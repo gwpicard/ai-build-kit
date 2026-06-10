@@ -1,0 +1,20 @@
+# Confidential data never travels through GitHub.
+# Put reference files, client material, and anything sensitive in data/.
+data/*
+!data/README.txt
+
+# Secrets
+.env
+.env.*
+
+# Dependencies and build output
+node_modules/
+dist/
+build/
+__pycache__/
+*.pyc
+.venv/
+
+# OS noise
+.DS_Store
+Thumbs.db

@@ -1,49 +1,42 @@
 ---
 name: new-feature
-description: Use when the user asks to create, add, build, implement, or extend an app with a new feature. Guides feature work from context discovery through scoped implementation, validation, and handoff.
+description: Build one feature through the team's loop, test first, with a human behaviour check before anything commits. Trigger for building any feature from the masterplan, or any small clear change with a one-sentence done condition. Do not use for repairs (fix-bug), for planning (grill-the-plan), or for several features at once.
 ---
 
-# New Feature
+# New feature: the build loop
 
-Use this skill to implement a feature in an existing app or a fresh codebase.
+You build one feature, directed by a non-developer. Follow the steps in order. One feature per pass; the next feature starts a new pass.
 
-## Workflow
+## 1. Read the state
 
-1. Understand the request
-   - Identify the user-visible outcome, not just the code change.
-   - Infer reasonable defaults from the app when details are missing.
-   - Ask only when a missing decision would materially change the result or risk wasted work.
+masterplan.md, plus the recent CHANGELOG.md entries. If the change touches behaviour that already exists, explore the relevant part of the code first and summarise in two or three plain sentences how it works now and what this change touches, before proposing anything.
 
-2. Inspect the app
-   - Find the framework, package manager, entry points, routes, and existing feature patterns.
-   - Read nearby components, services, tests, styles, and data models before editing.
-   - Prefer existing conventions over introducing new abstractions.
+## 2. Check the size
 
-3. Plan the implementation
-   - Keep the feature small enough to finish and verify in one pass when possible.
-   - Identify affected files, state/data flow, UI states, error states, and validation needs.
-   - Choose the least surprising integration point.
+The feature needs a done condition the user can say in one sentence. If the request bundles several features or the done condition won't compress to a sentence, stop and propose a split. Build only the first agreed piece.
 
-4. Implement
-   - Make focused edits that match local naming, structure, styling, and dependency patterns.
-   - Include empty, loading, error, and success states when they are part of the user flow.
-   - Avoid unrelated refactors and broad formatting churn.
+## 3. Ask before guessing
 
-5. Validate
-   - Run the narrowest meaningful tests, type checks, linters, or build command available.
-   - For frontend work, run the app and inspect the changed flow in a browser when practical.
-   - Fix issues discovered during validation before handing off.
+Anything ambiguous gets asked now, in plain language, with the options and trade-offs. Do not pad the feature with extras nobody asked for. Useful context to request if missing: a real input and the expected output, a screenshot or sketch, the definition of done.
 
-6. Handoff
-   - Summarize what changed and where.
-   - Mention commands run and any failures or skipped validation.
-   - Call out follow-up work only when it is directly relevant.
+## 4. Test first
 
-## Feature Quality Checklist
+Write the expected behaviour as a plain-language test, show the user the sentence form ("when this happens, that should be true"), and wait for their confirmation that it matches what they meant.
 
-- The feature is reachable from the existing app flow.
-- The main path works with realistic data.
-- Edge cases do not break layout or state.
-- Errors are visible and recoverable where appropriate.
-- The implementation follows existing app patterns.
-- Validation results are reported clearly.
+## 5. Build until it passes
+
+Implement, run the whole suite including the new test, and keep working until green. Use safe, parameterised approaches for anything that takes user input.
+
+## 6. Stop for the human check
+
+Tell the user exactly what to click or run and what they should see. Then stop. Nothing commits until they confirm the behaviour. If they report a gap, treat their expected-versus-actual description as the bug: fix the root cause rather than a workaround, add a test so the gap cannot reopen, and hand over again.
+
+## 7. Record
+
+After confirmation: if the change touched sign-in, data, or money, run the security-pass skill first and resolve what it finds. Then flip the feature's status to "built" in masterplan.md (and update any masterplan section the change made untrue, editing in place), append a dated CHANGELOG.md entry with the why where it isn't obvious, update AGENTS.md only if a convention changed, and commit with a clear message. Remind the user to push, and that teammates need to pull.
+
+## Hard rules
+
+- Nothing matched by .gitignore is ever staged, committed, printed, or copied into code, tests, documents, or prompts. Confidential data is read only through the project's agreed loading path.
+- If a fix has made things worse across two or three attempts, say so, recommend reverting to the last good commit, and propose a different approach.
+- The masterplan stays about a page and describes the present; history goes to the changelog.
