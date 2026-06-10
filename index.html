@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Local Time</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="clock-shell" aria-labelledby="clock-title">
+      <section class="clock-panel">
+        <p class="eyebrow">Local time</p>
+        <h1 id="clock-title">Right now where you are</h1>
+
+        <div class="time-card" aria-live="polite">
+          <time id="time" datetime="">--:--:--</time>
+          <p id="period" class="period">Loading</p>
+        </div>
+
+        <dl class="details" aria-label="Local time details">
+          <div>
+            <dt>Date</dt>
+            <dd id="date">Detecting...</dd>
+          </div>
+          <div>
+            <dt>Time zone</dt>
+            <dd id="timezone">Detecting...</dd>
+          </div>
+          <div>
+            <dt>UTC offset</dt>
+            <dd id="offset">Detecting...</dd>
+          </div>
+        </dl>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
