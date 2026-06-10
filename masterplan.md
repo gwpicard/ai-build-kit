@@ -17,15 +17,13 @@ Each answer gives immediate feedback. Wrong answers are counted wrong and the ga
 
 ## Features
 
-- Mode choice between reading a shown clock and setting clock hands: to build.
-- Analog clock display with clear hour and minute hands: to build.
-- 12-hour time answers in 5-minute increments: to build.
-- Slider controls for setting the clock hands: to build.
-- 10-round game session with pass or fail result: to build.
-- Score, completion time, and streak tracking: to build.
-- Immediate feedback after every answer: to build.
-- High-contrast visual design: to build.
-- Keyboard-only play for the full game flow: to build.
+- Game shell and mode choice: to build. Done when a player can open the game, choose either "read the clock" or "set the clock," and begin a session.
+- 10-round session engine: to build. Done when the game generates 10 random 5-minute-increment times, tracks the current round, and ends after round 10.
+- Read the clock mode: to build. Done when the game shows an analog clock and accepts a typed 12-hour answer for each round.
+- Immediate answer feedback: to build. Done when each submitted answer is marked correct or wrong, wrong answers move to the next round, and the correct time is shown.
+- Set the clock mode: to build. Done when the game shows a written time and the player can set the analog clock hands using keyboard-accessible sliders.
+- Score, time, streak, and pass result: to build. Done when the end screen shows score, completion time, best streak, and pass/fail with passing only at 10 out of 10.
+- High-contrast keyboard-ready polish: to build. Done when the full game can be completed without a mouse and remains readable in high contrast.
 
 ## Data
 
