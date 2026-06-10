@@ -1,0 +1,4 @@
+interface:
+  display_name: "New Feature"
+  short_description: "Guide scoped app feature implementation"
+  default_prompt: "Use $new-feature to add a focused app feature from request to validation."
