@@ -1,6 +1,6 @@
 ---
 name: fix-bug
-description: Repair something broken through a disciplined loop: reproduce, locate, fix the root cause, add a regression test. Trigger when intended behaviour has stopped working or never worked. Do not use for building new behaviour (new-feature) or for vague unease without a reproduction.
+description: "Fix a bug or broken behaviour through a disciplined loop: reproduce the issue, find the cause, make the smallest safe fix, add a regression test, run the test suite, and record the change. Use when the user says something is broken, failing, wrong, regressed, not working, or not behaving as intended."
 ---
 
 # Fix a bug
