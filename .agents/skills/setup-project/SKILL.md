@@ -1,6 +1,6 @@
 ---
 name: setup-project
-description: Stand the project foundation up once, after the masterplan exists: complete AGENTS.md, create the test harness with one passing test, commit and push. Trigger exactly once per project, on day one. Never run it again; if AGENTS.md's stack section is already filled in, setup has already happened.
+description: "Check or perform the one-time project foundation setup after the masterplan exists. Use when the user asks about project setup, initialization, test harness setup, or whether setup has already run. If AGENTS.md's stack section is already filled in, report that setup has already happened."
 ---
 
 # Set up the project
