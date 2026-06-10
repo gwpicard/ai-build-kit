@@ -1,0 +1,7 @@
+interface:
+  display_name: "Setup Project"
+  short_description: "Initialize the project foundation once"
+  default_prompt: "Use $setup-project to check or perform the one-time project setup."
+
+policy:
+  allow_implicit_invocation: true
