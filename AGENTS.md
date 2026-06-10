@@ -4,7 +4,7 @@ Standing instructions for this project. Read every session, so this file stays s
 
 ## What this project is
 
-[One line. Filled in by $setup-project from the masterplan.]
+A small internal browser game that helps adults practice reading and setting analog clock times.
 
 ## The workflow
 
@@ -28,4 +28,8 @@ Ask before anything irreversible: deleting data, changing the shape of stored da
 
 ## Stack, and how to run and test
 
-[Filled in by $setup-project: the chosen stack and why, the command that runs the tool, the command that runs the tests.]
+This is a dependency-free browser app using HTML, CSS, and plain JavaScript, with Node's built-in test runner, because the first version is a small internal game and does not need a framework yet.
+
+Run the tool: `npm run dev`, then open the local URL it prints.
+
+Run the tests: `npm test`.
