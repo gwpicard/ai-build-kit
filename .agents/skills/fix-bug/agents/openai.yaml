@@ -1,7 +1,0 @@
-interface:
-  display_name: "Fix Bug"
-  short_description: "Reproduce, repair, and test a bug"
-  default_prompt: "Use $fix-bug to investigate and repair broken behaviour."
-
-policy:
-  allow_implicit_invocation: true
