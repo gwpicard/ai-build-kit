@@ -1,12 +1,10 @@
 # Changelog
 
-A dated, plain-language record of what changed and why. Newest entries at
-the top, grouped under Added, Changed, Fixed, Removed. A good entry says
-what changed in the tool, in words anyone on the team can read, and why
-where it is not obvious. The past lives here, never in the masterplan.
+Plain-language history of the project, newest first. One dated entry per piece of work, written so a teammate who was away can catch up by reading it.
 
-## 2026-06-11
+<!-- Example entry:
 
-### Added
+## 2026-07-14
 
-- Set up the Analog Clock Trainer as a dependency-free browser app with a local run command and one passing automated test, so feature work can start from a working foundation.
+- Built: the board shows one column per project. Checked in the browser.
+-->

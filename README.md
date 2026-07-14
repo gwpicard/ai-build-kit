@@ -1,5 +1,5 @@
 # Project starter
 
-A starter repository for building an internal tool with an AI agent, by a team that doesn't read code. It carries three working documents, eight skills that run the routine, and the rules that keep the records true.
+A starter folder for building an internal tool with an AI agent, run by a team that does not read code. It holds seven things you can type, four documents that remember everything between sessions, and the rules that keep the agent careful.
 
-Start with INIT.md if you're standing the repository up, and WORKFLOW.md for how the work runs. masterplan.md (what the tool is) gets created by the first skill you run; CHANGELOG.md is the history; AGENTS.md is the agent's standing instructions. Confidential files go in data/, which never reaches GitHub.
+New here? INIT.md gets the folder set up, once. WORKFLOW.md explains how the work runs day to day. After that, day one is a single word: type $start and answer its questions. Everything the project needs gets created from there.
