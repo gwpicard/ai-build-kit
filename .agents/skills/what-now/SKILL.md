@@ -14,7 +14,7 @@ masterplan.md (stakes section first), plan.md, the recent changelog, git status,
 
 ## Say
 
-Which word comes next, and why, in a few sentences of plain language. Match where the project is in its life. Still building toward the first launch: the answer is usually $build, or $ship when the plan has run dry. Live and running: the answer is usually "say what you want to $build", $fix for the thing that broke, or the $maintain that the calendar shows is overdue.
+Which word comes next, and why, in a few sentences of plain language. Match where the project is in its life. Still building toward the first launch: the answer is usually /build, or /ship when the plan has run dry. Live and running: the answer is usually "say what you want to /build", /fix for the thing that broke, or the /maintain that the calendar shows is overdue.
 
 ## The half-done moment
 

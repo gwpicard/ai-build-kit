@@ -26,7 +26,7 @@ No flags: continue to step 4. A get-it-checked flag: write the reviewer's brief 
 
 ## 4. Go live, one connection at a time
 
-Take the harmless parts live first; anything a flag names waits for its own check. Before the team is told: error alerts point at an inbox someone reads, a backup exists and has been restored once, the way back is written in the changelog, and test data is gone. If hosting uses a preview address, this is the moment work moves to the team's address. That move is what $ship means.
+Take the harmless parts live first; anything a flag names waits for its own check. Before the team is told: error alerts point at an inbox someone reads, a backup exists and has been restored once, the way back is written in the changelog, and test data is gone. If hosting uses a preview address, this is the moment work moves to the team's address. That move is what /ship means.
 
 ## After the first launch
 
