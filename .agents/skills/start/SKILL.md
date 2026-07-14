@@ -1,6 +1,6 @@
 ---
 name: start
-description: Begin a new project, or resume a beginning that was interrupted. Use when the user types $start or asks to start, plan, or set up a new tool. Runs once per project; if the founding documents already exist and are complete, say so and point at $build. Do not use for new features on an existing project (that is build) or for repairs (that is fix).
+description: Begin a new project, or resume a beginning that was interrupted. Use when the user types /start or asks to start, plan, or set up a new tool. Runs once per project; if the founding documents already exist and are complete, say so and point at /build. Do not use for new features on an existing project (that is build) or for repairs (that is fix).
 disable-model-invocation: true
 ---
 
@@ -38,8 +38,8 @@ Create plan.md from templates/plan.md. Pieces sized for one sitting, in the orde
 
 ## 8. Stand the project up
 
-Ask two questions: will the team use this in a browser, and does it need to work when your machine is off? Set up accordingly. One established, conventional stack, because the agent is strongest where the conventions run deepest. Managed services for anything storing sign-ins, payments, or files; those never get hand-built, however capable you feel. If hosting is needed, arrange it so day-to-day pushes land at a preview address and only $ship changes the address the team uses. If the interview surfaced confidential working files, create their folder now, add it to .gitignore and .worktreeinclude, and record the handling rules in AGENTS.md. Fill in AGENTS.md's project line and stack section. Finish with one passing test and a first commit, pushed.
+Ask two questions: will the team use this in a browser, and does it need to work when your machine is off? Set up accordingly. One established, conventional stack, because the agent is strongest where the conventions run deepest. Managed services for anything storing sign-ins, payments, or files; those never get hand-built, however capable you feel. If hosting is needed, arrange it so day-to-day pushes land at a preview address and only /ship changes the address the team uses. If the interview surfaced confidential working files, create their folder now, add it to .gitignore and .worktreeinclude, and record the handling rules in AGENTS.md. Fill in AGENTS.md's project line and stack section. Finish with one passing test and a first commit, pushed.
 
 ## Done when
 
-masterplan.md and plan.md exist and held their review, AGENTS.md is filled in, one test passes, the first commit is pushed, and the user has been told the next word is $build.
+masterplan.md and plan.md exist and held their review, AGENTS.md is filled in, one test passes, the first commit is pushed, and the user has been told the next word is /build.

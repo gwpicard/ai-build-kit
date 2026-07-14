@@ -4,7 +4,7 @@ Standing instructions for this project. Read every session, so this file stays s
 
 ## What this project is
 
-(One line, written by $start.)
+(One line, written by /start.)
 
 ## Before any work
 
@@ -12,7 +12,18 @@ Read masterplan.md, stakes section first. Its flags are stop conditions, never s
 
 ## The workflow
 
-Work runs through the skills in .agents/skills/, mapped in WORKFLOW.md. One piece per pass through $build. Test first, and show the test failing before building: a test that never failed proves nothing. Nothing is saved until a human has used the change and confirmed it behaves. Requests arrive in plain language through $build; classify them with change-triage instead of trusting the label the user picked.
+Work runs through the skills in .agents/skills/, mapped in WORKFLOW.md. One piece per pass through /build. Test first, and show the test failing before building: a test that never failed proves nothing. Nothing is saved until a human has used the change and confirmed it behaves. Requests arrive in plain language through /build; classify them with change-triage instead of trusting the label the user picked.
+
+## The skills, and how they are invoked
+
+The work lives in eleven skills under `.agents/skills/`, each a folder with a `SKILL.md`. Seven are the words a human types; four are disciplines the words compose.
+
+- Words (human-invoked): `/start`, `/build`, `/fix`, `/ship`, `/sync`, `/maintain`, `/what-now`.
+- Disciplines (composed by the words and each other): `grilling`, `change-triage`, `section-builder`, `second-opinion`.
+
+The load rule, which holds in any tool: when someone types `/word`, or the older `$word`, or asks for a skill by name, open `.agents/skills/<word>/SKILL.md` and follow it; anything typed after the word is the request. When a skill's body says to run another skill by name, open that one's `SKILL.md` the same way.
+
+`.agents/skills/` is the single source of truth. The per-tool folders `.claude/`, `.cursor/`, `.gemini/`, and `.codex/` are thin adapters generated from it by `.agents/tools/build-adapters.sh`, so the native slash commands and skills of each tool point back here. To change a skill, edit its canonical `SKILL.md` and rerun that script; never edit the generated adapters by hand. COMPATIBILITY.md records which tool lights up which.
 
 ## The records
 
@@ -28,9 +39,9 @@ Keys, passwords, and tokens live in .env and nowhere else. Never print, commit, 
 
 ## Confidential files
 
-If the project works from confidential files, their folder and handling rules are recorded here by $start. Never stage, commit, print, or copy their contents into code, tests, documents, or the changelog.
+If the project works from confidential files, their folder and handling rules are recorded here by /start. Never stage, commit, print, or copy their contents into code, tests, documents, or the changelog.
 
-(Filled in by $start if the project needs it.)
+(Filled in by /start if the project needs it.)
 
 ## Dangerous commands
 
@@ -42,4 +53,4 @@ Work would touch a flagged area outside the current piece. A piece needs more th
 
 ## Stack, and how to run and test
 
-(Filled in by $start.)
+(Filled in by /start.)
