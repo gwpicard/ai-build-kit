@@ -9,9 +9,9 @@ The recipe for the one person who stands the project up. Everyone else only does
 5. Ask the agent to commit everything with the message "starter" and push. In plain terms: a commit is a saved snapshot of the project, and pushing sends it up to GitHub. Or run it yourself: git add -A, git commit -m "starter", git push.
 6. Invite the team as collaborators (repo Settings, Collaborators). Everyone accepts the email, clones through Cursor the same way as step 2, adds their line to team.md, and does step 4 on their own machine.
 
-Verify on every machine: the repo is open in Cursor, and typing $ in the agent panel lists the seven words (start, build, fix, ship, sync, maintain, what-now).
+Verify on every machine: the repo is open in Cursor, and typing $ in the agent panel shows this pack's skills, with the seven words (start, build, fix, ship, sync, maintain, what-now) among them. The other four are machinery the agent uses by itself.
 
-Then day one is one word: type $start and answer its questions. It interviews you about the tool, pauses while you take the assessment, writes the founding documents, and stands the project up. You can stop it anywhere and type $start again later; it carries on where it left off.
+Then day one is one word: type $start and answer its questions. It interviews you about the tool, runs a short fit check to confirm this pack matches your project, writes the founding documents, and stands the project up. You can stop it anywhere and type $start again later; it carries on where it left off. From there, work runs through pull requests; WORKFLOW.md explains what that means in plain terms, and the skills handle the mechanics.
 
 Two notes.
 

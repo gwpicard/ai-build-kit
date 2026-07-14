@@ -9,7 +9,7 @@ You build one piece, directed by someone who will judge it by behaviour. Follow 
 
 ## 1. Clean start
 
-Check git status. If uncommitted work is lying around, stop and say so: it gets finished or cleared first (what-now owns that conversation). Never build on top of half-done work.
+Check git status. If uncommitted work is lying around, stop and say so: it gets finished or cleared first (what-now owns that conversation). Never build on top of half-done work. Then update main (git pull) and create a short-lived branch named after the piece. Pieces never get built on main directly.
 
 ## 2. Agree the sentence
 
@@ -21,16 +21,16 @@ Write the agreed sentence as a test. Run it and show it failing before building 
 
 ## 4. Hand it over
 
-Stop, and ask the user to try it: a real input, the output they expected. For a piece with no face (a scheduled job, an email), trigger it now against a made-up case and show what it produced. Describe any gap as expected versus actual, and fix it at the root.
+Stop. The change gets tried by hand before anything is saved: a real input, the expected output. For a piece with no face (a scheduled job, an email), trigger it now against a made-up case and show what it produced. Describe any gap as expected versus actual, and fix it at the root.
 
 ## 5. Check the change itself
 
-If the change touched sign-in, stored data, or money, say so, and have second-opinion run in a fresh session before offering to save. This fires off what the change actually touched, so it never depends on anyone remembering.
+If the change touched any of the stakes section's flags (in the preset: sign-in, stored data, money), say so, and have second-opinion run in a fresh session before offering to save. This fires off what the change actually touched, so it never depends on anyone remembering.
 
-## 6. Save
+## 6. Save, and open the pull request
 
-Only after the user confirms the behaviour: flip the piece's status in plan.md, append the changelog line, commit with a clear message, push. Work is not finished until the push succeeds.
+Only after the behaviour is confirmed: flip the piece's status in plan.md, append the changelog line, commit on the piece's branch with a clear message, push, and open a pull request titled after the piece. Its description is a plain-language summary: what changed, and how it was checked. Say it's ready, and that merging is the green button on GitHub. Work isn't finished until the pull request is open.
 
 ## Done when
 
-The user confirmed the behaviour, the test passes, the records are updated, and the commit is pushed.
+The behaviour is confirmed, the test passes, the records are updated, and the pull request is open with a plain-language description.

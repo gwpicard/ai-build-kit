@@ -10,7 +10,7 @@ Everything build and fix make lives on the draft copy until this word moves it o
 
 ## 0. Read the verdict
 
-If the stakes section says this is a practice project, or that the design must change before a safe launch exists, decline: say "not yet", say the project stays on the draft copy, and say exactly what changes the answer (a re-run of the assessment for the first, the named design swaps for the second). This check exists because the moment before launch is exactly when checks get skipped.
+If the stakes section says the project is practice, or records a fit-check outcome of fix-the-design-first, decline: say "not yet", say the project stays on the draft copy, and say exactly what changes the answer: the redesign the stakes section names, or a fresh run of the fit check. This refusal exists because the moment before launch is exactly when checks get skipped.
 
 ## 1. The evidence run
 
@@ -20,9 +20,9 @@ Run references/evidence-run.md in full. No claims without fresh output.
 
 Have second-opinion run in a new session across the build, scoped by the stakes section's flags.
 
-## 3. The verdict's door
+## 3. What the stakes section directs
 
-Run-it-yourself: continue to step 4. Get-it-checked-first: fetch the reviewer-brief skill from the master pack, run it, and stop until the review comes back. Hand-it-over: fetch and run the handover-package skill instead of launching, and rotate every key first so none travels with the package.
+No flags: continue to step 4. A get-it-checked flag: write the reviewer's brief now, one page: what the tool is, what data it holds, the specific parts to examine (taken from the flags), how to run it, and what the review should try to break. Stop until the review comes back and its findings are fixed. A handover flag: instead of launching, assemble the handover folder: the masterplan, the plan, the changelog, the repo with its tests, an honest list of what's unfinished or was deferred, and a one-page orientation covering how to run it and where things live. Rotate every key first, so none travels with the package.
 
 ## 4. Go live, one connection at a time
 

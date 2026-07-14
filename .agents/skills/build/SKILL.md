@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Build
 
-Always a fresh session: one piece per session keeps quality flat and the documents honest. Read masterplan.md first, stakes section first, then plan.md.
+Always a fresh session, and fresh session means exactly that: close the chat, open a new one, type the command. One piece per session keeps quality flat and the documents honest. Read masterplan.md first, stakes section first, then plan.md.
 
 ## Typed alone
 
@@ -14,11 +14,11 @@ Take the next piece marked to-build and run section-builder on it.
 
 ## Typed with words
 
-Run change-triage on the request and follow its route: build it now through section-builder, run grilling first, update the masterplan first, or stop and send the user to the assessment. Say which route you chose and why, in one line.
+Run change-triage on the request and follow its route: build it now through section-builder, run grilling first, update the masterplan first, or stop and run the fit check. Say which route you chose and why, in one line.
 
 ## Typed with auto
 
-The user approves the plan once; you build the pieces in a row without them in between. The rules of the mode: every piece still goes test first with the test seen failing, and every piece gets its own commit, so anything can be unwound piece by piece. Stop the run at any failing test you cannot make pass inside its piece, at anything change-triage would escalate, at any touch of a flagged area, and at anything ambiguous; never guess to keep a run going. Skip the per-piece hand-over, and end the run with the evidence run (ship/references/evidence-run.md) plus a report: what was built, what passed, where and why the run stopped, and a checklist of things for the user to try, riskiest first, anything near the flags on top.
+The plan gets approved once; the pieces then run in a row with nobody in between. The rules of the mode: every piece still goes test first with the test seen failing, and every piece gets its own commit, so anything can be unwound piece by piece. Stop the run at any failing test you cannot make pass inside its piece, at anything change-triage would escalate, at any touch of a flagged area, and at anything ambiguous; never guess to keep a run going. The whole run happens on one branch and ends as one pull request. Skip the per-piece hand-over; end the run with the evidence run (ship/references/evidence-run.md), and write the pull request's description as the report: what was built, what passed, where and why the run stopped, and a checklist of things to try before merging, riskiest first, anything near the flags on top.
 
 ## Done when
 
