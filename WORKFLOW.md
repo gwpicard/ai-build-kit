@@ -22,7 +22,7 @@ The documents are the project's memory. The agent forgets everything between ses
 
 | Document | Job | Written |
 |---|---|---|
-| masterplan.md | What the tool is, in the present tense, in about a page. Its first part, the stakes section, records how careful this project needs to be; the agent reads that part first, always. | Created by $start; the stakes section changes only by re-running the assessment; kept true by $sync |
+| masterplan.md | What the tool is, in the present tense, in about a page. Its first part, the stakes section, records how careful this project needs to be; the agent reads that part first, always. | Created by $start; the stakes section changes only by re-running the fit check; kept true by $sync |
 | plan.md | What's left to build: the pieces, in order, each with a sentence saying when it's done and how you'll check. It churns constantly, and that is its job. | Created by $start; updated by $build; kept true by $sync |
 | CHANGELOG.md | What happened, dated, in plain language. | A line added after every piece of work |
 | AGENTS.md | How we work here: the rules, the stack, the conventions. | Set up by $start; touched only when a convention changes |
@@ -31,13 +31,13 @@ The dividing rule: the masterplan describes the present, the plan holds the futu
 
 ## Day one
 
-Type $start. It talks you out of building if something simpler would do, interviews you one question at a time with its best guess attached, pauses while you take the assessment, writes the masterplan, has a fresh session read that page looking for holes, cuts the work into pieces on the plan, and stands the project up with one passing test. Interrupt it anywhere; typing $start again resumes where it stopped.
+Type $start. It talks you out of building if something simpler would do, interviews you one question at a time with its best guess attached, runs a short fit check to confirm this pack matches your project, writes the masterplan, has a fresh session read that page looking for holes, cuts the work into pieces on the plan, and stands the project up with one passing test. Interrupt it anywhere; typing $start again resumes where it stopped.
 
 ## Day to day
 
 Typed alone, $build takes the next piece from the plan. It agrees with you in one sentence what the piece should do, writes a test and shows it failing first, builds until the test passes, then stops so you can try it. Nothing is saved until you confirm it behaves. If the change touched sign-in, stored data, or money, a second agent with no memory of writing the code reviews it first and reports in plain language.
 
-Typed with words after it, $build is how you bring anything new: "$build add a filter to the board". You never sort your own request; the agent works out what kind of work it is. Small and clear gets built right away. Vague gets a short interview. Anything touching data, access, or money gets written into the masterplan first. And if the request would change what kind of project this is (outside users, real money moving, a promise to someone), it sends you back through the assessment before building.
+Typed with words after it, $build is how you bring anything new: "$build add a filter to the board". You never sort your own request; the agent works out what kind of work it is. Small and clear gets built right away. Vague gets a short interview. Anything touching data, access, or money gets written into the masterplan first. And if the request would change what kind of project this is (outside users, real money moving, a promise to someone), it re-runs the fit check with you before building, because a different kind of project needs different care before people rely on it.
 
 $fix is for when something that should work doesn't: "$fix the board duplicates cards when I drag them". Paste the whole error if there is one. It works out the cause before touching code, wipes failed attempts rather than stacking them, and finishes with a test that keeps the bug from coming back. If the same piece fails three rounds in a row, it stops patching and rebuilds the piece from the masterplan, which is usually quicker and cleaner.
 
@@ -59,9 +59,15 @@ Once the plan exists, "$build auto" builds several pieces in a row without you b
 
 $sync trues the documents up against what actually happened, at the end of a session. The pack wires it to run by itself when a session closes, where the tool supports that; typing it by hand is the fallback. $maintain is the service visit: monthly and light for updates and anything the error alerts caught, quarterly and fuller for a tidy-up. It also owns the ending, when a tool's time is over: export the data, tell the team, switch off the services.
 
-## Git, day to day
+## Git, day to day: pull requests
 
-Everyone on main for now, and one builder at a time: two people running $build at once will collide on the same files, and untangling that is the worst first experience this system can give you. If two of you want to build in the same week, claim pieces by name in plan.md first. Pull before you start, commit when a piece works, push so others can pull it. Conflicts go to the agent to walk through.
+Work runs through pull requests, whether you build alone or in a team. In plain terms: each piece gets built on its own short-lived branch, a side copy of the project, and once you've confirmed it behaves, the agent opens a pull request. That's GitHub's approve-this-change page: a plain-language summary of what changed, and one green button to merge it. Click it, the branch gets deleted, and the next piece starts fresh.
+
+Why bother when you're alone? Two reasons. It's a checkpoint you control: nothing reaches the shared copy of the project until you click, so a half-done piece can't land there by accident. And it's how professional teams work, so the day a developer joins or reviews your project, they find a shape they already know.
+
+The skills handle the mechanics. $build creates the branch and opens the pull request; $build auto runs its whole batch on one branch and opens one pull request at the end, with a checklist of things to try written into it. Your part is reading the summary, trying the result, and clicking merge. Pull main before starting anything new; the agent will remind you.
+
+In a team, one extra habit: claim your piece by name in plan.md before starting, so two people don't build the same thing twice. Conflicts, if they happen, go to the agent to walk through.
 
 ## If the plan outgrows the file
 

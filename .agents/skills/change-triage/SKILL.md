@@ -1,6 +1,6 @@
 ---
 name: change-triage
-description: Classify a request written in plain words before any work happens. Used by build when the user typed words after the command, and by fix to check a report before repairing. Decides whether the request is new work, a repair, too vague to size, or a change that needs the masterplan or the assessment first.
+description: Classify a request written in plain words before any work happens. Used by build when the user typed words after the command, and by fix to check a report before repairing. Decides whether the request is new work, a repair, too vague to size, or a change that needs the masterplan or the fit check first.
 ---
 
 # Change triage
@@ -17,7 +17,7 @@ Piece-sized and clear (one sitting, a done line you could write now): add it to 
 
 ## Escalate before building when
 
-The request touches what data is stored, who can see or do what, or money: update the masterplan first and say what changed. The request would change what kind of project this is (outside users, real money moving, a promise to someone, a new kind of data about people): stop and send the user back through the assessment, because the stakes section decides how this whole system behaves, and building past it is how safe projects quietly become unsafe ones.
+The request touches what data is stored, who can see or do what, or money: update the masterplan first and say what changed. The request would change what kind of project this is (outside users, real money moving, a promise to someone, a new kind of data about people): stop, run the fit check at .agents/skills/start/references/fit-check.md again, rewrite the stakes section from its outcome, and only then route the work. The stakes section decides how this whole system behaves, and building past it is how safe projects quietly become unsafe ones.
 
 ## Record
 
