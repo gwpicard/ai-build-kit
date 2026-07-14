@@ -12,12 +12,10 @@ No coding knowledge is needed. The workflow never asks you to read code: every c
 
 ## Quick start
 
-1. On GitHub, create a new, empty private repository named after your project (no template, no README).
-2. Open [Cursor](https://cursor.com), choose *Clone Git Repository*, sign in to GitHub when prompted, and clone your new repo.
-3. Copy this kit's files into the cloned folder, including the hidden ones (`.agents`, `.gitignore`, `.env.example`).
-4. Copy `.env.example` to a file named `.env`. Keys will live there later; the file never leaves your machine.
-5. Ask the agent to commit everything as "starter" and push.
-6. Type `$start` in the agent panel and answer its questions.
+1. Click **Use this template** above and name your new repository (make it private).
+2. Open [Cursor](https://cursor.com), choose *Clone Git Repository*, sign in to GitHub when prompted, and pick your new repo.
+3. Copy `.env.example` to a file named `.env`. Keys will live there later; the file never leaves your machine.
+4. Type `$start` in the agent panel and answer its questions.
 
 That's day one. `$start` interviews you about the tool you want, checks the project fits this kit, writes the founding documents, and stands the project up with one passing test. The full setup recipe, including inviting teammates, is in [INIT.md](INIT.md).
 
@@ -44,7 +42,8 @@ flowchart LR
   S["$start<br/>once"] --> L["$build, $fix, $sync<br/>the loop"]
   L --> P["$ship<br/>when ready"]
   P --> R["the long run<br/>$build · $fix · $sync · $maintain"]
-  R -. a request that changes what kind<br/>of project this is re-runs the fit check .-> S
+  R -. a request that changes what kind of<br/>project this is .-> F["the fit check re-runs,<br/>the stakes section gets rewritten"]
+  F -. same words, more care .-> R
 ```
 
 Every piece follows the same shape: agree the behaviour in one plain sentence, write a test and watch it fail, build until it passes, try it by hand, then save. Work lands through pull requests, so nothing reaches the shared project until you click merge, and the version your team relies on changes only when you type `$ship`.
