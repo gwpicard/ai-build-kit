@@ -16,21 +16,21 @@ Test the idea against the ladder, cheapest first: a process change, a feature in
 
 Run the grilling skill for the founding interview. It ends when your guesses keep being right.
 
-## 3. The assessment
+## 3. The fit check
 
-Pause and ask the user to take the solo build assessment (about 25 minutes) and paste the result. If the project matches the internal-tool preset (own team, own data, no promises to outsiders), offer the shortcut: the pre-filled stakes section already in templates/masterplan.md. Recommend the real assessment for a first project; the shortcut is for people whose answers have become predictable to them.
+Go through references/fit-check.md, all six questions, one at a time, guesses attached like the interview. All six no: the pre-filled stakes section from templates/masterplan.md applies. Any yes: the fit check says what the stakes section records instead, flags and launch rule included, and what that means in practice: a paid review before the flagged part goes live, a planned handover, or a pause to redesign. Either way, the answers and the date go in the stakes section.
 
 ## 4. Write the masterplan
 
-Create masterplan.md from templates/masterplan.md, filled from the interview, present tense throughout. The stakes section goes first: the assessment result verbatim, or the preset.
+Create masterplan.md from templates/masterplan.md, filled from the interview, present tense throughout. The stakes section goes first: the fit check's outcome, or the preset.
 
 ## 5. Fresh eyes on the page
 
-Ask the user to open a new chat and ask it to run the second-opinion skill on masterplan.md. A problem found on paper costs a sentence to fix; the same problem found in built code costs an evening. Stop here until that review has happened; when resuming, look for its note in the changelog.
+The drafted masterplan gets read by fresh eyes: a new chat, running the second-opinion skill on masterplan.md. A problem found on paper costs a sentence to fix; the same problem found in built code costs an evening. Stop here until that review has happened; when resuming, look for its note in the changelog.
 
 ## 6. Three questions
 
-Ask the user to answer, from the masterplan alone: who can see and do what? What happens when the main flow fails? What is out of scope? If any answer is not on the page, fix the page and ask again. When all three hold, note it in the changelog.
+Three questions get answered from the masterplan alone, no memory allowed: who can see and do what? What happens when the main flow fails? What is out of scope? If any answer isn't on the page, fix the page and ask again. When all three hold, note it in the changelog.
 
 ## 7. Cut the plan
 

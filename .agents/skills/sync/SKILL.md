@@ -12,7 +12,7 @@ The documents are supposed to describe reality. Make that true again by reading 
 
 1. Read the commits and changes since the last changelog entry, plus the tool's actual behaviour where that is cheap to check.
 2. Correct plan.md statuses to match reality. Append any changelog lines the work missed, dated.
-3. Correct masterplan.md where reality moved: a promise that changed shape, a section that no longer matches the tool. Never touch the stakes section; only the assessment rewrites that.
+3. Correct masterplan.md where reality moved: a promise that changed shape, a section that no longer matches the tool. Never touch the stakes section; only the fit check rewrites that.
 4. Bank what was learned. A mistake the agent has now made twice becomes one line in AGENTS.md, so it stops recurring. A pattern the user approved more than once becomes a project skill, if it earns one. Keep AGENTS.md lean: point at documents instead of repeating them, and delete lines that no longer pay their way.
 5. Say in one short paragraph what was corrected, so the user knows what had drifted.
 

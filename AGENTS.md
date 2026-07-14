@@ -16,7 +16,7 @@ Work runs through the skills in .agents/skills/, mapped in WORKFLOW.md. One piec
 
 ## The records
 
-If it isn't written down, it doesn't exist. After every working piece: update plan.md statuses, append a dated CHANGELOG.md entry, commit with a clear message, and remind the user to push and teammates to pull. masterplan.md describes the present only. Keep it to roughly a page and flag it if it passes 120 lines.
+If it isn't written down, it doesn't exist. After every working piece: update plan.md statuses, append a dated CHANGELOG.md entry, commit on the piece's branch with a clear message, and open the pull request. Merging belongs to a human, always; after a merge, everyone pulls main. masterplan.md describes the present only. Keep it to roughly a page and flag it if it passes 120 lines.
 
 ## Working with this team
 

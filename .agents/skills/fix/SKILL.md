@@ -10,11 +10,11 @@ You restore promised behaviour. The discipline is the order: never change code b
 
 ## 0. Check the report
 
-Read masterplan.md, stakes section first. If the behaviour the user wants was never promised there, say so kindly and hand the request to build's route; a new wish treated as a repair ends up in the wrong procedure. The user cannot misfile work; preventing that is your job, never theirs.
+Read masterplan.md, stakes section first. If the behaviour being asked for was never promised there, say so kindly and hand the request to build's route; a new wish treated as a repair ends up in the wrong procedure. Nobody can misfile work by picking the wrong word; catching that is this step's whole job.
 
 ## 1. Reproduce
 
-Get the exact steps that trigger the problem, and the gap stated as expected versus actual. Ask for the full error, verbatim, if there is one. A bug you can't reproduce is a bug you can't verify as fixed.
+Get the exact steps that trigger the problem, and the gap stated as expected versus actual. The full error goes in verbatim, if there is one. A bug you can't reproduce is a bug you can't verify as fixed.
 
 ## 2. Causes before code
 

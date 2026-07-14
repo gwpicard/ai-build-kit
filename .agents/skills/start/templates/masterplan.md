@@ -6,17 +6,17 @@ what happened lives in CHANGELOG.md. Keep it to roughly a page. -->
 
 ## The stakes section
 
-<!-- Rewritten only by re-running the solo build assessment. The agent reads
-this part first, every session. The version below is the internal-tool
-preset: your own team, your own data, no promises to outsiders. If that is
-not this project, take the assessment and replace this section with its
-result. -->
+<!-- Rewritten only by re-running the fit check, which lives at
+.agents/skills/start/references/fit-check.md. The agent reads this part
+first, every session. The version below is the internal-tool preset: your
+own team, your own data, no promises to outsiders. If that is not this
+project, the fit check says what goes here instead. -->
 
 Verdict: build it and run it yourself.
 Data rule: the tool starts empty and fills through use. Build only on data you can afford to lose.
 Flags: sign-in, stored data, money. Any change touching these gets a fresh-session review before it is saved.
 Autonomy: $build auto may run the plan, and stops at any flag, any failure, anything unclear.
-Who else is involved: nobody, while the preset holds. The day outside users, real money, or a promise to someone arrives, re-run the assessment before building further.
+Who else is involved: nobody, while the preset holds. The day outside users, real money, or a promise to someone arrives, the fit check runs again before anything else gets built.
 
 ## What it does, and for whom
 

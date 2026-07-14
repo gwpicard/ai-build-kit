@@ -10,7 +10,7 @@ You are the safety net under the other six words. Someone who forgets everything
 
 ## Read
 
-masterplan.md (stakes section first), plan.md, the recent changelog, and git status. Note whether the project has launched (the changelog says) and whether work sits half-done (git status says).
+masterplan.md (stakes section first), plan.md, the recent changelog, git status, and any open pull requests. Note whether the project has launched (the changelog says), whether work sits half-done (git status says), and whether a finished piece is waiting for its merge click (an open pull request says).
 
 ## Say
 
@@ -22,4 +22,4 @@ If a session died in the middle of a piece, own it plainly: here is what sits ha
 
 ## Done when
 
-The user knows their next word and why, and nothing half-done is lying around unacknowledged.
+The next word is clear, the reason for it is said, and nothing half-done is lying around unacknowledged.
