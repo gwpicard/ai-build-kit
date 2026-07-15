@@ -15,7 +15,7 @@ project, the fit check says what goes here instead. -->
 Verdict: build it and run it yourself.
 Data rule: the tool starts empty and fills through use. Build only on data you can afford to lose.
 Flags: sign-in, stored data, money. Any change touching these gets a fresh-session review before it is saved.
-Autonomy: /build auto may run the plan, and stops at any flag, any failure, anything unclear.
+Autonomy: /build auto may run the plan's machine-checkable pieces. A failing piece gets three attempts, then parked. Any flag, and anything unclear, stops the run.
 Who else is involved: nobody, while the preset holds. The day outside users, real money, or a promise to someone arrives, the fit check runs again before anything else gets built.
 
 ## What it does, and for whom

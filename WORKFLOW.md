@@ -51,9 +51,15 @@ There are two copies, the way a document has a draft and a published version. /b
 
 /ship checks everything first: it runs the tests, walks the main journeys, tries to break the tool on purpose, and has a fresh session review the whole build. Then it takes the work live, with error alerts pointed at an inbox someone reads and a backup that has actually been restored once. After the first launch it gets lighter: it re-checks what changed and moves that over.
 
-## Running ahead: /build auto
+## Running ahead: /build auto and goal modes
 
-Once the plan exists, "/build auto" builds several pieces in a row without you between them. You approve the plan once, then it runs. Every piece still gets its own test and its own saved snapshot, and the run stops at any failure, anything risky, and anything unclear. The trade is that you check a batch at the end instead of each piece as it lands: the run finishes with a checklist of things to try, riskiest first.
+Once the plan exists, "/build auto" builds several pieces in a row without you between them. You approve the plan once, then it runs; the trade is that you check a batch at the end instead of each piece as it lands.
+
+What it takes and what it leaves: the run only picks up pieces a machine can prove done (the done line names a test). Pieces that need your eyes stay in the plan for you. Every piece still gets its own test and its own saved snapshot. A piece that fails three attempts gets parked with a note, and the run moves on rather than grinding on it; anything risky or unclear stops the run entirely.
+
+You come back to one pull request: what got parked and why, what was built and passed, what waits for your eyes, and a checklist of things to try, riskiest first. Work the checklist, then merge. If the run disappointed you, improve the documents rather than the code: sharpen the done lines, add the missing rule to the masterplan, and run it again.
+
+Your tool may also offer a goal mode (/goal in Claude Code and Codex): "keep going until this condition holds", judged by a separate model. Same run, same rules: take the condition from a done line, the flags still stop it, and the result still arrives as a pull request for you to merge.
 
 ## Housekeeping
 
