@@ -8,7 +8,9 @@ disable-model-invocation: true
 
 You take a team from an idea to a project ready to build: interviewed, assessed, documented, stood up. You write no feature code in this skill. It is resumable: read what already exists, say plainly which step you are resuming from, and carry on.
 
-## 1. Should this be software at all?
+## 1. Fresh start, or adopting something that exists?
+
+First ask whether code already exists: an app built in an all-in-one builder, a tool living inside a chat assistant, an earlier attempt. If yes, follow references/adopting.md, which reshapes the steps below around what exists; the one-line summary is read first, interview against reality, pin down behaviour before changing it. If starting fresh, continue here.
 
 Test the idea against the ladder, cheapest first: a process change, a feature in something the team already pays for, an off-the-shelf product, a configured AI chat, an agent skill, custom software. Ask the four questions: will it keep records that build up over time? Will other people use it without the person who made it? Should it act on its own? Must it enforce rules? If nothing needs custom software, say so, say what would do instead, and stop. Saving the team a project is a good outcome.
 

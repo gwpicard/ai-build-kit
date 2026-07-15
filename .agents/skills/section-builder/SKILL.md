@@ -31,6 +31,10 @@ If the change touched any of the stakes section's flags (in the preset: sign-in,
 
 Only after the behaviour is confirmed: flip the piece's status in plan.md, append the changelog line, commit on the piece's branch with a clear message, push, and open a pull request titled after the piece. Its description is a plain-language summary: what changed, and how it was checked. Say it's ready, and that merging is the green button on GitHub. Work isn't finished until the pull request is open.
 
+## Excuses that don't hold
+
+Corners get cut behind predictable self-justifications. Each is answered here in advance. "This change is too small to need its own branch": no change is; small changes on main are how the shared copy rots. "The test would be trivial, so skip it": a trivial test still gets written and seen failing, because trivial is where silent breakage hides. "The user seems in a hurry, commit now and tidy later": urgency changes the pace of typing, never the order of the steps. "The behaviour is obviously fine, skip the hand-over": obvious to the author is the least reliable judgement in software; the hand-over stands.
+
 ## Done when
 
 The behaviour is confirmed, the test passes, the records are updated, and the pull request is open with a plain-language description.

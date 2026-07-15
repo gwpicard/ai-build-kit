@@ -33,6 +33,8 @@ The dividing rule: the masterplan describes the present, the plan holds the futu
 
 Type /start. It talks you out of building if something simpler would do, interviews you one question at a time with its best guess attached, runs a short fit check to confirm this pack matches your project, writes the masterplan, has a fresh session read that page looking for holes, cuts the work into pieces on the plan, and stands the project up with one passing test. Interrupt it anywhere; typing /start again resumes where it stopped.
 
+Already built something, in an app builder, a chat assistant, or an earlier attempt? /start adopts it instead of replacing it: it reads what exists, interviews you about what the tool is supposed to do, writes the masterplan for what's actually there, and pins down current behaviour with tests before anything changes. Your earlier build was the right first step; this is what graduating looks like.
+
 ## Day to day
 
 Typed alone, /build takes the next piece from the plan. It agrees with you in one sentence what the piece should do, writes a test and shows it failing first, builds until the test passes, then stops so you can try it. Nothing is saved until you confirm it behaves. If the change touched sign-in, stored data, or money, a second agent with no memory of writing the code reviews it first and reports in plain language.

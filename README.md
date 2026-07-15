@@ -67,6 +67,10 @@ The kit assumes the person directing the work can't review code, so every protec
 
 The kit is tuned for internal tools: something for your own team, holding your own data, with nobody outside relying on it. Trackers, dashboards, small workflow tools, internal calculators. If your project involves outside users, payments, contracts, sensitive personal data, or regulation, the kit still works, and it will tell you exactly what extra care applies, up to and including "have this built by professionals, and here's the brief." That honesty is a feature: the [fit check](.agents/skills/start/references/fit-check.md) exists so nobody finds out at launch what they should have known at the start.
 
+## Why this and not the alternatives?
+
+Fair question, and each alternative is genuinely good at what it's for. All-in-one builders (Lovable, Bolt, Replit) are the fastest way to a working app; the trade is that the platform owns the shape of your project, and extending or leaving gets harder as it grows. Bare agent tools (Claude Code, Cursor, Codex on their own) give you all of the power and none of the process; they'll happily help you build an unmaintainable thing quickly. The developer skill packs (Superpowers, agent-skills) are excellent, and they assume you read code, because they're written for people who do. This kit is the process layer for people who don't: the same discipline those packs encode, expressed as behaviour you can check without reading a line, plus the one thing none of the others carry, a fit check that tells you honestly when your project needs a professional instead of this kit.
+
 ## For technical people
 
 Everything is markdown. A skill is a folder in `.agents/skills/` containing a `SKILL.md`: frontmatter description for triggering, numbered steps ending on checkable criteria, stop conditions, and a done-when. The seven commands carry `disable-model-invocation: true` so only a human starts them; the four shared disciplines (grilling, change-triage, section-builder, second-opinion) trigger on their descriptions. Composition is by name: a command's body references a discipline, and the agent loads it.
