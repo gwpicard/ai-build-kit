@@ -1,0 +1,33 @@
+---
+name: sync
+description: True the documents up against what actually happened. Use for an interrupted session, work done outside the skills, an imported branch or contribution, a long session whose context went foggy, or reconciliation before a handover. Normal completion of /build, /fix, /ship, and /maintain already updates the records; sync is the recovery and reconciliation route, not a routine step after every piece.
+disable-model-invocation: true
+---
+
+# Sync
+
+The documents are supposed to describe reality. Make that true again by reading what actually happened, and correct the records instead of trusting what they claim. Propose the document changes before making anything large or ambiguous. You change documents only, never code; the single piece of machinery you keep in step is the check's own file, in step 4.
+
+## When to run this
+
+Normal completion of /build, /fix, /ship, and /maintain already updates
+plan.md, the changelog, and the masterplan directly; a correctly finished
+piece of work doesn't need sync afterward. Reach for sync instead for: a
+session that was interrupted mid-piece, work done outside the skills
+entirely, an imported branch or outside contribution, a long session whose
+context became unclear, reconciliation before handing the project to someone
+else, or recovering after an optional automation failed to run.
+
+## The routine
+
+1. Read the commits and changes since the last changelog entry, plus the tool's actual behaviour where that is cheap to check, and compare them against the records and the current Git state.
+2. Correct plan.md statuses to match reality. Append any changelog lines the work missed, dated.
+3. Correct masterplan.md where reality moved: a promise that changed shape, a section that no longer matches the tool. Never rewrite the build-path section directly; if the project's character has changed, rerun the fit check instead and let it produce the new section.
+4. Identify anything left open: an unresolved recheck trigger from the build-path section, an open expert gate, or interrupted manual setup. Say what's open rather than closing it quietly.
+5. Keep the check on the pull request honest. If the way the project installs or tests has moved, update .github/workflows/checks.yml so the `project-check` job runs the project's real commands, the same ones AGENTS.md's stack section names. Touch only those commands; leave the `source-kit-validation` job and both `if:` conditions unchanged. A check still running the placeholder, or the wrong commands, is worse than no check at all: the green tick gets believed either way.
+6. Bank what was learned. A mistake the agent has now made twice becomes one line in AGENTS.md, so it stops recurring. A pattern the user approved more than once becomes a project skill, if it earns one. Keep AGENTS.md lean: point at documents instead of repeating them, and delete lines that no longer pay their way.
+7. Say in one short paragraph what was corrected, so the user knows what had drifted.
+
+## Done when
+
+A teammate could start tomorrow from the documents alone, anything learned is written where the next session will read it, and nothing was closed quietly that should have stayed visible.
