@@ -11,6 +11,30 @@ assessed, documented, stood up. You write no feature code in this skill. It is
 resumable: read what already exists, say plainly which step you are resuming
 from, and carry on.
 
+## Conversation contract
+
+`/start` guides the person through project decisions. Speak when they need to
+answer a question, make a decision, approve an action, understand a blocker,
+or see a result that changes what they can do next. Finishing an internal step
+is not a user-facing result by itself. Routine reading, research, setup, and
+checking happen quietly.
+
+Do not narrate commands, search queries, package or version selection, retries,
+waiting, terminal output, or internal technical reasoning. Record technical
+choices in AGENTS.md. Name a tool or service in the conversation only when the
+person must choose it, pay for it, create or own its account, grant it access,
+or understand a limit that affects the product.
+
+A harness may show its own command or status text. Do not repeat that text or
+translate each line as it appears. If the harness requires an update during a
+long operation, say only which visible outcome is still being checked and
+whether anything has changed.
+
+Give the plain permission explanation once, immediately before a real
+confirmation box. Do not announce that a confirmation might appear later. If
+the action and its boundaries were already explained, refer back to that
+explanation instead of repeating the full checklist.
+
 ## 0. Resume safely
 
 Read the repository's current state before doing anything else. Check whether
@@ -142,6 +166,11 @@ explicitly owns a different design. Use references/manual-setup.md for any
 step only a human can complete. If hosting is needed, arrange it so day-to-day
 pushes land at a preview address and only /ship changes the address the team
 uses.
+
+Choose routine technical parts quietly and record them under AGENTS.md's stack
+section. In the conversation, describe what the setup lets the person do. Name
+a product or service only when it creates a choice, cost, account, access step,
+ownership duty, or product limit that the person needs to understand.
 
 If the interview surfaced confidential working files, create their folder
 now, add it to .gitignore, and record the handling rules in AGENTS.md. If the

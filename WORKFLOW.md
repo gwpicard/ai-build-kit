@@ -48,6 +48,11 @@ Every project has exactly one build path at a time, set by the fit check and rec
 
 Type /start. It checks what the current tool can actually do, then tries to talk you out of building if something simpler would do the job. It interviews you, one question at a time with its best guess attached, and runs the fit check to set the project's build path. From those answers it writes the masterplan, has the best available independent method read that page looking for holes, cuts the work into pieces on the plan, and stands the project up with one passing check. Interrupt it anywhere; typing /start again resumes where it stopped.
 
+While it works, the conversation follows project decisions and results you can
+use. Routine searches, setup commands, retries, and waiting stay behind the
+scenes unless they create a blocker or require a decision. Your agent tool may
+still display its own technical activity, but the agent does not repeat it.
+
 Already built something, in an app builder, a chat assistant, or an earlier attempt? /start adopts it instead of replacing it: it reads what exists, interviews you about what the tool is supposed to do, writes the masterplan for what's actually there, and pins down current behaviour with tests before anything changes. Your earlier build was the right first step; this is what graduating looks like.
 
 If the tool needs confidential files to work from, say so during the interview. /start makes a folder for them that stays on each machine and never reaches GitHub, and writes the handling rules into AGENTS.md.
