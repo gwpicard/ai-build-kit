@@ -5,4 +5,4 @@ user-invocable: false
 ---
 <!-- GENERATED from .agents/skills/change-triage/. Do not edit here; regenerate with .agents/tools/build-adapters.sh -->
 
-Load and follow `.agents/skills/change-triage/SKILL.md`, the single source of truth for this skill.
+When this skill comes from a Claude plugin, load and follow `${CLAUDE_PLUGIN_ROOT}/.agents/skills/change-triage/SKILL.md`. Otherwise, load and follow `.agents/skills/change-triage/SKILL.md`. It is the single source of truth for this skill.

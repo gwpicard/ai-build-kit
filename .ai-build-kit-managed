@@ -1,5 +1,5 @@
 # AI Build Kit managed files. Generated during release; do not edit.
-version|v0.1.1
+version|v0.2.0
 source|https://github.com/gwpicard/ai-build-kit-maintainer/releases
 file|100644|.agents/guard/blocked-commands.md
 file|100755|.agents/hooks/session-end-sync.sh
@@ -13,6 +13,7 @@ file|100644|.agents/skills/fix/agents/openai.yaml
 file|100644|.agents/skills/grilling/SKILL.md
 file|100644|.agents/skills/grilling/references/decision-prototype.md
 file|100644|.agents/skills/maintain/SKILL.md
+file|100644|.agents/skills/maintain/VERSION
 file|100644|.agents/skills/maintain/agents/openai.yaml
 file|100644|.agents/skills/second-opinion/SKILL.md
 file|100644|.agents/skills/section-builder/SKILL.md
@@ -23,11 +24,22 @@ file|100644|.agents/skills/ship/templates/expert-brief.md
 file|100644|.agents/skills/start/SKILL.md
 file|100644|.agents/skills/start/agents/openai.yaml
 file|100644|.agents/skills/start/references/adopting.md
+file|100644|.agents/skills/start/references/blocked-commands.md
 file|100644|.agents/skills/start/references/capability-check.md
 file|100644|.agents/skills/start/references/completion-report.md
 file|100644|.agents/skills/start/references/fit-check.md
 file|100644|.agents/skills/start/references/manual-setup.md
+file|100755|.agents/skills/start/scripts/bootstrap-project.sh
 file|100644|.agents/skills/start/templates/CHANGELOG.md
+file|100644|.agents/skills/start/templates/foundation/AGENTS.md
+file|100644|.agents/skills/start/templates/foundation/CLAUDE.md
+file|100644|.agents/skills/start/templates/foundation/GEMINI.md
+file|100644|.agents/skills/start/templates/foundation/README.md
+file|100644|.agents/skills/start/templates/foundation/checks.yml
+file|100644|.agents/skills/start/templates/foundation/claude-settings.json
+file|100644|.agents/skills/start/templates/foundation/copilot-instructions.md
+file|100644|.agents/skills/start/templates/foundation/env.example
+file|100644|.agents/skills/start/templates/foundation/gitignore
 file|100644|.agents/skills/start/templates/masterplan.md
 file|100644|.agents/skills/start/templates/plan.md
 file|100644|.agents/skills/sync/SKILL.md

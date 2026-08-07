@@ -1,6 +1,6 @@
 # AI Build Kit
 
-A clonable workflow that helps non-developers build reliable software with an
+An installable workflow that helps non-developers build reliable software with an
 AI coding agent. Seven commands cover the project's life. Four internal
 disciplines handle interviewing, routing, building, and review behind the
 scenes.
@@ -17,15 +17,53 @@ This kit is those steps, packaged as skills the agent follows and words you type
 
 No coding knowledge is needed. The workflow never asks you to read code: every check is something you click or something you see.
 
-## Quick start
+## Start a project
 
-1. Use this repository as a private template and open the clone in an agent tool.
-2. Ask the agent to run `start`. Native `/start` works where the tool supports it.
-3. Answer one question at a time. The agent checks what the environment can do, decides the project's build path, creates the records, and tells you the next step.
+Choose one installation route. Do not use both in the same project.
 
-The core workflow works in any agent harness that can read and edit repository files, run shell commands, and use Git. Generated adapters make the experience more native in Claude Code, Cursor, and Gemini CLI; Codex reads the canonical skills directly.
+For a project that uses only the Claude Code terminal app, open the project
+folder and run:
 
-In a harness with native project commands, typing `/` should list the seven words. Otherwise, ask for `start` by name and confirm the agent opens `.agents/skills/start/SKILL.md`. The seven commands are the user interface. The four disciplines are internal machinery; some harness skill pickers may still display them, but users never need to select them. [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md) covers every tool, including harnesses with no adapter at all.
+```bash
+claude plugin marketplace add gwpicard/ai-build-kit
+claude plugin install ai-build-kit@ai-build-kit --scope local
+```
+
+Start Claude Code in that folder and type `/ai-build-kit:start`. Local scope
+keeps the plugin attached to this project on this computer without changing
+the settings shared with the project.
+
+For Codex, Cursor, Gemini CLI, another coding agent, or a project that uses
+more than one agent, run this from the project folder:
+
+```bash
+npx skills add gwpicard/ai-build-kit
+```
+
+Choose the agents you use and install all eleven AI Build Kit skills. Then ask
+the agent: "Run the start skill."
+
+With either route, answer one question at a time. The agent prepares the
+project files, checks what the environment can do, decides the project's build
+path, creates the records, and tells you the next step.
+
+The shared [skills installer](https://github.com/vercel-labs/skills) supports
+Claude Code, Codex, Cursor, Gemini CLI, and many other harnesses. It installs
+the skills inside this project and records their source for later updates. The
+workflow itself needs an agent that can read and edit project files, run shell
+commands, and use Git.
+
+If this computer cannot run `npx`, download the
+[latest public Release](https://github.com/gwpicard/ai-build-kit/releases/latest),
+copy its `.agents/skills` folder into the project, and ask the agent: "Open
+`.agents/skills/start/SKILL.md` and run the start skill." This manual route
+keeps the same workflow, but later updates also need to be copied manually.
+
+The seven commands are the user interface. The Claude plugin keeps the four
+internal disciplines out of its command menu. Some other coding agents may
+display them in a skill picker, but users never need to select them.
+[docs/COMPATIBILITY.md](docs/COMPATIBILITY.md) explains the installation paths
+and fallback.
 
 ## The seven words
 
@@ -103,17 +141,29 @@ The kit is free. Building with it needs an agent subscription, which is the real
 
 ## For technical people
 
-`.agents/skills/` is the single source of truth. Claude Code, Cursor, and Gemini CLI each get thin, generated adapters that point back at it, so their native slash commands and skills light up; Codex reads the canonical skills directly, guided by an `agents/openai.yaml` policy file beneath each command that disables implicit invocation. The core workflow never depends on an adapter existing; it works through `AGENTS.md`'s load rule in any harness that can read and edit files, run shell commands, and use Git. A skill is a folder in `.agents/skills/` containing a `SKILL.md`: frontmatter description for triggering, numbered steps ending on checkable criteria, stop conditions, and a done-when. `disable-model-invocation: true` on the seven commands prevents Claude from starting a human command automatically; `user-invocable: false` on the four generated Claude discipline skills hides them from the human command menu while leaving them available for a command to compose. Composition is by name: a command's body references a discipline, and the agent loads it.
+The public repository is an Agent Skills source and a Claude Code plugin
+marketplace. Each folder under
+`.agents/skills/` contains one skill and all of the references, templates, or
+scripts that skill needs. Both installation routes use those same folders.
+The shared installer records the source in `skills-lock.json` and places the
+skills in the locations selected agents use. The Claude plugin keeps its copy
+in Claude's plugin cache. Seven generated command adapters remain under the
+person's control and use the `ai-build-kit:` prefix. Four hidden discipline
+adapters stay available to Claude when a command needs them.
 
-To extend or adapt, edit the canonical `SKILL.md` and rerun `.agents/tools/build-adapters.sh`; never hand-edit the generated `.claude/`, `.cursor/`, or `.gemini/` folders. [docs/PHILOSOPHY.md](docs/PHILOSOPHY.md) carries the five questions a new capability has to answer before it earns a place, and the examples of ones that didn't.
+The start skill carries the project foundation. On its first run it creates
+missing project instructions, harness pointers, environment examples, and the
+placeholder project check. Existing files are preserved. It then creates
+`masterplan.md`, `plan.md`, and `CHANGELOG.md` from the founding interview.
 
-The machinery that isn't a skill: an optional, report-only session-end hook in `.agents/hooks/`, a command deny list in `.agents/guard/`, and the pull request check in `.github/workflows/checks.yml`, which ships as a placeholder that fails on purpose until `/start` replaces it with the project's real install and test commands. The maintainer source performs its own deeper validation before publishing this starter. [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md) maps every tool and every generated file.
+Put project-specific rules in `AGENTS.md`. Treat installed skill folders as
+managed packages. `maintain` reads the public Release notes, asks before an
+update, and uses the same route that installed the kit. Application code,
+records, project instructions, environment files, and the project's own check
+remain under the project's control.
 
-The three project records don't exist yet on purpose: `/start` creates `masterplan.md`, `plan.md`, and `CHANGELOG.md` from templates, so a fresh starter begins as a kit, ready to become your project. Maintainer-only files are excluded before a release reaches this repository.
-
-After the project is under way, `/maintain` checks for stable AI Build Kit
-updates. It asks before changing anything, updates only kit-owned workflow
-files, rebuilds every harness adapter, and leaves the tool and its project
-records alone. A conflict or redirected managed folder stops before changes;
-after an unexpected application failure, automatic restoration runs when the
-computer still permits it, with the required clean checkpoint as the fallback.
+The separate maintainer repository contains the canonical source, validation,
+and release machinery. Numbered releases publish this repository with matching
+tags and reviewed Release notes. The legacy starter files remain temporarily so
+projects created before the installer model can migrate through one compatible
+release.

@@ -37,6 +37,20 @@ explanation instead of repeating the full checklist.
 
 ## 0. Resume safely
 
+First, run `scripts/bootstrap-project.sh` from this installed skill folder in
+the project root. It creates only missing project foundation files and leaves
+anything already there untouched. If the harness cannot run the script, copy
+the missing files from `templates/foundation/` to the paths named by the
+script. Never replace an existing file during this preparation. When an
+existing `AGENTS.md` lacks the installed-skill load rule, preserve its project
+instructions and add the smallest compatible rule before continuing.
+
+The same script works when Claude Code runs this skill from its plugin cache.
+If it reports that the project has both the Claude plugin and a separate AI
+Build Kit skill installation, stop before preparing the project. Keep the
+plugin for a Claude-only project, or keep the shared skills installation when
+the project uses more than one coding agent. Never leave both active.
+
 Read the repository's current state before doing anything else. Check whether
 masterplan.md, plan.md, and CHANGELOG.md already exist, and whether they look
 complete or half-written. Check for unfinished setup: a placeholder still in
@@ -113,7 +127,8 @@ present tense throughout. The build-path section goes first: the fit check's
 result. Create CHANGELOG.md from its template, empty; it has to exist before
 the next step writes its first line to it. Do not create team.md; it no
 longer exists. Fill in AGENTS.md's project line and the capability profile
-from step 2.
+from step 2. Replace README.md's project-name and purpose placeholders with a
+short description taken from the masterplan.
 
 If docs/MAINTAINING.md exists, delete it as part of this same commit. Current
 starter releases exclude that maintainer-only file, but older direct clones
@@ -177,7 +192,9 @@ now, add it to .gitignore, and record the handling rules in AGENTS.md. If the
 tool keeps a list of files to carry into a working copy, add the folder there
 too; in Claude Code that list is .worktreeinclude.
 
-Wire the project check according to the build path: explore privately needs a
+Wire the project check according to the build path. If
+`.github/workflows/checks.yml` is missing, copy it from
+`templates/foundation/checks.yml`. Explore privately needs a
 local test or smoke command, and the remote pull-request check stays
 optional; build and run it, and build with expert help, both need the remote
 check working before any shared or live behavioural work; professional-led
@@ -189,15 +206,9 @@ Configure only `jobs.project-check`.
 Inside that job, replace the placeholder `Install and test` commands with the
 project's real install and check commands.
 
-Leave unchanged:
-
-- the `source-kit-validation` job;
-- the `if: github.repository == 'gwpicard/ai-build-kit-maintainer'` condition;
-- the `if: github.repository != 'gwpicard/ai-build-kit-maintainer'` condition;
-- the job names.
-
-The source-kit job remains skipped in a clone. The project-check job becomes
-the clone's real clean-machine check.
+An older project may still carry the legacy `source-kit-validation` job and
+its repository conditions. Leave that job and its conditions unchanged. Edit
+only `jobs.project-check` in either layout.
 
 Do not replace the entire workflow file from memory. Edit only the
 placeholder step unless the project genuinely requires a broader workflow

@@ -1,6 +1,10 @@
 # WORKFLOW.md: how this project runs
 
-The reference card. When in doubt about what to type, start here, or just type /what-now and let it tell you. Skills are invoked by typing `/` and the name as a slash command (`/start`, `/build`, …), or by asking for them by name. The older `$name` form still works too.
+The reference card. When in doubt about what to type, start here, or just type
+/what-now and let it tell you. Skills are invoked by typing `/` and the name as
+a slash command (`/start`, `/build`, …), or by asking for them by name. The
+Claude Code plugin adds the prefix `ai-build-kit:`, such as
+`/ai-build-kit:start`. The older `$name` form still works too.
 
 ## 1. The seven words
 
@@ -131,13 +135,12 @@ Normal /build and /fix completion updates the records directly; you don't need /
 /maintain is the service visit: monthly and light for AI Build Kit updates,
 project dependency updates, and anything the error alerts caught. When a newer
 kit is available, the agent shows the version and what changed, then waits for
-approval. The updater changes only kit-owned workflow files and rebuilds every
-harness adapter. It leaves the tool, its records, its standing instructions,
-and its own checks alone. A collision or redirected managed folder stops before
-anything changes and comes back as one plain decision. If applying an approved
-update fails unexpectedly, the updater restores the clean starting state when
-the computer still permits it; otherwise recovery uses that required clean
-checkpoint.
+approval. The shared skills installer refreshes only the eleven AI Build Kit
+skills recorded for this project. It leaves the tool, its records, its standing
+instructions, environment files, and its own checks alone. Projects from an
+older release register their existing skills with the installer once, then use
+the same update route. A clean checkpoint comes first, so an interrupted update
+can be recovered without asking the person to inspect installation details.
 
 The quarterly visit is fuller, with a hot-spot tidy-up and an ownership check
 that can move the build path in either direction. /maintain also owns the ending,

@@ -128,9 +128,10 @@ generate_all() {
       {
         printf '%s\n' "---"
         printf 'description: %s\n' "$short"
+        printf 'disable-model-invocation: true\n'
         printf '%s\n' "---"
         printf '%s\n\n' "$claude_banner"
-        printf 'Load and follow `.agents/skills/%s/SKILL.md`, the single source of truth for the `/%s` command. Treat anything typed after the command as the user'"'"'s request and pass it through unchanged.\n' "$name" "$name"
+        printf 'When this command comes from a Claude plugin, load and follow `${CLAUDE_PLUGIN_ROOT}/.agents/skills/%s/SKILL.md`. Otherwise, load and follow `.agents/skills/%s/SKILL.md`. It is the single source of truth for the `/%s` command. Treat anything typed after the command as the user'"'"'s request and pass it through unchanged.\n' "$name" "$name" "$name"
       } > "$OUT/.claude/commands/$name.md"
 
       # Cursor slash command
@@ -160,7 +161,7 @@ generate_all() {
         printf 'user-invocable: false\n'
         printf '%s\n' "---"
         printf '%s\n\n' "$claude_banner"
-        printf 'Load and follow `.agents/skills/%s/SKILL.md`, the single source of truth for this skill.\n' "$name"
+        printf 'When this skill comes from a Claude plugin, load and follow `${CLAUDE_PLUGIN_ROOT}/.agents/skills/%s/SKILL.md`. Otherwise, load and follow `.agents/skills/%s/SKILL.md`. It is the single source of truth for this skill.\n' "$name" "$name"
       } > "$OUT/.claude/skills/$name/SKILL.md"
     else
       # Claude Code does not discover the portable .agents/skills alias, so a

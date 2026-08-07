@@ -10,35 +10,59 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
 
 ## Monthly, light
 
-1. Check the project's `.ai-build-kit-version` against the latest stable release
-   from `gwpicard/ai-build-kit-maintainer`. If a newer version exists, read its
-   release notes and say: "A newer AI Build Kit is available. This updates the
-   kit around your tool, not the tool itself." Do not update silently.
-2. To prepare an approved kit update, download the official starter archives
-   for both the project's current version and the new version into new temporary
-   folders outside the project. Run `.agents/tools/update-kit.sh plan` with
-   those two unpacked folders. It updates only the paths declared in the
-   releases' `.ai-build-kit-managed` records; project code, project records,
-   AGENTS.md, README.md, environment files, and the project's check stay owned
-   by the project.
-3. Report the version, the release-note summary, and the updater's plain change
-   counts. Apply only after approval, on the save route the build path requires,
-   with no other unsaved work present. Run `.agents/tools/update-kit.sh apply`,
-   then the regenerated adapter check and the project's own check. Record the
-   kit version in the changelog with the saved change.
-4. A conflict or a path redirected outside the project stops before anything
-   changes. After an unexpected failure while applying, the updater restores
-   the clean starting state when the computer still permits restoration. If it
-   cannot finish restoring, stop and direct recovery from the required clean
-   checkpoint. Explain which kit behaviour needs attention and what the new
-   release changes there. Propose one resolution and wait for approval; never
-   choose a side by file age or replace the whole project with the starter. If
-   either official release archive is unavailable, stop and report that the
-   update cannot be verified.
-5. Update project dependencies and check for known vulnerabilities. Report what changed; apply on approval.
-6. Once live: read the error alerts and the bills. Anything real becomes a piece on plan.md, for build to take.
-7. Verify backups still run where the tool has any. Confirm the named operational owner from the masterplan still holds that role, and that no critical service or credential is tied to someone who has left.
-8. Check whether use or reliance has grown enough that the fit check should run again; if it has, run it before anything else this visit.
+1. Read this skill's `VERSION` file and compare it with the latest stable public
+   Release at `gwpicard/ai-build-kit`. If a newer version exists, read its notes
+   and say: "A newer AI Build Kit is available. It refreshes the installed
+   workflow skills. Your tool, project records, and project instructions remain
+   yours." Give the version and a short summary, then wait for approval.
+2. Before registering or changing the kit, require the clean checkpoint used by
+   the current build path. For a shared skills installation, check whether any
+   AI Build Kit skill has local edits. Project-specific rules belong in
+   AGENTS.md. If such edits exist, explain them and propose moving the durable
+   rule there. Wait for approval rather than replacing an edit silently.
+3. Identify how this project receives AI Build Kit. Check whether
+   `skills-lock.json` records the eleven skills from `gwpicard/ai-build-kit`.
+   In Claude Code, also use `claude plugin list --json` to check for the enabled
+   `ai-build-kit@ai-build-kit` plugin and note its installation scope. If both
+   routes are active, stop and ask the person which one to keep. Use the plugin
+   for a Claude-only project and the shared skills installation when the project
+   uses several coding agents.
+4. Update only through the route found in step 3:
+
+   - For the Claude plugin, refresh its marketplace with
+     `claude plugin marketplace update ai-build-kit`, then run
+     `claude plugin update ai-build-kit@ai-build-kit --scope <scope>` using the
+     scope reported in step 3.
+   - For a shared skills installation, run
+     `npx skills update start build fix ship sync maintain what-now grilling change-triage section-builder second-opinion -p`.
+   - When neither route is present, this is an older installation. After
+     approval, run `npx skills add gwpicard/ai-build-kit` and let the person
+     choose the coding agents they use. This registers and refreshes the
+     existing skills, so do not run a second update on the same visit.
+
+   Do not update unrelated plugins, project skills, or global skills.
+5. For the shared route, confirm that this skill's `VERSION` matches the public
+   Release. For the Claude route, confirm that `claude plugin list --json`
+   reports the matching version without the leading `v`. Claude loads an
+   updated plugin after `/reload-plugins` or the next session, so say that
+   plainly. Run the project's own check and record the kit version in the
+   changelog with the saved change. The foundation created by start, including
+   AGENTS.md, README.md, project records, environment files, application code,
+   and the project's check, stays project-owned.
+6. If the normal route is unavailable, use the latest public Release as the
+   fallback source. A shared installation may replace only the eleven AI Build
+   Kit skill folders after the same approval and clean checkpoint. A Claude
+   plugin installation keeps its current enabled version when the marketplace
+   cannot be reached. Confirm that version with `claude plugin list --json`,
+   tell the person the update did not happen, and retry when the marketplace is
+   reachable. Do not create a second installation or claim that the project
+   checkpoint can restore Claude's plugin cache. If the plugin is no longer
+   enabled, stop and ask the person to reinstall it after the marketplace is
+   reachable.
+7. Update project dependencies and check for known vulnerabilities. Report what changed; apply on approval.
+8. Once live: read the error alerts and the bills. Anything real becomes a piece on plan.md, for build to take.
+9. Verify backups still run where the tool has any. Confirm the named operational owner from the masterplan still holds that role, and that no critical service or credential is tied to someone who has left.
+10. Check whether use or reliance has grown enough that the fit check should run again; if it has, run it before anything else this visit.
 
 ## Quarterly, or before a handover
 
