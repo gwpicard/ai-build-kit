@@ -162,8 +162,10 @@ update, and uses the same route that installed the kit. Application code,
 records, project instructions, environment files, and the project's own check
 remain under the project's control.
 
-The separate maintainer repository contains the canonical source, validation,
-and release machinery. Numbered releases publish this repository with matching
-tags and reviewed Release notes. The legacy starter files remain temporarily so
-projects created before the installer model can migrate through one compatible
-release.
+This repository contains the complete public release. Each numbered version has
+a matching tag and reviewed Release notes. The legacy starter files remain
+temporarily so projects created before the installer model can migrate through
+one compatible release.
+
+Problems and suggestions belong in the public issue tracker. Read
+[CONTRIBUTING.md](CONTRIBUTING.md) before opening one.

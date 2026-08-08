@@ -1,6 +1,6 @@
 # AI Build Kit managed files. Generated during release; do not edit.
-version|v0.2.0
-source|https://github.com/gwpicard/ai-build-kit-maintainer/releases
+version|v0.3.0
+source|https://github.com/gwpicard/ai-build-kit/releases
 file|100644|.agents/guard/blocked-commands.md
 file|100755|.agents/hooks/session-end-sync.sh
 file|100644|.agents/skills/build/SKILL.md

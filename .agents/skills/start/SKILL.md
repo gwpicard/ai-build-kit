@@ -131,7 +131,7 @@ from step 2. Replace README.md's project-name and purpose placeholders with a
 short description taken from the masterplan.
 
 If docs/MAINTAINING.md exists, delete it as part of this same commit. Current
-starter releases exclude that maintainer-only file, but older direct clones
+starter releases exclude that source-only file, but older direct clones
 may still contain it. Do this yourself rather than asking the user to remember.
 
 If the project needs a `.env`, copy `.env.example` to `.env` now, confirm
