@@ -33,11 +33,11 @@ not ask for. Do not widen a fix into a tidy-up.
 
 ## The skills, and how they are invoked
 
-The work lives in eleven installed skills. Seven are words a human types; four
-are disciplines those words compose.
+The work lives in eleven installed skills. Seven are commands you type. Four run
+in the background when a command needs them.
 
-- Words: `start`, `build`, `fix`, `ship`, `sync`, `maintain`, `what-now`.
-- Disciplines: `grilling`, `change-triage`, `section-builder`,
+- Commands: `start`, `build`, `fix`, `ship`, `sync`, `maintain`, `what-now`.
+- Background skills: `grilling`, `change-triage`, `section-builder`,
   `second-opinion`.
 
 Use the harness's skill picker or ask for a skill by name. When a skill says to

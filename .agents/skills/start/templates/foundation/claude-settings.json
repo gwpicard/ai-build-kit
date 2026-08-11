@@ -9,5 +9,17 @@
       "Bash(git clean -fd:*)",
       "Bash(rm -rf:*)"
     ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "hook=\"$CLAUDE_PROJECT_DIR/.agents/hooks/session-start.sh\"; if [ -x \"$hook\" ]; then \"$hook\" --claude-hook; fi"
+          }
+        ]
+      }
+    ]
   }
 }

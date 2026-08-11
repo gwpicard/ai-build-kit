@@ -110,16 +110,32 @@ generate_all() {
     # TOML-safe: escape backslash and double-quote for the description string.
     short_toml=$(printf '%s' "$short" | sed 's/\\/\\\\/g; s/"/\\"/g')
 
+    # Trigger type is declared, never inferred. A skill that declares nothing,
+    # or declares two things at once, stops the build instead of quietly
+    # becoming a discipline the model may start on its own.
+    kind=
+    kinds=0
     if [ -f "$dir/.maintainer-only" ]; then
       kind=maintainer
-      maintainer_skills=$((maintainer_skills + 1))
-    elif grep -q '^disable-model-invocation:[ \t]*true' "$file"; then
-      kind=command
-      commands=$((commands + 1))
-    else
-      kind=discipline
-      disciplines=$((disciplines + 1))
+      kinds=$((kinds + 1))
     fi
+    if grep -q '^disable-model-invocation:[ \t]*true' "$file"; then
+      kind=command
+      kinds=$((kinds + 1))
+    fi
+    if grep -q '^user-invocable:[ \t]*false' "$file"; then
+      kind=discipline
+      kinds=$((kinds + 1))
+    fi
+    if [ "$kinds" -ne 1 ]; then
+      echo "error: $name/SKILL.md must declare exactly one trigger type, and declares $kinds: use 'disable-model-invocation: true' for a command a person types, 'user-invocable: false' for an internal discipline another skill calls, or a .maintainer-only marker file for a maintainer skill" >&2
+      exit 1
+    fi
+    case "$kind" in
+      command) commands=$((commands + 1)) ;;
+      discipline) disciplines=$((disciplines + 1)) ;;
+      maintainer) maintainer_skills=$((maintainer_skills + 1)) ;;
+    esac
 
     claude_banner="<!-- GENERATED from .agents/skills/$name/. Do not edit here; regenerate with .agents/tools/build-adapters.sh -->"
 

@@ -1,9 +1,8 @@
 # AI Build Kit
 
 An installable workflow that helps non-developers build reliable software with an
-AI coding agent. Seven commands cover the project's life. Four internal
-disciplines handle interviewing, routing, building, and review behind the
-scenes.
+AI coding agent. Seven commands cover the project's life. Four more skills
+run in the background, handling the interview, routing, building and review.
 
 You do not need to read code. You do need to explain what should happen, try
 the results, and make the product and risk decisions the agent cannot make
@@ -11,15 +10,13 @@ for you.
 
 ## What this is
 
-AI agents can write working software now. What they can't do is stop you from skipping the steps that make software trustworthy: agreeing what a thing should do before building it, proving it works before saving it, checking the risky parts before anyone relies on them, and keeping records so next month's you knows what this month's you did.
+Coding agents can write working software. They will not stop you skipping the steps that make it trustworthy: agreeing what a thing should do before building it, proving it works before saving it, checking the risky parts before anyone relies on them, and keeping records so next month you can still tell what happened.
 
-This kit is those steps, packaged as skills the agent follows and words you type. Seven commands cover a project's whole life, and three records hold its memory, because the agent forgets everything between sessions and the records don't. A build path, set at the start and rechecked as the project changes, decides how much of that process actually applies to this project right now. You describe what you want in plain language and judge the results by using them; the kit handles everything in between.
-
-No coding knowledge is needed. The workflow never asks you to read code: every check is something you click or something you see.
+This kit is those steps, packaged as skills the agent follows and words you type. Three records hold the project's memory, because the agent forgets everything between sessions and the records don't. A build path, set at the start and rechecked as the project changes, decides how much of the process applies right now.
 
 ## Start a project
 
-Choose one installation route. Do not use both in the same project.
+Choose one installation route. Do not use more than one in the same project.
 
 For a project that uses only the Claude Code terminal app, open the project
 folder and run:
@@ -43,15 +40,14 @@ npx skills add gwpicard/ai-build-kit
 Choose the agents you use and install all eleven AI Build Kit skills. Then ask
 the agent: "Run the start skill."
 
-With either route, answer one question at a time. The agent prepares the
-project files, checks what the environment can do, decides the project's build
-path, creates the records, and tells you the next step.
+Whichever route you choose, answer one question at a time. The agent prepares
+the project files, checks what the environment can do, decides the project's
+build path, creates the records, and tells you the next step.
 
 The shared [skills installer](https://github.com/vercel-labs/skills) supports
-Claude Code, Codex, Cursor, Gemini CLI, and many other harnesses. It installs
-the skills inside this project and records their source for later updates. The
-workflow itself needs an agent that can read and edit project files, run shell
-commands, and use Git.
+Claude Code, Codex, Cursor, and Gemini CLI. It installs the skills inside this
+project and records their source for later updates. The workflow itself needs
+an agent that can read and edit project files, run shell commands, and use Git.
 
 If this computer cannot run `npx`, download the
 [latest public Release](https://github.com/gwpicard/ai-build-kit/releases/latest),
@@ -59,9 +55,8 @@ copy its `.agents/skills` folder into the project, and ask the agent: "Open
 `.agents/skills/start/SKILL.md` and run the start skill." This manual route
 keeps the same workflow, but later updates also need to be copied manually.
 
-The seven commands are the user interface. The Claude plugin keeps the four
-internal disciplines out of its command menu. Some other coding agents may
-display them in a skill picker, but users never need to select them.
+The seven commands are the interface. Some coding agents also list the four
+background skills in a skill picker, but you never need to pick one.
 [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md) explains the installation paths
 and fallback.
 
@@ -79,7 +74,7 @@ Commands are named after moments, because that's how you'll reach for them.
 | It's been a while | `/maintain` | The service visit. |
 | I'm lost | `/what-now` | Which word comes next, and why. |
 
-You never have to choose the hidden technique. The agent decides whether the moment needs an interview, a prototype, source research, a test, a review, or outside help. You never have to sort your own request either: both `/build` and `/fix` check what you typed against the masterplan and route it correctly. [WORKFLOW.md](WORKFLOW.md) is the day-to-day manual for all seven.
+You never have to choose the hidden technique, and you never have to sort your own request: both `/build` and `/fix` check what you typed against the masterplan and route it correctly. [WORKFLOW.md](WORKFLOW.md) is the day-to-day manual for all seven.
 
 ## How a project flows
 
@@ -96,7 +91,7 @@ flowchart LR
   F -. same words, care matched to the path .-> R
 ```
 
-Every piece follows the same shape: agree the behaviour in one plain sentence, choose the evidence it needs, build the smallest complete slice, try it by hand, then save through the route the build path requires. Private exploration may end in a simple checkpoint; shared or live work lands through a pull request, so nothing reaches the shared project until you click merge, and the version your team relies on changes only when you type `/ship`.
+Every piece follows the same shape: agree the behaviour in one plain sentence, choose the evidence it needs, build the smallest complete slice, try it by hand, then save it through the route the build path requires.
 
 ## The three records
 
@@ -111,25 +106,25 @@ Three project records hold the product's memory: `masterplan.md` is the present,
 | Outside users, payments, sensitive data, or business-critical reliance | Build with expert help |
 | Regulation, irreplaceable live data, high-consequence automation, or technical ownership the team cannot carry | Professional-led |
 
-The path is not a permanent label. The kit rechecks it when the system changes character, and moving up a path means the fit check caught something before the consequences did.
+The path is not a permanent label. The kit rechecks it whenever the project changes character.
 
 ## What keeps it safe
 
-The kit assumes the person directing the work can't review code, so every protection is behavioural or mechanical. It opens with a fit check, which sets the project's build path and names any outside help that path requires. That check runs again whenever the project changes character; the four possible paths are explained in [fit-check.md](.agents/skills/start/references/fit-check.md).
+The kit assumes the person directing the work can't review code, so every protection is behavioural or mechanical. It opens with a fit check, which sets the build path and names any outside help that path requires; the four possible paths are explained in [fit-check.md](.agents/skills/start/references/fit-check.md).
 
-Every promised behaviour gets evidence. Stable rules and bugs usually get automated tests, shown failing first. Visual and exploratory work may be checked by trying it. Shared, live, or risky changes get stronger checkpoints: a pull request with a clean-machine check next to the merge button, and an independent review. The project's build path decides how much of this applies to a given piece of work: a private prototype never gets the full production checks, and `/ship` only performs a real production launch on the path built for one.
+Every promised behaviour gets evidence. Stable rules and bugs usually get automated tests, shown failing first. Visual and exploratory work may be checked by trying it. Shared, live, or risky changes get stronger checkpoints: a pull request with a clean-machine check next to the merge button, and an independent review. The build path decides how much of this applies to a given piece of work.
 
-Underneath sit the blunt protections. Destructive commands are on a blocked list, alongside standing restrictions like never disabling authentication to make a test pass. Secrets live in `.env` and nowhere else. And `/ship` reads the build path before launching, then refuses or changes shape when the project's own answers say it should.
+Underneath sit the blunt protections. Destructive commands are on a blocked list, alongside standing restrictions like never disabling authentication to make a test pass. Secrets live in `.env` and nowhere else.
 
 ## Does this fit my project?
 
-The kit is strongest for internal tools: something for your own team, holding your own data, with nobody outside relying on it. Trackers, dashboards, small workflow tools, internal calculators. It can also help define, prototype, and get acceptance criteria for software other people will use; the fit check will say plainly when that production build needs expert help or professional ownership, and name the scope. Nobody should find out at launch what the fit check would have told them at the start.
+The kit is strongest for internal tools: something for your own team, holding your own data, with nobody outside relying on it. Trackers, dashboards, small workflow tools, internal calculators. It can also help define, prototype, and get acceptance criteria for software other people will use; the fit check says plainly when that production build needs expert help or professional ownership, and names the scope.
 
-## Why this and not the alternatives?
+## How it compares
 
-Each alternative is good at what it's for. All-in-one builders (Lovable, Bolt, Replit) are the fastest way to a working app, and the trade is that the platform owns the shape of your project, so extending it or leaving gets harder as it grows. Bare agent tools (Claude Code, Cursor, Codex on their own) give you an agent's full power with no process around it, and they'll happily help you build an unmaintainable thing quickly. The developer skill packs (Superpowers, agent-skills) are excellent, and they assume you read code, because they're written for people who do.
+All-in-one builders (Lovable, Bolt, Replit) are the fastest way to a working app, and the trade is that the platform owns the shape of your project, so extending it or leaving gets harder as it grows. Bare agent tools (Claude Code, Cursor, Codex on their own) give you an agent's full power with no process around it. The developer skill packs (Superpowers, agent-skills) carry a similar discipline and assume you read code, because they are written for people who do. This kit carries that discipline for people who don't, and its fit check says when a project needs a professional instead of the kit, or alongside it.
 
-This kit carries the same discipline, written for people who don't read code: every check it asks of you is behaviour you can judge by using the tool. It also runs a fit check, which will tell you when your project needs a professional instead of this kit, or alongside it.
+Much of what the kit does was borrowed from people working in the open. [docs/SOURCES.md](docs/SOURCES.md) names them and says what each one contributed.
 
 ## When outside help is needed
 
@@ -141,15 +136,18 @@ The kit is free. Building with it needs an agent subscription, which is the real
 
 ## For technical people
 
-The public repository is an Agent Skills source and a Claude Code plugin
-marketplace. Each folder under
+The public repository is an Agent Skills source, a Claude Code plugin
+marketplace, and an Agent Plugins folder at `agent-plugin`. Each folder under
 `.agents/skills/` contains one skill and all of the references, templates, or
-scripts that skill needs. Both installation routes use those same folders.
-The shared installer records the source in `skills-lock.json` and places the
-skills in the locations selected agents use. The Claude plugin keeps its copy
-in Claude's plugin cache. Seven generated command adapters remain under the
-person's control and use the `ai-build-kit:` prefix. Four hidden discipline
-adapters stay available to Claude when a command needs them.
+scripts it needs, and every installation route carries the same skills. The
+shared installer records the source in `skills-lock.json`. The Claude plugin
+keeps its copy in Claude's plugin cache, where the seven commands use the
+`ai-build-kit:` prefix and the four background skills stay out of the menu until
+a command needs them.
+
+The `agent-plugin` folder is the newest route, for a client that reads the open
+Agent Plugins format. Such a client is free to skip a skill it judges
+non-standard, so the shared installer is the safer choice.
 
 The start skill carries the project foundation. On its first run it creates
 missing project instructions, harness pointers, environment examples, and the

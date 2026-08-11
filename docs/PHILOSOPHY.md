@@ -58,7 +58,7 @@ existing word. A capability that genuinely needs its own word is a sign the shap
 is wrong, and that is a redesign conversation rather than an addition.
 
 Machinery stays invisible until it matters. Nobody needs to know a review
-discipline exists until the agent says a change touched sign-in and a fresh
+skill exists until the agent says a change touched sign-in and a fresh
 session is checking it. Nobody needs to know what a continuous integration runner
 is to understand that green means the tests really passed.
 

@@ -1,0 +1,14 @@
+name: checks
+on:
+  pull_request:
+jobs:
+  project-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install and test
+        run: |
+          echo "This check is still the placeholder the kit creates, so no tests have run and nothing has been verified."
+          echo "Run the start skill's stand-up step to replace it with the project's real install and test commands."
+          echo "Red is the correct answer until then. A green tick here would mean nothing."
+          exit 1

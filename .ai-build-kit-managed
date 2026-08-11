@@ -1,5 +1,5 @@
 # AI Build Kit managed files. Generated during release; do not edit.
-version|v0.3.0
+version|v0.4.0
 source|https://github.com/gwpicard/ai-build-kit/releases
 file|100644|.agents/guard/blocked-commands.md
 file|100755|.agents/hooks/session-end-sync.sh
@@ -40,6 +40,8 @@ file|100644|.agents/skills/start/templates/foundation/claude-settings.json
 file|100644|.agents/skills/start/templates/foundation/copilot-instructions.md
 file|100644|.agents/skills/start/templates/foundation/env.example
 file|100644|.agents/skills/start/templates/foundation/gitignore
+file|100755|.agents/skills/start/templates/foundation/session-start.sh
+file|100644|.agents/skills/start/templates/maintenance-record
 file|100644|.agents/skills/start/templates/masterplan.md
 file|100644|.agents/skills/start/templates/plan.md
 file|100644|.agents/skills/sync/SKILL.md
@@ -53,3 +55,4 @@ file|100644|.github/copilot-instructions.md
 file|100644|WORKFLOW.md
 file|100644|docs/COMPATIBILITY.md
 file|100644|docs/PHILOSOPHY.md
+file|100644|docs/SOURCES.md
