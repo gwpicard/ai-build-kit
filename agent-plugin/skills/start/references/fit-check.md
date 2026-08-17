@@ -133,9 +133,10 @@ Choose when:
 - the team cannot explain, recover, or operate the system;
 - complexity and consequence cannot be reduced enough by redesign.
 
-## Redesign before escalation
+## Redesign before the notice
 
-Before moving to professional-led, ask whether the risk can be removed:
+Before settling on build with expert help or professional-led, ask whether the
+risk can be removed:
 
 - use a copy instead of live data;
 - remove automated action;
@@ -146,7 +147,74 @@ Before moving to professional-led, ask whether the risk can be removed:
 - keep a manual fallback;
 - narrow the promise.
 
-If the redesign materially changes the answers, run the check again.
+A redesign that genuinely removes a trigger changes the answers, so run the
+check again. A redesign that keeps the surface and drops the control does not.
+Managed sign-in removes stored passwords, and outside users can still sign in,
+so the access review stands.
+
+## The risk notice
+
+The kit refuses nothing. Where a trigger survives redesign, say so before that
+work goes ahead. This applies on any build path. Private disposable work has no
+trigger to name, so it gets no notice and no ceremony.
+
+A notice says five things:
+
+- who is exposed, named as people rather than as a risk;
+- what happens to them when it goes wrong;
+- what would normally prevent that;
+- the two things the person can do, which are to accept it on the record or to
+  take the flagged thing out of scope;
+- that you flag what you can recognise and will miss things.
+
+"This is risky" is not a notice. Naming a cost, a delay, or a rule of the kit's
+own is not a notice either. Say who gets hurt.
+
+A notice is about the work you are about to do, not the problem that led to it.
+Where the answer to a broken thing is to build a replacement, the notice covers
+the replacement. Describing the fault accurately while saying nothing about what
+you are proposing to put in its place is the same failure as saying nothing,
+and it is harder to spot because it sounds careful.
+
+### The notice holds
+
+Once given, do not soften it, drop it, or recast a named control into something
+you can satisfy yourself. An independent review means a reviewer who did not
+build the work, and offering to re-read your own work does not meet it however
+it is described.
+
+Pushback is not evidence about the risk. Cost, a deadline, the size of the team,
+the person's own willingness to be responsible, and what other tools are said to
+allow all change what the person decides. None of them changes who is exposed.
+
+Never propose a downgrade and act on it in the same breath. The build path moves
+toward more care on your own judgement. It moves toward less only on the
+person's plain acceptance.
+
+Restate the notice when the flagged work is actually built, rather than only
+when it was first scoped. A session that named a risk an hour ago and has been
+arguing since has not given a notice.
+
+### Acceptance
+
+Ask about the named risk and nothing else, and treat the answer to that question
+as the acceptance. Three things are not acceptance:
+
+- an instruction to carry on, given in answer to some other question. "Try it
+  anyway", "attempt it first", and "just build it" are instructions. They tell
+  you what they want, which you already knew, and say nothing about the risk;
+- a refusal to pay for help, or to wait;
+- the person describing the risk themselves before you have named it. Name it
+  yourself and ask again.
+
+A person who has not been told cannot have accepted. When a plain instruction
+arrives and no notice has been given, give the notice and put the question. When
+one arrives after a notice, and the answer does not engage with what you named,
+ask once more in one sentence and take whatever comes back.
+
+An acceptance becomes an `Accepted:` line in the masterplan's build-path
+section, described under "Write it down" below. Add the line before the flagged
+work starts, not after it lands. Then build what was asked for.
 
 ## Full fit check
 
@@ -167,7 +235,8 @@ For a single change-triggered reassessment:
 3. recheck named operational ownership;
 4. recheck whether the team can still explain and recover the system;
 5. apply the decision order;
-6. update `Recheck when` and `Last checked`.
+6. update `Recheck when` and `Last checked`, and add an `Accepted:` line if a
+   risk was accepted along the way.
 
 Run the full check instead when the affected area cannot be bounded confidently.
 
@@ -182,9 +251,24 @@ Path: <Explore privately | Build and run it | Build with expert help | Professio
 Why: <one or two sentences>
 Required controls: <only the controls that apply>
 Outside help: <none | advice | scoped review | supervised change | professional ownership>, for <scope>
+Accepted: <none, or one line per accepted risk>
 Recheck when: <specific triggers>
 Last checked: YYYY-MM-DD
 ```
 
+Each accepted risk gets its own line, and lines are added rather than replaced.
+A line carries the date, what it drops, and who accepted it:
+
+```md
+Accepted: 2026-08-12, independent review of who can see what, declined on cost, accepted by Priya
+```
+
+An acceptance can relax the path. Where it does, `Path:` moves and the line says
+so:
+
+```md
+Accepted: 2026-08-12, professional-led recommendation declined, no clinical sign-off, accepted by Sam, path moved to Build with expert help
+```
+
 The agent reads that section first in every session. This half page tells the
-whole system how careful to be.
+whole system how careful to be, and what the project has knowingly given up.

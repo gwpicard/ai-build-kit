@@ -1,0 +1,242 @@
+# Pieces
+
+A piece is one small, visible, end-to-end change, sized for a single sitting.
+That has not changed. Where a piece lives has.
+
+Where a project keeps its pieces as issues, those issues are the only record of
+what is left. Where it keeps a plain `plan.md`, that file is the only record.
+Which one applies is settled when the project is founded and written into the
+capability profile in AGENTS.md; `capability-check.md` decides it.
+
+A remote address does not settle it. Keeping pieces as issues needs a GitHub
+repository and the GitHub command line tool signed in, so a project can have a
+repository and still keep `plan.md`, which is what happens when that tool is
+missing or nobody is signed in. The test is the record itself: where a project
+has no open issues and `plan.md` is on disk, `plan.md` is the record, and it is
+the file to read. See "Private projects" below.
+
+Issues are the agent's memory rather than the person's reading material. They
+can carry as much context as a piece deserves, because nobody reads them all at
+once. What the person reads is `/what-now`, and a local printout of the open
+issues that never becomes a source of truth.
+
+## What an issue carries
+
+The title says what the person will be able to do, in their words. Not a task
+for the agent.
+
+```md
+## So that
+<the outcome this exists for, in one line>
+
+## Done when
+- <a condition somebody can check>
+- <another>
+
+## Evidence
+<automated behaviour check | guided manual check | source-backed fact |
+operational rehearsal>
+
+## Not in this piece
+<the nearest things this is not, so scope does not creep in later>
+
+## Decided
+<only when a decision was actually made that would otherwise be re-argued>
+```
+
+`## Done when` is written as conditions somebody can check rather than a
+description. If a line cannot be answered yes or no by trying the tool, it
+belongs in `## So that`.
+
+`## Decided` is left out entirely on the pieces that had no argument behind
+them, which is most of them. A section of thin prose repeated on every issue
+teaches a reader to skip all of them.
+
+## Labels
+
+A piece carries every subject label that fits it, from the same small vocabulary
+the consequence classification uses. Most pieces have one:
+
+| Label | What the piece is about |
+|---|---|
+| `visual` | the interface, what people see and click |
+| `how it works` | the rules and logic |
+| `data` | information the tool stores |
+| `accounts and permissions` | who can get in and what they can see |
+| `finance` | charging, refunds, pricing, invoices |
+| `external service` | somebody else's system that this piece needs |
+| `background automation` | something that runs on its own, with nobody watching |
+
+A subject label is not a description of the piece. Each one decides evidence and
+a save route, so `section-builder` reads the labels rather than re-deriving them.
+Where a piece carries more than one, its evidence is everything those subjects
+demand between them, and its save route is the strictest of the ones present.
+
+Ticking every subject that fits, rather than choosing the closest single one,
+stops the kit dropping a true fact about a piece. A checkout is `finance` and
+`external service`. A nightly backup is `data` and `background automation`.
+Picking one of either pair would quietly lose the evidence the other requires.
+
+Four more labels carry state that open and closed cannot:
+
+- `building`, while somebody is working on it;
+- `blocked`, when something outside the project holds it up;
+- `parked`, on a closed issue, for an idea deliberately left out;
+- `broken`, when the piece is repairing something that used to work.
+
+`broken` sends the work to `/fix` rather than to `/build`, and it sits alongside
+the subjects rather than replacing them, because a broken thing is still about
+something.
+
+Three more say the piece is waiting on a question rather than on a person:
+
+- `needs-clarification`, when talking it through will settle it;
+- `needs-prototype`, when only a throwaway build will settle it;
+- `needs-research`, when it needs a fact from outside the project.
+
+Anything nobody has sized starts at `needs-clarification`. The interview swaps
+that for one of the other two once it finds what is actually in the way. All
+three mean the same thing to `/build`: not ready, and here is why.
+
+Those fourteen are the only labels the kit owns. Any other label on an issue
+belongs to somebody else, so the kit reads past it and never removes it.
+
+The nine labels GitHub puts on a new repository are the one exception, and only
+at founding. `bug`, `documentation`, `duplicate`, `enhancement`, `good first
+issue`, `help wanted`, `invalid`, `question` and `wontfix` were nobody's
+decision: they were there before anybody arrived. `/start` deletes them and says
+which ones went. After founding they are somebody's to keep, so the ordinary
+rule applies again and the kit leaves them alone.
+
+A label is created when it is first needed. Where the person's account cannot
+create one, because they are a collaborator without write access, the work
+carries on without the label and the agent says which one is missing. A piece
+that cannot be labelled is still a piece.
+
+## Status, owner, and order
+
+Open and closed already mean "to build" and "built". Do not add labels that
+repeat them.
+
+The assignee is who is building it. This works the same whether one person or
+five are on the project, so nothing changes on the day a second person arrives.
+
+Dependencies use GitHub's own blocked-by relationship, not a line of prose. A
+piece that needs another names it there, and the agent reads it rather than
+parsing a body.
+
+`/build` takes the lowest-numbered open issue whose blockers are all closed and
+whose subjects the current build path all permit. Issue numbers give a stable creation
+order and the blocked-by relationship gives the dependencies, so nothing extra
+is maintained by hand.
+
+## An issue somebody typed by hand
+
+Anybody can open an issue, from a phone, in half a sentence. That is a request
+rather than a piece, and it cannot be built or proved as it stands.
+
+Shape is what decides, not who wrote it or whether anyone remembered to mark it.
+An issue with no `## Done when` has not been sized. Label it
+`needs-clarification` the first time you see one, so somebody reading the list on
+GitHub can tell which entries are still notes. The label is there for people; the
+agent goes by shape, so an unlabelled note is still a note.
+
+If the interview finds that talking will not settle it, swap the label for the
+one that says why. A question about how something should look or behave takes
+`needs-prototype`, and the throwaway build answers it. A question about a fact
+the project cannot see, such as what an outside service actually does, takes
+`needs-research`. Say which you moved it to and why, because a label change
+nobody explained reads as the agent losing track.
+
+Refining one produces the shape above. Keep what the person originally typed
+underneath rather than replacing it, because their words are what a refinement
+can be checked against and what to return to when it reads wrong.
+
+## When somebody acts on GitHub
+
+The issues are shared, so people assign, close, label and edit them by hand.
+Three rules settle nearly every case.
+
+A person's action wins. The agent never undoes something somebody did on
+purpose. It can say what it found, and then it works with what is there.
+
+Absence is not a decision. A piece carrying no subject label is unclassified
+rather than assumed to be `how it works`. Several subject labels are not excess,
+because a piece is allowed to be about more than one thing.
+
+The agent says what it found. It does not quietly reshape a project back into
+the form it expected.
+
+| What the person does | What the kit does |
+|---|---|
+| Assigns themselves | Treats the piece as theirs, and `/build` will not hand it to anyone else. Assignment says whose it is; `building` says work is under way now |
+| Assigns somebody else | `/build` skips it and says who has it, rather than quietly taking it |
+| Adds `building` | Treats the piece as under way and leaves it alone |
+| Closes an issue by hand | It stays closed. `/sync` may say that no changelog line matches it, and ask whether it was done or dropped |
+| Reopens a closed issue | Treats it as work again, and takes off a `parked` label, because reopening is the decision to unpark it |
+| Edits the body so `## Done when` is gone | Treats it as a request rather than a piece, and refines it before building |
+| Adds labels of their own | Leaves them alone |
+| Puts two subject labels on one piece | Takes both, and satisfies what each one demands |
+| Leaves the subject off | change-triage classifies it when the piece is refined |
+| Uses milestones or a project board | Ignores both, and neither reads nor writes them |
+| Deletes an issue | Lets it go. If a branch still refers to it, `/sync` says so |
+| Fills the issue form in properly | Nothing special. It is a piece, and it gets built |
+
+## The local printout
+
+`plan.local.md` is a printout of the open issues and nothing else. It is
+gitignored, so it is one person's view of a shared record and can never collide
+with anyone else's.
+
+Information flows one way. Issues are the record; the printout is made from
+them and is never a source. Nobody edits it to change work, and nothing reads it
+back. A change to a piece goes to the issue, and the printout is made again. It
+cannot drift out of step with its source, because it is not a source; if it
+looks stale, print it again.
+
+`.agents/tools/plan-refresh.sh` writes it. Run it when reading or changing the
+plan rather than on every session start, so a session that never touches the
+plan stays offline and light.
+
+An edited printout is overwritten at the next refresh, and its first line says
+not to edit it. A missing one is simply printed again. Neither is a problem to
+report, because the printout holds nothing that is not in the issues.
+
+It carries the time it was written, which is what makes it safe when GitHub is
+unreachable. The agent can say "here is your list as of 18:40, and I cannot
+reach GitHub to confirm it is current" rather than leaving somebody with
+nothing. Work that would change the plan waits until GitHub is back, because
+the agent will not update issues it cannot see. The piece already in hand
+carries on.
+
+One call to GitHub covers the whole backlog. The issue list carries a
+dependency summary, so whether a piece is held up by another is known without
+asking about each one. Only the pieces that are actually blocked need a second
+call, to name what is holding them.
+
+## Parked ideas
+
+An idea deliberately left out becomes a closed issue labelled `parked`, with the
+reason in the body. Closed, so it never reads as work waiting to be done.
+
+Before accepting a request as new, search closed issues too. The reason exists
+so the same idea does not come back around and get built by accident.
+
+## Private projects
+
+Two kinds of project keep `plan.md`, the plain table, exactly as before, and
+nothing else in this file applies to either. Explore privately with no remote has
+no issues to keep. A project that has a repository but was founded without the
+GitHub command line tool signed in has none either, because there was no way to
+make them; `capability-check.md` calls that a working fallback rather than a
+failure, and it stays a fallback for as long as the person wants it to.
+
+The second kind is easy to mistake for a project whose list has run out. It has a
+repository, so a command that asks GitHub for the open issues gets none back, and
+the file holding every remaining piece goes unread. This is why every command
+that reads the pieces tests the record rather than the remote.
+
+If either kind later gains issues, moving its pieces into them is a decision to
+take with the person at that point. The kit has no standing routine for it and
+does not do it on its own, because an unrehearsed move of the only record of what
+is left is worse than leaving the file where it is.

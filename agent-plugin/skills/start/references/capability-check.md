@@ -24,6 +24,24 @@ Check:
     opens. When it does not, the check-up reminder reaches the person through
     `/what-now` instead.
 
+14. The pieces can be kept as issues: the GitHub command line tool is installed
+    and signed in, and issues are switched on for the repository.
+15. The label set can be put in order: the signed-in account can create and
+    delete labels on the repository.
+
+Where that tool is missing or nobody is signed in, the project keeps its pieces
+in `plan.md` and the kit says why. That is a working fallback rather than a
+failure, and it is not a reason to push somebody towards an account they did
+not want. Where the repository has issues switched off, say what you found and
+offer to switch them on. Do not switch them on yourself, because it changes a
+setting on something the person owns.
+
+Where the account cannot create or delete labels, which is what a collaborator
+without write access will find, the pieces still become issues and the work
+still goes ahead. Say which labels could not be made and which of GitHub's own
+could not be removed. A missing label costs a little clarity on the list; it
+stops nothing.
+
 A remote address is never treated as proof that the current person has an
 account or access to it. A previous commit's author is never treated as the
 current person's identity.

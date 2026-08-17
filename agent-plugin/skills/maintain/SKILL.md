@@ -40,7 +40,7 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
      Release and replace the installed `agent-plugin` folder after the same
      approval and clean checkpoint.
    - For a shared skills installation, run
-     `npx skills update start build fix ship sync maintain what-now grilling change-triage section-builder second-opinion -p`.
+     `npx skills update start build fix ship sync maintain what-now clarify change-triage section-builder second-opinion -p`.
    - When no route is present, this is an older installation. After
      approval, run `npx skills add gwpicard/ai-build-kit` and let the person
      choose the coding agents they use. This registers and refreshes the
@@ -68,7 +68,7 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    enabled, stop and ask the person to reinstall it after the marketplace is
    reachable.
 7. Update project dependencies and check for known vulnerabilities. Report what changed; apply on approval.
-8. Once live: read the error alerts and the bills. Anything real becomes a piece on plan.md, for build to take.
+8. Once live: read the error alerts and the bills. Anything real becomes a piece, for build to take: open an issue in the shape `.agents/skills/start/references/pieces.md` describes, or add a row to `plan.md` on a project that keeps its pieces there rather than as issues. A finding nobody wrote down is a finding nobody acts on.
 9. Verify backups still run where the tool has any. Confirm the named operational owner from the masterplan still holds that role, and that no critical service or credential is tied to someone who has left.
 10. Check whether use or reliance has grown enough that the fit check should run again; if it has, run it before anything else this visit.
 11. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
@@ -102,9 +102,10 @@ Everything above, plus:
    flows? Can it verify important changes without reading code? Can it
    identify where data, secrets, service owners, and bills live? Can it
    recover, or use the manual fallback? Has reliability, complexity, or
-   reliance grown? Are the expert gates still accurate? Move the build path
-   upward when the answers require it, and downward when a genuine redesign
-   has removed the risk that put it there.
+   reliance grown? Are the risk notices and their conditions still accurate?
+   Move the build path upward when the answers require it, and downward when a
+   genuine redesign has removed the risk that put it there, or when the person
+   accepts a risk that was previously holding it up.
 6. Put today's date on the `last-full-pass` line as well as the
    `last-light-pass` line in `.ai-build-kit-maintenance`.
 

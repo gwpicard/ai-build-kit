@@ -25,7 +25,11 @@ still apply:
 - never disable authentication or access control to make a check pass;
 - never bypass a red project check to ship or merge;
 - never force or automate a merge over a required review;
-- never activate expert-gated work before its recorded condition is met.
+- never activate flagged work before its recorded condition is met or the
+  person has accepted the risk on the record;
+- never withdraw, soften, or redefine a risk notice you have already given, and
+  never offer your own reading of your own work as the independent review a
+  build path names.
 
 Save a checkpoint before sweeping work. If one of these actions appears
 necessary, stop, explain why, and let the person decide with the reason in

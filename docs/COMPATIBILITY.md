@@ -13,6 +13,12 @@ background skill loads it by name.
 
 ## Choose one installation route
 
+Every route installs the same eleven AI Build Kit skills. Seven are commands
+you type: `start`, `build`, `fix`, `ship`, `sync`, `maintain`, and `what-now`.
+Four run in the background when a command needs them: `clarify`,
+`change-triage`, `section-builder`, and `second-opinion`. The routes differ in
+how the skills reach the project, not in what arrives.
+
 A Claude-only project can use the public repository as a Claude Code plugin.
 From the project folder, run:
 
@@ -48,11 +54,6 @@ same eleven skills, each carrying its own supporting files. This is the newest
 route, and a client may skip a skill it judges non-standard, so prefer the
 shared installer when the project has a choice.
 
-Install all eleven AI Build Kit skills. Seven are commands you type:
-`start`, `build`, `fix`, `ship`, `sync`, `maintain`, and `what-now`. Four run in
-the background when a command needs them: `grilling`, `change-triage`,
-`section-builder`, and `second-opinion`.
-
 After installation, run `start`. That skill prepares missing project
 foundation files before the interview. It preserves existing files, so every
 route works for a blank folder and for a project that already has code.
@@ -81,10 +82,16 @@ The shared installer records project skill sources in `skills-lock.json`. Its
 approved update is limited to the eleven AI Build Kit skill names:
 
 ```bash
-npx skills update start build fix ship sync maintain what-now grilling change-triage section-builder second-opinion -p
+npx skills update start build fix ship sync maintain what-now clarify change-triage section-builder second-opinion -p
 ```
 
 The `-p` flag limits the update to this project.
+
+That command replaces the installed skill files outright. Anyone who has edited
+one of the eleven skills in their own project loses that edit, without being
+asked and without being told. This is why `maintain` looks for local edits
+before it updates anything, and why a project rule belongs in `AGENTS.md`, which
+no route ever touches.
 
 An Agent Plugins installation belongs to the coding agent that installed it,
 so use that agent's own plugin update command. When the agent has none,

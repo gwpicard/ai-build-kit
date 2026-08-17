@@ -12,7 +12,7 @@ for you.
 
 Coding agents can write working software. They will not stop you skipping the steps that make it trustworthy: agreeing what a thing should do before building it, proving it works before saving it, checking the risky parts before anyone relies on them, and keeping records so next month you can still tell what happened.
 
-This kit is those steps, packaged as skills the agent follows and words you type. Three records hold the project's memory, because the agent forgets everything between sessions and the records don't. A build path, set at the start and rechecked as the project changes, decides how much of the process applies right now.
+This kit is those steps, packaged as skills the agent follows and commands you type. Three records hold the project's memory, because the agent forgets everything between sessions and the records don't. A build path, set at the start and rechecked as the project changes, decides how much of the process applies right now.
 
 ## Start a project
 
@@ -60,11 +60,11 @@ background skills in a skill picker, but you never need to pick one.
 [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md) explains the installation paths
 and fallback.
 
-## The seven words
+## Commands
 
-Commands are named after moments, because that's how you'll reach for them.
+Command names say when to use them.
 
-| The moment | Type | What it does |
+| When | Type | What it does |
 |---|---|---|
 | I'm starting something | `/start` | Interview, fit check, founding documents. |
 | Keep going, or: I want it to... | `/build` | The next piece, or anything new you ask for. |
@@ -72,30 +72,30 @@ Commands are named after moments, because that's how you'll reach for them.
 | I think it's ready | `/ship` | Checks everything, then takes it live, one path at a time. |
 | I'm done for today | `/sync` | Documents caught up with reality. |
 | It's been a while | `/maintain` | The service visit. |
-| I'm lost | `/what-now` | Which word comes next, and why. |
+| I'm lost | `/what-now` | Where the project stands and what to do next. |
 
-You never have to choose the hidden technique, and you never have to sort your own request: both `/build` and `/fix` check what you typed against the masterplan and route it correctly. [WORKFLOW.md](WORKFLOW.md) is the day-to-day manual for all seven.
+You never choose the method, and you never sort your own request. Both `/build` and `/fix` check what you typed against the masterplan and send it down the right route, so picking the wrong one costs you nothing. [WORKFLOW.md](WORKFLOW.md) is the day-to-day manual for all seven.
 
 ## How a project flows
 
 ```mermaid
 flowchart LR
-  S["/start<br/>once"] --> L["/build, /fix, /sync<br/>the loop"]
-  L --> P["/ship<br/>first time, then again each release"]
-  P --> R["the long run<br/>/build · /fix · /sync · /maintain"]
-  R --> P
-  F["the fit check re-runs,<br/>the build path is rewritten"]
-  L -. a request that changes what kind of<br/>project this is .-> F
-  R -. a request that changes what kind of<br/>project this is .-> F
-  F -. same words, care matched to the path .-> L
-  F -. same words, care matched to the path .-> R
+  S["/start<br/>once"] --> L["/build · /fix · /sync<br/>day to day"]
+  L --> P["/ship<br/>whenever a batch is ready"]
+  P --> L
 ```
 
-Every piece follows the same shape: agree the behaviour in one plain sentence, choose the evidence it needs, build the smallest complete slice, try it by hand, then save it through the route the build path requires.
+You run `/start` once. After that you go in wherever you actually are: `/build` when you want something new or the next piece, `/fix` when something that worked has stopped working, `/what-now` when you have lost the thread. None of them needs another to have run first.
+
+The first `/ship` is the heaviest, because it takes the tool live. Later ones only re-check what changed since the last one.
+
+`/maintain` is not in the picture because it runs on its own clock rather than in this order: about monthly from the day the project is founded, whether or not it has gone live. The project tells you when one is due.
+
+Every piece runs the same cycle: agree the behaviour in one plain sentence, choose the evidence it needs, build the smallest complete slice, try it by hand, then save it through the route the build path requires.
 
 ## The three records
 
-Three project records hold the product's memory: `masterplan.md` is the present, `plan.md` is what's left, `CHANGELOG.md` is the past. `AGENTS.md` sits alongside them as the standing instruction file the agent reads to know how this repository works. The agent reads all of them so you don't have to; [WORKFLOW.md](WORKFLOW.md) explains what goes where.
+Three project records hold the product's memory: `masterplan.md` is the present, your project's issues are what's left, `CHANGELOG.md` is the past. Some projects keep a simple `plan.md` file instead of the issues: one you are only trying out, with no GitHub repository, and one set up on a computer not signed in to GitHub's command line tool. The kit says which yours is when it founds the project. `AGENTS.md` sits alongside them as the standing instruction file the agent reads to know how this repository works. The agent reads all of them so you don't have to; [WORKFLOW.md](WORKFLOW.md) explains what goes where.
 
 ## Which path will I be on?
 
@@ -106,15 +106,33 @@ Three project records hold the product's memory: `masterplan.md` is the present,
 | Outside users, payments, sensitive data, or business-critical reliance | Build with expert help |
 | Regulation, irreplaceable live data, high-consequence automation, or technical ownership the team cannot carry | Professional-led |
 
-The path is not a permanent label. The kit rechecks it whenever the project changes character.
+The path is not a permanent label. The kit rechecks it whenever the project changes character. The last two paths are not the kit refusing to build; they are where it tells you what a professional would normally do, and you decide.
 
-## What keeps it safe
+## What the kit does to reduce risk
 
-The kit assumes the person directing the work can't review code, so every protection is behavioural or mechanical. It opens with a fit check, which sets the build path and names any outside help that path requires; the four possible paths are explained in [fit-check.md](.agents/skills/start/references/fit-check.md).
+The kit assumes the person directing the work can't review code, so every protection is behavioural or mechanical. It opens with a fit check, which sets the build path and names any outside help that path requires; the four possible paths are explained in [fit-check.md](.agents/skills/start/references/fit-check.md). Read [what it does not promise](#what-it-does-not-promise) alongside this section.
 
 Every promised behaviour gets evidence. Stable rules and bugs usually get automated tests, shown failing first. Visual and exploratory work may be checked by trying it. Shared, live, or risky changes get stronger checkpoints: a pull request with a clean-machine check next to the merge button, and an independent review. The build path decides how much of this applies to a given piece of work.
 
-Underneath sit the blunt protections. Destructive commands are on a blocked list, alongside standing restrictions like never disabling authentication to make a test pass. Secrets live in `.env` and nowhere else.
+Where a risk survives that, you get a risk notice: who is exposed, what happens to them, and what a professional would normally do about it. Then it is your call. You can accept the risk and have the work built, or take the flagged thing out of scope. An acceptance is written into the build-path section with the date and who gave it, so making the project less careful is a decision you record rather than something the agent does on its own.
+
+Two simpler protections sit underneath. Destructive commands are on a blocked list, alongside standing restrictions like never disabling authentication to make a test pass. Secrets live in `.env` and nowhere else.
+
+## What it does not promise
+
+The kit is free software, provided as is, under the [MIT licence](LICENSE). There is no warranty, and the licence's own terms are the ones that apply.
+
+The fit check and its risk notices flag what the kit can recognise. They will miss things. A risk it never named is not a risk it ruled out, and no notice should be read as a survey of everything that could go wrong with your project.
+
+The checks verify what somebody thought to check. A green tick beside the merge button means those checks really passed, which is a smaller claim than the software being correct, safe, legal, or fit for what you plan to do with it.
+
+The kit never refuses. Hear the notice, tell it to build the thing anyway, and it builds it, writing down that you accepted with the date and your name. Pressure does not change the notice, because a cost or a deadline does not change who is exposed, and pressure does not stop the work either. Pressing on past a warning is a decision you are making, and the record is there so nobody has to guess later what was decided or by whom.
+
+You own the product and risk decisions. The kit can tell you a professional would normally review who can see what; it cannot decide for you whether to go ahead, and it does not carry the consequences when you do.
+
+It is not a substitute for a professional developer, and it is not legal, medical, financial, or security advice. Where your project touches those, the notice will say so, and acting on it is still your judgement.
+
+Reporting something you think is wrong with the kit itself is covered in [SECURITY.md](SECURITY.md) for anything security related, and in [CONTRIBUTING.md](CONTRIBUTING.md) for everything else.
 
 ## Does this fit my project?
 
@@ -122,7 +140,9 @@ The kit is strongest for internal tools: something for your own team, holding yo
 
 ## How it compares
 
-All-in-one builders (Lovable, Bolt, Replit) are the fastest way to a working app, and the trade is that the platform owns the shape of your project, so extending it or leaving gets harder as it grows. Bare agent tools (Claude Code, Cursor, Codex on their own) give you an agent's full power with no process around it. The developer skill packs (Superpowers, agent-skills) carry a similar discipline and assume you read code, because they are written for people who do. This kit carries that discipline for people who don't, and its fit check says when a project needs a professional instead of the kit, or alongside it.
+All-in-one builders (Lovable, Bolt, Replit) are the fastest way to a working app, and the trade is that the platform owns the shape of your project, so extending it or leaving gets harder as it grows. Bare agent tools (Claude Code, Cursor, Codex on their own) give you an agent's full power with no process around it.
+
+The developer skill packs (Superpowers, agent-skills) carry a similar discipline and assume you read code, because they are written for people who do. This kit carries that discipline for people who don't, and its fit check says when a project needs a professional instead of the kit, or alongside it.
 
 Much of what the kit does was borrowed from people working in the open. [docs/SOURCES.md](docs/SOURCES.md) names them and says what each one contributed.
 
@@ -152,7 +172,8 @@ non-standard, so the shared installer is the safer choice.
 The start skill carries the project foundation. On its first run it creates
 missing project instructions, harness pointers, environment examples, and the
 placeholder project check. Existing files are preserved. It then creates
-`masterplan.md`, `plan.md`, and `CHANGELOG.md` from the founding interview.
+`masterplan.md` and `CHANGELOG.md` from the founding interview, and opens one
+issue per piece of remaining work.
 
 Put project-specific rules in `AGENTS.md`. Treat installed skill folders as
 managed packages. `maintain` reads the public Release notes, asks before an

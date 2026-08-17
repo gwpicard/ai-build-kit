@@ -41,7 +41,8 @@ guard can express them:
 - no disabling authentication or an access control to make a test or a check pass;
 - no bypassing a red project check to ship or merge anyway;
 - no force-merging or auto-merging over a review the build path requires;
-- no activating a capability flagged for expert help before its recorded gate is met.
+- no activating a flagged capability before its recorded condition is met or the person has accepted the risk on the record;
+- no withdrawing, softening, or redefining a risk notice already given, and no treating your own work as the independent review a build path names.
 
 Commit before anything sweeping. If one of these ever looks necessary,
 stop, say why, and let the human decide with the reason in front of them.

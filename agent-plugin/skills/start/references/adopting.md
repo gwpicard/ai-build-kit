@@ -14,7 +14,7 @@ behaviour nobody ever wrote down.
    what data it appears to hold. Guesses attached, like the interview:
    correcting a wrong guess brings the real picture out.
 
-2. Interview against reality. The grilling runs as normal, with one twist:
+2. Interview against reality. The interview runs as normal, with one twist:
    the questions are about what the tool is supposed to do, asked next to
    what it actually does. Every gap between the two gets written down as
    either a piece for the plan (it should do X and doesn't) or a wart to

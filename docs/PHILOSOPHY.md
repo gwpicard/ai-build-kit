@@ -52,9 +52,9 @@ rather than patched a fourth time, often ending in a rebuild from the
 documents, and why a disappointing autonomous run is answered by sharpening
 the plan instead of hand-editing whatever it produced.
 
-The vocabulary never grows. Seven words, named after the moments a person
+The vocabulary never grows. Seven commands, named after the moments a person
 actually reaches for them. Every new capability arrives as behaviour of an
-existing word. A capability that genuinely needs its own word is a sign the shape
+existing command. A capability that genuinely needs its own command is a sign the shape
 is wrong, and that is a redesign conversation rather than an addition.
 
 Machinery stays invisible until it matters. Nobody needs to know a review
@@ -64,7 +64,9 @@ is to understand that green means the tests really passed.
 
 Trust becomes mechanism wherever it can. A claim that can be checked
 automatically gets checked automatically, and the result shows up as something
-visible. Instructions ask. Machinery guarantees.
+visible. Instructions ask. Machinery guarantees, and it guarantees exactly what
+it checks and nothing beyond that, which is why the kit says what a check
+covers rather than letting a green tick stand for everything.
 
 And the kit is honest about its own limits. A fit check at the start, and again
 whenever a project changes character, decides how much care applies and when a
@@ -84,6 +86,21 @@ The path can move in either direction. A prototype may become an operational
 tool. A risky design may become safe enough after sensitive data or automatic
 actions are removed. The fit check records the current path and the events that
 must trigger another check.
+
+The path is a recommendation the kit is honest about, not a barrier. Where a
+risk survives redesign, the person gets a risk notice naming who is exposed and
+what a professional would normally do, and then decides. They can accept it and
+have the work built, or take the flagged thing out of scope. A gate somebody
+cannot get past and cannot understand is worse than one they knowingly walked
+through, because the first gets worked around by starting again somewhere with
+no gate at all.
+
+What holds is the notice rather than the outcome. Moving toward more care is the
+agent's own judgement; moving toward less needs the person's plain acceptance,
+recorded with a date and a reason in the build-path section. The agent may not
+withdraw a notice under pressure, and may not satisfy a named control by
+appointing itself, because a warning that survives only while the person agrees
+with it is not a control at all.
 
 Controls fall into three groups. Some are always required because they are cheap
 and prevent common harm: secrets stay out of code, destructive actions stop for
@@ -120,8 +137,8 @@ same reason. This is the test.
 Answer all five questions in writing before adding anything. If you cannot answer
 all five, do not add it.
 
-1. **Does it fit under one of the seven words?** The vocabulary stays at seven. A
-   new capability arrives as behaviour of an existing word.
+1. **Does it fit under one of the seven commands?** The vocabulary stays at seven. A
+   new capability arrives as behaviour of an existing command.
 
 2. **What does the person actually see, and when?** Name the concrete thing on
    their screen and the moment it appears. If the honest answer is "nothing",

@@ -3,9 +3,9 @@
 <!-- Small, visible, end-to-end pieces in the order they genuinely depend on one
 another. Status: to build / building / blocked / built. -->
 
-| Piece | Done when | Evidence | Class | Needs | Status |
+| Piece | Done when | Evidence | Subjects | Needs | Status |
 |---|---|---|---|---|---|
-|  |  |  | behaviour | Nothing | to build |
+|  |  |  | how it works | Nothing | to build |
 
 <!-- Add an Owner column only when more than one person is building. -->
 

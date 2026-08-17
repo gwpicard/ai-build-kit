@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Ship
 
-Everything build and fix make lives on the draft copy until this word moves it over. Read masterplan.md, build-path section first.
+Everything build and fix make lives on the draft copy until this command moves it over. Read masterplan.md, build-path section first.
 
 ## 0. Confirm the build path
 
@@ -71,11 +71,12 @@ connection at a time.
 For flagged functionality:
 
 1. generate or refresh the expert brief;
-2. stop at the recorded gate;
+2. stop at the recorded condition;
 3. record what the expert must confirm;
-4. do not merge or activate that capability until the gate is met.
+4. do not merge or activate that capability until the condition is met or the
+   person accepts the risk on the record.
 
-Only after the gate is met does that capability get its own operational
+Only after that does the capability get its own operational
 readiness check (the same list as above) and its own go-live step, one
 connection at a time, with the result recorded.
 
@@ -88,7 +89,8 @@ owner's own process once they take the build on.
 Check that the handover package contains:
 
 - the current masterplan;
-- the current plan;
+- what is left to build: the open issues, with `plan.local.md` printed fresh as
+  the readable copy, or `plan.md` on a project that keeps its pieces there;
 - acceptance criteria;
 - any decision prototypes;
 - evidence gathered so far;

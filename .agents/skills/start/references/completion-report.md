@@ -1,7 +1,7 @@
 # Completion report
 
 The message /start ends with. Lead with what's ready, where it's saved,
-whether anything was uploaded, and the next word to type. Never lead with a
+whether anything was uploaded, and the next command to type. Never lead with a
 checkpoint reference, Git state, package-manager command, port, branch, or
 remote status.
 

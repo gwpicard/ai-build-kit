@@ -33,11 +33,16 @@ Where applicable: alerts arrive, the named owner reads them, service and
 billing ownership are known, the manual fallback works, and the rollback or
 disable process works.
 
-## 5. Review and expert gates
+## 5. Review and flagged work
 
 Independent review completed, its blocking findings resolved, any expert
 condition completed, and the review's scope and limitations recorded rather
 than implied.
+
+Where a review names its reviewer, check that person did it. A substitute is a
+gap, not a completed review, and it is recorded as one. Where a risk was
+accepted instead, the build-path section carries the `Accepted:` line, and the
+launch report says plainly which review did not happen.
 
 ## 6. Report honesty
 

@@ -85,6 +85,15 @@ user-opened clean chat with a prepared instruction. A same-session fallback
 is permitted only for Explore privately and must be labelled as
 non-independent.
 
+This fallback covers a review that asks only for eyes other than the builder's.
+It does not cover a review whose reviewer is named. Where the build path or a
+risk notice asks for a particular person, such as the owner of a failing
+component or a specialist in one area, that person is the review, and no
+session of any kind stands in for them. Neither does a passing test suite, a
+check the project already runs, or the person having a look themselves. Say the
+named review has not happened, and let them accept that on the record if they
+want the work anyway.
+
 ## The rule
 
 Report first. Fix only what the user approves, and never widen into a general tidy-up.

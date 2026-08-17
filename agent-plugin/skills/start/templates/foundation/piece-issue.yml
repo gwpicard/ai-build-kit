@@ -1,0 +1,69 @@
+name: A piece of work
+description: One small, visible change, sized for a single sitting.
+title: "<what the person will be able to do>"
+labels: ["how it works"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Your coding agent fills this in. You can open one yourself if you
+        prefer, and the agent will read it the same way.
+
+        The title says what you will be able to do, in your words.
+
+  - type: textarea
+    id: so-that
+    attributes:
+      label: So that
+      description: The outcome this exists for, in one line.
+      placeholder: freelancers stop phoning to check what is free.
+    validations:
+      required: true
+
+  - type: textarea
+    id: done-when
+    attributes:
+      label: Done when
+      description: >
+        Conditions somebody can check by trying the tool. If a line cannot be
+        answered yes or no, it belongs in "So that" instead.
+      placeholder: |
+        - A freelancer can book an item for a date range.
+        - Booking the same item for overlapping dates is refused.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: evidence
+    attributes:
+      label: Evidence
+      description: How this piece will be proved. The agent chooses this.
+      options:
+        - automated behaviour check
+        - guided manual check
+        - source-backed fact
+        - operational rehearsal
+    validations:
+      required: true
+
+  - type: textarea
+    id: not-in-this-piece
+    attributes:
+      label: Not in this piece
+      description: The nearest things this is not, so scope does not creep in later.
+      placeholder: Cancelling. Deposits.
+    validations:
+      required: false
+
+  - type: textarea
+    id: decided
+    attributes:
+      label: Decided
+      description: >
+        Only when a decision was actually made that would otherwise be argued
+        again. Most pieces leave this empty.
+      placeholder: >
+        Bookings are per item, not per kit: the tripod is lent separately from
+        the bag.
+    validations:
+      required: false

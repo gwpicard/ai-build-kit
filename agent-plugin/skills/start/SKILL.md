@@ -19,7 +19,7 @@ or see a result that changes what they can do next. Finishing an internal step
 is not a user-facing result by itself. Routine reading, research, setup, and
 checking happen quietly.
 
-Ask every question in the shape grilling's "How to ask" section describes,
+Ask every question in the shape clarify's "How to ask" section describes,
 whichever step you are on. A short and complete set of answers may be offered
 as choices; anything the person would answer in their own words is asked as a
 plain question.
@@ -58,8 +58,9 @@ project, or keep the shared skills installation when the project uses more
 than one coding agent. Never leave both active.
 
 Read the repository's current state before doing anything else. Check whether
-masterplan.md, plan.md, and CHANGELOG.md already exist, and whether they look
-complete or half-written. Check for unfinished setup: a placeholder still in
+masterplan.md and CHANGELOG.md already exist, whether the project's pieces
+exist as issues or as plan.md, and whether any of them look complete or
+half-written. Check for unfinished setup: a placeholder still in
 `.github/workflows/checks.yml`, an uncommitted change, an open question left
 in the changelog. Say plainly where the process is resuming from. Never
 overwrite an existing record without saying so and getting agreement first.
@@ -109,7 +110,7 @@ stop. Saving the team a project is a good outcome.
 
 ## 5. Founding interview
 
-Run the grilling skill for the founding interview. During it: resolve
+Run the clarify skill for the founding interview. During it: resolve
 overloaded terms rather than letting them pass; use concrete examples to
 settle ambiguity; invoke source research when an answer depends on an
 external fact; invoke a disposable decision prototype when conversation alone
@@ -124,7 +125,9 @@ one at a time, guesses attached like the interview. Record the result: which
 of the four build paths, why, the required controls, any outside help and its
 scope, the recheck triggers, and today's date. Before settling on build with
 expert help or professional-led, work through the redesign options in
-fit-check.md; if a redesign changes the answers, run the check again.
+fit-check.md; if a redesign changes the answers, run the check again. Where a
+trigger survives that, give the risk notice fit-check.md describes before any of
+the flagged work goes ahead.
 
 ## 7. Write the masterplan
 
@@ -172,12 +175,48 @@ here. Note the result in the changelog.
 
 ## 10. Cut the plan
 
-Create plan.md from templates/plan.md. Pieces sized for one sitting, in the
-order they unblock each other, each cutting vertically through the whole
-tool so the unknowns surface early: what the user can do or see when the
-piece is complete, its evidence, its genuine dependencies, and its status.
-Do not split one user capability into separate "database", "API", and "UI"
-pieces. Ideas that did not make the cut go under parked ideas.
+Pieces sized for one sitting, in the order they unblock each other, each cutting
+vertically through the whole tool so the unknowns surface early: what the user
+can do or see when the piece is complete, its evidence, and its genuine
+dependencies. Do not split one user capability into separate "database", "API",
+and "UI" pieces.
+
+Where the capability check found that the pieces can be kept as issues, which
+needs a GitHub repository and the GitHub command line tool signed in, each piece
+becomes an issue, written to the shape in references/pieces.md. Do this without narrating it: create the
+label set, delete the labels GitHub made by itself, copy
+templates/foundation/piece-issue.yml to `.github/ISSUE_TEMPLATE/piece.yml`, open
+one issue per piece, and link the ones that genuinely block each other using
+GitHub's blocked-by relationship. Then run `.agents/tools/plan-refresh.sh` once,
+so the person has their list before they need it.
+
+The labels GitHub creates on a new repository are `bug`, `documentation`,
+`duplicate`, `enhancement`, `good first issue`, `help wanted`, `invalid`,
+`question` and `wontfix`. Delete every one that is still there. The kit reads
+none of them, and a list of labels that do nothing is the first thing a person
+sees on GitHub. This is safe here and only here, because founding happens before
+any issue exists to be wearing one.
+
+Say which ones went, in one line, rather than deleting them silently. Where the
+account cannot delete a label, say which stayed and carry on: a leftover label
+is untidy rather than harmful. Anything a person added themselves is left alone
+under the ordinary rule.
+
+An idea that did not make the cut becomes a closed issue labelled `parked`, with
+the reason in the body.
+
+Otherwise create plan.md from templates/plan.md instead and put the parked ideas
+in its own section. Say plainly that the pieces live in a file for now, and that
+they move to the project's issues if it ever gets a home. Do not press for a
+GitHub account to make that happen sooner.
+
+Two kinds of project land here. Explore privately has no repository. A project
+that has one but was founded without the GitHub command line tool signed in also
+keeps `plan.md`, because there was no way to make the issues; the capability
+check calls that a working fallback and it holds until the person changes it.
+Record which kind this is in the capability profile, because from here on every
+command that reads the pieces asks that profile rather than looking for a remote.
+This step never finishes with a project that has neither issues nor `plan.md`.
 
 ## 11. Stand the project up
 
@@ -259,8 +298,8 @@ and report the result in its shape.
 
 ## Done when
 
-The build path is recorded, the three records (masterplan.md, plan.md,
-CHANGELOG.md) exist, AGENTS.md contains the capability profile and project
-commands, the masterplan passed the available review, the plan is made of
-visible pieces, one check passes, and the user has received the
-plain-language completion report ending in the next word, /build.
+The build path is recorded, the records exist (masterplan.md, CHANGELOG.md, and
+the pieces as issues or as plan.md), AGENTS.md contains the capability profile
+and project commands, the masterplan passed the available review, the plan is
+made of visible pieces, one check passes, and the user has received the
+plain-language completion report ending in the next command, /build.

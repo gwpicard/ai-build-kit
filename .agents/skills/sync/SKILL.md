@@ -10,8 +10,8 @@ The documents are supposed to describe reality. Make that true again by reading 
 
 ## When to run this
 
-Normal completion of /build, /fix, /ship, and /maintain already updates
-plan.md, the changelog, and the masterplan directly; a correctly finished
+Normal completion of /build, /fix, /ship, and /maintain already updates the
+pieces, the changelog, and the masterplan directly; a correctly finished
 piece of work doesn't need sync afterward. Reach for sync instead for: a
 session that was interrupted mid-piece, work done outside the skills
 entirely, an imported branch or outside contribution, a long session whose
@@ -21,9 +21,9 @@ else, or recovering after an optional automation failed to run.
 ## The routine
 
 1. Read the commits and changes since the last changelog entry, plus the tool's actual behaviour where that is cheap to check, and compare them against the records and the current Git state.
-2. Correct plan.md statuses to match reality. Append any changelog lines the work missed, dated.
+2. Correct the pieces to match reality, and append any changelog lines the work missed, dated. On a project with issues there is usually little to do, because a merged pull request saying `Closes #<number>` closes its own piece. Look for the exceptions: a piece marked `building` that nobody is building, a piece still open whose work plainly landed, a `blocked` label whose blocker has gone. Say what you found rather than correcting it quietly. Closing a piece is the person's decision, and a stale `blocked` label is worth offering to remove, since the blocked-by link already decides what `/build` does. Whatever somebody did on GitHub by hand stands, as `.agents/skills/start/references/pieces.md` describes. Refresh the printout afterwards. On a project with no issues, correct the statuses in plan.md instead.
 3. Correct masterplan.md where reality moved: a promise that changed shape, a section that no longer matches the tool. Never rewrite the build-path section directly; if the project's character has changed, rerun the fit check instead and let it produce the new section.
-4. Identify anything left open: an unresolved recheck trigger from the build-path section, an open expert gate, or interrupted manual setup. Say what's open rather than closing it quietly.
+4. Identify anything left open: an unresolved recheck trigger from the build-path section, flagged work still waiting, or interrupted manual setup. Say what's open rather than closing it quietly. Where flagged work was built during the period being reconciled, check the build-path section carries an `Accepted:` line for it; if the work happened and the line is missing, say so rather than writing one now, because an acceptance recorded after the fact is a record of nothing.
 5. Keep the check on the pull request honest. If the way the project installs or tests has moved, update `.github/workflows/checks.yml` so `jobs.project-check` runs the project's real commands, the same ones AGENTS.md's stack section names. Touch only that job. An older project may still carry a separate source-validation job and repository conditions; leave those unchanged. A check still running the placeholder, or the wrong commands, is worse than no check at all because people believe the green tick.
 6. Bank what was learned. A mistake the agent has now made twice becomes one line in AGENTS.md, so it stops recurring. A pattern the user approved more than once becomes a project skill, if it earns one. Keep AGENTS.md lean: point at documents instead of repeating them, and delete lines that no longer pay their way.
 7. Say in one short paragraph what was corrected, so the user knows what had drifted.

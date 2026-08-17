@@ -10,6 +10,7 @@
       "name": "ai-build-kit",
       "source": "./",
       "description": "A guided workflow for building reliable software with an AI coding agent.",
+      "license": "MIT",
       "category": "productivity",
       "tags": [
         "development",

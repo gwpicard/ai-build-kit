@@ -23,15 +23,19 @@ Choose the save route before changing anything:
 2. **Pull-request route.** Shared or live use, a behavioural change, data or
    permissions, an external integration or service, an operational change, or
    any change the build path requires it for.
-3. **Expert-gated route.** The work touches a named expert scope. Build may
-   prepare or implement only up to the recorded gate; the expert condition
+3. **Flagged route.** The work touches a named expert scope. Build may
+   prepare or implement only up to the recorded condition; that condition
    must be met before merge or live activation. Stopping there, safely
    prepared and correctly recorded as blocked, is one of section-builder's
    two successful outcomes; see step 8.
 
-Pull-request and expert-gated routes work on a short-lived branch. The
+Pull-request and flagged routes work on a short-lived branch. The
 checkpoint route may use the current branch once its state is confirmed
 clean.
+
+Where the piece is an issue, label it `building` and assign it to whoever is
+building it before changing anything. That is what stops two people starting the
+same piece, and it costs one call.
 
 ## 2. Agree the visible result
 
@@ -42,9 +46,11 @@ piece does not need the ceremony repeated.
 
 ## 3. Choose evidence
 
-Pick the smallest evidence that would actually be credible. Use the plan
-row's stored `Class` as an input to that choice and to the save route; do not
-silently downgrade it.
+Pick the smallest evidence that would actually be credible. Use every subject
+the piece stores as an input to that choice and to the save route, from its
+labels on an issue or its `Subjects` column on a plan; do not silently downgrade
+any of them. A piece carrying two subjects needs what both demand, and its save
+route is the stricter of the two.
 
 An automated behaviour test is required for: business rules, calculations,
 permissions, data transformations, integrations, scheduled or background
@@ -55,7 +61,9 @@ A guided manual check is acceptable for: copy, layout, colour, exploratory
 interaction, subjective usability, and disposable prototype work.
 
 An operational rehearsal is required for: backups, restores, migrations,
-rollback, alerts, deployment, and failure recovery.
+rollback, alerts, deployment, and failure recovery. Under `data`, that turns on
+what the change does to records that already exist. Adding a new field takes a
+test; changing or moving records people already have takes a rehearsal on a copy.
 
 Source evidence is required when correctness depends on an external fact;
 run change-triage's source check first.
@@ -97,36 +105,54 @@ any of those apply, run second-opinion using the best independent method
 recorded in the capability profile before offering to save; this fires off
 what the change actually touched, so it never depends on anyone remembering.
 
+Where the trigger names who must review, that person is the review. Running
+second-opinion instead is a different thing, worth doing and worth saying is not
+the named one. Evidence the change works is also not a review: a green check
+proves the behaviour, and the review exists for what the check cannot see.
+
 ## 8. Save
 
 Checkpoint route: update the records, commit, and state the saved checkpoint.
 
 Pull-request route: update the records, commit, push, open a pull request
 titled after the piece with a plain-language summary, and run the project
-checks. Never present it as ready until the check is green; if it goes red,
+checks. Where the piece is an issue, write `Closes #<number>` in the pull
+request body, so merging it closes the piece rather than leaving somebody to
+remember. Never present it as ready until the check is green; if it goes red,
 say so plainly, pull the failing output yourself, fix through the normal
 steps, and push again.
 
-Expert-gated route: do the pull-request route for everything up to the gate,
+Flagged route: do the pull-request route for everything up to the condition,
 then:
 
 - attach or generate the expert brief;
-- record the exact gate condition the expert must confirm;
-- set the piece's plan status to `blocked`;
+- record the exact condition that must be met;
+- label the piece `blocked`, or set its plan status to `blocked` on a project
+  with no issues;
 - name what unblocked work may still continue;
-- state plainly that the gated capability is not ready or live, with no
+- state plainly that the flagged capability is not ready or live, with no
   softer wording that could be read otherwise.
 
 A piece that ends here, with all five done, is safely prepared and correctly
-blocked. Report it as a completed pass, and leave it alone until the gate
-clears.
+blocked. Report it as a completed pass, and leave it alone until the
+condition is met or the person accepts the risk instead.
 
 ## 9. Sync the records
 
-Normal completion updates: the piece's status in plan.md, a changelog line,
-the masterplan when the present behaviour changed, and AGENTS.md only when a
-durable operating convention changed. A correctly completed build does not
-need /sync afterward.
+Normal completion updates: the piece, a changelog line, the masterplan when the
+present behaviour changed, and AGENTS.md only when a durable operating
+convention changed. A correctly completed build does not need /sync afterward.
+
+Where the piece is an issue, the merged pull request closes it, so there is no
+status to set by hand. Remove the `building` label, and refresh the printout
+with `.agents/tools/plan-refresh.sh` so the person's list matches what just
+happened. On a project with no issues, set the row's status in plan.md instead.
+
+Write the changelog line from the piece's own `So that` and `Done when`, in
+plain language, dated. Not from its title, and not from the pull request. A
+changelog assembled out of titles reads like a list of tasks, and this record
+exists so somebody who cannot read code understands what happened to their
+project six months later.
 
 ## Excuses that don't hold
 
@@ -144,7 +170,6 @@ One of two outcomes, both complete passes:
 - Complete: the agreed behaviour has credible evidence, the user-facing
   result is confirmed where needed, required review is satisfied, the
   records match reality, and the selected save route is complete.
-- Safely blocked: the piece stopped at its recorded expert gate with plan
-  status `blocked`, an expert brief carrying the exact gate condition,
-  unblocked work identified, and no claim that the gated capability is
-  ready or live.
+- Safely blocked: the piece stopped at its recorded condition, marked
+  `blocked`, with an expert brief carrying that condition, unblocked work
+  identified, and no claim that the flagged capability is ready or live.

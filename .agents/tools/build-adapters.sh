@@ -6,11 +6,11 @@
 #
 # Single source of truth: .agents/skills/<name>/SKILL.md
 # Generated (thin) adapters, all pointing back at canonical:
-#   .claude/commands/<word>.md       the seven words as Claude Code slash commands
+#   .claude/commands/<name>.md       the seven commands as Claude Code slash commands
 #   .claude/skills/<discipline>/      the four disciplines as auto-triggering skills
 #   .claude/skills/humanizer/         the callable maintainer writing skill
-#   .cursor/commands/<word>.md        the seven words as Cursor slash commands
-#   .gemini/commands/<word>.toml      the seven words as Gemini CLI slash commands
+#   .cursor/commands/<name>.md        the seven commands as Cursor slash commands
+#   .gemini/commands/<name>.toml      the seven commands as Gemini CLI slash commands
 #
 # Codex, Cursor, and Gemini discover the canonical .agents/skills/ tree
 # directly. Claude Code needs its project skill under .claude/skills/.
@@ -100,7 +100,13 @@ generate_all() {
 
     fm_name=$(field name "$file")
     desc=$(field description "$file")
-    [ -n "$desc" ] || { echo "warn: $name has no description, skipping" >&2; continue; }
+    # A skipped skill still leaves a self-consistent tree, so the drift check
+    # passes and the skill is simply absent everywhere. Stopping is the same
+    # answer a mismatched name already gets three lines below.
+    [ -n "$desc" ] || {
+      echo "error: $name/SKILL.md has no description, which every adapter needs" >&2
+      exit 1
+    }
     if [ "$fm_name" != "$name" ]; then
       echo "error: $name/SKILL.md declares name '$fm_name', which does not match its folder" >&2
       exit 1

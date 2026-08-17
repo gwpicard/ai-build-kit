@@ -1,8 +1,8 @@
 # AGENTS.md
 
 Standing instructions for this project. Read this file at the start of every
-session. The product lives in `masterplan.md`, the remaining work lives in
-`plan.md`, and the history lives in `CHANGELOG.md`.
+session. The product lives in `masterplan.md`, the remaining work lives in this
+project's issues, and the history lives in `CHANGELOG.md`.
 
 ## What this project is
 
@@ -37,7 +37,7 @@ The work lives in eleven installed skills. Seven are commands you type. Four run
 in the background when a command needs them.
 
 - Commands: `start`, `build`, `fix`, `ship`, `sync`, `maintain`, `what-now`.
-- Background skills: `grilling`, `change-triage`, `section-builder`,
+- Background skills: `clarify`, `change-triage`, `section-builder`,
   `second-opinion`.
 
 Use the harness's skill picker or ask for a skill by name. When a skill says to
@@ -49,10 +49,25 @@ project-specific rules in this file instead of editing an installed skill.
 
 ## The records
 
-If it is not written down, it does not exist. After every working piece, update
-the status and evidence in `plan.md`. Add a dated `CHANGELOG.md` entry when work
-lands. Commit with a clear message. Each plan piece also carries a `Class`, set
-once by change-triage and read by later sessions.
+If it is not written down, it does not exist. Add a dated `CHANGELOG.md` entry
+when work lands, written in plain words rather than assembled from titles.
+Commit with a clear message.
+
+The remaining work lives in this project's issues, one per piece, in the shape
+`.agents/skills/start/references/pieces.md` describes. A merged pull request
+saying `Closes #<number>` closes its piece, so no status is set by hand. Each
+piece carries a subject label for everything it is about, set once by
+change-triage and read by later sessions.
+
+`plan.local.md` is a printout of the open issues, written by
+`.agents/tools/plan-refresh.sh`. It is never a source. Nothing reads it back and
+nobody edits it to change work: a change goes to the issue, and the printout is
+made again.
+
+(A project that keeps its pieces in `plan.md` has that file as its record, and
+none of the above applies to it. The capability profile below says which kind
+this project is. A repository does not settle it, so an empty issue list on a
+project with `plan.md` on disk never means the work has run out.)
 
 When one document says another will do a job, write that job into the other
 document too. The masterplan describes the present only, and its build-path
@@ -73,8 +88,19 @@ what remains uncertain. Never ask the person to read code or logs.
 ## Outside help
 
 The build-path section may require advice, a scoped review, a supervised
-change, or professional ownership. Stop at the named boundary, prepare the
-brief, and continue only when its recorded condition is met.
+change, or professional ownership. At the named boundary, prepare the brief and
+give the risk notice: who is exposed, what happens to them, what would normally
+prevent it, and that you flag what you can recognise and will miss things.
+
+Nothing is refused. The person may accept the risk and have the work built, and
+that acceptance is recorded in the build-path section with the date and who gave
+it. What may not happen is the notice being softened or dropped later, or a
+named control being recast into something you can satisfy yourself. An
+independent review means a reviewer who did not build the work.
+
+Cost, deadlines, team size, and the person's willingness to be responsible all
+change what they decide. None of them changes who is exposed, so none of them
+changes the notice.
 
 ## Working with this team
 
@@ -119,7 +145,8 @@ data, or doing anything irreversible or outside this computer.
   external users;
 - a new dependency or service is required;
 - real data may change irreversibly;
-- the build path requires outside help;
+- the build path requires outside help, or a risk notice is waiting on the
+  person's answer;
 - the masterplan is silent on a consequential decision;
 - the harness lacks a required capability;
 - the expected result cannot be reproduced or verified.

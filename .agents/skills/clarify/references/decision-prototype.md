@@ -8,7 +8,7 @@ Write one sentence:
 
 "This prototype exists to decide whether <question>."
 
-If more than one question appears, split them or return to grilling.
+If more than one question appears, split them or return to clarify.
 
 ## Rules
 

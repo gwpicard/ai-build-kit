@@ -1,5 +1,5 @@
 ---
-description: The everyday word for making the tool do something new or different.
+description: The everyday command for making the tool do something new or different.
 disable-model-invocation: true
 ---
 <!-- GENERATED from .agents/skills/build/. Do not edit here; regenerate with .agents/tools/build-adapters.sh -->

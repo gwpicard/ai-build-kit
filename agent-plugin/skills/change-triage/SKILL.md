@@ -10,10 +10,14 @@ The user never sorts their own request; you do, and the masterplan is the refere
 
 ## Step 1: Understand the request
 
-Compare it with the masterplan, plan.md, parked ideas, the recent changelog,
-and existing behaviour where that's cheap to check. Before accepting it as
-new work, check: does this already exist under another name? Was it
-deliberately parked or rejected before? Is the report actually a
+Compare it with the masterplan, the project's pieces, parked ideas, the recent
+changelog, and existing behaviour where that's cheap to check. Before accepting
+it as new work, check: does this already exist under another name? Was it
+deliberately parked or rejected before?
+
+A parked idea is a closed issue labelled `parked`, so search closed issues too,
+not only open ones. The reason was written down to stop the same idea coming
+back around and getting built by accident, and it only works if somebody looks. Is the report actually a
 misunderstanding or a setup problem rather than a real gap? Does it contradict
 an existing rule in the masterplan?
 
@@ -21,41 +25,67 @@ an existing rule in the masterplan?
 
 One of: repair of promised behaviour; new behaviour; clarification or
 copy/presentation change; setup or operational task; a decision that needs
-grilling; a decision that needs a prototype; a decision that needs source
+clarify; a decision that needs a prototype; a decision that needs source
 research; a change that alters the build path or the outside-help scope.
 
 ## Step 3: Classify consequence
 
-One of: presentation-only; behaviour; data; access; integration or service;
-money; automatic or irreversible action; operational reliance. This
-classification is what later decides the evidence, the review, and the save
-route; section-builder reads it rather than re-deriving it.
+Every consequence that applies, from: presentation-only; behaviour; data;
+access; integration or service; money; automatic or irreversible action;
+operational reliance. This classification is what later decides the evidence,
+the review, and the save route; section-builder reads it rather than re-deriving
+it.
 
-When the request is, or becomes, a plan piece, write the classification into
-that row's `Class` column, mapped to the small vocabulary plan.md uses:
+When the request is, or becomes, a piece, store the classification on it, mapped
+to the small vocabulary the kit uses everywhere:
 
-| Internal consequence | Plan class |
+| Internal consequence | Subject |
 |---|---|
 | presentation-only | visual |
-| behaviour | behaviour |
-| data, access, money | data/access |
-| integration or service | service |
-| automatic action, irreversible action, operational reliance | operational |
+| behaviour | how it works |
+| data | data |
+| access | accounts and permissions |
+| money | finance |
+| integration or service | external service |
+| automatic action, operational reliance | background automation |
 
-A later session reads the stored class rather than reclassifying the piece
+An irreversible action takes the subject of whatever it is irreversible about,
+which is usually `data`.
+
+A request often lands on more than one row, and every row it lands on is stored.
+A checkout takes `finance` and `external service`. A nightly backup takes `data`
+and `background automation`. Do not pick the closest single subject: the one
+dropped takes its evidence with it.
+
+On a project with issues, those are labels on the issue, and the issue is written
+to the shape in `.agents/skills/start/references/pieces.md`. On a project with
+no issues, they go in the row's `Subjects` column, separated by commas. Refresh
+the printout afterwards, so the person's list matches what was just agreed.
+
+A later session reads the stored subjects rather than reclassifying the piece
 from scratch.
 
 ## Step 4: Route
 
-Route to one of: `/fix`; section-builder directly; grilling; a decision
+Route to one of: `/fix`; section-builder directly; clarify; a decision
 prototype; a source check; update the masterplan then build; rerun the fit
-check; prepare an expert brief; stop at the professional-led boundary. Say
-the route and the reason in one line.
+check; prepare an expert brief; give the risk notice at the professional-led
+boundary. Say the route and the reason in one line.
 
 Piece-sized and clear (one sitting, a done line you could write now) goes
-straight to section-builder. Too vague to size runs grilling first. Bigger
+straight to section-builder. Too vague to size runs clarify first. Bigger
 than a piece gets written into the masterplan and cut into pieces on the
 plan, order confirmed with the user before building.
+
+Where the request is a piece and the route is a question rather than building,
+put the route on the issue: `needs-clarification` for clarify,
+`needs-prototype` for a decision prototype, `needs-research` for a source check.
+Take the label off once the question is answered. Without this the reason a
+piece is waiting lives only in the session that found it, and the next person to
+open the list sees a piece that has simply stopped.
+
+A repair takes `broken` as well as its subjects, which is what points `/what-now`
+and `/fix` at it.
 
 The request touches what data is stored, who can see or do what, or money:
 update the masterplan first and say what changed before routing further. If
@@ -70,12 +100,21 @@ only then route the work. The build path decides how the whole system
 behaves, and building past it is how safe projects quietly become unsafe
 ones.
 
+Where that check leaves a trigger standing, give the risk notice described in
+`.agents/skills/start/references/fit-check.md` before routing the flagged work,
+and hold it. Nothing is refused: the person may accept the risk and have it
+built. What may not happen is the notice quietly going away, or you deciding on
+their behalf that it no longer applies because they pushed back. Repeat the
+request back, however many times it arrives, and route it the same way each
+time.
+
 ## Step 5: Record only durable information
 
 Do not add a changelog line for every classification; most triage
 conversations leave no trace worth keeping. Record only when: the masterplan
-changes, the build path changes, an idea is parked or rejected for a durable
-reason, the outside-help scope changes, or work actually lands.
+changes, the build path changes, a risk notice is accepted, an idea is parked
+or rejected for a durable reason, the outside-help scope changes, or work
+actually lands.
 
 ## Done when
 

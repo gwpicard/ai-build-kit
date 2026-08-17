@@ -38,10 +38,10 @@ plan sorts itself: the how-to-check phrase on each done line is the
 eligibility rule.
 
 When a piece fails: retry within the piece, up to three attempts, the same
-number fix uses. After the third, park it, mark it blocked in plan.md with
-one line on what kept failing, and move to the next piece; never let one
-piece consume the run. Route the parked piece further when the failure
-points somewhere specific: a missing decision goes to grilling, a missing
+number fix uses. After the third, park it, mark it `blocked` with one line on
+what kept failing, and move to the next piece; never let one piece consume the
+run. Route the parked piece further when the failure
+points somewhere specific: a missing decision goes to clarify, a missing
 external fact goes to the source check, and a shape the team could not
 safely own goes to a build-path reassessment rather than a fourth attempt.
 
