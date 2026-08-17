@@ -63,7 +63,7 @@ A piece often carries two, because a checkout is finance and an outside service 
 
 Four labels say where a piece stands instead: `building` when somebody is on it, `blocked` when something outside the project holds it up, `parked` on something you decided against, and `broken` for a repair, which sends it to `/fix`.
 
-Three more say it is waiting on a question rather than on a person. `needs-clarification` means talking it through will settle it. `needs-prototype` means somebody has to build a throwaway first to see what it should look like. `needs-research` means somebody has to go and find a fact the project cannot see. Anything you jot down starts at `needs-clarification`.
+Three more say it is waiting on a question rather than on a person. `needs-clarification` means talking it through will settle it. `needs-prototype` means somebody has to build a throwaway first to see what it should look like. `needs-research` means somebody has to go and find a fact the project cannot see. Anything you jot down starts at `needs-clarification`. When /build reaches a piece waiting on a question, it settles that question first, a few questions, a quick throwaway, or a lookup, and then builds the piece, rather than building past the open question.
 
 To see where things stand, type `/what-now`. The printed list in `plan.local.md` is there too, though it is only a photocopy of the issues.
 

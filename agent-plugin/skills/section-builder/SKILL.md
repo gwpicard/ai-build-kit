@@ -33,6 +33,19 @@ Pull-request and flagged routes work on a short-lived branch. The
 checkpoint route may use the current branch once its state is confirmed
 clean.
 
+A route the project cannot perform does not stop the work. Where the pull-request
+route is the right one and there is no way to open a pull request, because the
+GitHub command line tool is missing or nobody is signed in, build the piece and
+save it on its own branch. Note the step that did not happen in one plain line
+where the piece lives, the way you would note any other fact.
+
+That line is a note, not a warning. A step the project has no way to perform is
+missing, not dangerous, so it earns no risk notice, no acceptance, and no
+recorded exception. Treating it as a hazard tells the person their working
+project is broken, which is both untrue and the fastest way to make them
+distrust the record they are relying on. Offer the sign-in once and get on with
+the piece.
+
 Where the piece is an issue, label it `building` and assign it to whoever is
 building it before changing anything. That is what stops two people starting the
 same piece, and it costs one call.

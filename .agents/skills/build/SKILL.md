@@ -22,6 +22,20 @@ a refresh that returns no issues at all on a project with `plan.md` on disk mean
 the file is the record. Read it, and say that is where the pieces live. Never
 report an empty list while that file sits unread.
 
+Nor is signing in a condition of working. A project whose pieces live in
+`plan.md` because nobody is signed in has everything it needs to build: say so
+once, offer the sign-in once, and get on with the piece. Making it the first
+step, or holding work until it happens, turns a fallback the project chose into
+a fault, which `.agents/skills/start/references/capability-check.md` says it is
+not. What that state does cost is the pull-request route, and
+`.agents/skills/section-builder/SKILL.md` says what to do about that.
+
+That file is the record, so treat it as current. It is not a leftover, a stale
+copy, or a guess at what the issues would have said, and describing it that way
+leaves the person doubting the only list they have. Where the capability profile
+disagrees with it, the profile is the thing that is out of date. Say that once
+and carry on reading the file.
+
 When GitHub cannot be reached, say so, say when the printout was last written,
 and work from it. The piece already in hand carries on. Anything that would
 change what is on the plan waits, because an issue that cannot be updated is
@@ -46,23 +60,39 @@ subject labels rather than reclassifying it; reclassify only when the piece
 carries none, the request materially changed, or a subject contradicts the
 masterplan.
 
-## When the next piece is only a note
+## When the next piece is waiting on a question
 
-An issue with no `## Done when` was typed by hand and has never been sized. Do
-not build it, and do not guess what done means.
+A piece labelled `needs-clarification`, `needs-prototype`, or `needs-research`
+has a question to settle before its code is written, and building past it only
+guesses the answer. An issue with no `## Done when` was typed by hand and never
+sized, so treat it the same way, as `needs-clarification`.
 
-Say in one sentence why it is not ready, and offer both the interview and the
-way out in the same breath: a few questions now, or "not now" and you take the
-next piece that is ready instead. Somebody who typed `/build` wanted something
-built, so an escape hatch mentioned afterwards is no escape hatch at all.
+Do not skip the piece. Settling the question is the first part of building it, so
+take it up and do that part now. Say in one sentence what it is waiting on, and
+offer the step and the way out in the same breath: settle it now, or "not now"
+and you take the next ready piece instead. Somebody who typed `/build` wanted
+something built, so an escape hatch mentioned afterwards is no escape hatch at
+all.
 
-When they agree, run clarify on it there and then. Write what comes out into
-the shape `.agents/skills/start/references/pieces.md` describes, keep their
-original words underneath, take the subjects from change-triage rather than
-picking them yourself, and then build it.
+When they agree, run the step the label names, then take the label off and build
+the piece in the same session:
 
-"Not now" leaves the note alone, still labelled `needs-clarification`, and you carry
-on to the next ready piece. The list stays in its order either way.
+- `needs-clarification` runs clarify. For an unsized note, write what comes out
+  into the shape `.agents/skills/start/references/pieces.md` describes, keep the
+  original words underneath, and take the subjects from change-triage rather than
+  choosing them yourself.
+- `needs-prototype` runs the decision prototype in
+  `.agents/skills/clarify/references/decision-prototype.md`, which answers the one
+  question it exists for and writes the decision back onto the piece.
+- `needs-research` runs a source check, and records the fact it finds on the
+  piece.
+
+The interview may show that the real block is a different one and swap
+`needs-clarification` for `needs-prototype` or `needs-research`. Follow the new
+label rather than building past it.
+
+"Not now" leaves the piece and its label alone, and you carry on to the next
+ready piece. The list stays in its order either way.
 
 ## When the pieces contradict each other
 
@@ -94,7 +124,9 @@ which route you chose and why, in one line.
 Auto is not an ordinary peer to normal build; it is earned, not default.
 Before enabling it, require: at least three normal pieces completed cleanly,
 no unresolved review or flagged work waiting, clean Git state, evidence a machine can
-check for every selected piece, nothing needing human judgement in the batch,
+check for every selected piece, no piece still waiting on a question
+(`needs-clarification`, `needs-prototype`, or `needs-research`), nothing needing
+human judgement in the batch,
 no pending build-path transition, and the user's explicit approval of the
 batch. A project has earned auto mode when its records and checks have
 repeatedly predicted successful ordinary builds; the presence of an agent

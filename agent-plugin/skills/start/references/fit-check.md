@@ -154,9 +154,14 @@ so the access review stands.
 
 ## The risk notice
 
-The kit refuses nothing. Where a trigger survives redesign, say so before that
-work goes ahead. This applies on any build path. Private disposable work has no
-trigger to name, so it gets no notice and no ceremony.
+The kit refuses nothing. A notice is due only where a trigger from the decision
+order survives redesign: a regulated or high-consequence decision, irreplaceable
+live data, high-harm autonomous action, a team that cannot operate or recover
+the system, or a production promise beyond the team. Say so before that work
+goes ahead, on any build path. Work with no surviving trigger gets no notice, no
+acceptance, and no recorded exception, whatever its path. Most work on most
+projects is like this. Build and run it, the primary path, is defined by no
+professional trigger applying, so it usually has nothing to notice.
 
 A notice says five things:
 
@@ -169,6 +174,16 @@ A notice says five things:
 
 "This is risky" is not a notice. Naming a cost, a delay, or a rule of the kit's
 own is not a notice either. Say who gets hurt.
+
+A trigger is exposure from the decision order, not any imperfection you can
+imagine somebody being annoyed by. A booking that vanishes with no record, a
+colleague who has to walk to a room, a whiteboard replacement with no audit
+trail, a stack choice, a save that stays on one machine, an integration not
+connected yet: these are design points, not exposure. Raise them in ordinary
+words in the ordinary place. In a tool for twenty colleagues you can always
+picture one of them inconvenienced, and that is not who a notice is for. A notice
+given for ordinary work teaches the person to skip notices, and it is paid for by
+the one notice that names a real exposure and now looks like all the others.
 
 A notice is about the work you are about to do, not the problem that led to it.
 Where the answer to a broken thing is to build a replacement, the notice covers
@@ -206,6 +221,10 @@ as the acceptance. Three things are not acceptance:
 - a refusal to pay for help, or to wait;
 - the person describing the risk themselves before you have named it. Name it
   yourself and ask again.
+
+Where no notice was due, there is nothing to accept and nothing to record.
+Agreement to a plan is not acceptance of a risk. An `Accepted:` line written
+against an ordinary decision makes the record meaningless, so do not write one.
 
 A person who has not been told cannot have accepted. When a plain instruction
 arrives and no notice has been given, give the notice and put the question. When
