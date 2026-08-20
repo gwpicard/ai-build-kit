@@ -52,10 +52,13 @@ rather than patched a fourth time, often ending in a rebuild from the
 documents, and why a disappointing autonomous run is answered by sharpening
 the plan instead of hand-editing whatever it produced.
 
-The vocabulary never grows. Seven commands, named after the moments a person
-actually reaches for them. Every new capability arrives as behaviour of an
-existing command. A capability that genuinely needs its own command is a sign the shape
-is wrong, and that is a redesign conversation rather than an addition.
+The vocabulary stays small and grows only by deliberate redesign. Eight
+commands, each named after a moment a person actually reaches for, and every new
+capability arrives as behaviour of an existing command wherever it can. A
+capability that genuinely needs its own command is a sign a command was carrying
+two jobs at once, and splitting it is a redesign conversation, not a casual
+addition. The count moved from seven to eight exactly once, when `/build` was
+found to be both planning and building and the planning half became `/plan`.
 
 Machinery stays invisible until it matters. Nobody needs to know a review
 skill exists until the agent says a change touched sign-in and a fresh
@@ -137,8 +140,9 @@ same reason. This is the test.
 Answer all five questions in writing before adding anything. If you cannot answer
 all five, do not add it.
 
-1. **Does it fit under one of the seven commands?** The vocabulary stays at seven. A
-   new capability arrives as behaviour of an existing command.
+1. **Does it fit under one of the commands?** The vocabulary stays small. A new
+   capability arrives as behaviour of an existing command, and a new command is
+   a rare, deliberate redesign rather than the default answer.
 
 2. **What does the person actually see, and when?** Name the concrete thing on
    their screen and the moment it appears. If the honest answer is "nothing",
@@ -174,7 +178,7 @@ cannot use.
 
 ### Worked examples
 
-Automatic tests on every pull request, added. It fits under /build. The person
+Automatic tests on every pull request, added. It fits under /implement. The person
 sees a green tick or a red cross beside the merge button. The sentence is "green
 means the tests really passed; red means don't merge". When it is red they type
 /fix. They never need to know GitHub Actions exists.
@@ -198,9 +202,15 @@ Tight bug reproduction before a fix, added. It fits under /fix; the user sees
 the exact failing case and the evidence that it stopped failing; they never
 need to learn instrumentation or bisection.
 
-Disposable decision prototype, added. It fits under /start or /build; the user
+Disposable decision prototype, added. It fits under /start or /plan; the user
 tries a rough artifact to settle one question; they never need to understand
 prototype branches or throwaway architecture.
+
+A board view of the pieces, added. GitHub can show a person their own build
+steps as a board, still to do in one column and done in the other. The kit
+offers it once and gives the steps, and never reads it back. It stays a view
+over the issues the kit already owns, so it adds no second place to manage work,
+and it fits under /start and /what-now rather than a command of its own.
 
 Architecture command, rejected. Architecture judgement may guide the agent
 internally, but a new command and vocabulary do not improve the user's
@@ -213,6 +223,11 @@ experiment.
 Universal test-first, rejected. Every promised behaviour needs evidence, but
 the evidence may be an automated test, a manual visual check, a source-backed
 fact, or a rehearsed recovery depending on the claim.
+
+A wiki, rejected. Each file under `docs/` owns one concept and sits beside the
+source it describes. A wiki would carry the record away from the work it must
+stay true to, and give one concept two homes. This is today's position rather
+than a permanent ban; a later cycle may revisit it.
 
 ## Keeping it honest
 

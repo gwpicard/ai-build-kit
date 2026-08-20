@@ -1,20 +1,22 @@
 # AI Build Kit managed files. Generated during release; do not edit.
-version|v0.5.1
+version|v0.6.0
 source|https://github.com/gwpicard/ai-build-kit/releases
 file|100644|.agents/guard/blocked-commands.md
 file|100755|.agents/hooks/session-end-sync.sh
-file|100644|.agents/skills/build/SKILL.md
-file|100644|.agents/skills/build/agents/openai.yaml
-file|100644|.agents/skills/build/references/running-longer.md
 file|100644|.agents/skills/change-triage/SKILL.md
 file|100644|.agents/skills/change-triage/references/source-check.md
 file|100644|.agents/skills/clarify/SKILL.md
 file|100644|.agents/skills/clarify/references/decision-prototype.md
 file|100644|.agents/skills/fix/SKILL.md
 file|100644|.agents/skills/fix/agents/openai.yaml
+file|100644|.agents/skills/implement/SKILL.md
+file|100644|.agents/skills/implement/agents/openai.yaml
+file|100644|.agents/skills/implement/references/running-longer.md
 file|100644|.agents/skills/maintain/SKILL.md
 file|100644|.agents/skills/maintain/VERSION
 file|100644|.agents/skills/maintain/agents/openai.yaml
+file|100644|.agents/skills/plan/SKILL.md
+file|100644|.agents/skills/plan/agents/openai.yaml
 file|100644|.agents/skills/second-opinion/SKILL.md
 file|100644|.agents/skills/section-builder/SKILL.md
 file|100644|.agents/skills/ship/SKILL.md
@@ -25,6 +27,7 @@ file|100644|.agents/skills/start/SKILL.md
 file|100644|.agents/skills/start/agents/openai.yaml
 file|100644|.agents/skills/start/references/adopting.md
 file|100644|.agents/skills/start/references/blocked-commands.md
+file|100644|.agents/skills/start/references/board-view.md
 file|100644|.agents/skills/start/references/capability-check.md
 file|100644|.agents/skills/start/references/completion-report.md
 file|100644|.agents/skills/start/references/fit-check.md
@@ -45,7 +48,6 @@ file|100644|.agents/skills/start/templates/foundation/piece-issue.yml
 file|100755|.agents/skills/start/templates/foundation/session-start.sh
 file|100644|.agents/skills/start/templates/maintenance-record
 file|100644|.agents/skills/start/templates/masterplan.md
-file|100644|.agents/skills/start/templates/plan.md
 file|100644|.agents/skills/sync/SKILL.md
 file|100644|.agents/skills/sync/agents/openai.yaml
 file|100644|.agents/skills/what-now/SKILL.md

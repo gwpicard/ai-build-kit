@@ -20,6 +20,11 @@ If more than one question appears, split them or return to clarify.
 - Show relevant state after actions.
 - Skip production error handling, abstractions, and polish.
 - Do not treat prototype code as production code.
+- Build the visible thing to look like what it is testing, not like a labelled
+  prototype. A tax calculator's screen is titled "Tax Calculator", not "This is
+  a Tax Calculator" or "Tax Calculator prototype". Narrating in the interface
+  that it is a prototype changes what the person sees and makes the decision
+  harder to judge.
 - Let the user try alternatives where the decision is visual or behavioural.
 
 ## Finish

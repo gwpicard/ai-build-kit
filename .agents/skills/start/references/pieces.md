@@ -1,19 +1,12 @@
 # Pieces
 
 A piece is one small, visible, end-to-end change, sized for a single sitting.
-That has not changed. Where a piece lives has.
+It lives as a GitHub issue.
 
-Where a project keeps its pieces as issues, those issues are the only record of
-what is left. Where it keeps a plain `plan.md`, that file is the only record.
-Which one applies is settled when the project is founded and written into the
-capability profile in AGENTS.md; `capability-check.md` decides it.
-
-A remote address does not settle it. Keeping pieces as issues needs a GitHub
-repository and the GitHub command line tool signed in, so a project can have a
-repository and still keep `plan.md`, which is what happens when that tool is
-missing or nobody is signed in. The test is the record itself: where a project
-has no open issues and `plan.md` is on disk, `plan.md` is the record, and it is
-the file to read. See "Private projects" below.
+The project's issues are the only record of what is left to build. Keeping the
+pieces there needs a GitHub repository and the GitHub command line tool signed
+in, which the kit sets up when a project is founded; `capability-check.md`
+records it in the capability profile.
 
 Issues are the agent's memory rather than the person's reading material. They
 can carry as much context as a piece deserves, because nobody reads them all at
@@ -84,9 +77,9 @@ Four more labels carry state that open and closed cannot:
 - `parked`, on a closed issue, for an idea deliberately left out;
 - `broken`, when the piece is repairing something that used to work.
 
-`broken` sends the work to `/fix` rather than to `/build`, and it sits alongside
-the subjects rather than replacing them, because a broken thing is still about
-something.
+`broken` sends the work to `/fix` rather than to `/implement`, and it sits
+alongside the subjects rather than replacing them, because a broken thing is
+still about something.
 
 Three more say the piece is waiting on a question rather than on a person:
 
@@ -96,9 +89,19 @@ Three more say the piece is waiting on a question rather than on a person:
 
 Anything nobody has sized starts at `needs-clarification`. The interview swaps
 that for one of the other two once it finds what is actually in the way. All
-three mean the same thing to `/build`: not ready, and here is why.
+three mean the same thing to `/implement`: not ready, and here is why.
 
-Those fourteen are the only labels the kit owns. Any other label on an issue
+One more is the positive counterpart to those three:
+
+- `ready`, when the piece is shaped and waiting to be built.
+
+`/plan` adds `ready` once a piece is fully shaped: it has a `## Done when` line
+and waits on no question. `/implement` takes the lowest-numbered `ready` piece,
+swaps the label for `building` at pickup, and the merged pull request closes it.
+A piece never carries `ready` and a `needs-` label at the same time; settling
+the question is what moves it from one to the other.
+
+Those fifteen are the only labels the kit owns. Any other label on an issue
 belongs to somebody else, so the kit reads past it and never removes it.
 
 The nine labels GitHub puts on a new repository are the one exception, and only
@@ -125,8 +128,8 @@ Dependencies use GitHub's own blocked-by relationship, not a line of prose. A
 piece that needs another names it there, and the agent reads it rather than
 parsing a body.
 
-`/build` takes the lowest-numbered open issue whose blockers are all closed and
-whose subjects the current build path all permit. Issue numbers give a stable creation
+`/implement` takes the lowest-numbered `ready` issue whose blockers are all closed
+and whose subjects the current build path all permit. Issue numbers give a stable creation
 order and the blocked-by relationship gives the dependencies, so nothing extra
 is maintained by hand.
 
@@ -169,8 +172,8 @@ the form it expected.
 
 | What the person does | What the kit does |
 |---|---|
-| Assigns themselves | Treats the piece as theirs, and `/build` will not hand it to anyone else. Assignment says whose it is; `building` says work is under way now |
-| Assigns somebody else | `/build` skips it and says who has it, rather than quietly taking it |
+| Assigns themselves | Treats the piece as theirs, and `/implement` will not hand it to anyone else. Assignment says whose it is; `building` says work is under way now |
+| Assigns somebody else | `/implement` skips it and says who has it, rather than quietly taking it |
 | Adds `building` | Treats the piece as under way and leaves it alone |
 | Closes an issue by hand | It stays closed. `/sync` may say that no changelog line matches it, and ask whether it was done or dropped |
 | Reopens a closed issue | Treats it as work again, and takes off a `parked` label, because reopening is the decision to unpark it |
@@ -221,22 +224,3 @@ reason in the body. Closed, so it never reads as work waiting to be done.
 
 Before accepting a request as new, search closed issues too. The reason exists
 so the same idea does not come back around and get built by accident.
-
-## Private projects
-
-Two kinds of project keep `plan.md`, the plain table, exactly as before, and
-nothing else in this file applies to either. Explore privately with no remote has
-no issues to keep. A project that has a repository but was founded without the
-GitHub command line tool signed in has none either, because there was no way to
-make them; `capability-check.md` calls that a working fallback rather than a
-failure, and it stays a fallback for as long as the person wants it to.
-
-The second kind is easy to mistake for a project whose list has run out. It has a
-repository, so a command that asks GitHub for the open issues gets none back, and
-the file holding every remaining piece goes unread. This is why every command
-that reads the pieces tests the record rather than the remote.
-
-If either kind later gains issues, moving its pieces into them is a decision to
-take with the person at that point. The kit has no standing routine for it and
-does not do it on its own, because an unrehearsed move of the only record of what
-is left is worse than leaving the file where it is.

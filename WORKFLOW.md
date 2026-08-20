@@ -2,7 +2,7 @@
 
 This is the reference card. When you are not sure what to type, read this page,
 or type /what-now and let it tell you. Type a command as `/` and its name
-(`/start`, `/build`, and so on), or ask for it by name. The Claude Code plugin
+(`/start`, `/plan`, `/implement`, and so on), or ask for it by name. The Claude Code plugin
 adds the prefix `ai-build-kit:`, so `/start` becomes `/ai-build-kit:start`.
 
 ## 1. Commands
@@ -12,16 +12,17 @@ Command names say when to use them.
 | When | Type |
 |---|---|
 | I'm starting something | /start |
-| Keep going, or: I want it to... | /build |
+| I want it to... (a new idea) | /plan |
+| Build the next ready piece | /implement |
 | It's broken | /fix |
 | I think it's ready | /ship |
 | I'm done for today | /sync |
 | It's been a while | /maintain |
 | I'm lost | /what-now |
 
-Only two of them change the tool. /build makes it do something new or different. /fix brings it back to doing what it already should. The other five are housekeeping around those two.
+Two of them change the tool. /implement makes it do something new or different, and /fix brings it back to doing what it already should. /plan decides what to change next and shapes it into a ready piece, without touching the tool yet. The other five are housekeeping around those.
 
-You run /start once. After that, start wherever you actually are. You can open a session with /fix as readily as with /build, and neither needs the other to have run first. If you pick the wrong one it costs you nothing, because each checks what you typed against the masterplan and sends it down the right route.
+You run /start once. After that, start wherever you actually are. You can open a session with /fix as readily as with /implement, and neither needs the other to have run first. If you pick the wrong one it costs you nothing, because each checks what you typed against the masterplan and sends it down the right route.
 
 You never choose the method either. The agent decides whether the request needs an interview, a prototype, research, a test, a review, or outside help.
 
@@ -30,8 +31,6 @@ You never choose the method either. The agent decides whether the request needs 
 The records are the project's memory. The agent forgets everything between sessions; these don't, and every piece of work starts by reading them.
 
 Two of them are files you can open. The third, what's left to build, lives in your project's issues on GitHub, because that is what lets more than one person work without clashing over the same file. You never have to open it: `/what-now` tells you where things stand in a sentence, and a plain list is printed to `plan.local.md` on your own machine so you can always see it, even when GitHub cannot be reached. That printout is a photocopy. Nobody edits it, and changing a piece means telling the agent, not editing the file.
-
-Some projects keep a simple `plan.md` file instead, and nothing above applies to them. A project you are only trying out, with no GitHub repository, is one. So is a project that has a repository but was set up on a computer not signed in to GitHub's command line tool, the small program the kit uses to create the issues, because there was no way to make them at the time. Either way the kit says so when it happens and will not push you to create an account. If you later want the pieces moved into issues, ask, and the agent will do it with you.
 
 | Record | Purpose |
 |---|---|
@@ -43,7 +42,7 @@ Some projects keep a simple `plan.md` file instead, and nothing above applies to
 
 The dividing rule: the masterplan describes the present, the plan holds the future, and the moment a sentence is about when, why, or how something was built, it belongs in the changelog.
 
-You can work with the issues yourself, and nothing you do there will be undone. Open one and write it however you like, in as little as half a sentence. The agent settles what done means with you before it builds anything, and if you would rather not be asked at that moment, say "not now" and it takes the next ready thing instead.
+You can work with the issues yourself, and nothing you do there will be undone. Open one and write it however you like, in as little as half a sentence. /plan settles what done means with you and marks the piece ready; /implement builds only ready pieces and never guesses past an open question. If a piece is not ready when you reach for /implement, it points you to /plan and takes the next ready piece instead.
 
 Assign yourself to claim a piece, or let the agent put your name on it when it starts; either way nobody else builds the same thing. Close an issue you have decided against and it stays closed. Labels of your own are left alone, and milestones and boards are ignored entirely, so you can use them however suits you.
 
@@ -63,7 +62,7 @@ A piece often carries two, because a checkout is finance and an outside service 
 
 Four labels say where a piece stands instead: `building` when somebody is on it, `blocked` when something outside the project holds it up, `parked` on something you decided against, and `broken` for a repair, which sends it to `/fix`.
 
-Three more say it is waiting on a question rather than on a person. `needs-clarification` means talking it through will settle it. `needs-prototype` means somebody has to build a throwaway first to see what it should look like. `needs-research` means somebody has to go and find a fact the project cannot see. Anything you jot down starts at `needs-clarification`. When /build reaches a piece waiting on a question, it settles that question first, a few questions, a quick throwaway, or a lookup, and then builds the piece, rather than building past the open question.
+Three more say it is waiting on a question rather than on a person. `needs-clarification` means talking it through will settle it. `needs-prototype` means somebody has to build a throwaway first to see what it should look like. `needs-research` means somebody has to go and find a fact the project cannot see. Anything you jot down starts at `needs-clarification`. /plan settles that question, a few questions, a quick throwaway, or a lookup, and then marks the piece `ready`. /implement builds only ready pieces, so a piece still waiting on a question goes back to /plan first rather than being built past its open question.
 
 To see where things stand, type `/what-now`. The printed list in `plan.local.md` is there too, though it is only a photocopy of the issues.
 
@@ -95,11 +94,11 @@ If the tool needs confidential files to work from, say so during the interview. 
 
 ## 5. Day to day
 
-Typed alone, /build takes the next piece from the plan. It agrees with you in one sentence what the piece should do, chooses the evidence that piece needs, builds until that evidence holds, then stops so you can try it. Nothing is saved until you confirm it behaves.
+Typed alone, /implement takes the next ready piece from the plan. It agrees with you in one sentence what the piece should do, chooses the evidence that piece needs, builds until that evidence holds, then stops so you can try it. Nothing is saved until you confirm it behaves. A piece that is not ready yet, still waiting on a question, goes to /plan first; /implement builds, it does not shape.
 
 If the change touched an area the build path flags, the best independent method available reviews it first. It reports in plain language, sorted into what's worth stopping for and what's worth knowing.
 
-Typed with words after it, /build is how you bring anything new: "/build add a filter to the board". You never sort your own request; the agent works out what kind of work it is. Small and clear gets built right away. Vague gets a short interview. A question conversation can't settle gets a disposable prototype or a source check. Anything touching data, access, or money gets written into the masterplan first.
+/plan is how you bring anything new: "/plan add a filter to the board". You never sort your own request; the agent works out what kind of work it is. Clear and piece-sized becomes a ready piece, and /plan offers to build it now or leave it for /implement later. Vague gets a short interview. A question a conversation can't settle gets a disposable prototype or a source check. Anything touching data, access, or money gets written into the masterplan first.
 
 If the request would change what kind of project this is, by bringing in outside users or real money or a promise to someone, the agent re-runs the fit check with you before building. A different build path needs different care before people rely on it.
 
@@ -120,7 +119,7 @@ The agent chooses the form the change actually needs; the report says what was p
 
 ## 7. Saving work
 
-Every piece saves through one of three routes. The checkpoint route commits, and that commit may stay local: private, disposable exploration needs no remote or GitHub authentication to complete. The pull-request route pushes and opens a pull request, for shared, live, behavioural, data, access, integration, service, or operational changes. The flagged route does the same, and also attaches the condition the touched area requires; a piece that stops there, plan marked blocked and the condition on record, counts as finished until that condition is met or you accept the risk instead.
+Every piece saves through one of three routes. The checkpoint route commits, and that commit may stay local, so private, disposable exploration can be saved without pushing. The pull-request route pushes and opens a pull request, for shared, live, behavioural, data, access, integration, service, or operational changes. The flagged route does the same, and also attaches the condition the touched area requires; a piece that stops there, plan marked blocked and the condition on record, counts as finished until that condition is met or you accept the risk instead.
 
 Next to the merge button sits that check. It re-runs the project's real commands on a clean machine, so the pull request's claims get verified rather than trusted. Green means the checks that exist really passed, which is a smaller promise than nothing being wrong: it covers the behaviour somebody thought to check and nothing else. Red means don't merge; say it to /fix, and the agent reads what failed itself. You never read the machine's logs, and you never merge over a red check.
 
@@ -152,9 +151,9 @@ What the agent may not do is take the notice back. Pushing back on the cost, the
 
 After the first launch, shipping gets lighter: it re-checks what changed since the last ship and moves that over, rechecking the build path first if reliance or consequence has grown.
 
-## 10. Autonomy: /build auto and goal modes
+## 10. Autonomy: /implement auto and goal modes
 
-Autonomy is earned. Once a project has three normal pieces built cleanly, no open review finding, and a plan made of pieces a machine can prove done, "/build auto" can build several of them in a row without you between them. You approve the plan once, then it runs; the trade is that you check a batch at the end instead of each piece as it lands.
+Autonomy is earned. Once a project has three normal pieces built cleanly, no open review finding, and a plan made of ready pieces a machine can prove done, "/implement auto" can build several of them in a row without you between them. You approve the plan once, then it runs; the trade is that you check a batch at the end instead of each piece as it lands.
 
 The run only picks up pieces whose done line names a check a machine can judge. Pieces that need your eyes stay in the plan for you. Every piece still gets its own evidence and its own saved snapshot. A piece that fails three attempts gets parked with a note on what it revealed, and the run moves on rather than grinding on it; anything touching a flagged area or an expert scope stops the run entirely.
 
@@ -170,14 +169,17 @@ Nothing else changes when a second person arrives, because the agent already put
 
 ## 12. Sync and maintenance
 
-Normal /build and /fix completion updates the records directly; you don't need /sync after a piece that finished cleanly. /sync exists for interrupted work, work done outside the workflow, long sessions whose context went foggy, and handovers. A report-only reminder can optionally run at session end, where the tool supports it, but nothing writes to the records without a skill deciding to.
+Normal /implement and /fix completion updates the records directly; you don't need /sync after a piece that finished cleanly. /sync exists for interrupted work, work done outside the workflow, long sessions whose context went foggy, and handovers. A report-only reminder can optionally run at session end, where the tool supports it, but nothing writes to the records without a skill deciding to.
 
 /maintain is the service visit: monthly and light for AI Build Kit updates,
 project dependency updates, and anything the error alerts caught. When a newer
 kit is available, the agent shows the version and what changed, then waits for
-approval. An update refreshes only the eleven AI Build Kit skills and leaves
+approval. An update refreshes only the twelve AI Build Kit skills and leaves
 your tool, its records, and its own checks alone. A clean checkpoint comes
-first, so an interrupted update can be recovered.
+first, so an interrupted update can be recovered. The one update that split the
+old `/build` into `/plan` and `/implement` runs a one-time step that labels your
+existing pieces so they can still be built, and offers to move any older
+`plan.md` list into your project's issues; it says what it changed.
 
 /maintain writes the date of each visit into the project. When more than a month
 has gone by, opening a session says so and names /maintain. A tool that cannot

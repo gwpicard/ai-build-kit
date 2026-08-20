@@ -27,7 +27,7 @@ if git diff --quiet && git diff --cached --quiet && [ -z "$(git status --porcela
 fi
 
 echo "Session ended with repository changes present."
-echo "The records (plan.md, CHANGELOG.md, masterplan.md) may not describe what just happened."
+echo "The records (CHANGELOG.md, masterplan.md) may not describe what just happened."
 echo "Run /sync to check and reconcile them; this hook does not edit anything itself."
 
 mkdir -p "$ROOT/.agents/tmp"

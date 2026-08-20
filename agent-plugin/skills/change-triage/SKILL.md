@@ -1,6 +1,6 @@
 ---
 name: change-triage
-description: Classify a request written in plain words before any work happens. Used by build when the user typed words after the command, and by fix to check a report before repairing. Decides whether the request is new work, a repair, too vague to size, or a change that needs the masterplan or the fit check first.
+description: Classify a request written in plain words before any work happens. Used by plan when the user typed a request, and by fix to check a report before repairing. Decides whether the request is new work, a repair, too vague to size, or a change that needs the masterplan or the fit check first.
 user-invocable: false
 ---
 
@@ -57,30 +57,29 @@ A checkout takes `finance` and `external service`. A nightly backup takes `data`
 and `background automation`. Do not pick the closest single subject: the one
 dropped takes its evidence with it.
 
-On a project with issues, those are labels on the issue, and the issue is written
-to the shape in `.agents/skills/start/references/pieces.md`. On a project with
-no issues, they go in the row's `Subjects` column, separated by commas. Refresh
-the printout afterwards, so the person's list matches what was just agreed.
+Those are labels on the issue, and the issue is written to the shape in
+`.agents/skills/start/references/pieces.md`. Refresh the printout afterwards, so
+the person's list matches what was just agreed.
 
 A later session reads the stored subjects rather than reclassifying the piece
 from scratch.
 
 ## Step 4: Route
 
-Route to one of: `/fix`; section-builder directly; clarify; a decision
-prototype; a source check; update the masterplan then build; rerun the fit
+Route to one of: `/fix`; a ready piece; clarify; a decision
+prototype; a source check; update the masterplan first; rerun the fit
 check; prepare an expert brief; give the risk notice at the professional-led
 boundary. Say the route and the reason in one line.
 
-Piece-sized and clear (one sitting, a done line you could write now) goes
-straight to section-builder. Too vague to size runs clarify first. Bigger
+Piece-sized and clear (one sitting, a done line you could write now) becomes a
+ready piece. Too vague to size runs clarify first. Bigger
 than a piece gets written into the masterplan and cut into pieces on the
-plan, order confirmed with the user before building.
+plan, order confirmed with the user.
 
-Where the request is a piece and the route is a question rather than building,
-put the route on the issue: `needs-clarification` for clarify,
+Where the request is a piece and the route is a question rather than a ready
+piece, put the route on the issue: `needs-clarification` for clarify,
 `needs-prototype` for a decision prototype, `needs-research` for a source check.
-Take the label off once the question is answered. Without this the reason a
+Take the label off and mark it `ready` once the question is answered. Without this the reason a
 piece is waiting lives only in the session that found it, and the next person to
 open the list sees a piece that has simply stopped.
 

@@ -6,11 +6,11 @@
 #
 # Single source of truth: .agents/skills/<name>/SKILL.md
 # Generated (thin) adapters, all pointing back at canonical:
-#   .claude/commands/<name>.md       the seven commands as Claude Code slash commands
+#   .claude/commands/<name>.md       the eight commands as Claude Code slash commands
 #   .claude/skills/<discipline>/      the four disciplines as auto-triggering skills
 #   .claude/skills/humanizer/         the callable maintainer writing skill
-#   .cursor/commands/<name>.md        the seven commands as Cursor slash commands
-#   .gemini/commands/<name>.toml      the seven commands as Gemini CLI slash commands
+#   .cursor/commands/<name>.md        the eight commands as Cursor slash commands
+#   .gemini/commands/<name>.toml      the eight commands as Gemini CLI slash commands
 #
 # Codex, Cursor, and Gemini discover the canonical .agents/skills/ tree
 # directly. Claude Code needs its project skill under .claude/skills/.
@@ -201,8 +201,8 @@ generate_all() {
     fi
   done
 
-  if [ "$commands" -ne 7 ] || [ "$disciplines" -ne 4 ] || [ "$maintainer_skills" -gt 1 ]; then
-    echo "error: expected 7 commands, 4 disciplines, and no more than 1 maintainer skill; found $commands, $disciplines, and $maintainer_skills" >&2
+  if [ "$commands" -ne 8 ] || [ "$disciplines" -ne 4 ] || [ "$maintainer_skills" -gt 1 ]; then
+    echo "error: expected 8 commands, 4 disciplines, and no more than 1 maintainer skill; found $commands, $disciplines, and $maintainer_skills" >&2
     exit 1
   fi
 

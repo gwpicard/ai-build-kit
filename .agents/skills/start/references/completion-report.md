@@ -25,6 +25,19 @@ Include only the subsections that apply to this project; skip the rest
 rather than leaving a placeholder line unfilled. The checkpoint reference
 belongs at the very end, for troubleshooting only.
 
+Include the "Seeing your progress" subsection, which offers the progress board.
+If the person takes up the offer, follow
+`.agents/skills/start/references/board-view.md` for the steps.
+
+End with a clean cut, not an offer to build. Say plainly that setup is done and
+the work is saved, name the first ready piece and a rough, honest time, and say
+the empty project is expected rather than broken. Point at `/implement` to build
+the first piece and `/plan` to shape more, ideally in a fresh session so the
+founding conversation does not carry into the build. Do not offer to build the
+first piece in this session; founding a project and building it are separate,
+deliberate steps. On an adopted project that is not empty, drop the "this is
+normal" line and name the first outstanding piece instead.
+
 ```md
 # Your [project name] is ready to build
 
@@ -49,9 +62,22 @@ Private preview address: `[address]`
 
 This address works only on this computer while the preview is running.
 
+## Seeing your progress
+
+You can view your build steps as a board on GitHub, one card each, in two
+columns: still to do, and done. It updates itself as steps are finished. Say
+the word and I will walk you through setting it up.
+
 ## What to do next
 
-Type `/build` to begin the first feature.
+Setup is done and your work is saved. Your project is empty right now, which is
+how it should look at this point, not a sign anything went wrong. The plan holds
+[number] small build steps, and the first is [first step name], about
+[rough time].
+
+Push your changes, then start a fresh chat and type `/implement` to build the
+first piece, or `/plan` to shape more first. `/what-now` tells you where things
+stand any time.
 
 Checkpoint reference: `[short reference]`
 ```

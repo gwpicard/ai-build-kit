@@ -13,8 +13,9 @@ explained.
 ## 0. Check the report
 
 Read masterplan.md, build-path section first. If the behaviour being asked
-for was never promised there, say so kindly and hand the request to build's
-route; a new wish treated as a repair ends up in the wrong procedure. Nobody
+for was never promised there, say so kindly and hand the request to `/plan`,
+which shapes new work; a new wish treated as a repair ends up in the wrong
+procedure. Nobody
 can misfile work by picking the wrong command; catching that is this step's
 whole job.
 

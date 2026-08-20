@@ -1,6 +1,6 @@
 ---
 name: section-builder
-description: Build one piece from the plan to a confirmed, saved change. Used by build for every piece and by fix once the cause is known. Refuses to start on top of uncommitted work. One piece per pass, always.
+description: Build one piece from the plan to a confirmed, saved change. Used by implement for every piece and by fix once the cause is known. Refuses to start on top of uncommitted work. One piece per pass, always.
 user-invocable: false
 ---
 
@@ -33,22 +33,22 @@ Pull-request and flagged routes work on a short-lived branch. The
 checkpoint route may use the current branch once its state is confirmed
 clean.
 
-A route the project cannot perform does not stop the work. Where the pull-request
-route is the right one and there is no way to open a pull request, because the
-GitHub command line tool is missing or nobody is signed in, build the piece and
-save it on its own branch. Note the step that did not happen in one plain line
-where the piece lives, the way you would note any other fact.
+A route the project cannot perform right now does not stop the work. Where the
+pull-request route is the right one and GitHub cannot be reached, so there is no
+way to open a pull request, build the piece and save it on its own branch. Note
+the step that did not happen in one plain line where the piece lives, the way you
+would note any other fact.
 
-That line is a note, not a warning. A step the project has no way to perform is
-missing, not dangerous, so it earns no risk notice, no acceptance, and no
-recorded exception. Treating it as a hazard tells the person their working
-project is broken, which is both untrue and the fastest way to make them
-distrust the record they are relying on. Offer the sign-in once and get on with
-the piece.
+That line is a note, not a warning. A step that cannot be performed because a
+service is temporarily unreachable is missing, not dangerous, so it earns no risk
+notice, no acceptance, and no recorded exception. Treating it as a hazard tells
+the person their working project is broken, which is both untrue and the fastest
+way to make them distrust the record they are relying on. Open the pull request
+once GitHub is reachable again.
 
-Where the piece is an issue, label it `building` and assign it to whoever is
-building it before changing anything. That is what stops two people starting the
-same piece, and it costs one call.
+Label the piece `building` and assign it to whoever is building it before
+changing anything. That is what stops two people starting the same piece, and it
+costs one call.
 
 ## 2. Agree the visible result
 
@@ -61,7 +61,7 @@ piece does not need the ceremony repeated.
 
 Pick the smallest evidence that would actually be credible. Use every subject
 the piece stores as an input to that choice and to the save route, from its
-labels on an issue or its `Subjects` column on a plan; do not silently downgrade
+labels; do not silently downgrade
 any of them. A piece carrying two subjects needs what both demand, and its save
 route is the stricter of the two.
 
@@ -140,8 +140,7 @@ then:
 
 - attach or generate the expert brief;
 - record the exact condition that must be met;
-- label the piece `blocked`, or set its plan status to `blocked` on a project
-  with no issues;
+- label the piece `blocked`;
 - name what unblocked work may still continue;
 - state plainly that the flagged capability is not ready or live, with no
   softer wording that could be read otherwise.
@@ -156,10 +155,9 @@ Normal completion updates: the piece, a changelog line, the masterplan when the
 present behaviour changed, and AGENTS.md only when a durable operating
 convention changed. A correctly completed build does not need /sync afterward.
 
-Where the piece is an issue, the merged pull request closes it, so there is no
-status to set by hand. Remove the `building` label, and refresh the printout
-with `.agents/tools/plan-refresh.sh` so the person's list matches what just
-happened. On a project with no issues, set the row's status in plan.md instead.
+The merged pull request closes the issue, so there is no status to set by hand.
+Remove the `building` label, and refresh the printout with
+`.agents/tools/plan-refresh.sh` so the person's list matches what just happened.
 
 Write the changelog line from the piece's own `So that` and `Done when`, in
 plain language, dated. Not from its title, and not from the pull request. A

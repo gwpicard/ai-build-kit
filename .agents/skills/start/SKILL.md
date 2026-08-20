@@ -1,6 +1,6 @@
 ---
 name: start
-description: Begin a new project, or resume a beginning that was interrupted. Use when the user types /start or asks to start, plan, or set up a new tool. Runs once per project; if the founding documents already exist and are complete, say so and point at /build. Do not use for new features on an existing project (that is build) or for repairs (that is fix). Type this command when you want it; it never starts on its own.
+description: Begin a new project, or resume a beginning that was interrupted. Use when the user types /start or asks to start or set up a new tool. Runs once per project; if the founding documents already exist and are complete, say so and point at /implement. Do not use for new features on an existing project (that is plan) or for repairs (that is fix). Type this command when you want it; it never starts on its own.
 disable-model-invocation: true
 ---
 
@@ -28,7 +28,10 @@ Do not narrate commands, search queries, package or version selection, retries,
 waiting, terminal output, or internal technical reasoning. Record technical
 choices in AGENTS.md. Name a tool or service in the conversation only when the
 person must choose it, pay for it, create or own its account, grant it access,
-or understand a limit that affects the product.
+or understand a limit that affects the product. When you name one, say what it
+is in one plain sentence at the same moment, so the person can decide without
+already knowing the word. One sentence about this tool and why it is here, not a
+lesson in the general idea behind it.
 
 A harness may show its own command or status text. Do not repeat that text or
 translate each line as it appears. If the harness requires an update during a
@@ -59,7 +62,7 @@ than one coding agent. Never leave both active.
 
 Read the repository's current state before doing anything else. Check whether
 masterplan.md and CHANGELOG.md already exist, whether the project's pieces
-exist as issues or as plan.md, and whether any of them look complete or
+exist as issues, and whether any of them look complete or
 half-written. Check for unfinished setup: a placeholder still in
 `.github/workflows/checks.yml`, an uncommitted change, an open question left
 in the changelog. Say plainly where the process is resuming from. Never
@@ -73,8 +76,8 @@ working version, check that it opens, and save a checkpoint. Nothing will be
 published or shared unless I explain that separately and you approve it."
 When step 3 finds an existing project to adopt, replace "turn your idea into
 a small plan" with something about understanding what already exists before
-anything changes. Say nothing about GitHub, a remote, or shared setup here;
-whether either is needed is decided later, at the point it is needed. Skip
+anything changes. Say nothing about GitHub or shared setup here; it is
+set up later, at the step that creates the pieces, not now. Skip
 repeating this when a resumed session already covered it in step 0.
 
 ## 2. Capability check
@@ -181,14 +184,19 @@ can do or see when the piece is complete, its evidence, and its genuine
 dependencies. Do not split one user capability into separate "database", "API",
 and "UI" pieces.
 
-Where the capability check found that the pieces can be kept as issues, which
-needs a GitHub repository and the GitHub command line tool signed in, each piece
-becomes an issue, written to the shape in references/pieces.md. Do this without narrating it: create the
+Each piece becomes an issue, written to the shape in references/pieces.md. This
+needs a GitHub repository and the GitHub command line tool signed in; where that
+is not yet in place, guide the person through it now, following
+references/manual-setup.md, because the pieces live as issues and there is no
+file-based substitute. A private repository keeps issues just as well as a
+public one, so a project that wants to stay private still uses one. Do this without narrating it: create the
 label set, delete the labels GitHub made by itself, copy
 templates/foundation/piece-issue.yml to `.github/ISSUE_TEMPLATE/piece.yml`, open
-one issue per piece, and link the ones that genuinely block each other using
-GitHub's blocked-by relationship. Then run `.agents/tools/plan-refresh.sh` once,
-so the person has their list before they need it.
+one issue per piece, label each shaped piece `ready` (or the matching `needs-`
+label where it still holds an open question for `/plan` to settle), and link the
+ones that genuinely block each other using GitHub's blocked-by relationship.
+Then run `.agents/tools/plan-refresh.sh` once, so the person has their list
+before they need it.
 
 The labels GitHub creates on a new repository are `bug`, `documentation`,
 `duplicate`, `enhancement`, `good first issue`, `help wanted`, `invalid`,
@@ -205,18 +213,11 @@ under the ordinary rule.
 An idea that did not make the cut becomes a closed issue labelled `parked`, with
 the reason in the body.
 
-Otherwise create plan.md from templates/plan.md instead and put the parked ideas
-in its own section. Say plainly that the pieces live in a file for now, and that
-they move to the project's issues if it ever gets a home. Do not press for a
-GitHub account to make that happen sooner.
-
-Two kinds of project land here. Explore privately has no repository. A project
-that has one but was founded without the GitHub command line tool signed in also
-keeps `plan.md`, because there was no way to make the issues; the capability
-check calls that a working fallback and it holds until the person changes it.
-Record which kind this is in the capability profile, because from here on every
-command that reads the pieces asks that profile rather than looking for a remote.
-This step never finishes with a project that has neither issues nor `plan.md`.
+Where the person cannot complete the GitHub setup in this session, save the
+masterplan and everything else, and say plainly that the pieces cannot be
+created until the GitHub command line tool is signed in. Name that as the one
+remaining step. Do not invent a file in its place; the pieces live as issues,
+and this step is only finished once they exist.
 
 ## 11. Stand the project up
 
@@ -299,7 +300,9 @@ and report the result in its shape.
 ## Done when
 
 The build path is recorded, the records exist (masterplan.md, CHANGELOG.md, and
-the pieces as issues or as plan.md), AGENTS.md contains the capability profile
+the pieces as issues), AGENTS.md contains the capability profile
 and project commands, the masterplan passed the available review, the plan is
-made of visible pieces, one check passes, and the user has received the
-plain-language completion report ending in the next command, /build.
+made of visible pieces each labelled `ready` or with its open question, one
+check passes, and the user has received the plain-language completion report,
+which ends on a clean cut naming `/implement` and `/plan` rather than an offer
+to build in this session.

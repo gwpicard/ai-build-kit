@@ -1,6 +1,6 @@
 ---
 name: second-opinion
-description: Review work using the best independent method available to the current harness and build path. Used on a drafted masterplan during start, on the diff of any change the build path or the change's consequence flags for review during build, and on the whole build during ship when the current build path calls for a launch review. Report first, in plain behavioural language, sorted into worth-stopping-for and worth-knowing; change nothing without approval.
+description: Review work using the best independent method available to the current harness and build path. Used on a drafted masterplan during start, on the diff of any change the build path or the change's consequence flags for review during a build, and on the whole build during ship when the current build path calls for a launch review. Report first, in plain behavioural language, sorted into worth-stopping-for and worth-knowing; change nothing without approval.
 user-invocable: false
 ---
 

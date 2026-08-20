@@ -40,14 +40,14 @@ eligibility rule.
 When a piece fails: retry within the piece, up to three attempts, the same
 number fix uses. After the third, park it, mark it `blocked` with one line on
 what kept failing, and move to the next piece; never let one piece consume the
-run. Route the parked piece further when the failure
-points somewhere specific: a missing decision goes to clarify, a missing
-external fact goes to the source check, and a shape the team could not
-safely own goes to a build-path reassessment rather than a fourth attempt.
+run. Route the parked piece further when the failure points somewhere specific:
+send it back to `/plan`, which settles a missing decision, chases a missing
+external fact, or reassesses a shape the team could not safely own, rather than
+a fourth attempt.
 
-Stop the whole run at anything change-triage would escalate, at any touch of
-a flagged area or expert scope, and at anything ambiguous; never guess to
-keep a run going.
+Stop the whole run at anything that needs planning or would change the build
+path, at any touch of a flagged area or expert scope, and at anything
+ambiguous; never guess to keep a run going.
 
 The whole run happens on one branch and ends as one pull request, where the
 build path requires a pull request at all; a run confined to the checkpoint

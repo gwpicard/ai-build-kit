@@ -14,14 +14,9 @@ masterplan.md (build-path section first), the project's pieces, the recent
 changelog, the capability profile in AGENTS.md, git status, and any open pull
 requests.
 
-Where the pieces are issues, refresh the printout with
-`.agents/tools/plan-refresh.sh` and read `plan.local.md`. Where the project keeps
-`plan.md`, read that instead; the capability profile in AGENTS.md says which
-applies. A repository on its own does not settle it, so where a refresh returns
-no issues at all and `plan.md` is on disk, that file is the record: read it and
-say so rather than reporting that there is nothing left. If GitHub cannot be
-reached, work from the printout and say when it was written, because an old list
-a person can see beats no list at all. Note
+Refresh the printout with `.agents/tools/plan-refresh.sh` and read
+`plan.local.md`. If GitHub cannot be reached, work from the printout and say when
+it was written, because an old list a person can see beats no list at all. Note
 whether the project has launched (the changelog says), whether work sits
 half-done (git status says), whether a finished piece is waiting for its
 merge click (an open pull request says), whether any check is failing,
@@ -62,7 +57,11 @@ of the three it is can often supply the answer on the spot.
 Say piece names, never issue numbers. Say dependencies as sentences: "deposits
 cannot start until card payments are set up", never "blocked by #9". Name at
 most three things; if more apply, say how many and name the nearest. More than
-three stops being orientation and becomes a report. Match where the project is in its life. Still building toward the first launch: the answer is usually /build, or /ship when the plan has run dry. Live and running: the answer is usually "say what you want to /build", /fix for the thing that broke, or the /maintain that the recorded check-up dates show is overdue.
+three stops being orientation and becomes a report. Match where the project is in its life. Still building toward the first launch: the answer is usually /implement for the next ready piece, /plan to shape a new one, or /ship when the plan has run dry. Live and running: the answer is usually "say what you want to /plan", /fix for the thing that broke, or the /maintain that the recorded check-up dates show is overdue.
+
+You can also mention once, briefly, that the person can see their build steps as
+a board on GitHub, and offer the steps in
+`.agents/skills/start/references/board-view.md` if they want it.
 
 ## Recovery routes
 

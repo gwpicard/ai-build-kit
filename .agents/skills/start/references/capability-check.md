@@ -24,15 +24,17 @@ Check:
     opens. When it does not, the check-up reminder reaches the person through
     `/what-now` instead.
 
-14. The pieces can be kept as issues: the GitHub command line tool is installed
-    and signed in, and issues are switched on for the repository.
+14. The pieces are kept as issues, which the kit requires: the GitHub command
+    line tool is installed and signed in, and issues are switched on for the
+    repository.
 15. The label set can be put in order: the signed-in account can create and
     delete labels on the repository.
 
-Where that tool is missing or nobody is signed in, the project keeps its pieces
-in `plan.md` and the kit says why. That is a working fallback rather than a
-failure, and it is not a reason to push somebody towards an account they did
-not want. Where the repository has issues switched off, say what you found and
+Where that tool is missing or nobody is signed in, the pieces cannot be kept as
+issues yet, and the kit keeps them there. This is a required setup step rather
+than an optional one: guide the person through installing and signing in to the
+GitHub command line tool, following `manual-setup.md`, before the pieces are
+founded. Where the repository has issues switched off, say what you found and
 offer to switch them on. Do not switch them on yourself, because it changes a
 setting on something the person owns.
 

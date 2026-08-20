@@ -1,7 +1,7 @@
 # AI Build Kit
 
 An installable workflow that helps non-developers build reliable software with an
-AI coding agent. Seven commands cover the project's life. Four more skills
+AI coding agent. Eight commands cover the project's life. Four more skills
 run in the background, handling the interview, routing, building and review.
 
 You do not need to read code. You do need to explain what should happen, try
@@ -37,7 +37,7 @@ more than one agent, run this from the project folder:
 npx skills add gwpicard/ai-build-kit
 ```
 
-Choose the agents you use and install all eleven AI Build Kit skills. Then ask
+Choose the agents you use and install all twelve AI Build Kit skills. Then ask
 the agent: "Run the start skill."
 
 Whichever route you choose, answer one question at a time. The agent prepares
@@ -55,7 +55,7 @@ copy its `.agents/skills` folder into the project, and ask the agent: "Open
 `.agents/skills/start/SKILL.md` and run the start skill." This manual route
 keeps the same workflow, but later updates also need to be copied manually.
 
-The seven commands are the interface. Some coding agents also list the four
+The eight commands are the interface. Some coding agents also list the four
 background skills in a skill picker, but you never need to pick one.
 [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md) explains the installation paths
 and fallback.
@@ -67,25 +67,26 @@ Command names say when to use them.
 | When | Type | What it does |
 |---|---|---|
 | I'm starting something | `/start` | Interview, fit check, founding documents. |
-| Keep going, or: I want it to... | `/build` | The next piece, or anything new you ask for. |
+| I want it to... (a new idea) | `/plan` | Shapes your idea into a ready piece. |
+| Build the next ready piece | `/implement` | Builds a ready piece to confirmed and saved. |
 | It's broken | `/fix` | Cause before code, and evidence that keeps it fixed. |
 | I think it's ready | `/ship` | Checks everything, then takes it live, one path at a time. |
 | I'm done for today | `/sync` | Documents caught up with reality. |
 | It's been a while | `/maintain` | The service visit. |
 | I'm lost | `/what-now` | Where the project stands and what to do next. |
 
-You never choose the method, and you never sort your own request. Both `/build` and `/fix` check what you typed against the masterplan and send it down the right route, so picking the wrong one costs you nothing. [WORKFLOW.md](WORKFLOW.md) is the day-to-day manual for all seven.
+You never choose the method, and you never sort your own request. `/plan` and `/fix` check what you typed against the masterplan and send it down the right route, so picking the wrong one costs you nothing. [WORKFLOW.md](WORKFLOW.md) is the day-to-day manual for all eight.
 
 ## How a project flows
 
 ```mermaid
 flowchart LR
-  S["/start<br/>once"] --> L["/build · /fix · /sync<br/>day to day"]
+  S["/start<br/>once"] --> L["/plan · /implement · /fix<br/>day to day"]
   L --> P["/ship<br/>whenever a batch is ready"]
   P --> L
 ```
 
-You run `/start` once. After that you go in wherever you actually are: `/build` when you want something new or the next piece, `/fix` when something that worked has stopped working, `/what-now` when you have lost the thread. None of them needs another to have run first.
+You run `/start` once. After that you go in wherever you actually are: `/plan` when you want something new, `/implement` for the next ready piece, `/fix` when something that worked has stopped working, `/what-now` when you have lost the thread. None of them needs another to have run first.
 
 The first `/ship` is the heaviest, because it takes the tool live. Later ones only re-check what changed since the last one.
 
@@ -95,7 +96,7 @@ Every piece runs the same cycle: agree the behaviour in one plain sentence, choo
 
 ## The three records
 
-Three project records hold the product's memory: `masterplan.md` is the present, your project's issues are what's left, `CHANGELOG.md` is the past. Some projects keep a simple `plan.md` file instead of the issues: one you are only trying out, with no GitHub repository, and one set up on a computer not signed in to GitHub's command line tool. The kit says which yours is when it founds the project. `AGENTS.md` sits alongside them as the standing instruction file the agent reads to know how this repository works. The agent reads all of them so you don't have to; [WORKFLOW.md](WORKFLOW.md) explains what goes where.
+Three project records hold the product's memory: `masterplan.md` is the present, your project's issues are what's left, `CHANGELOG.md` is the past. `AGENTS.md` sits alongside them as the standing instruction file the agent reads to know how this repository works. The agent reads all of them so you don't have to; [WORKFLOW.md](WORKFLOW.md) explains what goes where.
 
 ## Which path will I be on?
 
@@ -161,7 +162,7 @@ marketplace, and an Agent Plugins folder at `agent-plugin`. Each folder under
 `.agents/skills/` contains one skill and all of the references, templates, or
 scripts it needs, and every installation route carries the same skills. The
 shared installer records the source in `skills-lock.json`. The Claude plugin
-keeps its copy in Claude's plugin cache, where the seven commands use the
+keeps its copy in Claude's plugin cache, where the eight commands use the
 `ai-build-kit:` prefix and the four background skills stay out of the menu until
 a command needs them.
 

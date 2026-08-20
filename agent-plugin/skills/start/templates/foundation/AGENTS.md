@@ -19,7 +19,7 @@ subagent, browser, or remote service the current harness does not have.
 
 ## The workflow
 
-Work runs through the seven commands installed as AI Build Kit skills. The user
+Work runs through the eight commands installed as AI Build Kit skills. The user
 describes intent in plain language; change-triage chooses the route.
 
 Every promised behaviour needs evidence. Use an automated check for stable
@@ -28,15 +28,21 @@ judge them reliably. Use a guided manual check for visual or exploratory work.
 Use a source check when a decision depends on an external fact. Use a rehearsal
 for backup, restore, migration, rollback, or other operational claims.
 
+When a written instruction and an automatic check disagree about the same
+thing, trust the check. It tests the real work, and an instruction can fall out
+of date. Follow the check, and say plainly that the two disagree rather than
+following the stale instruction in silence.
+
 Build one agreed, visible slice at a time. Do not add behaviour the slice did
 not ask for. Do not widen a fix into a tidy-up.
 
 ## The skills, and how they are invoked
 
-The work lives in eleven installed skills. Seven are commands you type. Four run
+The work lives in twelve installed skills. Eight are commands you type. Four run
 in the background when a command needs them.
 
-- Commands: `start`, `build`, `fix`, `ship`, `sync`, `maintain`, `what-now`.
+- Commands: `start`, `plan`, `implement`, `fix`, `ship`, `sync`, `maintain`,
+  `what-now`.
 - Background skills: `clarify`, `change-triage`, `section-builder`,
   `second-opinion`.
 
@@ -63,11 +69,6 @@ change-triage and read by later sessions.
 `.agents/tools/plan-refresh.sh`. It is never a source. Nothing reads it back and
 nobody edits it to change work: a change goes to the issue, and the printout is
 made again.
-
-(A project that keeps its pieces in `plan.md` has that file as its record, and
-none of the above applies to it. The capability profile below says which kind
-this project is. A repository does not settle it, so an empty issue list on a
-project with `plan.md` on disk never means the work has run out.)
 
 When one document says another will do a job, write that job into the other
 document too. The masterplan describes the present only, and its build-path

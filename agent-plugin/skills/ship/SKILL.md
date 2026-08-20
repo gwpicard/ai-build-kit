@@ -90,7 +90,7 @@ Check that the handover package contains:
 
 - the current masterplan;
 - what is left to build: the open issues, with `plan.local.md` printed fresh as
-  the readable copy, or `plan.md` on a project that keeps its pieces there;
+  the readable copy;
 - acceptance criteria;
 - any decision prototypes;
 - evidence gathered so far;

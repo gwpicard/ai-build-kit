@@ -7,13 +7,13 @@ shell commands, and use Git. Native skill pickers, slash commands, hooks,
 subagents, and command deny lists can improve the experience, but the workflow
 does not depend on them.
 
-The eleven skills use the open Agent Skills folder format. Each skill keeps its
+The twelve skills use the open Agent Skills folder format. Each skill keeps its
 own instructions and supporting files together. A command that needs a
 background skill loads it by name.
 
 ## Choose one installation route
 
-Every route installs the same eleven AI Build Kit skills. Seven are commands
+Every route installs the same twelve AI Build Kit skills. Eight are commands
 you type: `start`, `build`, `fix`, `ship`, `sync`, `maintain`, and `what-now`.
 Four run in the background when a command needs them: `clarify`,
 `change-triage`, `section-builder`, and `second-opinion`. The routes differ in
@@ -28,7 +28,7 @@ claude plugin install ai-build-kit@ai-build-kit --scope local
 ```
 
 The plugin uses local project scope, so it does not replace the project's
-shared Claude settings. It exposes the seven commands and the four
+shared Claude settings. It exposes the eight commands and the four
 background skills. The commands use the `ai-build-kit:` prefix, so start with
 `/ai-build-kit:start`.
 
@@ -50,7 +50,7 @@ A coding agent that installs plugins in the open
 [Agent Plugins](https://agent-plugins.org) format can use the `agent-plugin`
 folder of the public repository. Point that agent's own plugin installer at
 the folder. It holds a `plugin.json` manifest and a `skills` folder with the
-same eleven skills, each carrying its own supporting files. This is the newest
+same twelve skills, each carrying its own supporting files. This is the newest
 route, and a client may skip a skill it judges non-standard, so prefer the
 shared installer when the project has a choice.
 
@@ -79,16 +79,16 @@ If the marketplace cannot be reached, the installed version remains enabled.
 `maintain` reports that no update happened and tries again later.
 
 The shared installer records project skill sources in `skills-lock.json`. Its
-approved update is limited to the eleven AI Build Kit skill names:
+approved update is limited to the twelve AI Build Kit skill names:
 
 ```bash
-npx skills update start build fix ship sync maintain what-now clarify change-triage section-builder second-opinion -p
+npx skills update start plan implement fix ship sync maintain what-now clarify change-triage section-builder second-opinion -p
 ```
 
 The `-p` flag limits the update to this project.
 
 That command replaces the installed skill files outright. Anyone who has edited
-one of the eleven skills in their own project loses that edit, without being
+one of the twelve skills in their own project loses that edit, without being
 asked and without being told. This is why `maintain` looks for local edits
 before it updates anything, and why a project rule belongs in `AGENTS.md`, which
 no route ever touches.
@@ -115,7 +115,7 @@ paths are:
 | Harness | Project skill location | Standing instructions |
 |---|---|---|
 | Claude Code, shared installer | `.claude/skills/` | `CLAUDE.md` points to `AGENTS.md` |
-| Claude Code, plugin | Claude's plugin cache | the seven commands use the `ai-build-kit:` prefix; the four background skills stay out of the menu |
+| Claude Code, plugin | Claude's plugin cache | the eight commands use the `ai-build-kit:` prefix; the four background skills stay out of the menu |
 | Codex | `.agents/skills/` | reads `AGENTS.md` |
 | Cursor | `.agents/skills/` | reads `AGENTS.md` |
 | Gemini CLI | `.agents/skills/` | `GEMINI.md` points to `AGENTS.md` |
@@ -132,7 +132,7 @@ follow it.
 
 ## Who may start a command
 
-You type the seven commands yourself. Four more skills run in the background
+You type the eight commands yourself. Four more skills run in the background
 when a command needs them, and you never call those directly. The kit tells your
 coding agent not to start a command on its own. Not every tool enforces that, so
 if one offers to run a command you did not ask for, say no.
@@ -145,7 +145,7 @@ Then ask the agent:
 
 > Open `.agents/skills/start/SKILL.md` and run the start skill.
 
-A later manual update replaces only the eleven AI Build Kit skill folders,
+A later manual update replaces only the twelve AI Build Kit skill folders,
 after a clean checkpoint and explicit approval.
 
 ## Optional harness features

@@ -1,6 +1,6 @@
 ---
 name: clarify
-description: Interview the team before work is specified, one question at a time, each with a best guess attached. Used by start for the founding interview and by build when a request is too vague to size. Do not use for small clear changes or for repairs, and never write code during it.
+description: Interview the team before work is specified, one question at a time, each with a best guess attached. Used by start for the founding interview and by plan when a request is too vague to size. Do not use for small clear changes or for repairs, and never write code during it.
 user-invocable: false
 ---
 <!-- GENERATED from .agents/skills/clarify/. Do not edit here; regenerate with .agents/tools/build-adapters.sh -->

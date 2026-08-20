@@ -4,7 +4,9 @@ Use when a step can only be completed by a human: creating an account,
 provisioning a service, approving access, setting a secret, completing billing,
 or performing an irreversible cutover.
 
-1. Explain why the step is needed in one sentence.
+1. Explain why the step is needed in one sentence, and where the step names a
+   tool or service the person may not know, say what that is in one plain
+   sentence too.
 2. Give one step at a time.
 3. Open or provide the exact page when possible.
 4. State exactly what the person should see.

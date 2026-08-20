@@ -21,7 +21,7 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    AGENTS.md. If such edits exist, explain them and propose moving the durable
    rule there. Wait for approval rather than replacing an edit silently.
 3. Identify how this project receives AI Build Kit. Check whether
-   `skills-lock.json` records the eleven skills from `gwpicard/ai-build-kit`.
+   `skills-lock.json` records the twelve skills from `gwpicard/ai-build-kit`.
    In Claude Code, also use `claude plugin list --json` to check for the enabled
    `ai-build-kit@ai-build-kit` plugin and note its installation scope. Also
    check for an Agent Plugins installation: a `plugin.json` naming
@@ -40,7 +40,7 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
      Release and replace the installed `agent-plugin` folder after the same
      approval and clean checkpoint.
    - For a shared skills installation, run
-     `npx skills update start build fix ship sync maintain what-now clarify change-triage section-builder second-opinion -p`.
+     `npx skills update start plan implement fix ship sync maintain what-now clarify change-triage section-builder second-opinion -p`.
    - When no route is present, this is an older installation. After
      approval, run `npx skills add gwpicard/ai-build-kit` and let the person
      choose the coding agents they use. This registers and refreshes the
@@ -56,9 +56,12 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    `skills/maintain/VERSION`. Run the project's own check and record the kit
    version in the changelog with the saved change. The foundation created by
    start, including AGENTS.md, README.md, project records, environment files,
-   application code, and the project's check, stays project-owned.
+   application code, and the project's check, stays project-owned. When this
+   update is the one that first brings in `/plan` and `/implement`, run the
+   one-time migration in "Migrating a project founded before /plan and
+   /implement" below.
 6. If the normal route is unavailable, use the latest public Release as the
-   fallback source. A shared installation may replace only the eleven AI Build
+   fallback source. A shared installation may replace only the twelve AI Build
    Kit skill folders after the same approval and clean checkpoint. A Claude
    plugin installation keeps its current enabled version when the marketplace
    cannot be reached. Confirm that version with `claude plugin list --json`,
@@ -68,7 +71,7 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    enabled, stop and ask the person to reinstall it after the marketplace is
    reachable.
 7. Update project dependencies and check for known vulnerabilities. Report what changed; apply on approval.
-8. Once live: read the error alerts and the bills. Anything real becomes a piece, for build to take: open an issue in the shape `.agents/skills/start/references/pieces.md` describes, or add a row to `plan.md` on a project that keeps its pieces there rather than as issues. A finding nobody wrote down is a finding nobody acts on.
+8. Once live: read the error alerts and the bills. Anything real becomes a piece, for implement to take: open an issue in the shape `.agents/skills/start/references/pieces.md` describes. A finding nobody wrote down is a finding nobody acts on.
 9. Verify backups still run where the tool has any. Confirm the named operational owner from the masterplan still holds that role, and that no critical service or credential is tied to someone who has left.
 10. Check whether use or reliance has grown enough that the fit check should run again; if it has, run it before anything else this visit.
 11. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
@@ -81,6 +84,40 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
     the next one is due." If the project's Claude settings existed before AI
     Build Kit did, add that the reminder cannot appear by itself there, and that
     `/what-now` reports it when asked.
+
+## Migrating a project founded before /plan and /implement
+
+Run this once, on the visit whose update first replaces `/build` with `/plan`
+and `/implement`. It brings an existing project's records up to the new model.
+It changes labels and, with approval, moves records, so do it only after the
+clean checkpoint from step 2. Every part is idempotent: a later visit that finds
+the project already migrated does nothing here.
+
+1. Backfill the `ready` label. `/implement` builds only pieces labelled `ready`,
+   and a project founded earlier has none, so without this its whole backlog
+   goes unbuilt. For every open issue that is already shaped, a `## Done when`
+   present and no `needs-clarification`, `needs-prototype`, or `needs-research`
+   label, add the `ready` label. Leave anything still carrying a `needs-` label
+   alone; that one is `/plan`'s to shape. Say how many pieces were marked ready,
+   so the person can see their backlog is still there.
+
+2. Move a `plan.md` into issues. A project founded without the GitHub tool
+   signed in kept its pieces in `plan.md`, which nothing reads any more. Where
+   that file is on disk, say so plainly and offer to move its rows into issues:
+   guide the GitHub setup first if it is not ready
+   (`.agents/skills/start/references/manual-setup.md`), open one issue per row in
+   the shape `.agents/skills/start/references/pieces.md` describes, carry each
+   row's subjects across as labels, label a shaped row `ready`, and label an
+   unshaped one with the question it still waits on. Do this on the clean
+   checkpoint, name what moved, and only then remove `plan.md`. Where the person
+   declines, leave `plan.md` untouched and say its pieces are not picked up until
+   they are moved.
+
+3. Point `/build` forward. Say once that the old `/build` command has become
+   two: `/plan` to shape a new idea into a ready piece, and `/implement` to build
+   one. Nothing the person saved is lost; only the command names changed.
+
+Record the migration in the changelog as a dated line.
 
 ## Quarterly, or before a handover
 

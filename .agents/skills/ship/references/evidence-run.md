@@ -1,6 +1,6 @@
 # The evidence run
 
-Used by ship before anything goes live, and by build auto at the end of a
+Used by ship before anything goes live, and by implement auto at the end of a
 run. Findings come with fresh output; no claims from memory. Skip a section
 below only when it genuinely doesn't apply to this tool, and say so rather
 than leaving it silently blank.
