@@ -13,7 +13,10 @@ You build one piece, directed by someone who will judge it by behaviour. Follow 
 Read the masterplan's build-path section. Check git status; if uncommitted
 work is lying around, stop and say so: it gets finished or cleared first
 (what-now owns that conversation). Never build on top of half-done work.
-Update from the shared branch when the save route will need it.
+Bring the shared `main` branch up to date and start the piece from it, on every
+save route including the checkpoint route, so no piece begins from a stale copy.
+Where `main` cannot be reached, start from the local copy and note that in one
+plain line.
 
 Choose the save route before changing anything:
 
@@ -29,9 +32,10 @@ Choose the save route before changing anything:
    prepared and correctly recorded as blocked, is one of section-builder's
    two successful outcomes; see step 8.
 
-Pull-request and flagged routes work on a short-lived branch. The
-checkpoint route may use the current branch once its state is confirmed
-clean.
+Pull-request and flagged routes work on a short-lived branch cut from the
+up-to-date `main`. The checkpoint route may commit on the current branch once
+its state is confirmed clean, but it too starts the piece from the up-to-date
+`main` rather than continuing an older branch, so each piece is independent.
 
 A route the project cannot perform right now does not stop the work. Where the
 pull-request route is the right one and GitHub cannot be reached, so there is no
@@ -64,6 +68,11 @@ the piece stores as an input to that choice and to the save route, from its
 labels; do not silently downgrade
 any of them. A piece carrying two subjects needs what both demand, and its save
 route is the stricter of the two.
+
+Where a machine can check the piece, that check is run and must pass before the
+piece is called done. The softer proofs below are for the claims a machine
+cannot judge, not a way around one it could. A screen that looks right is never
+a substitute for a check that was available and skipped.
 
 An automated behaviour test is required for: business rules, calculations,
 permissions, data transformations, integrations, scheduled or background
@@ -135,6 +144,11 @@ remember. Never present it as ready until the check is green; if it goes red,
 say so plainly, pull the failing output yourself, fix through the normal
 steps, and push again.
 
+Once the check is green the piece is ready for review, and the run stops
+there. Do not merge the pull request, and do not delete the branch. A person
+decides whether to merge, always. Report the piece as ready for review, not as
+done, and leave the merge to them.
+
 Flagged route: do the pull-request route for everything up to the condition,
 then:
 
@@ -155,9 +169,10 @@ Normal completion updates: the piece, a changelog line, the masterplan when the
 present behaviour changed, and AGENTS.md only when a durable operating
 convention changed. A correctly completed build does not need /sync afterward.
 
-The merged pull request closes the issue, so there is no status to set by hand.
-Remove the `building` label, and refresh the printout with
-`.agents/tools/plan-refresh.sh` so the person's list matches what just happened.
+Once a person merges the pull request it closes the issue, so there is no
+status to set by hand. After that merge, remove the `building` label and refresh
+the printout with `.agents/tools/plan-refresh.sh` so the person's list matches
+what just happened.
 
 Write the changelog line from the piece's own `So that` and `Done when`, in
 plain language, dated. Not from its title, and not from the pull request. A
@@ -178,9 +193,10 @@ project six months later.
 
 One of two outcomes, both complete passes:
 
-- Complete: the agreed behaviour has credible evidence, the user-facing
-  result is confirmed where needed, required review is satisfied, the
-  records match reality, and the selected save route is complete.
+- Complete: the agreed behaviour has credible evidence, with any available
+  machine check run and green, the user-facing result is confirmed where needed,
+  required review is satisfied, the records match reality, and the selected save
+  route is complete.
 - Safely blocked: the piece stopped at its recorded condition, marked
   `blocked`, with an expert brief carrying that condition, unblocked work
   identified, and no claim that the flagged capability is ready or live.

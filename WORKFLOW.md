@@ -62,9 +62,7 @@ A piece often carries two, because a checkout is finance and an outside service 
 
 Four labels say where a piece stands instead: `building` when somebody is on it, `blocked` when something outside the project holds it up, `parked` on something you decided against, and `broken` for a repair, which sends it to `/fix`.
 
-Three more say it is waiting on a question rather than on a person. `needs-clarification` means talking it through will settle it. `needs-prototype` means somebody has to build a throwaway first to see what it should look like. `needs-research` means somebody has to go and find a fact the project cannot see. Anything you jot down starts at `needs-clarification`. /plan settles that question, a few questions, a quick throwaway, or a lookup, and then marks the piece `ready`. /implement builds only ready pieces, so a piece still waiting on a question goes back to /plan first rather than being built past its open question.
-
-To see where things stand, type `/what-now`. The printed list in `plan.local.md` is there too, though it is only a photocopy of the issues.
+Three more say it is waiting on a question rather than on a person: `needs-clarification` (talking it through settles it), `needs-prototype` (a throwaway is needed first to see what it should look like), and `needs-research` (a fact from outside the project is needed). Anything you jot down starts at `needs-clarification`; `/plan` settles it and marks the piece `ready`, and `/implement` builds only ready pieces.
 
 ## 3. The build path
 
@@ -123,13 +121,13 @@ Every piece saves through one of three routes. The checkpoint route commits, and
 
 Next to the merge button sits that check. It re-runs the project's real commands on a clean machine, so the pull request's claims get verified rather than trusted. Green means the checks that exist really passed, which is a smaller promise than nothing being wrong: it covers the behaviour somebody thought to check and nothing else. Red means don't merge; say it to /fix, and the agent reads what failed itself. You never read the machine's logs, and you never merge over a red check.
 
-A human decides whether to merge, always; after a merge, everyone pulls main. Flagged areas also get the review the build path names before the pull request is offered as ready.
+A human decides whether to merge, always; after a merge, everyone pulls main. Flagged areas also get the review the build path names before the pull request is offered as ready. A direct push to `main` is blocked, so every change reaches it through a pull request, and each piece starts from an up-to-date `main`.
 
 ## 8. Outside help, and the risk notice
 
 When the build path names outside help, it's one of four levels: a short advice conversation to validate a choice, a scoped review of one named area, a supervised change for one risky event, or professional ownership of the build. The build path's section says which level, for what scope, and what the review or the professional must confirm. The kit keeps building unflagged areas while it waits.
 
-Before that work goes ahead, you get a risk notice. It says who is exposed, what happens to them if it goes wrong, what a professional would normally do about it, and that the kit flags what it can recognise and will miss things. It names people rather than saying something is risky, because the person building a tool is the one creating the exposure and the exposure often lands on somebody else.
+Before that work goes ahead, you get a risk notice. It says who is exposed, what happens to them if it goes wrong, what a professional would normally do about it, and that the kit flags what it can recognise and will miss things. It names people rather than saying something is risky, because the exposure a tool creates usually lands on somebody else.
 
 Then it is your call. You can accept the risk and have the thing built, or take it out of scope so the risk goes away. Nothing is refused either way.
 
@@ -165,7 +163,7 @@ Some harnesses provide goal or long-run modes, such as Claude Code's `/goal`: "k
 
 GitHub collaborators identify who has access. Invite someone under the repository's Settings, then Collaborators. They accept the email, open the repo in their own tool, and make their own .env from .env.example.
 
-Nothing else changes when a second person arrives, because the agent already puts your name on a piece before starting it, and that is what stops two people building the same thing. Each of you gets your own printed list, so there is no shared file to clash over. Open pull requests show work in progress, and /what-now identifies conflicts and unfinished work rather than leaving you to read Git state yourself.
+Nothing else changes when a second person arrives: naming a piece before starting it already stops two people building the same thing. Each of you gets your own printed list, so there is no shared file to clash over. Open pull requests show work in progress, and /what-now identifies conflicts and unfinished work rather than leaving you to read Git state yourself.
 
 ## 12. Sync and maintenance
 

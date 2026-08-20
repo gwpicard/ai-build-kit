@@ -65,10 +65,9 @@ a save route, so `section-builder` reads the labels rather than re-deriving them
 Where a piece carries more than one, its evidence is everything those subjects
 demand between them, and its save route is the strictest of the ones present.
 
-Ticking every subject that fits, rather than choosing the closest single one,
-stops the kit dropping a true fact about a piece. A checkout is `finance` and
-`external service`. A nightly backup is `data` and `background automation`.
-Picking one of either pair would quietly lose the evidence the other requires.
+Ticking every subject that fits, rather than the closest single one, stops the
+kit dropping a true fact about a piece: a checkout is `finance` and
+`external service`, and picking one would lose the evidence the other requires.
 
 Four more labels carry state that open and closed cannot:
 
@@ -145,11 +144,8 @@ GitHub can tell which entries are still notes. The label is there for people; th
 agent goes by shape, so an unlabelled note is still a note.
 
 If the interview finds that talking will not settle it, swap the label for the
-one that says why. A question about how something should look or behave takes
-`needs-prototype`, and the throwaway build answers it. A question about a fact
-the project cannot see, such as what an outside service actually does, takes
-`needs-research`. Say which you moved it to and why, because a label change
-nobody explained reads as the agent losing track.
+`needs-` label that says why (see Labels above), and say which you moved it to
+and why, because a label change nobody explained reads as the agent losing track.
 
 Refining one produces the shape above. Keep what the person originally typed
 underneath rather than replacing it, because their words are what a refinement
@@ -191,19 +187,11 @@ the form it expected.
 gitignored, so it is one person's view of a shared record and can never collide
 with anyone else's.
 
-Information flows one way. Issues are the record; the printout is made from
-them and is never a source. Nobody edits it to change work, and nothing reads it
-back. A change to a piece goes to the issue, and the printout is made again. It
-cannot drift out of step with its source, because it is not a source; if it
-looks stale, print it again.
-
-`.agents/tools/plan-refresh.sh` writes it. Run it when reading or changing the
-plan rather than on every session start, so a session that never touches the
-plan stays offline and light.
-
-An edited printout is overwritten at the next refresh, and its first line says
-not to edit it. A missing one is simply printed again. Neither is a problem to
-report, because the printout holds nothing that is not in the issues.
+Information flows one way: issues are the record, and the printout is made from
+them, never read back. A change to a piece goes to the issue, and the printout is
+made again with `.agents/tools/plan-refresh.sh`, so if it looks stale, refresh
+it. Run the refresh when reading or changing the plan rather than on every
+session start, so a session that never touches the plan stays light.
 
 It carries the time it was written, which is what makes it safe when GitHub is
 unreachable. The agent can say "here is your list as of 18:40, and I cannot

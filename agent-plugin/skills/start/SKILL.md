@@ -30,8 +30,7 @@ choices in AGENTS.md. Name a tool or service in the conversation only when the
 person must choose it, pay for it, create or own its account, grant it access,
 or understand a limit that affects the product. When you name one, say what it
 is in one plain sentence at the same moment, so the person can decide without
-already knowing the word. One sentence about this tool and why it is here, not a
-lesson in the general idea behind it.
+already knowing the word.
 
 A harness may show its own command or status text. Do not repeat that text or
 translate each line as it appears. If the harness requires an update during a
@@ -161,10 +160,8 @@ session, or a user-opened clean chat with a prepared instruction. A
 same-session fallback is permitted only for Explore privately, and must be
 labelled plainly as not independent. For build with expert help and
 professional-led paths, the lack of any independent method is itself a setup
-gap; resolve it before flagged work continues. A
-problem found on paper costs a sentence to fix; the same problem found in
-built code costs an evening. Stop here until the review has happened; when
-resuming, look for its note in the changelog.
+gap; resolve it before flagged work continues. Stop here until the review has
+happened; when resuming, look for its note in the changelog.
 
 ## 9. Ownership check
 
@@ -198,12 +195,17 @@ ones that genuinely block each other using GitHub's blocked-by relationship.
 Then run `.agents/tools/plan-refresh.sh` once, so the person has their list
 before they need it.
 
+Set the repository to delete a merged pull request's branch automatically, so
+the branch list does not fill with finished piece branches
+(`gh api -X PATCH repos/OWNER/REPO -F delete_branch_on_merge=true`), and say in
+one line that you did. That is the whole of the pull-request hygiene the kit sets
+up on the repository. A direct push to `main` is blocked by the guard in
+references/blocked-commands.md rather than by a branch protection rule.
+
 The labels GitHub creates on a new repository are `bug`, `documentation`,
 `duplicate`, `enhancement`, `good first issue`, `help wanted`, `invalid`,
-`question` and `wontfix`. Delete every one that is still there. The kit reads
-none of them, and a list of labels that do nothing is the first thing a person
-sees on GitHub. This is safe here and only here, because founding happens before
-any issue exists to be wearing one.
+`question` and `wontfix`. Delete every one that is still there. This is safe here
+and only here, because founding happens before any issue exists to be wearing one.
 
 Say which ones went, in one line, rather than deleting them silently. Where the
 account cannot delete a label, say which stayed and carry on: a leftover label

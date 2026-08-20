@@ -127,7 +127,7 @@ The fit check and its risk notices flag what the kit can recognise. They will mi
 
 The checks verify what somebody thought to check. A green tick beside the merge button means those checks really passed, which is a smaller claim than the software being correct, safe, legal, or fit for what you plan to do with it.
 
-The kit never refuses. Hear the notice, tell it to build the thing anyway, and it builds it, writing down that you accepted with the date and your name. Pressure does not change the notice, because a cost or a deadline does not change who is exposed, and pressure does not stop the work either. Pressing on past a warning is a decision you are making, and the record is there so nobody has to guess later what was decided or by whom.
+The kit never refuses: hear the notice, accept the risk, and it builds the thing, with your acceptance on the record. Pressure changes what you decide, not who is exposed.
 
 You own the product and risk decisions. The kit can tell you a professional would normally review who can see what; it cannot decide for you whether to go ahead, and it does not carry the consequences when you do.
 
@@ -149,7 +149,7 @@ Much of what the kit does was borrowed from people working in the open. [docs/SO
 
 ## When outside help is needed
 
-The kit is specific about what's needed: a short advice conversation, a scoped review of one named area, a supervised change for one risky event, or professional ownership of the whole build. It prepares the brief and keeps the rest of the project moving, wherever that remains safe, while the flagged part waits.
+When a build path names outside help, it names one of four levels and keeps the rest of the project moving while the flagged part waits; [WORKFLOW.md](WORKFLOW.md) says which level, for what.
 
 ## What it costs
 

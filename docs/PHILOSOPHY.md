@@ -206,23 +206,11 @@ Disposable decision prototype, added. It fits under /start or /plan; the user
 tries a rough artifact to settle one question; they never need to understand
 prototype branches or throwaway architecture.
 
-A board view of the pieces, added. GitHub can show a person their own build
-steps as a board, still to do in one column and done in the other. The kit
-offers it once and gives the steps, and never reads it back. It stays a view
-over the issues the kit already owns, so it adds no second place to manage work,
-and it fits under /start and /what-now rather than a command of its own.
-
-Architecture command, rejected. Architecture judgement may guide the agent
-internally, but a new command and vocabulary do not improve the user's
-decision.
-
-Universal pull requests, rejected. Pull requests are required when shared or
-consequential work benefits from the checkpoint, not for every private visual
-experiment.
-
 Universal test-first, rejected. Every promised behaviour needs evidence, but
 the evidence may be an automated test, a manual visual check, a source-backed
-fact, or a rehearsed recovery depending on the claim.
+fact, or a rehearsed recovery depending on the claim. Where a machine can check
+the claim, that check comes first and must pass; the other three are for the
+claims a machine cannot judge, not a way around one it could.
 
 A wiki, rejected. Each file under `docs/` owns one concept and sits beside the
 source it describes. A wiki would carry the record away from the work it must

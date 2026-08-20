@@ -3,7 +3,7 @@
   "name": "ai-build-kit",
   "displayName": "AI Build Kit",
   "description": "A guided workflow for building reliable software with an AI coding agent.",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "author": {
     "name": "Guillaume Picard"
   },

@@ -8,6 +8,8 @@ deny list, mirror these entries there as mechanical enforcement:
 
 - `git reset --hard`
 - `git push --force` and `git push -f`
+- a direct push to `main` (`git push origin main`, `git push -u origin main`,
+  `git push origin HEAD:main`)
 - `git clean -f` and `git clean -fd`
 - `rm -rf`
 
@@ -24,6 +26,8 @@ still apply:
 - never print, commit, or otherwise expose a secret;
 - never disable authentication or access control to make a check pass;
 - never bypass a red project check to ship or merge;
+- never push a change directly to `main`; every change to `main` goes through a
+  pull request, so shared work reaches it by merge rather than by a direct push;
 - never force or automate a merge over a required review;
 - never activate flagged work before its recorded condition is met or the
   person has accepted the risk on the record;

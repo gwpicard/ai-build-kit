@@ -59,10 +59,6 @@ cannot start until card payments are set up", never "blocked by #9". Name at
 most three things; if more apply, say how many and name the nearest. More than
 three stops being orientation and becomes a report. Match where the project is in its life. Still building toward the first launch: the answer is usually /implement for the next ready piece, /plan to shape a new one, or /ship when the plan has run dry. Live and running: the answer is usually "say what you want to /plan", /fix for the thing that broke, or the /maintain that the recorded check-up dates show is overdue.
 
-You can also mention once, briefly, that the person can see their build steps as
-a board on GitHub, and offer the steps in
-`.agents/skills/start/references/board-view.md` if they want it.
-
 ## Recovery routes
 
 ### Uncommitted work

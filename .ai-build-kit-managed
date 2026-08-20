@@ -1,5 +1,5 @@
 # AI Build Kit managed files. Generated during release; do not edit.
-version|v0.6.0
+version|v0.6.1
 source|https://github.com/gwpicard/ai-build-kit/releases
 file|100644|.agents/guard/blocked-commands.md
 file|100755|.agents/hooks/session-end-sync.sh
@@ -27,7 +27,6 @@ file|100644|.agents/skills/start/SKILL.md
 file|100644|.agents/skills/start/agents/openai.yaml
 file|100644|.agents/skills/start/references/adopting.md
 file|100644|.agents/skills/start/references/blocked-commands.md
-file|100644|.agents/skills/start/references/board-view.md
 file|100644|.agents/skills/start/references/capability-check.md
 file|100644|.agents/skills/start/references/completion-report.md
 file|100644|.agents/skills/start/references/fit-check.md

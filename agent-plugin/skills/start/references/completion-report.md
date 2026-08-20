@@ -25,10 +25,6 @@ Include only the subsections that apply to this project; skip the rest
 rather than leaving a placeholder line unfilled. The checkpoint reference
 belongs at the very end, for troubleshooting only.
 
-Include the "Seeing your progress" subsection, which offers the progress board.
-If the person takes up the offer, follow
-`.agents/skills/start/references/board-view.md` for the steps.
-
 End with a clean cut, not an offer to build. Say plainly that setup is done and
 the work is saved, name the first ready piece and a rough, honest time, and say
 the empty project is expected rather than broken. Point at `/implement` to build
@@ -61,12 +57,6 @@ Nothing was uploaded or published.
 Private preview address: `[address]`
 
 This address works only on this computer while the preview is running.
-
-## Seeing your progress
-
-You can view your build steps as a board on GitHub, one card each, in two
-columns: still to do, and done. It updates itself as steps are finished. Say
-the word and I will walk you through setting it up.
 
 ## What to do next
 

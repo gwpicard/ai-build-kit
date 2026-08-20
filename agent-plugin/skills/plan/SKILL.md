@@ -25,7 +25,9 @@ you chose and why, in one line.
 Clear, piece-sized work becomes a ready piece straight away: write it into the
 shape `.agents/skills/start/references/pieces.md` describes, take its subjects
 from change-triage rather than choosing them yourself, and label it `ready`.
-That is a new issue. Then make the build offer below.
+That is a new issue, and it starts unassigned: a person is assigned only when
+`/implement` picks the piece up to build it, never when `/plan` creates it. Then
+make the build offer below.
 
 Where the request is bigger than a piece, it goes into the masterplan first and
 is cut into pieces on the plan, order confirmed with the user. Where it would
