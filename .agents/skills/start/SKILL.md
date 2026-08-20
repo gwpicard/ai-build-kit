@@ -175,11 +175,11 @@ here. Note the result in the changelog.
 
 ## 10. Cut the plan
 
-Pieces sized for one sitting, in the order they unblock each other, each cutting
-vertically through the whole tool so the unknowns surface early: what the user
-can do or see when the piece is complete, its evidence, and its genuine
-dependencies. Do not split one user capability into separate "database", "API",
-and "UI" pieces.
+Pieces sized for one sitting, and small enough for a fresh session to hold
+whole, in the order they unblock each other, each cutting vertically through the
+whole tool so the unknowns surface early: what the user can do or see when the
+piece is complete, its evidence, and its genuine dependencies. Do not split one
+user capability into separate "database", "API", and "UI" pieces.
 
 Each piece becomes an issue, written to the shape in references/pieces.md. This
 needs a GitHub repository and the GitHub command line tool signed in; where that

@@ -71,10 +71,16 @@ prototype; a source check; update the masterplan first; rerun the fit
 check; prepare an expert brief; give the risk notice at the professional-led
 boundary. Say the route and the reason in one line.
 
-Piece-sized and clear (one sitting, a done line you could write now) becomes a
-ready piece. Too vague to size runs clarify first. Bigger
-than a piece gets written into the masterplan and cut into pieces on the
-plan, order confirmed with the user.
+Piece-sized and clear (one sitting, a done line you could write now, small
+enough for a fresh session to hold whole) becomes a ready piece. Too vague to
+size runs clarify first. Bigger than a piece gets written into the masterplan
+and cut into pieces on the plan, order confirmed with the user.
+
+Context is routed by how far it reaches. A decision that affects the whole
+product goes into the masterplan, in plain words. A technical convention that
+affects the whole codebase goes into AGENTS.md's stack section. Anything
+particular to one piece stays on that piece. This keeps the masterplan free of
+implementation terms and keeps each concept in one home.
 
 Where the request is a piece and the route is a question rather than a ready
 piece, put the route on the issue: `needs-clarification` for clarify,

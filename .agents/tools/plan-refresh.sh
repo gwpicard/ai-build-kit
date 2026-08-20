@@ -101,10 +101,20 @@ stamp = subprocess.run(["date", "+%d %b, %H:%M"], capture_output=True,
 def labels(issue):
     return {l["name"] for l in issue.get("labels", [])}
 
+# A piece made of parts. GitHub's sub-issue summary rides along in the list
+# payload, the way the blocked-by summary does, so a parent is known without a
+# second call. total is how many parts; completed is how many have closed.
+def sub_summary(issue):
+    s = issue.get("sub_issues_summary") or {}
+    return s.get("total", 0), s.get("completed", 0)
+
 # An issue with no "## Done when" was typed by hand and has never been sized.
 # Shape decides rather than the label, so one that nobody has labelled yet still
-# shows up here as what it is.
+# shows up here as what it is. A parent carries no Done when of its own, because
+# its parts carry the checkable conditions, so it is never a bare note.
 def still_a_note(issue):
+    if sub_summary(issue)[0] > 0:
+        return False
     return "## Done when" not in (issue.get("body") or "")
 
 # What a piece is waiting on, when it is waiting on a question rather than on a
@@ -123,10 +133,12 @@ def waiting_on(issue):
 
 # A repair goes at the top. Somebody opening this file wants to know what is
 # broken before they read what is next.
-broken, building, blocked, to_build = [], [], [], []
+broken, building, parents, blocked, to_build = [], [], [], [], []
 for issue in sorted(issues, key=lambda i: i["number"]):
     names = labels(issue)
-    if "broken" in names:
+    if sub_summary(issue)[0] > 0:
+        parents.append(issue)
+    elif "broken" in names:
         broken.append(issue)
     elif "building" in names:
         building.append(issue)
@@ -164,6 +176,8 @@ def render(heading, group, note):
 
 render("Broken", broken, lambda i: "(being fixed)" if "building" in labels(i) else "")
 render("Building", building, lambda i: "")
+render("Made of parts", parents,
+       lambda i: "(%d of %d parts done, build the parts)" % (sub_summary(i)[1], sub_summary(i)[0]))
 render("To build", to_build, lambda i: "")
 render("Blocked", blocked,
        lambda i: "(needs %s)" % blockers[i["number"]] if blockers.get(i["number"]) else "(waiting)")

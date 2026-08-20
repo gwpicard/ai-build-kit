@@ -44,7 +44,11 @@ The dividing rule: the masterplan describes the present, the plan holds the futu
 
 You can work with the issues yourself, and nothing you do there will be undone. Open one and write it however you like, in as little as half a sentence. /plan settles what done means with you and marks the piece ready; /implement builds only ready pieces and never guesses past an open question. If a piece is not ready when you reach for /implement, it points you to /plan and takes the next ready piece instead.
 
+A piece is written in two layers. The part you read stays in plain words, and it stays complete about anything that affects your product, so it never looks simpler than the work really is. The build detail the agent needs sits in a collapsed "under the hood" section you never have to open. Anything that affects the whole product is written into the masterplan instead, and anything technical that affects the whole project goes into AGENTS.md, so no fact is copied into two places.
+
 Assign yourself to claim a piece, or let the agent put your name on it when it starts; either way nobody else builds the same thing. Close an issue you have decided against and it stays closed. Labels of your own are left alone, and milestones and boards are ignored entirely, so you can use them however suits you.
+
+A piece too big to build in one go is split into parts. You will see it marked "made of parts" with a count of how many are done. The agent builds the parts one at a time, and the whole piece closes itself when the last part is finished, so there is nothing for you to tick off.
 
 Each piece is labelled with what it is about. The labels are not decoration: they decide how carefully the agent has to prove the work.
 

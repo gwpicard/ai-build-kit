@@ -34,6 +34,11 @@ class the current build path allows. A ready piece is one `/plan` has finished
 shaping: it carries the `ready` label, has a `## Done when` line, and waits on no
 open question. The issue list says which are held up, so this needs no digging.
 
+A piece with open parts is a container, not a slice to build directly. Skip it
+and take one of its parts, the same way you would take any other ready piece; the
+parent closes on its own when its parts all close. The issue list carries the
+sub-issue count, so a parent is known without digging, the way a blocker is.
+
 Before handing an eligible piece to section-builder, confirm it's genuinely
 unblocked, confirm the current build path allows it, and identify its
 evidence and save route from the piece and the build path. Read the piece's
@@ -97,7 +102,9 @@ Auto is not an ordinary peer to normal building; it is earned, not default.
 Before enabling it, require: at least three normal pieces completed cleanly,
 no unresolved review or flagged work waiting, clean Git state, evidence a machine can
 check for every selected piece, no piece still waiting on a question
-(`needs-clarification`, `needs-prototype`, or `needs-research`), nothing needing
+(`needs-clarification`, `needs-prototype`, or `needs-research`), every selected
+piece self-sufficient enough to build without a person present, meaning its
+`Under the hood` notes carry what the build needs, nothing needing
 human judgement in the batch,
 no pending build-path transition, and the user's explicit approval of the
 batch. A project has earned auto mode when its records and checks have

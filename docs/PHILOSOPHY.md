@@ -206,6 +206,19 @@ Disposable decision prototype, added. It fits under /start or /plan; the user
 tries a rough artifact to settle one question; they never need to understand
 prototype branches or throwaway architecture.
 
+A piece written in two layers, added. It fits under /plan and /implement. The
+person sees a plain surface that stays comprehensive about anything affecting the
+product, so a simple read is never a false one; the build detail sits in a
+collapsed "under the hood" section they never have to open. The sentence is "you
+read the plain part; the agent reads the rest". When it goes wrong, the surface
+missed something that changed a product decision, and /plan puts it back on the
+surface. They never need to read the build notes, but nothing that affects their
+product is hidden from them. This answers the question a workshop raised: a ready
+piece must carry enough to build without fresh research, which matters most when
+/implement runs a batch with nobody watching. Context that reaches past one piece
+is not duplicated onto it: a whole-product decision lives in the masterplan, a
+whole-codebase convention in AGENTS.md, so each concept keeps one home.
+
 Universal test-first, rejected. Every promised behaviour needs evidence, but
 the evidence may be an automated test, a manual visual check, a source-backed
 fact, or a rehearsed recovery depending on the claim. Where a machine can check
@@ -216,6 +229,16 @@ A wiki, rejected. Each file under `docs/` owns one concept and sits beside the
 source it describes. A wiki would carry the record away from the work it must
 stay true to, and give one concept two homes. This is today's position rather
 than a permanent ban; a later cycle may revisit it.
+
+Sub-issues for a piece made of parts, added. GitHub already models a
+parent/child relationship, so the kit uses it rather than inventing one. It fits
+under /plan, which splits a piece too big to hold whole, and under /implement,
+which builds the parts and lets the parent close on its own. The person sees a
+piece that is "made of parts", nothing more. The line that keeps it from becoming
+a second way to be blocked is the outcome: a part shares the parent's outcome,
+while a blocked-by piece is a different outcome that must come first. Without that
+line, a piece would have two kinds of not-ready and /implement would not know
+which it was looking at, which is the mistake the #86 investigation warned about.
 
 ## Keeping it honest
 

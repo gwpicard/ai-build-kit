@@ -26,15 +26,21 @@ When one word is carrying two meanings, stop and settle it before going on:
 2. propose plain alternatives;
 3. test the alternatives against a concrete scenario;
 4. settle on one canonical term;
-5. update masterplan.md immediately if the term affects the whole product.
+5. record the settled term where the current work lives, without committing a
+   file or opening a pull request. In a founding session, that is the masterplan
+   being written for the first time. In a planning session, that is the piece
+   being shaped: record the term on it, and note that the masterplan's key terms
+   section still needs the update, so `/implement` writes it when it builds the
+   piece. Planning records and stops; writing to the masterplan is a build.
 
 For example: "You have used 'customer' for both the company paying and the
 person signing in. I suggest 'company' and 'user'. Does that match the real
 workflow?"
 
 Do not create CONTEXT.md, context maps, or architecture decision records to
-carry this. The settled term lives in the masterplan, in plain language,
-where the rest of the product description already lives.
+carry this. The settled term ends up in the masterplan, in plain language, where
+the rest of the product description already lives: written there when founding,
+or when `/implement` next builds the piece that carries it.
 
 ## Pressure-testing a rule
 

@@ -10,7 +10,11 @@ You build one piece, directed by someone who will judge it by behaviour. Follow 
 
 ## 1. Safe start
 
-Read the masterplan's build-path section. Check git status; if uncommitted
+Read the piece in full, including its `Under the hood` notes, the masterplan's
+build-path section, and any whole-product decision in the masterplan or
+whole-codebase convention in AGENTS.md's stack section that the piece points to.
+The under-the-hood notes carry the build context so this does not have to be
+worked out from nothing. Check git status; if uncommitted
 work is lying around, stop and say so: it gets finished or cleared first
 (what-now owns that conversation). Never build on top of half-done work.
 Bring the shared `main` branch up to date and start the piece from it, on every
@@ -105,6 +109,12 @@ Implement only the agreed behaviour, end to end and visible, in the smallest
 reasonable change. Run focused checks as you go. Avoid speculative
 abstraction; prefer managed services and the project's existing conventions.
 Stop and say so if the change is expanding past what was agreed.
+
+Groundwork that makes the change easier is allowed only when it is itself a
+vertical slice, or an expand-then-contract sequence that keeps the checks green
+throughout, and it is ordered ahead as its own piece. It is never a horizontal
+"refactor the data layer first" step, because that is the speculative
+abstraction the paragraph above rules out and the layer split `/start` forbids.
 
 Internal engineering judgement, about interfaces, locality, or what makes a
 boundary testable, can guide the work, but none of that vocabulary belongs in

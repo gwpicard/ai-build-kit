@@ -1,7 +1,8 @@
 # Pieces
 
-A piece is one small, visible, end-to-end change, sized for a single sitting.
-It lives as a GitHub issue.
+A piece is one small, visible, end-to-end change, sized for a single sitting and
+small enough for a fresh session to hold the whole of it. It lives as a GitHub
+issue.
 
 The project's issues are the only record of what is left to build. Keeping the
 pieces there needs a GitHub repository and the GitHub command line tool signed
@@ -35,6 +36,13 @@ operational rehearsal>
 
 ## Decided
 <only when a decision was actually made that would otherwise be re-argued>
+
+<details><summary>Under the hood</summary>
+
+<the build approach, the seams, code-level dependencies, any groundwork: the
+technical context a builder needs and the person never has to open>
+
+</details>
 ```
 
 `## Done when` is written as conditions somebody can check rather than a
@@ -44,6 +52,26 @@ belongs in `## So that`.
 `## Decided` is left out entirely on the pieces that had no argument behind
 them, which is most of them. A section of thin prose repeated on every issue
 teaches a reader to skip all of them.
+
+## The two layers of a piece
+
+The five sections above are the surface. They stay in plain words, and they stay
+comprehensive about anything that affects the product, so a simple read is never
+a false one. A fact belongs on the surface when it would change a product
+decision: put it in `## Decided`, or name it as a dependency, in words the person
+would use. A fact belongs under the hood when it only affects how the code gets
+written.
+
+`Under the hood` is a collapsed section for that build context: the approach, the
+seams, code-level dependencies, any groundwork. The person never has to open it,
+and `section-builder` always reads it before building. Most short pieces need
+none of it. This is the same principle the issue already follows, that an issue
+is the agent's memory and carries as much context as a piece deserves.
+
+Context that reaches past one piece does not live here. A decision that affects
+the whole product goes in the masterplan, in plain words. A technical convention
+that affects the whole codebase goes in AGENTS.md's stack section. The piece
+holds only what is particular to it.
 
 ## Labels
 
@@ -127,10 +155,22 @@ Dependencies use GitHub's own blocked-by relationship, not a line of prose. A
 piece that needs another names it there, and the agent reads it rather than
 parsing a body.
 
+A piece with parts uses GitHub's own sub-issue relationship. The two
+relationships answer different questions, and the answer decides which to use. A
+sub-issue is a part of the same outcome: it shares the parent's `## So that`, and
+the parent is not done until its parts are. A blocked-by piece is a different
+outcome that must land first. Same outcome means a sub-issue; a different outcome
+that has to come first means blocked-by. A piece too big to hold whole in a fresh
+session is split into sub-issues, each a vertical slice of its own.
+
 `/implement` takes the lowest-numbered `ready` issue whose blockers are all closed
-and whose subjects the current build path all permit. Issue numbers give a stable creation
-order and the blocked-by relationship gives the dependencies, so nothing extra
-is maintained by hand.
+and whose subjects the current build path all permit. A parent with open children
+is a container rather than a buildable slice: `/implement` builds the children,
+and the parent closes when they all close. This is what keeps the two ways of
+being not-ready apart. A blocker is a different piece that must land first; an
+open child is a part of this piece still to build. Issue numbers give a stable
+creation order and the two relationships give the structure, so nothing extra is
+maintained by hand.
 
 ## An issue somebody typed by hand
 

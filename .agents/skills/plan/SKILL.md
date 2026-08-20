@@ -29,10 +29,25 @@ That is a new issue, and it starts unassigned: a person is assigned only when
 `/implement` picks the piece up to build it, never when `/plan` creates it. Then
 make the build offer below.
 
+Shape the piece in its two layers. The surface stays plain and comprehensive
+about anything that affects the product, so it never reads as simpler than the
+work is: a fact that would change a product decision goes on the surface, in the
+person's words. The build context that only affects how the code gets written
+goes in the collapsed `Under the hood` section, so the person never has to read
+it and `/implement` still has it. Route context that reaches past this piece by
+how far it reaches: a whole-product decision to the masterplan, a whole-codebase
+convention to AGENTS.md's stack section. A piece must be small enough for a fresh
+session to hold whole; where it is not, cut it down. Any groundwork the piece
+needs is itself a vertical slice, ordered ahead of the piece that needs it, never
+a separate "database" or "API" layer.
+
 Where the request is bigger than a piece, it goes into the masterplan first and
-is cut into pieces on the plan, order confirmed with the user. Where it would
-change what kind of project this is, stop and rerun the fit check before shaping
-anything.
+is cut into pieces on the plan, order confirmed with the user. Parts of one
+outcome become sub-issues of a parent piece, each a vertical slice; separate
+outcomes that must come in order become separate pieces linked by blocked-by. The
+test is the outcome: one shared `## So that` means parts of a whole, and the
+parent is done when its parts are. Where it would change what kind of project
+this is, stop and rerun the fit check before shaping anything.
 
 ## When a piece is waiting on a question
 
@@ -67,16 +82,17 @@ does not run out of things to do quietly; it says the plan is shaped.
 
 ## The build offer
 
-When a piece is ready, offer to build it now: name the piece, and offer to hand
-it to `/implement` in this session, or "not now" to leave it as a ready piece
-for later. The offer is genuinely optional, and declining leaves a shaped,
-recorded piece that any `/implement` session picks up.
+When a piece is ready, offer to build it: name the piece, and point at
+`/implement` in a fresh session as the way to build it, or "not now" to leave it
+as a ready piece for later. A fresh session is the offer for every piece, not
+only when a founding or long session ends, so a heavy planning context does not
+carry into the build. The offer is genuinely optional, and declining leaves a
+shaped, recorded piece that any `/implement` session picks up.
 
-Plan itself never builds. Where the person accepts, that is `/implement` running
-on the piece just shaped, not this command writing code. Where a founding
-session or a long planning session is ending, prefer pointing at `/implement` in
-a fresh session over building here, so a heavy context does not carry into the
-build.
+Plan itself never builds. Where the person asks to build here and now anyway,
+that is `/implement` running on the piece just shaped, not this command writing
+code, and a fresh session stays the better path whenever the planning context
+has grown heavy.
 
 ## Record only durable information
 

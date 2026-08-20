@@ -1,5 +1,5 @@
 name: A piece of work
-description: One small, visible change, sized for a single sitting.
+description: One small, visible change, sized for a single sitting and small enough for a fresh session to hold whole.
 title: "<what the person will be able to do>"
 labels: ["how it works"]
 body:
@@ -65,5 +65,19 @@ body:
       placeholder: >
         Bookings are per item, not per kit: the tripod is lent separately from
         the bag.
+    validations:
+      required: false
+
+  - type: textarea
+    id: under-the-hood
+    attributes:
+      label: Under the hood
+      description: >
+        The agent fills this in: the build approach, the seams, code-level
+        dependencies, any groundwork. It stays collapsed, and you never have to
+        open it. Most short pieces leave it empty.
+      placeholder: >
+        Reuses the availability check from the calendar piece. New column on the
+        bookings table; add it, migrate, then use it.
     validations:
       required: false
