@@ -104,7 +104,7 @@ waits behind the notice below.
 
 The last three routes hand work to somebody else, and rebuilding an unowned area
 yourself is a fourth, so each carries the risk notice in
-`.agents/skills/start/references/fit-check.md`. Name who is exposed,
+`.agents/skills/setup-ai-build-kit/references/fit-check.md`. Name who is exposed,
 which here is whoever relies on the broken behaviour, say that another attempt
 on a cause nobody has established can hide the fault rather than remove it, and
 say who would normally establish it first.

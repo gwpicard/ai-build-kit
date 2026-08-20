@@ -2,8 +2,8 @@
 
 This is the reference card. When you are not sure what to type, read this page,
 or type /what-now and let it tell you. Type a command as `/` and its name
-(`/start`, `/plan`, `/implement`, and so on), or ask for it by name. The Claude Code plugin
-adds the prefix `ai-build-kit:`, so `/start` becomes `/ai-build-kit:start`.
+(`/setup-ai-build-kit`, `/plan`, `/implement`, and so on), or ask for it by name. The Claude Code plugin
+adds the prefix `ai-build-kit:`, so `/setup-ai-build-kit` becomes `/ai-build-kit:setup-ai-build-kit`.
 
 ## 1. Commands
 
@@ -11,7 +11,7 @@ Command names say when to use them.
 
 | When | Type |
 |---|---|
-| I'm starting something | /start |
+| I'm starting something | /setup-ai-build-kit |
 | I want it to... (a new idea) | /plan |
 | Build the next ready piece | /implement |
 | It's broken | /fix |
@@ -22,7 +22,7 @@ Command names say when to use them.
 
 Two of them change the tool. /implement makes it do something new or different, and /fix brings it back to doing what it already should. /plan decides what to change next and shapes it into a ready piece, without touching the tool yet. The other five are housekeeping around those.
 
-You run /start once. After that, start wherever you actually are. You can open a session with /fix as readily as with /implement, and neither needs the other to have run first. If you pick the wrong one it costs you nothing, because each checks what you typed against the masterplan and sends it down the right route.
+You run /setup-ai-build-kit once. After that, start wherever you actually are. You can open a session with /fix as readily as with /implement, and neither needs the other to have run first. If you pick the wrong one it costs you nothing, because each checks what you typed against the masterplan and sends it down the right route.
 
 You never choose the method either. The agent decides whether the request needs an interview, a prototype, research, a test, a review, or outside help.
 
@@ -84,15 +84,15 @@ None of these paths is the kit refusing to build. The top two are where it says 
 
 ## 4. Day one
 
-Type /start. It checks what the current tool can actually do, then tries to talk you out of building if something simpler would do the job. It interviews you, one question at a time with its best guess attached, and runs the fit check to set the project's build path. From those answers it writes the masterplan, has the best available independent method read that page looking for holes, cuts the work into pieces on the plan, and stands the project up with one passing check. Interrupt it anywhere; typing /start again resumes where it stopped.
+Type /setup-ai-build-kit. It checks what the current tool can actually do, then tries to talk you out of building if something simpler would do the job. It interviews you, one question at a time with its best guess attached, and runs the fit check to set the project's build path. From those answers it writes the masterplan, has the best available independent method read that page looking for holes, cuts the work into pieces on the plan, and stands the project up with one passing check. Interrupt it anywhere; typing /setup-ai-build-kit again resumes where it stopped.
 
 While it works, the conversation stays on project decisions and results you can
 use. Routine searches, setup commands, retries, and waiting stay behind the
 scenes unless they create a blocker or need a decision from you.
 
-Already built something, in an app builder, a chat assistant, or an earlier attempt? /start adopts it instead of replacing it: it reads what exists, interviews you about what the tool is supposed to do, writes the masterplan for what's actually there, and pins down current behaviour with tests before anything changes.
+Already built something, in an app builder, a chat assistant, or an earlier attempt? /setup-ai-build-kit adopts it instead of replacing it: it reads what exists, interviews you about what the tool is supposed to do, writes the masterplan for what's actually there, and pins down current behaviour with tests before anything changes.
 
-If the tool needs confidential files to work from, say so during the interview. /start makes a folder for them that stays on each machine and never reaches GitHub, and writes the handling rules into AGENTS.md.
+If the tool needs confidential files to work from, say so during the interview. /setup-ai-build-kit makes a folder for them that stays on each machine and never reaches GitHub, and writes the handling rules into AGENTS.md.
 
 ## 5. Day to day
 

@@ -19,7 +19,7 @@ never has to guess what a piece means. A request that is not yet a ready piece
 belongs to `/plan` first.
 
 `.agents/tools/plan-refresh.sh` prints the open issues into `plan.local.md`.
-Refresh first, then read that. `.agents/skills/start/references/pieces.md`
+Refresh first, then read that. `.agents/skills/setup-ai-build-kit/references/pieces.md`
 describes how the pieces are kept.
 
 When GitHub cannot be reached, say so, say when the printout was last written,

@@ -58,7 +58,7 @@ and `background automation`. Do not pick the closest single subject: the one
 dropped takes its evidence with it.
 
 Those are labels on the issue, and the issue is written to the shape in
-`.agents/skills/start/references/pieces.md`. Refresh the printout afterwards, so
+`.agents/skills/setup-ai-build-kit/references/pieces.md`. Refresh the printout afterwards, so
 the person's list matches what was just agreed.
 
 A later session reads the stored subjects rather than reclassifying the piece
@@ -106,7 +106,7 @@ behaves, and building past it is how safe projects quietly become unsafe
 ones.
 
 Where that check leaves a trigger standing, give the risk notice described in
-`.agents/skills/start/references/fit-check.md` before routing the flagged work,
+`.agents/skills/setup-ai-build-kit/references/fit-check.md` before routing the flagged work,
 and hold it. Nothing is refused: the person may accept the risk and have it
 built. What may not happen is the notice quietly going away, or you deciding on
 their behalf that it no longer applies because they pushed back. Repeat the

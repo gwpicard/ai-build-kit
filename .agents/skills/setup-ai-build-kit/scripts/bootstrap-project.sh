@@ -24,23 +24,23 @@ if [ -n "${HOME:-}" ]; then
   home_root=$(CDPATH= cd -- "$HOME" 2>/dev/null && pwd -P || true)
   [ "$PROJECT_ROOT" != "$home_root" ] || fail "choose a project folder, not the home folder"
 fi
-[ "$PROJECT_ROOT" != "$SKILL_ROOT" ] || fail "choose the project folder, not the start skill folder"
-EXPECTED_START="$PROJECT_ROOT/.agents/skills/start"
+[ "$PROJECT_ROOT" != "$SKILL_ROOT" ] || fail "choose the project folder, not the setup-ai-build-kit skill folder"
+EXPECTED_START="$PROJECT_ROOT/.agents/skills/setup-ai-build-kit"
 
 PLUGIN_ROOT=$(CDPATH= cd -- "$SKILL_ROOT/../../.." && pwd -P)
 PLUGIN_MANIFEST="$PLUGIN_ROOT/.claude-plugin/plugin.json"
 PLUGIN_INSTALLATION=no
 if [ -f "$PLUGIN_MANIFEST" ] && [ ! -L "$PLUGIN_MANIFEST" ] && \
    grep -Eq '"name"[[:space:]]*:[[:space:]]*"ai-build-kit"' "$PLUGIN_MANIFEST" && \
-   grep -Eq '"\./\.claude/commands/start\.md"' "$PLUGIN_MANIFEST"; then
-  PLUGIN_START="$PLUGIN_ROOT/.agents/skills/start"
+   grep -Eq '"\./\.claude/commands/setup-ai-build-kit\.md"' "$PLUGIN_MANIFEST"; then
+  PLUGIN_START="$PLUGIN_ROOT/.agents/skills/setup-ai-build-kit"
   if [ -d "$PLUGIN_START" ]; then
     PLUGIN_START=$(CDPATH= cd -- "$PLUGIN_START" && pwd -P)
     [ "$PLUGIN_START" != "$SKILL_ROOT" ] || PLUGIN_INSTALLATION=yes
   fi
 fi
 
-# An Agent Plugins installation puts this skill at <plugin>/skills/start, with
+# An Agent Plugins installation puts this skill at <plugin>/skills/setup-ai-build-kit, with
 # the plugin manifest beside the skills folder.
 AGENT_PLUGIN_ROOT=$(CDPATH= cd -- "$SKILL_ROOT/../.." && pwd -P)
 AGENT_PLUGIN_MANIFEST="$AGENT_PLUGIN_ROOT/plugin.json"
@@ -50,8 +50,8 @@ if [ "$PLUGIN_INSTALLATION" = "no" ] && \
      "$AGENT_PLUGIN_MANIFEST" && \
    grep -Eq '"name"[[:space:]]*:[[:space:]]*"ai-build-kit"' \
      "$AGENT_PLUGIN_MANIFEST" && \
-   [ -f "$AGENT_PLUGIN_ROOT/skills/start/SKILL.md" ]; then
-  AGENT_PLUGIN_START=$(CDPATH= cd -- "$AGENT_PLUGIN_ROOT/skills/start" && pwd -P)
+   [ -f "$AGENT_PLUGIN_ROOT/skills/setup-ai-build-kit/SKILL.md" ]; then
+  AGENT_PLUGIN_START=$(CDPATH= cd -- "$AGENT_PLUGIN_ROOT/skills/setup-ai-build-kit" && pwd -P)
   [ "$AGENT_PLUGIN_START" != "$SKILL_ROOT" ] || PLUGIN_INSTALLATION=yes
 fi
 
@@ -60,11 +60,11 @@ if [ -d "$EXPECTED_START" ]; then
   if [ "$EXPECTED_START" != "$SKILL_ROOT" ]; then
     [ "$PLUGIN_INSTALLATION" != "yes" ] || \
       fail "this project has both an installed AI Build Kit plugin and a separate AI Build Kit skill installation; keep one before running start"
-    fail "the chosen project belongs to a different start skill installation"
+    fail "the chosen project belongs to a different setup-ai-build-kit skill installation"
   fi
 else
   [ "$PLUGIN_INSTALLATION" = "yes" ] || \
-    fail "the chosen project does not contain this installed start skill"
+    fail "the chosen project does not contain this installed setup-ai-build-kit skill"
 fi
 
 validate_foundation_file() {

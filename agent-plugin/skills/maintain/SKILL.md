@@ -40,7 +40,7 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
      Release and replace the installed `agent-plugin` folder after the same
      approval and clean checkpoint.
    - For a shared skills installation, run
-     `npx skills update start plan implement fix ship sync maintain what-now clarify change-triage section-builder second-opinion -p`.
+     `npx skills update setup-ai-build-kit plan implement fix ship sync maintain what-now clarify change-triage section-builder second-opinion -p`.
    - When no route is present, this is an older installation. After
      approval, run `npx skills add gwpicard/ai-build-kit` and let the person
      choose the coding agents they use. This registers and refreshes the
@@ -59,7 +59,9 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    application code, and the project's check, stays project-owned. When this
    update is the one that first brings in `/plan` and `/implement`, run the
    one-time migration in "Migrating a project founded before /plan and
-   /implement" below.
+   /implement" below. When it is the one that first brings in
+   `setup-ai-build-kit` in place of `start`, also run "Migrating a project
+   founded before the setup-ai-build-kit rename".
 6. If the normal route is unavailable, use the latest public Release as the
    fallback source. A shared installation may replace only the twelve AI Build
    Kit skill folders after the same approval and clean checkpoint. A Claude
@@ -71,7 +73,7 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    enabled, stop and ask the person to reinstall it after the marketplace is
    reachable.
 7. Update project dependencies and check for known vulnerabilities. Report what changed; apply on approval.
-8. Once live: read the error alerts and the bills. Anything real becomes a piece, for implement to take: open an issue in the shape `.agents/skills/start/references/pieces.md` describes. A finding nobody wrote down is a finding nobody acts on.
+8. Once live: read the error alerts and the bills. Anything real becomes a piece, for implement to take: open an issue in the shape `.agents/skills/setup-ai-build-kit/references/pieces.md` describes. A finding nobody wrote down is a finding nobody acts on.
 9. Verify backups still run where the tool has any. Confirm the named operational owner from the masterplan still holds that role, and that no critical service or credential is tied to someone who has left.
 10. Check whether use or reliance has grown enough that the fit check should run again; if it has, run it before anything else this visit.
 11. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
@@ -105,8 +107,8 @@ the project already migrated does nothing here.
    signed in kept its pieces in `plan.md`, which nothing reads any more. Where
    that file is on disk, say so plainly and offer to move its rows into issues:
    guide the GitHub setup first if it is not ready
-   (`.agents/skills/start/references/manual-setup.md`), open one issue per row in
-   the shape `.agents/skills/start/references/pieces.md` describes, carry each
+   (`.agents/skills/setup-ai-build-kit/references/manual-setup.md`), open one issue per row in
+   the shape `.agents/skills/setup-ai-build-kit/references/pieces.md` describes, carry each
    row's subjects across as labels, label a shaped row `ready`, and label an
    unshaped one with the question it still waits on. Do this on the clean
    checkpoint, name what moved, and only then remove `plan.md`. Where the person
@@ -118,6 +120,30 @@ the project already migrated does nothing here.
    one. Nothing the person saved is lost; only the command names changed.
 
 Record the migration in the changelog as a dated line.
+
+## Migrating a project founded before the setup-ai-build-kit rename
+
+Run this once, on the visit whose update first installs the `setup-ai-build-kit`
+skill in place of `start`. It is idempotent: a later visit that finds no `start`
+skill does nothing here.
+
+The founding command was renamed from `/start` to `/setup-ai-build-kit`. Founding
+runs once, so a project already founded never types it again, and nothing the
+person saved is affected. Two housekeeping steps keep the installation tidy:
+
+1. Remove a stale `start` skill. The shared installer leaves the old `start`
+   skill folder in place when the update brings its replacement. Where a
+   `setup-ai-build-kit` skill and an old `start` skill both exist, offer to
+   remove the `start` one, because it is a managed package the kit renamed rather
+   than the person's own work. Where only `setup-ai-build-kit` exists, there is
+   nothing to do.
+
+2. Point the founding command forward. Say once that the command that founds a
+   project is now `/setup-ai-build-kit`, not `/start`, and that any saved command
+   which updates the kit by name uses that new first name. The full update
+   command is in the monthly step above.
+
+Record the tidy-up in the changelog as a dated line.
 
 ## Quarterly, or before a handover
 

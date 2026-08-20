@@ -26,7 +26,7 @@ claude plugin marketplace add gwpicard/ai-build-kit
 claude plugin install ai-build-kit@ai-build-kit --scope local
 ```
 
-Start Claude Code in that folder and type `/ai-build-kit:start`. Local scope
+Start Claude Code in that folder and type `/ai-build-kit:setup-ai-build-kit`. Local scope
 keeps the plugin attached to this project on this computer without changing
 the settings shared with the project.
 
@@ -38,7 +38,7 @@ npx skills add gwpicard/ai-build-kit
 ```
 
 Choose the agents you use and install all twelve AI Build Kit skills. Then ask
-the agent: "Run the start skill."
+the agent: "Run the setup-ai-build-kit skill."
 
 Whichever route you choose, answer one question at a time. The agent prepares
 the project files, checks what the environment can do, decides the project's
@@ -52,7 +52,7 @@ an agent that can read and edit project files, run shell commands, and use Git.
 If this computer cannot run `npx`, download the
 [latest public Release](https://github.com/gwpicard/ai-build-kit/releases/latest),
 copy its `.agents/skills` folder into the project, and ask the agent: "Open
-`.agents/skills/start/SKILL.md` and run the start skill." This manual route
+`.agents/skills/setup-ai-build-kit/SKILL.md` and run the setup-ai-build-kit skill." This manual route
 keeps the same workflow, but later updates also need to be copied manually.
 
 The eight commands are the interface. Some coding agents also list the four
@@ -66,7 +66,7 @@ Command names say when to use them.
 
 | When | Type | What it does |
 |---|---|---|
-| I'm starting something | `/start` | Interview, fit check, founding documents. |
+| I'm starting something | `/setup-ai-build-kit` | Interview, fit check, founding documents. |
 | I want it to... (a new idea) | `/plan` | Shapes your idea into a ready piece. |
 | Build the next ready piece | `/implement` | Builds a ready piece to confirmed and saved. |
 | It's broken | `/fix` | Cause before code, and evidence that keeps it fixed. |
@@ -81,12 +81,12 @@ You never choose the method, and you never sort your own request. `/plan` and `/
 
 ```mermaid
 flowchart LR
-  S["/start<br/>once"] --> L["/plan · /implement · /fix<br/>day to day"]
+  S["/setup-ai-build-kit<br/>once"] --> L["/plan · /implement · /fix<br/>day to day"]
   L --> P["/ship<br/>whenever a batch is ready"]
   P --> L
 ```
 
-You run `/start` once. After that you go in wherever you actually are: `/plan` when you want something new, `/implement` for the next ready piece, `/fix` when something that worked has stopped working, `/what-now` when you have lost the thread. None of them needs another to have run first.
+You run `/setup-ai-build-kit` once. After that you go in wherever you actually are: `/plan` when you want something new, `/implement` for the next ready piece, `/fix` when something that worked has stopped working, `/what-now` when you have lost the thread. None of them needs another to have run first.
 
 The first `/ship` is the heaviest, because it takes the tool live. Later ones only re-check what changed since the last one.
 
@@ -111,7 +111,7 @@ The path is not a permanent label. The kit rechecks it whenever the project chan
 
 ## What the kit does to reduce risk
 
-The kit assumes the person directing the work can't review code, so every protection is behavioural or mechanical. It opens with a fit check, which sets the build path and names any outside help that path requires; the four possible paths are explained in [fit-check.md](.agents/skills/start/references/fit-check.md). Read [what it does not promise](#what-it-does-not-promise) alongside this section.
+The kit assumes the person directing the work can't review code, so every protection is behavioural or mechanical. It opens with a fit check, which sets the build path and names any outside help that path requires; the four possible paths are explained in [fit-check.md](.agents/skills/setup-ai-build-kit/references/fit-check.md). Read [what it does not promise](#what-it-does-not-promise) alongside this section.
 
 Every promised behaviour gets evidence. Stable rules and bugs usually get automated tests, shown failing first. Visual and exploratory work may be checked by trying it. Shared, live, or risky changes get stronger checkpoints: a pull request with a clean-machine check next to the merge button, and an independent review. The build path decides how much of this applies to a given piece of work.
 
@@ -170,7 +170,7 @@ The `agent-plugin` folder is the newest route, for a client that reads the open
 Agent Plugins format. Such a client is free to skip a skill it judges
 non-standard, so the shared installer is the safer choice.
 
-The start skill carries the project foundation. On its first run it creates
+The setup-ai-build-kit skill carries the project foundation. On its first run it creates
 missing project instructions, harness pointers, environment examples, and the
 placeholder project check. Existing files are preserved. It then creates
 `masterplan.md` and `CHANGELOG.md` from the founding interview, and opens one

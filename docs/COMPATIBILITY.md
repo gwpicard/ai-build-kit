@@ -14,7 +14,8 @@ background skill loads it by name.
 ## Choose one installation route
 
 Every route installs the same twelve AI Build Kit skills. Eight are commands
-you type: `start`, `build`, `fix`, `ship`, `sync`, `maintain`, and `what-now`.
+you type: `setup-ai-build-kit`, `plan`, `implement`, `fix`, `ship`, `sync`,
+`maintain`, and `what-now`.
 Four run in the background when a command needs them: `clarify`,
 `change-triage`, `section-builder`, and `second-opinion`. The routes differ in
 how the skills reach the project, not in what arrives.
@@ -30,7 +31,7 @@ claude plugin install ai-build-kit@ai-build-kit --scope local
 The plugin uses local project scope, so it does not replace the project's
 shared Claude settings. It exposes the eight commands and the four
 background skills. The commands use the `ai-build-kit:` prefix, so start with
-`/ai-build-kit:start`.
+`/ai-build-kit:setup-ai-build-kit`.
 
 Use the shared skills installer when the project uses Codex, Cursor, Gemini
 CLI, another coding agent, or more than one agent. From the project folder,
@@ -54,7 +55,7 @@ same twelve skills, each carrying its own supporting files. This is the newest
 route, and a client may skip a skill it judges non-standard, so prefer the
 shared installer when the project has a choice.
 
-After installation, run `start`. That skill prepares missing project
+After installation, run `setup-ai-build-kit`. That skill prepares missing project
 foundation files before the interview. It preserves existing files, so every
 route works for a blank folder and for a project that already has code.
 
@@ -123,7 +124,7 @@ paths are:
 
 Another coding agent may work through the same portable files.
 
-The start skill creates missing standing-instruction pointers. It does not
+The setup-ai-build-kit skill creates missing standing-instruction pointers. It does not
 replace an existing harness configuration.
 
 Use the harness's skill picker or ask for a skill by name. When native
@@ -143,7 +144,7 @@ If the computer cannot run `npx`, download the latest public Release and copy
 its `.agents/skills` directory into the project's `.agents/skills` directory.
 Then ask the agent:
 
-> Open `.agents/skills/start/SKILL.md` and run the start skill.
+> Open `.agents/skills/setup-ai-build-kit/SKILL.md` and run the setup-ai-build-kit skill.
 
 A later manual update replaces only the twelve AI Build Kit skill folders,
 after a clean checkpoint and explicit approval.
@@ -160,11 +161,11 @@ after a clean checkpoint and explicit approval.
 | Safety | Standing restrictions and approval gates | Mechanical command deny list |
 | Long runs | Normal sequential work | Native goal or orchestration mode |
 
-During `start`, the capability check records which enhancements the current
+During `setup-ai-build-kit`, the capability check records which enhancements the current
 harness provides and selects a fallback for anything absent. Missing optional
 automation reduces convenience rather than changing the workflow's rules.
 
-`start` writes the session-start wiring only into a Claude settings file it
+`setup-ai-build-kit` writes the session-start wiring only into a Claude settings file it
 creates itself, and never into one that already exists. A project whose Claude
 settings predate AI Build Kit keeps them exactly as they are, and its check-up
 reminder arrives through `what-now`.

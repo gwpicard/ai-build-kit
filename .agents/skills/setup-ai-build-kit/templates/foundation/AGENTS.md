@@ -6,7 +6,7 @@ project's issues, and the history lives in `CHANGELOG.md`.
 
 ## What this project is
 
-(One line, written by the start skill.)
+(One line, written by the setup-ai-build-kit skill.)
 
 ## Before any work
 
@@ -41,7 +41,7 @@ not ask for. Do not widen a fix into a tidy-up.
 The work lives in twelve installed skills. Eight are commands you type. Four run
 in the background when a command needs them.
 
-- Commands: `start`, `plan`, `implement`, `fix`, `ship`, `sync`, `maintain`,
+- Commands: `setup-ai-build-kit`, `plan`, `implement`, `fix`, `ship`, `sync`, `maintain`,
   `what-now`.
 - Background skills: `clarify`, `change-triage`, `section-builder`,
   `second-opinion`.
@@ -60,7 +60,7 @@ when work lands, written in plain words rather than assembled from titles.
 Commit with a clear message.
 
 The remaining work lives in this project's issues, one per piece, in the shape
-`.agents/skills/start/references/pieces.md` describes. A merged pull request
+`.agents/skills/setup-ai-build-kit/references/pieces.md` describes. A merged pull request
 saying `Closes #<number>` closes its piece, so no status is set by hand. Each
 piece carries a subject label for everything it is about, set once by
 change-triage and read by later sessions.
@@ -127,15 +127,15 @@ appears anywhere it should not.
 ## Confidential files
 
 If the project works from confidential files, their folder and handling rules
-are recorded here by the start skill. Never stage, commit, print, or copy their
+are recorded here by the setup-ai-build-kit skill. Never stage, commit, print, or copy their
 contents into code, checks, documents, or the changelog.
 
-(Filled in by the start skill if the project needs it.)
+(Filled in by the setup-ai-build-kit skill if the project needs it.)
 
 ## Dangerous actions
 
 The restrictions in
-`.agents/skills/start/references/blocked-commands.md` always apply. Save a
+`.agents/skills/setup-ai-build-kit/references/blocked-commands.md` always apply. Save a
 checkpoint before sweeping work. Ask before deleting data, changing stored
 data, or doing anything irreversible or outside this computer.
 
@@ -154,11 +154,11 @@ data, or doing anything irreversible or outside this computer.
 
 ## Capability profile
 
-(Filled in by the start skill: harness, file access, shell, Git, local save
+(Filled in by the setup-ai-build-kit skill: harness, file access, shell, Git, local save
 identity, online repository, online account access, online authentication,
 project check, browser availability, independent-review method, and optional
 harness capabilities.)
 
 ## Stack, and how to run and check it
 
-(Filled in by the start skill.)
+(Filled in by the setup-ai-build-kit skill.)

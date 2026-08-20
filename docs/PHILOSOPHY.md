@@ -202,7 +202,7 @@ Tight bug reproduction before a fix, added. It fits under /fix; the user sees
 the exact failing case and the evidence that it stopped failing; they never
 need to learn instrumentation or bisection.
 
-Disposable decision prototype, added. It fits under /start or /plan; the user
+Disposable decision prototype, added. It fits under /setup-ai-build-kit or /plan; the user
 tries a rough artifact to settle one question; they never need to understand
 prototype branches or throwaway architecture.
 

@@ -6,7 +6,7 @@ one to two pages. Optional sections appear only when they carry real decisions. 
 ## Build path
 
 <!-- Rewritten only by re-running the fit check, which lives at
-.agents/skills/start/references/fit-check.md. The agent reads this section
+.agents/skills/setup-ai-build-kit/references/fit-check.md. The agent reads this section
 first, every session. -->
 
 Path:

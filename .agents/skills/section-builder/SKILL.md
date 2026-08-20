@@ -114,7 +114,7 @@ Groundwork that makes the change easier is allowed only when it is itself a
 vertical slice, or an expand-then-contract sequence that keeps the checks green
 throughout, and it is ordered ahead as its own piece. It is never a horizontal
 "refactor the data layer first" step, because that is the speculative
-abstraction the paragraph above rules out and the layer split `/start` forbids.
+abstraction the paragraph above rules out and the layer split `/setup-ai-build-kit` forbids.
 
 Internal engineering judgement, about interfaces, locality, or what makes a
 boundary testable, can guide the work, but none of that vocabulary belongs in

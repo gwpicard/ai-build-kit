@@ -3,7 +3,7 @@
 The fit check chooses the project's current **build path** and names the
 condition for outside help, if any. It runs:
 
-- during /start;
+- during /setup-ai-build-kit;
 - when a request changes users, data, money, autonomy, promises, or reliance;
 - before the first /ship;
 - during quarterly /maintain;

@@ -134,7 +134,7 @@ belongs to somebody else, so the kit reads past it and never removes it.
 The nine labels GitHub puts on a new repository are the one exception, and only
 at founding. `bug`, `documentation`, `duplicate`, `enhancement`, `good first
 issue`, `help wanted`, `invalid`, `question` and `wontfix` were nobody's
-decision: they were there before anybody arrived. `/start` deletes them and says
+decision: they were there before anybody arrived. `/setup-ai-build-kit` deletes them and says
 which ones went. After founding they are somebody's to keep, so the ordinary
 rule applies again and the kit leaves them alone.
 

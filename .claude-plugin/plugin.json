@@ -3,7 +3,7 @@
   "name": "ai-build-kit",
   "displayName": "AI Build Kit",
   "description": "A guided workflow for building reliable software with an AI coding agent.",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "author": {
     "name": "Guillaume Picard"
   },
@@ -20,8 +20,8 @@
     "./.claude/commands/implement.md",
     "./.claude/commands/maintain.md",
     "./.claude/commands/plan.md",
+    "./.claude/commands/setup-ai-build-kit.md",
     "./.claude/commands/ship.md",
-    "./.claude/commands/start.md",
     "./.claude/commands/sync.md",
     "./.claude/commands/what-now.md"
   ],
