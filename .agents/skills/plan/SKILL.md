@@ -49,6 +49,29 @@ test is the outcome: one shared `## So that` means parts of a whole, and the
 parent is done when its parts are. Where it would change what kind of project
 this is, stop and rerun the fit check before shaping anything.
 
+## Settling it now, or filing it for later
+
+Where the route is a question rather than a ready piece, offer the choice before
+the step starts: settle it now, or file the piece with its question and come back
+to it. Say roughly what settling it now would take, so the choice is informed
+rather than blind. A source check or a search for existing work is minutes. An
+interview or a prototype is a sitting.
+
+Make the offer every time a request routes to a question. Guessing at how much
+time somebody has is worse than asking them, and an offer that appears only when
+the agent judges them to be in a hurry is one nobody learns to expect. Word it as
+two ways of working, not as a reason to put the work off.
+
+Filing it for later writes the piece in full: the person's own words, the
+question it still waits on in plain language, and the label that names who can
+settle it. It is the same piece a session settling the question now would have
+started from, so a fresh session picks it up with nothing lost. Then stop.
+Do not begin the step, and do not ask a second time in the same session.
+
+A piece filed this way carries its `needs-` label and no `ready` label, which is
+what keeps it out of `/implement` until its question is answered. Deferring the
+question never lets the piece be built with the question still open.
+
 ## When a piece is waiting on a question
 
 A piece labelled `needs-clarification`, `needs-prototype`, or `needs-research`
@@ -56,7 +79,11 @@ has a question to settle before its code could be written. Settling that
 question is the work of this command. An issue with no `## Done when` was typed
 by hand and never sized, so treat it as `needs-clarification`.
 
-Run the step the label names, then take the label off and mark the piece `ready`:
+Run the step the label names, write what settled it into the piece's `## Decided`
+section, and only then take the label off and mark the piece `ready`. The record
+goes first because the label is the only thing saying the question was ever open:
+once it is gone, a piece settled properly and a piece nobody looked at read
+exactly alike.
 
 - `needs-clarification` runs clarify. Write what comes out into the shape
   `.agents/skills/setup-ai-build-kit/references/pieces.md` describes, and keep the person's
@@ -77,17 +104,36 @@ Run the step the label names, then take the label off and mark the piece `ready`
   `.agents/skills/change-triage/references/existing-work.md`. Say which step you
   ran and why, in one line, because a question can plausibly match either.
 
+Two of those three need the person in the room. An interview needs somebody to
+interview, and a prototype exists so somebody can react to it. Research does
+not: the agent settles it alone.
+
+Never answer a person-present question yourself. With nobody there, say which
+pieces are waiting on them and leave those pieces labelled as they are. A guess
+written onto a piece and marked `ready` is worse than an open question, because
+the label that said it was open has gone and `/implement` builds on the guess.
+
 The interview may show that the real block is a different one and swap
 `needs-clarification` for `needs-prototype` or `needs-research`. Follow the new
 label rather than shaping past it. A piece whose question is settled carries the
 `ready` label and no `needs-` label; the two never sit together.
 
-## Typed alone
+## Typed alone, or given a piece
 
-Take the lowest-numbered piece still waiting on a question, or the next unsized
-note, and shape it as above. When nothing is waiting and every piece is already
-ready, say so and point the person at `/implement` to build the next one. Plan
-does not run out of things to do quietly; it says the plan is shaped.
+Typed alone, take the lowest-numbered piece still waiting on a question, or the
+next unsized note, and shape it as above. When nothing is waiting and every
+piece is already ready, say so and point the person at `/implement` to build the
+next one. Plan does not run out of things to do quietly; it says the plan is
+shaped.
+
+Given an issue number, settle that piece rather than the lowest-numbered one, so
+somebody with one piece in mind is not made to work through the list. Where that
+piece is already ready, say so and make the build offer instead.
+
+Where the person says they are not staying, take the pieces the agent can settle
+alone, which is every piece labelled `needs-research`. Then name the ones that
+need them and why, in one short list, so they know what is waiting for their
+return. Settle none of those in their absence.
 
 ## The build offer
 
@@ -113,6 +159,7 @@ changelog entry; the piece is the record.
 ## Done when
 
 The request has exactly one route, the piece is written into its proper shape
-and labelled `ready` or with the question it still waits on, the person's
+and labelled `ready` or with the question it still waits on, the person was
+offered the choice between settling that question now and filing it for later, the person's
 original words are kept underneath a refinement, and nothing was built except
 through an accepted build offer.

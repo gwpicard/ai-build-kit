@@ -1,5 +1,5 @@
 # AI Build Kit managed files. Generated during release; do not edit.
-version|v0.9.0
+version|v0.10.0
 source|https://github.com/gwpicard/ai-build-kit/releases
 file|100644|.agents/guard/blocked-commands.md
 file|100755|.agents/hooks/session-end-sync.sh
@@ -9,6 +9,8 @@ file|100644|.agents/skills/change-triage/references/source-check.md
 file|100644|.agents/skills/clarify/SKILL.md
 file|100644|.agents/skills/clarify/references/decision-prototype.md
 file|100644|.agents/skills/clarify/references/existing-artifact.md
+file|100644|.agents/skills/clarify/references/prototype-behaviour.md
+file|100644|.agents/skills/clarify/references/prototype-structure.md
 file|100644|.agents/skills/fix/SKILL.md
 file|100644|.agents/skills/fix/agents/openai.yaml
 file|100644|.agents/skills/implement/SKILL.md

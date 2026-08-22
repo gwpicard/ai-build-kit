@@ -75,7 +75,7 @@ Command names say when to use them.
 | It's been a while | `/maintain` | The service visit. |
 | I'm lost | `/what-now` | Where the project stands and what to do next. |
 
-You never choose the method, and you never sort your own request. `/plan` and `/fix` check what you typed against the masterplan and send it down the right route, so picking the wrong one costs you nothing. [WORKFLOW.md](WORKFLOW.md) is the day-to-day manual for all eight.
+You never choose the method and never sort your own request: each command checks what you typed against the masterplan and sends it down the right route, so picking the wrong one costs you nothing. [WORKFLOW.md](WORKFLOW.md) is the day-to-day manual for all eight.
 
 ## How a project flows
 
@@ -86,7 +86,7 @@ flowchart LR
   P --> L
 ```
 
-You run `/setup-ai-build-kit` once. After that you go in wherever you actually are: `/plan` when you want something new, `/implement` for the next ready piece, `/fix` when something that worked has stopped working, `/what-now` when you have lost the thread. None of them needs another to have run first.
+You run `/setup-ai-build-kit` once. After that you go in wherever you actually are, and none of the day-to-day commands needs another to have run first.
 
 The first `/ship` is the heaviest, because it takes the tool live. Later ones only re-check what changed since the last one.
 
@@ -96,7 +96,7 @@ Every piece runs the same cycle: agree the behaviour in one plain sentence, choo
 
 ## The three records
 
-Three project records hold the product's memory: `masterplan.md` is the present, your project's issues are what's left, `CHANGELOG.md` is the past. `AGENTS.md` sits alongside them as the standing instruction file the agent reads to know how this repository works. The agent reads all of them so you don't have to; [WORKFLOW.md](WORKFLOW.md) explains what goes where.
+Three project records hold the product's memory: `masterplan.md` is the present, your project's issues are what's left, `CHANGELOG.md` is the past. `AGENTS.md` sits alongside them, holding the standing instructions for the repository itself. The agent reads all of them so you don't have to; [WORKFLOW.md](WORKFLOW.md) explains what goes where.
 
 ## Which path will I be on?
 
@@ -107,7 +107,7 @@ Three project records hold the product's memory: `masterplan.md` is the present,
 | Outside users, payments, sensitive data, or business-critical reliance | Build with expert help |
 | Regulation, irreplaceable live data, high-consequence automation, or technical ownership the team cannot carry | Professional-led |
 
-The path is not a permanent label. The kit rechecks it whenever the project changes character. The last two paths are not the kit refusing to build; they are where it tells you what a professional would normally do, and you decide.
+The path is not a permanent label. The kit rechecks it whenever the project changes character, and none of the four is it refusing to build.
 
 ## What the kit does to reduce risk
 

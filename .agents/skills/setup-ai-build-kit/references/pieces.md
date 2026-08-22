@@ -37,6 +37,10 @@ operational rehearsal>
 ## Decided
 <only when a decision was actually made that would otherwise be re-argued>
 
+## Waiting on you
+<only when the work cannot go further until the person does something the agent
+cannot: where to go, what to do there, and what to bring back>
+
 <details><summary>Under the hood</summary>
 
 <the build approach, the seams, code-level dependencies, any groundwork: the
@@ -52,6 +56,19 @@ belongs in `## So that`.
 `## Decided` is left out entirely on the pieces that had no argument behind
 them, which is most of them. A section of thin prose repeated on every issue
 teaches a reader to skip all of them.
+
+`## Waiting on you` is left out the same way, and for a stronger reason: it is
+the one thing on a piece that only the person can clear. It appears when the
+work stops until they sign up for something, hand over a key, or move some data
+themselves. Write it as something they could follow without help, and never ask
+for something the agent could go and do instead. It never carries the secret it
+asks for: say where the key goes, and the key itself stays out of every tracked
+file, as it always does.
+
+This is not `blocked`. That label already means two things, a piece safely
+stopped at a recorded condition and a piece parked after repeated failure, and a
+third meaning would make all three unreadable. A piece waiting on the person
+keeps whatever labels it had.
 
 ## The two layers of a piece
 
@@ -108,13 +125,34 @@ Four more labels carry state that open and closed cannot:
 alongside the subjects rather than replacing them, because a broken thing is
 still about something.
 
-Three more say the piece is waiting on a question rather than on a person:
+Three more say the piece is waiting on a question, and each says who can answer
+it:
 
-- `needs-clarification`, when talking it through will settle it;
+- `needs-clarification`, when talking it through will settle it. The person has
+  to be there: an interview the agent answers itself is a guess with a record
+  attached.
 - `needs-prototype`, when only something to look at will settle it, whether a
-  throwaway build or a mock the person already has;
+  throwaway build or a mock the person already has. The person has to be there,
+  because reacting to the thing is the whole point.
 - `needs-research`, when it needs something from outside the project: a fact to
-  confirm, or existing work that might already do the job.
+  confirm, or existing work that might already do the job. The agent settles
+  this one alone, with nobody present.
+
+So the label already says whether the person is needed, and the list shows it at
+a glance. No further label carries that.
+
+They cost different amounts to settle, which is why filing a piece and shaping it
+are two decisions rather than one. `needs-research` is minutes, and nobody has to
+be there for it. `needs-clarification` and `needs-prototype` are a sitting: an
+interview runs until the questions run out, and a prototype has to be built
+before anybody can react to it. Keep the estimate that coarse. A real estimate
+per piece would be a guess dressed as a number.
+
+Settling one of these writes what settled it into the piece's `## Decided`
+section before the label comes off: the fact and where it was found, the decision
+the prototype produced, or what the interview agreed. Without that the label is
+the only sign the question was ever asked, and taking it off leaves a piece that
+looks the same whether the work happened or not.
 
 Anything nobody has sized starts at `needs-clarification`. The interview swaps
 that for one of the other two once it finds what is actually in the way. All
@@ -125,8 +163,8 @@ One more is the positive counterpart to those three:
 - `ready`, when the piece is shaped and waiting to be built.
 
 `/plan` adds `ready` once a piece is fully shaped: it has a `## Done when` line
-and waits on no question. `/implement` takes the lowest-numbered `ready` piece,
-swaps the label for `building` at pickup, and the merged pull request closes it.
+and waits on no question. `/implement` swaps that label for `building` when it
+picks the piece up, and the merged pull request closes it.
 A piece never carries `ready` and a `needs-` label at the same time; settling
 the question is what moves it from one to the other.
 

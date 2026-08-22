@@ -57,8 +57,23 @@ that before a build session is worth more than meeting it during one.
 
 Where a waiting piece says why it is waiting, pass the reason on rather than the
 label: one needs a few questions, one needs a throwaway build before anybody can
-decide, one needs a fact somebody has to go and find. A person who knows which
-of the three it is can often supply the answer on the spot.
+decide, one needs a fact the agent can go and confirm on its own. Say which of
+the three, because the first two need the person in the room and the third does
+not. Somebody with ten minutes can answer the questions, or leave `/plan` to
+settle the research without them.
+
+Weigh the waiting pieces against the ready ones, in the same place as the counts
+and never ahead of anything broken. Where more pieces are waiting on a question
+than are ready to build, say that this session is better spent planning than
+building, and give the reason in the counts themselves: one piece ready and four
+nobody can build yet. Where the ready pieces outnumber the waiting ones, say
+nothing about it and let the usual advice stand.
+
+A piece waiting on the person is named apart from the rest, as their own thing
+to do rather than something the agent is working through: "nothing can happen on
+the payment piece until somebody opens the card account, and it takes about ten
+minutes". Say what the step is and where it happens, in the piece's own words,
+because a step nobody names is a step nobody does.
 
 Say piece names, never issue numbers. Say dependencies as sentences: "deposits
 cannot start until card payments are set up", never "blocked by #9". Name at
@@ -103,6 +118,13 @@ State the blocked area, the help it's waiting on, where its brief lives, and
 which work can keep going safely in the meantime. Say that the wait ends either
 way: when that help happens, or when they accept the risk and it goes on the
 record.
+
+### A step only you can do
+
+Name the step, where it happens, and what to bring back, in the words the piece
+uses. Say what starts moving again once it is done, and what can carry on in the
+meantime. Never repeat a key, password, or token back, and never ask for one to
+be pasted into a message.
 
 ### Failing check
 

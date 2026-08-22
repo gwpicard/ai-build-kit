@@ -14,6 +14,23 @@ Write one sentence:
 
 If more than one question appears, split them or return to clarify.
 
+## Which kind of question is it
+
+Say which of these two you are answering, and why, before building anything.
+Building the wrong kind wastes the whole prototype, and the person cannot tell
+you it was the wrong kind until it is in front of them.
+
+- **Does this behave the way I meant?** They need something they can press
+  buttons on and watch happen, driven by them rather than described to them.
+  Follow prototype-behaviour.md.
+- **What shape should this take?** They need genuinely different arrangements
+  side by side, so they can move between them and say which is right. Follow
+  prototype-structure.md.
+
+Where a question sounds like both, it is two questions. Split them, and answer
+the behaviour one first: an arrangement of something whose behaviour is still
+undecided is a guess wearing a layout.
+
 ## Rules
 
 - Use fake or disposable data.

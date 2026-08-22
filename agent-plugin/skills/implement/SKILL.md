@@ -51,6 +51,20 @@ condition is met, or until the person accepts the risk on the record; one parked
 after repeated failure (references/running-longer.md) needs routing back to
 `/plan` first, for another look.
 
+## When a piece waits on the person
+
+A piece carrying a `## Waiting on you` section cannot be built until that step is
+done. Do not attempt it, and do not pass it over in silence. Say what the step
+is, in the words the piece uses, and that building carries on once it is done.
+
+In an unattended run, name the step, leave the piece where it is, and take the
+next ready piece, so the run keeps working and the step is waiting when the
+person comes back.
+
+Where the step turns out to be something you can do yourself, do it and carry on
+rather than asking. A piece should never hold work up for something the agent
+could have gone and done.
+
 ## When the next piece is not ready
 
 A piece that still carries `needs-clarification`, `needs-prototype`, or

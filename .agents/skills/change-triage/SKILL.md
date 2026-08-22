@@ -78,8 +78,8 @@ from scratch.
 ## Step 4: Route
 
 Route to one of: `/fix`; a ready piece; clarify; a decision
-prototype; a source check; a search for existing work; update the masterplan
-first; rerun the fit
+prototype; a source check; a search for existing work; a step only the person
+can do; update the masterplan first; rerun the fit
 check; prepare an expert brief; give the risk notice at the professional-led
 boundary. Say the route and the reason in one line.
 
@@ -98,9 +98,16 @@ Where the request is a piece and the route is a question rather than a ready
 piece, put the route on the issue: `needs-clarification` for clarify,
 `needs-prototype` for a decision prototype, `needs-research` for a source check
 or a search for existing work.
-Take the label off and mark it `ready` once the question is answered. Without this the reason a
+Take the label off and mark it `ready` once the question is answered.
+Routing to a question does not mean the step starts now: `/plan` offers the
+person the choice between settling it and filing the piece to come back to. Without this the reason a
 piece is waiting lives only in the session that found it, and the next person to
 open the list sees a piece that has simply stopped.
+
+A setup or operational task the person has to do themselves is written onto the
+piece as its `## Waiting on you` section, in the shape
+`.agents/skills/setup-ai-build-kit/references/pieces.md` describes. Do the step
+yourself where you can; write it down only where you cannot.
 
 A repair takes `broken` as well as its subjects, which is what points `/what-now`
 and `/fix` at it.

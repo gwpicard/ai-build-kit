@@ -122,13 +122,31 @@ asking for one more go are all reasons the person may decide differently, and
 none of them is a reason the fault is now understood. They may accept the risk
 and have you carry on, and that acceptance is recorded before the work starts.
 
+### Before you rebuild
+
 Rebuilding the failing area yourself is the same decision as patching it again,
 whatever the rebuild is called, so it needs the same notice and the same
-acceptance. The notice then covers the replacement rather than the fault: a
-replacement nobody who understands the original failure has looked at can fail
-the same silent way, and the fact that your own version passes its tests is not
-evidence otherwise, because the thing that keeps breaking was never understood.
-Say that before building it, not after.
+acceptance. Work through these four in order. Do not start the replacement
+until all four are behind you.
+
+1. **Name the rebuild risk yourself, before anything is built.** The notice
+   covers the replacement rather than the fault: a replacement nobody who
+   understands the original failure has looked at can fail the same silent way,
+   and your own version passing its own tests is not evidence otherwise,
+   because the thing that keeps breaking was never understood. Describing the
+   fault accurately while saying nothing about what replaces it is the same
+   failure as saying nothing.
+2. **Ask about that named risk and nothing else.**
+3. **Check that what comes back is an acceptance.** It is not one where the
+   person described the risk before you named it, where it answers some other
+   question ("just rebuild it", "try it anyway", "attempt it first"), or where
+   it is a refusal to pay for help or to wait. Somebody who got there first has
+   still not been told by you, so name it yourself and ask again.
+4. **Record the acceptance, then build.** The `Accepted:` line goes into the
+   masterplan's build-path section before the replacement starts.
+
+The order carries this. An acceptance collected once the replacement exists is
+not an acceptance, it is a note about something that already happened.
 
 ## Done when
 

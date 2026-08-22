@@ -202,9 +202,13 @@ Tight bug reproduction before a fix, added. It fits under /fix; the user sees
 the exact failing case and the evidence that it stopped failing; they never
 need to learn instrumentation or bisection.
 
-Disposable decision prototype, added. It fits under /setup-ai-build-kit or /plan; the user
-tries a rough artifact to settle one question; they never need to understand
-prototype branches or throwaway architecture.
+Disposable decision prototype, added. It fits under /setup-ai-build-kit or /plan;
+the user tries a rough artifact to settle one question. What they get is chosen
+by the question: one file they open and drive themselves when the question is
+whether something behaves right, or three genuinely different arrangements to
+move between when the question is what shape it should take. When it is the
+wrong thing, they say so and the question gets split. They never need to
+understand prototype branches or throwaway architecture.
 
 A piece written in two layers, added. It fits under /plan and /implement. The
 person sees a plain surface that stays comprehensive about anything affecting the
