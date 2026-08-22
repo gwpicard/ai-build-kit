@@ -30,6 +30,12 @@ Check:
 15. The label set can be put in order: the signed-in account can create and
     delete labels on the repository.
 
+`scripts/check-tooling.sh` is the machine check behind items 3, 14, and 15. It
+reports whether Git, the GitHub command line tool, and python3 are present, and
+whether the account is signed in with issues switched on and labels it can order.
+`required-tools.md` lists what it checks and why. Run it first, then confirm the
+rest of this list by hand.
+
 Where that tool is missing or nobody is signed in, the pieces cannot be kept as
 issues yet, and the kit keeps them there. This is a required setup step rather
 than an optional one: guide the person through installing and signing in to the

@@ -11,8 +11,8 @@ You are the safety net under the other six commands. Someone who forgets everyth
 ## Read
 
 masterplan.md (build-path section first), the project's pieces, the recent
-changelog, the capability profile in AGENTS.md, git status, and any open pull
-requests.
+changelog, the capability profile in AGENTS.md, git status, the recent commits
+and merged pull requests, and any open pull requests.
 
 Refresh the printout with `.agents/tools/plan-refresh.sh` and read
 `plan.local.md`. If GitHub cannot be reached, work from the printout and say when
@@ -44,6 +44,12 @@ work and no longer does outranks a thing that was never built: "the booking
 confirmation is broken, so /fix comes before anything else". Name what is broken
 rather than saying a piece is labelled.
 
+A failing check is named next, after anything broken and before the counts. Say
+it plainly as failing, because a red check is a fact the person cannot see for
+themselves. An open review finding still waiting, and a setup step left
+half-done, are named in the same place. None of the three is left sitting under a
+"nothing is blocked"; each has its own recovery route below.
+
 Say how many entries are still notes rather than pieces, when any are, in the
 words a person would use: "two things on the list are still just notes, so I
 will ask you about them before building them". The printout marks them. Knowing
@@ -58,6 +64,15 @@ Say piece names, never issue numbers. Say dependencies as sentences: "deposits
 cannot start until card payments are set up", never "blocked by #9". Name at
 most three things; if more apply, say how many and name the nearest. More than
 three stops being orientation and becomes a report. Match where the project is in its life. Still building toward the first launch: the answer is usually /implement for the next ready piece, /plan to shape a new one, or /ship when the plan has run dry. Live and running: the answer is usually "say what you want to /plan", /fix for the thing that broke, or the /maintain that the recorded check-up dates show is overdue.
+
+End with a short recap of where the tool has got to, in the words a person would
+use. Say what the last stretch of work was about, and whether anything is on the
+go right now, drawn from the changelog, the recent commits, and the merged pull
+requests read together. Tell it as a short account of where things stand, not a
+count of commits or pieces. Leave out the broken or waiting items already named
+above, since the recap is the wider sense of the project rather than a second
+list. Where nothing has happened lately, say nothing here and the answer ends
+where it did before.
 
 ## Recovery routes
 
@@ -88,6 +103,26 @@ State the blocked area, the help it's waiting on, where its brief lives, and
 which work can keep going safely in the meantime. Say that the wait ends either
 way: when that help happens, or when they accept the risk and it goes on the
 record.
+
+### Failing check
+
+Name the check that is failing and what it is there to catch, in plain words,
+for example the test that stops a booking being taken twice. Say that a red check
+means the tool is not doing something it is meant to, and that /fix is where that
+goes. Do not show the check's output or its logs.
+
+### Open review finding
+
+Where an earlier review raised something and nobody has settled it, name it in
+the words the review used and say it is still open. Say it is a point somebody
+made and no one has answered, so it is worth closing before more is built on top
+of it. Name the piece it belongs to.
+
+### Unfinished setup step
+
+Where a manual setup step was started and left part-way, name the step and say it
+is unfinished, so the person knows the tool is not fully stood up. Give the one
+action that would finish it, and say what stays unavailable until it is done.
 
 ### Accepted risks
 

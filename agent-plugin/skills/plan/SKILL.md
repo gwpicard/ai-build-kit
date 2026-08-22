@@ -62,11 +62,20 @@ Run the step the label names, then take the label off and mark the piece `ready`
   `.agents/skills/setup-ai-build-kit/references/pieces.md` describes, and keep the person's
   original words underneath, because their words are what a refinement can be
   checked against and what to return to when it reads wrong.
-- `needs-prototype` runs the decision prototype in
-  `.agents/skills/clarify/references/decision-prototype.md`, which answers the
-  one question it exists for and writes the decision back onto the piece.
-- `needs-research` runs a source check, and records the fact it finds on the
-  piece.
+- `needs-prototype` settles the piece with something to look at. Where the
+  person already has a mock, a sketch, or anything else that shows it, follow
+  `.agents/skills/clarify/references/existing-artifact.md` and build toward
+  that, rather than building a throwaway to rediscover a decision they have
+  already made. Otherwise run the decision prototype in
+  `.agents/skills/clarify/references/decision-prototype.md`. Either way, the
+  decision goes back onto the piece in words.
+- `needs-research` runs one of two steps and records what it finds on the
+  piece. A question about one external fact, such as what a provider's API
+  supports, runs the source check in
+  `.agents/skills/change-triage/references/source-check.md`. A question about
+  whether something already exists that could do the work runs
+  `.agents/skills/change-triage/references/existing-work.md`. Say which step you
+  ran and why, in one line, because a question can plausibly match either.
 
 The interview may show that the real block is a different one and swap
 `needs-clarification` for `needs-prototype` or `needs-research`. Follow the new

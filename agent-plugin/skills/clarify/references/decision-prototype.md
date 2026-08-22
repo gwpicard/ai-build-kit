@@ -2,6 +2,10 @@
 
 A prototype answers one decision that conversation cannot settle.
 
+Before building one, check whether the person already has something that answers
+it, and follow existing-artifact.md where they do. Building a throwaway to
+rediscover a decision they have already made wastes their time and yours.
+
 ## Start with the question
 
 Write one sentence:

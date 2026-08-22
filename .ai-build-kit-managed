@@ -1,12 +1,14 @@
 # AI Build Kit managed files. Generated during release; do not edit.
-version|v0.8.0
+version|v0.9.0
 source|https://github.com/gwpicard/ai-build-kit/releases
 file|100644|.agents/guard/blocked-commands.md
 file|100755|.agents/hooks/session-end-sync.sh
 file|100644|.agents/skills/change-triage/SKILL.md
+file|100644|.agents/skills/change-triage/references/existing-work.md
 file|100644|.agents/skills/change-triage/references/source-check.md
 file|100644|.agents/skills/clarify/SKILL.md
 file|100644|.agents/skills/clarify/references/decision-prototype.md
+file|100644|.agents/skills/clarify/references/existing-artifact.md
 file|100644|.agents/skills/fix/SKILL.md
 file|100644|.agents/skills/fix/agents/openai.yaml
 file|100644|.agents/skills/implement/SKILL.md
@@ -25,10 +27,13 @@ file|100644|.agents/skills/setup-ai-build-kit/references/adopting.md
 file|100644|.agents/skills/setup-ai-build-kit/references/blocked-commands.md
 file|100644|.agents/skills/setup-ai-build-kit/references/capability-check.md
 file|100644|.agents/skills/setup-ai-build-kit/references/completion-report.md
+file|100644|.agents/skills/setup-ai-build-kit/references/coverage-read.md
 file|100644|.agents/skills/setup-ai-build-kit/references/fit-check.md
 file|100644|.agents/skills/setup-ai-build-kit/references/manual-setup.md
 file|100644|.agents/skills/setup-ai-build-kit/references/pieces.md
+file|100644|.agents/skills/setup-ai-build-kit/references/required-tools.md
 file|100755|.agents/skills/setup-ai-build-kit/scripts/bootstrap-project.sh
+file|100755|.agents/skills/setup-ai-build-kit/scripts/check-tooling.sh
 file|100644|.agents/skills/setup-ai-build-kit/templates/CHANGELOG.md
 file|100644|.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md
 file|100644|.agents/skills/setup-ai-build-kit/templates/foundation/CLAUDE.md

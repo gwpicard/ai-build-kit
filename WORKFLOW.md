@@ -30,7 +30,7 @@ You never choose the method either. The agent decides whether the request needs 
 
 The records are the project's memory. The agent forgets everything between sessions; these don't, and every piece of work starts by reading them.
 
-Two of them are files you can open. The third, what's left to build, lives in your project's issues on GitHub, because that is what lets more than one person work without clashing over the same file. You never have to open it: `/what-now` tells you where things stand in a sentence, and a plain list is printed to `plan.local.md` on your own machine so you can always see it, even when GitHub cannot be reached. That printout is a photocopy. Nobody edits it, and changing a piece means telling the agent, not editing the file.
+Two of them are files you can open. The third, what's left to build, lives in your project's issues on GitHub, because that is what lets more than one person work without clashing over the same file. You never have to open it: `/what-now` tells you where things stand, recaps what the recent work was about, and names anything broken or left unfinished, and a plain list is printed to `plan.local.md` on your own machine so you can always see it, even when GitHub cannot be reached. That printout is a photocopy. Nobody edits it, and changing a piece means telling the agent, not editing the file.
 
 | Record | Purpose |
 |---|---|
@@ -84,13 +84,17 @@ None of these paths is the kit refusing to build. The top two are where it says 
 
 ## 4. Day one
 
-Type /setup-ai-build-kit. It checks what the current tool can actually do, then tries to talk you out of building if something simpler would do the job. It interviews you, one question at a time with its best guess attached, and runs the fit check to set the project's build path. From those answers it writes the masterplan, has the best available independent method read that page looking for holes, cuts the work into pieces on the plan, and stands the project up with one passing check. Interrupt it anywhere; typing /setup-ai-build-kit again resumes where it stopped.
+Type /setup-ai-build-kit. It checks what the current tool can actually do, then tries to talk you out of building if something simpler would do the job. It interviews you, one question at a time with its best guess attached, and runs the fit check to set the project's build path. From those answers it writes the masterplan, has the best available independent method read that page looking for holes, cuts the work into pieces on the plan, and stands the project up with one passing check. Before it stands anything up it checks that every promise on the masterplan has a piece that builds it, and names the ones that do not, so you can add them while the plan is minutes old. Interrupt it anywhere; typing /setup-ai-build-kit again resumes where it stopped.
 
 While it works, the conversation stays on project decisions and results you can
 use. Routine searches, setup commands, retries, and waiting stay behind the
 scenes unless they create a blocker or need a decision from you.
 
 Already built something, in an app builder, a chat assistant, or an earlier attempt? /setup-ai-build-kit adopts it instead of replacing it: it reads what exists, interviews you about what the tool is supposed to do, writes the masterplan for what's actually there, and pins down current behaviour with tests before anything changes.
+
+The masterplan carries a picture of everything outside the tool that it reaches: where it keeps your data, and each outside service. You confirm each one at founding, and the picture is redrawn whenever a piece adds or drops a connection, so a tool never quietly reaches something you did not agree to.
+
+Already sketched, mocked, or written down what you want? Show it during the interview. /setup-ai-build-kit reads it, says back what it sees so you can correct it, records what that settles, and builds toward it. What the mock doesn't cover gets asked rather than guessed, and a mock never carries work past the fit check.
 
 If the tool needs confidential files to work from, say so during the interview. /setup-ai-build-kit makes a folder for them that stays on each machine and never reaches GitHub, and writes the handling rules into AGENTS.md.
 
@@ -100,11 +104,11 @@ Typed alone, /implement takes the next ready piece from the plan. It agrees with
 
 If the change touched an area the build path flags, the best independent method available reviews it first. It reports in plain language, sorted into what's worth stopping for and what's worth knowing.
 
-/plan is how you bring anything new: "/plan add a filter to the board". You never sort your own request; the agent works out what kind of work it is. Clear and piece-sized becomes a ready piece, and /plan offers to build it now or leave it for /implement later. Vague gets a short interview. A question a conversation can't settle gets a disposable prototype or a source check. Anything touching data, access, or money gets written into the masterplan first.
+/plan is how you bring anything new: "/plan add a filter to the board". You never sort your own request; the agent works out what kind of work it is. Clear and piece-sized becomes a ready piece, and /plan offers to build it now or leave it for /implement later. Vague gets a short interview. A question a conversation can't settle gets a disposable prototype, a source check, or a search for something that already does the job. Show a mock of what you want and it settles the question instead, with no throwaway built. Anything touching data, access, or money gets written into the masterplan first. If another piece already open would be built in the same place, /plan names it before the work starts, so you can decide whether to carry on, wait, or fold the two together.
 
 If the request would change what kind of project this is, by bringing in outside users or real money or a promise to someone, the agent re-runs the fit check with you before building. A different build path needs different care before people rely on it.
 
-/fix is for when something that should work doesn't: "/fix the board duplicates cards when I drag them". Paste the whole error if there is one. It builds the tightest repeatable check it can find for the exact symptom, works out the cause before touching code, resets failed attempts rather than stacking them, and finishes with evidence that keeps the bug from coming back.
+/fix is for when something that should work doesn't: "/fix the board duplicates cards when I drag them". Paste the whole error if there is one. It builds the tightest repeatable check it can find for the exact symptom and works out the cause before touching code, driving the app in a browser or adding temporary logging when it needs to see what is actually going wrong. It resets failed attempts rather than stacking them, and finishes with evidence that keeps the bug from coming back.
 
 If the same piece fails three rounds in a row, it stops patching and routes by what the failures revealed. That may mean another interview, a rebuild from the masterplan, a stop for missing access, or scoped expert help.
 
@@ -171,7 +175,7 @@ Nothing else changes when a second person arrives: naming a piece before startin
 
 ## 12. Sync and maintenance
 
-Normal /implement and /fix completion updates the records directly; you don't need /sync after a piece that finished cleanly. /sync exists for interrupted work, work done outside the workflow, long sessions whose context went foggy, and handovers. A report-only reminder can optionally run at session end, where the tool supports it, but nothing writes to the records without a skill deciding to.
+Normal /implement and /fix completion updates the records directly; you don't need /sync after a piece that finished cleanly. /sync exists for interrupted work, work done outside the workflow, long sessions whose context went foggy, and handovers. A report-only reminder can optionally run at session end, where the tool supports it, but nothing writes to the records without a skill deciding to. /sync also re-reads the masterplan against your pieces, and says if a promise has lost the piece that builds it.
 
 /maintain is the service visit: monthly and light for AI Build Kit updates,
 project dependency updates, and anything the error alerts caught. When a newer

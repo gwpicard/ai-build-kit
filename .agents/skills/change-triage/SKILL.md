@@ -57,6 +57,17 @@ A checkout takes `finance` and `external service`. A nightly backup takes `data`
 and `background automation`. Do not pick the closest single subject: the one
 dropped takes its evidence with it.
 
+With the subjects settled, look at the open pieces that carry one of the same
+ones, and at anything labelled `building`. Read their titles and their `## So
+that` lines. Where one would plainly be built in the same place as this request,
+name it before routing: which piece, and what the two have in common. Nothing is
+blocked and nothing waits. The person decides whether to carry on, hold this
+until the other piece lands, or fold the two together.
+
+Say nothing where no open piece shares a subject, or where the only thing in
+common is that both touch this project. A pause on every request teaches people
+to skip the pause.
+
 Those are labels on the issue, and the issue is written to the shape in
 `.agents/skills/setup-ai-build-kit/references/pieces.md`. Refresh the printout afterwards, so
 the person's list matches what was just agreed.
@@ -67,7 +78,8 @@ from scratch.
 ## Step 4: Route
 
 Route to one of: `/fix`; a ready piece; clarify; a decision
-prototype; a source check; update the masterplan first; rerun the fit
+prototype; a source check; a search for existing work; update the masterplan
+first; rerun the fit
 check; prepare an expert brief; give the risk notice at the professional-led
 boundary. Say the route and the reason in one line.
 
@@ -84,7 +96,8 @@ implementation terms and keeps each concept in one home.
 
 Where the request is a piece and the route is a question rather than a ready
 piece, put the route on the issue: `needs-clarification` for clarify,
-`needs-prototype` for a decision prototype, `needs-research` for a source check.
+`needs-prototype` for a decision prototype, `needs-research` for a source check
+or a search for existing work.
 Take the label off and mark it `ready` once the question is answered. Without this the reason a
 piece is waiting lives only in the session that found it, and the next person to
 open the list sees a piece that has simply stopped.

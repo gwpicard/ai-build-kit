@@ -67,6 +67,13 @@ half-written. Check for unfinished setup: a placeholder still in
 in the changelog. Say plainly where the process is resuming from. Never
 overwrite an existing record without saying so and getting agreement first.
 
+Look for `.agents/tmp/setup-notes.md` in that read. It holds the answers agreed
+so far when an earlier session stopped before masterplan.md existed. Where it
+exists and masterplan.md does not, say you are carrying on from those answers,
+read them back as one short list, and wait for a yes. Handle a correction the
+way you handle a wrong guess: the person says what changed, and you update the
+file.
+
 ## 1. Orientation
 
 Before any technical action, say what is about to happen, close to: "First
@@ -80,6 +87,13 @@ set up later, at the step that creates the pieces, not now. Skip
 repeating this when a resumed session already covered it in step 0.
 
 ## 2. Capability check
+
+First run `scripts/check-tooling.sh` from this installed skill folder. It reports
+whether Git, the GitHub command line tool, and python3 are ready and signed in,
+so a missing one is caught here rather than at the later step that creates the
+issues. If the harness cannot run the script, work through
+references/required-tools.md by hand. When a tool is missing, guide the install
+following references/manual-setup.md before going on.
 
 Load references/capability-check.md and work through it. Record the result in
 AGENTS.md under Capability profile: harness name when known, file read/write,
@@ -115,19 +129,28 @@ stop. Saving the team a project is a good outcome.
 Run the clarify skill for the founding interview. During it: resolve
 overloaded terms rather than letting them pass; use concrete examples to
 settle ambiguity; invoke source research when an answer depends on an
-external fact; invoke a disposable decision prototype when conversation alone
-cannot settle a visual or behavioural question; keep open questions visible
+external fact; settle a visual or behavioural question with a mock or
+sketch the person already has, or a disposable decision prototype where they
+have none; keep open questions visible
 rather than quietly guessing past them. It ends when your guesses keep being
 right.
+
+Write each answer into `.agents/tmp/setup-notes.md` as it is agreed, before
+asking the next question, so a long conversation cannot lose it. Plain
+sentences under the question they answer, no template. Before that first write,
+check `.gitignore` carries `.agents/tmp/` and add the line when it is missing,
+so the notes stay out of every commit. Say nothing about the file: it is
+housekeeping rather than a decision the person makes.
 
 ## 6. Fit check and build path
 
 Go through references/fit-check.md: the consequence and ownership questions,
-one at a time, guesses attached like the interview. Record the result: which
-of the four build paths, why, the required controls, any outside help and its
-scope, the recheck triggers, and today's date. Before settling on build with
-expert help or professional-led, work through the redesign options in
-fit-check.md; if a redesign changes the answers, run the check again. Where a
+one at a time, guesses attached like the interview. Record the result in the
+same working notes as it is settled: which of the four build paths, why, the
+required controls, any outside help and its scope, the recheck triggers, and
+today's date. Before settling on build with expert help or professional-led,
+work through the redesign options in fit-check.md; if a redesign changes the
+answers, run the check again. Where a
 trigger survives that, give the risk notice fit-check.md describes before any of
 the flagged work goes ahead.
 
@@ -143,6 +166,15 @@ mention that small file to the person. Do not create team.md; it no
 longer exists. Fill in AGENTS.md's project line and the capability profile
 from step 2. Replace README.md's project-name and purpose placeholders with a
 short description taken from the masterplan.
+
+Fill the masterplan from the working notes as well as from the conversation,
+then delete `.agents/tmp/setup-notes.md` in this same step. The masterplan
+carries everything the notes held, so nothing is lost by clearing them.
+
+Draw the connections section from what the interview found, then read the
+picture back in plain words and let the team confirm each outside connection
+before going on: that it should reach their email, their calendar, whatever the
+picture shows. A connection nobody meant to agree to is cheapest to catch here.
 
 If docs/MAINTAINING.md exists, delete it as part of this same commit. Current
 starter releases exclude that source-only file, but older direct clones
@@ -214,6 +246,10 @@ under the ordinary rule.
 
 An idea that did not make the cut becomes a closed issue labelled `parked`, with
 the reason in the body.
+
+With the pieces created, load references/coverage-read.md and run the coverage
+read against the masterplan. This is the cheapest moment in the project's life
+to find a promise nobody planned to build.
 
 Where the person cannot complete the GitHub setup in this session, save the
 masterplan and everything else, and say plainly that the pieces cannot be

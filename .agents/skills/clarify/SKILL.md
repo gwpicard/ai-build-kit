@@ -27,11 +27,12 @@ When one word is carrying two meanings, stop and settle it before going on:
 3. test the alternatives against a concrete scenario;
 4. settle on one canonical term;
 5. record the settled term where the current work lives, without committing a
-   file or opening a pull request. In a founding session, that is the masterplan
-   being written for the first time. In a planning session, that is the piece
-   being shaped: record the term on it, and note that the masterplan's key terms
-   section still needs the update, so `/implement` writes it when it builds the
-   piece. Planning records and stops; writing to the masterplan is a build.
+   file or opening a pull request. In a founding session, that is the working
+   notes the interview keeps, and the masterplan once it exists. In a planning
+   session, that is the piece being shaped: record the term on it, and note that
+   the masterplan's key terms section still needs the update, so `/implement`
+   writes it when it builds the piece.
+   Planning records and stops; writing to the masterplan is a build.
 
 For example: "You have used 'customer' for both the company paying and the
 person signing in. I suggest 'company' and 'user'. Does that match the real
@@ -53,7 +54,10 @@ the cases that could actually happen here.
 ## When conversation cannot settle it
 
 If a behavioural or visual decision cannot be settled by talking it through,
-load references/decision-prototype.md. The interview pauses, the prototype
+ask whether they already have something that shows it: a sketch, a mock, a
+screenshot, the spreadsheet they use today. Where they do, load
+references/existing-artifact.md and let it settle the question. Where they do
+not, load references/decision-prototype.md. The interview pauses, the prototype
 answers the one question it exists to answer, and the decision gets written
 back into the masterplan or the request before the interview continues.
 

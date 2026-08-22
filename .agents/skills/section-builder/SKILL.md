@@ -177,7 +177,10 @@ condition is met or the person accepts the risk instead.
 
 Normal completion updates: the piece, a changelog line, the masterplan when the
 present behaviour changed, and AGENTS.md only when a durable operating
-convention changed. A correctly completed build does not need /sync afterward.
+convention changed. Where the piece added, removed, or changed something outside
+the tool that it reaches, update the masterplan's connections picture too, and
+say in one line what the tool now reaches, so the person can say whether it
+should. A correctly completed build does not need /sync afterward.
 
 Once a person merges the pull request it closes the issue, so there is no
 status to set by hand. After that merge, remove the `building` label and refresh

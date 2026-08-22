@@ -111,8 +111,10 @@ still about something.
 Three more say the piece is waiting on a question rather than on a person:
 
 - `needs-clarification`, when talking it through will settle it;
-- `needs-prototype`, when only a throwaway build will settle it;
-- `needs-research`, when it needs a fact from outside the project.
+- `needs-prototype`, when only something to look at will settle it, whether a
+  throwaway build or a mock the person already has;
+- `needs-research`, when it needs something from outside the project: a fact to
+  confirm, or existing work that might already do the job.
 
 Anything nobody has sized starts at `needs-clarification`. The interview swaps
 that for one of the other two once it finds what is actually in the way. All

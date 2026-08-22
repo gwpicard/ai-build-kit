@@ -12,6 +12,13 @@ explained.
 
 ## 0. Check the report
 
+When `/fix` arrives with no bug described, look for the repair already on the
+board before asking the person to describe one. Refresh the printout with
+`.agents/tools/plan-refresh.sh` and read its Broken group, the same open issues
+labelled `broken` that `/what-now` surfaces first. If none is labelled `broken`,
+ask for the symptom, as step 1 sets out. If exactly one is, name it and use it as
+the report. If more than one is, list them and ask which to take.
+
 Read masterplan.md, build-path section first. If the behaviour being asked
 for was never promised there, say so kindly and hand the request to `/plan`,
 which shapes new work; a new wish treated as a repair ends up in the wrong
@@ -54,10 +61,11 @@ change the ranking; otherwise it stays internal.
 
 ## 5. Test one cause at a time
 
-Change one variable, add targeted and clearly labelled temporary
-instrumentation, and reset to the last saved state after any failed attempt
-before trying differently. Failed fixes never stack; stacked fixes are how
-clean projects rot.
+Change one variable, and keep any temporary instrumentation targeted and clearly
+labelled: name the file you write a temporary log to and read it back while
+testing the cause, so the evidence sits somewhere you can point at rather than
+scroll past. Reset to the last saved state after any failed attempt before trying
+differently. Failed fixes never stack; stacked fixes are how clean projects rot.
 
 ## 6. Fix and lock it down
 
