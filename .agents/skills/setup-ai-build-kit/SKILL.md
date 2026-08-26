@@ -42,6 +42,28 @@ confirmation box. Do not announce that a confirmation might appear later. If
 the action and its boundaries were already explained, refer back to that
 explanation instead of repeating the full checklist.
 
+## Founding ends with something stood up
+
+Every step below wants something from the person. None of them is a gate. This
+skill is finished when the project exists and a checkpoint is saved, and that
+outcome outranks any answer still outstanding.
+
+An answer you would like but do not need becomes an open question in the
+masterplan, your best guess recorded beside it, and founding carries on. Ask it
+later, once there is a project to change.
+
+A step that tells you to check something is a check, not an interview question.
+Where a step says to answer from the masterplan, answer from the masterplan. A
+gap found that way becomes a setup task or an open question, and the person is
+told what was recorded rather than asked to fill it in.
+
+A person who says to get on with it has answered everything outstanding at once.
+Take the guesses, say in one line what you assumed, and stand the project up.
+
+Founding that stops with nothing stood up has helped nobody, whatever it was
+waiting for. There is no answer worth more than a saved project, because every
+answer can still be changed afterwards and an unfounded project cannot.
+
 ## 0. Resume safely
 
 First, run `scripts/bootstrap-project.sh` from this installed skill folder in
@@ -58,6 +80,24 @@ project has both a plugin and a separate AI Build Kit skill installation, stop
 before preparing the project. Keep the plugin when one coding agent runs the
 project, or keep the shared skills installation when the project uses more
 than one coding agent. Never leave both active.
+
+A folder holding the kit and nothing else is the normal place to found a
+project, not a reason to stop. A fresh installation leaves `README.md`,
+`WORKFLOW.md`, `docs/`, `.agents/skills/` and `agent-plugin/` in the project
+root, which reads exactly like the kit's own source code, and the answer is not
+to guess from how it looks. Look for `.ai-build-kit-version`: every release
+carries it and the kit's source never does. Where it is there, this is an
+installation waiting for a project, so found here without asking.
+
+The kit's own source is the one place founding does not belong, and it says so
+plainly: `release-manifest.txt`, `.agents/tests/` and `docs/MAINTAINING.md` sit
+at its root and reach no release. Only where those are present is stopping
+right, and then say which of them you found rather than describing the folder.
+
+Never make a location the thing founding waits on. Where the person meant a
+different folder they will say so, and a project founded in the wrong place
+costs a move; a project never founded costs everything that was said to get
+there.
 
 Read the repository's current state before doing anything else. Check whether
 masterplan.md and CHANGELOG.md already exist, whether the project's pieces
@@ -120,9 +160,22 @@ off-the-shelf product, an automation inside an existing service, a configured
 AI chat, an agent skill, a lightweight form or no-code workflow, custom
 software. Ask the four questions: will it keep records that build up over
 time? Will other people use it without the person who made it? Should it act
-on its own? Must it enforce rules? Stop when custom software does not provide
-material value over something cheaper; say so, say what would do instead, and
-stop. Saving the team a project is a good outcome.
+on its own? Must it enforce rules? Where custom software does not provide
+material value over something cheaper, say so once, plainly, and say what would
+do instead. Saving the team a project is a good outcome.
+
+Say it once, and do not stop to ask. The case is made in one reply, at this
+step, and the same reply carries straight on into the next one. Do not end the
+turn on it, do not ask which way they want to go, and do not wait for an answer:
+a person who wanted the cheaper thing will say so unprompted, and one who did
+not has lost nothing. Naming a product they might already have is enough. Do not
+tell them to go to whoever administers it, because that turns a remark into an
+errand.
+
+If they want the tool anyway, that is their decision and not a fault to be
+corrected: record the cheaper option and the choice in the masterplan, and carry
+on founding. Do not ask the question again, do not hold the interview open until
+it is answered, and never make an answer a condition of founding.
 
 ## 5. Founding interview
 
@@ -167,6 +220,14 @@ longer exists. Fill in AGENTS.md's project line and the capability profile
 from step 2. Replace README.md's project-name and purpose placeholders with a
 short description taken from the masterplan.
 
+Where README.md holds no such placeholders, it is somebody's real file: an
+installation that arrived as a whole copy of the kit leaves the kit's own
+read-me at that path, and an adopted project has its own. Leave it exactly as it
+is. Say in one line that the description is going into masterplan.md and
+AGENTS.md instead, and carry on. Never overwrite it, and never stop to ask which
+the person would prefer. A read-me is the cheapest thing in the project to
+change later and the founding is the most expensive thing to lose.
+
 Fill the masterplan from the working notes as well as from the conversation,
 then delete `.agents/tmp/setup-notes.md` in this same step. The masterplan
 carries everything the notes held, so nothing is lost by clearing them.
@@ -186,14 +247,29 @@ user.
 
 ## 8. Review the masterplan
 
-The drafted masterplan gets read using the best independent method recorded
-in the capability profile: an independent subagent, a clean separate
-session, or a user-opened clean chat with a prepared instruction. A
-same-session fallback is permitted only for Explore privately, and must be
-labelled plainly as not independent. For build with expert help and
-professional-led paths, the lack of any independent method is itself a setup
-gap; resolve it before flagged work continues. Stop here until the review has
-happened; when resuming, look for its note in the changelog.
+Who this is for decides whether it runs. On build with expert help and
+professional-led paths, the masterplan is read before flagged work continues,
+because somebody other than the builder is going to be relied on and the plan is
+what they will be relied on against. On Build and run it, skip it: an ordinary
+internal tool has no exposure for a reviewer to find, and a review nobody needed
+costs the person a wait they did not ask for. Say in one line that it was
+skipped and why, and record that in the changelog, so a project that later moves
+up a build path knows this never happened.
+
+Where it does run, use the best independent method recorded in the capability
+profile: an independent subagent, a clean separate session, or a user-opened
+clean chat with a prepared instruction. A same-session fallback is permitted
+only for Explore privately, and must be labelled plainly as not independent.
+
+Where no independent method exists at all, say so, record it in the changelog as
+a setup gap to close before flagged work continues, and carry on founding. Do
+not wait for one to appear. This step used to stop until the review had
+happened, which in a session with nobody else to ask is a wait that never ends,
+and it cost two measured runs their whole founding. A masterplan nobody has read
+is a gap worth naming; a project that was never stood up is not worth trading
+for it.
+
+When resuming, look for the review's note in the changelog.
 
 ## 9. Ownership check
 
@@ -314,15 +390,21 @@ operation rather than several unrelated technical approvals, then give
 AGENTS.md's warning that a technical confirmation box may appear next.
 
 Before the first checkpoint, check whether the project already has a
-suitable save name and email configured. When it is missing, explain: "Each
-checkpoint carries a name and email label showing who saved it. This does
-not create an online account or upload anything," then ask which identity
-the project should use. For a disposable private experiment, offer a
-project-only neutral label instead, for example "Local project user,"
-applying only inside this project. Never invent a real identity, and never
-copy the latest commit's author: that person may be the kit's own author, an
-earlier collaborator, or someone with no connection to whoever is sitting
+suitable save name and email configured. Never invent a real identity, and
+never copy the latest commit's author: that person may be the kit's own author,
+an earlier collaborator, or someone with no connection to whoever is sitting
 here now.
+
+Where none is configured, do not stop for one. Save under a project-only
+neutral label, "Local project user", applying only inside this project, and say
+in one line that the checkpoint carries that label, that it can be changed, and
+that no online account was created and nothing was uploaded. Record the real
+identity as an open question in the masterplan.
+
+A neutral label is not an invented identity, which is what that rule protects
+against, and it is the same fallback this step already offered a disposable
+experiment. Waiting for an answer here costs the whole founding, and a label on
+a checkpoint is among the cheapest things in the project to change afterwards.
 
 When the setup is ready to save, say so before saving, close to: "The
 initial setup is ready to save. I'm going to save a checkpoint inside this
@@ -330,17 +412,29 @@ project so this working state can be recovered later. Nothing will be
 uploaded."
 
 Finish with: one command that proves the project starts, one small passing
-behaviour or smoke check, a recorded preview or local run path, and the
-initial state saved through the route available to this project, pushed
-when the selected route requires it. Load references/completion-report.md
-and report the result in its shape.
+behaviour or smoke check, a recorded preview or local run path, and the initial
+state saved as a checkpoint on this computer. Load
+references/completion-report.md and report the result in its shape.
+
+The founding save is always the checkpoint route, whatever the tool will grow
+into. It stands an initial state up rather than changing anything anybody
+relies on, so there is nothing yet for a reviewer to compare against and nothing
+live to protect. Do not push it, do not open a pull request for it, and do not
+read a remote being reachable as a reason to use one. Founding already told the
+person "Nothing will be uploaded", and that has to stay true.
+
+section-builder chooses between the checkpoint, pull-request and flagged routes
+for each piece built afterwards, on what that piece touches. That choice is
+about the work, not about this. A tool the whole team will share still founds
+locally, and its first piece takes whichever route it earns.
 
 ## Done when
 
 The build path is recorded, the records exist (masterplan.md, CHANGELOG.md, and
-the pieces as issues), AGENTS.md contains the capability profile
-and project commands, the masterplan passed the available review, the plan is
-made of visible pieces each labelled `ready` or with its open question, one
-check passes, and the user has received the plain-language completion report,
-which ends on a clean cut naming `/implement` and `/plan` rather than an offer
-to build in this session.
+the pieces as issues), AGENTS.md contains the capability profile and project
+commands, the masterplan has had whatever review its build path called for or a
+changelog line saying why none ran, the initial state is saved as a local
+checkpoint, the plan is made of visible pieces each labelled `ready` or with its
+open question, one check passes, and the user has received the plain-language
+completion report, which ends on a clean cut naming `/implement` and `/plan`
+rather than an offer to build in this session.

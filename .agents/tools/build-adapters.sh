@@ -8,9 +8,15 @@
 # Generated (thin) adapters, all pointing back at canonical:
 #   .claude/commands/<name>.md       the eight commands as Claude Code slash commands
 #   .claude/skills/<discipline>/      the four disciplines as auto-triggering skills
-#   .claude/skills/humanizer/         the callable maintainer writing skill
 #   .cursor/commands/<name>.md        the eight commands as Cursor slash commands
 #   .gemini/commands/<name>.toml      the eight commands as Gemini CLI slash commands
+#
+# A skill only the kit's own maintainers use lives under
+# .agents/maintainer-skills/ and gets no adapter at all. A shared skills
+# installer reads .agents/skills/ and .claude/skills/ and merges what it finds
+# by the name in the frontmatter, so anything sitting in either folder is a
+# skill somebody installs. Keeping the maintainer's writing skill out of both is
+# what stops a project receiving a thirteenth.
 #
 # Codex, Cursor, and Gemini discover the canonical .agents/skills/ tree
 # directly. Claude Code needs its project skill under .claude/skills/.
@@ -74,9 +80,9 @@ field() {
 }
 
 # Generate the full adapter tree under $1 (either $ROOT for a real run, or a
-# scratch directory for --check). Prints the count of commands and
-# disciplines and maintainer skills generated on fd 3, so the caller can
-# validate the inventory without a second parsing pass over the skills.
+# scratch directory for --check). Prints the count of commands and disciplines
+# generated on fd 3, so the caller can validate the inventory without a second
+# parsing pass over the skills.
 generate_all() {
   OUT="$1"
 
@@ -91,7 +97,6 @@ generate_all() {
 
   commands=0
   disciplines=0
-  maintainer_skills=0
 
   for dir in $(find "$SKILLS" -mindepth 1 -maxdepth 1 -type d | sort); do
     name=$(basename "$dir")
@@ -121,10 +126,6 @@ generate_all() {
     # becoming a discipline the model may start on its own.
     kind=
     kinds=0
-    if [ -f "$dir/.maintainer-only" ]; then
-      kind=maintainer
-      kinds=$((kinds + 1))
-    fi
     if grep -q '^disable-model-invocation:[ \t]*true' "$file"; then
       kind=command
       kinds=$((kinds + 1))
@@ -134,13 +135,12 @@ generate_all() {
       kinds=$((kinds + 1))
     fi
     if [ "$kinds" -ne 1 ]; then
-      echo "error: $name/SKILL.md must declare exactly one trigger type, and declares $kinds: use 'disable-model-invocation: true' for a command a person types, 'user-invocable: false' for an internal discipline another skill calls, or a .maintainer-only marker file for a maintainer skill" >&2
+      echo "error: $name/SKILL.md must declare exactly one trigger type, and declares $kinds: use 'disable-model-invocation: true' for a command a person types, or 'user-invocable: false' for an internal discipline another skill calls. A skill only the maintainers use belongs under .agents/maintainer-skills/ instead, where no installer looks for it" >&2
       exit 1
     fi
     case "$kind" in
       command) commands=$((commands + 1)) ;;
       discipline) disciplines=$((disciplines + 1)) ;;
-      maintainer) maintainer_skills=$((maintainer_skills + 1)) ;;
     esac
 
     claude_banner="<!-- GENERATED from .agents/skills/$name/. Do not edit here; regenerate with .agents/tools/build-adapters.sh -->"
@@ -172,7 +172,7 @@ generate_all() {
         printf 'Treat the following as the user'"'"'s request (it may be empty): {{args}}\n'
         printf '"""\n'
       } > "$OUT/.gemini/commands/$name.toml"
-    elif [ "$kind" = discipline ]; then
+    else
       # Claude Code auto-triggering skill (disciplines only), hidden from the
       # user command menu but still available for a command to compose.
       mkdir -p "$OUT/.claude/skills/$name"
@@ -185,28 +185,15 @@ generate_all() {
         printf '%s\n\n' "$claude_banner"
         printf 'When this skill comes from a Claude plugin, load and follow `${CLAUDE_PLUGIN_ROOT}/.agents/skills/%s/SKILL.md`. Otherwise, load and follow `.agents/skills/%s/SKILL.md`. It is the single source of truth for this skill.\n' "$name" "$name"
       } > "$OUT/.claude/skills/$name/SKILL.md"
-    else
-      # Claude Code does not discover the portable .agents/skills alias, so a
-      # callable maintainer skill gets a thin project adapter of its own.
-      mkdir -p "$OUT/.claude/skills/$name"
-      {
-        printf '%s\n' "---"
-        printf 'name: %s\n' "$name"
-        printf 'description: %s\n' "$desc"
-        printf 'user-invocable: true\n'
-        printf '%s\n' "---"
-        printf '%s\n\n' "$claude_banner"
-        printf 'Load and follow `.agents/skills/%s/SKILL.md`, the single source of truth for this skill.\n' "$name"
-      } > "$OUT/.claude/skills/$name/SKILL.md"
     fi
   done
 
-  if [ "$commands" -ne 8 ] || [ "$disciplines" -ne 4 ] || [ "$maintainer_skills" -gt 1 ]; then
-    echo "error: expected 8 commands, 4 disciplines, and no more than 1 maintainer skill; found $commands, $disciplines, and $maintainer_skills" >&2
+  if [ "$commands" -ne 8 ] || [ "$disciplines" -ne 4 ]; then
+    echo "error: expected 8 commands and 4 disciplines; found $commands and $disciplines" >&2
     exit 1
   fi
 
-  echo "$commands $disciplines $maintainer_skills" >&3
+  echo "$commands $disciplines" >&3
 }
 
 if [ "$CHECK" -eq 1 ]; then
@@ -214,7 +201,7 @@ if [ "$CHECK" -eq 1 ]; then
   trap 'rm -rf "$SCRATCH"' EXIT
 
   counts=$(generate_all "$SCRATCH" 3>&1 1>&2)
-  read -r commands disciplines maintainer_skills <<EOF
+  read -r commands disciplines <<EOF
 $counts
 EOF
 
@@ -233,15 +220,15 @@ EOF
     exit 1
   fi
 
-  echo "adapters match: $commands commands, $disciplines disciplines, $maintainer_skills maintainer skill, no drift"
+  echo "adapters match: $commands commands, $disciplines disciplines, no drift"
   exit 0
 fi
 
 counts=$(generate_all "$ROOT" 3>&1 1>&2)
-read -r commands disciplines maintainer_skills <<EOF
+read -r commands disciplines <<EOF
 $counts
 EOF
 
-echo "Regenerated adapters for $((commands + disciplines + maintainer_skills)) skills ($commands commands, $disciplines disciplines, $maintainer_skills maintainer skill) into .claude/ .cursor/ .gemini/"
+echo "Regenerated adapters for $((commands + disciplines)) skills ($commands commands, $disciplines disciplines) into .claude/ .cursor/ .gemini/"
 echo "Generated files:"
 find "$ROOT/.claude/commands" "$ROOT/.claude/skills" "$ROOT/.cursor/commands" "$ROOT/.gemini/commands" -type f | sed "s|^$ROOT/||" | sort

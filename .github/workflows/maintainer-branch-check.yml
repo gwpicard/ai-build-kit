@@ -1,0 +1,28 @@
+name: maintainer branch check
+
+on:
+  push:
+    branches-ignore:
+      - main
+
+permissions:
+  contents: read
+
+# Pushing again to the same branch replaces the earlier check. Without this,
+# the run it replaced keeps going and is still billed.
+concurrency:
+  group: branch-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source-kit-validation:
+    if: github.repository == 'gwpicard/ai-build-kit'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Regenerate adapters and check for drift
+        run: .agents/tools/build-adapters.sh --check
+      - name: Validate the kit
+        run: .agents/tools/validate-kit.sh

@@ -157,18 +157,21 @@ The kit is free. Building with it needs an agent subscription, which is the real
 
 ## For technical people
 
-The public repository is an Agent Skills source, a Claude Code plugin
-marketplace, and an Agent Plugins folder at `agent-plugin`. Each folder under
-`.agents/skills/` contains one skill and all of the references, templates, or
-scripts it needs, and every installation route carries the same skills. The
-shared installer records the source in `skills-lock.json`. The Claude plugin
-keeps its copy in Claude's plugin cache, where the eight commands use the
-`ai-build-kit:` prefix and the four background skills stay out of the menu until
-a command needs them.
+The public repository is an Agent Skills source and a Claude Code plugin
+marketplace. Each folder under `.agents/skills/` contains one skill and all of
+the references, templates, or scripts it needs, and every installation route
+carries the same skills. The shared installer records the source in
+`skills-lock.json`. The Claude plugin keeps its copy in Claude's plugin cache,
+where the eight commands use the `ai-build-kit:` prefix and the four background
+skills stay out of the menu until a command needs them.
 
-The `agent-plugin` folder is the newest route, for a client that reads the open
-Agent Plugins format. Such a client is free to skip a skill it judges
-non-standard, so the shared installer is the safer choice.
+Agent Plugins is the newest route, for a client that reads that open format. The
+`agent-plugin` folder holds the manifest in this repository and gains its
+`skills` folder only when a numbered version is packaged, so the route is served
+by the release archive rather than by cloning. Keeping that packaged copy out of
+the repository is deliberate: committing it would hold the same twelve skills
+twice, and one of the two would drift. Such a client is also free to skip a skill
+it judges non-standard, so the shared installer is the safer choice.
 
 The setup-ai-build-kit skill carries the project foundation. On its first run it creates
 missing project instructions, harness pointers, environment examples, and the
@@ -182,10 +185,9 @@ update, and uses the same route that installed the kit. Application code,
 records, project instructions, environment files, and the project's own check
 remain under the project's control.
 
-This repository contains the complete public release. Each numbered version has
-a matching tag and reviewed Release notes. The legacy starter files remain
-temporarily so projects created before the installer model can migrate through
-one compatible release.
+This repository is where the kit is built as well as where it is published. Each
+numbered version has a matching tag and reviewed Release notes, and `/maintain`
+reads the latest of those notes before it offers an update.
 
 Problems and suggestions belong in the public issue tracker. Read
 [CONTRIBUTING.md](CONTRIBUTING.md) before opening one.

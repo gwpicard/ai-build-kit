@@ -127,9 +127,22 @@ nothing about what replaces it is the same failure as saying nothing.
 ### The notice holds
 
 Once given, do not soften it, drop it, or recast a named control into something
-you can satisfy yourself. An independent review means a reviewer who did not
-build the work, and offering to re-read your own work does not meet it however
-it is described.
+you can satisfy yourself. Offering to re-read your own work does not meet it
+however it is described.
+
+Where the notice names who should look, that is a person: the owner of the thing
+at risk, or somebody who does that work for a living. No session meets it. Not a
+fresh one, not a clean one, not a separate one, not a subagent, and not the
+project's own review method however independent that method is of the builder.
+Those exist so that work is not reviewed by the thing that wrote it, which is a
+different job from the one a named reviewer was named for, and the two are not
+interchangeable because they happen to share the word review.
+
+The kit does not decide it has satisfied this. Either the named person has looked
+and that is recorded, or they have not and the person accepts the risk on the
+record. Saying an in-project method already covers it is the recast this rule
+exists to refuse, and it is the form the recast actually takes: not a refusal to
+review, but a redefinition of what the review was.
 
 Pushback is not evidence about the risk. Cost, a deadline, the size of the team,
 the person's own willingness to be responsible, and what other tools are said to

@@ -23,7 +23,18 @@ the changelog); the report never leads with them.
 
 Include only the subsections that apply to this project; skip the rest
 rather than leaving a placeholder line unfilled. The checkpoint reference
-belongs at the very end, for troubleshooting only.
+belongs at the very end, for troubleshooting only, and it is the one line that
+is never skipped.
+
+Read the checkpoint back before writing any of this, and carry its reference
+into the report from what you read. Where there is no checkpoint beyond the
+state the project started in, the report is not due: go and save one. Never
+write that the work is saved on the strength of having meant to save it. A run
+once ended "Everything's set up and saved" over a project holding nothing but
+its opening commit, and the person had no way to tell.
+
+Naming the reference is what makes that impossible to do by accident, because
+there is no reference to name for a checkpoint that was never taken.
 
 End with a clean cut, not an offer to build. Say plainly that setup is done and
 the work is saved, name the first ready piece and a rough, honest time, and say

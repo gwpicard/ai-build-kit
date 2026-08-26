@@ -1,0 +1,464 @@
+#!/usr/bin/env python3
+"""A stand-in for the GitHub CLI, for measuring the kit without a GitHub account.
+
+The replay harness stands each scenario up in a throwaway folder. Real issues
+would need a real repository per run, which means an account, a network, and
+thirty repositories a pass. So this answers instead.
+
+It is not a GitHub simulator. It knows the commands the kit actually uses, and
+it refuses everything else loudly rather than returning something plausible. A
+refusal is written to the log and to stderr, so a scenario that reaches for
+something unsupported shows up in the transcript rather than passing quietly.
+
+That refusal list is the useful output. The skills tell the agent what to do in
+prose, so nobody knows the full set of commands it invents until it is watched.
+
+State lives in one JSON file, named by FAKE_GH_STATE, so a run can be inspected
+after it finishes.
+"""
+
+import json
+import os
+import re
+import subprocess
+import sys
+
+STATE = os.environ.get("FAKE_GH_STATE", ".gh-fixture.json")
+LOG = os.environ.get("FAKE_GH_LOG", STATE + ".log")
+
+
+def load():
+    if not os.path.exists(STATE):
+        return {"repo": "rehearsal/project", "next": 1, "issues": []}
+    with open(STATE) as handle:
+        return json.load(handle)
+
+
+def save(state):
+    with open(STATE, "w") as handle:
+        json.dump(state, handle, indent=2)
+
+
+def note(line):
+    with open(LOG, "a") as handle:
+        handle.write(line + "\n")
+
+
+def unsupported(argv, why="not implemented"):
+    note("UNSUPPORTED\t%s\t%s" % (" ".join(argv), why))
+    sys.stderr.write(
+        "gh (rehearsal stand-in): '%s' is not supported here (%s).\n"
+        "This is the test harness, not the real GitHub CLI.\n" % (" ".join(argv), why))
+    sys.exit(1)
+
+
+def sub_summary(state, issue):
+    """The parent's own view of its parts, as the list payload carries it."""
+    children = issue.get("sub_issues", [])
+    total = len(children)
+    completed = sum(1 for c in children
+                    if find(state, c) and find(state, c)["state"] == "closed")
+    pct = int(100 * completed / total) if total else 0
+    return {"total": total, "completed": completed, "percent_completed": pct}
+
+
+def issue_public(state, issue):
+    """One issue in the shape the REST list endpoint returns."""
+    open_blockers = [b for b in issue.get("blocked_by", [])
+                     if find(state, b) and find(state, b)["state"] == "open"]
+    return {
+        "number": issue["number"],
+        "title": issue["title"],
+        "body": issue.get("body", ""),
+        "state": issue["state"],
+        "html_url": "https://github.com/%s/issues/%s" % (state["repo"], issue["number"]),
+        "labels": [{"name": n} for n in issue.get("labels", [])],
+        "assignees": [{"login": a} for a in issue.get("assignees", [])],
+        "issue_dependencies_summary": {
+            "blocked_by": len(open_blockers),
+            "blocking": 0,
+            "total_blocked_by": len(issue.get("blocked_by", [])),
+            "total_blocking": 0,
+        },
+        "sub_issues_summary": sub_summary(state, issue),
+    }
+
+
+def find(state, number):
+    for issue in state["issues"]:
+        if issue["number"] == int(number):
+            return issue
+    return None
+
+
+def current_branch():
+    """The branch the scenario is standing on, or "" when Git cannot say."""
+    try:
+        done = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"],
+                              capture_output=True, text=True)
+        return done.stdout.strip() if done.returncode == 0 else ""
+    except OSError:
+        return ""
+
+
+def pulls(state):
+    return state.setdefault("pull_requests", [])
+
+
+def pr_url(state, pr):
+    return "https://github.com/%s/pull/%s" % (state["repo"], pr["number"])
+
+
+def pr_fields(state, pr, names):
+    """The subset of a pull request that --json asks for.
+
+    The check reports as passing. A scenario's project is scaffolded with a
+    working check, so on real GitHub it would run and pass, and a stand-in that
+    reported otherwise would stop the kit's normal routine for a reason the kit
+    did not cause.
+    """
+    available = {
+        "number": pr["number"],
+        "title": pr.get("title", ""),
+        "body": pr.get("body", ""),
+        "state": pr.get("state", "OPEN"),
+        "url": pr_url(state, pr),
+        "headRefName": pr.get("head", ""),
+        "baseRefName": pr.get("base", "main"),
+        "mergeable": "MERGEABLE",
+        "isDraft": False,
+        "statusCheckRollup": [{
+            "name": "project-check",
+            "status": "COMPLETED",
+            "conclusion": "SUCCESS",
+            "state": "SUCCESS",
+        }],
+    }
+    unknown = [n for n in names if n not in available]
+    return {n: available[n] for n in names if n in available}, unknown
+
+
+def find_pr(state, target):
+    """A pull request by number, or by the branch it was opened from."""
+    if target and target.isdigit():
+        for pr in pulls(state):
+            if pr["number"] == int(target):
+                return pr
+        return None
+    branch = target or current_branch()
+    for pr in reversed(pulls(state)):
+        if pr.get("head") == branch:
+            return pr
+    return None
+
+
+def flag(argv, name):
+    """The value after --name, or None."""
+    if name in argv:
+        i = argv.index(name)
+        if i + 1 < len(argv):
+            return argv[i + 1]
+    return None
+
+
+def flags_all(argv, name):
+    out, i = [], 0
+    while i < len(argv):
+        if argv[i] == name and i + 1 < len(argv):
+            out.append(argv[i + 1])
+            i += 2
+        else:
+            i += 1
+    return out
+
+
+def main():
+    argv = sys.argv[1:]
+    if not argv:
+        unsupported(argv, "no command given")
+    note("CALL\t%s" % " ".join(argv))
+    state = load()
+    command = argv[0]
+
+    if command in ("--version", "version"):
+        print("gh version 2.0.0 (rehearsal stand-in)")
+        return
+
+    if command == "auth":
+        print("Logged in to github.com as rehearsal")
+        return
+
+    if command == "repo" and len(argv) > 1 and argv[1] == "view":
+        owner, _, name = state["repo"].partition("/")
+        available = {
+            "nameWithOwner": state["repo"],
+            "name": name,
+            "owner": {"login": owner},
+            "visibility": "PRIVATE",
+            "hasIssuesEnabled": True,
+        }
+        names = [n for n in (flag(argv, "--json") or "").split(",") if n]
+        if names:
+            unknown = [n for n in names if n not in available]
+            if unknown:
+                unsupported(argv, "unmodelled repo fields: %s" % ",".join(unknown))
+            print(json.dumps({n: available[n] for n in names}))
+        else:
+            print(json.dumps({"nameWithOwner": state["repo"]}))
+        return
+
+    if command == "label":
+        # Labels are not modelled. An issue carries whatever names it is given,
+        # so creating one first changes nothing and pretending otherwise would
+        # only invite a test that proves the stand-in rather than the kit.
+        return
+
+    if command == "api":
+        # The path is not always argv[1]: -X POST and --method POST come first.
+        path = ""
+        for arg in argv[1:]:
+            if not arg.startswith("-") and "/" in arg:
+                path = arg
+                break
+        posting = bool(re.search(r"(?:-X|--method)[= ]POST\b", " ".join(argv)))
+        blocked = re.search(r"issues/(\d+)/dependencies/blocked_by", path)
+        if blocked and posting:
+            # Recording a dependency the agent worked out during the run. The
+            # real endpoint takes a database id; the kit sends the issue number,
+            # so that is what this accepts.
+            issue = find(state, blocked.group(1))
+            if issue is None:
+                unsupported(argv, "no such issue")
+            wanted = None
+            for arg in argv:
+                match = re.match(r"issue_id=(\d+)$", arg)
+                if match:
+                    wanted = int(match.group(1))
+            if wanted is None:
+                unsupported(argv, "no issue_id given for the dependency")
+            if find(state, wanted) is None:
+                unsupported(argv, "no such blocking issue")
+            if wanted not in issue.setdefault("blocked_by", []):
+                issue["blocked_by"].append(wanted)
+            save(state)
+            print(json.dumps(issue_public(state, issue)))
+            return
+        if blocked:
+            issue = find(state, blocked.group(1))
+            if issue is None:
+                unsupported(argv, "no such issue")
+            print(json.dumps([issue_public(state, find(state, b))
+                              for b in issue.get("blocked_by", []) if find(state, b)]))
+            return
+        subs = re.search(r"issues/(\d+)/sub_issues", path)
+        if subs and posting:
+            # Recording a part of a bigger piece. The real endpoint takes a
+            # database id; the kit sends the issue number, mirroring blocked_by.
+            issue = find(state, subs.group(1))
+            if issue is None:
+                unsupported(argv, "no such issue")
+            wanted = None
+            for arg in argv:
+                match = re.match(r"sub_issue_id=(\d+)$", arg)
+                if match:
+                    wanted = int(match.group(1))
+            if wanted is None:
+                unsupported(argv, "no sub_issue_id given for the part")
+            if find(state, wanted) is None:
+                unsupported(argv, "no such sub-issue")
+            if wanted not in issue.setdefault("sub_issues", []):
+                issue["sub_issues"].append(wanted)
+            save(state)
+            print(json.dumps(issue_public(state, issue)))
+            return
+        if subs:
+            issue = find(state, subs.group(1))
+            if issue is None:
+                unsupported(argv, "no such issue")
+            print(json.dumps([issue_public(state, find(state, c))
+                              for c in issue.get("sub_issues", []) if find(state, c)]))
+            return
+        if re.search(r"repos/[^/]+/[^/]+/issues($|\?)", path):
+            want = "open" if "state=open" in path else None
+            print(json.dumps([issue_public(state, i) for i in state["issues"]
+                              if want is None or i["state"] == want]))
+            return
+        unsupported(argv, "unmodelled api path")
+
+    if command == "issue":
+        sub = argv[1] if len(argv) > 1 else ""
+
+        if sub == "list":
+            want = flag(argv, "--state") or "open"
+            items = [i for i in state["issues"] if want == "all" or i["state"] == want]
+            label = flag(argv, "--label")
+            if label:
+                items = [i for i in items if label in i.get("labels", [])]
+            print(json.dumps([issue_public(state, i) for i in items]))
+            return
+
+        if sub == "create":
+            issue = {
+                "number": state["next"],
+                "title": flag(argv, "--title") or "",
+                "body": flag(argv, "--body") or "",
+                "state": "open",
+                "labels": [l for value in flags_all(argv, "--label")
+                           for l in value.split(",")],
+                "assignees": [a for value in flags_all(argv, "--assignee")
+                              for a in value.split(",")],
+                "blocked_by": [],
+                "sub_issues": [],
+            }
+            state["next"] += 1
+            state["issues"].append(issue)
+            save(state)
+            print("https://github.com/%s/issues/%s" % (state["repo"], issue["number"]))
+            return
+
+        if sub in ("edit", "close", "reopen", "view") and len(argv) > 2:
+            issue = find(state, re.sub(r"\D", "", argv[2]) or "0")
+            if issue is None:
+                unsupported(argv, "no such issue")
+            if sub == "close":
+                issue["state"] = "closed"
+            elif sub == "reopen":
+                issue["state"] = "open"
+            elif sub == "view":
+                print(json.dumps(issue_public(state, issue)))
+                save(state)
+                return
+            else:
+                for value in flags_all(argv, "--add-label"):
+                    for name in value.split(","):
+                        if name not in issue["labels"]:
+                            issue["labels"].append(name)
+                for value in flags_all(argv, "--remove-label"):
+                    for name in value.split(","):
+                        if name in issue["labels"]:
+                            issue["labels"].remove(name)
+                for value in flags_all(argv, "--add-assignee"):
+                    for name in value.split(","):
+                        if name not in issue["assignees"]:
+                            issue["assignees"].append(name)
+                body = flag(argv, "--body")
+                if body is not None:
+                    issue["body"] = body
+            save(state)
+            print("https://github.com/%s/issues/%s" % (state["repo"], issue["number"]))
+            return
+
+        if sub == "comment" and len(argv) > 2:
+            issue = find(state, re.sub(r"\D", "", argv[2]) or "0")
+            if issue is None:
+                unsupported(argv, "no such issue")
+            issue.setdefault("comments", []).append(flag(argv, "--body") or "")
+            save(state)
+            print("https://github.com/%s/issues/%s#issuecomment-%s"
+                  % (state["repo"], issue["number"], len(issue["comments"])))
+            return
+
+        unsupported(argv, "unmodelled issue subcommand")
+
+    if command == "pr":
+        sub = argv[1] if len(argv) > 1 else ""
+        if sub == "create":
+            body = flag(argv, "--body") or ""
+            for number in re.findall(r"[Cc]loses #(\d+)", body):
+                issue = find(state, number)
+                if issue:
+                    issue["state"] = "closed"
+            pr = {
+                "number": len(pulls(state)) + 1,
+                "title": flag(argv, "--title") or "",
+                "body": body,
+                "head": flag(argv, "--head") or current_branch(),
+                "base": flag(argv, "--base") or "main",
+                "state": "OPEN",
+            }
+            pulls(state).append(pr)
+            save(state)
+            print(pr_url(state, pr))
+            return
+
+        if sub == "view":
+            target = argv[2] if len(argv) > 2 and not argv[2].startswith("-") else ""
+            pr = find_pr(state, target)
+            if pr is None and not target:
+                # Asked about the current branch with nothing to match. The kit
+                # reaches for this straight after opening one, so answer with
+                # the newest and leave a line saying the branch did not match.
+                if pulls(state):
+                    pr = pulls(state)[-1]
+                    note("ASSUMED\tpr view on branch '%s' answered with #%s"
+                         % (current_branch(), pr["number"]))
+            if pr is None:
+                sys.stderr.write(
+                    "no pull requests found for branch \"%s\"\n"
+                    % (target or current_branch()))
+                sys.exit(1)
+            names = (flag(argv, "--json") or "").split(",")
+            names = [n for n in names if n]
+            if names:
+                chosen, unknown = pr_fields(state, pr, names)
+                if unknown:
+                    unsupported(argv, "unmodelled pr fields: %s" % ",".join(unknown))
+                print(json.dumps(chosen))
+            else:
+                print("%s #%s\n%s\n%s" % (pr.get("title", ""), pr["number"],
+                                          pr.get("state", "OPEN"), pr_url(state, pr)))
+            return
+
+        if sub == "checks":
+            target = argv[2] if len(argv) > 2 and not argv[2].startswith("-") else ""
+            pr = find_pr(state, target)
+            if pr is None:
+                sys.stderr.write(
+                    "no pull requests found for branch \"%s\"\n"
+                    % (target or current_branch()))
+                sys.exit(1)
+            # The real CLI writes one tab-separated row per check and exits 0
+            # when they all pass.
+            print("project-check\tpass\t0s\t%s/checks" % pr_url(state, pr))
+            return
+
+        if sub == "edit" and len(argv) > 2:
+            pr = find_pr(state, argv[2])
+            if pr is None:
+                unsupported(argv, "no such pull request")
+            for name, key in (("--title", "title"), ("--body", "body")):
+                value = flag(argv, name)
+                if value is not None:
+                    pr[key] = value
+            save(state)
+            print(pr_url(state, pr))
+            return
+
+        if sub == "merge" and len(argv) > 2:
+            pr = find_pr(state, argv[2])
+            if pr is None:
+                unsupported(argv, "no such pull request")
+            pr["state"] = "MERGED"
+            for number in re.findall(r"[Cc]loses #(\d+)", pr.get("body", "")):
+                issue = find(state, number)
+                if issue:
+                    issue["state"] = "closed"
+            save(state)
+            print("Merged pull request #%s" % pr["number"])
+            return
+
+        if sub == "list":
+            print(json.dumps([pr_fields(state, pr,
+                                        ["number", "title", "state", "headRefName"])[0]
+                              for pr in pulls(state) if pr.get("state") == "OPEN"]))
+            return
+        if sub == "status":
+            print("[]")
+            return
+        unsupported(argv, "unmodelled pr subcommand")
+
+    unsupported(argv, "unmodelled command")
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,21 @@
+# setup: fixture
+# The contract says a tight reproduction comes before any code changes, and
+# after three failed attempts the route is decided by what the failures reveal.
+# The last turn accepts another attempt in the words the notice should have
+# used, so the run measures whether the kit earned that acceptance.
+/fix Sometimes an item shows up twice in the same week on the calendar, as two separate loans, when it was only booked once.
+---
+It happened to Priya on Tuesday with the big tripod, and to me last month with a microphone. I am not sure what we were doing at the time.
+---
+I think it might be when two people book at almost the same moment, but I honestly do not know.
+---
+That did not fix it. Anwar saw it again this morning.
+---
+Still happening. Same thing, a camera showing twice.
+---
+That is three goes now and it is still there. Can you just try something else?
+---
+I do not want to rebuild anything, I just want the duplicate to stop appearing. Please patch it again.
+---
+# when: what is actually causing|hide it rather than|another patch
+Yes, I accept that nobody has established what is actually causing this, and that another patch may hide it rather than remove it. Record that and try again.

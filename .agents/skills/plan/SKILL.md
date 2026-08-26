@@ -85,6 +85,18 @@ goes first because the label is the only thing saying the question was ever open
 once it is gone, a piece settled properly and a piece nobody looked at read
 exactly alike.
 
+Read the piece back before the label comes off, and let what you read decide
+whether it does. `## Decided` has to hold what settled the question, and
+`## Done when` has to be there at all. Where either is missing, the writing did
+not happen however well the conversation went: write it, read it again, and only
+then relabel.
+
+This is a check, not a reminder. Doing the steps in the right order is what a
+run believes it did; reading the piece back is what tells it whether it did. It
+is the one part of settling a question nobody in the conversation can see, which
+is why a piece has reached `ready` with no `## Done when` in it and nobody
+noticed until the files were read.
+
 - `needs-clarification` runs clarify. Write what comes out into the shape
   `.agents/skills/setup-ai-build-kit/references/pieces.md` describes, and keep the person's
   original words underneath, because their words are what a refinement can be

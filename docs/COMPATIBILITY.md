@@ -49,11 +49,13 @@ one project.
 
 A coding agent that installs plugins in the open
 [Agent Plugins](https://agent-plugins.org) format can use the `agent-plugin`
-folder of the public repository. Point that agent's own plugin installer at
-the folder. It holds a `plugin.json` manifest and a `skills` folder with the
-same twelve skills, each carrying its own supporting files. This is the newest
-route, and a client may skip a skill it judges non-standard, so prefer the
-shared installer when the project has a choice.
+folder. That folder gains its skills when a numbered version is packaged, so
+take it from the release archive rather than from a clone of the repository,
+and point the agent's own plugin installer at it. It holds a `plugin.json`
+manifest and a `skills` folder with the same twelve skills, each carrying its
+own supporting files. This is the newest route, and a client may skip a skill
+it judges non-standard, so prefer the shared installer when the project has a
+choice.
 
 After installation, run `setup-ai-build-kit`. That skill prepares missing project
 foundation files before the interview. It preserves existing files, so every
@@ -104,9 +106,9 @@ project records, environment files, and the project check under the project's
 control.
 
 Projects created before this installation model may not have
-`skills-lock.json`. Their existing archive updater can move them to the bridge
-release. On the next `maintain` visit, `npx skills add gwpicard/ai-build-kit`
-registers the installed skills. Later updates use the normal command above.
+`skills-lock.json`. On the next `maintain` visit,
+`npx skills add gwpicard/ai-build-kit` registers the installed skills. Later
+updates use the normal command above.
 
 ## Harness map
 

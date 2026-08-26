@@ -96,8 +96,11 @@ prevent it, and that you flag what you can recognise and will miss things.
 Nothing is refused. The person may accept the risk and have the work built, and
 that acceptance is recorded in the build-path section with the date and who gave
 it. What may not happen is the notice being softened or dropped later, or a
-named control being recast into something you can satisfy yourself. An
-independent review means a reviewer who did not build the work.
+named control being recast into something you can satisfy yourself. Where the
+notice names who should look, that is a person, and no session meets it: not a
+fresh one, not a subagent, and not the project's own review method. Those exist
+so work is not reviewed by whatever wrote it, which is a different job from the
+one a named reviewer was named for.
 
 Cost, deadlines, team size, and the person's willingness to be responsible all
 change what they decide. None of them changes who is exposed, so none of them

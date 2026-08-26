@@ -131,6 +131,22 @@ It does not replace professional developers. It is at its best when it tells you
 hours of one to purchase, which is an odd thing for a tool to be proud of and is
 the point anyway.
 
+It also holds nothing that needs a service somebody else runs: no hosted
+scanning, no remote browser testing, no production monitoring, no vulnerability
+feed, no stored assurance records, no trust badges, no compliance dashboard, no
+expert marketplace, and nothing that compares one project against another.
+
+Each of those needs a person to run it, watch it and pay for it. A workflow that
+installs into a folder cannot provide any of them honestly, and a kit that
+pretended otherwise would be making exactly the kind of unbacked claim it exists
+to stop. Where a project genuinely needs one, the fit check says so and names it
+as outside help, in the same way it names a developer.
+
+That line is about who runs a thing, not about what the kit is allowed to look
+at. The kit reads the work it produced and reports in plain words, and it may get
+better at that over time. What it will not do is claim there is a service behind
+it.
+
 ## Deciding what to add
 
 New techniques appear constantly: repositories, articles, tool features, client
@@ -242,7 +258,7 @@ piece that is "made of parts", nothing more. The line that keeps it from becomin
 a second way to be blocked is the outcome: a part shares the parent's outcome,
 while a blocked-by piece is a different outcome that must come first. Without that
 line, a piece would have two kinds of not-ready and /implement would not know
-which it was looking at, which is the mistake the #86 investigation warned about.
+which it was looking at, which is the mistake an earlier investigation warned about.
 
 ## Keeping it honest
 

@@ -148,6 +148,20 @@ until all four are behind you.
 The order carries this. An acceptance collected once the replacement exists is
 not an acceptance, it is a note about something that already happened.
 
+Read the masterplan back before the replacement starts, and let the `Accepted:`
+line being there decide whether it does. Where it is not there, the acceptance
+was not recorded whatever was said in the conversation, and the work waits.
+Doing the steps in order is what a run believes it did; reading the line back is
+what tells it whether it did.
+
+Being told to carry on is not an acceptance. "Try something else", "just fix
+it", and going quiet are instructions about the work, not decisions about the
+risk. What the line records is the person hearing who is exposed and saying they
+accept that: if you cannot quote them accepting it, there is nothing to record
+and the work has not been accepted. Ask once, plainly, naming the exposure
+again in a sentence, and wait for the answer to that question rather than
+reading one into the next thing they say.
+
 ## Done when
 
 The exact original symptom no longer occurs, the repeatable evidence passes,
