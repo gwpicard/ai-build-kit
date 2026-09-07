@@ -285,6 +285,18 @@ rename; a number does not.
   graded, and that the rollup says so. It drives the rollup with graded runs
   built by hand, so a withdrawn notice is proved not to cost a run its pass while
   flagged work built with nothing on the record still fails.
+- `.agents/tests/release-label.sh` checks the guard that refuses a pull request
+  nobody has sorted. Release Drafter picks the next version from labels and
+  cannot read a change, so an unlabelled pull request falls through to "Other
+  changes" and quietly becomes a patch. Four merged that way and the repository
+  proposed a patch for a release adding a ninth command; a person asking a
+  question is what caught it, an hour after the release was cut. So the guard
+  asks only whether somebody chose, never whether they chose correctly, since
+  knowing that means reading the change. The check drives the real script, and
+  its second half is the one that matters: it reads the labels out of
+  `release-drafter.yml` and requires the script to accept every one, because two
+  written-out lists of the same thing drift and the drift would refuse a pull
+  request labelled exactly as the configuration says.
 - `.agents/tests/version-stamp.sh` guards the release stamp: that all three
   version-bearing files move together, that a preview never reaches the branch
   every installer reads, that an already-stamped tree takes the next version,

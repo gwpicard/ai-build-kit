@@ -1766,6 +1766,31 @@ $github_yaml_files
 GITHUBYAMLFILES
   pass "GitHub configuration files parse as YAML"
 
+  # Parsing is not the same as being the right shape. A run block written as a
+  # literal scalar ends the moment a line is indented less than the block, and
+  # what follows becomes a top-level key. The document still parses, and a check
+  # that reads `jobs` still finds it, so nothing local complains. GitHub rejects
+  # the workflow outright and reports a nought-second failure against the push.
+  #
+  # That happened to the workflow this check sits beside. So the keys are named,
+  # and anything else is a run block that ended early. `on` is absent from the
+  # list because YAML reads it as the boolean true.
+  for wf in "$ROOT"/.github/workflows/*.yml "$ROOT"/.github/workflows/*.yaml; do
+    [ -f "$wf" ] || continue
+    stray=$(python3 - "$wf" <<'STRAYKEYS'
+import sys, yaml
+known = {"name", True, "on", "permissions", "concurrency", "jobs", "env",
+         "defaults", "run-name"}
+doc = yaml.safe_load(open(sys.argv[1])) or {}
+print(" ".join(repr(k) for k in doc if k not in known))
+STRAYKEYS
+)
+    if [ -n "$stray" ]; then
+      fail "$(basename "$wf") has a top-level key that is not a workflow key, which is what a run block ending early looks like: $stray"
+    fi
+  done
+  pass "no workflow has a stray top-level key from a run block ending early"
+
   # Structural contract: private source validation and the public starter's
   # deliberately failing project check are separate workflows, and every
   # rehearsal in .agents/tests/ runs on a pull request here.
