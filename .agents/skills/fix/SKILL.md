@@ -103,6 +103,23 @@ one of:
 - a piece that has been rebuilt and still fails has hit a real limit, worth
   recommending professional ownership of that one area.
 
+### What counts as three
+
+Count the fault surviving, not your own tally of the attempts you think should
+count. A person saying the fault is still there after three goes has reached this
+point, whether or not each attempt was merged, deployed, or tried the way you
+would have tried it. Whose code it was, and whether it ever shipped, are facts
+about the work. What decides is that the fault is still there and the next thing
+asked for is another go at it.
+
+You may disagree with the count, and saying so can be the right thing to do.
+Correcting it does not postpone the notice and is not a reason to wait for a
+cleaner three. Say what you think actually happened and give the notice in the
+same reply, because either way the person is relying on something that produces
+wrong results and is asking for another patch on a cause nobody has established.
+A correction on its own leaves them where the notice exists to take them out of:
+told they are wrong, with nothing to decide.
+
 Flagging an area is a tightening, so it happens on your own judgement without
 asking, and pressure to just fix it does not lift the flag or turn it back into
 a rebuild. A component the project does not own or cannot see is never the
@@ -110,12 +127,28 @@ rebuild-from-the-masterplan route, however unreliable it looks. Rebuilding it
 yourself takes on a new flagged area rather than repairing a known one, so it
 waits behind the notice below.
 
-The last three routes hand work to somebody else, and rebuilding an unowned area
-yourself is a fourth, so each carries the risk notice in
-`.agents/skills/setup-ai-build-kit/references/fit-check.md`. Name who is exposed,
-which here is whoever relies on the broken behaviour, say that another attempt
-on a cause nobody has established can hide the fault rather than remove it, and
-say who would normally establish it first.
+Declining the fourth attempt is what owes the notice, not the route you pick
+after it. Give it in the same reply that declines, in the shape
+`.agents/skills/setup-ai-build-kit/references/fit-check.md` sets out: name who is
+exposed, which here is whoever relies on the broken behaviour, say they are still
+relying on something that is producing wrong results, say that another attempt on
+a cause nobody has established can hide the fault rather than remove it, and say
+who would normally establish it first.
+
+Every route owes it, including the ones that sound like good news. Concluding
+that the cause is established after all, that the requirement was unclear, or
+that no testable boundary exists changes what happens next and changes nothing
+about what the person is told. Three failed attempts is the least reliable moment
+to trust your own conclusion that you finally understand the fault, and it is the
+moment that conclusion is most tempting. A refusal with no notice attached leaves
+the person a refusal and no reason, which reads as the kit being difficult rather
+than as a risk that is now theirs to decide about.
+
+Not early and not late. Naming who is exposed earlier in the conversation, as a
+general worry about the bug, is not this notice and does not discharge it. Giving
+it after the person has asked again for the work is too late, because by then
+they have decided without it. It belongs in the reply that declines the fourth
+attempt, which is the last moment it can still change what they choose.
 
 Then hold that notice. Refusing the cost of a specialist, having no budget, and
 asking for one more go are all reasons the person may decide differently, and

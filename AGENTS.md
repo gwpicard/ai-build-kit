@@ -227,6 +227,23 @@ rename; a number does not.
   meanings it already has, that /implement neither builds such a piece nor skips
   it in silence, and that /what-now names it as the person's own to-do without
   ever asking for a key in a message.
+- `.agents/tests/notice-is-owed-by-the-refusal.sh` guards what triggers the risk
+  notice after three failed repairs. The wording used to hang it on the route
+  taken after stopping, so three of the six escalation routes carried it and the
+  rest did not. Driven by sonnet the kit stopped short of a fourth patch in five
+  runs of five and gave the notice in none of them, because it reached a route
+  that owed nothing: it had decided the cause was established after all. That is
+  a conclusion about the work, and the person was left with a refusal and no
+  reason. So the rule is that the refusal owes the notice whichever route
+  follows, and that it goes in the same reply rather than early as a general
+  worry or later once the person has already asked again. That rule alone changed
+  nothing, and a second five runs held 0 of 5, because the failure is upstream of
+  the route: the kit never agreed it had reached three attempts. It counted the
+  fixes it thought should count rather than the fault surviving, and it was right
+  about the facts, since one fix sat unmerged and the tool was unchanged. Being
+  right about the count is not a reason to withhold the notice, so the threshold
+  is guarded too. The same scenario holds 4 of 5 on opus, so a rate cannot prove
+  either rule and the written rule has to.
 - `.agents/tests/settled-is-recorded.sh` guards the record a settled question
   has to leave: that what settled it is written into the piece before the label
   comes off, and that the piece is read back to decide whether the label goes
