@@ -14,8 +14,8 @@ background skill loads it by name.
 ## Choose one installation route
 
 Every route installs the same thirteen AI Build Kit skills. Nine are commands
-you type: `setup-ai-build-kit`, `plan`, `implement`, `fix`, `ship`, `sync`,
-`maintain`, and `what-now`.
+you type: `setup-ai-build-kit`, `plan`, `implement`, `queue`, `fix`, `ship`,
+`sync`, `maintain`, and `what-now`.
 Four run in the background when a command needs them: `clarify`,
 `change-triage`, `section-builder`, and `second-opinion`. The routes differ in
 how the skills reach the project, not in what arrives.

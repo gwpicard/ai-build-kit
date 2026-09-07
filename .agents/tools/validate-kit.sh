@@ -2000,6 +2000,58 @@ DENYFILES
 fi
 
 # ---------------------------------------------------------------------------
+echo "== Command lists in shipped documents =="
+
+# A count and a list are two claims, and only the count was guarded. A release
+# shipped a document reading "Nine are commands you type" above a list of eight
+# names, because raising the number is a search-and-replace and adding the name
+# to every list somewhere else is not. The founded project's own instructions
+# were one of those documents, so a new project was told about a command it
+# never learned the name of.
+#
+# So the list is compared with the inventory rather than with a number. These
+# are the shipped documents that name the commands one by one; a document that
+# mentions one command in passing is not a list and is not checked.
+#
+# The loop reads a here-document rather than a pipe. A pipeline runs its body in
+# a subshell, where fail sets the failure flag on a copy and the validator exits
+# zero having printed FAIL. That is worse than no check, and it is how the first
+# version of this one behaved.
+command_lists="$ROOT/docs/COMPATIBILITY.md
+$SKILLS/setup-ai-build-kit/templates/foundation/AGENTS.md"
+
+list_ok=1
+while IFS= read -r list_file; do
+  [ -n "$list_file" ] || continue
+  if [ ! -f "$list_file" ]; then
+    fail "missing $list_file"
+    list_ok=0
+    continue
+  fi
+  # The run of backticked names that starts at setup-ai-build-kit, joined onto
+  # one line first so a list wrapped across lines is read whole.
+  listed=$(tr '\n' ' ' < "$list_file" \
+    | grep -oE '`setup-ai-build-kit`[^.]*' \
+    | head -1 \
+    | grep -oE '`[a-z-]+`' \
+    | tr -d '`' \
+    | sort -u)
+  expected=$(printf '%s\n' "$expected_commands" | sort)
+  if [ "$listed" != "$expected" ]; then
+    fail "$(basename "$list_file") names the commands one by one and the list does not match the inventory"
+    echo "  expected:" >&2
+    echo "$expected" | sed 's/^/    /' >&2
+    echo "  found:" >&2
+    echo "$listed" | sed 's/^/    /' >&2
+    list_ok=0
+  fi
+done <<COMMANDLISTS
+$command_lists
+COMMANDLISTS
+
+[ "$list_ok" -eq 1 ] && pass "every shipped document that lists the commands names all of them"
+
+# ---------------------------------------------------------------------------
 echo "== Stale-claim checks =="
 
 # docs/MAINTAINING.md is deliberately excluded: it is maintainer-only and the

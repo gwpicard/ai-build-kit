@@ -41,8 +41,8 @@ not ask for. Do not widen a fix into a tidy-up.
 The work lives in thirteen installed skills. Nine are commands you type. Four run
 in the background when a command needs them.
 
-- Commands: `setup-ai-build-kit`, `plan`, `implement`, `fix`, `ship`, `sync`, `maintain`,
-  `what-now`.
+- Commands: `setup-ai-build-kit`, `plan`, `implement`, `queue`, `fix`, `ship`,
+  `sync`, `maintain`, `what-now`.
 - Background skills: `clarify`, `change-triage`, `section-builder`,
   `second-opinion`.
 
