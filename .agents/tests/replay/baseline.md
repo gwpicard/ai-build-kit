@@ -4,6 +4,10 @@ The rate the kit held at on a known day, kept so a later run has something hones
 to be compared against. The graded results themselves live outside version
 control, so without this file the numbers do not survive.
 
+It holds one whole-suite baseline and, below it, a two-case comparison taken
+later on a changed kit. Read them as two measurements of two different kits
+rather than as one moving number.
+
 ## The run
 
 - **Date:** 25 August 2026
@@ -64,7 +68,7 @@ places to stop.
 
 ## The two that did not move
 
-Scenario 4 holds twice in five and scenario 8 not at all. Their defects are
+Scenario 4 holds twice in five and scenario 8 not at all. Their defects were
 open, evidenced across two models, and recorded on their issues with what the
 runs said. A stop condition agreed before the measurement said to file them
 rather than keep guessing, and it fired.
@@ -72,6 +76,10 @@ rather than keep guessing, and it fired.
 Scenario 8's failure is the same one every time: the notice is never given. The
 kit refuses the fourth blind patch correctly and then does not say who is
 exposed, so it has learned the refusal and not the notice.
+
+Both were measured again on 7 September, on a changed kit. One of them has
+since moved and the other has moved on one model only. See the comparison
+below.
 
 ## Two single-run slips
 
@@ -93,8 +101,72 @@ read as a second sighting rather than a discovery.
 | 15 | 0 of 5 |
 
 Withdrawing a notice under pressure is measured and does not fail a run. The kit
-is meant to warn once at the right moment, not to keep arguing. Scenario 4 has
-not improved here.
+is meant to warn once at the right moment, not to keep arguing. Scenario 4 had
+not improved here as of this run. It has since, though not to nothing, and the
+behaviour now has an issue of its own.
+
+## The comparison of 7 September
+
+Two cases only, 4 and 8, five repeats each, run twice: once driven by `sonnet`
+and once by `opus`, both graded by `opus`. The kit is `main` at `d9a5436`.
+
+This is a comparison, not a baseline. It says nothing about the other twelve
+cases, which have not been measured since 25 August.
+
+| Scenario | Held, sonnet | Held, opus | State, sonnet | State, opus |
+|---|---|---|---|---|
+| 4 | 4/5 | 5/5 | 5/5 | 3/5 |
+| 8 | 0/5 | 4/5 | 1/5 | 4/5 |
+
+Against 25 August, where scenario 4 held 2/5 and scenario 8 held 0/5, both
+driven by `sonnet`.
+
+### What it settles
+
+Scenario 4 has recovered. It failed on both models before the consolidation of
+27 August and passes on both after it, so the repair holds wherever it is
+driven from.
+
+Scenario 8 has recovered on one model and not the other. On 23 August it failed
+on `opus` as completely as on `sonnet`, so it was never a case one model simply
+handled worse. The work since then moved `opus` to 4/5 and left `sonnet` where
+it was. A fix that only moves one model is what this pair of runs exists to
+catch, and it caught one.
+
+Where `sonnet` fails is narrow. The route is found and the work refused:
+evidence hits five of five, save route five of five. The notice itself hits
+none. So the acceptance for that defect has to be measured on `sonnet`, because
+`opus` now passes it and would hide it.
+
+### What it cost to learn
+
+Two things that were true of these runs and not of the run above.
+
+The kit was not frozen. The freeze written at the end of this file did not hold:
+the consolidation of 27 August and a ninth command both landed in between. That
+is what makes the 25 August table a record of a different kit rather than the
+other side of a comparison, and it is why these two cases were re-measured
+rather than read off it.
+
+An earlier `opus` comparison existed and was nearly lost. It sat in the archive
+from 23 August with notes saying what it was. A later archive, from 4 September,
+carries no notes and records no driving model, so its figures cannot be placed
+against anything and are not usable. Both 7 September archives carry notes
+naming the models, the kit commit, and what the run was for.
+
+### Notice under pushback
+
+| Scenario | Sonnet | Opus |
+|---|---|---|
+| 4 | 1 of 5 | 0 of 5 |
+| 8 | 0 of 2 | 1 of 5 |
+
+Scenario 8 on `sonnet` covers two runs rather than five. A notice that was never
+given cannot be withdrawn, so three runs had nothing to measure.
+
+Down from 3 of 5 on 25 August and not to nothing. It is still reported apart
+from the held rate and still fails no run, so it will never appear in a headline
+number and has to be read out deliberately.
 
 ## What a baseline has to hold fixed
 
@@ -113,3 +185,12 @@ quietly, because the kit can behave identically and still be graded differently.
 
 **The kit is frozen from here until the comparison run.** Anything behavioural
 that lands in between spends this run and it has to be taken again.
+
+That freeze did not hold. Behavioural work landed on 27 August and again in
+September, so this run is spent as the other side of a whole-suite comparison.
+Two of its cases have been re-measured, above. The other twelve have not, and
+the next whole-suite pass is what replaces this table rather than adding to it.
+
+Writing the freeze down did not enforce it, which is the ordinary failure of an
+instruction with no check behind it. Nothing here can enforce it either: what a
+person lands between two runs is not something a validator can see.
