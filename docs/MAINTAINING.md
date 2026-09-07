@@ -269,59 +269,45 @@ close first.
 
 ## The pull request check
 
-`.github/workflows/checks.yml` is private source machinery. Its
-`source-kit-validation` job regenerates the adapters and runs `validate-kit.sh`
-on pull requests here. It never ships.
+`.github/workflows/source-checks.yml` is private source machinery. It never
+ships. Its `source-kit-validation` job regenerates the adapters and runs
+`validate-kit.sh` on pull requests here.
 
-Its `rehearsal` job runs each script in `.agents/tests/` as a separate check, so
-a failure names itself on the pull request rather than sitting in a log nobody
-opens. The jobs run side by side and none of them stops the others, so one
-broken rehearsal still leaves you the state of the other eight.
-`validate-kit.sh` compares that folder with the list of jobs, so a rehearsal
-added later cannot sit there unrun. Only `mutate.sh` is left out, and it audits
-the suite rather than passing or failing.
+Its `rehearsal` job runs `.agents/tests/run-all.sh`, which is every rehearsal in
+that folder, in a single job. A job for each would name a failure on the pull
+request's own checks list, which reads better. But a hosted job is billed a whole
+minute however long it takes, and most of these finish in seconds, so a job each
+would cost about twenty five minutes to do about three minutes of work.
 
-`validate-kit.sh` calls eight of those rehearsals itself, which is what keeps it
+The runner does that naming instead. It carries on past a failure and names every
+one, in its output and in the run summary, rather than stopping at the first and
+hiding the rest. `rehearsal-runner.sh` is what proves it holds: a validator could
+read a list off the file, but only running the thing settles whether it behaves.
+The runner reads the folder rather than a written-out list, so a rehearsal runs
+from the moment it is saved. Only `mutate.sh` is left out, and it audits the
+suite rather than passing or failing.
+
+`validate-kit.sh` checks that this workflow still has both jobs, that the
+rehearsal job is guarded to this repository, and that it runs `run-all.sh`. The
+last of those is the load-bearing one, because a rehearsal job that ran something
+else, or nothing at all, would go green.
+
+`validate-kit.sh` also calls several of those rehearsals itself by name, and runs
+the whole written-rule family by finding the checks that source
+`lib/rule-shape.sh` rather than by keeping a list of them. That is what keeps it
 a single local command and what gives release preparation its coverage. So the
 hosted run does that work twice, and at about half a minute for the whole set
 that is cheaper than either half losing it.
 
-Do not add a switch to skip the rehearsals when the jobs run them. Every
+Do not add a switch to skip the rehearsals when the hosted job runs them. Every
 expensive fault this repository has had came from a check that passed by never
 running, and the duplication costs half a minute and fails loudly.
 
-This job installs Claude Code and runs the Claude plugin rehearsal for real, and
-runs `fake-github.sh`, neither of which the checks list alone covered. Nothing
-else here reaches the network or uses a token, since the stand-in for the GitHub
-command line tool covers what would otherwise need an account.
-
-The replay harness stays out of this workflow. It holds conversations with a
-large model and costs about a pound each time, so it is run by hand before a
-release and its output is read rather than enforced.
-
-The starter's root `.github/workflows/checks.yml` is copied from
-`.agents/skills/setup-ai-build-kit/templates/foundation/checks.yml`. That project check
-fails on purpose, so a new project cannot receive a green tick that verified
-nothing. `setup-ai-build-kit` replaces the placeholder with the project's real install and
-test commands during stand-up. Keeping these workflows separate is what stops a
-founded project inheriting the kit's own checks, which would fail in a place
-they mean nothing.
-
-`.github/workflows/maintainer-branch-check.yml` is the source repository's
-fallback: it runs the same maintainer validation when a non-`main` branch is
-published, with read-only file access and no retained checkout credential. It
-is intentionally absent from `release-manifest.txt`, so starter and user
-projects do not inherit this extra automation.
-
-Every workflow gate names this repository, and `release-publication.sh` reads
-the folder rather than a list, so a workflow written tomorrow has to carry one
-too. After a rename or a transfer, update all of them together: a gate naming
-the old name skips its job, and a skipped job reports as nothing wrong.
-
-If the pull request that changes the identity cannot receive the old hosted
-check, merge it only with the complete local validator and an independent review
-recorded. Then require a green hosted result from the non-main branch fallback
-on a small follow-up pull request before configuring or publishing a release.
+The job installs Claude Code, so the Claude plugin rehearsal and `fake-github.sh`
+run for real rather than being skipped for want of it. Nothing here reaches the
+network or uses a token, since the stand-in for the GitHub command line tool
+covers what would otherwise need an account. The replay harness stays out
+altogether: it costs money and needs a model, which its own README explains.
 
 ## Keep it generic
 
