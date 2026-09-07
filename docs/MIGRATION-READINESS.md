@@ -24,7 +24,7 @@ issue. Where an answer supersedes something below, the text says so.
 
 ## B1. The four paths that mean two things
 
-The release allowlist carries nine rename mappings, on top of the twelve that
+The release allowlist carries nine rename mappings, on top of the thirteen that
 rebase the canonical skills under `agent-plugin/skills/`. Four of the nine are
 genuine collisions: a file exists at that path here **and** in the public
 repository, with a different meaning in each.
@@ -49,7 +49,7 @@ were never collisions, `CONTRIBUTING.md`, `SECURITY.md`, `.github/ISSUE_TEMPLATE
 than renames.
 
 Everything else in the allowlist passes through unchanged and already means the
-same thing in both places: the twelve skills, the generated adapters, the guard
+same thing in both places: the thirteen skills, the generated adapters, the guard
 and hook folders, `CLAUDE.md`, `GEMINI.md`, `WORKFLOW.md`, `LICENSE`,
 `.gitignore`, `.env.example` and the three shipped documents under `docs/`.
 

@@ -47,10 +47,10 @@ confirming this appeared to fail for that reason alone.
 
 ## The weak spot
 
-Three checks count skills and expect twelve:
+Three checks count skills and expect thirteen:
 `release-builder.sh:120`, `release-builder.sh:126`, and
 `starter-rehearsal.sh:72`. Removing a skill leaves ten and all three fail, as
-they should. Replacing one skill with a copy of another leaves twelve of the
+they should. Replacing one skill with a copy of another leaves thirteen of the
 wrong set, and all three pass.
 
 Only `agent-plugin.sh:152-156` catches that, because it compares the sorted

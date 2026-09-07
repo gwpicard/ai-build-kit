@@ -168,6 +168,15 @@ picks the piece up, and the merged pull request closes it.
 A piece never carries `ready` and a `needs-` label at the same time; settling
 the question is what moves it from one to the other.
 
+`/queue` reads this label to answer a different question: not which piece is
+next, but which of them can be taken on at the same time. A piece can be shaped
+and still be held up, so `ready` alone does not mean startable. What `/queue`
+offers is the ready pieces the printout has already put under `To build`, and a
+piece with an open blocker is never there. That is what makes the group safe to
+take on at once: no two pieces in it are waiting on each other. Shape still
+decides too, so a piece somebody labelled `ready` without giving it a
+`## Done when` is a note, and `/queue` does not offer it either.
+
 Those fifteen are the only labels the kit owns. Any other label on an issue
 belongs to somebody else, so the kit reads past it and never removes it.
 

@@ -74,13 +74,13 @@ describe() {
   case "$1" in
     manifest-drop) echo "a document named in both manifests is dropped from the release allowlist" ;;
     manifest-drop-unpaired) echo "a file named only in the release allowlist is dropped, with no second manifest to cross-check it" ;;
-    humanizer-leak) echo "the maintainer's writing skill is put back beside the twelve and allowed into the release" ;;
+    humanizer-leak) echo "the maintainer's writing skill is put back beside the thirteen and allowed into the release" ;;
     bootstrap-overwrite) echo "project bootstrap overwrites a file the project already had" ;;
     bootstrap-escape) echo "project bootstrap follows a link and writes outside the project" ;;
     maintainer-name-leak) echo "the private source repository is named in the public README" ;;
     adapter-stale) echo "a skill changes without its adapters being regenerated" ;;
     skill-missing) echo "one skill folder disappears, leaving ten" ;;
-    skill-duplicate) echo "one skill is replaced by a copy of another, leaving the wrong twelve" ;;
+    skill-duplicate) echo "one skill is replaced by a copy of another, leaving the wrong thirteen" ;;
     publish-writes-a-tree) echo "a workflow gains the power to replace this repository's tree" ;;
     gate-widened) echo "a workflow gate names a repository the kit no longer lives in" ;;
     command-model-invocable) echo "a person-invoked command becomes available to the model" ;;
@@ -134,7 +134,7 @@ apply() {
     humanizer-leak)
       # The writing skill is kept out of a user's project by living outside
       # every folder an installer reads, so the mistake to rehearse is moving it
-      # back into one. A project would then be offered a thirteenth skill.
+      # back into one. A project would then be offered a fourteenth skill.
       [ -d "$tree/.agents/maintainer-skills/humanizer" ] || return 1
       cp -R "$tree/.agents/maintainer-skills/humanizer" \
         "$tree/.agents/skills/humanizer"
@@ -316,7 +316,7 @@ open(p, "w").write(t)
       # Until now none of that family was exercised at all: the single
       # hand-written rule mutation this replaces was routed to a list of checks
       # that did not include the check built to catch it, so validate-kit caught
-      # it alone and twelve checks were never asked.
+      # it alone and thirteen checks were never asked.
       rule_check=${name#rule-}
       RS_LIST=1 sh "$tree/.agents/tests/$rule_check.sh" \
         > "$WORK/$name.rules" 2>/dev/null || true

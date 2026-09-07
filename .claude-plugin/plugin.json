@@ -20,6 +20,7 @@
     "./.claude/commands/implement.md",
     "./.claude/commands/maintain.md",
     "./.claude/commands/plan.md",
+    "./.claude/commands/queue.md",
     "./.claude/commands/setup-ai-build-kit.md",
     "./.claude/commands/ship.md",
     "./.claude/commands/sync.md",

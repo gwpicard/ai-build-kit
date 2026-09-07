@@ -106,7 +106,7 @@ done
 grep -qF '"version": "0.1.0"' "$FIRST/.claude-plugin/plugin.json" || \
   fail "Claude plugin version does not match the release"
 grep -qF '"./.claude/commands/setup-ai-build-kit.md"' "$FIRST/.claude-plugin/plugin.json" || \
-  fail "Claude plugin does not load the eight manual commands"
+  fail "Claude plugin does not load the nine manual commands"
 grep -qF '"./.claude/skills/section-builder"' "$FIRST/.claude-plugin/plugin.json" || \
   fail "Claude plugin does not load the internal disciplines"
 grep -qF 'disable-model-invocation: true' "$FIRST/.claude/commands/setup-ai-build-kit.md" || \
@@ -123,14 +123,14 @@ grep -qF 'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json' \
   fail "agent plugin does not declare the open plugin standard"
 agent_plugin_skill_count=$(find "$FIRST/agent-plugin/skills" -mindepth 2 -maxdepth 2 \
   -name SKILL.md | wc -l | tr -d ' ')
-[ "$agent_plugin_skill_count" -eq 12 ] || \
-  fail "agent plugin does not expose exactly twelve installable skills"
+[ "$agent_plugin_skill_count" -eq 13 ] || \
+  fail "agent plugin does not expose exactly thirteen installable skills"
 [ "$(cat "$FIRST/agent-plugin/skills/maintain/VERSION")" = "v0.1.0" ] || \
   fail "agent plugin maintain skill version is wrong"
 released_skill_count=$(find "$FIRST/.agents/skills" -mindepth 2 -maxdepth 2 \
   -name SKILL.md | wc -l | tr -d ' ')
-[ "$released_skill_count" -eq 12 ] || \
-  fail "release does not expose exactly twelve installable skills"
+[ "$released_skill_count" -eq 13 ] || \
+  fail "release does not expose exactly thirteen installable skills"
 cmp -s "$FIRST/AGENTS.md" \
   "$FIRST/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md" || \
   fail "released root instructions differ from start's foundation template"

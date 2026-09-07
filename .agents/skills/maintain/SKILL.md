@@ -21,7 +21,7 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    AGENTS.md. If such edits exist, explain them and propose moving the durable
    rule there. Wait for approval rather than replacing an edit silently.
 3. Identify how this project receives AI Build Kit. Check whether
-   `skills-lock.json` records the twelve skills from `gwpicard/ai-build-kit`.
+   `skills-lock.json` records the thirteen skills from `gwpicard/ai-build-kit`.
    In Claude Code, also use `claude plugin list --json` to check for the enabled
    `ai-build-kit@ai-build-kit` plugin and note its installation scope. Also
    check for an Agent Plugins installation: a `plugin.json` naming
@@ -63,7 +63,7 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    `setup-ai-build-kit` in place of `start`, also run "Migrating a project
    founded before the setup-ai-build-kit rename".
 6. If the normal route is unavailable, use the latest public Release as the
-   fallback source. A shared installation may replace only the twelve AI Build
+   fallback source. A shared installation may replace only the thirteen AI Build
    Kit skill folders after the same approval and clean checkpoint. A Claude
    plugin installation keeps its current enabled version when the marketplace
    cannot be reached. Confirm that version with `claude plugin list --json`,

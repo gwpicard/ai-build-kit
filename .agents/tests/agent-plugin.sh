@@ -40,6 +40,7 @@ expected_commands="fix
 implement
 maintain
 plan
+queue
 setup-ai-build-kit
 ship
 sync
@@ -153,7 +154,7 @@ fi
 expected_skills=$(printf '%s\n%s\n' "$expected_commands" "$expected_disciplines" | sort)
 found_skills=$(find "$SKILLS_DIR" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sort)
 if [ "$found_skills" != "$expected_skills" ]; then
-  fail "the agent plugin does not expose exactly the twelve installable skills"
+  fail "the agent plugin does not expose exactly the thirteen installable skills"
 fi
 
 while IFS= read -r skill; do
@@ -172,7 +173,7 @@ deep=$(find "$SKILLS_DIR" -mindepth 3 -name SKILL.md)
 [ -z "$deep" ] || \
   fail "the agent plugin hides a skill below the one level a client reads: $deep"
 
-# --- the vendor extension names exactly the eight commands ---------------
+# --- the vendor extension names exactly the nine commands ----------------
 # The open plugin format has no setting for "a person starts this", so the
 # manifest carries the list under a vendor namespace. Nothing compared it with
 # the canonical inventory, so renaming a command would have left it quietly
@@ -201,7 +202,7 @@ PYEOF
       ;;
     *)
       if [ "$listed" != "$(printf '%s\n' "$expected_commands" | sort)" ]; then
-        fail "personInvokedSkills does not name exactly the eight commands: $(printf '%s' "$listed" | tr '\n' ' ')"
+        fail "personInvokedSkills does not name exactly the nine commands: $(printf '%s' "$listed" | tr '\n' ' ')"
       fi
       ;;
   esac
@@ -214,7 +215,7 @@ if find "$PLUGIN" -name '*humanizer*' | grep -q .; then
   fail "the maintainer's writing skill reached the agent plugin"
 fi
 
-# --- the eight commands say a person starts them; disciplines do not ---
+# --- the nine commands say a person starts them; disciplines do not ----
 while IFS= read -r word; do
   [ -n "$word" ] || continue
   tr '\n' ' ' < "$SKILLS_DIR/$word/SKILL.md" | grep -qF "$PERSON_INVOKED" || \
@@ -254,7 +255,7 @@ cmp -s "$SKILLS_DIR/setup-ai-build-kit/SKILL.md" "$PACK/.agents/skills/setup-ai-
 
 # --- the Claude route is untouched and still complete -------------------
 grep -qF '"./.claude/commands/setup-ai-build-kit.md"' "$PACK/.claude-plugin/plugin.json" || \
-  fail "the Claude plugin manifest stopped selecting the eight manual commands"
+  fail "the Claude plugin manifest stopped selecting the nine manual commands"
 grep -qF '"./.claude/skills/section-builder"' "$PACK/.claude-plugin/plugin.json" || \
   fail "the Claude plugin manifest stopped selecting the internal disciplines"
 grep -qF '"version": "0.3.0"' "$PACK/.claude-plugin/plugin.json" || \

@@ -33,7 +33,7 @@ pass() {
 
 SKILLS="$ROOT/.agents/skills"
 # A skill only the kit's own maintainers use lives here rather than beside the
-# twelve. A shared skills installer reads .agents/skills/ and .claude/skills/
+# thirteen. A shared skills installer reads .agents/skills/ and .claude/skills/
 # and merges what it finds by the name in its frontmatter, so a folder in
 # either one is a skill somebody installs. This folder is in neither.
 MAINTAINER_SKILLS="$ROOT/.agents/maintainer-skills"
@@ -42,6 +42,7 @@ expected_commands="fix
 implement
 maintain
 plan
+queue
 setup-ai-build-kit
 ship
 sync
@@ -92,7 +93,7 @@ echo "== Stray copies =="
 #
 # Nothing said so, which was the real cost. The validator blamed the adapters
 # for being out of date and blamed CI for not running a check, because it
-# counted nine command files where it demands eight and ten skill folders where
+# counted ten command files where it demands nine and ten skill folders where
 # it demands five. Both accusations pointed at work that was fine.
 #
 # A stray cannot reach a release, since release-manifest.txt is an allowlist.
@@ -127,13 +128,13 @@ actual=$(find "$SKILLS" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | s
 expected=$(printf '%s\n%s\n' "$expected_commands" "$expected_disciplines" | sort)
 
 if [ "$actual" != "$expected" ]; then
-  fail "skill inventory does not match the canonical eight commands and four disciplines"
+  fail "skill inventory does not match the canonical nine commands and four disciplines"
   echo "  expected:" >&2
   echo "$expected" | sed 's/^/    /' >&2
   echo "  found:" >&2
   echo "$actual" | sed 's/^/    /' >&2
 else
-  pass "exactly eight commands and four disciplines, named exactly"
+  pass "exactly nine commands and four disciplines, named exactly"
 fi
 
 while IFS= read -r name; do
@@ -191,7 +192,7 @@ while IFS= read -r name; do
     for suffix in "" .md .toml; do
       candidate="$scanned/$name$suffix"
       [ ! -e "$ROOT/$candidate" ] || \
-        fail "$candidate: a maintainer skill has reached a folder an installer reads, so a project would be offered it as a thirteenth skill"
+        fail "$candidate: a maintainer skill has reached a folder an installer reads, so a project would be offered it as a fourteenth skill"
     done
   done <<SCANNED
 $installer_scanned
@@ -241,7 +242,7 @@ else
 fi
 
 # Claude Code: the four generated discipline skills are hidden from the user
-# command menu; the eight generated commands stay person-invoked.
+# command menu; the nine generated commands stay person-invoked.
 while IFS= read -r name; do
   [ -n "$name" ] || continue
   gen="$ROOT/.claude/skills/$name/SKILL.md"
@@ -374,7 +375,7 @@ else
   expected_command_files=$(printf '%s\n' "$expected_commands" | sed 's/$/.md/' | sort)
   actual_command_files=$(find "$ROOT/.claude/commands" -mindepth 1 -maxdepth 1 -exec basename {} \; | sort)
   if [ "$actual_command_files" != "$expected_command_files" ]; then
-    fail ".claude/commands/ must hold exactly the eight generated command files"
+    fail ".claude/commands/ must hold exactly the nine generated command files"
     echo "  expected:" >&2
     echo "$expected_command_files" | sed 's/^/    /' >&2
     echo "  found:" >&2
@@ -399,7 +400,7 @@ else
   fi
 fi
 
-# The Cursor and Gemini trees carry the same eight commands and were covered
+# The Cursor and Gemini trees carry the same nine commands and were covered
 # only by the drift comparison, which asks whether the committed adapters match
 # what the source generates. A source mistake that generates a wrong but
 # self-consistent tree satisfies that and reaches a project. These anchor both
@@ -417,7 +418,7 @@ for adapter in ".cursor/commands:.md:Cursor" ".gemini/commands:.toml:Gemini CLI"
   expected_files=$(printf '%s\n' "$expected_commands" | sed "s/\$/$ext/" | sort)
   actual_files=$(find "$ROOT/$dir" -mindepth 1 -maxdepth 1 -exec basename {} \; | sort)
   if [ "$actual_files" != "$expected_files" ]; then
-    fail "$dir/ must hold exactly the eight generated $tool command files"
+    fail "$dir/ must hold exactly the nine generated $tool command files"
     echo "  expected:" >&2
     echo "$expected_files" | sed 's/^/    /' >&2
     echo "  found:" >&2
@@ -2035,6 +2036,11 @@ check_claim() {
 
 check_claim "all markdown" "all markdown"
 check_claim "seven skills" "seven skills"
+# The command count is written out in words in a dozen documents. The inventory
+# check above knows how many commands there really are; nothing else did, so a
+# document could keep the old number after the count moved and no check would
+# say so.
+check_claim "eight commands" "eight commands"
 check_claim "four project documents" "four project documents"
 check_claim "four project records" "four project records"
 check_claim "four documents" "four documents hold"

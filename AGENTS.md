@@ -22,10 +22,10 @@ repository.
 
 ## Source and starter boundary
 
-- `.agents/skills/` is the single source of truth for the eight commands and
+- `.agents/skills/` is the single source of truth for the nine commands and
   four internal background skills. Nothing else belongs in it.
 - `.agents/maintainer-skills/` holds the Humanizer writing skill, which only
-  the kit's own maintainers use. It sits there rather than beside the twelve
+  the kit's own maintainers use. it sits there rather than beside the thirteen
   because a shared skills installer reads `.agents/skills/` and
   `.claude/skills/` and offers whatever it finds in either, so a folder in one
   of those is a skill somebody installs. Being outside both is the whole
@@ -33,7 +33,7 @@ repository.
   reason.
 - `.claude/`, `.cursor/`, and `.gemini/` are generated adapters. Change the
   canonical skill, then run `.agents/tools/build-adapters.sh`. The Claude
-  plugin exposes the eight generated command files and four hidden background
+  plugin exposes the nine generated command files and four hidden background
   skills. Shared installations use the adapters their coding agents need.
 - `.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md` creates a project's
   root instructions.
@@ -45,7 +45,7 @@ repository.
 - `.claude-plugin/` is the Claude plugin and marketplace metadata. It selects
   generated adapters rather than duplicating a skill.
 - `agent-plugin/plugin.json` is the Agent Plugins manifest. The release
-  allowlist rebases the twelve canonical skills under `agent-plugin/skills/`,
+  allowlist rebases the thirteen canonical skills under `agent-plugin/skills/`,
   so the plugin folder is assembled at release time and this repository keeps
   one copy of each skill.
 - `release-manifest.txt` is the full allowlist for the public kit. A file absent
@@ -129,8 +129,19 @@ rename; a number does not.
 - `.agents/tests/fake-github.sh` checks the replay harness's stand-in for the
   GitHub CLI: the commands it answers, and the ones it still refuses on purpose.
 - `.agents/tests/plan-printout.sh` runs the printout against a fixed set of
-  issues and reads what it wrote: which group each piece lands in, and whether a
-  waiting piece says why.
+  issues and reads what it wrote: which group each piece lands in, whether a
+  waiting piece says why, whether a shaped piece says it is ready, and whether a
+  held-up piece names the piece holding it rather than its number. It also holds
+  the invariant `/queue` rests on, that a piece with an open blocker never
+  reaches the buildable group while a piece whose blocker has closed does.
+- `.agents/tests/queue-groups.sh` guards what `/queue` may call safe to build
+  together. The rule that matters is that it reads the printout's grouping rather
+  than working safety out again, since the printout is where the guarantee comes
+  from. It also guards the blocker being named rather than numbered, a waiting
+  question keeping a piece out of both groups, the command reporting and never
+  building, and `/what-now` keeping its cap of three things, because a
+  `/what-now` that grew the whole list would undo the split that earned the ninth
+  command.
 - `.agents/tests/gated-turns.sh` checks the rule that decides when a scripted
   replay turn is due: that a turn with no precondition still fires by position,
   that one with a precondition waits until the kit has said the thing it

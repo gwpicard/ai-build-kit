@@ -60,7 +60,18 @@ cat >"$WORK/issues.json" <<'JSON'
   {"number": 9, "title": "Booking flow", "html_url": "http://x/9",
    "body": "## So that\nGuests can book.", "assignees": [],
    "labels": [{"name": "how it works"}],
-   "sub_issues_summary": {"total": 2, "completed": 1, "percent_completed": 50}}
+   "sub_issues_summary": {"total": 2, "completed": 1, "percent_completed": 50}},
+  {"number": 10, "title": "Guest list export", "html_url": "http://x/10",
+   "body": "## Done when\nThe list downloads.", "assignees": [],
+   "labels": [{"name": "how it works"}, {"name": "ready"}]},
+  {"number": 11, "title": "Deposits", "html_url": "http://x/11",
+   "body": "## Done when\nA deposit is held.", "assignees": [],
+   "labels": [{"name": "finance"}],
+   "issue_dependencies_summary": {"blocked_by": 1, "total": 1}},
+  {"number": 12, "title": "Refund button", "html_url": "http://x/12",
+   "body": "## Done when\nA refund is sent.", "assignees": [],
+   "labels": [{"name": "finance"}, {"name": "ready"}],
+   "issue_dependencies_summary": {"blocked_by": 1, "total": 1}}
 ]
 JSON
 
@@ -71,6 +82,14 @@ case "$1 $2" in
   "repo view") echo '{"nameWithOwner":"someone/project"}' ;;
   *) case "$2" in
        *"/issues?"*) cat "$FIXTURE" ;;
+       # Deposits is held up by an open piece, which is the case the printout
+       # has to name. Refund button counts a blocker too, but that blocker has
+       # closed, so it is free to build. Both go through the same call, and only
+       # the state in the answer tells them apart.
+       *"/issues/11/dependencies/blocked_by")
+         echo '[{"number":1,"title":"Card checkout","state":"open"}]' ;;
+       *"/issues/12/dependencies/blocked_by")
+         echo '[{"number":2,"title":"Rename the header","state":"closed"}]' ;;
        *dependencies/blocked_by*) echo '[]' ;;
        *) echo '[]' ;;
      esac ;;
@@ -142,6 +161,56 @@ grep "#4" "$OUT" | grep -q "still a note" \
 grep "#1" "$OUT" | grep -q "still a note" \
   && fail "#1 is a sized piece but was marked a note" \
   || pass "a sized piece is not marked a note"
+
+echo "== What the printout says about a piece ready to build =="
+
+# Everything under one heading, rather than the first entry a -A1 would reach.
+# Two groups now carry more than one piece, and a check that only ever reads the
+# first would pass while the second sat in the wrong place.
+section() {
+  awk -v want="$1" '$0 == want { f = 1; next } /^[^ ]/ { f = 0 } f' "$OUT"
+}
+
+# Pieces are named rather than numbered here, the same rule the printout's own
+# readers follow. It also keeps this file clear of the issue-number check, which
+# cannot tell a fixture apart from a real citation and should not have to.
+section "To build" | grep "Guest list export" | grep -q "(ready)" \
+  && pass "a shaped piece waiting to be built says it is ready" \
+  || fail "Guest list export does not say it is ready"
+
+# Shape is what says a piece has been sized. The label follows it and never
+# talks over it, so a piece nobody has labelled is not announced as ready.
+section "To build" | grep "Card checkout" | grep -q "(ready)" \
+  && fail "Card checkout carries no ready label but was printed as ready" \
+  || pass "an unlabelled piece is not printed as ready"
+
+echo "== What the printout says about a blocked piece =="
+
+# The commands that read this file say what is holding a piece up in a sentence
+# a person can follow. A number is not that, and it is one they would have to go
+# and look up.
+section "Blocked" | grep "Deposits" | grep -q "needs Card checkout" \
+  && pass "a held-up piece names the piece holding it" \
+  || fail "Deposits does not name Card checkout as its blocker"
+
+section "Blocked" | grep "Deposits" | grep -q "needs #" \
+  && fail "Deposits names its blocker by number instead of by name" \
+  || pass "a blocker is named rather than numbered"
+
+# The invariant the whole plan rests on: a piece with an open blocker is never
+# offered as buildable, so nothing in To build can be waiting on anything else
+# in To build. Refund button counts a blocker, but it has closed, so it is free.
+section "Blocked" | grep -q "Refund button" \
+  && fail "Refund button's blocker has closed but it is still held" \
+  || pass "a closed blocker does not hold a piece back"
+
+section "To build" | grep "Refund button" | grep -q "(ready)" \
+  && pass "a piece whose blocker has closed is ready to build" \
+  || fail "Refund button is not offered as ready"
+
+section "To build" | grep -q "Deposits" \
+  && fail "a piece with an open blocker was offered as buildable" \
+  || pass "a piece with an open blocker stays out of To build"
 
 echo "== A piece made of parts =="
 

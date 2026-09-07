@@ -344,8 +344,8 @@ reported, and it is not what decides whether the case held.
 
 - Expected path: unaffected; the route decides how the skills arrive, not how the project is built.
 - Visible explanation: the person points their own coding agent's plugin installer at the `agent-plugin` folder of the public repository, then types `setup-ai-build-kit`.
-- Hidden technique: the folder is assembled at release time by the allowlist, which rebases the twelve canonical skills under `agent-plugin/skills/`. This repository keeps one copy of each skill and no second plugin tree.
-- Evidence: `.agents/tests/agent-plugin.sh` checks the manifest's permitted fields, the 1.0.0 schema, the twelve skills as immediate children of `skills`, that no skill hides deeper, that the maintainer writing skill is absent, that `personInvokedSkills` names exactly the eight commands, and that a project stands up from the folder alone.
+- Hidden technique: the folder is assembled at release time by the allowlist, which rebases the thirteen canonical skills under `agent-plugin/skills/`. This repository keeps one copy of each skill and no second plugin tree.
+- Evidence: `.agents/tests/agent-plugin.sh` checks the manifest's permitted fields, the 1.0.0 schema, the thirteen skills as immediate children of `skills`, that no skill hides deeper, that the maintainer writing skill is absent, that `personInvokedSkills` names exactly the nine commands, and that a project stands up from the folder alone.
 - Save route: unaffected.
 - Review: unaffected.
 - Escalation: a client that judges a skill non-standard may skip it, because the two settings keeping a command person-only are not yet in the written standard. `docs/COMPATIBILITY.md` says to prefer the shared installer where a project has a choice.
@@ -358,7 +358,7 @@ reported, and it is not what decides whether the case held.
 - Evidence: `.agents/tests/release-builder.sh` checks that the released README carries the installation command this route uses. The installer itself is somebody else's tool, which the kit never runs, so what it does with the files afterwards is confirmed by installing into a throwaway project and reading the result.
 - Save route: unaffected.
 - Review: unaffected.
-- Escalation: `npx skills update` replaces installed skill files outright, so a local edit to one of the twelve is lost without warning. `maintain` looks for local edits before updating and proposes moving the durable rule into AGENTS.md, which no route touches.
+- Escalation: `npx skills update` replaces installed skill files outright, so a local edit to one of the thirteen is lost without warning. `maintain` looks for local edits before updating and proposes moving the durable rule into AGENTS.md, which no route touches.
 
 ## 30. GitHub setup is required to found the pieces
 

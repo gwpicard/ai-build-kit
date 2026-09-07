@@ -14,13 +14,14 @@ Command names say when to use them.
 | I'm starting something | /setup-ai-build-kit |
 | I want it to... (a new idea) | /plan |
 | Build the next ready piece | /implement |
+| I'm taking on several things | /queue |
 | It's broken | /fix |
 | I think it's ready | /ship |
 | I'm done for today | /sync |
 | It's been a while | /maintain |
 | I'm lost | /what-now |
 
-Two of them change the tool. /implement makes it do something new or different, and /fix brings it back to doing what it already should. /plan decides what to change next and shapes it into a ready piece, without touching the tool yet. The other five are housekeeping around those.
+Two of them change the tool. /implement makes it do something new or different, and /fix brings it back to doing what it already should. /plan decides what to change next and shapes it into a ready piece, without touching the tool yet. The other six are housekeeping around those.
 
 You run /setup-ai-build-kit once. After that, start wherever you actually are. You can open a session with /fix as readily as with /implement, and neither needs the other to have run first. If you pick the wrong one it costs you nothing, because each checks what you typed against the masterplan and sends it down the right route.
 
@@ -104,6 +105,8 @@ Typed alone, /implement takes the next ready piece from the plan. It agrees with
 
 If the change touched an area the build path flags, the best independent method available reviews it first. It reports in plain language, sorted into what's worth stopping for and what's worth knowing.
 
+/queue shows everything ready to build at once, and what is waiting on what. Type it when you are taking on several pieces rather than one, which is the only time you need it. It comes back with two lists. The first is everything ready, and those are safe to take on together, because a piece waiting on another piece is never in it. The second is what is waiting, each line saying which piece has to land first: "deposits cannot start until card payments is built". It changes nothing and builds nothing, so /implement is still what does the work. If the list looks out of date, type /queue again, since it is printed fresh from your project's issues every time.
+
 /plan is how you bring anything new: "/plan add a filter to the board". You never sort your own request; the agent works out what kind of work it is. Clear and piece-sized becomes a ready piece, and /plan offers to build it now or leave it for /implement later. Vague gets a short interview. A question a conversation can't settle gets a disposable prototype, a source check, or a search for something that already does the job. Two of those need you there; the research does not, so you can tell /plan you're leaving and it settles what it can alone, then tells you which pieces are waiting on you. Type /plan with a piece's number to settle that one rather than the next in line. You are never made to settle it there and then: when a request lands on a question, /plan says roughly what settling it would take, minutes for a look-up or a sitting for an interview or a prototype, and offers to file the piece with its question so you can come back to it. Nothing filed that way can be built until the question is answered, and /what-now tells you when enough pieces are waiting that the session is better spent planning than building. Show a mock of what you want and it settles the question instead, with no throwaway built. A prototype comes back as one of two things: a single file you open and click through yourself, or three genuinely different versions to move between and pick from. Anything touching data, access, or money gets written into the masterplan first. If another piece already open would be built in the same place, /plan names it before the work starts, so you can decide whether to carry on, wait, or fold the two together.
 
 If the request would change what kind of project this is, by bringing in outside users or real money or a promise to someone, the agent re-runs the fit check with you before building. A different build path needs different care before people rely on it.
@@ -180,7 +183,7 @@ Normal /implement and /fix completion updates the records directly; you don't ne
 /maintain is the service visit: monthly and light for AI Build Kit updates,
 project dependency updates, and anything the error alerts caught. When a newer
 kit is available, the agent shows the version and what changed, then waits for
-approval. An update refreshes only the twelve AI Build Kit skills and leaves
+approval. An update refreshes only the thirteen AI Build Kit skills and leaves
 your tool, its records, and its own checks alone. A clean checkpoint comes
 first, so an interrupted update can be recovered. The one update that split the
 old `/build` into `/plan` and `/implement` runs a one-time step that labels your

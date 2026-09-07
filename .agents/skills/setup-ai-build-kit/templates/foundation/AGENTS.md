@@ -19,7 +19,7 @@ subagent, browser, or remote service the current harness does not have.
 
 ## The workflow
 
-Work runs through the eight commands installed as AI Build Kit skills. The user
+Work runs through the nine commands installed as AI Build Kit skills. The user
 describes intent in plain language; change-triage chooses the route.
 
 Every promised behaviour needs evidence. Use an automated check for stable
@@ -38,7 +38,7 @@ not ask for. Do not widen a fix into a tidy-up.
 
 ## The skills, and how they are invoked
 
-The work lives in twelve installed skills. Eight are commands you type. Four run
+The work lives in thirteen installed skills. Nine are commands you type. Four run
 in the background when a command needs them.
 
 - Commands: `setup-ai-build-kit`, `plan`, `implement`, `fix`, `ship`, `sync`, `maintain`,

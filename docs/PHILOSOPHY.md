@@ -52,13 +52,17 @@ rather than patched a fourth time, often ending in a rebuild from the
 documents, and why a disappointing autonomous run is answered by sharpening
 the plan instead of hand-editing whatever it produced.
 
-The vocabulary stays small and grows only by deliberate redesign. Eight
-commands, each named after a moment a person actually reaches for, and every new
+The vocabulary stays small and grows only by deliberate redesign. Nine commands,
+each named after a moment a person actually reaches for, and every new
 capability arrives as behaviour of an existing command wherever it can. A
 capability that genuinely needs its own command is a sign a command was carrying
 two jobs at once, and splitting it is a redesign conversation, not a casual
-addition. The count moved from seven to eight exactly once, when `/build` was
-found to be both planning and building and the planning half became `/plan`.
+addition. The count has moved twice, both times for that reason. Seven became
+eight when `/build` was found to be both planning and building, and the planning
+half became `/plan`. Eight became nine when `/what-now` was found to be both
+orientation and overview: it names at most three things because somebody lost
+cannot use more, and somebody taking on several pieces at once needs the whole
+list, so that half became `/queue`.
 
 Machinery stays invisible until it matters. Nobody needs to know a review
 skill exists until the agent says a change touched sign-in and a fresh
@@ -202,6 +206,16 @@ means the tests really passed; red means don't merge". When it is red they type
 Review reports split into "worth stopping for" and "worth knowing", added. The
 same findings as before, sorted, so the decision becomes one question: is the
 first list empty?
+
+`/queue`, the whole ready list at once, added as a ninth command. It failed
+question 1 under every existing command, which is the answer that mattered:
+`/what-now` was doing orientation and overview at once, and the cap that keeps
+orientation usable is what squeezed the overview out. The person sees two lists
+when they type it, what can be built together now and what is waiting on what.
+The sentence is "it shows everything ready to build at once, and what is waiting
+on what". When the list looks wrong they type it again, since it is printed from
+the issues and never edited. They never need to learn that a piece can depend on
+another piece.
 
 Specialised agent role systems, rejected. Fails question 1, because each role is
 a new thing to know, and question 3, because there is no one-sentence version.

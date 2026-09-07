@@ -17,7 +17,7 @@ produced the same mistake more than once.
   `.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md` carries the rules that
   start places at the root of a project.
 
-The eight user-facing commands are product under test here, not the source
+The nine user-facing commands are product under test here, not the source
 repository's own operating workflow. Maintainer changes follow root `AGENTS.md`
 and this guide.
 
@@ -86,7 +86,7 @@ the regenerated compatibility fixtures. Never hand-edit anything under
 `.claude/`, `.cursor/`, or `.gemini/`. New projects use the shared skills
 installer, the optional Claude Code plugin, or the Agent Plugins folder. The
 Claude plugin metadata lives under `.claude-plugin/`. It explicitly
-selects the eight generated command files and four generated background skills.
+selects the nine generated command files and four generated background skills.
 Those thin adapters load the canonical instructions from the plugin cache. The
 Agent Plugins manifest lives under `agent-plugin/`, and its `skills`
 folder is assembled by the release allowlist rather than by
@@ -94,7 +94,7 @@ folder is assembled by the release allowlist rather than by
 generated files also remain as maintainer checks. There is no `.codex/` adapter tree to
 protect.
 
-The eight commands each end their description with a sentence saying the person
+The nine commands each end their description with a sentence saying the person
 types the command and it never starts on its own. That description is the only
 text a client reads before deciding to trigger a skill by itself, so the
 sentence stays. It must stay last, because the generated adapters take the
@@ -117,7 +117,7 @@ absent it started it.
 They are not in the written Agent Skills standard, so its reference checker
 reports every shipped skill as invalid. Keep them anyway, with the cost on the
 record: the plugin standard tells a client to skip any skill that fails the
-skill standard, so a strict Agent Plugins client would load none of the twelve.
+skill standard, so a strict Agent Plugins client would load none of the thirteen.
 Claude Code accepts them, which is why that route works today. If the standard
 adopts a setting of its own, follow it and update the short person-facing
 version in `docs/COMPATIBILITY.md`.
@@ -127,9 +127,9 @@ Humanizer is not in that tree at all. It lives under
 
 The reason is what a shared skills installer reads. It looks in
 `.agents/skills/` and `.claude/skills/` and offers whatever it finds in either,
-merging the two by the `name` in each file's frontmatter. The twelve adapters
-carry the names of the twelve skills they point at, so they merge away and an
-installer finds twelve. Nothing else is called `humanizer`, so a copy in either
+merging the two by the `name` in each file's frontmatter. The thirteen adapters
+carry the names of the thirteen skills they point at, so they merge away and an
+installer finds thirteen. Nothing else is called `humanizer`, so a copy in either
 folder would be a thirteenth skill offered to every project.
 
 Sitting outside both folders is what prevents that. It is also why the skill
@@ -170,7 +170,7 @@ COMPATIBILITY.md, beside this file, holds the full per-tool map.
 Every change to `.agents/skills/` or the kit's own machinery runs
 `.agents/tools/validate-kit.sh`, which checks:
 
-- the canonical skill inventory (exactly eight commands and four background
+- the canonical skill inventory (exactly nine commands and four background
   skills, named exactly, with nothing else in the folder);
 - the maintainer skill boundary: the writing skill carries its vendored licence,
   and no folder or command file named for it exists in `.agents/skills/`,
@@ -370,7 +370,7 @@ maintainer's real Claude configuration.
 
 Run `.agents/tests/agent-plugin.sh` too. It builds a release and checks the
 assembled `agent-plugin` folder against the open standard: the manifest's
-permitted fields, the twelve skills as immediate children of `skills`, no
+permitted fields, the thirteen skills as immediate children of `skills`, no
 skill hidden deeper, no maintainer-only writing skill, and a project
 stand-up from that folder alone.
 
@@ -529,7 +529,7 @@ home and every other mention is a link.
 
 - Root `README.md`: what the kit is, installation, and positioning for someone
   deciding whether to use it. It ships as the public README unchanged, so it is
-  written for that reader rather than for a maintainer. The eight-command table
+  written for that reader rather than for a maintainer. The nine-command table
   there is a summary; what each command actually does belongs to WORKFLOW.
   Orientation for someone working on the source belongs in root `AGENTS.md`.
 - `WORKFLOW.md`: everything operational. How work runs, day to day, for someone

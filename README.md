@@ -1,7 +1,7 @@
 # AI Build Kit
 
 An installable workflow that helps non-developers build reliable software with an
-AI coding agent. Eight commands cover the project's life. Four more skills
+AI coding agent. Nine commands cover the project's life. Four more skills
 run in the background, handling the interview, routing, building and review.
 
 You do not need to read code. You do need to explain what should happen, try
@@ -37,7 +37,7 @@ more than one agent, run this from the project folder:
 npx skills add gwpicard/ai-build-kit
 ```
 
-Choose the agents you use and install all twelve AI Build Kit skills. Then ask
+Choose the agents you use and install all thirteen AI Build Kit skills. Then ask
 the agent: "Run the setup-ai-build-kit skill."
 
 Whichever route you choose, answer one question at a time. The agent prepares
@@ -55,7 +55,7 @@ copy its `.agents/skills` folder into the project, and ask the agent: "Open
 `.agents/skills/setup-ai-build-kit/SKILL.md` and run the setup-ai-build-kit skill." This manual route
 keeps the same workflow, but later updates also need to be copied manually.
 
-The eight commands are the interface. Some coding agents also list the four
+The nine commands are the interface. Some coding agents also list the four
 background skills in a skill picker, but you never need to pick one.
 [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md) explains the installation paths
 and fallback.
@@ -69,13 +69,14 @@ Command names say when to use them.
 | I'm starting something | `/setup-ai-build-kit` | Interview, fit check, founding documents. |
 | I want it to... (a new idea) | `/plan` | Shapes your idea into a ready piece. |
 | Build the next ready piece | `/implement` | Builds a ready piece to confirmed and saved. |
+| I'm taking on several things | `/queue` | Everything ready to build, and what is waiting on what. |
 | It's broken | `/fix` | Cause before code, and evidence that keeps it fixed. |
 | I think it's ready | `/ship` | Checks everything, then takes it live, one path at a time. |
 | I'm done for today | `/sync` | Documents caught up with reality. |
 | It's been a while | `/maintain` | The service visit. |
 | I'm lost | `/what-now` | Where the project stands and what to do next. |
 
-You never choose the method and never sort your own request: each command checks what you typed against the masterplan and sends it down the right route, so picking the wrong one costs you nothing. [WORKFLOW.md](WORKFLOW.md) is the day-to-day manual for all eight.
+You never choose the method and never sort your own request: each command checks what you typed against the masterplan and sends it down the right route, so picking the wrong one costs you nothing. [WORKFLOW.md](WORKFLOW.md) is the day-to-day manual for all nine.
 
 ## How a project flows
 
@@ -162,14 +163,14 @@ marketplace. Each folder under `.agents/skills/` contains one skill and all of
 the references, templates, or scripts it needs, and every installation route
 carries the same skills. The shared installer records the source in
 `skills-lock.json`. The Claude plugin keeps its copy in Claude's plugin cache,
-where the eight commands use the `ai-build-kit:` prefix and the four background
+where the nine commands use the `ai-build-kit:` prefix and the four background
 skills stay out of the menu until a command needs them.
 
 Agent Plugins is the newest route, for a client that reads that open format. The
 `agent-plugin` folder holds the manifest in this repository and gains its
 `skills` folder only when a numbered version is packaged, so the route is served
 by the release archive rather than by cloning. Keeping that packaged copy out of
-the repository is deliberate: committing it would hold the same twelve skills
+the repository is deliberate: committing it would hold the same thirteen skills
 twice, and one of the two would drift. Such a client is also free to skip a skill
 it judges non-standard, so the shared installer is the safer choice.
 

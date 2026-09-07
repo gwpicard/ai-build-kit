@@ -20,6 +20,7 @@
         "setup-ai-build-kit",
         "plan",
         "implement",
+        "queue",
         "fix",
         "ship",
         "sync",

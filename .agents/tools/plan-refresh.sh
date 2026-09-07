@@ -47,6 +47,11 @@ listing=$(gh api "repos/$repo/issues?state=open&per_page=100" --paginate 2>/dev/
   exit 1
 }
 
+# A blocker is named by its title rather than its number. A number is a thing
+# the reader has to go and look up, and the commands that read this file have to
+# say "deposits cannot start until card payments is set up" rather than
+# "blocked by #9". Carrying the title here means neither of them has to match a
+# number back to a line somewhere else in the file and hope it is still there.
 blockers_for() {
   gh api "repos/$repo/issues/$1/dependencies/blocked_by" 2>/dev/null \
     | python3 -c '
@@ -55,7 +60,7 @@ try:
     items = json.load(sys.stdin)
 except Exception:
     raise SystemExit(0)
-print(", ".join("#%s" % i["number"] for i in items if i.get("state") == "open"))
+print(", ".join(i["title"] for i in items if i.get("state") == "open"))
 ' 2>/dev/null || true
 }
 
@@ -152,11 +157,19 @@ lines = ["Plan (local view, refreshed from GitHub, do not edit)",
 
 # The question label says why a piece is waiting, so it replaces the generic
 # note marker rather than printing beside it.
+#
+# `ready` is the last of the three to be considered, and only ever the last.
+# Shape decides whether a piece has been sized, so a hand-typed issue somebody
+# labelled `ready` without giving it a Done when is still a note here, and the
+# label does not talk over that. A piece cannot honestly be both waiting on a
+# question and ready, which is why the first two win.
 def state_note(issue):
     text = waiting_on(issue)
     if text:
         return "(%s)" % text
-    return "(still a note)" if still_a_note(issue) else ""
+    if still_a_note(issue):
+        return "(still a note)"
+    return "(ready)" if "ready" in labels(issue) else ""
 
 def render(heading, group, note):
     if not group:
