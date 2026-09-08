@@ -7,7 +7,7 @@
 #
 # The person agrees to the split without proposing one, so the relationships in
 # the end state are the kit's own work rather than something it was handed.
-/plan Stewards should be able to book a whole kit for an event instead of adding the items one at a time.
+/shape Stewards should be able to book a whole kit for an event instead of adding the items one at a time.
 ---
 A kit is a named set, like the PA kit or the camping kit. Mostly the same items every time, though somebody needs to be able to change what is in one.
 ---

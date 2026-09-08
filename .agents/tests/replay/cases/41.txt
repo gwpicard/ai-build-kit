@@ -3,7 +3,7 @@
 # needs-clarification. The contract says the pickup runs the interview, writes
 # the result into the piece's shape, keeps the original words underneath, and
 # only then marks it ready.
-/plan 11
+/shape 11
 ---
 # when: \?
 Just the ones that are out. What is on the shelf is not interesting, we can see that by looking.

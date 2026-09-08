@@ -3,7 +3,7 @@
 # freelancers are named as the people exposed, and that unrelated work carries
 # on. The last turn accepts the risk in the words the notice should have used,
 # so the run measures whether the kit earned that acceptance or was handed it.
-/plan We want to let our freelance camera operators book equipment themselves. They are not employees, so they do not have a company account. They would sign up with their own email and password.
+/shape We want to let our freelance camera operators book equipment themselves. They are not employees, so they do not have a company account. They would sign up with their own email and password.
 ---
 About fifteen freelancers, and it changes month to month. They would only see and book items, not edit the item list.
 ---

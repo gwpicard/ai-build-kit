@@ -50,7 +50,7 @@ grep -qF '"scope": "local"' "$LISTING" || \
   fail "Claude did not keep the plugin local to the project"
 grep -qF 'Skills (4)  change-triage, clarify, second-opinion, section-builder' \
   "$DETAILS" || fail "Claude did not keep the plugin command and discipline boundaries separate"
-if grep -Eq '^[[:space:]]+(fix|implement|maintain|plan|ship|setup-ai-build-kit|sync|what-now)[[:space:]]' \
+if grep -Eq '^[[:space:]]+(fix|implement|maintain|shape|ship|setup-ai-build-kit|sync|what-now)[[:space:]]' \
   "$DETAILS"; then
   fail "Claude made a person-invoked command available to the model"
 fi

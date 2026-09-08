@@ -17,12 +17,12 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 ARTIFACT="$ROOT/.agents/skills/clarify/references/existing-artifact.md"
 PROTOTYPE="$ROOT/.agents/skills/clarify/references/decision-prototype.md"
 CLARIFY="$ROOT/.agents/skills/clarify/SKILL.md"
-PLAN="$ROOT/.agents/skills/plan/SKILL.md"
+SHAPE="$ROOT/.agents/skills/shape/SKILL.md"
 SETUP="$ROOT/.agents/skills/setup-ai-build-kit/SKILL.md"
 WORKFLOW="$ROOT/WORKFLOW.md"
 
 rs_init "Existing-artifact checks"
-rs_exists "$ARTIFACT" "$PROTOTYPE" "$CLARIFY" "$PLAN" "$SETUP" "$WORKFLOW"
+rs_exists "$ARTIFACT" "$PROTOTYPE" "$CLARIFY" "$SHAPE" "$SETUP" "$WORKFLOW"
 
 rs_rule "says back what it sees, guesses attached" 'say what you found'
 rs_rule "never claims to have seen what it cannot open" \
@@ -43,8 +43,8 @@ rs_guard "$ARTIFACT" "the shipped existing-artifact.md"
 # behaviour survives in whichever one was missed.
 rs_require "clarify asks before it builds a throwaway" \
   "$CLARIFY" 'existing-artifact\.md'
-rs_require "/plan settles a needs-prototype piece with what exists" \
-  "$PLAN" 'existing-artifact\.md'
+rs_require "/shape settles a needs-prototype piece with what exists" \
+  "$SHAPE" 'existing-artifact\.md'
 rs_require "decision-prototype.md checks before building one" \
   "$PROTOTYPE" 'existing-artifact\.md'
 rs_require "/setup names it in the founding interview" \

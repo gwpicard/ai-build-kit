@@ -10,7 +10,7 @@
 # covering a whole screen was too big to hold whole, so the kit asked to split it
 # instead of marking it ready. Both were right in general and neither is what
 # this scenario measures. Keep the piece this narrow.
-/plan 12
+/shape 12
 ---
 # when: sketch|mock|already have|drawn|anything (you|to) (have|show)|screenshot
 No, nothing drawn up. We have only ever talked about it.

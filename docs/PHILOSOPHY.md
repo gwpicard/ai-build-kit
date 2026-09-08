@@ -59,10 +59,16 @@ capability that genuinely needs its own command is a sign a command was carrying
 two jobs at once, and splitting it is a redesign conversation, not a casual
 addition. The count has moved twice, both times for that reason. Seven became
 eight when `/build` was found to be both planning and building, and the planning
-half became `/plan`. Eight became nine when `/what-now` was found to be both
-orientation and overview: it names at most three things because somebody lost
-cannot use more, and somebody taking on several pieces at once needs the whole
-list, so that half became `/queue`.
+half became its own command, now `/shape`. Eight became nine when `/what-now`
+was found to be both orientation and overview: it names at most three things
+because somebody lost cannot use more, and somebody taking on several pieces at
+once needs the whole list, so that half became `/queue`.
+
+A name can also be forced from outside. Where the coding agent the kit runs inside takes a command
+name for itself, the person either cannot reach the kit's command or loses the
+agent's own, and renaming the kit's command is the repair. That is a rename
+rather than a redesign, so the count stays where it is. `/plan` became `/shape`
+on those grounds.
 
 Machinery stays invisible until it matters. Nobody needs to know a review
 skill exists until the agent says a change touched sign-in and a fresh
@@ -232,7 +238,7 @@ Tight bug reproduction before a fix, added. It fits under /fix; the user sees
 the exact failing case and the evidence that it stopped failing; they never
 need to learn instrumentation or bisection.
 
-Disposable decision prototype, added. It fits under /setup-ai-build-kit or /plan;
+Disposable decision prototype, added. It fits under /setup-ai-build-kit or /shape;
 the user tries a rough artifact to settle one question. What they get is chosen
 by the question: one file they open and drive themselves when the question is
 whether something behaves right, or three genuinely different arrangements to
@@ -240,12 +246,12 @@ move between when the question is what shape it should take. When it is the
 wrong thing, they say so and the question gets split. They never need to
 understand prototype branches or throwaway architecture.
 
-A piece written in two layers, added. It fits under /plan and /implement. The
+A piece written in two layers, added. It fits under /shape and /implement. The
 person sees a plain surface that stays comprehensive about anything affecting the
 product, so a simple read is never a false one; the build detail sits in a
 collapsed "under the hood" section they never have to open. The sentence is "you
 read the plain part; the agent reads the rest". When it goes wrong, the surface
-missed something that changed a product decision, and /plan puts it back on the
+missed something that changed a product decision, and /shape puts it back on the
 surface. They never need to read the build notes, but nothing that affects their
 product is hidden from them. This answers the question a workshop raised: a ready
 piece must carry enough to build without fresh research, which matters most when
@@ -266,7 +272,7 @@ than a permanent ban; a later cycle may revisit it.
 
 Sub-issues for a piece made of parts, added. GitHub already models a
 parent/child relationship, so the kit uses it rather than inventing one. It fits
-under /plan, which splits a piece too big to hold whole, and under /implement,
+under /shape, which splits a piece too big to hold whole, and under /implement,
 which builds the parts and lets the parent close on its own. The person sees a
 piece that is "made of parts", nothing more. The line that keeps it from becoming
 a second way to be blocked is the outcome: a part shares the parent's outcome,

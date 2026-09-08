@@ -6,7 +6,7 @@
 .agents/guard|
 .agents/hooks|
 .agents/skills/implement|
-.agents/skills/plan|
+.agents/skills/shape|
 .agents/skills/queue|
 .agents/skills/change-triage|
 .agents/skills/fix|
@@ -47,7 +47,7 @@ SECURITY.md|
 .claude-plugin|
 agent-plugin|
 .agents/skills/implement|agent-plugin/skills/implement
-.agents/skills/plan|agent-plugin/skills/plan
+.agents/skills/shape|agent-plugin/skills/shape
 .agents/skills/queue|agent-plugin/skills/queue
 .agents/skills/change-triage|agent-plugin/skills/change-triage
 .agents/skills/fix|agent-plugin/skills/fix

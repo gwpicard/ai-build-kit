@@ -205,9 +205,9 @@ rename; a number does not.
   against the pieces: the rules that keep it honest, that /setup and /sync both
   still run it, and that WORKFLOW.md explains it for founding and for sync. It
   fails on a copy with any one of those removed.
-- `.agents/tests/plan-research.sh` guards the two research steps that share the
+- `.agents/tests/shape-research.sh` guards the two research steps that share the
   `needs-research` label: the rules that keep an existing-work search honest
-  about maintenance, licence, cost, data, and removal, that /plan offers both
+  about maintenance, licence, cost, data, and removal, that /shape offers both
   steps and says which it ran, and that change-triage, pieces.md, and
   WORKFLOW.md all describe the label as covering both.
 - `.agents/tests/triage-overlap.sh` guards the warning that another open piece
@@ -216,7 +216,7 @@ rename; a number does not.
   nothing, and that it stays quiet when no piece shares a subject.
 - `.agents/tests/existing-artifact.sh` guards the route that lets a mock the
   person already has settle a question: the ten rules that keep it safe, that
-  clarify, /plan, and the decision prototype all check for one before building a
+  clarify, /shape, and the decision prototype all check for one before building a
   throwaway, and that /setup and WORKFLOW.md name it.
 - `.agents/tests/wiring-picture.sh` guards the masterplan's picture of what the
   tool reaches outside itself: the drawing rules, that the example draws nothing
@@ -265,11 +265,11 @@ rename; a number does not.
   order, which a run believes it did. So it guards a read-back of the
   `Accepted:` line and a definition of what counts as accepting, not the order.
 - `.agents/tests/who-can-settle.sh` guards which waiting pieces need the person:
-  that the three labels each say who can answer, that /plan never answers a
+  that the three labels each say who can answer, that /shape never answers a
   person-present question itself, that it can be pointed at one piece and can
   clear the research alone, and that /what-now stops calling that research the
   person's errand.
-- `.agents/tests/plan-later.sh` guards the choice between settling a piece's
+- `.agents/tests/shape-later.sh` guards the choice between settling a piece's
   question now and filing it to come back to: the rules that keep the offer an
   offer rather than a reluctance, that change-triage agrees a routed question
   does not start the step there and then, that pieces.md says roughly what each

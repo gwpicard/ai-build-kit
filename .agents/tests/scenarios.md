@@ -406,7 +406,7 @@ reported, and it is not what decides whether the case held.
 
 - Expected route: a search for existing work before implementation, under the same `needs-research` label as a source check.
 - Visible explanation: "Something may already do this, so I'll look before we build our own," followed by what was found, what it costs, and whether anything leaves the project.
-- Hidden technique: `change-triage/references/existing-work.md`, searching the project first, then what it already depends on, then the standard parts, then a well-established package; a new dependency is the last resort. `/plan` says which of the two research steps it ran and why, since one open question can plausibly match either.
+- Hidden technique: `change-triage/references/existing-work.md`, searching the project first, then what it already depends on, then the standard parts, then a well-established package; a new dependency is the last resort. `/shape` says which of the two research steps it ran and why, since one open question can plausibly match either.
 - Evidence: at most three candidates recorded on the piece with the recommended one and the reason, the date checked, and what was rejected and why, so the next session does not search the same ground.
 - Save route: unaffected; the search itself saves nothing, and nothing is installed or configured, because planning records and stops.
 - Review: none is due for the search; the resulting build follows normal review rules.
@@ -454,9 +454,9 @@ reported, and it is not what decides whether the case held.
 
 ## 39. Settling what can be settled without the person
 
-- Expected result: told that the person is not staying, `/plan` settles every piece labelled `needs-research` on its own, names the pieces that need them and why, and leaves those pieces exactly as they were.
+- Expected result: told that the person is not staying, `/shape` settles every piece labelled `needs-research` on its own, names the pieces that need them and why, and leaves those pieces exactly as they were.
 - Visible explanation: "I can settle the two research pieces without you. The refund piece needs a few questions answered and the calendar piece needs something to look at, so both are waiting for you rather than for me."
-- Hidden technique: the three waiting labels already say who is needed, so no further label carries it; `needs-research` is the agent alone, `needs-clarification` and `needs-prototype` need the person, and `/plan` reads the label rather than judging the piece afresh.
+- Hidden technique: the three waiting labels already say who is needed, so no further label carries it; `needs-research` is the agent alone, `needs-clarification` and `needs-prototype` need the person, and `/shape` reads the label rather than judging the piece afresh.
 - Evidence: the research pieces end `ready` with their finding recorded, and every person-present piece still carries the label it started with, with no answer written onto it.
 - Save route: unaffected; planning records on the pieces and opens no pull request.
 - Review: none is due for settling a research question. The work that follows takes its normal route.
@@ -464,9 +464,9 @@ reported, and it is not what decides whether the case held.
 
 ## 40. A waiting research piece is picked up and settled
 
-- Expected result: `/plan`, given the piece, runs the step its `needs-research` label names, records what it found on the piece, and only then swaps the label for `ready`.
+- Expected result: `/shape`, given the piece, runs the step its `needs-research` label names, records what it found on the piece, and only then swaps the label for `ready`.
 - Visible explanation: "This one is waiting on a fact I can go and confirm myself, so I will check and write down what I find and where I found it."
-- Hidden technique: plan/SKILL.md's pickup routes; source-check.md for one external fact or existing-work.md for whether something already does the job, saying which was run and why, because a question can plausibly match either.
+- Hidden technique: shape/SKILL.md's pickup routes; source-check.md for one external fact or existing-work.md for whether something already does the job, saying which was run and why, because a question can plausibly match either.
 - Evidence: the finding is written into the piece's `## Decided` section with its source and the date checked, before the label comes off. The piece ends `ready`, carrying no `needs-` label.
 - Save route: unaffected; planning records on the piece and opens no pull request.
 - Review: none is due for a research step. The build that follows takes its normal route.
@@ -474,9 +474,9 @@ reported, and it is not what decides whether the case held.
 
 ## 41. A waiting interview piece is picked up and settled
 
-- Expected result: `/plan`, given the piece, runs clarify with the person, writes the result into the piece's proper shape, keeps the person's original words underneath, and swaps the label for `ready`.
+- Expected result: `/shape`, given the piece, runs clarify with the person, writes the result into the piece's proper shape, keeps the person's original words underneath, and swaps the label for `ready`.
 - Visible explanation: "This one needs a few questions answered before anybody could build it. Can I ask you three or four now?"
-- Hidden technique: plan/SKILL.md's pickup routes and clarify's terminology and scenario-pressure steps; the interview may find the real block is a different one and swap `needs-clarification` for `needs-prototype` or `needs-research`, and the new label is followed rather than shaped past.
+- Hidden technique: shape/SKILL.md's pickup routes and clarify's terminology and scenario-pressure steps; the interview may find the real block is a different one and swap `needs-clarification` for `needs-prototype` or `needs-research`, and the new label is followed rather than shaped past.
 - Evidence: the piece gains a `## Done when` somebody could check, what was agreed is written into `## Decided`, and the person's original words are still there underneath. The piece ends `ready`, carrying no `needs-` label.
 - Save route: unaffected; planning records on the piece and opens no pull request.
 - Review: none is due for an interview. The build that follows takes its normal route.
@@ -484,9 +484,9 @@ reported, and it is not what decides whether the case held.
 
 ## 42. A waiting prototype piece is picked up and settled
 
-- Expected result: `/plan`, given the piece, checks first whether the person already has something that answers it, builds a throwaway only where they do not, and swaps the label for `ready` once the decision is recorded.
+- Expected result: `/shape`, given the piece, checks first whether the person already has something that answers it, builds a throwaway only where they do not, and swaps the label for `ready` once the decision is recorded.
 - Visible explanation: "Nobody can settle this by describing it, so let's look at something. Do you already have a sketch or a mock of it? If not, I will build a throwaway you can click through."
-- Hidden technique: plan/SKILL.md's pickup routes; existing-artifact.md where the person already has one, otherwise decision-prototype.md, which names which of the two kinds of question it is before it builds anything and follows prototype-behaviour.md or prototype-structure.md.
+- Hidden technique: shape/SKILL.md's pickup routes; existing-artifact.md where the person already has one, otherwise decision-prototype.md, which names which of the two kinds of question it is before it builds anything and follows prototype-behaviour.md or prototype-structure.md.
 - Evidence: the decision the prototype produced is written into the piece's `## Decided` section in words rather than pixels, and the piece ends `ready`, carrying no `needs-` label. The throwaway is deleted or isolated and never becomes the real implementation.
 - Save route: unaffected; the prototype is disposable and is never the thing that ships.
 - Review: none is due for a prototype.

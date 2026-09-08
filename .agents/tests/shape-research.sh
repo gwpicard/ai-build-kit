@@ -1,8 +1,8 @@
 #!/usr/bin/env sh
-# plan-research.sh: guard the two research steps behind one label.
+# shape-research.sh: guard the two research steps behind one label.
 #
 # `needs-research` covers two different questions: confirm one external fact, or
-# find something that already does the job. /plan picks the step
+# find something that already does the job. /shape picks the step
 # from the question, so the risk is a silent collapse back to one step, or an
 # existing-work search that recommends something unmaintained, costly, or with a
 # licence the project cannot live with.
@@ -14,13 +14,13 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 
 EXISTING="$ROOT/.agents/skills/change-triage/references/existing-work.md"
 SOURCE="$ROOT/.agents/skills/change-triage/references/source-check.md"
-PLAN="$ROOT/.agents/skills/plan/SKILL.md"
+SHAPE="$ROOT/.agents/skills/shape/SKILL.md"
 TRIAGE="$ROOT/.agents/skills/change-triage/SKILL.md"
 PIECES="$ROOT/.agents/skills/setup-ai-build-kit/references/pieces.md"
 WORKFLOW="$ROOT/WORKFLOW.md"
 
-rs_init "Plan research-step checks"
-rs_exists "$EXISTING" "$SOURCE" "$PLAN" "$TRIAGE" "$PIECES" "$WORKFLOW"
+rs_init "Shape research-step checks"
+rs_exists "$EXISTING" "$SOURCE" "$SHAPE" "$TRIAGE" "$PIECES" "$WORKFLOW"
 
 rs_rule "searches the project before anything new" 'the project itself'
 rs_rule "a new dependency is the last resort" 'last resort'
@@ -34,14 +34,14 @@ rs_rule "records the finding on the piece" 'record the date checked'
 rs_rule "installs nothing" 'never installs'
 rs_guard "$EXISTING" "the shipped existing-work.md"
 
-rs_require "/plan still runs the source check for a single fact" \
-  "$PLAN" 'references/source-check\.md'
-rs_require "/plan runs the existing-work search for a question about existing work" \
-  "$PLAN" 'references/existing-work\.md'
+rs_require "/shape still runs the source check for a single fact" \
+  "$SHAPE" 'references/source-check\.md'
+rs_require "/shape runs the existing-work search for a question about existing work" \
+  "$SHAPE" 'references/existing-work\.md'
 # Without this instruction a question matching both steps could be answered
 # without the person ever learning which was run.
-rs_require_load_bearing "/plan names which step it ran, and why" \
-  "$PLAN" 'say which step you ran'
+rs_require_load_bearing "/shape names which step it ran, and why" \
+  "$SHAPE" 'say which step you ran'
 
 rs_require "change-triage routes both steps under one label" \
   "$TRIAGE" 'needs-research. for a source check or a search for existing work'

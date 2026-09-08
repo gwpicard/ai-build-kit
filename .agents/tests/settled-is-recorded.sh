@@ -2,7 +2,7 @@
 # settled-is-recorded.sh: guard the record a settled question has to leave.
 #
 # A piece waiting on a question carries a `needs-` label. Settling it writes what
-# settled it into `## Decided` and only then takes the label off. Both /plan and
+# settled it into `## Decided` and only then takes the label off. Both /shape and
 # pieces.md said so, correctly and in the right order, and three measured runs
 # still relabelled with nothing written. One reached `ready` carrying no
 # `## Done when` at all, so it had never been sized either.
@@ -18,11 +18,11 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 . "$ROOT/.agents/tests/lib/rule-shape.sh"
 
-PLAN="$ROOT/.agents/skills/plan/SKILL.md"
+SHAPE="$ROOT/.agents/skills/shape/SKILL.md"
 PIECES="$ROOT/.agents/skills/setup-ai-build-kit/references/pieces.md"
 
 rs_init "Settled-is-recorded checks"
-rs_exists "$PLAN" "$PIECES"
+rs_exists "$SHAPE" "$PIECES"
 
 # The order, which was always right and was always going to be believed rather
 # than done. Kept because a check that only demanded the read-back could be
@@ -49,7 +49,7 @@ rs_rule "because a run believes it did the steps in order" \
   'is what a run believes it did'
 rs_rule "and nobody in the conversation can see this part" \
   'nobody in the conversation can see'
-rs_guard "$PLAN" "the /plan skill"
+rs_guard "$SHAPE" "the /shape skill"
 
 # pieces.md is where somebody reading about a piece meets the rule.
 rs_reset

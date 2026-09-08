@@ -3,7 +3,7 @@
 # The contract says a source check comes before the build, and that the fact is
 # recorded with its source and the date. The turns give the kit nothing to go on
 # but the provider's own pages, so a remembered answer is visible as one.
-/plan I want the overdue list to go out as a text message to each steward instead of an email.
+/shape I want the overdue list to go out as a text message to each steward instead of an email.
 ---
 Twilio. It is the only one I have heard of, so let's assume that unless there is a reason not to.
 ---

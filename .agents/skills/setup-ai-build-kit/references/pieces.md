@@ -162,7 +162,7 @@ One more is the positive counterpart to those three:
 
 - `ready`, when the piece is shaped and waiting to be built.
 
-`/plan` adds `ready` once a piece is fully shaped: it has a `## Done when` line
+`/shape` adds `ready` once a piece is fully shaped: it has a `## Done when` line
 and waits on no question. `/implement` swaps that label for `building` when it
 picks the piece up, and the merged pull request closes it.
 A piece never carries `ready` and a `needs-` label at the same time; settling

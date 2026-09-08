@@ -1,8 +1,8 @@
 #!/usr/bin/env sh
-# plan-later.sh: guard the route that files a piece now and shapes it later.
+# shape-later.sh: guard the route that files a piece now and shapes it later.
 #
 # The kit knew what planning was and had never decided when it happens.
-# Every route out of triage was work started in that session, while /plan's Done
+# Every route out of triage was work started in that session, while /shape's Done
 # when already permitted a piece left with its open question, so the only way to
 # reach that outcome was to interrupt.
 #
@@ -17,14 +17,14 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 . "$ROOT/.agents/tests/lib/rule-shape.sh"
 
-PLAN="$ROOT/.agents/skills/plan/SKILL.md"
+SHAPE="$ROOT/.agents/skills/shape/SKILL.md"
 TRIAGE="$ROOT/.agents/skills/change-triage/SKILL.md"
 PIECES="$ROOT/.agents/skills/setup-ai-build-kit/references/pieces.md"
 WHATNOW="$ROOT/.agents/skills/what-now/SKILL.md"
 WORKFLOW="$ROOT/WORKFLOW.md"
 
 rs_init "File-it-for-later checks"
-rs_exists "$PLAN" "$TRIAGE" "$PIECES" "$WHATNOW" "$WORKFLOW"
+rs_exists "$SHAPE" "$TRIAGE" "$PIECES" "$WHATNOW" "$WORKFLOW"
 
 # The route itself. Remove any one of these and the offer stops being an offer:
 # it becomes an interview that starts before the person was asked, or a piece
@@ -38,7 +38,7 @@ rs_rule "it carries the question in plain language" 'the question it still waits
 rs_rule "a fresh session can pick it up" 'a fresh session picks it up with nothing lost'
 rs_rule "the session stops rather than starting the step" 'do not begin the step'
 rs_rule "deferring never opens a route into /implement" 'never lets the piece be built with the question still open'
-rs_guard "$PLAN" "the /plan skill"
+rs_guard "$SHAPE" "the /shape skill"
 
 # Without this the two files disagree about whether a routed question is work
 # that starts now, which is the contradiction this check exists to hold shut.
@@ -62,8 +62,8 @@ rs_rule "it says when the session is a planning one" 'better spent planning than
 rs_rule "it stays quiet when ready pieces outnumber waiting ones" 'say nothing about it and let the usual advice stand'
 rs_guard "$WHATNOW" "the /what-now skill"
 
-rs_require "/plan's Done when records that the choice was offered" \
-  "$PLAN" 'offered the choice between settling that question now and filing it for later'
+rs_require "/shape's Done when records that the choice was offered" \
+  "$SHAPE" 'offered the choice between settling that question now and filing it for later'
 rs_require "WORKFLOW.md explains it in plain words" \
   "$WORKFLOW" 'never made to settle it there and then'
 rs_require "and says a filed piece still cannot be built" \

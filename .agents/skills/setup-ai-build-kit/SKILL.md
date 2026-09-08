@@ -1,6 +1,6 @@
 ---
 name: setup-ai-build-kit
-description: Begin a new project, or resume a beginning that was interrupted. Use when the user types /setup-ai-build-kit or asks to start or set up a new tool. Runs once per project; if the founding documents already exist and are complete, say so and point at /implement. Do not use for new features on an existing project (that is plan) or for repairs (that is fix). Type this command when you want it; it never starts on its own.
+description: Begin a new project, or resume a beginning that was interrupted. Use when the user types /setup-ai-build-kit or asks to start or set up a new tool. Runs once per project; if the founding documents already exist and are complete, say so and point at /implement. Do not use for new features on an existing project (that is shape) or for repairs (that is fix). Type this command when you want it; it never starts on its own.
 disable-model-invocation: true
 ---
 
@@ -298,7 +298,7 @@ public one, so a project that wants to stay private still uses one. Do this with
 label set, delete the labels GitHub made by itself, copy
 templates/foundation/piece-issue.yml to `.github/ISSUE_TEMPLATE/piece.yml`, open
 one issue per piece, label each shaped piece `ready` (or the matching `needs-`
-label where it still holds an open question for `/plan` to settle), and link the
+label where it still holds an open question for `/shape` to settle), and link the
 ones that genuinely block each other using GitHub's blocked-by relationship.
 Then run `.agents/tools/plan-refresh.sh` once, so the person has their list
 before they need it.
@@ -436,5 +436,5 @@ commands, the masterplan has had whatever review its build path called for or a
 changelog line saying why none ran, the initial state is saved as a local
 checkpoint, the plan is made of visible pieces each labelled `ready` or with its
 open question, one check passes, and the user has received the plain-language
-completion report, which ends on a clean cut naming `/implement` and `/plan`
+completion report, which ends on a clean cut naming `/implement` and `/shape`
 rather than an offer to build in this session.

@@ -40,7 +40,7 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
      Release and replace the installed `agent-plugin` folder after the same
      approval and clean checkpoint.
    - For a shared skills installation, run
-     `npx skills update setup-ai-build-kit plan implement fix ship sync maintain what-now clarify change-triage section-builder second-opinion -p`.
+     `npx skills update setup-ai-build-kit shape implement queue fix ship sync maintain what-now clarify change-triage section-builder second-opinion -p`.
    - When no route is present, this is an older installation. After
      approval, run `npx skills add gwpicard/ai-build-kit` and let the person
      choose the coding agents they use. This registers and refreshes the
@@ -57,11 +57,13 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    version in the changelog with the saved change. The foundation created by
    start, including AGENTS.md, README.md, project records, environment files,
    application code, and the project's check, stays project-owned. When this
-   update is the one that first brings in `/plan` and `/implement`, run the
-   one-time migration in "Migrating a project founded before /plan and
+   update is the one that first brings in `/shape` and `/implement`, run the
+   one-time migration in "Migrating a project founded before /shape and
    /implement" below. When it is the one that first brings in
    `setup-ai-build-kit` in place of `start`, also run "Migrating a project
-   founded before the setup-ai-build-kit rename".
+   founded before the setup-ai-build-kit rename". When it is the one that first
+   brings in `shape` in place of `plan`, also run "Migrating a project founded
+   before the shape rename".
 6. If the normal route is unavailable, use the latest public Release as the
    fallback source. A shared installation may replace only the thirteen AI Build
    Kit skill folders after the same approval and clean checkpoint. A Claude
@@ -87,9 +89,9 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
     Build Kit did, add that the reminder cannot appear by itself there, and that
     `/what-now` reports it when asked.
 
-## Migrating a project founded before /plan and /implement
+## Migrating a project founded before /shape and /implement
 
-Run this once, on the visit whose update first replaces `/build` with `/plan`
+Run this once, on the visit whose update first replaces `/build` with `/shape`
 and `/implement`. It brings an existing project's records up to the new model.
 It changes labels and, with approval, moves records, so do it only after the
 clean checkpoint from step 2. Every part is idempotent: a later visit that finds
@@ -100,7 +102,7 @@ the project already migrated does nothing here.
    goes unbuilt. For every open issue that is already shaped, a `## Done when`
    present and no `needs-clarification`, `needs-prototype`, or `needs-research`
    label, add the `ready` label. Leave anything still carrying a `needs-` label
-   alone; that one is `/plan`'s to shape. Say how many pieces were marked ready,
+   alone; that one is `/shape`'s to shape. Say how many pieces were marked ready,
    so the person can see their backlog is still there.
 
 2. Move a `plan.md` into issues. A project founded without the GitHub tool
@@ -116,7 +118,7 @@ the project already migrated does nothing here.
    they are moved.
 
 3. Point `/build` forward. Say once that the old `/build` command has become
-   two: `/plan` to shape a new idea into a ready piece, and `/implement` to build
+   two: `/shape` to shape a new idea into a ready piece, and `/implement` to build
    one. Nothing the person saved is lost; only the command names changed.
 
 Record the migration in the changelog as a dated line.
@@ -142,6 +144,31 @@ person saved is affected. Two housekeeping steps keep the installation tidy:
    project is now `/setup-ai-build-kit`, not `/start`, and that any saved command
    which updates the kit by name uses that new first name. The full update
    command is in the monthly step above.
+
+Record the tidy-up in the changelog as a dated line.
+
+## Migrating a project founded before the shape rename
+
+Run this once, on the visit whose update first installs the `shape` skill in
+place of `plan`. It is idempotent: a later visit that finds no `plan` skill does
+nothing here.
+
+The command that turns an idea into a ready piece was renamed from `/plan` to
+`/shape`. Some coding agents, Claude Code among them, now carry a `/plan` of
+their own, so one name pointed at two different commands. Nothing the person
+saved is affected and no record changes, but this command is typed most days, so
+the new name is said out loud rather than only tidied away in the files:
+
+1. Remove a stale `plan` skill. The shared installer leaves the old `plan` skill
+   folder in place when the update brings its replacement. Where a `shape` skill
+   and an old `plan` skill both exist, offer to remove the `plan` one, because it
+   is a managed package the kit renamed rather than the person's own work. Where
+   only `shape` exists, there is nothing to do.
+
+2. Point the command forward. Say once that `/shape` is the command that turns an
+   idea into a ready piece, that it does everything `/plan` did, and that a saved
+   note or shortcut typing `/plan` needs changing. The full update command is in
+   the monthly step above.
 
 Record the tidy-up in the changelog as a dated line.
 

@@ -14,7 +14,7 @@ Install (Claude Code only): `claude plugin marketplace add gwpicard/ai-build-kit
 then `claude plugin install ai-build-kit@ai-build-kit --scope local`
 First command to type: `/setup-ai-build-kit`
 
-The nine commands: `/setup-ai-build-kit` founds the project, `/plan` shapes an
+The nine commands: `/setup-ai-build-kit` founds the project, `/shape` shapes an
 idea into a ready piece, `/implement` builds one ready piece, `/queue` shows
 everything ready to build, `/fix` repairs a fault cause-first, `/ship` takes the
 tool live, `/sync` catches the documents up, `/maintain` is the monthly service

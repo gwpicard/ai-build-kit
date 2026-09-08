@@ -14,7 +14,7 @@ background skill loads it by name.
 ## Choose one installation route
 
 Every route installs the same thirteen AI Build Kit skills. Nine are commands
-you type: `setup-ai-build-kit`, `plan`, `implement`, `queue`, `fix`, `ship`,
+you type: `setup-ai-build-kit`, `shape`, `implement`, `queue`, `fix`, `ship`,
 `sync`, `maintain`, and `what-now`.
 Four run in the background when a command needs them: `clarify`,
 `change-triage`, `section-builder`, and `second-opinion`. The routes differ in
@@ -85,7 +85,7 @@ The shared installer records project skill sources in `skills-lock.json`. Its
 approved update is limited to the thirteen AI Build Kit skill names:
 
 ```bash
-npx skills update start plan implement fix ship sync maintain what-now clarify change-triage section-builder second-opinion -p
+npx skills update setup-ai-build-kit shape implement queue fix ship sync maintain what-now clarify change-triage section-builder second-opinion -p
 ```
 
 The `-p` flag limits the update to this project.

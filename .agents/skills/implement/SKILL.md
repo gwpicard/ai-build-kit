@@ -1,6 +1,6 @@
 ---
 name: implement
-description: The everyday command for building a piece that has already been shaped and marked ready. Typed alone it takes the next ready piece from the plan. Given an issue number, or a request that matches a ready piece, it builds that one. A request that is not yet a ready piece goes to plan first; implement builds, it does not shape. "/implement auto" builds several ready pieces in a row. Do not use for repairs of promised behaviour; that is fix. Type this command when you want it; it never starts on its own.
+description: The everyday command for building a piece that has already been shaped and marked ready. Typed alone it takes the next ready piece from the plan. Given an issue number, or a request that matches a ready piece, it builds that one. A request that is not yet a ready piece goes to shape first; implement builds, it does not shape. "/implement auto" builds several ready pieces in a row. Do not use for repairs of promised behaviour; that is fix. Type this command when you want it; it never starts on its own.
 disable-model-invocation: true
 ---
 
@@ -12,11 +12,11 @@ session, and whenever an independent review is required. The documents are
 the source of truth either way. Read masterplan.md first, build-path section
 first, then the project's pieces.
 
-This command builds; it does not shape. It takes a piece that `/plan` has
+This command builds; it does not shape. It takes a piece that `/shape` has
 already shaped and marked ready, and carries it to a confirmed, saved change.
-Shaping, sizing, and settling a question all happen in `/plan`, so this command
+Shaping, sizing, and settling a question all happen in `/shape`, so this command
 never has to guess what a piece means. A request that is not yet a ready piece
-belongs to `/plan` first.
+belongs to `/shape` first.
 
 `.agents/tools/plan-refresh.sh` prints the open issues into `plan.local.md`.
 Refresh first, then read that. `.agents/skills/setup-ai-build-kit/references/pieces.md`
@@ -30,7 +30,7 @@ not a record of anything.
 ## Typed alone
 
 Take the lowest-numbered ready piece that nothing open is holding up and whose
-class the current build path allows. A ready piece is one `/plan` has finished
+class the current build path allows. A ready piece is one `/shape` has finished
 shaping: it carries the `ready` label, has a `## Done when` line, and waits on no
 open question. The issue list says which are held up, so this needs no digging.
 
@@ -43,13 +43,13 @@ Before handing an eligible piece to section-builder, confirm it's genuinely
 unblocked, confirm the current build path allows it, and identify its
 evidence and save route from the piece and the build path. Read the piece's
 subject labels rather than reclassifying it; the classification was settled in
-`/plan` and section-builder reads it rather than re-deriving it.
+`/shape` and section-builder reads it rather than re-deriving it.
 
 A piece labelled `blocked` needs attention before it counts as buildable again:
 one safely prepared and stopped at a recorded condition stays skipped until that
 condition is met, or until the person accepts the risk on the record; one parked
 after repeated failure (references/running-longer.md) needs routing back to
-`/plan` first, for another look.
+`/shape` first, for another look.
 
 ## When a piece waits on the person
 
@@ -73,8 +73,8 @@ with no `## Done when` was typed by hand and never sized. Neither is ready, and
 building either one only guesses the answer.
 
 This command does not settle the question. Settling it is planning, and planning
-is what `/plan` is for. Say in one sentence what the piece is waiting on, and
-point the person at `/plan` to shape it. Then take the next ready piece instead,
+is what `/shape` is for. Say in one sentence what the piece is waiting on, and
+point the person at `/shape` to shape it. Then take the next ready piece instead,
 so a session that asked to build still builds something. Where nothing else is
 ready, say so plainly rather than shaping the waiting piece here.
 
@@ -82,12 +82,12 @@ ready, say so plainly rather than shaping the waiting piece here.
 
 Typed alone, take the next ready piece as above.
 
-Given an issue number, build that piece if it is ready, and send it to `/plan`
+Given an issue number, build that piece if it is ready, and send it to `/shape`
 if it is not, saying in one line why it is not ready.
 
 Given a request in plain words, check whether it already matches a ready piece.
 Where it does, build that piece. Where it does not, this is new or unshaped
-work: point the person at `/plan`, which shapes a request into a piece. This
+work: point the person at `/shape`, which shapes a request into a piece. This
 command never shapes a typed request itself, and it never builds past an open
 question.
 
@@ -101,7 +101,7 @@ When nothing is ready, because everything open is held up, still waiting on a
 question, or two pieces hold each other up, say so plainly and name what is
 waiting on what. Standing there with nothing to say is the one unhelpful answer.
 Two pieces blocking each other is a planning mistake rather than a state to wait
-out, so offer to break it in `/plan`.
+out, so offer to break it in `/shape`.
 
 A piece assigned to somebody else is theirs. Skip it and say who has it. Where
 that person is no longer around, offer to take it over and let the person

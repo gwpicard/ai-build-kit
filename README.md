@@ -84,7 +84,7 @@ Command names say when to use them.
 | When | Type | What it does |
 |---|---|---|
 | I'm starting something | `/setup-ai-build-kit` | Interview, fit check, founding documents. |
-| I want it to... (a new idea) | `/plan` | Shapes your idea into a ready piece. |
+| I want it to... (a new idea) | `/shape` | Turns your idea into a ready piece. |
 | Build the next ready piece | `/implement` | Builds a ready piece to confirmed and saved. |
 | I'm taking on several things | `/queue` | Everything ready to build, and what is waiting on what. |
 | It's broken | `/fix` | Cause before code, and evidence that keeps it fixed. |
@@ -99,7 +99,7 @@ You never choose the method and never sort your own request: each command checks
 
 ```mermaid
 flowchart LR
-  S["/setup-ai-build-kit<br/>once"] --> L["/plan · /implement · /fix<br/>day to day"]
+  S["/setup-ai-build-kit<br/>once"] --> L["/shape · /implement · /fix<br/>day to day"]
   L --> P["/ship<br/>whenever a batch is ready"]
   P --> L
 ```
@@ -120,7 +120,7 @@ it rather than start from a blank page. It sets the build path, writes
 `masterplan.md` and `CHANGELOG.md`, opens one issue per piece of remaining work,
 and saves a checkpoint on your computer. Nothing is uploaded.
 
-A day's work. You type `/plan` and describe what you want in your own words: "I
+A day's work. You type `/shape` and describe what you want in your own words: "I
 want people to be able to reset their own password." The kit decides whether
 that is new work, a repair, or too vague to size, asks what it still needs to
 know, and leaves a piece marked ready. You type `/implement`, and it builds that

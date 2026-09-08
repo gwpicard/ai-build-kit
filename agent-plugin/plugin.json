@@ -18,7 +18,7 @@
     "io.github.gwpicard.ai-build-kit": {
       "personInvokedSkills": [
         "setup-ai-build-kit",
-        "plan",
+        "shape",
         "implement",
         "queue",
         "fix",

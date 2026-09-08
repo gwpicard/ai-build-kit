@@ -1,6 +1,6 @@
 ---
 name: change-triage
-description: Classify a request written in plain words before any work happens. Used by plan when the user typed a request, and by fix to check a report before repairing. Decides whether the request is new work, a repair, too vague to size, or a change that needs the masterplan or the fit check first.
+description: Classify a request written in plain words before any work happens. Used by shape when the user typed a request, and by fix to check a report before repairing. Decides whether the request is new work, a repair, too vague to size, or a change that needs the masterplan or the fit check first.
 user-invocable: false
 ---
 
@@ -99,7 +99,7 @@ piece, put the route on the issue: `needs-clarification` for clarify,
 `needs-prototype` for a decision prototype, `needs-research` for a source check
 or a search for existing work.
 Take the label off and mark it `ready` once the question is answered.
-Routing to a question does not mean the step starts now: `/plan` offers the
+Routing to a question does not mean the step starts now: `/shape` offers the
 person the choice between settling it and filing the piece to come back to. Without this the reason a
 piece is waiting lives only in the session that found it, and the next person to
 open the list sees a piece that has simply stopped.

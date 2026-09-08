@@ -41,7 +41,7 @@ When a piece fails: retry within the piece, up to three attempts, the same
 number fix uses. After the third, park it, mark it `blocked` with one line on
 what kept failing, and move to the next piece; never let one piece consume the
 run. Route the parked piece further when the failure points somewhere specific:
-send it back to `/plan`, which settles a missing decision, chases a missing
+send it back to `/shape`, which settles a missing decision, chases a missing
 external fact, or reassesses a shape the team could not safely own, rather than
 a fourth attempt.
 

@@ -39,7 +39,7 @@ SKILLS_DIR="$PLUGIN/skills"
 expected_commands="fix
 implement
 maintain
-plan
+shape
 queue
 setup-ai-build-kit
 ship

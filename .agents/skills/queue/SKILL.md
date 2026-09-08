@@ -51,13 +51,13 @@ key, a password, or a token in a message.
 
 A piece under `To build` carrying no marker at all has been sized but never
 marked ready, so `/implement` will not take it either. Name it with those, and
-say `/plan` is what marks it ready. This is the one case where a piece looks
+say `/shape` is what marks it ready. This is the one case where a piece looks
 buildable in the printout and is not, and it matters most when that piece is the
 one holding another up, because otherwise the person is told to wait for
 something they never see.
 
 Where nothing is ready, say so plainly and say what would make something ready,
-usually `/plan`. Where nothing is blocked, say nothing about it rather than
+usually `/shape`. Where nothing is blocked, say nothing about it rather than
 printing an empty group.
 
 Say how many pieces a sitting can realistically hold, once, if the ready group is

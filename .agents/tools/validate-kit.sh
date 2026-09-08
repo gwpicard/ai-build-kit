@@ -41,9 +41,9 @@ MAINTAINER_SKILLS="$ROOT/.agents/maintainer-skills"
 expected_commands="fix
 implement
 maintain
-plan
 queue
 setup-ai-build-kit
+shape
 ship
 sync
 what-now"
@@ -743,23 +743,23 @@ fi
 
 # Anybody can open an issue in half a sentence, so the list has entries nobody
 # sized. Built as though they were finished pieces, the agent guesses what done
-# means, which is the one thing a piece exists to stop. Shaping lives in /plan.
-planfile="$SKILLS/plan/SKILL.md"
+# means, which is the one thing a piece exists to stop. Shaping lives in /shape.
+shapefile="$SKILLS/shape/SKILL.md"
 whatnowfile="$SKILLS/what-now/SKILL.md"
 refresh="$ROOT/.agents/tools/plan-refresh.sh"
-if [ -f "$pieces" ] && [ -f "$planfile" ] && [ -f "$whatnowfile" ] && [ -f "$refresh" ]; then
+if [ -f "$pieces" ] && [ -f "$shapefile" ] && [ -f "$whatnowfile" ] && [ -f "$refresh" ]; then
   nr_ok=1
   grep -qF "## An issue somebody typed by hand" "$pieces" || \
     { fail "$pieces: does not say that a hand-typed issue is a request"; nr_ok=0; }
   # Shape rather than the label, so an unlabelled note is still caught.
   grep -qF 'An issue with no `## Done when` has not been sized' "$pieces" || \
     { fail "$pieces: does not make the missing 'Done when' section the test"; nr_ok=0; }
-  grep -qF "original words underneath" "$planfile" || \
-    { fail "$planfile: does not keep the person's own words through refining"; nr_ok=0; }
+  grep -qF "original words underneath" "$shapefile" || \
+    { fail "$shapefile: does not keep the person's own words through refining"; nr_ok=0; }
   # The way out has to be offered with the shaping. Mentioned afterwards, the
   # command becomes a trap for somebody who only wanted something built.
-  grep -qF '"not now"' "$planfile" || \
-    { fail "$planfile: offers no way out of the build offer"; nr_ok=0; }
+  grep -qF '"not now"' "$shapefile" || \
+    { fail "$shapefile: offers no way out of the build offer"; nr_ok=0; }
   grep -qF "still notes rather than pieces" "$whatnowfile" || \
     { fail "$whatnowfile: does not say how many entries are still notes"; nr_ok=0; }
   grep -qF "still a note" "$refresh" || \
@@ -787,24 +787,24 @@ if [ -f "$whatnowfile" ]; then
     pass "what-now voices a failing check, an open finding, an unfinished setup step, and a recap"
 fi
 
-# The command split: plan shapes work and marks a piece `ready`; implement
+# The command split: shape prepares work and marks a piece `ready`; implement
 # builds only ready pieces and refuses to shape, sending an unready piece back to
-# plan rather than guessing past its open question.
+# shape rather than guessing past its open question.
 implementfile="$SKILLS/implement/SKILL.md"
-if [ -f "$implementfile" ] && [ -f "$planfile" ] && [ -f "$pieces" ]; then
+if [ -f "$implementfile" ] && [ -f "$shapefile" ] && [ -f "$pieces" ]; then
   split_ok=1
   grep -qF '`ready`, when the piece is shaped' "$pieces" || \
     { fail "$pieces: does not define the ready label"; split_ok=0; }
   grep -qF "it does not shape" "$implementfile" || \
     { fail "$implementfile: does not say it builds rather than shapes"; split_ok=0; }
   grep -qF "does not settle the question" "$implementfile" || \
-    { fail "$implementfile: does not send an unready piece to plan instead of settling it"; split_ok=0; }
-  grep -qF "Plan itself never builds" "$planfile" || \
-    { fail "$planfile: does not say plan never builds"; split_ok=0; }
-  grep -qF 'label it `ready`' "$planfile" || \
-    { fail "$planfile: does not mark a shaped piece ready"; split_ok=0; }
+    { fail "$implementfile: does not send an unready piece to shape instead of settling it"; split_ok=0; }
+  grep -qF "Shape itself never builds" "$shapefile" || \
+    { fail "$shapefile: does not say shape never builds"; split_ok=0; }
+  grep -qF 'label it `ready`' "$shapefile" || \
+    { fail "$shapefile: does not mark a shaped piece ready"; split_ok=0; }
   [ "$split_ok" -eq 1 ] && \
-    pass "plan shapes and marks ready; implement builds only ready pieces and redirects the rest"
+    pass "shape prepares and marks ready; implement builds only ready pieces and redirects the rest"
 fi
 
 # The layered piece: a plain surface that stays comprehensive about the
@@ -860,7 +860,7 @@ if [ -f "$pieces" ] && [ -f "$implementfile" ] && [ -f "$refreshtool" ]; then
     pass "a piece made of parts uses sub-issues, the parent is a container, and the printout reads the parts"
 fi
 
-# A project founded before the /plan and /implement split needs migrating: its
+# A project founded before the /shape and /implement split needs migrating: its
 # issues carry no `ready` label, so /maintain backfills it, and moves a leftover
 # plan.md into issues where one survives from the old fallback.
 maintfile="$SKILLS/maintain/SKILL.md"
@@ -872,8 +872,10 @@ if [ -f "$maintfile" ]; then
     { fail "$maintfile: does not move a leftover plan.md into issues"; mig_ok=0; }
   grep -qF 'Remove a stale `start` skill' "$maintfile" || \
     { fail "$maintfile: does not tidy a stale start skill after the setup-ai-build-kit rename"; mig_ok=0; }
+  grep -qF 'Remove a stale `plan` skill' "$maintfile" || \
+    { fail "$maintfile: does not tidy a stale plan skill after the shape rename"; mig_ok=0; }
   [ "$mig_ok" -eq 1 ] && \
-    pass "maintain migrates a project founded before /plan and /implement, and before the setup-ai-build-kit rename"
+    pass "maintain migrates a project founded before /shape and /implement, and before the setup-ai-build-kit and shape renames"
 fi
 
 # Every release asks what an existing user must do to upgrade (real users since
@@ -884,14 +886,14 @@ if [ -f "$mfile" ]; then
     fail "$mfile: the release checklist does not ask what an existing user must do to upgrade"
 fi
 
-# Plan stays planning: the build offer points at a fresh session for every piece
+# Shape stays shaping: the build offer points at a fresh session for every piece
 #, and clarify records a settled term on the piece rather than committing
 # the masterplan mid-plan, so a planning session opens no pull request.
 clarifyfile="$SKILLS/clarify/SKILL.md"
-if [ -f "$planfile" ] && [ -f "$clarifyfile" ]; then
+if [ -f "$shapefile" ] && [ -f "$clarifyfile" ]; then
   pp_ok=1
-  grep -qF "A fresh session is the offer for every piece" "$planfile" || \
-    { fail "$planfile: build offer does not point at a fresh session for every piece"; pp_ok=0; }
+  grep -qF "A fresh session is the offer for every piece" "$shapefile" || \
+    { fail "$shapefile: build offer does not point at a fresh session for every piece"; pp_ok=0; }
   grep -qF "Planning records and stops; writing to the masterplan is a build" "$clarifyfile" || \
     { fail "$clarifyfile: clarify still writes the masterplan mid-plan instead of recording on the piece"; pp_ok=0; }
   [ "$pp_ok" -eq 1 ] && \
@@ -906,13 +908,13 @@ sbfile="$SKILLS/section-builder/SKILL.md"
 blocked="$SKILLS/setup-ai-build-kit/references/blocked-commands.md"
 settings="$SKILLS/setup-ai-build-kit/templates/foundation/claude-settings.json"
 startfile="$SKILLS/setup-ai-build-kit/SKILL.md"
-planfile="$SKILLS/plan/SKILL.md"
-if [ -f "$sbfile" ] && [ -f "$blocked" ] && [ -f "$settings" ] && [ -f "$startfile" ] && [ -f "$planfile" ]; then
+shapefile="$SKILLS/shape/SKILL.md"
+if [ -f "$sbfile" ] && [ -f "$blocked" ] && [ -f "$settings" ] && [ -f "$startfile" ] && [ -f "$shapefile" ]; then
   mech_ok=1
   grep -qF "save route including the checkpoint route" "$sbfile" || \
     { fail "$sbfile: does not start every piece from up-to-date main"; mech_ok=0; }
-  grep -qF "starts unassigned" "$planfile" || \
-    { fail "$planfile: does not say a new issue starts unassigned"; mech_ok=0; }
+  grep -qF "starts unassigned" "$shapefile" || \
+    { fail "$shapefile: does not say a new issue starts unassigned"; mech_ok=0; }
   grep -qF 'never push a change directly to `main`' "$blocked" || \
     { fail "$blocked: does not block a direct push to main"; mech_ok=0; }
   grep -qF "git push origin main" "$settings" || \
@@ -1598,7 +1600,7 @@ for literal in \
   '"./.claude/commands/fix.md"' \
   '"./.claude/commands/implement.md"' \
   '"./.claude/commands/maintain.md"' \
-  '"./.claude/commands/plan.md"' \
+  '"./.claude/commands/shape.md"' \
   '"./.claude/commands/ship.md"' \
   '"./.claude/commands/setup-ai-build-kit.md"' \
   '"./.claude/commands/sync.md"' \
@@ -1624,7 +1626,7 @@ maintain_skill="$ROOT/.agents/skills/maintain/SKILL.md"
 for literal in \
   'claude plugin marketplace update ai-build-kit' \
   'claude plugin update ai-build-kit@ai-build-kit --scope <scope>' \
-  'npx skills update setup-ai-build-kit plan implement fix ship sync maintain what-now clarify change-triage section-builder second-opinion -p' \
+  'npx skills update setup-ai-build-kit shape implement queue fix ship sync maintain what-now clarify change-triage section-builder second-opinion -p' \
   'For an Agent Plugins installation'; do
   if ! grep -qF "$literal" "$maintain_skill"; then
     fail "maintain does not preserve the installation route: $literal"

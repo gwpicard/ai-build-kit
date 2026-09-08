@@ -1,15 +1,16 @@
 ---
-name: plan
+name: shape
 description: The command for turning an idea into a ready piece before anything is built. Typed with words after it, it takes the request in plain language, works out what kind of work it is, shapes it into a piece, and settles any open question. Typed alone it shapes the next piece still waiting on one. It records and stops; it never builds, though it offers to hand a ready piece to implement. Type this command when you want it; it never starts on its own.
 disable-model-invocation: true
 ---
 
-# Plan
+# Shape
 
-Plan shapes work; it does not build it. It takes an idea in plain language, works
-out what kind of work it is, writes it into a piece somebody could build, and
-settles anything the piece is still waiting on. When a piece is ready it offers
-to hand it to `/implement`, but building is always a separate, deliberate step.
+This command shapes work; it does not build it. It takes an idea in plain
+language, works out what kind of work it is, writes it into a piece somebody
+could build, and settles anything the piece is still waiting on. When a piece
+is ready it offers to hand it to `/implement`, but building is always a
+separate, deliberate step.
 
 Read masterplan.md first, build-path section first, then the project's pieces,
 the same way `/implement` does. Refresh the printout and read that.
@@ -26,7 +27,7 @@ Clear, piece-sized work becomes a ready piece straight away: write it into the
 shape `.agents/skills/setup-ai-build-kit/references/pieces.md` describes, take its subjects
 from change-triage rather than choosing them yourself, and label it `ready`.
 That is a new issue, and it starts unassigned: a person is assigned only when
-`/implement` picks the piece up to build it, never when `/plan` creates it. Then
+`/implement` picks the piece up to build it, never when `/shape` creates it. Then
 make the build offer below.
 
 Shape the piece in its two layers. The surface stays plain and comprehensive
@@ -135,8 +136,8 @@ label rather than shaping past it. A piece whose question is settled carries the
 Typed alone, take the lowest-numbered piece still waiting on a question, or the
 next unsized note, and shape it as above. When nothing is waiting and every
 piece is already ready, say so and point the person at `/implement` to build the
-next one. Plan does not run out of things to do quietly; it says the plan is
-shaped.
+next one. The command does not run out of things to do quietly; it says the
+plan is shaped.
 
 Given an issue number, settle that piece rather than the lowest-numbered one, so
 somebody with one piece in mind is not made to work through the list. Where that
@@ -156,7 +157,7 @@ only when a founding or long session ends, so a heavy planning context does not
 carry into the build. The offer is genuinely optional, and declining leaves a
 shaped, recorded piece that any `/implement` session picks up.
 
-Plan itself never builds. Where the person asks to build here and now anyway,
+Shape itself never builds. Where the person asks to build here and now anyway,
 that is `/implement` running on the piece just shaped, not this command writing
 code, and a fresh session stays the better path whenever the planning context
 has grown heavy.

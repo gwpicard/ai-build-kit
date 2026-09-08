@@ -3,7 +3,7 @@
 # and the connection activates only after a scoped review or a recorded
 # acceptance. The last turn accepts the risk in the words the notice should have
 # used, so the run measures whether the kit earned that acceptance.
-/plan We want to charge freelancers a deposit when they book an item, and refund it when they bring it back. Card payment, taken in the tool.
+/shape We want to charge freelancers a deposit when they book an item, and refund it when they bring it back. Card payment, taken in the tool.
 ---
 Around eighty pounds a time, and maybe thirty bookings a month. It is mostly to stop things walking off.
 ---

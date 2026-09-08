@@ -20,7 +20,7 @@ ask for the symptom, as step 1 sets out. If exactly one is, name it and use it a
 the report. If more than one is, list them and ask which to take.
 
 Read masterplan.md, build-path section first. If the behaviour being asked
-for was never promised there, say so kindly and hand the request to `/plan`,
+for was never promised there, say so kindly and hand the request to `/shape`,
 which shapes new work; a new wish treated as a repair ends up in the wrong
 procedure. Nobody
 can misfile work by picking the wrong command; catching that is this step's

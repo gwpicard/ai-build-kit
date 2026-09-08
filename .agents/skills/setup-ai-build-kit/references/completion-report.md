@@ -39,7 +39,7 @@ there is no reference to name for a checkpoint that was never taken.
 End with a clean cut, not an offer to build. Say plainly that setup is done and
 the work is saved, name the first ready piece and a rough, honest time, and say
 the empty project is expected rather than broken. Point at `/implement` to build
-the first piece and `/plan` to shape more, ideally in a fresh session so the
+the first piece and `/shape` to shape more, ideally in a fresh session so the
 founding conversation does not carry into the build. Do not offer to build the
 first piece in this session; founding a project and building it are separate,
 deliberate steps. On an adopted project that is not empty, drop the "this is
@@ -77,7 +77,7 @@ how it should look at this point, not a sign anything went wrong. The plan holds
 [rough time].
 
 Push your changes, then start a fresh chat and type `/implement` to build the
-first piece, or `/plan` to shape more first. `/what-now` tells you where things
+first piece, or `/shape` to shape more first. `/what-now` tells you where things
 stand any time.
 
 Checkpoint reference: `[short reference]`

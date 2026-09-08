@@ -9,7 +9,7 @@
 # account could send email on the project's behalf, and the kit correctly took
 # that to the masterplan and the fit check instead, which is right in general
 # and not what this measures.
-/plan 10
+/shape 10
 ---
 # when: check|find out|look (it )?up|source|documentation|confirm
 Go ahead. I do not know the answer myself, so whatever you can establish is what we have.

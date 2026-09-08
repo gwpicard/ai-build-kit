@@ -547,6 +547,13 @@ run that measured its variance, so renaming it again would make the recorded
 results harder to compare against the next ones. Rename it when a measurement is
 not the thing standing behind it.
 
+One word carries two meanings, and that is deliberate too. A person reads
+`/shape`, the command that turns an idea into a ready piece.
+`.agents/skills/setup-ai-build-kit/references/pieces.md` uses the bare word for
+what an issue has to contain, as in "Shape is what decides". The command
+produces that shape, so the two belong together, and the slash is what tells
+them apart. Write the command with its slash every time.
+
 Nothing should say the old "words" name for the commands now, in prose or in an
 identifier.
 

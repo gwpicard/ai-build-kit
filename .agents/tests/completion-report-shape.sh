@@ -23,7 +23,7 @@ rs_rule "checkpoint reference stays at the end" "checkpoint reference.*(end|bott
 rs_rule "end on a clean cut, not an offer to build" "clean cut"
 rs_rule "do not offer to build in this session" "not offer to build"
 rs_rule "point at /implement" "point at .?/implement"
-rs_rule "point at /plan" "/plan.? to shape more, ideally"
+rs_rule "point at /shape" "/shape.? to shape more, ideally"
 # The report once said "Everything's set up and saved" over a project holding
 # nothing but its opening commit. The reference is the thing that cannot be
 # written without the checkpoint existing, so it is required rather than

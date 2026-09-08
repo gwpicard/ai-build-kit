@@ -1,6 +1,6 @@
 ---
 name: sync
-description: True the documents up against what actually happened. Use for an interrupted session, work done outside the skills, an imported branch or contribution, a long session whose context went foggy, or reconciliation before a handover. Normal completion of /plan, /implement, /fix, /ship, and /maintain already updates the records; sync is the recovery and reconciliation route, not a routine step after every piece. Type this command when you want it; it never starts on its own.
+description: True the documents up against what actually happened. Use for an interrupted session, work done outside the skills, an imported branch or contribution, a long session whose context went foggy, or reconciliation before a handover. Normal completion of /shape, /implement, /fix, /ship, and /maintain already updates the records; sync is the recovery and reconciliation route, not a routine step after every piece. Type this command when you want it; it never starts on its own.
 disable-model-invocation: true
 ---
 
@@ -10,7 +10,7 @@ The documents are supposed to describe reality. Make that true again by reading 
 
 ## When to run this
 
-Normal completion of /plan, /implement, /fix, /ship, and /maintain already updates the
+Normal completion of /shape, /implement, /fix, /ship, and /maintain already updates the
 pieces, the changelog, and the masterplan directly; a correctly finished
 piece of work doesn't need sync afterward. Reach for sync instead for: a
 session that was interrupted mid-piece, work done outside the skills

@@ -59,7 +59,7 @@ Where a waiting piece says why it is waiting, pass the reason on rather than the
 label: one needs a few questions, one needs a throwaway build before anybody can
 decide, one needs a fact the agent can go and confirm on its own. Say which of
 the three, because the first two need the person in the room and the third does
-not. Somebody with ten minutes can answer the questions, or leave `/plan` to
+not. Somebody with ten minutes can answer the questions, or leave `/shape` to
 settle the research without them.
 
 Weigh the waiting pieces against the ready ones, in the same place as the counts
@@ -78,7 +78,7 @@ because a step nobody names is a step nobody does.
 Say piece names, never issue numbers. Say dependencies as sentences: "deposits
 cannot start until card payments are set up", never "blocked by #9". Name at
 most three things; if more apply, say how many and name the nearest. More than
-three stops being orientation and becomes a report. Match where the project is in its life. Still building toward the first launch: the answer is usually /implement for the next ready piece, /plan to shape a new one, or /ship when the plan has run dry. Live and running: the answer is usually "say what you want to /plan", /fix for the thing that broke, or the /maintain that the recorded check-up dates show is overdue.
+three stops being orientation and becomes a report. Match where the project is in its life. Still building toward the first launch: the answer is usually /implement for the next ready piece, /shape to shape a new one, or /ship when the plan has run dry. Live and running: the answer is usually "say what you want to /shape", /fix for the thing that broke, or the /maintain that the recorded check-up dates show is overdue.
 
 End with a short recap of where the tool has got to, in the words a person would
 use. Say what the last stretch of work was about, and whether anything is on the

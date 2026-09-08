@@ -68,7 +68,7 @@ Four things are thin, and all four were confirmed by reading the code.
 The functions with no working replay coverage include the ones the philosophy
 calls most valuable: talking a person out of building, choosing the right form
 of evidence and refusing a fake test, shaping a vague request into a sound
-ready piece, the ready gate between `/plan` and `/implement`, path-adaptive
+ready piece, the ready gate between `/shape` and `/implement`, path-adaptive
 `/ship` with a backup and a restore rehearsal, and `/sync` keeping the records
 true after messy work.
 

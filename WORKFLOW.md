@@ -2,7 +2,7 @@
 
 This is the reference card. When you are not sure what to type, read this page,
 or type /what-now and let it tell you. Type a command as `/` and its name
-(`/setup-ai-build-kit`, `/plan`, `/implement`, and so on), or ask for it by name. The Claude Code plugin
+(`/setup-ai-build-kit`, `/shape`, `/implement`, and so on), or ask for it by name. The Claude Code plugin
 adds the prefix `ai-build-kit:`, so `/setup-ai-build-kit` becomes `/ai-build-kit:setup-ai-build-kit`.
 
 ## 1. Commands
@@ -12,7 +12,7 @@ Command names say when to use them.
 | When | Type |
 |---|---|
 | I'm starting something | /setup-ai-build-kit |
-| I want it to... (a new idea) | /plan |
+| I want it to... (a new idea) | /shape |
 | Build the next ready piece | /implement |
 | I'm taking on several things | /queue |
 | It's broken | /fix |
@@ -21,7 +21,7 @@ Command names say when to use them.
 | It's been a while | /maintain |
 | I'm lost | /what-now |
 
-Two of them change the tool. /implement makes it do something new or different, and /fix brings it back to doing what it already should. /plan decides what to change next and shapes it into a ready piece, without touching the tool yet. The other six are housekeeping around those.
+Two of them change the tool. /implement makes it do something new or different, and /fix brings it back to doing what it already should. /shape decides what to change next and turns it into a ready piece, without touching the tool yet. The other six are housekeeping around those.
 
 You run /setup-ai-build-kit once. After that, start wherever you actually are. You can open a session with /fix as readily as with /implement, and neither needs the other to have run first. If you pick the wrong one it costs you nothing, because each checks what you typed against the masterplan and sends it down the right route.
 
@@ -43,7 +43,7 @@ Two of them are files you can open. The third, what's left to build, lives in yo
 
 The dividing rule: the masterplan describes the present, the plan holds the future, and the moment a sentence is about when, why, or how something was built, it belongs in the changelog.
 
-You can work with the issues yourself, and nothing you do there will be undone. Open one and write it however you like, in as little as half a sentence. /plan settles what done means with you and marks the piece ready; /implement builds only ready pieces and never guesses past an open question. If a piece is not ready when you reach for /implement, it points you to /plan and takes the next ready piece instead.
+You can work with the issues yourself, and nothing you do there will be undone. Open one and write it however you like, in as little as half a sentence. /shape settles what done means with you and marks the piece ready; /implement builds only ready pieces and never guesses past an open question. If a piece is not ready when you reach for /implement, it points you to /shape and takes the next ready piece instead.
 
 A piece is written in two layers. The part you read stays in plain words, and it stays complete about anything that affects your product, so it never looks simpler than the work really is. The build detail the agent needs sits in a collapsed "under the hood" section you never have to open. Anything that affects the whole product is written into the masterplan instead, and anything technical that affects the whole project goes into AGENTS.md, so no fact is copied into two places.
 
@@ -67,7 +67,7 @@ A piece often carries two, because a checkout is finance and an outside service 
 
 Four labels say where a piece stands instead: `building` when somebody is on it, `blocked` when something outside the project holds it up, `parked` on something you decided against, and `broken` for a repair, which sends it to `/fix`.
 
-Three more say it is waiting on a question rather than on a person: `needs-clarification` (talking it through settles it), `needs-prototype` (a throwaway is needed first to see what it should look like), and `needs-research` (a fact from outside the project is needed). Anything you jot down starts at `needs-clarification`; `/plan` settles it and marks the piece `ready`, and `/implement` builds only ready pieces. What settled it is written onto the piece before the label changes, so a month later you can see what was decided rather than only that something was.
+Three more say it is waiting on a question rather than on a person: `needs-clarification` (talking it through settles it), `needs-prototype` (a throwaway is needed first to see what it should look like), and `needs-research` (a fact from outside the project is needed). Anything you jot down starts at `needs-clarification`; `/shape` settles it and marks the piece `ready`, and `/implement` builds only ready pieces. What settled it is written onto the piece before the label changes, so a month later you can see what was decided rather than only that something was.
 
 ## 3. The build path
 
@@ -101,13 +101,21 @@ If the tool needs confidential files to work from, say so during the interview. 
 
 ## 5. Day to day
 
-Typed alone, /implement takes the next ready piece from the plan. It agrees with you in one sentence what the piece should do, chooses the evidence that piece needs, builds until that evidence holds, then stops so you can try it. Nothing is saved until you confirm it behaves. A piece that is not ready yet, still waiting on a question, goes to /plan first; /implement builds, it does not shape.
+Typed alone, /implement takes the next ready piece from the plan. It agrees with you in one sentence what the piece should do, chooses the evidence that piece needs, builds until that evidence holds, then stops so you can try it. Nothing is saved until you confirm it behaves. A piece that is not ready yet, still waiting on a question, goes to /shape first; /implement builds, it does not shape.
 
 If the change touched an area the build path flags, the best independent method available reviews it first. It reports in plain language, sorted into what's worth stopping for and what's worth knowing.
 
 /queue shows everything ready to build at once, and what is waiting on what. Type it when you are taking on several pieces rather than one, which is the only time you need it. It comes back with two lists. The first is everything ready, and those are safe to take on together, because a piece waiting on another piece is never in it. The second is what is waiting, each line saying which piece has to land first: "deposits cannot start until card payments is built". It changes nothing and builds nothing, so /implement is still what does the work. If the list looks out of date, type /queue again, since it is printed fresh from your project's issues every time.
 
-/plan is how you bring anything new: "/plan add a filter to the board". You never sort your own request; the agent works out what kind of work it is. Clear and piece-sized becomes a ready piece, and /plan offers to build it now or leave it for /implement later. Vague gets a short interview. A question a conversation can't settle gets a disposable prototype, a source check, or a search for something that already does the job. Two of those need you there; the research does not, so you can tell /plan you're leaving and it settles what it can alone, then tells you which pieces are waiting on you. Type /plan with a piece's number to settle that one rather than the next in line. You are never made to settle it there and then: when a request lands on a question, /plan says roughly what settling it would take, minutes for a look-up or a sitting for an interview or a prototype, and offers to file the piece with its question so you can come back to it. Nothing filed that way can be built until the question is answered, and /what-now tells you when enough pieces are waiting that the session is better spent planning than building. Show a mock of what you want and it settles the question instead, with no throwaway built. A prototype comes back as one of two things: a single file you open and click through yourself, or three genuinely different versions to move between and pick from. Anything touching data, access, or money gets written into the masterplan first. If another piece already open would be built in the same place, /plan names it before the work starts, so you can decide whether to carry on, wait, or fold the two together.
+/shape is how you bring anything new: "/shape add a filter to the board". You never sort your own request; the agent works out what kind of work it is. Clear and piece-sized becomes a ready piece, and /shape offers to build it now or leave it for /implement later. Vague gets a short interview.
+
+A question a conversation can't settle gets a disposable prototype, a source check, or a search for something that already does the job. Two of those need you there; the research does not, so you can tell /shape you're leaving and it settles what it can alone, then tells you which pieces are waiting on you. Type /shape with a piece's number to settle that one rather than the next in line.
+
+You are never made to settle it there and then: when a request lands on a question, /shape says roughly what settling it would take, minutes for a look-up or a sitting for an interview or a prototype, and offers to file the piece with its question so you can come back to it. Nothing filed that way can be built until the question is answered, and /what-now tells you when enough pieces are waiting that the session is better spent planning than building.
+
+Show a mock of what you want and it settles the question instead, with no throwaway built. A prototype comes back as one of two things: a single file you open and click through yourself, or three genuinely different versions to move between and pick from.
+
+Anything touching data, access, or money gets written into the masterplan first. If another piece already open would be built in the same place, /shape names it before the work starts, so you can decide whether to carry on, wait, or fold the two together.
 
 If the request would change what kind of project this is, by bringing in outside users or real money or a promise to someone, the agent re-runs the fit check with you before building. A different build path needs different care before people rely on it.
 
@@ -186,7 +194,7 @@ kit is available, the agent shows the version and what changed, then waits for
 approval. An update refreshes only the thirteen AI Build Kit skills and leaves
 your tool, its records, and its own checks alone. A clean checkpoint comes
 first, so an interrupted update can be recovered. The one update that split the
-old `/build` into `/plan` and `/implement` runs a one-time step that labels your
+old `/build` into what are now `/shape` and `/implement` runs a one-time step that labels your
 existing pieces so they can still be built, and offers to move any older
 `plan.md` list into your project's issues; it says what it changed.
 
