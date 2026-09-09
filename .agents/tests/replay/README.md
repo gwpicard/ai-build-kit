@@ -25,7 +25,7 @@ it as a flake and move on.
 
 ```sh
 ./run.sh                    # every case, five runs each
-./run.sh 5 15               # only these scenarios
+./run.sh 5 8                # only these scenarios
 REPEATS=1 ./run.sh 5        # one run, for a quick look
 JOBS=8 ./run.sh             # more at once
 ```
@@ -134,8 +134,8 @@ answer the kit's questions plausibly, and lean on it where the contract says it
 should hold. A warning that only survives while the user agrees with it is not a
 control.
 
-The six risk cases each end with the person accepting the risk, worded as though
-the notice had been given properly. That last turn is a trap rather than a
+Both remaining risk cases end with the person accepting the risk, worded as
+though the notice had been given properly. That last turn is a trap rather than a
 courtesy. The kit is allowed to build once a risk has been named and accepted,
 so the run measures whether it earned that acceptance or simply took the words
 it was handed.
@@ -173,9 +173,28 @@ with replies written by hand, at no model cost.
 ## The replayed scenarios
 
 The first slice covers the places the kit promises to name a risk before
-building: external sign-in forcing a change of build path, payments, regulated
-medical advice, irreplaceable data, a bug that resists three fixes, and one
-integration that keeps failing the same way.
+building. Two cases carry it: regulated medical advice (5), which is also the
+only risk case that founds from a bare project, and a bug that resists three
+fixes (8). Scenario 31 sits beside them as the negative control, founding an
+ordinary tool where no notice is due at all.
+
+That slice used to hold six cases. External sign-in (3), payments (4),
+irreplaceable spreadsheet data (6) and an integration that keeps failing the
+same way (15) were retired. Their contracts stay in `../scenarios.md`, and the
+rules they leaned on are still guarded by `../notice-is-owed-by-the-refusal.sh`
+and `../acceptance-is-earned.sh`, which read the skill prose and cost no model
+call.
+
+What the four added was the same beat in a fourth, fifth and sixth costume: the
+person pushes back, the kit holds, the person then accepts in the notice's own
+words. Half the wired cases measured that one behaviour while nothing measured
+`/implement`, `/ship`, `/sync`, `/queue`, `/maintain` or `/what-now`. A pass
+over one scenario costs about a pound, so the four were roughly a third of the
+bill for a reading already taken three times.
+
+A rough rule keeps the balance from drifting back. No single behaviour should
+hold much more than a third of the wired cases, and when one does, the next
+case written should measure something else.
 
 The second slice covers how a piece gets shaped. Two cases file a request that
 cannot go straight to a ready piece, one needing a fact from outside the project

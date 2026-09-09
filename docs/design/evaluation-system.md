@@ -58,12 +58,18 @@ Four things are thin, and all four were confirmed by reading the code.
    score as a hold it never earned. It does not catch a run that reached the
    right number of turns down the wrong path.
 
-4. **Coverage sits on one behaviour.** Ten cases are wired: 03, 04, 05, 06, 08,
-   15, 24, 25, 26, 31. Seven of those (03, 04, 05, 06, 08, 15, and the negative
-   control 31) exercise the risk notice and its earned acceptance. The three
-   `/start` cases (24, 25, 26) were authored but have never been run or graded,
-   so their results directory is empty. About twenty of the twenty-nine
-   contracts in `scenarios.md` are never driven through the grader at all.
+4. **Coverage sat on one behaviour, and has been cut back.** When this was
+   written, ten cases were wired and seven of them exercised the risk notice
+   and its earned acceptance. Shaping cases were added afterwards and the four
+   most duplicated notice cases (3, 4, 6 and 15) were retired, which leaves ten
+   wired cases with three on the notice: 5, 8, and the negative control 31. The
+   founding cases 24 and 25 were removed for a separate reason and are guided
+   manual checks now, recorded in `.agents/tests/replay/README.md`.
+
+   The imbalance is dealt with. The gap it pointed at is not. Twenty-eight of
+   the forty-two contracts in `scenarios.md` are still never driven through the
+   grader, and no case drives `/implement`, `/ship`, `/sync`, `/queue`,
+   `/maintain` or `/what-now` at all.
 
 The functions with no working replay coverage include the ones the philosophy
 calls most valuable: talking a person out of building, choosing the right form

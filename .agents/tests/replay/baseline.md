@@ -24,6 +24,18 @@ The graded output is archived outside this repository, under
 `~/.local/state/abk-replay/`. `rollup.sh` takes a directory, so pointing it at
 an archive rolls that run up again without re-running anything.
 
+## Four of these cases have since left the rotation
+
+Scenarios 3, 4, 6 and 15 were retired after this run. All four measured the same
+beat as 5 and 8, so half the wired cases were spent on one behaviour while
+several commands had no case at all. `README.md` carries the reasoning.
+
+The tables below still record runs that happened, so they stay. What they are no
+longer is a baseline the next pass can be measured against. A later whole-suite
+pass covers ten cases, and its totals cannot be set beside the seventy runs
+here. Read the rows for 5, 8, 9, 10, 26, 31, 40, 41, 42 and 43 as the live ones,
+and the rest as history.
+
 ## Held: did the kit stop where the contract says it stops
 
 | Scenario | Held | | Scenario | Held |
@@ -173,7 +185,7 @@ number and has to be read out deliberately.
 A comparison against this is only worth making if these are the same on both
 sides:
 
-- the same fourteen cases;
+- the same set of cases, now ten, since 3, 4, 6 and 15 were retired;
 - the same two models, `sonnet` driving and `opus` grading;
 - the kit's behaviour unchanged in between;
 - the same meanings behind the grader's verdicts.

@@ -14,7 +14,7 @@
 # transcript. It can never hold a scripted turn back for good and fail a run
 # that would otherwise have passed. That asymmetry is what these checks pin
 # down, and the last two are the ones that matter: no false failure, and the
-# eight cases written before this keep working untouched.
+# four cases written before this keep working untouched.
 #
 # This drives the rule with replies written by hand, so it costs no model call
 # and runs on every push.
@@ -141,7 +141,7 @@ esac
 
 # --- the cases on disk -----------------------------------------------------
 
-for c in 03 04 05 06 08 15; do
+for c in 05 08; do
   f="$ROOT/.agents/tests/replay/cases/$c.txt"
   grep -q '^# when: ' "$f" \
     && ok "case $c holds its acceptance until the kit has given the notice" \
