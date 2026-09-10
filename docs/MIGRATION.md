@@ -12,6 +12,10 @@ were rehearsed on stand-ins that behaved the same way.
 Read the whole document before starting. The middle of a migration is a bad
 place to meet a surprise.
 
+Not to be confused with `docs/MIGRATION-READINESS.md`, which is a record of a
+different and finished move: retiring the private maintainer repository in
+August 2026. It has nothing to do with this.
+
 ## Why this exists
 
 A coding agent appended two lines to every commit message and pull request
@@ -78,6 +82,49 @@ It costs the following, and there is no way to avoid any of them.
   searchable. The diffs and the review threads do not.
 - **Traffic and insight history.**
 
+## What happens to people who installed the kit
+
+This is the part that matters most, so it was checked rather than assumed.
+
+Claude Code records a marketplace by its path, not by any internal identity of
+the repository. The local record reads `"source": "github"` with
+`"repo": "gwpicard/ai-build-kit"`. The migration keeps that path, so the record
+stays correct and nobody has to edit anything on their machine.
+
+The marketplace is kept as an ordinary git clone whose origin is the same web
+address, and an install records the commit it came from. The new repository is
+pushed from the same local clone the rewrite happened in, so its commits are the
+same commits with the same addresses. Nothing about the git side changes.
+
+The install and update commands in `README.md` keep working, unchanged:
+
+```
+claude plugin marketplace add gwpicard/ai-build-kit
+claude plugin install ai-build-kit@ai-build-kit --scope local
+```
+
+and `claude plugin marketplace update ai-build-kit` still finds its source.
+
+Release downloads are addressed by tag and file name rather than by an internal
+number, so those links survive as well.
+
+**One group is already broken, and the migration is not what broke them.** The
+history rewrite gave new addresses to nineteen commits, roughly everything from
+v0.11.0 onwards. An installation sitting on one of those cannot move forward,
+because the commit it remembers is no longer on the branch. An installation from
+v0.10.0 or earlier is unaffected: those commits were never rewritten and are
+still exactly where they were.
+
+Anyone stuck that way fixes it in two commands:
+
+```
+claude plugin marketplace remove ai-build-kit
+claude plugin marketplace add gwpicard/ai-build-kit
+```
+
+Say that in the release notes next time a version goes out, whether or not the
+migration ever happens.
+
 ## Before you start
 
 Set aside about ninety minutes and do not start if you cannot finish. There is a
@@ -90,9 +137,14 @@ You need:
   `gh auth status`. It needs the `repo` and `workflow` permissions, which the
   current sign-in has.
 - A local clone whose `main` matches the public one, with nothing uncommitted.
-- Every branch you care about merged into `main` first. The new repository is
-  built from `main`, and an unmerged branch has to be pushed separately
-  afterwards or it is left behind.
+- **The work you want in the new repository has to be on `main` first.** Step 3
+  builds the new repository by pushing `main`, so a branch that is not merged is
+  a branch that does not exist there. Two were outstanding on 10 September:
+  `keep-attribution-out-of-the-record`, holding the hook and the validator rule
+  that stop the trailers coming back, and `migration-plan`, holding this
+  document and the scripts it runs. Merge them, or push them separately after
+  step 3, or accept losing them. Check what is outstanding with
+  `git branch --no-merged main`.
 - The saved social preview image. There is a copy at
   `~/ai-build-kit-backups/social-preview.png`, 1280 by 640.
 - The full backup of the pre-rewrite history, at
@@ -329,8 +381,19 @@ command line.
    instead of yours.
 2. **Tell KasperHonore.** Their issue and comment now live on a new record.
 3. **Star your own repository**, if you want the count not to read zero.
-4. **Check the plugin route still installs.** The web address is unchanged so it
-   should, but type the install command once and watch it work.
+4. **Check the plugin route really installs.** The web address is unchanged so
+   it should, and the section above says why, but type it once and watch it
+   work rather than trusting the reasoning:
+
+   ```
+   claude plugin marketplace remove ai-build-kit
+   claude plugin marketplace add gwpicard/ai-build-kit
+   claude plugin marketplace list
+   ```
+
+   The last command should show the marketplace pointing at
+   `gwpicard/ai-build-kit`. This is the one check worth doing before you tell
+   anybody the migration is finished.
 5. **Tell anyone with a clone to clone again.** Their copy has the old history
    and will not merge cleanly.
 6. **Decide what happens to the archive.** It can sit there privately forever at
