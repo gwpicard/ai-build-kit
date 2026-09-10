@@ -24,13 +24,16 @@ repository.
 
 - `.agents/skills/` is the single source of truth for the nine commands and
   four internal background skills. Nothing else belongs in it.
-- `.agents/maintainer-skills/` holds the Humanizer writing skill, which only
-  the kit's own maintainers use. it sits there rather than beside the thirteen
-  because a shared skills installer reads `.agents/skills/` and
-  `.claude/skills/` and offers whatever it finds in either, so a folder in one
-  of those is a skill somebody installs. Being outside both is the whole
-  boundary, and a maintainer skill gets no generated adapter for the same
-  reason.
+- `.agents/maintainer-skills/` holds the skills only the kit's own maintainers
+  use. There are two: the Humanizer writing skill, and `review-issues`, which
+  reads the open issues, groups them by theme and names the next piece worth
+  picking up. They sit there rather than beside the thirteen because a shared
+  skills installer reads `.agents/skills/` and `.claude/skills/` and offers
+  whatever it finds in either, so a folder in one of those is a skill somebody
+  installs. Being outside both is the whole boundary, and a maintainer skill
+  gets no generated adapter for the same reason. Nothing offers one as a
+  command, so load it by its path. To decide what to work on next, load
+  `.agents/maintainer-skills/review-issues/SKILL.md`.
 - `.claude/`, `.cursor/`, and `.gemini/` are generated adapters. Change the
   canonical skill, then run `.agents/tools/build-adapters.sh`. The Claude
   plugin exposes the nine generated command files and four hidden background
@@ -297,6 +300,19 @@ rename; a number does not.
   stamp rather than letting it match nothing. That last one is the reason the
   check exists. A stamp that matches nothing reports success and ships the
   previous release's number, and no other check would see it.
+- `.agents/tests/unshaped-is-not-next.sh` guards the maintainer's own read of
+  the open issues. That read goes wrong quietly rather than loudly. It
+  recommends a piece nobody has sized, or ranks themes against a priority this
+  repository has never written down, or groups the backlog by the area labels
+  instead of by what the issues say, which hands back the grouping that is
+  already there and finds nothing. Each of those reads perfectly well and is
+  worth nothing, so the rules against them live as prose in the skill and this
+  check reads them back. It also holds the rule that a silently empty answer
+  stops the read: the second GitHub call returned an empty list once while the
+  backlog was not empty, and an empty list is also the honest answer for a
+  backlog that is empty, so nothing tells the two apart except the other call
+  disagreeing. Telling somebody their backlog is empty when it is not is the one
+  wrong answer that looks like a right one.
 - The checks that guard a rule written as prose share
   `.agents/tests/lib/rule-shape.sh`: declare the rules, and it asserts each one
   and proves it is load-bearing by removing it and requiring the check to fail.

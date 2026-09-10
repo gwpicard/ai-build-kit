@@ -123,23 +123,27 @@ adopts a setting of its own, follow it and update the short person-facing
 version in `docs/COMPATIBILITY.md`.
 
 Humanizer is not in that tree at all. It lives under
-`.agents/maintainer-skills/`, and it is the only thing there.
+`.agents/maintainer-skills/`, alongside `review-issues`, which reads the open
+issues, groups them by theme and names the next piece worth picking up. Both
+belong to whoever works on the kit, and neither belongs to anybody who installs
+it.
 
 The reason is what a shared skills installer reads. It looks in
 `.agents/skills/` and `.claude/skills/` and offers whatever it finds in either,
 merging the two by the `name` in each file's frontmatter. The thirteen adapters
 carry the names of the thirteen skills they point at, so they merge away and an
-installer finds thirteen. Nothing else is called `humanizer`, so a copy in either
-folder would be a thirteenth skill offered to every project.
+installer finds thirteen. Neither maintainer skill shares a name with one of the
+thirteen, so a copy of either in those folders would be a fourteenth skill
+offered to every project.
 
 Sitting outside both folders is what prevents that. It is also why the skill
 gets no generated adapter and no line in the release allowlist. A marker file
 was tried first and cannot work: the marker is this kit's own convention, and
 an installer written by somebody else has never heard of it.
 
-Load it by its path when you need it. The validator checks the placement rather
-than trusting it, and fails if a folder or command file named for a maintainer
-skill turns up anywhere an installer reads.
+Load either by its path when you need it. The validator checks the placement
+rather than trusting it, and fails if a folder or command file named for a
+maintainer skill turns up anywhere an installer reads.
 
 The vendored copy is pinned to version 2.9.1 from
 [blader/humanizer](https://github.com/blader/humanizer/tree/v2.9.1) under its

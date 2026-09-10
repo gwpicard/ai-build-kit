@@ -53,7 +53,15 @@ clarify
 second-opinion
 section-builder"
 
-expected_maintainer_skills="humanizer"
+expected_maintainer_skills="humanizer
+review-issues"
+
+# Which of those arrived from somewhere else. A vendored copy carries the
+# licence it was published under, and dropping that licence is how a borrowed
+# skill turns into an uncredited one. A skill written here has no upstream to
+# carry a licence from, so demanding one of every maintainer skill would mean
+# inventing a file to satisfy a check.
+vendored_maintainer_skills="humanizer"
 
 # ---------------------------------------------------------------------------
 echo "== Issue references =="
@@ -182,8 +190,16 @@ while IFS= read -r name; do
     fail "missing $file"
     continue
   fi
-  [ -f "$MAINTAINER_SKILLS/$name/LICENSE" ] || \
-    fail "$MAINTAINER_SKILLS/$name/LICENSE: missing vendored skill licence"
+  case "
+$vendored_maintainer_skills
+" in
+    *"
+$name
+"*)
+      [ -f "$MAINTAINER_SKILLS/$name/LICENSE" ] || \
+        fail "$MAINTAINER_SKILLS/$name/LICENSE: missing vendored skill licence"
+      ;;
+  esac
   if [ -e "$MAINTAINER_SKILLS/$name/agents/openai.yaml" ]; then
     fail "$MAINTAINER_SKILLS/$name/agents/openai.yaml: a maintainer skill needs no harness policy; nothing offers it as a command"
   fi
