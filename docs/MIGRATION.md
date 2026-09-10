@@ -145,6 +145,14 @@ You need:
   document and the scripts it runs. Merge them, or push them separately after
   step 3, or accept losing them. Check what is outstanding with
   `git branch --no-merged main`.
+
+  It is worth being clear about why this matters, because the opposite is easy
+  to assume. Nothing on those branches is cleanup. The cleanup was the rewrite,
+  which is finished and sits in no branch. What they hold is only the rules that
+  stop the trailers coming back, which is exactly the part that has to survive
+  into the new repository. A migration that leaves them behind produces a clean
+  history with nothing defending it, and the problem starts again from the first
+  commit.
 - The saved social preview image. There is a copy at
   `~/ai-build-kit-backups/social-preview.png`, 1280 by 640.
 - The full backup of the pre-rewrite history, at
