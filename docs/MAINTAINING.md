@@ -76,6 +76,10 @@ condition, not in the shared default.
 
 ## Changing a skill
 
+This section governs the thirteen canonical skills in `.agents/skills/`. A
+maintainer skill sits outside it, and `AGENTS.md` says what it does and does not
+owe.
+
 Start with PHILOSOPHY.md, beside this file. Its five questions get answered in
 the pull request description before the skill changes. A change that cannot
 answer them gets reshaped before it's considered for merge.

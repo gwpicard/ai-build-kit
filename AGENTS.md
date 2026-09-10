@@ -15,8 +15,9 @@ here by design. They are created inside a user's project by `/setup-ai-build-kit
 
 ## Before any work
 
-Read `docs/MAINTAINING.md`. Read `docs/PHILOSOPHY.md` before changing what a
-skill does or adding a capability. Check the current branch and unsaved work
+Read `docs/MAINTAINING.md`. Read `docs/PHILOSOPHY.md` before changing what one
+of the thirteen canonical skills does, or adding a capability. Check the current
+branch and unsaved work
 before editing. Never run the project-founding `/setup-ai-build-kit` process in this
 repository.
 
@@ -76,10 +77,25 @@ thing, trust the check. It tests the real work, and an instruction can fall out
 of date. Follow the check, and say plainly that the two disagree rather than
 following the stale instruction in silence.
 
-When a skill changes, answer the five questions in `docs/PHILOSOPHY.md`, record
-any borrowed idea in `docs/SOURCES.md`, update the owned explanation where
-needed, regenerate adapters, and run the kit validator. Generated files are
-committed with their canonical change.
+When one of the thirteen canonical skills changes, answer the five questions in
+`docs/PHILOSOPHY.md`, record any borrowed idea in `docs/SOURCES.md`, update the
+owned explanation where needed, regenerate adapters, and run the kit validator.
+Generated files are committed with their canonical change.
+
+A skill in `.agents/maintainer-skills/` carries none of that bar. It reaches
+nobody who installs the kit, it gets no adapter, and the maintainer who chose it
+is the only person it answers to. So the five questions do not apply: they ask
+what somebody who does not read code sees on screen and what they type when it
+goes wrong, and a maintainer skill has no such person. Nor does the rule that a
+story is told in three places, because `WORKFLOW.md` ships and must not describe
+a skill a reader cannot install.
+
+Three things still hold. The house writing rules, since a person still reads the
+words. `docs/SOURCES.md`, if the idea came from somewhere, which is a matter of
+credit rather than of product rigour. And the kit validator, which matters more
+here than for a canonical skill: it guards the placement that keeps a maintainer
+skill out of a release. Everything else is the maintainer's own call, because a
+rule with no activation boundary becomes universal ceremony.
 
 Shared changes are reviewed and arrive through a pull request. A human decides
 whether to merge. Reports describe behaviour, evidence, and uncertainty in
@@ -307,12 +323,20 @@ rename; a number does not.
   instead of by what the issues say, which hands back the grouping that is
   already there and finds nothing. Each of those reads perfectly well and is
   worth nothing, so the rules against them live as prose in the skill and this
-  check reads them back. It also holds the rule that a silently empty answer
-  stops the read: the second GitHub call returned an empty list once while the
-  backlog was not empty, and an empty list is also the honest answer for a
-  backlog that is empty, so nothing tells the two apart except the other call
-  disagreeing. Telling somebody their backlog is empty when it is not is the one
-  wrong answer that looks like a right one.
+  check reads them back. It holds the printout's shape too, which is fixed in
+  the skill rather than described, because a described shape gets followed
+  loosely: one line per theme, a piece printed as its number, one
+  recommendation rather than a ranked list, and a piece no theme fits left on
+  its own instead of pushed into the nearest one. Printing the number reverses
+  an earlier rule, so the check carries the reason. A number is banned from a
+  tracked file because its reader cannot follow a pointer once the numbering
+  has moved on, while this printout is read beside the live backlog and the
+  number is what the maintainer types next. It also holds the rule that a
+  silently empty answer stops the read: the second GitHub call returned an
+  empty list once while the backlog was not empty, and an empty list is also
+  the honest answer for a backlog that is empty, so nothing tells the two
+  apart except the other call disagreeing. Telling somebody their backlog is
+  empty when it is not is the one wrong answer that looks like a right one.
 - The checks that guard a rule written as prose share
   `.agents/tests/lib/rule-shape.sh`: declare the rules, and it asserts each one
   and proves it is load-bearing by removing it and requiring the check to fail.

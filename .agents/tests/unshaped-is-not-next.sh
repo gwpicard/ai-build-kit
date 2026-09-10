@@ -49,8 +49,24 @@ rs_rule "a silently empty answer stops it too" 'the two calls must agree'
 rs_rule "no invented ranking" 'instead of inventing an order'
 
 # The shape of the answer, and the line it never crosses.
-rs_rule "the runners-up are capped" 'at most two runners-up'
-rs_rule "pieces are named, not numbered" 'never by its issue number'
+#
+# The printout is fixed rather than described, because a described shape gets
+# followed loosely. The first read written against a described one grouped the
+# backlog correctly and then buried the grouping in paragraphs about it.
+rs_rule "the printout has a fixed shape" 'a printout with a fixed shape'
+rs_rule "a theme is glossed in one line" 'the line under a theme heading is one line'
+# A theme of one is the honest answer for a piece nothing else sits beside.
+# Forcing it into the nearest theme is how the grouping stops meaning anything.
+rs_rule "a piece no theme fits stands alone" 'where no theme fits a piece'
+rs_rule "one thing is recommended" 'worth picking up names one thing'
+rs_rule "the closing lists are capped" 'at most three pieces'
+# Numbers are the reversal of an earlier rule, so the reason belongs next to it.
+# The repository bans an issue number in a tracked file, whose reader cannot
+# follow a pointer once the numbering has moved on. This printout is read beside
+# the live backlog and the number is what the maintainer types next, so it is
+# printed there and still never written down.
+rs_rule "a piece is printed as its number" 'a piece appears as its number'
+rs_rule "the number still never reaches a file" 'do not write one into a file'
 rs_rule "it reports and never acts" 'reports and changes nothing'
 rs_guard "$REVIEW" "the review-issues skill"
 

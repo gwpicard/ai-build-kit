@@ -63,22 +63,62 @@ and leave it there. Applying a label is somebody's decision, not this read's.
 
 ## Say
 
-Start with the themes. Name each one in a few words, say which pieces sit in it,
-and say in one line what the theme is really about. This is the part that earns
-the command, because it is the view nobody has while reading issues one at a
-time.
+The answer is a printout with a fixed shape, not an essay. Read what you have
+written back against this before you send it:
 
-Then name one piece as the next thing to pick up, with the reason in ordinary
-words. The reason is the useful half. "It is the only shaped piece in the
-largest theme" tells somebody something. "It seems important" does not.
+```
+<n> open · <n> themes
 
-Then at most two runners-up, and no more. `/what-now` holds the same cap for the
-same reason, which is that a list of everything hands the decision straight back
-to the person who asked for help making it.
+THEME NAME                              #<n> #<n> #<n>
+One line saying what this theme is about.
 
-Name every piece by its title, never by its issue number. A number is a pointer
-the reader has to go and look up, and this repository holds that rule everywhere
-else.
+ANOTHER THEME                           #<n> #<n>
+One line saying what this theme is about.
+
+ON ITS OWN                              #<n>
+One line, for the piece no theme fits.
+
+WORTH PICKING UP
+  #<n>  the issue title
+        Why this one, in a line or two.
+
+SMALL AND SEPARATE
+  #<n>  the issue title, and what makes it one small change
+
+NEEDS YOU TO DECIDE
+  #<n>  the question only the maintainer can answer
+```
+
+A piece appears as its number. That is what the maintainer types next, and a
+theme carrying four numbers reads faster than a theme carrying four titles. The
+title comes back wherever the printout recommends something, because a
+recommendation nobody can recognise is no use. The rule against numbers governs
+a tracked file, where the reader cannot follow a pointer and the numbering
+shifts underneath it once the material is public. A printout is read once,
+beside the backlog it came from. Do not write one into a file.
+
+The line under a theme heading is one line. That is where this read runs away
+from itself: given room it explains each theme twice over, and then the grouping
+it exists to show is buried in the explaining. Say what the theme is about in
+the words somebody would use out loud, and stop.
+
+Where no theme fits a piece, leave it on its own rather than pushing it into the
+nearest one. A theme of one is an honest answer. A theme of two unrelated things
+is worse than no theme at all.
+
+Order the themes largest first. A count is not a judgement, so ordering by one
+ranks nothing.
+
+Worth picking up names one thing, with the reason in ordinary words. The reason
+is the useful half. "It is the only shaped piece in the largest theme" tells
+somebody something. "It seems important" does not.
+
+The two lists under it hold the work that needs no ranking. Small and separate
+is the piece somebody could finish and send on its own, which is what a person
+with a spare hour is looking for. Needs you to decide is the piece waiting on an
+answer nobody else has. Each list names at most three pieces, because a list of
+everything hands the decision straight back to the person who asked for help
+making it.
 
 Where nothing is shaped, say that plainly and recommend what to shape first,
 rather than dressing unshaped work up as ready.
@@ -91,10 +131,11 @@ answer is that the choice rests on grounds this read cannot see.
 This command reports and changes nothing. It does not edit an issue, apply a
 label, link a part to a parent, or open anything. Where the read turns up
 something worth changing, such as two pieces covering the same ground, say it
-and leave it with the maintainer.
+under the printout and leave it with the maintainer.
 
 ## Done when
 
 The maintainer can see the backlog grouped by what the work is about, has one
-recommended next piece and the reason for it, and knows which pieces are not
-ready and why. Nothing on GitHub has changed.
+recommended next piece and the reason for it, and can see at a glance which
+pieces would go on their own as one small change and which are waiting on an
+answer only they can give. Nothing on GitHub has changed.
