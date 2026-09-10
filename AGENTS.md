@@ -35,6 +35,13 @@ repository.
   gets no generated adapter for the same reason. Nothing offers one as a
   command, so load it by its path. To decide what to work on next, load
   `.agents/maintainer-skills/review-issues/SKILL.md`.
+- `.agents/migration/` holds the one-off tooling for replacing the public
+  repository with one whose history carries no AI attribution. It is not part of
+  the kit, it gets no adapter, and it reaches nobody who installs the kit. It
+  lives here rather than outside the repository because `docs/MIGRATION.md` is
+  the plan and these are the scripts that plan runs, and a runbook whose tools
+  sit somewhere else is a runbook that stops working. Read `docs/MIGRATION.md`
+  before running any of them.
 - `.claude/`, `.cursor/`, and `.gemini/` are generated adapters. Change the
   canonical skill, then run `.agents/tools/build-adapters.sh`. The Claude
   plugin exposes the nine generated command files and four hidden background
