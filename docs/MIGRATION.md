@@ -127,9 +127,10 @@ migration ever happens.
 
 ## Before you start
 
-Set aside about ninety minutes and do not start if you cannot finish. There is a
-window of a few minutes where the web address does not resolve, and leaving it
-there is worse than not starting.
+Set aside about an hour. Steps 0 to 5 can be stopped at any point and cost
+nothing, so the part that needs your attention is steps 7 and 8, which take a
+few minutes and should be run back to back. The web address does not resolve
+between them, and leaving it that way is worse than not starting.
 
 You need:
 
@@ -137,22 +138,12 @@ You need:
   `gh auth status`. It needs the `repo` and `workflow` permissions, which the
   current sign-in has.
 - A local clone whose `main` matches the public one, with nothing uncommitted.
-- **The work you want in the new repository has to be on `main` first.** Step 3
-  builds the new repository by pushing `main`, so a branch that is not merged is
-  a branch that does not exist there. Two were outstanding on 10 September:
-  `keep-attribution-out-of-the-record`, holding the hook and the validator rule
-  that stop the trailers coming back, and `migration-plan`, holding this
-  document and the scripts it runs. Merge them, or push them separately after
-  step 3, or accept losing them. Check what is outstanding with
-  `git branch --no-merged main`.
-
-  It is worth being clear about why this matters, because the opposite is easy
-  to assume. Nothing on those branches is cleanup. The cleanup was the rewrite,
-  which is finished and sits in no branch. What they hold is only the rules that
-  stop the trailers coming back, which is exactly the part that has to survive
-  into the new repository. A migration that leaves them behind produces a clean
-  history with nothing defending it, and the problem starts again from the first
-  commit.
+- Everything you want to keep merged into `main`. Step 1 does this and explains
+  it. It matters more than it looks: nothing on those branches is cleanup, since
+  the cleanup was the rewrite and that is finished. What they hold is only the
+  rules that stop the trailers coming back. A migration that leaves them behind
+  produces a clean history with nothing defending it, and the problem starts
+  again from the first commit.
 - The saved social preview image. There is a copy at
   `~/ai-build-kit-backups/social-preview.png`, 1280 by 640.
 - The full backup of the pre-rewrite history, at
@@ -184,11 +175,12 @@ their contribution moves to a new record.
 
 ## The tools
 
-All four live in `.agents/migration/` and are maintainer-only. None ships,
+All five live in `.agents/migration/` and are maintainer-only. None ships,
 because none appears in `release-manifest.txt`.
 
 | File | What it does |
 | --- | --- |
+| `orient.sh` | Reads the world back and says which of this plan's assumptions still hold. Changes nothing. Run it first. |
 | `export.sh` | Reads issues, comments, labels, releases, sub-issue links and settings out of the old repository. Read-only. Stops if it finds a gap in the numbering or any attribution text. |
 | `port.py` | Recreates all of that in the new repository, in number order. Stops dead if any item lands on the wrong number. |
 | `port-settings.sh` | Release download files, merge settings, description, topics, branch ruleset. |
@@ -196,187 +188,217 @@ because none appears in `release-manifest.txt`.
 
 ## The steps
 
+Steps 1 to 5 change nothing on GitHub and nothing that anyone can see. If you
+stop during them, you have lost only your time. Step 6 onwards is the part that
+moves, and it takes a few minutes.
+
 Names used below: the live repository is `gwpicard/ai-build-kit`, the archive
 will be `gwpicard/ai-build-kit-archive`, and the replacement is built as
 `gwpicard/ai-build-kit-next` before it takes the real name.
 
-### 1. Export, fresh
+### 0. Check the ground
 
 ```
-cd /mnt/c/Users/GUP/Documents/ai-build-kit
-bash .agents/migration/export.sh gwpicard/ai-build-kit ~/ai-build-kit-backups/export
+bash .agents/migration/orient.sh
 ```
 
-**Expected:** a summary listing the counts, then `gaps : none` and `clean`.
+This reads GitHub and the local clone and reports whether the plan still
+describes them. It writes nothing anywhere. Read the output before going on.
+A line marked ATTENTION is not always a problem, but it is something this plan
+did not expect, so re-read the plan where it touches that thing.
 
-Do not reuse an older export. An issue opened or a comment added since the
-export is one that does not survive, and an issue added in the middle shifts
-every number after it. The script refuses to continue if it finds a gap.
+### 1. Put everything on `main`, locally
 
-Nothing has changed on the live repository at this point, and nothing does until
-step 5.
+The new repository is built from `main`, so anything not on `main` will not
+exist in it. Nothing here is pushed to the old repository, which is being
+retired anyway.
 
-### 2. Create the replacement, private
+```
+git checkout main
+git merge --ff-only migration-plan
+```
+
+**Expected:** a fast-forward, with no merge commit. `migration-plan` sits in a
+straight line on top of `main`, and it carries the attribution branch beneath
+it, so this one merge brings both.
+
+**If it refuses to fast-forward**, something has changed since this was written.
+Stop and look rather than forcing it.
+
+Then check nothing else is outstanding:
+
+```
+git branch --no-merged main
+```
+
+Anything still listed is either wanted, in which case merge it too, or it is a
+leftover. On 10 September the two leftovers were
+`clearer-issue-review-printout` and `maintainer-skill-review-issues`, both old
+copies of work already on `main`. They are harmless either way, because the
+rewrite cleaned them along with everything else, and step 3 pushes only `main`
+and the tags.
+
+### 2. Build the clean local repository
+
+```
+git clone /mnt/c/Users/GUP/Documents/ai-build-kit ~/ai-build-kit-clean
+cd ~/ai-build-kit-clean
+git remote remove origin
+```
+
+A clone takes branches and tags and nothing else. The rewrite's own backup
+references are left behind, and so is every commit that only they held. That is
+why this is a clone rather than a copy of the folder: a copy would bring the
+whole object store, including the old commits.
+
+Prove it, rather than trusting it:
+
+```
+git log --all --format=%B | grep -ci "claude-session:"
+git tag -l | wc -l
+git log --oneline -1
+```
+
+**Expected:** `0` for the first, `16` for the second, and the newest commit for
+the third. If the first prints anything but zero, stop. The whole point of the
+exercise has failed and pushing would carry the problem into the new
+repository.
+
+### 3. Create the new repository and push
 
 ```
 gh repo create gwpicard/ai-build-kit-next --private \
   --description "$(gh api repos/gwpicard/ai-build-kit -q .description)"
+git remote add origin https://github.com/gwpicard/ai-build-kit-next.git
+git push origin main
+git push origin --tags
 ```
 
-Private, so the port happens out of sight and a half-built repository is never
-public. It goes public in step 7.
+Private for now, so a half-built repository is never public. It goes public in
+step 8.
 
-### 3. Push the clean history
+**Expected:** `main` and 16 tags. Check with
+`git ls-remote origin | grep -c refs/tags/`.
 
-```
-git remote add next https://github.com/gwpicard/ai-build-kit-next.git
-git push next main:main
-git push next --tags
-```
+### 4. Port everything else
 
-**Expected:** `main` and 16 tags on the new repository. Check with
-`git ls-remote next | grep -c refs/tags/`, which should print 16.
-
-### 4. Port the content
+Run from the original working clone, which is where the scripts live:
 
 ```
+cd /mnt/c/Users/GUP/Documents/ai-build-kit
+bash .agents/migration/export.sh gwpicard/ai-build-kit ~/ai-build-kit-backups/export
 python3 .agents/migration/port.py \
   --export ~/ai-build-kit-backups/export --target gwpicard/ai-build-kit-next
 bash .agents/migration/port-settings.sh \
   gwpicard/ai-build-kit gwpicard/ai-build-kit-next
 ```
 
-This takes roughly five minutes. It pauses a second between writes on purpose,
+Export first, always, and never reuse an old one. An issue opened since the last
+export is an issue that does not survive, and one opened in the middle of the
+range shifts every number after it. The export script refuses to run if it finds
+a gap.
+
+The port takes about five minutes. It pauses a second between writes on purpose,
 to stay under GitHub's limit on how fast an account may create things.
 
-**Expected:** every number from 1 to 37 printed in order, then the sub-issue
-links, then the releases, then the settings and the four downloads.
+**Expected:** every number from 1 to 37 in order, then the sub-issue links, the
+releases, the settings and the four downloads.
 
-**The ruleset step will fail here**, saying the feature needs GitHub Pro or a
-public repository. That is correct and expected. The repository is still
-private. The ruleset is created in step 8, after it is public.
+**The ruleset step will fail**, saying the feature needs GitHub Pro or a public
+repository. That is correct and expected. The repository is still private. The
+ruleset is created in step 9.
 
 **If the port stops with `STOP: created number N where M was expected`:** delete
-`gwpicard/ai-build-kit-next` entirely and start again from step 2. Do not try to
-repair it. Numbers cannot be reassigned, so everything after the mistake is
-wrong and there is no way back except starting over. Nothing on the live
-repository has been touched, so this costs you time and nothing else.
+`gwpicard/ai-build-kit-next` and start again from step 3. Do not try to repair
+it. Numbers cannot be reassigned, so everything after the mistake is wrong.
+Nothing on the live repository has been touched, so this costs time and nothing
+else.
 
-Now verify, before anything irreversible:
+### 5. Verify, while everything is still reversible
 
 ```
 bash .agents/migration/verify-port.sh gwpicard/ai-build-kit gwpicard/ai-build-kit-next
 ```
 
-**Expected:** nine `ok` lines and `everything matched`. If any line says FAIL,
-stop. Delete the new repository, work out why, and start again from step 2.
+**Expected:** nine `ok` lines and `everything matched`.
 
-Everything up to here is free. The live repository has not changed and you can
-walk away at any point by deleting `ai-build-kit-next`.
+If any line says FAIL, stop. Delete the new repository, work out why, and start
+again from step 3. Up to this point the live repository is untouched and you can
+walk away by deleting one private repository.
 
-### 5. Rename the live repository aside
+### 6. Stop and read
 
-This is the first step that changes the live repository. From here until step 7
-lands, the public web address does not resolve, so run 5, 6 and 7 back to back.
+Everything from here changes what the world sees, and the web address stops
+resolving until step 8 finishes. Do not begin unless you can finish now.
+
+Steps 7 and 8 should be run back to back.
+
+### 7. Retire the old repository
 
 ```
 gh api -X PATCH repos/gwpicard/ai-build-kit -f name=ai-build-kit-archive
+gh api -X PATCH repos/gwpicard/ai-build-kit-archive -F private=true
+gh api -X PATCH repos/gwpicard/ai-build-kit-archive -F archived=true
 ```
 
-**Expected:** it prints the new full name.
+The second command is the one that ends the exposure. All 35 attributed commits
+and every pull request reference stop being publicly reachable the moment it
+lands.
 
-**If it refuses** with `a conflicting repository operation is still in
-progress`, wait about ten seconds and run it again. This happens when another
-change to the repository has not settled. It is not a failure.
+**Archiving is not the same as making it private, and archiving alone fixes
+nothing.** GitHub's archive setting makes a repository read-only. An archived
+public repository is still fully public and every one of those commits stays
+readable. Private is the setting that matters, which is why it comes first. The
+archive flag is only a label saying nobody works here any more.
 
-### 6. Take the name over
+**If a command refuses** with `a conflicting repository operation is still in
+progress`, wait about ten seconds and run it again. That happens while an
+earlier change settles. It is not a failure.
+
+### 8. Put the new repository in its place
 
 ```
 gh api -X PATCH repos/gwpicard/ai-build-kit-next -f name=ai-build-kit
-```
-
-Renaming into a name currently held by a redirect works, and the redirect gives
-way. This was rehearsed.
-
-**If it refuses** with `name already exists on this account`, the previous
-rename has not settled. Wait ten seconds and run it again, and keep trying. The
-name is free. GitHub is catching up.
-
-### 7. Make it public
-
-```
 gh api -X PATCH repos/gwpicard/ai-build-kit -F private=false
 ```
 
-**Expected:** within about ten seconds,
-`https://github.com/gwpicard/ai-build-kit` serves the new repository. Check with:
+Renaming into a name currently held by a redirect works, and the redirect gives
+way. This was rehearsed. **If it refuses** with `name already exists on this
+account`, the previous rename has not settled. Wait ten seconds and try again.
 
 ```
 curl -s -o /dev/null -w "%{http_code}\n" https://github.com/gwpicard/ai-build-kit
 ```
 
-It should print 200. If it prints 404, wait ten seconds and try again before
-worrying. GitHub serves repository pages from a cache that lags a change by up
-to about ten seconds, in both directions.
+**Expected:** 200, within about ten seconds. If it prints 404, wait and try
+again before worrying. GitHub serves repository pages from a cache that lags a
+change by up to about ten seconds, in both directions. That lag is the moment
+somebody panics and reverses a step that was working.
 
-The web address is working again. Nothing after this point is urgent.
+The web address is live again. Nothing after this is urgent.
 
-### 8. Make the archive private
-
-**This is the step that ends the exposure**, and it is the one step nobody may
-skip. All 35 attributed commits and every pull request reference stop being
-publicly reachable the moment it lands.
+### 9. Ruleset, and the last checks
 
 ```
-gh api -X PATCH repos/gwpicard/ai-build-kit-archive -F private=true
-```
-
-Check it, from a signed-out browser or with:
-
-```
-curl -s -o /dev/null -w "%{http_code}\n" https://github.com/gwpicard/ai-build-kit-archive
-```
-
-It should print 404. Allow the same ten seconds of cache lag before believing a
-200.
-
-**Archiving is not the same as making it private, and archiving alone fixes
-nothing.** GitHub's archive setting makes a repository read-only. An archived
-public repository is still fully public, and every one of those commits stays
-readable by anyone. Private is the setting that matters. Archive it as well if
-you like the label, but only after it is private.
-
-Until this step lands, the old commits are still public under the archive name.
-That window is a few minutes, and they had been public for weeks already, which
-is why it is worth trading for a web address that comes back in seconds instead
-of minutes.
-
-### 9. Create the branch ruleset
-
-The ruleset that failed during the port will work now the repository is public:
-
-```
+cd /mnt/c/Users/GUP/Documents/ai-build-kit
 bash .agents/migration/port-settings.sh gwpicard/ai-build-kit gwpicard/ai-build-kit
-```
-
-Run against itself, this reapplies the settings harmlessly and creates the
-ruleset. **Expected:** `ruleset created, enforcement active`.
-
-The ruleset protects the default branch with four rules: no deletion, no
-force-push, changes through a pull request, and two required checks named
-`source-kit-validation` and `rehearsal`.
-
-### 10. Final verification
-
-```
 bash .agents/migration/verify-port.sh gwpicard/ai-build-kit-archive gwpicard/ai-build-kit
+```
+
+The first reapplies the settings harmlessly and creates the ruleset that could
+not be created while the repository was private. **Expected:**
+`ruleset created, enforcement active`.
+
+Then point your working clone at the repository that now holds the name:
+
+```
 git remote set-url origin https://github.com/gwpicard/ai-build-kit.git
 git fetch origin && git status
 ```
 
-Then check by hand that the old attributed commits are gone. Take any address
-from the list the export wrote and open it while signed out, or in a private
-browser window. It should not be found.
+Finally, check by hand that the old commits are gone. Open one of the addresses
+the orientation script listed, while signed out or in a private browser window.
+It should not be found.
 
 ## What only you can do
 
@@ -413,9 +435,9 @@ The migration is reversible up to a point, and that point is worth knowing.
 
 | Stage | How to get back |
 | --- | --- |
-| Steps 1 to 4 | Delete `ai-build-kit-next`. The live repository was never touched. |
-| After step 5, before step 7 | Rename the archive back to `ai-build-kit` and, if you already made it private, make it public again. You are exactly where you started. |
-| After step 7 | Rename the new repository aside, rename the archive back, and make it public. The archive still holds everything. |
+| Steps 0 to 5 | Delete `ai-build-kit-next`. The live repository was never touched, and the local work is all on branches. |
+| After step 7, before step 8 | Make the archive public again, unarchive it, and rename it back to `ai-build-kit`. You are exactly where you started. |
+| After step 8 | Rename the new repository aside, then rename the archive back and make it public. The archive still holds everything. |
 | After you delete the archive | Nothing. So do not delete the archive. |
 
 The full pre-rewrite history is in a bundle at `~/ai-build-kit-backups/`. That
