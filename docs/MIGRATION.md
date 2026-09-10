@@ -175,11 +175,12 @@ their contribution moves to a new record.
 
 ## The tools
 
-All five live in `.agents/migration/` and are maintainer-only. None ships,
+All six live in `.agents/migration/` and are maintainer-only. None ships,
 because none appears in `release-manifest.txt`.
 
 | File | What it does |
 | --- | --- |
+| `PROMPT.md` | What to paste into a fresh session to have it run the safe half of this plan and stop. |
 | `orient.sh` | Reads the world back and says which of this plan's assumptions still hold. Changes nothing. Run it first. |
 | `export.sh` | Reads issues, comments, labels, releases, sub-issue links and settings out of the old repository. Read-only. Stops if it finds a gap in the numbering or any attribution text. |
 | `port.py` | Recreates all of that in the new repository, in number order. Stops dead if any item lands on the wrong number. |
