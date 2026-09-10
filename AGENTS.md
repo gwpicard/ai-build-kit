@@ -114,6 +114,34 @@ rename; a number does not.
 
 `validate-kit.sh` fails on a number in any tracked file.
 
+## Attribution
+
+A commit and a pull request carry the name of the person who made them and
+nothing else. No co-author trailer naming a model, and no link back to the
+session the work came out of.
+
+The session link is the one that matters. It is a personal address on the agent
+vendor's site, it opens for anyone who reads it, and a commit message has no use
+for it. Nineteen commits and thirteen pull request descriptions carried one into
+a public repository before anybody noticed. Taking them out again meant
+rewriting every commit and force-pushing a branch other people had already
+cloned, which is a thing to do once.
+
+Three things hold it shut now. Each coding agent has a setting that stops the
+lines being written, and that setting is the first defence. `.githooks/commit-msg`
+takes them out of a message anyway, for the session that overrides the setting
+and the clone that never had it. `validate-kit.sh` refuses a tracked file
+carrying one, which is the way in a hook cannot see, since a person pasting a
+message into a document is not making a commit.
+
+A hook runs from the folder named by `core.hooksPath`. That is a local setting
+and a clone does not carry it, so a fresh clone runs one command before its
+first commit. `docs/MAINTAINING.md` gives it.
+
+None of this touches prose about the tools. The kit is built with Claude, Cursor
+and Gemini and writes about them in most of its commits. What goes is the
+attribution line, not the word.
+
 ## Maintainer checks
 
 - `.agents/tools/validate-kit.sh` checks the source and generated adapters.
@@ -337,6 +365,14 @@ rename; a number does not.
   the honest answer for a backlog that is empty, so nothing tells the two
   apart except the other call disagreeing. Telling somebody their backlog is
   empty when it is not is the one wrong answer that looks like a right one.
+- `.agents/tests/attribution-scrub.sh` drives the commit-msg hook over a set of
+  messages and reads what it wrote: that a session link goes whether it sits
+  behind a trailer key or on a line of its own, that the row of dashes a squash
+  merge strands above a removed trailer goes with it, and that a message with
+  nothing to take out comes back unchanged. The case worth having is the one
+  that keeps prose about Claude, Cursor and Gemini intact. A hook that went
+  after the word rather than the attribution line would gut most of the messages
+  in this repository, and nothing would say so until the history was unreadable.
 - The checks that guard a rule written as prose share
   `.agents/tests/lib/rule-shape.sh`: declare the rules, and it asserts each one
   and proves it is load-bearing by removing it and requiring the check to fail.

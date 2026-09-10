@@ -91,6 +91,46 @@ else
 fi
 
 # ---------------------------------------------------------------------------
+echo "== Attribution =="
+
+# A tracked file never carries an AI attribution line, and never a link back to
+# the session that produced the work. The link is the one that matters: it is a
+# personal address on the agent vendor's site, and this repository is public.
+#
+# The commit-msg hook takes those lines out of a commit message. This check
+# covers the other way in, which is somebody pasting a message into a document.
+#
+# The words are built here rather than written out, so this check does not
+# report itself. Two files are left out because carrying the words is their
+# job: the hook, and the rehearsal that drives it. Naming them here keeps the
+# exception where a reader of the check can see it.
+attr_session=$(printf 'claude.ai/code/%s' 'session_')
+attr_author=$(printf 'Co-%sed-By: Claude' 'Author')
+attr_vendor=$(printf 'noreply@%s.com' 'anthropic')
+attr_hits=$(git -C "$ROOT" ls-files 2>/dev/null \
+  | grep -v -x -e '.githooks/commit-msg' -e '.agents/tests/attribution-scrub.sh' \
+  | while IFS= read -r attr_file; do
+      grep -HnIiF -e "$attr_session" -e "$attr_author" -e "$attr_vendor" \
+        "$ROOT/$attr_file" 2>/dev/null | sed "s|^$ROOT/||"
+    done)
+if [ -n "$attr_hits" ]; then
+  fail "a tracked file carries an AI attribution line or a session link:"
+  echo "$attr_hits" | sed 's/^/    /' | cut -c1-100
+else
+  pass "no tracked file carries an AI attribution line or a session link"
+fi
+
+# The saved mode, not this working copy. A Windows mount reports every file as
+# runnable, and the sweep further down does not reach this hook: it skips a
+# script the repository hands to sh, which is how the rehearsal drives it.
+attr_mode=$(git -C "$ROOT" ls-files -s -- '.githooks/commit-msg' | cut -d' ' -f1)
+if [ "$attr_mode" = "100755" ]; then
+  pass "the commit-msg hook is saved as a runnable file"
+else
+  fail ".githooks/commit-msg is missing or not saved as runnable (found mode '$attr_mode')"
+fi
+
+# ---------------------------------------------------------------------------
 echo "== Stray copies =="
 
 # This repository sits inside ~/Documents, which iCloud syncs. When iCloud has a

@@ -17,6 +17,13 @@ produced the same mistake more than once.
   `.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md` carries the rules that
   start places at the root of a project.
 
+- A fresh clone runs one command before its first commit:
+  `git config core.hooksPath .githooks`. The hook in that folder takes AI
+  attribution lines and session links back out of a commit message. Git finds a
+  hook through `core.hooksPath`, which is a local setting, so a clone does not
+  inherit it and nothing warns you that it is missing. Root `AGENTS.md` says why
+  the rule exists and what else holds it shut.
+
 The nine user-facing commands are product under test here, not the source
 repository's own operating workflow. Maintainer changes follow root `AGENTS.md`
 and this guide.
@@ -195,6 +202,9 @@ Every change to `.agents/skills/` or the kit's own machinery runs
   refuses to run when one does not say, the validator rehearses that refusal,
   and `.claude/commands/` and `.claude/skills/` are compared as whole listings
   against the expected names;
+- that no tracked file carries an AI attribution line or a link back to the
+  session the work came out of, and that `.githooks/commit-msg`, which takes
+  those out of a commit message, is saved as a runnable file;
 - that every local Markdown link and every skill, reference, or template path
   named in another file resolves;
 - the fit check's structure: all four canonical build paths and their
