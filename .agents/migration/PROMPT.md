@@ -64,7 +64,7 @@ Follow `docs/MIGRATION.md` exactly. In outline:
 1. Merge everything onto `main` locally. It is a fast-forward. Nothing is pushed
    to the old repository, which is being retired anyway.
 2. Build a clean local repository with `git clone` into `~/ai-build-kit-clean`,
-   and prove it is clean before going on. Clone, never copy the folder: a clone
+   and prove it is clean before going on. Clone with `--no-local`, never copy the folder: a clone
    takes branches and tags only, so the rewrite's backup references and the old
    commits they held are left behind. A folder copy brings the whole object
    store, old commits included.

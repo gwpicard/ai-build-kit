@@ -242,7 +242,7 @@ and the tags.
 ### 2. Build the clean local repository
 
 ```
-git clone /mnt/c/Users/GUP/Documents/ai-build-kit ~/ai-build-kit-clean
+git clone --no-local /mnt/c/Users/GUP/Documents/ai-build-kit ~/ai-build-kit-clean
 cd ~/ai-build-kit-clean
 git remote remove origin
 ```
@@ -251,6 +251,12 @@ A clone takes branches and tags and nothing else. The rewrite's own backup
 references are left behind, and so is every commit that only they held. That is
 why this is a clone rather than a copy of the folder: a copy would bring the
 whole object store, including the old commits.
+
+The `--no-local` flag matters. Without it, git treats a clone from a folder on
+the same machine as a copy and carries the whole object store across, old
+commits included. They would sit unreferenced, so a push would not send them,
+but the proof below could not tell you that. With the flag, git sends only what
+the branches and tags reach, and the proof means what it says.
 
 Prove it, rather than trusting it:
 

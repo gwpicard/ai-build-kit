@@ -83,9 +83,11 @@ info=$(gh api "repos/$SRC" 2>/dev/null)
 if [ -z "$info" ]; then
   att "$SRC" "cannot be read; wrong name, or it has already been renamed"
 else
-  printf '%s' "$info" | python3 - <<'PY'
-import json, sys
-d = json.load(sys.stdin)
+  # The JSON travels through the environment rather than a pipe: a heredoc
+  # takes over standard input, so anything piped in never reaches the script.
+  REPO_INFO="$info" python3 - <<'PY'
+import json, os
+d = json.loads(os.environ["REPO_INFO"])
 for name, value in (
     ("visibility", d["visibility"]),
     ("default branch", d["default_branch"]),
@@ -120,6 +122,12 @@ echo
 echo "== is the migration still needed? =="
 # The commits GitHub keeps alive behind pull request references. This asks
 # GitHub what it actually serves today, rather than reading a local clone.
+#
+# It counts the commits listed on each pull request's Commits tab. The plan's
+# figure of 35 is a wider count: every attributed commit reachable by walking
+# back from a pull request reference, which includes the old history the
+# branches were cut from. Both are true at once, so the two are reported side
+# by side rather than one being compared against the other.
 needle_link=$(printf 'claude.ai/code/%s' 'session_')
 needle_author=$(printf 'co-%sed-by: claude' 'author')
 prs=$(gh api "repos/$SRC/pulls?state=all&per_page=100" --paginate -q '.[].number' 2>/dev/null)
@@ -136,7 +144,7 @@ done
 dirty=$(sort -u "$seen" | grep -c . || true)
 rm -f "$seen"
 if [ "$dirty" -gt 0 ]; then
-  att "attributed commits still served" "$dirty across the pull requests (was 35)"
+  att "attributed commits still served" "$dirty listed on pull request Commits tabs (plan counted 35 reachable by address)"
   echo "        This is what the migration exists to remove. Nothing else reaches them."
 else
   ok "attributed commits still served" "none, the migration may no longer be needed"
