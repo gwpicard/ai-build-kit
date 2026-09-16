@@ -35,9 +35,6 @@ rs_rule "an unsized piece is never the next thing to build" \
   'never recommend an unshaped piece as the next thing to build'
 rs_rule "it can still be the next thing to shape" 'the next thing to shape'
 rs_rule "the two readiness signals are both read" 'rather than quietly picking one'
-# This backlog carries its checkable condition under two headings, and a read
-# that recognised only one of them called eight shaped pieces unshaped.
-rs_rule "either heading for the checkable condition counts" 'the checkable condition is the shape and the heading is not'
 
 # Themes come from the issues. Reading them off the labels would hand back the
 # grouping that is already there, which is the one thing the read cannot be
@@ -95,6 +92,13 @@ rs_require_absent "no document still claims the folder holds one skill" \
   "$MAINTAINING" 'it is the only thing there'
 rs_require "MAINTAINING.md accounts for both maintainer skills" \
   "$MAINTAINING" 'review-issues'
+# The skill says MAINTAINING.md owns the shape of a shaped issue, and the two
+# routines that write issues are told the same. A pointer to a section that has
+# gone is worse than no pointer, so the section and its heading are held here.
+rs_require "MAINTAINING.md owns the shape of a shaped issue" \
+  "$MAINTAINING" '### what a shaped issue carries.*## done when'
+rs_require "MAINTAINING.md names the two readiness labels" \
+  "$MAINTAINING" '`needs-answers` means.*`ready` means'
 
 # Placement is the whole boundary, and three checks guard it: the validator,
 # the release builder's rehearsal, and the agent plugin's. Each once named the

@@ -37,17 +37,15 @@ wrong answer that looks like a right one.
 
 ### What makes a piece ready
 
-A piece is shaped when its body carries a condition somebody can check. In a
-project built with the kit that section is `## Done when`. The issues here
-carry it under that heading or under `## Acceptance criteria`, and both count,
-because the checkable condition is the shape and the heading is not. The
-`refined` label says a person judged it ready. Those two signals do not always
-agree here. Where they disagree, say so rather
-than quietly picking one, because a piece marked refined with nothing checkable
-in it is usually worth a second look.
+A piece is shaped when its body carries a `## Done when` section, which is a
+condition somebody can check. `docs/MAINTAINING.md` owns that shape. The
+`ready` label says a person judged it shaped. Those two signals do not always
+agree here. Where they disagree, say so rather than quietly picking one, because
+a piece labelled ready with nothing checkable in it is usually worth a second
+look.
 
-A piece is unshaped when it carries `refine` or `needs-answers`, or when it has
-neither a checkable condition nor the refined label. Never recommend an unshaped
+A piece is unshaped when it carries `needs-answers`, or when it has neither a
+checkable condition nor the ready label. Never recommend an unshaped
 piece as the next thing to build. It can be the next thing to shape, which is a
 different recommendation and worth making when little else is ready.
 
