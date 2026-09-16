@@ -21,7 +21,11 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    AGENTS.md. If such edits exist, explain them and propose moving the durable
    rule there. Wait for approval rather than replacing an edit silently.
 3. Identify how this project receives AI Build Kit. Check whether
-   `skills-lock.json` records the thirteen skills from `gwpicard/ai-build-kit`.
+   `skills-lock.json` records skills from `gwpicard/ai-build-kit`. Where it
+   does, count its entries against the thirteen names and say which are
+   missing. A short installation means a skill the kit renamed or added never
+   arrived. The version file cannot show this, because the same update that
+   drops a skill rewrites the version, so the count is the only sign.
    In Claude Code, also use `claude plugin list --json` to check for the enabled
    `ai-build-kit@ai-build-kit` plugin and note its installation scope. Also
    check for an Agent Plugins installation: a `plugin.json` naming
@@ -40,18 +44,26 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
      Release and replace the installed `agent-plugin` folder after the same
      approval and clean checkpoint.
    - For a shared skills installation, run
-     `npx skills update setup-ai-build-kit shape implement queue fix ship sync maintain what-now clarify change-triage section-builder second-opinion -p`.
+     `npx skills add gwpicard/ai-build-kit` and let the person choose the same
+     coding agents the project already uses. Choosing `universal` is what puts
+     the real folder under `.agents/skills/`. This command refreshes a skill
+     that is installed and adds one that is missing. Do not use
+     `npx skills update` for the kit: it refreshes only what the lockfile
+     already lists and drops any other name without a word, so it cannot
+     carry a project across a rename.
    - When no route is present, this is an older installation. After
-     approval, run `npx skills add gwpicard/ai-build-kit` and let the person
-     choose the coding agents they use. This registers and refreshes the
-     existing skills, so do not run a second update on the same visit.
+     approval, run the same `npx skills add gwpicard/ai-build-kit`. This
+     registers and refreshes the existing skills, so do not run a second
+     update on the same visit.
 
    Do not update unrelated plugins, project skills, or global skills.
 5. For the shared route, confirm that this skill's `VERSION` matches the public
-   Release. For the Claude route, confirm that `claude plugin list --json`
-   reports the matching version without the leading `v`. Claude loads an
-   updated plugin after `/reload-plugins` or the next session, so say that
-   plainly. For an Agent Plugins installation, confirm the version in the
+   Release and that the count from step 3 is now thirteen. A matching version
+   alone is not proof the installation is whole. For the Claude route, confirm
+   that `claude plugin list --json` reports the matching version without the
+   leading `v`. Claude loads an updated plugin after `/reload-plugins` or the
+   next session, so say that plainly. For an Agent Plugins installation,
+   confirm the version in the
    installed `agent-plugin/plugin.json` and in that folder's
    `skills/maintain/VERSION`. Run the project's own check and record the kit
    version in the changelog with the saved change. The foundation created by
@@ -59,11 +71,13 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    application code, and the project's check, stays project-owned. When this
    update is the one that first brings in `/shape` and `/implement`, run the
    one-time migration in "Migrating a project founded before /shape and
-   /implement" below. When it is the one that first brings in
-   `setup-ai-build-kit` in place of `start`, also run "Migrating a project
-   founded before the setup-ai-build-kit rename". When it is the one that first
-   brings in `shape` in place of `plan`, also run "Migrating a project founded
-   before the shape rename".
+   /implement" below. When the visit finds a `start` skill, or no
+   `setup-ai-build-kit` skill, also run "Migrating a project founded before the
+   setup-ai-build-kit rename". When it finds a `plan` skill, or no `shape`
+   skill, also run "Migrating a project founded before the shape rename". Both
+   are decided by what is on disk rather than by which update this is, because
+   an update that removed the old skill without adding the new one leaves
+   nothing else to say it happened.
 6. If the normal route is unavailable, use the latest public Release as the
    fallback source. A shared installation may replace only the thirteen AI Build
    Kit skill folders after the same approval and clean checkpoint. A Claude
@@ -125,33 +139,37 @@ Record the migration in the changelog as a dated line.
 
 ## Migrating a project founded before the setup-ai-build-kit rename
 
-Run this once, on the visit whose update first installs the `setup-ai-build-kit`
-skill in place of `start`. It is idempotent: a later visit that finds no `start`
-skill does nothing here.
+Run this on any visit that finds a `start` skill installed, or no
+`setup-ai-build-kit` skill. It is idempotent: a visit that finds only
+`setup-ai-build-kit` does nothing here.
 
 The founding command was renamed from `/start` to `/setup-ai-build-kit`. Founding
 runs once, so a project already founded never types it again, and nothing the
 person saved is affected. Two housekeeping steps keep the installation tidy:
 
-1. Remove a stale `start` skill. The shared installer leaves the old `start`
-   skill folder in place when the update brings its replacement. Where a
-   `setup-ai-build-kit` skill and an old `start` skill both exist, offer to
-   remove the `start` one, because it is a managed package the kit renamed rather
-   than the person's own work. Where only `setup-ai-build-kit` exists, there is
-   nothing to do.
+1. Remove a stale `start` skill. The shared installer asks whether to remove a
+   skill that has gone upstream, and an older installer removed nothing, so
+   three states are possible. Where a `setup-ai-build-kit` skill and an old
+   `start` skill both exist, offer to remove the `start` one, because it is a
+   managed package the kit renamed rather than the person's own work. Where
+   neither exists, the update removed the old skill without adding the new
+   one: run the add command from the monthly step, then read the skill folder
+   back and carry on only once `setup-ai-build-kit` is there. Where only
+   `setup-ai-build-kit` exists, there is nothing to do.
 
-2. Point the founding command forward. Say once that the command that founds a
-   project is now `/setup-ai-build-kit`, not `/start`, and that any saved command
-   which updates the kit by name uses that new first name. The full update
-   command is in the monthly step above.
+2. Point the founding command forward. Rewrite the command list in the
+   project's AGENTS.md as "Bringing the project's instructions up to the
+   current names" below says, so the person is not left to do it. Then say
+   once that the command that founds a project is now `/setup-ai-build-kit`,
+   not `/start`, and that any saved command which updates the kit by name uses
+   that new first name. The full update command is in the monthly step above.
 
 Record the tidy-up in the changelog as a dated line.
 
 ## Migrating a project founded before the shape rename
 
-Run this once, on the visit whose update first installs the `shape` skill in
-place of `plan`. It is idempotent: a later visit that finds no `plan` skill does
-nothing here.
+Run this on any visit that finds a `plan` skill installed, or no `shape`
+skill. It is idempotent: a visit that finds only `shape` does nothing here.
 
 The command that turns an idea into a ready piece was renamed from `/plan` to
 `/shape`. Some coding agents, Claude Code among them, now carry a `/plan` of
@@ -159,18 +177,44 @@ their own, so one name pointed at two different commands. Nothing the person
 saved is affected and no record changes, but this command is typed most days, so
 the new name is said out loud rather than only tidied away in the files:
 
-1. Remove a stale `plan` skill. The shared installer leaves the old `plan` skill
-   folder in place when the update brings its replacement. Where a `shape` skill
-   and an old `plan` skill both exist, offer to remove the `plan` one, because it
-   is a managed package the kit renamed rather than the person's own work. Where
-   only `shape` exists, there is nothing to do.
+1. Remove a stale `plan` skill. The shared installer asks whether to remove a
+   skill that has gone upstream, and an older installer removed nothing, so
+   three states are possible. Where a `shape` skill and an old `plan` skill
+   both exist, offer to remove the `plan` one, because it is a managed package
+   the kit renamed rather than the person's own work. Where neither exists,
+   the update removed the old skill without adding the new one: run the add
+   command from the monthly step, then read the skill folder back and carry on
+   only once `shape` is there. Where only `shape` exists, there is nothing to
+   do.
 
-2. Point the command forward. Say once that `/shape` is the command that turns an
-   idea into a ready piece, that it does everything `/plan` did, and that a saved
-   note or shortcut typing `/plan` needs changing. The full update command is in
-   the monthly step above.
+2. Point the command forward. Rewrite the command list in the project's
+   AGENTS.md as "Bringing the project's instructions up to the current names"
+   below says, rather than asking the person to do it. Then say once that
+   `/shape` is the command that turns an idea into a ready piece, that it does
+   everything `/plan` did, and that a saved note or shortcut typing `/plan`
+   still needs changing by hand. The full update command is in the monthly
+   step above.
 
 Record the tidy-up in the changelog as a dated line.
+
+## Bringing the project's instructions up to the current names
+
+Run this from either rename migration. A project's AGENTS.md is project-owned
+and no update touches it. But the line that lists the commands is the kit's own
+template text, and a person made to fix it by hand after every rename will stop
+updating. So the kit does it for them, with approval:
+
+1. Find the line that lists the commands. In the foundation template it begins
+   `- Commands:` and names all nine. Where it names `start`, replace it with
+   `setup-ai-build-kit`. Where it names `plan`, replace it with `shape`. Where
+   `queue` is missing, add it after `implement`. Where the sentences nearby
+   give an older count of commands or skills, make them nine and thirteen.
+2. Show the change and apply it on approval. Say what changed in one sentence.
+3. Where the file lists the commands in its own words and the line cannot be
+   recognised, leave the file alone and say which name needs changing, so the
+   person edits one line rather than reads a diff.
+
+Record it in the changelog with the tidy-up that called it.
 
 ## Quarterly, or before a handover
 
