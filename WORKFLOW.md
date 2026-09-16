@@ -196,7 +196,9 @@ your tool, its records, and its own checks alone. It also adds any skill the
 kit has renamed or added since, and says if the installation is short of the
 thirteen. When the kit has renamed a command, the update also rewrites the
 command list in your AGENTS.md, with your approval, so you are not left to
-edit it by hand. A clean checkpoint comes first, so an interrupted update can
+edit it by hand. A project founded from a whole copy of the kit also carries
+the kit's own command files, which make each command show twice; the visit
+offers to remove those and leaves anything you wrote yourself alone. A clean checkpoint comes first, so an interrupted update can
 be recovered. The one update that split the
 old `/build` into what are now `/shape` and `/implement` runs a one-time step that labels your
 existing pieces so they can still be built, and offers to move any older

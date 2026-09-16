@@ -305,6 +305,16 @@ attribution line, not the word.
   every rename stops updating. It reads the rules back from the maintain skill
   because the installer is somebody else's tool and nothing here can watch it
   run.
+- `.agents/tests/whole-copy-leftovers.sh` guards the tidy step for a project
+  founded from a whole copy of the kit. Such a project carries the kit's own
+  generated adapters, which the shared installer never refreshes, so every
+  command shows twice in Claude Code and a renamed command lives on in a file
+  nothing removes. A hand deletion in one project fixes one project, so the
+  step lives in maintain. The check holds the two rules that keep it safe: an
+  adapter is recognised by its generated marker and never by name, and a
+  retired skill folder only by the kit's former names and absence from the
+  lockfile. It holds that the step is run from the monthly pass, removes on
+  approval, and that WORKFLOW.md says so.
 - `.agents/tests/settled-is-recorded.sh` guards the record a settled question
   has to leave: that what settled it is written into the piece before the label
   comes off, and that the piece is read back to decide whether the label goes

@@ -77,7 +77,9 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    skill, also run "Migrating a project founded before the shape rename". Both
    are decided by what is on disk rather than by which update this is, because
    an update that removed the old skill without adding the new one leaves
-   nothing else to say it happened.
+   nothing else to say it happened. On the shared route, also run "Tidying a
+   project founded from a whole copy of the kit" below whenever the leftovers
+   it names are present.
 6. If the normal route is unavailable, use the latest public Release as the
    fallback source. A shared installation may replace only the thirteen AI Build
    Kit skill folders after the same approval and clean checkpoint. A Claude
@@ -215,6 +217,37 @@ updating. So the kit does it for them, with approval:
    person edits one line rather than reads a diff.
 
 Record it in the changelog with the tidy-up that called it.
+
+## Tidying a project founded from a whole copy of the kit
+
+Run this on any visit on the shared route that finds the leftovers below. It
+is idempotent: a project that has none of them gets nothing here.
+
+A project founded from a whole copy of the kit brought the kit's own generated
+adapters with it: `.claude/commands/<name>.md`, `.cursor/commands/<name>.md`
+and `.gemini/commands/<name>.toml`. Only the kit's repository and the Claude
+plugin need those. On the shared route the installer's own symlinks under
+`.claude/skills/` do their job, and the installer never refreshes them because
+it does not know they exist. So every command appears twice in Claude Code, and
+a command the kit has renamed lives on in a file nothing will ever remove.
+Deleting the files by hand in one project fixes one project, which is why this
+is a step here rather than advice:
+
+1. Find the kit's adapters. An adapter is recognised only by the generated
+   marker on its first lines, which names `.agents/skills/` and
+   `build-adapters.sh`. Never by its name: a command file the person wrote
+   themselves has no marker and is never touched. List every file under
+   `.claude/commands/`, `.cursor/commands/` and `.gemini/commands/` that
+   carries the marker.
+2. Find retired skill folders. A folder under `.agents/skills/` counts only
+   when it carries one of the kit's former names, `build`, `start` or `plan`,
+   and the lockfile does not list it. Any other folder there is the person's
+   own and is left alone.
+3. Show the list and say what removing it does: each command appears once,
+   and the renamed command goes. Remove on approval, and remove the empty
+   folders too. Where the files are tracked, the removal is part of the
+   visit's saved change.
+4. Record a changelog line saying what was removed and why.
 
 ## Quarterly, or before a handover
 
