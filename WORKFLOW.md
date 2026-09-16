@@ -192,8 +192,10 @@ Normal /implement and /fix completion updates the records directly; you don't ne
 project dependency updates, and anything the error alerts caught. When a newer
 kit is available, the agent shows the version and what changed, then waits for
 approval. An update refreshes only the thirteen AI Build Kit skills and leaves
-your tool, its records, and its own checks alone. A clean checkpoint comes
-first, so an interrupted update can be recovered. The one update that split the
+your tool, its records, and its own checks alone. It also adds any skill the
+kit has renamed or added since, and says if the installation is short of the
+thirteen. A clean checkpoint comes first, so an interrupted update can be
+recovered. The one update that split the
 old `/build` into what are now `/shape` and `/implement` runs a one-time step that labels your
 existing pieces so they can still be built, and offers to move any older
 `plan.md` list into your project's issues; it says what it changed.

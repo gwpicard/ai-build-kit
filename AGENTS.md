@@ -291,6 +291,17 @@ attribution line, not the word.
   notice. Both are written rules rather than rates, since the same scenario
   comes out differently on `sonnet` and on `opus`. The runs behind them are
   recorded in `.agents/tests/replay/baseline.md`.
+- `.agents/tests/shared-route-adds.sh` guards the shared installer route. The
+  kit renamed `plan` to `shape`, and a project that updated across it with the
+  installer's `update` command lost `plan` and never received `shape`, because
+  that command refreshes only what the lockfile already lists and drops any
+  other name in silence. The version file said the project was up to date,
+  since the same update rewrote it. So the check holds that the route is the
+  installer's `add` command, that the monthly pass counts the lockfile against
+  thirteen, and that each rename migration fires on what is on disk and has a
+  branch for the state where the old skill is gone and the new one never
+  came. It reads the rules back from the maintain skill because the installer
+  is somebody else's tool and nothing here can watch it run.
 - `.agents/tests/settled-is-recorded.sh` guards the record a settled question
   has to leave: that what settled it is written into the piece before the label
   comes off, and that the piece is read back to decide whether the label goes

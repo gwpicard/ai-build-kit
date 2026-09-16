@@ -82,13 +82,17 @@ If the marketplace cannot be reached, the installed version remains enabled.
 `maintain` reports that no update happened and tries again later.
 
 The shared installer records project skill sources in `skills-lock.json`. Its
-approved update is limited to the thirteen AI Build Kit skill names:
+approved update is the same command that installs the kit:
 
 ```bash
-npx skills update setup-ai-build-kit shape implement queue fix ship sync maintain what-now clarify change-triage section-builder second-opinion -p
+npx skills add gwpicard/ai-build-kit
 ```
 
-The `-p` flag limits the update to this project.
+This refreshes a skill that is installed and adds one that is missing, which
+is what carries a project across a rename. The installer's `update` command
+is not the route: it refreshes only what the lockfile already lists and drops
+any other name without a word, so a project that updated across the rename of
+`plan` to `shape` lost one skill and never received the other.
 
 That command replaces the installed skill files outright. Anyone who has edited
 one of the thirteen skills in their own project loses that edit, without being
@@ -106,9 +110,8 @@ project records, environment files, and the project check under the project's
 control.
 
 Projects created before this installation model may not have
-`skills-lock.json`. On the next `maintain` visit,
-`npx skills add gwpicard/ai-build-kit` registers the installed skills. Later
-updates use the normal command above.
+`skills-lock.json`. The same command registers the installed skills on the
+next `maintain` visit, and later visits use it again.
 
 ## Harness map
 

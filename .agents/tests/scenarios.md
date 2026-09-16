@@ -358,7 +358,7 @@ reported, and it is not what decides whether the case held.
 - Evidence: `.agents/tests/release-builder.sh` checks that the released README carries the installation command this route uses. The installer itself is somebody else's tool, which the kit never runs, so what it does with the files afterwards is confirmed by installing into a throwaway project and reading the result.
 - Save route: unaffected.
 - Review: unaffected.
-- Escalation: `npx skills update` replaces installed skill files outright, so a local edit to one of the thirteen is lost without warning. `maintain` looks for local edits before updating and proposes moving the durable rule into AGENTS.md, which no route touches.
+- Escalation: `npx skills add gwpicard/ai-build-kit` replaces installed skill files outright, so a local edit to one of the thirteen is lost without warning. `maintain` looks for local edits before updating and proposes moving the durable rule into AGENTS.md, which no route touches. The installer's `update` command is not the route, because it refreshes only what the lockfile lists and cannot add a skill the kit renamed.
 
 ## 30. GitHub setup is required to found the pieces
 

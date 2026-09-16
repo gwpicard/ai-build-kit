@@ -930,6 +930,8 @@ if [ -f "$maintfile" ]; then
     { fail "$maintfile: does not tidy a stale start skill after the setup-ai-build-kit rename"; mig_ok=0; }
   grep -qF 'Remove a stale `plan` skill' "$maintfile" || \
     { fail "$maintfile: does not tidy a stale plan skill after the shape rename"; mig_ok=0; }
+  grep -qF 'the update removed the old skill without adding the new' "$maintfile" || \
+    { fail "$maintfile: the rename migration cannot recover a project whose update removed the old skill without adding the new one"; mig_ok=0; }
   [ "$mig_ok" -eq 1 ] && \
     pass "maintain migrates a project founded before /shape and /implement, and before the setup-ai-build-kit and shape renames"
 fi
@@ -1682,7 +1684,7 @@ maintain_skill="$ROOT/.agents/skills/maintain/SKILL.md"
 for literal in \
   'claude plugin marketplace update ai-build-kit' \
   'claude plugin update ai-build-kit@ai-build-kit --scope <scope>' \
-  'npx skills update setup-ai-build-kit shape implement queue fix ship sync maintain what-now clarify change-triage section-builder second-opinion -p' \
+  'npx skills add gwpicard/ai-build-kit' \
   'For an Agent Plugins installation'; do
   if ! grep -qF "$literal" "$maintain_skill"; then
     fail "maintain does not preserve the installation route: $literal"
