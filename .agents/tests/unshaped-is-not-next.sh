@@ -101,7 +101,7 @@ rs_require "MAINTAINING.md accounts for both maintainer skills" \
 # one maintainer skill that existed, and this one arrived without two of them
 # noticing, while the third was edited by hand. So each now reads the names off
 # the folder, and a name written into any of them is the fault coming back.
-# The proof that the folder-read catches a copy is the review-issues-leak
+# The proof that reading the folder catches a copy is the review-issues-leak
 # mutation in mutate.sh, which plants one and asks all three.
 for guard in "$VALIDATOR" "$RELEASE_BUILDER" "$AGENT_PLUGIN"; do
   rs_require "$(basename -- "$guard") reads the maintainer skills off the folder" \

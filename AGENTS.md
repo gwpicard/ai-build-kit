@@ -404,7 +404,7 @@ attribution line, not the word.
   read the skill names off `.agents/maintainer-skills/` rather than carrying
   one. Each once named humanizer, the only maintainer skill when it was
   written, and the second skill arrived with two of the three not looking.
-  The proof that the folder-read catches a copy is the `review-issues-leak`
+  The proof that reading the folder catches a copy is the `review-issues-leak`
   mutation in `mutate.sh`, which plants one and asks all three.
 - `.agents/tests/attribution-scrub.sh` drives the commit-msg hook over a set of
   messages and reads what it wrote: that a session link goes whether it sits
