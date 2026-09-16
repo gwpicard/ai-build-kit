@@ -23,9 +23,11 @@ REVIEW="$ROOT/.agents/maintainer-skills/review-issues/SKILL.md"
 AGENTS="$ROOT/AGENTS.md"
 MAINTAINING="$ROOT/docs/MAINTAINING.md"
 VALIDATOR="$ROOT/.agents/tools/validate-kit.sh"
+RELEASE_BUILDER="$ROOT/.agents/tests/release-builder.sh"
+AGENT_PLUGIN="$ROOT/.agents/tests/agent-plugin.sh"
 
 rs_init "Issue review checks"
-rs_exists "$REVIEW" "$AGENTS" "$MAINTAINING" "$VALIDATOR"
+rs_exists "$REVIEW" "$AGENTS" "$MAINTAINING" "$VALIDATOR" "$RELEASE_BUILDER" "$AGENT_PLUGIN"
 
 # The rule the check is named for. A piece nobody has sized cannot be the next
 # thing built, however attractive it looks in a themed list.
@@ -33,6 +35,9 @@ rs_rule "an unsized piece is never the next thing to build" \
   'never recommend an unshaped piece as the next thing to build'
 rs_rule "it can still be the next thing to shape" 'the next thing to shape'
 rs_rule "the two readiness signals are both read" 'rather than quietly picking one'
+# This backlog carries its checkable condition under two headings, and a read
+# that recognised only one of them called eight shaped pieces unshaped.
+rs_rule "either heading for the checkable condition counts" 'the checkable condition is the shape and the heading is not'
 
 # Themes come from the issues. Reading them off the labels would hand back the
 # grouping that is already there, which is the one thing the read cannot be
@@ -54,7 +59,15 @@ rs_rule "no invented ranking" 'instead of inventing an order'
 # followed loosely. The first read written against a described one grouped the
 # backlog correctly and then buried the grouping in paragraphs about it.
 rs_rule "the printout has a fixed shape" 'a printout with a fixed shape'
-rs_rule "a theme is glossed in one line" 'the line under a theme heading is one line'
+# The heading and the paragraph under it are where the signal is, and both went
+# wrong before this rule existed. A heading written to be short came out as a
+# phrase only its author could decode, and a paragraph capped at one line came
+# out as a list of nouns. So the heading has a test the maintainer can apply
+# from the heading alone, and the paragraph has two jobs and a length.
+rs_rule "a heading is readable on its own" 'read the heading on its own and say which pieces fall under it'
+rs_rule "the paragraph says what the pieces share" 'what the pieces share'
+rs_rule "the paragraph says where the theme stands" 'second, where the theme stands'
+rs_rule "the paragraph has a length" 'and it is two to four sentences'
 # A theme of one is the honest answer for a piece nothing else sits beside.
 # Forcing it into the nearest theme is how the grouping stops meaning anything.
 rs_rule "a piece no theme fits stands alone" 'where no theme fits a piece'
@@ -83,9 +96,18 @@ rs_require_absent "no document still claims the folder holds one skill" \
 rs_require "MAINTAINING.md accounts for both maintainer skills" \
   "$MAINTAINING" 'review-issues'
 
-# Placement is the whole boundary, and the validator checks it by name. A skill
-# missing from that list is not guarded at all.
-rs_require "the validator guards this skill's placement" \
-  "$VALIDATOR" 'review-issues'
+# Placement is the whole boundary, and three checks guard it: the validator,
+# the release builder's rehearsal, and the agent plugin's. Each once named the
+# one maintainer skill that existed, and this one arrived without two of them
+# noticing, while the third was edited by hand. So each now reads the names off
+# the folder, and a name written into any of them is the fault coming back.
+# The proof that reading the folder catches a copy is the review-issues-leak
+# mutation in mutate.sh, which plants one and asks all three.
+for guard in "$VALIDATOR" "$RELEASE_BUILDER" "$AGENT_PLUGIN"; do
+  rs_require "$(basename -- "$guard") reads the maintainer skills off the folder" \
+    "$guard" 'find "\$(maintainer_skills|root/\.agents/maintainer-skills)" -mindepth 1 -maxdepth 1 -type d'
+  rs_require_absent "$(basename -- "$guard") carries no maintainer skill by name in its guard" \
+    "$guard" 'expected_maintainer_skills="|(\.agents|\.claude|agent-plugin)/skills/(humanizer|review-issues)|\*(humanizer|review-issues)\*'
+done
 
 rs_done

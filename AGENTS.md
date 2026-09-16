@@ -384,10 +384,14 @@ attribution line, not the word.
   worth nothing, so the rules against them live as prose in the skill and this
   check reads them back. It holds the printout's shape too, which is fixed in
   the skill rather than described, because a described shape gets followed
-  loosely: one line per theme, a piece printed as its number, one
-  recommendation rather than a ranked list, and a piece no theme fits left on
-  its own instead of pushed into the nearest one. Printing the number reverses
-  an earlier rule, so the check carries the reason. A number is banned from a
+  loosely: a heading the maintainer can read on its own, a paragraph under it
+  that says what the pieces share and where the theme stands, a piece printed
+  as its number, one recommendation rather than a ranked list, and a piece no
+  theme fits left on its own instead of pushed into the nearest one. The
+  heading and paragraph rules came from a read that named a theme "reaching
+  beyond the thirteen" and glossed it with a list of nouns, which grouped the
+  backlog correctly and told the maintainer nothing. Printing the number
+  reverses an earlier rule, so the check carries the reason. A number is banned from a
   tracked file because its reader cannot follow a pointer once the numbering
   has moved on, while this printout is read beside the live backlog and the
   number is what the maintainer types next. It also holds the rule that a
@@ -396,6 +400,12 @@ attribution line, not the word.
   the honest answer for a backlog that is empty, so nothing tells the two
   apart except the other call disagreeing. Telling somebody their backlog is
   empty when it is not is the one wrong answer that looks like a right one.
+  Last, it holds that the three checks guarding the maintainer skill boundary
+  read the skill names off `.agents/maintainer-skills/` rather than carrying
+  one. Each once named humanizer, the only maintainer skill when it was
+  written, and the second skill arrived with two of the three not looking.
+  The proof that reading the folder catches a copy is the `review-issues-leak`
+  mutation in `mutate.sh`, which plants one and asks all three.
 - `.agents/tests/attribution-scrub.sh` drives the commit-msg hook over a set of
   messages and reads what it wrote: that a session link goes whether it sits
   behind a trailer key or on a line of its own, that the row of dashes a squash

@@ -53,8 +53,16 @@ clarify
 second-opinion
 section-builder"
 
-expected_maintainer_skills="humanizer
-review-issues"
+# Every folder under .agents/maintainer-skills/ is a maintainer skill, and the
+# list is read off the folder rather than written out here. A written-out list
+# is one a new folder is not on: the second maintainer skill was added by
+# editing this list by hand, and had that edit been forgotten the folder would
+# have been checked by nothing while this script reported success. A folder
+# that cannot be read, or holds nothing, is a failure for the same reason.
+expected_maintainer_skills=$(find "$MAINTAINER_SKILLS" -mindepth 1 -maxdepth 1 -type d 2>/dev/null \
+  | while IFS= read -r skill_dir; do basename -- "$skill_dir"; done | sort)
+[ -n "$expected_maintainer_skills" ] || \
+  fail "$MAINTAINER_SKILLS: no maintainer skill folder could be read, so none was checked"
 
 # Which of those arrived from somewhere else. A vendored copy carries the
 # licence it was published under, and dropping that licence is how a borrowed
@@ -260,7 +268,7 @@ MAINTAINERSKILLS
 if grep -q '^\.agents/maintainer-skills/' "$ROOT/release-manifest.txt"; then
   fail "release-manifest.txt: the release allowlist carries a maintainer skill, which puts it in a user's project"
 else
-  pass "the maintainer writing skill sits outside every folder an installer reads, and outside the release"
+  pass "every maintainer skill sits outside every folder an installer reads, and outside the release"
 fi
 
 # ---------------------------------------------------------------------------

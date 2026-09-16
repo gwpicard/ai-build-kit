@@ -37,9 +37,12 @@ wrong answer that looks like a right one.
 
 ### What makes a piece ready
 
-A piece is shaped when its body carries a `## Done when` section, which is a
-condition somebody can check. The `refined` label says a person judged it ready.
-Those two signals do not always agree here. Where they disagree, say so rather
+A piece is shaped when its body carries a condition somebody can check. In a
+project built with the kit that section is `## Done when`. The issues here
+carry it under that heading or under `## Acceptance criteria`, and both count,
+because the checkable condition is the shape and the heading is not. The
+`refined` label says a person judged it ready. Those two signals do not always
+agree here. Where they disagree, say so rather
 than quietly picking one, because a piece marked refined with nothing checkable
 in it is usually worth a second look.
 
@@ -69,14 +72,16 @@ written back against this before you send it:
 ```
 <n> open · <n> themes
 
-THEME NAME                              #<n> #<n> #<n>
-One line saying what this theme is about.
+WHAT THIS WORK IS ABOUT, IN PLAIN WORDS          #<n> #<n> #<n>
+What these pieces have in common, said the way the maintainer would
+say it out loud. Then where the theme stands: how many are shaped,
+and what holds the rest. Two to four sentences.
 
-ANOTHER THEME                           #<n> #<n>
-One line saying what this theme is about.
+THE NEXT THEME, NAMED THE SAME WAY               #<n> #<n>
+The same again.
 
-ON ITS OWN                              #<n>
-One line, for the piece no theme fits.
+ON ITS OWN                                       #<n>
+The same, for the piece no theme fits.
 
 WORTH PICKING UP
   #<n>  the issue title
@@ -97,10 +102,24 @@ a tracked file, where the reader cannot follow a pointer and the numbering
 shifts underneath it once the material is public. A printout is read once,
 beside the backlog it came from. Do not write one into a file.
 
-The line under a theme heading is one line. That is where this read runs away
-from itself: given room it explains each theme twice over, and then the grouping
-it exists to show is buried in the explaining. Say what the theme is about in
-the words somebody would use out loud, and stop.
+A heading names what the work is. The test is that the maintainer can read the
+heading on its own and say which pieces fall under it. "Reaching beyond the
+thirteen" fails that test. It is a phrase that needs the paragraph under it to
+decode, and a reader who does not carry the count of skills in their head gets
+nothing from it. "Asks for a capability the kit does not have" passes. Say the
+plain thing and let the heading run long. A heading that stays cryptic in order
+to stay short has kept the wrong thing.
+
+The paragraph under a heading does two jobs, and it is two to four sentences.
+First, what the pieces share, in the words somebody would use to say it out
+loud. Second, where the theme stands: how many of its pieces are shaped, and
+what holds the rest. The second job is what turns a grouping into something the
+maintainer can act on. This paragraph has gone wrong in both directions. A read
+written against a looser rule ran to three paragraphs a theme and buried the
+grouping in the explaining. A read written against a one-line rule produced "a
+new agent, a default design plugin, and a hosting companion", which is a list
+of nouns, and a list of nouns says neither what the theme is nor what to do
+about it.
 
 Where no theme fits a piece, leave it on its own rather than pushing it into the
 nearest one. A theme of one is an honest answer. A theme of two unrelated things
