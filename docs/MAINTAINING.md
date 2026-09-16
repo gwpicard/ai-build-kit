@@ -46,10 +46,13 @@ by mentioning it in the body instead.
 **Labels** carry the categories. Each open issue takes exactly one `area:` label,
 one of `area:skills`, `area:tests`, `area:release`, or `area:docs`. Its type is
 one of the existing `bug`, `enhancement`, `feature`, `documentation`, or `chore`.
-`status:blocked` and `status:needs-decision` are added only when they say
-something. Colour is one hue per family, so the list stays scannable. There is no
-priority label: what to pick up next is set by the maintainer's cadence, not
-recorded on the issues.
+Two labels carry readiness, and they never sit on one issue together:
+`needs-answers` means a question only a person can answer is open, and `ready`
+means a person judged the piece shaped. `ready` is the same word the kit uses
+for the same state in a project it founds. `status:blocked` is added only when
+it says something. Colour is one hue per family, so the list stays scannable.
+There is no priority label: what to pick up next is set by the maintainer's
+cadence, not recorded on the issues.
 
 Some labels are read by the release machinery and must not be renamed or removed:
 `release-major`, `release-minor`, `release-patch`, `skip-release-notes`, and the
@@ -71,6 +74,67 @@ Milestones are not used, because they are release or date buckets and the work
 has no timeline. Issue Types, the built-in type field, need an organisation
 account this repository does not have, so the `epic` and type labels stand in for
 them.
+
+### What a shaped issue carries
+
+A piece is shaped when its body carries a condition somebody can check, under
+`## Done when`. That is the heading the kit gives a piece in a project it
+founds, and it is the heading here for the same reason: the checkable condition
+is what turns a request into a piece. A shaped body has this shape, with the
+original report kept whole underneath it.
+
+```md
+<!-- elaborated:v1 -->
+## Problem
+What is wrong now, who it affects, and how often.
+
+## Evidence
+The files, functions and lines involved. Related issues and pull requests.
+
+## Goal
+The correct behaviour, in one or two sentences.
+
+## Scope
+**In scope:** what this piece changes.
+**Out of scope:** the related changes it leaves alone.
+
+## Done when
+- [ ] A result a person can see or test. One result per line.
+
+## Assumptions
+- I assumed X, because Y. Correct me if this is wrong.
+
+## Risks
+What can break, and who or what the change touches.
+
+<details><summary>Original report</summary>
+
+The unchanged original body.
+
+</details>
+```
+
+Two routines write that shape, and neither builds anything. One runs when an
+issue is opened. The other runs each morning and picks up the answers to the
+questions the first one asked. Their outputs are an issue body, an issue
+comment, and a label change, and nothing else. The first line of the body,
+`<!-- elaborated:v1 -->`, is how a run knows the work is done, and a question
+comment opens with `<!-- elaborate:questions -->` so the morning run can tell
+its own question from the answer under it.
+
+A routine asks only about a blocker, which is an unknown where two different
+answers give two different results. Everything else becomes an assumption,
+written into the body so the person can correct it. A routine asks at most
+twice on one issue. After that it takes its own defaults, lists them under
+assumptions, and writes the body, because a piece stuck behind an unanswered
+question is a piece nobody sees again.
+
+A routine skips an epic, since an epic is an initiative rather than a piece,
+and it skips a pull request. When it writes the body it also adds the one
+`area:` label and the one type label the evidence supports, and swaps
+`needs-answers` for `ready`. Those are guesses from the code, and the
+maintainer corrects them. A routine never closes an issue, never adds a
+sub-issue, and never sends a reminder.
 
 ## Adaptive process is a contract
 
