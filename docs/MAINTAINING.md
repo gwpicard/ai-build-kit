@@ -187,10 +187,11 @@ Every change to `.agents/skills/` or the kit's own machinery runs
 
 - the canonical skill inventory (exactly nine commands and four background
   skills, named exactly, with nothing else in the folder);
-- the maintainer skill boundary: the writing skill carries its vendored licence,
-  and no folder or command file named for it exists in `.agents/skills/`,
-  `.claude/skills/`, `.claude/commands/`, `.cursor/commands/`,
-  `.gemini/commands/`, or the release allowlist;
+- the maintainer skill boundary: every folder under `.agents/maintainer-skills/`
+  is read off the disk rather than from a list, the vendored writing skill
+  carries its licence, and no folder or command file named for any of them
+  exists in `.agents/skills/`, `.claude/skills/`, `.claude/commands/`,
+  `.cursor/commands/`, `.gemini/commands/`, or the release allowlist;
 - frontmatter on every `SKILL.md` (name, description, folder match, no
   duplicates);
 - harness contracts: every command's Codex `openai.yaml` disables implicit

@@ -42,6 +42,7 @@ MODE_CHECKS="validate-kit fake-github"
 MUTATIONS="manifest-drop
 manifest-drop-unpaired
 humanizer-leak
+review-issues-leak
 bootstrap-overwrite
 bootstrap-escape
 maintainer-name-leak
@@ -75,6 +76,7 @@ describe() {
     manifest-drop) echo "a document named in both manifests is dropped from the release allowlist" ;;
     manifest-drop-unpaired) echo "a file named only in the release allowlist is dropped, with no second manifest to cross-check it" ;;
     humanizer-leak) echo "the maintainer's writing skill is put back beside the thirteen and allowed into the release" ;;
+    review-issues-leak) echo "the maintainer's issue review, the skill nobody wrote a check for by name, is put beside the thirteen and allowed into the release" ;;
     bootstrap-overwrite) echo "project bootstrap overwrites a file the project already had" ;;
     bootstrap-escape) echo "project bootstrap follows a link and writes outside the project" ;;
     maintainer-name-leak) echo "the private source repository is named in the public README" ;;
@@ -139,6 +141,17 @@ apply() {
       cp -R "$tree/.agents/maintainer-skills/humanizer" \
         "$tree/.agents/skills/humanizer"
       printf '%s\n' '.agents/skills/humanizer/|' >> "$tree/release-manifest.txt"
+      ;;
+    review-issues-leak)
+      # The same mistake with the other maintainer skill. The three checks that
+      # guard the boundary once named humanizer and nothing else, so this is
+      # the leak they would have missed. It exists so that the checks are
+      # proved to read the folder rather than a name.
+      [ -d "$tree/.agents/maintainer-skills/review-issues" ] || return 1
+      cp -R "$tree/.agents/maintainer-skills/review-issues" \
+        "$tree/.agents/skills/review-issues"
+      printf '%s\n' '.agents/skills/review-issues/|' >> "$tree/release-manifest.txt"
+      printf '%s\n' '.agents/skills/review-issues|agent-plugin/skills/review-issues' >> "$tree/release-manifest.txt"
       ;;
     bootstrap-overwrite)
       edit "$tree/.agents/skills/setup-ai-build-kit/scripts/bootstrap-project.sh" '

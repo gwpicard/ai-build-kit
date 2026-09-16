@@ -84,9 +84,6 @@ for forbidden in \
   .github/release-drafter.yml \
   .github/workflows/release-drafter.yml \
   .agents/maintainer-skills \
-  .agents/skills/humanizer \
-  .claude/skills/humanizer \
-  agent-plugin/skills/humanizer \
   skills \
   plugin.json \
   .agents/tests \
@@ -97,6 +94,22 @@ for forbidden in \
   .agents/tools/validate-kit.sh \
   .agents/tools/build-release.sh; do
   [ ! -e "$FIRST/$forbidden" ] || fail "starter contains maintainer-only $forbidden"
+done
+
+# A maintainer skill is kept out of a project by living outside every folder an
+# installer reads, so the copy to look for is one of those skills under a folder
+# the release does ship. The names are read off the folder rather than written
+# here: the first version of this list named the one maintainer skill that
+# existed, and the second one arrived without the list noticing.
+maintainer_skill_names=$(find "$ROOT/.agents/maintainer-skills" -mindepth 1 -maxdepth 1 -type d 2>/dev/null \
+  | while IFS= read -r skill_dir; do basename -- "$skill_dir"; done)
+[ -n "$maintainer_skill_names" ] || \
+  fail "no maintainer skill folder could be read, so none was checked against the starter"
+for name in $maintainer_skill_names; do
+  for shipped in .agents/skills .claude/skills agent-plugin/skills; do
+    [ ! -e "$FIRST/$shipped/$name" ] || \
+      fail "starter contains maintainer-only $shipped/$name"
+  done
 done
 
 [ "$(cat "$FIRST/.ai-build-kit-version")" = "v0.1.0" ] || \

@@ -210,10 +210,21 @@ else
   note "python3 is unavailable; personInvokedSkills was not compared with the inventory"
 fi
 
-# --- the maintainer's writing skill never ships -------------------------
-if find "$PLUGIN" -name '*humanizer*' | grep -q .; then
-  fail "the maintainer's writing skill reached the agent plugin"
-fi
+# --- no maintainer skill ships --------------------------------------------
+# The names are read off .agents/maintainer-skills/ rather than written here,
+# because a written-out name is what this check carried when there was one
+# maintainer skill, and the second one arrived unguarded. The match is an exact
+# folder or file name, so a passing mention of a skill in some document's prose
+# does not count as a copy of it.
+maintainer_skill_names=$(find "$ROOT/.agents/maintainer-skills" -mindepth 1 -maxdepth 1 -type d 2>/dev/null \
+  | while IFS= read -r skill_dir; do basename -- "$skill_dir"; done)
+[ -n "$maintainer_skill_names" ] || \
+  fail "no maintainer skill folder could be read, so none was checked against the agent plugin"
+for name in $maintainer_skill_names; do
+  if find "$PLUGIN" \( -name "$name" -o -name "$name.md" \) | grep -q .; then
+    fail "a maintainer skill reached the agent plugin: $name"
+  fi
+done
 
 # --- the nine commands say a person starts them; disciplines do not ----
 while IFS= read -r word; do
