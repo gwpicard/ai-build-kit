@@ -98,7 +98,8 @@ That command replaces the installed skill files outright. Anyone who has edited
 one of the thirteen skills in their own project loses that edit, without being
 asked and without being told. This is why `maintain` looks for local edits
 before it updates anything, and why a project rule belongs in `AGENTS.md`, which
-no route ever touches.
+no update touches. The one edit the kit makes there is to the line naming the
+commands, after a rename, and only with approval.
 
 An Agent Plugins installation belongs to the coding agent that installed it,
 so use that agent's own plugin update command. When the agent has none,

@@ -157,10 +157,12 @@ person saved is affected. Two housekeeping steps keep the installation tidy:
    back and carry on only once `setup-ai-build-kit` is there. Where only
    `setup-ai-build-kit` exists, there is nothing to do.
 
-2. Point the founding command forward. Say once that the command that founds a
-   project is now `/setup-ai-build-kit`, not `/start`, and that any saved command
-   which updates the kit by name uses that new first name. The full update
-   command is in the monthly step above.
+2. Point the founding command forward. Rewrite the command list in the
+   project's AGENTS.md as "Bringing the project's instructions up to the
+   current names" below says, so the person is not left to do it. Then say
+   once that the command that founds a project is now `/setup-ai-build-kit`,
+   not `/start`, and that any saved command which updates the kit by name uses
+   that new first name. The full update command is in the monthly step above.
 
 Record the tidy-up in the changelog as a dated line.
 
@@ -185,12 +187,34 @@ the new name is said out loud rather than only tidied away in the files:
    only once `shape` is there. Where only `shape` exists, there is nothing to
    do.
 
-2. Point the command forward. Say once that `/shape` is the command that turns an
-   idea into a ready piece, that it does everything `/plan` did, and that a saved
-   note or shortcut typing `/plan` needs changing. The full update command is in
-   the monthly step above.
+2. Point the command forward. Rewrite the command list in the project's
+   AGENTS.md as "Bringing the project's instructions up to the current names"
+   below says, rather than asking the person to do it. Then say once that
+   `/shape` is the command that turns an idea into a ready piece, that it does
+   everything `/plan` did, and that a saved note or shortcut typing `/plan`
+   still needs changing by hand. The full update command is in the monthly
+   step above.
 
 Record the tidy-up in the changelog as a dated line.
+
+## Bringing the project's instructions up to the current names
+
+Run this from either rename migration. A project's AGENTS.md is project-owned
+and no update touches it. But the line that lists the commands is the kit's own
+template text, and a person made to fix it by hand after every rename will stop
+updating. So the kit does it for them, with approval:
+
+1. Find the line that lists the commands. In the foundation template it begins
+   `- Commands:` and names all nine. Where it names `start`, replace it with
+   `setup-ai-build-kit`. Where it names `plan`, replace it with `shape`. Where
+   `queue` is missing, add it after `implement`. Where the sentences nearby
+   give an older count of commands or skills, make them nine and thirteen.
+2. Show the change and apply it on approval. Say what changed in one sentence.
+3. Where the file lists the commands in its own words and the line cannot be
+   recognised, leave the file alone and say which name needs changing, so the
+   person edits one line rather than reads a diff.
+
+Record it in the changelog with the tidy-up that called it.
 
 ## Quarterly, or before a handover
 

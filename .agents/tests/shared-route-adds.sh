@@ -61,6 +61,23 @@ rs_rule "the setup migration fires on start present or setup absent" \
   'finds a .start. skill installed, or no .setup-ai-build-kit. skill'
 rs_rule "and adds setup-ai-build-kit when neither is there" \
   'carry on only once .setup-ai-build-kit. is there'
+
+# The project's own instructions are brought up to the new name, with approval,
+# rather than left to the person.
+rs_rule "the reason the kit edits a project-owned file" \
+  'made to fix it by hand after every rename will stop updating'
+rs_rule "plan becomes shape in the command list" \
+  'where it names .plan., replace it with .shape.'
+rs_rule "queue is added where it is missing" \
+  'where .queue. is missing, add it'
+rs_rule "the change is shown and applied on approval" \
+  'show the change and apply it on approval'
+rs_rule "an unrecognised list is left alone and named" \
+  'leave the file alone and say which name needs changing'
+rs_rule "the shape migration calls it rather than asking the person" \
+  'rather than asking the person to do it'
+rs_rule "the setup migration calls it too" \
+  'so the person is not left to do it'
 rs_guard "$MAINTAIN" "the maintain skill"
 
 # The places a person reads about the route say the same thing.
@@ -72,5 +89,7 @@ rs_require "WORKFLOW.md says an update adds a renamed skill" \
   "$WORKFLOW" 'adds any skill the kit has renamed or added since'
 rs_require "the scenario record says update cannot add" \
   "$SCENARIOS" 'cannot add a skill the kit renamed'
+rs_require "WORKFLOW.md says a rename rewrites the command list with approval" \
+  "$WORKFLOW" 'rewrites the command list in your agents.md, with your approval'
 
 rs_done

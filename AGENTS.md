@@ -300,8 +300,11 @@ attribution line, not the word.
   installer's `add` command, that the monthly pass counts the lockfile against
   thirteen, and that each rename migration fires on what is on disk and has a
   branch for the state where the old skill is gone and the new one never
-  came. It reads the rules back from the maintain skill because the installer
-  is somebody else's tool and nothing here can watch it run.
+  came. It also holds that a rename rewrites the command list in the project's
+  own AGENTS.md with approval, because a person left to do that by hand after
+  every rename stops updating. It reads the rules back from the maintain skill
+  because the installer is somebody else's tool and nothing here can watch it
+  run.
 - `.agents/tests/settled-is-recorded.sh` guards the record a settled question
   has to leave: that what settled it is written into the piece before the label
   comes off, and that the piece is read back to decide whether the label goes
