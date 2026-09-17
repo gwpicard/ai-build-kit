@@ -1,6 +1,5 @@
 ---
 description: Bring the tool back to doing what it already should.
-disable-model-invocation: true
 ---
 <!-- GENERATED from .agents/skills/fix/. Do not edit here; regenerate with .agents/tools/build-adapters.sh -->
 

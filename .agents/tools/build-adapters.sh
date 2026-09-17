@@ -121,27 +121,20 @@ generate_all() {
     # TOML-safe: escape backslash and double-quote for the description string.
     short_toml=$(printf '%s' "$short" | sed 's/\\/\\\\/g; s/"/\\"/g')
 
-    # Trigger type is declared, never inferred. A skill that declares nothing,
-    # or declares two things at once, stops the build instead of quietly
-    # becoming a discipline the model may start on its own.
-    kind=
-    kinds=0
-    if grep -q '^disable-model-invocation:[ \t]*true' "$file"; then
-      kind=command
-      kinds=$((kinds + 1))
-    fi
+    # One setting marks a background skill. A SKILL.md carrying
+    # 'user-invocable: false' is a discipline another skill calls. A skill
+    # without that line is a command, which the agent may start when the
+    # person types it, names it, or asks for its job in plain words. Nothing
+    # else is declared, so a dropped user-invocable line cannot hide: it shows
+    # up as ten commands and three disciplines and stops the build at the
+    # count check below.
     if grep -q '^user-invocable:[ \t]*false' "$file"; then
       kind=discipline
-      kinds=$((kinds + 1))
+      disciplines=$((disciplines + 1))
+    else
+      kind=command
+      commands=$((commands + 1))
     fi
-    if [ "$kinds" -ne 1 ]; then
-      echo "error: $name/SKILL.md must declare exactly one trigger type, and declares $kinds: use 'disable-model-invocation: true' for a command a person types, or 'user-invocable: false' for an internal discipline another skill calls. A skill only the maintainers use belongs under .agents/maintainer-skills/ instead, where no installer looks for it" >&2
-      exit 1
-    fi
-    case "$kind" in
-      command) commands=$((commands + 1)) ;;
-      discipline) disciplines=$((disciplines + 1)) ;;
-    esac
 
     claude_banner="<!-- GENERATED from .agents/skills/$name/. Do not edit here; regenerate with .agents/tools/build-adapters.sh -->"
 
@@ -150,7 +143,6 @@ generate_all() {
       {
         printf '%s\n' "---"
         printf 'description: %s\n' "$short"
-        printf 'disable-model-invocation: true\n'
         printf '%s\n' "---"
         printf '%s\n\n' "$claude_banner"
         printf 'When this command comes from a Claude plugin, load and follow `${CLAUDE_PLUGIN_ROOT}/.agents/skills/%s/SKILL.md`. Otherwise, load and follow `.agents/skills/%s/SKILL.md`. It is the single source of truth for the `/%s` command. Treat anything typed after the command as the user'"'"'s request and pass it through unchanged.\n' "$name" "$name" "$name"

@@ -1,7 +1,6 @@
 ---
 name: sync
-description: True the documents up against what actually happened. Use for an interrupted session, work done outside the skills, an imported branch or contribution, a long session whose context went foggy, or reconciliation before a handover. Normal completion of /shape, /implement, /fix, /ship, and /maintain already updates the records; sync is the recovery and reconciliation route, not a routine step after every piece. Type this command when you want it; it never starts on its own.
-disable-model-invocation: true
+description: True the documents up against what actually happened. Use for an interrupted session, work done outside the skills, an imported branch or contribution, a long session whose context went foggy, or reconciliation before a handover. Normal completion of /shape, /implement, /fix, /ship, and /maintain already updates the records; sync is the recovery and reconciliation route, not a routine step after every piece.
 ---
 
 # Sync

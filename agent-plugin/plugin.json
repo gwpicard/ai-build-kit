@@ -13,20 +13,5 @@
     "agent-skills",
     "software-development",
     "workflow"
-  ],
-  "extensions": {
-    "io.github.gwpicard.ai-build-kit": {
-      "personInvokedSkills": [
-        "setup-ai-build-kit",
-        "shape",
-        "implement",
-        "queue",
-        "fix",
-        "ship",
-        "sync",
-        "maintain",
-        "what-now"
-      ]
-    }
-  }
+  ]
 }

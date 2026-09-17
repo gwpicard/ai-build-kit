@@ -1,6 +1,5 @@
 ---
 description: Take checked work to the copy of the tool the team actually uses.
-disable-model-invocation: true
 ---
 <!-- GENERATED from .agents/skills/ship/. Do not edit here; regenerate with .agents/tools/build-adapters.sh -->
 

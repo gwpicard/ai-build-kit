@@ -169,33 +169,32 @@ folder is assembled by the release allowlist rather than by
 generated files also remain as maintainer checks. There is no `.codex/` adapter tree to
 protect.
 
-The nine commands each end their description with a sentence saying the person
-types the command and it never starts on its own. That description is the only
-text a client reads before deciding to trigger a skill by itself, so the
-sentence stays. It must stay last, because the generated adapters take the
-first sentence only. The validator checks both the exact wording and its
-position, so change it there and in `.agents/tests/agent-plugin.sh` together.
+One setting says how a skill is triggered. A background skill another skill
+calls carries `user-invocable: false` in its own file. A skill without it is a
+command. The adapter builder reads that setting and nothing else, so a dropped
+or misspelt line shows up as ten commands and three background skills, and the
+count check stops the build there.
 
-Every skill declares how it is triggered, in its own file. A command a person
-types carries `disable-model-invocation: true`. An internal background skill
-another skill calls carries `user-invocable: false`. The adapter builder stops
-with an error when a skill declares neither, or both, so a dropped or misspelt
-line cannot quietly turn a command into a skill the model may start on its own.
+The commands used to carry a second setting that stopped the agent starting one
+by itself, and each description ended with a sentence saying the same. Both
+went. A person who wrote `/fix` in the middle of a message, or said "let's
+implement", was told to retype the message with the command first, and that
+restricted the person more than it protected them. The agent may now start a
+command when the person types it, names it anywhere in a message, or asks for
+its job in plain words, and it says which command it is running. It never
+starts one the person did not ask for. The guard worth keeping is that the
+person cannot pick a background skill, and that stays where the tool enforces
+it. The shared installer and an Agent Plugins client load the canonical files
+directly, so the setting has to be right in the skill itself, whatever the
+generated adapters look like.
 
-Those two settings are the part several coding agents enforce, not decoration on
-the generated adapters: the shared installer and an Agent Plugins client load the
-canonical files directly, so removing a trigger setting changes behaviour even
-when every generated adapter still looks correct. Tested against Claude Code:
-with the setting present it refused to start the skill by itself, and with it
-absent it started it.
-
-They are not in the written Agent Skills standard, so its reference checker
-reports every shipped skill as invalid. Keep them anyway, with the cost on the
-record: the plugin standard tells a client to skip any skill that fails the
-skill standard, so a strict Agent Plugins client would load none of the thirteen.
-Claude Code accepts them, which is why that route works today. If the standard
-adopts a setting of its own, follow it and update the short person-facing
-version in `docs/COMPATIBILITY.md`.
+`user-invocable` is not in the written Agent Skills standard, so its reference
+checker reports the four background skills as invalid. Keep it anyway, with the
+cost on the record: the plugin standard tells a client to skip any skill that
+fails the skill standard, so a strict Agent Plugins client would load the nine
+commands and skip the four. Claude Code accepts the setting, which is why that
+route works today. If the standard adopts a setting of its own, follow it and
+update the short person-facing version in `docs/COMPATIBILITY.md`.
 
 Humanizer is not in that tree at all. It lives under
 `.agents/maintainer-skills/`, alongside `review-issues`, which reads the open
@@ -258,15 +257,12 @@ Every change to `.agents/skills/` or the kit's own machinery runs
   `.cursor/commands/`, `.gemini/commands/`, or the release allowlist;
 - frontmatter on every `SKILL.md` (name, description, folder match, no
   duplicates);
-- harness contracts: every command's Codex `openai.yaml` disables implicit
-  invocation, no background skill carries one, `.codex/skills` does not exist,
-  and Claude's generated commands stay person-invoked while generated background
-  skills carry `user-invocable: false`;
-- trigger declarations: every skill says in its own file whether a person types
-  it or another skill calls it; the adapter builder
-  refuses to run when one does not say, the validator rehearses that refusal,
-  and `.claude/commands/` and `.claude/skills/` are compared as whole listings
-  against the expected names;
+- harness contracts: `.codex/skills` does not exist, and Claude's generated
+  background skills carry `user-invocable: false` while its generated commands
+  do not;
+- trigger declarations: a background skill declares `user-invocable: false` in
+  its own file, a command never carries it, and `.claude/commands/` and
+  `.claude/skills/` are compared as whole listings against the expected names;
 - that no tracked file carries an AI attribution line or a link back to the
   session the work came out of, and that `.githooks/commit-msg`, which takes
   those out of a commit message, is saved as a runnable file;
