@@ -1,6 +1,5 @@
 ---
 description: Orientation for a lost or returning user.
-disable-model-invocation: true
 ---
 <!-- GENERATED from .agents/skills/what-now/. Do not edit here; regenerate with .agents/tools/build-adapters.sh -->
 

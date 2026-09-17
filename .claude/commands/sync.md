@@ -1,6 +1,5 @@
 ---
 description: True the documents up against what actually happened.
-disable-model-invocation: true
 ---
 <!-- GENERATED from .agents/skills/sync/. Do not edit here; regenerate with .agents/tools/build-adapters.sh -->
 

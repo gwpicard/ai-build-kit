@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
-# claude-plugin.sh: rehearse the manual command boundary, local install,
-# bootstrap, failed and successful updates, and removal without touching the
-# maintainer's real Claude configuration.
+# claude-plugin.sh: rehearse the command and background-skill boundary, local
+# install, bootstrap, failed and successful updates, and removal without
+# touching the maintainer's real Claude configuration.
 
 set -eu
 
@@ -50,17 +50,28 @@ grep -qF '"scope": "local"' "$LISTING" || \
   fail "Claude did not keep the plugin local to the project"
 grep -qF 'Skills (4)  change-triage, clarify, second-opinion, section-builder' \
   "$DETAILS" || fail "Claude did not keep the plugin command and discipline boundaries separate"
-if grep -Eq '^[[:space:]]+(fix|implement|maintain|shape|ship|setup-ai-build-kit|sync|what-now)[[:space:]]' \
-  "$DETAILS"; then
-  fail "Claude made a person-invoked command available to the model"
-fi
 
 INSTALL_PATH=$(sed -n 's/^[[:space:]]*"installPath": "\([^"]*\)",$/\1/p' "$LISTING")
 [ -n "$INSTALL_PATH" ] || fail "Claude did not report the plugin cache path"
 BOOTSTRAP="$INSTALL_PATH/.agents/skills/setup-ai-build-kit/scripts/bootstrap-project.sh"
 [ -x "$BOOTSTRAP" ] || fail "installed Claude plugin has no start bootstrap"
-[ -f "$INSTALL_PATH/.claude/commands/setup-ai-build-kit.md" ] || \
-  fail "installed Claude plugin has no manual start command"
+
+# The nine commands are checked where Claude reads them. Its details listing
+# counts skills, agents, hooks and servers and says nothing about commands, so
+# the installed manifest and the command files in the plugin cache are the only
+# evidence that Claude offers all nine. A command carries no trigger setting,
+# because the agent may start one when the person asks for it, so a command
+# file still carrying the retired manual-only setting would put that command
+# back out of reach in silence.
+for word in fix implement maintain queue setup-ai-build-kit shape ship sync what-now; do
+  grep -qF "\"./.claude/commands/$word.md\"" "$INSTALL_PATH/.claude-plugin/plugin.json" || \
+    fail "installed Claude plugin manifest does not offer the command: $word"
+  [ -f "$INSTALL_PATH/.claude/commands/$word.md" ] || \
+    fail "installed Claude plugin has no command file for: $word"
+  if grep -qF 'disable-model-invocation' "$INSTALL_PATH/.claude/commands/$word.md"; then
+    fail "installed Claude command still carries the retired manual-only setting: $word"
+  fi
+done
 grep -qF '${CLAUDE_PLUGIN_ROOT}/.agents/skills/setup-ai-build-kit/SKILL.md' \
   "$INSTALL_PATH/.claude/commands/setup-ai-build-kit.md" || \
   fail "installed start command does not load the plugin's canonical skill"

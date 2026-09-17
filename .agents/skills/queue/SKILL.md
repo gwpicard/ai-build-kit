@@ -1,7 +1,6 @@
 ---
 name: queue
-description: The whole list of ready work at once, for somebody taking on more than one piece. Trigger when someone asks what can be built in parallel, what order the rest comes in, or wants to see everything that is ready rather than the next thing. Reads the plan and reports two groups. Never builds, shapes, or changes anything. Type this command when you want it; it never starts on its own.
-disable-model-invocation: true
+description: The whole list of ready work at once, for somebody taking on more than one piece. Trigger when someone asks what can be built in parallel, what order the rest comes in, or wants to see everything that is ready rather than the next thing. Reads the plan and reports two groups. Never builds, shapes, or changes anything.
 ---
 
 # Queue

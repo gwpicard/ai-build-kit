@@ -51,7 +51,6 @@ skill-missing
 skill-duplicate
 publish-writes-a-tree
 gate-widened
-command-model-invocable
 discipline-user-invocable
 hook-speaks-in-source
 hook-speaks-in-cadence
@@ -85,8 +84,7 @@ describe() {
     skill-duplicate) echo "one skill is replaced by a copy of another, leaving the wrong thirteen" ;;
     publish-writes-a-tree) echo "a workflow gains the power to replace this repository's tree" ;;
     gate-widened) echo "a workflow gate names a repository the kit no longer lives in" ;;
-    command-model-invocable) echo "a person-invoked command becomes available to the model" ;;
-    discipline-user-invocable) echo "a background skill claims a person starts it" ;;
+    discipline-user-invocable) echo "a background skill loses the setting that keeps it out of the person's hands" ;;
     hook-speaks-in-source) echo "the session hook speaks inside the kit's own source" ;;
     hook-speaks-in-cadence) echo "the session hook speaks before a visit is overdue" ;;
     broken-link) echo "a local Markdown link points at nothing" ;;
@@ -104,6 +102,7 @@ checks_for() {
     publish-writes-a-tree) echo "$PUBLISH_CHECKS" ;;
     gate-widened) echo "$MODE_CHECKS" ;;
     runnable-bit-lost) echo "$MODE_CHECKS" ;;
+    discipline-user-invocable) echo "validate-kit" ;;
     rule-*) echo "${1#rule-} validate-kit" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
@@ -231,33 +230,18 @@ new = "contains(fromJSON(" + both + "), github.repository)"
 open(p, "w").write(t.replace(old, new))
 '
       ;;
-    command-model-invocable)
-      edit "$tree/.agents/skills/ship/SKILL.md" '
-import os
-p = os.environ["MUTATE_TARGET"]
-t = open(p).read()
-phrase = " Type this command when you want it; it never starts on its own."
-assert phrase in t, "person-invoked sentence not found in ship"
-t = t.replace(phrase, "")
-assert "disable-model-invocation: true\n" in t, "no model-invocation guard"
-open(p, "w").write(t.replace("disable-model-invocation: true\n", ""))
-'
-      (cd "$tree" && ./.agents/tools/build-adapters.sh >/dev/null 2>&1) || true
-      ;;
     discipline-user-invocable)
+      # The one trigger setting the kit uses is `user-invocable: false`, and it
+      # is what makes a skill a background skill rather than a command. Take
+      # it off one and the inventory reads ten commands and three background
+      # skills. The adapters are rebuilt so the tree is self-consistent, and
+      # the fault has to be caught in the source rather than as adapter drift.
       edit "$tree/.agents/skills/clarify/SKILL.md" '
 import os
 p = os.environ["MUTATE_TARGET"]
-lines = open(p).read().split("\n")
-phrase = " Type this command when you want it; it never starts on its own."
-for i, line in enumerate(lines):
-    if line.startswith("description:"):
-        assert phrase not in line, "clarify already claims to be person-invoked"
-        lines[i] = line.rstrip() + phrase
-        break
-else:
-    raise SystemExit("no description line")
-open(p, "w").write("\n".join(lines))
+t = open(p).read()
+assert "user-invocable: false\n" in t, "clarify carries no background-skill setting to remove"
+open(p, "w").write(t.replace("user-invocable: false\n", "", 1))
 '
       (cd "$tree" && ./.agents/tools/build-adapters.sh >/dev/null 2>&1) || true
       ;;

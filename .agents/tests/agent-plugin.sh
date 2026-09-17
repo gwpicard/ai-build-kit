@@ -1,14 +1,15 @@
 #!/usr/bin/env sh
 # agent-plugin.sh: rehearse the Agent Plugins distribution route. It builds a
-# real release, checks the assembled folder against the standard's rules, and
-# proves that folder can stand a project up on its own.
+# real release, checks the assembled folder against the standard's rules,
+# checks that the one trigger setting marks the four background skills and
+# none of the nine commands, and proves that folder can stand a project up on
+# its own.
 
 set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 BUILDER="$ROOT/.agents/tools/build-release.sh"
 SCHEMA="https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
-PERSON_INVOKED="Type this command when you want it; it never starts on its own."
 
 fail() {
   echo "FAIL: $1" >&2
@@ -190,60 +191,33 @@ deep=$(find "$SKILLS_DIR" -mindepth 3 -name SKILL.md)
 [ -z "$deep" ] || \
   fail "the agent plugin hides a skill below the one level a client reads: $deep"
 
-# --- the vendor extension names exactly the nine commands ----------------
-# The open plugin format has no setting for "a person starts this", so the
-# manifest carries the list under a vendor namespace. Nothing compared it with
-# the canonical inventory, so renaming a command would have left it quietly
-# wrong while every other check still passed.
-if command -v python3 >/dev/null 2>&1; then
-  listed=$(python3 - "$MANIFEST" <<'PYEOF'
-import json, sys
-manifest = json.load(open(sys.argv[1]))
-ext = manifest.get("extensions") or {}
-found = [v.get("personInvokedSkills") for v in ext.values()
-         if isinstance(v, dict) and "personInvokedSkills" in v]
-if len(found) != 1:
-    print("MISSING")
-elif not isinstance(found[0], list) or not all(isinstance(s, str) for s in found[0]):
-    print("NOTALIST")
-else:
-    print("\n".join(sorted(found[0])))
-PYEOF
-)
-  case "$listed" in
-    MISSING)
-      fail "the agent plugin manifest declares no personInvokedSkills list under a vendor namespace"
-      ;;
-    NOTALIST)
-      fail "the agent plugin manifest's personInvokedSkills is not a list of skill names"
-      ;;
-    *)
-      if [ "$listed" != "$(printf '%s\n' "$expected_commands" | sort)" ]; then
-        fail "personInvokedSkills does not name exactly the nine commands: $(printf '%s' "$listed" | tr '\n' ' ')"
-      fi
-      ;;
-  esac
-else
-  note "python3 is unavailable; personInvokedSkills was not compared with the inventory"
-fi
-
-# --- the nine commands say a person starts them; disciplines do not ----
-while IFS= read -r word; do
-  [ -n "$word" ] || continue
-  tr '\n' ' ' < "$SKILLS_DIR/$word/SKILL.md" | grep -qF "$PERSON_INVOKED" || \
-    fail "a command in the agent plugin does not say it waits for the person: $word"
-done <<WORDS
-$expected_commands
-WORDS
-
+# --- the one trigger setting marks the disciplines and nothing else -------
+# A background skill carries `user-invocable: false` and a command carries no
+# trigger setting at all, because the agent may start a command when the
+# person asks for it. The manifest used to name the commands under a vendor
+# extension as well, but no client read it, so the SKILL.md files are the only
+# place the boundary lives and the only place worth checking. The retired
+# manual-only setting is refused on a command because a copy of it would put
+# that command back out of the agent's reach in silence.
 while IFS= read -r discipline; do
   [ -n "$discipline" ] || continue
-  if tr '\n' ' ' < "$SKILLS_DIR/$discipline/SKILL.md" | grep -qF "$PERSON_INVOKED"; then
-    fail "an internal discipline in the agent plugin claims to wait for the person: $discipline"
-  fi
+  grep -Eq '^user-invocable:[ \t]*false' "$SKILLS_DIR/$discipline/SKILL.md" || \
+    fail "a background skill in the agent plugin is missing the setting that keeps it out of the person's hands: $discipline"
 done <<DISCIPLINES
 $expected_disciplines
 DISCIPLINES
+
+while IFS= read -r word; do
+  [ -n "$word" ] || continue
+  if grep -Eq '^user-invocable:[ \t]*false' "$SKILLS_DIR/$word/SKILL.md"; then
+    fail "a command in the agent plugin is marked as a background skill: $word"
+  fi
+  if grep -qF 'disable-model-invocation' "$SKILLS_DIR/$word/SKILL.md"; then
+    fail "a command in the agent plugin still carries the retired manual-only setting: $word"
+  fi
+done <<WORDS
+$expected_commands
+WORDS
 
 # --- each skill arrived whole, and identical to the canonical release ----
 for supporting in \

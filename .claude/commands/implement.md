@@ -1,6 +1,5 @@
 ---
 description: The everyday command for building a piece that has already been shaped and marked ready.
-disable-model-invocation: true
 ---
 <!-- GENERATED from .agents/skills/implement/. Do not edit here; regenerate with .agents/tools/build-adapters.sh -->
 

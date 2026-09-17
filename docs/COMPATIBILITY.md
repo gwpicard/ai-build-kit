@@ -139,10 +139,12 @@ follow it.
 
 ## Who may start a command
 
-You type the nine commands yourself. Four more skills run in the background
-when a command needs them, and you never call those directly. The kit tells your
-coding agent not to start a command on its own. Not every tool enforces that, so
-if one offers to run a command you did not ask for, say no.
+You can type one of the nine commands, name it anywhere in a message, or just
+say what you want done in your own words. The agent starts the right command
+and says which one it is running. It never starts one you did not ask for.
+
+The four background skills run when a command needs them. The kit marks them so
+that you cannot pick one yourself, where your coding agent enforces that.
 
 ## Manual fallback
 

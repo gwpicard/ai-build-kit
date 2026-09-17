@@ -1,6 +1,5 @@
 ---
 description: The service visit for AI Build Kit updates, project upkeep, handovers, and retirement.
-disable-model-invocation: true
 ---
 <!-- GENERATED from .agents/skills/maintain/. Do not edit here; regenerate with .agents/tools/build-adapters.sh -->
 

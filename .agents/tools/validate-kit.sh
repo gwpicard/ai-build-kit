@@ -193,33 +193,17 @@ else
   pass "exactly nine commands and four disciplines, named exactly"
 fi
 
+# Each of the thirteen has a SKILL.md. Which of them are commands and which
+# are background skills is settled by one setting, and the trigger contract
+# further down checks that. Here the question is only that the file exists.
 while IFS= read -r name; do
   [ -n "$name" ] || continue
   file="$SKILLS/$name/SKILL.md"
-  if [ ! -f "$file" ]; then
-    fail "missing $file"
-    continue
-  fi
-  if ! grep -q '^disable-model-invocation:[ \t]*true' "$file"; then
-    fail "$file: expected disable-model-invocation: true (this is a human-typed command)"
-  fi
-done <<COMMANDS
+  [ -f "$file" ] || fail "missing $file"
+done <<ALLSKILLS
 $expected_commands
-COMMANDS
-
-while IFS= read -r name; do
-  [ -n "$name" ] || continue
-  file="$SKILLS/$name/SKILL.md"
-  if [ ! -f "$file" ]; then
-    fail "missing $file"
-    continue
-  fi
-  if grep -q '^disable-model-invocation:[ \t]*true' "$file"; then
-    fail "$file: disciplines must not carry disable-model-invocation: true"
-  fi
-done <<DISCIPLINES
 $expected_disciplines
-DISCIPLINES
+ALLSKILLS
 
 # The maintainer's own skills sit outside every folder an installer reads, and
 # that placement is the whole boundary. There is no marker file and no
@@ -249,7 +233,7 @@ $name
       ;;
   esac
   if [ -e "$MAINTAINER_SKILLS/$name/agents/openai.yaml" ]; then
-    fail "$MAINTAINER_SKILLS/$name/agents/openai.yaml: a maintainer skill needs no harness policy; nothing offers it as a command"
+    fail "$MAINTAINER_SKILLS/$name/agents/openai.yaml: a maintainer skill carries no harness policy file"
   fi
   while IFS= read -r scanned; do
     [ -n "$scanned" ] || continue
@@ -274,39 +258,18 @@ fi
 # ---------------------------------------------------------------------------
 echo "== Harness contracts =="
 
-# Codex: every command has an openai.yaml policy disabling implicit
-# invocation; no discipline carries one; .codex/skills no longer exists (the
-# canonical .agents/skills/ tree is Codex's project-skill location directly).
-while IFS= read -r name; do
-  [ -n "$name" ] || continue
-  policy="$SKILLS/$name/agents/openai.yaml"
-  if [ ! -f "$policy" ]; then
-    fail "$policy: missing (every command needs an openai.yaml disabling implicit invocation)"
-  elif ! grep -q 'allow_implicit_invocation:[ \t]*false' "$policy"; then
-    fail "$policy: expected allow_implicit_invocation: false"
-  fi
-done <<COMMANDS
-$expected_commands
-COMMANDS
-
-while IFS= read -r name; do
-  [ -n "$name" ] || continue
-  policy="$SKILLS/$name/agents/openai.yaml"
-  if [ -f "$policy" ]; then
-    fail "$policy: disciplines must not carry a Codex implicit-invocation policy"
-  fi
-done <<DISCIPLINES
-$expected_disciplines
-DISCIPLINES
-
+# Codex reads the canonical .agents/skills/ tree directly, so .codex/skills
+# must not exist. A second tree would be a copy nothing refreshes.
 if [ -e "$ROOT/.codex/skills" ]; then
   fail ".codex/skills still exists; Codex now reads .agents/skills/ directly"
 else
   pass "no .codex/skills adapter tree"
 fi
 
-# Claude Code: the four generated discipline skills are hidden from the user
-# command menu; the nine generated commands stay person-invoked.
+# Claude Code: the four generated background skills are hidden from the user
+# command menu. The nine generated commands carry neither setting. A command
+# used to carry disable-model-invocation, and a regenerate from a stale builder
+# would put it back, so its absence is checked rather than assumed.
 while IFS= read -r name; do
   [ -n "$name" ] || continue
   gen="$ROOT/.claude/skills/$name/SKILL.md"
@@ -324,8 +287,8 @@ while IFS= read -r name; do
   gen="$ROOT/.claude/commands/$name.md"
   if [ ! -f "$gen" ]; then
     fail "$gen: missing generated Claude command"
-  elif ! grep -q '^disable-model-invocation:[ \t]*true' "$gen"; then
-    fail "$gen: expected disable-model-invocation: true"
+  elif grep -q '^disable-model-invocation:' "$gen"; then
+    fail "$gen: generated commands must not carry disable-model-invocation; the agent may start a command the person asks for"
   elif grep -q '^user-invocable:' "$gen"; then
     fail "$gen: generated commands must not carry user-invocable"
   fi
@@ -333,42 +296,7 @@ done <<COMMANDS2
 $expected_commands
 COMMANDS2
 
-pass "Codex policies and Claude skill visibility match the harness contract"
-
-# The open plugin format has no setting for "a person starts this", so each
-# command carries the rule in its own description, which is the text a client
-# reads before deciding to trigger a skill by itself.
-person_invoked="Type this command when you want it; it never starts on its own."
-person_invoked_ok=yes
-while IFS= read -r name; do
-  [ -n "$name" ] || continue
-  file="$SKILLS/$name/SKILL.md"
-  [ -f "$file" ] || continue
-  desc=$(awk '/^---[ \t]*$/{fm++;next} fm==1 && /^description:[ \t]/{sub("^description:[ \t]*","");print;exit}' "$file")
-  case "$desc" in
-    *"$person_invoked") ;;
-    *)
-      fail "$file: the description must end with '$person_invoked', which is the only place a client without a manual-only setting will read it"
-      person_invoked_ok=no
-      ;;
-  esac
-done <<PERSONINVOKED
-$expected_commands
-PERSONINVOKED
-while IFS= read -r name; do
-  [ -n "$name" ] || continue
-  file="$SKILLS/$name/SKILL.md"
-  [ -f "$file" ] || continue
-  if grep -qF "$person_invoked" "$file"; then
-    fail "$file: an internal discipline must not claim to wait for the person"
-    person_invoked_ok=no
-  fi
-done <<PERSONINVOKEDDISCIPLINES
-$expected_disciplines
-PERSONINVOKEDDISCIPLINES
-if [ "$person_invoked_ok" = "yes" ]; then
-  pass "every command says in its own description that a person starts it"
-fi
+pass "no Codex adapter tree, and Claude skill visibility matches the harness contract"
 
 # CLAUDE.md and GEMINI.md must be exactly the harness import line, so loading
 # AGENTS.md never depends on the model choosing to read a prose pointer.
@@ -392,8 +320,12 @@ pass "CLAUDE.md and GEMINI.md import AGENTS.md deterministically"
 # ---------------------------------------------------------------------------
 echo "== Trigger contract =="
 
-# Each skill declares its own trigger type, and the two generated Claude trees
-# are compared as whole listings rather than name by name. The listing
+# One setting decides what a skill is. `user-invocable: false` marks a
+# background skill, which the agent loads on its own and nobody types. A skill
+# without it is a command, and the agent may start a command when the person
+# asks for it in a slash, by name, or in plain words. So a background skill
+# must carry the setting and a command must not, and the two generated Claude
+# trees are compared as whole listings rather than name by name. The listing
 # comparison is deliberately independent of the builder: build-adapters.sh
 # --check only proves the committed adapters match what the source generates,
 # so a source mistake that generates a wrong but self-consistent tree needs a
@@ -405,11 +337,11 @@ while IFS= read -r name; do
   file="$SKILLS/$name/SKILL.md"
   [ -f "$file" ] || continue
   if ! grep -q '^user-invocable:[ \t]*false' "$file"; then
-    fail "$file: expected user-invocable: false (an internal discipline declares its trigger type; the adapter builder refuses to guess)"
+    fail "$file: expected user-invocable: false (that setting is what marks a background skill; without it the builder treats the skill as a command)"
     trigger_ok=0
   fi
   if [ -e "$ROOT/.claude/commands/$name.md" ]; then
-    fail ".claude/commands/$name.md exists; an internal discipline must not be reachable as a typed command"
+    fail ".claude/commands/$name.md exists; a background skill must not be reachable as a command"
     trigger_ok=0
   fi
 done <<DISCIPLINES3
@@ -421,11 +353,11 @@ while IFS= read -r name; do
   file="$SKILLS/$name/SKILL.md"
   [ -f "$file" ] || continue
   if grep -q '^user-invocable:' "$file"; then
-    fail "$file: a typed command declares disable-model-invocation only, never user-invocable"
+    fail "$file: a command never carries user-invocable; that setting marks a background skill"
     trigger_ok=0
   fi
   if [ -e "$ROOT/.claude/skills/$name" ]; then
-    fail ".claude/skills/$name exists; a typed command must not also be an automatically triggered skill"
+    fail ".claude/skills/$name exists; a command must not also be generated as a background skill"
     trigger_ok=0
   fi
 done <<COMMANDS3
@@ -491,7 +423,7 @@ for adapter in ".cursor/commands:.md:Cursor" ".gemini/commands:.toml:Gemini CLI"
   fi
 done
 
-[ "$trigger_ok" -eq 1 ] && pass "every skill declares its trigger type, and the generated command and skill folders all hold exactly the expected names"
+[ "$trigger_ok" -eq 1 ] && pass "background skills carry user-invocable: false and commands do not, and the generated command and skill folders all hold exactly the expected names"
 
 # ---------------------------------------------------------------------------
 echo "== Frontmatter =="
@@ -1409,35 +1341,6 @@ for entry in \
 done
 
 [ "$ss_ok" -eq 1 ] && pass "the check-up reminder is a project hook, wired from start's template and absent from this source"
-# ---------------------------------------------------------------------------
-echo "== Undeclared trigger refusal =="
-
-# Prove the refusal rather than trusting it. A temporary extra skill folder
-# declares no trigger type; --check writes its generated files to a scratch
-# directory, so the committed adapters are never touched, and the folder is
-# removed again whether the rehearsal passes or fails.
-rehearsal_skill="$SKILLS/zz-undeclared-rehearsal-$$"
-rehearsal_out=/tmp/validate-kit-undeclared.$$
-clean_rehearsal() {
-  rm -rf "$rehearsal_skill" "$rehearsal_out"
-}
-trap clean_rehearsal EXIT INT TERM
-mkdir -p "$rehearsal_skill"
-{
-  echo "---"
-  echo "name: zz-undeclared-rehearsal-$$"
-  echo "description: Temporary folder used to rehearse the builder's refusal."
-  echo "---"
-} > "$rehearsal_skill/SKILL.md"
-if "$ROOT/.agents/tools/build-adapters.sh" --check >"$rehearsal_out" 2>&1; then
-  fail "the adapter builder accepted a skill that declares no trigger type"
-elif ! grep -q 'must declare exactly one trigger type' "$rehearsal_out"; then
-  fail "the adapter builder stopped for the wrong reason: $(cat "$rehearsal_out")"
-else
-  pass "the adapter builder refuses a skill that does not declare how it is triggered"
-fi
-clean_rehearsal
-trap - EXIT INT TERM
 
 # ---------------------------------------------------------------------------
 echo "== Release boundary =="
@@ -1600,7 +1503,7 @@ if [ ! -x "$claude_plugin_check" ]; then
   fail ".agents/tests/claude-plugin.sh is missing or not executable"
 elif command -v claude >/dev/null 2>&1; then
   if "$claude_plugin_check"; then
-    pass "Claude plugin keeps commands manual, prepares a project, recovers, updates, and uninstalls in isolation"
+    pass "Claude plugin exposes the nine commands, prepares a project, recovers, updates, and uninstalls in isolation"
   else
     fail "Claude plugin rehearsal failed"
   fi
@@ -2197,6 +2100,10 @@ check_claim "universal test-first claim" "Test first, and show the test failing 
 check_claim "obsolete automatic-rebuild rule" "rebuilds the piece from the masterplan, which is usually quicker and cleaner"
 check_claim "absolute discipline-visibility claim" "so they never appear in that list"
 check_claim "incorrect Claude invocation semantics" "can't be launched by slash either"
+# Every command description once ended "it never starts on its own". The agent
+# may now start a command the person asks for in plain words, so a document
+# that says otherwise describes a kit that no longer exists.
+check_claim "a command that never starts on its own" "never starts on its own"
 check_claim "everything is markdown claim" "everything here is plain markdown"
 # The seven commands were called "the seven words" until August 2026. The old
 # name reads like a fantasy novel rather than a tool, and half the register

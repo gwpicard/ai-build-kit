@@ -38,17 +38,20 @@ not ask for. Do not widen a fix into a tidy-up.
 
 ## The skills, and how they are invoked
 
-The work lives in thirteen installed skills. Nine are commands you type. Four run
-in the background when a command needs them.
+The work lives in thirteen installed skills. Nine are commands. The user types
+one, names it anywhere in a message, or asks for its job in plain words. Start
+the matching command and say which one you are running. Never start a command
+the user did not ask for. Four run in the background when a command needs them,
+and they are not for the user to pick.
 
 - Commands: `setup-ai-build-kit`, `shape`, `implement`, `queue`, `fix`, `ship`,
   `sync`, `maintain`, `what-now`.
 - Background skills: `clarify`, `change-triage`, `section-builder`,
   `second-opinion`.
 
-Use the harness's skill picker or ask for a skill by name. When a skill says to
-run another skill, load that installed skill and follow it. If native discovery
-is unavailable, open `.agents/skills/<name>/SKILL.md` directly.
+When a skill says to run another skill, load that installed skill and follow
+it. If native discovery is unavailable, open `.agents/skills/<name>/SKILL.md`
+directly.
 
 The installed skill folders are managed by the shared skills installer. Put
 project-specific rules in this file instead of editing an installed skill.

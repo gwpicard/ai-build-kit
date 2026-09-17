@@ -2,7 +2,9 @@
 
 This is the reference card. When you are not sure what to type, read this page,
 or type /what-now and let it tell you. Type a command as `/` and its name
-(`/setup-ai-build-kit`, `/shape`, `/implement`, and so on), or ask for it by name. The Claude Code plugin
+(`/setup-ai-build-kit`, `/shape`, `/implement`, and so on), or ask for it by name. You can also
+just say what you want done, in your own words, and the agent picks the command
+and says which one. The Claude Code plugin
 adds the prefix `ai-build-kit:`, so `/setup-ai-build-kit` becomes `/ai-build-kit:setup-ai-build-kit`.
 
 ## 1. Commands

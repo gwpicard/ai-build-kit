@@ -122,8 +122,9 @@ grep -qF '"./.claude/commands/setup-ai-build-kit.md"' "$FIRST/.claude-plugin/plu
   fail "Claude plugin does not load the nine manual commands"
 grep -qF '"./.claude/skills/section-builder"' "$FIRST/.claude-plugin/plugin.json" || \
   fail "Claude plugin does not load the internal disciplines"
-grep -qF 'disable-model-invocation: true' "$FIRST/.claude/commands/setup-ai-build-kit.md" || \
-  fail "Claude plugin start command is not kept under the person's control"
+if grep -qF 'disable-model-invocation' "$FIRST/.claude/commands/setup-ai-build-kit.md"; then
+  fail "Claude plugin start command still carries the retired manual-only setting"
+fi
 grep -qF '${CLAUDE_PLUGIN_ROOT}/.agents/skills/setup-ai-build-kit/SKILL.md' \
   "$FIRST/.claude/commands/setup-ai-build-kit.md" || \
   fail "Claude plugin start command does not load its canonical skill"

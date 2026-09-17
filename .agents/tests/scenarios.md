@@ -197,7 +197,7 @@ reported, and it is not what decides whether the case held.
 ## 12. Unknown harness with no native slash commands
 
 - Expected route: the AGENTS.md load rule; the core workflow continues unreduced apart from the slash-command convenience.
-- Visible explanation: "This tool doesn't have slash commands, so just ask for start, build, fix, and so on by name."
+- Visible explanation: "This tool doesn't have slash commands, so just say what you want done and I'll run the matching command."
 - Hidden technique: the capability check records the gap and selects the AGENTS.md fallback rather than stopping.
 - Evidence: unaffected; the evidence rules don't depend on command syntax.
 - Save route: unaffected.
@@ -245,15 +245,14 @@ reported, and it is not what decides whether the case held.
 
 ## 16. Claude command visibility
 
-- Eight human commands appear in the user command surface.
+- The nine commands appear in the user command surface, and the agent may start one when asked.
 - Four disciplines do not appear there.
 - A command can still compose a discipline.
 - AGENTS.md is loaded through CLAUDE.md.
 
-## 17. Codex explicit command control
+## 17. Codex command discovery
 
 - Canonical skills are discovered under `.agents/skills`.
-- A human command is not selected implicitly.
 - A discipline remains composable.
 - No `.codex/skills` adapter tree is required.
 
@@ -345,10 +344,10 @@ reported, and it is not what decides whether the case held.
 - Expected path: unaffected; the route decides how the skills arrive, not how the project is built.
 - Visible explanation: the person points their own coding agent's plugin installer at the `agent-plugin` folder of the public repository, then types `setup-ai-build-kit`.
 - Hidden technique: the folder is assembled at release time by the allowlist, which rebases the thirteen canonical skills under `agent-plugin/skills/`. This repository keeps one copy of each skill and no second plugin tree.
-- Evidence: `.agents/tests/agent-plugin.sh` checks the manifest's permitted fields, the 1.0.0 schema, the thirteen skills as immediate children of `skills`, that no skill hides deeper, that the maintainer writing skill is absent, that `personInvokedSkills` names exactly the nine commands, and that a project stands up from the folder alone.
+- Evidence: `.agents/tests/agent-plugin.sh` checks the manifest's permitted fields, the 1.0.0 schema, the thirteen skills as immediate children of `skills`, that no skill hides deeper, that the maintainer writing skill is absent, that each background skill carries `user-invocable: false` and no command does, and that a project stands up from the folder alone.
 - Save route: unaffected.
 - Review: unaffected.
-- Escalation: a client that judges a skill non-standard may skip it, because the two settings keeping a command person-only are not yet in the written standard. `docs/COMPATIBILITY.md` says to prefer the shared installer where a project has a choice.
+- Escalation: a client that judges a skill non-standard may skip it, because the one setting keeping a background skill out of the person's hands is not yet in the written standard. `docs/COMPATIBILITY.md` says to prefer the shared installer where a project has a choice.
 
 ## 29. Shared skills installer route
 
@@ -501,3 +500,13 @@ reported, and it is not what decides whether the case held.
 - Save route: unaffected; planning records on the masterplan and the pieces, and opens no pull request.
 - Review: none is due for cutting work up. Each piece takes its normal route when it is built.
 - Escalation: two failures are caught here, and both look like an ordinary plan on the list. Sub-issues used where blocked-by belonged give a parent that can never close, because one of its parts was never part of it. Blocked-by used where sub-issues belonged scatters one outcome across pieces that each look shippable, so the outcome is never finished, only its fragments.
+
+## 44. A command asked for in plain words
+
+- Expected result: the person writes "let's implement", or puts `/fix` in the middle of a sentence, and the agent starts the matching command and says which one it is running. It never asks the person to retype the message with the command first.
+- Visible explanation: "That's /implement, so I'm starting it now." or "Running /fix for the error you described."
+- Hidden technique: a skill without `user-invocable: false` is a command, and the agent may start one when the person types it, names it anywhere in a message, or asks for its job in plain words. The four background skills carry the setting and are never offered as the match.
+- Evidence: this scenario, reviewed before a release. It is conversation behaviour, and no shell check can watch it. The validator holds the setting behind it: each background skill carries `user-invocable: false` and no command does.
+- Save route: unaffected; the command that starts takes its own.
+- Review: unaffected; the command that starts brings its own.
+- Escalation: a request that fits no command gets one question with a best guess attached, such as "That sounds like /shape, is that right?". Starting a command the person did not ask for, or sending them back to retype the message with the command first, are the failures this scenario catches.
