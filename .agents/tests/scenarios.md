@@ -142,7 +142,7 @@ reported, and it is not what decides whether the case held.
 
 - Expected route: /fix; a tight reproduction before any code changes.
 - Visible explanation: "I'll first make the problem repeat reliably, so the fix can be proved."
-- Risk notice: raised once the route reaches scoped expert help. Names the team
+- Risk notice: raised once the route names the area as sensitive. Names the team
   as the people exposed, says they keep relying on a calendar that produces
   wrong bookings and that a fourth patch on an unestablished cause can hide the
   fault rather than remove it, and says someone who knows the area would
@@ -159,10 +159,11 @@ reported, and it is not what decides whether the case held.
   failures reveal rather than defaulting to a rebuild. An unclear rule
   returns to clarify; a missing environment or artifact stops for setup; a
   clear rule with an implementation that keeps failing unreliably gets
-  rebuilt from the masterplan; repeated failure in one technical area
-  triggers scoped expert help; an untestable boundary becomes a
-  maintainability finding; a piece rebuilt and still failing moves to
-  professional ownership of that area.
+  rebuilt from the masterplan; repeated failure in one technical area names
+  that area as sensitive, with a look by somebody who does that work for a
+  living as its caution; an untestable boundary becomes a maintainability
+  finding; a piece rebuilt and still failing has hit a real limit, and that
+  area is handed over for somebody else to own.
 
 ## 9. Third-party API capability question
 

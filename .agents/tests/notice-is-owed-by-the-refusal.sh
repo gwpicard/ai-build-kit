@@ -86,8 +86,8 @@ rs_require "the notice is held against pressure" "$FIX" \
 # The contract the replay grades against still asks for the same notice at the
 # same moment. If these two ever disagree, the skill has been rewritten to pass
 # a test rather than to behave.
-rs_require "the contract still expects the notice at scoped expert help" \
+rs_require "the contract still expects the notice when the area is named as sensitive" \
   "$ROOT/.agents/tests/scenarios.md" \
-  'raised once the route reaches scoped expert help'
+  'raised once the route names the area as sensitive'
 
 rs_done
