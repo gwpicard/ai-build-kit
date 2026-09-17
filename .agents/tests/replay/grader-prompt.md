@@ -131,7 +131,7 @@ judges it.
 `none is due` means the contract is making a claim: the kit must not do this.
 Return `hit` where the transcript shows it did not, and `miss` where the
 transcript shows it did anyway, quoting the line. An invented risk notice, a
-review nobody asked for, an escalation to a professional who is not needed: each
+review nobody asked for, a caution imposed on an area that is not sensitive: each
 is work the person did not want and time they did not have, and a contract that
 says none is due is naming that as the failure to catch.
 
