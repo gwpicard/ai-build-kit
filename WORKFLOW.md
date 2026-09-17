@@ -202,7 +202,11 @@ offers to remove those and leaves anything you wrote yourself alone. A clean che
 be recovered. The one update that split the
 old `/build` into what are now `/shape` and `/implement` runs a one-time step that labels your
 existing pieces so they can still be built, and offers to move any older
-`plan.md` list into your project's issues; it says what it changed.
+`plan.md` list into your project's issues; it says what it changed. The first
+visit after the kit went from four build paths to three offers to rewrite the
+build-path section of your masterplan to the new shape, shows the old text
+above the new, keeps every accepted risk word for word, and changes nothing
+without your approval.
 
 /maintain writes the date of each visit into the project. When more than a month
 has gone by, opening a session says so and names /maintain. A tool that cannot
@@ -210,7 +214,7 @@ run anything when a session opens says it when you type /what-now instead.
 Nothing is blocked and nothing changes without a command.
 
 The quarterly visit is fuller, with a hot-spot tidy-up and an ownership check
-that can move the build path in either direction. /maintain also owns the ending,
+that can name a new sensitive area or, after a genuine redesign, take one off. /maintain also owns the ending,
 when a tool's time is over: export the data, tell the team, revoke access, and
 switch off the services.
 
