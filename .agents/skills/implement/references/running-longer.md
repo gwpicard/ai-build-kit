@@ -44,7 +44,7 @@ external fact, or reassesses a shape the team could not safely own, rather than
 a fourth attempt.
 
 Stop the whole run at anything that needs planning or would change the build
-path, at any touch of a flagged area or expert scope, and at anything
+path, at any touch of a named sensitive area, and at anything
 ambiguous; never guess to keep a run going.
 
 The whole run happens on one branch and ends as one pull request, where the
@@ -53,7 +53,7 @@ route may end in a single confirmed checkpoint instead. Skip the per-piece
 hand-over; end the run with the evidence run (ship/references/evidence-run.md),
 and write the report as: what was parked and why first, then what was built
 and what passed, what was skipped as eyes-only, and a checklist of things to
-try before merging, riskiest first, anything near a flag or expert scope on
+try before merging, riskiest first, anything near a sensitive area on
 top.
 
 When a run disappoints, the fix is in the documents rather than in the code by
@@ -66,7 +66,7 @@ readable project into a mystery.
 Some tools ship a /goal feature: state a condition and the agent keeps going
 until a separate model judges it met. Treat it as this mode wearing the
 tool's clothes, under the same rules: the condition comes from a done line or
-a plan area's done lines, read aloud; flagged areas and expert scopes stay
+a plan area's done lines, read aloud; sensitive areas stay
 stop conditions the goal may not cross; the three-attempt parking rule still
 applies per piece; and the result still lands through the save route the
 build path requires, because merging belongs to a human however long the

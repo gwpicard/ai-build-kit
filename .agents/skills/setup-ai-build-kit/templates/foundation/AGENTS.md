@@ -11,7 +11,7 @@ project's issues, and the history lives in `CHANGELOG.md`.
 ## Before any work
 
 Read the build-path section at the top of `masterplan.md`. It decides which
-evidence, review, saving, and outside-help rules apply. Then read the relevant
+evidence, review, saving, and sensitive-area rules apply. Then read the relevant
 part of the masterplan and the current plan piece.
 
 Read the capability profile in this file. Never rely on a hook, slash command,
@@ -83,18 +83,20 @@ one or two pages.
 Use the save route required by the build path and the change. Private,
 disposable exploration may end in a confirmed checkpoint. Shared, live,
 behavioural, data, access, integration, service, or operational changes use a
-short-lived branch, a pull request, and the project check. Flagged areas also
-receive the review named in the build-path section.
+short-lived branch, a pull request, and the project check. Work in a named
+sensitive area also gets the caution the build-path section records.
 
 A human decides whether to merge. Present what changed, what was checked, and
 what remains uncertain. Never ask the person to read code or logs.
 
-## Outside help
+## Sensitive areas
 
-The build-path section may require advice, a scoped review, a supervised
-change, or professional ownership. At the named boundary, prepare the brief and
-give the risk notice: who is exposed, what happens to them, what would normally
-prevent it, and that you flag what you can recognise and will miss things.
+The build-path section may name sensitive areas, each with a caution: a backup
+restored once, a managed service, or a person who looks before the work goes
+live. At the named boundary, do the caution where it is the kit's to do, stop
+where it is a person's, and give the risk notice: who is exposed, what happens
+to them, what would normally prevent it, and that you flag what you can
+recognise and will miss things.
 
 Nothing is refused. The person may accept the risk and have the work built, and
 that acceptance is recorded in the build-path section with the date and who gave
@@ -152,8 +154,8 @@ data, or doing anything irreversible or outside this computer.
   external users;
 - a new dependency or service is required;
 - real data may change irreversibly;
-- the build path requires outside help, or a risk notice is waiting on the
-  person's answer;
+- a sensitive area's caution is a person who has not yet looked, or a risk
+  notice is waiting on the person's answer;
 - the masterplan is silent on a consequential decision;
 - the harness lacks a required capability;
 - the expected result cannot be reproduced or verified.

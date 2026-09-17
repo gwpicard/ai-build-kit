@@ -35,7 +35,7 @@ disable process works.
 
 ## 5. Review and flagged work
 
-Independent review completed, its blocking findings resolved, any expert
+Independent review completed, its blocking findings resolved, any caution
 condition completed, and the review's scope and limitations recorded rather
 than implied.
 

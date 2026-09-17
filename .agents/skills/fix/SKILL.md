@@ -121,10 +121,10 @@ told they are wrong, with nothing to decide.
 
 Naming an area as sensitive is a tightening, so it happens on your own
 judgement without asking, and pressure to just fix it does not lift the flag or
-turn it back into a rebuild. A component the project does not own or cannot see is never the
-rebuild-from-the-masterplan route, however unreliable it looks. Rebuilding it
-yourself takes on a new sensitive area rather than repairing a known one, so it
-waits behind the notice below.
+turn it back into a rebuild. A component the project does not own or cannot see
+is never the rebuild-from-the-masterplan route, however unreliable it looks.
+Rebuilding it yourself takes on a new sensitive area rather than repairing a
+known one, so it waits behind the notice below.
 
 Declining the fourth attempt is what owes the notice, not the route you pick
 after it. Give it in the same reply that declines, in the shape
