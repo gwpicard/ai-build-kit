@@ -4,18 +4,20 @@
 [![Latest release](https://img.shields.io/github/v/release/gwpicard/ai-build-kit)](https://github.com/gwpicard/ai-build-kit/releases/latest)
 [![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-6b5bd6)](docs/COMPATIBILITY.md)
 
-An installable set of commands for an AI coding agent that gives a non-developer
-a repeatable way to plan, build, check, ship and maintain their own software.
+A compact, reliable way to build software with an AI coding agent: the
+discipline of a real process, without the ceremony, and without having to read
+the code.
 
-You do not need to read code. You do need to explain what should happen, try the
-results, and make the product and risk decisions the agent cannot make for you.
+None of the nine commands asks you to open a file of code. You do need to
+explain what should happen, try the results, and make the product and risk
+decisions the agent cannot make for you.
 
 ## At a glance
 
 | | |
 |---|---|
-| What it is | Commands you type into your coding agent, and the process behind them. |
-| Who it is for | Someone who directs the work and does not read code. |
+| What it is | Nine commands you type into your coding agent, the process behind them, and three records that hold your project's memory. |
+| Who it is for | Anyone directing an AI coding agent who wants what it builds to keep working. People who came to software from another job, and developers trying agent-led work for the first time. |
 | Works with | Claude Code, Codex, Cursor, Gemini CLI, or any agent that can read and edit project files, run shell commands, and use Git. |
 | You need | A coding agent, Git, and Node for the `npx` route. |
 | Install, Claude Code only | `claude plugin marketplace add gwpicard/ai-build-kit`, then `claude plugin install ai-build-kit@ai-build-kit --scope local` |

@@ -92,7 +92,7 @@ Generated files are committed with their canonical change.
 A skill in `.agents/maintainer-skills/` carries none of that bar. It reaches
 nobody who installs the kit, it gets no adapter, and the maintainer who chose it
 is the only person it answers to. So the five questions do not apply: they ask
-what somebody who does not read code sees on screen and what they type when it
+what somebody who has not read the code sees on screen and what they type when it
 goes wrong, and a maintainer skill has no such person. Nor does the rule that a
 story is told in three places, because `WORKFLOW.md` ships and must not describe
 a skill a reader cannot install.
@@ -471,7 +471,7 @@ checkpoint before sweeping changes.
 ## Writing
 
 Use British spelling and plain language. Do not use em dashes. Keep paragraphs
-short. The audience does not read code, so define a technical term once only
+short. The audience is not required to read code, so define a technical term once only
 when it cannot be avoided and describe verification as an action and its
 expected outcome.
 

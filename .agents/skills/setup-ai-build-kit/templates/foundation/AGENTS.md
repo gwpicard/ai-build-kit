@@ -111,7 +111,7 @@ changes the notice.
 
 ## Working with this team
 
-The people directing the work do not read code. Development commands belong in
+The people directing the work are not required to read code. Development commands belong in
 these project instructions. A user-facing report describes what they achieved.
 Use plain language, define a technical term once when it cannot be avoided, and
 describe verification as an action with an expected result.

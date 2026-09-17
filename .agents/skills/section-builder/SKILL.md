@@ -190,7 +190,7 @@ what just happened.
 Write the changelog line from the piece's own `So that` and `Done when`, in
 plain language, dated. Not from its title, and not from the pull request. A
 changelog assembled out of titles reads like a list of tasks, and this record
-exists so somebody who cannot read code understands what happened to their
+exists so somebody who has not read the code understands what happened to their
 project six months later.
 
 ## Excuses that don't hold

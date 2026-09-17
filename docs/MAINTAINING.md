@@ -548,7 +548,7 @@ update the public repository.
 ## House rules for writing
 
 Anything written into this repository, by a person or an agent, follows these.
-They exist because the audience cannot read code, so the words are the product.
+They exist because the audience is not required to read code, so the words are the product.
 A short form of the list ships in `AGENTS.md`'s project template, so a project
 built with the kit inherits the plain-language spirit of it without carrying the
 full editorial machinery. This is the full version, and it governs the kit's own
@@ -580,7 +580,7 @@ belongs only where the subject and author's voice call for it.
 - One name per thing. This is a kit, and calling it a pack somewhere else only
   makes a reader wonder whether the two are different.
 - Paragraphs stay under about 100 words. Four here had passed 140 before the
-  rule existed, and the audience is people who do not read code.
+  rule existed, and the audience is not required to read code.
 - Vary the sentence shape. Almost every explanation wants to arrive as
   "statement: a, b, and c", and a document leaning on one device reads as a
   template however clear each instance is.
