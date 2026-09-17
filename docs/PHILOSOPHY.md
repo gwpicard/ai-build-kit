@@ -11,25 +11,35 @@ demos beautifully on a Tuesday and cannot be changed by anyone six weeks later,
 including the person who built it.
 
 The steps that close that gap are the ones the README opens with. This kit is
-those steps, packaged so they can be used by people who will never read the code
-they produce.
+those steps, packaged so that nobody has to read the code they produce to
+follow them.
 
 ## Who it is for
 
-Someone smart and business-savvy who wants a tool their team needs, is
-comfortable with ChatGPT or Claude as a chat window, and knows essentially
-nothing about software development. They are not learning to code and have no
-plans to. That's a legitimate position, and this kit is built around it. What they
-build is internal, and the README's fit section says which projects qualify.
+Someone who directs an AI coding agent and wants what it builds to still work
+six weeks later. Two kinds of person reach for that. One came to software from
+another job. They run a team, a product, an operation or a dataset, they are
+fluent with a chat window, and they want a working tool without taking up a
+profession. The other is a developer trying agent-led work and finding that
+their usual discipline is either too heavy for it or quietly skipped. Both want
+the reliability of a real process. Neither wants to carry the process by hand.
 
-Solo here means without professional developers, so a team of five is as much the
-audience as a team of one. Technical people are welcome, and the skills
-themselves are plain markdown they can extend, though the kit is not shaped
-for them.
+The kit rests on one rule: the workflow never requires reading code. None of the
+nine commands asks anyone to open a file of code, and every check is something a
+person sees or tries. The rule describes the process and leaves the person
+alone. A developer can read every diff if they like. The kit never depends on
+it, because a process that only works while somebody reads the code stops
+working the day nobody does.
 
-The audience settles every argument below. When a choice comes up, the question
-is always what this person can do, what they can see, and what they can safely
-never learn.
+That rule settles every argument below. When a choice comes up, the question is
+always what this person can see, what they can try, and what they can safely
+leave to the machinery.
+
+Solo here means without a professional development team behind the project, so
+a team of five is as much the audience as a team of one. The skills are plain
+markdown, and a technical person can read and extend them. What people build
+with the kit is mostly internal, and the README's fit section says which
+projects qualify.
 
 The kit optimises for the least process that materially reduces failure for the
 project's current consequences, complexity, and ownership burden. A control
@@ -132,11 +142,12 @@ machinery beneath them.
 
 ## What this is not
 
-It is not a way to learn programming, and it does not pretend the person is an
-engineer. The kit is shaped first for internal tools. It may also be used to
-define, prototype, and accept externally used software, but the production
-build path may require expert help or professional ownership. The fit check
-decides that boundary before launch, not after the system has acquired users.
+It is not a way to learn programming. It does not assume the person is an
+engineer, and it does not need them to be one. The kit is shaped first for
+internal tools. It may also be used to define, prototype, and accept externally
+used software, but the production build path may require expert help or
+professional ownership. The fit check decides that boundary before launch, not
+after the system has acquired users.
 It does not replace professional developers. It is at its best when it tells you precisely which few
 hours of one to purchase, which is an odd thing for a tool to be proud of and is
 the point anyway.
@@ -231,8 +242,8 @@ never reads them, and even the repositories that ship them admit their agents
 barely use them.
 
 Parallel agents on separate worktrees, rejected. Fails question 4, because when
-something goes wrong the recovery involves git states a non-developer cannot
-judge.
+something goes wrong the recovery involves git states the person should never
+have to untangle.
 
 Tight bug reproduction before a fix, added. It fits under /fix; the user sees
 the exact failing case and the evidence that it stopped failing; they never

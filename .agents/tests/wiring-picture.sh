@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # wiring-picture.sh: guard the picture of what the tool reaches outside itself.
 #
-# A person who cannot read code cannot tell what their tool talks to. The
+# A person who has not read the code cannot tell what their tool talks to. The
 # masterplan now carries a simple picture of it, confirmed at founding and
 # redrawn when a piece changes a connection. Two failures matter:
 # the picture disappearing, and the picture going stale, which is worse than no
