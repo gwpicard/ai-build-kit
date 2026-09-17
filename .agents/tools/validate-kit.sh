@@ -1137,23 +1137,24 @@ done
 echo "== Ship control-flow contract =="
 
 # Operational readiness and go-live belong inside the path branches that use
-# them (Build and run it, Build with expert help), never as a shared section
-# after all four branches; that shape is what let Explore privately and
-# Professional-led be read as reaching launch instructions despite their own
-# branch saying to stop.
+# them (Build and run it, Build with care), never as a shared section after
+# all three branches; that shape is what let Explore privately be read as
+# reaching launch instructions despite its own branch saying to stop. The
+# anchor is the last branch heading, so a rename of that heading without a
+# matching change here would let the check pass on nothing.
 shipfile="$SKILLS/ship/SKILL.md"
 if [ ! -f "$shipfile" ]; then
   fail "$shipfile: missing"
 else
   leaked=$(awk '
-    /^### Professional-led/ { seen=1; next }
+    /^### Build with care/ { seen=1; next }
     seen && /^## [^#]/ {
       low = tolower($0)
       if (low ~ /go live/ || low ~ /operational readiness/) print NR ": " $0
     }
   ' "$shipfile")
   if [ -n "$leaked" ]; then
-    fail "$shipfile: a go-live or operational-readiness heading appears after all four path branches, so every path reaches it: $leaked"
+    fail "$shipfile: a go-live or operational-readiness heading appears after all three path branches, so every path reaches it: $leaked"
   else
     pass "ship/SKILL.md keeps go-live and operational-readiness steps inside their path branches"
   fi

@@ -266,8 +266,7 @@ reported, and it is not what decides whether the case held.
 
 - Explore privately receives a private-preview check only.
 - Build and run it receives full evidence, independent review, and operational readiness, in that order.
-- Build with expert help stops only at its named gate.
-- Professional-led produces a handover package and performs no production launch.
+- Build with care does the cautions it can, stops only at a caution that is a person, and offers the handover once.
 
 ## 21. First save has no identity
 

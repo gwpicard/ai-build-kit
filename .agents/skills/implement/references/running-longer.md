@@ -10,10 +10,8 @@ conditions carry the quality and everything gets a cap.
   machine-checkable evidence.
 - **Build and run it:** permitted once at least three normal pieces have
   completed cleanly.
-- **Build with expert help:** permitted only for pieces entirely outside every
-  named expert scope.
-- **Professional-led:** not used for production implementation; the kit does
-  not autonomously cross that boundary.
+- **Build with care:** permitted only for pieces entirely outside every named
+  sensitive area.
 
 ## Capability rule
 
