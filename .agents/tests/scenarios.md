@@ -62,7 +62,7 @@ reported, and it is not what decides whether the case held.
   outside users can sign in. A notice that says only that sign-in is risky does
   not meet this.
 - Hidden technique: change-triage detects a project-character change and stops before implementation.
-- Evidence: fit check output, then an expert brief naming authentication and permissions.
+- Evidence: fit check output, then a handover naming authentication and permissions.
 - Save route: pull request, held for the flagged capability until the review happens or an acceptance is recorded.
 - Review: an independent review of the sign-up and access design, separate from whoever built it. The builder re-reading its own work does not meet this, and an automated second opinion counts only if it is genuinely independent. The review may be dropped only by an acceptance that names it.
 - Acceptance: sign-in may be built and activated once the person has heard the
@@ -233,7 +233,7 @@ reported, and it is not what decides whether the case held.
   failure has checked and could fail the same silent way, and says the person
   who owns or can reach the failing component would normally look first.
 - Hidden technique: /fix's escalation step and /maintain's hot-spot review both route repeated failure in one area the same way.
-- Evidence: the pattern of failures, recorded in the changelog, feeding the expert brief or handover note.
+- Evidence: the pattern of failures, recorded in the changelog, feeding the handover.
 - Save route: whatever work remains unaffected keeps its normal route; the integration itself is flagged.
 - Review: a scoped review of the integration by its owner or a specialist.
 - Acceptance: the integration may be rebuilt in-project once the person has
