@@ -315,6 +315,17 @@ attribution line, not the word.
   retired skill folder only by the kit's former names and absence from the
   lockfile. It holds that the step is run from the monthly pass, removes on
   approval, and that WORKFLOW.md says so.
+- `.agents/tests/sync-saves-like-a-piece.sh` guards how /sync saves what it
+  corrects. Every skill that changes the records said how it saves them, and
+  sync did not: it corrected the pieces, the changelog and the masterplan and
+  stopped, which on a project that blocks a direct push to `main` left the
+  corrections uncommitted or on whatever branch was checked out. So the
+  corrections take the save route the build path already requires, and on the
+  shared route arrive as a pull request a person decides to merge. The rule it
+  guards hardest is the one about uncommitted work: sync is run after an
+  interruption, so a dirty tree is the ordinary case, and the two easy ways to
+  get a clean branch are to sweep that work into sync's own commit or to
+  discard it. Both destroy the thing sync was called to reconcile.
 - `.agents/tests/settled-is-recorded.sh` guards the record a settled question
   has to leave: that what settled it is written into the piece before the label
   comes off, and that the piece is read back to decide whether the label goes
