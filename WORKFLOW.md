@@ -27,7 +27,7 @@ Two of them change the tool. /implement makes it do something new or different, 
 
 You run /setup-ai-build-kit once. After that, start wherever you actually are. You can open a session with /fix as readily as with /implement, and neither needs the other to have run first. If you pick the wrong one it costs you nothing, because each checks what you typed against the masterplan and sends it down the right route.
 
-You never choose the method either. The agent decides whether the request needs an interview, a prototype, research, a test, a review, or outside help.
+You never choose the method either. The agent decides whether the request needs an interview, a prototype, research, a test, a review, or a person to look at one area.
 
 ## 2. The three records
 
@@ -79,11 +79,9 @@ Every project has exactly one build path at a time, set by the fit check and rec
 
 **Build and run it.** The team's own tool, with a manual fallback and consequences that are limited and recoverable. Promised behaviour gets evidence, shared or behavioural changes go through a pull request, and named risky areas get an independent review before they go live.
 
-**Build with expert help.** One or more named areas, such as sign-in, payments, or personal data, need a professional's involvement even though the team can still own the rest. The kit keeps building everywhere else, and at the named boundary it tells you what could go wrong and who it lands on.
+**Build with care.** Some of the work touches a sensitive area: personal data, money, sign-in by outsiders, automatic action on people or other systems, irreplaceable live data, or a regulated decision. The masterplan names each area in your tool's own words, with the one caution that goes with it. The kit builds everything else the ordinary way, and in a named area the caution happens before that part goes live, or you accept skipping it on the record.
 
-**Professional-led.** The core risk, regulation, irreplaceable live data, or a scale of consequence the team cannot safely carry, can't be designed away. The kit's job becomes producing the specification, the prototype, and the brief a professional needs to build the production system.
-
-None of these paths is the kit refusing to build. The top two are where it says plainly what a professional would normally do, and you decide. That is the risk notice, in section 8.
+None of these paths is the kit refusing to build. Build with care is where it says plainly what would normally prevent the harm, and you decide. That is the risk notice, in section 8.
 
 ## 4. Day one
 
@@ -123,7 +121,7 @@ If the request would change what kind of project this is, by bringing in outside
 
 /fix is for when something that should work doesn't: "/fix the board duplicates cards when I drag them". Paste the whole error if there is one. It builds the tightest repeatable check it can find for the exact symptom and works out the cause before touching code, driving the app in a browser or adding temporary logging when it needs to see what is actually going wrong. It resets failed attempts rather than stacking them, and finishes with evidence that keeps the bug from coming back.
 
-If the same piece fails three rounds in a row, it stops patching and routes by what the failures revealed. That may mean another interview, a rebuild from the masterplan, a stop for missing access, or scoped expert help.
+If the same piece fails three rounds in a row, it stops patching and routes by what the failures revealed. That may mean another interview, a rebuild from the masterplan, a stop for missing access, or naming the area as sensitive so somebody who does that work for a living looks at it.
 
 ## 6. Evidence
 
@@ -144,11 +142,11 @@ Next to the merge button sits that check. It re-runs the project's real commands
 
 A human decides whether to merge, always; after a merge, everyone pulls main. Flagged areas also get the review the build path names before the pull request is offered as ready. A direct push to `main` is blocked, so every change reaches it through a pull request, and each piece starts from an up-to-date `main`.
 
-## 8. Outside help, and the risk notice
+## 8. Sensitive areas, and the risk notice
 
-When the build path names outside help, it's one of four levels: a short advice conversation to validate a choice, a scoped review of one named area, a supervised change for one risky event, or professional ownership of the build. The build path's section says which level, for what scope, and what the review or the professional must confirm. The kit keeps building unflagged areas while it waits.
+Six areas count as sensitive, and the list is fixed: personal or sensitive data, money, sign-in and permissions, automatic action on people or other systems, irreplaceable live data, and regulated decisions. Each carries a default caution, which is what would normally prevent the harm: a person who did not build the tool reviews who can see what; a managed payment or sign-in service so the tool never holds card details or passwords; a person approves each automatic action until a live run has shown it right; a backup restored once and the change rehearsed on a copy; somebody qualified signs off a regulated rule. The build path's section names each area in your tool's own words, its caution, and whether the caution is done. Where the caution is a backup, a copy or a managed service, the kit does it. Where it is a person, the kit stops there until they have looked. It keeps building everywhere else while it waits.
 
-Before that work goes ahead, you get a risk notice. It says who is exposed, what happens to them if it goes wrong, what a professional would normally do about it, and that the kit flags what it can recognise and will miss things. It names people rather than saying something is risky, because the exposure a tool creates usually lands on somebody else.
+Before work in a named area goes ahead, you get a risk notice. It says who is exposed, what happens to them if it goes wrong, what would normally prevent that, and that the kit flags what it can recognise and will miss things. It names people rather than saying something is risky, because the exposure a tool creates usually lands on somebody else.
 
 Then it is your call. You can accept the risk and have the thing built, or take it out of scope so the risk goes away. Nothing is refused either way.
 
@@ -172,11 +170,11 @@ After the first launch, shipping gets lighter: it re-checks what changed since t
 
 Autonomy is earned. Once a project has three normal pieces built cleanly, no open review finding, and a plan made of ready pieces a machine can prove done, "/implement auto" can build several of them in a row without you between them. You approve the plan once, then it runs; the trade is that you check a batch at the end instead of each piece as it lands.
 
-The run only picks up pieces whose done line names a check a machine can judge. Pieces that need your eyes stay in the plan for you. Every piece still gets its own evidence and its own saved snapshot. A piece that fails three attempts gets parked with a note on what it revealed, and the run moves on rather than grinding on it; anything touching a flagged area or an expert scope stops the run entirely.
+The run only picks up pieces whose done line names a check a machine can judge. Pieces that need your eyes stay in the plan for you. Every piece still gets its own evidence and its own saved snapshot. A piece that fails three attempts gets parked with a note on what it revealed, and the run moves on rather than grinding on it; anything touching a named sensitive area stops the run entirely.
 
 You come back to a report of what was built, what got parked and why, and a checklist of things to try, riskiest first. Where the build path requires a pull request, that's how the batch arrives; work the checklist, then merge. If the run disappointed you, improve the documents rather than the code. Sharpen the done lines, add the missing rule to the masterplan, and run it again.
 
-Some harnesses provide goal or long-run modes, such as Claude Code's `/goal`: "keep going until this condition holds". Same run, same rules: take the condition from a done line, the flags and expert scopes still stop it, and the result still lands through the save route the build path requires.
+Some harnesses provide goal or long-run modes, such as Claude Code's `/goal`: "keep going until this condition holds". Same run, same rules: take the condition from a done line, a named sensitive area still stops it, and the result still lands through the save route the build path requires.
 
 ## 11. Team use
 
@@ -203,8 +201,8 @@ be recovered. The one update that split the
 old `/build` into what are now `/shape` and `/implement` runs a one-time step that labels your
 existing pieces so they can still be built, and offers to move any older
 `plan.md` list into your project's issues; it says what it changed. The first
-visit after the kit went from four build paths to three offers to rewrite the
-build-path section of your masterplan to the new shape, shows the old text
+visit after the kit changed how it decides the build path offers to rewrite
+the build-path section of your masterplan to the new shape, shows the old text
 above the new, keeps every accepted risk word for word, and changes nothing
 without your approval.
 

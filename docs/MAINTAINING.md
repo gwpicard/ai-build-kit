@@ -139,10 +139,10 @@ sub-issue, and never sends a reminder.
 ## Adaptive process is a contract
 
 Every rule declares where it applies (always, on named paths or changes, or
-professional-only), the way PHILOSOPHY.md requires; do not add a strict step to
-the default workflow merely because it is good engineering practice. When
-changing a skill, check all four build paths: a change that improves the
-professional-led path but burdens private exploration belongs behind a path
+only inside a named sensitive area), the way PHILOSOPHY.md requires; do not add
+a strict step to the default workflow merely because it is good engineering
+practice. When changing a skill, check all three build paths: a change that
+improves Build with care but burdens private exploration belongs behind a path
 condition, not in the shared default.
 
 ## Changing a skill
@@ -268,16 +268,17 @@ Every change to `.agents/skills/` or the kit's own machinery runs
   those out of a commit message, is saved as a runnable file;
 - that every local Markdown link and every skill, reference, or template path
   named in another file resolves;
-- the fit check's structure: all four canonical build paths and their
-  decision-order headings are present;
-- that the plan template carries the `Subjects` column, that only the four
+- the fit check's structure: all three canonical build paths and their
+  decision-order headings are present, and the masterplan template carries the
+  same build-path fields as the fit check, `Sensitive areas` among them;
+- that the plan template carries the `Subjects` column, that only the three
   canonical build-path names appear as path values, and that `team.md` is
   referenced nowhere;
 - that clarify says which questions may be offered as choices and which are
   asked in plain words, with the matching maintainer scenario present;
 - that `/ship` keeps its go-live and operational-readiness steps inside the
   path branches that use them, never as a shared section reachable from all
-  four;
+  three;
 - that the generated adapters match what `.agents/skills/` produces, with no
   stale adapter folder left behind;
 - shell syntax on every script, and that config files (JSON, TOML, YAML)

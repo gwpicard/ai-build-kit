@@ -43,9 +43,9 @@ projects qualify.
 
 The kit optimises for the least process that materially reduces failure for the
 project's current consequences, complexity, and ownership burden. A control
-may be always required, activated only when a risk appears, or left to a
-professional. More process is not automatically better; process earns its
-place by changing an outcome the user can understand.
+may be always required, activated only when a risk appears, or carried by a
+sensitive area as its caution. More process is not automatically better;
+process earns its place by changing an outcome the user can understand.
 
 ## What follows from that
 
@@ -92,18 +92,32 @@ it checks and nothing beyond that, which is why the kit says what a check
 covers rather than letting a green tick stand for everything.
 
 And the kit is honest about its own limits. A fit check at the start, and again
-whenever a project changes character, decides how much care applies and when a
-professional should be involved, up to and including "have this built for you,
-and here is the brief". Being told at the start what you would otherwise discover
-at launch is the most valuable thing here.
+whenever a project changes character, decides how much care applies and names
+each part of the work that touches something sensitive, with the one caution
+that goes with it. Being told at the start what you would otherwise discover at
+launch is the most valuable thing here.
 
 ## Rigour follows the project
 
 The same workflow must not treat a private experiment and a business-critical
 internal system as if they carry the same consequences. Every project has one
-build path: explore privately, build and run it, build with expert help, or
-professional-led. The path decides which checks, reviews, saving steps, and
-launch conditions apply.
+build path: explore privately, build and run it, or build with care. The path
+decides which checks, reviews, saving steps, and launch conditions apply. It is
+decided by what the work touches. Build with care means some of the work sits
+in a sensitive area: personal data, money, sign-in, automatic action,
+irreplaceable live data, or a regulated decision. The masterplan names each
+area in the tool's own words with the caution beside it, and everything
+outside those areas is built the ordinary way.
+
+The path count has moved once too, and the other way. Four became three when
+the two most careful paths were found to be asking the wrong question. Both
+asked who should own the build, one for a single named area and one for the
+whole thing, and a person who had already decided to build it themselves heard
+either as a refusal wearing a different name. What the kit needed to know was
+what the work touches. So the two became build with care, which names each
+sensitive area and the one caution that goes with it, and the ownership
+answers became founding tasks rather than a path. A path that changes how
+carefully a thing is built has to be about the thing.
 
 The path can move in either direction. A prototype may become an operational
 tool. A risky design may become safe enough after sensitive data or automatic
@@ -111,16 +125,17 @@ actions are removed. The fit check records the current path and the events that
 must trigger another check.
 
 The path is a recommendation the kit is honest about, not a barrier. Where a
-risk survives redesign, the person gets a risk notice naming who is exposed and
-what a professional would normally do, and then decides. They can accept it and
-have the work built, or take the flagged thing out of scope. A gate somebody
-cannot get past and cannot understand is worse than one they knowingly walked
-through, because the first gets worked around by starting again somewhere with
-no gate at all.
+sensitive area survives redesign, the person gets a risk notice naming who is
+exposed and what would normally prevent the harm, and then decides. They can
+accept it and have the work built, or take the flagged thing out of scope. A
+gate somebody cannot get past and cannot understand is worse than one they
+knowingly walked through, because the first gets worked around by starting
+again somewhere with no gate at all.
 
-What holds is the notice rather than the outcome. Moving toward more care is the
-agent's own judgement; moving toward less needs the person's plain acceptance,
-recorded with a date and a reason in the build-path section. The agent may not
+What holds is the notice rather than the outcome. Naming an area as sensitive
+is the agent's own judgement; dropping its caution needs the person's plain
+acceptance, recorded with a date and a reason in the build-path section, and
+the area stays named because the exposure is still there. The agent may not
 withdraw a notice under pressure, and may not satisfy a named control by
 appointing itself, because a warning that survives only while the person agrees
 with it is not a control at all.
@@ -129,8 +144,9 @@ Controls fall into three groups. Some are always required because they are cheap
 and prevent common harm: secrets stay out of code, destructive actions stop for
 approval, and the user confirms promised behaviour. Some are triggered by the
 path or the change: automated tests, pull requests, independent review, restored
-backups. The rest belong to professionals: regulated systems, high-consequence
-automation, or technical ownership the team cannot safely carry.
+backups. The rest are the cautions a sensitive area carries, done before the
+area goes live or accepted on the record, and where a caution is a person, no
+session stands in for them.
 
 ## What the person still has to learn
 
@@ -145,12 +161,11 @@ machinery beneath them.
 It is not a way to learn programming. It does not assume the person is an
 engineer, and it does not need them to be one. The kit is shaped first for
 internal tools. It may also be used to define, prototype, and accept externally
-used software, but the production build path may require expert help or
-professional ownership. The fit check decides that boundary before launch, not
-after the system has acquired users.
-It does not replace professional developers. It is at its best when it tells you precisely which few
-hours of one to purchase, which is an odd thing for a tool to be proud of and is
-the point anyway.
+used software, and the fit check names what that touches before launch, not
+after the system has acquired users. It does not replace a developer where one
+is wanted. It is at its best when it can say precisely which one area needs
+another pair of eyes, and hand that area over with nothing lost, which is an
+odd thing for a tool to be proud of and is the point anyway.
 
 It also holds nothing that needs a service somebody else runs: no hosted
 scanning, no remote browser testing, no production monitoring, no vulnerability
@@ -160,8 +175,8 @@ expert marketplace, and nothing that compares one project against another.
 Each of those needs a person to run it, watch it and pay for it. A workflow that
 installs into a folder cannot provide any of them honestly, and a kit that
 pretended otherwise would be making exactly the kind of unbacked claim it exists
-to stop. Where a project genuinely needs one, the fit check says so and names it
-as outside help, in the same way it names a developer.
+to stop. Where a project genuinely needs one, the fit check says so and names
+it as a caution, in the same way it names a person who has to look.
 
 That line is about who runs a thing, not about what the kit is allowed to look
 at. The kit reads the work it produced and reports in plain words, and it may get
@@ -197,9 +212,8 @@ all five, do not add it.
    of the feature, so it should be easy to state.
 
 Every capability that passes the five questions must also declare where it
-applies: always, only on named build paths or changes, or only as part of
-professional involvement. A rule with no activation boundary becomes universal
-ceremony.
+applies: always, only on named build paths or changes, or only inside a named
+sensitive area. A rule with no activation boundary becomes universal ceremony.
 
 Two more rules for the ones that pass. The system sorts things for the person
 rather than handing them raw judgement: where it can classify (which kind of work

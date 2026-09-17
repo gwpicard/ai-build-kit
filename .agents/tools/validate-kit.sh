@@ -1248,7 +1248,9 @@ PATHFILES
 
 # The gate names went with the redesign that made the kit stop refusing. What
 # it does now is give a risk notice the person can accept on the record, so a
-# stray "expert gate" would describe a barrier that no longer exists.
+# stray "expert gate" would describe a barrier that no longer exists. The two
+# paths named for who you had to hire went the same way, with the field that
+# recorded the hiring level and the brief written for the hire.
 stale_terms="six questions
 six outcomes
 stakes section
@@ -1257,7 +1259,15 @@ build it and run it yourself
 fix the design first
 have it built for you
 expert gate
-expert-gated"
+expert-gated
+Build with expert help
+Professional-led
+Required controls:
+Outside help:
+help level
+expert brief
+four build paths
+levels of outside help"
 had_stale=0
 while IFS= read -r term; do
   [ -n "$term" ] || continue
@@ -1266,7 +1276,10 @@ while IFS= read -r term; do
     | grep -v '/\.git/' \
     | grep -v '\.agents/tests/scenarios\.md$' \
     | grep -v 'docs/MAINTAINING\.md$' \
+    | grep -v '\.agents/skills/maintain/SKILL\.md$' \
     || true)
+  # maintain/SKILL.md is excluded because its migration has to name the old
+  # fields and paths it recognises on disk; nothing else may use them.
   if [ -n "$hits" ]; then
     fail "retired vocabulary '$term' found in: $(printf '%s' "$hits" | tr '\n' ' ')"
     had_stale=1
