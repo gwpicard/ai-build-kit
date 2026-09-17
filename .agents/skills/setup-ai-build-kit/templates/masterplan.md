@@ -11,8 +11,7 @@ first, every session. -->
 
 Path:
 Why:
-Required controls:
-Outside help:
+Sensitive areas:
 Accepted:
 Recheck when:
 Last checked:

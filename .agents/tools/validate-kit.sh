@@ -634,14 +634,14 @@ if [ ! -f "$fitcheck" ]; then
   fail "$fitcheck: missing"
 else
   fc_ok=1
-  for needle in "Explore privately" "Build and run it" "Build with expert help" "Professional-led" \
-    "### 1. Professional-led" "### 2. Build with expert help" "### 3. Build and run it" "### 4. Explore privately"; do
+  for needle in "Explore privately" "Build and run it" "Build with care" \
+    "### 1. Build with care" "### 2. Build and run it" "### 3. Explore privately"; do
     if ! grep -qF "$needle" "$fitcheck"; then
       fail "$fitcheck: missing expected text '$needle'"
       fc_ok=0
     fi
   done
-  [ "$fc_ok" -eq 1 ] && pass "fit-check.md carries the four canonical paths and the decision-order headings"
+  [ "$fc_ok" -eq 1 ] && pass "fit-check.md carries the three canonical paths and the decision-order headings"
 fi
 
 # The build-path block has one owner. fit-check.md defines the fields and the
@@ -653,7 +653,7 @@ if [ ! -f "$mpt" ] || [ ! -f "$fitcheck" ]; then
   fail "cannot compare the build-path block: fit-check.md or the masterplan template is missing"
 else
   bp_ok=1
-  for field in Path Why "Required controls" "Outside help" Accepted "Recheck when" "Last checked"; do
+  for field in Path Why "Sensitive areas" Accepted "Recheck when" "Last checked"; do
     grep -q "^$field:" "$mpt" || { fail "$mpt: build-path block is missing '$field:'"; bp_ok=0; }
     grep -q "^$field:" "$fitcheck" || { fail "$fitcheck: build-path block is missing '$field:'"; bp_ok=0; }
   done
@@ -1214,8 +1214,7 @@ echo "== Build-path vocabulary =="
 
 canonical_paths="Explore privately
 Build and run it
-Build with expert help
-Professional-led"
+Build with care"
 
 # Checked per file, with the lineno:content split done by parameter
 # expansion rather than `read`, because `read` silently drops a trailing
