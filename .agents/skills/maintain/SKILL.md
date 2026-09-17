@@ -76,9 +76,13 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    skill, also run "Migrating a project founded before the shape rename". Both
    are decided by what is on disk rather than by which update this is, because
    an update that removed the old skill without adding the new one leaves
-   nothing else to say it happened. On the shared route, also run "Tidying a
-   project founded from a whole copy of the kit" below whenever the leftovers
-   it names are present.
+   nothing else to say it happened. Whenever the build-path section of
+   `masterplan.md` carries a `Required controls:` or `Outside help:` line, or
+   a `Path:` value the kit no longer uses, also run "Migrating a masterplan
+   written with four build paths" below; that too is decided by what the
+   masterplan says rather than by which update this is. On the shared route,
+   also run "Tidying a project founded from a whole copy of the kit" below
+   whenever the leftovers it names are present.
 6. If the normal route is unavailable, use the latest public Release as the
    fallback source. A shared installation may replace only the thirteen AI Build
    Kit skill folders after the same approval and clean checkpoint. A Claude
@@ -198,6 +202,59 @@ the new name is said out loud rather than only tidied away in the files:
 
 Record the tidy-up in the changelog as a dated line.
 
+## Migrating a masterplan written with four build paths
+
+Run this on any visit that finds, in the build-path section of
+`masterplan.md`, a `Required controls:` line, an `Outside help:` line, or a
+`Path:` of `Build with expert help` or `Professional-led`. It is idempotent: a
+section whose fields are Path, Why, Sensitive areas, Accepted, Recheck when
+and Last checked, with a `Path:` of one of the three current names, gets
+nothing here, and a second visit after the rewrite finds exactly that.
+
+The kit went from four build paths to three. The two most careful paths asked
+who should own the build. The path is now decided by what the work touches,
+and a masterplan names each sensitive area with the one caution that has to
+happen there. Nothing the person decided is lost: the old fields carry across,
+and every accepted risk stays word for word.
+
+1. Work out the new section before saying anything. `Explore privately` and
+   `Build and run it` keep their name. `Build with expert help` and
+   `Professional-led` become `Build with care`. `Outside help: none`
+   contributes nothing. `Outside help: <level>, for <scope>` becomes one line
+   under `Sensitive areas`: the scope named as one of the six areas in
+   fit-check.md where it plainly is one, what in the tool touches it, the help
+   level as its caution, and `not yet done` unless the changelog records that
+   it happened. Each `Required controls` entry that protects a place in the
+   tool (a review of who can see what, a backup, a rehearsal on a copy, a
+   managed provider) becomes a line for the area it protects, or joins the
+   line the scope already made where they are the same area. A control that
+   names no area (secrets out of code, destructive actions stop for approval,
+   a pull request with a check) is a standing rule of the kit and of the save
+   route, so it leaves the block; say so in the changelog line. `Accepted`,
+   `Recheck when` and `Last checked` are copied word for word, including an
+   old line that says the path moved, because they are history and a rewrite
+   is not a check.
+2. Say this, then show the section as it is and as it would be, one above the
+   other: "Your masterplan's build-path section was written when the kit had
+   four build paths. It now has three, and the path is decided by what the
+   work touches rather than by who owns the build. I can rewrite the section
+   to the new shape. Every accepted risk stays exactly as written, and nothing
+   else in the masterplan changes. Shall I apply it?"
+3. Apply on approval, as part of the visit's saved change. Where a control or
+   a help line cannot be matched to one of the six areas, keep its words as
+   they are on their own line under `Sensitive areas` and say so, rather than
+   guessing; the next fit check tidies it.
+4. Where the person declines, leave the section untouched. Say that the kit's
+   skills now look for `Sensitive areas`, so a control recorded in the old
+   fields may be missed until the section is rewritten, and that the offer
+   comes back next visit.
+
+Record the migration in the changelog as a dated line naming the old path,
+the new one, and any control that left the block. Where an old `Accepted:`
+line says the path moved, the changelog line says that acceptance predates the
+rename, so a later reader does not go looking for a path the kit no longer
+has.
+
 ## Bringing the project's instructions up to the current names
 
 Run this from either rename migration. A project's AGENTS.md is project-owned
@@ -269,10 +326,13 @@ Everything above, plus:
    flows? Can it verify important changes without reading code? Can it
    identify where data, secrets, service owners, and bills live? Can it
    recover, or use the manual fallback? Has reliability, complexity, or
-   reliance grown? Are the risk notices and their conditions still accurate?
-   Move the build path upward when the answers require it, and downward when a
-   genuine redesign has removed the risk that put it there, or when the person
-   accepts a risk that was previously holding it up.
+   reliance grown? Are the named sensitive areas and their cautions still
+   accurate? Name a new area when the answers require it. An area comes off
+   only when a genuine redesign has removed what put it there; an acceptance
+   drops its caution and leaves the area named. Where the person asks for a
+   handover, or a caution names a person the team has to find, prepare
+   `.agents/skills/ship/templates/handover.md` for the area or the whole
+   build.
 6. Put today's date on the `last-full-pass` line as well as the
    `last-light-pass` line in `.ai-build-kit-maintenance`.
 
