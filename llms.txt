@@ -1,10 +1,12 @@
 # AI Build Kit
 
-> An installable set of commands for an AI coding agent that gives a non-developer a repeatable way to plan, build, check, ship and maintain their own software. It is thirteen skills in the open Agent Skills format: nine commands you type, and four that run in the background. Free, MIT licensed, and it runs inside your own project folder on your own computer.
+> A compact, reliable way to build software with an AI coding agent: the discipline of a real process, without the ceremony, and without having to read the code. It is thirteen skills in the open Agent Skills format: nine commands you type, and four that run in the background. Free, MIT licensed, and it runs inside your own project folder on your own computer.
 
-Who it is for: someone who directs the work and does not read code. The kit is
-strongest for internal tools, held by your own team, holding your own data,
-with nobody outside relying on them.
+Who it is for: anyone directing an AI coding agent who wants what it builds to
+keep working. People who came to software from another job, and developers
+trying agent-led work for the first time. None of the nine commands asks you to
+open a file of code. The kit is strongest for internal tools, held by your own
+team, holding your own data, with nobody outside relying on them.
 
 Works with: Claude Code, Codex, Cursor, and Gemini CLI, or any coding agent that
 can read and edit project files, run shell commands, and use Git.
@@ -23,9 +25,10 @@ visit, `/what-now` says where the project stands.
 How it differs from the alternatives: all-in-one builders such as Lovable, Bolt
 and Replit host the app and own the shape of the project. Developer skill packs
 such as GitHub Spec Kit, Superpowers and agent-skills carry a similar discipline
-but are written for people who read code. AI Build Kit carries that discipline
-for people who do not, and opens with a fit check that says when a project needs
-a professional developer instead of the kit, or alongside it.
+but are written for people who read code and already have the habits. AI Build
+Kit carries the discipline for you, keeps the vocabulary to nine commands, never
+requires reading code, and opens with a fit check that names each part of a
+project touching something sensitive and the one caution that goes with it.
 
 What it does not promise: no warranty, the risk notices will miss things, and it
 is not a substitute for a professional developer nor legal, medical, financial
