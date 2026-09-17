@@ -80,7 +80,7 @@ from scratch.
 Route to one of: `/fix`; a ready piece; clarify; a decision
 prototype; a source check; a search for existing work; a step only the person
 can do; update the masterplan first; rerun the fit
-check; prepare an expert brief; give the risk notice at the professional-led
+check; prepare the handover; give the risk notice at the professional-led
 boundary. Say the route and the reason in one line.
 
 Piece-sized and clear (one sitting, a done line you could write now, small

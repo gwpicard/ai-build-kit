@@ -69,7 +69,7 @@ connection at a time.
 
 For flagged functionality:
 
-1. generate or refresh the expert brief;
+1. generate or refresh the handover for that area;
 2. stop at the recorded condition;
 3. record what the expert must confirm;
 4. do not merge or activate that capability until the condition is met or the
@@ -93,7 +93,7 @@ Check that the handover package contains:
 - acceptance criteria;
 - any decision prototypes;
 - evidence gathered so far;
-- the expert brief;
+- the handover;
 - known limitations and unresolved questions;
 - service, data, access, and ownership information without secrets.
 

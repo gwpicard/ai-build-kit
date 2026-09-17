@@ -162,8 +162,8 @@ done, and leave the merge to them.
 Flagged route: do the pull-request route for everything up to the condition,
 then:
 
-- attach or generate the expert brief;
-- record the exact condition that must be met;
+- record the exact condition that must be met, and say that /ship prepares a
+  handover for the area on request;
 - label the piece `blocked`;
 - name what unblocked work may still continue;
 - state plainly that the flagged capability is not ready or live, with no
@@ -211,5 +211,5 @@ One of two outcomes, both complete passes:
   required review is satisfied, the records match reality, and the selected save
   route is complete.
 - Safely blocked: the piece stopped at its recorded condition, marked
-  `blocked`, with an expert brief carrying that condition, unblocked work
+  `blocked`, with the caution recorded on it, unblocked work
   identified, and no claim that the flagged capability is ready or live.
