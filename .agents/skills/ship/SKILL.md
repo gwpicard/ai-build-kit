@@ -14,8 +14,9 @@ Read the build-path section first.
 If anything under `Recheck when` has happened since `Last checked`, run the
 fit check before continuing.
 
-Confirm that any outside-help condition already required by the current path
-has either been met or remains visibly open.
+Read each line under `Sensitive areas`. Say for each whether its caution is
+done, waiting on a person, or accepted, and do not carry on past one that is
+none of those.
 
 ## 1. Follow the current path
 
@@ -56,64 +57,55 @@ it, then stop.
    If hosting uses a preview address, this is the moment work moves to the
    team's address. That move is what /ship means.
 
-### Build with expert help
+### Build with care
 
-Separate the work into:
+Separate the work into what is outside every named area and what is inside
+one.
 
-- functionality outside the named expert scope;
-- functionality inside the named expert scope.
-
-For unflagged functionality, follow the same four steps as Build and run it
+Outside every named area, follow the same four steps as Build and run it
 above: evidence run, second-opinion, operational readiness, then go live one
 connection at a time.
 
-For flagged functionality:
+Inside a named area, take each area in turn:
 
-1. generate or refresh the expert brief;
-2. stop at the recorded condition;
-3. record what the expert must confirm;
-4. do not merge or activate that capability until the condition is met or the
-   person accepts the risk on the record.
+1. read its line in the build-path section: what touches it, its caution, and
+   where the caution stands;
+2. where the caution is the kit's to do (a backup restored once, a rehearsal
+   on a copy, a managed service, an approval step), do it now or check it was
+   done, and write `done` with today's date on the line;
+3. where the caution is a person, stop at it. Say in one sentence what that
+   person must confirm. Do not merge or activate that area until they have
+   looked and that is recorded, or the person accepts the risk on the record.
+   No session meets it; fit-check.md says who does;
+4. restate the risk notice here, at the moment the area is actually going
+   live, rather than only when it was first scoped;
+5. only after the caution is done or accepted does that area get its own
+   operational readiness check (the same list as above) and its own go-live
+   step, one connection at a time, with the result recorded on its line.
 
-Only after that does the capability get its own operational
-readiness check (the same list as above) and its own go-live step, one
-connection at a time, with the result recorded.
-
-### Professional-led
-
-Do not perform a production launch. Nothing in this branch ever reaches
-operational readiness or go-live steps; those belong to the professional
-owner's own process once they take the build on.
-
-Check that the handover package contains:
-
-- the current masterplan;
-- what is left to build: the open issues, with `plan.local.md` printed fresh as
-  the readable copy;
-- acceptance criteria;
-- any decision prototypes;
-- evidence gathered so far;
-- the expert brief;
-- known limitations and unresolved questions;
-- service, data, access, and ownership information without secrets.
-
-The professional owner decides the production build, checks, deployment, and
-operating model. Stop here.
+Where a caution is a person and the team has nobody to ask, offer the
+handover once: `templates/handover.md`, filled in for that area, is what the
+team gives somebody outside it to look at that area or to take the build on.
+Offer it, prepare it if they say yes, and carry on with everything outside
+the area either way. A handover is a document the person asks for, not a
+stop.
 
 ## 2. Graduation
 
-When shipping or preparing a handover changes the build path, record:
+When shipping or preparing a handover changes the build path or names a new
+sensitive area, record:
 
 - what changed;
 - why the previous path no longer fits;
-- the new outside-help level and scope;
+- each new area and its caution;
 - which work may continue;
-- which work is blocked.
+- which work waits.
 
 ## After the first launch
 
-Applies only once Build and run it, or an unflagged or gate-cleared part of
-Build with expert help, has actually gone live at least once. Lighter from
+Applies only once Build and run it, or Build with care outside its named
+areas or in an area whose caution is done or accepted, has actually gone live
+at least once. Lighter from
 then on: re-run the evidence for what changed since the last ship, and move
 that over. If reliance, data sensitivity, or consequence has grown since the
 build path was last checked, rerun the fit check before shipping further.
@@ -121,8 +113,8 @@ build path was last checked, rerun the fit check before shipping further.
 ## Done when
 
 Explore privately: the private-preview checks are recorded and nothing moved
-to a live address. Professional-led: the handover package is complete and no
-production launch happened. Build and run it, and Build with expert help for
-its unflagged or gate-cleared parts: the team can rely on the copy they use,
-required operational readiness is real, and the changelog says what went
-live, when, and under which build path.
+to a live address. Build and run it, and Build with care outside its named
+areas or in an area whose caution is done or accepted: the team can rely on
+the copy they use, required operational readiness is real, and the changelog
+says what went live, when, and under which build path. Where a handover was
+asked for, it is complete and says what it does not cover.

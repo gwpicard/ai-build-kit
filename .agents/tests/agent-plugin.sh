@@ -224,7 +224,7 @@ for supporting in \
   setup-ai-build-kit/scripts/bootstrap-project.sh \
   setup-ai-build-kit/templates/foundation/AGENTS.md \
   setup-ai-build-kit/references/fit-check.md \
-  ship/templates/expert-brief.md \
+  ship/templates/handover.md \
   implement/references/running-longer.md \
   change-triage/references/source-check.md; do
   [ -f "$SKILLS_DIR/$supporting" ] || \

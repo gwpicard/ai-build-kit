@@ -130,12 +130,12 @@ empties=$(grep -cE '^- [A-Za-z ]+: (none is due|unaffected)\b' "$SCENARIOS" || t
 [ "$empties" -gt 0 ] || fail "no empty fields were found at all, so this check is reading the wrong file"
 echo "  $empties empty fields, all 'none is due' or 'unaffected'"
 
-# Multi-line fields fold correctly. Scenario 8's escalation runs to seven lines
+# Multi-line fields fold correctly. Scenario 8's escalation runs to eight lines
 # in the contract, so a parser that stops at the first newline loses most of it.
 echo
 escalation=$(scenario_field 8 Escalation)
 case "$escalation" in
-  *"three failed attempts"*"professional ownership"*)
+  *"three failed attempts"*"somebody else to own"*)
     echo "Multi-line field check: scenario 8 escalation folded whole"
     ;;
   *)

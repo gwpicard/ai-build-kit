@@ -95,12 +95,12 @@ one of:
 - missing access, environment, or artifact means stopping to ask for it;
 - a clear requirement whose failing implementation the project owns and can
   see gets rebuilt from the masterplan;
-- repeated failure in one technical area flags that area for a scoped expert
-  review;
+- repeated failure in one technical area names that area as sensitive, with a
+  look by somebody who does that work for a living as its caution;
 - being unable to establish any testable boundary is a maintenance finding,
   not a fourth patch;
-- a piece that has been rebuilt and still fails has hit a real limit, worth
-  recommending professional ownership of that one area.
+- a piece that has been rebuilt and still fails has hit a real limit, and that
+  one area is worth handing over for somebody else to own.
 
 ### What counts as three
 
@@ -119,12 +119,12 @@ wrong results and is asking for another patch on a cause nobody has established.
 A correction on its own leaves them where the notice exists to take them out of:
 told they are wrong, with nothing to decide.
 
-Flagging an area is a tightening, so it happens on your own judgement without
-asking, and pressure to just fix it does not lift the flag or turn it back into
-a rebuild. A component the project does not own or cannot see is never the
-rebuild-from-the-masterplan route, however unreliable it looks. Rebuilding it
-yourself takes on a new flagged area rather than repairing a known one, so it
-waits behind the notice below.
+Naming an area as sensitive is a tightening, so it happens on your own
+judgement without asking, and pressure to just fix it does not lift the flag or
+turn it back into a rebuild. A component the project does not own or cannot see
+is never the rebuild-from-the-masterplan route, however unreliable it looks.
+Rebuilding it yourself takes on a new sensitive area rather than repairing a
+known one, so it waits behind the notice below.
 
 Declining the fourth attempt is what owes the notice, not the route you pick
 after it. Give it in the same reply that declines, in the shape

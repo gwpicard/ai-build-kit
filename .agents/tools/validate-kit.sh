@@ -634,14 +634,14 @@ if [ ! -f "$fitcheck" ]; then
   fail "$fitcheck: missing"
 else
   fc_ok=1
-  for needle in "Explore privately" "Build and run it" "Build with expert help" "Professional-led" \
-    "### 1. Professional-led" "### 2. Build with expert help" "### 3. Build and run it" "### 4. Explore privately"; do
+  for needle in "Explore privately" "Build and run it" "Build with care" \
+    "### 1. Build with care" "### 2. Build and run it" "### 3. Explore privately"; do
     if ! grep -qF "$needle" "$fitcheck"; then
       fail "$fitcheck: missing expected text '$needle'"
       fc_ok=0
     fi
   done
-  [ "$fc_ok" -eq 1 ] && pass "fit-check.md carries the four canonical paths and the decision-order headings"
+  [ "$fc_ok" -eq 1 ] && pass "fit-check.md carries the three canonical paths and the decision-order headings"
 fi
 
 # The build-path block has one owner. fit-check.md defines the fields and the
@@ -653,7 +653,7 @@ if [ ! -f "$mpt" ] || [ ! -f "$fitcheck" ]; then
   fail "cannot compare the build-path block: fit-check.md or the masterplan template is missing"
 else
   bp_ok=1
-  for field in Path Why "Required controls" "Outside help" Accepted "Recheck when" "Last checked"; do
+  for field in Path Why "Sensitive areas" Accepted "Recheck when" "Last checked"; do
     grep -q "^$field:" "$mpt" || { fail "$mpt: build-path block is missing '$field:'"; bp_ok=0; }
     grep -q "^$field:" "$fitcheck" || { fail "$fitcheck: build-path block is missing '$field:'"; bp_ok=0; }
   done
@@ -1137,23 +1137,24 @@ done
 echo "== Ship control-flow contract =="
 
 # Operational readiness and go-live belong inside the path branches that use
-# them (Build and run it, Build with expert help), never as a shared section
-# after all four branches; that shape is what let Explore privately and
-# Professional-led be read as reaching launch instructions despite their own
-# branch saying to stop.
+# them (Build and run it, Build with care), never as a shared section after
+# all three branches; that shape is what let Explore privately be read as
+# reaching launch instructions despite its own branch saying to stop. The
+# anchor is the last branch heading, so a rename of that heading without a
+# matching change here would let the check pass on nothing.
 shipfile="$SKILLS/ship/SKILL.md"
 if [ ! -f "$shipfile" ]; then
   fail "$shipfile: missing"
 else
   leaked=$(awk '
-    /^### Professional-led/ { seen=1; next }
+    /^### Build with care/ { seen=1; next }
     seen && /^## [^#]/ {
       low = tolower($0)
       if (low ~ /go live/ || low ~ /operational readiness/) print NR ": " $0
     }
   ' "$shipfile")
   if [ -n "$leaked" ]; then
-    fail "$shipfile: a go-live or operational-readiness heading appears after all four path branches, so every path reaches it: $leaked"
+    fail "$shipfile: a go-live or operational-readiness heading appears after all three path branches, so every path reaches it: $leaked"
   else
     pass "ship/SKILL.md keeps go-live and operational-readiness steps inside their path branches"
   fi
@@ -1214,8 +1215,7 @@ echo "== Build-path vocabulary =="
 
 canonical_paths="Explore privately
 Build and run it
-Build with expert help
-Professional-led"
+Build with care"
 
 # Checked per file, with the lineno:content split done by parameter
 # expansion rather than `read`, because `read` silently drops a trailing
@@ -1248,7 +1248,9 @@ PATHFILES
 
 # The gate names went with the redesign that made the kit stop refusing. What
 # it does now is give a risk notice the person can accept on the record, so a
-# stray "expert gate" would describe a barrier that no longer exists.
+# stray "expert gate" would describe a barrier that no longer exists. The two
+# paths named for who you had to hire went the same way, with the field that
+# recorded the hiring level and the brief written for the hire.
 stale_terms="six questions
 six outcomes
 stakes section
@@ -1257,7 +1259,15 @@ build it and run it yourself
 fix the design first
 have it built for you
 expert gate
-expert-gated"
+expert-gated
+Build with expert help
+Professional-led
+Required controls:
+Outside help:
+help level
+expert brief
+four build paths
+levels of outside help"
 had_stale=0
 while IFS= read -r term; do
   [ -n "$term" ] || continue
@@ -1266,7 +1276,10 @@ while IFS= read -r term; do
     | grep -v '/\.git/' \
     | grep -v '\.agents/tests/scenarios\.md$' \
     | grep -v 'docs/MAINTAINING\.md$' \
+    | grep -v '\.agents/skills/maintain/SKILL\.md$' \
     || true)
+  # maintain/SKILL.md is excluded because its migration has to name the old
+  # fields and paths it recognises on disk; nothing else may use them.
   if [ -n "$hits" ]; then
     fail "retired vocabulary '$term' found in: $(printf '%s' "$hits" | tr '\n' ' ')"
     had_stale=1

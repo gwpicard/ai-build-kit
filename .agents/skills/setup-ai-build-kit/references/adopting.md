@@ -73,9 +73,8 @@ Prioritise:
 
 ## Reassess ownership
 
-An adopted tool may already have crossed into expert-help or professional-led
-territory. Run the full consequence and ownership check before normal
-building.
+An adopted tool may already touch a sensitive area. Run the full consequence
+and ownership check before normal building.
 
 ## Contain, do not beautify
 

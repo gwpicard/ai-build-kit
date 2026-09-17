@@ -1,7 +1,7 @@
 # The fit check
 
-The fit check chooses the project's current **build path** and names the
-condition for outside help, if any. It runs:
+The fit check chooses the project's current **build path** and names each
+sensitive area the work touches, with the caution that goes with it. It runs:
 
 - during /setup-ai-build-kit;
 - when a request changes users, data, money, autonomy, promises, or reliance;
@@ -11,7 +11,7 @@ condition for outside help, if any. It runs:
 
 ## Consequence questions
 
-Ask one at a time, with a best guess attached.
+Ask one at a time, with a best guess attached. These decide the path.
 
 1. Will anyone outside the team sign in or rely on it?
 2. Will real money move through it or be calculated for real decisions?
@@ -40,43 +40,70 @@ Ask one at a time, with a best guess attached.
 14. Are integrations, background jobs, permissions, and migrations limited
     enough for the team to operate confidently?
 
-## The four build paths
+These decide setup tasks, never the path. A no to any of them becomes a
+founding task: a piece on the plan where there is work to do (write down the
+manual fallback, name who reads the alerts), or a line in the masterplan's
+"How it stays running" section where there is only a fact to record. Founding
+carries on. A team that cannot yet explain or recover its tool has a gap to
+close, which is a different thing from work that touches a sensitive area.
 
-Use these four names everywhere, and do not alternate between path, tier, level,
-mode, verdict, or maturity class. Choose the first that matches, after redesign
-has been considered.
+## The three build paths
 
-### 1. Professional-led
+Use these three names everywhere, and do not alternate between path, tier,
+level, mode, verdict, or maturity class. Choose the first that matches, after
+redesign has been considered.
 
-Regulation or high-consequence decisions are central, irreplaceable live data
-cannot be isolated or copied, high-harm autonomous action is central, a contract
-requires technical operational ownership, or the team cannot explain, operate, or
-recover the system, and redesign cannot reduce it enough.
+### 1. Build with care
 
-### 2. Build with expert help
+Some of the work touches a sensitive area: personal or sensitive data, money,
+sign-in and permissions, automatic action on people or other systems,
+irreplaceable live data, or a regulated decision. A yes to question 1, 2, 4,
+5, 6 or 7 that redesign cannot remove puts the project here. The masterplan
+names each area in the tool's own words and the caution beside it. Everything
+outside those areas is built exactly as Build and run it. Inside one, the
+caution is done before merge or activation, or the person accepts on the
+record.
 
-A professional trigger exists in a named, bounded area while the team still owns
-the rest: outside users, real money, sensitive data, complex permissions,
-operational criticality, autonomous actions, a difficult live-data change,
-several integrations, or repeated failure in one area. The output names the exact
-help level (advice, scoped review, supervised change, or professional ownership)
-and its scope.
+### 2. Build and run it
 
-### 3. Build and run it
+People rely on the tool, no sensitive area is touched, consequences are
+limited and recoverable, and the manual fallback is real. A yes to question 3
+or 8 lands here rather than above: it says the tool is relied on, not what it
+touches, and what it asks for is the operational readiness /ship requires
+before first live use. This is the kit's primary target path.
 
-People rely on the tool, but consequences are limited and recoverable, the manual
-fallback is real, and ownership is clear, with no professional trigger applying.
-This is the kit's primary target path.
-
-### 4. Explore privately
+### 3. Explore privately
 
 Nobody relies on it, data is disposable, actions are reversible, and the work
 exists to answer questions or learn.
 
+## Sensitive areas
+
+Six areas, fixed. Each carries a default caution, which is what would normally
+prevent the harm. The fit check names the area in the tool's own words (the
+client notes, the refund button, the nurses' protocol) and writes the caution
+beside it. Change a caution only where the tool's own facts make a different
+one right, and say why.
+
+| Area | What counts | Default caution |
+|---|---|---|
+| Personal or sensitive data | Facts about a person beyond ordinary work contact details: health, pay, home address, identity documents, anything a person would mind a colleague reading. | A person who did not build the tool reviews who can see what, before real data goes in. |
+| Money | Real money moving through the tool, or figures people act on as if they were the bill. | A managed payment provider holds card details so the tool never sees them, and the owner of the money checks the first real figures against a case they know. |
+| Sign-in and permissions | Anyone outside the team signing in, or rules that keep one person's things from another's. | A managed sign-in service so the tool never stores a password, and a person who did not build it reviews who can reach what, before outside users sign in. |
+| Automatic action on people or other systems | The tool sends messages, changes records elsewhere, or does anything on its own that is hard to take back. | A person approves each action until a live run has shown it right, and one switch turns it off. |
+| Irreplaceable live data | The only copy of something the team cannot recreate. | A backup taken and restored once, and the change rehearsed on a copy, before the original is touched. |
+| Regulated decisions | Medical, legal, financial, employment, or safety decisions the tool gives or enforces. | Somebody qualified in that field signs off the rule before anyone acts on it. |
+
+Where a caution is a person, the rule under "The notice holds" applies
+unchanged: that person looks, or the risk is accepted on the record. Where a
+caution is a backup, a copy, a rehearsal, a managed service, or an approval
+step, it is the kit's to do. Do it as part of the work, or check it was done,
+and record the result on the area's line. Work inside a named area is flagged
+work, and that word keeps its meaning in every skill.
+
 ## Redesign before the notice
 
-Before settling on build with expert help or professional-led, ask whether the
-risk can be removed:
+Before naming a sensitive area, ask whether the risk can be removed:
 
 - use a copy instead of live data;
 - remove automated action;
@@ -87,19 +114,19 @@ risk can be removed:
 - keep a manual fallback;
 - narrow the promise.
 
-A redesign that genuinely removes a trigger changes the answers, so run the
-check again. A redesign that keeps the surface and drops the control does not.
+A redesign that genuinely removes the area changes the answers, so run the
+check again. A redesign that keeps the surface and drops the caution does not.
 
 ## The risk notice
 
-The kit refuses nothing. A notice is due only where a trigger from the decision
-order survives redesign: a regulated or high-consequence decision, irreplaceable
-live data, high-harm autonomous action, a team that cannot operate or recover
-the system, or a production promise beyond the team. Say so before that work
-goes ahead, on any build path. Work with no surviving trigger gets no notice, no
-acceptance, and no recorded exception, whatever its path. Most work on most
-projects is like this. Build and run it, the primary path, is defined by no
-professional trigger applying, so it usually has nothing to notice.
+The kit refuses nothing. A notice is due only where work touches a sensitive
+area that survives redesign and whose caution has not been done: personal or
+sensitive data, money, sign-in and permissions, automatic action on people or
+other systems, irreplaceable live data, or a regulated decision. Say so before
+that work goes ahead, on any build path. Work outside every named area gets no
+notice, no acceptance, and no recorded exception, whatever its path. Most work
+on most projects is like this. Build and run it, the primary path, is defined
+by no sensitive area applying, so it has nothing to notice.
 
 A notice says five things:
 
@@ -113,12 +140,12 @@ A notice says five things:
 "This is risky" is not a notice. Naming a cost, a delay, or a rule of the kit's
 own is not a notice either. Say who gets hurt.
 
-A trigger is exposure from the decision order, not any imperfection somebody
-might be annoyed by. A vanished booking, a stack choice, a save that stays on one
-machine, an integration not connected yet: these are design points, so raise them
-in ordinary words in the ordinary place. A notice given for ordinary work teaches
-the person to skip notices, which is paid for by the one that names a real
-exposure and now looks like all the others.
+A sensitive area is exposure from the list above, not any imperfection
+somebody might be annoyed by. A vanished booking, a stack choice, a save that
+stays on one machine, an integration not connected yet: these are design
+points, so raise them in ordinary words in the ordinary place. A notice given
+for ordinary work teaches the person to skip notices, which is paid for by the
+one that names a real exposure and now looks like all the others.
 
 When the answer to a broken thing is to build a replacement, the notice covers
 the replacement, not the fault. Describing the fault accurately while saying
@@ -148,8 +175,8 @@ Pushback is not evidence about the risk. Cost, a deadline, the size of the team,
 the person's own willingness to be responsible, and what other tools are said to
 allow all change what the person decides. None of them changes who is exposed.
 
-Never propose a downgrade and act on it in the same breath. The build path moves
-toward more care on your own judgement. It moves toward less only on the
+Never propose a relaxation and act on it in the same breath. An area is named
+as sensitive on your own judgement. Its caution is dropped only on the
 person's plain acceptance.
 
 Restate the notice when the flagged work is actually built, rather than only
@@ -178,8 +205,9 @@ one arrives after a notice, and the answer does not engage with what you named,
 ask once more in one sentence and take whatever comes back.
 
 An acceptance becomes an `Accepted:` line in the masterplan's build-path
-section, described under "Write it down" below. Add the line before the flagged
-work starts, not after it lands. Then build what was asked for.
+section, described under "Write it down" below, and the area's own line says
+`accepted` with the date. Add both before the flagged work starts, not after
+it lands. Then build what was asked for.
 
 ## Full fit check
 
@@ -191,11 +219,11 @@ whenever several project characteristics changed together.
 For a single change-triggered reassessment:
 
 1. ask the consequence questions affected by the proposed change;
-2. recheck manual fallback;
-3. recheck named operational ownership;
-4. recheck whether the team can still explain and recover the system;
-5. apply the decision order;
-6. update `Recheck when` and `Last checked`, and add an `Accepted:` line if a
+2. name any sensitive area the change touches, and its caution;
+3. recheck the ownership questions the change affects, and record a new no as
+   a founding task;
+4. apply the decision order;
+5. update `Recheck when` and `Last checked`, and add an `Accepted:` line if a
    risk was accepted along the way.
 
 Run the full check instead when the affected area cannot be bounded confidently.
@@ -207,27 +235,35 @@ Whatever the outcome, it goes in the masterplan's build path section:
 ```md
 ## Build path
 
-Path: <Explore privately | Build and run it | Build with expert help | Professional-led>
+Path: <Explore privately | Build and run it | Build with care>
 Why: <one or two sentences>
-Required controls: <only the controls that apply>
-Outside help: <none | advice | scoped review | supervised change | professional ownership>, for <scope>
+Sensitive areas: <none, or one line per area beneath this one>
 Accepted: <none, or one line per accepted risk>
 Recheck when: <specific triggers>
 Last checked: YYYY-MM-DD
+```
+
+Each named area gets its own line under `Sensitive areas:`, indented two
+spaces. A line carries the area, what in this tool touches it, its caution,
+and where the caution stands: `not yet done`, `done` with the date, or
+`accepted` with the date of the matching `Accepted:` line.
+
+```md
+Sensitive areas:
+  regulated decisions: the treatment recommendation; caution: a clinician signs off the protocol before nurses act on it; not yet done
+  irreplaceable live data: the maintenance history import; caution: a backup restored once and the import rehearsed on a copy; done 2026-08-12
 ```
 
 Each accepted risk gets its own line, and lines are added rather than replaced.
 A line carries the date, what it drops, and who accepted it:
 
 ```md
-Accepted: 2026-08-12, independent review of who can see what, declined on cost, accepted by Priya
+Accepted: 2026-08-12, review of who can see the client notes, declined on cost, accepted by Priya
 ```
 
-An acceptance can relax the path. Where it does, `Path:` moves and the line says
-so:
-
-```md
-Accepted: 2026-08-12, professional-led recommendation declined, no clinical sign-off, accepted by Sam, path moved to Build with expert help
-```
+An acceptance drops a caution. It does not move the path or take the area off
+the list, because the exposure is still there; the area's own line changes to
+`accepted 2026-08-12` so the two point at each other. The path moves only by
+running the fit check again, when a redesign has removed the area.
 
 The agent reads that section first in every session.

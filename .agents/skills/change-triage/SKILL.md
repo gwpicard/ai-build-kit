@@ -26,7 +26,7 @@ an existing rule in the masterplan?
 One of: repair of promised behaviour; new behaviour; clarification or
 copy/presentation change; setup or operational task; a decision that needs
 clarify; a decision that needs a prototype; a decision that needs source
-research; a change that alters the build path or the outside-help scope.
+research; a change that alters the build path or a sensitive area.
 
 ## Step 3: Classify consequence
 
@@ -80,8 +80,8 @@ from scratch.
 Route to one of: `/fix`; a ready piece; clarify; a decision
 prototype; a source check; a search for existing work; a step only the person
 can do; update the masterplan first; rerun the fit
-check; prepare an expert brief; give the risk notice at the professional-led
-boundary. Say the route and the reason in one line.
+check; prepare the handover; give the risk notice where a sensitive area
+survives redesign. Say the route and the reason in one line.
 
 Piece-sized and clear (one sitting, a done line you could write now, small
 enough for a fresh session to hold whole) becomes a ready piece. Too vague to
@@ -138,7 +138,7 @@ time.
 Do not add a changelog line for every classification; most triage
 conversations leave no trace worth keeping. Record only when: the masterplan
 changes, the build path changes, a risk notice is accepted, an idea is parked
-or rejected for a durable reason, the outside-help scope changes, or work
+or rejected for a durable reason, a sensitive area changes, or work
 actually lands.
 
 ## Done when

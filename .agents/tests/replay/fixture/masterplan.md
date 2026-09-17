@@ -5,10 +5,7 @@
 Path: Build and run it
 Why: An internal tool for one team of nine. Nothing it holds is irreplaceable,
 nobody outside the company signs in, and the team can explain and operate it.
-Required controls: secrets stay out of the code, destructive actions stop for
-approval, shared changes go through a pull request with an automatic check,
-an independent review on anything touching who can see what.
-Outside help: none
+Sensitive areas: none
 Accepted: none
 Recheck when: someone outside the company needs to sign in; money moves through
 it; it starts holding the only copy of anything; another team comes to depend
