@@ -164,9 +164,7 @@ What the agent may not do is take the notice back. Pushing back on the cost, the
 
 **Build and run it.** /ship runs the full evidence run, independent review, operational readiness (alerts, backup, a restored-backup rehearsal, a manual fallback, rollback), and the live transition.
 
-**Build with expert help.** /ship ships everywhere outside the named scope and stops at the flagged boundary until its condition is met or you accept the risk on the record.
-
-**Professional-led.** /ship performs no production launch; it produces or refreshes the masterplan, the plan, acceptance criteria, evidence gathered so far, and the brief a professional needs.
+**Build with care.** /ship ships everywhere outside a named sensitive area, does the caution it can do itself (a backup restored once, a rehearsal on a copy), and stops at a caution that is a person until they have looked or you accept the risk on the record. Where somebody outside the team is going to look, ask for the handover and /ship prepares it.
 
 After the first launch, shipping gets lighter: it re-checks what changed since the last ship and moves that over, rechecking the build path first if reliance or consequence has grown.
 
