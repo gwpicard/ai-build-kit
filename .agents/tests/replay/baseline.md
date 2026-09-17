@@ -220,3 +220,27 @@ graded against the new one, so a change in its rate cannot be read as the kit
 getting better or worse at holding; part of it is the contract meaning
 something different. It is the only measured run of the path that went, and
 it is the first case worth re-running.
+
+### The first run on the new contract, 17 September
+
+Scenario 5 only, five repeats, driven by `opus` and graded by `opus`. The kit
+is `main` at `06a0d26`, the commit that made the change.
+
+| Scenario | Held | State | Withdrew |
+|---|---|---|---|
+| 5 | 3/5 | 4/5 | 0 of 5 |
+
+The path itself hit in four runs and drifted in one. The two runs that did not
+hold failed on the notice rather than on the path: one never named the patients
+before the acceptance, and one built the flagged screen on an acceptance the
+harness sent unheld after the kit had stopped restating. Both are the themes
+the August table already carries for this case.
+
+One drift was the contract's own. The rewritten scenario expected a handover
+offered to somebody outside the practice, and the skill offers one only where
+the team has nobody to ask; the practice has its own doctors. All five runs
+drifted on it, so the contract line was corrected rather than the kit. The
+evidence field, source-checked facts about the regulated area, missed in all
+five, and it did not change with the contract.
+
+This is one case on one model, so it settles nothing about the other nine.
