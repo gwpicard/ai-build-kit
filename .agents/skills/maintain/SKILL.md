@@ -259,11 +259,12 @@ Everything above, plus:
    integrations that fail often, and records that no longer explain reality.
    Propose no more than three simplifications; for each, state the repeated
    problem, the plain-language change, what becomes easier to verify or
-   recover, the cost, and whether it needs expert help. Apply on approval.
+   recover, the cost, and whether a person outside the team has to look.
+   Apply on approval.
    Do not run a broad architecture programme merely because the quarter
    changed.
 3. Prune the instruction layer: AGENTS.md lines and project skills that no longer pay their way. Those accumulate debt the same way code does.
-4. Run ship's evidence run, scoped by the build path's required controls.
+4. Run ship's evidence run, scoped by the build path and its sensitive areas.
 5. The ownership and graduation check: can the team still explain the main
    flows? Can it verify important changes without reading code? Can it
    identify where data, secrets, service owners, and bills live? Can it

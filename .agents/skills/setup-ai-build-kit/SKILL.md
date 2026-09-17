@@ -198,13 +198,13 @@ housekeeping rather than a decision the person makes.
 
 Go through references/fit-check.md: the consequence and ownership questions,
 one at a time, guesses attached like the interview. Record the result in the
-same working notes as it is settled: which of the four build paths, why, the
-required controls, any outside help and its scope, the recheck triggers, and
-today's date. Before settling on build with expert help or professional-led,
-work through the redesign options in fit-check.md; if a redesign changes the
-answers, run the check again. Where a
-trigger survives that, give the risk notice fit-check.md describes before any of
-the flagged work goes ahead.
+same working notes as it is settled: which of the three build paths, why,
+each sensitive area and its caution, the recheck triggers, and today's date.
+Before naming a sensitive area, work through the redesign options in
+fit-check.md; if a redesign changes the answers, run the check again. Where an
+area survives that, give the risk notice fit-check.md describes before any of
+the flagged work goes ahead. A no to an ownership question becomes a founding
+task rather than a path move.
 
 ## 7. Write the masterplan
 
@@ -246,10 +246,9 @@ user.
 
 ## 8. Review the masterplan
 
-Who this is for decides whether it runs. On build with expert help and
-professional-led paths, the masterplan is read before flagged work continues,
-because somebody other than the builder is going to be relied on and the plan is
-what they will be relied on against. On Build and run it, skip it: an ordinary
+Who this is for decides whether it runs. On Build with care, the masterplan is
+read before flagged work continues, because somebody other than the builder is
+going to be relied on and the plan is what they will be relied on against. On Build and run it, skip it: an ordinary
 internal tool has no exposure for a reviewer to find, and a review nobody needed
 costs the person a wait they did not ask for. Say in one line that it was
 skipped and why, and record that in the changelog, so a project that later moves
@@ -277,8 +276,9 @@ main flow? Can it explain who can see and change what? Can it identify where
 important data, secrets, and service accounts live? Can it recover or
 continue manually if the tool stops? Is somebody responsible for alerts,
 backups, bills, and access? A "no" to any of these becomes a setup task before
-build starts, or moves the build path upward if the gap cannot be closed
-here. Note the result in the changelog.
+build starts: a piece on the plan where there is work to do, or a line in the
+masterplan's "How it stays running" section where there is only a fact to
+record. It never moves the build path. Note the result in the changelog.
 
 ## 10. Cut the plan
 
@@ -338,8 +338,9 @@ Ask two questions: will the team use this in a browser, and does it need to
 work when your machine is off? Set up accordingly. One established,
 conventional stack, because the agent is strongest where the conventions run
 deepest. Managed services for anything storing sign-ins, payments, or files;
-those never get hand-built, however capable you feel, unless a professional
-explicitly owns a different design. Use references/manual-setup.md for any
+those never get hand-built, however capable you feel, unless a person who
+does that work for a living owns a different design and has said so on the
+record. Use references/manual-setup.md for any
 step only a human can complete. If hosting is needed, arrange it so day-to-day
 pushes land at a preview address and only /ship changes the address the team
 uses.
@@ -358,10 +359,8 @@ Wire the project check according to the build path. If
 `.github/workflows/checks.yml` is missing, copy it from
 `templates/foundation/checks.yml`. Explore privately needs a
 local test or smoke command, and the remote pull-request check stays
-optional; build and run it, and build with expert help, both need the remote
-check working before any shared or live behavioural work; professional-led
-needs enough to support prototype and specification work, with the
-professional owner confirming production checks later.
+optional; Build and run it, and Build with care, both need the remote check
+working before any shared or live behavioural work.
 
 Configure only `jobs.project-check`.
 

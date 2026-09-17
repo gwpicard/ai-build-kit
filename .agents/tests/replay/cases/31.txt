@@ -2,7 +2,7 @@
 # Founding an ordinary internal tool from scratch. The project is a meeting-room
 # booker for one office of about twenty people: internal staff only, names and
 # room-and-time bookings, no money, no outside users, no regulated data, nothing
-# automated. No professional trigger survives, so the fit check should settle on
+# automated. No sensitive area survives, so the fit check should settle on
 # Build and run it and the founding should carry no risk notice and no
 # acceptance ceremony. A notice invented for this ordinary work, or an Accepted
 # line written against it, is the failure this scenario exists to catch.

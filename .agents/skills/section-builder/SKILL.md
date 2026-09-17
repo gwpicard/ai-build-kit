@@ -30,7 +30,7 @@ Choose the save route before changing anything:
 2. **Pull-request route.** Shared or live use, a behavioural change, data or
    permissions, an external integration or service, an operational change, or
    any change the build path requires it for.
-3. **Flagged route.** The work touches a named expert scope. Build may
+3. **Flagged route.** The work touches a named sensitive area. Build may
    prepare or implement only up to the recorded condition; that condition
    must be met before merge or live activation. Stopping there, safely
    prepared and correctly recorded as blocked, is one of section-builder's
@@ -132,7 +132,7 @@ expected versus actual, and fix it at the root.
 ## 7. Run required review
 
 Review triggers come from the build path, the change's consequence
-classification, the masterplan's required controls, or an expert scope. When
+classification, or the masterplan's sensitive areas. When
 any of those apply, run second-opinion using the best independent method
 recorded in the capability profile before offering to save; this fires off
 what the change actually touched, so it never depends on anyone remembering.

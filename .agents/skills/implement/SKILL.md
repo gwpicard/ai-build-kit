@@ -127,7 +127,7 @@ feature called "goal" or "auto" does not itself make the project eligible.
 Once eligible, load references/running-longer.md before starting and follow
 it. The shape, so the person knows what they are agreeing to: the plan is
 approved once, only ready pieces a machine can prove get taken, a failing piece is
-retried three times and then parked, flags and expert scopes stop the run,
+retried three times and then parked, a named sensitive area stops the run,
 and it ends through the route required by the build path: normally one pull
 request carrying a checklist of things to try before merging, or a confirmed
 checkpoint for eligible private exploration.

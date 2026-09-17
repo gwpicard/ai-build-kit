@@ -26,7 +26,7 @@ access and permission boundaries, secret or personal-data exposure, data
 loss, duplication, or corruption, double actions, failure and recovery,
 migration or rollback safety, autonomous actions, unnecessary complexity
 that would make future changes materially harder, and any violation of the
-build path or an expert boundary.
+build path or a sensitive area's caution.
 
 Check the classics by trying them rather than assuming. Can someone without
 an account see anything? Can one user reach another's things by editing an
