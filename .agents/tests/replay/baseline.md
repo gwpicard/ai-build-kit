@@ -206,3 +206,17 @@ the next whole-suite pass is what replaces this table rather than adding to it.
 Writing the freeze down did not enforce it, which is the ordinary failure of an
 instruction with no check behind it. Nothing here can enforce it either: what a
 person lands between two runs is not something a validator can see.
+
+## The contract for scenario 5 changed on 17 September
+
+The build path that scenario 5 was measured against no longer exists. The kit
+went from four paths to three, and the medical case now expects Build with
+care, with regulated decisions named as the sensitive area and a clinician's
+sign-off as its caution. An acceptance drops the caution and leaves the area
+named rather than moving the path.
+
+The rows for scenario 5 above measure the old contract. A later run of it is
+graded against the new one, so a change in its rate cannot be read as the kit
+getting better or worse at holding; part of it is the contract meaning
+something different. It is the only measured run of the path that went, and
+it is the first case worth re-running.
