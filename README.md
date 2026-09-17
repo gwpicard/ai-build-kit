@@ -129,7 +129,7 @@ know, and leaves a piece marked ready. You type `/implement`, and it builds that
 one piece, shows you the evidence, and saves it.
 
 A piece that carries a risk. The kit gives you a risk notice: who is exposed,
-what happens to them, and what a professional would normally do about it. You
+what happens to them, and what would normally prevent it. You
 decide. If you accept the risk, the acceptance is written into the masterplan
 with the date, and the work goes ahead.
 
@@ -158,18 +158,17 @@ Three project records hold the product's memory: `masterplan.md` is the present,
 |---|---|
 | Trying an idea with disposable data | Explore privately |
 | Internal tool with a manual fallback | Build and run it |
-| Outside users, payments, sensitive data, or business-critical reliance | Build with expert help |
-| Regulation, irreplaceable live data, high-consequence automation, or technical ownership the team cannot carry | Professional-led |
+| Personal data, money, sign-in by outsiders, automatic action, irreplaceable live data, or a regulated decision, in some part of it | Build with care |
 
-The path is not a permanent label. The kit rechecks it whenever the project changes character, and none of the four is it refusing to build.
+The path is not a permanent label. The kit rechecks it whenever the project changes character, and none of the three is it refusing to build. On Build with care the kit builds everything outside the sensitive part the ordinary way, and in that part one named caution happens before it goes live, or you accept skipping it on the record.
 
 ## What the kit does to reduce risk
 
-The kit assumes the person directing the work can't review code, so every protection is behavioural or mechanical. It opens with a fit check, which sets the build path and names any outside help that path requires; the four possible paths are explained in [fit-check.md](.agents/skills/setup-ai-build-kit/references/fit-check.md). Read [what it does not promise](#what-it-does-not-promise) alongside this section.
+The kit is built so that nothing depends on a code review by you, so every protection is behavioural or mechanical. It opens with a fit check, which sets the build path and names each sensitive area with its caution; the three paths are explained in [fit-check.md](.agents/skills/setup-ai-build-kit/references/fit-check.md). Read [what it does not promise](#what-it-does-not-promise) alongside this section.
 
 Every promised behaviour gets evidence. Stable rules and bugs usually get automated tests, shown failing first. Visual and exploratory work may be checked by trying it. Shared, live, or risky changes get stronger checkpoints: a pull request with a clean-machine check next to the merge button, and an independent review. The build path decides how much of this applies to a given piece of work.
 
-Where a risk survives that, you get a risk notice: who is exposed, what happens to them, and what a professional would normally do about it. Then it is your call. You can accept the risk and have the work built, or take the flagged thing out of scope. An acceptance is written into the build-path section with the date and who gave it, so making the project less careful is a decision you record rather than something the agent does on its own.
+Where a risk survives that, you get a risk notice: who is exposed, what happens to them, and what would normally prevent it. Then it is your call. You can accept the risk and have the work built, or take the flagged thing out of scope. An acceptance is written into the build-path section with the date and who gave it, so making the project less careful is a decision you record rather than something the agent does on its own.
 
 Two simpler protections sit underneath. Destructive commands are on a blocked list, alongside standing restrictions like never disabling authentication to make a test pass. Secrets live in `.env` and nowhere else.
 
@@ -193,9 +192,9 @@ should happen, try the result, and make the product and risk decisions.
 
 **Can a non-developer build software with an AI coding agent safely?**
 Safely enough depends on what the software does. The kit opens with a fit check
-that sorts your project into one of four build paths, and says plainly when a
-project needs professional help or professional ownership. It never refuses to
-build. It tells you what you are taking on and records your decision.
+that sorts your project into one of three build paths, and names each part of
+it that touches something sensitive, with the one caution that has to happen
+there. It never refuses to build. It tells you what you are taking on and records your decision.
 
 **What is the alternative to Lovable or Bolt if I want to own my code?**
 A coding agent working in your own project folder. That is what this kit is
@@ -239,10 +238,13 @@ your own data, with nobody outside relying on it. Trackers, dashboards, small
 workflow tools, internal calculators. It can also help define, prototype, and
 get acceptance criteria for software other people will use.
 
-**What happens if my project needs a professional developer?**
-The fit check says so, names one of four levels of outside help, and keeps the
-rest of the project moving while the flagged part waits. [WORKFLOW.md](WORKFLOW.md)
-says which level, for what.
+**What happens when my project touches something sensitive?**
+The fit check names the area and the one caution that goes with it: a backup
+restored once, a managed service, or a person who looks before that part goes
+live. The kit does the cautions it can do itself and keeps the rest of the
+project moving while a person looks. Where somebody outside the team is going
+to look, ask for the handover and the kit prepares it. [WORKFLOW.md](WORKFLOW.md)
+lists the six areas and their cautions.
 
 **How is this different from Spec Kit, Superpowers, or agent-skills?**
 Those carry a similar discipline and assume you read code, because they are
