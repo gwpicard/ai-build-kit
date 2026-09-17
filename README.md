@@ -77,7 +77,9 @@ and fallback.
 
 Coding agents can write working software. They will not stop you skipping the steps that make it trustworthy: agreeing what a thing should do before building it, proving it works before saving it, checking the risky parts before anyone relies on them, and keeping records so next month you can still tell what happened.
 
-This kit is those steps, packaged as skills the agent follows and commands you type. Three records hold the project's memory, because the agent forgets everything between sessions and the records don't. A build path, set at the start and rechecked as the project changes, decides how much of the process applies right now.
+This kit is those steps, packaged as skills the agent follows and commands you type. Nine commands, and no more: a new ability arrives inside a command that already exists, so the vocabulary you learn on day one is the vocabulary you use in month six. Three records hold the project's memory, because the agent forgets everything between sessions and the records don't. A build path, set at the start and rechecked as the project changes, decides how much of the process applies right now.
+
+The workflow is opinionated so that you do not have to be. Whether you are an engineer makes no difference to it. What makes a difference is that the behaviour is agreed before the code, the evidence is shown before the save, and what happened gets written down. A developer can read every diff if they like. The kit never asks.
 
 ## Commands
 
@@ -174,21 +176,25 @@ Two simpler protections sit underneath. Destructive commands are on a blocked li
 
 ## How it compares
 
-| | Written for | Where your code lives | Must you read code | What you get |
+| | What it is | Who it is for | How much you must learn | What it decides for you |
 |---|---|---|---|---|
-| All-in-one builders (Lovable, Bolt, Replit) | anyone | the platform | no | The fastest way to a working app. The platform owns the shape of your project, so extending it or leaving gets harder as it grows. |
-| Bare agent tools (Claude Code, Cursor, Codex) | anyone | your own project | to judge the result, yes | An agent's full power, with no process around it. |
-| Developer skill packs (GitHub Spec Kit, Superpowers, agent-skills, Waza) | people who read code | your own project | yes | A similar discipline, written for engineers. |
-| AI Build Kit | people who do not read code | your own project | no | That discipline carried for you, plus a fit check that says when a project needs a professional instead of the kit, or alongside it. |
+| All-in-one builders (Lovable, Bolt, Replit) | A hosted app builder that owns the shape of your project. | Anyone. | The platform. | Where your code lives, and how far you can take it before leaving gets hard. |
+| Bare agent tools (Claude Code, Cursor, Codex) | An agent's full power, with no process around it. | Anyone. | Nothing up front, everything by experience. | Nothing. You choose when to plan, test, review and save, every time. |
+| Developer skill packs (GitHub Spec Kit, Superpowers, agent-skills, Waza) | A discipline the agent applies, written by engineers for engineers. | People who read code and already have the habits. | A dozen or more skills and the order they run in. | The order of work, once you have learned it. |
+| Books and guides on agentic engineering | A way of thinking about working with agents. No tooling. | Developers and tech leads. | A book. | Nothing on your machine. |
+| AI Build Kit | Nine commands, three records, one build path. The least process that keeps agent-built software reliable. | People who came to software from another job, and developers trying agent-led work for the first time. | Nine command names, each named after the moment you need it. | Which route a request takes, what evidence it needs, how it is saved, and when a piece touches something sensitive enough to stop and tell you. |
+
+Each is good at something. The builders are the fastest start. The bare agent is the most powerful. The skill packs are the strongest guarantee that an engineer's agent behaves. The kit is the shortest path from an idea to a tool that still works in six weeks, for somebody who does not want to run a process by hand.
 
 Much of what the kit does was borrowed from people working in the open. [docs/SOURCES.md](docs/SOURCES.md) names them and says what each one contributed.
 
 ## FAQ
 
 **Do I need to know how to code?**
-No. The nine commands are the whole interface, and the kit is built on the
-assumption that you will not read the code or the logs. You do have to say what
-should happen, try the result, and make the product and risk decisions.
+No. The nine commands are the whole interface, and the kit is built so that
+none of them needs you to read the code or the logs. If you can, nothing
+stops you. You do have to say what should happen, try the result, and make the
+product and risk decisions.
 
 **Can a non-developer build software with an AI coding agent safely?**
 Safely enough depends on what the software does. The kit opens with a fit check
@@ -247,10 +253,10 @@ to look, ask for the handover and the kit prepares it. [WORKFLOW.md](WORKFLOW.md
 lists the six areas and their cautions.
 
 **How is this different from Spec Kit, Superpowers, or agent-skills?**
-Those carry a similar discipline and assume you read code, because they are
-written for people who do. This kit carries that discipline for people who
-don't, and its fit check says when a project needs a professional instead of the
-kit, or alongside it.
+Those carry a similar discipline and are written for people who read code and
+already have the habits. This kit carries the discipline for you, keeps the
+vocabulary to nine commands, and says plainly when a piece touches something
+sensitive and what has to happen there.
 
 ## What it does not promise
 
@@ -262,7 +268,7 @@ The checks verify what somebody thought to check. A green tick beside the merge 
 
 The kit never refuses: hear the notice, accept the risk, and it builds the thing, with your acceptance on the record. Pressure changes what you decide, not who is exposed.
 
-You own the product and risk decisions. The kit can tell you a professional would normally review who can see what; it cannot decide for you whether to go ahead, and it does not carry the consequences when you do.
+You own the product and risk decisions. The kit can tell you that a second pair of eyes normally goes over who can see what; it cannot decide for you whether to go ahead, and it does not carry the consequences when you do.
 
 It is not a substitute for a professional developer, and it is not legal, medical, financial, or security advice. Where your project touches those, the notice will say so, and acting on it is still your judgement.
 
@@ -273,6 +279,10 @@ Problems and suggestions belong in the public issue tracker. Read
 is covered in [SECURITY.md](SECURITY.md).
 
 ## For technical people
+
+You can read every diff, and the kit never asks you to. The process rests on
+behavioural evidence and records rather than on a code review by you, so a
+developer gets the same workflow and can look under it whenever they like.
 
 The public repository is an Agent Skills source and a Claude Code plugin
 marketplace. Each folder under `.agents/skills/` contains one skill and all of
