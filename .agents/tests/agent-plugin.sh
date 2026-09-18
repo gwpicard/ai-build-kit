@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # agent-plugin.sh: rehearse the Agent Plugins distribution route. It builds a
 # real release, checks the assembled folder against the standard's rules,
-# checks that the one trigger setting marks the four background skills and
+# checks that the one trigger setting marks the five background skills and
 # none of the nine commands, and proves that folder can stand a project up on
 # its own.
 
@@ -49,6 +49,7 @@ what-now"
 
 expected_disciplines="change-triage
 clarify
+screen-check
 second-opinion
 section-builder"
 
@@ -172,7 +173,7 @@ done
 expected_skills=$(printf '%s\n%s\n' "$expected_commands" "$expected_disciplines" | sort)
 found_skills=$(find "$SKILLS_DIR" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sort)
 if [ "$found_skills" != "$expected_skills" ]; then
-  fail "the agent plugin does not expose exactly the thirteen installable skills"
+  fail "the agent plugin does not expose exactly the fourteen installable skills"
 fi
 
 while IFS= read -r skill; do

@@ -110,6 +110,13 @@ reasonable change. Run focused checks as you go. Avoid speculative
 abstraction; prefer managed services and the project's existing conventions.
 Stop and say so if the change is expanding past what was agreed.
 
+When the piece carries `visual`, or the change touches a screen file whatever
+subject the piece carries, load and follow `screen-check`. A screen file is one
+that renders a page, view, component, template, style, or native interface.
+Apply it before the screen's guided manual check, so the person judges the first
+result rather than describing a redo. When this build came from `/fix`, use the
+same boundary: a fault on a screen gets the rules and any other fault does not.
+
 Groundwork that makes the change easier is allowed only when it is itself a
 vertical slice, or an expand-then-contract sequence that keeps the checks green
 throughout, and it is ordered ahead as its own piece. It is never a horizontal

@@ -103,6 +103,15 @@ If the tool needs confidential files to work from, say so during the interview. 
 
 Typed alone, /implement takes the next ready piece from the plan. It agrees with you in one sentence what the piece should do, chooses the evidence that piece needs, builds until that evidence holds, then stops so you can try it. Nothing is saved until you confirm it behaves. A piece that is not ready yet, still waiting on a question, goes to /shape first; /implement builds, it does not shape.
 
+When a piece is about the interface, or its files change a screen, the agent
+applies the screen rules before your guided check. Your project's `DESIGN.md`,
+design system, or component library comes first. The house rules cover forms,
+tables, states, actions, words, keyboard use, contrast, and the familiar visual
+defaults that coding agents reach for. The report says which rules were applied
+and what still needs your eyes. It never claims the screen is accessible,
+compliant, or good, and a piece with no screen sees none of this. If the result
+is wrong, describe what happened and type /fix.
+
 If the change touched an area the build path flags, the best independent method available reviews it first. It reports in plain language, sorted into what's worth stopping for and what's worth knowing.
 
 /queue shows everything ready to build at once, and what is waiting on what. Type it when you are taking on several pieces rather than one, which is the only time you need it. It comes back with two lists. The first is everything ready, and those are safe to take on together, because a piece waiting on another piece is never in it. The second is what is waiting, each line saying which piece has to land first: "deposits cannot start until card payments is built". It changes nothing and builds nothing, so /implement is still what does the work. If the list looks out of date, type /queue again, since it is printed fresh from your project's issues every time.
@@ -189,10 +198,10 @@ Normal /implement and /fix completion updates the records directly; you don't ne
 /maintain is the service visit: monthly and light for AI Build Kit updates,
 project dependency updates, and anything the error alerts caught. When a newer
 kit is available, the agent shows the version and what changed, then waits for
-approval. An update refreshes only the thirteen AI Build Kit skills and leaves
+approval. An update refreshes only the fourteen AI Build Kit skills and leaves
 your tool, its records, and its own checks alone. It also adds any skill the
 kit has renamed or added since, and says if the installation is short of the
-thirteen. When the kit has renamed a command, the update also rewrites the
+fourteen. When the kit has renamed a command, the update also rewrites the
 command list in your AGENTS.md, with your approval, so you are not left to
 edit it by hand. A project founded from a whole copy of the kit also carries
 the kit's own command files, which make each command show twice; the visit

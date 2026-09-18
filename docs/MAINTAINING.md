@@ -147,7 +147,7 @@ condition, not in the shared default.
 
 ## Changing a skill
 
-This section governs the thirteen canonical skills in `.agents/skills/`. A
+This section governs the fourteen canonical skills in `.agents/skills/`. A
 maintainer skill sits outside it, and `AGENTS.md` says what it does and does not
 owe.
 
@@ -161,7 +161,7 @@ the regenerated compatibility fixtures. Never hand-edit anything under
 `.claude/`, `.cursor/`, or `.gemini/`. New projects use the shared skills
 installer, the optional Claude Code plugin, or the Agent Plugins folder. The
 Claude plugin metadata lives under `.claude-plugin/`. It explicitly
-selects the nine generated command files and four generated background skills.
+selects the nine generated command files and five generated background skills.
 Those thin adapters load the canonical instructions from the plugin cache. The
 Agent Plugins manifest lives under `agent-plugin/`, and its `skills`
 folder is assembled by the release allowlist rather than by
@@ -189,10 +189,10 @@ directly, so the setting has to be right in the skill itself, whatever the
 generated adapters look like.
 
 `user-invocable` is not in the written Agent Skills standard, so its reference
-checker reports the four background skills as invalid. Keep it anyway, with the
+checker reports the five background skills as invalid. Keep it anyway, with the
 cost on the record: the plugin standard tells a client to skip any skill that
 fails the skill standard, so a strict Agent Plugins client would load the nine
-commands and skip the four. Claude Code accepts the setting, which is why that
+commands and skip the five. Claude Code accepts the setting, which is why that
 route works today. If the standard adopts a setting of its own, follow it and
 update the short person-facing version in `docs/COMPATIBILITY.md`.
 
@@ -204,10 +204,10 @@ it.
 
 The reason is what a shared skills installer reads. It looks in
 `.agents/skills/` and `.claude/skills/` and offers whatever it finds in either,
-merging the two by the `name` in each file's frontmatter. The thirteen adapters
-carry the names of the thirteen skills they point at, so they merge away and an
-installer finds thirteen. Neither maintainer skill shares a name with one of the
-thirteen, so a copy of either in those folders would be a fourteenth skill
+merging the two by the `name` in each file's frontmatter. The fourteen adapters
+carry the names of the fourteen skills they point at, so they merge away and an
+installer finds fourteen. Neither maintainer skill shares a name with one of the
+fourteen, so a copy of either in those folders would be a fifteenth skill
 offered to every project.
 
 Sitting outside both folders is what prevents that. It is also why the skill
@@ -248,7 +248,7 @@ COMPATIBILITY.md, beside this file, holds the full per-tool map.
 Every change to `.agents/skills/` or the kit's own machinery runs
 `.agents/tools/validate-kit.sh`, which checks:
 
-- the canonical skill inventory (exactly nine commands and four background
+- the canonical skill inventory (exactly nine commands and five background
   skills, named exactly, with nothing else in the folder);
 - the maintainer skill boundary: every folder under `.agents/maintainer-skills/`
   is read off the disk rather than from a list, the vendored writing skill
@@ -297,7 +297,7 @@ Every change to `.agents/skills/` or the kit's own machinery runs
   "four project documents", `team.md`, a mandatory fresh session for every
   build, a universal pull-request or test-first requirement, an automatic
   rebuild treated as the fourth `/fix` attempt, an absolute claim that the
-  four background skills never appear in any harness, incorrect Claude invocation
+  five background skills never appear in any harness, incorrect Claude invocation
   semantics, `.codex/` described as a generated adapter, or a claim that
   everything in the kit is markdown.
 
@@ -436,7 +436,7 @@ maintainer's real Claude configuration.
 
 Run `.agents/tests/agent-plugin.sh` too. It builds a release and checks the
 assembled `agent-plugin` folder against the open standard: the manifest's
-permitted fields, the thirteen skills as immediate children of `skills`, no
+permitted fields, the fourteen skills as immediate children of `skills`, no
 skill hidden deeper, no maintainer-only writing skill, and a project
 stand-up from that folder alone.
 
@@ -618,7 +618,7 @@ name a person reads is the one that matters, and an internal name is left alone
 where changing it would churn output nobody reads for no reader benefit.
 
 A person reads "background skills"; the code identifiers and check messages say
-"disciplines". They are the same four skills.
+"disciplines". They are the same five skills.
 
 A person reads that the agent chooses the method; `.agents/tests/scenarios.md`
 and `.agents/tests/replay/grader-prompt.md` call that field "hidden technique".

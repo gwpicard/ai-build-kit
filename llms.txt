@@ -1,6 +1,6 @@
 # AI Build Kit
 
-> A compact, reliable way to build software with an AI coding agent: the discipline of a real process, without the ceremony, and without having to read the code. It is thirteen skills in the open Agent Skills format: nine commands you type, and four that run in the background. Free, MIT licensed, and it runs inside your own project folder on your own computer.
+> A compact, reliable way to build software with an AI coding agent: the discipline of a real process, without the ceremony, and without having to read the code. It is fourteen skills in the open Agent Skills format: nine commands you type, and five that run in the background. Free, MIT licensed, and it runs inside your own project folder on your own computer.
 
 Who it is for: anyone directing an AI coding agent who wants what it builds to
 keep working. People who came to software from another job, and developers

@@ -29,6 +29,7 @@
   "skills": [
     "./.claude/skills/change-triage",
     "./.claude/skills/clarify",
+    "./.claude/skills/screen-check",
     "./.claude/skills/second-opinion",
     "./.claude/skills/section-builder"
   ]

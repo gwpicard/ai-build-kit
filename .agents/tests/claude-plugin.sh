@@ -48,7 +48,7 @@ grep -qF '"version": "0.2.0"' "$LISTING" || \
   fail "Claude installed the wrong plugin version"
 grep -qF '"scope": "local"' "$LISTING" || \
   fail "Claude did not keep the plugin local to the project"
-grep -qF 'Skills (4)  change-triage, clarify, second-opinion, section-builder' \
+grep -qF 'Skills (5)  change-triage, clarify, screen-check, second-opinion, section-builder' \
   "$DETAILS" || fail "Claude did not keep the plugin command and discipline boundaries separate"
 
 INSTALL_PATH=$(sed -n 's/^[[:space:]]*"installPath": "\([^"]*\)",$/\1/p' "$LISTING")
