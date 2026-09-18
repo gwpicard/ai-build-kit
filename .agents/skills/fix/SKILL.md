@@ -34,6 +34,17 @@ precisely is a bug you can't verify as fixed.
 
 ## 2. Build the tightest feedback loop available
 
+Before ranking causes, read `CHANGELOG.md` and closed pieces for the same area.
+A repair already tried and failed is ruled out or named as a repeat; a cause
+already established ranks first. When that history changes the ranking, say one
+line: "This was tried on <date> and did not hold, so it is ruled out." The
+history is evidence to check against the present, not a verdict to copy.
+
+Load `.agents/skills/section-builder/references/reach-check.md` and run its
+reach check now. Run the existing tests it finds before writing a new focused
+test. Prefer the existing test when it catches the exact symptom; add the new
+regression test after the cause is known.
+
 Find one repeatable check that catches the exact symptom. Prefer, in order:
 an existing failing test; a new focused automated test; a request or command
 script; browser automation; replayed input; a small throwaway harness;
@@ -54,14 +65,14 @@ still fails remains.
 
 ## 4. Rank causes
 
-Load `.agents/skills/section-builder/references/reach-check.md` and run its
-reach check before ranking causes. Use the parts reached and their existing
-covering tests as evidence, with the live working tree outranking any written
-index.
-
 List two to five plausible causes internally, each with a falsifiable
 prediction. Show the list to the user only when their domain knowledge could
 change the ranking; otherwise it stays internal.
+
+When the person or changelog identifies a time the behaviour worked, use the
+tight reproduction to bisect the saved history before testing the ranked
+causes. Report the result as: "It broke in the change called <piece title> on
+<date>." Do not bisect when there is no known-good point.
 
 ## 5. Test one cause at a time
 
@@ -81,10 +92,12 @@ the strongest manual or operational evidence available instead.
 
 ## 7. Cleanup
 
-Remove temporary logs and harnesses, confirm the original symptom is gone and
-the regression evidence passes, record the cause in the changelog in plain
-language, update the other records, and use section-builder's save and
-review route for the change itself.
+Name every temporary log and harness added during the repair, remove each one,
+then run the regression evidence without them. Confirm the original symptom is
+gone, record the cause in the changelog in plain language, update the other
+records, and use section-builder's save and review route for the change itself.
+The report says which temporary items were removed and that the evidence still
+passed.
 
 Where the repair had an issue, take the `broken` label off once the symptom is
 gone. A repair that stays labelled broken keeps reporting a fault that no longer

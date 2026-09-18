@@ -273,6 +273,10 @@ attribution line, not the word.
   sensitive areas and code. It holds the Build with care boundary, the optional
   local data scan, each skill that reads the map, and the shipped check that
   fails on a moved path or an unassigned source folder.
+- `.agents/tests/fix-history-first.sh` guards the repair steps that read prior
+  work and existing tests before a new attempt, search saved history from a
+  known-good point, remove temporary instrumentation, and refuse to call a
+  retry-only test green.
 - `.agents/tests/triage-overlap.sh` guards the warning that another open piece
   would be built in the same place: what change-triage compares, that it names
   the clash before the routing step rather than after it, that it blocks

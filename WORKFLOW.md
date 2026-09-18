@@ -133,6 +133,13 @@ If the request would change what kind of project this is, by bringing in outside
 
 /fix is for when something that should work doesn't: "/fix the board duplicates cards when I drag them". Paste the whole error if there is one. It builds the tightest repeatable check it can find for the exact symptom and works out the cause before touching code, driving the app in a browser or adding temporary logging when it needs to see what is actually going wrong. It resets failed attempts rather than stacking them, and finishes with evidence that keeps the bug from coming back.
 
+Before repairing, it reads the changelog and finished pieces for the same part
+of the tool. That keeps a failed repair from being tried as if it were new, and
+lets an earlier cause lead the search. Existing covering tests run before a new
+one is written. When there is a known time the behaviour worked, /fix searches
+the saved changes for where it broke, then removes every temporary log before
+the repair is saved.
+
 If the same piece fails three rounds in a row, it stops patching and routes by what the failures revealed. That may mean another interview, a rebuild from the masterplan, a stop for missing access, or naming the area as sensitive so somebody who does that work for a living looks at it.
 
 ## 6. Evidence

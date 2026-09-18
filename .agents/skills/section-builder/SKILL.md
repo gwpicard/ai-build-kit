@@ -110,6 +110,10 @@ reasonable change. Run focused checks as you go. Avoid speculative
 abstraction; prefer managed services and the project's existing conventions.
 Stop and say so if the change is expanding past what was agreed.
 
+A test that passes only on a retry is a fault in the test, never a passing
+result. Report it as unreliable evidence and repair or replace it before the
+piece can be saved.
+
 Groundwork that makes the change easier is allowed only when it is itself a
 vertical slice, or an expand-then-contract sequence that keeps the checks green
 throughout, and it is ordered ahead as its own piece. It is never a horizontal
