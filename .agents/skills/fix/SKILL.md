@@ -34,6 +34,13 @@ precisely is a bug you can't verify as fixed.
 
 ## 2. Build the tightest feedback loop available
 
+After launch on Build and run it or Build with care, read the tool's own
+request record alongside the person's report as a source for the reproduction.
+Use it to find the failed step and the smallest repeatable case. If the record
+is absent or cannot be reached, say what evidence is missing and continue with
+the other sources below; never ask the person to read logs. The project's
+Secrets and Confidential files rules still apply to anything read or reported.
+
 Before ranking causes, read `CHANGELOG.md` and closed pieces for the same area.
 A repair already tried and failed is ruled out or named as a repeat; a cause
 already established ranks first. When that history changes the ranking, say one

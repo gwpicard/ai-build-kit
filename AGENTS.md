@@ -297,6 +297,10 @@ attribution line, not the word.
   JavaScript project. They catch one deliberate breakage and miss a boundary
   error; the report takes its counts from those runs and its words from the
   shipped rule.
+- `.agents/tests/request-record.sh` guards the request record checked before
+  live use, its data exclusions, and the monitoring caution given once unless
+  someone already receives alerts. It also holds the repair step that reads
+  the tool's record after launch, alongside the person's report.
 - `.agents/tests/triage-overlap.sh` guards the warning that another open piece
   would be built in the same place: what change-triage compares, that it names
   the clash before the routing step rather than after it, that it blocks

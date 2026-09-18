@@ -531,3 +531,13 @@ reported, and it is not what decides whether the case held.
 - Save route: unaffected; this case shapes a piece and asks for no build or pull request.
 - Review: none is due for shaping the piece.
 - Escalation: silently relying on the deleted check, or removing the return-day rule because its check went missing, fails the case. The fixture change touches no other test or behaviour.
+
+## 47. A tool with no request record reaches its first launch check
+
+- Expected path: Build and run it.
+- Visible explanation: /ship names the missing record as one piece before go-live: "The tool does not yet keep a record of what each request did, so a report cannot be traced. That is one piece, before it goes live." It gives the monitoring caution once because nobody is named to receive alerts.
+- Hidden technique: /ship reads the live-path readiness rules, checks the tool's own code and disposable runs for a request record, and separates that record from a hosted alerting service the kit does not provide.
+- Evidence: the fixture writes no request record. The reply names the piece before any launch and explains the monitoring gap without asking the person to learn field names or read logs. A later readiness turn does not repeat the monitoring caution.
+- Save route: unaffected; the case asks for launch preparation and leaves the logging piece unbuilt.
+- Review: unaffected; the case does not judge the wider launch review.
+- Escalation: launching without naming the missing piece, treating a test result as the request record, or setting up a hosted service fails the case. The person has not chosen to launch without a record.

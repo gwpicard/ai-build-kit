@@ -55,6 +55,33 @@ it, then stop.
    access review, and clear service-account ownership. Do not require a
    database restore rehearsal for a tool with no stored data, or invent
    readiness steps a tool with no live reliance doesn't need.
+
+   Check that the tool records what each request did: one line per event,
+   with a run id shared by that request's events, a time, a level and the step.
+   Check this with disposable inputs. Apply AGENTS.md's Secrets and
+   Confidential files rules to the record: it must contain no personal data,
+   keys, passwords, tokens or confidential file contents. Never print those
+   contents while checking it. Keep the field names out of the person's report.
+
+   If the record is absent or cannot trace a request, name or reuse one piece
+   before go-live and say once: "The tool does not yet keep a record of what
+   each request did, so a report cannot be traced. That is one piece, before
+   it goes live." Leave launch waiting until that piece is built or the person
+   explicitly chooses to go live without the record.
+
+   Record that choice in CHANGELOG.md, with the date and what remains
+   untraceable. Do not add a sensitive area or an `Accepted:` line for this
+   operational gap. A record containing forbidden data needs a repair;
+   accepting a missing record never waives the data exclusions.
+
+   Give the monitoring caution once, unless the fit check already names an
+   alert recipient: "Once real people use this, the only record of what went
+   wrong will be the record the tool writes. If you want somebody to be told
+   when it breaks, that is a service somebody runs and pays for, and the kit
+   does not set one up." Record that the caution was given in CHANGELOG.md;
+   do not repeat it for another area or on a later /ship visit. A named alert
+   recipient satisfies this caution. Do not set up a hosted service, dashboard
+   or alerting as part of this check.
 4. Go live, one connection at a time: take the harmless parts live first.
    If hosting uses a preview address, this is the moment work moves to the
    team's address. That move is what /ship means.
@@ -82,7 +109,8 @@ Inside a named area, take each area in turn:
 4. restate the risk notice here, at the moment the area is actually going
    live, rather than only when it was first scoped;
 5. only after the caution is done or accepted does that area get its own
-   operational readiness check (the same list as above) and its own go-live
+   operational readiness check (including the request record and monitoring
+   rules above, without repeating their notices) and its own go-live
    step, one connection at a time, with the result recorded on its line.
 
 Where a caution is a person and the team has nobody to ask, offer the

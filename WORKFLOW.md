@@ -163,6 +163,10 @@ one is written. When there is a known time the behaviour worked, /fix searches
 the saved changes for where it broke, then removes every temporary log before
 the repair is saved.
 
+After launch, /fix also reads the tool's own record of what each request did
+alongside your report, so it can trace the failed step. You do not need to read
+that record yourself.
+
 If the same piece fails three rounds in a row, it stops patching and routes by what the failures revealed. That may mean another interview, a rebuild from the masterplan, a stop for missing access, or naming the area as sensitive so somebody who does that work for a living looks at it.
 
 ## 6. Evidence
@@ -216,6 +220,19 @@ What the agent may not do is take the notice back. Pushing back on the cost, the
 **Build and run it.** /ship runs the full evidence run, independent review, operational readiness (alerts, backup, a restored-backup rehearsal, a manual fallback, rollback), and the live transition.
 
 **Build with care.** /ship ships everywhere outside a named sensitive area, does the caution it can do itself (a backup restored once, a rehearsal on a copy), and stops at a caution that is a person until they have looked or you accept the risk on the record. Where somebody outside the team is going to look, ask for the handover and /ship prepares it.
+
+On both live paths, /ship checks that the tool keeps a plain record of what each
+request did, without personal data, secrets or confidential file contents. If
+it does not, you hear: "The tool does not yet keep a record of what each request
+did, so a report cannot be traced. That is one piece, before it goes live."
+That piece gets built before launch, or your choice to launch without the
+record goes into the changelog.
+
+It also tells you once: "Once real people use this, the only record of what
+went wrong will be the record the tool writes. If you want somebody to be told
+when it breaks, that is a service somebody runs and pays for, and the kit does
+not set one up." If the fit check already names who receives alerts, it does
+not repeat this caution. Explore privately gets neither check nor caution.
 
 After the first launch, shipping gets lighter: it re-checks what changed since the last ship and moves that over, rechecking the build path first if reliance or consequence has grown.
 
