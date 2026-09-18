@@ -18,7 +18,7 @@ rs_init "Screen-foundation checks"
 rs_rule "only a project with a screen gets the foundation" \
   'when the project has a screen'
 rs_rule "a project without a screen records nothing" \
-  'when the project has no screen, do not add or record either'
+  'when the project has no screen, do not add or record a design tool, design-taste skill, or component route'
 rs_rule "the taste skill comes from the vendored copy" \
   'copy the vendored .frontend-design.md.'
 rs_rule "the vendored licence stays beside the skill" \
@@ -47,14 +47,17 @@ rs_rule "founding does not create DESIGN.md" \
   'do not create .design.md.'
 rs_guard "$SETUP" "the setup skill's screen-foundation step"
 
+rs_reset
+rs_rule "the foundation template records design choices only for screen projects" \
+  'for a project with a screen, this section records its design tool, design-taste skill and component route'
+rs_guard "$FOUNDATION" "the project foundation stack template"
+
 rs_require_order "the question comes before the vendored copy" \
   "$SETUP" '^Ask once, in plain words' '^Then copy the vendored `frontend-design.md`'
 
 rs_require_order "consent comes before the route commands" \
   "$SETUP" 'Only after the person says yes' 'For React, set `THEME_URL`'
 
-rs_require "the project stack template names the two records" \
-  "$FOUNDATION" 'design-taste skill and component route'
 rs_require "the project stack template says both can be swapped there" \
   "$FOUNDATION" 'replace either choice here'
 rs_require "WORKFLOW explains the one founding choice" \

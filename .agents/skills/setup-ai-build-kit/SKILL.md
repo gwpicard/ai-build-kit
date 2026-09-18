@@ -350,6 +350,13 @@ section. In the conversation, describe what the setup lets the person do. Name
 a product or service only when it creates a choice, cost, account, access step,
 ownership duty, or product limit that the person needs to understand.
 
+For a project with a screen, read the design tool, if any, from answers already
+given. Where one was named, record it in the stack section. Where none was
+named, write `Design tool: none recorded`. Do not add a founding question. If
+the first structure prototype could use a design tool and none is recorded, ask
+once then and update the stack section. That later question must never stop
+founding.
+
 When the project has a screen, choose its screen foundation after the stack is
 chosen. For a React stack, use shadcn/ui with a tweakcn theme as the component
 route. For a screen stack that is not React, use DaisyUI.
@@ -380,7 +387,7 @@ gate.
 Record the design-taste skill and component route in AGENTS.md's stack section,
 including where to replace either one later. The stack section is the record for
 both choices. Do not create `DESIGN.md`. When the project has no screen, do not
-add or record either.
+add or record a design tool, design-taste skill, or component route.
 
 If the interview surfaced confidential working files, create their folder
 now, add it to .gitignore, and record the handling rules in AGENTS.md. If the
