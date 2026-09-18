@@ -49,6 +49,11 @@ You can work with the issues yourself, and nothing you do there will be undone. 
 
 A piece is written in two layers. The part you read stays in plain words, and it stays complete about anything that affects your product, so it never looks simpler than the work really is. The build detail the agent needs sits in a collapsed "under the hood" section you never have to open. Anything that affects the whole product is written into the masterplan instead, and anything technical that affects the whole project goes into AGENTS.md, so no fact is copied into two places.
 
+A decision can say what it rests on, in one short line beside it. When /shape
+uses that decision, or /sync checks the masterplan, the agent reads its support
+again. If it has gone, you hear which decision has lost its ground and answer
+in plain words. You never have to read a test or find a saved change yourself.
+
 Assign yourself to claim a piece, or let the agent put your name on it when it starts; either way nobody else builds the same thing. Close an issue you have decided against and it stays closed. Labels of your own are left alone, and milestones and boards are ignored entirely, so you can use them however suits you.
 
 A piece too big to build in one go is split into parts. You will see it marked "made of parts" with a count of how many are done. The agent builds the parts one at a time, and the whole piece closes itself when the last part is finished, so there is nothing for you to tick off.
@@ -81,6 +86,12 @@ Every project has exactly one build path at a time, set by the fit check and rec
 
 **Build with care.** Some of the work touches a sensitive area: personal data, money, sign-in by outsiders, automatic action on people or other systems, irreplaceable live data, or a regulated decision. The masterplan names each area in your tool's own words, with the one caution that goes with it. The kit builds everything else the ordinary way, and in a named area the caution happens before that part goes live, or you accept skipping it on the record.
 
+Each sensitive area also says where it lives in the tool. A check keeps that
+list true: a moved place or a new part with no area stops the check and asks
+you where it belongs. When a change reaches one of those places, the review
+starts from what the change touched rather than from what the piece expected
+to touch. The map exists only on Build with care.
+
 None of these paths is the kit refusing to build. Build with care is where it says plainly what would normally prevent the harm, and you decide. That is the risk notice, in section 8.
 
 ## 4. Day one
@@ -90,6 +101,10 @@ Type /setup-ai-build-kit. It checks what the current tool can actually do, then 
 While it works, the conversation stays on project decisions and results you can
 use. Routine searches, setup commands, retries, and waiting stay behind the
 scenes unless they create a blocker or need a decision from you.
+
+The coverage read includes who can see and do what, the data the tool holds,
+and its outside connections. It names any gaps together and offers once to add
+the missing work. You decide whether it belongs in the plan.
 
 Already built something, in an app builder, a chat assistant, or an earlier attempt? /setup-ai-build-kit adopts it instead of replacing it: it reads what exists, interviews you about what the tool is supposed to do, writes the masterplan for what's actually there, and pins down current behaviour with tests before anything changes.
 
@@ -102,6 +117,24 @@ If the tool needs confidential files to work from, say so during the interview. 
 ## 5. Day to day
 
 Typed alone, /implement takes the next ready piece from the plan. It agrees with you in one sentence what the piece should do, chooses the evidence that piece needs, builds until that evidence holds, then stops so you can try it. Nothing is saved until you confirm it behaves. A piece that is not ready yet, still waiting on a question, goes to /shape first; /implement builds, it does not shape.
+
+Before saving, the kit checks what else the change touches and runs the tests
+that already cover those parts first. If it reaches another part of the tool,
+you get one line naming that part and saying whether its tests passed. The
+check is worked out afresh from the current code, so there is no map to keep up
+to date. The full project check still runs before a pull request is ready.
+
+It also compares the tool's structure before and after the build. You hear one
+line only when the change made later work harder, such as two parts now looping
+through each other or a named boundary being crossed. There is no score to
+interpret. You can ask for the structure to be fixed before saving, or leave it
+and have that choice recorded on the piece.
+
+If a build uncovers another piece of work, that new piece says "Found while
+building the invoice list", using the title of the piece that surfaced it.
+Both pieces link to each other, so you can follow where the work came from.
+Parts of the same outcome stay together as parts; a different outcome keeps
+its own piece.
 
 When a piece is about the interface, or its files change a screen, the agent
 applies the screen rules before your guided check. Your project's `DESIGN.md`,
@@ -118,6 +151,12 @@ If the change touched an area the build path flags, the best independent method 
 
 /shape is how you bring anything new: "/shape add a filter to the board". You never sort your own request; the agent works out what kind of work it is. Clear and piece-sized becomes a ready piece, and /shape offers to build it now or leave it for /implement later. Vague gets a short interview.
 
+Each piece says what it changes in the masterplan, and the masterplan says when
+it was last checked. You see a line such as "When this lands, the masterplan
+gains a weekly summary email", or "nothing" when it already covers the result.
+/implement applies that change as it saves the work, so the page keeps up
+without a separate /sync visit.
+
 A question a conversation can't settle gets a disposable prototype, a source check, or a search for something that already does the job. Two of those need you there; the research does not, so you can tell /shape you're leaving and it settles what it can alone, then tells you which pieces are waiting on you. Type /shape with a piece's number to settle that one rather than the next in line.
 
 You are never made to settle it there and then: when a request lands on a question, /shape says roughly what settling it would take, minutes for a look-up or a sitting for an interview or a prototype, and offers to file the piece with its question so you can come back to it. Nothing filed that way can be built until the question is answered, and /what-now tells you when enough pieces are waiting that the session is better spent planning than building.
@@ -129,6 +168,17 @@ Anything touching data, access, or money gets written into the masterplan first.
 If the request would change what kind of project this is, by bringing in outside users or real money or a promise to someone, the agent re-runs the fit check with you before building. A different build path needs different care before people rely on it.
 
 /fix is for when something that should work doesn't: "/fix the board duplicates cards when I drag them". Paste the whole error if there is one. It builds the tightest repeatable check it can find for the exact symptom and works out the cause before touching code, driving the app in a browser or adding temporary logging when it needs to see what is actually going wrong. It resets failed attempts rather than stacking them, and finishes with evidence that keeps the bug from coming back.
+
+Before repairing, it reads the changelog and finished pieces for the same part
+of the tool. That keeps a failed repair from being tried as if it were new, and
+lets an earlier cause lead the search. Existing covering tests run before a new
+one is written. When there is a known time the behaviour worked, /fix searches
+the saved changes for where it broke, then removes every temporary log before
+the repair is saved.
+
+After launch, /fix also reads the tool's own record of what each request did
+alongside your report, so it can trace the failed step. You do not need to read
+that record yourself.
 
 If the same piece fails three rounds in a row, it stops patching and routes by what the failures revealed. That may mean another interview, a rebuild from the masterplan, a stop for missing access, or naming the area as sensitive so somebody who does that work for a living looks at it.
 
@@ -142,6 +192,17 @@ Every promised behaviour gets evidence, in one of four forms:
 - an operational rehearsal, for backups, restores, migrations, rollback, or anything else that only proves itself by being run.
 
 The agent chooses the form the change actually needs; the report says what was proved and what remains a judgement call.
+
+On Build with care, /implement can offer to break the changed code on purpose
+to check whether its tests notice. /fix offers the same check for the test
+that keeps a repaired fault from returning. It runs locally when the language
+has a suitable tool, covers only the changed code, and is optional.
+
+You get one line: "The tests were checked by breaking the code on purpose 40
+times. They caught 37. The three they missed are listed on the piece." Misses
+in a named sensitive area are worth stopping for; the rest are worth knowing.
+You decide whether they matter. The kit records that choice, and only adds a
+test to protect promised behaviour, never just to raise the count.
 
 ## 7. Saving work
 
@@ -173,6 +234,19 @@ What the agent may not do is take the notice back. Pushing back on the cost, the
 
 **Build with care.** /ship ships everywhere outside a named sensitive area, does the caution it can do itself (a backup restored once, a rehearsal on a copy), and stops at a caution that is a person until they have looked or you accept the risk on the record. Where somebody outside the team is going to look, ask for the handover and /ship prepares it.
 
+On both live paths, /ship checks that the tool keeps a plain record of what each
+request did, without personal data, secrets or confidential file contents. If
+it does not, you hear: "The tool does not yet keep a record of what each request
+did, so a report cannot be traced. That is one piece, before it goes live."
+That piece gets built before launch, or your choice to launch without the
+record goes into the changelog.
+
+It also tells you once: "Once real people use this, the only record of what
+went wrong will be the record the tool writes. If you want somebody to be told
+when it breaks, that is a service somebody runs and pays for, and the kit does
+not set one up." If the fit check already names who receives alerts, it does
+not repeat this caution. Explore privately gets neither check nor caution.
+
 After the first launch, shipping gets lighter: it re-checks what changed since the last ship and moves that over, rechecking the build path first if reliance or consequence has grown.
 
 ## 10. Autonomy: /implement auto and goal modes
@@ -195,6 +269,29 @@ Nothing else changes when a second person arrives: naming a piece before startin
 
 Normal /implement and /fix completion updates the records directly; you don't need /sync after a piece that finished cleanly. /sync exists for interrupted work, work done outside the workflow, long sessions whose context went foggy, and handovers. A report-only reminder can optionally run at session end, where the tool supports it, but nothing writes to the records without a skill deciding to. /sync also re-reads the masterplan against your pieces, and says if a promise has lost the piece that builds it. Its corrections are saved the way a piece is saved, through the route your build path requires, so on a shared project they arrive as a pull request you decide to merge, and uncommitted work it finds on arrival is reported and left alone.
 
+/sync also picks up changes a finished piece was meant to make to the
+masterplan but never did. It checks what actually landed, applies what is still
+missing and records where it checked up to. The monthly visit uses that point
+to say how much work has since touched the tool's data, permissions or
+connections. When there is any, it gives the count and offers /sync in one
+line. That is a reason to check the page, not a claim that it is wrong.
+
+The coverage read includes permissions, data and outside connections here too.
+It also compares settled terms on every piece with the masterplan, even if a
+piece was parked or reshaped. A missing or different meaning joins the same
+list of gaps, with one offer to put the records right. Planning leaves the
+term on its piece until it is carried across, so parking the work cannot lose
+what you agreed.
+
+When the core masterplan grows beyond roughly two pages, /sync says so once
+and offers to move detail about individual pieces onto those pieces. It leaves
+the page alone without your yes, and keeps the tool's present promises and
+decisions on the masterplan.
+
+/sync names open pieces untouched for 30 days in one short list and asks once
+whether each is still wanted, should be parked, or is done. It changes nothing
+on that list without your yes. You can leave them as they are and carry on.
+
 /maintain is the service visit: monthly and light for AI Build Kit updates,
 project dependency updates, and anything the error alerts caught. When a newer
 kit is available, the agent shows the version and what changed, then waits for
@@ -215,13 +312,22 @@ the build-path section of your masterplan to the new shape, shows the old text
 above the new, keeps every accepted risk word for word, and changes nothing
 without your approval.
 
+The standing instructions in AGENTS.md stay under 200 lines and hold what the
+code cannot show, such as how work is saved and reviewed and which conventions
+differ from the default. /maintain counts the lines every month and offers a
+trim if the file reaches 200, or contains a folder layout, dependency list,
+architecture overview or style rule an automatic check could enforce. You see
+one line saying how long it is and what can go. Nothing is cut without your yes.
+
 /maintain writes the date of each visit into the project. When more than a month
 has gone by, opening a session says so and names /maintain. A tool that cannot
 run anything when a session opens says it when you type /what-now instead.
 Nothing is blocked and nothing changes without a command.
 
 The quarterly visit is fuller, with a hot-spot tidy-up and an ownership check
-that can name a new sensitive area or, after a genuine redesign, take one off. /maintain also owns the ending,
+that can name a new sensitive area or, after a genuine redesign, take one off.
+Its hot-spot read counts how widely the quarter's saved changes spread instead
+of guessing from memory. /maintain also owns the ending,
 when a tool's time is over: export the data, tell the team, revoke access, and
 switch off the services.
 

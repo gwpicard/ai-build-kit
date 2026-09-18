@@ -1,7 +1,17 @@
 # Masterplan
 
+Trued against: not yet checked
+
+<!-- The saved code state last compared with this page. The agent follows
+.agents/skills/setup-ai-build-kit/references/masterplan-changes.md; the person
+never has to read a hash. -->
+
 <!-- What the tool is now. Present tense. Keep the core readable in roughly
-one to two pages. Optional sections appear only when they carry real decisions. -->
+one to two pages. Optional sections appear only when they carry real decisions.
+On every build path, key terms and decided lines may carry an optional one-line
+"rests on" clause in plain words, naming the evidence behind the decision.
+Follow the decision rules in
+.agents/skills/setup-ai-build-kit/references/pieces.md. -->
 
 ## Build path
 
@@ -12,6 +22,10 @@ first, every session. -->
 Path:
 Why:
 Sensitive areas:
+<!-- Build with care only. Under each area, add an indented `paths:` line and
+at most one `boundary:` line. List every other top-level source folder on an
+indented `none:` line. Update the map in the same save as a code move. Omit the
+map on Explore privately and Build and run it. -->
 Accepted:
 Recheck when:
 Last checked:

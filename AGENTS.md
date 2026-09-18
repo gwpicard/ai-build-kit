@@ -182,6 +182,10 @@ attribution line, not the word.
   this repository never receives a reminder.
 - `.agents/tests/fake-github.sh` checks the replay harness's stand-in for the
   GitHub CLI: the commands it answers, and the ones it still refuses on purpose.
+- `.agents/tests/replay-provider.sh` checks both replay providers without a
+  model call. It stubs Claude Code and Codex, then proves each first turn,
+  resumed turn and grader route. It also holds the Codex shell profiles that
+  keep the fake GitHub command ahead of a signed-in real one.
 - `.agents/tests/plan-printout.sh` runs the printout against a fixed set of
   issues and reads what it wrote: which group each piece lands in, whether a
   waiting piece says why, whether a shaped piece says it is ready, and whether a
@@ -258,12 +262,58 @@ attribution line, not the word.
 - `.agents/tests/coverage-read.sh` guards the read that compares the masterplan
   against the pieces: the rules that keep it honest, that /setup and /sync both
   still run it, and that WORKFLOW.md explains it for founding and for sync. It
-  fails on a copy with any one of those removed.
+  includes permissions, data, connections and settled terms left on parked
+  pieces, and fails on a copy with any one of those rules removed.
+- `.agents/tests/masterplan-edges.sh` guards where ownership facts are written,
+  the settled term a piece keeps through parking or reshaping, and the single
+  offer to shorten an overlong masterplan. It also holds the parked-term
+  rehearsal's setup and expected result.
 - `.agents/tests/shape-research.sh` guards the two research steps that share the
   `needs-research` label: the rules that keep an existing-work search honest
   about maintenance, licence, cost, data, and removal, that /shape offers both
   steps and says which it ran, and that change-triage, pieces.md, and
   WORKFLOW.md all describe the label as covering both.
+- `.agents/tests/reach-check.sh` guards the check that asks what else a change
+  reaches and which existing tests cover it. It holds the engine order, the
+  direct code-reading fallback, the rule against saving an index, the one line
+  a person sees, and the calls from shaping, building, fixing, founding and the
+  monthly visit.
+- `.agents/tests/sensitive-area-map.sh` guards the readable map between named
+  sensitive areas and code. It holds the Build with care boundary, the optional
+  local data scan, each skill that reads the map, and the shipped check that
+  fails on a moved path or an unassigned source folder.
+- `.agents/tests/fix-history-first.sh` guards the repair steps that read prior
+  work and existing tests before a new attempt, search saved history from a
+  known-good point, remove temporary instrumentation, and refuse to call a
+  retry-only test green.
+- `.agents/tests/masterplan-changes.sh` guards the change each piece carries
+  for the masterplan, its application during save and recovery, the saved state
+  the page was checked against, and the monthly count that offers /sync when
+  later work touched data, permissions or connections.
+- `.agents/tests/record-habits.sh` guards a decision's optional evidence line,
+  the read that spots when its support has gone, the link back to the build
+  that found a new piece, and the single question about work untouched for a
+  month. Each rule is removed in turn to prove the check catches its absence.
+- `.agents/tests/structure-change.sh` guards the small structure comparison
+  around a build: its live engine and import fallback, silence when nothing got
+  worse, fixed lines without a score, and the quarterly count of change spread
+  from saved history.
+- `.agents/tests/test-strength.sh` guards the optional check that breaks changed
+  code to see whether tests notice. It holds the Build with care boundary,
+  local scope, plain report, sorting of misses, the offer during repair, and
+  the rule against adding tests just to raise a count.
+- `.agents/tests/test-strength-rehearsal.sh` runs weak tests in a throwaway
+  JavaScript project. They catch one deliberate breakage and miss a boundary
+  error; the report takes its counts from those runs and its words from the
+  shipped rule.
+- `.agents/tests/request-record.sh` guards the request record checked before
+  live use, its data exclusions, and the monitoring caution given once unless
+  someone already receives alerts. It also holds the repair step that reads
+  the tool's record after launch, alongside the person's report.
+- `.agents/tests/standing-instructions.sh` guards the project's instruction
+  ceiling and the monthly offer to trim repeated code information. It removes
+  each written rule in turn and drives the validator's own count at the limit,
+  so a template of 199 lines passes and one of 200 fails.
 - `.agents/tests/triage-overlap.sh` guards the warning that another open piece
   would be built in the same place: what change-triage compares, that it names
   the clash before the routing step rather than after it, that it blocks

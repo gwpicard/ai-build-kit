@@ -86,7 +86,15 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    masterplan says rather than by which update this is. On the shared route,
    also run "Tidying a project founded from a whole copy of the kit" below
    whenever the leftovers it names are present.
-6. If the normal route is unavailable, use the latest public Release as the
+6. Re-read the capability profile's reach-check engine against what the
+   harness and project can use now. Keep the same preference order as
+   `.agents/skills/section-builder/references/reach-check.md`, and update the
+   profile when a better engine has appeared or the recorded one has gone.
+7. Run the sensitive-area check installed during founding. It is silent outside
+   Build with care. Where it names a missing path or an unassigned source folder,
+   ask which sensitive area it belongs to, or whether it belongs under `none`,
+   then update the map only after the person answers.
+8. If the normal route is unavailable, use the latest public Release as the
    fallback source. A shared installation may replace only the fourteen AI Build
    Kit skill folders after the same approval and clean checkpoint. A Claude
    plugin installation keeps its current enabled version when the marketplace
@@ -96,11 +104,32 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    checkpoint can restore Claude's plugin cache. If the plugin is no longer
    enabled, stop and ask the person to reinstall it after the marketplace is
    reachable.
-7. Update project dependencies and check for known vulnerabilities. Report what changed; apply on approval.
-8. Once live: read the error alerts and the bills. Anything real becomes a piece, for implement to take: open an issue in the shape `.agents/skills/setup-ai-build-kit/references/pieces.md` describes. A finding nobody wrote down is a finding nobody acts on.
-9. Verify backups still run where the tool has any. Confirm the named operational owner from the masterplan still holds that role, and that no critical service or credential is tied to someone who has left.
-10. Check whether use or reliance has grown enough that the fit check should run again; if it has, run it before anything else this visit.
-11. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
+9. Read the masterplan's trued-against mark and count landed changes since it
+   using `.agents/skills/setup-ai-build-kit/references/masterplan-changes.md`.
+   When data, permissions or connections were touched, report the count and
+   offer /sync in one line. An absent or unusable mark gets the same offer
+   without a guessed count. Then update project dependencies and check for known
+   vulnerabilities. Report what changed; apply on approval.
+10. Once live: read the error alerts and the bills. Anything real becomes a piece, for implement to take: open an issue in the shape `.agents/skills/setup-ai-build-kit/references/pieces.md` describes. A finding nobody wrote down is a finding nobody acts on.
+11. Verify backups still run where the tool has any. Confirm the named operational owner from the masterplan still holds that role, and that no critical service or credential is tied to someone who has left.
+12. Check whether use or reliance has grown enough that the fit check should run again; if it has, run it before anything else this visit.
+13. On every build path, count every line in the project's AGENTS.md, including
+    blank lines, and read it for a directory layout, dependency list,
+    architecture overview or style rule an automatic check could enforce. It
+    stays under 200 lines and holds only what the code cannot show: the save
+    and review routes, conventions that differ from the default, and pointers
+    to the records.
+
+    At 200 lines or more, or with any of the named content even below that
+    count, offer a trim in one line, using the measured count and what can
+    go: "The standing instructions have reached 240 lines, and 30 of them
+    describe the folder layout the code already shows. Shall I trim them?"
+
+    Where length alone triggers the offer, name that alone; never invent
+    removable content to fill the example. Cut nothing without the person's
+    yes. A no leaves the file intact and the visit carries on. If the file is
+    short and carries none of that content, say nothing.
+14. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
     today's date on the `last-light-pass` line, written as YYYY-MM-DD. If that
     file is missing, create it with a `founded` line holding the date
     masterplan.md was first saved, then the two pass lines. If the project has
@@ -317,13 +346,19 @@ Everything above, plus:
    changed repeatedly, areas behind repeated bugs, areas whose evidence is
    slow or unreliable, areas where one change spreads across many files,
    integrations that fail often, and records that no longer explain reality.
+   For spread, read the quarter's landed changes from Git and count the files
+   each change touched in each area. Use that count to name the widest-spreading
+   areas rather than judging them from memory. This is a comparison, not a
+   health score.
    Propose no more than three simplifications; for each, state the repeated
    problem, the plain-language change, what becomes easier to verify or
    recover, the cost, and whether a person outside the team has to look.
    Apply on approval.
    Do not run a broad architecture programme merely because the quarter
    changed.
-3. Prune the instruction layer: AGENTS.md lines and project skills that no longer pay their way. Those accumulate debt the same way code does.
+3. Review project skills for instructions that no longer pay their way and
+   offer to remove them. AGENTS.md was already checked in the monthly pass;
+   do not repeat its trim offer or cut anything without the person's yes.
 4. Run ship's evidence run, scoped by the build path and its sensitive areas.
 5. The ownership and graduation check: can the team still explain the main
    flows? Can it verify important changes without reading code? Can it

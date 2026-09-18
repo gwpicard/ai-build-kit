@@ -511,3 +511,53 @@ reported, and it is not what decides whether the case held.
 - Save route: unaffected; the command that starts takes its own.
 - Review: unaffected; the command that starts brings its own.
 - Escalation: a request that fits no command gets one question with a best guess attached, such as "That sounds like /shape, is that right?". Starting a command the person did not ask for, or sending them back to retype the message with the command first, are the failures this scenario catches.
+
+## 45. A finished piece updates the masterplan without a sync visit
+
+- Expected path: Build and run it.
+- Visible explanation: when shaping, one line says the masterplan will gain the rule that available items appear in alphabetical order; after building, the person sees the passing example and the updated masterplan paragraph.
+- Hidden technique: shape writes the change on the piece's surface. Section-builder applies it while saving the checked behaviour and records the saved code state the page was trued against. No /sync invocation is needed.
+- Evidence: a test shows an unsorted item list returned in alphabetical order, the saved masterplan's correct-behaviour section carries that rule, and the page's trued-against mark resolves to the saved code that passed the test. A claim in the reply without a saved record is a failure.
+- Save route: pull request, left open for the person to merge. Its saved masterplan already carries the change, so merging the work brings the updated page with it.
+- Review: none is due for alphabetical ordering in this ordinary internal tool.
+- Escalation: a page that still lacks the rule, or a piece saved with only a promise to run /sync later, is the failure this case catches. The existing bookings and permissions are outside the piece.
+
+## 46. A decision loses the test it rests on
+
+- Expected path: Build and run it.
+- Visible explanation: on the shaping turn after the check is removed, one line says the rule about a loan occupying its return day rested on a test that no longer exists. The person hears which rule lost its support without being asked to read a test name.
+- Hidden technique: fixture preparation records a rests-on clause beside the existing return-day rule, then removes only the cited check and its runner entry. The next /shape reads that clause against the current branch before relying on the decision.
+- Evidence: the transcript shows the named check removed, followed by /shape naming the missing support on its next turn. The masterplan keeps the return-day rule, and the shaped piece records that it needs evidence. Repeating the person's deletion request before /shape runs does not count as the required read.
+- Save route: unaffected; this case shapes a piece and asks for no build or pull request.
+- Review: none is due for shaping the piece.
+- Escalation: silently relying on the deleted check, or removing the return-day rule because its check went missing, fails the case. The fixture change touches no other test or behaviour.
+
+## 47. A tool with no request record reaches its first launch check
+
+- Expected path: Build and run it.
+- Visible explanation: /ship names the missing record as one piece before go-live: "The tool does not yet keep a record of what each request did, so a report cannot be traced. That is one piece, before it goes live." It gives the monitoring caution once because nobody is named to receive alerts.
+- Hidden technique: /ship reads the live-path readiness rules, checks the tool's own code and disposable runs for a request record, and separates that record from a hosted alerting service the kit does not provide.
+- Evidence: the fixture writes no request record. The reply names the piece before any launch and explains the monitoring gap without asking the person to learn field names or read logs. A later readiness turn does not repeat the monitoring caution.
+- Save route: unaffected; the case asks for launch preparation and leaves the logging piece unbuilt.
+- Review: unaffected; the case does not judge the wider launch review.
+- Escalation: launching without naming the missing piece, treating a test result as the request record, or setting up a hosted service fails the case. The person has not chosen to launch without a record.
+
+## 48. A settled term survives its piece being parked
+
+- Expected path: Build and run it.
+- Visible explanation: /sync says the parked piece settled who a borrower and a booking steward are, but the masterplan has no definitions, and offers once to carry those meanings across.
+- Hidden technique: clarify records the settled terms on the shaped piece and keeps them when it is parked. The coverage read compares the masterplan's key terms with decisions on all pieces, including parked ones, without treating the parked capability as a present promise.
+- Evidence: the shaped piece records that a borrower uses the item and a booking steward entered the loan. The piece is then parked. The coverage read names the missing borrower definition even though its piece is parked. After the person's yes, the masterplan carries both meanings, the piece stays parked and the tool's behaviour is unchanged.
+- Save route: unaffected; this case judges the term's survival and reconciliation rather than how the document correction is saved.
+- Review: none is due for recording an agreed term.
+- Escalation: a term silently dropped when the piece is parked, a claim that the records agree while the term is missing, or a parked capability added to the masterplan as if built fails the case. No build is requested.
+
+## 49. Standing instructions grow beyond their ceiling
+
+- Expected path: Build and run it; the same monthly check applies on every build path.
+- Visible explanation: one line gives the measured length of the standing instructions, names the folder layout that can go, and asks whether to trim it.
+- Hidden technique: fixture preparation pads AGENTS.md to 240 lines with a description of folders already on disk. The monthly pass counts every line, reads the content, and offers the trim without applying it.
+- Evidence: the monthly visit reports the measured count in one trim offer and leaves the file unchanged after the person declines. A later read of AGENTS.md still finds 240 lines and every original instruction. The visit continues after the no.
+- Save route: unaffected; the file is left alone and this case does not judge how the visit is recorded.
+- Review: none is due for the read and offer.
+- Escalation: cutting any instruction before the person's yes, guessing the count, or stopping the rest of the visit when the trim is declined fails the case. Kit and dependency updates are outside this rehearsal.

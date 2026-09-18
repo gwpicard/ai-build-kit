@@ -34,6 +34,24 @@ precisely is a bug you can't verify as fixed.
 
 ## 2. Build the tightest feedback loop available
 
+After launch on Build and run it or Build with care, read the tool's own
+request record alongside the person's report as a source for the reproduction.
+Use it to find the failed step and the smallest repeatable case. If the record
+is absent or cannot be reached, say what evidence is missing and continue with
+the other sources below; never ask the person to read logs. The project's
+Secrets and Confidential files rules still apply to anything read or reported.
+
+Before ranking causes, read `CHANGELOG.md` and closed pieces for the same area.
+A repair already tried and failed is ruled out or named as a repeat; a cause
+already established ranks first. When that history changes the ranking, say one
+line: "This was tried on <date> and did not hold, so it is ruled out." The
+history is evidence to check against the present, not a verdict to copy.
+
+Load `.agents/skills/section-builder/references/reach-check.md` and run its
+reach check now. Run the existing tests it finds before writing a new focused
+test. Prefer the existing test when it catches the exact symptom; add the new
+regression test after the cause is known.
+
 Find one repeatable check that catches the exact symptom. Prefer, in order:
 an existing failing test; a new focused automated test; a request or command
 script; browser automation; replayed input; a small throwaway harness;
@@ -58,6 +76,11 @@ List two to five plausible causes internally, each with a falsifiable
 prediction. Show the list to the user only when their domain knowledge could
 change the ranking; otherwise it stays internal.
 
+When the person or changelog identifies a time the behaviour worked, use the
+tight reproduction to bisect the saved history before testing the ranked
+causes. Report the result as: "It broke in the change called <piece title> on
+<date>." Do not bisect when there is no known-good point.
+
 ## 5. Test one cause at a time
 
 Change one variable, and keep any temporary instrumentation targeted and clearly
@@ -74,12 +97,21 @@ it pass, then rerun the original, unminimised case. When no credible
 automated boundary exists, record that as a maintainability finding and use
 the strongest manual or operational evidence available instead.
 
+On Build with care, where a runner exists for the project's language, offer
+to check the regression test by breaking the repaired code on purpose. Follow
+`.agents/skills/section-builder/references/test-strength.md` for this optional
+check, its one-line report, and the misses listed on the repair's piece. Keep
+the run to the repaired code and the regression test; do not offer it again
+when section-builder saves the repair.
+
 ## 7. Cleanup
 
-Remove temporary logs and harnesses, confirm the original symptom is gone and
-the regression evidence passes, record the cause in the changelog in plain
-language, update the other records, and use section-builder's save and
-review route for the change itself.
+Name every temporary log and harness added during the repair, remove each one,
+then run the regression evidence without them. Confirm the original symptom is
+gone, record the cause in the changelog in plain language, update the other
+records, and use section-builder's save and review route for the change itself.
+The report says which temporary items were removed and that the evidence still
+passed.
 
 Where the repair had an issue, take the `broken` label off once the symptom is
 gone. A repair that stays labelled broken keeps reporting a fault that no longer

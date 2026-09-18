@@ -20,9 +20,38 @@ else, or recovering after an optional automation failed to run.
 ## The routine
 
 1. Bring the shared `main` branch up to date, then read the commits and changes since the last changelog entry, plus the tool's actual behaviour where that is cheap to check, and compare them against the records and the current Git state. Uncommitted work found here is the first finding, not an obstacle: say what it is and whose it seems to be, leave it exactly where it is, and never sweep it into a commit of your own or discard it to get a clean tree. Where `main` cannot be reached, work from the local copy and say so in one plain line.
-2. Correct the pieces to match reality, and append any changelog lines the work missed, dated. On a project with issues there is usually little to do, because a merged pull request saying `Closes #<number>` closes its own piece. Look for the exceptions: a piece marked `building` that nobody is building, a piece still open whose work plainly landed, a `blocked` label whose blocker has gone. Say what you found rather than correcting it quietly. Closing a piece is the person's decision, and a stale `blocked` label is worth offering to remove, since the blocked-by link already decides what `/implement` does. Whatever somebody did on GitHub by hand stands, as `.agents/skills/setup-ai-build-kit/references/pieces.md` describes. Refresh the printout afterwards.
-3. Correct masterplan.md where reality moved: a promise that changed shape, a section that no longer matches the tool. Never rewrite the build-path section directly; if the project's character has changed, rerun the fit check instead and let it produce the new section.
+2. Check for stale pieces before correcting their records. On every build
+   path, read the open pieces' last-updated times from GitHub.
+   List pieces untouched for at least 30 days once, in one short list by title.
+   Ask once: "For each of these, is it still wanted, should it be parked, or is
+   it done?" Change nothing on that list without a yes to the proposed action
+   for that piece.
+
+   Silence leaves it as it is, and sync carries on without asking again. Age
+   alone never closes or relabels a piece. If the dates cannot be read, say the
+   stale-piece check could not be made; do not guess from the local printout.
+
+   Correct the pieces to match reality, and append any changelog lines the work missed, dated. On a project with issues there is usually little to do, because a merged pull request saying `Closes #<number>` closes its own piece. Look for the exceptions: a piece marked `building` that nobody is building, a piece still open whose work plainly landed, a `blocked` label whose blocker has gone. Say what you found rather than correcting it quietly. Closing a piece is the person's decision, and a stale `blocked` label is worth offering to remove, since the blocked-by link already decides what `/implement` does. Whatever somebody did on GitHub by hand stands, as `.agents/skills/setup-ai-build-kit/references/pieces.md` describes. Refresh the printout afterwards.
+
+3. Correct masterplan.md where reality moved. Load `.agents/skills/setup-ai-build-kit/references/masterplan-changes.md`, merge each landed piece's `## Masterplan change` that has not yet been applied, and move the trued-against mark to the saved state you checked. Read from the older of that mark and the last changelog entry, so an up-to-date history cannot hide a stale page. Never rewrite the build-path section directly; if the project's character has changed, rerun the fit check instead and let it produce the new section.
+
+   Re-read every "rests on" clause in the masterplan against what it names,
+   following `.agents/skills/setup-ai-build-kit/references/pieces.md`'s decision
+   rules. When its support has gone, say in one line which decision lost its
+   ground: "The rule that a job closes once rested on a test that no longer
+   exists." Keep the decision on the page and ask what should settle it;
+   never quietly remove a rule because its evidence went missing.
+
 4. Check the plan still covers the page. Load `.agents/skills/setup-ai-build-kit/references/coverage-read.md` and compare the masterplan's promises against the pieces. Reconciling after an interruption or an outside contribution is exactly when a promise quietly loses its piece.
+
+   On every build path, count the words in the masterplan's core sections.
+   Leave out `Build path`, the optional `Key terms` and `How it stays running`
+   sections, headings, comments and diagram source. More than 1,000 words is the
+   working measure for roughly two pages. Above that, give one line once in this run:
+   "The masterplan is longer than roughly two pages. Shall I move the detail
+   about individual pieces onto those pieces?" Move detail only with a yes,
+   keeping every present promise and decision on the masterplan. Otherwise,
+   leave it intact and carry on. At or below the measure, say nothing.
 5. Identify anything left open: an unresolved recheck trigger from the build-path section, flagged work still waiting, or interrupted manual setup. Say what's open rather than closing it quietly. Where flagged work was built during the period being reconciled, check the build-path section carries an `Accepted:` line for it; if the work happened and the line is missing, say so rather than writing one now, because an acceptance recorded after the fact is a record of nothing.
 6. Keep the check on the pull request honest. If the way the project installs or tests has moved, update `.github/workflows/checks.yml` so `jobs.project-check` runs the project's real commands, the same ones AGENTS.md's stack section names. Touch only that job. An older project may still carry a separate source-validation job and repository conditions; leave those unchanged. A check still running the placeholder, or the wrong commands, is worse than no check at all because people believe the green tick.
 7. Bank what was learned. A mistake the agent has now made twice becomes one line in AGENTS.md, so it stops recurring. A pattern the user approved more than once becomes a project skill, if it earns one. Keep AGENTS.md lean: point at documents instead of repeating them, and delete lines that no longer pay their way.

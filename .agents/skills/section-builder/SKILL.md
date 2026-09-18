@@ -94,6 +94,12 @@ test; changing or moving records people already have takes a rehearsal on a copy
 Source evidence is required when correctness depends on an external fact;
 run change-triage's source check first.
 
+On Build with care, where a runner exists for the project's language, offer
+the optional check in `references/test-strength.md`: break only the changed
+code on purpose to see whether its tests notice. Run it after the ordinary
+tests pass, if the person wants it. Use that reference's one-line report and
+sort the misses on the piece. This offer adds no gate to saving the work.
+
 ## 4. Establish the baseline
 
 For automated behaviour: write or identify the check, and show it fails
@@ -102,6 +108,12 @@ behaviour or a refactor: establish the current passing baseline before
 changing it. For visual work: capture or describe the current state and say
 what visible difference to expect. Do not write a meaningless automated test
 merely to have one.
+
+Load `references/reach-check.md` and use its current engine to take a small
+structure baseline before code changes. Record only the relationships needed
+for comparison: imports between the parts being changed, and any declared
+sensitive-area boundary. Where no engine is present, read those imports
+directly. Do not save the baseline as a project file or turn it into a score.
 
 ## 5. Build one vertical slice
 
@@ -116,6 +128,16 @@ that renders a page, view, component, template, style, or native interface.
 Apply it before the screen's guided manual check, so the person judges the first
 result rather than describing a redo. When this build came from `/fix`, use the
 same boundary: a fault on a screen gets the rules and any other fault does not.
+
+When filing a new piece for work this build uncovers, follow the rule for work
+found during a build in `.agents/skills/setup-ai-build-kit/references/pieces.md`.
+Put the originating title on the new piece's surface and name the new piece
+on the originating record. Say one line such as "Found while building the
+invoice list." Keep the current build within its agreed scope.
+
+A test that passes only on a retry is a fault in the test, never a passing
+result. Report it as unreliable evidence and repair or replace it before the
+piece can be saved.
 
 Groundwork that makes the change easier is allowed only when it is itself a
 vertical slice, or an expand-then-contract sequence that keeps the checks green
@@ -138,6 +160,24 @@ expected versus actual, and fix it at the root.
 
 ## 7. Run required review
 
+Before deciding which review applies, load `references/reach-check.md`. Check
+what else the finished change reaches and which existing tests cover it, then
+run those tests first. Use what the change actually reaches when applying the
+review triggers below. On Build with care, compare the reached paths and crossed
+boundaries with the sensitive-area map in the masterplan. A match starts the
+review and says exactly: "This change reaches <area>, so a review is running."
+Check a boundary with sentrux or dependency-cruiser where either is already
+present, and by reading the changed imports where neither is present.
+Update that map in the same save as any code move that changes it. Keep the full
+project check for the pull-request gate.
+
+Compare the finished structure with the baseline from step 4, using the same
+engine. Say one line only when it got worse: "This change added a loop between
+<part> and <part>." On Build with care, use "This change crossed the boundary
+around <area>." Never show a score. When nothing worsened, say nothing. If it
+did, the person can ask to fix it before the save or leave it; record the choice
+on the piece and carry on.
+
 Review triggers come from the build path, the change's consequence
 classification, or the masterplan's sensitive areas. When
 any of those apply, run second-opinion using the best independent method
@@ -150,6 +190,11 @@ the named one. Evidence the change works is also not a review: a green check
 proves the behaviour, and the review exists for what the check cannot see.
 
 ## 8. Save
+
+Before saving on any route, apply the piece's `## Masterplan change` and update
+the trued-against mark as
+`.agents/skills/setup-ai-build-kit/references/masterplan-changes.md` describes.
+The record changes in step 9 are part of this save, not a later /sync task.
 
 Checkpoint route: update the records, commit, and state the saved checkpoint.
 
@@ -182,8 +227,8 @@ condition is met or the person accepts the risk instead.
 
 ## 9. Sync the records
 
-Normal completion updates: the piece, a changelog line, the masterplan when the
-present behaviour changed, and AGENTS.md only when a durable operating
+Normal completion updates: the piece, a changelog line, the masterplan through
+the piece's recorded change, and AGENTS.md only when a durable operating
 convention changed. Where the piece added, removed, or changed something outside
 the tool that it reaches, update the masterplan's connections picture too, and
 say in one line what the tool now reaches, so the person can say whether it

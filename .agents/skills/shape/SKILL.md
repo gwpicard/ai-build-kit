@@ -15,6 +15,13 @@ Read masterplan.md first, build-path section first, then the project's pieces,
 the same way `/implement` does. Refresh the printout and read that.
 `.agents/skills/setup-ai-build-kit/references/pieces.md` describes how the pieces are kept.
 
+Whenever shaping touches a decision, re-read any "rests on" clause in the
+piece's `## Decided` or the masterplan, following pieces.md's decision rules.
+Check what it names before relying on it, including when the piece is already
+ready. When its support has gone, say in one line: "The rule that a job closes
+once rested on a test that no longer exists." Name the actual rule in plain
+words, then settle any question this opens through the usual shaping route.
+
 ## Typed with words
 
 Run change-triage on the request and follow its route: shape it into a ready
@@ -40,6 +47,19 @@ convention to AGENTS.md's stack section. A piece must be small enough for a fres
 session to hold whole; where it is not, cut it down. Any groundwork the piece
 needs is itself a vertical slice, ordered ahead of the piece that needs it, never
 a separate "database" or "API" layer.
+
+On every piece you shape or refine, write `## Masterplan change` on the
+surface before marking it ready, following pieces.md. Say what the masterplan
+gains, changes or loses when it lands, or "nothing" when it already covers the
+result. Read it back with the piece: "When this lands, the masterplan gains a
+weekly summary email." Use the actual change in that line; for "nothing", say
+the masterplan already covers it. Do not apply a future change while shaping.
+
+When writing the `Under the hood` notes for a project with code, load
+`.agents/skills/section-builder/references/reach-check.md` and run its reach
+check. Use the live result to name the code seams and existing covering tests,
+instead of researching them again from nothing. Keep the result on the piece as
+build context only; never create a separate index or record for it.
 
 Where the request is bigger than a piece, it goes into the masterplan first and
 is cut into pieces on the plan, order confirmed with the user. Parts of one

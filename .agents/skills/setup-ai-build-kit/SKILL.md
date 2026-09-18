@@ -138,7 +138,8 @@ Load references/capability-check.md and work through it. Record the result in
 AGENTS.md under Capability profile: harness name when known, file read/write,
 shell, Git, local save identity, online repository, online account access,
 online authentication, available test/runtime commands, browser or preview
-access, independent-review options, hook support, subagent support. Choose a
+access, independent-review options, the reach-check engine, hook support, and
+subagent support. Choose a
 fallback for anything missing. Do not make the user configure an optional
 feature before the interview; a missing capability becomes a setup task or a
 reduced-automation fallback, decided later at the step that needs it.
@@ -236,6 +237,11 @@ picture back in plain words and let the team confirm each outside connection
 before going on: that it should reach their email, their calendar, whatever the
 picture shows. A connection nobody meant to agree to is cheapest to catch here.
 
+On Build with care, write the sensitive-area paths and any one-line boundaries
+from `references/fit-check.md`, read each area and its home back in plain words,
+then run the sensitive-area check installed by the bootstrap step. On the other
+two paths, leave the map absent; the check says nothing.
+
 If docs/MAINTAINING.md exists, delete it as part of this same commit. Current
 starter releases exclude that source-only file, but older direct clones
 may still contain it. Do this yourself rather than asking the user to remember.
@@ -278,7 +284,10 @@ continue manually if the tool stops? Is somebody responsible for alerts,
 backups, bills, and access? A "no" to any of these becomes a setup task before
 build starts: a piece on the plan where there is work to do, or a line in the
 masterplan's "How it stays running" section where there is only a fact to
-record. It never moves the build path. Note the result in the changelog.
+record, following fit-check.md's ownership rule. It never moves the build path.
+The fit check owns the present facts in "How it stays running"; the changelog
+records only that this ownership check ran and when. Do not copy the answers
+into the changelog.
 
 ## 10. Cut the plan
 
@@ -345,8 +354,10 @@ step only a human can complete. If hosting is needed, arrange it so day-to-day
 pushes land at a preview address and only /ship changes the address the team
 uses.
 
-Choose routine technical parts quietly and record them under AGENTS.md's stack
-section. In the conversation, describe what the setup lets the person do. Name
+Choose routine technical parts quietly. Record run and check commands and any
+non-standard conventions under AGENTS.md's stack section, keeping its content
+rule and line ceiling. Leave dependency lists in the code. In the conversation,
+describe what the setup lets the person do. Name
 a product or service only when it creates a choice, cost, account, access step,
 ownership duty, or product limit that the person needs to understand.
 

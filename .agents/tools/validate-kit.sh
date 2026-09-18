@@ -614,6 +614,20 @@ else
   [ "$rec_ok" -eq 1 ] && pass "AGENTS.md names every maintainer check under .agents/tests/"
 fi
 
+# Keep the project template short enough to read every session. The maintainer's
+# own AGENTS.md has a different job and is outside this ceiling.
+foundation_agents="$SKILLS/setup-ai-build-kit/templates/foundation/AGENTS.md"
+if [ ! -f "$foundation_agents" ]; then
+  fail "$foundation_agents: missing"
+else
+  foundation_lines=$(awk 'END { print NR }' "$foundation_agents")
+  if [ "$foundation_lines" -lt 200 ]; then
+    pass "the foundation instructions stay under 200 lines ($foundation_lines)"
+  else
+    fail "the foundation instructions have $foundation_lines lines; keep them under 200"
+  fi
+fi
+
 # The tie-breaker between a written instruction and an automatic check lives in
 # the project's standing instructions, so a session that finds the two in
 # conflict trusts the check rather than the stale rule. Checked where a project

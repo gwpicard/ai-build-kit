@@ -8,7 +8,7 @@
 #
 # Each run produces a transcript and a graded verdict. Those land outside this
 # repository; the run prints where at the end, and REPLAY_RESULTS overrides it.
-# Nothing is written inside this repository, and no Claude configuration is
+# Nothing is written inside this repository, and no agent configuration is
 # changed.
 
 set -eu
@@ -18,8 +18,17 @@ REPLAY_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$REPLAY_DIR/turn-gate.sh"
 
 REPEATS=${REPEATS:-5}
-MODEL=${MODEL:-opus}
-GRADER_MODEL=${GRADER_MODEL:-opus}
+REPLAY_PROVIDER=${REPLAY_PROVIDER:-claude}
+case "$REPLAY_PROVIDER" in
+  claude)
+    MODEL=${MODEL:-opus}
+    GRADER_MODEL=${GRADER_MODEL:-opus}
+    ;;
+  codex)
+    MODEL=${MODEL:-}
+    GRADER_MODEL=${GRADER_MODEL:-$MODEL}
+    ;;
+esac
 VERSION=${VERSION:-v0.0.0-replay}
 
 WORK=${REPLAY_WORK:-${TMPDIR:-/tmp}/abk-replay-$$}
@@ -32,8 +41,8 @@ WORK=${REPLAY_WORK:-${TMPDIR:-/tmp}/abk-replay-$$}
 # travels is baseline.md, and everything else is re-derivable by re-running.
 # REPLAY_RESULTS moves it somewhere else.
 RESULTS=${REPLAY_RESULTS:-${XDG_STATE_HOME:-$HOME/.local/state}/abk-replay/results}
+GH_DIR="$REPLAY_DIR/fake-github"
 
-command -v claude >/dev/null 2>&1 || fail "Claude Code is not installed"
 command -v python3 >/dev/null 2>&1 || fail "python3 is needed to read run output"
 [ -x "$ROOT/.agents/tools/build-release.sh" ] || fail "release builder is missing"
 
@@ -51,7 +60,12 @@ else
   note "no timeout or gtimeout found, so turns run without a time cap"
 fi
 
+. "$REPLAY_DIR/provider.sh"
+provider_check
+
 mkdir -p "$WORK" "$RESULTS"
+provider_prepare
+echo "Replay provider: $REPLAY_PROVIDER"
 
 # --- the kit under test, assembled once -----------------------------------
 # The builder refuses an existing folder, so this is built once per run and
@@ -95,8 +109,6 @@ run_once() {
   mkdir -p "$project"
   cp -R "$KIT/." "$project/"
   setup=$(case_setup "$casefile")
-  # The stand-in that answers for the GitHub tool.
-  gh_dir="$REPLAY_DIR/fake-github"
   if [ "$setup" = "fixture" ]; then
     cp "$REPLAY_DIR/fixture/masterplan.md" "$project/masterplan.md"
     cp "$REPLAY_DIR/fixture/CHANGELOG.md" "$project/CHANGELOG.md"
@@ -122,7 +134,7 @@ run_once() {
   git -C "$project" add -A
   git -C "$project" commit -q -m "Project before the scenario"
 
-  session=$(new_uuid)
+  provider_new_session
   transcript="$WORK/s${number}-r${repeat}.transcript"
   turns="$WORK/s${number}-r${repeat}-turns"
   : > "$transcript"
@@ -169,12 +181,6 @@ run_once() {
     turn=$((turn + 1))
     printf '\n### user turn %s%s\n%s\n' "$turn" "$label" "$message" >> "$transcript"
 
-    if [ "$turn" -eq 1 ]; then
-      resume_args="--session-id $session"
-    else
-      resume_args="--resume $session"
-    fi
-
     raw="$WORK/s${number}-r${repeat}-t${turn}.json"
     # The stand-in for the GitHub CLI goes first on PATH, so the kit's issue
     # work is answered without an account or a network. It refuses anything it
@@ -200,50 +206,29 @@ run_once() {
     GIT_TERMINAL_PROMPT=0
     export GH_CONFIG_DIR GH_TOKEN GITHUB_TOKEN GH_ENTERPRISE_TOKEN \
       GITHUB_ENTERPRISE_TOKEN GIT_TERMINAL_PROMPT
-    # bypassPermissions, not acceptEdits. acceptEdits waves through file edits
-    # but still asks before a command runs, and nobody is here to answer, so the
-    # kit's checks, backups, rehearsals and source lookups were all refused by
-    # the harness measuring them. That made every evidence field a miss for a
-    # reason that had nothing to do with the kit. The session runs in a fresh,
-    # throwaway project under $WORK and writes nothing back here, so letting it
-    # run its own commands is what the measurement needs. Do not narrow this
-    # back to acceptEdits without re-reading the transcripts.
-    # shellcheck disable=SC2086
-    if ! (cd "$project" && PATH="$gh_dir:$PATH" \
-      ${TIMEOUT_CMD:+$TIMEOUT_CMD 1800} claude -p "$message" \
-      $resume_args \
-      --strict-mcp-config \
-      --permission-mode bypassPermissions \
-      --output-format json \
-      --model "$MODEL" > "$raw" 2>/dev/null); then
+    # Both providers run without approval prompts. Nobody is here to answer,
+    # and refusing commands would turn every evidence field into a harness
+    # failure. The project and remote are disposable, while GitHub credentials
+    # are empty and the stand-in is first on the command path.
+    if ! provider_turn "$project" "$message" "$raw" "$lastreply"; then
       printf '\n### run ended at turn %s\n' "$turn" >> "$transcript"
       break
     fi
 
     # The reply is kept on its own as well as in the transcript, because the
     # next turn's precondition is read against the last thing the kit said.
-    python3 - "$raw" "$transcript" "$turn" "$lastreply" <<'PY'
-import json, sys
-raw, transcript, turn, lastreply = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
-try:
-    data = json.load(open(raw))
-except Exception:
-    sys.exit(0)
-text = data.get("result") or ""
-with open(transcript, "a") as handle:
-    handle.write("\n### kit reply %s\n%s\n" % (turn, text))
-with open(lastreply, "w") as handle:
-    handle.write(text)
-PY
+    printf '\n### kit reply %s\n' "$turn" >> "$transcript"
+    cat "$lastreply" >> "$transcript"
+    printf '\n' >> "$transcript"
   done
 
   printf '%s' "$transcript"
 }
 
 # --- grading ---------------------------------------------------------------
-# The grader gets the contract and the transcript and nothing else. Tools are
-# switched off so it cannot go and read the skills that produced the behaviour
-# and talk itself into approving it.
+# The grader is given the contract and transcript, not the skills that produced
+# the behaviour. Claude Code has its tools switched off. Codex runs read-only
+# from an empty folder, as described in the replay guide.
 grade_once() {
   number=$1
   transcript=$2
@@ -258,12 +243,7 @@ grade_once() {
     cat "$transcript"
   } > "$input"
 
-  # shellcheck disable=SC2086
-  (cd "$WORK" && ${TIMEOUT_CMD:+$TIMEOUT_CMD 600} claude -p "$(cat "$input")" \
-    --allowedTools "" \
-    --strict-mcp-config \
-    --output-format json \
-    --model "$GRADER_MODEL" 2>/dev/null) > "$out.raw" || true
+  provider_grade "$input" "$out.raw"
 
   python3 "$REPLAY_DIR/grade-parse.py" "$out.raw" "$out" "$number"
 }
