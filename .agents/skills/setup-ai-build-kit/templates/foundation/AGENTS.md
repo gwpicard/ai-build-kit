@@ -174,4 +174,7 @@ harness capabilities.)
 
 ## Stack, and how to run and check it
 
-(Filled in by the setup-ai-build-kit skill.)
+(Filled in by the setup-ai-build-kit skill.) For a project with a screen, this
+section records its design-taste skill and component route, or says that the
+default was kept. Replace either choice here when the project changes it, and
+record the replacement path or package beside the project commands.

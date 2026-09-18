@@ -91,6 +91,12 @@ While it works, the conversation stays on project decisions and results you can
 use. Routine searches, setup commands, retries, and waiting stay behind the
 scenes unless they create a blocker or need a decision from you.
 
+If the project has a screen, setup adds a local design-taste skill and chooses
+the component route from the stack: shadcn/ui with a tweakcn theme for React,
+or DaisyUI otherwise. You are asked once before anything is added. Say no to
+keep the default. The stack section records what was chosen and where to swap
+either choice later. A project without a screen gets none of this.
+
 Already built something, in an app builder, a chat assistant, or an earlier attempt? /setup-ai-build-kit adopts it instead of replacing it: it reads what exists, interviews you about what the tool is supposed to do, writes the masterplan for what's actually there, and pins down current behaviour with tests before anything changes.
 
 The masterplan carries a picture of everything outside the tool that it reaches: where it keeps your data, and each outside service. You confirm each one at founding, and the picture is redrawn whenever a piece adds or drops a connection, so a tool never quietly reaches something you did not agree to.

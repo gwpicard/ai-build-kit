@@ -285,6 +285,12 @@ attribution line, not the word.
   entry points, and the limit on what their report may claim. It proves the
   refusal to call a screen accessible, compliant or good is load-bearing, since
   a partial rule check cannot earn that conclusion.
+- `.agents/tests/screen-foundation.sh` guards what a project with a screen gets
+  during founding: the vendored design-taste skill and its licence, the
+  component route chosen from the stack, the one question before installation,
+  the recorded default after a refusal, and the place to swap either choice.
+  It also keeps the whole step out of a project with no screen and stops setup
+  from creating a `DESIGN.md` as a side effect.
 - `.agents/tests/notice-is-owed-by-the-refusal.sh` guards what triggers the risk
   notice after three failed repairs, and it holds two rules. The refusal owes
   the notice whichever route follows it, in the same reply, because hanging it

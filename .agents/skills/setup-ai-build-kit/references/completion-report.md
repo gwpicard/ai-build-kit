@@ -11,6 +11,8 @@ Internal facts recorded for later agents, and what the user hears instead:
 
 - `npm test` passes -> "The automatic project check passed."
 - `npm start` serves a local address -> "The private preview opened successfully."
+- a screen foundation was added -> name the design taste and component route;
+  if the person declined it, say that the project kept its default styling.
 - the working tree is clean -> "All setup work has been saved."
 - the current branch is ahead of its remote -> "The saved work has not been uploaded."
 - the commit identifier -> only in the checkpoint reference at the very end, never leading the report.
@@ -57,6 +59,8 @@ The initial setup is complete.
 - A separate review checked the plan, and any important findings were resolved.
 - The automatic project check passed.
 - The instructions for opening the private preview were tested successfully.
+- [For a screen project: the design taste and component route that were added,
+  or that the project kept its default styling.]
 
 ## Where it is saved
 

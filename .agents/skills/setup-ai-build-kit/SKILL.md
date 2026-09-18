@@ -350,6 +350,28 @@ section. In the conversation, describe what the setup lets the person do. Name
 a product or service only when it creates a choice, cost, account, access step,
 ownership duty, or product limit that the person needs to understand.
 
+When the project has a screen, choose its screen foundation after the stack is
+chosen. For a React stack, use shadcn/ui with a tweakcn theme as the component
+route. For a screen stack that is not React, use DaisyUI.
+
+Ask once, in plain words, before adding the foundation or running the one `npx`
+command that adds the chosen parts. Say what will be added, that the files stay
+in the project, and that the choice can be changed later. If they say yes, copy
+the vendored `frontend-design` folder from `templates/screen-foundation/` to
+`.agents/skills/frontend-design/` in the project, and keep its `LICENSE.txt`
+beside it. Do not fetch the skill during founding.
+
+If they say no, add neither part, leave the generated screen on its default
+styling, and write that default in the stack section. Do not ask again. If the
+answer does not arrive, do the same, record the open question in the
+masterplan, and carry on under the founding rule above rather than making it a
+gate.
+
+Record the design-taste skill and component route in AGENTS.md's stack section,
+including where to replace either one later. The stack section is the record for
+both choices. Do not create `DESIGN.md`. When the project has no screen, do not
+add or record either.
+
 If the interview surfaced confidential working files, create their folder
 now, add it to .gitignore, and record the handling rules in AGENTS.md. If the
 tool keeps a list of files to carry into a working copy, add the folder there
