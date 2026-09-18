@@ -41,6 +41,12 @@ session to hold whole; where it is not, cut it down. Any groundwork the piece
 needs is itself a vertical slice, ordered ahead of the piece that needs it, never
 a separate "database" or "API" layer.
 
+When writing the `Under the hood` notes for a project with code, load
+`.agents/skills/section-builder/references/reach-check.md` and run its reach
+check. Use the live result to name the code seams and existing covering tests,
+instead of researching them again from nothing. Keep the result on the piece as
+build context only; never create a separate index or record for it.
+
 Where the request is bigger than a piece, it goes into the masterplan first and
 is cut into pieces on the plan, order confirmed with the user. Parts of one
 outcome become sub-issues of a parent piece, each a vertical slice; separate

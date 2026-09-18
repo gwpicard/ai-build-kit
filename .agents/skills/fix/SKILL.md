@@ -54,6 +54,11 @@ still fails remains.
 
 ## 4. Rank causes
 
+Load `.agents/skills/section-builder/references/reach-check.md` and run its
+reach check before ranking causes. Use the parts reached and their existing
+covering tests as evidence, with the live working tree outranking any written
+index.
+
 List two to five plausible causes internally, each with a falsifiable
 prediction. Show the list to the user only when their domain knowledge could
 change the ranking; otherwise it stays internal.

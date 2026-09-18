@@ -83,7 +83,11 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    masterplan says rather than by which update this is. On the shared route,
    also run "Tidying a project founded from a whole copy of the kit" below
    whenever the leftovers it names are present.
-6. If the normal route is unavailable, use the latest public Release as the
+6. Re-read the capability profile's reach-check engine against what the
+   harness and project can use now. Keep the same preference order as
+   `.agents/skills/section-builder/references/reach-check.md`, and update the
+   profile when a better engine has appeared or the recorded one has gone.
+7. If the normal route is unavailable, use the latest public Release as the
    fallback source. A shared installation may replace only the thirteen AI Build
    Kit skill folders after the same approval and clean checkpoint. A Claude
    plugin installation keeps its current enabled version when the marketplace
@@ -93,11 +97,11 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    checkpoint can restore Claude's plugin cache. If the plugin is no longer
    enabled, stop and ask the person to reinstall it after the marketplace is
    reachable.
-7. Update project dependencies and check for known vulnerabilities. Report what changed; apply on approval.
-8. Once live: read the error alerts and the bills. Anything real becomes a piece, for implement to take: open an issue in the shape `.agents/skills/setup-ai-build-kit/references/pieces.md` describes. A finding nobody wrote down is a finding nobody acts on.
-9. Verify backups still run where the tool has any. Confirm the named operational owner from the masterplan still holds that role, and that no critical service or credential is tied to someone who has left.
-10. Check whether use or reliance has grown enough that the fit check should run again; if it has, run it before anything else this visit.
-11. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
+8. Update project dependencies and check for known vulnerabilities. Report what changed; apply on approval.
+9. Once live: read the error alerts and the bills. Anything real becomes a piece, for implement to take: open an issue in the shape `.agents/skills/setup-ai-build-kit/references/pieces.md` describes. A finding nobody wrote down is a finding nobody acts on.
+10. Verify backups still run where the tool has any. Confirm the named operational owner from the masterplan still holds that role, and that no critical service or credential is tied to someone who has left.
+11. Check whether use or reliance has grown enough that the fit check should run again; if it has, run it before anything else this visit.
+12. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
     today's date on the `last-light-pass` line, written as YYYY-MM-DD. If that
     file is missing, create it with a `founded` line holding the date
     masterplan.md was first saved, then the two pass lines. If the project has

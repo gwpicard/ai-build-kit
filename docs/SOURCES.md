@@ -27,6 +27,8 @@ Nobody named here was asked first, and nobody named here has endorsed the kit.
 | [Boris Cherny's notes on Claude Code](https://ykdojo.github.io/claude-code-tips/content/boris-claude-code-tips) | Turning something you have done more than once into a saved shortcut |
 | [Carsten Jørgensen on harness engineering](https://harness-engineering.carstenj.workers.dev/) | That a rule written down is a wish and a rule the tool enforces is a law, which is why the dangerous commands are switched off rather than discouraged |
 | [trailofbits/skills](https://github.com/trailofbits/skills) | That a check inspecting nothing has to fail rather than pass, which is why a new project starts with a deliberately failing check |
+| [TDAD](https://arxiv.org/abs/2603.17973) | Checking what a change reaches before saving it, so nearby behaviour is tested before a regression escapes |
+| [TestPrune](https://arxiv.org/abs/2510.18270) | Running the existing tests that cover a changed area before adding more evidence |
 | [Builder.io on subagents](https://www.builder.io/blog/subagents) | That whoever built something is the worst judge of whether it works, so a reviewer that did not do the work is the one worth having |
 | [EveryInc's compound engineering plugin](https://github.com/EveryInc/compound-engineering-plugin) | That independence is a property of the separate run rather than of the point of view taken, so a review done in the same conversation gets labelled as the weaker thing it is |
 | ["How we vibe code at a FAANG"](https://www.reddit.com/r/vibecoding/comments/1myakhd/how_we_vibe_code_at_a_faang/) | A hard read of the plan before any building starts, on the grounds that a problem found on paper is the cheapest one to fix |

@@ -103,6 +103,12 @@ If the tool needs confidential files to work from, say so during the interview. 
 
 Typed alone, /implement takes the next ready piece from the plan. It agrees with you in one sentence what the piece should do, chooses the evidence that piece needs, builds until that evidence holds, then stops so you can try it. Nothing is saved until you confirm it behaves. A piece that is not ready yet, still waiting on a question, goes to /shape first; /implement builds, it does not shape.
 
+Before saving, the kit checks what else the change touches and runs the tests
+that already cover those parts first. If it reaches another part of the tool,
+you get one line naming that part and saying whether its tests passed. The
+check is worked out afresh from the current code, so there is no map to keep up
+to date. The full project check still runs before a pull request is ready.
+
 If the change touched an area the build path flags, the best independent method available reviews it first. It reports in plain language, sorted into what's worth stopping for and what's worth knowing.
 
 /queue shows everything ready to build at once, and what is waiting on what. Type it when you are taking on several pieces rather than one, which is the only time you need it. It comes back with two lists. The first is everything ready, and those are safe to take on together, because a piece waiting on another piece is never in it. The second is what is waiting, each line saying which piece has to land first: "deposits cannot start until card payments is built". It changes nothing and builds nothing, so /implement is still what does the work. If the list looks out of date, type /queue again, since it is printed fresh from your project's issues every time.

@@ -19,18 +19,22 @@ Check:
 11. A browser or preview can be reached, when behaviour needs visual checking.
 12. An independent-review route exists: subagent, separate session, or a
     user-opened clean chat.
-13. Hooks and mechanical command blocks are recorded as optional enhancements,
+13. A reach-check engine is recorded. Prefer the harness's language server or
+    Serena, then a related-test or affected-code command, then a graph tool the
+    person already installed. Where none exists, record that the agent reads
+    imports and callers directly.
+14. Hooks and mechanical command blocks are recorded as optional enhancements,
     never assumed. Record whether the harness runs anything when a session
     opens. When it does not, the check-up reminder reaches the person through
     `/what-now` instead.
 
-14. The pieces are kept as issues, which the kit requires: the GitHub command
+15. The pieces are kept as issues, which the kit requires: the GitHub command
     line tool is installed and signed in, and issues are switched on for the
     repository.
-15. The label set can be put in order: the signed-in account can create and
+16. The label set can be put in order: the signed-in account can create and
     delete labels on the repository.
 
-`scripts/check-tooling.sh` is the machine check behind items 3, 14, and 15. It
+`scripts/check-tooling.sh` is the machine check behind items 3, 15, and 16. It
 reports whether Git, the GitHub command line tool, and python3 are present, and
 whether the account is signed in with issues switched on and labels it can order.
 `required-tools.md` lists what it checks and why. Run it first, then confirm the

@@ -131,6 +131,11 @@ expected versus actual, and fix it at the root.
 
 ## 7. Run required review
 
+Before deciding which review applies, load `references/reach-check.md`. Check
+what else the finished change reaches and which existing tests cover it, then
+run those tests first. Use what the change actually reaches when applying the
+review triggers below. Keep the full project check for the pull-request gate.
+
 Review triggers come from the build path, the change's consequence
 classification, or the masterplan's sensitive areas. When
 any of those apply, run second-opinion using the best independent method

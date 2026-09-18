@@ -138,7 +138,8 @@ Load references/capability-check.md and work through it. Record the result in
 AGENTS.md under Capability profile: harness name when known, file read/write,
 shell, Git, local save identity, online repository, online account access,
 online authentication, available test/runtime commands, browser or preview
-access, independent-review options, hook support, subagent support. Choose a
+access, independent-review options, the reach-check engine, hook support, and
+subagent support. Choose a
 fallback for anything missing. Do not make the user configure an optional
 feature before the interview; a missing capability becomes a setup task or a
 reduced-automation fallback, decided later at the step that needs it.

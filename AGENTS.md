@@ -264,6 +264,11 @@ attribution line, not the word.
   about maintenance, licence, cost, data, and removal, that /shape offers both
   steps and says which it ran, and that change-triage, pieces.md, and
   WORKFLOW.md all describe the label as covering both.
+- `.agents/tests/reach-check.sh` guards the check that asks what else a change
+  reaches and which existing tests cover it. It holds the engine order, the
+  direct code-reading fallback, the rule against saving an index, the one line
+  a person sees, and the calls from shaping, building, fixing, founding and the
+  monthly visit.
 - `.agents/tests/triage-overlap.sh` guards the warning that another open piece
   would be built in the same place: what change-triage compares, that it names
   the clash before the routing step rather than after it, that it blocks
