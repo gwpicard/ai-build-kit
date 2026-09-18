@@ -161,7 +161,7 @@ A question a conversation can't settle gets a disposable prototype, a source che
 
 You are never made to settle it there and then: when a request lands on a question, /shape says roughly what settling it would take, minutes for a look-up or a sitting for an interview or a prototype, and offers to file the piece with its question so you can come back to it. Nothing filed that way can be built until the question is answered, and /what-now tells you when enough pieces are waiting that the session is better spent planning than building.
 
-Show a mock of what you want and it settles the question instead, with no throwaway built. A prototype comes back as one of two things: a single file you open and click through yourself, or three genuinely different versions to move between and pick from.
+Show a mock of what you want and it settles the question instead, with no throwaway built. A prototype comes back as one of two things: a single file you open and click through yourself, or three genuinely different versions to move between and pick from. If setup recorded a design tool, the agent may use its canvas before a real page exists or when you want to draw a redesign. The real page still wins wherever one exists, and without a recorded tool the ordinary coded throwaway stays the default.
 
 Anything touching data, access, or money gets written into the masterplan first. If another piece already open would be built in the same place, /shape names it before the work starts, so you can decide whether to carry on, wait, or fold the two together.
 

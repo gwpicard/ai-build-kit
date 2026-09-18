@@ -37,6 +37,10 @@ rs_rule "builds a slice rather than the whole mock" 'never build the whole mock'
 rs_rule "names what the artifact does not cover" 'rather than inventing it'
 rs_rule "a conflict goes to the person" 'let them choose'
 rs_rule "records the decision in words" 'record the decision rather than'
+rs_rule "a recorded design-tool file may be opened directly" \
+  'file in the recorded design tool'
+rs_rule "the harness must be able to reach that tool" \
+  'where the harness can reach it'
 rs_guard "$ARTIFACT" "the shipped existing-artifact.md"
 
 # Every route that could build a throwaway has to check first, or the old

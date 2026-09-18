@@ -361,6 +361,12 @@ describe what the setup lets the person do. Name
 a product or service only when it creates a choice, cost, account, access step,
 ownership duty, or product limit that the person needs to understand.
 
+Read the design tool, if any, from answers already given. Where one was named,
+record it in the stack section. Where none was named, write `Design
+tool: none recorded`. Do not add a founding question. If the first structure
+prototype could use a design tool and none is recorded, ask once then and
+update the stack section. That later question must never stop founding.
+
 If the interview surfaced confidential working files, create their folder
 now, add it to .gitignore, and record the handling rules in AGENTS.md. If the
 tool keeps a list of files to carry into a working copy, add the folder there
