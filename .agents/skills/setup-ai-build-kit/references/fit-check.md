@@ -47,6 +47,11 @@ manual fallback, name who reads the alerts), or a line in the masterplan's
 carries on. A team that cannot yet explain or recover its tool has a gap to
 close, which is a different thing from work that touches a sensitive area.
 
+The fit check owns the present ownership facts in "How it stays running".
+Keep those facts only there. The changelog records only that the ownership
+check ran and when, without copying its answers. A later ownership check reads
+that section and returns any missing or changed fact to this rule.
+
 ## The three build paths
 
 Use these three names everywhere, and do not alternate between path, tier,

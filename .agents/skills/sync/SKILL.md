@@ -43,6 +43,15 @@ else, or recovering after an optional automation failed to run.
    never quietly remove a rule because its evidence went missing.
 
 4. Check the plan still covers the page. Load `.agents/skills/setup-ai-build-kit/references/coverage-read.md` and compare the masterplan's promises against the pieces. Reconciling after an interruption or an outside contribution is exactly when a promise quietly loses its piece.
+
+   On every build path, count the words in the masterplan's core sections.
+   Leave out `Build path`, the optional `Key terms` and `How it stays running`
+   sections, headings, comments and diagram source. More than 1,000 words is the
+   working measure for roughly two pages. Above that, give one line once in this run:
+   "The masterplan is longer than roughly two pages. Shall I move the detail
+   about individual pieces onto those pieces?" Move detail only with a yes,
+   keeping every present promise and decision on the masterplan. Otherwise,
+   leave it intact and carry on. At or below the measure, say nothing.
 5. Identify anything left open: an unresolved recheck trigger from the build-path section, flagged work still waiting, or interrupted manual setup. Say what's open rather than closing it quietly. Where flagged work was built during the period being reconciled, check the build-path section carries an `Accepted:` line for it; if the work happened and the line is missing, say so rather than writing one now, because an acceptance recorded after the fact is a record of nothing.
 6. Keep the check on the pull request honest. If the way the project installs or tests has moved, update `.github/workflows/checks.yml` so `jobs.project-check` runs the project's real commands, the same ones AGENTS.md's stack section names. Touch only that job. An older project may still carry a separate source-validation job and repository conditions; leave those unchanged. A check still running the placeholder, or the wrong commands, is worse than no check at all because people believe the green tick.
 7. Bank what was learned. A mistake the agent has now made twice becomes one line in AGENTS.md, so it stops recurring. A pattern the user approved more than once becomes a project skill, if it earns one. Keep AGENTS.md lean: point at documents instead of repeating them, and delete lines that no longer pay their way.

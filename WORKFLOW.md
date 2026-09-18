@@ -102,6 +102,10 @@ While it works, the conversation stays on project decisions and results you can
 use. Routine searches, setup commands, retries, and waiting stay behind the
 scenes unless they create a blocker or need a decision from you.
 
+The coverage read includes who can see and do what, the data the tool holds,
+and its outside connections. It names any gaps together and offers once to add
+the missing work. You decide whether it belongs in the plan.
+
 Already built something, in an app builder, a chat assistant, or an earlier attempt? /setup-ai-build-kit adopts it instead of replacing it: it reads what exists, interviews you about what the tool is supposed to do, writes the masterplan for what's actually there, and pins down current behaviour with tests before anything changes.
 
 The masterplan carries a picture of everything outside the tool that it reaches: where it keeps your data, and each outside service. You confirm each one at founding, and the picture is redrawn whenever a piece adds or drops a connection, so a tool never quietly reaches something you did not agree to.
@@ -262,6 +266,18 @@ missing and records where it checked up to. The monthly visit uses that point
 to say how much work has since touched the tool's data, permissions or
 connections. When there is any, it gives the count and offers /sync in one
 line. That is a reason to check the page, not a claim that it is wrong.
+
+The coverage read includes permissions, data and outside connections here too.
+It also compares settled terms on every piece with the masterplan, even if a
+piece was parked or reshaped. A missing or different meaning joins the same
+list of gaps, with one offer to put the records right. Planning leaves the
+term on its piece until it is carried across, so parking the work cannot lose
+what you agreed.
+
+When the core masterplan grows beyond roughly two pages, /sync says so once
+and offers to move detail about individual pieces onto those pieces. It leaves
+the page alone without your yes, and keeps the tool's present promises and
+decisions on the masterplan.
 
 /sync names open pieces untouched for 30 days in one short list and asks once
 whether each is still wanted, should be parked, or is done. It changes nothing

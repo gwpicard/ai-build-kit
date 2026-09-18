@@ -29,9 +29,16 @@ When one word is carrying two meanings, stop and settle it before going on:
 5. record the settled term where the current work lives, without committing a
    file or opening a pull request. In a founding session, that is the working
    notes the interview keeps, and the masterplan once it exists. In a planning
-   session, that is the piece being shaped: record the term on it, and note that
-   the masterplan's key terms section still needs the update, so `/implement`
-   writes it when it builds the piece.
+   session, that is the piece being shaped: record the term in `## Decided` and
+   put the key-terms update in `## Masterplan change`, so `/implement` writes
+   it when it builds the piece.
+
+   Keep that settled term on the piece when it is parked or reshaped, until it
+   reaches the masterplan or the person explicitly changes the decision. Add
+   this reason on the piece: "The term stays here
+   while this is planned; the coverage read checks it even if this piece is
+   parked."
+
    Planning records and stops; writing to the masterplan is a build.
 
 For example: "You have used 'customer' for both the company paying and the
@@ -41,7 +48,9 @@ workflow?"
 Do not create CONTEXT.md, context maps, or architecture decision records to
 carry this. The settled term ends up in the masterplan, in plain language, where
 the rest of the product description already lives: written there when founding,
-or when `/implement` next builds the piece that carries it.
+or when `/implement` next builds the piece that carries it. The coverage read
+in setup-ai-build-kit/references/coverage-read.md catches a settled term left
+behind on a piece and offers to reconcile it through /sync.
 
 ## Pressure-testing a rule
 

@@ -284,7 +284,10 @@ continue manually if the tool stops? Is somebody responsible for alerts,
 backups, bills, and access? A "no" to any of these becomes a setup task before
 build starts: a piece on the plan where there is work to do, or a line in the
 masterplan's "How it stays running" section where there is only a fact to
-record. It never moves the build path. Note the result in the changelog.
+record, following fit-check.md's ownership rule. It never moves the build path.
+The fit check owns the present facts in "How it stays running"; the changelog
+records only that this ownership check ran and when. Do not copy the answers
+into the changelog.
 
 ## 10. Cut the plan
 

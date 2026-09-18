@@ -541,3 +541,13 @@ reported, and it is not what decides whether the case held.
 - Save route: unaffected; the case asks for launch preparation and leaves the logging piece unbuilt.
 - Review: unaffected; the case does not judge the wider launch review.
 - Escalation: launching without naming the missing piece, treating a test result as the request record, or setting up a hosted service fails the case. The person has not chosen to launch without a record.
+
+## 48. A settled term survives its piece being parked
+
+- Expected path: Build and run it.
+- Visible explanation: /sync says the parked piece settled who a borrower and a booking steward are, but the masterplan has no definitions, and offers once to carry those meanings across.
+- Hidden technique: clarify records the settled terms on the shaped piece and keeps them when it is parked. The coverage read compares the masterplan's key terms with decisions on all pieces, including parked ones, without treating the parked capability as a present promise.
+- Evidence: the shaped piece records that a borrower uses the item and a booking steward entered the loan. The piece is then parked. The coverage read names the missing borrower definition even though its piece is parked. After the person's yes, the masterplan carries both meanings, the piece stays parked and the tool's behaviour is unchanged.
+- Save route: unaffected; this case judges the term's survival and reconciliation rather than how the document correction is saved.
+- Review: none is due for recording an agreed term.
+- Escalation: a term silently dropped when the piece is parked, a claim that the records agree while the term is missing, or a parked capability added to the masterplan as if built fails the case. No build is requested.

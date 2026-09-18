@@ -258,7 +258,12 @@ attribution line, not the word.
 - `.agents/tests/coverage-read.sh` guards the read that compares the masterplan
   against the pieces: the rules that keep it honest, that /setup and /sync both
   still run it, and that WORKFLOW.md explains it for founding and for sync. It
-  fails on a copy with any one of those removed.
+  includes permissions, data, connections and settled terms left on parked
+  pieces, and fails on a copy with any one of those rules removed.
+- `.agents/tests/masterplan-edges.sh` guards where ownership facts are written,
+  the settled term a piece keeps through parking or reshaping, and the single
+  offer to shorten an overlong masterplan. It also holds the parked-term
+  rehearsal's setup and expected result.
 - `.agents/tests/shape-research.sh` guards the two research steps that share the
   `needs-research` label: the rules that keep an existing-work search honest
   about maintenance, licence, cost, data, and removal, that /shape offers both
