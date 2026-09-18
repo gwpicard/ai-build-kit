@@ -354,10 +354,19 @@ When the project has a screen, choose its screen foundation after the stack is
 chosen. For a React stack, use shadcn/ui with a tweakcn theme as the component
 route. For a screen stack that is not React, use DaisyUI.
 
-Ask once, in plain words, before adding the foundation or running the one `npx`
+Ask once, in plain words, before adding the foundation or running the one install
 command that adds the chosen parts. Say what will be added, that the files stay
-in the project, and that the choice can be changed later. If they say yes, copy
-the vendored `frontend-design.md` from
+in the project, and that the choice can be changed later.
+
+Only after the person says yes, run exactly one of these commands.
+
+- For React, set `THEME_URL` to the registry URL copied from the chosen theme in
+  tweakcn, then run `npx shadcn@latest add "$THEME_URL"`.
+- For another screen stack, run `npm install --save-dev daisyui@latest`.
+
+Run no second component command.
+
+Then copy the vendored `frontend-design.md` from
 `templates/screen-foundation/frontend-design/` into the project's
 frontend-design skill folder, naming the copy `SKILL.md`. Copy its
 `LICENSE.txt` beside it. Do not fetch the skill during founding.
