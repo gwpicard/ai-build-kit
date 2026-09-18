@@ -45,6 +45,8 @@ first piece in this session; founding a project and building it are separate,
 deliberate steps. On an adopted project that is not empty, drop the "this is
 normal" line and name the first outstanding piece instead.
 
+Do not tell the person to push the founding checkpoint from this report.
+
 ```md
 # Your [project name] is ready to build
 
@@ -76,8 +78,8 @@ how it should look at this point, not a sign anything went wrong. The plan holds
 [number] small build steps, and the first is [first step name], about
 [rough time].
 
-Push your changes, then start a fresh chat and type `/implement` to build the
-first piece, or `/shape` to shape more first. `/what-now` tells you where things
+Then start a fresh chat and type `/implement` to build the first piece, or `/shape`
+to shape more first. `/what-now` tells you where things
 stand any time.
 
 Checkpoint reference: `[short reference]`
