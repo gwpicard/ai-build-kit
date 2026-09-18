@@ -289,6 +289,14 @@ attribution line, not the word.
   around a build: its live engine and import fallback, silence when nothing got
   worse, fixed lines without a score, and the quarterly count of change spread
   from saved history.
+- `.agents/tests/test-strength.sh` guards the optional check that breaks changed
+  code to see whether tests notice. It holds the Build with care boundary,
+  local scope, plain report, sorting of misses, the offer during repair, and
+  the rule against adding tests just to raise a count.
+- `.agents/tests/test-strength-rehearsal.sh` runs weak tests in a throwaway
+  JavaScript project. They catch one deliberate breakage and miss a boundary
+  error; the report takes its counts from those runs and its words from the
+  shipped rule.
 - `.agents/tests/triage-overlap.sh` guards the warning that another open piece
   would be built in the same place: what change-triage compares, that it names
   the clash before the routing step rather than after it, that it blocks

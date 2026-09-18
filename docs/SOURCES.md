@@ -29,6 +29,8 @@ Nobody named here was asked first, and nobody named here has endorsed the kit.
 | [trailofbits/skills](https://github.com/trailofbits/skills) | That a check inspecting nothing has to fail rather than pass, which is why a new project starts with a deliberately failing check |
 | [TDAD](https://arxiv.org/abs/2603.17973) | Checking what a change reaches before saving it, so nearby behaviour is tested before a regression escapes |
 | [TestPrune](https://arxiv.org/abs/2510.18270) | Running the existing tests that cover a changed area before adding more evidence |
+| [StrykerJS incremental testing](https://stryker-mutator.io/docs/stryker-js/incremental/) and [mutmut](https://mutmut.readthedocs.io/en/latest/) | Breaking only the changed code on purpose to check whether the tests notice, as optional local evidence |
+| [Awesome Testing's field note on agent-written tests](https://www.awesome-testing.com/2026/08/mutation-testing-for-agent-written-code) | Checking what passing tests can miss and explaining each miss before deciding whether another test is needed |
 | [ReqToCode](https://arxiv.org/abs/2603.13999) | Treating a stale link between a requirement and code as a failed check rather than a fact |
 | [StrictDoc](https://strictdoc.readthedocs.io/en/latest/latest/docs/strictdoc_01_user_guide.html) | Checking the link between a written requirement and the files that satisfy it |
 | [GitHub CODEOWNERS](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners) | A short, readable path list beside the rule that applies there |

@@ -94,6 +94,12 @@ test; changing or moving records people already have takes a rehearsal on a copy
 Source evidence is required when correctness depends on an external fact;
 run change-triage's source check first.
 
+On Build with care, where a runner exists for the project's language, offer
+the optional check in `references/test-strength.md`: break only the changed
+code on purpose to see whether its tests notice. Run it after the ordinary
+tests pass, if the person wants it. Use that reference's one-line report and
+sort the misses on the piece. This offer adds no gate to saving the work.
+
 ## 4. Establish the baseline
 
 For automated behaviour: write or identify the check, and show it fails

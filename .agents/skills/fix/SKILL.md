@@ -90,6 +90,13 @@ it pass, then rerun the original, unminimised case. When no credible
 automated boundary exists, record that as a maintainability finding and use
 the strongest manual or operational evidence available instead.
 
+On Build with care, where a runner exists for the project's language, offer
+to check the regression test by breaking the repaired code on purpose. Follow
+`.agents/skills/section-builder/references/test-strength.md` for this optional
+check, its one-line report, and the misses listed on the repair's piece. Keep
+the run to the repaired code and the regression test; do not offer it again
+when section-builder saves the repair.
+
 ## 7. Cleanup
 
 Name every temporary log and harness added during the repair, remove each one,

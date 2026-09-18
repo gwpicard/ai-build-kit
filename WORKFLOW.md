@@ -176,6 +176,17 @@ Every promised behaviour gets evidence, in one of four forms:
 
 The agent chooses the form the change actually needs; the report says what was proved and what remains a judgement call.
 
+On Build with care, /implement can offer to break the changed code on purpose
+to check whether its tests notice. /fix offers the same check for the test
+that keeps a repaired fault from returning. It runs locally when the language
+has a suitable tool, covers only the changed code, and is optional.
+
+You get one line: "The tests were checked by breaking the code on purpose 40
+times. They caught 37. The three they missed are listed on the piece." Misses
+in a named sensitive area are worth stopping for; the rest are worth knowing.
+You decide whether they matter. The kit records that choice, and only adds a
+test to protect promised behaviour, never just to raise the count.
+
 ## 7. Saving work
 
 Every piece saves through one of three routes. The checkpoint route commits, and that commit may stay local, so private, disposable exploration can be saved without pushing. The pull-request route pushes and opens a pull request, for shared, live, behavioural, data, access, integration, service, or operational changes. The flagged route does the same, and also attaches the condition the touched area requires; a piece that stops there, plan marked blocked and the condition on record, counts as finished until that condition is met or you accept the risk instead.
