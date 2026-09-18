@@ -357,9 +357,10 @@ route. For a screen stack that is not React, use DaisyUI.
 Ask once, in plain words, before adding the foundation or running the one `npx`
 command that adds the chosen parts. Say what will be added, that the files stay
 in the project, and that the choice can be changed later. If they say yes, copy
-the vendored `frontend-design` folder from `templates/screen-foundation/` to
-`.agents/skills/frontend-design/` in the project, and keep its `LICENSE.txt`
-beside it. Do not fetch the skill during founding.
+the vendored `frontend-design.md` from
+`templates/screen-foundation/frontend-design/` into the project's
+frontend-design skill folder, naming the copy `SKILL.md`. Copy its
+`LICENSE.txt` beside it. Do not fetch the skill during founding.
 
 If they say no, add neither part, leave the generated screen on its default
 styling, and write that default in the stack section. Do not ask again. If the
