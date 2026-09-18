@@ -182,6 +182,10 @@ attribution line, not the word.
   this repository never receives a reminder.
 - `.agents/tests/fake-github.sh` checks the replay harness's stand-in for the
   GitHub CLI: the commands it answers, and the ones it still refuses on purpose.
+- `.agents/tests/replay-provider.sh` checks both replay providers without a
+  model call. It stubs Claude Code and Codex, then proves each first turn,
+  resumed turn and grader route. It also holds the Codex shell profiles that
+  keep the fake GitHub command ahead of a signed-in real one.
 - `.agents/tests/plan-printout.sh` runs the printout against a fixed set of
   issues and reads what it wrote: which group each piece lands in, whether a
   waiting piece says why, whether a shaped piece says it is ready, and whether a

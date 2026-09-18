@@ -28,7 +28,19 @@ it as a flake and move on.
 ./run.sh 5 8                # only these scenarios
 REPEATS=1 ./run.sh 5        # one run, for a quick look
 JOBS=8 ./run.sh             # more at once
+REPLAY_PROVIDER=codex REPEATS=1 ./run.sh 47
 ```
+
+Claude Code is the default provider, so existing commands and recorded
+baselines keep their meaning. Set `REPLAY_PROVIDER=codex` to use Codex CLI.
+`MODEL` and `GRADER_MODEL` are optional on Codex and use the CLI default when
+left empty. Set both when a run needs to be repeatable against named models.
+
+The two providers keep one transcript shape and one grader format. Claude Code
+starts with a harness-chosen session id. Codex reports its thread id in JSONL,
+which the harness records and resumes on later turns. Codex also starts command
+shells as login shells, so the harness writes throwaway shell profiles under the
+working folder to keep the fake GitHub command first on `PATH`.
 
 A whole conversation takes around twenty minutes, so runs overlap. `JOBS` sets
 how many at a time and defaults to four.
@@ -96,8 +108,9 @@ after editing `../scenarios.md`. It covers every scenario in the contract rather
 than the ones currently replayed, so extending the harness later holds no
 surprises.
 
-Nothing here writes inside this repository, and no Claude configuration is
-changed. Working copies go to a temporary folder.
+Nothing here writes inside this repository, and no agent configuration is
+changed. Working copies and any throwaway shell profiles go to the working
+folder.
 
 ## What the isolation is, and what it is not
 
@@ -225,8 +238,11 @@ replayed.
 ## How grading works
 
 The grader is a separate session that receives the contract and the transcript
-and nothing else. It has no tools, so it cannot open the skills that produced
-the behaviour and talk itself into approving them.
+and nothing else. Claude Code runs it with tools switched off. Codex CLI does
+not expose the same switch, so its grader runs read-only from an empty folder
+with user configuration and project rules ignored. A Codex grader can still
+read files if it goes looking for them; inspect its event file if a verdict
+appears to rely on anything outside the supplied transcript.
 
 Each field is graded on its own, because a session can hold its expected path
 and still fail its evidence, and one combined verdict would hide that. A verdict
