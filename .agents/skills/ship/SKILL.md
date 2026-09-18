@@ -16,7 +16,9 @@ fit check before continuing.
 
 Read each line under `Sensitive areas`. Say for each whether its caution is
 done, waiting on a person, or accepted, and do not carry on past one that is
-none of those.
+none of those. On Build with care, walk its `paths`, its optional `boundary`,
+and the folders assigned to `none`; stop if the shipped sensitive-area check
+does not agree with the current project.
 
 ## 1. Follow the current path
 

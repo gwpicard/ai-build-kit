@@ -237,6 +237,11 @@ picture back in plain words and let the team confirm each outside connection
 before going on: that it should reach their email, their calendar, whatever the
 picture shows. A connection nobody meant to agree to is cheapest to catch here.
 
+On Build with care, write the sensitive-area paths and any one-line boundaries
+from `references/fit-check.md`, read each area and its home back in plain words,
+then run the sensitive-area check installed by the bootstrap step. On the other
+two paths, leave the map absent; the check says nothing.
+
 If docs/MAINTAINING.md exists, delete it as part of this same commit. Current
 starter releases exclude that source-only file, but older direct clones
 may still contain it. Do this yourself rather than asking the user to remember.

@@ -246,13 +246,32 @@ Last checked: YYYY-MM-DD
 Each named area gets its own line under `Sensitive areas:`, indented two
 spaces. A line carries the area, what in this tool touches it, its caution,
 and where the caution stands: `not yet done`, `done` with the date, or
-`accepted` with the date of the matching `Accepted:` line.
+`accepted` with the date of the matching `Accepted:` line. On Build with care,
+the next line lists the paths where that area lives. A third line may name one
+boundary the area must not cross. Every top-level source folder is listed under
+an area or on a `none:` line, so the shipped check can refuse a new, unassigned
+folder. Keep this map absent on the other two build paths.
 
 ```md
 Sensitive areas:
   regulated decisions: the treatment recommendation; caution: a clinician signs off the protocol before nurses act on it; not yet done
+    paths: src/recommendations/, src/rules/treatment.ts
+    boundary: reached only through src/rules/treatment.ts
   irreplaceable live data: the maintenance history import; caution: a backup restored once and the import rehearsed on a copy; done 2026-08-12
+    paths: src/imports/maintenance/
+  none: src/reporting/
 ```
+
+Read the paths back in plain words at founding. For example: "Money is the
+refund button, and it lives in the billing folder." Where the project uses a
+language Bearer covers, offer its local data scan to find files that handle
+personal data. Bearer is free to run under the Elastic License 2.0 and is not
+open source. The scan is optional; the map and its check are not.
+
+Write the map in the same save as any code move that changes it. The foundation
+check fails when a listed path has gone or a new top-level source folder has no
+area or `none` line. It says which path or folder needs a decision. The check is
+silent on Explore privately and Build and run it.
 
 Each accepted risk gets its own line, and lines are added rather than replaced.
 A line carries the date, what it drops, and who accepted it:

@@ -269,6 +269,10 @@ attribution line, not the word.
   direct code-reading fallback, the rule against saving an index, the one line
   a person sees, and the calls from shaping, building, fixing, founding and the
   monthly visit.
+- `.agents/tests/sensitive-area-map.sh` guards the readable map between named
+  sensitive areas and code. It holds the Build with care boundary, the optional
+  local data scan, each skill that reads the map, and the shipped check that
+  fails on a moved path or an unassigned source folder.
 - `.agents/tests/triage-overlap.sh` guards the warning that another open piece
   would be built in the same place: what change-triage compares, that it names
   the clash before the routing step rather than after it, that it blocks

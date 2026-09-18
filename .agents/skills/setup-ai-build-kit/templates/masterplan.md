@@ -12,6 +12,10 @@ first, every session. -->
 Path:
 Why:
 Sensitive areas:
+<!-- Build with care only. Under each area, add an indented `paths:` line and
+at most one `boundary:` line. List every other top-level source folder on an
+indented `none:` line. Update the map in the same save as a code move. Omit the
+map on Explore privately and Build and run it. -->
 Accepted:
 Recheck when:
 Last checked:

@@ -134,7 +134,13 @@ expected versus actual, and fix it at the root.
 Before deciding which review applies, load `references/reach-check.md`. Check
 what else the finished change reaches and which existing tests cover it, then
 run those tests first. Use what the change actually reaches when applying the
-review triggers below. Keep the full project check for the pull-request gate.
+review triggers below. On Build with care, compare the reached paths and crossed
+boundaries with the sensitive-area map in the masterplan. A match starts the
+review and says exactly: "This change reaches <area>, so a review is running."
+Check a boundary with sentrux or dependency-cruiser where either is already
+present, and by reading the changed imports where neither is present.
+Update that map in the same save as any code move that changes it. Keep the full
+project check for the pull-request gate.
 
 Review triggers come from the build path, the change's consequence
 classification, or the masterplan's sensitive areas. When

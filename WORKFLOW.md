@@ -81,6 +81,12 @@ Every project has exactly one build path at a time, set by the fit check and rec
 
 **Build with care.** Some of the work touches a sensitive area: personal data, money, sign-in by outsiders, automatic action on people or other systems, irreplaceable live data, or a regulated decision. The masterplan names each area in your tool's own words, with the one caution that goes with it. The kit builds everything else the ordinary way, and in a named area the caution happens before that part goes live, or you accept skipping it on the record.
 
+Each sensitive area also says where it lives in the tool. A check keeps that
+list true: a moved place or a new part with no area stops the check and asks
+you where it belongs. When a change reaches one of those places, the review
+starts from what the change touched rather than from what the piece expected
+to touch. The map exists only on Build with care.
+
 None of these paths is the kit refusing to build. Build with care is where it says plainly what would normally prevent the harm, and you decide. That is the risk notice, in section 8.
 
 ## 4. Day one

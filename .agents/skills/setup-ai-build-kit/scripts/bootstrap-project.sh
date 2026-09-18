@@ -102,6 +102,7 @@ copilot-instructions.md|.github/copilot-instructions.md
 checks.yml|.github/workflows/checks.yml
 claude-settings.json|.claude/settings.json
 session-start.sh|.agents/hooks/session-start.sh
+check-sensitive-areas.sh|.agents/hooks/check-sensitive-areas.sh
 env.example|.env.example
 gitignore|.gitignore
 FOUNDATION_FILES
@@ -137,6 +138,7 @@ copilot-instructions.md|.github/copilot-instructions.md
 checks.yml|.github/workflows/checks.yml
 claude-settings.json|.claude/settings.json
 session-start.sh|.agents/hooks/session-start.sh
+check-sensitive-areas.sh|.agents/hooks/check-sensitive-areas.sh
 env.example|.env.example
 gitignore|.gitignore
 FOUNDATION_FILES

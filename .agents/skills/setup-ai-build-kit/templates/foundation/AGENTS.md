@@ -93,7 +93,10 @@ what remains uncertain. Never ask the person to read code or logs.
 
 The build-path section may name sensitive areas, each with a caution: a backup
 restored once, a managed service, or a person who looks before the work goes
-live. At the named boundary, do the caution where it is the kit's to do, stop
+live. On Build with care, each area also lists where it lives and may name one
+boundary. Update that map in the same save as a code move, and let the
+sensitive-area step in the project check decide whether it still matches the
+project. At the named boundary, do the caution where it is the kit's to do, stop
 where it is a person's, and give the risk notice: who is exposed, what happens
 to them, what would normally prevent it, and that you flag what you can
 recognise and will miss things.
