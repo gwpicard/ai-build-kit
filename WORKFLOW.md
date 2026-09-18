@@ -120,6 +120,12 @@ you get one line naming that part and saying whether its tests passed. The
 check is worked out afresh from the current code, so there is no map to keep up
 to date. The full project check still runs before a pull request is ready.
 
+It also compares the tool's structure before and after the build. You hear one
+line only when the change made later work harder, such as two parts now looping
+through each other or a named boundary being crossed. There is no score to
+interpret. You can ask for the structure to be fixed before saving, or leave it
+and have that choice recorded on the piece.
+
 If a build uncovers another piece of work, that new piece says "Found while
 building the invoice list", using the title of the piece that surfaced it.
 Both pieces link to each other, so you can follow where the work came from.
@@ -259,7 +265,9 @@ run anything when a session opens says it when you type /what-now instead.
 Nothing is blocked and nothing changes without a command.
 
 The quarterly visit is fuller, with a hot-spot tidy-up and an ownership check
-that can name a new sensitive area or, after a genuine redesign, take one off. /maintain also owns the ending,
+that can name a new sensitive area or, after a genuine redesign, take one off.
+Its hot-spot read counts how widely the quarter's saved changes spread instead
+of guessing from memory. /maintain also owns the ending,
 when a tool's time is over: export the data, tell the team, revoke access, and
 switch off the services.
 

@@ -285,6 +285,10 @@ attribution line, not the word.
   the read that spots when its support has gone, the link back to the build
   that found a new piece, and the single question about work untouched for a
   month. Each rule is removed in turn to prove the check catches its absence.
+- `.agents/tests/structure-change.sh` guards the small structure comparison
+  around a build: its live engine and import fallback, silence when nothing got
+  worse, fixed lines without a score, and the quarterly count of change spread
+  from saved history.
 - `.agents/tests/triage-overlap.sh` guards the warning that another open piece
   would be built in the same place: what change-triage compares, that it names
   the clash before the routing step rather than after it, that it blocks

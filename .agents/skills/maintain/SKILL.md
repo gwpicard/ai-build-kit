@@ -327,6 +327,10 @@ Everything above, plus:
    changed repeatedly, areas behind repeated bugs, areas whose evidence is
    slow or unreliable, areas where one change spreads across many files,
    integrations that fail often, and records that no longer explain reality.
+   For spread, read the quarter's landed changes from Git and count the files
+   each change touched in each area. Use that count to name the widest-spreading
+   areas rather than judging them from memory. This is a comparison, not a
+   health score.
    Propose no more than three simplifications; for each, state the repeated
    problem, the plain-language change, what becomes easier to verify or
    recover, the cost, and whether a person outside the team has to look.
