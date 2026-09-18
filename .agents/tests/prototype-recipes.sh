@@ -19,7 +19,11 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 PROTOTYPE="$ROOT/.agents/skills/clarify/references/decision-prototype.md"
 BEHAVIOUR="$ROOT/.agents/skills/clarify/references/prototype-behaviour.md"
 STRUCTURE="$ROOT/.agents/skills/clarify/references/prototype-structure.md"
+ARTIFACT="$ROOT/.agents/skills/clarify/references/existing-artifact.md"
 WORKFLOW="$ROOT/WORKFLOW.md"
+SETUP="$ROOT/.agents/skills/setup-ai-build-kit/SKILL.md"
+FOUNDATION="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md"
+README="$ROOT/README.md"
 
 rs_init "Prototype-recipe checks"
 rs_exists "$PROTOTYPE" "$BEHAVIOUR" "$STRUCTURE" "$WORKFLOW"
@@ -67,6 +71,17 @@ rs_rule "a way between them the person finds unaided" 'without being told'
 rs_rule "the arrangements still never announce themselves" \
   'never announce that they are prototypes'
 rs_rule "a combination of two is itself the decision" 'they wanted parts of two'
+rs_rule "a recorded design tool is optional" 'recorded design tool'
+rs_rule "the real page still wins wherever one exists" \
+  'the real page wins wherever one exists'
+rs_rule "the canvas is for work before a page or a drawn redesign" \
+  'before a real page exists or.*draw a redesign'
+rs_rule "no recorded tool leaves the coded throwaway unchanged" \
+  'no design tool is recorded.*coded throwaway'
+rs_rule "an available browser tool is used to inspect the throwaway" \
+  'browser tool.*look at your own throwaway'
+rs_rule "the agent says when it could not inspect the throwaway" \
+  'say when you could not'
 rs_guard "$STRUCTURE" "prototype-structure.md"
 
 # --- the prose stays readable by the person it is for ---------------------
@@ -81,5 +96,36 @@ done
 
 rs_require "WORKFLOW.md says what the person will get" \
   "$WORKFLOW" 'file you open and click through'
+rs_require "WORKFLOW.md explains the recorded design-tool route" \
+  "$WORKFLOW" 'design tool.*real page still wins'
+
+rs_require "setup reads a design tool from answers already given" \
+  "$SETUP" 'design tool.*answers already given'
+rs_require "setup records when none is known" \
+  "$SETUP" 'design tool: none recorded'
+rs_require "the first relevant prototype asks later" \
+  "$SETUP" 'first structure prototype.*ask once'
+rs_require "the later question never holds founding up" \
+  "$SETUP" 'never stop founding'
+rs_require "the project stack template has a design-tool record" \
+  "$FOUNDATION" 'design tool'
+
+rs_require "the FAQ answers whether a design tool can be used" \
+  "$README" 'can i use my design tool'
+rs_require "the FAQ names Pencil with its changing-cost caveat" \
+  "$README" 'pencil.*free.*paid features'
+rs_require "the FAQ keeps Pencil's caveats in the same paragraph" \
+  "$README" 'pencil.*proprietary.*sign-in.*format may change'
+rs_require "the FAQ says a Pencil design lives in the project" \
+  "$README" 'pencil.*\.pen.*project'
+rs_require "the FAQ names free Penpot and where its design lives" \
+  "$README" 'penpot.*free.*server'
+rs_require "the FAQ names Sketch's price and local file" \
+  "$README" 'sketch.*12.*local'
+
+for skill_file in "$STRUCTURE" "$ARTIFACT" "$SETUP"; do
+  rs_require_absent "skills name no companion design tool" \
+    "$skill_file" '(pencil|penpot|sketch mcp)'
+done
 
 rs_done

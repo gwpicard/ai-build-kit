@@ -15,6 +15,10 @@ whiteboard photo. A written brief. The spreadsheet that is the current manual
 tool. A sample data file that shows the shape of the data. An example of the
 output wanted. A reference link. A recording of the flow they want.
 
+A file in the recorded design tool may be opened directly where the harness can
+reach it. Where it cannot, the ordinary screenshot or description route still
+applies.
+
 ## Say back what you see
 
 Read it, then say what you found with your guesses attached, the way an

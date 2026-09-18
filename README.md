@@ -227,6 +227,22 @@ and edit project files, run shell commands, and use Git can follow the workflow.
 Yes. Setup can adopt an existing project. It understands what is already there
 before anything changes, and existing files are preserved.
 
+**Can I use my design tool?**
+Yes. If you already use one, the kit records it and can use it for early screen
+prototypes when your coding agent can reach it. [Pencil](https://www.pen.dev/pricing)
+is currently free and may add paid features. Its [`.pen`
+file](https://docs.pencil.dev/core-concepts/pen-files) can live in the project
+and travel with Git, but the app has a [proprietary licence and requires
+sign-in](https://www.pen.dev/eula), and warns that its [format may
+change](https://docs.pencil.dev/for-developers/the-pen-format).
+
+[Penpot](https://penpot.app/pricing/self-host) has a free cloud plan and a free
+self-hosted edition; the design lives on the Penpot server you choose, not in
+the project. [Sketch](https://www.sketch.com/pricing) starts at $12 per editor
+per month when billed yearly, and can keep the design in a local `.sketch` file
+on a Mac. The skills do not depend on any of them, so the ordinary browser
+prototype remains the default.
+
 **Does anything leave my computer?**
 Not during setup. The founding save is always a local checkpoint, never a push
 and never a pull request. Keys and passwords live in `.env`, which Git ignores.
