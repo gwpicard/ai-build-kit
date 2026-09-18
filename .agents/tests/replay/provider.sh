@@ -206,7 +206,7 @@ provider_grade() {
         --model "$GRADER_MODEL" 2>/dev/null) > "$outer" || true
       ;;
     codex)
-      events=$(mktemp "$CODEX_GRADER_DIR/events.XXXXXX")
+      events="$outer.events"
       message=$(mktemp "$CODEX_GRADER_DIR/message.XXXXXX")
       # Codex has no command-line switch that removes every tool. The grader
       # runs read-only from an empty folder and receives only the contract and
@@ -215,7 +215,7 @@ provider_grade() {
       (cd "$CODEX_GRADER_DIR" && \
         run_codex_grader "$(cat "$input")" "$events" "$message") || true
       wrap_codex_result "$message" "$outer"
-      rm -f "$events" "$message"
+      rm -f "$message"
       ;;
   esac
 }

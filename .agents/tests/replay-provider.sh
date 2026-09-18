@@ -119,6 +119,9 @@ grep -qF "$GH_DIR" "$WORK/codex-shell/bash-env" \
 
 printf '%s\n' grading > "$TEST_WORK/input"
 provider_grade "$TEST_WORK/input" "$TEST_WORK/codex-grade.raw"
+[ -s "$TEST_WORK/codex-grade.raw.events" ] \
+  && pass "Codex grader events are kept for inspection" \
+  || fail_provider "Codex grader events were discarded"
 python3 - "$TEST_WORK/codex-grade.raw" <<'PY' \
   && pass "Codex grader output uses the existing outer JSON shape" \
   || fail_provider "Codex grader output was not wrapped for the parser"
