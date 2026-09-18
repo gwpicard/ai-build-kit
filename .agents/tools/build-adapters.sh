@@ -7,7 +7,7 @@
 # Single source of truth: .agents/skills/<name>/SKILL.md
 # Generated (thin) adapters, all pointing back at canonical:
 #   .claude/commands/<name>.md       the nine commands as Claude Code slash commands
-#   .claude/skills/<discipline>/      the four disciplines as auto-triggering skills
+#   .claude/skills/<discipline>/      the five disciplines as auto-triggering skills
 #   .cursor/commands/<name>.md        the nine commands as Cursor slash commands
 #   .gemini/commands/<name>.toml      the nine commands as Gemini CLI slash commands
 #
@@ -16,7 +16,7 @@
 # installer reads .agents/skills/ and .claude/skills/ and merges what it finds
 # by the name in the frontmatter, so anything sitting in either folder is a
 # skill somebody installs. Keeping the maintainer's writing skill out of both is
-# what stops a project receiving a fourteenth.
+# what stops a project receiving a fifteenth.
 #
 # Codex, Cursor, and Gemini discover the canonical .agents/skills/ tree
 # directly. Claude Code needs its project skill under .claude/skills/.
@@ -180,8 +180,8 @@ generate_all() {
     fi
   done
 
-  if [ "$commands" -ne 9 ] || [ "$disciplines" -ne 4 ]; then
-    echo "error: expected 9 commands and 4 disciplines; found $commands and $disciplines" >&2
+  if [ "$commands" -ne 9 ] || [ "$disciplines" -ne 5 ]; then
+    echo "error: expected 9 commands and 5 disciplines; found $commands and $disciplines" >&2
     exit 1
   fi
 

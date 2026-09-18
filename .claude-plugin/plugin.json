@@ -3,7 +3,7 @@
   "name": "ai-build-kit",
   "displayName": "AI Build Kit",
   "description": "A guided workflow for building reliable software with an AI coding agent.",
-  "version": "0.14.0",
+  "version": "0.15.0",
   "author": {
     "name": "Guillaume Picard"
   },
@@ -29,6 +29,7 @@
   "skills": [
     "./.claude/skills/change-triage",
     "./.claude/skills/clarify",
+    "./.claude/skills/screen-check",
     "./.claude/skills/second-opinion",
     "./.claude/skills/section-builder"
   ]

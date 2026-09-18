@@ -35,6 +35,11 @@ judge them reliably. Use a guided manual check for visual or exploratory work.
 Use a source check when a decision depends on an external fact. Use a rehearsal
 for backup, restore, migration, rollback, or other operational claims.
 
+When a piece carries `visual`, or a change touches a screen file, load
+`screen-check` before the guided manual check. It reads this project's design
+rules first, applies the house rules where they are silent, and says what a
+person still has to try. It never calls a screen accessible, compliant, or good.
+
 When a written instruction and an automatic check disagree about the same
 thing, trust the check. It tests the real work, and an instruction can fall out
 of date. Follow the check, and say plainly that the two disagree rather than
@@ -45,16 +50,16 @@ not ask for. Do not widen a fix into a tidy-up.
 
 ## The skills, and how they are invoked
 
-The work lives in thirteen installed skills. Nine are commands. The user types
+The work lives in fourteen installed skills. Nine are commands. The user types
 one, names it anywhere in a message, or asks for its job in plain words. Start
 the matching command and say which one you are running. Never start a command
-the user did not ask for. Four run in the background when a command needs them,
+the user did not ask for. Five run in the background when a command needs them,
 and they are not for the user to pick.
 
 - Commands: `setup-ai-build-kit`, `shape`, `implement`, `queue`, `fix`, `ship`,
   `sync`, `maintain`, `what-now`.
-- Background skills: `clarify`, `change-triage`, `section-builder`,
-  `second-opinion`.
+- Background skills: `clarify`, `change-triage`, `screen-check`,
+  `section-builder`, `second-opinion`.
 
 When a skill says to run another skill, load that installed skill and follow
 it. If native discovery is unavailable, open `.agents/skills/<name>/SKILL.md`

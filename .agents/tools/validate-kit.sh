@@ -33,7 +33,7 @@ pass() {
 
 SKILLS="$ROOT/.agents/skills"
 # A skill only the kit's own maintainers use lives here rather than beside the
-# thirteen. A shared skills installer reads .agents/skills/ and .claude/skills/
+# fourteen. A shared skills installer reads .agents/skills/ and .claude/skills/
 # and merges what it finds by the name in its frontmatter, so a folder in
 # either one is a skill somebody installs. This folder is in neither.
 MAINTAINER_SKILLS="$ROOT/.agents/maintainer-skills"
@@ -50,6 +50,7 @@ what-now"
 
 expected_disciplines="change-triage
 clarify
+screen-check
 second-opinion
 section-builder"
 
@@ -184,16 +185,16 @@ actual=$(find "$SKILLS" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | s
 expected=$(printf '%s\n%s\n' "$expected_commands" "$expected_disciplines" | sort)
 
 if [ "$actual" != "$expected" ]; then
-  fail "skill inventory does not match the canonical nine commands and four disciplines"
+  fail "skill inventory does not match the canonical nine commands and five disciplines"
   echo "  expected:" >&2
   echo "$expected" | sed 's/^/    /' >&2
   echo "  found:" >&2
   echo "$actual" | sed 's/^/    /' >&2
 else
-  pass "exactly nine commands and four disciplines, named exactly"
+  pass "exactly nine commands and five disciplines, named exactly"
 fi
 
-# Each of the thirteen has a SKILL.md. Which of them are commands and which
+# Each of the fourteen has a SKILL.md. Which of them are commands and which
 # are background skills is settled by one setting, and the trigger contract
 # further down checks that. Here the question is only that the file exists.
 while IFS= read -r name; do
@@ -240,7 +241,7 @@ $name
     for suffix in "" .md .toml; do
       candidate="$scanned/$name$suffix"
       [ ! -e "$ROOT/$candidate" ] || \
-        fail "$candidate: a maintainer skill has reached a folder an installer reads, so a project would be offered it as a fourteenth skill"
+        fail "$candidate: a maintainer skill has reached a folder an installer reads, so a project would be offered it as a fifteenth skill"
     done
   done <<SCANNED
 $installer_scanned
@@ -266,7 +267,7 @@ else
   pass "no .codex/skills adapter tree"
 fi
 
-# Claude Code: the four generated background skills are hidden from the user
+# Claude Code: the five generated background skills are hidden from the user
 # command menu. The nine generated commands carry neither setting. A command
 # used to carry disable-model-invocation, and a regenerate from a stale builder
 # would put it back, so its absence is checked rather than assumed.
@@ -387,7 +388,7 @@ else
   expected_skill_dirs=$(printf '%s\n' "$expected_disciplines" | sort)
   actual_skill_dirs=$(find "$ROOT/.claude/skills" -mindepth 1 -maxdepth 1 -exec basename {} \; | sort)
   if [ "$actual_skill_dirs" != "$expected_skill_dirs" ]; then
-    fail ".claude/skills/ must hold exactly the four disciplines"
+    fail ".claude/skills/ must hold exactly the five disciplines"
     echo "  expected:" >&2
     echo "$expected_skill_dirs" | sed 's/^/    /' >&2
     echo "  found:" >&2
@@ -1603,6 +1604,7 @@ for literal in \
   '"./.claude/commands/what-now.md"' \
   '"./.claude/skills/change-triage"' \
   '"./.claude/skills/clarify"' \
+  '"./.claude/skills/screen-check"' \
   '"./.claude/skills/second-opinion"' \
   '"./.claude/skills/section-builder"'; do
   if ! grep -qF "$literal" "$plugin_manifest"; then

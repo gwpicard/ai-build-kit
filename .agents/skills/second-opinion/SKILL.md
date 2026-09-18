@@ -8,8 +8,9 @@ user-invocable: false
 
 Act as fresh eyes. Prefer a reviewer that did not produce the work. When Explore privately permits a same-session fallback, label it as non-independent and review only from the written agreement and evidence.
 
-You review on two axes internally, and report the findings under the same two
-user-facing headings regardless of which axis surfaced them.
+You review agreement and risk internally. During a build review, a screen
+change adds the third axis below. Report every finding inside the two existing
+report headings regardless of which axis surfaced it.
 
 ## Axis 1: Agreement
 
@@ -33,6 +34,17 @@ an account see anything? Can one user reach another's things by editing an
 address or an id? Do keys or personal details appear anywhere they should
 not, including anything sent to the browser? Can money move twice from one
 click?
+
+## Axis 3: Screen
+
+During a build review, load and follow `screen-check` when the piece carries
+`visual`, or when the diff touches a screen file whatever subject the piece
+carries. Say which screen rules were applied, which could not be checked, and
+what a person still has to try. Put each finding under `Worth stopping for` or
+`Worth knowing`, never under a new heading.
+
+This axis does not run on a masterplan review or the whole-build review during
+`/ship`. A build with no screen does not load it.
 
 ## On a masterplan
 
@@ -62,10 +74,7 @@ once, at that point.
 
 - Agreement: ...
 - Risk: ...
-
-## Review limits
-
-- <what this review did not prove>
+- Review limits: <what this review did not prove>
 ```
 
 Every finding states what you tried, what happened, and whether that seems

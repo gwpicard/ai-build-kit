@@ -21,7 +21,7 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    rule there. Wait for approval rather than replacing an edit silently.
 3. Identify how this project receives AI Build Kit. Check whether
    `skills-lock.json` records skills from `gwpicard/ai-build-kit`. Where it
-   does, count its entries against the thirteen names and say which are
+   does, count its entries against the fourteen names and say which are
    missing. A short installation means a skill the kit renamed or added never
    arrived. The version file cannot show this, because the same update that
    drops a skill rewrites the version, so the count is the only sign.
@@ -57,7 +57,10 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
 
    Do not update unrelated plugins, project skills, or global skills.
 5. For the shared route, confirm that this skill's `VERSION` matches the public
-   Release and that the count from step 3 is now thirteen. A matching version
+   Release and that the count from step 3 is now fourteen. When the shared
+   installation did not have `screen-check` before this visit, confirm that the
+   same `npx skills add` command added it, and carry on only once it is there.
+   A matching version
    alone is not proof the installation is whole. For the Claude route, confirm
    that `claude plugin list --json` reports the matching version without the
    leading `v`. Claude loads an updated plugin after `/reload-plugins` or the
@@ -92,7 +95,7 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    ask which sensitive area it belongs to, or whether it belongs under `none`,
    then update the map only after the person answers.
 8. If the normal route is unavailable, use the latest public Release as the
-   fallback source. A shared installation may replace only the thirteen AI Build
+   fallback source. A shared installation may replace only the fourteen AI Build
    Kit skill folders after the same approval and clean checkpoint. A Claude
    plugin installation keeps its current enabled version when the marketplace
    cannot be reached. Confirm that version with `claude plugin list --json`,
@@ -295,7 +298,7 @@ updating. So the kit does it for them, with approval:
    `- Commands:` and names all nine. Where it names `start`, replace it with
    `setup-ai-build-kit`. Where it names `plan`, replace it with `shape`. Where
    `queue` is missing, add it after `implement`. Where the sentences nearby
-   give an older count of commands or skills, make them nine and thirteen.
+   give an older count of commands or skills, make them nine and fourteen.
 2. Show the change and apply it on approval. Say what changed in one sentence.
 3. Where the file lists the commands in its own words and the line cannot be
    recognised, leave the file alone and say which name needs changing, so the
