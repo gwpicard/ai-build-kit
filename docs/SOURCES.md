@@ -32,3 +32,14 @@ Nobody named here was asked first, and nobody named here has endorsed the kit.
 | ["How we vibe code at a FAANG"](https://www.reddit.com/r/vibecoding/comments/1myakhd/how_we_vibe_code_at_a_faang/) | A hard read of the plan before any building starts, on the grounds that a problem found on paper is the cheapest one to fix |
 | [github/spec-kit](https://github.com/github/spec-kit) | Its `analyze` template, a read-only pass that compares what was promised against what is planned, reports what has nothing behind it in one list, and changes nothing by itself |
 | [The Boring JavaScript Stack](https://boringstack.xyz/) | Framing the empty project as the expected starting point rather than a fault, so setup ends by naming the person's own first piece rather than leaving an anxious blank |
+| [Vercel Web Interface Guidelines](https://github.com/vercel-labs/web-interface-guidelines/blob/main/AGENTS.md) | The practical screen checklist covering keyboard use, focus, states, forms, copy, and the rule that generated interfaces are checked rather than trusted |
+| [Paul Bakaus's Impeccable craft floor](https://github.com/pbakaus/impeccable/blob/main/skill/reference/craft-floor.md) | Reading the project's own visual brief first, and refusing the repeated gradients, decorative glass, nested cards, glyph icons, eyebrow labels, and identical entrance effects that make agent-built screens look alike |
+| [GOV.UK Design System](https://design-system.service.gov.uk/) | Visible form labels, error summaries that receive focus, errors that repeat the field label and say how to fix the problem, and action labels that name what happens |
+| [Nielsen Norman Group's usability heuristics](https://www.nngroup.com/articles/ten-usability-heuristics/) | Consistency, plain error recovery, visible system state, undo before confirmation, and designing empty, loading, and error states as part of the task |
+| [Carbon Design System](https://carbondesignsystem.com/) | The spacing and type scales, productive product-screen typography, and the treatment of forms, tables, loading, and empty states |
+| [Shopify Polaris](https://polaris.shopify.com/) | Using colour for meaning without relying on it alone, keeping errors beside the failed control, and naming destructive choices by their outcome |
+| [W3C's WCAG 2.2 quick reference](https://www.w3.org/WAI/WCAG22/quickref/) | The criteria behind keyboard operation, visible and unobscured focus, contrast, reflow, target size, consistent identification, labels, and errors |
+
+Copyright © 2023 W3C®. This software or document includes material copied from
+or derived from [How to Meet WCAG (Web Content Accessibility Guidelines), Quick
+Reference](https://www.w3.org/WAI/WCAG22/quickref/).

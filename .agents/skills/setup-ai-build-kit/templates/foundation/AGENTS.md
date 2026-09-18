@@ -28,6 +28,11 @@ judge them reliably. Use a guided manual check for visual or exploratory work.
 Use a source check when a decision depends on an external fact. Use a rehearsal
 for backup, restore, migration, rollback, or other operational claims.
 
+When a piece carries `visual`, or a change touches a screen file, load
+`screen-check` before the guided manual check. It reads this project's design
+rules first, applies the house rules where they are silent, and says what a
+person still has to try. It never calls a screen accessible, compliant, or good.
+
 When a written instruction and an automatic check disagree about the same
 thing, trust the check. It tests the real work, and an instruction can fall out
 of date. Follow the check, and say plainly that the two disagree rather than
