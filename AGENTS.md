@@ -277,6 +277,10 @@ attribution line, not the word.
   work and existing tests before a new attempt, search saved history from a
   known-good point, remove temporary instrumentation, and refuse to call a
   retry-only test green.
+- `.agents/tests/masterplan-changes.sh` guards the change each piece carries
+  for the masterplan, its application during save and recovery, the saved state
+  the page was checked against, and the monthly count that offers /sync when
+  later work touched data, permissions or connections.
 - `.agents/tests/triage-overlap.sh` guards the warning that another open piece
   would be built in the same place: what change-triage compares, that it names
   the clash before the routing step rather than after it, that it blocks

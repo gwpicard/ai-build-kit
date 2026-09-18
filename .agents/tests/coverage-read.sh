@@ -24,6 +24,8 @@ rs_init "Coverage-read checks"
 rs_rule "counts pieces open and closed" 'open and closed'
 rs_rule "the line said when the plan covers the page" 'has a piece that builds it\."'
 rs_rule "a promise left to a parked piece is a gap" 'parked counts as a gap'
+rs_rule "reads each piece's change to the masterplan" 'read each piece.*masterplan change.*alongside its promised result'
+rs_rule "a missing applied change is recovery rather than a new piece" 'it must not be offered as a new piece'
 rs_rule "never names a promise that is not on the page" 'not on the page'
 rs_rule "never adds a piece without a yes" 'without a yes'
 rs_rule "never edits or closes a piece by itself" 'never edits, closes'

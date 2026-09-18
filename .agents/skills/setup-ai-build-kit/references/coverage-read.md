@@ -18,6 +18,12 @@ Read every piece, open and closed. A closed piece counts as covered, because
 the promise behind it is already built. Match by plain description; the records
 carry no reference numbers and never will.
 
+Read each piece's `## Masterplan change` alongside its promised result. A
+"nothing" there means the page already covers the result, not that the piece
+covers no promise. An unapplied change on a landed piece goes to /sync's
+reconciliation; it must not be offered as a new piece. A future change on an
+open piece does not become a present promise merely because this read saw it.
+
 A promise whose only piece is parked counts as a gap. The idea was set aside
 and the page still promises it, so one of the two has to move.
 

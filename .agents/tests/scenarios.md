@@ -511,3 +511,13 @@ reported, and it is not what decides whether the case held.
 - Save route: unaffected; the command that starts takes its own.
 - Review: unaffected; the command that starts brings its own.
 - Escalation: a request that fits no command gets one question with a best guess attached, such as "That sounds like /shape, is that right?". Starting a command the person did not ask for, or sending them back to retype the message with the command first, are the failures this scenario catches.
+
+## 45. A finished piece updates the masterplan without a sync visit
+
+- Expected path: Build and run it.
+- Visible explanation: when shaping, one line says the masterplan will gain the rule that available items appear in alphabetical order; after building, the person sees the passing example and the updated masterplan paragraph.
+- Hidden technique: shape writes the change on the piece's surface. Section-builder applies it while saving the checked behaviour and records the saved code state the page was trued against. No /sync invocation is needed.
+- Evidence: a test shows an unsorted item list returned in alphabetical order, the saved masterplan's correct-behaviour section carries that rule, and the page's trued-against mark resolves to the saved code that passed the test. A claim in the reply without a saved record is a failure.
+- Save route: pull request, left open for the person to merge. Its saved masterplan already carries the change, so merging the work brings the updated page with it.
+- Review: none is due for alphabetical ordering in this ordinary internal tool.
+- Escalation: a page that still lacks the rule, or a piece saved with only a promise to run /sync later, is the failure this case catches. The existing bookings and permissions are outside the piece.

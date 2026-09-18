@@ -47,6 +47,17 @@ body:
       required: true
 
   - type: textarea
+    id: masterplan-change
+    attributes:
+      label: Masterplan change
+      description: >
+        In plain words, name the section and what it gains, changes or loses
+        when this lands. Write "nothing" if the masterplan already covers it.
+      placeholder: What it does gains a weekly summary email.
+    validations:
+      required: true
+
+  - type: textarea
     id: not-in-this-piece
     attributes:
       label: Not in this piece

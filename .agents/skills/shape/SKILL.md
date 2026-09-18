@@ -41,6 +41,13 @@ session to hold whole; where it is not, cut it down. Any groundwork the piece
 needs is itself a vertical slice, ordered ahead of the piece that needs it, never
 a separate "database" or "API" layer.
 
+On every piece you shape or refine, write `## Masterplan change` on the
+surface before marking it ready, following pieces.md. Say what the masterplan
+gains, changes or loses when it lands, or "nothing" when it already covers the
+result. Read it back with the piece: "When this lands, the masterplan gains a
+weekly summary email." Use the actual change in that line; for "nothing", say
+the masterplan already covers it. Do not apply a future change while shaping.
+
 When writing the `Under the hood` notes for a project with code, load
 `.agents/skills/section-builder/references/reach-check.md` and run its reach
 check. Use the live result to name the code seams and existing covering tests,

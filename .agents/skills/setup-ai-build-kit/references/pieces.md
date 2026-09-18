@@ -31,6 +31,9 @@ for the agent.
 <automated behaviour check | guided manual check | source-backed fact |
 operational rehearsal>
 
+## Masterplan change
+<what the masterplan gains, changes or loses when this lands, or "nothing">
+
 ## Not in this piece
 <the nearest things this is not, so scope does not creep in later>
 
@@ -53,6 +56,13 @@ technical context a builder needs and the person never has to open>
 description. If a line cannot be answered yes or no by trying the tool, it
 belongs in `## So that`.
 
+`## Masterplan change` is always on the surface, in plain words. Name the
+section and what it gains, changes or loses when this piece lands. Most pieces
+say "nothing", because the masterplan already describes the promised result.
+This is the piece's delta, meaning its change to the present record. Writing
+it does not apply it early. The save and recovery rules live in
+[masterplan-changes.md](masterplan-changes.md).
+
 `## Decided` is left out entirely on the pieces that had no argument behind
 them, which is most of them. A section of thin prose repeated on every issue
 teaches a reader to skip all of them.
@@ -72,7 +82,7 @@ keeps whatever labels it had.
 
 ## The two layers of a piece
 
-The five sections above are the surface. They stay in plain words, and they stay
+The sections above are the surface. They stay in plain words, and they stay
 comprehensive about anything that affects the product, so a simple read is never
 a false one. A fact belongs on the surface when it would change a product
 decision: put it in `## Decided`, or name it as a dependency, in words the person

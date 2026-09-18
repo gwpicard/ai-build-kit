@@ -159,6 +159,11 @@ proves the behaviour, and the review exists for what the check cannot see.
 
 ## 8. Save
 
+Before saving on any route, apply the piece's `## Masterplan change` and update
+the trued-against mark as
+`.agents/skills/setup-ai-build-kit/references/masterplan-changes.md` describes.
+The record changes in step 9 are part of this save, not a later /sync task.
+
 Checkpoint route: update the records, commit, and state the saved checkpoint.
 
 Pull-request route: update the records, commit, push, open a pull request
@@ -190,8 +195,8 @@ condition is met or the person accepts the risk instead.
 
 ## 9. Sync the records
 
-Normal completion updates: the piece, a changelog line, the masterplan when the
-present behaviour changed, and AGENTS.md only when a durable operating
+Normal completion updates: the piece, a changelog line, the masterplan through
+the piece's recorded change, and AGENTS.md only when a durable operating
 convention changed. Where the piece added, removed, or changed something outside
 the tool that it reaches, update the masterplan's connections picture too, and
 say in one line what the tool now reaches, so the person can say whether it

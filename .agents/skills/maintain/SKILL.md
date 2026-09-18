@@ -101,7 +101,12 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    checkpoint can restore Claude's plugin cache. If the plugin is no longer
    enabled, stop and ask the person to reinstall it after the marketplace is
    reachable.
-9. Update project dependencies and check for known vulnerabilities. Report what changed; apply on approval.
+9. Read the masterplan's trued-against mark and count landed changes since it
+   using `.agents/skills/setup-ai-build-kit/references/masterplan-changes.md`.
+   When data, permissions or connections were touched, report the count and
+   offer /sync in one line. An absent or unusable mark gets the same offer
+   without a guessed count. Then update project dependencies and check for known
+   vulnerabilities. Report what changed; apply on approval.
 10. Once live: read the error alerts and the bills. Anything real becomes a piece, for implement to take: open an issue in the shape `.agents/skills/setup-ai-build-kit/references/pieces.md` describes. A finding nobody wrote down is a finding nobody acts on.
 11. Verify backups still run where the tool has any. Confirm the named operational owner from the masterplan still holds that role, and that no critical service or credential is tied to someone who has left.
 12. Check whether use or reliance has grown enough that the fit check should run again; if it has, run it before anything else this visit.

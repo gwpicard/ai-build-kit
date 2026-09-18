@@ -121,6 +121,12 @@ If the change touched an area the build path flags, the best independent method 
 
 /shape is how you bring anything new: "/shape add a filter to the board". You never sort your own request; the agent works out what kind of work it is. Clear and piece-sized becomes a ready piece, and /shape offers to build it now or leave it for /implement later. Vague gets a short interview.
 
+Each piece says what it changes in the masterplan, and the masterplan says when
+it was last checked. You see a line such as "When this lands, the masterplan
+gains a weekly summary email", or "nothing" when it already covers the result.
+/implement applies that change as it saves the work, so the page keeps up
+without a separate /sync visit.
+
 A question a conversation can't settle gets a disposable prototype, a source check, or a search for something that already does the job. Two of those need you there; the research does not, so you can tell /shape you're leaving and it settles what it can alone, then tells you which pieces are waiting on you. Type /shape with a piece's number to settle that one rather than the next in line.
 
 You are never made to settle it there and then: when a request lands on a question, /shape says roughly what settling it would take, minutes for a look-up or a sitting for an interview or a prototype, and offers to file the piece with its question so you can come back to it. Nothing filed that way can be built until the question is answered, and /what-now tells you when enough pieces are waiting that the session is better spent planning than building.
@@ -204,6 +210,13 @@ Nothing else changes when a second person arrives: naming a piece before startin
 ## 12. Sync and maintenance
 
 Normal /implement and /fix completion updates the records directly; you don't need /sync after a piece that finished cleanly. /sync exists for interrupted work, work done outside the workflow, long sessions whose context went foggy, and handovers. A report-only reminder can optionally run at session end, where the tool supports it, but nothing writes to the records without a skill deciding to. /sync also re-reads the masterplan against your pieces, and says if a promise has lost the piece that builds it. Its corrections are saved the way a piece is saved, through the route your build path requires, so on a shared project they arrive as a pull request you decide to merge, and uncommitted work it finds on arrival is reported and left alone.
+
+/sync also picks up changes a finished piece was meant to make to the
+masterplan but never did. It checks what actually landed, applies what is still
+missing and records where it checked up to. The monthly visit uses that point
+to say how much work has since touched the tool's data, permissions or
+connections. When there is any, it gives the count and offers /sync in one
+line. That is a reason to check the page, not a claim that it is wrong.
 
 /maintain is the service visit: monthly and light for AI Build Kit updates,
 project dependency updates, and anything the error alerts caught. When a newer
