@@ -16,7 +16,7 @@ here by design. They are created inside a user's project by `/setup-ai-build-kit
 ## Before any work
 
 Read `docs/MAINTAINING.md`. Read `docs/PHILOSOPHY.md` before changing what one
-of the thirteen canonical skills does, or adding a capability. Check the current
+of the fourteen canonical skills does, or adding a capability. Check the current
 branch and unsaved work
 before editing. Never run the project-founding `/setup-ai-build-kit` process in this
 repository.
@@ -24,11 +24,11 @@ repository.
 ## Source and starter boundary
 
 - `.agents/skills/` is the single source of truth for the nine commands and
-  four internal background skills. Nothing else belongs in it.
+  five internal background skills. Nothing else belongs in it.
 - `.agents/maintainer-skills/` holds the skills only the kit's own maintainers
   use. There are two: the Humanizer writing skill, and `review-issues`, which
   reads the open issues, groups them by theme and names the next piece worth
-  picking up. They sit there rather than beside the thirteen because a shared
+  picking up. They sit there rather than beside the fourteen because a shared
   skills installer reads `.agents/skills/` and `.claude/skills/` and offers
   whatever it finds in either, so a folder in one of those is a skill somebody
   installs. Being outside both is the whole boundary, and a maintainer skill
@@ -44,7 +44,7 @@ repository.
   before running any of them.
 - `.claude/`, `.cursor/`, and `.gemini/` are generated adapters. Change the
   canonical skill, then run `.agents/tools/build-adapters.sh`. The Claude
-  plugin exposes the nine generated command files and four hidden background
+  plugin exposes the nine generated command files and five hidden background
   skills. Shared installations use the adapters their coding agents need.
 - `.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md` creates a project's
   root instructions.
@@ -56,7 +56,7 @@ repository.
 - `.claude-plugin/` is the Claude plugin and marketplace metadata. It selects
   generated adapters rather than duplicating a skill.
 - `agent-plugin/plugin.json` is the Agent Plugins manifest. The release
-  allowlist rebases the thirteen canonical skills under `agent-plugin/skills/`,
+  allowlist rebases the fourteen canonical skills under `agent-plugin/skills/`,
   so the plugin folder is assembled at release time and this repository keeps
   one copy of each skill.
 - `release-manifest.txt` is the full allowlist for the public kit. A file absent
@@ -84,7 +84,7 @@ thing, trust the check. It tests the real work, and an instruction can fall out
 of date. Follow the check, and say plainly that the two disagree rather than
 following the stale instruction in silence.
 
-When one of the thirteen canonical skills changes, answer the five questions in
+When one of the fourteen canonical skills changes, answer the five questions in
 `docs/PHILOSOPHY.md`, record any borrowed idea in `docs/SOURCES.md`, update the
 owned explanation where needed, regenerate adapters, and run the kit validator.
 Generated files are committed with their canonical change.
@@ -281,6 +281,10 @@ attribution line, not the word.
   meanings it already has, that /implement neither builds such a piece nor skips
   it in silence, and that /what-now names it as the person's own to-do without
   ever asking for a key in a message.
+- `.agents/tests/screen-rules.sh` guards the screen rules, their two build-time
+  entry points, and the limit on what their report may claim. It proves the
+  refusal to call a screen accessible, compliant or good is load-bearing, since
+  a partial rule check cannot earn that conclusion.
 - `.agents/tests/notice-is-owed-by-the-refusal.sh` guards what triggers the risk
   notice after three failed repairs, and it holds two rules. The refusal owes
   the notice whichever route follows it, in the same reply, because hanging it
@@ -298,7 +302,7 @@ attribution line, not the word.
   other name in silence. The version file said the project was up to date,
   since the same update rewrote it. So the check holds that the route is the
   installer's `add` command, that the monthly pass counts the lockfile against
-  thirteen, and that each rename migration fires on what is on disk and has a
+  fourteen, and that each rename migration fires on what is on disk and has a
   branch for the state where the old skill is gone and the new one never
   came. It also holds that a rename rewrites the command list in the project's
   own AGENTS.md with approval, because a person left to do that by hand after

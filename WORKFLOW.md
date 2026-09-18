@@ -189,10 +189,10 @@ Normal /implement and /fix completion updates the records directly; you don't ne
 /maintain is the service visit: monthly and light for AI Build Kit updates,
 project dependency updates, and anything the error alerts caught. When a newer
 kit is available, the agent shows the version and what changed, then waits for
-approval. An update refreshes only the thirteen AI Build Kit skills and leaves
+approval. An update refreshes only the fourteen AI Build Kit skills and leaves
 your tool, its records, and its own checks alone. It also adds any skill the
 kit has renamed or added since, and says if the installation is short of the
-thirteen. When the kit has renamed a command, the update also rewrites the
+fourteen. When the kit has renamed a command, the update also rewrites the
 command list in your AGENTS.md, with your approval, so you are not left to
 edit it by hand. A project founded from a whole copy of the kit also carries
 the kit's own command files, which make each command show twice; the visit

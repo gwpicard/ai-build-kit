@@ -50,10 +50,12 @@ for required in \
   .agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md \
   .agents/skills/setup-ai-build-kit/templates/foundation/session-start.sh \
   .agents/skills/setup-ai-build-kit/templates/maintenance-record \
+  .agents/skills/screen-check/SKILL.md \
   .agents/skills/maintain/VERSION \
   .claude-plugin/plugin.json \
   .claude-plugin/marketplace.json \
   agent-plugin/plugin.json \
+  agent-plugin/skills/screen-check/SKILL.md \
   agent-plugin/skills/setup-ai-build-kit/SKILL.md \
   agent-plugin/skills/setup-ai-build-kit/scripts/bootstrap-project.sh \
   .agents/guard/blocked-commands.md \
@@ -120,7 +122,7 @@ grep -qF '"version": "0.1.0"' "$FIRST/.claude-plugin/plugin.json" || \
   fail "Claude plugin version does not match the release"
 grep -qF '"./.claude/commands/setup-ai-build-kit.md"' "$FIRST/.claude-plugin/plugin.json" || \
   fail "Claude plugin does not load the nine manual commands"
-grep -qF '"./.claude/skills/section-builder"' "$FIRST/.claude-plugin/plugin.json" || \
+grep -qF '"./.claude/skills/screen-check"' "$FIRST/.claude-plugin/plugin.json" || \
   fail "Claude plugin does not load the internal disciplines"
 if grep -qF 'disable-model-invocation' "$FIRST/.claude/commands/setup-ai-build-kit.md"; then
   fail "Claude plugin start command still carries the retired manual-only setting"
@@ -137,14 +139,14 @@ grep -qF 'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json' \
   fail "agent plugin does not declare the open plugin standard"
 agent_plugin_skill_count=$(find "$FIRST/agent-plugin/skills" -mindepth 2 -maxdepth 2 \
   -name SKILL.md | wc -l | tr -d ' ')
-[ "$agent_plugin_skill_count" -eq 13 ] || \
-  fail "agent plugin does not expose exactly thirteen installable skills"
+[ "$agent_plugin_skill_count" -eq 14 ] || \
+  fail "agent plugin does not expose exactly fourteen installable skills"
 [ "$(cat "$FIRST/agent-plugin/skills/maintain/VERSION")" = "v0.1.0" ] || \
   fail "agent plugin maintain skill version is wrong"
 released_skill_count=$(find "$FIRST/.agents/skills" -mindepth 2 -maxdepth 2 \
   -name SKILL.md | wc -l | tr -d ' ')
-[ "$released_skill_count" -eq 13 ] || \
-  fail "release does not expose exactly thirteen installable skills"
+[ "$released_skill_count" -eq 14 ] || \
+  fail "release does not expose exactly fourteen installable skills"
 cmp -s "$FIRST/AGENTS.md" \
   "$FIRST/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md" || \
   fail "released root instructions differ from start's foundation template"

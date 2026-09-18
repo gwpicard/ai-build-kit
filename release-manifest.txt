@@ -12,6 +12,7 @@
 .agents/skills/fix|
 .agents/skills/clarify|
 .agents/skills/maintain|
+.agents/skills/screen-check|
 .agents/skills/second-opinion|
 .agents/skills/section-builder|
 .agents/skills/ship|
@@ -23,6 +24,7 @@
 .claude/commands|
 .claude/skills/change-triage|
 .claude/skills/clarify|
+.claude/skills/screen-check|
 .claude/skills/second-opinion|
 .claude/skills/section-builder|
 .cursor/commands|
@@ -53,6 +55,7 @@ agent-plugin|
 .agents/skills/fix|agent-plugin/skills/fix
 .agents/skills/clarify|agent-plugin/skills/clarify
 .agents/skills/maintain|agent-plugin/skills/maintain
+.agents/skills/screen-check|agent-plugin/skills/screen-check
 .agents/skills/second-opinion|agent-plugin/skills/second-opinion
 .agents/skills/section-builder|agent-plugin/skills/section-builder
 .agents/skills/ship|agent-plugin/skills/ship

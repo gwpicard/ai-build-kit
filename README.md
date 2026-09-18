@@ -51,7 +51,7 @@ more than one agent, run this from the project folder:
 npx skills add gwpicard/ai-build-kit
 ```
 
-Choose the agents you use and install all thirteen AI Build Kit skills. Then ask
+Choose the agents you use and install all fourteen AI Build Kit skills. Then ask
 the agent: "Run the setup-ai-build-kit skill."
 
 Whichever route you choose, answer one question at a time. The agent prepares
@@ -68,7 +68,7 @@ copy its `.agents/skills` folder into the project, and ask the agent: "Open
 `.agents/skills/setup-ai-build-kit/SKILL.md` and run the setup-ai-build-kit skill." This manual route
 keeps the same workflow, but later updates also need to be copied manually.
 
-The nine commands are the interface. Some coding agents also list the four
+The nine commands are the interface. Some coding agents also list the five
 background skills in a skill picker, but you never need to pick one.
 [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md) explains the installation paths
 and fallback.
@@ -289,14 +289,14 @@ marketplace. Each folder under `.agents/skills/` contains one skill and all of
 the references, templates, or scripts it needs, and every installation route
 carries the same skills. The shared installer records the source in
 `skills-lock.json`. The Claude plugin keeps its copy in Claude's plugin cache,
-where the nine commands use the `ai-build-kit:` prefix and the four background
+where the nine commands use the `ai-build-kit:` prefix and the five background
 skills stay out of the menu until a command needs them.
 
 Agent Plugins is the newest route, for a client that reads that open format. The
 `agent-plugin` folder holds the manifest in this repository and gains its
 `skills` folder only when a numbered version is packaged, so the route is served
 by the release archive rather than by cloning. Keeping that packaged copy out of
-the repository is deliberate: committing it would hold the same thirteen skills
+the repository is deliberate: committing it would hold the same fourteen skills
 twice, and one of the two would drift. Such a client is also free to skip a skill
 it judges non-standard, so the shared installer is the safer choice.
 
