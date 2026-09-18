@@ -41,9 +41,8 @@ when the person wants to draw a redesign. The real page wins wherever one
 exists: put the alternatives there with their actual surroundings and data.
 
 Where no design tool is recorded, keep using the coded throwaway described
-above. Where the harness has a browser tool, such as Playwright MCP or Chrome
-DevTools MCP, use it to look at your own throwaway before showing it. Say when
-you could not inspect it yourself.
+above. Where the harness has a browser tool, use it to look at your own
+throwaway before showing it. Say when you could not inspect it yourself.
 
 ## What to bring back
 

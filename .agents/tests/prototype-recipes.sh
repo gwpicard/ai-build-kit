@@ -124,8 +124,8 @@ rs_require "the FAQ names Sketch's price and local file" \
   "$README" 'sketch.*12.*local'
 
 for skill_file in "$STRUCTURE" "$ARTIFACT" "$SETUP"; do
-  rs_require_absent "skills name no companion design tool" \
-    "$skill_file" '(pencil|penpot|sketch mcp)'
+  rs_require_absent "skills name no companion design or browser product" \
+    "$skill_file" '(pencil|penpot|sketch mcp|playwright mcp|chrome devtools mcp)'
 done
 
 rs_done
