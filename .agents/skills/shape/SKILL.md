@@ -15,6 +15,13 @@ Read masterplan.md first, build-path section first, then the project's pieces,
 the same way `/implement` does. Refresh the printout and read that.
 `.agents/skills/setup-ai-build-kit/references/pieces.md` describes how the pieces are kept.
 
+Whenever shaping touches a decision, re-read any "rests on" clause in the
+piece's `## Decided` or the masterplan, following pieces.md's decision rules.
+Check what it names before relying on it, including when the piece is already
+ready. When its support has gone, say in one line: "The rule that a job closes
+once rested on a test that no longer exists." Name the actual rule in plain
+words, then settle any question this opens through the usual shaping route.
+
 ## Typed with words
 
 Run change-triage on the request and follow its route: shape it into a ready

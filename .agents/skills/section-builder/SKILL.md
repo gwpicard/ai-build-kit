@@ -110,6 +110,12 @@ reasonable change. Run focused checks as you go. Avoid speculative
 abstraction; prefer managed services and the project's existing conventions.
 Stop and say so if the change is expanding past what was agreed.
 
+When filing a new piece for work this build uncovers, follow the rule for work
+found during a build in `.agents/skills/setup-ai-build-kit/references/pieces.md`.
+Put the originating title on the new piece's surface and name the new piece
+on the originating record. Say one line such as "Found while building the
+invoice list." Keep the current build within its agreed scope.
+
 A test that passes only on a retry is a fault in the test, never a passing
 result. Report it as unreliable evidence and repair or replace it before the
 piece can be saved.

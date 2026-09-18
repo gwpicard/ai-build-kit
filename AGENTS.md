@@ -281,6 +281,10 @@ attribution line, not the word.
   for the masterplan, its application during save and recovery, the saved state
   the page was checked against, and the monthly count that offers /sync when
   later work touched data, permissions or connections.
+- `.agents/tests/record-habits.sh` guards a decision's optional evidence line,
+  the read that spots when its support has gone, the link back to the build
+  that found a new piece, and the single question about work untouched for a
+  month. Each rule is removed in turn to prove the check catches its absence.
 - `.agents/tests/triage-overlap.sh` guards the warning that another open piece
   would be built in the same place: what change-triage compares, that it names
   the clash before the routing step rather than after it, that it blocks

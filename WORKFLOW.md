@@ -49,6 +49,11 @@ You can work with the issues yourself, and nothing you do there will be undone. 
 
 A piece is written in two layers. The part you read stays in plain words, and it stays complete about anything that affects your product, so it never looks simpler than the work really is. The build detail the agent needs sits in a collapsed "under the hood" section you never have to open. Anything that affects the whole product is written into the masterplan instead, and anything technical that affects the whole project goes into AGENTS.md, so no fact is copied into two places.
 
+A decision can say what it rests on, in one short line beside it. When /shape
+uses that decision, or /sync checks the masterplan, the agent reads its support
+again. If it has gone, you hear which decision has lost its ground and answer
+in plain words. You never have to read a test or find a saved change yourself.
+
 Assign yourself to claim a piece, or let the agent put your name on it when it starts; either way nobody else builds the same thing. Close an issue you have decided against and it stays closed. Labels of your own are left alone, and milestones and boards are ignored entirely, so you can use them however suits you.
 
 A piece too big to build in one go is split into parts. You will see it marked "made of parts" with a count of how many are done. The agent builds the parts one at a time, and the whole piece closes itself when the last part is finished, so there is nothing for you to tick off.
@@ -114,6 +119,12 @@ that already cover those parts first. If it reaches another part of the tool,
 you get one line naming that part and saying whether its tests passed. The
 check is worked out afresh from the current code, so there is no map to keep up
 to date. The full project check still runs before a pull request is ready.
+
+If a build uncovers another piece of work, that new piece says "Found while
+building the invoice list", using the title of the piece that surfaced it.
+Both pieces link to each other, so you can follow where the work came from.
+Parts of the same outcome stay together as parts; a different outcome keeps
+its own piece.
 
 If the change touched an area the build path flags, the best independent method available reviews it first. It reports in plain language, sorted into what's worth stopping for and what's worth knowing.
 
@@ -217,6 +228,10 @@ missing and records where it checked up to. The monthly visit uses that point
 to say how much work has since touched the tool's data, permissions or
 connections. When there is any, it gives the count and offers /sync in one
 line. That is a reason to check the page, not a claim that it is wrong.
+
+/sync names open pieces untouched for 30 days in one short list and asks once
+whether each is still wanted, should be parked, or is done. It changes nothing
+on that list without your yes. You can leave them as they are and carry on.
 
 /maintain is the service visit: monthly and light for AI Build Kit updates,
 project dependency updates, and anything the error alerts caught. When a newer

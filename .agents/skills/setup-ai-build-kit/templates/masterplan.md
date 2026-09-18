@@ -7,7 +7,11 @@ Trued against: not yet checked
 never has to read a hash. -->
 
 <!-- What the tool is now. Present tense. Keep the core readable in roughly
-one to two pages. Optional sections appear only when they carry real decisions. -->
+one to two pages. Optional sections appear only when they carry real decisions.
+On every build path, key terms and decided lines may carry an optional one-line
+"rests on" clause in plain words, naming the evidence behind the decision.
+Follow the decision rules in
+.agents/skills/setup-ai-build-kit/references/pieces.md. -->
 
 ## Build path
 

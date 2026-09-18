@@ -67,6 +67,20 @@ it does not apply it early. The save and recovery rules live in
 them, which is most of them. A section of thin prose repeated on every issue
 teaches a reader to skip all of them.
 
+A decision in `## Decided`, or a key term or decided line in the masterplan,
+may carry an optional one-line "rests on" clause in plain words. This applies
+on every build path. Name what supports it: a test, a piece, a source, or a
+person's answer with its date. For example: "A returned item can be booked
+again; rests on the returning-early check." Leave the clause out when there
+is no evidence to name. Never invent support to fill the line.
+
+Before relying on a clause, read the thing it names against the current
+branch or source. A missing or contradicted source no longer supports the
+decision. An unreachable source is unconfirmed, rather than gone. Say which
+in one plain line, without asking the person to read code or understand a
+test name. Keep the decision visible until it is settled through the command's
+usual route; a missing source is not permission to reverse the decision.
+
 `## Waiting on you` is left out the same way, and for a stronger reason: it is
 the one thing on a piece that only the person can clear. It appears when the
 work stops until they sign up for something, hand over a key, or move some data
@@ -221,6 +235,16 @@ the parent is not done until its parts are. A blocked-by piece is a different
 outcome that must land first. Same outcome means a sub-issue; a different outcome
 that has to come first means blocked-by. A piece too big to hold whole in a fresh
 session is split into sub-issues, each a vertical slice of its own.
+
+When a build uncovers work and files a new piece, write "Found while building
+<piece title>" on the new piece's surface, with the title linked to the piece
+that surfaced it. The originating piece's record names and links to the new
+piece too, so either one leads to the other.
+
+Parts of the same outcome stay sub-issues. A find with a different outcome gets
+the found-while-building link; it gains a blocked-by relationship only if one
+piece really must land before the other. Finding work does not add it to the
+piece being built.
 
 `/implement` takes the lowest-numbered `ready` issue whose blockers are all closed
 and whose subjects the current build path all permit. A parent with open children

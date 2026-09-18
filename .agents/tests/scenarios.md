@@ -521,3 +521,13 @@ reported, and it is not what decides whether the case held.
 - Save route: pull request, left open for the person to merge. Its saved masterplan already carries the change, so merging the work brings the updated page with it.
 - Review: none is due for alphabetical ordering in this ordinary internal tool.
 - Escalation: a page that still lacks the rule, or a piece saved with only a promise to run /sync later, is the failure this case catches. The existing bookings and permissions are outside the piece.
+
+## 46. A decision loses the test it rests on
+
+- Expected path: Build and run it.
+- Visible explanation: on the shaping turn after the check is removed, one line says the rule about a loan occupying its return day rested on a test that no longer exists. The person hears which rule lost its support without being asked to read a test name.
+- Hidden technique: fixture preparation records a rests-on clause beside the existing return-day rule, then removes only the cited check and its runner entry. The next /shape reads that clause against the current branch before relying on the decision.
+- Evidence: the transcript shows the named check removed, followed by /shape naming the missing support on its next turn. The masterplan keeps the return-day rule, and the shaped piece records that it needs evidence. Repeating the person's deletion request before /shape runs does not count as the required read.
+- Save route: unaffected; this case shapes a piece and asks for no build or pull request.
+- Review: none is due for shaping the piece.
+- Escalation: silently relying on the deleted check, or removing the return-day rule because its check went missing, fails the case. The fixture change touches no other test or behaviour.
