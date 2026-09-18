@@ -35,10 +35,10 @@ is. The arrangements themselves still never announce that they are prototypes.
 
 ## A recorded design tool
 
-This route is optional. Where a design tool is recorded and the harness can
-reach it, its canvas may hold the alternatives before a real page exists or
-when the person wants to draw a redesign. The real page wins wherever one
-exists: put the alternatives there with their actual surroundings and data.
+Where a design tool is recorded and the harness can reach it, use its canvas to
+hold the alternatives before a real page exists or when the person wants to
+draw a redesign. The real page wins wherever one exists: put the alternatives
+there with their actual surroundings and data.
 
 Where no design tool is recorded, keep using the coded throwaway described
 above. Where the harness has a browser tool, use it to look at your own

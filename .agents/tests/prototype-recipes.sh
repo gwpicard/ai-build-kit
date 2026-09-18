@@ -71,7 +71,8 @@ rs_rule "a way between them the person finds unaided" 'without being told'
 rs_rule "the arrangements still never announce themselves" \
   'never announce that they are prototypes'
 rs_rule "a combination of two is itself the decision" 'they wanted parts of two'
-rs_rule "a recorded design tool is optional" 'recorded design tool'
+rs_rule "a reachable recorded design tool holds the alternatives" \
+  'use its canvas to hold the alternatives'
 rs_rule "the real page still wins wherever one exists" \
   'the real page wins wherever one exists'
 rs_rule "the canvas is for work before a page or a drawn redesign" \
