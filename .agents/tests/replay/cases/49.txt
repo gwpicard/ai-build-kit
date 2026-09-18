@@ -1,0 +1,7 @@
+# setup: fixture
+# Prepare an overlong project file, then exercise the monthly offer and a no.
+In this disposable rehearsal project, pad its AGENTS.md to exactly 240 lines by adding a folder layout that describes the files already on disk. Leave every existing instruction intact. This prepares the fixture only; do not run maintenance or trim anything yet.
+---
+/maintain Run the monthly visit. Leave kit and dependency updates alone for this rehearsal. Do not edit the standing instructions before I answer any offer.
+---
+No, leave the standing instructions as they are. Carry on with the visit.

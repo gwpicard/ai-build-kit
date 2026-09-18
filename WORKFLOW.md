@@ -303,6 +303,13 @@ the build-path section of your masterplan to the new shape, shows the old text
 above the new, keeps every accepted risk word for word, and changes nothing
 without your approval.
 
+The standing instructions in AGENTS.md stay under 200 lines and hold what the
+code cannot show, such as how work is saved and reviewed and which conventions
+differ from the default. /maintain counts the lines every month and offers a
+trim if the file reaches 200, or contains a folder layout, dependency list,
+architecture overview or style rule an automatic check could enforce. You see
+one line saying how long it is and what can go. Nothing is cut without your yes.
+
 /maintain writes the date of each visit into the project. When more than a month
 has gone by, opening a session says so and names /maintain. A tool that cannot
 run anything when a session opens says it when you type /what-now instead.

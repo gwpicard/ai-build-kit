@@ -110,7 +110,23 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
 10. Once live: read the error alerts and the bills. Anything real becomes a piece, for implement to take: open an issue in the shape `.agents/skills/setup-ai-build-kit/references/pieces.md` describes. A finding nobody wrote down is a finding nobody acts on.
 11. Verify backups still run where the tool has any. Confirm the named operational owner from the masterplan still holds that role, and that no critical service or credential is tied to someone who has left.
 12. Check whether use or reliance has grown enough that the fit check should run again; if it has, run it before anything else this visit.
-13. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
+13. On every build path, count every line in the project's AGENTS.md, including
+    blank lines, and read it for a directory layout, dependency list,
+    architecture overview or style rule an automatic check could enforce. It
+    stays under 200 lines and holds only what the code cannot show: the save
+    and review routes, conventions that differ from the default, and pointers
+    to the records.
+
+    At 200 lines or more, or with any of the named content even below that
+    count, offer a trim in one line, using the measured count and what can
+    go: "The standing instructions have reached 240 lines, and 30 of them
+    describe the folder layout the code already shows. Shall I trim them?"
+
+    Where length alone triggers the offer, name that alone; never invent
+    removable content to fill the example. Cut nothing without the person's
+    yes. A no leaves the file intact and the visit carries on. If the file is
+    short and carries none of that content, say nothing.
+14. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
     today's date on the `last-light-pass` line, written as YYYY-MM-DD. If that
     file is missing, create it with a `founded` line holding the date
     masterplan.md was first saved, then the two pass lines. If the project has
@@ -337,7 +353,9 @@ Everything above, plus:
    Apply on approval.
    Do not run a broad architecture programme merely because the quarter
    changed.
-3. Prune the instruction layer: AGENTS.md lines and project skills that no longer pay their way. Those accumulate debt the same way code does.
+3. Review project skills for instructions that no longer pay their way and
+   offer to remove them. AGENTS.md was already checked in the monthly pass;
+   do not repeat its trim offer or cut anything without the person's yes.
 4. Run ship's evidence run, scoped by the build path and its sensitive areas.
 5. The ownership and graduation check: can the team still explain the main
    flows? Can it verify important changes without reading code? Can it

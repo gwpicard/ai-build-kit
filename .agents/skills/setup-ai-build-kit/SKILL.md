@@ -354,8 +354,10 @@ step only a human can complete. If hosting is needed, arrange it so day-to-day
 pushes land at a preview address and only /ship changes the address the team
 uses.
 
-Choose routine technical parts quietly and record them under AGENTS.md's stack
-section. In the conversation, describe what the setup lets the person do. Name
+Choose routine technical parts quietly. Record run and check commands and any
+non-standard conventions under AGENTS.md's stack section, keeping its content
+rule and line ceiling. Leave dependency lists in the code. In the conversation,
+describe what the setup lets the person do. Name
 a product or service only when it creates a choice, cost, account, access step,
 ownership duty, or product limit that the person needs to understand.
 

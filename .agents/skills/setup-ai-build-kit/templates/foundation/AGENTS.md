@@ -4,6 +4,13 @@ Standing instructions for this project. Read this file at the start of every
 session. The product lives in `masterplan.md`, the remaining work lives in this
 project's issues, and the history lives in `CHANGELOG.md`.
 
+Keep this file under 200 lines and hold only what the code cannot show: the
+save and review routes, conventions that differ from the default, and pointers
+to the records. Never add a directory layout, dependency list, architecture
+overview, or style rule an automatic check could enforce. `/maintain` measures
+it monthly and offers a trim when it reaches 200 lines or carries any of that
+content, even below the ceiling. Cut nothing without the person's yes.
+
 ## What this project is
 
 (One line, written by the setup-ai-build-kit skill.)
@@ -172,4 +179,5 @@ harness capabilities.)
 
 ## Stack, and how to run and check it
 
-(Filled in by the setup-ai-build-kit skill.)
+(Filled in by the setup-ai-build-kit skill: run and check commands, and
+conventions that differ from the default. Leave dependency lists in the code.)

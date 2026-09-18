@@ -306,6 +306,10 @@ attribution line, not the word.
   live use, its data exclusions, and the monitoring caution given once unless
   someone already receives alerts. It also holds the repair step that reads
   the tool's record after launch, alongside the person's report.
+- `.agents/tests/standing-instructions.sh` guards the project's instruction
+  ceiling and the monthly offer to trim repeated code information. It removes
+  each written rule in turn and drives the validator's own count at the limit,
+  so a template of 199 lines passes and one of 200 fails.
 - `.agents/tests/triage-overlap.sh` guards the warning that another open piece
   would be built in the same place: what change-triage compares, that it names
   the clash before the routing step rather than after it, that it blocks

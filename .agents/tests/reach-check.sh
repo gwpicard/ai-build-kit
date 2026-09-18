@@ -35,7 +35,8 @@ rs_guard "$REACH" "the shared reach-check reference"
 rs_require "section-builder runs it before save" "$BUILDER" 'references/reach-check\.md'
 rs_require "section-builder runs covered tests first" "$BUILDER" 'run those tests first'
 rs_require "shape uses it for under-the-hood notes" "$SHAPE" 'references/reach-check\.md'
-rs_require "fix uses it before ranking causes" "$FIX" 'reach check before ranking causes'
+rs_require_order "fix uses it before ranking causes" "$FIX" \
+  'references/reach-check\.md' '^## 4\. Rank causes$'
 rs_require "the capability check records the engine" "$CAPABILITY" 'a reach-check engine is recorded'
 rs_require "setup writes the engine to the profile" "$SETUP" 'the reach-check engine'
 rs_require "maintain re-reads the engine monthly" "$MAINTAIN" "re-read the capability profile's reach-check engine"

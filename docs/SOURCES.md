@@ -50,4 +50,7 @@ Nobody named here was asked first, and nobody named here has endorsed the kit.
 | [OpenSpec concepts](https://github.com/Fission-AI/OpenSpec/blob/main/docs/concepts.md) | Carrying a proposed change to the present record on the piece, then applying it when the work lands |
 | [Kiro's proposal to record what a spec was checked against](https://github.com/kirodotdev/Kiro/issues/9435) | Recording a saved code state so later changes can show how far the masterplan may have drifted |
 | [OpenAI's harness engineering](https://www.infoq.com/news/2026/02/openai-harness-engineering-codex/) | A regular read for documents that no longer match the code |
+| [ETH Zurich's Evaluating AGENTS.md study](https://arxiv.org/abs/2602.11988) | Keeping standing instructions to practices the code cannot show, rather than repeating a repository overview |
+| [Configuration Smells in AGENTS.md Files](https://arxiv.org/abs/2606.15828) | Checking for excess context and style rules that an automatic check could enforce when offering to trim the standing instructions |
+| [Anthropic's memory guidance](https://code.claude.com/docs/en/memory) | The under-200-line limit for standing instructions and the habit of trimming what the agent can find in the code |
 | [The Boring JavaScript Stack](https://boringstack.xyz/) | Framing the empty project as the expected starting point rather than a fault, so setup ends by naming the person's own first piece rather than leaving an anxious blank |
