@@ -253,9 +253,10 @@ spaces. A line carries the area, what in this tool touches it, its caution,
 and where the caution stands: `not yet done`, `done` with the date, or
 `accepted` with the date of the matching `Accepted:` line. On Build with care,
 the next line lists the paths where that area lives. A third line may name one
-boundary the area must not cross. Every top-level source folder is listed under
-an area or on a `none:` line, so the shipped check can refuse a new, unassigned
-folder. Keep this map absent on the other two build paths.
+boundary the area must not cross, and the project check can hold that boundary
+once the person agrees; `boundary-rules.md` says how. Every top-level source
+folder is listed under an area or on a `none:` line, so the shipped check can
+refuse a new, unassigned folder. Keep this map absent on the other two build paths.
 
 ```md
 Sensitive areas:

@@ -339,6 +339,17 @@ attribution line, not the word.
   loop from after it. Only the new loop is named, at the line where each file
   imports the other, the project's working tree is unchanged, and a second
   read after the next visit says nothing.
+- `.agents/tests/boundary-rules.sh` guards the offer to hold a sensitive
+  area's boundary in the project check: only for a boundary the masterplan
+  already names, offered and never imposed, added or removed only on a yes,
+  green on the day it is added, withdrawn plainly where the language has no
+  tool, and worded in the person's own sentence. A rule that turned the tick
+  red for a boundary nobody agreed would teach people to ignore red.
+  `.agents/tests/boundary-rules-rehearsal.sh` founds a throwaway Build with
+  care project, fills the shipped configuration template from the boundary
+  line the masterplan records, and watches the check go red at the `Boundary
+  rules` step on a crossing import, carrying the person's sentence word for
+  word, and green once the import is gone.
 - `.agents/tests/request-record.sh` guards the request record checked before
   live use, its data exclusions, and the monitoring caution given once unless
   someone already receives alerts. It also holds the repair step that reads

@@ -387,7 +387,10 @@ Everything above, plus:
    identify where data, secrets, service owners, and bills live? Can it
    recover, or use the manual fallback? Has reliability, complexity, or
    reliance grown? Are the named sensitive areas and their cautions still
-   accurate? Name a new area when the answers require it. An area comes off
+   accurate? Name a new area when the answers require it. Where an area was
+   named or given a boundary since the last full visit, offer the boundary
+   rule in `.agents/skills/setup-ai-build-kit/references/boundary-rules.md`,
+   and change or remove an existing rule with its area, on a yes. An area comes off
    only when a genuine redesign has removed what put it there; an acceptance
    drops its caution and leaves the area named. Where the person asks for a
    handover, or a caution names a person the team has to find, prepare
