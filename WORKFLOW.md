@@ -293,7 +293,10 @@ whether each is still wanted, should be parked, or is done. It changes nothing
 on that list without your yes. You can leave them as they are and carry on.
 
 /maintain is the service visit: monthly and light for AI Build Kit updates,
-project dependency updates, and anything the error alerts caught. When a newer
+project dependency updates, and anything the error alerts caught. Every visit
+names two numbers, the version your project holds and the latest published AI
+Build Kit, and says plainly when they differ. An update gives you that
+published release and never work nobody has released yet. When a newer
 kit is available, the agent shows the version and what changed, then waits for
 approval. An update refreshes only the fourteen AI Build Kit skills and leaves
 your tool, its records, and its own checks alone. It also adds any skill the

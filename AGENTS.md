@@ -471,6 +471,24 @@ attribution line, not the word.
   written, and the second skill arrived with two of the three not looking.
   The proof that reading the folder catches a copy is the `review-issues-leak`
   mutation in `mutate.sh`, which plants one and asks all three.
+- `.agents/tests/stable-is-the-channel.sh` guards the branch the world installs
+  from and the visit that names a project's version. Two of the three
+  installation routes clone with no ref and take the default branch, which was
+  the branch work merges into, so a project installing between two releases got
+  the last release's label with unreleased work behind it and `/maintain` said
+  it was up to date. It drives `.agents/tools/promote-stable.sh` against a
+  stand-in for the GitHub CLI: the create, the forced update, the read-back
+  that catches a write which answered and changed nothing, and the refusals,
+  including a commit no published tag names. The rule it guards hardest is
+  that the ref is written into the tool rather than taken from an argument,
+  since that is what makes a repository write from a workflow acceptable at
+  all. It also reads back `/maintain`'s rules about `releases/latest`, the one
+  endpoint that cannot answer with a draft, and asserts that neither
+  `docs/MAINTAINING.md` nor the stamp still calls the old gap unavoidable. The
+  real write from inside GitHub Actions is the one thing no local rehearsal can
+  reach, so the permission shape of that workflow is guarded in
+  `release-publication.sh` and the first published release is the first time
+  the write itself runs.
 - `.agents/tests/attribution-scrub.sh` drives the commit-msg hook over a set of
   messages and reads what it wrote: that a session link goes whether it sits
   behind a trailer key or on a line of its own, that the row of dashes a squash

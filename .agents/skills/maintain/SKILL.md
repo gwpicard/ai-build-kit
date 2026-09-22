@@ -9,11 +9,28 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
 
 ## Monthly, light
 
-1. Read this skill's `VERSION` file and compare it with the latest stable public
-   Release at `gwpicard/ai-build-kit`. If a newer version exists, read its notes
-   and say: "A newer AI Build Kit is available. It refreshes the installed
-   workflow skills. Your tool, project records, and project instructions remain
-   yours." Give the version and a short summary, then wait for approval.
+1. Read this skill's `VERSION` file, which is the version this project holds.
+   Then ask for the latest published one with
+   `gh api repos/gwpicard/ai-build-kit/releases/latest --jq .tag_name`. Ask
+   that endpoint and no other: it is the only one that cannot answer with a
+   draft or a prerelease, while `gh release list` puts an unpublished draft in
+   its first row for anybody who can see the repository, which would offer an
+   update that does not exist yet.
+
+   Say both numbers, every visit, whichever way they compare: "This project
+   holds v0.15.0, and the latest published AI Build Kit is v0.16.0." Where they
+   differ, say so plainly rather than leaving the person to compare two numbers,
+   read the newer version's notes, and add: "A newer AI Build Kit is available.
+   It refreshes the installed workflow skills. Your tool, project records, and
+   project instructions remain yours." Give a short summary, then wait for
+   approval. Where they match, say the project is on the latest published
+   release and carry on with the visit.
+
+   Where the call cannot be made at all, because the GitHub tool is missing or
+   signed out, say that the version check did not happen. Never say the project
+   is up to date on the strength of a call that failed: the whole reason this
+   step names one endpoint is that a project was once told it was current while
+   holding work that no release had ever contained.
 2. Before registering or changing the kit, require the clean checkpoint used by
    the current build path. For a shared skills installation, check whether any
    AI Build Kit skill has local edits. Project-specific rules belong in
@@ -56,11 +73,11 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
      update on the same visit.
 
    Do not update unrelated plugins, project skills, or global skills.
-5. For the shared route, confirm that this skill's `VERSION` matches the public
-   Release and that the count from step 3 is now fourteen. When the shared
-   installation did not have `screen-check` before this visit, confirm that the
-   same `npx skills add` command added it, and carry on only once it is there.
-   A matching version
+5. For the shared route, confirm that this skill's `VERSION` now matches the
+   version step 1 read from `releases/latest`, and that the count from step 3
+   is now fourteen. When the shared installation did not have `screen-check`
+   before this visit, confirm that the same `npx skills add` command added it,
+   and carry on only once it is there. A matching version
    alone is not proof the installation is whole. For the Claude route, confirm
    that `claude plugin list --json` reports the matching version without the
    leading `v`. Claude loads an updated plugin after `/reload-plugins` or the
@@ -94,9 +111,10 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    Build with care. Where it names a missing path or an unassigned source folder,
    ask which sensitive area it belongs to, or whether it belongs under `none`,
    then update the map only after the person answers.
-8. If the normal route is unavailable, use the latest public Release as the
-   fallback source. A shared installation may replace only the fourteen AI Build
-   Kit skill folders after the same approval and clean checkpoint. A Claude
+8. If the normal route is unavailable, use the latest published Release, the
+   one step 1 read, as the fallback source. A shared installation may replace
+   only the fourteen AI Build Kit skill folders after the same approval and
+   clean checkpoint. A Claude
    plugin installation keeps its current enabled version when the marketplace
    cannot be reached. Confirm that version with `claude plugin list --json`,
    tell the person the update did not happen, and retry when the marketplace is

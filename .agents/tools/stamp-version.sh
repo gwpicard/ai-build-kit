@@ -24,10 +24,17 @@
 # administrators and a pushing workflow would need a bypass, which is the
 # privileged actor that retiring the publication credential removed.
 #
-# The cost, stated where somebody will read it: between releases the branch
-# carries the last released version while its contents move ahead of it. That
-# is unavoidable once the branch is where the work happens, and it is a much
-# smaller untruth than a version that never resolves. Cut releases promptly.
+# Between releases `main` carries the last released version while its contents
+# move ahead of it. That used to be what a project received, and it is not any
+# more. Installers read the repository's default branch, and that branch is
+# `stable`, which only a verified release moves. So the number stamped here is
+# the number of the tree an installation actually gets, and the two cannot
+# drift apart while work merges.
+#
+# `main` is still the thing that gets stamped, because the stamp is what
+# `prepare release` checks and what the release is assembled from. A
+# version-bearing file on `main` between releases is an internal fact about
+# what the next release will say, rather than a promise made to anybody.
 #
 # Usage:
 #   stamp-version.sh vX.Y.Z            write that version into all three files

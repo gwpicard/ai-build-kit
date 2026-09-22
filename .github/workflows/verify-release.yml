@@ -6,8 +6,16 @@ name: verify release
 # between preparation and publication, into a red mark instead of a silent
 # divergence.
 #
-# It writes nothing. There is one repository now, so a release is published
-# where it was prepared and nothing has to be copied anywhere.
+# There is one repository now, so a release is published where it was prepared
+# and nothing has to be copied anywhere.
+#
+# Verification itself writes nothing, and the job that does it reads as it
+# always has. One job beside it writes, and only to move `stable` to the
+# release that has just been verified, so the branch the world installs from
+# carries a published release rather than whatever has merged since. That job
+# runs after verification and never instead of it, so a release that fails
+# verification leaves `stable` where it was. What bounds the write is in
+# .agents/tools/promote-stable.sh, beside the code that makes it.
 
 on:
   release:
@@ -20,6 +28,8 @@ jobs:
   verify:
     if: github.repository == 'gwpicard/ai-build-kit'
     runs-on: ubuntu-latest
+    outputs:
+      commit: ${{ steps.release-ref.outputs.commit }}
     env:
       VERSION: ${{ github.event.release.tag_name }}
     steps:
@@ -81,3 +91,34 @@ jobs:
           tar -xzf "$RUNNER_TEMP/prepared-archive/ai-build-kit-$VERSION.tar.gz" \
             -C "$RUNNER_TEMP/prepared-starter"
           diff -qr "$RUNNER_TEMP/starter" "$RUNNER_TEMP/prepared-starter"
+
+  # The branch every installer reads is moved here, and nowhere else.
+  #
+  # `needs: verify` is the gate. A release whose rebuild does not match the
+  # reviewed archive fails the job above, this one never starts, and `stable`
+  # stays on the previous release.
+  #
+  # The permission block belongs to this job alone. A block written at the top
+  # of the file would hand the same power to verification, which needs to read
+  # and nothing more.
+  promote-stable:
+    if: github.repository == 'gwpicard/ai-build-kit'
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      # The verified commit, not current main. The tag, the tool and the tree
+      # being promoted then all come from the same reviewed commit, and a
+      # release published while a later pull request sits on main cannot be
+      # moved by that pull request's version of this tool.
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.verify.outputs.commit }}
+          persist-credentials: false
+      - name: Point stable at the verified release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ github.event.release.tag_name }}
+          COMMIT: ${{ needs.verify.outputs.commit }}
+        run: .agents/tools/promote-stable.sh "$VERSION" "$COMMIT"
