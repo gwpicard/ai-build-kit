@@ -328,6 +328,17 @@ attribution line, not the word.
   a real line, that an export a configuration file names is dropped, that no
   percentage reaches the report, that a clean project produces nothing, and
   that nothing was written into either project.
+- `.agents/tests/structure-read.sh` guards the quarterly structure read: that
+  the earlier structure is derived again from saved history rather than kept,
+  that a loop already there at the last visit is not news, that a comparison
+  which could not happen says so, and that reliability is only ever a missing
+  pattern at a named place. It also holds the clause in the shared rules that
+  lets a read compare against an earlier state without saving one.
+  `.agents/tests/structure-read-rehearsal.sh` runs it against a throwaway
+  project whose history holds a recorded visit, a loop from before it and a
+  loop from after it. Only the new loop is named, at the line where each file
+  imports the other, the project's working tree is unchanged, and a second
+  read after the next visit says nothing.
 - `.agents/tests/request-record.sh` guards the request record checked before
   live use, its data exclusions, and the monitoring caution given once unless
   someone already receives alerts. It also holds the repair step that reads

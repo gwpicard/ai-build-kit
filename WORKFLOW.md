@@ -336,7 +336,11 @@ and dependencies nothing needs, using tools that read the project rather than
 the agent's impression of it. Each finding names the file and line, and it
 joins the same short list of at most three proposals. It finds copied code; it
 does not find two pieces of code that do the same job written differently. When
-it finds nothing, you hear nothing about it. /maintain also owns the ending,
+it finds nothing, you hear nothing about it. It also compares the project's
+structure with the last full visit and names any new place where two parts
+have started to depend on each other in a circle. The earlier structure is read
+again from the saved history each time rather than kept anywhere, so it cannot
+go out of date. Most quarters nothing got worse, and you hear nothing. /maintain also owns the ending,
 when a tool's time is over: export the data, tell the team, revoke access, and
 switch off the services.
 

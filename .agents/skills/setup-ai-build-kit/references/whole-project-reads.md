@@ -22,7 +22,9 @@ tool can answer a question, the read says the question was not checked.
    in one line and use the next one in the order.
 3. Save nothing. Derive every result again from the project as it is now.
    Never write a result, index or graph to a file for a later read to trust. A
-   stale index answers confidently and wrongly.
+   stale index answers confidently and wrongly. Where a read compares against
+   an earlier state, derive that state again from the project's saved history
+   at the recorded date, rather than keeping a copy of it.
 4. Each finding names a file and a line that exist. Before the person sees it,
    confirm it a second time: run the tool again, or open the file at that line
    and check that the finding is there. Drop any finding that does not survive
