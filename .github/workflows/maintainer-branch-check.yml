@@ -1,9 +1,15 @@
 name: maintainer branch check
 
+# Two branches are not maintainer branches. Work merges into `main`, which the
+# pull request checks have already covered by then, and a release moves
+# `stable`, whose commit was validated as part of `main` and again by `verify
+# release`. Checking either one again bills a hosted minute to re-run a check
+# that has already passed.
 on:
   push:
     branches-ignore:
       - main
+      - stable
 
 permissions:
   contents: read

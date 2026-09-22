@@ -527,12 +527,40 @@ refuses to touch a Release that is already published, and removes the archive it
 replaces rather than leaving two attached. Running it twice for the same version
 leaves one archive, not two.
 
-Between releases this branch carries the last published version while its
-contents move ahead of it, so somebody installing mid-cycle gets skills a little
-ahead of the label they wear and `/maintain` tells them they are up to date.
-That gap cannot be closed while the branch is where the work happens, and it is
-a much smaller untruth than a version that never resolves. Keep it small by
-cutting a release soon after a meaningful merge.
+Two of the three installation routes read the repository's default branch, so
+which branch that is decides what a project receives. `stable` is the answer to
+that. Only a release moves it: `verify release` rebuilds the published tag,
+compares it with the reviewed archive, and a second job in the same workflow
+then points `stable` at the verified commit. A release that fails verification
+leaves `stable` where it was. That job carries the only repository write in
+this repository, and `.agents/tools/promote-stable.sh` is where its limits are
+written down.
+
+Work still merges into `main`, and `main` is still the branch a contributor
+targets. What changed is that the branch installers read is no longer the
+branch the work happens on. A project installing between two releases used to
+receive the label of one release with the contents of another, and `/maintain`
+told it that it was up to date. Now it receives the release. `/maintain` reads
+the project's own version against
+`/repos/gwpicard/ai-build-kit/releases/latest`, the one endpoint that cannot
+answer with a draft or a prerelease, and says both numbers every visit, so a
+project that installed before this arrived can still see where it stands.
+
+Two things are the maintainer's to do by hand, once, and neither can arrive in
+a pull request. After the release that first creates `stable`, confirm it
+points at the release commit before switching anything:
+
+```
+git fetch origin && git rev-parse origin/stable
+git rev-list -n1 vX.Y.Z
+```
+
+Those two have to match. If `stable` is missing or points somewhere else, the
+step is wrong: repair it, and create `stable` by hand at the right commit
+rather than cutting another release to test it. Nothing is user-visible while
+the default branch is still `main`, so there is room to get it right. Then
+switch the repository's default branch to `stable` and protect it against a
+direct push.
 
 The bridge for projects installed before the shared installer is retired. Only
 v0.1.0 and v0.1.1 shipped a `/maintain` that could reach it, v0.1.0 was never

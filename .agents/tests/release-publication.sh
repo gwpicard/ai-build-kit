@@ -321,11 +321,46 @@ if grep -RqE 'create-github-app-token|STARTER_APP_|x-access-token' "$ROOT/.githu
 fi
 # GitHub accepts .yaml as readily as .yml, so both are swept. A guard that reads
 # the folder is only as good as its idea of what a workflow file is called.
-# Only the two workflows that edit a Release may write at all.
+# Only the two workflows that edit a Release, and the one job that moves
+# `stable`, may write at all.
+#
+# Verification is the reason that last one is a job rather than a file. It
+# earned its write by moving one branch to a release it has just verified, and
+# the verification beside it still needs to read and nothing more. So the
+# permission is asserted where it sits rather than merely allowed to exist
+# somewhere in the file: nothing at the top level, where it would reach every
+# job, and exactly one job carrying it. Written as a file-wide exemption, the
+# rehearsal would pass a verify-release.yml that handed the write to everything
+# in it, which is the mistake worth catching.
+VERIFY_JOB_WRITE='^      contents: write$'
 for workflow in "$ROOT"/.github/workflows/*.yml "$ROOT"/.github/workflows/*.yaml; do
   [ -f "$workflow" ] || continue
   case "${workflow##*/}" in
     prepare-release.yml | release-drafter.yml) continue ;;
+    verify-release.yml)
+      # The top-level block, read as the lines under `permissions:` at column
+      # zero and stopping at the next thing written there.
+      top=$(awk '/^permissions:/{seen=1;next} /^[^[:space:]]/{seen=0} seen' "$workflow")
+      printf '%s\n' "$top" | grep -qx '  contents: read' || \
+        fail "verify-release.yml does not keep its top-level permissions read-only"
+      if printf '%s\n' "$top" | grep -qF 'contents: write'; then
+        fail "verify-release.yml hands the repository write to every job in it"
+      fi
+      writers=$(grep -cE "$VERIFY_JOB_WRITE" "$workflow" || true)
+      [ "${writers:-0}" -eq 1 ] || \
+        fail "verify-release.yml has ${writers:-0} jobs that can write, and exactly one may"
+      # Comments come out first. This file explains its own gate in prose
+      # above the job, and a grep that reads the explanation as the gate would
+      # pass a workflow whose comment survived while the line it describes was
+      # deleted. That is exactly how a careless edit removes one.
+      declared=$(sed 's/#.*//' "$workflow")
+      printf '%s\n' "$declared" | grep -qE '^    needs: verify$' || \
+        fail "the job that moves stable does not wait for verification to pass"
+      printf '%s\n' "$declared" \
+        | grep -qE '^ +run: \.agents/tools/promote-stable\.sh' || \
+        fail "verify-release.yml writes to the repository without the bounded tool"
+      continue
+      ;;
   esac
   if grep -qF 'contents: write' "$workflow"; then
     fail "${workflow##*/} can write to the repository"

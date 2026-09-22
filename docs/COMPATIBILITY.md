@@ -67,8 +67,10 @@ shared skills, confirm they work, then remove the other installation.
 
 ## Update the installed skills
 
-During `maintain`, the agent reads the latest public Release notes and asks
-before changing the kit. It first identifies the installation route.
+During `maintain`, the agent names the version this project holds and the
+latest published one, reads that release's notes, and asks before changing the
+kit. Every route delivers a published release, never work that has not been
+released yet. The agent first identifies the installation route.
 
 For the Claude plugin, the approved update is:
 
