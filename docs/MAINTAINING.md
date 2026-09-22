@@ -546,21 +546,50 @@ the project's own version against
 answer with a draft or a prerelease, and says both numbers every visit, so a
 project that installed before this arrived can still see where it stands.
 
-Two things are the maintainer's to do by hand, once, and neither can arrive in
-a pull request. After the release that first creates `stable`, confirm it
-points at the release commit before switching anything:
+The switch is done. `stable` exists, it points at the latest published
+release's commit, and it is the repository's default branch. What matters now
+is how the two branches are protected, because they are protected differently
+and the difference is not arbitrary.
+
+`main` requires a pull request and the `source-kit-validation` and `rehearsal`
+checks, and refuses a deletion or a force push. `stable` refuses a deletion or
+a force push and nothing else. It cannot require a pull request. Nothing merges
+into `stable`: the release job updates the ref through the API, and a
+pull-request rule rejects a ref update whoever makes it. A rule meant to keep
+people out would stop the release instead.
+
+That leaves one gap, stated here rather than papered over. An ordinary
+fast-forward push to `stable` by somebody with write access is not refused. The
+rule that would refuse it is the ruleset's update restriction, and on a
+user-owned repository that restriction binds the workflow's own token as
+readily as a person, with no bypass to tell the two apart. What is in place
+stops the damage that cannot be undone, a deletion or a rewrite. A stray push
+shows in the branch and is corrected by publishing again.
+
+One trap for anybody who moves the default branch again. A ruleset whose
+condition is `~DEFAULT_BRANCH` rather than a branch name follows the default
+branch when it moves, and takes its rules off the branch it used to cover.
+That happened here. Switching to `stable` left `main` with no rules on it at
+all, and nothing said so: the ruleset list read exactly as it had before,
+because the ruleset had not changed. Both rulesets now name their branch
+literally. After any change of this kind, ask each branch what applies to it
+rather than reading the list:
+
+```
+gh api repos/<owner>/<repo>/rules/branches/main --jq '[.[].type]'
+gh api repos/<owner>/<repo>/rules/branches/stable --jq '[.[].type]'
+```
+
+If `stable` ever has to be rebuilt, confirm it against the published tag rather
+than assuming:
 
 ```
 git fetch origin && git rev-parse origin/stable
 git rev-list -n1 vX.Y.Z
 ```
 
-Those two have to match. If `stable` is missing or points somewhere else, the
-step is wrong: repair it, and create `stable` by hand at the right commit
-rather than cutting another release to test it. Nothing is user-visible while
-the default branch is still `main`, so there is room to get it right. Then
-switch the repository's default branch to `stable` and protect it against a
-direct push.
+Those two have to match. Create `stable` by hand at the right commit rather
+than cutting a release to move it.
 
 The bridge for projects installed before the shared installer is retired. Only
 v0.1.0 and v0.1.1 shipped a `/maintain` that could reach it, v0.1.0 was never

@@ -297,8 +297,16 @@ rs_require "MAINTAINING.md says only a release moves stable" \
   "$MAINTAINING" 'only a release moves it'
 rs_require "and that a failed verification leaves it where it was" \
   "$MAINTAINING" 'fails verification leaves .stable. where it was'
-rs_require "and names the confirmation the maintainer owes before switching" \
-  "$MAINTAINING" 'confirm it points at the release commit before switching'
+rs_require "and says why stable cannot require a pull request" \
+  "$MAINTAINING" 'rejects a ref update whoever makes it'
+rs_require "and names the gap that leaves, rather than implying none" \
+  "$MAINTAINING" 'fast-forward push to .stable. by somebody with write access is not refused'
+rs_require "and warns that a default-branch pointer takes its rules with it" \
+  "$MAINTAINING" 'follows the default branch when it moves'
+rs_require "and says to ask each branch rather than read the ruleset list" \
+  "$MAINTAINING" 'ask each branch what applies to it'
+rs_require "and keeps the check for a stable that has to be rebuilt" \
+  "$MAINTAINING" 'confirm it against the published tag'
 rs_require_absent "MAINTAINING.md no longer calls the gap unclosable" \
   "$MAINTAINING" 'gap cannot be closed'
 rs_require "the stamp says the stamped number is what an installation gets" \
