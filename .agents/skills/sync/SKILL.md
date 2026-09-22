@@ -52,6 +52,11 @@ else, or recovering after an optional automation failed to run.
    about individual pieces onto those pieces?" Move detail only with a yes,
    keeping every present promise and decision on the masterplan. Otherwise,
    leave it intact and carry on. At or below the measure, say nothing.
+
+   Then read the project's own documents against it. Load
+   `references/document-read.md` and check the README and every document
+   AGENTS.md points at for a file, link, command or setting that no longer
+   exists. Offer to correct only the stale name, or to file it as a piece.
 5. Identify anything left open: an unresolved recheck trigger from the build-path section, flagged work still waiting, or interrupted manual setup. Say what's open rather than closing it quietly. Where flagged work was built during the period being reconciled, check the build-path section carries an `Accepted:` line for it; if the work happened and the line is missing, say so rather than writing one now, because an acceptance recorded after the fact is a record of nothing.
 6. Keep the check on the pull request honest. If the way the project installs or tests has moved, update `.github/workflows/checks.yml` so `jobs.project-check` runs the project's real commands, the same ones AGENTS.md's stack section names. Touch only that job. An older project may still carry a separate source-validation job and repository conditions; leave those unchanged. A check still running the placeholder, or the wrong commands, is worse than no check at all because people believe the green tick.
 7. Bank what was learned. A mistake the agent has now made twice becomes one line in AGENTS.md, so it stops recurring. A pattern the user approved more than once becomes a project skill, if it earns one. Keep AGENTS.md lean: point at documents instead of repeating them, and delete lines that no longer pay their way.

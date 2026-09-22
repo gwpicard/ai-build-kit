@@ -295,6 +295,14 @@ and offers to move detail about individual pieces onto those pieces. It leaves
 the page alone without your yes, and keeps the tool's present promises and
 decisions on the masterplan.
 
+/sync also reads the project's README, and any document AGENTS.md points at,
+against the project itself. It names a file, link, command or setting a
+document mentions that no longer exists, at the line it sits on, and offers to
+correct just that name or to file it for later. A document that says less than
+the project does is fine. It checks names only, so it cannot tell you whether a
+described step still happens that way, and it says so. When every name still
+points at something real, you hear nothing about it.
+
 /sync names open pieces untouched for 30 days in one short list and asks once
 whether each is still wanted, should be parked, or is done. It changes nothing
 on that list without your yes. You can leave them as they are and carry on.

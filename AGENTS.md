@@ -350,6 +350,18 @@ attribution line, not the word.
   line the masterplan records, and watches the check go red at the `Boundary
   rules` step on a crossing import, carrying the person's sentence word for
   word, and green once the import is gone.
+- `.agents/tests/document-read.sh` guards the read in `/sync` that checks a
+  project's own documents against the project: that it reads only the README
+  and what AGENTS.md points at, that a document saying less than the project
+  does is never a finding, that it says it cannot tell whether a described step
+  still happens, that a name already on an open piece is not raised again, and
+  that a correction changes the stale name and never the prose around it.
+  `.agents/tests/document-read-rehearsal.sh` runs the shipped
+  `document-claims.py` against a throwaway project. It proves each of the four
+  kinds of stale name is found at its line and that nothing true is flagged,
+  including a file git ignores on purpose and a document nothing points at. It
+  also proves a clean project produces nothing, the script writes nothing, and
+  the document changed longest ago comes first.
 - `.agents/tests/request-record.sh` guards the request record checked before
   live use, its data exclusions, and the monitoring caution given once unless
   someone already receives alerts. It also holds the repair step that reads
