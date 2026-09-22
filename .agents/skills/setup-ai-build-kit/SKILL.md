@@ -382,7 +382,9 @@ working before any shared or live behavioural work.
 Configure only `jobs.project-check`.
 
 Inside that job, replace the placeholder `Install and test` commands with the
-project's real install and check commands.
+project's real install and check commands. Load `references/check-floor.md`:
+those commands include a type check and a linter wherever the project's
+language has them, and a language without one is recorded as having none.
 
 An older project may still carry the legacy `source-kit-validation` job and
 its repository conditions. Leave that job and its conditions unchanged. Edit

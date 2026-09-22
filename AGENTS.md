@@ -306,6 +306,17 @@ attribution line, not the word.
   JavaScript project. They catch one deliberate breakage and miss a boundary
   error; the report takes its counts from those runs and its words from the
   shipped rule.
+- `.agents/tests/check-floor.sh` guards the type check and linter a founded
+  project receives, and the eight reporting rules every whole-project read
+  shares. Those rules were written down with the floor because it landed
+  first, and the later reads point at them, so a rule that went from the file
+  would loosen every read at once. It also holds that the green-tick sentence
+  is unchanged, since the floor is meant to add nothing for the person to learn.
+  `.agents/tests/check-floor-rehearsal.sh` is the half that runs. It founds a
+  throwaway Python project from the shipped workflow template, takes its
+  commands from the shipped table, and watches the check go red at the type
+  check on an error no test reaches, green once it is fixed, and red at the
+  linter on an unused import.
 - `.agents/tests/request-record.sh` guards the request record checked before
   live use, its data exclusions, and the monitoring caution given once unless
   someone already receives alerts. It also holds the repair step that reads
