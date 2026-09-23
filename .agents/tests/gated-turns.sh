@@ -120,6 +120,72 @@ grep -q 'when:' "$turns/turn-03.txt" \
   && bad "the precondition line was sent to the kit as part of the turn" \
   || ok "the precondition is not spoken to the kit"
 
+# --- the person merges before a turn ---------------------------------------
+# A line saying "I merged your fix" must be true when it is sent, or the kit
+# rightly answers that the fix never went live. So a case marks the turn, and
+# the harness merges every open pull request on the remote first.
+
+cat > "$WORK/case3.txt" <<'CASE'
+First line.
+---
+# merge: open pull requests
+I merged it. Still broken.
+CASE
+turns3="$WORK/turns3"
+mkdir -p "$turns3"
+split_turns "$WORK/case3.txt" "$turns3"
+
+[ -f "$turns3/turn-02.merge" ] \
+  && ok "a merge line is carried beside the turn it comes before" \
+  || bad "turn 2's merge was dropped"
+[ -f "$turns3/turn-01.merge" ] && bad "turn 1 gained a merge it never had" \
+  || ok "a turn without one merges nothing"
+grep -q 'merge:' "$turns3/turn-02.txt" \
+  && bad "the merge line was sent to the kit as part of the turn" \
+  || ok "the merge line is not spoken to the kit"
+
+# Drive the merge against a real project and remote, through the stand-in.
+GH_DIR="$ROOT/.agents/tests/replay/fake-github"
+FAKE_GH_STATE="$WORK/.gh-fixture.json"
+FAKE_GH_LOG="$WORK/gh.log"
+export FAKE_GH_STATE FAKE_GH_LOG
+proj="$WORK/proj"
+git init -q "$proj"
+git -C "$proj" config user.email rehearsal@example.com
+git -C "$proj" config user.name Rehearsal
+git -C "$proj" commit -q --allow-empty -m first
+git -C "$proj" branch -M main
+# The remote starts empty, as run.sh leaves every project's. An earlier version
+# of this check pushed main first, passed, and hid the fact that every merge in
+# a real run failed for want of a base branch to merge into.
+git init -q --bare "$proj.git"
+git -C "$proj" remote add origin "$proj.git"
+git -C "$proj" checkout -q -b the-fix
+echo fixed > "$proj/fix.txt"
+git -C "$proj" add fix.txt
+git -C "$proj" commit -q -m "The fix"
+git -C "$proj" push -q origin the-fix
+(cd "$proj" && "$GH_DIR/gh" pr create --title "The fix" --body "Closes #1" >/dev/null)
+
+merged=$(merge_open_pulls "$proj")
+[ "$merged" = "#1" ] \
+  && ok "the harness merges the open pull request and names it" \
+  || bad "merge_open_pulls reported '$merged'"
+git -C "$proj" fetch -q origin
+git -C "$proj" merge-base --is-ancestor origin/the-fix origin/main \
+  && ok "the fix is on the remote's main, where the kit will look" \
+  || bad "the remote's main does not carry the merged fix"
+[ -z "$(merge_open_pulls "$proj")" ] \
+  && ok "with nothing open, nothing is merged" \
+  || bad "a second merge found something still open"
+
+grep -q 'merge_open_pulls' "$ROOT/.agents/tests/replay/run.sh" \
+  && ok "the harness merges before a marked turn" \
+  || bad "run.sh no longer merges before a marked turn"
+grep -q 'before this turn the person merged' "$ROOT/.agents/tests/replay/grader-prompt.md" \
+  && ok "the grader is told what the merge note means" \
+  || bad "the grader is not told what the merge note means"
+
 # --- the filler ------------------------------------------------------------
 
 [ -n "$(case_filler "$WORK/case.txt")" ] \

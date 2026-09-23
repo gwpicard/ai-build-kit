@@ -117,6 +117,12 @@ because the harness gave up waiting, not because the kit earned it. Grade the
 kit on what it actually said before that line arrived, exactly as you would if
 the line had never named the thing at all.
 
+A line reading `(before this turn the person merged: ...)` under a user turn
+records something the person really did. The harness merged those pull
+requests on the project's remote before the turn was sent, so the kit can see
+the fix landed. A fault reported after that is a fault on merged code. The kit
+did not merge anything itself, so do not count the merge against its save route.
+
 ## Fields you may not be able to see
 
 Some contracts name a hidden technique, meaning something the kit does

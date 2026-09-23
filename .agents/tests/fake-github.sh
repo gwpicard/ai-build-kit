@@ -35,7 +35,17 @@ cd "$WORK/project"
 git config user.email rehearsal@example.com
 git config user.name Rehearsal
 git commit -q --allow-empty -m "first"
+git branch -M main
+# A bare remote next door, as the replay harness gives every project, so a merge
+# has somewhere to land.
+git init -q --bare "$WORK/project.git"
+git remote add origin "$WORK/project.git"
+git push -q origin main
 git checkout -q -b deposits
+echo deposit > deposit.txt
+git add deposit.txt
+git commit -q -m "Take a deposit"
+git push -q origin deposits
 
 echo "== The commands the kit uses =="
 
@@ -179,12 +189,40 @@ case "$checks" in
   *) fail "pr checks returned '$checks'" ;;
 esac
 
-# The issue named by "Closes #1" closes when the pull request is opened.
-state_of_one=$("$GH" issue view 1)
-case "$state_of_one" in
-  *'"state": "closed"'*) pass "the piece closes with its pull request" ;;
-  *) fail "the piece did not close" ;;
+# Opening a pull request closes nothing. GitHub closes the issue named by
+# "Closes #1" when the pull request merges, and a stand-in that closed it on
+# opening told the kit a piece was done while its fix sat unmerged.
+case "$("$GH" issue view 1)" in
+  *'"state": "open"'*) pass "opening a pull request leaves its piece open" ;;
+  *) fail "the piece closed when its pull request was only opened" ;;
 esac
+
+"$GH" pr merge 1 > /dev/null \
+  && pass "pr merge is accepted" \
+  || fail "pr merge was refused"
+case "$("$GH" issue view 1)" in
+  *'"state": "closed"'*) pass "the piece closes when its pull request merges" ;;
+  *) fail "the piece stayed open after its pull request merged" ;;
+esac
+case "$("$GH" pr view 1 --json state)" in
+  *MERGED*) pass "the pull request reads as merged" ;;
+  *) fail "the pull request does not read as merged" ;;
+esac
+
+# The merge has to reach the remote. A kit that checks the base branch there
+# would otherwise find the fix missing and rightly say it never went live.
+git fetch -q origin
+if git merge-base --is-ancestor origin/deposits origin/main; then
+  pass "the merge lands the branch on the remote's main"
+else
+  fail "main on the remote does not carry the merged branch"
+fi
+
+if "$GH" pr merge 1 > /dev/null 2>&1; then
+  fail "a pull request merged twice"
+else
+  pass "a merged pull request cannot merge again"
+fi
 
 if "$GH" pr view no-such-branch --json url > /dev/null 2>&1; then
   fail "pr view invented a pull request for a branch that has none"

@@ -91,6 +91,56 @@ def find(state, number):
     return None
 
 
+def land_on_remote(pr):
+    """Merge the pull request's branch into its base on the project's remote.
+
+    Marking a pull request merged is not enough. A kit that checks the remote
+    finds the fix missing from the base branch, and rightly says the fix never
+    went live. So the merge happens in a throwaway clone and is pushed back.
+
+    A project with no remote has nowhere to land it, so the pull request is only
+    marked merged, as before. Returns False when Git cannot merge the branch.
+    """
+    import shutil
+    import tempfile
+
+    def git(*args, cwd=None):
+        return subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True)
+
+    remote = git("remote", "get-url", "origin")
+    if remote.returncode != 0:
+        return True
+    remote = remote.stdout.strip()
+    # A relative remote is relative to the project, not to the clone.
+    if not os.path.isabs(remote) and "://" not in remote:
+        remote = os.path.abspath(remote)
+    head, base = pr.get("head", ""), pr.get("base", "main")
+    work = tempfile.mkdtemp(prefix="fake-gh-merge-")
+    try:
+        clone = os.path.join(work, "clone")
+        if git("clone", "-q", remote, clone).returncode != 0:
+            return False
+        who = ["-c", "user.name=Replay person", "-c", "user.email=person@example.invalid",
+               "-c", "commit.gpgsign=false"]
+        if git("checkout", "-q", base, cwd=clone).returncode != 0:
+            # The harness starts every remote empty, so a scenario can tell a
+            # push it made from one it did not. On GitHub the base branch
+            # would already be there, so it is seeded from the project's own
+            # base before the merge. Without this, every merge failed.
+            if git("push", "-q", remote, "refs/heads/%s:refs/heads/%s" % (base, base)).returncode != 0:
+                return False
+            git("fetch", "-q", "origin", cwd=clone)
+            if git("checkout", "-q", "-b", base, "origin/" + base, cwd=clone).returncode != 0:
+                return False
+        merged = git(*who, "merge", "-q", "--no-ff", "origin/" + head,
+                     "-m", "Merge pull request #%s from %s" % (pr["number"], head), cwd=clone)
+        if merged.returncode != 0:
+            return False
+        return git("push", "-q", "origin", base, cwd=clone).returncode == 0
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
 def current_branch():
     """The branch the scenario is standing on, or "" when Git cannot say."""
     try:
@@ -390,11 +440,10 @@ def main():
     if command == "pr":
         sub = argv[1] if len(argv) > 1 else ""
         if sub == "create":
+            # "Closes #N" does nothing yet. GitHub closes the issue when the
+            # pull request merges, and closing it here told the kit a piece was
+            # done while its fix sat unmerged.
             body = flag(argv, "--body") or ""
-            for number in re.findall(r"[Cc]loses #(\d+)", body):
-                issue = find(state, number)
-                if issue:
-                    issue["state"] = "closed"
             pr = {
                 "number": len(pulls(state)) + 1,
                 "title": flag(argv, "--title") or "",
@@ -465,6 +514,12 @@ def main():
             pr = find_pr(state, argv[2])
             if pr is None:
                 unsupported(argv, "no such pull request")
+            if pr.get("state") != "OPEN":
+                sys.stderr.write("Pull request #%s is not open\n" % pr["number"])
+                sys.exit(1)
+            if not land_on_remote(pr):
+                sys.stderr.write("Pull request #%s is not mergeable\n" % pr["number"])
+                sys.exit(1)
             pr["state"] = "MERGED"
             for number in re.findall(r"[Cc]loses #(\d+)", pr.get("body", "")):
                 issue = find(state, number)
