@@ -1,0 +1,167 @@
+#!/usr/bin/env python3
+"""List the names a project's documents mention that no longer exist.
+
+Reads README.md and every document AGENTS.md points at. For each line it looks
+for five kinds of name and checks that each still exists: a file or folder, a
+link to another file, an `npm run`, `pnpm run`, `yarn run` or `make` command,
+and an environment variable. It prints one line per name that does not exist,
+as `document:line<TAB>kind<TAB>name`, and prints nothing when every name it
+found still exists.
+
+A document may describe less than the code does, and that is never flagged.
+Only a name that points at nothing is. It never says a document is right,
+because a described flow can change shape without any name going missing.
+
+Documents changed longest ago, counted in commits since, come first. That order
+says where to look first and is never printed.
+
+It reads the project and writes nothing. Run it from the project root:
+
+    python3 .agents/skills/sync/scripts/document-claims.py
+"""
+
+import json
+import os
+import re
+import subprocess
+import sys
+
+KIT_OWNED = {"WORKFLOW.md", "AGENTS.md", "masterplan.md", "CHANGELOG.md", "plan.local.md"}
+EXTENSIONS = (
+    ".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs", ".py", ".rb", ".go", ".rs",
+    ".java", ".kt", ".cs", ".php", ".md", ".json", ".yml", ".yaml", ".toml",
+    ".sh", ".sql", ".html", ".css", ".txt", ".csv", ".ini", ".cfg",
+)
+CODE_SPAN = re.compile(r"`([^`\n]+)`")
+LINK = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
+COMMAND = re.compile(r"\b(npm|pnpm|yarn) run ([\w:.-]+)|\bmake ([\w.-]+)")
+ENV_NAME = re.compile(r"^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+$")
+
+
+def git(*args):
+    result = subprocess.run(["git", *args], capture_output=True, text=True)
+    return result.stdout if result.returncode == 0 else ""
+
+
+def ignored(path):
+    return subprocess.run(
+        ["git", "check-ignore", "-q", path], capture_output=True
+    ).returncode == 0
+
+
+def documents():
+    found = []
+    if os.path.isfile("README.md"):
+        found.append("README.md")
+    if os.path.isfile("AGENTS.md"):
+        with open("AGENTS.md", encoding="utf-8") as handle:
+            text = handle.read()
+        named = LINK.findall(text) + CODE_SPAN.findall(text)
+        for name in named:
+            name = name.split("#")[0].strip()
+            if not name.endswith(".md") or name.startswith(("http:", "https:")):
+                continue
+            name = os.path.normpath(name)
+            if os.path.basename(name) in KIT_OWNED or name.startswith(".agents"):
+                continue
+            if os.path.isfile(name) and name not in found:
+                found.append(name)
+    return found
+
+
+def package_scripts():
+    try:
+        with open("package.json", encoding="utf-8") as handle:
+            return set(json.load(handle).get("scripts", {}))
+    except (OSError, ValueError):
+        return None
+
+
+def make_targets():
+    try:
+        with open("Makefile", encoding="utf-8") as handle:
+            return {m.group(1) for m in re.finditer(r"^([\w.-]+)\s*:", handle.read(), re.M)}
+    except OSError:
+        return None
+
+
+def looks_like_path(name):
+    if " " in name or name.startswith(("http:", "https:", "-", "$")):
+        return False
+    if any(mark in name for mark in "<>*?{}|=@~"):
+        return False
+    if name.startswith("node_modules") or "://" in name:
+        return False
+    return "/" in name or name.endswith(EXTENSIONS)
+
+
+def path_exists(name, document):
+    bare = name.split("#")[0].split(":")[0].rstrip("/")
+    if not bare:
+        return True
+    beside = os.path.join(os.path.dirname(document), bare)
+    for candidate in (os.path.normpath(bare), os.path.normpath(beside)):
+        if os.path.exists(candidate) or ignored(candidate):
+            return True
+    return False
+
+
+def env_named_in_code(name, documents_read):
+    hits = git("grep", "-l", "-w", "-F", name).split()
+    return any(hit not in documents_read and not hit.endswith(".md") for hit in hits)
+
+
+def claims(document, documents_read, scripts, targets):
+    missing = []
+    fenced = False
+    with open(document, encoding="utf-8") as handle:
+        lines = handle.read().split("\n")
+    for number, line in enumerate(lines, start=1):
+        if line.lstrip().startswith("```"):
+            fenced = not fenced
+            continue
+        for target in LINK.findall(line):
+            if target.startswith(("http:", "https:", "mailto:", "#")):
+                continue
+            if not path_exists(target, document):
+                missing.append((number, "link", target))
+        for match in COMMAND.finditer(line):
+            if match.group(3):
+                if targets is not None and match.group(3) not in targets:
+                    missing.append((number, "command", "make " + match.group(3)))
+            elif scripts is not None and match.group(2) not in scripts:
+                missing.append((number, "command", f"{match.group(1)} run {match.group(2)}"))
+        spans = CODE_SPAN.findall(line) if not fenced else []
+        for span in spans:
+            span = span.strip()
+            if ENV_NAME.match(span):
+                if not env_named_in_code(span, documents_read):
+                    missing.append((number, "environment variable", span))
+            elif looks_like_path(span) and not path_exists(span, document):
+                missing.append((number, "file", span))
+    return missing
+
+
+def commits_since(document):
+    last = git("log", "-1", "--format=%H", "--", document).strip()
+    if not last:
+        return 0
+    count = git("rev-list", "--count", f"{last}..HEAD").strip()
+    return int(count) if count.isdigit() else 0
+
+
+def main():
+    read = documents()
+    scripts, targets = package_scripts(), make_targets()
+    found = []
+    for document in read:
+        for number, kind, name in claims(document, read, scripts, targets):
+            found.append((commits_since(document), document, number, kind, name))
+    found.sort(key=lambda f: (-f[0], f[1], f[2]))
+    for _, document, number, kind, name in found:
+        print(f"{document}:{number}\t{kind}\t{name}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
