@@ -55,6 +55,11 @@ rs_rule "the field is always plain and on the surface" '`## masterplan change` i
 rs_rule "a piece names what the page gains, changes or loses" 'name the section and what it gains, changes or loses when this piece lands'
 rs_rule "most pieces may say nothing" 'most pieces say "nothing"'
 rs_rule "writing the change does not apply it early" 'writing it does not apply it early'
+# A replayed piece that sorted a list wrote "nothing", because the masterplan
+# already promised the list. The rule never reached the page, and nothing
+# downstream could notice, since save applies the field exactly as written.
+rs_rule "nothing is tested line by line against the page" 'read each line of `## done when` against the masterplan alone, and write "nothing" only when the masterplan already says it'
+rs_rule "a narrower checkable rule is still a change" 'is a change even when it narrows a promise the masterplan already makes'
 rs_guard "$PIECES" "the piece shape"
 
 rs_reset
@@ -66,6 +71,10 @@ rs_guard "$FORM" "the issue form"
 rs_require_load_bearing "a new page starts honestly unchecked" "$TEMPLATE" 'trued against: not yet checked'
 rs_require_load_bearing "shape writes the field before ready" "$SHAPE" 'write `## masterplan change` on the surface before marking it ready'
 rs_require_load_bearing "shape reads the change back in plain words" "$SHAPE" 'when this lands, the masterplan gains a weekly summary email'
+rs_require_load_bearing "shape writes nothing only after the test" "$SHAPE" 'write "nothing" only when the masterplan already says every line of `## done when`'
+rs_require_load_bearing "shape reads the change back where the piece is reported" "$SHAPE" 'read it back in the reply that reports the piece'
+rs_require_load_bearing "the issue form says a new rule is a change" "$FORM" 'a new rule, such as a sort order, is a change'
+rs_require_load_bearing "WORKFLOW says a checkable rule is a change" "$ROOT/WORKFLOW.md" 'a new rule you could check, such as a list now sorted by name, counts as a change'
 rs_require_load_bearing "building applies it before saving on every route" "$BUILDER" 'before saving on any route, apply the piece'
 rs_require_load_bearing "building updates the mark using its owner" "$BUILDER" 'update the trued-against mark as `.agents/skills/setup-ai-build-kit/references/masterplan-changes\.md` describes'
 rs_require_load_bearing "sync recovers unapplied changes and moves the mark" "$SYNC" 'merge each landed piece.*that has not yet been applied, and move the trued-against mark'

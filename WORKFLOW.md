@@ -173,7 +173,8 @@ If the change touched an area the build path flags, the best independent method 
 Each piece says what it changes in the masterplan, and the masterplan says when
 it was last checked. You see a line such as "When this lands, the masterplan
 gains a weekly summary email", or "nothing" when it already covers the result.
-/implement applies that change as it saves the work, so the page keeps up
+A new rule you could check, such as a list now sorted by name, counts as a
+change even when the masterplan already describes that list. /implement applies that change as it saves the work, so the page keeps up
 without a separate /sync visit.
 
 A question a conversation can't settle gets a disposable prototype, a source check, or a search for something that already does the job. Two of those need you there; the research does not, so you can tell /shape you're leaving and it settles what it can alone, then tells you which pieces are waiting on you. Type /shape with a piece's number to settle that one rather than the next in line.

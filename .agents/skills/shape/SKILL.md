@@ -50,10 +50,12 @@ a separate "database" or "API" layer.
 
 On every piece you shape or refine, write `## Masterplan change` on the
 surface before marking it ready, following pieces.md. Say what the masterplan
-gains, changes or loses when it lands, or "nothing" when it already covers the
-result. Read it back with the piece: "When this lands, the masterplan gains a
-weekly summary email." Use the actual change in that line; for "nothing", say
-the masterplan already covers it. Do not apply a future change while shaping.
+gains, changes or loses when it lands. Write "nothing" only when the masterplan
+already says every line of `## Done when`; pieces.md has the test, and a new
+rule the person could check is a change even when it narrows an existing
+promise. Read it back in the reply that reports the piece: "When this lands, the
+masterplan gains a weekly summary email." Use the actual change in that line;
+for "nothing", say the masterplan already covers it. Do not apply a future change while shaping.
 
 When writing the `Under the hood` notes for a project with code, load
 `.agents/skills/section-builder/references/reach-check.md` and run its reach

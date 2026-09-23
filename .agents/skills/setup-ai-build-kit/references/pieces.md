@@ -59,6 +59,12 @@ belongs in `## So that`.
 `## Masterplan change` is always on the surface, in plain words. Name the
 section and what it gains, changes or loses when this piece lands. Most pieces
 say "nothing", because the masterplan already describes the promised result.
+Test that before writing it. Read each line of `## Done when` against the
+masterplan alone, and write "nothing" only when the masterplan already says it.
+A rule the person could check the tool against, such as an order, a limit, a
+default or a message, is a change even when it narrows a promise the masterplan
+already makes. A piece that puts an existing list in alphabetical order gains
+that rule in `What correct looks like`.
 This is the piece's delta, meaning its change to the present record. Writing
 it does not apply it early. The save and recovery rules live in
 [masterplan-changes.md](masterplan-changes.md).
