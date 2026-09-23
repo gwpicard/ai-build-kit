@@ -156,6 +156,12 @@ section names, alongside the tests. A failure is a gap like any other: describe
 it as expected versus actual and fix it at the root. Where the stack section
 records none for the language, there is nothing to run.
 
+Once those pass, on Build and run it and Build with care, load
+`references/trim.md` and run its single pass. It takes out what this change
+added that the behaviour does not need, and it only removes or folds, so the
+person tries the piece as it will be saved. Give its one line at hand-over, or
+nothing when it found nothing.
+
 Stop. Give the exact action, the expected result, any known limitation, and
 whether the evidence behind it is automated, manual, source-backed, or
 operational. The user confirms the behaviour wherever human judgement is
@@ -258,6 +264,8 @@ project six months later.
 - Private exploration does not need pull-request ceremony it doesn't need.
 - Shared or risky work does not get downgraded because setup is inconvenient.
 - A review finding does not authorise unrelated cleanup.
+- The trim does not authorise a restructure. It removes and folds, and reports
+  the rest.
 
 ## Done when
 

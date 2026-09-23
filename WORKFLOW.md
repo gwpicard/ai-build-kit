@@ -137,6 +137,18 @@ through each other or a named boundary being crossed. There is no score to
 interpret. You can ask for the structure to be fixed before saving, or leave it
 and have that choice recorded on the piece.
 
+Before you try a piece, the kit takes out anything the change added that
+nothing needs, such as a helper only one place uses or code nothing calls. It
+only removes things or folds them into the one place that uses them, never
+reshapes the code, and runs the tests after every step. Anything that would
+need reshaping, such as a function grown hard to follow, is listed on the piece
+for you to decide instead.
+
+You hear one line, such as "I took out two things this change did not need.
+They are listed on the piece.", or nothing when there was nothing to take out.
+The removals are saved as their own step, so asking for one back undoes only
+that step. /fix does the same for a repair.
+
 If a build uncovers another piece of work, that new piece says "Found while
 building the invoice list", using the title of the piece that surfaced it.
 Both pieces link to each other, so you can follow where the work came from.
