@@ -18,7 +18,7 @@ decisions the agent cannot make for you.
 |---|---|
 | What it is | Nine commands you type into your coding agent, the process behind them, and three records that hold your project's memory. |
 | Who it is for | Anyone directing an AI coding agent who wants what it builds to keep working. People who came to software from another job, and developers trying agent-led work for the first time. |
-| Works with | Claude Code, Codex, Cursor, Gemini CLI, or any agent that can read and edit project files, run shell commands, and use Git. |
+| Works with | Claude Code, which is tested. Codex is expected to work. Cursor, Gemini CLI, and any other agent that can read and edit project files, run shell commands, and use Git are experimental. [How much is proved on each](docs/COMPATIBILITY.md#how-much-has-been-proved-on-each-agent). |
 | You need | A coding agent, Git, and Node for the `npx` route. |
 | Install, Claude Code only | `claude plugin marketplace add gwpicard/ai-build-kit`, then `claude plugin install ai-build-kit@ai-build-kit --scope local` |
 | Install, any supported agent | `npx skills add gwpicard/ai-build-kit` |
@@ -219,9 +219,14 @@ sessions, because the agent forgets everything between them and the records
 don't.
 
 **Which coding agents does this work with?**
-Claude Code, Codex, Cursor, and Gemini CLI through the shared skills installer,
-and Claude Code alone through the plugin marketplace. Any agent that can read
-and edit project files, run shell commands, and use Git can follow the workflow.
+Claude Code is tested: the kit's scripted conversations have been run on it
+and the results recorded. Codex is expected to work, but nobody has recorded a
+run on it. Cursor, Gemini CLI, and any other agent that can read and edit
+project files, run shell commands, and use Git are experimental. The four
+named agents install through the shared skills installer, and Claude Code can
+also use the plugin marketplace.
+[docs/COMPATIBILITY.md](docs/COMPATIBILITY.md#how-much-has-been-proved-on-each-agent)
+gives each grade and its known limits.
 
 **Can I add it to a project I have already started?**
 Yes. Setup can adopt an existing project. It understands what is already there

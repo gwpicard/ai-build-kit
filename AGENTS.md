@@ -605,6 +605,17 @@ attribution line, not the word.
   also holds that the skills and the masterplan template name no hosting
   product, since the kit does not tie its instructions to a tool it does not
   control. The README may name one, as one option.
+- `.agents/tests/compatibility-grades.sh` guards the grade each coding agent
+  carries in `docs/COMPATIBILITY.md`. The page once named four agents and
+  presented them alike, while the replay harness had recorded runs on only
+  one. So it holds the three grades, the evidence that moves an agent up, the
+  line saying a quiet issue tracker is not evidence, and the known limits
+  written for anything below Tested. Its mechanical half reads the harness map
+  and requires a grade for every agent in it. It also refuses Tested for an
+  agent the harness cannot drive, and for an agent other than the harness's
+  default that `baseline.md` never names. A grade raised by editing the page
+  rather than by a recorded run is the thing it exists to catch, and it proves
+  each refusal on a copy of the page.
 - The checks that guard a rule written as prose share
   `.agents/tests/lib/rule-shape.sh`: declare the rules, and it asserts each one
   and proves it is load-bearing by removing it and requiring the check to fail.
