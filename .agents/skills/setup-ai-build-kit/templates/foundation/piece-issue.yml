@@ -52,7 +52,8 @@ body:
       label: Masterplan change
       description: >
         In plain words, name the section and what it gains, changes or loses
-        when this lands. Write "nothing" if the masterplan already covers it.
+        when this lands. Write "nothing" only if the masterplan already says
+        everything under Done when. A new rule, such as a sort order, is a change.
       placeholder: What it does gains a weekly summary email.
     validations:
       required: true
