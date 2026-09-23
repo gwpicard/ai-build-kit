@@ -14,7 +14,8 @@ Internal facts recorded for later agents, and what the user hears instead:
 - the working tree is clean -> "All setup work has been saved."
 - the current branch is ahead of its remote -> "The saved work has not been uploaded."
 - the commit identifier -> only in the checkpoint reference at the very end, never leading the report.
-- no push occurred -> "Nothing was published."
+- no push occurred -> "No code was uploaded or published."
+- the pieces were opened as issues -> "The build steps are listed as issues in the project's online repository."
 
 These commands and states stay wherever agents already keep them (AGENTS.md,
 the changelog); the report never leads with them.
@@ -64,7 +65,8 @@ The initial setup is complete.
 
 A checkpoint has been saved inside the project on this computer.
 
-Nothing was uploaded or published.
+No code was uploaded or published. The build steps are listed as issues in the
+project's online repository, which is where the kit keeps the work still to do.
 [State whether an online project copy exists and whether it was updated.]
 
 Private preview address: `[address]`

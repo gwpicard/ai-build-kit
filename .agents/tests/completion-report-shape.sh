@@ -41,6 +41,13 @@ rs_rule "meaning to save is not saving" \
   "on the strength of having meant to save it"
 rs_rule "and naming it is what makes the claim impossible to fake" \
   "no reference to name for a checkpoint that was never taken"
+# Founding opens the pieces as issues online, so "Nothing was uploaded" was
+# untrue on every founded project. The report names what went online and what
+# did not.
+rs_rule "the report says no code was uploaded, not that nothing was" \
+  "no code was uploaded or published\. the build steps are listed as issues"
+rs_rule "the pieces going online is translated for the person" \
+  "the pieces were opened as issues -> "
 rs_guard "$REPORT" "the shipped completion-report.md"
 
 rs_done
