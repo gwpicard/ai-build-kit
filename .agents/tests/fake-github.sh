@@ -111,6 +111,41 @@ esac
   && pass "issue comment is accepted" \
   || fail "issue comment was refused"
 
+echo "== The repository, as founding reads and sets it =="
+
+# The tooling check reads these three fields together. Refusing one made the
+# whole call fail, and founding then reported that no repository existed.
+repo=$("$GH" repo view --json nameWithOwner,hasIssuesEnabled,viewerPermission)
+case "$repo" in
+  *'"viewerPermission": "ADMIN"'*) pass "repo view answers the fields the tooling check reads" ;;
+  *) fail "repo view returned '$repo'" ;;
+esac
+
+# Founding switches on deleting a merged branch, and the setup skill names the
+# API form. Both forms land on the same setting.
+"$GH" api -X PATCH repos/rehearsal/project -F delete_branch_on_merge=true > /dev/null \
+  && pass "the API form of the merged-branch setting is accepted" \
+  || fail "the API form of the merged-branch setting was refused"
+case "$("$GH" repo view --json deleteBranchOnMerge)" in
+  *'"deleteBranchOnMerge": true'*) pass "and the setting reads back as on" ;;
+  *) fail "the merged-branch setting did not read back as on" ;;
+esac
+"$GH" repo edit --delete-branch-on-merge > /dev/null \
+  && pass "repo edit --delete-branch-on-merge is accepted" \
+  || fail "repo edit --delete-branch-on-merge was refused"
+
+# Any other setting is one nobody modelled, so it must stay refused.
+if "$GH" repo edit --visibility public > /dev/null 2>&1; then
+  fail "an unmodelled repository setting was accepted"
+else
+  pass "an unmodelled repository setting is still refused"
+fi
+if "$GH" api -X PATCH repos/rehearsal/project -F private=false > /dev/null 2>&1; then
+  fail "an unmodelled setting through the API was accepted"
+else
+  pass "an unmodelled setting through the API is still refused"
+fi
+
 echo "== Pull requests =="
 
 url=$("$GH" pr create --title "Take a deposit" --body "Closes #1")
@@ -177,7 +212,7 @@ fi
 
 # Nothing the kit reached for during this rehearsal should have been refused.
 if grep -q "UNSUPPORTED" "$FAKE_GH_LOG"; then
-  unexpected=$(grep "UNSUPPORTED" "$FAKE_GH_LOG" | grep -vc "search repos\|repo list" || true)
+  unexpected=$(grep "UNSUPPORTED" "$FAKE_GH_LOG" | grep -vc "search repos\|repo list\|visibility public\|private=false" || true)
   if [ "$unexpected" -gt 0 ]; then
     fail "$unexpected modelled command was refused; see $FAKE_GH_LOG"
   fi

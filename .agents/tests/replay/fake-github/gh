@@ -196,6 +196,11 @@ def main():
             "owner": {"login": owner},
             "visibility": "PRIVATE",
             "hasIssuesEnabled": True,
+            # The rehearsal account owns the repository. The tooling check reads
+            # this before founding, and refusing it left that check reporting
+            # that no repository existed at all.
+            "viewerPermission": "ADMIN",
+            "deleteBranchOnMerge": bool(state.get("delete_branch_on_merge")),
         }
         names = [n for n in (flag(argv, "--json") or "").split(",") if n]
         if names:
@@ -205,6 +210,16 @@ def main():
             print(json.dumps({n: available[n] for n in names}))
         else:
             print(json.dumps({"nameWithOwner": state["repo"]}))
+        return
+
+    if command == "repo" and len(argv) > 1 and argv[1] == "edit":
+        # Founding switches on deleting a merged branch. That is the only
+        # repository setting the kit changes, so it is the only one answered.
+        if argv[2:] != ["--delete-branch-on-merge"]:
+            unsupported(argv, "unmodelled repo setting")
+        state["delete_branch_on_merge"] = True
+        save(state)
+        print("Edited repository %s" % state["repo"])
         return
 
     if command == "label":
@@ -277,6 +292,18 @@ def main():
                 unsupported(argv, "no such issue")
             print(json.dumps([issue_public(state, find(state, c))
                               for c in issue.get("sub_issues", []) if find(state, c)]))
+            return
+        patching = bool(re.search(r"(?:-X|--method)[= ]PATCH\b", " ".join(argv)))
+        if patching and re.fullmatch(r"repos/[^/]+/[^/]+", path):
+            # The same setting through the API, which is the form the setup
+            # skill names. Anything else in the body is a setting nobody
+            # modelled, so it is refused rather than quietly accepted.
+            fields = [a for a in argv if re.match(r"^\w+=", a)]
+            if fields != ["delete_branch_on_merge=true"]:
+                unsupported(argv, "unmodelled repo setting")
+            state["delete_branch_on_merge"] = True
+            save(state)
+            print(json.dumps({"full_name": state["repo"], "delete_branch_on_merge": True}))
             return
         if re.search(r"repos/[^/]+/[^/]+/issues($|\?)", path):
             want = "open" if "state=open" in path else None
