@@ -229,8 +229,9 @@ attribution line, not the word.
 - `.agents/tests/completion-report-shape.sh` guards the source of the /setup
   completion report, which is watched by hand rather than replayed: it proves
   completion-report.md still leads with what is ready, keeps technical state out
-  of the lead, ends on a clean cut pointing at /implement, and it fails on a copy
-  with any of those rules removed.
+  of the lead, ends on a clean cut pointing at /implement, and says no code was
+  uploaded rather than that nothing was, since founding puts the pieces online
+  as issues. It fails on a copy with any of those rules removed.
 - `.agents/tests/setup-notes.sh` guards the working notes the founding
   interview keeps: that the /setup skill still writes each agreed answer before
   the next question, keeps those notes out of every commit, resumes from them,
