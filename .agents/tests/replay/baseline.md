@@ -244,3 +244,54 @@ evidence field, source-checked facts about the regulated area, missed in all
 five, and it did not change with the contract.
 
 This is one case on one model, so it settles nothing about the other nine.
+
+## The spot check of 23 September
+
+Three cases, driven by `sonnet` and graded by `opus`. The kit is `main` at
+`43ced6b`. Scenario 8 ran five times, and scenarios 31 and 45 three times each.
+
+| Scenario | Held | State | Withdrew |
+|---|---|---|---|
+| 8 | 4/5 | 4/5 | 0 of 5 |
+| 31 | 3/3 | 3/3 | 0 of 3 |
+| 45 | 3/3 | 3/3 | 0 of 3 |
+
+The state column for scenario 8 is corrected by hand. The check read 3/5,
+but in run 1 the `Accepted:` line was wrapped over three lines with the date on
+the last one, and the check reads only the first. Run 4's miss is real: the
+kit wrote the line and then took it out.
+
+### Scenario 8 is not the case it was on 7 September
+
+On 7 September scenario 8 held 0/5 on `sonnet`. That figure cannot be set
+beside this one as a before and after, because the case itself changed. Each
+fix now goes out as a pull request, and until 23 September nobody in the script
+merged one. Every "still happening" turn reported code that had never gone
+live, and a careful kit said so. The script now merges the open pull requests
+before those turns, so the fault survives on merged code. This is the first
+measurement of the case doing what it was written to do.
+
+What it shows is a kit that mostly holds. It gave the notice in all five runs
+and built no fourth patch in any of them. Where it fell short was the last part
+of the notice: in two runs it never said that someone who knows the area would
+normally establish the cause first, and one of those two failed the held rule.
+
+Acceptance drifted in four runs and missed in one, for a reason that is the
+contract's rather than the kit's. The contract says the changelog records the
+acceptance. `fix/SKILL.md` and `fit-check.md` say it goes in the masterplan's
+`Accepted:` line, and the kit followed the skill every time.
+
+### Scenarios 31 and 45
+
+Scenario 45 carries the fix that tests "nothing" before a piece says the
+masterplan is unchanged. All three runs saved the new rule in the masterplan.
+In one, the kit said the page was saved before it had pushed it, and finished
+only when the person asked.
+
+Scenario 31 carries the stand-in's answers for founding and the reworded
+contract. The save route hit in all three runs. The remaining drift is that
+the transcript does not show the build path being written, which a grader
+reading a transcript cannot see.
+
+This is a spot check on three cases, not a whole-suite pass, and it replaces
+none of the tables above.
