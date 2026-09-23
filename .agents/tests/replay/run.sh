@@ -206,6 +206,17 @@ run_once() {
     GIT_TERMINAL_PROMPT=0
     export GH_CONFIG_DIR GH_TOKEN GITHUB_TOKEN GH_ENTERPRISE_TOKEN \
       GITHUB_ENTERPRISE_TOKEN GIT_TERMINAL_PROMPT
+
+    # A turn that says "I merged your fix" has to be true, or the kit rightly
+    # answers that the fix never went live and the case measures nothing. So the
+    # person merges every open pull request first, on the remote next door, and
+    # the transcript says so. A filler merges nothing: it is not the scripted
+    # turn, and the merge belongs to the line that reports it.
+    if [ "$message" != "$filler" ] && [ -f "${turnfile%.txt}.merge" ]; then
+      merged=$(merge_open_pulls "$project")
+      printf '(before this turn the person merged: %s)\n' "${merged:-nothing was open}" \
+        >> "$transcript"
+    fi
     # Both providers run without approval prompts. Nobody is here to answer,
     # and refusing commands would turn every evidence field into a harness
     # failure. The project and remote are disposable, while GitHub credentials

@@ -56,6 +56,12 @@ split_turns() {
         close(gate)
         pending = ""
       }
+      if (merging) {
+        marker = sprintf("%s/turn-%02d.merge", dir, count)
+        printf "open pull requests\n" > marker
+        close(marker)
+        merging = 0
+      }
       buffer = ""
       started = 0
     }
@@ -65,6 +71,9 @@ split_turns() {
       pending = line
       next
     }
+    # The person merges every open pull request before this turn is sent, as
+    # somebody who says "I merged your fix" would have done.
+    /^# merge:/ { merging = 1; next }
     /^#/ { next }
     /^---$/ { flush(); next }
     {
@@ -104,4 +113,24 @@ gate_decision() {
   fi
 
   echo wait
+}
+
+# merge_open_pulls <project>
+# Merge every open pull request through the GitHub stand-in, as the person would,
+# and print what was merged: "#1 #2", or "#3 (would not merge)" for one Git could
+# not merge. The stand-in lands each branch on the project's remote, so a kit
+# that checks the remote sees the fix there. Needs GH_DIR and FAKE_GH_STATE.
+merge_open_pulls() {
+  mo_list=$(cd "$1" && "$GH_DIR/gh" pr list 2>/dev/null \
+    | python3 -c 'import json, sys; print(" ".join(str(p["number"]) for p in json.load(sys.stdin)))' \
+    2>/dev/null || true)
+  mo_done=""
+  for mo_n in $mo_list; do
+    if (cd "$1" && "$GH_DIR/gh" pr merge "$mo_n" >/dev/null 2>&1); then
+      mo_done="$mo_done #$mo_n"
+    else
+      mo_done="$mo_done #$mo_n (would not merge)"
+    fi
+  done
+  printf '%s' "${mo_done# }"
 }

@@ -182,6 +182,9 @@ attribution line, not the word.
   this repository never receives a reminder.
 - `.agents/tests/fake-github.sh` checks the replay harness's stand-in for the
   GitHub CLI: the commands it answers, and the ones it still refuses on purpose.
+  It also holds that opening a pull request closes nothing, and that a merge
+  closes the piece and lands the branch on the remote's `main`, since a kit
+  that checks the remote would otherwise see a merged fix that never arrived.
 - `.agents/tests/replay-provider.sh` checks both replay providers without a
   model call. It stubs Claude Code and Codex, then proves each first turn,
   resumed turn and grader route. It also holds the Codex shell profiles that
@@ -205,7 +208,9 @@ attribution line, not the word.
   that one with a precondition waits until the kit has said the thing it
   answers, and that a precondition nothing will ever match gives up after two
   fillers and sends the line anyway, so the gate can cost tokens but can never
-  fail a run that would otherwise have passed.
+  fail a run that would otherwise have passed. It also drives the `# merge:`
+  line, which has the person merge every open pull request before a turn that
+  says the fix was merged, so that line is true when the kit reads it.
 - `.agents/tests/grader-recovery.sh` checks that the replay grader recovers a
   transcript missing only its final brace, and still refuses one that was cut
   off partway.

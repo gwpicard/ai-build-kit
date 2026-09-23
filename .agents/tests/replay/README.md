@@ -183,6 +183,20 @@ costs a little and leaves a note; it can never hold a line back for good and
 fail a run that would otherwise have passed. `../gated-turns.sh` pins that down
 with replies written by hand, at no model cost.
 
+## A turn that says the fix was merged
+
+The kit saves a fix as a pull request and never merges it, because merging is
+the person's call. So a script where the person reports the fault again only
+means something if they merged the fix first. Without that, a careful kit
+answers that the fix never went live, and it is right.
+
+A turn written after `# merge: open pull requests` makes that true. Before the
+line is sent, the harness merges every open pull request through the GitHub
+stand-in, which lands each branch on `main` in the remote next door. The
+transcript notes it under the turn as `(before this turn the person merged:
+#1)`, and the grader is told what that note means. A filler merges nothing.
+`../gated-turns.sh` drives the merge against a throwaway project.
+
 ## The replayed scenarios
 
 The first slice covers the places the kit promises to name a risk before
