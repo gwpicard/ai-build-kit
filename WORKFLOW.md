@@ -250,7 +250,7 @@ What the agent may not do is take the notice back. Pushing back on the cost, the
 
 **Explore privately.** /ship runs no production evidence or launch procedure; it only confirms the prototype stays disposable and private, and records what would have to change to graduate.
 
-**Build and run it.** /ship runs the full evidence run, independent review, operational readiness (alerts, backup, a restored-backup rehearsal, a manual fallback, rollback), and the live transition.
+**Build and run it.** /ship runs the full evidence run, independent review, operational readiness (backup, a restored-backup rehearsal, a manual fallback, rollback, and a single caution if nobody receives alerts), and the live transition.
 
 **Build with care.** /ship ships everywhere outside a named sensitive area, does the caution it can do itself (a backup restored once, a rehearsal on a copy), and stops at a caution that is a person until they have looked or you accept the risk on the record. Where somebody outside the team is going to look, ask for the handover and /ship prepares it.
 

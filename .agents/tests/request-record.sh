@@ -32,12 +32,18 @@ rs_rule "does not waive forbidden data" 'accepting a missing record never waives
 rs_rule "gives the caution once unless a recipient is named" 'give the monitoring caution once, unless the fit check already names an alert recipient'
 rs_rule "keeps the monitoring caution" 'once real people use this, the only record of what went wrong will be the record the tool writes\. if you want somebody to be told when it breaks, that is a service somebody runs and pays for, and the kit does not set one up'
 rs_rule "remembers that the caution was given" 'record that the caution was given in changelog\.md'
-rs_rule "does not repeat the caution across areas or visits" 'do not repeat it for another area or on a later /ship visit'
+rs_rule "does not repeat the caution across areas or visits" 'for another area, or on a later /ship visit'
+# A replay gave the caution in all three replies of one visit, and listed
+# "someone to receive alerts" as a piece, because the readiness list above
+# required a recipient while this caution treated one as optional.
+rs_rule "does not repeat the caution within one visit" 'do not repeat it in a later reply of the same visit'
+rs_rule "nobody to alert is never a piece" 'it is never a piece on the readiness list'
 rs_rule "treats an alert recipient as satisfying the caution" 'a named alert recipient satisfies this caution'
 rs_rule "sets up no service dashboard or alerting" 'do not set up a hosted service, dashboard or alerting as part of this check'
 rs_rule "care areas use the same request-record rules" 'operational readiness check \(including the request record and monitoring rules above, without repeating their notices\)'
 rs_rule "ordinary care work uses the live readiness step" 'outside every named area, follow the same four steps as build and run it above'
 rs_guard "$SHIP" "ship's live readiness rules"
+rs_require_absent "the readiness list does not require an alert recipient" "$SHIP" 'actually applies: a named alert recipient'
 
 rs_reset
 rs_rule "reads the tool record only after launch on live paths" 'after launch on build and run it or build with care, read the tool.s own request record alongside the person.s report as a source for the reproduction'
