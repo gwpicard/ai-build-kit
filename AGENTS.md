@@ -362,6 +362,18 @@ attribution line, not the word.
   including a file git ignores on purpose and a document nothing points at. It
   also proves a clean project produces nothing, the script writes nothing, and
   the document changed longest ago comes first.
+- `.agents/tests/document-bloat.sh` guards the quarterly read for documents
+  that repeat each other or are no longer needed: that it reads every
+  document rather than only the ones AGENTS.md points at, never offers the
+  README for deletion, confirms each finding, offers a tidy-up rather than
+  making one, shares the cap of three proposals, and says it cannot find two
+  documents saying one thing in different words.
+  `.agents/tests/document-bloat-rehearsal.sh` runs the shipped
+  `document-bloat.py` against a throwaway project carrying a repeated
+  paragraph, a note nothing names and a page whose names have mostly gone. It
+  proves each is found, and that a README nobody links to, the records, a
+  short shared sentence and a page with one missing name among several are
+  left alone. A clean project produces nothing, and the script writes nothing.
 - `.agents/tests/request-record.sh` guards the request record checked before
   live use, its data exclusions, and the monitoring caution given once unless
   someone already receives alerts. It also holds the repair step that reads

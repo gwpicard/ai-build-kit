@@ -371,7 +371,9 @@ Everything above, plus:
    On Build and run it and Build with care, load `references/waste-read.md`
    and gather copied code, unused code and unused dependencies before
    proposing anything. Load `references/structure-read.md` too, and compare
-   the structure with the last full visit.
+   the structure with the last full visit. Then load
+   `references/document-bloat.md` and look for documents that repeat each
+   other or are no longer needed.
    Propose no more than three simplifications; for each, state the repeated
    problem, the plain-language change, what becomes easier to verify or
    recover, the cost, and whether a person outside the team has to look.
