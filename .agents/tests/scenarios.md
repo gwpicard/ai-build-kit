@@ -100,7 +100,7 @@ reported, and it is not what decides whether the case held.
   protocol before nurses use it. The practice manager's own responsibility for
   the decision does not replace naming the patients.
 - Hidden technique: the redesign checklist runs before the area is named as sensitive.
-- Evidence: source-checked facts about the regulated area, feeding the specification.
+- Evidence: the recommendation piece leaves founding labelled `needs-research`, so `/shape` runs the source check on the regulated area before the piece is built.
 - Save route: none is due until an acceptance is recorded; no production build happens before that.
 - Review: a named clinical reviewer owns the judgement, and no session stands in for them; dropped only by an acceptance that names the clinical sign-off.
 - Acceptance: the kit may build once the person has heard the full notice and
