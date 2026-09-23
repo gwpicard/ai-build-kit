@@ -44,7 +44,10 @@ rs_require_load_bearing "setup writes commands and exceptions within the rule" "
 rs_require_load_bearing "WORKFLOW explains the offer and the person's choice" "$WORKFLOW" 'one line saying how long it is and what can go\. nothing is cut without your yes'
 rs_require_load_bearing "the validator counts the foundation template" "$VALIDATOR" 'foundation_agents="\$skills/setup-ai-build-kit/templates/foundation/agents\.md"'
 rs_require_load_bearing "the validator enforces under rather than at the ceiling" "$VALIDATOR" 'if \[ "\$foundation_lines" -lt 200 \]'
-rs_require_load_bearing "the rehearsal pads a disposable project" "$ROOT/.agents/tests/replay/cases/49.txt" 'pad its agents\.md to exactly 240 lines'
+# The harness pads the file, not the kit: asked to write a folder layout into
+# its own AGENTS.md, the kit refused, as that file tells it to.
+rs_require_load_bearing "the rehearsal has the harness pad a disposable project" "$ROOT/.agents/tests/replay/cases/49.txt" '# prepare: long-instructions'
+rs_require_load_bearing "the preparation pads to exactly 240 lines" "$ROOT/.agents/tests/replay/prepare/long-instructions.sh" 'target=240'
 rs_require_load_bearing "the rehearsal declines the trim" "$ROOT/.agents/tests/replay/cases/49.txt" 'no, leave the standing instructions as they are'
 rs_require_load_bearing "the rehearsal judges the observed offer and unchanged file" "$ROOT/.agents/tests/scenarios.md" 'the monthly visit reports the measured count in one trim offer and leaves the file unchanged after the person declines'
 

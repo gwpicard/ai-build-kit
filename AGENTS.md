@@ -210,7 +210,9 @@ attribution line, not the word.
   fillers and sends the line anyway, so the gate can cost tokens but can never
   fail a run that would otherwise have passed. It also drives the `# merge:`
   line, which has the person merge every open pull request before a turn that
-  says the fix was merged, so that line is true when the kit reads it.
+  says the fix was merged, so that line is true when the kit reads it, and the
+  `# prepare:` line, which has the harness build a starting state no
+  conversation should, such as scenario 49's instructions past their ceiling.
 - `.agents/tests/grader-recovery.sh` checks that the replay grader recovers a
   transcript missing only its final brace, and still refuses one that was cut
   off partway.

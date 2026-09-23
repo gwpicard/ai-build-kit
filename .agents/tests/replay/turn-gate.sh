@@ -134,3 +134,10 @@ merge_open_pulls() {
   done
   printf '%s' "${mo_done# }"
 }
+
+# case_prepare <file>   the preparation script a case names, or nothing
+# A case that needs a starting state no conversation should build names a
+# script in prepare/, which run.sh runs on the project before its first commit.
+case_prepare() {
+  awk -F': *' '/^# prepare:/ { sub(/^# prepare: */, ""); print; exit }' "$1"
+}
