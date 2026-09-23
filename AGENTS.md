@@ -532,6 +532,16 @@ attribution line, not the word.
   `release-drafter.yml` and requires the script to accept every one, because two
   written-out lists of the same thing drift and the drift would refuse a pull
   request labelled exactly as the configuration says.
+- `.agents/tests/pull-request-base.sh` checks the guard that goes red on a
+  pull request aimed at `stable`. `stable` is the default branch, so a new pull
+  request aims at it unless somebody changes the base, and one merged there
+  once and stopped the next release. It runs the real script against a `stable`
+  base and a `main` base, and requires the refusal to name both `stable` and
+  `--base main`. It also reads the workflow. The base must come from the pull
+  request through the environment, and the check must run again on `edited`,
+  since changing a base sends that event and a check that stayed red after the
+  fix would teach people to ignore it. The guard stays out of source checks,
+  whose concurrency group would cancel a running rehearsal on every edit.
 - `.agents/tests/version-stamp.sh` guards the release stamp: that all three
   version-bearing files move together, that a preview never reaches the branch
   every installer reads, that an already-stamped tree takes the next version,
