@@ -21,8 +21,8 @@ no remote, it is `main`, or `master` where there is no `main`. Where none of
 these gives an answer, say the branch check did not run, and carry on with the
 visit.
 
-Then run `git fetch origin`, so that Git can compare GitHub's branches with the
-default branch. Do not add `--prune`. It deletes Git's own record of branches
+Where the project has a remote called `origin`, run `git fetch origin`, so
+that Git can compare GitHub's branches with the default branch. Do not add `--prune`. It deletes Git's own record of branches
 already gone from GitHub, and this step deletes nothing.
 
 ## Branches that are never listed
@@ -36,12 +36,14 @@ already gone from GitHub, and this step deletes nothing.
 - A branch the project's own AGENTS.md or masterplan says stays, such as one a
   release is published from. The kit names no such branch in a project, so
   never set one aside because of its name alone.
-- A branch GitHub protects. For each branch that would otherwise be listed,
-  ask `gh api repos/{owner}/{repo}/branches/<name> --jq .protected` and
-  `gh api repos/{owner}/{repo}/rules/branches/<name>`. A `true`, or a list with
-  anything in it, means the project protects that branch. Where these calls
-  cannot be made, list the branches anyway and say that protection was not
-  checked.
+- A branch GitHub protects from deletion. For each branch that would otherwise
+  be listed, ask `gh api repos/{owner}/{repo}/branches/<name> --jq .protected`
+  and `gh api repos/{owner}/{repo}/rules/branches/<name>`. The branch is
+  protected when the first answer is `true`, or when the second holds a rule
+  whose `type` is `deletion`. Any other rule does not count. A rule set can
+  cover every branch and only ask for signed commits, and that says nothing
+  about whether a branch can go. Where these calls cannot be made, list the
+  branches anyway and say that protection was not checked.
 
 ## Two groups
 
@@ -102,7 +104,12 @@ Never run one of these commands. The person runs each one, and chooses which.
 
 ## What the person sees
 
-When no branch qualifies and nothing was left out, say nothing.
+When no branch qualifies and nothing was left out, say nothing. A branch counts
+as left out when it would have qualified but was set aside: because GitHub
+protects it from deletion, or because it holds work added after its merge. A
+group that could not be read, or a protection check that could not be made,
+counts too. Each one gets its line in the report, so a report is never silent
+about a branch it set aside.
 
 Otherwise, give one short report. It keeps this computer and GitHub apart,
 names the default branch by its real name, and gives each branch its command
@@ -119,12 +126,22 @@ On GitHub, every change confirmed in main:
   fix-login        git push origin --delete fix-login
 
 GitHub records these as merged, but Git cannot check every change, because
-the merge combined the branch's changes into one:
+the merge combined the branch's changes into one. The capital D removes the
+branch without Git's own check. It is safe here only because GitHub records
+the same work as merged:
   new-report       on this computer: git branch -D new-report
   new-report       on GitHub: git push origin --delete new-report
+
+GitHub shows this branch as merged, but it has work added after the merge.
+I have left it alone:
+  export-fix
+
+GitHub protects this branch from deletion, so I have left it alone:
+  release
 
 I can tell that a branch's work reached main. I cannot tell whether somebody
 still plans to use it.
 ```
 
-Leave out a group that is empty. Never add a branch to fill the example.
+Leave out a group or a line that is empty. Never add a branch to fill the
+example.

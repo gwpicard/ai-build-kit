@@ -26,6 +26,7 @@ rs_exists "$READ" "$MAINTAIN" "$WORKFLOW"
 rs_rule "it runs at every monthly visit" 'at every monthly visit, on every build path'
 rs_rule "no remote means this computer only" 'say that only this computer was checked'
 rs_rule "no default branch means the step did not run" 'say the branch check did not run'
+rs_rule "the fetch waits for an origin remote" 'where the project has a remote called `origin`, run `git fetch origin`'
 rs_rule "the fetch never prunes" 'do not add `--prune`'
 
 # What is never listed.
@@ -33,7 +34,8 @@ rs_rule "a checked-out branch in any working copy" '`git worktree list` names th
 rs_rule "a branch with an open pull request" 'a branch with an open pull request'
 rs_rule "a branch the project says stays" 'a branch the project.s own agents\.md or masterplan says stays'
 rs_rule "no long-lived branch is invented" 'never set one aside because of its name alone'
-rs_rule "a protected branch" 'means the project protects that branch'
+rs_rule "classic protection counts" 'protected when the first answer is `true`'
+rs_rule "only a deletion rule counts" 'a rule whose `type` is `deletion`\. any other rule does not count'
 rs_rule "an unchecked protection is said" 'say that protection was not checked'
 
 # The two groups.
@@ -59,9 +61,14 @@ rs_rule "a teammate's copy is untouched" 'leaves theirs alone'
 
 # What the person sees.
 rs_rule "silent when there is nothing" 'when no branch qualifies and nothing was left out, say nothing'
+rs_rule "a protected branch counts as left out" 'counts as left out when it would have qualified but was set aside: because github protects it from deletion'
+rs_rule "a set-aside branch is never silent" 'a report is never silent about a branch it set aside'
 rs_rule "computer and github stay apart" 'it keeps this computer and github apart'
 rs_rule "the report says nothing was removed" 'i have not removed anything'
 rs_rule "the report says what it cannot tell" 'i cannot tell whether somebody still plans to use it'
+rs_rule "the example explains the capital d" 'the capital d removes the branch without git.s own check\. it is safe here only because github records the same work as merged'
+rs_rule "the example names a branch with later work" 'it has work added after the merge\. i have left it alone'
+rs_rule "the example names a protected branch" 'github protects this branch from deletion, so i have left it alone'
 rs_guard "$READ" "the shipped stale-branches.md"
 
 rs_reset
