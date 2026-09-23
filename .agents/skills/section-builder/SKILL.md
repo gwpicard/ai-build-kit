@@ -151,6 +151,11 @@ what the user sees.
 
 ## 6. Hand over the behaviour
 
+Before handing over, run the type check and linter that AGENTS.md's stack
+section names, alongside the tests. A failure is a gap like any other: describe
+it as expected versus actual and fix it at the root. Where the stack section
+records none for the language, there is nothing to run.
+
 Stop. Give the exact action, the expected result, any known limitation, and
 whether the evidence behind it is automated, manual, source-backed, or
 operational. The user confirms the behaviour wherever human judgement is
