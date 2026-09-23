@@ -11,6 +11,102 @@ The fourteen skills use the open Agent Skills folder format. Each skill keeps it
 own instructions and supporting files together. A command that needs a
 background skill loads it by name.
 
+## How much has been proved on each agent
+
+Meeting the portable core means the kit should work on an agent. It does not
+mean anybody has watched it work there. Each agent this page names carries one
+of three grades, so you can see how much evidence sits behind your choice
+before you make it.
+
+- **Tested.** The kit's replay harness has driven this agent through whole
+  scripted conversations, and the results are on record with the date, the
+  version of the kit and the models used. The replay harness is a maintainer
+  tool: it sets up a throwaway project, talks to the kit, and grades what the
+  kit did against what it promises.
+- **Expected to work.** The agent reads the same skill files a tested agent
+  reads, and nothing known stops the kit working there. Nobody has recorded a
+  run. Its known limits are listed below.
+- **Experimental.** Nobody has recorded running the kit on this agent. The
+  files it needs ship with the kit, and the only checks on them are checks of
+  their shape.
+
+| Coding agent | Grade |
+|---|---|
+| Claude Code | Tested |
+| Codex | Expected to work |
+| Cursor | Experimental |
+| Gemini CLI | Experimental |
+| GitHub Copilot | Experimental |
+| Any other coding agent | Experimental |
+
+### Moving up a grade
+
+An agent moves up on evidence and on nothing else. A quiet issue tracker is not
+evidence. An absence of complaints may only mean that nobody has tried.
+
+To move from Experimental to Expected to work, somebody runs a published
+release on the agent, from a blank folder through founding and one built
+piece, and the maintainer writes down what happened and on which release. A
+maintainer's own walk-through counts, and so does a report from a real user
+that says the same.
+
+To move from Expected to work to Tested, the replay harness drives the agent
+through the replayed conversations and the rates are recorded beside the
+Claude Code ones. The harness can already drive Codex. What Codex lacks is a
+recorded run. The harness cannot drive Cursor, Gemini CLI or GitHub Copilot,
+so each of them needs that work first.
+
+An agent moves down when a recorded run shows the kit failing there in a way
+it does not fail elsewhere.
+
+### What Tested means for Claude Code
+
+Tested describes a rate. The harness runs each conversation several
+times and counts how often the kit behaved as promised, and some cases hold
+less often than others. One case, a bug that resists repeated fixes, held in
+four runs of five on one Claude model and in none of five on another. The runs
+have no person in them, so a failure they show is a lead to check by hand.
+
+The last measurement of every case was on 25 August 2026. Some cases have been
+measured again since, on a changed kit, and the rest have not.
+
+The plugin route is rehearsed for installing, updating and removing the kit.
+Its conversations cannot be replayed, because plugin commands do not load in
+the unattended sessions the harness uses. The replayed conversations use the
+skills installed into the project, which is the shared installer's route.
+
+### Known limits of Codex
+
+- Nobody has recorded a run. A check proves the harness can start, resume and
+  grade a Codex conversation, against a stand-in for Codex and without a model.
+  That proves the harness wiring, and says nothing yet about how the kit
+  behaves.
+- The kit ships no Codex command files. Codex finds the skills in
+  `.agents/skills/`, and you start a command by naming it.
+- Nothing reminds you of a check-up when a session opens. `what-now` says when
+  a visit is overdue.
+- There is no deny list set up for you. Codex's own approval settings do that
+  job, and you set them yourself.
+- Nobody has checked whether Codex keeps the five background skills out of
+  your hands.
+
+### Known limits of Cursor, Gemini CLI and GitHub Copilot
+
+- Nobody has recorded a run, and the replay harness cannot drive these agents.
+- The kit's release carries generated command files for Cursor and Gemini CLI.
+  A check confirms each file is there and well formed. Nothing has confirmed
+  that the agent lists the nine commands, or that it loads a background skill
+  when a command asks for one.
+- Setup creates the file that points Gemini CLI at `AGENTS.md`,
+  and the one that points GitHub Copilot at it. Nobody has confirmed that
+  either agent follows that pointer.
+- Nothing reminds you of a check-up when a session opens. `what-now` says when
+  a visit is overdue.
+- There is no deny list set up for you. Where the agent has command allow and
+  deny settings, you add the kit's blocked commands there yourself.
+- Nobody has checked whether these agents keep the five background skills out
+  of your hands.
+
 ## Choose one installation route
 
 Every route installs the same fourteen AI Build Kit skills. Nine are commands
@@ -130,7 +226,8 @@ paths are:
 | Gemini CLI | `.agents/skills/` | `GEMINI.md` points to `AGENTS.md` |
 | GitHub Copilot | `.agents/skills/` | `.github/copilot-instructions.md` points to `AGENTS.md` |
 
-Another coding agent may work through the same portable files.
+Another coding agent may work through the same portable files. It stays
+Experimental until somebody records a run on it.
 
 The setup-ai-build-kit skill creates missing standing-instruction pointers. It does not
 replace an existing harness configuration.
