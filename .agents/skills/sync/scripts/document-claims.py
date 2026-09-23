@@ -8,6 +8,11 @@ and an environment variable. It prints one line per name that does not exist,
 as `document:line<TAB>kind<TAB>name`, and prints nothing when every name it
 found still exists.
 
+A file name is one that ends in a file ending, and a folder name one that ends
+in a slash. So `/shape`, `owner/name` and `example.com/page` are not taken for
+files. A name written from some other folder is found wherever the project
+keeps a path that ends with it.
+
 A document may describe less than the code does, and that is never flagged.
 Only a name that points at nothing is. It never says a document is right,
 because a described flow can change shape without any name going missing.
@@ -20,6 +25,7 @@ It reads the project and writes nothing. Run it from the project root:
     python3 .agents/skills/sync/scripts/document-claims.py
 """
 
+import functools
 import json
 import os
 import re
@@ -92,7 +98,22 @@ def looks_like_path(name):
         return False
     if name.startswith("node_modules") or "://" in name:
         return False
-    return "/" in name or name.endswith(EXTENSIONS)
+    # A file name ends in a file ending, and a folder name ends in a slash.
+    # Anything else with a slash in it is a command such as /shape, a
+    # repository such as owner/name, or a web address, and is not checked.
+    if "/" in name and "." in name.split("/")[0].lstrip("."):
+        return False
+    return name.endswith(EXTENSIONS) or name.endswith("/")
+
+
+@functools.lru_cache(maxsize=None)
+def saved_paths():
+    """Every file git tracks, and every folder holding one."""
+    paths = set()
+    for path in git("ls-files").split("\n"):
+        parts = [part for part in path.split("/") if part]
+        paths.update("/".join(parts[:end]) for end in range(1, len(parts) + 1))
+    return paths
 
 
 def path_exists(name, document):
@@ -103,7 +124,10 @@ def path_exists(name, document):
     for candidate in (os.path.normpath(bare), os.path.normpath(beside)):
         if os.path.exists(candidate) or ignored(candidate):
             return True
-    return False
+    # Written from some other folder, a name is still present if a saved path
+    # ends with it: `deploy.sh` or `lib/check.sh` wherever the project keeps it.
+    tail = "/".join(p for p in bare.split("/") if p not in ("", ".", ".."))
+    return any(path == tail or path.endswith("/" + tail) for path in saved_paths())
 
 
 def env_named_in_code(name, documents_read):

@@ -80,6 +80,8 @@ See [the setup guide](docs/setup.md) and [the old notes](docs/old.md).
 ```sh
 npm run test
 ```
+
+Type `/implement` to build. The code is at `owner/shop` and `github.com/owner/shop`, the entry file is `index.js`, and releases use `release.sh`.
 EOF
 git add -A
 commit "The README drifts"
@@ -97,9 +99,13 @@ expect README.md:5 'environment variable' PAYMENT_SECRET_KEY
 expect README.md:7 file scripts/deploy.sh
 expect README.md:8 link docs/old.md
 
-[ "$(printf '%s\n' "$out" | wc -l | tr -d ' ')" = 4 ] ||
-  fail "expected exactly four findings, got: $out"
+expect README.md:14 file release.sh
+
+[ "$(printf '%s\n' "$out" | wc -l | tr -d ' ')" = 5 ] ||
+  fail "expected exactly five findings, got: $out"
 echo "  ok: nothing true is flagged: a real file, command, link and setting, and an ignored .env"
+echo "  ok: a slash command, a repository name and a web address are not taken for files"
+echo "  ok: a bare file name kept in a folder is found there"
 
 printf '%s\n' "$out" | grep -q 'unlisted' && fail "a document AGENTS.md never points at was read"
 printf '%s\n' "$out" | grep -q 'gone/by/design' && fail "the kit's own WORKFLOW.md was read"

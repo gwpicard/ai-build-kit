@@ -52,7 +52,8 @@ well. Without it, links to other sites are not checked; say so if asked.
 
 Open the document at the line the script names and confirm the name is there
 and is meant as a name in this project. A name in an example of some other
-project's setup is not a finding. Drop anything that does not survive.
+project's setup is not a finding, and nor is a name the document mentions only
+to say it does not exist. Drop anything that does not survive.
 
 Before reporting a finding, look at the open pieces. A name already on an open
 piece has been raised and decided, so do not raise it again.
