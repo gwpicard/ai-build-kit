@@ -44,10 +44,20 @@ rs_rule "no secret value is written" 'never write a value, key, password or toke
 rs_rule "an unknown field is none, not a guess" 'write `none` rather than guess'
 rs_rule "the block is printed for pasting" 'print the same block in the reply, so the person can paste it'
 rs_rule "the one line the person hears" 'this tool needs a home\. take this request to whoever runs the server\.'
+
+# The answer. The launch waits for it, and it is recorded whenever it arrives,
+# not only in the session that wrote the request. A person often carries the
+# request away and comes back days later, in a new session.
+rs_rule "the launch waits for an address" 'the first launch is not finished until an address is recorded under the request'
+rs_rule "the person hears it is not live yet" 'tell the person plainly that the tool is not live yet and is waiting on the server.s answer'
+rs_rule "it is not recorded as live meanwhile" 'do not write it into changelog\.md as live'
+rs_rule "an answer is recorded in any session" 'whenever the person pastes an answer, in this session or a later one, record its address and names under the request'
 rs_rule "a secret in the answer is left out" 'leave out any secret value it carries'
 
 # A later launch.
-rs_rule "a later launch reads it back" 'on a later launch, read the recorded hosting request back instead of asking again'
+rs_rule "a later launch reads it back" 'on a later /ship, read the recorded hosting request back instead of asking again'
+rs_rule "a missing answer is noticed" 'where no address is recorded under it, the request went out and no answer came back'
+rs_rule "a missing answer is said and the request printed again" 'say so plainly, print the request again for the person to carry, and ask them to paste the answer here when it arrives'
 rs_rule "a changed field is updated and printed again" 'where the project has changed a field since, update that line from the project and print the request again'
 rs_guard "$SHIP" "ship's hosting request"
 

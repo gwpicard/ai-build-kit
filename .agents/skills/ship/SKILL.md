@@ -111,13 +111,23 @@ it, then stop.
    Where the project does not say, write `none` rather than guess. Print the
    same block in the reply, so the person can paste it, and say once: "This
    tool needs a home. Take this request to whoever runs the server. Paste what
-   they send back here, and I will record it for the next /ship." When the
-   answer comes back, record its address and names under the request, and
-   leave out any secret value it carries.
+   they send back here, and I will record it for the next /ship."
 
-   On a later launch, read the recorded hosting request back instead of asking
-   again. Where the project has changed a field since, update that line from
-   the project and print the request again for the person to carry.
+   The first launch is not finished until an address is recorded under the
+   request. Until then, tell the person plainly that the tool is not live yet
+   and is waiting on the server's answer. Do not write it into CHANGELOG.md as
+   live.
+
+   Whenever the person pastes an answer, in this session or a later one,
+   record its address and names under the request, and leave out any secret
+   value it carries.
+
+   On a later /ship, read the recorded hosting request back instead of asking
+   again. Where no address is recorded under it, the request went out and no
+   answer came back. Say so plainly, print the request again for the person to
+   carry, and ask them to paste the answer here when it arrives. Where the
+   project has changed a field since, update that line from the project and
+   print the request again for the person to carry.
 
 ### Build with care
 
