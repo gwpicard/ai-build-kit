@@ -107,9 +107,12 @@ when section-builder saves the repair.
 ## 7. Cleanup
 
 Name every temporary log and harness added during the repair, remove each one,
-then run the regression evidence without them. Confirm the original symptom is
-gone, record the cause in the changelog in plain language, update the other
-records, and use section-builder's save and review route for the change itself.
+then run the regression evidence without them. On Build and run it and Build
+with care, run the trim in `.agents/skills/section-builder/references/trim.md`
+on the repair, so the repair keeps only what the fix needed. Confirm the
+original symptom is gone, record the cause in the changelog in plain language,
+update the other records, and use section-builder's save and review route for
+the change itself.
 The report says which temporary items were removed and that the evidence still
 passed.
 

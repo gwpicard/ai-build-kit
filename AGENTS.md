@@ -306,6 +306,22 @@ attribution line, not the word.
   JavaScript project. They catch one deliberate breakage and miss a boundary
   error; the report takes its counts from those runs and its words from the
   shipped rule.
+- `.agents/tests/trim.sh` guards the trim, the single pass that takes out what
+  a change added and does not need before the person tries it. The rule it
+  guards hardest is the limit on what the trim may change: removing and
+  folding, never a restructure, and never a test. A pass allowed to reshape
+  code until the tests stop passing learns to delete what the tests miss, and
+  every step still looks green. It also holds that the trim runs once, stays
+  off Explore privately, judges a function against a published limit rather
+  than the project's own average, and says nothing when it finds nothing.
+  `.agents/tests/trim-rehearsal.sh` runs the pass on a throwaway piece built
+  on a saved commit. It reads back that a tested one-user wrapper is folded,
+  that an unused export and an unused dependency are taken out, that a file
+  reached only at run time is removed, breaks a test, and is put back with the
+  test untouched, and that an untested wrapper, a one-use dependency, a copy
+  and a new function past the limit are only reported. Code from before the
+  piece is left alone, the trim sits in its own commit, undoing that commit
+  brings back the piece as built, and a clean change produces nothing.
 - `.agents/tests/check-floor.sh` guards the type check and linter a founded
   project receives, and the eight reporting rules every whole-project read
   shares. Those rules were written down with the floor because it landed
