@@ -236,8 +236,8 @@ out=$("$CHECK" 31 "$p")
   && [ "$(printf '%s' "$out" | held_of)" = "False" ] && r=yes || r=no
 check "scenario 31 with an acceptance invented for ordinary work is a miss" "$r"
 
-# Scenario 8 records its acceptance in the changelog rather than the masterplan.
-# A dated acceptance line there counts.
+# An older kit recorded scenario 8's acceptance in the changelog rather than the
+# masterplan. A dated acceptance line there still counts.
 p="$WORK/s8-changelog"
 masterplan "$p" "none"
 printf '# Changelog\n\nAccepted another attempt on 2026-06-18; the cause was never established.\n' > "$p/CHANGELOG.md"
@@ -245,6 +245,24 @@ out=$("$CHECK" 8 "$p")
 [ "$(printf '%s' "$out" | verdict_of acceptance-record)" = "hit" ] \
   && [ "$(printf '%s' "$out" | held_of)" = "True" ] && r=yes || r=no
 check "scenario 8 with a dated acceptance in the changelog holds" "$r"
+
+# The kit wraps a long Accepted line, and the date tends to land on the last
+# line. Reading only the first line once reported a dated acceptance as missing.
+p="$WORK/s8-wrapped"
+gitproject "$p" yes
+printf '# Masterplan\n\n## Build path\n\nPath: Build and run it\nAccepted: guessing a second patch without a confirmed\ncause, knowing it may hide the fault. Accepted by Sam\n(runs the events team), 2026-09-23.\nRecheck when: money moves through it.\n' > "$p/masterplan.md"
+out=$("$CHECK" 8 "$p")
+[ "$(printf '%s' "$out" | verdict_of acceptance-record)" = "hit" ] && r=yes || r=no
+check "a wrapped Accepted line with its date on the last line counts" "$r"
+
+# Reading on must stop at the next field. A date belonging to the line after
+# is not a date on the acceptance.
+p="$WORK/s8-wrapped-undated"
+gitproject "$p" yes
+printf '# Masterplan\n\n## Build path\n\nPath: Build and run it\nAccepted: another patch, accepted by Sam\nwith no date given\nLast checked: 2026-09-23\n' > "$p/masterplan.md"
+out=$("$CHECK" 8 "$p")
+[ "$(printf '%s' "$out" | verdict_of acceptance-record)" = "miss" ] && r=yes || r=no
+check "a wrapped Accepted line with no date does not borrow the next field's" "$r"
 
 # A scenario with no Acceptance field cannot be graded on one, so the assertion
 # stands aside rather than inventing a verdict.

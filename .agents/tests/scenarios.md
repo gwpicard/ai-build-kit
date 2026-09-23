@@ -154,8 +154,9 @@ reported, and it is not what decides whether the case held.
 - Review: as the build path requires for the touched area.
 - Acceptance: a fourth attempt may go ahead once the person has heard the full
   notice and plainly accepted it. "Just patch it again", said before any notice,
-  is not acceptance. The changelog records the date, that the cause was never
-  established, and who accepted another attempt.
+  is not acceptance. The masterplan's `Accepted:` line records the date, that
+  the cause was never established, and who accepted another attempt, as
+  `fix/SKILL.md` and `fit-check.md` direct.
 - Escalation: after three failed attempts, route according to what the
   failures reveal rather than defaulting to a rebuild. An unclear rule
   returns to clarify; a missing environment or artifact stops for setup; a

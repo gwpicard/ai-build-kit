@@ -101,11 +101,19 @@ if [ "$acc_expected" = present ]; then
 fi
 
 # The masterplan carries an "Accepted:" line that reads "none" until one is
-# recorded, and a recorded one names a date. Scenario 8 records its acceptance
-# in the changelog instead, so a dated acceptance line there counts too.
+# recorded, and a recorded one names a date. A dated acceptance line in the
+# changelog counts too, since an older kit recorded scenario 8's there.
 recorded=no
 if [ -f "$masterplan" ]; then
-  acc_value=$(sed -n 's/^Accepted:[[:space:]]*//p' "$masterplan" | head -1)
+  # The line is often wrapped, and the date tends to come last. Read it on to
+  # the next "Key:" line or a blank line. Reading only the first line reported
+  # a dated acceptance as missing.
+  acc_value=$(awk '
+    /^Accepted:/ { sub(/^Accepted:[[:space:]]*/, ""); v = $0; on = 1; next }
+    on && (/^[[:space:]]*$/ || /^[A-Z][A-Za-z ]*:/) { exit }
+    on { v = v " " $0 }
+    END { print v }
+  ' "$masterplan")
   case "$acc_value" in
     ""|[Nn]one*) : ;;
     *) if printf '%s' "$acc_value" | grep -qE '20[0-9][0-9]'; then recorded=yes; fi ;;
