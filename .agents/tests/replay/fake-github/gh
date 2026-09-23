@@ -123,7 +123,15 @@ def land_on_remote(pr):
         who = ["-c", "user.name=Replay person", "-c", "user.email=person@example.invalid",
                "-c", "commit.gpgsign=false"]
         if git("checkout", "-q", base, cwd=clone).returncode != 0:
-            return False
+            # The harness starts every remote empty, so a scenario can tell a
+            # push it made from one it did not. On GitHub the base branch
+            # would already be there, so it is seeded from the project's own
+            # base before the merge. Without this, every merge failed.
+            if git("push", "-q", remote, "refs/heads/%s:refs/heads/%s" % (base, base)).returncode != 0:
+                return False
+            git("fetch", "-q", "origin", cwd=clone)
+            if git("checkout", "-q", "-b", base, "origin/" + base, cwd=clone).returncode != 0:
+                return False
         merged = git(*who, "merge", "-q", "--no-ff", "origin/" + head,
                      "-m", "Merge pull request #%s from %s" % (pr["number"], head), cwd=clone)
         if merged.returncode != 0:

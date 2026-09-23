@@ -155,9 +155,11 @@ git -C "$proj" config user.email rehearsal@example.com
 git -C "$proj" config user.name Rehearsal
 git -C "$proj" commit -q --allow-empty -m first
 git -C "$proj" branch -M main
+# The remote starts empty, as run.sh leaves every project's. An earlier version
+# of this check pushed main first, passed, and hid the fact that every merge in
+# a real run failed for want of a base branch to merge into.
 git init -q --bare "$proj.git"
 git -C "$proj" remote add origin "$proj.git"
-git -C "$proj" push -q origin main
 git -C "$proj" checkout -q -b the-fix
 echo fixed > "$proj/fix.txt"
 git -C "$proj" add fix.txt
