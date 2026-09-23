@@ -359,9 +359,13 @@ attribution line, not the word.
   `.agents/tests/document-read-rehearsal.sh` runs the shipped
   `document-claims.py` against a throwaway project. It proves each of the four
   kinds of stale name is found at its line and that nothing true is flagged,
-  including a file git ignores on purpose and a document nothing points at. It
-  also proves a clean project produces nothing, the script writes nothing, and
-  the document changed longest ago comes first.
+  including a file git ignores on purpose and a document nothing points at. A
+  slash command such as `/implement`, a repository name and a web address are
+  not taken for files, and a file name written from another folder is found
+  where the project keeps it. Every founded project's documents name its
+  commands that way, and an earlier version reported each one as a missing
+  file. It also proves a clean project produces nothing, the script writes
+  nothing, and the document changed longest ago comes first.
 - `.agents/tests/document-bloat.sh` guards the quarterly read for documents
   that repeat each other or are no longer needed: that it reads every
   document rather than only the ones AGENTS.md points at, never offers the
