@@ -368,6 +368,9 @@ Everything above, plus:
    each change touched in each area. Use that count to name the widest-spreading
    areas rather than judging them from memory. This is a comparison, not a
    health score.
+   On Build and run it and Build with care, load `references/waste-read.md`
+   and gather copied code, unused code and unused dependencies before
+   proposing anything.
    Propose no more than three simplifications; for each, state the repeated
    problem, the plain-language change, what becomes easier to verify or
    recover, the cost, and whether a person outside the team has to look.

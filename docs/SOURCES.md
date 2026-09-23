@@ -43,6 +43,8 @@ Nobody named here was asked first, and nobody named here has endorsed the kit.
 | [SWE-Doctor](https://arxiv.org/abs/2607.00990) | Reading evidence from a running tool to find the failed step and reproduce a fault |
 | [sentrux](https://github.com/sentrux/sentrux) | Comparing code relationships before and after a change, while leaving out the health score |
 | [Cloudflare's AI code review at scale](https://blog.cloudflare.com/ai-code-review/) | Keeping a read to the few findings worth a person's time rather than every one it could make, and checking a finding against the code a second time before anyone sees it |
+| [Vulture](https://github.com/jendrikseipp/vulture) | Running a tool at the setting that reports only what it is certain of, so a confidence score becomes a plain list rather than a number to pass on |
+| ["Semantic Code Clone Detection: Are We There Yet?"](https://arxiv.org/abs/2606.25272) | The evidence that no detector reliably finds two pieces of code doing the same job written differently, which is why the quarterly read says it finds copied code only |
 | [CodeScene's code health model](https://codescene.com/product/code-health-mcp) | Using saved change frequency and spread to find areas worth simplifying |
 | [Builder.io on subagents](https://www.builder.io/blog/subagents) | That whoever built something is the worst judge of whether it works, so a reviewer that did not do the work is the one worth having |
 | [EveryInc's compound engineering plugin](https://github.com/EveryInc/compound-engineering-plugin) | That independence is a property of the separate run rather than of the point of view taken, so a review done in the same conversation gets labelled as the weaker thing it is |

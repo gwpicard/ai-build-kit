@@ -330,7 +330,13 @@ Nothing is blocked and nothing changes without a command.
 The quarterly visit is fuller, with a hot-spot tidy-up and an ownership check
 that can name a new sensitive area or, after a genuine redesign, take one off.
 Its hot-spot read counts how widely the quarter's saved changes spread instead
-of guessing from memory. /maintain also owns the ending,
+of guessing from memory. Unless the project is a private exploration, it also
+looks for code copied from one place to another, code nothing uses any more,
+and dependencies nothing needs, using tools that read the project rather than
+the agent's impression of it. Each finding names the file and line, and it
+joins the same short list of at most three proposals. It finds copied code; it
+does not find two pieces of code that do the same job written differently. When
+it finds nothing, you hear nothing about it. /maintain also owns the ending,
 when a tool's time is over: export the data, tell the team, revoke access, and
 switch off the services.
 

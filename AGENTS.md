@@ -317,6 +317,17 @@ attribution line, not the word.
   commands from the shipped table, and watches the check go red at the type
   check on an error no test reaches, green once it is fixed, and red at the
   linter on an unused import.
+- `.agents/tests/waste-read.sh` guards the quarterly read for copied code,
+  unused code and unused dependencies: that it stays off Explore privately,
+  keeps the settings chosen on purpose, drops a name found anywhere else in
+  the project, shares the cap of three proposals, says it cannot find two
+  pieces of code doing one job differently, and stays silent when it finds
+  nothing. `.agents/tests/waste-read-rehearsal.sh` runs the engines named in
+  the shipped table against a throwaway project carrying a renamed copy, an
+  unused export and an unused dependency. It reads back that each is named at
+  a real line, that an export a configuration file names is dropped, that no
+  percentage reaches the report, that a clean project produces nothing, and
+  that nothing was written into either project.
 - `.agents/tests/request-record.sh` guards the request record checked before
   live use, its data exclusions, and the monitoring caution given once unless
   someone already receives alerts. It also holds the repair step that reads
