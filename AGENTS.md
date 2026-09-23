@@ -390,10 +390,11 @@ attribution line, not the word.
   documents saying one thing in different words.
   `.agents/tests/document-bloat-rehearsal.sh` runs the shipped
   `document-bloat.py` against a throwaway project carrying a repeated
-  paragraph, a note nothing names and a page whose names have mostly gone. It
-  proves each is found, and that a README nobody links to, the records, a
-  short shared sentence and a page with one missing name among several are
-  left alone. A clean project produces nothing, and the script writes nothing.
+  paragraph and a note nothing names. It proves both are found, and that a
+  README nobody links to, the records, a short shared sentence and a page
+  naming files the project no longer has are left alone, since the document
+  read in `/sync` reports those one name at a time. A clean project produces
+  nothing, and the script writes nothing.
 - `.agents/tests/request-record.sh` guards the request record checked before
   live use, its data exclusions, and the monitoring caution given once unless
   someone already receives alerts. It also holds the repair step that reads

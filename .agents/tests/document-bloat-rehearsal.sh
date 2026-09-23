@@ -1,14 +1,14 @@
 #!/usr/bin/env sh
 # document-bloat-rehearsal.sh: run the shipped document-bloat script against a
-# throwaway project carrying one of each finding, and against a clean one.
+# throwaway project carrying each kind of bloat, and against a clean one.
 #
-# The project holds a paragraph repeated in two documents, a note nothing
-# names, and a page whose files and command have mostly gone. Each has to be
-# found. Just as much, the things that look like bloat and are not have to be
-# left alone: a README nothing links to, the project records and the kit's own
-# files, a short sentence two documents share, and a page that mentions a
-# single missing file among several that exist. A clean project produces
-# nothing, and the script writes nothing.
+# The project holds a paragraph repeated in two documents and a note nothing
+# names. Both have to be found. Just as much, the things that look like bloat
+# and are not have to be left alone: a README nothing links to, the project
+# records and the kit's own files, a short sentence two documents share, and a
+# page naming files the project no longer has, which the document read in
+# /sync reports one name at a time. A clean project produces nothing, and the
+# script writes nothing.
 #
 # Leaving those alone is the half that matters. A tidy-up offered for a note
 # somebody wanted, or for a sentence that belongs in both places, teaches the
@@ -25,8 +25,6 @@ fail() {
 }
 
 [ -x "$SCRIPT" ] || fail "the document-bloat script is missing or not runnable"
-[ -f "$ROOT/.agents/skills/sync/scripts/document-claims.py" ] ||
-  fail "the document-claims script it reuses is missing"
 command -v python3 >/dev/null 2>&1 || fail "python3 is needed to run this rehearsal"
 
 WORK=$(mktemp -d)
@@ -44,11 +42,10 @@ save() {
 PARAGRAPH="To release the tool, first make sure the environment file holds the database address and the payment key. Then run the release script from the project root, wait for the health check to pass, and tell the team in the channel that the new version is live. If the health check fails, roll back to the previous release."
 
 git init -q
-# The scripts live inside the project, as they do once the kit is installed, so
-# anything they wrote beside themselves would show as a change in the project.
-mkdir -p .agents/skills/maintain/scripts .agents/skills/sync/scripts
+# The script lives inside the project, as it does once the kit is installed, so
+# anything it wrote beside itself would show as a change in the project.
+mkdir -p .agents/skills/maintain/scripts
 cp "$SCRIPT" .agents/skills/maintain/scripts/
-cp "$ROOT/.agents/skills/sync/scripts/document-claims.py" .agents/skills/sync/scripts/
 SCRIPT="$PROJECT/.agents/skills/maintain/scripts/document-bloat.py"
 printf '%s\n' '{"name":"shop","scripts":{"dev":"node src/index.js"}}' > package.json
 printf '%s\n' 'console.log(1);' > src/index.js
@@ -78,7 +75,6 @@ out=$(python3 "$SCRIPT")
 [ -z "$out" ] || fail "a tidy project should produce nothing, got: $out"
 echo "  ok: a tidy project produces nothing"
 echo "  ok: a README nothing links to is left alone"
-echo "  ok: a page with one missing file among several real ones is not called dead"
 echo "  ok: the records and the kit's own files are not read, though they repeat and are unnamed"
 [ -z "$(git status --porcelain)" ] || fail "the script wrote into the project"
 echo "  ok: the script writes nothing"
@@ -104,15 +100,13 @@ has "$(printf 'repeated\tREADME.md:5\tdocs/release.md:5')" \
 has "$(printf 'unreferenced\tdocs/scratch.md')" \
   "the note nothing names was not found" \
   "the note nothing names is found"
-has "$(printf 'dead\tdocs/legacy.md\tnpm run legacy, src/old.js, src/older.js')" \
-  "the page whose names have mostly gone was not found" \
-  "the page whose names have mostly gone is found, with the names"
 
-[ "$(printf '%s\n' "$out" | wc -l | tr -d ' ')" = 3 ] ||
-  fail "expected exactly three findings, got: $out"
+[ "$(printf '%s\n' "$out" | wc -l | tr -d ' ')" = 2 ] ||
+  fail "expected exactly two findings, got: $out"
 echo "  ok: the short sentence two documents share is not called a repeat"
-printf '%s\n' "$out" | grep -qE 'masterplan|AGENTS|WORKFLOW|guide\.md' &&
-  fail "a record, a kit file or a live document was reported"
+printf '%s\n' "$out" | grep -qE 'masterplan|AGENTS|WORKFLOW|guide\.md|legacy\.md' &&
+  fail "a record, a kit file, a live document or the stale-names page was reported"
+echo "  ok: a page naming files the project no longer has is left to the sync read"
 echo "  ok: nothing else is reported"
 printf '%s\n' "$out" | grep -qE '[0-9]+ *%|score|grade' && fail "a score reached the output"
 echo "  ok: no score, grade or percentage"

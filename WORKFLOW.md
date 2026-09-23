@@ -369,8 +369,7 @@ have started to depend on each other in a circle. The earlier structure is read
 again from the saved history each time rather than kept anywhere, so it cannot
 go out of date. Most quarters nothing got worse, and you hear nothing. It also reads all
 of the project's documents for bloat: a paragraph written out in full in two
-places, a document nothing mentions any more, and a page that mostly describes
-things the project no longer has. Each one comes as an offer, to keep one copy
+places, and a document nothing mentions any more. Each one comes as an offer, to keep one copy
 or to delete the page, and nothing changes without your yes. It finds copies,
 not two documents that say the same thing in different words. /maintain also owns the ending,
 when a tool's time is over: export the data, tell the team, revoke access, and

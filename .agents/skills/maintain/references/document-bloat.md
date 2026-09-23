@@ -1,8 +1,8 @@
 # Document bloat
 
 A project collects writing. Some of it repeats what another document already
-says, some of it nobody reaches any more, and some of it describes a part of
-the project that has gone. Two copies of one instruction drift apart, and a
+says, and some of it nobody reaches any more. Two copies of one instruction
+drift apart, and a
 person who does not read code cannot tell which is current. Every extra page is
 also read by the agent as context. This read finds those documents so the
 quarterly visit can offer to tidy them.
@@ -32,8 +32,10 @@ folder whose name starts with a dot are left out.
   documents.
 - A document no other file in the project names. A README is never one of
   these, because it is where a reader starts.
-- A document that names at least three files, links, commands or settings,
-  where more than half of them no longer exist.
+
+A document that names things the project no longer has is not counted here.
+The document read in `/sync`, which the quarterly visit runs first, already
+names each of those at its line.
 
 Two documents that say the same thing in different words are out of reach. No
 read here can find them.
@@ -45,16 +47,16 @@ read here can find them.
    for repeated text. It also finds a copy with small changes. Point the report
    at a temporary folder outside the project and delete it afterwards.
 2. `python3 .agents/skills/maintain/scripts/document-bloat.py`, run from the
-   project root. It finds all three kinds and prints one line for each. It
-   prints nothing when there are none. It finds only word-for-word repeats.
-3. Where neither can run, read the documents directly for the same three kinds,
+   project root. It finds both kinds and prints one line for each. It prints
+   nothing when there are none. It finds only word-for-word repeats.
+3. Where neither can run, read the documents directly for the same two kinds,
    and say in the internal evidence that this was the fallback.
 
 ## Checking a finding
 
 Open each document the finding names. Confirm the repeated paragraph is really
-there twice, or that nothing names the unreferenced document, or that the names
-in the dead one are really gone. Drop anything that does not survive.
+there twice, or that nothing names the unreferenced document. Drop anything
+that does not survive.
 
 A document can be unreferenced and still wanted, such as a note somebody opens
 by hand. That is why a finding is only ever an offer.
@@ -67,8 +69,6 @@ for all of them together. For each one, offer one tidy-up in plain words:
 - "The release steps are written out in full in both `README.md` and
   `docs/release.md`. Keep them in one place and point to it from the other?"
 - "Nothing in the project mentions `docs/scratch.md`. Delete it, or leave it?"
-- "`docs/legacy.md` describes `src/old.js`, `src/older.js` and `npm run
-  legacy`, and none of them exist any more. Delete it, or leave it?"
 
 Change nothing without a yes. Keep the person's own words in the copy that
 stays. With any finding, say once: "This finds copied and unused documents. It

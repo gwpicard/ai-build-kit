@@ -28,9 +28,9 @@ rs_rule "it does not run on Explore privately" 'not on explore privately'
 rs_rule "it reads every document" 'every markdown document the project saves, not only the ones agents\.md points at'
 rs_rule "the records and kit files are left out" 'the kit.s own files, and anything in a folder whose name starts with a dot are left out'
 rs_rule "a README is never unreferenced" 'a readme is never one of these'
-rs_rule "a dead page needs most of its names gone" 'where more than half of them no longer exist'
+rs_rule "stale names are left to the sync read" 'a document that names things the project no longer has is not counted here'
 rs_rule "the shipped script is an engine" '`python3 \.agents/skills/maintain/scripts/document-bloat\.py`'
-rs_rule "the last resort is reading directly" 'read the documents directly for the same three kinds'
+rs_rule "the last resort is reading directly" 'read the documents directly for the same two kinds'
 rs_rule "each finding is confirmed" 'drop anything that does not survive'
 rs_rule "a finding is only an offer" 'that is why a finding is only ever an offer'
 rs_rule "the cap of three is shared" 'the cap of three proposals holds for all of them together'
@@ -42,7 +42,7 @@ rs_guard "$READ" "the shipped document-bloat.md"
 
 rs_require_load_bearing "the quarterly step loads the read" "$MAINTAIN" 'load `references/document-bloat\.md`'
 rs_require "the script never lists a README" "$SCRIPT" 'a readme is never listed'
-rs_require "WORKFLOW explains it" "$WORKFLOW" 'a paragraph written out in full in two places, a document nothing mentions any more'
+rs_require "WORKFLOW explains it" "$WORKFLOW" 'a paragraph written out in full in two places, and a document nothing mentions any more'
 rs_require "WORKFLOW says what it cannot find" "$WORKFLOW" 'not two documents that say the same thing in different words'
 
 rs_done
