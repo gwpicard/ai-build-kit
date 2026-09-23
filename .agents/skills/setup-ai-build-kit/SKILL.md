@@ -385,6 +385,8 @@ Inside that job, replace the placeholder `Install and test` commands with the
 project's real install and check commands. Load `references/check-floor.md`:
 those commands include a type check and a linter wherever the project's
 language has them, and a language without one is recorded as having none.
+On Build with care, where an area in the map names a boundary, load
+`references/boundary-rules.md` and offer once to have the check hold it.
 
 An older project may still carry the legacy `source-kit-validation` job and
 its repository conditions. Leave that job and its conditions unchanged. Edit

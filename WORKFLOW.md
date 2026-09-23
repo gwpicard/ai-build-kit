@@ -92,6 +92,13 @@ you where it belongs. When a change reaches one of those places, the review
 starts from what the change touched rather than from what the piece expected
 to touch. The map exists only on Build with care.
 
+An area can also name one boundary, such as "the ledger is only reached through
+the charge step". At founding, and at the quarterly visit for a newly named
+area, the agent offers once to have the check hold it. Say yes and put the rule
+in your own words, and a change that crosses it turns the tick red with your
+sentence beside it. Nothing is added or taken away without your yes, and a
+language with no tool for it is told plainly that it has none.
+
 None of these paths is the kit refusing to build. Build with care is where it says plainly what would normally prevent the harm, and you decide. That is the risk notice, in section 8.
 
 ## 4. Day one
