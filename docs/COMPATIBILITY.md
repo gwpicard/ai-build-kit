@@ -20,7 +20,7 @@ before you make it.
 
 - **Tested.** The kit's replay harness has driven this agent through whole
   scripted conversations, and the results are on record with the date, the
-  version of the kit and the models used. The replay harness is a maintainer
+  kit that was run and the models used. The replay harness is a maintainer
   tool: it sets up a throwaway project, talks to the kit, and grades what the
   kit did against what it promises.
 - **Expected to work.** The agent reads the same skill files a tested agent
@@ -52,7 +52,8 @@ that says the same.
 
 To move from Expected to work to Tested, the replay harness drives the agent
 through the replayed conversations and the rates are recorded beside the
-Claude Code ones. The harness can already drive Codex. What Codex lacks is a
+Claude Code ones. The record names the agent the harness drove, and it names a
+published release or the commit that release was cut from. The harness can already drive Codex. What Codex lacks is a
 recorded run. The harness cannot drive Cursor, Gemini CLI or GitHub Copilot,
 so each of them needs that work first.
 
@@ -67,8 +68,14 @@ less often than others. One case, a bug that resists repeated fixes, held in
 four runs of five on one Claude model and in none of five on another. The runs
 have no person in them, so a failure they show is a lead to check by hand.
 
-The last measurement of every case was on 25 August 2026. Some cases have been
-measured again since, on a changed kit, and the rest have not.
+The last time every case was measured together was 25 August 2026. Some cases
+have been measured again since, on a changed kit, and the rest have not.
+
+Every Claude Code run on record was on a commit of `main` between two
+releases, not on a published release. The record names each commit, so a rate
+can be traced to the exact kit it measured. No rate yet describes a release you
+can install. From now on, a run that keeps an agent at Tested is recorded
+against a published release or the commit that release was cut from.
 
 The plugin route is rehearsed for installing, updating and removing the kit.
 Its conversations cannot be replayed, because plugin commands do not load in

@@ -13,9 +13,15 @@
 # grade. The second is mechanical. An agent graded Tested has to be one the
 # replay harness can drive, and a run on it has to be on record. Claude Code is
 # the harness's default provider, so a recorded run that names no provider was
-# driven on Claude Code. Any other agent has to be named in the recorded
-# baseline before it can be called Tested. That is the promotion this check
-# exists to refuse: a grade raised by editing the page rather than by a run.
+# driven on Claude Code. Any other agent needs a run header in the recorded
+# baseline with a provider field naming it, a line such as
+#
+#   - **Provider:** `codex`
+#
+# before it can be called Tested. A bare mention is not enough, because the
+# likeliest sentence to name Codex in that file is one saying no Codex run has
+# been recorded. That is the promotion this check exists to refuse: a grade
+# raised by editing the page rather than by a run.
 
 set -eu
 
@@ -45,6 +51,10 @@ rs_rule "moving to Tested needs the harness and a recorded rate" \
   'to move from expected to work to tested, the replay harness drives the agent'
 rs_rule "Tested describes a rate" \
   'tested describes a rate. the harness runs each conversation'
+rs_rule "a Tested run names the agent and a published release" \
+  'the record names the agent the harness drove, and it names a published release'
+rs_rule "Claude Code's runs were on commits of main, not releases" \
+  'every claude code run on record was on a commit of `main` between two releases, not on a published release'
 rs_rule "the plugin route's conversations cannot be replayed" \
   'its conversations cannot be replayed'
 rs_rule "Codex's known limits are written down" \
@@ -79,9 +89,16 @@ provider_for() {
   esac
 }
 
-# grade_problems <compatibility-file>: prints one line per problem, nothing when
-# the grades hold.
+# recorded_run <provider> <baseline-file>: succeeds when the baseline carries a
+# run header whose provider field names this provider.
+recorded_run() {
+  grep -qiE "^- \*\*provider:\*\* \`$1\`" "$2"
+}
+
+# grade_problems <compatibility-file> [<baseline-file>]: prints one line per
+# problem, nothing when the grades hold.
 grade_problems() {
+  record=${2:-$BASELINE}
   grades=$(grep -E '^\| [^|]+ \| (Tested|Expected to work|Experimental) \|$' "$1" \
     | sed -E 's/^\| ([^|]+) \| ([^|]+) \|$/\1|\2/')
   # Every agent the harness map names needs a grade. Read the map rather than
@@ -100,8 +117,8 @@ grade_problems() {
       echo "$agent is graded Tested but the replay harness cannot drive it"
       continue
     fi
-    if [ "$p" != "$default_provider" ] && ! grep -qi "$p" "$BASELINE"; then
-      echo "$agent is graded Tested but no recorded run names it"
+    if [ "$p" != "$default_provider" ] && ! recorded_run "$p" "$record"; then
+      echo "$agent is graded Tested but no recorded run names it (baseline.md needs a run header with - **Provider:** \`$p\`)"
     fi
   done
 }
@@ -122,6 +139,26 @@ if grade_problems "$copy" | grep -q 'Codex is graded Tested but no recorded run 
   rs_ok "promoting Codex to Tested with no recorded run is caught"
 else
   rs_fail "promoting Codex to Tested with no recorded run was not caught"
+fi
+
+# A sentence that names Codex only to say it was never run is not a run.
+cp "$BASELINE" "$rs_dir/baseline-denial.md"
+printf '\nNo Codex run has been recorded. The codex provider has not been driven.\n' \
+  >> "$rs_dir/baseline-denial.md"
+if grade_problems "$copy" "$rs_dir/baseline-denial.md" \
+  | grep -q 'Codex is graded Tested but no recorded run names it'; then
+  rs_ok "a baseline that names Codex only to deny a run does not make it Tested"
+else
+  rs_fail "a baseline that names Codex only to deny a run let Codex be Tested"
+fi
+
+# And the guard is not simply refusing everything: a real run header passes.
+cp "$BASELINE" "$rs_dir/baseline-run.md"
+printf '\n## A Codex run\n\n- **Provider:** `codex`\n' >> "$rs_dir/baseline-run.md"
+if grade_problems "$copy" "$rs_dir/baseline-run.md" | grep -q 'Codex is graded Tested'; then
+  rs_fail "a recorded Codex run header was not accepted"
+else
+  rs_ok "a recorded Codex run header is accepted"
 fi
 
 sed -E 's/^\| Cursor \| Experimental \|$/| Cursor | Tested |/' "$COMPAT" > "$copy"
