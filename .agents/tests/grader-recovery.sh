@@ -74,6 +74,20 @@ grade truncated-midway.raw
   && [ -z "$(field "$WORK/out.json" held_note)" ] && r=yes || r=no
 check "a grading truncated in the middle is still refused" "$r"
 
+# The mirror case: a whole grading with one stray closing brace after it. A
+# scenario 49 grading was thrown away for exactly this.
+grade extra-brace.raw
+[ -z "$(field "$WORK/out.json" error)" ] \
+  && [ -n "$(field "$WORK/out.json" held_note)" ] \
+  && [ -n "$(field "$WORK/out.json" recovered)" ] && r=yes || r=no
+check "a grading with one extra brace is recovered and marked recovered" "$r"
+
+# Only braces come off. A grading followed by words is still refused, so this
+# cannot grow into a parser that takes the first object it finds.
+grade trailing-words.raw
+[ "$(field "$WORK/out.json" error)" = "grader output was not JSON" ] && r=yes || r=no
+check "a grading followed by other text is still refused" "$r"
+
 # A grader's own error object is passed through unchanged, not recovered.
 grade incomplete-transcript.raw
 [ "$(field "$WORK/out.json" error)" = "transcript is incomplete" ] \
