@@ -266,6 +266,16 @@ when it breaks, that is a service somebody runs and pays for, and the kit does
 not set one up." If the fit check already names who receives alerts, it does
 not repeat this caution. Explore privately gets neither check nor caution.
 
+When the tool will run on a server somebody else runs, the first launch needs
+an address, and the kit never contacts that server. So /ship writes a hosting
+request into the masterplan's "How it stays running" section and prints it for
+you. It names the repository and branch, the lane (private network or
+internet), the port, the names of the settings the tool needs, the folders that
+must survive a restart, and the path that shows the tool is healthy. It holds
+names only, never a password or key. You take it to whoever runs the server,
+and paste back what they send. On a later launch /ship reads the request back
+rather than asking again.
+
 After the first launch, shipping gets lighter: it re-checks what changed since the last ship and moves that over, rechecking the build path first if reliance or consequence has grown.
 
 ## 10. Autonomy: /implement auto and goal modes

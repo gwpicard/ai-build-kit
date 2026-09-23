@@ -86,6 +86,39 @@ it, then stop.
    If hosting uses a preview address, this is the moment work moves to the
    team's address. That move is what /ship means.
 
+   Where the tool will run on a server this session cannot reach, such as one
+   the team or a hosting companion runs, the address comes from whoever runs
+   that server. The kit never contacts that server. The person carries a short
+   request there by hand, and carries the answer back.
+
+   On a first launch, read the masterplan's "How it stays running" section.
+   When it holds no hosting request, write one there, filled from the project
+   itself rather than by asking the person:
+
+   ```
+   Hosting request
+   Repo:          <url>, branch <branch>
+   Lane:          internal (private network) | public (internet)
+   Port:          <port the tool listens on>
+   Env vars:      <names only>
+   Persist:       <paths that must survive a restart, or none>
+   Healthcheck:   <path, or none>
+   ```
+
+   Take the lane from the fit check: internal unless somebody outside the team
+   signs in or relies on it. Env vars carry names only; values are entered on
+   the server. Never write a value, key, password or token into the request.
+   Where the project does not say, write `none` rather than guess. Print the
+   same block in the reply, so the person can paste it, and say once: "This
+   tool needs a home. Take this request to whoever runs the server. Paste what
+   they send back here, and I will record it for the next /ship." When the
+   answer comes back, record its address and names under the request, and
+   leave out any secret value it carries.
+
+   On a later launch, read the recorded hosting request back instead of asking
+   again. Where the project has changed a field since, update that line from
+   the project and print the request again for the person to carry.
+
 ### Build with care
 
 Separate the work into what is outside every named area and what is inside
@@ -137,8 +170,10 @@ Applies only once Build and run it, or Build with care outside its named
 areas or in an area whose caution is done or accepted, has actually gone live
 at least once. Lighter from
 then on: re-run the evidence for what changed since the last ship, and move
-that over. If reliance, data sensitivity, or consequence has grown since the
-build path was last checked, rerun the fit check before shipping further.
+that over. The hosting request recorded at the first launch still holds, and
+step 4 says how to read it. If reliance, data sensitivity, or consequence has
+grown since the build path was last checked, rerun the fit check before
+shipping further.
 
 ## Done when
 

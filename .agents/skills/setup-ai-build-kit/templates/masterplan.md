@@ -74,7 +74,12 @@ that changes the build path. -->
 ## How it stays running
 
 <!-- Optional for live tools. Services, alerts, backup, billing owner, access
-owner, and manual fallback. Do not copy credentials here. -->
+owner, and manual fallback. Do not copy credentials here.
+
+Where the tool runs on a server somebody else runs, /ship writes a hosting
+request here on the first launch: repo and branch, lane, port, env var names,
+persisted paths and health check path. Names only, never a value. What comes
+back from the server goes under it. Later launches read it back. -->
 
 ## Out of scope
 
