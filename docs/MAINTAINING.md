@@ -538,7 +538,16 @@ written down.
 
 Work still merges into `main`, and `main` is still the branch a contributor
 targets. What changed is that the branch installers read is no longer the
-branch the work happens on. A project installing between two releases used to
+branch the work happens on.
+
+Because `stable` is the default, GitHub fills it in as the base of a new pull
+request, and so does `gh pr create`. Open one with `gh pr create --base main`.
+A version stamp once went in without `--base`, merged into `stable`, and
+stopped the next release from moving the branch until a person turned its
+force-push rule off by hand. The `pull request base` check now goes red on a
+pull request aimed at `stable` and says how to change it. It stays off the
+required list: a required check on `stable` would refuse the release job's
+update in the same way a pull-request rule does. A project installing between two releases used to
 receive the label of one release with the contents of another, and `/maintain`
 told it that it was up to date. Now it receives the release. `/maintain` reads
 the project's own version against
