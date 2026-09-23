@@ -586,6 +586,15 @@ attribution line, not the word.
   that keeps prose about Claude, Cursor and Gemini intact. A hook that went
   after the word rather than the attribution line would gut most of the messages
   in this repository, and nothing would say so until the history was unreadable.
+- `.agents/tests/hosting-request.sh` guards the hosting request `/ship`
+  writes on a first launch, for a tool that runs on a server somebody else
+  runs. The person carries it there by hand, because the kit never contacts
+  that server. It holds the six fields, the rule that the request carries
+  names and never a value, and that a later launch reads it back rather than
+  asking again, printing it anew only when the project changed a field. It
+  also holds that the skills and the masterplan template name no hosting
+  product, since the kit does not tie its instructions to a tool it does not
+  control. The README may name one, as one option.
 - The checks that guard a rule written as prose share
   `.agents/tests/lib/rule-shape.sh`: declare the rules, and it asserts each one
   and proves it is load-bearing by removing it and requiring the check to fail.

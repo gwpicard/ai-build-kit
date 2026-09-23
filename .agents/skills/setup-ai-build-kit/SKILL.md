@@ -352,7 +352,8 @@ does that work for a living owns a different design and has said so on the
 record. Use references/manual-setup.md for any
 step only a human can complete. If hosting is needed, arrange it so day-to-day
 pushes land at a preview address and only /ship changes the address the team
-uses.
+uses. Where a hosting companion or whoever runs the server will host it, /ship
+writes the hosting request on the first launch, and the person takes it there.
 
 Choose routine technical parts quietly. Record run and check commands and any
 non-standard conventions under AGENTS.md's stack section, keeping its content

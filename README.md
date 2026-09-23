@@ -249,6 +249,18 @@ and never a pull request. Keys and passwords live in `.env`, which Git ignores.
 Anything that would publish or share your work is explained first and needs your
 approval.
 
+**Where does the tool run once it is built?**
+Wherever you host it. The kit builds and checks the tool, and it does not host
+it. On the first launch, `/ship` writes a short hosting request into the
+masterplan: where the code lives, which port it uses, the names of the settings
+it needs, and what must survive a restart. You take that request to whoever runs
+your server. A team that runs its own server on [Coolify](https://coolify.io)
+can install a companion kit there, such as
+[coolify-devops](https://github.com/KasperHonore/coolify-devops), which turns
+that request into a running address on the team's private network or on the
+internet. It is a separate install on the server, made by somebody else, and
+not part of this kit.
+
 **What does it cost?**
 The kit is free. Building with it needs an agent subscription, which is the real
 running cost, and accounts with services that mostly start free. `/maintain`
