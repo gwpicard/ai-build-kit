@@ -147,7 +147,12 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
     removable content to fill the example. Cut nothing without the person's
     yes. A no leaves the file intact and the visit carries on. If the file is
     short and carries none of that content, say nothing.
-14. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
+14. On every build path, load `references/stale-branches.md` and list the
+    branches whose work is already in the default branch, each with the
+    command that removes it. List this computer and GitHub separately. Keep
+    the ones Git confirms apart from the ones only GitHub records as merged.
+    Never remove a branch. When no branch qualifies, say nothing.
+15. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
     today's date on the `last-light-pass` line, written as YYYY-MM-DD. If that
     file is missing, create it with a `founded` line holding the date
     masterplan.md was first saved, then the two pass lines. If the project has

@@ -359,6 +359,14 @@ trim if the file reaches 200, or contains a folder layout, dependency list,
 architecture overview or style rule an automatic check could enforce. You see
 one line saying how long it is and what can go. Nothing is cut without your yes.
 
+/maintain also lists old branches whose work is already in your main branch,
+on your computer and on GitHub, each with the command that removes it. It
+keeps two kinds apart: the ones Git can confirm, and the ones only GitHub
+records as merged. The second kind comes from a pull request that combined its
+changes into one, which Git cannot check. It never removes a branch itself,
+and it cannot tell whether somebody still plans to use one. When there are
+none, you hear nothing.
+
 /maintain writes the date of each visit into the project. When more than a month
 has gone by, opening a session says so and names /maintain. A tool that cannot
 run anything when a session opens says it when you type /what-now instead.

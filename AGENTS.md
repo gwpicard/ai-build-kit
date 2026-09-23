@@ -458,6 +458,16 @@ attribution line, not the word.
   retired skill folder only by the kit's former names and absence from the
   lockfile. It holds that the step is run from the monthly pass, removes on
   approval, and that WORKFLOW.md says so.
+- `.agents/tests/stale-branches.sh` guards the monthly step that lists old
+  branches whose work already reached the default branch. It holds two rules
+  hardest. The step never removes a branch, and gives the person the command
+  instead. And it keeps the branches Git confirms apart from the ones only
+  GitHub records as merged, because a pull request merged by squashing leaves
+  the branch's own commits outside the default branch, so Git's own check
+  misses it and only the forceful command removes it. It also holds what is
+  never listed, including a branch the project says stays, without the kit
+  guessing one by its name, and that a branch with work added after its pull
+  request merged stays off both lists.
 - `.agents/tests/sync-saves-like-a-piece.sh` guards how /sync saves what it
   corrects. Every skill that changes the records said how it saves them, and
   sync did not: it corrected the pieces, the changelog and the masterplan and
