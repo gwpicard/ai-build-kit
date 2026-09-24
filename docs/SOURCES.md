@@ -38,6 +38,7 @@ Nobody named here was asked first, and nobody named here has endorsed the kit.
 | [Beads' discovered work](https://github.com/gastownhall/beads/blob/main/docs/reference/faq.md) and [stale work query](https://github.com/gastownhall/beads/blob/main/docs/cli-reference/stale.md) | Linking a new piece to the build that surfaced it, and asking once about open work untouched for a month |
 | [Agentless](https://dl.acm.org/doi/full/10.1145/3715754) | Reproducing a fault before repair and using that reproduction to judge the fix |
 | [LLM-guided bisection](https://arxiv.org/abs/2511.18854) | Using a tight reproduction to find the saved change where working behaviour broke |
+| [Boring Stack](https://boringstack.org/) | Building on a small set of plain, proven defaults, which led to the recipe: a stack the kit can prove, offered from a short menu rather than whatever was picked |
 | [Cursor Debug Mode](https://cursor.com/blog/debug-mode) | Naming and removing temporary repair instrumentation before the work is saved, and using what the running tool recorded to reproduce a fault |
 | [OneUptime's structured logging convention](https://oneuptime.com/blog/post/2026-01-25-structured-logging-best-practices/view) | Recording each request's events in a consistent form, linked by one identifier, while leaving sensitive contents out |
 | [SWE-Doctor](https://arxiv.org/abs/2607.00990) | Reading evidence from a running tool to find the failed step and reproduce a fault |

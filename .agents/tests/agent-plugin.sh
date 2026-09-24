@@ -226,6 +226,8 @@ for supporting in \
   setup-ai-build-kit/templates/foundation/AGENTS.md \
   setup-ai-build-kit/references/fit-check.md \
   ship/templates/handover.md \
+  ship/templates/recipe.md \
+  ship/references/recipe-format.md \
   implement/references/running-longer.md \
   change-triage/references/source-check.md; do
   [ -f "$SKILLS_DIR/$supporting" ] || \
