@@ -534,12 +534,13 @@ PATHREFS
 pass "markdown links and skill/reference/template paths resolve"
 
 # Bare relative references written inside skill files (references/foo.md,
-# templates/foo.md, or the cross-skill sibling form other-skill/references/foo.md)
+# templates/foo.md, recipes/foo.md, or the cross-skill sibling form
+# other-skill/references/foo.md, other-skill/recipes/foo.md)
 # resolve relative to (a) the containing file's own directory, or (b) the
 # skills root, whichever exists. The check above only catches references
 # already spelled out with a full .agents/... path prefix.
 skillmdfiles=$(find "$SKILLS" -name '*.md' | sort)
-relpat='(references|templates)/[A-Za-z0-9_./-]+[.]md|[a-z][a-z-]*/references/[A-Za-z0-9_./-]+[.]md'
+relpat='(references|templates|recipes)/[A-Za-z0-9_./-]+[.]md|[a-z][a-z-]*/(references|templates|recipes)/[A-Za-z0-9_./-]+[.]md'
 qualifiedpat='[.]agents/(skills|tests|guard|hooks|tools)/[A-Za-z0-9_./-]+[.](md|sh)'
 relhits=$(printf '%s\n' "$skillmdfiles" | while IFS= read -r f; do
   [ -n "$f" ] || continue
@@ -565,7 +566,52 @@ while IFS=: read -r reffile lineno relpath; do
 done <<RELHITS
 $relhits
 RELHITS
-pass "bare relative skill references (references/*.md, templates/*.md, sibling-skill form) resolve"
+pass "bare relative skill references (references/*.md, templates/*.md, recipes/*.md, sibling-skill form) resolve"
+
+# Recipes. A recipe is one build stack paired with one place to run it, and
+# ship/references/recipe-format.md says what one must hold. The folder is the
+# menu, so a file in it is offered to somebody founding a project. Each one
+# must have the shape the format asks for and carry real dates. Each must also
+# have its own rehearsal that sources the rule-shape helper and names the
+# recipe file, because a recipe joins the menu only once offline rehearsals
+# guard its rules, and a rehearsal that only exits cleanly guards nothing. The
+# blank is held to the same shape so it cannot drift from the format it is
+# copied from. Shared parts sit in recipes/parts/, are held to the lines a
+# section carries, and are never read as menu entries: the glob below takes
+# only the files directly in recipes/. The folder may be empty, since the
+# format came before the first recipe.
+recipe_checker="$ROOT/.agents/tools/check-recipes.sh"
+recipe_blank="$SKILLS/ship/templates/recipe.md"
+recipe_ok=1
+if [ ! -x "$recipe_checker" ]; then
+  fail ".agents/tools/check-recipes.sh is missing or not executable"
+  recipe_ok=0
+else
+  if ! "$recipe_checker" --template "$recipe_blank" >&2; then
+    fail "$recipe_blank: the recipe blank does not have the shape the format asks for"
+    recipe_ok=0
+  fi
+  for recipe_part in "$SKILLS"/ship/recipes/parts/*.md; do
+    [ -f "$recipe_part" ] || continue
+    if ! "$recipe_checker" --part "$recipe_part" >&2; then
+      fail "$recipe_part: the shared part does not carry the lines a section needs"
+      recipe_ok=0
+    fi
+  done
+  for recipe in "$SKILLS"/ship/recipes/*.md; do
+    [ -f "$recipe" ] || continue
+    recipe_name=$(basename "$recipe" .md)
+    if ! "$recipe_checker" "$recipe" >&2; then
+      fail "$recipe: the recipe does not have the shape the format asks for"
+      recipe_ok=0
+    fi
+    if ! "$recipe_checker" --rehearsal "$recipe" "$ROOT/.agents/tests/recipe-$recipe_name.sh" >&2; then
+      fail "$recipe: no rehearsal in .agents/tests/recipe-$recipe_name.sh guards it"
+      recipe_ok=0
+    fi
+  done
+fi
+[ "$recipe_ok" -eq 0 ] || pass "every recipe, shared part and the recipe blank have the shape the format asks for"
 
 # team.md must not exist and must not be referenced anywhere tracked.
 if [ -e "$SKILLS/setup-ai-build-kit/templates/team.md" ]; then

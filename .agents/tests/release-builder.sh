@@ -51,6 +51,8 @@ for required in \
   .agents/skills/setup-ai-build-kit/templates/foundation/session-start.sh \
   .agents/skills/setup-ai-build-kit/templates/maintenance-record \
   .agents/skills/screen-check/SKILL.md \
+  .agents/skills/ship/references/recipe-format.md \
+  .agents/skills/ship/templates/recipe.md \
   .agents/skills/maintain/VERSION \
   .claude-plugin/plugin.json \
   .claude-plugin/marketplace.json \

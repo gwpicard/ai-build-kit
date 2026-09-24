@@ -190,6 +190,15 @@ at. The kit reads the work it produced and reports in plain words, and it may ge
 better at that over time. What it will not do is claim there is a service behind
 it.
 
+The one exception is a recipe: one build stack paired with one place to run it.
+A recipe names services somebody else runs, because the person's tool will run
+on them. The kit still runs none of them, and the person holds the accounts. What
+the kit holds is a written account of how that pair handles the eight things a
+live tool needs, from preview to health, each with a way to check it, and the
+record of one real run that proved it. A service a tool runs on, meaning its
+hosting, its data or its deploy, is named inside recipe files and the README,
+and nowhere else in the kit.
+
 ## Deciding what to add
 
 New techniques appear constantly: repositories, articles, tool features, client
@@ -311,6 +320,24 @@ a second way to be blocked is the outcome: a part shares the parent's outcome,
 while a blocked-by piece is a different outcome that must come first. Without that
 line, a piece would have two kinds of not-ready and /implement would not know
 which it was looking at, which is the mistake an earlier investigation warned about.
+
+Recipes, added. A recipe pairs a build stack with a place to run it, and for
+each part of a launch it says how that part is checked and who runs the check:
+the kit, a companion or the person with the result read back, or a person
+looking. It fits under /setup-ai-build-kit, which offers a short menu with one
+recommended, and under /ship, which works through the recipe's checks. The person sees the menu once, at
+founding, and after that a launch that says what it checked. The sentence is
+"this is a stack the kit has run for real, so it can check your launch as well
+as warn about it". When a check fails they type /fix. A person who wants their
+own stack says so, and the kit carries on with fewer promises.
+
+They never need to learn how the place they run on does a rollback or where its
+backups live, because the recipe carries that. It applies only to a project
+that chose a recipe, and one on its own stack works as before. Recipes make the
+kit bigger, and that should be said plainly. What they take away is the
+question /ship used to put to every project, how a backup, a rollback and a
+restore would work, which a person on a recipe no longer has to invent. The menu
+stays short because a pair joins it only after a real run.
 
 ## Keeping it honest
 
