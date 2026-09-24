@@ -26,15 +26,20 @@ repository.
 - `.agents/skills/` is the single source of truth for the nine commands and
   five internal background skills. Nothing else belongs in it.
 - `.agents/maintainer-skills/` holds the skills only the kit's own maintainers
-  use. There are two: the Humanizer writing skill, and `review-issues`, which
+  use. There are three: the Humanizer writing skill; `review-issues`, which
   reads the open issues, groups them by theme and names the next piece worth
-  picking up. They sit there rather than beside the fourteen because a shared
+  picking up; and `stack-research`, which reads what changed upstream for the
+  products the recipes name and writes a dated note proposing changes, or
+  none. They sit there rather than beside the fourteen because a shared
   skills installer reads `.agents/skills/` and `.claude/skills/` and offers
   whatever it finds in either, so a folder in one of those is a skill somebody
   installs. Being outside both is the whole boundary, and a maintainer skill
   gets no generated adapter for the same reason. Nothing offers one as a
   command, so load it by its path. To decide what to work on next, load
-  `.agents/maintainer-skills/review-issues/SKILL.md`.
+  `.agents/maintainer-skills/review-issues/SKILL.md`. To check the recipes
+  against their products before a release, load
+  `.agents/maintainer-skills/stack-research/SKILL.md`. Its note goes to
+  `.agents/tmp/stack-research/`, which git ignores, so it never ships.
 - `.agents/migration/` holds the one-off tooling for replacing the public
   repository with one whose history carries no AI attribution. It is not part of
   the kit, it gets no adapter, and it reaches nobody who installs the kit. It
@@ -607,6 +612,17 @@ attribution line, not the word.
   written, and the second skill arrived with two of the three not looking.
   The proof that reading the folder catches a copy is the `review-issues-leak`
   mutation in `mutate.sh`, which plants one and asks all three.
+- `.agents/tests/stack-research.sh` guards the maintainer's read of what
+  changed upstream for the products the recipes name. That read goes wrong
+  quietly: it edits a recipe it was meant to read, moves a last-checked date
+  nobody agreed to, proposes a change to how a section works without saying the
+  recipe then needs a new real run, or cites a summary site as if it were the
+  product's own page. So it holds that the skill changes nothing without the
+  maintainer, lists every recipe and part with "no change" as an answer, flags
+  every `How it works:` change as needing a real run, and treats a secondary
+  site as a pointer only. It also holds where the note goes, a folder git
+  ignores and the release allowlist never carries, and that AGENTS.md says
+  where to load the skill from.
 - `.agents/tests/stable-is-the-channel.sh` guards the branch the world installs
   from and the visit that names a project's version. Two of the three
   installation routes clone with no ref and take the default branch, which was
