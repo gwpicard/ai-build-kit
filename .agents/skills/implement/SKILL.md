@@ -46,7 +46,8 @@ subject labels rather than reclassifying it; the classification was settled in
 
 A piece labelled `blocked` needs attention before it counts as buildable again:
 one safely prepared and stopped at a recorded condition stays skipped until that
-condition is met, or until the person accepts the risk on the record; one parked
+condition is met, or until the person carries on after the risk notice and the
+acceptance is recorded; one parked
 after repeated failure (references/running-longer.md) needs routing back to
 `/shape` first, for another look.
 

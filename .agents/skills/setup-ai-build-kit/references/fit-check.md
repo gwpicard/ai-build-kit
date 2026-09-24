@@ -181,8 +181,8 @@ different job from the one a named reviewer was named for, and the two are not
 interchangeable because they happen to share the word review.
 
 The kit does not decide it has satisfied this. Either the named person has looked
-and that is recorded, or they have not and the person accepts the risk on the
-record. Saying an in-project method already covers it is the recast this rule
+and that is recorded, or they have not and the person carries on past the
+notice, with the acceptance on the record. Saying an in-project method already covers it is the recast this rule
 exists to refuse, and it is the form the recast actually takes: not a refusal to
 review, but a redefinition of what the review was.
 

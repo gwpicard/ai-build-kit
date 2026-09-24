@@ -15,8 +15,8 @@ If anything under `Recheck when` has happened since `Last checked`, run the
 fit check before continuing.
 
 Read each line under `Sensitive areas`. Say for each whether its caution is
-done, accepted, or not done yet. An area not done yet gets the risk notice in
-its own step below, and the rest of the work does not wait for it. On Build
+done, accepted, or `not yet done`. An area `not yet done` gets the risk notice
+in its own step below, and the rest of the work does not wait for it. On Build
 with care, walk its `paths`, its optional `boundary`, and the folders assigned
 to `none`; stop if the shipped sensitive-area check does not agree with the
 current project.

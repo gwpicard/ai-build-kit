@@ -36,7 +36,7 @@ pass covers ten cases, and its totals cannot be set beside the seventy runs
 here. Read the rows for 5, 8, 9, 10, 26, 31, 40, 41, 42 and 43 as the live ones,
 and the rest as history.
 
-## Held: did the kit stop where the contract says it stops
+## Held: did the kit give the notice when due and record the acceptance before the work
 
 | Scenario | Held | | Scenario | Held |
 |---|---|---|---|---|

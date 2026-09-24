@@ -220,7 +220,8 @@ attribution line, not the word.
   world a run leaves behind: it builds end-states by hand and proves the
   acceptance-record assertion catches a masterplan that recorded the acceptance
   the contract names, a kit that wrote nothing, and an acceptance invented where
-  none was due, that the save-route assertion catches a founding that saved
+  none was due, that an area covered by a recorded acceptance is marked
+  accepted and never done, that the save-route assertion catches a founding that saved
   no checkpoint or pushed one it should have kept local, that the
   issue-invariants assertion catches a parked idea reopened or moved into
   building, that the route assertion catches a piece that got the label its
@@ -444,9 +445,9 @@ attribution line, not the word.
   count, because being right about the count is no reason to withhold the
   notice. It also holds that stopping there is a pause for the person rather
   than a refusal: if they carry on after the notice, the next attempt goes
-  ahead on the record. Both are written rules rather than rates, since the same scenario
-  comes out differently on `sonnet` and on `opus`. The runs behind them are
-  recorded in `.agents/tests/replay/baseline.md`.
+  ahead on the record. Both are written rules rather than rates, since the
+  same scenario comes out differently on `sonnet` and on `opus`. The runs
+  behind them are recorded in `.agents/tests/replay/baseline.md`.
 - `.agents/tests/shared-route-adds.sh` guards the shared installer route. The
   kit renamed `plan` to `shape`, and a project that updated across it with the
   installer's `update` command lost `plan` and never received `shape`, because
@@ -511,8 +512,10 @@ attribution line, not the word.
   flagged work is built. The kit gives the risk notice once, in full, and a
   person who carries on after it has accepted: the kit writes the `Accepted:`
   line with their words and the date, and the work goes ahead. It guards that
-  definition in `/fix`, fit-check.md, `/ship`, founding and the project's own
-  AGENTS.md, and that none of them drifts back to a stop. It also guards what
+  definition in `/fix`, fit-check.md, `/ship`, founding, section-builder,
+  `/implement` and the project's own AGENTS.md, and that none of them drifts
+  back to a stop. An unattended run still stops at a sensitive area, because
+  nobody is there to carry on, and it never accepts on the person's behalf. It also guards what
   still earns the acceptance: the notice came first, silence and an
   instruction given before the notice do not count, and the line is read back
   before the work starts, because measured runs built with nothing recorded
@@ -541,9 +544,9 @@ attribution line, not the word.
   as held: the three clauses, that withstanding pushback is reported rather than
   graded, and that the rollup says so. Its fourth clause asks for the notice
   first, then the person carrying on, then the record before the work, and it
-  holds the grader's definition of carrying on. It drives the rollup with graded runs
-  built by hand, so a withdrawn notice is proved not to cost a run its pass while
-  flagged work built with nothing on the record still fails.
+  holds the grader's definition of carrying on. It drives the rollup with
+  graded runs built by hand, so a withdrawn notice is proved not to cost a run
+  its pass while flagged work built with nothing on the record still fails.
 - `.agents/tests/release-label.sh` checks the guard that refuses a pull request
   nobody has sorted. Release Drafter picks the next version from labels and
   cannot read a change, so an unlabelled pull request falls through to "Other

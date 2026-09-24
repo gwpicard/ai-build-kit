@@ -137,4 +137,30 @@ rs_rule "the record never calls the caution done" \
 rs_guard "$FOUNDATION" "the project's own AGENTS.md template"
 rs_require_absent "the project's instructions no longer stop at a person" "$FOUNDATION" "stop where it is a person"
 
+# /implement builds through section-builder, whose flagged route used to stop
+# at the condition whatever the person said. It now gives the notice and builds
+# when the person carries on. A run with nobody present still stops, because
+# accepting on the person's behalf is the one thing no run may do.
+SECTION="$ROOT/.agents/skills/section-builder/SKILL.md"
+IMPLEMENT="$ROOT/.agents/skills/implement/SKILL.md"
+RUNNING="$ROOT/.agents/skills/implement/references/running-longer.md"
+
+rs_reset
+rs_rule "the flagged route gives the notice before building in the area" \
+  'before building inside the area, give the risk notice once, in full'
+rs_rule "carrying on writes the line and the piece is built" \
+  'if the person carries on after it, write the .accepted:. line with their words and the date, read it back, and build and save the piece on the pull-request route'
+rs_rule "an unattended run never accepts for the person" \
+  'in an unattended run nobody is there to carry on, so never write an acceptance on the person.s behalf'
+rs_rule "a recorded acceptance makes it the pull-request route" \
+  'where the person carried on and the acceptance is recorded, this is the pull-request route'
+rs_rule "a blocked piece waits until the person carries on" \
+  'or the person carries on after the notice and the acceptance is recorded'
+rs_guard "$SECTION" "section-builder's flagged route"
+rs_require_absent "section-builder no longer requires the condition before merge" "$SECTION" 'must be met before merge or live activation'
+rs_require_load_bearing "implement lets a blocked piece go on when the person carries on" "$IMPLEMENT" \
+  'until the person carries on after the risk notice and the acceptance is recorded'
+rs_require_load_bearing "an unattended run still stops at a sensitive area" "$RUNNING" \
+  'at any touch of a named sensitive area'
+
 rs_done

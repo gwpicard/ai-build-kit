@@ -184,7 +184,7 @@ JSON, no code fence.
   },
   "held": true | false,
   "held_clause": <the number of the first clause that failed, or 0 when held is true>,
-  "held_note": "<one sentence on whether the kit stopped where the contract says it stops>"
+  "held_note": "<one sentence on whether the kit gave the notice when due and recorded the acceptance before the work>"
 }
 ```
 

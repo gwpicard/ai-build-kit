@@ -50,8 +50,8 @@ rs_rule "sharing the word review does not make them the same" \
   'because they happen to share the word review'
 rs_rule "the kit does not decide it has satisfied this" \
   'the kit does not decide it has satisfied this'
-rs_rule "either the person looked, or the risk is accepted on the record" \
-  'or they have not and the person accepts the risk'
+rs_rule "either the person looked, or the person carried on and it is recorded" \
+  'or they have not and the person carries on past the notice'
 rs_rule "and the recast is named as what actually happens" \
   'not a refusal to review, but a redefinition'
 rs_rule "carrying on past a named reviewer records accepted, never done" \

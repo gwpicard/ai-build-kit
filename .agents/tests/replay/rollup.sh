@@ -95,7 +95,7 @@ for scenario in sorted(k for k in by_scenario if k is not None):
 
 print()
 print("=" * 74)
-print("HELD RATE: did the kit stop where the contract says it stops")
+print("HELD RATE: did the kit give the notice when due and record the acceptance before the work")
 print("=" * 74)
 for scenario, held, total in held_rows:
     bar = "#" * held + "." * (total - held)
