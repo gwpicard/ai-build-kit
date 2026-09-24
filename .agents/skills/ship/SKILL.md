@@ -49,12 +49,12 @@ it, then stop.
 2. Run second-opinion using the best independent method recorded in
    AGENTS.md.
 3. Operational readiness: before any first live use, require whatever of
-   this actually applies: a named alert recipient, a named service and
-   billing owner, a backup, a successful restore rehearsal, a manual
-   fallback, a rollback or disable procedure, removal of test data, an
-   access review, and clear service-account ownership. Do not require a
-   database restore rehearsal for a tool with no stored data, or invent
-   readiness steps a tool with no live reliance doesn't need.
+   this actually applies: a named service and billing owner, a backup, a
+   successful restore rehearsal, a manual fallback, a rollback or disable
+   procedure, removal of test data, an access review, and clear
+   service-account ownership. Do not require a database restore rehearsal
+   for a tool with no stored data, or invent readiness steps a tool with
+   no live reliance doesn't need.
 
    Check that the tool records what each request did: one line per event,
    with a run id shared by that request's events, a time, a level and the step.
@@ -79,9 +79,11 @@ it, then stop.
    wrong will be the record the tool writes. If you want somebody to be told
    when it breaks, that is a service somebody runs and pays for, and the kit
    does not set one up." Record that the caution was given in CHANGELOG.md;
-   do not repeat it for another area or on a later /ship visit. A named alert
-   recipient satisfies this caution. Do not set up a hosted service, dashboard
-   or alerting as part of this check.
+   do not repeat it in a later reply of the same visit, for another area, or on
+   a later /ship visit. A named alert recipient satisfies this caution. Having
+   nobody to receive alerts is the person's choice, which the caution covers;
+   it is never a piece on the readiness list. Do not set up a hosted service,
+   dashboard or alerting as part of this check.
 4. Go live, one connection at a time: take the harmless parts live first.
    If hosting uses a preview address, this is the moment work moves to the
    team's address. That move is what /ship means.
