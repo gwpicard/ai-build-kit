@@ -15,8 +15,8 @@ It answers one question. Given what changed upstream since each recipe was last
 checked, which recipes need a change, and is there a stack worth a recipe of its
 own.
 
-The read proposes and the maintainer decides, and any change it leads to is made as ordinary work on a
-branch, through a pull request.
+The read proposes and the maintainer decides. Any change it leads to is made as
+ordinary work on a branch, through a pull request.
 
 ## Read the recipes first
 
@@ -63,8 +63,9 @@ For the products the first recipes name:
 - Coolify: the releases at <https://github.com/coollabsio/coolify/releases> and
   the documentation at <https://coolify.io/docs>.
 - coolify-devops at <https://github.com/KasperHonore/coolify-devops>: its
-  CHANGELOG, and the fields its `host` skill expects in a hosting request.
-  Compare those fields with the kit's hosting request, field by field. The two
+  CHANGELOG, and the fields its `host` skill expects in a hosting request. The
+  fields are in `skills/host/SKILL.md`, in the section "AI Build Kit: the
+  hosting request is the report". Compare those fields with the kit's hosting request, field by field. The two
   have drifted apart before, and a request the server's side cannot read leaves
   a first launch waiting on an answer that never comes.
 
