@@ -396,10 +396,11 @@ Nothing in the released kit names a project, a company, or a person;
 repository in a gate, so none of them runs in somebody's fork, and none of those
 workflows ships.
 
-Products are named nowhere either, except inside a recipe file under
+A service a tool runs on, meaning its hosting, its data or its deploy, is
+named nowhere either, except inside a recipe file under
 `.agents/skills/ship/recipes/` and in the README. A recipe pairs a build stack
-with a place to run it, so naming the products is its whole job. A skill that
-needs to know how a product behaves reads the project's recipe, which keeps
+with a place to run it, so naming those services is its whole job. A skill that
+needs to know how one behaves reads the project's recipe, which keeps
 every skill the same whichever recipe a project runs on. `hosting-request.sh`
 still refuses a hosting product's name in the skills and the masterplan
 template, and that stays true once recipes exist.
@@ -687,7 +688,7 @@ home and every other mention is a link.
   source contributed. It names a borrowed idea in the kit's own vocabulary and
   links to that idea's owner rather than explaining it again.
 - `.agents/skills/ship/recipes/`: one file for each recipe, and the only place
-  outside the README that names a product. What a recipe must hold, and what
+  outside the README that names a service a tool runs on. What a recipe must hold, and what
   proves it, belongs to `.agents/skills/ship/references/recipe-format.md`. A
   project records which recipe it runs on in its own AGENTS.md, in the stack
   section.

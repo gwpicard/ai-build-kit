@@ -195,8 +195,9 @@ A recipe names services somebody else runs, because the person's tool will run
 on them. The kit still runs none of them, and the person holds the accounts. What
 the kit holds is a written account of how that pair handles the eight things a
 live tool needs, from preview to health, each with a way to check it, and the
-record of one real run that proved it. Product names appear inside recipe files
-and the README, and nowhere else in the kit.
+record of one real run that proved it. A service a tool runs on, meaning its
+hosting, its data or its deploy, is named inside recipe files and the README,
+and nowhere else in the kit.
 
 ## Deciding what to add
 
@@ -320,10 +321,11 @@ while a blocked-by piece is a different outcome that must come first. Without th
 line, a piece would have two kinds of not-ready and /implement would not know
 which it was looking at, which is the mistake an earlier investigation warned about.
 
-Recipes, added. A recipe pairs a build stack with a place to run it, and the kit
-knows that pair well enough to check it by machine. It fits under
-/setup-ai-build-kit, which offers a short menu with one recommended, and under
-/ship, which runs the recipe's checks. The person sees the menu once, at
+Recipes, added. A recipe pairs a build stack with a place to run it, and for
+each part of a launch it says how that part is checked and who runs the check:
+the kit, a companion or the person with the result read back, or a person
+looking. It fits under /setup-ai-build-kit, which offers a short menu with one
+recommended, and under /ship, which works through the recipe's checks. The person sees the menu once, at
 founding, and after that a launch that says what it checked. The sentence is
 "this is a stack the kit has run for real, so it can check your launch as well
 as warn about it". When a check fails they type /fix. A person who wants their

@@ -644,14 +644,17 @@ attribution line, not the word.
   control. The README may name one, as one option.
 - `.agents/tests/recipes.sh` guards the recipe format. A recipe pairs a build
   stack with a place to run it, and it is the only place outside the README
-  allowed to name a product, so the rules around that permission are the ones
-  worth holding: two places are two recipes, each of the eight sections says
-  how it is checked, a recipe joins the menu only after rehearsals and one
-  recorded real run, and there is no draft state because the folder is the
+  allowed to name a service a tool runs on, so the rules around that permission
+  are the ones worth holding: two places are two recipes, each of the eight
+  sections says how it is checked and who runs the check, a shared part is
+  linked rather than copied, a recipe joins the menu only after rehearsals and
+  one recorded real run, and there is no draft state because the folder is the
   menu. It also runs `.agents/tools/check-recipes.sh`, which the validator runs
-  on every recipe and on the blank, against a recipe filled in from the blank
-  and against copies with one part taken away at a time. The validator wants a
-  rehearsal named `recipe-<name>.sh` for every recipe in the folder.
+  on every recipe, every shared part and the blank, against a recipe filled in
+  from the blank and against copies with one part taken away at a time. The
+  validator wants a rehearsal named `recipe-<name>.sh` for every recipe, and
+  refuses one that does not source the rule-shape helper or name its recipe
+  file. This check shows the tool refusing both.
 - `.agents/tests/compatibility-grades.sh` guards the grade each coding agent
   carries in `docs/COMPATIBILITY.md`. The page once named four agents and
   presented them alike, while the replay harness had recorded runs on only
