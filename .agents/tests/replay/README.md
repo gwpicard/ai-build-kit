@@ -197,6 +197,16 @@ transcript notes it under the turn as `(before this turn the person merged:
 #1)`, and the grader is told what that note means. A filler merges nothing.
 `../gated-turns.sh` drives the merge against a throwaway project.
 
+## A starting state the harness prepares
+
+Some cases need a project in a state the kit should refuse to create. Scenario
+49 needs standing instructions past their ceiling, padded with a folder
+layout, and the kit's own `AGENTS.md` forbids writing one. A case names a
+script with `# prepare: <name>`, and the harness runs `prepare/<name>.sh` on the
+project before its first commit, so the state is part of the project the
+conversation starts from. `../gated-turns.sh` runs the script on a throwaway
+project.
+
 ## The replayed scenarios
 
 The first slice covers the places the kit promises to name a risk before

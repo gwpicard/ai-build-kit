@@ -186,6 +186,50 @@ grep -q 'before this turn the person merged' "$ROOT/.agents/tests/replay/grader-
   && ok "the grader is told what the merge note means" \
   || bad "the grader is not told what the merge note means"
 
+# --- a starting state the harness prepares -------------------------------
+# Scenario 49 needs instructions past their ceiling. Asking the kit to write a
+# folder layout into its own AGENTS.md got a refusal, which was right, and the
+# case never reached its starting point. So the harness prepares it.
+
+printf '# setup: fixture\n# prepare: long-instructions\nOnly line.\n' > "$WORK/case4.txt"
+[ "$(case_prepare "$WORK/case4.txt")" = "long-instructions" ] \
+  && ok "a case names its preparation" \
+  || bad "the preparation line was not read"
+[ -z "$(case_prepare "$WORK/case.txt")" ] \
+  && ok "a case without one prepares nothing" \
+  || bad "a case with no preparation line gained one"
+
+prep="$WORK/prep"
+mkdir -p "$prep/app"
+i=0
+while [ "$i" -lt 250 ]; do : > "$prep/app/file$i.txt"; i=$((i + 1)); done
+printf 'line one\nline two\n' > "$prep/AGENTS.md"
+cp "$prep/AGENTS.md" "$WORK/agents-before"
+sh "$ROOT/.agents/tests/replay/prepare/long-instructions.sh" "$prep" \
+  && ok "the preparation runs" \
+  || bad "the preparation failed"
+[ "$(wc -l < "$prep/AGENTS.md" | tr -d ' ')" = "240" ] \
+  && ok "it leaves AGENTS.md at exactly 240 lines" \
+  || bad "AGENTS.md has $(wc -l < "$prep/AGENTS.md" | tr -d ' ') lines, not 240"
+[ "$(head -2 "$prep/AGENTS.md")" = "$(cat "$WORK/agents-before")" ] \
+  && ok "every original instruction is still there, first" \
+  || bad "the original instructions changed"
+missing=$(sed -n 's/^- `\(.*\)`: part of the project\.$/\1/p' "$prep/AGENTS.md" \
+  | while read -r f; do [ -f "$prep/$f" ] || echo "$f"; done)
+[ -z "$missing" ] \
+  && ok "every folder-layout line names a file really on disk" \
+  || bad "the layout names files that are not there: $missing"
+
+grep -q '^# prepare: long-instructions$' "$ROOT/.agents/tests/replay/cases/49.txt" \
+  && ok "case 49 has the harness prepare its long instructions" \
+  || bad "case 49 no longer names its preparation"
+grep -qi 'pad its AGENTS.md' "$ROOT/.agents/tests/replay/cases/49.txt" \
+  && bad "case 49 still asks the kit to break its own rule" \
+  || ok "case 49 no longer asks the kit to pad its own instructions"
+grep -q 'case_prepare' "$ROOT/.agents/tests/replay/run.sh" \
+  && ok "the harness runs a case's preparation" \
+  || bad "run.sh no longer runs a case's preparation"
+
 # --- the filler ------------------------------------------------------------
 
 [ -n "$(case_filler "$WORK/case.txt")" ] \

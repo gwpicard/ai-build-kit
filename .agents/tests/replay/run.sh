@@ -121,6 +121,15 @@ run_once() {
     cp -R "$REPLAY_DIR/fixture/app" "$project/app"
     cat "$REPLAY_DIR/fixture/AGENTS-additions.md" >> "$project/AGENTS.md"
   fi
+  # A starting state no conversation should build, such as instructions past
+  # their ceiling, is written by the harness before the first commit.
+  prepare=$(case_prepare "$casefile")
+  if [ -n "$prepare" ]; then
+    sh "$REPLAY_DIR/prepare/$prepare.sh" "$project" || {
+      echo "  preparation '$prepare' failed for scenario $number" >&2
+      return 1
+    }
+  fi
 
   git -C "$project" init -q
   # A real remote, so the pull-request save route is reachable. It is a bare
