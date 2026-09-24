@@ -234,13 +234,13 @@ A human decides whether to merge, always; after a merge, everyone pulls main. Fl
 
 ## 8. Sensitive areas, and the risk notice
 
-Six areas count as sensitive, and the list is fixed: personal or sensitive data, money, sign-in and permissions, automatic action on people or other systems, irreplaceable live data, and regulated decisions. Each carries a default caution, which is what would normally prevent the harm: a person who did not build the tool reviews who can see what; a managed payment or sign-in service so the tool never holds card details or passwords; a person approves each automatic action until a live run has shown it right; a backup restored once and the change rehearsed on a copy; somebody qualified signs off a regulated rule. The build path's section names each area in your tool's own words, its caution, and whether the caution is done. Where the caution is a backup, a copy or a managed service, the kit does it. Where it is a person, the kit stops there until they have looked. It keeps building everywhere else while it waits.
+Six areas count as sensitive, and the list is fixed: personal or sensitive data, money, sign-in and permissions, automatic action on people or other systems, irreplaceable live data, and regulated decisions. Each carries a default caution, which is what would normally prevent the harm: a person who did not build the tool reviews who can see what; a managed payment or sign-in service so the tool never holds card details or passwords; a person approves each automatic action until a live run has shown it right; a backup restored once and the change rehearsed on a copy; somebody qualified signs off a regulated rule. The build path's section names each area in your tool's own words, its caution, and whether the caution is done. Where the caution is a backup, a copy or a managed service, the kit does it. Where it is a person, the kit tells you so once, in the risk notice below, and the choice of whether to wait for them is yours. It keeps building everywhere else either way.
 
-Before work in a named area goes ahead, you get a risk notice. It says who is exposed, what happens to them if it goes wrong, what would normally prevent that, and that the kit flags what it can recognise and will miss things. It names people rather than saying something is risky, because the exposure a tool creates usually lands on somebody else.
+Before work in a named area goes ahead, you get a risk notice. It comes once, in full, in one reply. It says who is exposed, what happens to them if it goes wrong, what would normally prevent that, what you can do, and that the kit flags what it can recognise and will miss things. It names people rather than saying something is risky, because the exposure a tool creates usually lands on somebody else.
 
-Then it is your call. You can accept the risk and have the thing built, or take it out of scope so the risk goes away. Nothing is refused either way.
+Then it is your call. You can have the caution done first, take the thing out of scope so the risk goes away, or carry on. Carrying on is accepting the risk: say go ahead in any words and the work goes ahead. Saying nothing is not carrying on. Nothing is refused and nothing stops you.
 
-An acceptance is written into the build-path section as a dated line saying what was skipped and who accepted it. Making a project less careful is a decision you record, not something the agent does on its own, and the accumulated lines are the honest answer to "what did we knowingly skip?" when somebody asks in six months.
+When you carry on, an acceptance is written into the build-path section before the work starts, as a dated line saying what was skipped, in your own words, with your name. It says the risk was accepted, never that the caution was done. Making a project less careful is a decision you record, not something the agent does on its own, and the accumulated lines are the honest answer to "what did we knowingly skip?" when somebody asks in six months.
 
 What the agent may not do is take the notice back. Pushing back on the cost, the wait, or the fuss changes what you decide and changes nothing about who is exposed, so the notice stays put however many times it comes up. A named check cannot be quietly turned into something the agent does itself either: where the build path asks for another person's eyes, the agent reading its own work does not count, and neither does a passing test.
 
@@ -252,14 +252,15 @@ What the agent may not do is take the notice back. Pushing back on the cost, the
 
 **Build and run it.** /ship runs the full evidence run, independent review, operational readiness (backup, a restored-backup rehearsal, a manual fallback, rollback, and a single caution if nobody receives alerts), and the live transition.
 
-**Build with care.** /ship ships everywhere outside a named sensitive area, does the caution it can do itself (a backup restored once, a rehearsal on a copy), and stops at a caution that is a person until they have looked or you accept the risk on the record. Where somebody outside the team is going to look, ask for the handover and /ship prepares it.
+**Build with care.** /ship ships everywhere outside a named sensitive area, does the caution it can do itself (a backup restored once, a rehearsal on a copy), and at a caution that is a person who has not looked, gives you the risk notice once. If you carry on, your acceptance is written down and that area goes live too. Where somebody outside the team is going to look, ask for the handover and /ship prepares it.
 
 On both live paths, /ship checks that the tool keeps a plain record of what each
 request did, without personal data, secrets or confidential file contents. If
-it does not, you hear: "The tool does not yet keep a record of what each request
-did, so a report cannot be traced. That is one piece, before it goes live."
-That piece gets built before launch, or your choice to launch without the
-record goes into the changelog.
+it does not, you hear once: "The tool keeps no record of what each request did,
+so a fault reported after launch cannot be traced. I have noted that in the
+changelog, and adding the record is one piece whenever you want it." The
+launch does not wait for it. A record that holds personal data, secrets or
+confidential contents still gets repaired.
 
 It also tells you once: "Once real people use this, the only record of what
 went wrong will be the record the tool writes. If you want somebody to be told

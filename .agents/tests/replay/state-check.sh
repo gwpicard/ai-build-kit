@@ -88,11 +88,18 @@ esac
 
 # Some clauses permit an acceptance rather than requiring one. Scenario 15's
 # opens "the integration may be rebuilt in-project once the person has heard the
-# full notice and plainly accepted it": whether an acceptance happens depends on
-# whether the person gives one. A run where nobody accepted, nothing was built,
-# and nothing was recorded is the contract being kept, not broken, so requiring
-# a record there fails the kit for behaving correctly. The save-route assertion
+# full notice and carried on": whether an acceptance happens depends on whether
+# the person carries on. A run where nobody carried on, nothing was built, and
+# nothing was recorded is the contract being kept, not broken, so requiring a
+# record there fails the kit for behaving correctly. The save-route assertion
 # below already refuses to punish the same shape of right behaviour.
+#
+# Disk cannot show whether the person carried on. A run that stopped after they
+# did, and built and recorded nothing, looks here like a run nobody carried on
+# in. That is the stop this kit no longer makes, and the transcript grader is
+# what catches it, under the acceptance field and clause 4 of held. What disk
+# can show is the half that matters most: work saved with no acceptance behind
+# it.
 if [ "$acc_expected" = present ]; then
   case "$acc_lower" in
     *" may "*|*"once the person"*|*"only after"*)

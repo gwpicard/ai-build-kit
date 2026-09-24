@@ -15,10 +15,11 @@ If anything under `Recheck when` has happened since `Last checked`, run the
 fit check before continuing.
 
 Read each line under `Sensitive areas`. Say for each whether its caution is
-done, waiting on a person, or accepted, and do not carry on past one that is
-none of those. On Build with care, walk its `paths`, its optional `boundary`,
-and the folders assigned to `none`; stop if the shipped sensitive-area check
-does not agree with the current project.
+done, accepted, or not done yet. An area not done yet gets the risk notice in
+its own step below, and the rest of the work does not wait for it. On Build
+with care, walk its `paths`, its optional `boundary`, and the folders assigned
+to `none`; stop if the shipped sensitive-area check does not agree with the
+current project.
 
 ## 1. Follow the current path
 
@@ -63,16 +64,17 @@ it, then stop.
    keys, passwords, tokens or confidential file contents. Never print those
    contents while checking it. Keep the field names out of the person's report.
 
-   If the record is absent or cannot trace a request, name or reuse one piece
-   before go-live and say once: "The tool does not yet keep a record of what
-   each request did, so a report cannot be traced. That is one piece, before
-   it goes live." Leave launch waiting until that piece is built or the person
-   explicitly chooses to go live without the record.
+   If the record is absent or cannot trace a request, say once: "The tool
+   keeps no record of what each request did, so a fault reported after launch
+   cannot be traced. I have noted that in the changelog, and adding the record
+   is one piece whenever you want it." Record in CHANGELOG.md, with the date,
+   that the tool keeps no such record and what remains untraceable. Then carry
+   on with the launch. Do not hold launch for the record, and do not
+   ask the person to choose to go live without it.
 
-   Record that choice in CHANGELOG.md, with the date and what remains
-   untraceable. Do not add a sensitive area or an `Accepted:` line for this
-   operational gap. A record containing forbidden data needs a repair;
-   accepting a missing record never waives the data exclusions.
+   Do not add a sensitive area or an `Accepted:` line for this operational
+   gap. A record containing forbidden data needs a repair; going live without
+   a record never waives the data exclusions.
 
    Give the monitoring caution once, unless the fit check already names an
    alert recipient: "Once real people use this, the only record of what went
@@ -147,12 +149,17 @@ Inside a named area, take each area in turn:
 2. where the caution is the kit's to do (a backup restored once, a rehearsal
    on a copy, a managed service, an approval step), do it now or check it was
    done, and write `done` with today's date on the line;
-3. where the caution is a person, stop at it. Say in one sentence what that
-   person must confirm. Do not merge or activate that area until they have
-   looked and that is recorded, or the person accepts the risk on the record.
-   No session meets it; fit-check.md says who does;
-4. restate the risk notice here, at the moment the area is actually going
-   live, rather than only when it was first scoped;
+3. where the caution is a person who has not looked, give the risk notice
+   here, once and in full, at the moment the area is actually going live
+   rather than only when it was first scoped. Say in one sentence what that
+   person would confirm. No session meets it; fit-check.md says who does.
+   Where an acceptance is already recorded for the area, give no notice; say
+   in one line what was accepted and when;
+4. if the person carries on after the notice, write the `Accepted:` line with
+   their words and the date, as fit-check.md describes, and mark the area's
+   line `accepted`, never `done`. Read the line back, then go on. Silence, a
+   question, or a request for other work is not carrying on: leave that area
+   where it is and ship everything outside it;
 5. only after the caution is done or accepted does that area get its own
    operational readiness check (including the request record and monitoring
    rules above, without repeating their notices) and its own go-live

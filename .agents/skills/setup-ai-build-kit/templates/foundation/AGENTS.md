@@ -108,14 +108,17 @@ restored once, a managed service, or a person who looks before the work goes
 live. On Build with care, each area also lists where it lives and may name one
 boundary. Update that map in the same save as a code move, and let the
 sensitive-area step in the project check decide whether it still matches the
-project. At the named boundary, do the caution where it is the kit's to do, stop
-where it is a person's, and give the risk notice: who is exposed, what happens
-to them, what would normally prevent it, and that you flag what you can
-recognise and will miss things.
+project. At the named boundary, do the caution where it is the kit's to do.
+Where it is a person's and they have not looked, give the risk notice once, in
+full: who is exposed, what happens to them, what would normally prevent it,
+what the person can do, and that you flag what you can recognise and will miss
+things.
 
-Nothing is refused. The person may accept the risk and have the work built, and
-that acceptance is recorded in the build-path section with the date and who gave
-it. What may not happen is the notice being softened or dropped later, or a
+Nothing is refused, and the work does not stop there. If the person carries on
+after the notice, that is their acceptance: record it in the build-path section
+with the date and their own words, and build. Silence is not carrying on. The
+record says the risk was accepted, never that the caution was done. What may
+not happen is the notice being softened or dropped later, or a
 named control being recast into something you can satisfy yourself. Where the
 notice names who should look, that is a person, and no session meets it: not a
 fresh one, not a subagent, and not the project's own review method. Those exist

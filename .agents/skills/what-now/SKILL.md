@@ -115,8 +115,8 @@ missing.
 
 State the blocked area, the help it's waiting on, where its brief lives, and
 which work can keep going safely in the meantime. Say that the wait ends either
-way: when that help happens, or when they accept the risk and it goes on the
-record.
+way: when that help happens, or when they carry on after the notice and their
+acceptance goes on the record.
 
 ### A step only you can do
 

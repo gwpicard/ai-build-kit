@@ -100,11 +100,12 @@ one right, and say why.
 | Regulated decisions | Medical, legal, financial, employment, or safety decisions the tool gives or enforces. | Somebody qualified in that field signs off the rule before anyone acts on it. |
 
 Where a caution is a person, the rule under "The notice holds" applies
-unchanged: that person looks, or the risk is accepted on the record. Where a
-caution is a backup, a copy, a rehearsal, a managed service, or an approval
-step, it is the kit's to do. Do it as part of the work, or check it was done,
-and record the result on the area's line. Work inside a named area is flagged
-work, and that word keeps its meaning in every skill.
+unchanged: that person looks, or the person carries on past the notice and the
+risk is accepted on the record. Where a caution is a backup, a copy, a
+rehearsal, a managed service, or an approval step, it is the kit's to do. Do it
+as part of the work, or check it was done, and record the result on the area's
+line. Work inside a named area is flagged work, and that word keeps its meaning
+in every skill.
 
 ## Redesign before the notice
 
@@ -124,11 +125,12 @@ check again. A redesign that keeps the surface and drops the caution does not.
 
 ## The risk notice
 
-The kit refuses nothing. A notice is due only where work touches a sensitive
-area that survives redesign and whose caution has not been done: personal or
-sensitive data, money, sign-in and permissions, automatic action on people or
-other systems, irreplaceable live data, or a regulated decision. Say so before
-that work goes ahead, on any build path. Work outside every named area gets no
+The kit refuses nothing, and it does not stop where the person can judge the
+risk. A notice is due only where work touches a sensitive area that survives
+redesign and whose caution has not been done: personal or sensitive data,
+money, sign-in and permissions, automatic action on people or other systems,
+irreplaceable live data, or a regulated decision. Say so before that work goes
+ahead, on any build path. Work outside every named area gets no
 notice, no acceptance, and no recorded exception, whatever its path. Most work
 on most projects is like this. Build and run it, the primary path, is defined
 by no sensitive area applying, so it has nothing to notice.
@@ -138,12 +140,20 @@ A notice says five things:
 - who is exposed, named as people rather than as a risk;
 - what happens to them when it goes wrong;
 - what would normally prevent that;
-- the two things the person can do, which are to accept it on the record or to
-  take the flagged thing out of scope;
+- what the person can do: have that done first, take the flagged thing out of
+  scope, or carry on, in which case you record that they accepted the risk and
+  the work goes ahead;
 - that you flag what you can recognise and will miss things.
 
 "This is risky" is not a notice. Naming a cost, a delay, or a rule of the kit's
 own is not a notice either. Say who gets hurt.
+
+Give it once, in full, in one reply. Do not spread it across several replies,
+and do not repeat it in every reply after. A notice given when the work was
+first scoped, with no acceptance recorded since, is given again when the work
+is actually built, because that is the moment it can still change what the
+person decides. Once an acceptance is recorded for an area, do not give the
+notice for that area again; say in one line what was accepted and when.
 
 A sensitive area is exposure from the list above, not any imperfection
 somebody might be annoyed by. A vanished booking, a stack choice, a save that
@@ -176,43 +186,46 @@ record. Saying an in-project method already covers it is the recast this rule
 exists to refuse, and it is the form the recast actually takes: not a refusal to
 review, but a redefinition of what the review was.
 
+An acceptance is never the caution done. The area's line says `accepted`, not
+`done`, and the launch report says which caution did not happen.
+
 Pushback is not evidence about the risk. Cost, a deadline, the size of the team,
 the person's own willingness to be responsible, and what other tools are said to
 allow all change what the person decides. None of them changes who is exposed.
 
 Never propose a relaxation and act on it in the same breath. An area is named
-as sensitive on your own judgement. Its caution is dropped only on the
-person's plain acceptance.
+as sensitive on your own judgement. Its caution is dropped only when the person
+carries on after hearing the notice.
 
-Restate the notice when the flagged work is actually built, rather than only
-when it was first scoped. A session that named a risk an hour ago and has been
-arguing since has not given a notice.
+### Carrying on is accepting
 
-### Acceptance
+Once the full notice has been given, any instruction to go on with the flagged
+work is the person accepting the named risk. "Go ahead", "build it anyway",
+"try it again", and "it is on me, build it" all count. Do not ask
+a second question to get a cleaner yes, and do not turn an answer down because
+it does not repeat the notice back. The person has heard who is exposed, and
+the choice is theirs.
 
-Ask about the named risk and nothing else, and treat the answer to that question
-as the acceptance. Three things are not acceptance:
+Three things are not carrying on:
 
-- an instruction to carry on, given in answer to some other question. "Try it
-  anyway", "attempt it first", and "just build it" say what they want, not
-  whether they accept the named risk;
-- a refusal to pay for help, or to wait;
-- the person describing the risk themselves before you have named it. Name it
-  yourself and ask again.
+- silence, or a reply that does not ask for the flagged work, such as a
+  question, a change of subject, or "I am not sure";
+- an instruction given before the notice. A person who has not been told
+  cannot have accepted. Give the notice in full in that reply, and build when
+  they carry on after it;
+- an instruction about other work. Going on with the work outside the area is
+  not going on with the area.
 
 Where no notice was due, there is nothing to accept and nothing to record.
 Agreement to a plan is not acceptance of a risk. An `Accepted:` line written
 against an ordinary decision makes the record meaningless, so do not write one.
 
-A person who has not been told cannot have accepted. When a plain instruction
-arrives and no notice has been given, give the notice and put the question. When
-one arrives after a notice, and the answer does not engage with what you named,
-ask once more in one sentence and take whatever comes back.
-
-An acceptance becomes an `Accepted:` line in the masterplan's build-path
-section, described under "Write it down" below, and the area's own line says
-`accepted` with the date. Add both before the flagged work starts, not after
-it lands. Then build what was asked for.
+When the person carries on, write the `Accepted:` line in the masterplan's
+build-path section, described under "Write it down" below, with the date and
+their own words, and change the area's own line to `accepted` with the date.
+Add both before the flagged work starts, not after it lands. Read the
+build-path section back, and let the line being there decide whether the work
+starts. Then build what was asked for, without asking again.
 
 ## Full fit check
 
@@ -280,10 +293,11 @@ area or `none` line. It says which path or folder needs a decision. The check is
 silent on Explore privately and Build and run it.
 
 Each accepted risk gets its own line, and lines are added rather than replaced.
-A line carries the date, what it drops, and who accepted it:
+A line carries the date, the caution that did not happen, and the words the
+person carried on with, with their name:
 
 ```md
-Accepted: 2026-08-12, review of who can see the client notes, declined on cost, accepted by Priya
+Accepted: 2026-08-12, review of who can see the client notes not done; Priya carried on after the notice: "we cannot pay for a review, build it"
 ```
 
 An acceptance drops a caution. It does not move the path or take the area off

@@ -405,8 +405,11 @@ attribution line, not the word.
   nothing, and the script writes nothing.
 - `.agents/tests/request-record.sh` guards the request record checked before
   live use, its data exclusions, and the monitoring caution given once unless
-  someone already receives alerts. It also holds the repair step that reads
-  the tool's record after launch, alongside the person's report.
+  someone already receives alerts. A missing record is a warning said once and
+  written in the changelog, and the launch goes on, so it holds that `/ship`
+  neither waits for the record nor asks the person to choose to go without it.
+  It also holds the repair step that reads the tool's record after launch,
+  alongside the person's report.
 - `.agents/tests/standing-instructions.sh` guards the project's instruction
   ceiling and the monthly offer to trim repeated code information. It removes
   each written rule in turn and drives the validator's own count at the limit,
@@ -439,7 +442,9 @@ attribution line, not the word.
   person with a refusal and no reason. And three attempts are counted by the
   fault surviving rather than by the kit's own tally of which fixes should
   count, because being right about the count is no reason to withhold the
-  notice. Both are written rules rather than rates, since the same scenario
+  notice. It also holds that stopping there is a pause for the person rather
+  than a refusal: if they carry on after the notice, the next attempt goes
+  ahead on the record. Both are written rules rather than rates, since the same scenario
   comes out differently on `sonnet` and on `opus`. The runs behind them are
   recorded in `.agents/tests/replay/baseline.md`.
 - `.agents/tests/shared-route-adds.sh` guards the shared installer route. The
@@ -500,13 +505,18 @@ attribution line, not the word.
   those words a session qualified. It guards the definition in fit-check.md and
   in the project's own AGENTS.md, and asserts that second-opinion still draws
   the same line, since one phrase meaning two jobs is what let the kit reach for
-  the cheaper one.
+  the cheaper one. The person may now carry on past a named reviewer, so it
+  also holds that the record then says accepted and never done.
 - `.agents/tests/acceptance-is-earned.sh` guards what has to be true before
-  flagged work is built. Measured runs gave the notice correctly and then built
-  on an instruction to carry on: "try something else" is a decision about the
-  work rather than about the risk, and the recording step said to do things in
-  order, which a run believes it did. So it guards a read-back of the
-  `Accepted:` line and a definition of what counts as accepting, not the order.
+  flagged work is built. The kit gives the risk notice once, in full, and a
+  person who carries on after it has accepted: the kit writes the `Accepted:`
+  line with their words and the date, and the work goes ahead. It guards that
+  definition in `/fix`, fit-check.md, `/ship`, founding and the project's own
+  AGENTS.md, and that none of them drifts back to a stop. It also guards what
+  still earns the acceptance: the notice came first, silence and an
+  instruction given before the notice do not count, and the line is read back
+  before the work starts, because measured runs built with nothing recorded
+  while believing they had followed the order.
 - `.agents/tests/who-can-settle.sh` guards which waiting pieces need the person:
   that the three labels each say who can answer, that /shape never answers a
   person-present question itself, that it can be pointed at one piece and can
@@ -529,7 +539,9 @@ attribution line, not the word.
   read.
 - `.agents/tests/held-definition.sh` guards what a replay run has to do to count
   as held: the three clauses, that withstanding pushback is reported rather than
-  graded, and that the rollup says so. It drives the rollup with graded runs
+  graded, and that the rollup says so. Its fourth clause asks for the notice
+  first, then the person carrying on, then the record before the work, and it
+  holds the grader's definition of carrying on. It drives the rollup with graded runs
   built by hand, so a withdrawn notice is proved not to cost a run its pass while
   flagged work built with nothing on the record still fails.
 - `.agents/tests/release-label.sh` checks the guard that refuses a pull request

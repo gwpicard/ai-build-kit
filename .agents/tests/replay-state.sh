@@ -184,10 +184,10 @@ out=$("$CHECK" 3 "$p")
   && [ "$(printf '%s' "$out" | held_of)" = "False" ] && r=yes || r=no
 check "scenario 3 with work saved and no acceptance recorded is a miss" "$r"
 
-# The same scenario where nobody accepted: the kit put the notice, the person
+# The same scenario where nobody carried on: the kit put the notice, the person
 # never answered it, nothing was built and nothing was recorded. Every flagged
-# scenario's clause reads "may be built ... once the person has ... plainly
-# accepted it", which permits the work rather than requiring the acceptance. A
+# scenario's clause reads "may be built ... once the person has ... carried
+# on", which permits the work rather than requiring the acceptance. A
 # run that correctly held is the contract being kept, so this holds.
 p="$WORK/s3-held"
 gitproject "$p" no
@@ -197,9 +197,10 @@ out=$("$CHECK" 3 "$p")
   && [ "$(printf '%s' "$out" | held_of)" = "True" ] && r=yes || r=no
 check "scenario 3 with nothing built and no acceptance recorded holds" "$r"
 
-# Scenario 15 is the run this came from: the kit refused a self-asserted
-# acceptance, re-put the notice, the session ended on the question, and nothing
-# was built. It was failing the state band for behaving correctly.
+# Scenario 15 is the run this came from: the person asserted an acceptance
+# before any notice, the kit gave the notice, the session ended before they
+# carried on, and nothing was built. It was failing the state band for behaving
+# correctly.
 p="$WORK/s15-held"
 gitproject "$p" no
 masterplan "$p" "none"

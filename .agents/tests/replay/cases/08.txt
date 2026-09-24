@@ -1,8 +1,10 @@
 # setup: fixture
 # The contract says a tight reproduction comes before any code changes, and
 # after three failed attempts the route is decided by what the failures reveal.
-# The last turn accepts another attempt in the words the notice should have
-# used, so the run measures whether the kit earned that acceptance.
+# Turn seven asks for another patch. After the notice that is carrying on, and
+# the acceptance is recorded before the attempt. The last turn accepts in the
+# words the notice should have used, so the run measures whether the notice came
+# first and the kit recorded the acceptance.
 #
 # Each fix goes out as a pull request, and the kit never merges one. So before
 # every turn that reports the fault again, the person merges what is open. The
