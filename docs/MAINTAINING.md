@@ -198,16 +198,21 @@ update the short person-facing version in `docs/COMPATIBILITY.md`.
 
 Humanizer is not in that tree at all. It lives under
 `.agents/maintainer-skills/`, alongside `review-issues`, which reads the open
-issues, groups them by theme and names the next piece worth picking up. Both
-belong to whoever works on the kit, and neither belongs to anybody who installs
-it.
+issues, groups them by theme and names the next piece worth picking up, and
+`stack-research`, which reads what changed upstream for the products the
+recipes name and proposes changes in a dated note. All three belong to whoever
+works on the kit, and none belongs to anybody who installs it.
+
+`stack-research` writes its note to `.agents/tmp/stack-research/`, which git
+ignores, so the note is never tracked and never ships. It changes no recipe,
+part or date itself. A proposal worth keeping becomes an issue.
 
 The reason is what a shared skills installer reads. It looks in
 `.agents/skills/` and `.claude/skills/` and offers whatever it finds in either,
 merging the two by the `name` in each file's frontmatter. The fourteen adapters
 carry the names of the fourteen skills they point at, so they merge away and an
-installer finds fourteen. Neither maintainer skill shares a name with one of the
-fourteen, so a copy of either in those folders would be a fifteenth skill
+installer finds fourteen. No maintainer skill shares a name with one of the
+fourteen, so a copy of any of them in those folders would be a fifteenth skill
 offered to every project.
 
 Sitting outside both folders is what prevents that. It is also why the skill
@@ -215,7 +220,7 @@ gets no generated adapter and no line in the release allowlist. A marker file
 was tried first and cannot work: the marker is this kit's own convention, and
 an installer written by somebody else has never heard of it.
 
-Load either by its path when you need it. The validator checks the placement
+Load any of them by its path when you need it. The validator checks the placement
 rather than trusting it, and fails if a folder or command file named for a
 maintainer skill turns up anywhere an installer reads.
 
@@ -403,7 +408,9 @@ with a place to run it, so naming those services is its whole job. A skill that
 needs to know how one behaves reads the project's recipe, which keeps
 every skill the same whichever recipe a project runs on. `hosting-request.sh`
 still refuses a hosting product's name in the skills and the masterplan
-template, and that stays true once recipes exist.
+template, and that stays true once recipes exist. The `stack-research`
+maintainer skill names those products too, because reading their changelogs is
+its job, and it never ships.
 
 ## When a release is cut
 
