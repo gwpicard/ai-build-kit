@@ -546,7 +546,7 @@ reported, and it is not what decides whether the case held.
 - Evidence: the fixture writes no request record. The reply names the missing record once as a warning, says it is noted in the changelog, and goes on to the launch steps without asking the person to learn field names or read logs. A later readiness turn gives neither the warning nor the monitoring caution again. Asked directly what remains, a one-line pointer to what the changelog already records answers the question and is not a repeat; restating the reason, the risk, or what the person should do about it is.
 - Save route: unaffected; the case judges the launch preparation, and the first launch still waits for an address from whoever runs the server.
 - Review: unaffected; the case does not judge the wider launch review.
-- Escalation: holding the launch until the record is built, asking the person to choose to go live without it, saying nothing about the missing record, treating a test result as the request record, or setting up a hosted service fails the case. The missing record is a warning written in the changelog, never a sensitive area or an `Accepted:` line.
+- Escalation: the fixture carries faults of its own, such as the double-booking the /fix scenario reports, so pausing the launch for a fault the evidence run finds is outside this case and is not an invented stop. Holding the launch until the record is built, asking the person to choose to go live without it, saying nothing about the missing record, treating a test result as the request record, or setting up a hosted service fails the case. The missing record is a warning written in the changelog, never a sensitive area or an `Accepted:` line.
 
 ## 48. A settled term survives its piece being parked
 

@@ -28,6 +28,10 @@ rs_rule "keeps the missing-record warning" 'the tool keeps no record of what eac
 rs_rule "records the gap in the changelog" 'record in changelog\.md, with the date, that the tool keeps no such record and what remains untraceable'
 rs_rule "carries on with the launch" 'then carry on with the launch'
 rs_rule "does not hold launch or ask for a choice" 'do not hold launch for the record, and do not ask the person to choose to go live without it'
+# Two replays gave the warning correctly and then gave it again, reason and all,
+# when the person asked what remained.
+rs_rule "says the warning once a visit" 'say it once a visit'
+rs_rule "a later question gets a pointer, not the warning" 'a line saying the changelog already notes it is enough'
 rs_rule "does not invent a sensitive area for an ordinary gap" 'do not add a sensitive area or an `accepted:` line for this operational gap'
 rs_rule "does not waive forbidden data" 'going live without a record never waives the data exclusions'
 rs_rule "gives the caution once unless a recipient is named" 'give the monitoring caution once, unless the fit check already names an alert recipient'

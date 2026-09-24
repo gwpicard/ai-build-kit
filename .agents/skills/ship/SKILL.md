@@ -69,8 +69,10 @@ it, then stop.
    cannot be traced. I have noted that in the changelog, and adding the record
    is one piece whenever you want it." Record in CHANGELOG.md, with the date,
    that the tool keeps no such record and what remains untraceable. Then carry
-   on with the launch. Do not hold launch for the record, and do not
-   ask the person to choose to go live without it.
+   on with the launch. Do not hold launch for the record, and do not ask the
+   person to choose to go live without it. Say it once a visit. When the
+   person later asks what remains, a line saying the changelog already notes
+   it is enough; do not give the reason or the risk again.
 
    Do not add a sensitive area or an `Accepted:` line for this operational
    gap. A record containing forbidden data needs a repair; going live without
