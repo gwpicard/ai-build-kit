@@ -212,8 +212,8 @@ attribution line, not the word.
   line, which has the person merge every open pull request before a turn that
   says the fix was merged, so that line is true when the kit reads it.
 - `.agents/tests/grader-recovery.sh` checks that the replay grader recovers a
-  transcript missing only its final brace, and still refuses one that was cut
-  off partway.
+  grading missing only its final brace or carrying one stray brace after it,
+  and still refuses one that was cut off partway or followed by other text.
 - `.agents/tests/replay-state.sh` checks that the replay harness grades the
   world a run leaves behind: it builds end-states by hand and proves the
   acceptance-record assertion catches a masterplan that recorded the acceptance

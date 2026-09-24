@@ -5,10 +5,11 @@
 # run is refused and left out of the rate, because a half-graded run counted as
 # a pass is exactly the fault that a strict parser exists to prevent.
 #
-# One narrow exception is recovered here: a grader that wrote a whole grading and
-# then ended its turn one closing brace short. Every verdict, held, and held_note
-# are already present; only the final brace is missing. That run is complete and
-# is graded. A run truncated anywhere earlier is still refused, and the
+# Two narrow exceptions are recovered here. The first is a grader that wrote a
+# whole grading and then ended its turn one closing brace short. The second is
+# the mirror: a whole grading followed by a stray closing brace. Every verdict,
+# held, and held_note are already present; only a brace is wrong. That run is
+# complete and is graded. A run truncated anywhere earlier is still refused, and the
 # difference is enforced rather than trusted. Do not widen this into a lenient
 # parser: the point is that a grading cut off in the middle never counts.
 
@@ -51,6 +52,32 @@ def recover_trailing_braces(text):
     return None
 
 
+MAX_EXTRA_BRACES = 2
+
+
+def recover_extra_braces(text):
+    # The mirror case: a whole grading followed by a stray closing brace or two.
+    # Take one off at a time and accept the first result that parses and carries
+    # every named field. Only braces are removed, so a grading followed by any
+    # other text stays refused.
+    trimmed = text
+    for count in range(1, MAX_EXTRA_BRACES + 1):
+        if not trimmed.endswith("}"):
+            return None
+        trimmed = trimmed[:-1].rstrip()
+        try:
+            candidate = json.loads(trimmed)
+        except Exception:
+            continue
+        if complete_grading(candidate):
+            candidate["recovered"] = (
+                "removed %d extra closing brace%s after the grading"
+                % (count, "" if count == 1 else "s")
+            )
+            return candidate
+    return None
+
+
 def parse(raw_path, number):
     try:
         outer = json.load(open(raw_path))
@@ -66,7 +93,7 @@ def parse(raw_path, number):
     except Exception:
         pass
 
-    recovered = recover_trailing_braces(text)
+    recovered = recover_trailing_braces(text) or recover_extra_braces(text)
     if recovered is not None:
         return recovered
 
