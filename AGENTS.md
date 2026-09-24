@@ -512,12 +512,16 @@ attribution line, not the word.
   person-present question itself, that it can be pointed at one piece and can
   clear the research alone, and that /what-now stops calling that research the
   person's errand.
-- `.agents/tests/shape-later.sh` guards the choice between settling a piece's
-  question now and filing it to come back to: the rules that keep the offer an
-  offer rather than a reluctance, that change-triage agrees a routed question
-  does not start the step there and then, that pieces.md says roughly what each
-  waiting label costs to settle, and that /what-now calls a planning session when
-  more pieces are waiting than are ready.
+- `.agents/tests/shape-later.sh` guards when /shape shapes now and when it
+  files a piece for later. Typed with words it starts the step with no offer
+  first, since typing it was already the choice, and it says in one line when
+  that step takes a sitting. The person can say "later" at any point, or ask
+  for a note in the first place, and the piece is filed with its question,
+  their words and its `needs-` label, with nothing started. It also holds that
+  the old every-time offer stays gone, that change-triage recognises a request
+  to file, that pieces.md says roughly what each waiting label costs to settle,
+  and that /what-now calls a planning session when more pieces are waiting
+  than are ready.
 - `.agents/tests/prototype-recipes.sh` guards what a prototype is supposed to
   be: that decision-prototype.md names the two kinds of question and picks
   before it builds, that each recipe keeps the rules that make it worth

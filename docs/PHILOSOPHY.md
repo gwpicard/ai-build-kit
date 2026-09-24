@@ -16,12 +16,12 @@ follow them.
 
 ## Who it is for
 
-Someone who directs an AI coding agent and wants what it builds to still work
-six weeks later. Two kinds of person reach for that. One came to software from
-another job. They run a team, a product, an operation or a dataset, they are
-fluent with a chat window, and they want a working tool without taking up a
-profession. The other is a developer trying agent-led work and finding that
-their usual discipline is either too heavy for it or quietly skipped. Both want
+Someone who already builds with an AI coding agent and wants what it builds to
+still work six weeks later. Two kinds of person reach for that. One is a
+developer new to agent-led work, who finds their usual discipline either too
+heavy for it or quietly skipped. The other came to software from another job.
+They run a team, a product, an operation or a dataset, and they now have some
+practice at directing an agent and getting a working tool out of it. Both want
 the reliability of a real process. Neither wants to carry the process by hand.
 
 The kit rests on one rule: the workflow never requires reading code. None of the
@@ -79,6 +79,13 @@ name for itself, the person either cannot reach the kit's command or loses the
 agent's own, and renaming the kit's command is the repair. That is a rename
 rather than a redesign, so the count stays where it is. `/plan` became `/shape`
 on those grounds.
+
+Where the person can judge a risk, the kit suggests and warns rather than
+blocks. These readers have built things before, and once a cost is named in a
+line they can weigh it. So a step they could skip is offered with what it
+costs, a warning says what could go wrong, and the choice stays with them. A
+risk the person cannot judge alone is what the build path and its cautions are
+for, as the next sections describe.
 
 Machinery stays invisible until it matters. Nobody needs to know a review
 skill exists until the agent says a change touched sign-in and a fresh

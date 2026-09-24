@@ -1,6 +1,6 @@
 ---
 name: shape
-description: The command for turning an idea into a ready piece before anything is built. Typed with words after it, it takes the request in plain language, works out what kind of work it is, shapes it into a piece, and settles any open question. Typed alone it shapes the next piece still waiting on one. It records and stops; it never builds, though it offers to hand a ready piece to implement.
+description: The command for turning an idea into a ready piece before anything is built. Typed with words after it, it takes the request in plain language, works out what kind of work it is, shapes it into a piece, and settles any open question. Asked only to note an idea, it files the piece and stops. Typed alone it shapes the next piece still waiting on one. It records and stops; it never builds, though it offers to hand a ready piece to implement.
 ---
 
 # Shape
@@ -71,24 +71,31 @@ test is the outcome: one shared `## So that` means parts of a whole, and the
 parent is done when its parts are. Where it would change what kind of project
 this is, stop and rerun the fit check before shaping anything.
 
-## Settling it now, or filing it for later
+## Shaping now, or filing for later
 
-Where the route is a question rather than a ready piece, offer the choice before
-the step starts: settle it now, or file the piece with its question and come back
-to it. Say roughly what settling it now would take, so the choice is informed
-rather than blind. A source check or a search for existing work is minutes. An
-interview or a prototype is a sitting.
+Typed with words, this command shapes now. The person already chose to shape
+when they typed it, so offering them the choice again asks the same question
+twice. Where the route is a question rather than a ready piece, start the step
+the route names. A source check or a search for existing work simply starts.
+An interview or a prototype takes a sitting, so say so in one line and start:
+"This needs a short interview, which takes a sitting. Say 'later' at any point
+and I'll file it."
 
-Make the offer every time a request routes to a question. Guessing at how much
-time somebody has is worse than asking them, and an offer that appears only when
-the agent judges them to be in a hurry is one nobody learns to expect. Word it as
-two ways of working, not as a reason to put the work off.
+The person can say "later" at any point in a step. File the piece then, with
+anything the step has already agreed written onto it, and stop.
 
-Filing it for later writes the piece in full: the person's own words, the
-question it still waits on in plain language, and the label that names who can
-settle it. It is the same piece a session settling the question now would have
-started from, so a fresh session picks it up with nothing lost. Then stop.
-Do not begin the step, and do not ask a second time in the same session.
+Filing is also something the person can ask for outright, in words such as
+"note this for later" or "just file this idea". Run change-triage as usual so
+the piece gets its route and its subjects, then file it without starting any
+step. It is not a separate command. A clear, piece-sized request filed this way
+is simply a ready piece, written without the build offer.
+
+Filing writes the piece in full: the person's own words, the question it still
+waits on in plain language, and the label that names who can settle it. It is
+the same piece a session settling the question now would have started from, so
+a fresh session picks it up with nothing lost. Then stop. Do not begin the step,
+or carry on with one already started, and do not raise the question again in
+the same session.
 
 A piece filed this way carries its `needs-` label and no `ready` label, which is
 what keeps it out of `/implement` until its question is answered. Deferring the
@@ -193,7 +200,7 @@ changelog entry; the piece is the record.
 ## Done when
 
 The request has exactly one route, the piece is written into its proper shape
-and labelled `ready` or with the question it still waits on, the person was
-offered the choice between settling that question now and filing it for later, the person's
-original words are kept underneath a refinement, and nothing was built except
+and labelled `ready` or with the question it still waits on, a routed question was
+started unless the person asked to file it, the person's original words are kept
+underneath a refinement, and nothing was built except
 through an accepted build offer.
