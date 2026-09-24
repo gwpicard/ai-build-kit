@@ -99,10 +99,14 @@ piece, put the route on the issue: `needs-clarification` for clarify,
 `needs-prototype` for a decision prototype, `needs-research` for a source check
 or a search for existing work.
 Take the label off and mark it `ready` once the question is answered.
-Routing to a question does not mean the step starts now: `/shape` offers the
-person the choice between settling it and filing the piece to come back to. Without this the reason a
-piece is waiting lives only in the session that found it, and the next person to
-open the list sees a piece that has simply stopped.
+Without the label the reason a piece is waiting lives only in the session that
+found it, and the next person to open the list sees a piece that has simply
+stopped.
+
+`/shape` starts the routed step straight away unless the person asked only to
+file the piece. Recognise that request in their plain words, such as "note this
+for later" or "just file this idea". Route the piece as usual and hand it back
+marked for filing, so `/shape` writes it with its label and starts nothing.
 
 A setup or operational task the person has to do themselves is written onto the
 piece as its `## Waiting on you` section, in the shape

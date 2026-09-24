@@ -171,11 +171,12 @@ it:
 So the label already says whether the person is needed, and the list shows it at
 a glance. No further label carries that.
 
-They cost different amounts to settle, which is why filing a piece and shaping it
-are two decisions rather than one. `needs-research` is minutes, and nobody has to
-be there for it. `needs-clarification` and `needs-prototype` are a sitting: an
-interview runs until the questions run out, and a prototype has to be built
-before anybody can react to it. Keep the estimate that coarse. A real estimate
+They cost different amounts to settle, which is why `/shape` names the cost in
+one line before it starts a sitting, so the person can say "later" and file the
+piece instead. `needs-research` is minutes, and nobody has to be there for it.
+`needs-clarification` and `needs-prototype` are a sitting: an interview runs
+until the questions run out, and a prototype has to be built before anybody can
+react to it. Keep the estimate that coarse. A real estimate
 per piece would be a guess dressed as a number.
 
 Settling one of these writes what settled it into the piece's `## Decided`
