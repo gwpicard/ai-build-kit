@@ -86,6 +86,13 @@ rs_rule "then the work goes ahead without asking again" \
   'then build what was asked for, without asking again'
 rs_rule "an acceptance is never the caution done" \
   'an acceptance is never the caution done'
+# A measured run recorded an acceptance and built on it after referring to "my
+# earlier message" that named the options, when no reply had named who was
+# exposed. Carrying on only counts after a notice the kit can point to.
+rs_rule "the notice is found in a reply before anything is written" \
+  'find the notice in one of your own replies'
+rs_rule "remembering the notice is not finding it" \
+  'remembering that you meant to give it is not finding it'
 rs_guard "$FIT" "the shipped fit-check.md"
 
 # /ship and founding are the other two places the kit used to stop. Each now

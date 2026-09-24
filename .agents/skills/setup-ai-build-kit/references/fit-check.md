@@ -220,6 +220,12 @@ Where no notice was due, there is nothing to accept and nothing to record.
 Agreement to a plan is not acceptance of a risk. An `Accepted:` line written
 against an ordinary decision makes the record meaningless, so do not write one.
 
+Before you write anything, find the notice in one of your own replies: the
+reply that named who is exposed and what happens to them. Remembering that you
+meant to give it is not finding it. Where you cannot point to that reply, the
+person has not been told, so give the notice in full now and build when they
+carry on after it.
+
 When the person carries on, write the `Accepted:` line in the masterplan's
 build-path section, described under "Write it down" below, with the date and
 their own words, and change the area's own line to `accepted` with the date.
