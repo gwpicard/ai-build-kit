@@ -109,11 +109,17 @@ it, then stop.
    Env vars:      <names only>
    Persist:       <paths that must survive a restart, or none>
    Healthcheck:   <path, or none>
+   Build:         Dockerfile at root, image has curl or wget | lock file or requirements.txt, plus a Procfile | neither yet
+   Bind:          0.0.0.0 | reads HOST and PORT | 127.0.0.1 (not hostable yet)
    ```
 
    Take the lane from the fit check: internal unless somebody outside the team
-   signs in or relies on it. Env vars carry names only; values are entered on
-   the server. Never write a value, key, password or token into the request.
+   signs in or relies on it. Take Build from the files at the project's root,
+   and Bind from the address the server listens on when it starts. The server
+   builds and checks the tool from those two facts, so read them from the code
+   rather than from a plan. A tool that listens only on 127.0.0.1 cannot be
+   reached from outside its container: say so once, and record it. Env vars
+   carry names only; values are entered on the server. Never write a value, key, password or token into the request.
    Where the project does not say, write `none` rather than guess. Print the
    same block in the reply, so the person can paste it, and say once: "This
    tool needs a home. Take this request to whoever runs the server. Paste what

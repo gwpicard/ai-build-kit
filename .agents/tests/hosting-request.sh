@@ -6,8 +6,9 @@
 # there by hand. The rules that matter most are the ones whose loss would be
 # silent: that the request carries names and never a value, that the kit never
 # contacts the server, and that a later launch reads the request back rather
-# than asking the person again. The skills also stay free of any product name,
-# because the kit does not tie its instructions to a tool it does not control.
+# than asking the person again. The skills outside the recipes also stay free of
+# any hosting, data or deploy product name, because a skill that needs to know
+# how one behaves reads the project's recipe instead.
 
 set -eu
 
@@ -38,6 +39,10 @@ rs_rule "the port field" 'port: +<port the tool listens on>'
 rs_rule "the env var field" 'env vars: +<names only>'
 rs_rule "the persisted paths field" 'persist: +<paths that must survive a restart, or none>'
 rs_rule "the health check field" 'healthcheck: +<path, or none>'
+rs_rule "the build field" 'build: +dockerfile at root, image has curl or wget \| lock file or requirements\.txt, plus a procfile \| neither yet'
+rs_rule "the bind field" 'bind: +0\.0\.0\.0 \| reads host and port \| 127\.0\.0\.1 \(not hostable yet\)'
+rs_rule "build and bind are read from the code" 'take build from the files at the project.s root, and bind from the address the server listens on when it starts'
+rs_rule "a tool bound to 127.0.0.1 is named once" 'a tool that listens only on 127\.0\.0\.1 cannot be reached from outside its container: say so once, and record it'
 rs_rule "the lane comes from the fit check" 'take the lane from the fit check'
 rs_rule "values are entered on the server" 'values are entered on the server'
 rs_rule "no secret value is written" 'never write a value, key, password or token into the request'
@@ -68,10 +73,48 @@ rs_require_order "the request sits after Explore privately" "$SHIP" \
 rs_require_order "the request sits inside Build and run it" "$SHIP" \
   'Hosting request$' '^### Build with care'
 
-# The skills name no product.
-rs_require_absent "ship names no hosting product" "$SHIP" 'coolify'
-rs_require_absent "setup names no hosting product" "$SETUP" 'coolify'
-rs_require_absent "the masterplan template names no hosting product" "$MASTERPLAN" 'coolify'
+# The skills name no hosting, data or deploy product. A recipe file and the
+# shared parts it links are the one place in the skills that may, since naming
+# those services is their whole job, so everything under ship/recipes/ is left
+# out. Every other file under the skills is read. The screen rules link Vercel's
+# interface guidelines, which is a design guide rather than a place a tool runs,
+# so that one link is set aside before the read.
+PRODUCTS='coolify|vercel|supabase|netlify|heroku|railway|railpack|fly\.io|hetzner|hostinger|firebase|digitalocean'
+products_named() {
+  # products_named <skills folder>: each file and line that names a product.
+  find "$1" -type f ! -path '*/ship/recipes/*' | sort | while IFS= read -r pn_file; do
+    tr '[:upper:]' '[:lower:]' < "$pn_file" \
+      | sed -e 's#vercel web interface guidelines##g' \
+            -e 's#github\.com/vercel-labs/web-interface-guidelines##g' \
+      | grep -nE "$PRODUCTS" | sed "s#^#$pn_file:#" || true
+  done
+}
+if [ -z "${RS_LIST:-}" ]; then
+  named=$(products_named "$ROOT/.agents/skills")
+  if [ -n "$named" ]; then
+    printf '%s\n' "$named" >&2
+    rs_fail "a skill file outside the recipes names a hosting, data or deploy product"
+  fi
+  rs_ok "no skill file outside the recipes names a hosting, data or deploy product"
+
+  # The read has to notice a name, keep the exemption narrow, and leave the
+  # recipes alone, or it proves nothing.
+  mkdir -p "$rs_dir/skills/ship/recipes/parts" "$rs_dir/skills/screen-check" "$rs_dir/skills/ship/references"
+  grep -i 'web interface guidelines' "$ROOT/.agents/skills/screen-check/SKILL.md" > "$rs_dir/skills/screen-check/SKILL.md"
+  printf '%s\n' 'Runs on Vercel with a Supabase database.' > "$rs_dir/skills/ship/recipes/on-vercel.md"
+  printf '%s\n' 'Backups on Supabase.' > "$rs_dir/skills/ship/recipes/parts/backup.md"
+  [ -z "$(products_named "$rs_dir/skills")" ] ||
+    rs_fail "the guidelines link, a recipe or a part was counted as a product name"
+  rs_ok "the guidelines link, a recipe and a part are left alone"
+  printf '%s\n' 'Deploy it to Vercel.' > "$rs_dir/skills/ship/references/steps.md"
+  [ -n "$(products_named "$rs_dir/skills")" ] ||
+    rs_fail "a skill file naming a hosting product was not noticed"
+  rs_ok "a skill file naming a hosting product is noticed"
+  printf '%s\n' 'Vercel is fast.' 'The Vercel Web Interface Guidelines' > "$rs_dir/skills/ship/references/steps.md"
+  [ -n "$(products_named "$rs_dir/skills")" ] ||
+    rs_fail "the guidelines exemption hid a product named elsewhere in the same file"
+  rs_ok "the guidelines exemption hides nothing else in the same file"
+fi
 
 rs_require_load_bearing "setup step 11 names the hand-off" "$SETUP" \
   'where a hosting companion or whoever runs the server will host it, /ship writes the hosting request on the first launch'

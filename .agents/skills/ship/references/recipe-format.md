@@ -12,13 +12,17 @@ and not before. `ship/templates/recipe.md` is the blank to copy.
 
 ## What a recipe holds
 
-The file opens with five lines.
+The file opens with six lines.
 
 - `Fits:` the shape of tool the recipe suits, in words the person would use.
 - `Recommended when:` one plain sentence saying when founding should recommend
   this recipe over another that fits the same shape.
 - `Build stack:` what the tool is built with.
 - `Deploy target:` where it runs once it is live.
+- `Command-line tools:` the tools the recipe's checks run on the person's
+  machine, as command names separated by commas, or `none`. The setup tooling
+  check reads this line and reports each one, and a missing one never stops
+  founding, because only a project on this recipe needs it.
 - `Last checked:` a date, written YYYY-MM-DD, when somebody last read the recipe
   against the current documentation of everything it names. The date moves only
   when somebody did that.

@@ -113,6 +113,7 @@ for file in "$@"; do
     section == "" && /^Recommended when: ./ { head["Recommended when"] = 1 }
     section == "" && /^Build stack: ./      { head["Build stack"] = 1 }
     section == "" && /^Deploy target: ./    { head["Deploy target"] = 1 }
+    section == "" && /^Command-line tools: ./ { head["Command-line tools"] = 1 }
     section == "" && /^Last checked:/       { head["Last checked"] = 1; datecheck("Last checked", substr($0, 15)) }
     section == "Proven" && /^Real run:/     { realrun = 1; datecheck("Real run", substr($0, 11)); next }
     section == "Proven" {
@@ -129,8 +130,8 @@ for file in "$@"; do
     section != "" { body(section, $0, "\"## " section "\"") }
     END {
       if (mode == "part") { lacks("part", "the part"); exit bad }
-      split("Fits|Recommended when|Build stack|Deploy target|Last checked", heads, "|")
-      for (i = 1; i <= 5; i++)
+      split("Fits|Recommended when|Build stack|Deploy target|Command-line tools|Last checked", heads, "|")
+      for (i = 1; i <= 6; i++)
         if (!(heads[i] in head)) problem("the opening lines lack \"" heads[i] ":\"")
       for (i = 1; i <= n; i++) {
         s = order[i]

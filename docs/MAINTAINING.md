@@ -407,10 +407,18 @@ named nowhere either, except inside a recipe file under
 with a place to run it, so naming those services is its whole job. A skill that
 needs to know how one behaves reads the project's recipe, which keeps
 every skill the same whichever recipe a project runs on. `hosting-request.sh`
-still refuses a hosting product's name in the skills and the masterplan
-template, and that stays true once recipes exist. The `stack-research`
-maintainer skill names those products too, because reading their changelogs is
-its job, and it never ships.
+refuses a hosting, data or deploy product's name in every skill file outside
+`.agents/skills/ship/recipes/`, which holds the recipes and their shared parts.
+The screen rules' link to Vercel's interface guidelines is the one exception,
+because it names a design guide rather than a place a tool runs. The
+`stack-research` maintainer skill names those products too, because reading
+their changelogs is its job, and it never ships.
+
+A recipe waiting for its real run sits in `.agents/tests/recipes-awaiting-run/`,
+which ships nowhere, and its rehearsal reads it there. Once the run is recorded
+in its proven section, move the file into `.agents/skills/ship/recipes/` with
+`git mv`. The rehearsal finds it on the menu from then on, and fails if a copy
+is left in both places.
 
 ## When a release is cut
 

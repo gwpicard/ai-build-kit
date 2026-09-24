@@ -239,6 +239,9 @@ attribution line, not the word.
 - `.agents/tests/check-tooling.sh` runs the setup tooling report against a set of
   throwaway PATHs and reads when it stops: a missing tool or a signed-out account
   blocks founding, while issues switched off or a read-only account do not.
+  Given a recipe, the report also names each command-line tool that recipe's
+  launch checks run, and the check holds that a missing one never stops
+  founding and that a project naming no recipe is never asked about them.
 - `.agents/tests/completion-report-shape.sh` guards the source of the /setup
   completion report, which is watched by hand rather than replayed: it proves
   completion-report.md still leads with what is ready, keeps technical state out
@@ -346,7 +349,10 @@ attribution line, not the word.
   throwaway Python project from the shipped workflow template, takes its
   commands from the shipped table, and watches the check go red at the type
   check on an error no test reaches, green once it is fixed, and red at the
-  linter on an unused import.
+  linter on an unused import. It then does the same for a TypeScript project,
+  the language the web app recipes build in, with the tools installed as that
+  project's own dependencies. It does not run the Next.js starter, since a
+  project the starter made keeps the starter's own lint settings.
 - `.agents/tests/waste-read.sh` guards the quarterly read for copied code,
   unused code and unused dependencies: that it stays off Explore privately,
   keeps the settings chosen on purpose, drops a name found anywhere else in
@@ -652,12 +658,16 @@ attribution line, not the word.
 - `.agents/tests/hosting-request.sh` guards the hosting request `/ship`
   writes on a first launch, for a tool that runs on a server somebody else
   runs. The person carries it there by hand, because the kit never contacts
-  that server. It holds the six fields, the rule that the request carries
-  names and never a value, and that a later launch reads it back rather than
-  asking again, printing it anew only when the project changed a field. It
-  also holds that the skills and the masterplan template name no hosting
-  product, since the kit does not tie its instructions to a tool it does not
-  control. The README may name one, as one option.
+  that server. It holds the eight fields, including how the tool builds and
+  which address it listens on, which a hosting companion refuses a request
+  without. It holds the rule that the request carries names and never a value,
+  and that a later launch reads it back rather than asking again, printing it
+  anew only when the project changed a field. It also reads every skill file
+  outside `.agents/skills/ship/recipes/` and refuses a hosting, data or deploy
+  product named in one, since a skill that needs to know how one behaves reads
+  the project's recipe. The screen rules' link to Vercel's interface
+  guidelines is set aside, and the check proves the exemption hides nothing
+  else in that file. The README may name a product, as one option.
 - `.agents/tests/recipes.sh` guards the recipe format. A recipe pairs a build
   stack with a place to run it, and it is the only place outside the README
   allowed to name a service a tool runs on, so the rules around that permission
@@ -670,7 +680,22 @@ attribution line, not the word.
   from the blank and against copies with one part taken away at a time. The
   validator wants a rehearsal named `recipe-<name>.sh` for every recipe, and
   refuses one that does not source the rule-shape helper or name its recipe
-  file. This check shows the tool refusing both.
+  file. This check shows the tool refusing both, and a recipe with no
+  `Command-line tools:` line.
+- `.agents/tests/recipe-nextjs-supabase-on-vercel.sh` and
+  `.agents/tests/recipe-nextjs-supabase-on-coolify.sh` guard the first recipe
+  pair offline. They share `.agents/tests/lib/recipe-rehearsal.sh`. Each holds
+  its recipe's rules and proves every one load-bearing, and both hold the two
+  Supabase parts. Each also runs every command its recipe writes against
+  stand-ins for the recipe's tools. A stand-in answers only what that tool
+  documents, so a mistyped option or an invented subcommand is refused, and a
+  tool the recipe names but no command uses is refused too. Until its real run
+  is recorded a recipe waits in `.agents/tests/recipes-awaiting-run/`, which
+  ships nowhere, and must fail the shape check on its real run and on nothing
+  else. Once it moves onto the menu it must pass outright, and a copy left in
+  both places fails. On the Coolify recipe the rule held hardest is that every
+  check needing the server is run by the companion or the person and read
+  back, since the kit never contacts that server.
 - `.agents/tests/compatibility-grades.sh` guards the grade each coding agent
   carries in `docs/COMPATIBILITY.md`. The page once named four agents and
   presented them alike, while the replay harness had recorded runs on only
