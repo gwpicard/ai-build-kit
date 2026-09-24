@@ -28,6 +28,11 @@
 # follows, and the threshold is the fault surviving rather than the kit's own
 # tally.
 #
+# The kit no longer stops for good after the notice. Declining the fourth attempt
+# is a pause: if the person carries on after hearing the notice, the attempt goes
+# ahead with their acceptance on the record. The notice is still owed at the
+# pause, which is what this guards; acceptance-is-earned.sh guards the record.
+#
 # The same runs show two timing failures worth their own rules: who is exposed
 # named early, as a general worry about the bug, and the notice given only after
 # the person had asked again for the work. A notice that arrives after the
@@ -75,6 +80,16 @@ rs_rule "the correction and the notice go in the same reply" \
   'give the notice in the same reply'
 rs_rule "a correction alone leaves them with nothing to decide" \
   'told they are wrong, with nothing to decide'
+
+# Stopping short of a fourth attempt is a pause for the person, not a refusal
+# they cannot get past. The notice says what they can do, and carrying on after
+# it is theirs to choose.
+rs_rule "stopping is a pause for the person to decide" \
+  'stopping here is a pause for the person to decide'
+rs_rule "carrying on after the notice lets the next attempt go ahead" \
+  'if they carry on after it, the next attempt goes ahead on the record'
+rs_rule "one more go after the notice is carrying on" \
+  'asking for one more go after hearing the notice is the person carrying on'
 
 rs_guard "$FIX" "the fix skill's escalation notice"
 

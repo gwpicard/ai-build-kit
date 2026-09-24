@@ -167,7 +167,9 @@ after it. Give it in the same reply that declines, in the shape
 exposed, which here is whoever relies on the broken behaviour, say they are still
 relying on something that is producing wrong results, say that another attempt on
 a cause nobody has established can hide the fault rather than remove it, and say
-who would normally establish it first.
+who would normally establish it first. Stopping here is a pause for the person to
+decide. The notice also says what they can do, and if they carry on after it,
+the next attempt goes ahead on the record.
 
 Every route owes it, including the ones that sound like good news. Concluding
 that the cause is established after all, that the requirement was unclear, or
@@ -186,48 +188,47 @@ attempt, which is the last moment it can still change what they choose.
 
 Then hold that notice. Refusing the cost of a specialist, having no budget, and
 asking for one more go are all reasons the person may decide differently, and
-none of them is a reason the fault is now understood. They may accept the risk
-and have you carry on, and that acceptance is recorded before the work starts.
+none of them is a reason the fault is now understood. Asking for one more go
+after hearing the notice is the person carrying on, which is theirs to choose:
+record the acceptance as below, then make the attempt.
 
-### Before you rebuild
+### Before the next attempt
 
-Rebuilding the failing area yourself is the same decision as patching it again,
-whatever the rebuild is called, so it needs the same notice and the same
-acceptance. Work through these four in order. Do not start the replacement
-until all four are behind you.
+Another patch after three, or rebuilding the failing area yourself, is the same
+decision whatever it is called, so it needs the same notice. Work through these
+four in order. Do not start the work until all four are behind you.
 
-1. **Name the rebuild risk yourself, before anything is built.** The notice
-   covers the replacement rather than the fault: a replacement nobody who
-   understands the original failure has looked at can fail the same silent way,
-   and your own version passing its own tests is not evidence otherwise,
+1. **Name the risk yourself, before anything is built.** For a rebuild the
+   notice covers the replacement rather than the fault: a replacement nobody
+   who understands the original failure has looked at can fail the same silent
+   way, and your own version passing its own tests is not evidence otherwise,
    because the thing that keeps breaking was never understood. Describing the
    fault accurately while saying nothing about what replaces it is the same
    failure as saying nothing.
-2. **Ask about that named risk and nothing else.**
-3. **Check that what comes back is an acceptance.** It is not one where the
-   person described the risk before you named it, where it answers some other
-   question ("just rebuild it", "try it anyway", "attempt it first"), or where
-   it is a refusal to pay for help or to wait. Somebody who got there first has
-   still not been told by you, so name it yourself and ask again.
+2. **Give the notice once, in full, in one reply,** and let the person decide.
+3. **Take carrying on as the acceptance.** Any instruction to go on with the
+   work after the notice counts: "just rebuild it", "try it anyway", "patch it
+   again". Silence does not, and neither does a question or an instruction
+   given before the notice. Somebody who described the risk before you named it
+   has still not been told by you, so name it yourself.
 4. **Record the acceptance, then build.** The `Accepted:` line goes into the
-   masterplan's build-path section before the replacement starts.
+   masterplan's build-path section before the replacement starts, with the date
+   and the person's own words.
 
 The order carries this. An acceptance collected once the replacement exists is
 not an acceptance, it is a note about something that already happened.
 
 Read the masterplan back before the replacement starts, and let the `Accepted:`
 line being there decide whether it does. Where it is not there, the acceptance
-was not recorded whatever was said in the conversation, and the work waits.
-Doing the steps in order is what a run believes it did; reading the line back is
-what tells it whether it did.
+was not recorded whatever was said in the conversation, and the work waits
+until it is written. Doing the steps in order is what a run believes it did;
+reading the line back is what tells it whether it did.
 
-Being told to carry on is not an acceptance. "Try something else", "just fix
-it", and going quiet are instructions about the work, not decisions about the
-risk. What the line records is the person hearing who is exposed and saying they
-accept that: if you cannot quote them accepting it, there is nothing to record
-and the work has not been accepted. Ask once, plainly, naming the exposure
-again in a sentence, and wait for the answer to that question rather than
-reading one into the next thing they say.
+Carrying on after the notice is the acceptance, and the line quotes the
+person's words after hearing who is exposed. Do not ask again for a cleaner yes.
+Do not read an acceptance into a reply that does not ask for the work either:
+silence, a question, or "I am not sure" leaves the work waiting and the notice
+standing.
 
 ## Done when
 

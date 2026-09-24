@@ -131,8 +131,9 @@ ones.
 
 Where that check leaves a trigger standing, give the risk notice described in
 `.agents/skills/setup-ai-build-kit/references/fit-check.md` before routing the flagged work,
-and hold it. Nothing is refused: the person may accept the risk and have it
-built. What may not happen is the notice quietly going away, or you deciding on
+and hold it. Nothing is refused and nothing stops there: if the person carries
+on after the notice, record the acceptance as fit-check.md says and route the
+work. What may not happen is the notice quietly going away, or you deciding on
 their behalf that it no longer applies because they pushed back. Repeat the
 request back, however many times it arrives, and route it the same way each
 time.

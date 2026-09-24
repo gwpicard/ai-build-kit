@@ -130,10 +130,10 @@ that is new work, a repair, or too vague to size, asks what it still needs to
 know, and leaves a piece marked ready. You type `/implement`, and it builds that
 one piece, shows you the evidence, and saves it.
 
-A piece that carries a risk. The kit gives you a risk notice: who is exposed,
-what happens to them, and what would normally prevent it. You
-decide. If you accept the risk, the acceptance is written into the masterplan
-with the date, and the work goes ahead.
+A piece that carries a risk. The kit gives you a risk notice once: who is
+exposed, what happens to them, and what would normally prevent it. You decide.
+If you carry on, your acceptance is written into the masterplan with your words
+and the date, and the work goes ahead.
 
 A month later. `/maintain` tells you it is due, reads the public Release notes,
 asks before updating the kit, and watches the running costs.
@@ -162,7 +162,7 @@ Three project records hold the product's memory: `masterplan.md` is the present,
 | Internal tool with a manual fallback | Build and run it |
 | Personal data, money, sign-in by outsiders, automatic action, irreplaceable live data, or a regulated decision, in some part of it | Build with care |
 
-The path is not a permanent label. The kit rechecks it whenever the project changes character, and none of the three is it refusing to build. On Build with care the kit builds everything outside the sensitive part the ordinary way, and in that part one named caution happens before it goes live, or you accept skipping it on the record.
+The path is not a permanent label. The kit rechecks it whenever the project changes character, and none of the three is it refusing to build. On Build with care the kit builds everything outside the sensitive part the ordinary way, and in that part it names one caution before it goes live. You have it done, or you carry on and your acceptance is recorded.
 
 ## What the kit does to reduce risk
 
@@ -170,7 +170,7 @@ The kit is built so that nothing depends on a code review by you, so every prote
 
 Every promised behaviour gets evidence. Stable rules and bugs usually get automated tests, shown failing first. Visual and exploratory work may be checked by trying it. Shared, live, or risky changes get stronger checkpoints: a pull request with a clean-machine check next to the merge button, and an independent review. The build path decides how much of this applies to a given piece of work.
 
-Where a risk survives that, you get a risk notice: who is exposed, what happens to them, and what would normally prevent it. Then it is your call. You can accept the risk and have the work built, or take the flagged thing out of scope. An acceptance is written into the build-path section with the date and who gave it, so making the project less careful is a decision you record rather than something the agent does on its own.
+Where a risk survives that, you get a risk notice: who is exposed, what happens to them, and what would normally prevent it. Then it is your call. You can have it done first, carry on and have the work built, or take the flagged thing out of scope. It does not stop to ask twice. When you carry on, your acceptance is written into the build-path section with the date and your words, so making the project less careful is a decision you record rather than something the agent does on its own.
 
 Two simpler protections sit underneath. Destructive commands are on a blocked list, alongside standing restrictions like never disabling authentication to make a test pass. Secrets live in `.env` and nowhere else.
 
@@ -299,7 +299,7 @@ The fit check and its risk notices flag what the kit can recognise. They will mi
 
 The checks verify what somebody thought to check. A green tick beside the merge button means those checks really passed, which is a smaller claim than the software being correct, safe, legal, or fit for what you plan to do with it.
 
-The kit never refuses: hear the notice, accept the risk, and it builds the thing, with your acceptance on the record. Pressure changes what you decide, not who is exposed.
+The kit never refuses, and where you are there to decide it does not stop you: hear the notice, carry on, and it builds the thing, with your acceptance on the record. A run left going on its own stops at a sensitive area and hands it back to you, because nobody is there to carry on. Pressure changes what you decide, not who is exposed.
 
 You own the product and risk decisions. The kit can tell you that a second pair of eyes normally goes over who can see what; it cannot decide for you whether to go ahead, and it does not carry the consequences when you do.
 

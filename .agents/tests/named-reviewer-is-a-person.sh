@@ -17,6 +17,10 @@
 #
 # So this guards the definition rather than the prohibition. The prohibition was
 # never the part that failed.
+#
+# The kit no longer stops at a named reviewer. The person may carry on past the
+# notice, and the work goes ahead. What that must never do is read as the review
+# having happened, so this also guards that the record says accepted, not done.
 
 set -eu
 
@@ -46,10 +50,12 @@ rs_rule "sharing the word review does not make them the same" \
   'because they happen to share the word review'
 rs_rule "the kit does not decide it has satisfied this" \
   'the kit does not decide it has satisfied this'
-rs_rule "either the person looked, or the risk is accepted on the record" \
-  'or they have not and the person accepts the risk'
+rs_rule "either the person looked, or the person carried on and it is recorded" \
+  'or they have not and the person carries on past the notice'
 rs_rule "and the recast is named as what actually happens" \
   'not a refusal to review, but a redefinition'
+rs_rule "carrying on past a named reviewer records accepted, never done" \
+  'the area.s line says .accepted., not .done.'
 rs_guard "$FIT" "the shipped fit-check.md"
 
 # The same words reach a project, where the kit reads them on every build.
@@ -58,6 +64,8 @@ rs_rule "a named reviewer is a person here too" 'that is a person'
 rs_rule "no session meets it" 'no session meets it'
 rs_rule "not the project's own review method" "not the project.s own review method"
 rs_rule "which exists for a different job" 'a different job from the one a named'
+rs_rule "an accepted risk is never recorded as the caution done" \
+  'the record says the risk was accepted, never that the caution was done'
 rs_guard "$FOUNDATION" "the project's own AGENTS.md template"
 
 # second-opinion already drew this line correctly. It is asserted so the two

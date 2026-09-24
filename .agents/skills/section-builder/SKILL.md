@@ -30,11 +30,17 @@ Choose the save route before changing anything:
 2. **Pull-request route.** Shared or live use, a behavioural change, data or
    permissions, an external integration or service, an operational change, or
    any change the build path requires it for.
-3. **Flagged route.** The work touches a named sensitive area. Build may
-   prepare or implement only up to the recorded condition; that condition
-   must be met before merge or live activation. Stopping there, safely
-   prepared and correctly recorded as blocked, is one of section-builder's
-   two successful outcomes; see step 8.
+3. **Flagged route.** The work touches a named sensitive area whose caution
+   is neither done nor accepted. Before building inside the area, give the
+   risk notice once, in full, as
+   `.agents/skills/setup-ai-build-kit/references/fit-check.md` describes. If
+   the person carries on after it, write the `Accepted:` line with their
+   words and the date, read it back, and build and save the piece on the
+   pull-request route. If they do not, build only up to the recorded
+   condition. In an unattended run nobody is there to carry on, so never
+   write an acceptance on the person's behalf: stop at the condition.
+   Stopping there, safely prepared and correctly recorded as blocked, is one
+   of section-builder's two successful outcomes; see step 8.
 
 Pull-request and flagged routes work on a short-lived branch cut from the
 up-to-date `main`. The checkpoint route may commit on the current branch once
@@ -222,8 +228,9 @@ there. Do not merge the pull request, and do not delete the branch. A person
 decides whether to merge, always. Report the piece as ready for review, not as
 done, and leave the merge to them.
 
-Flagged route: do the pull-request route for everything up to the condition,
-then:
+Flagged route: where the person carried on and the acceptance is recorded,
+this is the pull-request route and nothing below applies. Otherwise do the
+pull-request route for everything up to the condition, then:
 
 - record the exact condition that must be met, and say that /ship prepares a
   handover for the area on request;
@@ -234,7 +241,8 @@ then:
 
 A piece that ends here, with all five done, is safely prepared and correctly
 blocked. Report it as a completed pass, and leave it alone until the
-condition is met or the person accepts the risk instead.
+condition is met or the person carries on after the notice and the acceptance
+is recorded.
 
 ## 9. Sync the records
 

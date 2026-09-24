@@ -203,9 +203,12 @@ same working notes as it is settled: which of the three build paths, why,
 each sensitive area and its caution, the recheck triggers, and today's date.
 Before naming a sensitive area, work through the redesign options in
 fit-check.md; if a redesign changes the answers, run the check again. Where an
-area survives that, give the risk notice fit-check.md describes before any of
-the flagged work goes ahead. A no to an ownership question becomes a founding
-task rather than a path move.
+area survives that, give the risk notice fit-check.md describes, once and in
+full, before any of the flagged work goes ahead. If the person carries on after
+it, write their acceptance into the working notes with their words and the
+date, so the masterplan's `Accepted:` line carries it, and go on. If they do
+not, founding goes on anyway and the area's caution stays `not yet done`. A no
+to an ownership question becomes a founding task rather than a path move.
 
 ## 7. Write the masterplan
 

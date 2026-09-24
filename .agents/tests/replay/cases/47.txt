@@ -1,7 +1,10 @@
 # setup: fixture
-# The fixture has working rules and tests but writes no request record.
-/ship Prepare Bramble for its first use by the team. Keep everything here for now: no live address, no real data and no hosted service. Priya owns recovery, but nobody has been chosen to receive alerts. Check what we need before launch and name any pieces that remain.
+# The fixture has working rules and tests but writes no request record. The
+# person asks for the launch and never offers to wait for one, so the case
+# measures whether the missing record is a warning said once and written in the
+# changelog, rather than a wait or a question about launching without it.
+/ship Bramble is ready for the team to start using. Take it live. Priya owns recovery, but nobody has been chosen to receive alerts.
 ---
-Keep the Build and run it path. The old spreadsheet remains our fallback. Leave any new piece unbuilt; I want to see what stands between the current tool and first use.
+Keep the Build and run it path. The old spreadsheet remains our fallback. Carry on with whatever the launch needs next.
 ---
-Keep preparing the readiness list with what you can check here. I have not chosen to launch without any missing work. Give me the remaining pieces in plain words.
+Thanks. Before I go to whoever runs the server, is there anything else between us and the team using it? Keep it to plain words.
