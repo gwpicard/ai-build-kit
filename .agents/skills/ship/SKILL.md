@@ -49,11 +49,12 @@ it, then stop.
 2. Run second-opinion using the best independent method recorded in
    AGENTS.md.
 3. Operational readiness: before any first live use, require whatever of
-   this actually applies: a named service and billing owner, a backup, a successful restore rehearsal, a manual
-   fallback, a rollback or disable procedure, removal of test data, an
-   access review, and clear service-account ownership. Do not require a
-   database restore rehearsal for a tool with no stored data, or invent
-   readiness steps a tool with no live reliance doesn't need.
+   this actually applies: a named service and billing owner, a backup, a
+   successful restore rehearsal, a manual fallback, a rollback or disable
+   procedure, removal of test data, an access review, and clear
+   service-account ownership. Do not require a database restore rehearsal
+   for a tool with no stored data, or invent readiness steps a tool with
+   no live reliance doesn't need.
 
    Check that the tool records what each request did: one line per event,
    with a run id shared by that request's events, a time, a level and the step.
