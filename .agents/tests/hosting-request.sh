@@ -47,6 +47,7 @@ rs_rule "the lane comes from the fit check" 'take the lane from the fit check'
 rs_rule "values are entered on the server" 'values are entered on the server'
 rs_rule "no secret value is written" 'never write a value, key, password or token into the request'
 rs_rule "an unknown field is none, not a guess" 'write `none` rather than guess'
+rs_rule "on a recipe the health check is always filled" 'a project on a recipe always has a health route, because the recipe.s health section names one, so there healthcheck is that path and never .none.'
 rs_rule "the block is printed for pasting" 'print the same block in the reply, so the person can paste it'
 rs_rule "the one line the person hears" 'this tool needs a home\. take this request to whoever runs the server\.'
 

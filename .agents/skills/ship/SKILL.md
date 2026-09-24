@@ -120,7 +120,9 @@ it, then stop.
    rather than from a plan. A tool that listens only on 127.0.0.1 cannot be
    reached from outside its container: say so once, and record it. Env vars
    carry names only; values are entered on the server. Never write a value, key, password or token into the request.
-   Where the project does not say, write `none` rather than guess. Print the
+   Where the project does not say, write `none` rather than guess. A project
+   on a recipe always has a health route, because the recipe's health section
+   names one, so there Healthcheck is that path and never `none`. Print the
    same block in the reply, so the person can paste it, and say once: "This
    tool needs a home. Take this request to whoever runs the server. Paste what
    they send back here, and I will record it for the next /ship."

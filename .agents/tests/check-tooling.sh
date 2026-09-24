@@ -164,7 +164,7 @@ for name in nextjs-supabase-on-vercel nextjs-supabase-on-coolify; do
   [ -f "$recipe" ] || { fail "$name is neither on the menu nor waiting"; continue; }
   out=$(PATH="$WORK/bin" HOME="$HOME" "$CHECK" --recipe "$recipe" 2>&1) && code=0 || code=$?
   [ "$code" -eq 0 ] || fail "$name's tools stopped founding"
-  for tool in supabase docker psql curl; do
+  for tool in supabase docker psql curl git; do
     printf '%s\n' "$out" | grep -q "^$tool is \(ready\|missing\)" || fail "$name's report says nothing about $tool"
   done
   pass "$name's tools are each reported, and none stops founding"

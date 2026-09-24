@@ -75,9 +75,27 @@ rr_write_stand_ins() {
 #!/usr/bin/env sh
 echo "vercel $*" >> "$RR_CALLS"
 refuse() { echo "vercel stand-in: not a documented command: vercel $*" >&2; exit 64; }
+# One deployment, given as an address or an id, and only the options the
+# command documents. A misspelt option is refused rather than taken for the
+# deployment.
+one_deployment() {
+  command=$1
+  shift
+  target=""
+  while [ "$#" -gt 0 ]; do
+    case "$command $1" in
+      "inspect --logs"|"inspect --wait"|"promote --yes") shift ;;
+      "inspect --timeout"|"promote --timeout"|"rollback --timeout")
+        [ -n "${2:-}" ] || refuse "$command" "$@"; shift 2 ;;
+      "$command -"*) refuse "$command" "$@" ;;
+      *) [ -z "$target" ] || refuse "$command" "$@"; target=$1; shift ;;
+    esac
+  done
+  [ -n "$target" ] || refuse "$command"
+}
 case "$1" in
-  inspect) [ "$#" -eq 2 ] || refuse "$@"; echo "status  Ready" ;;
-  promote|rollback) [ "$#" -le 2 ] || refuse "$@" ;;
+  inspect) one_deployment "$@"; echo "status  Ready" ;;
+  promote|rollback) one_deployment "$@" ;;
   env)
     case "$2 ${3:-} ${4:-}" in
       "ls  "|"ls production "|"ls preview "|"pull  ") ;;
@@ -90,8 +108,8 @@ case "$1" in
       case "$1" in
         --environment) case "${2:-}" in production|preview) shift 2 ;; *) refuse logs "$@" ;; esac ;;
         --level) case "${2:-}" in error|warning|info|fatal) shift 2 ;; *) refuse logs "$@" ;; esac ;;
-        --since|--until|--limit|--deployment|--query) [ -n "${2:-}" ] || refuse logs "$@"; shift 2 ;;
-        --json|--expand|--follow) shift ;;
+        --since|--until|--limit|--deployment|--query|--branch) [ -n "${2:-}" ] || refuse logs "$@"; shift 2 ;;
+        --json|--expand|--follow|--no-branch) shift ;;
         *) refuse logs "$@" ;;
       esac
     done ;;
@@ -103,13 +121,14 @@ SH
 echo "supabase $*" >> "$RR_CALLS"
 refuse() { echo "supabase stand-in: not a documented command: supabase $*" >&2; exit 64; }
 case "$*" in
-  "start"|"stop --no-backup"|"db push"|"db push --dry-run") ;;
+  "init"|"start"|"stop"|"stop --no-backup"|"link"|"db push"|"db push --dry-run") ;;
+  "link --project-ref "*) [ "$#" -eq 3 ] || refuse "$@" ;;
   "db dump"*)
     shift 2
     while [ "$#" -gt 0 ]; do
       case "$1" in
         --linked|--local|--role-only|--data-only|--use-copy|--dry-run) shift ;;
-        -f|--file|-s|--schema) [ -n "${2:-}" ] || refuse db dump "$@"; shift 2 ;;
+        -f|--file|-s|--schema|-x|--exclude|-p|--password) [ -n "${2:-}" ] || refuse db dump "$@"; shift 2 ;;
         *) refuse db dump "$@" ;;
       esac
     done ;;
@@ -122,7 +141,7 @@ echo "psql $*" >> "$RR_CALLS"
 refuse() { echo "psql stand-in: not an option psql has: $*" >&2; exit 64; }
 while [ "$#" -gt 0 ]; do
   case "$1" in
-    --single-transaction) shift ;;
+    --single-transaction|--tuples-only) shift ;;
     --variable|--file|--command|--dbname) [ -n "${2:-}" ] || refuse "$@"; shift 2 ;;
     *) refuse "$@" ;;
   esac
@@ -137,14 +156,14 @@ while [ "$#" -gt 0 ]; do
   case "$1" in
     -fsS) shift ;;
     -H) [ -n "${2:-}" ] || refuse "$@"; shift 2 ;;
-    https://*) url=$1; shift ;;
+    https://*|http://localhost:3000/*) url=$1; shift ;;
     *) refuse "$@" ;;
   esac
 done
 case "$url" in
   https://api.supabase.com/v1/projects/*/database/backups) echo '{"backups":[]}' ;;
   https://api.supabase.com/v1/projects/*/advisors/security) echo '{"lints":[]}' ;;
-  https://*/api/health) echo '{"status":"ok","database":"ok"}' ;;
+  https://*/api/health|http://localhost:3000/api/health) echo '{"status":"ok","database":"ok"}' ;;
   *) refuse "$url" ;;
 esac
 SH
@@ -153,10 +172,28 @@ SH
 echo "docker $*" >> "$RR_CALLS"
 case "$*" in
   "info"|"build ."|"build -t "*" .") ;;
+  "run -d --name "*" -p 3000:3000 --env-file .env.local "*) [ "$#" -eq 9 ] || { echo "docker stand-in: not a command a recipe may use: docker $*" >&2; exit 64; } ;;
+  "rm -f "*) [ "$#" -eq 3 ] || { echo "docker stand-in: not a command a recipe may use: docker $*" >&2; exit 64; } ;;
   *) echo "docker stand-in: not a command a recipe may use: docker $*" >&2; exit 64 ;;
 esac
 SH
-  chmod +x "$1/vercel" "$1/supabase" "$1/psql" "$1/curl" "$1/docker"
+  cat > "$1/git" <<'SH'
+#!/usr/bin/env sh
+echo "git $*" >> "$RR_CALLS"
+case "$*" in
+  "rev-parse origin/main") echo 0000000 ;;
+  *) echo "git stand-in: not a command a recipe may use: git $*" >&2; exit 64 ;;
+esac
+SH
+  cat > "$1/npx" <<'SH'
+#!/usr/bin/env sh
+echo "npx $*" >> "$RR_CALLS"
+case "$*" in
+  "next build"|"next start") ;;
+  *) echo "npx stand-in: not a command a recipe may use: npx $*" >&2; exit 64 ;;
+esac
+SH
+  chmod +x "$1/vercel" "$1/supabase" "$1/psql" "$1/curl" "$1/docker" "$1/git" "$1/npx"
 }
 
 rr_tools() {
@@ -201,7 +238,7 @@ rr_run_commands() {
   rr_commands "$1" > "$rs_dir/commands"
   [ -s "$rs_dir/commands" ] || { echo "  no command in the recipe uses one of its tools"; return 1; }
   while IFS= read -r rr_cmd; do
-    if ! (cd "$rs_dir/work" && PATH="$rs_dir/bin:$PATH" SUPABASE_ACCESS_TOKEN=stand-in sh -c "$rr_cmd") >/dev/null 2>"$rs_dir/refusal"; then
+    if ! (cd "$rs_dir/work" && PATH="$rs_dir/bin:$PATH" SUPABASE_ACCESS_TOKEN=stand-in SUPABASE_DB_URL=stand-in sh -c "$rr_cmd") >/dev/null 2>"$rs_dir/refusal"; then
       echo "  refused: $rr_cmd"
       sed 's/^/    /' "$rs_dir/refusal"
       rr_status=1
@@ -239,15 +276,56 @@ rr_stand_ins() {
   rr_run_commands "$rs_dir/copy/$rr_name" >/dev/null &&
     rs_fail "a copy naming a tool no command uses was not refused"
   rs_ok "a copy naming a tool no command uses is refused"
+
+  # A misspelt option must fail rather than be taken for the deployment, and
+  # the options each command documents must still pass.
+  for rr_probe in "rollback --timout 5m stand-in" "inspect --wiat stand-in" "promote --yse stand-in" \
+    "rollback" "inspect one two"; do
+    # shellcheck disable=SC2086
+    if PATH="$rs_dir/bin:$PATH" vercel $rr_probe >/dev/null 2>&1; then
+      rs_fail "the vercel stand-in accepted 'vercel $rr_probe'"
+    fi
+  done
+  for rr_probe in "rollback --timeout 5m stand-in" "inspect --wait stand-in" "promote --yes stand-in"; do
+    # shellcheck disable=SC2086
+    PATH="$rs_dir/bin:$PATH" vercel $rr_probe >/dev/null 2>&1 ||
+      rs_fail "the vercel stand-in refused 'vercel $rr_probe'"
+  done
+  rs_ok "the vercel stand-in refuses a misspelt option and keeps the documented ones"
 }
 
 # --- the Supabase parts ------------------------------------------------------
+
+rr_guard_container_part() {
+  # The Dockerfile and the health route every Next.js recipe shares, whichever
+  # host runs the app, so the two recipes cannot drift apart on them.
+  rs_reset
+  rs_rule "the project always carries the same dockerfile" 'the project always carries the same dockerfile'
+  rs_rule "a host that ignores it still gets a matching local check" 'it gives a local check that matches production'
+  rs_rule "it keeps a way off the host" 'moving to a host that runs containers changes the host and nothing else'
+  rs_rule "Next.js builds standalone" 'output: "standalone"'
+  rs_rule "the server listens on every address" 'hostname=0\.0\.0\.0. and .port=3000.'
+  rs_rule "the image carries wget" 'starts from a node alpine image, which carries .wget.'
+  rs_rule "a slim image has neither tool" 'a .node:\*-slim. image has neither'
+  rs_rule "one check on one route" 'it carries no .healthcheck. line: on a host that runs its own health check, such a line takes precedence over the host.s settings'
+  rs_rule "the health route makes a real round trip" 'makes one real round trip to the database'
+  rs_rule "it is never answered from a build-time copy" 'export const dynamic = "force-dynamic"'
+  rs_rule "public variables are fixed at build" 'next\.js fixes public variables when it builds'
+  rs_rule "the image answers locally before anything goes live" 'before anything goes live, the kit checks docker is running'
+  rs_rule "the local answer is read" 'curl -fss http://localhost:3000/api/health.: 200, ."database":"ok".'
+  rs_rule "a dead database gives 503" 'the same route answers 503 rather than claiming the tool is up'
+  rs_rule "the local values stay local" 'the values in .\.env\.local. never leave the machine and are never shown'
+  rs_guard "$RR_PARTS/nextjs-container.md" "the container part"
+}
 
 rr_guard_supabase_parts() {
   rs_reset
   rs_rule "Free takes no backup of its own" 'the free plan takes none'
   rs_rule "on Free the kit takes its own after each launch" 'on free the kit takes its own after each launch'
-  rs_rule "the data is dumped with copy statements" 'supabase db dump --linked --data-only --use-copy -f data\.sql'
+  rs_rule "the data is dumped with copy statements" 'supabase db dump --linked --data-only --use-copy -x storage\.buckets_vectors -x storage\.vector_indexes -f data\.sql'
+  rs_rule "a dump needs the database password" 'from .supabase_db_password., from .-p., or from what .supabase link. stored'
+  rs_rule "the password is never shown" 'never writes the password into a command it shows'
+  rs_rule "point-in-time recovery hides the daily backups" 'with point-in-time recovery switched on, the listing shows no daily backups at all'
   rs_rule "the dump is kept outside the repository" 'into a dated folder outside the repository'
   rs_rule "the gap in a daily backup is named once" 'holds neither the passwords of custom roles nor the files in storage'
   rs_rule "a paid plan's backups are listed" 'api\.supabase\.com/v1/projects/<project ref>/database/backups. lists a backup taken in the last day'
@@ -256,13 +334,16 @@ rr_guard_supabase_parts() {
 
   rs_reset
   rs_rule "the restore test never touches the live database" 'the restore test never touches the live database'
-  rs_rule "roles, schema and data are dumped" 'with .--role-only. into .roles\.sql., with no option into .schema\.sql., and with .--data-only --use-copy. into .data\.sql.'
-  rs_rule "it restores into an empty local database" 'starts an empty local database with .supabase start.'
+  rs_rule "roles, schema and data are dumped" 'with .--role-only. into .roles\.sql., with no option into .schema\.sql., and with'
+  rs_rule "the data dump leaves out the same tables" 'with .--data-only --use-copy -x storage\.buckets_vectors -x storage\.vector_indexes. into .data\.sql.'
+  rs_rule "the project's own local database is stopped" 'stops the project.s own local database with .supabase stop., since the restore uses the same ports'
+  rs_rule "it restores into an empty local database" 'in a throwaway folder outside the project it runs .supabase init. and .supabase start.'
+  rs_rule "the project's migrations and seed stay out" 'would load its migrations, which clash with .schema\.sql., and its .supabase/seed\.sql., whose rows would be counted as restored'
   rs_rule "the load stops on the first error" 'psql --single-transaction --variable on_error_stop=1'
   rs_rule "triggers stay off while the data loads" 'set session_replication_role = replica'
   rs_rule "the restore time is written down" 'written down as the restore time'
   rs_rule "the rows are counted table by table" 'equals .select count\(\*\). on that table in the local database'
   rs_rule "a restore that loads nothing fails" 'at least one table holds rows'
-  rs_rule "the local copy is removed" '.supabase stop --no-backup. removes the local copy'
+  rs_rule "the local copy is removed" '.supabase stop --no-backup. in the throwaway folder removes the local copy'
   rs_guard "$RR_PARTS/supabase-restore.md" "the restore part"
 }

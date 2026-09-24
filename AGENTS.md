@@ -685,8 +685,10 @@ attribution line, not the word.
 - `.agents/tests/recipe-nextjs-supabase-on-vercel.sh` and
   `.agents/tests/recipe-nextjs-supabase-on-coolify.sh` guard the first recipe
   pair offline. They share `.agents/tests/lib/recipe-rehearsal.sh`. Each holds
-  its recipe's rules and proves every one load-bearing, and both hold the two
-  Supabase parts. Each also runs every command its recipe writes against
+  its recipe's rules and proves every one load-bearing, and both hold the three
+  shared parts: the Next.js container and its health route, which both recipes
+  keep so the local check matches production and a later move changes only the
+  host, and the Supabase backup and restore. Each also runs every command its recipe writes against
   stand-ins for the recipe's tools. A stand-in answers only what that tool
   documents, so a mistyped option or an invented subcommand is refused, and a
   tool the recipe names but no command uses is refused too. Until its real run
