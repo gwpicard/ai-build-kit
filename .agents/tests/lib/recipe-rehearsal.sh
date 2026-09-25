@@ -254,7 +254,10 @@ case "$*" in
   "check-ignore .vercel .env.local") printf '.vercel\n.env.local\n' ;;
   # Right after vercel link, before the kit lets the file back in.
   "check-ignore --no-index -v .env.example") printf '.gitignore:10:.env*\t.env.example\n' ;;
-  "ls-files .env.example") echo .env.example ;;
+  # Once the kit has let it back in: nothing named, and status 1, which is how
+  # git check-ignore says no path is ignored.
+  "check-ignore --no-index .env.example") exit 1 ;;
+  "add .env.example") ;;
   *) echo "git stand-in: not a command a recipe may use: git $*" >&2; exit 64 ;;
 esac
 SH
@@ -316,7 +319,12 @@ rr_run_commands() {
   rr_commands "$1" > "$rs_dir/commands"
   [ -s "$rs_dir/commands" ] || { echo "  no command in the recipe uses one of its tools"; return 1; }
   while IFS= read -r rr_cmd; do
-    if ! (cd "$rs_dir/work" && PATH="$rs_dir/bin:$PATH" SUPABASE_ACCESS_TOKEN=stand-in SUPABASE_DB_URL=stand-in VALUE=stand-in sh -c "$rr_cmd") >/dev/null 2>"$rs_dir/refusal"; then
+    rr_exit=0
+    (cd "$rs_dir/work" && PATH="$rs_dir/bin:$PATH" SUPABASE_ACCESS_TOKEN=stand-in SUPABASE_DB_URL=stand-in VALUE=stand-in sh -c "$rr_cmd") >/dev/null 2>"$rs_dir/refusal" || rr_exit=$?
+    # git check-ignore answers status 1 when no path is ignored, which is the
+    # answer a recipe's check can ask for. Every other command must succeed.
+    case "$rr_exit $rr_cmd" in "1 git check-ignore "*) rr_exit=0 ;; esac
+    if [ "$rr_exit" -ne 0 ]; then
       echo "  refused: $rr_cmd"
       sed 's/^/    /' "$rs_dir/refusal"
       rr_status=1
