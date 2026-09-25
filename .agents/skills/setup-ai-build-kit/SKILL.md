@@ -347,16 +347,64 @@ and this step is only finished once they exist.
 ## 11. Stand the project up
 
 Ask two questions: will the team use this in a browser, and does it need to
-work when your machine is off? Set up accordingly. One established,
-conventional stack, because the agent is strongest where the conventions run
-deepest. Managed services for anything storing sign-ins, payments, or files;
-those never get hand-built, however capable you feel, unless a person who
-does that work for a living owns a different design and has said so on the
-record. Use references/manual-setup.md for any
-step only a human can complete. If hosting is needed, arrange it so day-to-day
-pushes land at a preview address and only /ship changes the address the team
-uses. Where a hosting companion or whoever runs the server will host it, /ship
-writes the hosting request on the first launch, and the person takes it there.
+work when your machine is off? From those answers and the interview, name the
+app's shape in one plain sentence, such as "a web app your team signs in to,
+with saved data".
+
+Then offer the recipe menu. A recipe is one build stack paired with one place
+to run it, which the kit knows well enough to check at launch. The installed
+ship skill sits beside this skill's folder, however the kit was installed, and
+its `ship/references/recipe-format.md` says what a recipe holds. The menu is
+the files directly in the `recipes/` folder of the installed ship skill, beside
+this skill's folder, read now rather than remembered. Nothing else is on it:
+not the `parts/` folder, and not a recipe kept anywhere else while it waits for
+its real run. Read each file's `Fits:` line and keep the ones that fit the
+shape.
+
+If one recipe fits, recommend it. If several fit, recommend the one whose
+`Recommended when:` line best matches what the interview said, or the first by
+file name when none or several match. Show the ones that fit with exactly one
+recommended. For each, say in plain words what it promises: the launch steps
+the kit can check on it, such as preview, rollback, backup and restore. Say
+what running it involves in the same plain words, meaning which accounts the
+person will hold and whether the tool runs on a hosting platform or on a server
+they rent. Never quote a price. Take every product name from the recipe file at
+this moment, and never write one into this skill. Say that they may bring their
+own stack instead.
+
+In the same reply, say that the recommended recipe is the default and that
+founding carries on with it unless they pick another. Showing the menu does not
+end the turn: carry on with the setup below while they read it. If they give no
+answer, or say to get on with it, keep the recommended recipe. The menu is
+never a condition of founding.
+
+If they choose their own stack, say once what the kit then cannot check: the
+launch steps a recipe would have checked. Record their choice and `Recipe:
+none`, and do not raise it again. Where no recipe fits the shape, such as a
+command-line tool or a desktop app, say so in one line, record `Recipe: none`,
+and set up as below without a menu.
+
+Once a recipe is chosen, build on its `Build stack:` line. Record it in
+AGENTS.md's stack section as `Recipe: <file name>.md`, the file name exactly
+as it sits in the folder with `.md` included, so /ship can open it. Run
+`scripts/check-tooling.sh --recipe <recipe file>` from this installed skill
+folder, passing the chosen file's path inside the ship skill's `recipes/`
+folder beside it. A tool it reports missing is needed before the first /ship,
+not now: name it once, add it to the masterplan as a setup task, and carry on.
+That report never stops founding.
+
+Without a recipe, set up accordingly: one established, conventional stack,
+because the agent is strongest where the conventions run deepest.
+
+On any stack, recipe or not, use managed services for anything storing
+sign-ins, payments, or files; those never get hand-built, however capable you
+feel, unless a person who does that work for a living owns a different design
+and has said so on the record. Use references/manual-setup.md for any step only
+a human can complete. If hosting is needed, arrange it so day-to-day pushes
+land at a preview address and only /ship changes the address the team uses; on
+a recipe, its preview section says how. Where a hosting companion or whoever
+runs the server will host it, /ship writes the hosting request on the first
+launch, and the person takes it there.
 
 Choose routine technical parts quietly. Record run and check commands and any
 non-standard conventions under AGENTS.md's stack section, keeping its content

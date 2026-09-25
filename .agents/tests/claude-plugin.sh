@@ -75,6 +75,13 @@ done
 grep -qF '${CLAUDE_PLUGIN_ROOT}/.agents/skills/setup-ai-build-kit/SKILL.md' \
   "$INSTALL_PATH/.claude/commands/setup-ai-build-kit.md" || \
   fail "installed start command does not load the plugin's canonical skill"
+# Founding reads the recipe menu from the ship skill beside its own folder,
+# which on this route is inside the plugin cache.
+for recipe in "$ROOT"/.agents/skills/ship/recipes/*.md; do
+  [ -f "$recipe" ] || continue
+  [ -f "$INSTALL_PATH/.agents/skills/ship/recipes/$(basename -- "$recipe")" ] || \
+    fail "installed Claude plugin lost a recipe founding offers: $(basename -- "$recipe")"
+done
 grep -qF 'user-invocable: false' \
   "$INSTALL_PATH/.claude/skills/change-triage/SKILL.md" || \
   fail "installed internal discipline is visible in Claude's command menu"

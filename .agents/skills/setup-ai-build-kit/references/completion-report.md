@@ -16,6 +16,8 @@ Internal facts recorded for later agents, and what the user hears instead:
 - the commit identifier -> only in the checkpoint reference at the very end, never leading the report.
 - no push occurred -> "No code was uploaded or published."
 - the pieces were opened as issues -> "The build steps are listed as issues in the project's online repository."
+- `Recipe: <file name>.md` in AGENTS.md -> "The tool will run on [the recipe's name, from its file], and the kit can check its launch steps."
+- `Recipe: none` in AGENTS.md -> "The tool runs on a stack the kit has no recipe for, so it cannot check the launch steps a recipe would."
 
 These commands and states stay wherever agents already keep them (AGENTS.md,
 the changelog); the report never leads with them.
@@ -58,6 +60,7 @@ The initial setup is complete.
 - The purpose of the tool, its intended users, and its access rules are written down.
 - The work has been divided into [number] small build steps.
 - A separate review checked the plan, and any important findings were resolved.
+- [What the tool will run on, and whether the kit can check its launch steps.]
 - The automatic project check passed.
 - The instructions for opening the private preview were tested successfully.
 

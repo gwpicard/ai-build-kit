@@ -97,7 +97,8 @@ governed here.
 ## Where a project records its recipe
 
 A project names its recipe in its own AGENTS.md, in the stack section, as
-`Recipe: <file name>`, or `Recipe: none` when the person chose their own stack.
+`Recipe: <file name>.md`, the file name with `.md` included, or `Recipe: none`
+when the person chose their own stack or no recipe fits.
 It does not go in the build-path block. The build path says how carefully the
 work is built and the recipe says what it runs on, and the two change for
 different reasons.
