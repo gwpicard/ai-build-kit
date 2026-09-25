@@ -126,7 +126,8 @@ rs_require "WORKFLOW tells the story" "$WORKFLOW" 'so /ship writes a hosting req
 rs_require "WORKFLOW says it holds names only" "$WORKFLOW" 'it holds names only, never a password or key'
 rs_require "WORKFLOW says a later launch reads it back" "$WORKFLOW" 'on a later launch /ship reads the request back'
 rs_require "the README FAQ answers where it runs" "$README" 'where does the tool run once it is built\?'
-rs_require "the README says the companion is a separate install" "$README" 'it is a separate install on the server'
+rs_require "the README says the companion is a separate install" "$README" 'it is a separate install, made by somebody else'
+rs_require_absent "the README does not put the companion on the server" "$README" 'separate install on the server'
 rs_require "SOURCES credits the hosting request" "$SOURCES" 'kasperhonore/coolify-devops'
 
 rs_done

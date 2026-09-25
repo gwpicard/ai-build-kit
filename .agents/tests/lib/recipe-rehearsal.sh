@@ -84,7 +84,7 @@ one_deployment() {
   target=""
   while [ "$#" -gt 0 ]; do
     case "$command $1" in
-      "inspect --logs"|"inspect --wait"|"promote --yes") shift ;;
+      "inspect --logs"|"inspect --wait"|"promote --yes"|"rollback --yes") shift ;;
       "inspect --timeout"|"promote --timeout"|"rollback --timeout")
         [ -n "${2:-}" ] || refuse "$command" "$@"; shift 2 ;;
       "$command -"*) refuse "$command" "$@" ;;
@@ -99,7 +99,19 @@ case "$1" in
   env)
     case "$2 ${3:-} ${4:-}" in
       "ls  "|"ls production "|"ls preview "|"pull  ") ;;
-      "add "*" production"|"add "*" preview") [ "$#" -eq 4 ] || refuse "$@" ;;
+      "add "*" production"|"add "*" preview"|"add "*" production "*|"add "*" preview "*)
+        # A name, an environment, then only documented options. The value
+        # arrives on standard input, never as an argument.
+        name=$3 environment=$4
+        shift 4
+        case "$name" in -*) refuse env add "$name" ;; esac
+        while [ "$#" -gt 0 ]; do
+          case "$1" in
+            --yes|--sensitive|--no-sensitive|--force) shift ;;
+            --type) case "${2:-}" in config|sensitive|encrypted|plain) shift 2 ;; *) refuse env add "$name" "$environment" "$@" ;; esac ;;
+            *) refuse env add "$name" "$environment" "$@" ;;
+          esac
+        done ;;
       *) refuse "$@" ;;
     esac ;;
   logs)
@@ -172,7 +184,7 @@ SH
 echo "docker $*" >> "$RR_CALLS"
 case "$*" in
   "info"|"build ."|"build -t "*" .") ;;
-  "run -d --name "*" -p 3000:3000 --env-file .env.local "*) [ "$#" -eq 9 ] || { echo "docker stand-in: not a command a recipe may use: docker $*" >&2; exit 64; } ;;
+  "run -d --name "*" -p 3000:3000 --env-file .env.container "*) [ "$#" -eq 9 ] || { echo "docker stand-in: not a command a recipe may use: docker $*" >&2; exit 64; } ;;
   "rm -f "*) [ "$#" -eq 3 ] || { echo "docker stand-in: not a command a recipe may use: docker $*" >&2; exit 64; } ;;
   *) echo "docker stand-in: not a command a recipe may use: docker $*" >&2; exit 64 ;;
 esac
@@ -182,6 +194,7 @@ SH
 echo "git $*" >> "$RR_CALLS"
 case "$*" in
   "rev-parse origin/main") echo 0000000 ;;
+  "check-ignore supabase/.temp") echo supabase/.temp ;;
   *) echo "git stand-in: not a command a recipe may use: git $*" >&2; exit 64 ;;
 esac
 SH
@@ -220,7 +233,12 @@ rr_commands() {
         rest = substr(rest, RSTART + RLENGTH)
         # A tool named on its own, such as `curl`, is a mention, not a command.
         if (split(span, word, " ") < 2) continue
-        if (word[1] in tool) { gsub(/<[^>]*>/, "stand-in", span); print span }
+        # A value piped in with printf counts when the command it feeds is one
+        # of the tools, since that is how a recipe keeps a value off the
+        # command line.
+        first = word[1]
+        if (first == "printf" && split(span, piece, "[|] ") == 2) { split(piece[2], word, " "); first = word[1] }
+        if (first in tool) { gsub(/<[^>]*>/, "stand-in", span); print span }
       }
     }
   ' "$rs_dir/tools" $rr_files
@@ -238,7 +256,7 @@ rr_run_commands() {
   rr_commands "$1" > "$rs_dir/commands"
   [ -s "$rs_dir/commands" ] || { echo "  no command in the recipe uses one of its tools"; return 1; }
   while IFS= read -r rr_cmd; do
-    if ! (cd "$rs_dir/work" && PATH="$rs_dir/bin:$PATH" SUPABASE_ACCESS_TOKEN=stand-in SUPABASE_DB_URL=stand-in sh -c "$rr_cmd") >/dev/null 2>"$rs_dir/refusal"; then
+    if ! (cd "$rs_dir/work" && PATH="$rs_dir/bin:$PATH" SUPABASE_ACCESS_TOKEN=stand-in SUPABASE_DB_URL=stand-in VALUE=stand-in sh -c "$rr_cmd") >/dev/null 2>"$rs_dir/refusal"; then
       echo "  refused: $rr_cmd"
       sed 's/^/    /' "$rs_dir/refusal"
       rr_status=1
@@ -314,7 +332,9 @@ rr_guard_container_part() {
   rs_rule "the image answers locally before anything goes live" 'before anything goes live, the kit checks docker is running'
   rs_rule "the local answer is read" 'curl -fss http://localhost:3000/api/health.: 200, ."database":"ok".'
   rs_rule "a dead database gives 503" 'the same route answers 503 rather than claiming the tool is up'
-  rs_rule "the local values stay local" 'the values in .\.env\.local. never leave the machine and are never shown'
+  rs_rule "the container gets its own env file" 'the container gets its values from .\.env\.container., a file git ignores that holds only the names in .\.env\.example.'
+  rs_rule "it never gets the local env file" 'it never gets .\.env\.local., because other tools write their own tokens there'
+  rs_rule "the container file holds no stray name" '.\.env\.container. holds no name missing from .\.env\.example., its values never leave the machine'
   rs_guard "$RR_PARTS/nextjs-container.md" "the container part"
 }
 
@@ -337,7 +357,10 @@ rr_guard_supabase_parts() {
   rs_rule "roles, schema and data are dumped" 'with .--role-only. into .roles\.sql., with no option into .schema\.sql., and with'
   rs_rule "the data dump leaves out the same tables" 'with .--data-only --use-copy -x storage\.buckets_vectors -x storage\.vector_indexes. into .data\.sql.'
   rs_rule "the project's own local database is stopped" 'stops the project.s own local database with .supabase stop., since the restore uses the same ports'
-  rs_rule "it restores into an empty local database" 'in a throwaway folder outside the project it runs .supabase init. and .supabase start.'
+  rs_rule "it restores into an empty local database" 'in a throwaway folder outside the project it runs .supabase init.'
+  rs_rule "the local services match live" 'copies the linked project.s .supabase/\.temp/\*-version. files into the throwaway folder.s .supabase/\.temp/., so the local services run the same versions as the live project'
+  rs_rule "the whole stack starts" 'runs .supabase start. with the full stack, leaving no service out, because the auth and storage tables come from those services'
+  rs_rule "the files load as supabase_admin" 'loads the three files as .supabase_admin. with .psql .*postgresql://supabase_admin:postgres.127\.0\.0\.1:54322/postgres., because .roles\.sql. grants settings the local .postgres. user may not grant'
   rs_rule "the project's migrations and seed stay out" 'would load its migrations, which clash with .schema\.sql., and its .supabase/seed\.sql., whose rows would be counted as restored'
   rs_rule "the load stops on the first error" 'psql --single-transaction --variable on_error_stop=1'
   rs_rule "triggers stay off while the data loads" 'set session_replication_role = replica'

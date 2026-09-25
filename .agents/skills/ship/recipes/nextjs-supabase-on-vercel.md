@@ -1,0 +1,65 @@
+# Recipe: Next.js and hosted Supabase on Vercel
+
+Fits: a web app people use in a browser, with sign-in and saved data
+Recommended when: the team has no server of its own and wants the host to handle previews, going live and rollback.
+Build stack: Next.js with TypeScript and the App Router, with a Dockerfile that Vercel ignores, and the database and sign-in in a hosted Supabase project whose tables are made by migrations
+Deploy target: Vercel, with the project's GitHub repository connected so that each push builds
+Command-line tools: vercel, supabase, docker, psql, curl, git
+Last checked: 2026-09-25
+
+## Preview
+
+How it works: The first push to a new Vercel project is `main`, before any other branch, because Vercel sends the first build it gets from GitHub to production whichever branch it came from. After that, each branch pushed to GitHub gets its own Vercel preview deployment at its own address, built with the Preview environment variables. Those point at a second Supabase project kept for previews, never at the live one. Before each preview, the kit gives that project the branch's migrations with `supabase link --project-ref <preview project ref>` and `supabase db push`. The kit waits until `vercel inspect <preview address>` reports the deployment as Ready. Vercel protects each generated deployment address with a sign-in by default, and such an address answers 302 to anyone not signed in, so the person opens it in their own browser. The production domain, `<project>.vercel.app`, stays public.
+How it is checked: The person opens the preview address and tries the change, then opens `<preview address>/api/health`. It shows `"database":"ok"`, the branch's commit, and a `project` that is not the live project's reference.
+Who runs it: a person looking
+
+## Going live
+
+How it works: The kit links back to the live project with `supabase link --project-ref <live project ref>`, then applies new migrations to the live database before the build that needs them, because Vercel does not run them: `supabase db push --dry-run` lists what would change, and `supabase db push` applies it. A migration in a release only adds, so the version still live keeps working until the new one takes over. The kit then lists the public tables with row-level security off, `psql --dbname "$SUPABASE_DB_URL" --tuples-only --command "select tablename from pg_tables where schemaname = 'public' and not rowsecurity;"`. `SUPABASE_DB_URL` is the session pooler address from `supabase/.temp/pooler-url` with the database password added, built in the person's shell, and the kit never shows it. Any table the query lists can be read by anyone holding the public key, so the kit names each one once and records it. The Supabase security advisor, `curl -fsS -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" https://api.supabase.com/v1/projects/<project ref>/advisors/security`, is an optional second read, since that endpoint is marked experimental. Before the merge, the kit runs the local container check from the Health part, so the build that goes live has already answered on this machine. The branch then merges into `main`, Vercel builds `main`, and the production address moves to the new build once it succeeds. `vercel promote <deployment>` moves a chosen build live by hand. The health route reports the commit from `VERCEL_GIT_COMMIT_SHA`.
+How it is checked: The row-level security query returns no rows, or each table it returns is on the record. `curl -fsS https://<live address>/api/health` returns 200 with `"database":"ok"`, and its `commit` equals `git rev-parse origin/main`.
+Who runs it: the kit
+
+## Rollback
+
+How it works: `vercel rollback <earlier deployment> --yes` points the production address back at an earlier build in seconds, with no new build. On the Hobby plan only the build just before is eligible; on Pro, any earlier production build. After a rollback, Vercel stops moving new pushes to production until a newer build is promoted with `vercel promote <deployment> --yes`, and the kit says so in the same reply. A rollback does not undo database migrations, which is why a migration only adds.
+How it is checked: After the rollback, `curl -fsS https://<live address>/api/health` returns 200 with `"database":"ok"`, and its `commit` is the earlier commit rather than the one rolled back.
+Who runs it: the kit
+
+## Backup
+
+Shared part: [backup on hosted Supabase](parts/supabase-backup.md)
+
+## Restore
+
+Shared part: [restore on hosted Supabase](parts/supabase-restore.md)
+
+## Secrets
+
+How it works: The person gives each value, and the kit pipes it into Vercel so that it never sits on a command line: `printf '%s' "$VALUE" | vercel env add <NAME> production --type config --yes` for a name that starts with `NEXT_PUBLIC_`, since Vercel refuses a value that looks like a key unless it is told the type, and `printf '%s' "$VALUE" | vercel env add <NAME> production --yes` for a secret, which keeps Vercel's default sensitive type. The tool receives each value as an environment variable when it builds and runs. The Supabase address and public key carry the `NEXT_PUBLIC_` prefix and reach the browser by design. Row-level security is what keeps them harmless. The service role key stays on the server and never carries that prefix. `supabase init` does not add `supabase/.temp` to `.gitignore`, and that folder holds the project reference and the pooler address, so the kit adds it before the first commit. The kit never runs `vercel env pull` for production and never writes a value into the repository.
+How it is checked: `vercel env ls production` lists every name in `.env.example` and no value. No name that starts with `NEXT_PUBLIC_` contains `SERVICE_ROLE` or `SECRET`. `git check-ignore supabase/.temp` names the folder.
+Who runs it: the kit
+
+## Logs
+
+How it works: Vercel keeps the record of requests and function output for each deployment. What the tool writes with `console.error` lands there, and `vercel logs` reads it from the project folder. That command reads only the current git branch unless told otherwise, so the kit passes `--no-branch`. The Hobby plan keeps runtime logs for one hour, so on Hobby the kit reads them within the hour after a launch.
+How it is checked: `vercel logs --environment production --level error --since 1h --no-branch --json` prints one JSON object for each error line. After a launch the kit reads it, and names to the person any error from the new build.
+Who runs it: the kit
+
+## Health
+
+Shared part: [the Next.js container and its health route](parts/nextjs-container.md)
+
+## Proven
+
+Real run: 2026-09-25
+
+The run used a throwaway private app on the Vercel Hobby plan and the Supabase Free plan, with Supabase CLI 2.117 and Vercel CLI 60.0.0. The Free plan allows two active projects, so previews and live shared one Supabase project on this run.
+
+Preview: A branch push built a preview, and `vercel inspect <preview address>` reported it Ready. Opened in the person's browser behind Vercel's protection, `/api/health` gave `"database":"ok"` with the branch's commit. That previews stay off the live database is not proven by this run, since previews and live shared one project.
+Going live: `supabase db push --dry-run` then `supabase db push` applied the migration. The row-level security query returned no rows. The local container check passed. After the merge into `main`, `/api/health` on the production address gave 200, `"database":"ok"`, and a commit equal to `origin/main`.
+Rollback: `vercel rollback <earlier deployment> --yes` took 8 seconds, and `/api/health` showed the earlier commit. `vercel promote <newer deployment> --yes` brought the newer commit back.
+Backup: On the Free plan, the kit took the three dumps into a dated folder outside the repository: roles 370 B, schema 3.5 KB, data 10.7 KB. The `-x storage.buckets_vectors -x storage.vector_indexes` exclusions worked with Supabase CLI 2.117.
+Restore: The one table held 3 rows in `data.sql` and 3 rows in the local database, a match. It took about 5 minutes, including two failed attempts that led to loading as `supabase_admin` and copying the live project's version files.
+Secrets: `vercel env ls` listed both names for Production and Preview, and no value. No public name carries a secret.
+Logs: `vercel logs --environment production --level error --since 1h --no-branch --json` returned no errors. The same command without `--level` returned 3 request lines, which shows it reads production.
+Health: The local image answered 200 with `"database":"ok"` and carried `/usr/bin/wget`. An image with the database address pointed nowhere answered 503.

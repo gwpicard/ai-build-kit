@@ -26,10 +26,13 @@ rr_locate "$ROOT/.agents/skills/ship/recipes/nextjs-supabase-on-vercel.md"
 rr_shape
 
 # Preview.
+rs_rule "main goes first" 'the first push to a new vercel project is .main., before any other branch'
+rs_rule "a generated address answers 302" 'such an address answers 302 to anyone not signed in'
+rs_rule "the production domain stays public" 'the production domain, .<project>\.vercel\.app., stays public'
 rs_rule "previews never reach the live database" 'a second supabase project kept for previews, never at the live one'
 rs_rule "the preview database gets the branch's migrations" 'before each preview, the kit gives that project the branch.s migrations with .supabase link --project-ref <preview project ref>. and .supabase db push.'
 rs_rule "the kit waits for the preview to be ready" 'waits until .vercel inspect <preview address>. reports the deployment as ready'
-rs_rule "a protected preview is opened by the person" 'vercel protects preview addresses with a sign-in by default'
+rs_rule "a protected preview is opened by the person" 'vercel protects each generated deployment address with a sign-in by default'
 rs_rule "the preview answers from its own project" 'a .project. that is not the live project.s reference'
 
 # Going live.
@@ -38,7 +41,7 @@ rs_rule "migrations run before the build that needs them" 'applies new migration
 rs_rule "a dry run lists the migrations first" '.supabase db push --dry-run. lists what would change'
 rs_rule "a migration in a release only adds" 'a migration in a release only adds'
 rs_rule "the kit lists tables with row-level security off" 'select tablename from pg_tables where schemaname = .public. and not rowsecurity;'
-rs_rule "the connection string is never shown" 'from the person.s environment and (is )?never shown'
+rs_rule "the connection string is the session pooler, built in the shell" '.supabase_db_url. is the session pooler address from .supabase/\.temp/pooler-url. with the database password added, built in the person.s shell, and the kit never shows it'
 rs_rule "the query passes on no rows" 'the row-level security query returns no rows, or each table it returns is on the record'
 rs_rule "the advisor is only a second read" 'is an optional second read, since that endpoint is marked experimental'
 rs_rule "the live commit is the one on main" 'its .commit. equals .git rev-parse origin/main.'
@@ -56,12 +59,17 @@ rs_rule "restore links the shared part" '## restore shared part: \[restore on ho
 
 # Secrets.
 rs_rule "the service role key never reaches the browser" 'the service role key stays on the server and never carries that prefix'
+rs_rule "supabase/.temp is kept out of the repository" '.supabase init. does not add .supabase/\.temp. to .\.gitignore., and that folder holds the project reference and the pooler address, so the kit adds it before the first commit'
+rs_rule "a value never sits on a command line" 'the kit pipes it into vercel so that it never sits on a command line'
+rs_rule "a public name is typed as config" 'printf .%s. "\$value" \| vercel env add <name> production --type config --yes. for a name that starts with .next_public_.'
+rs_rule "a secret keeps the sensitive type" 'which keeps vercel.s default sensitive type'
+rs_rule "the ignore is checked" '.git check-ignore supabase/\.temp. names the folder'
 rs_rule "production values are never pulled" 'never runs .vercel env pull. for production'
 rs_rule "the secrets check reads names only" 'lists every name in .\.env\.example. and no value'
 rs_rule "no public name carries a secret" 'no name that starts with .next_public_. contains .service_role. or .secret.'
 
 # Logs.
-rs_rule "errors are read from production, on every branch" 'vercel logs --environment production --level error --since 1h --no-branch --json'
+rs_rule "errors are read from production, on every branch" 'vercel logs --environment production --level error --since 1h --no-branch --json. prints one json object'
 rs_rule "the log command reads one branch unless told" 'reads only the current [a-z]+ branch unless told otherwise, so the kit passes .--no-branch.'
 rs_rule "Hobby keeps runtime logs for an hour" 'the hobby plan keeps runtime logs for one hour'
 rs_rule "an error from the new build is named" 'names to the person any error from the new build'

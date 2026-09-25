@@ -40,7 +40,7 @@ rs_rule "the kit links back to live before going live" 'the kit links back to th
 rs_rule "migrations run before the build that needs them" 'applies new migrations to the live database before the build that needs them, because coolify does not run them'
 rs_rule "a migration in a release only adds" 'a migration in a release only adds'
 rs_rule "the kit lists tables with row-level security off" 'select tablename from pg_tables where schemaname = .public. and not rowsecurity;'
-rs_rule "the connection string is never shown" 'from the person.s environment and (is )?never shown'
+rs_rule "the connection string is the session pooler, built in the shell" '.supabase_db_url. is the session pooler address from .supabase/\.temp/pooler-url. with the database password added, built in the person.s shell, and the kit never shows it'
 rs_rule "the query passes on no rows" 'the row-level security query returns no rows, or each table it returns is on the record'
 rs_rule "the advisor is only a second read" 'is an optional second read, since that endpoint is marked experimental'
 rs_rule "the local container answers before the merge" 'before the merge, the kit runs the local container check from the health part, so an image that fails to build, bind or answer is found on the person.s machine'
@@ -64,6 +64,7 @@ rs_rule "restore links the shared part" '## restore shared part: \[restore on ho
 # Secrets.
 rs_rule "the request carries names and never a value" 'the hosting request carries the names of the environment variables and never a value'
 rs_rule "the service role key never reaches the browser" 'the service role key stays on the server and never carries that prefix'
+rs_rule "supabase/.temp is kept out of the repository" '.supabase init. does not add .supabase/\.temp. to .\.gitignore., and that folder holds the project reference and the pooler address, so the kit adds it before the first commit'
 rs_rule "the pasted list carries names only" 'pastes back the list of names set in coolify, with no values'
 rs_rule "no public name carries a secret" 'no name that starts with .next_public_. contains .service_role. or .secret.'
 

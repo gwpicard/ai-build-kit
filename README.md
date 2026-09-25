@@ -260,11 +260,19 @@ it. On the first launch, `/ship` writes a short hosting request into the
 masterplan: where the code lives, which port it uses, the names of the settings
 it needs, and what must survive a restart. You take that request to whoever runs
 your server. A team that runs its own server on [Coolify](https://coolify.io)
-can install a companion kit there, such as
+can use a companion, such as
 [coolify-devops](https://github.com/KasperHonore/coolify-devops), which turns
 that request into a running address on the team's private network or on the
-internet. It is a separate install on the server, made by somebody else, and
-not part of this kit.
+internet. It is an agent skill that runs in a coding session in the team's
+deployment repository and talks to Coolify through its API. It is a separate
+install, made by somebody else, and not part of this kit.
+
+One stack comes with launch checks the kit knows how to run: Next.js with a
+hosted [Supabase](https://supabase.com) database, deployed on
+[Vercel](https://vercel.com). This is the kit's first recipe. Its preview,
+launch, rollback, backup, restore, secrets, logs and health steps were each run
+for real on a live deployment before the kit offered it. Any other stack or host
+still works, with fewer checks.
 
 **What does it cost?**
 The kit is free. Building with it needs an agent subscription, which is the real
