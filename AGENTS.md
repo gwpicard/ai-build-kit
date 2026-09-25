@@ -496,6 +496,18 @@ attribution line, not the word.
   retired skill folder only by the kit's former names and absence from the
   lockfile. It holds that the step is run from the monthly pass, removes on
   approval, and that WORKFLOW.md says so.
+- `.agents/tests/offer-recipe-move.sh` guards the monthly offer to move a
+  project onto a recipe. It applies to a project with `Recipe: none` or no
+  `Recipe:` line, whose stack matches a recipe's build stack in substance even
+  if it runs somewhere else. The rules it holds are the ones whose loss a
+  transcript would not show. The move is offered and never required, nothing
+  changes without a yes, a yes becomes a piece rather than work done in the
+  visit, and a no is not asked again that visit. The offer names the launch
+  checks the move gains, and nothing is said when no recipe is close. It also
+  holds that the menu is read from the ship skill's recipes folder at run
+  time. It reads the product list from `hosting-request.sh` and proves the
+  maintain skill names none of them, so the skill names no product even
+  though its offer is about one.
 - `.agents/tests/stale-branches.sh` guards the monthly step that lists old
   branches whose work already reached the default branch. It holds two rules
   hardest. The step never removes a branch, and gives the person the command

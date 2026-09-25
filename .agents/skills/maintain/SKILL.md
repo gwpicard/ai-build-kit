@@ -147,12 +147,15 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
     removable content to fill the example. Cut nothing without the person's
     yes. A no leaves the file intact and the visit carries on. If the file is
     short and carries none of that content, say nothing.
-14. On every build path, load `references/stale-branches.md` and list the
+14. Unless the project explores privately, run "Offering a move onto a
+    recipe" below. When no recipe on the menu is close to the project's stack,
+    it says nothing.
+15. On every build path, load `references/stale-branches.md` and list the
     branches whose work is already in the default branch, each with the
     command that removes it. List this computer and GitHub separately. Keep
     the ones Git confirms apart from the ones only GitHub records as merged.
     Never remove a branch. When no branch qualifies, say nothing.
-15. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
+16. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
     today's date on the `last-light-pass` line, written as YYYY-MM-DD. If that
     file is missing, create it with a `founded` line holding the date
     masterplan.md was first saved, then the two pass lines. If the project has
@@ -359,6 +362,59 @@ is a step here rather than advice:
    folders too. Where the files are tracked, the removal is part of the
    visit's saved change.
 4. Record a changelog line saying what was removed and why.
+
+## Offering a move onto a recipe
+
+A project founded before the kit had recipes has no `Recipe:` line in its
+AGENTS.md. A project whose person chose their own stack has `Recipe: none`.
+Either one can be built much like a recipe on the menu without anybody
+noticing. On a recipe, /ship checks the launch steps. Off one, it can only
+name what it could not check. So the monthly visit makes the offer, and the
+person decides. The move is never required.
+
+Skip this on Explore privately. Nothing there goes live, so the launch checks
+would gain nothing.
+
+1. Read the `Recipe:` line in the stack section of the project's AGENTS.md.
+   Where it names a file that is in the installed ship skill's `recipes/`
+   folder, the project is on a recipe, and this step ends. `Recipe: none`, no
+   line at all, or a file that is no longer there counts as off a recipe.
+2. Read the menu at this moment: each file directly in the installed ship
+   skill's `recipes/` folder, not the `parts/` folder inside it. Read each
+   file's `Build stack:` and `Deploy target:` lines. Take every product name
+   from those files, and never write one into this skill.
+3. Compare each recipe's `Build stack:` line with what the project is built
+   with. Read that from the project's code and dependency files, not from
+   memory. A recipe is close when the build stack matches in substance: the
+   same framework and the same data service. It stays close when the project
+   deploys somewhere else, or lacks something the recipe adds, such as its
+   Dockerfile or its health route. A different framework or a different data
+   service is not close. Where several recipes are close, take the one whose
+   `Build stack:` line matches the most, or the first by file name.
+4. Where the person chose their own stack at founding, offer the move only
+   when the stack has become close since, because the project changed or a
+   recipe joined the menu. Read the stack at founding from the saved history.
+   Where it was already that close when they chose their own, their choice
+   stands.
+5. When no recipe is close, say nothing.
+6. Offer the move once, in one reply. Name the recipe from its file. Say what
+   it gains in plain words: the launch checks /ship would then run, one for
+   each section the recipe checks, such as preview, rollback, backup and
+   restore. Say what it would change, from the differences step 3 found: for
+   example, add the recipe's shared Dockerfile and health route, or move the
+   tool to the recipe's deploy target. Never quote a price. Say that the
+   project keeps working as it is if they say no. For example: "This project
+   is built much like the [recipe name] recipe. On that recipe, /ship would
+   check the preview, rollback, backup and restore for you. The move would add
+   a Dockerfile and a health route, and move the tool to [deploy target].
+   Shall I file it as a piece? Nothing changes if you say no."
+7. Change nothing without approval. On a yes, open an issue in the shape
+   `.agents/skills/setup-ai-build-kit/references/pieces.md` describes. It
+   holds the recipe's file name and the changes the offer named. Leave it for
+   /shape and /implement like any other piece. Do not make the move during
+   the visit. The `Recipe:` line changes only when that piece lands.
+8. On a no, leave the project alone and do not ask again this visit. The next
+   monthly visit may offer it once more.
 
 ## Quarterly, or before a handover
 
