@@ -31,7 +31,9 @@ restored, and deletion or export behaviour checked.
 
 Where applicable: alerts arrive, the named owner reads them, service and
 billing ownership are known, the manual fallback works, and the rollback or
-disable process works.
+disable process works. On a project with a recipe, the rollback, backup,
+restore, secrets, logs and health checks are the recipe's own, and ship runs
+them as its "On a recipe" steps say rather than repeating them here.
 
 ## 5. Review and flagged work
 

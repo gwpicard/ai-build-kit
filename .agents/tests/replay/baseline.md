@@ -345,3 +345,30 @@ the same gap the September runs carried.
 
 This is a spot check on four cases, not a whole-suite pass, and it replaces
 none of the tables above.
+
+## The recipe checks change, 25 September
+
+`/ship` now runs a project's recipe checks when AGENTS.md names one. Off a
+recipe, the general readiness list became warnings rather than requirements.
+Scenario 47's fixture names no recipe, so it exercises that list. It ran once,
+driven by `opus` and graded by `opus`, the harness default.
+
+| Scenario | Kit | Held | State | Withdrew |
+|---|---|---|---|---|
+| 47 | `f7a41a3` | 1/1 | 1/1 | none due |
+
+`f7a41a3` is the change as it stood before it was rebased onto founding's
+recipe menu, so that commit is not on `main`. The run used the tree one
+reworded sentence before it. The address
+wait there said "do not write it into CHANGELOG.md as live" rather than "keep
+it out of CHANGELOG.md as a launch", which means the same.
+
+The kit named the missing bill owner, backup and switch-off as warnings and
+said none of them stopped the launch. It paused only for the fixture's own
+fault and the missing server address, both of which the contract allows.
+Evidence drifted. A declined changelog write meant the first reply could not
+yet say the gap was noted, and the later turn repeated the alerts caution in
+one short line, the drift the earlier runs of this case carried.
+
+This is one run of one case. It replaces none of the tables above, and no
+scenario with a case file runs on a recipe yet.
