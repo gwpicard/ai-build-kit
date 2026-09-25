@@ -96,6 +96,47 @@ one_deployment() {
 case "$1" in
   inspect) one_deployment "$@"; echo "status  Ready" ;;
   promote|rollback) one_deployment "$@" ;;
+  project)
+    # Only the options vercel project documents: add takes a name and no
+    # option, and update takes one name and the settings it lists.
+    case "${2:-}" in
+      add) [ "$#" -eq 3 ] && case "$3" in -*) false ;; *) true ;; esac || refuse "$@" ;;
+      update)
+        shift 2
+        name=""
+        while [ "$#" -gt 0 ]; do
+          case "$1" in
+            --yes|-y|--json) shift ;;
+            --framework|--build-command|--install-command|--output-directory|--root-directory|--node-version)
+              [ -n "${2:-}" ] || refuse project update "$@"; shift 2 ;;
+            -*) refuse project update "$@" ;;
+            *) [ -z "$name" ] || refuse project update "$@"; name=$1; shift ;;
+          esac
+        done ;;
+      *) refuse "$@" ;;
+    esac ;;
+  link)
+    shift
+    while [ "$#" -gt 0 ]; do
+      case "$1" in
+        --yes|-y) shift ;;
+        --project|-p|--team) [ -n "${2:-}" ] || refuse link "$@"; shift 2 ;;
+        *) refuse link "$@" ;;
+      esac
+    done ;;
+  git)
+    case "${2:-}" in
+      connect)
+        shift 2
+        while [ "$#" -gt 0 ]; do
+          case "$1" in
+            --yes|-y|--confirm) shift ;;
+            --project) [ -n "${2:-}" ] || refuse git connect "$@"; shift 2 ;;
+            *) refuse git connect "$@" ;;
+          esac
+        done ;;
+      *) refuse "$@" ;;
+    esac ;;
   env)
     case "$2 ${3:-} ${4:-}" in
       "ls  "|"ls production "|"ls preview "|"pull  ") ;;
@@ -195,6 +236,7 @@ echo "git $*" >> "$RR_CALLS"
 case "$*" in
   "rev-parse origin/main") echo 0000000 ;;
   "check-ignore supabase/.temp") echo supabase/.temp ;;
+  "check-ignore .vercel .env.local") printf '.vercel\n.env.local\n' ;;
   *) echo "git stand-in: not a command a recipe may use: git $*" >&2; exit 64 ;;
 esac
 SH
@@ -296,15 +338,19 @@ rr_stand_ins() {
   rs_ok "a copy naming a tool no command uses is refused"
 
   # A misspelt option must fail rather than be taken for the deployment, and
-  # the options each command documents must still pass.
+  # the options each command documents must still pass. vercel project add
+  # documents no framework option, so a recipe that sets the framework there
+  # is refused and has to use project update.
   for rr_probe in "rollback --timout 5m stand-in" "inspect --wiat stand-in" "promote --yse stand-in" \
-    "rollback" "inspect one two"; do
+    "rollback" "inspect one two" "project add stand-in --framework nextjs" \
+    "project update stand-in --framwork nextjs" "link --projet stand-in" "git connect --yse"; do
     # shellcheck disable=SC2086
     if PATH="$rs_dir/bin:$PATH" vercel $rr_probe >/dev/null 2>&1; then
       rs_fail "the vercel stand-in accepted 'vercel $rr_probe'"
     fi
   done
-  for rr_probe in "rollback --timeout 5m stand-in" "inspect --wait stand-in" "promote --yes stand-in"; do
+  for rr_probe in "rollback --timeout 5m stand-in" "inspect --wait stand-in" "promote --yes stand-in" \
+    "project update stand-in --framework nextjs --yes" "link --project stand-in --yes" "git connect --yes"; do
     # shellcheck disable=SC2086
     PATH="$rs_dir/bin:$PATH" vercel $rr_probe >/dev/null 2>&1 ||
       rs_fail "the vercel stand-in refused 'vercel $rr_probe'"
