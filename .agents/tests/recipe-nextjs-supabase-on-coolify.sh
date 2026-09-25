@@ -14,9 +14,9 @@
 # which the Vercel recipe uses too. This check holds what is Coolify's own: the
 # health check switched on, and the two hosting request fields, Build and Bind.
 #
-# It runs every command the recipe writes against stand-ins for its tools, and
-# holds the recipe out of the menu until its real run is recorded. The recipe
-# file is recipes/nextjs-supabase-on-coolify.md.
+# It runs every command the recipe writes against stand-ins for its tools. The
+# real run is recorded, so the recipe is on the menu and must pass the shape
+# check outright. The recipe file is recipes/nextjs-supabase-on-coolify.md.
 
 set -eu
 
@@ -29,9 +29,16 @@ rr_locate "$ROOT/.agents/skills/ship/recipes/nextjs-supabase-on-coolify.md"
 rr_shape
 
 # Preview.
-rs_rule "each pull request gets its own preview" 'the address coolify.s preview template gives, by default .\{\{pr_id\}\}\.\{\{domain\}\}.'
+rs_rule "each pull request gets its own preview" 'coolify builds each pull request into its own container on the pull request.s commit'
+rs_rule "previews start off on a new app" 'previews start off on every new app'
+rs_rule "the person switches previews on" 'switches them on with enable preview deployments on the app.s preview deployments page'
+rs_rule "the companion's tools cannot set it" 'the companion.s own tools cannot set it'
+rs_rule "a preview has an address only with a domain" 'a preview has an address only when the app has a domain: coolify fills its preview template, by default .\{\{pr_id\}\}\.\{\{domain\}\}., from that domain'
+rs_rule "a preview nobody can open is a warning" 'the kit says once that the person cannot open the preview, as a warning, and does not wait for an address'
+rs_rule "without a second project, previews get no migrations" 'gives a preview no migrations, since they would change the live database before the merge'
+rs_rule "a preview needing a migration is warned about" 'a preview whose code needs a new migration then fails against the live database, and the warning says so'
 rs_rule "the preview database gets the branch's migrations" 'before each preview, the kit gives that project the branch.s migrations with .supabase link --project-ref <preview project ref>. and .supabase db push.'
-rs_rule "previews never reach the live database" 'a second supabase project kept for previews, never at the live one'
+rs_rule "previews never reach the live database" 'a second supabase project kept for previews, unless no second project can exist'
 rs_rule "the kit never contacts the server" 'the kit never contacts the server, so the person or the hosting companion reads the preview'
 rs_rule "the preview answers from its own project" 'a .project. that is not the live project.s reference'
 
@@ -51,9 +58,11 @@ rs_rule "the request says it binds to every address" 'bind: 0\.0\.0\.0'
 rs_rule "the live commit is the one on main" 'a .commit. equal to .git rev-parse origin/main.'
 
 # Rollback.
-rs_rule "two images are kept, and cleanup can remove them" 'two by default, and its cleanup of unused images can remove the one a rollback needs'
+rs_rule "two images survive the nightly cleanup" 'until its nightly cleanup, which leaves the two newest by default'
+rs_rule "cleanup can remove the image a rollback needs" 'the cleanup of unused images can remove the one a rollback needs'
+rs_rule "the rollback is a click on the rollback page" 'the rollback is always a click on that page'
 rs_rule "the earlier image is confirmed first" 'confirms the earlier image is still listed in coolify'
-rs_rule "a rollback redeploys a kept image" 'redeploys its kept image, with no new build'
+rs_rule "a rollback reuses a kept image" 'coolify reuses the kept image, with no new build'
 rs_rule "a rollback leaves migrations alone" 'a rollback does not undo database migrations'
 rs_rule "the rollback is read back from the health route" 'is the earlier commit rather than the one rolled back'
 
@@ -71,14 +80,15 @@ rs_rule "no public name carries a secret" 'no name that starts with .next_public
 # Logs.
 rs_rule "the kit cannot read the server's logs" 'the kit cannot read it, since it never contacts the server'
 rs_rule "an error from the new build is named" 'names to the person any error from the new build'
+rs_rule "coolify's own build lines are not the tool's errors" 'those are not the tool.s errors'
 
 # Health comes from the shared container part. What is Coolify's own is the
 # health check setting, which is off until somebody switches it on.
 rs_rule "health links the shared part" '## health shared part: \[the next\.js container and its health route\]\(parts/nextjs-container\.md\)'
 rs_rule "the health check is off until switched on" 'coolify.s health check is off by default'
-rs_rule "it is switched on for the route and port" 'with path ./api/health. and port 3000'
+rs_rule "it is switched on for the route, port and host" 'with path ./api/health., port 3000 and host .127\.0\.0\.1.'
 rs_rule "coolify's setting is the only check" 'the image carries no .healthcheck. line, as the health part says, so coolify.s setting is the only check'
-rs_rule "the settings are read back" 'the check switched on for ./api/health. on port 3000, healthy'
+rs_rule "the settings are read back" 'the check switched on for ./api/health. on port 3000 and host .127\.0\.0\.1., healthy'
 rs_rule "the commit comes from the server" 'the health route reports the commit from .source_commit.'
 rs_guard "$RR_RECIPE" "the Coolify recipe"
 

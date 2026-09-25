@@ -71,7 +71,9 @@ A recipe joins the menu only when two things are true. Offline rehearsals guard
 its rules: a maintainer check names the recipe file and fails when a rule goes
 missing. And one real deploy has been run from an empty project to a live
 address and through all eight sections, with the maintainer's approval and
-accounts, and written down.
+accounts, and written down. A shared part proven once, in another recipe's real
+run, counts for every recipe that links it. The outcome line for that section
+says so and names the run it comes from.
 
 The record lives in the recipe's own proven section, so it travels with the
 recipe and anyone can read what was tried. It opens with `Real run:` and the
