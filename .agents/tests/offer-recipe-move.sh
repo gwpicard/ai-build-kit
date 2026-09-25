@@ -8,8 +8,9 @@
 # be quiet: the move is offered and never required, nothing changes without a
 # yes, a yes becomes a piece rather than work done inside the visit, an open
 # piece stops the offer, a no is recorded and not asked again until the menu or
-# the stack changes, the offer names what the move gains, and nothing is said
-# when no recipe is close. A visit that nagged, or moved a project without
+# the stack changes, a recipe that joined the menu after founding is offered to
+# an own stack that has not moved, the offer names what the move gains, and
+# nothing is said when no recipe is close. A visit that nagged, or moved a project without
 # asking, would read perfectly well in a transcript.
 #
 # The menu is read from the ship skill's recipes folder at run time, so the
@@ -67,8 +68,22 @@ rs_rule "an open move piece ends the step" \
 # A person who chose their own stack.
 rs_rule "own stack is offered only when it has become close" \
   'offer the move only when the stack has become close since'
-rs_rule "and a choice made against a close stack stands" \
-  'where it was already that close then, their choice stands'
+rs_rule "or when the close recipe is new since founding" \
+  'or when the close recipe is new since founding'
+rs_rule "and a choice made against a close recipe on that menu stands" \
+  'where a close recipe was on that menu and the stack was already that close then, their choice stands'
+
+# A recipe that joined the menu after founding was never a choice the person
+# turned down. Founding records its menu, and the visit reads that record, or a
+# close recipe added later would never be offered to an unchanged stack.
+rs_rule "the founding menu is read from the check-up file" \
+  'read the .founding-menu. line in .\.ai-build-kit-maintenance.'
+rs_rule "a close recipe missing from it is offered once, stack unchanged" \
+  'a close recipe that line does not list joined the menu later, .* offer it once, even if the stack has not changed'
+rs_rule "a project with no founding-menu line treats every close recipe as new" \
+  'a project with no .founding-menu. line was founded before founding kept one, so every close recipe counts as new for it, once'
+rs_rule "after a no, the decline line decides" \
+  'after a no, step 6 decides whether the offer comes back'
 
 # Silence when nothing is close.
 rs_rule "nothing is said when no recipe is close" 'when no recipe is close, or an earlier no stands, say nothing'
@@ -122,6 +137,10 @@ rs_require "WORKFLOW says a no is recorded and waits for a change" "$WORKFLOW" \
   'a no is recorded, and the offer comes back only when the menu or your stack has changed since'
 rs_require "the maintenance record template names the line" \
   "$ROOT/.agents/skills/setup-ai-build-kit/templates/maintenance-record" 'recipe-move-declined'
+rs_require_load_bearing "the maintenance record template names the founding menu line" \
+  "$ROOT/.agents/skills/setup-ai-build-kit/templates/maintenance-record" 'founding-menu'
+rs_require_load_bearing "WORKFLOW says a recipe added since founding is offered" \
+  "$WORKFLOW" 'a close recipe that joined the menu after you founded the project is offered once, even if your stack has not changed'
 rs_require "WORKFLOW says the move is never required" "$WORKFLOW" \
   'the move is never required\. when no recipe is close, you hear nothing'
 

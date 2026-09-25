@@ -8,8 +8,10 @@
 # anybody noticing. A menu read from memory offers a recipe that was withdrawn,
 # or one still waiting for its real run. A menu with no default stops founding
 # on a question the person may not want to answer. A second warning about an
-# own stack turns a choice into an argument. And a product name written into
-# the skill is one the next recipe makes wrong.
+# own stack turns a choice into an argument. A menu nobody wrote down leaves
+# the monthly visit unable to tell a recipe added later from one the person
+# already passed over. And a product name written into the skill is one the
+# next recipe makes wrong.
 #
 # So this reads the rules back out of the founding skill and proves each one is
 # load-bearing. The menu is found beside the founding skill rather than at a
@@ -85,6 +87,21 @@ rs_rule "with the path found beside this skill" \
 rs_rule "a missing tool becomes a setup task" \
   'add it to the masterplan as a setup task, and carry on'
 rs_rule "and that report never stops founding" 'that report never stops founding'
+
+# --- the menu is remembered ----------------------------------------------
+# The monthly visit can only tell that a recipe joined the menu after founding
+# if founding wrote down the menu it read. Without the line, a close recipe
+# added later is never offered to a person who chose their own stack.
+rs_rule "the menu read is recorded whatever the choice" \
+  'whatever the choice, record the menu this step read'
+rs_rule "as one founding-menu line in the check-up file" \
+  'in .\.ai-build-kit-maintenance., which step 7 created, add one line, replacing any earlier one: .founding-menu\|<yyyy-mm-dd>\|<menu files, comma separated>.'
+rs_rule "listing every file in the folder, fitting or not" \
+  'list every file directly in the .recipes/. folder, including the ones that did not fit'
+rs_rule "each by its file name with .md" \
+  'each written exactly as it sits there with .\.md. included'
+rs_rule "written before the first checkpoint" \
+  'write this line before the first checkpoint, so the save holds it'
 rs_guard "$SETUP" "founding step 11"
 
 # The menu sits inside the stand-up step, after the two questions it reads
@@ -121,6 +138,8 @@ rs_require_load_bearing "WORKFLOW says an own stack gets one warning" \
   "$WORKFLOW" 'you can bring your own stack instead: it says once what it then cannot check'
 rs_require_load_bearing "WORKFLOW says no answer takes the recommended one" \
   "$WORKFLOW" 'if you do not answer, it takes the recommended recipe and carries on'
+rs_require_load_bearing "WORKFLOW says founding notes the menu" \
+  "$WORKFLOW" 'the kit notes which recipes were on the menu, so a later check-up can offer one added since'
 
 # --- the half that runs --------------------------------------------------
 if [ -z "${RS_LIST:-}" ]; then

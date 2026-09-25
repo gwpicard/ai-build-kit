@@ -386,6 +386,14 @@ none`, and do not raise it again. Where no recipe fits the shape, such as a
 command-line tool or a desktop app, say so in one line, record `Recipe: none`,
 and set up as below without a menu.
 
+Whatever the choice, record the menu this step read, so a later monthly visit
+can tell which recipes joined it afterwards. In `.ai-build-kit-maintenance`,
+which step 7 created, add one line, replacing any earlier one:
+`founding-menu|<YYYY-MM-DD>|<menu files, comma separated>`. List every file
+directly in the `recipes/` folder, including the ones that did not fit, each
+written exactly as it sits there with `.md` included. Write this line before
+the first checkpoint, so the save holds it. Do not mention it to the person.
+
 Once a recipe is chosen, build on its `Build stack:` line. Record it in
 AGENTS.md's stack section as `Recipe: <file name>.md`, the file name exactly
 as it sits in the folder with `.md` included, so /ship can open it. Run

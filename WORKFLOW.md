@@ -117,7 +117,9 @@ involves, such as the accounts you will hold. You can bring your own stack
 instead: it says once what it then cannot check, and records your choice. If
 you do not answer, it takes the recommended recipe and carries on. Where no
 recipe fits, such as a command-line tool, it says so in one line and picks a
-conventional stack. The choice is written in AGENTS.md, in the stack section.
+conventional stack. The choice is written in AGENTS.md, in the stack section,
+and the kit notes which recipes were on the menu, so a later check-up can offer
+one added since.
 
 The coverage read includes who can see and do what, the data the tool holds,
 and its outside connections. It names any gaps together and offers once to add
@@ -397,6 +399,11 @@ your yes. A yes becomes a piece, shaped and built like any other, and the
 offer does not come back while that piece is open. A no is recorded, and the
 offer comes back only when the menu or your stack has changed since. The move
 is never required. When no recipe is close, you hear nothing.
+
+If you chose your own stack, founding noted which recipes were on the menu. A
+close recipe that joined the menu after you founded the project is offered
+once, even if your stack has not changed. A project founded before that note
+existed treats every close recipe as new, once.
 
 /maintain also lists old branches whose work is already in your main branch,
 on your computer and on GitHub, each with the command that removes it. It

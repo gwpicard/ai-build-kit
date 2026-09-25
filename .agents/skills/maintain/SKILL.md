@@ -398,9 +398,17 @@ would gain nothing.
    take the one whose `Build stack:` line matches the most, or the first by
    file name.
 5. Where the person chose their own stack at founding, offer the move only
-   when the stack has become close since. Read the stack at founding from the
-   commit that first saved masterplan.md. Where it was already that close
-   then, their choice stands.
+   when the stack has become close since, or when the close recipe is new
+   since founding. Read the stack at founding from the commit that first
+   saved masterplan.md. Read the `founding-menu` line in
+   `.ai-build-kit-maintenance`: it lists the recipe files on the menu
+   founding showed. A close recipe that line does not list joined the menu
+   later, so the person never had the chance to choose it. Offer it once,
+   even if the stack has not changed. A project with no `founding-menu` line
+   was founded before founding kept one, so every close recipe counts as new
+   for it, once. Where a close recipe was on that menu and the stack was
+   already that close then, their choice stands. After a no, step 6 decides
+   whether the offer comes back.
 6. Read the `recipe-move-declined` line in `.ai-build-kit-maintenance`, if
    there is one. It holds the date of an earlier no, the recipe file that was
    offered, and the recipe files on the menu that day. Offer again only when

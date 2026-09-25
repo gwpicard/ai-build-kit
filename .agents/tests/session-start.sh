@@ -143,6 +143,21 @@ grep -qF 'Type /maintain when you have ten minutes.' "$OUT" || \
 [ "$(grep -c 'since the last check-up' "$OUT")" -eq 1 ] || \
   fail "the check-up reminder appeared more than once"
 
+# The file also carries the recipe lines founding and maintain write. The hook
+# reads its dates by key, so those lines change nothing, even placed first.
+{
+  printf '%s\n' "founding-menu|2025-12-01|a-recipe.md,b-recipe.md"
+  printf '%s\n' "recipe-move-declined|2025-12-15|a-recipe.md|a-recipe.md"
+  printf '%s\n' "founded|2026-01-01"
+  printf '%s\n' "last-light-pass|2026-02-01"
+  printf '%s\n' "last-full-pass|"
+} > "$PROJECT/.ai-build-kit-maintenance"
+run_hook 2026-03-07
+[ ! -s "$OUT" ] || fail "the recipe lines in the check-up file broke the cadence count"
+run_hook 2026-03-08
+grep -qF '35 days since the last check-up' "$OUT" || \
+  fail "the recipe lines in the check-up file changed the date the visit is counted from"
+
 # Never visited, inside one window since founding: nothing is said.
 write_record 2026-03-01 ""
 run_hook 2026-03-20

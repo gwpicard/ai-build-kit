@@ -286,7 +286,11 @@ attribution line, not the word.
   showing the menu never ends the turn. A person may bring their own stack and
   hears once what the kit then cannot check. The choice is recorded by file
   name with `.md` included, and neither the menu nor the recipe's tool report
-  ever stops founding. Product names are left to `hosting-request.sh`.
+  ever stops founding. Whatever the choice, founding writes every file on the
+  menu into a `founding-menu` line in `.ai-build-kit-maintenance` before the
+  first checkpoint, so the monthly visit can tell a recipe added later from
+  one the person already passed over. Product names are left to
+  `hosting-request.sh`.
   `agent-plugin.sh` and `claude-plugin.sh` each check that every menu recipe
   arrives in their installed layout.
 - `.agents/tests/coverage-read.sh` guards the read that compares the masterplan
@@ -505,7 +509,11 @@ attribution line, not the word.
   the visit. While that piece is open, the offer does not come back. A no is
   written into `.ai-build-kit-maintenance` with its date, the recipe and the
   menu that day, and the offer returns only once the menu or the stack has
-  changed. A copy of the data service run on the project's own server is not
+  changed. A person who chose their own stack is offered a close recipe the
+  `founding-menu` line does not list, once, even if the stack has not moved,
+  because that recipe joined the menu after founding. A project with no such
+  line was founded before founding kept one, so every close recipe is new to
+  it, once. A copy of the data service run on the project's own server is not
   close. The offer names the launch checks the move gains, and nothing is said
   when no recipe is close. It also
   holds that the menu is read from the ship skill's recipes folder at run
