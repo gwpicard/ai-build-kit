@@ -86,6 +86,64 @@ printf '%s\n' "Existing project instructions" > "$PROJECT/AGENTS.md"
   fail "project bootstrap overwrote existing project instructions"
 cp "$PACK/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md" "$PROJECT/AGENTS.md"
 
+# Rehearse the shared installer with Claude Code chosen alone. It puts every
+# skill in .claude/skills and nothing in .agents/skills, and founding has to
+# start from there. The copy stands in for the installer, which needs the
+# network.
+CLAUDE_ONLY="$SCRATCH/claude-only"
+mkdir -p "$CLAUDE_ONLY/.claude"
+cp -R "$PACK/.agents/skills" "$CLAUDE_ONLY/.claude/skills"
+CLAUDE_ONLY_BOOTSTRAP="$CLAUDE_ONLY/.claude/skills/setup-ai-build-kit/scripts/bootstrap-project.sh"
+(cd "$CLAUDE_ONLY" && "$CLAUDE_ONLY_BOOTSTRAP" >/dev/null) || \
+  fail "a Claude-Code-only shared installation could not prepare a blank project"
+[ -f "$CLAUDE_ONLY/AGENTS.md" ] || \
+  fail "a Claude-Code-only shared installation did not prepare project instructions"
+[ -x "$CLAUDE_ONLY/.agents/hooks/session-start.sh" ] || \
+  fail "a Claude-Code-only shared installation did not prepare the session hook"
+[ ! -e "$CLAUDE_ONLY/.agents/skills" ] || \
+  fail "the bootstrap created .agents/skills for a Claude-Code-only installation"
+
+# Several coding agents: the real folder sits in .agents/skills and Claude
+# Code reaches it through a link in .claude/skills. Founding started from the
+# link is the same installation.
+LINKED="$SCRATCH/linked"
+mkdir -p "$LINKED/.agents" "$LINKED/.claude/skills"
+cp -R "$PACK/.agents/skills" "$LINKED/.agents/skills"
+for skill in "$LINKED/.agents/skills"/*; do
+  ln -s "../../.agents/skills/$(basename "$skill")" \
+    "$LINKED/.claude/skills/$(basename "$skill")"
+done
+(cd "$LINKED" && .claude/skills/setup-ai-build-kit/scripts/bootstrap-project.sh \
+  >/dev/null) || \
+  fail "founding from a linked .claude/skills folder was refused"
+
+# The installer's copy option writes a second real copy in place of the link.
+# Both copies belong to the one installation, so either may start founding.
+COPIED="$SCRATCH/copied"
+mkdir -p "$COPIED/.agents" "$COPIED/.claude"
+cp -R "$PACK/.agents/skills" "$COPIED/.agents/skills"
+cp -R "$PACK/.agents/skills" "$COPIED/.claude/skills"
+(cd "$COPIED" && .claude/skills/setup-ai-build-kit/scripts/bootstrap-project.sh \
+  >/dev/null) || \
+  fail "founding from one of two copies of the same installation was refused"
+
+# The guard still holds for the new folder. Another installation's skill must
+# not prepare a project whose skills sit in .claude/skills, and a plugin beside
+# a Claude-Code-only installation is still two installations.
+FOREIGN="$SCRATCH/foreign"
+mkdir -p "$FOREIGN/.claude"
+cp -R "$PACK/.agents/skills" "$FOREIGN/.claude/skills"
+if "$CLAUDE_ONLY_BOOTSTRAP" "$FOREIGN" >/dev/null 2>&1; then
+  fail "the bootstrap accepted a project that belongs to another installation"
+fi
+[ ! -e "$FOREIGN/AGENTS.md" ] || \
+  fail "the bootstrap wrote project files for another installation"
+if "$PLUGIN_BOOTSTRAP" "$FOREIGN" >/dev/null 2>&1; then
+  fail "Claude plugin bootstrap accepted a Claude-Code-only installation beside it"
+fi
+[ ! -e "$FOREIGN/AGENTS.md" ] || \
+  fail "Claude plugin bootstrap wrote project files beside a Claude-Code-only installation"
+
 REDIRECTED="$SCRATCH/redirected"
 OUTSIDE="$SCRATCH/outside"
 mkdir -p "$REDIRECTED/.agents" "$OUTSIDE"

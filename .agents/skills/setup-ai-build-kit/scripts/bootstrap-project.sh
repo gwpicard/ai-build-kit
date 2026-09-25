@@ -25,7 +25,6 @@ if [ -n "${HOME:-}" ]; then
   [ "$PROJECT_ROOT" != "$home_root" ] || fail "choose a project folder, not the home folder"
 fi
 [ "$PROJECT_ROOT" != "$SKILL_ROOT" ] || fail "choose the project folder, not the setup-ai-build-kit skill folder"
-EXPECTED_START="$PROJECT_ROOT/.agents/skills/setup-ai-build-kit"
 
 PLUGIN_ROOT=$(CDPATH= cd -- "$SKILL_ROOT/../../.." && pwd -P)
 PLUGIN_MANIFEST="$PLUGIN_ROOT/.claude-plugin/plugin.json"
@@ -55,14 +54,30 @@ if [ "$PLUGIN_INSTALLATION" = "no" ] && \
   [ "$AGENT_PLUGIN_START" != "$SKILL_ROOT" ] || PLUGIN_INSTALLATION=yes
 fi
 
-if [ -d "$EXPECTED_START" ]; then
-  EXPECTED_START=$(CDPATH= cd -- "$EXPECTED_START" && pwd -P)
-  if [ "$EXPECTED_START" != "$SKILL_ROOT" ]; then
+# The shared skills installer puts a project's skills in one of two folders.
+# Codex, Cursor, Gemini CLI and GitHub Copilot read .agents/skills. Claude Code
+# alone reads .claude/skills, so choosing only Claude Code leaves nothing in
+# .agents/skills. With several coding agents, one folder holds the skill and the
+# other links to it, or holds a second copy of the same installation.
+INSTALLED_HERE=no
+OTHER_INSTALLATION=no
+for skills_folder in .agents/skills .claude/skills; do
+  installed_start="$PROJECT_ROOT/$skills_folder/setup-ai-build-kit"
+  [ -d "$installed_start" ] || continue
+  installed_start=$(CDPATH= cd -- "$installed_start" && pwd -P)
+  if [ "$installed_start" = "$SKILL_ROOT" ]; then
+    INSTALLED_HERE=yes
+  else
+    OTHER_INSTALLATION=yes
+  fi
+done
+
+if [ "$INSTALLED_HERE" = "no" ]; then
+  if [ "$OTHER_INSTALLATION" = "yes" ]; then
     [ "$PLUGIN_INSTALLATION" != "yes" ] || \
       fail "this project has both an installed AI Build Kit plugin and a separate AI Build Kit skill installation; keep one before running start"
     fail "the chosen project belongs to a different setup-ai-build-kit skill installation"
   fi
-else
   [ "$PLUGIN_INSTALLATION" = "yes" ] || \
     fail "the chosen project does not contain this installed setup-ai-build-kit skill"
 fi
