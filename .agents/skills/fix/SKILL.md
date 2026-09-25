@@ -226,6 +226,9 @@ reading the line back is what tells it whether it did.
 
 Carrying on after the notice is the acceptance, and the line quotes the
 person's words after hearing who is exposed. Do not ask again for a cleaner yes.
+Write the line, read it back and start the replacement in the reply that
+answers them, and keep no lock that only waits for the skipped caution;
+fit-check.md says why a further question is a stop.
 Do not read an acceptance into a reply that does not ask for the work either:
 silence, a question, or "I am not sure" leaves the work waiting and the notice
 standing.

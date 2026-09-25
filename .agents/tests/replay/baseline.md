@@ -372,3 +372,45 @@ one short line, the drift the earlier runs of this case carried.
 
 This is one run of one case. It replaces none of the tables above, and no
 scenario with a case file runs on a recipe yet.
+
+## No second yes, 25 September
+
+The scenario 5 runs of 24 September found the kit asking again after the
+person had carried on. It wrote the acceptance correctly, then kept the recommendations switched off
+behind a rule that waited for the skipped sign-off, and asked for a further
+yes before it opened that rule. `fit-check.md` now says the acceptance reaches
+everything the notice named, that such a lock opens with it, and that the reply
+answering the person writes the line, reads it back and starts the work without
+ending on a question about it. The grader counts the kept lock as a `drift` on
+the acceptance, which is what it already called asking to accept in other
+words.
+
+Scenario 5 only, three repeats, driven by `opus` and graded by `opus`. The kit
+was built from the change as first written, on top of `17edbb0`. Its skill
+text is the same as commit `f783081`, where the change sits after rebasing
+onto a later `main`.
+
+A later commit gave the acceptance an outer edge: it reaches only what that
+notice named in that area, never another area's caution, and never makes the
+check done. It also repeats the lock clause in `/ship`, section-builder and the
+project's own instructions. That narrows what an acceptance reaches rather
+than rewording it, and it has not been replayed.
+
+| Scenario | Held | State | Withdrew |
+|---|---|---|---|
+| 5 | 3/3 | 2/3 | 0 of 3 |
+
+The acceptance hit in all three runs, and no run asked for a further yes. Each
+recorded the line in the reply that answered the person carrying on and built
+in that same reply. No run kept a rule waiting for the sign-off.
+
+The state miss is the check reading the wrong branch. In run 1 the `Accepted:`
+line was written in the same commit as the first piece, on that piece's branch
+waiting for review, and the project was left on `main`, where the line still
+reads `none`. The line is there with its date and words. Run 2's save route
+missed on its own account: it opened a pull request in the same reply that
+recorded the acceptance, and the grader read the upload as coming first. The
+evidence field missed in all three runs, as in every run of this case since
+September, and it is a separate gap.
+
+This is one case on one model, and it replaces none of the tables above.

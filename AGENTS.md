@@ -543,7 +543,13 @@ attribution line, not the word.
   still earns the acceptance: the notice came first, silence and an
   instruction given before the notice do not count, and the line is read back
   before the work starts, because measured runs built with nothing recorded
-  while believing they had followed the order.
+  while believing they had followed the order. And it guards the reply after
+  the person carries on: the line is written and the work started in that
+  same reply, with no further yes asked for. Measured runs recorded the
+  acceptance and then kept the flagged part switched off behind a rule that
+  waited for the skipped sign-off, and asked again before opening it. The
+  acceptance now reaches everything the notice named, so a lock that only
+  waits for the skipped caution opens with it.
 - `.agents/tests/who-can-settle.sh` guards which waiting pieces need the person:
   that the three labels each say who can answer, that /shape never answers a
   person-present question itself, that it can be pointed at one piece and can
