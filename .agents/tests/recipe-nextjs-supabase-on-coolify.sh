@@ -30,12 +30,15 @@ rr_shape
 
 # Preview.
 rs_rule "each pull request gets its own preview" 'coolify builds each pull request into its own container on the pull request.s commit'
-rs_rule "previews are switched on through the api" 'switches them on through coolify.s api, by setting .is_preview_deployments_enabled. on the app'
+rs_rule "previews start off on a new app" 'previews start off on every new app'
+rs_rule "the person switches previews on" 'switches them on with enable preview deployments on the app.s preview deployments page'
+rs_rule "the companion's tools cannot set it" 'the companion.s own tools cannot set it'
 rs_rule "a preview has an address only with a domain" 'a preview has an address only when the app has a domain: coolify fills its preview template, by default .\{\{pr_id\}\}\.\{\{domain\}\}., from that domain'
 rs_rule "a preview nobody can open is a warning" 'the kit says once that the person cannot open the preview, as a warning, and does not wait for an address'
 rs_rule "without a second project, previews get no migrations" 'gives a preview no migrations, since they would change the live database before the merge'
+rs_rule "a preview needing a migration is warned about" 'a preview whose code needs a new migration then fails against the live database, and the warning says so'
 rs_rule "the preview database gets the branch's migrations" 'before each preview, the kit gives that project the branch.s migrations with .supabase link --project-ref <preview project ref>. and .supabase db push.'
-rs_rule "previews never reach the live database" 'a second supabase project kept for previews, never at the live one'
+rs_rule "previews never reach the live database" 'a second supabase project kept for previews, unless no second project can exist'
 rs_rule "the kit never contacts the server" 'the kit never contacts the server, so the person or the hosting companion reads the preview'
 rs_rule "the preview answers from its own project" 'a .project. that is not the live project.s reference'
 
@@ -57,7 +60,7 @@ rs_rule "the live commit is the one on main" 'a .commit. equal to .git rev-parse
 # Rollback.
 rs_rule "two images survive the nightly cleanup" 'until its nightly cleanup, which leaves the two newest by default'
 rs_rule "cleanup can remove the image a rollback needs" 'the cleanup of unused images can remove the one a rollback needs'
-rs_rule "the rollback is the person's click" 'the rollback is always the person.s click'
+rs_rule "the rollback is a click on the rollback page" 'the rollback is always a click on that page'
 rs_rule "the earlier image is confirmed first" 'confirms the earlier image is still listed in coolify'
 rs_rule "a rollback reuses a kept image" 'coolify reuses the kept image, with no new build'
 rs_rule "a rollback leaves migrations alone" 'a rollback does not undo database migrations'
