@@ -25,7 +25,20 @@ rs_init "Next.js and Supabase on Vercel recipe"
 rr_locate "$ROOT/.agents/skills/ship/recipes/nextjs-supabase-on-vercel.md"
 rr_shape
 
-# Preview.
+# Preview, and the first launch that sets the project up. A real run on a
+# private repository met all three of these: Vercel's GitHub app could not see
+# the repository, the new project had no framework, and linking the folder
+# wrote to it. Each needed a hand fix, and the first tempted the kit into
+# deploying from a local copy, which reports no commit and never deploys again.
+rs_rule "a private repository is the person's step" 'when the github repository is private, the person first lets vercel.s github app see it, because only somebody who owns the repository can grant that'
+rs_rule "the person hears where to grant it" 'choose configure beside vercel, add the repository under repository access, and save'
+rs_rule "the connect failure is named" '.vercel git connect --yes. fails with "failed to connect"'
+rs_rule "the project is created with no framework" '.vercel project add <project>., which sets no framework'
+rs_rule "the framework is set before the first deploy" '.vercel project update <project> --framework nextjs --yes.'
+rs_rule "the missing framework's failure is named" 'no output directory named "public" found'
+rs_rule "the folder is linked to the project" '.vercel link --project <project> --yes.'
+rs_rule "the kit never deploys from a local copy" 'the kit never deploys from a local copy of the folder in place of that connection'
+rs_rule "the real run's finding is recorded" 'the first-launch steps have not yet had a real run of their own'
 rs_rule "main goes first" 'the first push to a new vercel project is .main., before any other branch'
 rs_rule "a generated address answers 302" 'such an address answers 302 to anyone not signed in'
 rs_rule "the production domain stays public" 'the production domain, .<project>\.vercel\.app., stays public'
@@ -64,6 +77,9 @@ rs_rule "a value never sits on a command line" 'the kit pipes it into vercel so 
 rs_rule "a public name is typed as config" 'printf .%s. "\$value" \| vercel env add <name> production --type config --yes. for a name that starts with .next_public_.'
 rs_rule "a secret keeps the sensitive type" 'which keeps vercel.s default sensitive type'
 rs_rule "the ignore is checked" '.git check-ignore supabase/\.temp. names the folder'
+rs_rule "linking edits .gitignore" 'it adds its own .\.vercel. folder to .\.gitignore., and the kit keeps that line'
+rs_rule "linking writes a token into .env.local" 'it also writes .vercel_oidc_token., a short-lived token that lets this machine reach vercel as the project, into .\.env\.local.'
+rs_rule "both files are checked as ignored" '.git check-ignore \.vercel \.env\.local. names both'
 rs_rule "production values are never pulled" 'never runs .vercel env pull. for production'
 rs_rule "the secrets check reads names only" 'lists every name in .\.env\.example. and no value'
 rs_rule "no public name carries a secret" 'no name that starts with .next_public_. contains .service_role. or .secret.'
