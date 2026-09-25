@@ -274,6 +274,10 @@ reported, and it is not what decides whether the case held.
 
 - Explore privately receives a private-preview check only.
 - Build and run it receives full evidence, independent review, and operational readiness, in that order.
+- On a recipe, operational readiness is the recipe's eight checks in its order, each reported in one plain line: preview up, live address updated, rollback possible, backup present, restore works, no secret in the repo, logs readable, health answers. `Who runs it:` decides whether the kit runs a check, reads back a pasted result, or records what the person saw.
+- Off a recipe, operational readiness is the general list, and each missing item is a warning.
+- A check not done, on a recipe or off one, is said once, recorded in CHANGELOG.md, and the launch goes ahead. The first launch still waits for a recorded address, and a tool without one is not called live.
+- /ship names no hosting, data or deploy product itself; every command comes from the recipe file.
 - Build with care does the cautions it can, gives the risk notice once at a caution that is a person, records the acceptance and ships that area too if the person carries on, and offers the handover once.
 
 ## 21. First save has no identity

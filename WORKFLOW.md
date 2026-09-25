@@ -260,9 +260,22 @@ What the agent may not do is take the notice back. Pushing back on the cost, the
 
 **Explore privately.** /ship runs no production evidence or launch procedure; it only confirms the prototype stays disposable and private, and records what would have to change to graduate.
 
-**Build and run it.** /ship runs the full evidence run, independent review, operational readiness (backup, a restored-backup rehearsal, a manual fallback, rollback, and a single caution if nobody receives alerts), and the live transition.
+**Build and run it.** /ship runs the full evidence run, independent review, operational readiness, and the live transition. Off a recipe, readiness is a general list: a backup, a restored-backup rehearsal, a manual fallback, rollback, and a single caution if nobody receives alerts. Anything missing from it is a warning you hear once and find in the changelog, and the launch goes ahead.
 
 **Build with care.** /ship ships everywhere outside a named sensitive area, does the caution it can do itself (a backup restored once, a rehearsal on a copy), and at a caution that is a person who has not looked, gives you the risk notice once. If you carry on, your acceptance is written down and that area goes live too. Where somebody outside the team is going to look, ask for the handover and /ship prepares it.
+
+On a recipe, the recipe's own checks take the place of that list. /ship reads
+the recipe your project's AGENTS.md names and works through its eight sections
+in order, and each one gives you a plain line: preview up, live address updated,
+rollback possible, backup present, restore works, no secret in the repo, logs
+readable, health answers.
+
+The kit runs the checks it can reach. Where a check runs on a server the kit
+cannot reach, you paste the result back and the kit reads it. Where only a
+person can judge, you look and the kit writes down what you said. A check that
+fails or cannot run is a warning, said once and written in the changelog, and
+the launch goes ahead. The one thing a first launch waits for is its address,
+because a tool with no recorded address is not live.
 
 On both live paths, /ship checks that the tool keeps a plain record of what each
 request did, without personal data, secrets or confidential file contents. If

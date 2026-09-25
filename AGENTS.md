@@ -681,6 +681,18 @@ attribution line, not the word.
   the project's recipe. The screen rules' link to Vercel's interface
   guidelines is set aside, and the check proves the exemption hides nothing
   else in that file. The README may name a product, as one option.
+- `.agents/tests/ship-runs-recipe.sh` guards how `/ship` runs a project's
+  recipe. It holds that `/ship` reads the `Recipe:` line and the file it
+  names, runs all eight sections in the recipe's order, and reports each in
+  one plain line. `Who runs it:` decides whether the kit runs a check, reads
+  back a pasted result, or records what the person saw. The rules it guards
+  hardest are the ones that would turn a warning back into a stop: a check not
+  done is said once, written in the changelog, and the launch goes ahead, and
+  off a recipe the general list is warnings too. The one wait left is the
+  address, since a tool with no recorded address is not live. It also takes
+  the deploy target from each recipe's title and refuses one named in `/ship`
+  or its evidence run, because a skill that learned one recipe's commands
+  would read wrongly on every other.
 - `.agents/tests/recipes.sh` guards the recipe format. A recipe pairs a build
   stack with a place to run it, and it is the only place outside the README
   allowed to name a service a tool runs on, so the rules around that permission

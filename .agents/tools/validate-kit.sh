@@ -1219,6 +1219,21 @@ else
   else
     pass "ship/SKILL.md keeps go-live and operational-readiness steps inside their path branches"
   fi
+
+  # The recipe's checks move work to a live address, so they sit inside Build
+  # and run it, which Build with care follows for everything outside its
+  # areas. Placed after the last branch, they would be a shared step that
+  # Explore privately could be read as reaching.
+  recipe_at=$(awk '
+    /^### Build and run it/ { inrun=1; next }
+    /^### / { inrun=0 }
+    /^#+ On a recipe/ { print (inrun ? "inside" : "outside"); exit }
+  ' "$shipfile")
+  if [ "$recipe_at" = inside ]; then
+    pass "ship/SKILL.md keeps the recipe's checks inside Build and run it"
+  else
+    fail "$shipfile: the 'On a recipe' checks are ${recipe_at:-missing}, not inside Build and run it"
+  fi
 fi
 
 # ---------------------------------------------------------------------------

@@ -21,6 +21,12 @@ with care, walk its `paths`, its optional `boundary`, and the folders assigned
 to `none`; stop if the shipped sensitive-area check does not agree with the
 current project.
 
+Read the `Recipe:` line in the stack section of the project's AGENTS.md. A file
+name there is the project's recipe: read that file in this skill's `recipes/`
+folder, and each part it links with `Shared part:`. `Recipe: none`, or no line
+at all, means the project is off a recipe. If the named file is not there, say
+so once and treat the project as off a recipe.
+
 ## 1. Follow the current path
 
 Each branch below is self-contained. Follow only the branch that matches the
@@ -49,13 +55,16 @@ it, then stop.
 1. Run the full evidence run.
 2. Run second-opinion using the best independent method recorded in
    AGENTS.md.
-3. Operational readiness: before any first live use, require whatever of
-   this actually applies: a named service and billing owner, a backup, a
-   successful restore rehearsal, a manual fallback, a rollback or disable
-   procedure, removal of test data, an access review, and clear
-   service-account ownership. Do not require a database restore rehearsal
-   for a tool with no stored data, or invent readiness steps a tool with
-   no live reliance doesn't need.
+3. Operational readiness, before any first live use. On a recipe, the
+   recipe's own checks replace the general list; "On a recipe" below says how
+   to run them. Off a recipe, check whatever of this actually applies: a named
+   service and billing owner, a backup, a successful restore rehearsal, a
+   manual fallback, a rollback or disable procedure, removal of test data, an
+   access review, and clear service-account ownership. Leave out a database
+   restore rehearsal for a tool with no stored data, and invent no readiness
+   steps a tool with no live reliance doesn't need. Each item that applies and
+   is not in place is a warning: name it once in one plain line, record it in
+   CHANGELOG.md with the date, and carry on. None of them holds the launch.
 
    Check that the tool records what each request did: one line per event,
    with a run id shared by that request's events, a time, a level and the step.
@@ -89,6 +98,8 @@ it, then stop.
    it is never a piece on the readiness list. Do not set up a hosted service,
    dashboard or alerting as part of this check.
 4. Go live, one connection at a time: take the harmless parts live first.
+   On a recipe, go live the way its going-live section says, when that
+   section's turn comes in the checks below.
    If hosting uses a preview address, this is the moment work moves to the
    team's address. That move is what /ship means.
 
@@ -142,6 +153,46 @@ it, then stop.
    carry, and ask them to paste the answer here when it arrives. Where the
    project has changed a field since, update that line from the project and
    print the request again for the person to carry.
+
+#### On a recipe
+
+Here the recipe file says what to run and what a pass looks like. Every
+command, service and address comes from it at run time. This skill names none
+of them, so it reads the same whichever recipe the project is on.
+
+Take the recipe's eight sections in its order: preview, going live, rollback,
+backup, restore, secrets, logs and health. For each one, read `How it works:`
+for what happens and `How it is checked:` for what a pass looks like. Then let
+`Who runs it:` decide how the check is done:
+
+- `the kit`: run the check from the project and read the output against the
+  pass the recipe describes.
+- `a companion or the person, result read back`: the check runs somewhere this
+  session cannot reach. Say in one plain sentence what to fetch and from
+  where, ask the person to paste it here, and read it against the pass
+  yourself.
+- `a person looking`: no machine can judge it. Ask the person to look, say in
+  one sentence what they are looking for, and record what they say in their
+  own words.
+
+A check that would change the live tool only to prove it can, as a rollback
+does, is not run against the live tool. Confirm from the recipe's own check
+that the step is there to take, such as an earlier version to go back to, and
+report that. Run it in full when the person asks for that step.
+
+Report each section in one plain line, in this order: preview up, live address
+updated, rollback possible, backup present, restore works, no secret in the
+repo, logs readable, health answers. Each line says what was found, in plain
+words, and leaves the command out.
+
+A check that failed, could not run, or got no answer is a warning. Say it once,
+on that section's line, record it in CHANGELOG.md with the date and the
+section, and go on to the next section. Do not hold the launch for it, and do
+not ask the person to choose to go live without it. The one wait that remains
+is the address. Where the kit ran the going-live section itself, record the
+live address it produced in the masterplan's "How it stays running" section.
+A tool with no recorded address is not called live, on a recipe or off one:
+tell the person so plainly, and keep it out of CHANGELOG.md as a launch.
 
 ### Build with care
 
@@ -199,7 +250,9 @@ Applies only once Build and run it, or Build with care outside its named
 areas or in an area whose caution is done or accepted, has actually gone live
 at least once. Lighter from
 then on: re-run the evidence for what changed since the last ship, and move
-that over. The hosting request recorded at the first launch still holds, and
+that over. On a recipe, run its eight checks again, as above; a warning the
+changelog already holds gets a one-line pointer rather than the warning again.
+The hosting request recorded at the first launch still holds, and
 step 4 says how to read it. If reliance, data sensitivity, or consequence has
 grown since the build path was last checked, rerun the fit check before
 shipping further.
@@ -209,6 +262,7 @@ shipping further.
 Explore privately: the private-preview checks are recorded and nothing moved
 to a live address. Build and run it, and Build with care outside its named
 areas or in an area whose caution is done or accepted: the team can rely on
-the copy they use, required operational readiness is real, and the changelog
+the copy they use, each readiness item is in place or recorded as a warning,
+on a recipe each of the eight checks has its line, and the changelog
 says what went live, when, and under which build path. Where a handover was
 asked for, it is complete and says what it does not cover.

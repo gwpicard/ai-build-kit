@@ -1,0 +1,108 @@
+#!/usr/bin/env sh
+# ship-runs-recipe.sh: guard how /ship runs a project's recipe.
+#
+# On a recipe, /ship reads the recipe the project named and runs its eight
+# checks in order, one plain line each. Off a recipe, it keeps the general
+# readiness list. Either way a check not done is a warning, said once and
+# written in the changelog, and the launch goes ahead. The one wait left is
+# the address, because a tool with no recorded address is not live.
+#
+# The rules most likely to go quietly are the ones that turn a warning back
+# into a stop, and the one that keeps the skill free of product names. A skill
+# that learned one recipe's commands would read wrongly on every other recipe,
+# and nothing on screen would say so.
+
+set -eu
+
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
+. "$ROOT/.agents/tests/lib/rule-shape.sh"
+
+SHIP="$ROOT/.agents/skills/ship/SKILL.md"
+EVIDENCE="$ROOT/.agents/skills/ship/references/evidence-run.md"
+WORKFLOW="$ROOT/WORKFLOW.md"
+SCENARIOS="$ROOT/.agents/tests/scenarios.md"
+
+rs_init "Ship-runs-recipe rules"
+rs_exists "$SHIP" "$EVIDENCE" "$WORKFLOW" "$SCENARIOS"
+
+# Which recipe, if any.
+rs_rule "reads the project's Recipe line" 'read the `recipe:` line in the stack section of the project.s agents\.md'
+rs_rule "reads the named file and its shared parts" 'read that file in this skill.s `recipes/` folder, and each part it links with `shared part:`'
+rs_rule "none or no line is off a recipe" '`recipe: none`, or no line at all, means the project is off a recipe'
+rs_rule "a missing recipe file is said once and treated as off a recipe" 'if the named file is not there, say so once and treat the project as off a recipe'
+
+# On a recipe.
+rs_rule "the recipe's checks replace the general list" 'on a recipe, the recipe.s own checks replace the general list'
+rs_rule "going live follows the recipe's going-live section" 'on a recipe, go live the way its going-live section says'
+rs_rule "commands and products come from the recipe at run time" 'every command, service and address comes from it at run time\. this skill names none of them'
+rs_rule "runs every section in the recipe's order" 'take the recipe.s eight sections in its order: preview, going live, rollback, backup, restore, secrets, logs and health'
+rs_rule "reads how it works and how it is checked" 'read `how it works:` for what happens and `how it is checked:` for what a pass looks like'
+rs_rule "Who runs it decides how" 'then let `who runs it:` decide how the check is done'
+rs_rule "the kit runs its own checks" '`the kit`: run the check from the project and read the output against the pass'
+rs_rule "a read-back check asks for a paste and reads it" '`a companion or the person, result read back`: the check runs somewhere this session cannot reach\. say in one plain sentence what to fetch and from where, ask the person to paste it here, and read it against the pass yourself'
+rs_rule "a person looking is asked and recorded" '`a person looking`: no machine can judge it\. ask the person to look, say in one sentence what they are looking for, and record what they say'
+rs_rule "a check that changes the live tool is not forced" 'a check that would change the live tool only to prove it can, as a rollback does, is not run against the live tool'
+rs_rule "one plain line per section, in order" 'report each section in one plain line, in this order: preview up, live address updated, rollback possible, backup present, restore works, no secret in the repo, logs readable, health answers'
+rs_rule "a line leaves the command out" 'leaves the command out'
+
+# A warning, not a stop.
+rs_rule "a check not done is a warning said once" 'a check that failed, could not run, or got no answer is a warning\. say it once'
+rs_rule "the warning is recorded and the next section runs" 'record it in changelog\.md with the date and the section, and go on to the next section'
+rs_rule "the launch is not held for a check" 'do not hold the launch for it, and do not ask the person to choose to go live without it'
+rs_rule "the address is the one wait" 'the one wait that remains is the address'
+rs_rule "a kit-run launch records its address" 'where the kit ran the going-live section itself, record the live address it produced'
+rs_rule "no recorded address, not called live" 'a tool with no recorded address is not called live, on a recipe or off one'
+rs_rule "a later ship runs the checks again" 'on a recipe, run its eight checks again'
+
+# Off a recipe.
+rs_rule "off a recipe the general list applies" 'off a recipe, check whatever of this actually applies'
+rs_rule "the general list is warnings" 'each item that applies and is not in place is a warning: name it once in one plain line, record it in changelog\.md with the date, and carry on\. none of them holds the launch'
+rs_guard "$SHIP" "ship's recipe rules"
+
+rs_require_absent "the general list is no longer a requirement" "$SHIP" 'require whatever of this actually applies'
+rs_require_order "the Recipe line is read before any path runs" "$SHIP" 'Read the `Recipe:` line' '^## 1\. Follow the current path'
+rs_require_order "the recipe's checks come after the hosting request" "$SHIP" 'Hosting request$' '^#### On a recipe$'
+
+# No product name in the skill. The names come from the recipes themselves, the
+# word after " on " in each recipe title, so a new recipe's target is covered
+# the day its file arrives, together with a fixed list of the obvious others.
+if [ -z "${RS_LIST:-}" ]; then
+  targets=$(for rf in "$ROOT"/.agents/skills/ship/recipes/*.md "$ROOT"/.agents/tests/recipes-awaiting-run/*.md; do
+    [ -f "$rf" ] || continue
+    sed -n 's/^# Recipe: .* on \(.*\)$/\1/p' "$rf" | head -1
+  done | tr '[:upper:]' '[:lower:]' | sort -u | paste -sd'|' -)
+  [ -n "$targets" ] || rs_fail "no recipe title named a deploy target, so the product read would check nothing"
+  PRODUCTS="$targets|supabase|netlify|heroku|railway|fly\.io|firebase"
+  names_in() {
+    tr '[:upper:]' '[:lower:]' < "$1" | grep -nE "$PRODUCTS" || true
+  }
+  for sf in "$SHIP" "$EVIDENCE"; do
+    found=$(names_in "$sf")
+    if [ -n "$found" ]; then
+      printf '%s\n' "$found" >&2
+      rs_fail "$sf names a product that belongs in a recipe"
+    fi
+  done
+  rs_ok "ship and the evidence run name no product from any recipe"
+  cp "$SHIP" "$rs_dir/ship-named"
+  first_target=$(printf '%s' "$targets" | cut -d'|' -f1)
+  printf '%s\n' "Deploy it with $first_target." >> "$rs_dir/ship-named"
+  [ -n "$(names_in "$rs_dir/ship-named")" ] ||
+    rs_fail "a product named in the skill was not noticed"
+  rs_ok "a product named in the skill is noticed"
+fi
+
+rs_require "the evidence run points at ship's recipe steps" "$EVIDENCE" 'on a project with a recipe, the rollback, backup, restore, secrets, logs and health checks are the recipe.s own'
+
+rs_require_load_bearing "WORKFLOW says the recipe's checks replace the list" "$WORKFLOW" 'on a recipe, the recipe.s own checks take the place of that list'
+rs_require_load_bearing "WORKFLOW gives the eight lines" "$WORKFLOW" 'preview up, live address updated, rollback possible, backup present, restore works, no secret in the repo, logs readable, health answers'
+rs_require_load_bearing "WORKFLOW says who runs each check" "$WORKFLOW" 'where a check runs on a server the kit cannot reach, you paste the result back and the kit reads it'
+rs_require_load_bearing "WORKFLOW says a check is a warning" "$WORKFLOW" 'a check that fails or cannot run is a warning, said once and written in the changelog, and the launch goes ahead'
+rs_require_load_bearing "WORKFLOW keeps the address wait" "$WORKFLOW" 'the one thing a first launch waits for is its address'
+rs_require_load_bearing "WORKFLOW says the general list is warnings" "$WORKFLOW" 'anything missing from it is a warning you hear once and find in the changelog'
+
+rs_require_load_bearing "scenario 20 runs the eight checks" "$SCENARIOS" 'on a recipe, operational readiness is the recipe.s eight checks in its order'
+rs_require_load_bearing "scenario 20 keeps the general list off a recipe" "$SCENARIOS" 'off a recipe, operational readiness is the general list, and each missing item is a warning'
+rs_require_load_bearing "scenario 20 keeps the address wait" "$SCENARIOS" 'the first launch still waits for a recorded address'
+
+rs_done
