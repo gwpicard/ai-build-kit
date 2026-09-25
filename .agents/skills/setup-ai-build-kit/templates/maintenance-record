@@ -1,6 +1,7 @@
-# AI Build Kit check-up dates. UTC, written as YYYY-MM-DD. start writes founded;
-# maintain writes the two pass lines, and a recipe-move-declined line when the
-# person turns down a move onto a recipe. Nothing else edits this file.
+# AI Build Kit check-up dates. UTC, written as YYYY-MM-DD. start writes founded,
+# and a founding-menu line naming the recipes on the menu it showed; maintain
+# writes the two pass lines, and a recipe-move-declined line when the person
+# turns down a move onto a recipe. Nothing else edits this file.
 founded|
 last-light-pass|
 last-full-pass|
