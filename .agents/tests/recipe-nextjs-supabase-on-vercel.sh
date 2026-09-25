@@ -31,7 +31,9 @@ rr_shape
 # wrote to it. Each needed a hand fix, and the first tempted the kit into
 # deploying from a local copy, which reports no commit and never deploys again.
 rs_rule "a private repository is the person's step" 'when the github repository is private, the person first lets vercel.s github app see it, because only somebody who owns the repository can grant that'
-rs_rule "the person hears where to grant it" 'choose configure beside vercel, add the repository under repository access, and save'
+rs_rule "the person hears where to grant it" 'settings, then applications, then installed github apps, and choose configure beside vercel'
+rs_rule "an organisation's repository has its own page" 'the organisation.s settings, then third-party access, then github apps'
+rs_rule "the person adds only this repository" 'under repository access they pick only select repositories, add the repository, and save'
 rs_rule "the connect failure is named" '.vercel git connect --yes. fails with "failed to connect"'
 rs_rule "the project is created with no framework" '.vercel project add <project>., which sets no framework'
 rs_rule "the framework is set before the first deploy" '.vercel project update <project> --framework nextjs --yes.'
