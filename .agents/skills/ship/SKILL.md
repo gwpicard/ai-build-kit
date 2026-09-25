@@ -100,7 +100,8 @@ it, then stop.
    dashboard or alerting as part of this check.
 4. Go live, one connection at a time: take the harmless parts live first.
    On a recipe, go live the way its going-live section says, when that
-   section's turn comes in the checks below.
+   section's turn comes in the checks below. Any merge or deploy on the way
+   follows "Merging and deploying" below.
    If hosting uses a preview address, this is the moment work moves to the
    team's address. That move is what /ship means.
 
@@ -199,6 +200,34 @@ is the address. Where the kit ran the going-live section itself, record the
 live address it produced in the masterplan's "How it stays running" section.
 A tool with no recorded address is not called live, on a recipe or off one:
 tell the person so plainly, and keep it out of CHANGELOG.md as a launch.
+
+#### Merging and deploying
+
+These rules hold at every go-live, on a recipe or off one, and on Build with
+care as well.
+
+A person decides whether to merge, as with /implement. Before a merge, name
+each pull request in one plain line that says what it changes. Then ask for a
+yes that names the merge, for example: "Say yes to put it live, which merges
+the two record changes." Merge only when the person's reply plainly covers
+that merge. A yes to going live, to a hosting step, or to any question asked
+before the merge was named does not cover it: ask again, and merge nothing
+until they answer. A no leaves the pull request open and the live tool as it
+was.
+
+Before you decide a deploy failed, read its whole output, or read the host's
+own list of deployments. Never cut the output short. Where neither says
+whether the deploy went live, ask the live address which version it serves,
+through its health route where it has one. Never run a deploy a second time until you have checked
+that the first did not go live. A second deploy of the same version replaces
+the earlier build as the rollback target, so a rollback would bring back the
+same version. When a second deploy is still needed, say that in one line
+before you run it, and correct the rollback line to match.
+
+A warning said once in a /ship is not said again in that /ship, even when a
+step runs twice. Where it matters again, one line saying the changelog already
+holds it is enough. The risk notice for a named area is not a warning, and
+Build with care still gives it at the moment that area goes live.
 
 ### Build with care
 
