@@ -33,9 +33,14 @@ rs_rule "the yes asked for names the merge" 'ask for a yes that names the merge'
 rs_rule "merge only on a reply that covers it" 'merge only when the person.s reply plainly covers that merge'
 rs_rule "a go-live yes given before the merge was named does not cover it" 'a yes to going live, to a hosting step, or to any question asked before the merge was named does not cover it: ask again, and merge nothing until they answer'
 rs_rule "a no leaves the pull request open" 'a no leaves the pull request open'
+# The person may name the merge first. Asking again then is the opposite fault:
+# a question they already answered.
+rs_rule "a merge the person already named is the yes" 'where their own words already named the merge, as in "merge both and put it live", that is the yes: do not ask again'
 
 # The deploy runs once unless it plainly did not go live.
-rs_rule "the whole output or the deployment list is read first" 'before you decide a deploy failed, read its whole output, or read the host.s own list of deployments'
+rs_rule "the whole output or the deployment list is read first" 'before you decide a deploy failed, read its whole output, or read the host.s own list of deployments or have it read'
+# On a server the kit never contacts, the list comes back as a paste.
+rs_rule "an unreachable host's list is read by the person or a companion" 'where the kit cannot reach the host, the person or a companion reads that list and pastes it here'
 rs_rule "the output is never cut short" 'never cut the output short'
 rs_rule "an unclear result is checked at the live address" 'ask the live address which version it serves'
 rs_rule "no second deploy before the first is checked" 'never run a deploy a second time until you have checked that the first did not go live'

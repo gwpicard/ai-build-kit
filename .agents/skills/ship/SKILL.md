@@ -210,19 +210,22 @@ A person decides whether to merge, as with /implement. Before a merge, name
 each pull request in one plain line that says what it changes. Then ask for a
 yes that names the merge, for example: "Say yes to put it live, which merges
 the two record changes." Merge only when the person's reply plainly covers
-that merge. A yes to going live, to a hosting step, or to any question asked
-before the merge was named does not cover it: ask again, and merge nothing
-until they answer. A no leaves the pull request open and the live tool as it
-was.
+that merge. Where their own words already named the merge, as in "merge both
+and put it live", that is the yes: do not ask again. A yes to going live, to a
+hosting step, or to any question asked before the merge was named does not
+cover it: ask again, and merge nothing until they answer. A no leaves the pull
+request open and the live tool as it was.
 
 Before you decide a deploy failed, read its whole output, or read the host's
-own list of deployments. Never cut the output short. Where neither says
-whether the deploy went live, ask the live address which version it serves,
-through its health route where it has one. Never run a deploy a second time until you have checked
-that the first did not go live. A second deploy of the same version replaces
-the earlier build as the rollback target, so a rollback would bring back the
-same version. When a second deploy is still needed, say that in one line
-before you run it, and correct the rollback line to match.
+own list of deployments or have it read. Where the kit cannot reach the host,
+the person or a companion reads that list and pastes it here. Never cut the
+output short. Where neither says whether the deploy went live, ask the live
+address which version it serves, through its health route where it has one,
+or have the person ask it. Never run a deploy a second time until you have
+checked that the first did not go live. A second deploy of the same version
+replaces the earlier build as the rollback target, so a rollback would bring
+back the same version. When a second deploy is still needed, say that in one
+line before you run it, and correct the rollback line to match.
 
 A warning said once in a /ship is not said again in that /ship, even when a
 step runs twice. Where it matters again, one line saying the changelog already
