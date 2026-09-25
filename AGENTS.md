@@ -277,14 +277,18 @@ attribution line, not the word.
   and which records a missing reviewer as a gap rather than waiting for one,
   because the wait had no exit and cost two measured runs their whole founding.
 - `.agents/tests/founding-menu.sh` guards the recipe menu founding offers. The
-  menu is read from the files directly in `.agents/skills/ship/recipes/` at
-  that moment, so a shared part or a recipe still waiting for its real run is
-  never offered. Exactly one recipe is recommended. A person may bring their
-  own stack and hears once what the kit then cannot check. No answer takes the
-  recommended recipe, and neither the menu nor the recipe's tool report ever
-  stops founding. It also reads the product names out of the recipe titles
-  and fails if any of them appears in the founding skill, its templates, its
-  completion report or WORKFLOW.md, and proves a planted name is caught.
+  menu is the files directly in the `recipes/` folder of the installed ship
+  skill, found beside the founding skill and never at a project path, since
+  the two plugin routes install the skills elsewhere and a project path there
+  finds an empty menu. A shared part or a recipe still waiting for its real
+  run is never offered. Exactly one recipe is recommended, with a tie going to
+  the first by file name, and the same reply says it is the default, so
+  showing the menu never ends the turn. A person may bring their own stack and
+  hears once what the kit then cannot check. The choice is recorded by file
+  name with `.md` included, and neither the menu nor the recipe's tool report
+  ever stops founding. Product names are left to `hosting-request.sh`.
+  `agent-plugin.sh` and `claude-plugin.sh` each check that every menu recipe
+  arrives in their installed layout.
 - `.agents/tests/coverage-read.sh` guards the read that compares the masterplan
   against the pieces: the rules that keep it honest, that /setup and /sync both
   still run it, and that WORKFLOW.md explains it for founding and for sync. It
