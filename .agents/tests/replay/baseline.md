@@ -386,7 +386,15 @@ the acceptance, which is what it already called asking to accept in other
 words.
 
 Scenario 5 only, three repeats, driven by `opus` and graded by `opus`. The kit
-is the branch carrying the change, at `2933f9e` on top of `17edbb0`.
+was built from the change as first written, on top of `17edbb0`. Its skill
+text is the same as commit `f783081`, where the change sits after rebasing
+onto a later `main`.
+
+A later commit gave the acceptance an outer edge: it reaches only what that
+notice named in that area, never another area's caution, and never makes the
+check done. It also repeats the lock clause in `/ship`, section-builder and the
+project's own instructions. That narrows what an acceptance reaches rather
+than rewording it, and it has not been replayed.
 
 | Scenario | Held | State | Withdrew |
 |---|---|---|---|
