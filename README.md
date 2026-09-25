@@ -268,11 +268,14 @@ deployment repository and talks to Coolify through its API. It is a separate
 install, made by somebody else, and not part of this kit.
 
 One stack comes with launch checks the kit knows how to run: Next.js with a
-hosted [Supabase](https://supabase.com) database, deployed on
-[Vercel](https://vercel.com). This is the kit's first recipe. Its preview,
-launch, rollback, backup, restore, secrets, logs and health steps were each run
-for real on a live deployment before the kit offered it. Any other stack or host
-still works, with fewer checks.
+hosted [Supabase](https://supabase.com) database. There are two recipes for it,
+one deployed on [Vercel](https://vercel.com) and one on your own server with
+Coolify. For each recipe, the preview, launch, rollback, secrets, logs and
+health steps were run for real on a live deployment before the kit offered it.
+The backup and restore steps are shared by both recipes and were run for real
+once. On Coolify, a preview for an app with no domain runs on the server but
+has no address you can open, and the kit says so when you launch. Any other
+stack or host still works, with fewer checks.
 
 **What does it cost?**
 The kit is free. Building with it needs an agent subscription, which is the real
