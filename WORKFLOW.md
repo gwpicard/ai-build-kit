@@ -387,6 +387,17 @@ trim if the file reaches 200, or contains a folder layout, dependency list,
 architecture overview or style rule an automatic check could enforce. You see
 one line saying how long it is and what can go. Nothing is cut without your yes.
 
+A project with no recipe may still be built much like one on the menu, with
+the same framework and the same data service, even if it runs somewhere else or
+lacks the recipe's Dockerfile and health route. That covers a project founded
+before recipes existed and one founded on its own stack. The monthly visit then
+offers the move once, and says what it gains: the launch checks /ship would run
+on that recipe. It also says what the move would change. Nothing changes without
+your yes. A yes becomes a piece, shaped and built like any other, and the
+offer does not come back while that piece is open. A no is recorded, and the
+offer comes back only when the menu or your stack has changed since. The move
+is never required. When no recipe is close, you hear nothing.
+
 /maintain also lists old branches whose work is already in your main branch,
 on your computer and on GitHub, each with the command that removes it. It
 keeps two kinds apart: the ones Git can confirm, and the ones only GitHub
