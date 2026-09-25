@@ -108,6 +108,10 @@ it, then stop.
    that server. The kit never contacts that server. The person carries a short
    request there by hand, and carries the answer back.
 
+   On a recipe whose going-live section the kit runs itself, no hosting
+   request is written. The address that section produces, recorded as "On a
+   recipe" below says, is the address the first launch waits for.
+
    On a first launch, read the masterplan's "How it stays running" section.
    When it holds no hosting request, write one there, filled from the project
    itself rather than by asking the person:
@@ -139,7 +143,7 @@ it, then stop.
    they send back here, and I will record it for the next /ship."
 
    The first launch is not finished until an address is recorded under the
-   request. Until then, tell the person plainly that the tool is not live yet
+   request, or by the kit's own going-live on a recipe. Until then, tell the person plainly that the tool is not live yet
    and is waiting on the server's answer. Do not write it into CHANGELOG.md as
    live.
 
@@ -176,9 +180,10 @@ for what happens and `How it is checked:` for what a pass looks like. Then let
   own words.
 
 A check that would change the live tool only to prove it can, as a rollback
-does, is not run against the live tool. Confirm from the recipe's own check
-that the step is there to take, such as an earlier version to go back to, and
-report that. Run it in full when the person asks for that step.
+does, is not run against the live tool. For rollback, confirm with the
+recipe's own commands that an earlier production build is listed, and report
+the line as "rollback possible, not tried", so it never claims more than was
+checked. Run the check in full only when the person asks for a rollback.
 
 Report each section in one plain line, in this order: preview up, live address
 updated, rollback possible, backup present, restore works, no secret in the
@@ -201,7 +206,8 @@ one.
 
 Outside every named area, follow the same four steps as Build and run it
 above: evidence run, second-opinion, operational readiness, then go live one
-connection at a time.
+connection at a time. On a recipe, readiness and going live are the recipe's
+checks, as "On a recipe" says.
 
 Inside a named area, take each area in turn:
 
@@ -224,7 +230,10 @@ Inside a named area, take each area in turn:
 5. only after the caution is done or accepted does that area get its own
    operational readiness check (including the request record and monitoring
    rules above, without repeating their notices) and its own go-live
-   step, one connection at a time, with the result recorded on its line.
+   step, one connection at a time, with the result recorded on its line. On a
+   recipe, the recipe deploys the whole tool at once, so an area whose caution
+   is done or accepted goes live through the next run of the eight checks,
+   not through a separate deploy.
 
 Where a caution is a person and the team has nobody to ask, offer the
 handover once: `templates/handover.md`, filled in for that area, is what the

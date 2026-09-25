@@ -268,7 +268,8 @@ On a recipe, the recipe's own checks take the place of that list. /ship reads
 the recipe your project's AGENTS.md names and works through its eight sections
 in order, and each one gives you a plain line: preview up, live address updated,
 rollback possible, backup present, restore works, no secret in the repo, logs
-readable, health answers.
+readable, health answers. The rollback line says a rollback is possible and
+was not tried, because the kit does not roll back the live tool just to check.
 
 The kit runs the checks it can reach. Where a check runs on a server the kit
 cannot reach, you paste the result back and the kit reads it. Where only a

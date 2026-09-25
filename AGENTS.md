@@ -689,7 +689,12 @@ attribution line, not the word.
   hardest are the ones that would turn a warning back into a stop: a check not
   done is said once, written in the changelog, and the launch goes ahead, and
   off a recipe the general list is warnings too. The one wait left is the
-  address, since a tool with no recorded address is not live. It also takes
+  address, since a tool with no recorded address is not live. A deploy the
+  kit runs itself writes no hosting request, since nobody runs a server to
+  carry one to, and its own address meets the wait. The rollback line says
+  "possible, not tried", because the kit only saw an earlier build listed.
+  Build with care reaches the same checks, and a settled area goes live on
+  their next run rather than through a deploy of its own. It also takes
   the deploy target from each recipe's title and refuses one named in `/ship`
   or its evidence run, because a skill that learned one recipe's commands
   would read wrongly on every other.

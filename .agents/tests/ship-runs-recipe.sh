@@ -42,6 +42,22 @@ rs_rule "the kit runs its own checks" '`the kit`: run the check from the project
 rs_rule "a read-back check asks for a paste and reads it" '`a companion or the person, result read back`: the check runs somewhere this session cannot reach\. say in one plain sentence what to fetch and from where, ask the person to paste it here, and read it against the pass yourself'
 rs_rule "a person looking is asked and recorded" '`a person looking`: no machine can judge it\. ask the person to look, say in one sentence what they are looking for, and record what they say'
 rs_rule "a check that changes the live tool is not forced" 'a check that would change the live tool only to prove it can, as a rollback does, is not run against the live tool'
+# "Possible" has to rest on something the kit saw, and the line must not read
+# as a rollback that was tried.
+rs_rule "rollback is confirmed by a listed earlier build" 'for rollback, confirm with the recipe.s own commands that an earlier production build is listed'
+rs_rule "the rollback line says it was not tried" 'report the line as "rollback possible, not tried", so it never claims more than was checked'
+
+# A deploy the kit runs has nobody to carry a request to. Without these rules,
+# the hosting request would send the person to a server nobody runs, and the
+# launch would wait for an answer that never comes.
+rs_rule "no hosting request when the kit runs the going-live" 'on a recipe whose going-live section the kit runs itself, no hosting request is written'
+rs_rule "the kit's own address is the one the wait needs" 'the address that section produces, recorded as "on a recipe" below says, is the address the first launch waits for'
+rs_rule "the wait is met by the kit's own going-live" 'recorded under the request, or by the kit.s own going-live on a recipe'
+
+# Build with care reaches the recipe for its ordinary work and for an area
+# once its caution is settled.
+rs_rule "care work outside areas uses the recipe's checks" 'on a recipe, readiness and going live are the recipe.s checks, as "on a recipe" says'
+rs_rule "a settled area goes live on the next run of the checks" 'an area whose caution is done or accepted goes live through the next run of the eight checks, not through a separate deploy'
 rs_rule "one plain line per section, in order" 'report each section in one plain line, in this order: preview up, live address updated, rollback possible, backup present, restore works, no secret in the repo, logs readable, health answers'
 rs_rule "a line leaves the command out" 'leaves the command out'
 
@@ -96,6 +112,7 @@ rs_require "the evidence run points at ship's recipe steps" "$EVIDENCE" 'on a pr
 
 rs_require_load_bearing "WORKFLOW says the recipe's checks replace the list" "$WORKFLOW" 'on a recipe, the recipe.s own checks take the place of that list'
 rs_require_load_bearing "WORKFLOW gives the eight lines" "$WORKFLOW" 'preview up, live address updated, rollback possible, backup present, restore works, no secret in the repo, logs readable, health answers'
+rs_require_load_bearing "WORKFLOW says the rollback was not tried" "$WORKFLOW" 'the rollback line says a rollback is possible and was not tried'
 rs_require_load_bearing "WORKFLOW says who runs each check" "$WORKFLOW" 'where a check runs on a server the kit cannot reach, you paste the result back and the kit reads it'
 rs_require_load_bearing "WORKFLOW says a check is a warning" "$WORKFLOW" 'a check that fails or cannot run is a warning, said once and written in the changelog, and the launch goes ahead'
 rs_require_load_bearing "WORKFLOW keeps the address wait" "$WORKFLOW" 'the one thing a first launch waits for is its address'
