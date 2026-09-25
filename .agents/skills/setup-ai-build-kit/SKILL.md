@@ -206,7 +206,9 @@ fit-check.md; if a redesign changes the answers, run the check again. Where an
 area survives that, give the risk notice fit-check.md describes, once and in
 full, before any of the flagged work goes ahead. If the person carries on after
 it, write their acceptance into the working notes with their words and the
-date, so the masterplan's `Accepted:` line carries it, and go on. If they do
+date, so the masterplan's `Accepted:` line carries it, and go on in that same
+reply. Do not ask a further yes, and do not keep a rule in the plan that only
+waits for the caution they skipped. If they do
 not, founding goes on anyway and the area's caution stays `not yet done`. A no
 to an ownership question becomes a founding task rather than a path move.
 

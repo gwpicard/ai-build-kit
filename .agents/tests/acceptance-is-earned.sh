@@ -55,6 +55,10 @@ rs_rule "no second question for a cleaner yes" \
   'do not ask again for a cleaner yes'
 rs_rule "a reply that asks for no work leaves the notice standing" \
   'leaves the work waiting and the notice standing'
+rs_rule "the line is written and the work started in the same reply" \
+  'start the replacement in the reply that answers them'
+rs_rule "no lock is kept that only waits for the skipped caution" \
+  'keep no lock that only waits for the skipped caution'
 rs_guard "$FIX" "the fix skill"
 
 # fit-check.md is where every skill reads the rule from, so the definition has
@@ -93,6 +97,23 @@ rs_rule "the notice is found in a reply before anything is written" \
   'find the notice in one of your own replies'
 rs_rule "remembering the notice is not finding it" \
   'remembering that you meant to give it is not finding it'
+# Measured runs recorded the acceptance correctly and then asked for a further
+# yes before the flagged part switched on: the plan kept a rule that stayed off
+# until somebody signed, and the acceptance was read as not reaching it. That
+# second question is a stop by another name, so the three rules below hold it
+# shut, and the rule that silence and a question do not count stays beside them.
+rs_rule "recording and starting happen in the reply that answers the person" \
+  'all of this happens in the reply that answers the person carrying on'
+rs_rule "that reply does not end on a question about the flagged work" \
+  'do not end that reply on a question about the flagged work'
+rs_rule "a further question is the second question in other words" \
+  'the second question in other words'
+rs_rule "the acceptance reaches everything the notice named" \
+  'the acceptance reaches everything the notice named'
+rs_rule "a lock that only waits for the skipped caution is opened" \
+  'a lock that exists only to wait for the skipped caution'
+rs_rule "no further yes is asked to open it" \
+  'do not keep the lock and ask for a further yes to open it'
 rs_guard "$FIT" "the shipped fit-check.md"
 
 # /ship and founding are the other two places the kit used to stop. Each now
@@ -113,6 +134,8 @@ rs_rule "the area reads accepted, never done" \
   'line .accepted., never .done.'
 rs_rule "silence or other work leaves only that area behind" \
   'silence, a question, or a request for other work is not carrying on'
+rs_rule "ship goes on in the same reply with no further question" \
+  'go on in the same reply, without a further question about that area'
 rs_guard "$SHIP" "ship's Build with care steps"
 rs_require_absent "ship no longer stops at a person caution" "$SHIP" 'stop at it'
 rs_require_absent "ship no longer halts on an area without a status" "$SHIP" 'do not carry on past one'
@@ -124,6 +147,10 @@ rs_rule "carrying on writes the acceptance with words and date" \
   'if the person carries on after it, write their acceptance'
 rs_rule "founding goes on either way" \
   'founding goes on anyway'
+rs_rule "founding goes on in the same reply with no further yes" \
+  'go on in that same reply. do not ask a further yes'
+rs_rule "founding keeps no rule that only waits for the skipped caution" \
+  'do not keep a rule in the plan that only waits for the caution they skipped'
 rs_guard "$SETUP" "the founding fit-check step"
 
 rs_reset
@@ -132,6 +159,8 @@ rs_rule "the project's instructions give the notice once" \
 rs_rule "carrying on is the acceptance there too" \
   'if the person carries on after the notice, that is their acceptance'
 rs_rule "silence is not carrying on" 'silence is not carrying on'
+rs_rule "the project builds in the same reply with no further yes" \
+  'build in that same reply, with no further yes asked for'
 rs_rule "the record never calls the caution done" \
   'accepted, never that the caution was done'
 rs_guard "$FOUNDATION" "the project's own AGENTS.md template"
@@ -156,6 +185,8 @@ rs_rule "a recorded acceptance makes it the pull-request route" \
   'where the person carried on and the acceptance is recorded, this is the pull-request route'
 rs_rule "a blocked piece waits until the person carries on" \
   'or the person carries on after the notice and the acceptance is recorded'
+rs_rule "the flagged route asks no further question before the build" \
+  'do this in the reply that answers them, and do not ask a further question before the build'
 rs_guard "$SECTION" "section-builder's flagged route"
 rs_require_absent "section-builder no longer requires the condition before merge" "$SECTION" 'must be met before merge or live activation'
 rs_require_load_bearing "implement lets a blocked piece go on when the person carries on" "$IMPLEMENT" \

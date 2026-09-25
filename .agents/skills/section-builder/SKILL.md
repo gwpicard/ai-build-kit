@@ -36,7 +36,8 @@ Choose the save route before changing anything:
    `.agents/skills/setup-ai-build-kit/references/fit-check.md` describes. If
    the person carries on after it, write the `Accepted:` line with their
    words and the date, read it back, and build and save the piece on the
-   pull-request route. If they do not, build only up to the recorded
+   pull-request route. Do this in the reply that answers them, and do not
+   ask a further question before the build. If they do not, build only up to the recorded
    condition. In an unattended run nobody is there to carry on, so never
    write an acceptance on the person's behalf: stop at the condition.
    Stopping there, safely prepared and correctly recorded as blocked, is one

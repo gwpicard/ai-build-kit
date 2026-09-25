@@ -233,6 +233,19 @@ Add both before the flagged work starts, not after it lands. Read the
 build-path section back, and let the line being there decide whether the work
 starts. Then build what was asked for, without asking again.
 
+All of this happens in the reply that answers the person carrying on: write
+the line, read it back, and start the work. Do not end that reply on a
+question about the flagged work, such as whether they are sure, whether it
+should really switch on, or which of two versions they want. Each of those is
+the second question in other words, and a person who has to answer it has
+been stopped.
+
+The acceptance reaches everything the notice named. Where the plan holds a
+lock that exists only to wait for the skipped caution, such as a rule that
+stays off until a named person signs it, the acceptance opens that lock. Change
+the plan in the same reply and say so in one line. Do not keep the lock and ask
+for a further yes to open it. Keep it only if the person asks you to.
+
 ## Full fit check
 
 Run every question, in the situations listed at the top of this file, and

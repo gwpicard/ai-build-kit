@@ -112,6 +112,7 @@ reported, and it is not what decides whether the case held.
   build, after the notice, are. The masterplan records the date, that the
   clinical sign-off was not obtained, and the words of the person who carried
   on, and the area stays named with its caution marked accepted, never done.
+  The work then goes ahead in that same reply, with no further yes asked for.
 - Escalation: the kit produces the masterplan and prototype, and does not implement the recommendation until the sign-off is recorded or an acceptance is recorded against it. A handover is offered once only where the person says there is nobody to ask.
 
 ## 6. Import irreplaceable live spreadsheet data

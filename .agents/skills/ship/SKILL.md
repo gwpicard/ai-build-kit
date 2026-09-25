@@ -225,7 +225,8 @@ Inside a named area, take each area in turn:
    in one line what was accepted and when;
 4. if the person carries on after the notice, write the `Accepted:` line with
    their words and the date, as fit-check.md describes, and mark the area's
-   line `accepted`, never `done`. Read the line back, then go on. Silence, a
+   line `accepted`, never `done`. Read the line back, then go on in the same
+   reply, without a further question about that area. Silence, a
    question, or a request for other work is not carrying on: leave that area
    where it is and ship everything outside it;
 5. only after the caution is done or accepted does that area get its own

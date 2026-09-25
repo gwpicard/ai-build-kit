@@ -248,7 +248,7 @@ Six areas count as sensitive, and the list is fixed: personal or sensitive data,
 
 Before work in a named area goes ahead, you get a risk notice. It comes once, in full, in one reply. It says who is exposed, what happens to them if it goes wrong, what would normally prevent that, what you can do, and that the kit flags what it can recognise and will miss things. It names people rather than saying something is risky, because the exposure a tool creates usually lands on somebody else.
 
-Then it is your call. You can have the caution done first, take the thing out of scope so the risk goes away, or carry on. Carrying on is accepting the risk: say go ahead in any words and the work goes ahead. Saying nothing is not carrying on. Nothing is refused and nothing stops you.
+Then it is your call. You can have the caution done first, take the thing out of scope so the risk goes away, or carry on. Carrying on is accepting the risk: say go ahead in any words and the work goes ahead. You are not asked a second time, and nothing the notice named stays switched off waiting for the check you chose to skip. Saying nothing is not carrying on, and neither is asking a question. Nothing is refused and nothing stops you.
 
 When you carry on, an acceptance is written into the build-path section before the work starts, as a dated line saying what was skipped, in your own words, with your name. It says the risk was accepted, never that the caution was done. Making a project less careful is a decision you record, not something the agent does on its own, and the accumulated lines are the honest answer to "what did we knowingly skip?" when somebody asks in six months.
 
