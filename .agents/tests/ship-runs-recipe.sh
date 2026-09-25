@@ -27,6 +27,7 @@ rs_exists "$SHIP" "$EVIDENCE" "$WORKFLOW" "$SCENARIOS"
 
 # Which recipe, if any.
 rs_rule "reads the project's Recipe line" 'read the `recipe:` line in the stack section of the project.s agents\.md'
+rs_rule "the file name carries its .md, as founding records it" 'a file name there, written with its `\.md` as founding records it'
 rs_rule "reads the named file and its shared parts" 'read that file in this skill.s `recipes/` folder, and each part it links with `shared part:`'
 rs_rule "none or no line is off a recipe" '`recipe: none`, or no line at all, means the project is off a recipe'
 rs_rule "a missing recipe file is said once and treated as off a recipe" 'if the named file is not there, say so once and treat the project as off a recipe'

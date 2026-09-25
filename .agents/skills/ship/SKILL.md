@@ -22,7 +22,8 @@ to `none`; stop if the shipped sensitive-area check does not agree with the
 current project.
 
 Read the `Recipe:` line in the stack section of the project's AGENTS.md. A file
-name there is the project's recipe: read that file in this skill's `recipes/`
+name there, written with its `.md` as founding records it, is the project's
+recipe: read that file in this skill's `recipes/`
 folder, and each part it links with `Shared part:`. `Recipe: none`, or no line
 at all, means the project is off a recipe. If the named file is not there, say
 so once and treat the project as off a recipe.

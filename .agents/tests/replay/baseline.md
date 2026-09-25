@@ -357,7 +357,9 @@ driven by `opus` and graded by `opus`, the harness default.
 |---|---|---|---|---|
 | 47 | `f7a41a3` | 1/1 | 1/1 | none due |
 
-The run used the tree one reworded sentence before `f7a41a3`. The address
+`f7a41a3` is the change as it stood before it was rebased onto founding's
+recipe menu, so that commit is not on `main`. The run used the tree one
+reworded sentence before it. The address
 wait there said "do not write it into CHANGELOG.md as live" rather than "keep
 it out of CHANGELOG.md as a launch", which means the same.
 
