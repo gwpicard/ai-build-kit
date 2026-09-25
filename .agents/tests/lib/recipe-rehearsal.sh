@@ -96,6 +96,21 @@ one_deployment() {
 case "$1" in
   inspect) one_deployment "$@"; echo "status  Ready" ;;
   promote|rollback) one_deployment "$@" ;;
+  curl)
+    # A path, then only the options vercel curl documents. It is marked beta,
+    # and it answers a protected deployment through a bypass token.
+    shift
+    path=""
+    while [ "$#" -gt 0 ]; do
+      case "$1" in
+        --yes|-y|--json|--trace) shift ;;
+        --deployment|--protection-bypass) [ -n "${2:-}" ] || refuse curl "$@"; shift 2 ;;
+        -*) refuse curl "$@" ;;
+        *) [ -z "$path" ] || refuse curl "$@"; path=$1; shift ;;
+      esac
+    done
+    [ -n "$path" ] || refuse curl
+    echo '{"status":"ok","database":"ok"}' ;;
   project)
     # Only the options vercel project documents: add takes a name and no
     # option, and update takes one name and the settings it lists.
@@ -237,6 +252,9 @@ case "$*" in
   "rev-parse origin/main") echo 0000000 ;;
   "check-ignore supabase/.temp") echo supabase/.temp ;;
   "check-ignore .vercel .env.local") printf '.vercel\n.env.local\n' ;;
+  # Right after vercel link, before the kit lets the file back in.
+  "check-ignore --no-index -v .env.example") printf '.gitignore:10:.env*\t.env.example\n' ;;
+  "ls-files .env.example") echo .env.example ;;
   *) echo "git stand-in: not a command a recipe may use: git $*" >&2; exit 64 ;;
 esac
 SH
@@ -343,14 +361,16 @@ rr_stand_ins() {
   # is refused and has to use project update.
   for rr_probe in "rollback --timout 5m stand-in" "inspect --wiat stand-in" "promote --yse stand-in" \
     "rollback" "inspect one two" "project add stand-in --framework nextjs" \
-    "project update stand-in --framwork nextjs" "link --projet stand-in" "git connect --yse"; do
+    "project update stand-in --framwork nextjs" "link --projet stand-in" "git connect --yse" \
+    "curl" "curl /api/health --deploymnet stand-in" "curl /api/health --deployment"; do
     # shellcheck disable=SC2086
     if PATH="$rs_dir/bin:$PATH" vercel $rr_probe >/dev/null 2>&1; then
       rs_fail "the vercel stand-in accepted 'vercel $rr_probe'"
     fi
   done
   for rr_probe in "rollback --timeout 5m stand-in" "inspect --wait stand-in" "promote --yes stand-in" \
-    "project update stand-in --framework nextjs --yes" "link --project stand-in --yes" "git connect --yes"; do
+    "project update stand-in --framework nextjs --yes" "link --project stand-in --yes" "git connect --yes" \
+    "curl /api/health --deployment stand-in --yes"; do
     # shellcheck disable=SC2086
     PATH="$rs_dir/bin:$PATH" vercel $rr_probe >/dev/null 2>&1 ||
       rs_fail "the vercel stand-in refused 'vercel $rr_probe'"
