@@ -280,6 +280,14 @@ fails or cannot run is a warning, said once and written in the changelog, and
 the launch goes ahead. The one thing a first launch waits for is its address,
 because a tool with no recorded address is not live.
 
+/ship never merges a pull request you have not agreed to. It names each one and
+what it changes, then asks for a yes that names the merge. Saying "put it live"
+before any merge was named is not that yes, so it asks again. When a deploy's
+result is unclear, /ship checks whether it went live before it tries again. A
+second deploy of the same version leaves nothing older to roll back to, and
+/ship says so before running one. A warning you have already heard is not
+repeated in the same /ship.
+
 On both live paths, /ship checks that the tool keeps a plain record of what each
 request did, without personal data, secrets or confidential file contents. If
 it does not, you hear once: "The tool keeps no record of what each request did,

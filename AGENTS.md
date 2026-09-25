@@ -730,6 +730,17 @@ attribution line, not the word.
   the deploy target from each recipe's title and refuses one named in `/ship`
   or its evidence run, because a skill that learned one recipe's commands
   would read wrongly on every other.
+- `.agents/tests/ship-merges-and-deploys-once.sh` guards how `/ship` merges
+  and deploys. In one real run the person said only "put it live" and `/ship`
+  merged two pull requests nobody had named to them. So it holds that `/ship`
+  names each pull request and what it changes, asks for a yes that names the
+  merge, and asks again when an earlier yes did not. In another run `/ship`
+  cut a deploy's output short, deployed the same version again, and so lost
+  the earlier build a rollback would reach. So it holds that the whole output
+  or the host's list of deployments is read first, that no second deploy runs
+  before the first is checked, and that a second deploy is announced as
+  replacing the rollback target. It also holds that a warning said once is not
+  repeated in the same `/ship`, and that WORKFLOW.md says all of it.
 - `.agents/tests/recipes.sh` guards the recipe format. A recipe pairs a build
   stack with a place to run it, and it is the only place outside the README
   allowed to name a service a tool runs on, so the rules around that permission
