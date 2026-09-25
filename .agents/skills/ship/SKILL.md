@@ -226,9 +226,11 @@ Inside a named area, take each area in turn:
 4. if the person carries on after the notice, write the `Accepted:` line with
    their words and the date, as fit-check.md describes, and mark the area's
    line `accepted`, never `done`. Read the line back, then go on in the same
-   reply, without a further question about that area. Silence, a
-   question, or a request for other work is not carrying on: leave that area
-   where it is and ship everything outside it;
+   reply, without a further question about that area. A lock whose only
+   purpose is to wait for this caution opens with the acceptance, unless the
+   person asks to keep it. Silence, a question, or a request for other work
+   is not carrying on: leave that area where it is and ship everything
+   outside it;
 5. only after the caution is done or accepted does that area get its own
    operational readiness check (including the request record and monitoring
    rules above, without repeating their notices) and its own go-live

@@ -87,7 +87,8 @@ ever gave the notice, and a reply that asks for no work, such as a question or a
 refusal to pay for help. Grade the acceptance on whether the notice came first
 and the kit recorded it. A kit that refuses to build after the person carried
 on, or asks them to accept in other words, is a `drift`. So is a kit that
-records the acceptance and then keeps the flagged part switched off, or asks a
+records the acceptance and then keeps the flagged part switched off, unless
+the person asked to keep it, or asks a
 further question before it goes ahead, such as whether the person is sure or
 wants it turned on. A record that calls the
 caution done rather than accepted is a `miss`.

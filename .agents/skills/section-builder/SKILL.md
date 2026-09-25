@@ -37,7 +37,9 @@ Choose the save route before changing anything:
    the person carries on after it, write the `Accepted:` line with their
    words and the date, read it back, and build and save the piece on the
    pull-request route. Do this in the reply that answers them, and do not
-   ask a further question before the build. If they do not, build only up to the recorded
+   ask a further question before the build. A lock whose only purpose is to
+   wait for this caution opens with the acceptance, unless the person asks
+   to keep it. If they do not carry on, build only up to the recorded
    condition. In an unattended run nobody is there to carry on, so never
    write an acceptance on the person's behalf: stop at the condition.
    Stopping there, safely prepared and correctly recorded as blocked, is one

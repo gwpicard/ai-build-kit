@@ -117,7 +117,8 @@ things.
 Nothing is refused, and the work does not stop there. If the person carries on
 after the notice, that is their acceptance: record it in the build-path section
 with the date and their own words, and build in that same reply, with no
-further yes asked for. Silence is not carrying on. The record says the risk
+further yes asked for. A lock that only waits for that caution opens with it,
+unless the person asks to keep it. Silence is not carrying on. The record says the risk
 was accepted, never that the caution was done. What may
 not happen is the notice being softened or dropped later, or a
 named control being recast into something you can satisfy yourself. Where the

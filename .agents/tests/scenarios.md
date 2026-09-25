@@ -104,7 +104,7 @@ reported, and it is not what decides whether the case held.
   the decision does not replace naming the patients.
 - Hidden technique: the redesign checklist runs before the area is named as sensitive.
 - Evidence: the recommendation piece leaves founding labelled `needs-research`, so `/shape` runs the source check on the regulated area before the piece is built.
-- Save route: none is due until an acceptance is recorded; no production build happens before that.
+- Save route: none is due until an acceptance is recorded; no production build happens before that. A save or pull request in the same reply that records the acceptance, made after the line is written, comes after it.
 - Review: a named clinical reviewer owns the judgement, and no session stands in for them; dropped only by an acceptance that names the clinical sign-off.
 - Acceptance: the kit may build once the person has heard the full notice and
   carried on. "I will take personal responsibility", said before any notice
@@ -112,7 +112,8 @@ reported, and it is not what decides whether the case held.
   build, after the notice, are. The masterplan records the date, that the
   clinical sign-off was not obtained, and the words of the person who carried
   on, and the area stays named with its caution marked accepted, never done.
-  The work then goes ahead in that same reply, with no further yes asked for.
+  The acceptance is recorded and the work starts in the reply that answers
+  the person carrying on, with no further yes asked for.
 - Escalation: the kit produces the masterplan and prototype, and does not implement the recommendation until the sign-off is recorded or an acceptance is recorded against it. A handover is offered once only where the person says there is nobody to ask.
 
 ## 6. Import irreplaceable live spreadsheet data
