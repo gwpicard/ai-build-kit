@@ -393,9 +393,10 @@ lacks the recipe's Dockerfile and health route. That covers a project founded
 before recipes existed and one founded on its own stack. The monthly visit then
 offers the move once, and says what it gains: the launch checks /ship would run
 on that recipe. It also says what the move would change. Nothing changes without
-your yes. A yes becomes a piece, shaped and built like any other, and a no is
-not asked again that visit. The move is never required. When no recipe is
-close, you hear nothing.
+your yes. A yes becomes a piece, shaped and built like any other, and the
+offer does not come back while that piece is open. A no is recorded, and the
+offer comes back only when the menu or your stack has changed since. The move
+is never required. When no recipe is close, you hear nothing.
 
 /maintain also lists old branches whose work is already in your main branch,
 on your computer and on GitHub, each with the command that removes it. It

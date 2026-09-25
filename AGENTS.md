@@ -501,9 +501,13 @@ attribution line, not the word.
   `Recipe:` line, whose stack matches a recipe's build stack in substance even
   if it runs somewhere else. The rules it holds are the ones whose loss a
   transcript would not show. The move is offered and never required, nothing
-  changes without a yes, a yes becomes a piece rather than work done in the
-  visit, and a no is not asked again that visit. The offer names the launch
-  checks the move gains, and nothing is said when no recipe is close. It also
+  changes without a yes, and a yes becomes a piece rather than work done in
+  the visit. While that piece is open, the offer does not come back. A no is
+  written into `.ai-build-kit-maintenance` with its date, the recipe and the
+  menu that day, and the offer returns only once the menu or the stack has
+  changed. A copy of the data service run on the project's own server is not
+  close. The offer names the launch checks the move gains, and nothing is said
+  when no recipe is close. It also
   holds that the menu is read from the ship skill's recipes folder at run
   time. It reads the product list from `hosting-request.sh` and proves the
   maintain skill names none of them, so the skill names no product even
