@@ -187,7 +187,8 @@ harness capabilities.)
 
 ## Stack, and how to run and check it
 
-(Filled in by the setup-ai-build-kit skill: run, test, type check and lint
-commands, or `none for <language>`, and conventions that differ from the
-default, including `Design tool: <name>` or
-`Design tool: none recorded`. Leave dependency lists in the code.)
+(Filled in by the setup-ai-build-kit skill: `Recipe: <file name>` or
+`Recipe: none`, then run, test, type check and lint commands, or `none for
+<language>`, and conventions that differ from the default, including
+`Design tool: <name>` or `Design tool: none recorded`. Leave dependency lists
+in the code.)

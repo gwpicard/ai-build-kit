@@ -109,6 +109,16 @@ While it works, the conversation stays on project decisions and results you can
 use. Routine searches, setup commands, retries, and waiting stay behind the
 scenes unless they create a blocker or need a decision from you.
 
+Before it stands the project up, it names the kind of tool you are building and
+shows the recipes that fit, with one recommended. A recipe is one build stack
+paired with one place to run it, which the kit knows well enough to check at
+launch. For each one it says what the kit can check and what running it
+involves, such as the accounts you will hold. You can bring your own stack
+instead: it says once what it then cannot check, and records your choice. If
+you do not answer, it takes the recommended recipe and carries on. Where no
+recipe fits, such as a command-line tool, it says so in one line and picks a
+conventional stack. The choice is written in AGENTS.md, in the stack section.
+
 The coverage read includes who can see and do what, the data the tool holds,
 and its outside connections. It names any gaps together and offers once to add
 the missing work. You decide whether it belongs in the plan.

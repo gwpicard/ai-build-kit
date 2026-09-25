@@ -276,6 +276,15 @@ attribution line, not the word.
   be uploaded. And it guards the masterplan review, which the build path decides
   and which records a missing reviewer as a gap rather than waiting for one,
   because the wait had no exit and cost two measured runs their whole founding.
+- `.agents/tests/founding-menu.sh` guards the recipe menu founding offers. The
+  menu is read from the files directly in `.agents/skills/ship/recipes/` at
+  that moment, so a shared part or a recipe still waiting for its real run is
+  never offered. Exactly one recipe is recommended. A person may bring their
+  own stack and hears once what the kit then cannot check. No answer takes the
+  recommended recipe, and neither the menu nor the recipe's tool report ever
+  stops founding. It also reads the product names out of the recipe titles
+  and fails if any of them appears in the founding skill, its templates, its
+  completion report or WORKFLOW.md, and proves a planted name is caught.
 - `.agents/tests/coverage-read.sh` guards the read that compares the masterplan
   against the pieces: the rules that keep it honest, that /setup and /sync both
   still run it, and that WORKFLOW.md explains it for founding and for sync. It
