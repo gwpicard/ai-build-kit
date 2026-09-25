@@ -30,24 +30,34 @@ rr_shape
 # the repository, the new project had no framework, and linking the folder
 # wrote to it. Each needed a hand fix, and the first tempted the kit into
 # deploying from a local copy, which reports no commit and never deploys again.
+# A later run proved the steps and found two more things: GitHub asks the
+# person to confirm who they are before it shows the app's page, and the kit
+# can read a protected preview's health itself, which it did.
 rs_rule "a private repository is the person's step" 'when the github repository is private, the person first lets vercel.s github app see it, because only somebody who owns the repository can grant that'
 rs_rule "the person hears where to grant it" 'settings, then applications, then installed github apps, and choose configure beside vercel'
+rs_rule "GitHub asks the person to confirm first" 'github asks them to confirm who they are, with a passkey or their password, before it shows that page'
 rs_rule "an organisation's repository has its own page" 'the organisation.s settings, then third-party access, then github apps'
 rs_rule "the person adds only this repository" 'under repository access they pick only select repositories, add the repository, and save'
 rs_rule "the connect failure is named" '.vercel git connect --yes. fails with "failed to connect"'
 rs_rule "the project is created with no framework" '.vercel project add <project>., which sets no framework'
-rs_rule "the framework is set before the first deploy" '.vercel project update <project> --framework nextjs --yes.'
+rs_rule "the framework is set before the first deploy" 'then sets one with .vercel project update <project> --framework nextjs --yes.'
 rs_rule "the missing framework's failure is named" 'no output directory named "public" found'
 rs_rule "the folder is linked to the project" '.vercel link --project <project> --yes.'
 rs_rule "the kit never deploys from a local copy" 'the kit never deploys from a local copy of the folder in place of that connection'
-rs_rule "the real run's finding is recorded" 'the first-launch steps have not yet had a real run of their own'
+rs_rule "the first-launch steps' own run is recorded" 'a third run the same day, on a new private repository with vercel cli 60\.0\.0, ran those first-launch steps'
 rs_rule "main goes first" 'the first push to a new vercel project is .main., before any other branch'
 rs_rule "a generated address answers 302" 'such an address answers 302 to anyone not signed in'
 rs_rule "the production domain stays public" 'the production domain, .<project>\.vercel\.app., stays public'
 rs_rule "previews never reach the live database" 'a second supabase project kept for previews, never at the live one'
 rs_rule "the preview database gets the branch's migrations" 'before each preview, the kit gives that project the branch.s migrations with .supabase link --project-ref <preview project ref>. and .supabase db push.'
 rs_rule "the kit waits for the preview to be ready" 'waits until .vercel inspect <preview address>. reports the deployment as ready'
-rs_rule "a protected preview is opened by the person" 'vercel protects each generated deployment address with a sign-in by default'
+rs_rule "a preview is protected by a sign-in" 'vercel protects each generated deployment address with a sign-in by default'
+rs_rule "the kit can read a protected preview's health" 'the kit can read the preview.s health with .vercel curl /api/health --deployment <preview address> --yes., which gets past that sign-in'
+rs_rule "the command is named as beta" 'that command is marked beta'
+rs_rule "the bypass token is named" 'it creates a deployment protection bypass token on the project\. the token stays on the project and is never printed'
+rs_rule "the kit asks before making the token" 'so the kit asks the person before running the command the first time'
+rs_rule "the kit reads it only after a yes" 'read by the kit through that command after the person.s yes, or opened by the person signed in'
+rs_rule "without it the person opens the preview signed in" 'when the person says no, or the command is missing or fails, the person opens the address in their own browser, signed in to vercel'
 rs_rule "the preview answers from its own project" 'a .project. that is not the live project.s reference'
 
 # Going live.
@@ -79,7 +89,12 @@ rs_rule "a value never sits on a command line" 'the kit pipes it into vercel so 
 rs_rule "a public name is typed as config" 'printf .%s. "\$value" \| vercel env add <name> production --type config --yes. for a name that starts with .next_public_.'
 rs_rule "a secret keeps the sensitive type" 'which keeps vercel.s default sensitive type'
 rs_rule "the ignore is checked" '.git check-ignore supabase/\.temp. names the folder'
-rs_rule "linking edits .gitignore" 'it adds its own .\.vercel. folder to .\.gitignore., and the kit keeps that line'
+rs_rule "linking adds two lines to .gitignore" 'it adds two lines to .\.gitignore., .\.vercel. and .\.env\*., and the kit keeps both'
+rs_rule "the .env* line is named as hiding .env.example" 'the .\.env\*. line also matches .\.env\.example., which the repository needs'
+rs_rule "the kit looks for .env.example being hidden" 'after linking, the kit runs .git check-ignore --no-index -v \.env\.example.'
+rs_rule "the kit lets .env.example back in" 'the kit adds .!\.env\.example. on the line below it'
+rs_rule "the fix is checked with the form that names nothing" '.git check-ignore --no-index \.env\.example. names nothing and exits with status 1'
+rs_rule "the local run of the fix is recorded" 'secrets, local run: on 2026-09-25 the .\.env\.example. step was run on this computer'
 rs_rule "linking writes a token into .env.local" 'it also writes .vercel_oidc_token., a short-lived token that lets this machine reach vercel as the project, into .\.env\.local.'
 rs_rule "both files are checked as ignored" '.git check-ignore \.vercel \.env\.local. names both'
 rs_rule "production values are never pulled" 'never runs .vercel env pull. for production'

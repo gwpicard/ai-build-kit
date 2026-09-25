@@ -96,6 +96,21 @@ one_deployment() {
 case "$1" in
   inspect) one_deployment "$@"; echo "status  Ready" ;;
   promote|rollback) one_deployment "$@" ;;
+  curl)
+    # A path, then only the options vercel curl documents. It is marked beta,
+    # and it answers a protected deployment through a bypass token.
+    shift
+    path=""
+    while [ "$#" -gt 0 ]; do
+      case "$1" in
+        --yes|-y|--json|--trace) shift ;;
+        --deployment|--protection-bypass) [ -n "${2:-}" ] || refuse curl "$@"; shift 2 ;;
+        -*) refuse curl "$@" ;;
+        *) [ -z "$path" ] || refuse curl "$@"; path=$1; shift ;;
+      esac
+    done
+    [ -n "$path" ] || refuse curl
+    echo '{"status":"ok","database":"ok"}' ;;
   project)
     # Only the options vercel project documents: add takes a name and no
     # option, and update takes one name and the settings it lists.
@@ -237,6 +252,12 @@ case "$*" in
   "rev-parse origin/main") echo 0000000 ;;
   "check-ignore supabase/.temp") echo supabase/.temp ;;
   "check-ignore .vercel .env.local") printf '.vercel\n.env.local\n' ;;
+  # Right after vercel link, before the kit lets the file back in.
+  "check-ignore --no-index -v .env.example") printf '.gitignore:10:.env*\t.env.example\n' ;;
+  # Once the kit has let it back in: nothing named, and status 1, which is how
+  # git check-ignore says no path is ignored.
+  "check-ignore --no-index .env.example") exit 1 ;;
+  "add .env.example") ;;
   *) echo "git stand-in: not a command a recipe may use: git $*" >&2; exit 64 ;;
 esac
 SH
@@ -298,7 +319,12 @@ rr_run_commands() {
   rr_commands "$1" > "$rs_dir/commands"
   [ -s "$rs_dir/commands" ] || { echo "  no command in the recipe uses one of its tools"; return 1; }
   while IFS= read -r rr_cmd; do
-    if ! (cd "$rs_dir/work" && PATH="$rs_dir/bin:$PATH" SUPABASE_ACCESS_TOKEN=stand-in SUPABASE_DB_URL=stand-in VALUE=stand-in sh -c "$rr_cmd") >/dev/null 2>"$rs_dir/refusal"; then
+    rr_exit=0
+    (cd "$rs_dir/work" && PATH="$rs_dir/bin:$PATH" SUPABASE_ACCESS_TOKEN=stand-in SUPABASE_DB_URL=stand-in VALUE=stand-in sh -c "$rr_cmd") >/dev/null 2>"$rs_dir/refusal" || rr_exit=$?
+    # git check-ignore answers status 1 when no path is ignored, which is the
+    # answer a recipe's check can ask for. Every other command must succeed.
+    case "$rr_exit $rr_cmd" in "1 git check-ignore "*) rr_exit=0 ;; esac
+    if [ "$rr_exit" -ne 0 ]; then
       echo "  refused: $rr_cmd"
       sed 's/^/    /' "$rs_dir/refusal"
       rr_status=1
@@ -343,14 +369,16 @@ rr_stand_ins() {
   # is refused and has to use project update.
   for rr_probe in "rollback --timout 5m stand-in" "inspect --wiat stand-in" "promote --yse stand-in" \
     "rollback" "inspect one two" "project add stand-in --framework nextjs" \
-    "project update stand-in --framwork nextjs" "link --projet stand-in" "git connect --yse"; do
+    "project update stand-in --framwork nextjs" "link --projet stand-in" "git connect --yse" \
+    "curl" "curl /api/health --deploymnet stand-in" "curl /api/health --deployment"; do
     # shellcheck disable=SC2086
     if PATH="$rs_dir/bin:$PATH" vercel $rr_probe >/dev/null 2>&1; then
       rs_fail "the vercel stand-in accepted 'vercel $rr_probe'"
     fi
   done
   for rr_probe in "rollback --timeout 5m stand-in" "inspect --wait stand-in" "promote --yes stand-in" \
-    "project update stand-in --framework nextjs --yes" "link --project stand-in --yes" "git connect --yes"; do
+    "project update stand-in --framework nextjs --yes" "link --project stand-in --yes" "git connect --yes" \
+    "curl /api/health --deployment stand-in --yes"; do
     # shellcheck disable=SC2086
     PATH="$rs_dir/bin:$PATH" vercel $rr_probe >/dev/null 2>&1 ||
       rs_fail "the vercel stand-in refused 'vercel $rr_probe'"
