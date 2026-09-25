@@ -394,9 +394,10 @@ would gain nothing.
    Dockerfile or its health route. A different framework or a different data
    service is not close. A copy of the data service that the project runs on
    its own server is not the same data service, because it lacks the managed
-   backups that the recipe's checks rely on. Where several recipes are close,
-   take the one whose `Build stack:` line matches the most, or the first by
-   file name.
+   backups that the recipe's checks rely on. Keep every close recipe for
+   now, and do not pick one yet. Steps 5 and 6 drop the ones they do not
+   allow, so a close recipe that is new never hides behind an older one that
+   matches a little better.
 5. Where the person chose their own stack at founding, offer the move only
    when the stack has become close since, or when the close recipe is new
    since founding. Read the stack at founding from the commit that first
@@ -414,9 +415,13 @@ would gain nothing.
    offered, and the recipe files on the menu that day. Offer again only when
    the menu or the project's stack has changed since that no: a recipe file on
    the menu now that the line does not list, or a saved change to the
-   project's dependency files after that date. Otherwise the earlier no
-   stands.
-7. When no recipe is close, or an earlier no stands, say nothing.
+   project's dependency files after that date. Where only the menu changed,
+   allow only the close recipes the line does not list, and the ones it lists
+   stay declined. Otherwise the earlier no stands.
+7. When no recipe is close, or an earlier no stands, say nothing. Compare
+   only the close recipes that steps 5 and 6 still allow. Where several are
+   left, take the one whose `Build stack:` line matches the most, or the
+   first by file name.
 8. Offer the move once, in one reply. Name the recipe from its file. Say what
    it gains in plain words: the launch checks /ship would then run, one for
    each section the recipe checks, such as preview, rollback, backup and

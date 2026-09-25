@@ -95,7 +95,9 @@ rs_rule "and that report never stops founding" 'that report never stops founding
 rs_rule "the menu read is recorded whatever the choice" \
   'whatever the choice, record the menu this step read'
 rs_rule "as one founding-menu line in the check-up file" \
-  'in .\.ai-build-kit-maintenance., which step 7 created, add one line, replacing any earlier one: .founding-menu\|<yyyy-mm-dd>\|<menu files, comma separated>.'
+  'in .\.ai-build-kit-maintenance., which step 7 created, add one line, replacing any earlier one without asking, .* .founding-menu\|<yyyy-mm-dd>\|<menu files, comma separated>.'
+rs_rule "the line is not a record step 0 protects" \
+  'it is kit bookkeeping and not one of the project records step 0 protects'
 rs_rule "listing every file in the folder, fitting or not" \
   'list every file directly in the .recipes/. folder, including the ones that did not fit'
 rs_rule "each by its file name with .md" \

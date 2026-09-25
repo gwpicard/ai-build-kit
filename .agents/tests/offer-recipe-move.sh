@@ -52,6 +52,15 @@ rs_rule "close is the same framework and data service" \
   'the same framework and the same data service\. it stays close'
 rs_rule "a different deploy target is still close" \
   'it stays close when the project deploys somewhere else, or lacks something the recipe adds'
+# Picking one close recipe before the founding-menu and decline tests run
+# lets an older recipe that matches a little better hide a new one, which is
+# then never offered. So the pick comes last, among what those steps allow.
+rs_rule "no close recipe is picked before the later steps" \
+  'keep every close recipe for now, and do not pick one yet'
+rs_rule "the pick is made only among the recipes still allowed" \
+  'compare only the close recipes that steps 5 and 6 still allow'
+rs_rule "after a no, a new recipe on the menu is not hidden by the declined ones" \
+  'where only the menu changed, allow only the close recipes the line does not list, and the ones it lists stay declined'
 rs_rule "the stack is read from the project" \
   'read that from the project.s code and dependency files, not from memory'
 

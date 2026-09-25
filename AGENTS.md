@@ -513,7 +513,9 @@ attribution line, not the word.
   `founding-menu` line does not list, once, even if the stack has not moved,
   because that recipe joined the menu after founding. A project with no such
   line was founded before founding kept one, so every close recipe is new to
-  it, once. A copy of the data service run on the project's own server is not
+  it, once. The visit picks one close recipe only after the founding-menu and
+  decline tests, so an older recipe that matches a little better never hides
+  a new one. A copy of the data service run on the project's own server is not
   close. The offer names the launch checks the move gains, and nothing is said
   when no recipe is close. It also
   holds that the menu is read from the ship skill's recipes folder at run

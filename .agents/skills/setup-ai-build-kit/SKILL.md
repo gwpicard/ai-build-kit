@@ -388,7 +388,8 @@ and set up as below without a menu.
 
 Whatever the choice, record the menu this step read, so a later monthly visit
 can tell which recipes joined it afterwards. In `.ai-build-kit-maintenance`,
-which step 7 created, add one line, replacing any earlier one:
+which step 7 created, add one line, replacing any earlier one without asking,
+since it is kit bookkeeping and not one of the project records step 0 protects:
 `founding-menu|<YYYY-MM-DD>|<menu files, comma separated>`. List every file
 directly in the `recipes/` folder, including the ones that did not fit, each
 written exactly as it sits there with `.md` included. Write this line before
