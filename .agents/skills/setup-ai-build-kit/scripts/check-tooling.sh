@@ -15,9 +15,17 @@
 # jq is not required. The kit filters JSON with python3 on purpose, which is
 # also what lets the test harness stand in for the GitHub command line tool.
 #
-# Run from anywhere inside the project.
+# Run from anywhere inside the project. With --recipe <recipe file>, it also
+# reports the command-line tools that recipe's launch checks run. Those never
+# stop founding.
 
 set -eu
+
+recipe=""
+if [ "${1:-}" = "--recipe" ]; then
+  recipe=${2:-}
+  [ -n "$recipe" ] || { echo "usage: check-tooling.sh [--recipe <recipe file>]" >&2; exit 2; }
+fi
 
 blocked=0
 
@@ -78,6 +86,42 @@ if [ "$gh_ready" = yes ] && command -v python3 >/dev/null 2>&1; then
     esac
   else
     echo "No GitHub repository is set up yet, so the issue and label checks wait until one exists."
+  fi
+fi
+
+# 3. The tools a recipe's checks run, only when a recipe is named. A recipe
+# lists them on its "Command-line tools:" line. They are needed before the
+# first launch, not before founding, so a missing one never sets blocked: a
+# project that uses no recipe needs none of them.
+if [ -n "$recipe" ]; then
+  if [ -f "$recipe" ]; then
+    # Read with the shell alone, so the report needs nothing beyond the tools
+    # it is checking for.
+    recipe_tools=""
+    while IFS= read -r line || [ -n "$line" ]; do
+      case "$line" in
+        "Command-line tools: "*) recipe_tools=${line#Command-line tools: } ;;
+      esac
+    done < "$recipe"
+    saved_ifs=$IFS
+    IFS=', '
+    set -f
+    set -- $recipe_tools
+    set +f
+    IFS=$saved_ifs
+    for tool in "$@"; do
+      case "$tool" in
+        none) continue ;;
+        *[!a-z0-9-]*) echo "The recipe names a tool this report cannot read, $tool, so it was skipped."; continue ;;
+      esac
+      if command -v "$tool" >/dev/null 2>&1; then
+        echo "$tool is ready: the recipe's launch checks run it."
+      else
+        echo "$tool is missing: the recipe's launch checks run it, so install it before the first /ship. It does not stop founding."
+      fi
+    done
+  else
+    echo "The recipe file $recipe was not found, so the tools its checks run were not looked for."
   fi
 fi
 

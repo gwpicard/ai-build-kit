@@ -273,7 +273,9 @@ an address, and the kit never contacts that server. So /ship writes a hosting
 request into the masterplan's "How it stays running" section and prints it for
 you. It names the repository and branch, the lane (private network or
 internet), the port, the names of the settings the tool needs, the folders that
-must survive a restart, and the path that shows the tool is healthy. It holds
+must survive a restart, and the path that shows the tool is healthy. It also
+says how the tool builds and which address it listens on, read from the code,
+because the server builds and checks it from those two facts. It holds
 names only, never a password or key. You take it to whoever runs the server,
 and paste back what they send. On a later launch /ship reads the request back
 rather than asking again.

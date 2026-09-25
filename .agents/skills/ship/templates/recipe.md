@@ -4,6 +4,7 @@ Fits: <the shape of tool this suits, in the person's words>
 Recommended when: <one plain sentence on when to recommend this over another recipe that fits the same shape>
 Build stack: <what the tool is built with>
 Deploy target: <where it runs once it is live>
+Command-line tools: <command names separated by commas, or none>
 Last checked: YYYY-MM-DD
 
 ## Preview

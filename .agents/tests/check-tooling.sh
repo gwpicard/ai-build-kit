@@ -127,6 +127,49 @@ printf '%s\n' "$out" | grep -q "No GitHub repository is set up yet" \
   && pass "it says the repository checks wait until one exists" \
   || fail "the no-repository line is missing"
 
+echo "== The tools a recipe's checks run =="
+
+# A recipe names the command-line tools its launch checks run. They are asked
+# for only when a recipe is named, and a missing one never stops founding, since
+# a project that uses no recipe needs none of them. The real recipes are read
+# where they are, on the menu or still waiting for their real run.
+write_gh 0 '{"nameWithOwner":"someone/project","hasIssuesEnabled":true,"viewerPermission":"ADMIN"}'
+out=$(run_check) && code=0 || code=$?
+printf '%s\n' "$out" | grep -q "launch checks" \
+  && fail "a project that names no recipe was asked about recipe tools" \
+  || pass "with no recipe named, no recipe tool is asked about"
+
+printf '%s\n' 'Fits: a test' 'Command-line tools: git, stand-in-deploy-tool' > "$WORK/recipe.md"
+out=$(PATH="$WORK/bin" HOME="$HOME" "$CHECK" --recipe "$WORK/recipe.md" 2>&1) && code=0 || code=$?
+[ "$code" -eq 0 ] \
+  && pass "a missing recipe tool does not stop founding" \
+  || fail "a missing recipe tool returned $code"
+printf '%s\n' "$out" | grep -q "^git is ready: the recipe's launch checks run it" \
+  && pass "it reports a recipe tool that is ready" \
+  || fail "the ready recipe tool line is missing"
+printf '%s\n' "$out" | grep -q "^stand-in-deploy-tool is missing: .*before the first /ship. It does not stop founding" \
+  && pass "it names a missing recipe tool as needed before the first launch" \
+  || fail "the missing recipe tool line is missing"
+
+rm -f "$WORK/bin/gh"
+out=$(PATH="$WORK/bin" HOME="$HOME" "$CHECK" --recipe "$WORK/recipe.md" 2>&1) && code=0 || code=$?
+[ "$code" -ne 0 ] \
+  && pass "naming a recipe does not excuse a missing founding tool" \
+  || fail "a recipe hid the missing GitHub command line tool"
+write_gh 0 '{"nameWithOwner":"someone/project","hasIssuesEnabled":true,"viewerPermission":"ADMIN"}'
+
+for name in nextjs-supabase-on-vercel nextjs-supabase-on-coolify; do
+  recipe="$ROOT/skills/ship/recipes/$name.md"
+  [ -f "$recipe" ] || recipe="$ROOT/tests/recipes-awaiting-run/$name.md"
+  [ -f "$recipe" ] || { fail "$name is neither on the menu nor waiting"; continue; }
+  out=$(PATH="$WORK/bin" HOME="$HOME" "$CHECK" --recipe "$recipe" 2>&1) && code=0 || code=$?
+  [ "$code" -eq 0 ] || fail "$name's tools stopped founding"
+  for tool in supabase docker psql curl git; do
+    printf '%s\n' "$out" | grep -q "^$tool is \(ready\|missing\)" || fail "$name's report says nothing about $tool"
+  done
+  pass "$name's tools are each reported, and none stops founding"
+done
+
 echo
 if [ "$FAIL" -eq 0 ]; then
   echo "check-tooling.sh: all checks passed"

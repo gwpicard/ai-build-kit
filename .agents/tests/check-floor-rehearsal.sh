@@ -156,5 +156,150 @@ first=$(run_check)
 [ "$first" = "Lint" ] || fail "expected the Lint step to go red, got '${first:-nothing}'"
 echo "  ok: the check goes red at Lint on an unused import"
 
+# --- the same again for TypeScript -------------------------------------------
+#
+# The web app recipes build with Next.js in TypeScript, so the TypeScript row is
+# rehearsed the same way. This founds a small TypeScript project from the same
+# template and takes its commands from the table. It does not run the Next.js
+# starter: that would download the whole framework, and a project the starter
+# made would use the starter's own lint settings, which the reference says to
+# keep as they stand. The table's row is what founding writes when there are
+# none, so that is the half worth watching go red.
+#
+# The tools install into the throwaway project, as a founded project's own
+# dependencies. The tests run through tsx, which strips the types without
+# checking them, so as with Python the tests pass and the type check is what
+# turns the tick red.
+
 echo
-echo "check-floor-rehearsal.sh: red on a type error, green once fixed"
+echo "TypeScript:"
+command -v npm >/dev/null 2>&1 || fail "npm is needed to rehearse the TypeScript row"
+
+row=$(grep '^| TypeScript |' "$FLOOR") || fail "check-floor.md has no TypeScript row"
+type_check=$(printf '%s\n' "$row" | awk -F'|' '{print $3}' | sed -n 's/^[^`]*`\([^`]*\)`.*/\1/p')
+lint=$(printf '%s\n' "$row" | awk -F'|' '{print $4}' | sed -n 's/^[^`]*`\([^`]*\)`.*/\1/p')
+[ -n "$type_check" ] || fail "the TypeScript row names no type check command"
+[ -n "$lint" ] || fail "the TypeScript row names no lint command"
+printf '%s\n' "$row" | grep -q "ESLint's own recommended rules and typescript-eslint's recommended rules" ||
+  fail "the TypeScript row no longer says which lint rules it starts from"
+echo "  type check: $type_check"
+echo "  lint: $lint"
+
+PROJECT="$WORK/ts-project"
+mkdir -p "$PROJECT/.github/workflows" "$PROJECT/.agents/hooks" "$PROJECT/src"
+cp "$SENSITIVE" "$PROJECT/.agents/hooks/check-sensitive-areas.sh"
+
+awk -v tc="$type_check" -v li="$lint" '
+  /- name: Install and test/ { skipping = 1 }
+  skipping { next }
+  { print }
+  END {
+    print "      - name: Install"
+    print "        run: npm install"
+    print "      - name: Type check"
+    print "        run: " tc
+    print "      - name: Lint"
+    print "        run: " li
+    print "      - name: Test"
+    print "        run: npx tsx --test src/pricing.test.ts"
+  }
+' "$TEMPLATE" > "$PROJECT/.github/workflows/checks.yml"
+grep -q 'placeholder' "$PROJECT/.github/workflows/checks.yml" &&
+  fail "the placeholder step survived the edit"
+
+cat > "$PROJECT/package.json" <<'JSON'
+{
+  "name": "rehearsal",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@eslint/js": "^9",
+    "@types/node": "^22",
+    "eslint": "^9",
+    "tsx": "^4",
+    "typescript": "^5",
+    "typescript-eslint": "^8"
+  }
+}
+JSON
+
+cat > "$PROJECT/tsconfig.json" <<'JSON'
+{
+  "compilerOptions": {
+    "strict": true,
+    "noEmit": true,
+    "module": "nodenext",
+    "target": "es2022",
+    "skipLibCheck": true
+  },
+  "include": ["src"]
+}
+JSON
+
+# ESLint's own recommended rules and typescript-eslint's, and nothing else.
+cat > "$PROJECT/eslint.config.mjs" <<'JS'
+import js from "@eslint/js";
+import tseslint from "typescript-eslint";
+
+export default [js.configs.recommended, ...tseslint.configs.recommended];
+JS
+
+cat > "$PROJECT/src/pricing.ts" <<'TS'
+export function total(price: number, count: number): number {
+  return price * count;
+}
+TS
+
+cat > "$PROJECT/src/pricing.test.ts" <<'TS'
+import { test } from "node:test";
+import assert from "node:assert/strict";
+
+import { total } from "./pricing.js";
+
+test("total", () => {
+  assert.equal(total(2, 3), 6);
+});
+TS
+
+echo "  installing the project's own check tools"
+(cd "$PROJECT" && npm install --no-audit --no-fund --silent) ||
+  fail "could not install the TypeScript check tools, so the check could not be rehearsed"
+
+started=$(date +%s)
+first=$(run_check)
+finished=$(date +%s)
+[ -z "$first" ] || { cat "$WORK/last-output" >&2; fail "the new TypeScript project's check was red on day one, at $first"; }
+echo "  ok: the founded TypeScript project's check is green on day one ($((finished - started))s)"
+
+# A type error in code no test reaches. It is exported, so the linter has no
+# reason to object and only the type check can see it.
+cat >> "$PROJECT/src/pricing.ts" <<'TS'
+
+export function describe(count: number): string {
+  return count;
+}
+TS
+
+(cd "$PROJECT" && npx tsx --test src/pricing.test.ts) > "$WORK/tests-only" 2>&1 ||
+  { cat "$WORK/tests-only" >&2; fail "the TypeScript tests should still pass with the type error in place"; }
+echo "  ok: the tests alone still pass with the type error in place"
+
+first=$(run_check)
+[ "$first" = "Type check" ] || fail "expected the TypeScript Type check step to go red, got '${first:-nothing}'"
+grep -q 'pricing.ts' "$WORK/last-output" || fail "the TypeScript type check did not name the file"
+echo "  ok: the check goes red at Type check, naming pricing.ts"
+
+sed 's/  return count;/  return String(count);/' "$PROJECT/src/pricing.ts" > "$WORK/fixed"
+mv "$WORK/fixed" "$PROJECT/src/pricing.ts"
+first=$(run_check)
+[ -z "$first" ] || { cat "$WORK/last-output" >&2; fail "the TypeScript check stayed red after the fix, at $first"; }
+echo "  ok: the check goes green once the type error is fixed"
+
+printf 'import { readFileSync } from "node:fs";\n%s\n' "$(cat "$PROJECT/src/pricing.ts")" > "$WORK/linted"
+mv "$WORK/linted" "$PROJECT/src/pricing.ts"
+first=$(run_check)
+[ "$first" = "Lint" ] || { cat "$WORK/last-output" >&2; fail "expected the TypeScript Lint step to go red, got '${first:-nothing}'"; }
+echo "  ok: the check goes red at Lint on an unused import"
+
+echo
+echo "check-floor-rehearsal.sh: red on a type error, green once fixed, in Python and TypeScript"
