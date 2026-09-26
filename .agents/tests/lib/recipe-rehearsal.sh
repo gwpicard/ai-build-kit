@@ -21,8 +21,9 @@
 #    recipe names must be used by at least one command, so the tooling check
 #    never asks a person to install something nothing runs.
 #
-# The two Supabase parts are guarded here too, once for every recipe that
-# links them, by rr_guard_supabase_parts.
+# The three Supabase parts are guarded here too, once for every recipe that
+# links them, by rr_guard_supabase_parts. The third is the settings the launch
+# review reads with the public key before it asks the person about them.
 
 RR_CHECKER="$ROOT/.agents/tools/check-recipes.sh"
 RR_MENU="$ROOT/.agents/skills/ship/recipes"
@@ -220,10 +221,11 @@ SH
 echo "curl $*" >> "$RR_CALLS"
 refuse() { echo "curl stand-in: not an address or option a recipe may use: $*" >&2; exit 64; }
 url=""
+headers=""
 while [ "$#" -gt 0 ]; do
   case "$1" in
     -fsS) shift ;;
-    -H) [ -n "${2:-}" ] || refuse "$@"; shift 2 ;;
+    -H) [ -n "${2:-}" ] || refuse "$@"; headers="$headers|$2"; shift 2 ;;
     https://*|http://localhost:3000/*) url=$1; shift ;;
     *) refuse "$@" ;;
   esac
@@ -231,6 +233,13 @@ done
 case "$url" in
   https://api.supabase.com/v1/projects/*/database/backups) echo '{"backups":[]}' ;;
   https://api.supabase.com/v1/projects/*/advisors/security) echo '{"lints":[]}' ;;
+  # The sign-in settings answer to the public key alone, sent as apikey. A
+  # bearer token is how a secret key or a signed-in session would be sent, and
+  # a settings read must never carry one.
+  https://*.supabase.co/auth/v1/settings)
+    case "$headers" in "|apikey: "?*) ;; *) refuse "$url" "headers$headers" ;; esac
+    case "$headers" in *"|apikey: "*"|"*) refuse "$url" "headers$headers" ;; esac
+    echo '{"external":{"email":true},"disable_signup":false,"mailer_autoconfirm":false}' ;;
   https://*/api/health|http://localhost:3000/api/health) echo '{"status":"ok","database":"ok"}' ;;
   *) refuse "$url" ;;
 esac
@@ -384,6 +393,42 @@ rr_stand_ins() {
       rs_fail "the vercel stand-in refused 'vercel $rr_probe'"
   done
   rs_ok "the vercel stand-in refuses a misspelt option and keeps the documented ones"
+
+  # The settings read goes out with the public key alone. Without it, with a
+  # bearer token beside it, or at an address the service does not answer in
+  # public, the stand-in refuses.
+  rr_settings=https://stand-in.supabase.co/auth/v1/settings
+  PATH="$rs_dir/bin:$PATH" curl -fsS -H "apikey: stand-in" "$rr_settings" >/dev/null 2>&1 ||
+    rs_fail "the curl stand-in refused the settings read with the public key"
+  for rr_probe in "" "Authorization: Bearer stand-in"; do
+    if [ -z "$rr_probe" ]; then
+      set -- curl -fsS "$rr_settings"
+    else
+      set -- curl -fsS -H "apikey: stand-in" -H "$rr_probe" "$rr_settings"
+    fi
+    if PATH="$rs_dir/bin:$PATH" "$@" >/dev/null 2>&1; then
+      rs_fail "the curl stand-in accepted a settings read '$*'"
+    fi
+  done
+  if PATH="$rs_dir/bin:$PATH" curl -fsS -H "apikey: stand-in" https://stand-in.supabase.co/auth/v1/admin/users >/dev/null 2>&1; then
+    rs_fail "the curl stand-in accepted a read of the admin address"
+  fi
+  rs_ok "the curl stand-in answers the settings read with the public key alone"
+
+  # And a recipe whose settings read carried a secret instead is refused as a
+  # whole, which proves the read is among the commands the run tries.
+  if grep -qF 'parts/supabase-settings.md' "$RR_RECIPE"; then
+    mkdir -p "$rs_dir/secret/parts"
+    cp "$RR_PARTS"/*.md "$rs_dir/secret/parts/"
+    sed 's#-H "apikey: <public key>"#-H "Authorization: Bearer <secret key>"#' \
+      "$RR_PARTS/supabase-settings.md" > "$rs_dir/secret/parts/supabase-settings.md"
+    cmp -s "$RR_PARTS/supabase-settings.md" "$rs_dir/secret/parts/supabase-settings.md" &&
+      rs_fail "the secret-key copy of the settings part changed nothing"
+    cp "$RR_RECIPE" "$rs_dir/secret/$rr_name"
+    rr_run_commands "$rs_dir/secret/$rr_name" >/dev/null &&
+      rs_fail "a settings read sent with a secret key was not refused"
+    rs_ok "a settings read sent with a secret key is refused"
+  fi
 }
 
 # --- the Supabase parts ------------------------------------------------------
@@ -443,4 +488,24 @@ rr_guard_supabase_parts() {
   rs_rule "a restore that loads nothing fails" 'at least one table holds rows'
   rs_rule "the local copy is removed" '.supabase stop --no-backup. in the throwaway folder removes the local copy'
   rs_guard "$RR_PARTS/supabase-restore.md" "the restore part"
+
+  # The part the launch review reads before it asks the person about a
+  # sign-in setting. A real run asked the person to open the dashboard for
+  # "Confirm email", which this address answers to the public key.
+  rs_reset
+  rs_rule "the review reads before it asks" 'the launch review reads these settings itself before it asks the person about any of them'
+  rs_rule "the settings answer to the public key" 'supabase answers a project.s sign-in settings to anyone holding its public key, which the tool already sends to the browser'
+  rs_rule "the read is the settings address with the key as apikey" 'curl -fss -h "apikey: <public key>" https://<project ref>\.supabase\.co/auth/v1/settings'
+  rs_rule "the key comes from the project's own files" 'takes the public key and the project address from the project.s own environment file'
+  rs_rule "false means confirm email is on" '.false. means the dashboard.s "confirm email" setting is on, and .true. means it is off'
+  rs_rule "the public key and nothing else" 'the kit uses the public key for this read and nothing else, never the service role key or a secret key'
+  rs_rule "the redirect list is not in the answer" 'the list of addresses sign-in may send a person back to is not in this answer'
+  rs_rule "the person is asked for the redirect list, and told why" 'so the kit asks the person to look at that list, and says that the public key cannot read it'
+  rs_rule "no setting in the answer is asked about" 'asks the person about no setting this answer holds'
+  rs_rule "the kit runs the read" 'who runs it: the kit'
+  rs_guard "$RR_PARTS/supabase-settings.md" "the settings part"
+
+  rs_reset
+  rs_rule "the recipe links the settings part after health" '## settings the kit can read shared part: \[sign-in settings on hosted supabase\]\(parts/supabase-settings\.md\) ## proven'
+  rs_guard "$RR_RECIPE" "$rr_name's settings section"
 }

@@ -65,6 +65,17 @@ Markdown link to the part's file. A part holds the same three lines a
 section would. The parts folder is not a menu entry, and nothing that reads the
 menu treats it as one.
 
+## Settings the kit can read
+
+A recipe may carry one more section, `## Settings the kit can read`, between
+health and the proven section. It says which settings of the services the tool
+runs on the kit can read for itself, and how, so the launch review reads them
+rather than asking the person to look them up. Such a read uses only a key the
+project already sends to the browser. A setting that needs a secret key to read
+does not belong here, and the section says what the kit cannot read and why.
+The section carries the same three lines as the others, or a `Shared part:`
+link. It is not one of the eight, and /ship gives it no line of its own.
+
 ## What proven means
 
 A recipe joins the menu only when two things are true. Offline rehearsals guard

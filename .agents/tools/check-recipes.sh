@@ -13,6 +13,10 @@
 #   check-recipes.sh --part FILE...
 #   check-recipes.sh --rehearsal RECIPE REHEARSAL
 #
+# A recipe may add one section to the eight, "## Settings the kit can read",
+# between health and the proven section. When it is there, it is held to the
+# same three lines as the others.
+#
 # With --template the two dates may still read YYYY-MM-DD and "Who runs it:"
 # may still be a placeholder, since the blank has nothing real to give. Every
 # other rule applies to the blank as well, so it cannot drift away from the
@@ -99,14 +103,29 @@ for file in "$@"; do
       if (!(key in checked)) problem(where " does not say \"How it is checked:\"")
       if (!(key in who)) problem(where " does not say \"Who runs it:\"")
     }
+    # A section carries its three lines, written out or in the part it links.
+    function section_lines(s,   path, line) {
+      if (s in part) {
+        path = dir "/" part[s]; line = ""
+        if ((getline line < path) < 0) { problem("\"## " s "\" links a shared part that does not exist: " part[s]); return }
+        do { body(s, line, part[s]) } while ((getline line < path) > 0)
+        close(path)
+        lacks(s, part[s] " (linked from \"## " s "\")")
+      } else {
+        lacks(s, "\"## " s "\"")
+      }
+    }
     BEGIN {
       n = split("Preview|Going live|Rollback|Backup|Restore|Secrets|Logs|Health|Proven", order, "|")
+      extra = "Settings the kit can read"
       for (i = 1; i <= n; i++) want[order[i]] = i
     }
     mode == "part" { body("part", $0, "the part"); next }
     /^## / {
       section = substr($0, 4)
       if (section in want) { seen[section] = 1; pos[section] = ++count }
+      # The one section a recipe may add to the eight. It sits after health.
+      if (section == extra) { hasextra = 1; extrapos = count }
       next
     }
     section == "" && /^Fits: ./             { head["Fits"] = 1 }
@@ -138,15 +157,11 @@ for file in "$@"; do
         if (!(s in seen)) { problem("no \"## " s "\" section"); continue }
         if (pos[s] != i) problem("\"## " s "\" is out of order")
         if (s == "Proven") continue
-        if (s in part) {
-          path = dir "/" part[s]; line = ""
-          if ((getline line < path) < 0) { problem("\"## " s "\" links a shared part that does not exist: " part[s]); continue }
-          do { body(s, line, part[s]) } while ((getline line < path) > 0)
-          close(path)
-          lacks(s, part[s] " (linked from \"## " s "\")")
-        } else {
-          lacks(s, "\"## " s "\"")
-        }
+        section_lines(s)
+      }
+      if (hasextra) {
+        if (extrapos != 8) problem("\"## " extra "\" does not sit between \"## Health\" and \"## Proven\"")
+        section_lines(extra)
       }
       if ("Proven" in seen) {
         if (!realrun) problem("\"## Proven\" does not open with \"Real run:\" and a date")

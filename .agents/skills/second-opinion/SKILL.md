@@ -35,6 +35,15 @@ address or an id? Do keys or personal details appear anywhere they should
 not, including anything sent to the browser? Can money move twice from one
 click?
 
+Before a finding asks the person to look up a setting of a service the tool
+uses, check whether you can read it yourself with what you already have: an
+address the service answers in public, a command-line tool this session is
+already signed in to, or the project's own files. On a recipe, the recipe's
+`Settings the kit can read` section says how. Where you can, read it and report
+the value and what it means. Use only a key the project already sends to the
+browser, never a secret key, a service key or a password. Ask the person only
+for a setting you cannot read that way, and say why you cannot.
+
 ## Axis 3: Screen
 
 During a build review, load and follow `screen-check` when the piece carries

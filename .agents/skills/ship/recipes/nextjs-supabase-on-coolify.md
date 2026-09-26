@@ -49,6 +49,10 @@ Who runs it: a companion or the person, result read back
 
 Shared part: [the Next.js container and its health route](parts/nextjs-container.md)
 
+## Settings the kit can read
+
+Shared part: [sign-in settings on hosted Supabase](parts/supabase-settings.md)
+
 ## Proven
 
 Real run: 2026-09-25

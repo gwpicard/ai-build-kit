@@ -53,6 +53,12 @@ rs_rule "a shared section is written once, as a part" 'is written once, as a par
 rs_rule "a part holds the lines a section would" 'a part holds the same three lines a section would'
 rs_rule "the parts folder is not on the menu" 'the parts folder is not a menu entry'
 
+# --- the settings the kit can read -------------------------------------------
+rs_rule "a recipe may say which settings the kit reads" 'a recipe may carry one more section, .## settings the kit can read., between health and the proven section'
+rs_rule "the review reads them rather than asking" 'so the launch review reads them rather than asking the person to look them up'
+rs_rule "only a key the browser already has" 'such a read uses only a key the project already sends to the browser'
+rs_rule "a secret-key read does not belong" 'a setting that needs a secret key to read does not belong here'
+
 # --- what proven means ---------------------------------------------------
 rs_rule "rehearsals guard the rules" 'offline rehearsals guard its rules'
 rs_rule "the rehearsal names the recipe" 'a maintainer check names the recipe file'
@@ -193,6 +199,34 @@ if "$CHECKER" "$rs_dir/linked.md" >/dev/null; then
   rs_fail "a recipe linking a part with a Who runs it value outside the three passed"
 fi
 rs_ok "a shared part with a Who runs it value outside the three is refused"
+
+# --- the settings section --------------------------------------------------
+# The one section a recipe may add. It sits between health and the proven
+# section and carries the lines the others do, so a read the launch review
+# relies on is never a bare claim.
+cp "$rs_dir/parts/whole.md" "$rs_dir/parts/shared.md"
+awk '
+  $0 == "## Proven" { print "## Settings the kit can read"; print ""; print "Shared part: [shared](parts/shared.md)"; print "" }
+  { print }
+' "$FILLED" > "$rs_dir/settings.md"
+"$CHECKER" "$rs_dir/settings.md" >/dev/null
+rs_ok "a recipe with a settings section after health passes"
+
+sed '/^Who runs it:/d' "$rs_dir/parts/whole.md" > "$rs_dir/parts/shared.md"
+if "$CHECKER" "$rs_dir/settings.md" >/dev/null; then
+  rs_fail "a settings section whose part has no Who runs it line passed"
+fi
+rs_ok "a settings section missing a line is refused"
+cp "$rs_dir/parts/whole.md" "$rs_dir/parts/shared.md"
+
+awk '
+  $0 == "## Health" { print "## Settings the kit can read"; print ""; print "Shared part: [shared](parts/shared.md)"; print "" }
+  { print }
+' "$FILLED" > "$rs_dir/mutant.md"
+if "$CHECKER" "$rs_dir/mutant.md" >/dev/null; then
+  rs_fail "a settings section before health passed"
+fi
+rs_ok "a settings section out of place is refused"
 
 # --- the rehearsal a recipe needs ----------------------------------------
 mkdir -p "$rs_dir/recipes"
