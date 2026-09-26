@@ -53,13 +53,17 @@ destination="$PROJECT_ROOT/$TARGET"
   fail "$TARGET is not a file, so it was left alone"
 
 if [ -f "$destination" ] && cmp -s "$HELPER" "$destination"; then
-  [ -x "$destination" ] || chmod 755 "$destination"
-  echo "plan helper: already current at $TARGET"
+  if [ -x "$destination" ]; then
+    echo "plan helper: already current at $TARGET"
+  else
+    chmod 755 "$destination"
+    echo "plan helper: already current at $TARGET, and made runnable again, which is a change to save"
+  fi
   exit 0
 fi
 
 if [ -f "$destination" ]; then
-  outcome="replaced an older copy at $TARGET"
+  outcome="replaced a copy that differed at $TARGET. Any change somebody made to it by hand was replaced too, and the earlier copy is in the checkpoint saved before this ran"
 else
   outcome="added $TARGET"
 fi

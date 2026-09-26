@@ -185,7 +185,9 @@ current, so it is safe on every visit.
 Where it added the helper, say one sentence: "I have added the helper that
 prints your list of pieces, so /what-now, /queue and /implement read what is
 ready from it rather than from the issues by hand." Where it replaced one, say
-that the helper was brought up to date. Save either change with the visit's
+that the helper was brought up to date, and that any change made to the old
+copy by hand was replaced too and is kept in the checkpoint saved first. Where
+it made the helper runnable again, say so, since that is a change to save. Save either change with the visit's
 other changes and add a dated changelog line. When it changed nothing, say
 nothing. Where the harness cannot run the script and the project has no
 helper, copy the installed skill's `templates/foundation/plan-refresh.sh` to

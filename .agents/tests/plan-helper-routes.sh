@@ -210,6 +210,19 @@ case "$said" in
 esac
 cmp -s "$OLD/$TARGET" "$INSTALLED_HELPER" || \
   fail "the replaced helper does not match the installed skill's copy"
+case "$said" in
+  *checkpoint*) pass "the replacement says any hand change is in the checkpoint" ;;
+  *) fail "the replacement does not say where a hand change went: $said" ;;
+esac
+
+# A current copy that lost its runnable bit is fixed, and the fix is reported.
+chmod 644 "$OLD/$TARGET"
+said=$(cd "$OLD" && sh "$PLACE_OLD" 2>&1) || fail "the backfill failed on a copy that is not runnable"
+case "$said" in
+  *"made runnable again"*) [ -x "$OLD/$TARGET" ] && \
+    pass "a mode fix is made and reported" || fail "the helper was not made runnable" ;;
+  *) fail "a mode fix was not reported: $said" ;;
+esac
 
 # It writes only into a founded project, and never through a link.
 NOT_FOUNDED="$SCRATCH/not-founded"
