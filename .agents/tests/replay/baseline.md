@@ -450,3 +450,35 @@ menu failures above, and the state check was made to require that file. The
 recorded file already matched it. The changed case has not been replayed.
 
 This is one run of one case, and it replaces none of the tables above.
+
+## The founding menu with one recipe, 26 September
+
+Scenario 51 is new. A charity office founds a booking sheet for its two meeting
+rooms with one recipe on the menu, and never picks it. It ran once, driven by
+`opus` and graded by `opus`, the harness default. The kit was built from the
+branch that adds the scenario, on top of `0d2f86c`. That branch also changes
+step 11 of the founding skill: a menu of one is shown as a menu, and the
+recipe's tool report runs and is reported.
+
+| Scenario | Held | State | Withdrew | Contract misses |
+|---|---|---|---|---|
+| 51 | 1/1 | 1/1 | none due | visible explanation, hidden technique, evidence and escalation miss |
+
+The records came out right. AGENTS.md named the Vercel recipe, the
+`founding-menu` line named that one file and no other, and the checkpoint stayed
+local. The recipe's tool report ran before the checkpoint, and the completion
+report said this computer has the tools the launch checks use. The kit never
+asked about the menu and quoted no price.
+
+The menu itself failed the contract, in the same way as scenario 50's run. The
+recipe first appeared in the completion report, after the project was stood up,
+as a choice already made. It was never called recommended or the default, and
+the own-stack option was not offered. The new line in step 11 did not change
+that. It is filed as a finding, and the scenario stays as written.
+
+The gate waited for the menu, which never came before the completion report. So
+two fillers went to the interview's slot-rules question and its summary, and
+the line meant for the menu's reply went out unheld, after the stand-up. It
+answered only something else, so it did not change the result.
+
+This is one run of one case, and it replaces none of the tables above.
