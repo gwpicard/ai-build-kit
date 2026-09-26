@@ -22,6 +22,8 @@
 #                      parts of one outcome as sub-issues sharing the parent's
 #                      So that, separate outcomes as blocked-by, and no part
 #                      that is a layer rather than a slice.
+#   recipe-record      founding wrote the chosen recipe into AGENTS.md and a
+#                      founding-menu line naming every file on the menu.
 #
 # The remaining Stage 1 assertion, the issue transitions the fake-GitHub state
 # file records, is the next slice. It needs a per-scenario goal state, so it is
@@ -266,6 +268,100 @@ else
   sr_note="no git repository to read the save route from"
 fi
 
+# --- the recipe record -----------------------------------------------------
+# Founding records two things about the recipe menu, and a kit can talk through
+# the menu well and still write neither. AGENTS.md names the chosen recipe by
+# its file, so /ship can open it. `.ai-build-kit-maintenance` names every file
+# the menu held that day, so a later monthly visit can tell a recipe added
+# afterwards from one the person already passed over. A line naming only the
+# recipe chosen reads fine and makes every other recipe look new next month.
+#
+# Only a scenario whose Evidence field names the founding-menu line is graded
+# here, so the contract decides. The menu is the files directly in the ship
+# skill's recipes folder: the copy the run was installed with when there is
+# one, and this repository's own otherwise, as it stands when the check runs.
+#
+# Where the Evidence field names a concrete `Recipe: <file>.md`, the record has
+# to name that file. The grader reads only the transcript, so this is the one
+# place a run that recorded the wrong recipe is caught. Without one, any file on
+# the menu will do.
+evidence=$(scenario_field "$number" "Evidence" 2>/dev/null || true)
+rec_verdict=unobservable
+rec_note="the contract names no founding-menu line for this scenario"
+case "$evidence" in
+  *founding-menu*)
+    recipes="$project/.agents/skills/ship/recipes"
+    [ -d "$recipes" ] || recipes="$ROOT/.agents/skills/ship/recipes"
+    rec_result=$(python3 - "$recipes" "$project/AGENTS.md" \
+      "$project/.ai-build-kit-maintenance" "$evidence" <<'PY'
+import os, re, sys
+folder, agents, upkeep, evidence = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+menu = sorted(f for f in os.listdir(folder)
+              if f.endswith(".md") and os.path.isfile(os.path.join(folder, f)))
+problems = []
+if not menu:
+    print("unobservable|no recipe menu to compare against")
+    sys.exit()
+
+named = re.findall(r"Recipe:\s*([A-Za-z0-9._-]+\.md)", evidence)
+expected = named[-1] if named else None
+
+values = []
+try:
+    for line in open(agents):
+        # A line that opens with the record, perhaps as a list item, in bold or
+        # in code quotes.
+        found = re.match(r"\s*(?:[-*]\s+)?`?(?:\*\*)?Recipe:(?:\*\*)?\s*`?([^`\s]+)`?", line)
+        if found:
+            values.append(found.group(1).rstrip(".,;"))
+except OSError:
+    pass
+# A line naming a recipe file wins over one saying none, so the template's own
+# placeholder left behind cannot hide a real record. Among equals, the later
+# line wins, as a later edit would.
+files = [v for v in values if v.endswith(".md")]
+chosen = files[-1] if files else (values[-1] if values else None)
+if chosen is None:
+    problems.append("AGENTS.md records no Recipe: line")
+elif chosen not in menu:
+    problems.append("AGENTS.md records Recipe: %s, which is not a file on the menu" % chosen)
+elif expected and chosen != expected:
+    problems.append("AGENTS.md records Recipe: %s, but the contract expects %s" % (chosen, expected))
+
+listed = None
+try:
+    for line in open(upkeep):
+        if line.startswith("founding-menu|"):
+            parts = line.strip().split("|")
+            if len(parts) != 3 or not re.fullmatch(r"20\d\d-\d\d-\d\d", parts[1]):
+                listed = "malformed"
+            else:
+                listed = sorted(x.strip() for x in parts[2].split(",") if x.strip())
+except OSError:
+    pass
+if listed is None:
+    problems.append(".ai-build-kit-maintenance has no founding-menu line")
+elif listed == "malformed":
+    problems.append("the founding-menu line is not founding-menu|<date>|<files>")
+else:
+    missing = [f for f in menu if f not in listed]
+    extra = [f for f in listed if f not in menu]
+    if missing:
+        problems.append("the founding-menu line leaves out %s" % ", ".join(missing))
+    if extra:
+        problems.append("the founding-menu line names %s, which is not on the menu" % ", ".join(extra))
+
+if problems:
+    print("miss|" + "; ".join(problems))
+else:
+    print("hit|AGENTS.md names %s and the founding-menu line names every file on the menu" % chosen)
+PY
+)
+    rec_verdict=${rec_result%%|*}
+    rec_note=${rec_result#*|}
+    ;;
+esac
+
 # --- issue invariants and the route ----------------------------------------
 # The fake-GitHub stand-in records every issue transition to a state file. This
 # does not assert a per-scenario goal state, which would need a goal annotation
@@ -292,7 +388,8 @@ baseline="$REPLAY_DIR/fixture/issues.json"
 python3 - "$number" "$endstate" "$baseline" \
   acceptance-record "$acc_verdict" "$acc_note" \
   save-route "$sr_verdict" "$sr_note" \
-  accepted-not-done "$and_verdict" "$and_note" <<'PY'
+  accepted-not-done "$and_verdict" "$and_note" \
+  recipe-record "$rec_verdict" "$rec_note" <<'PY'
 import json, sys
 number = sys.argv[1]
 endstate_path = sys.argv[2]

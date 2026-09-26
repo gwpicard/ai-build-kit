@@ -259,6 +259,12 @@ their cases were removed. The completion report's shape is guarded instead by
 release. The interview shape (26) shows early and is still
 replayed.
 
+Scenario 50 founds a small team's sign-out log with both recipes on the menu.
+The person answers the other thing the menu's reply asks and never picks a
+recipe, so the case measures whether founding keeps the recommended one and
+carries on rather than asking again. It gets through founding because the
+person answers plainly and the tool is small, the same reason 31 does.
+
 ## How grading works
 
 The grader is a separate session that receives the contract and the transcript
@@ -331,6 +337,19 @@ state, which would need a goal annotation the contract does not carry yet. It
 applies only when the end state is the fixture's own, told apart by its
 repository name, so a founding run that made its own issues is left
 `unobservable`.
+
+The fourth assertion is the recipe record, for a scenario whose contract names
+the `founding-menu` line. AGENTS.md has to name the chosen recipe by its file,
+and the `founding-menu` line in `.ai-build-kit-maintenance` has to name every
+file on the menu. A line naming only the recipe chosen is a `miss`, because
+next month's visit would take every other recipe for a new one.
+
+Where the contract names a concrete `Recipe:` file, the record has to name that
+file and no other. The grader reads only the transcript, so a run that recorded
+the wrong recipe is caught here or nowhere. The menu is read from the recipes
+folder the run was installed with, never written out in the check. Where a
+project has no such folder, the check falls back to this repository's copy as
+it stands when the check runs.
 
 The rollup shows these under `state:` in each scenario's table, and a `STATE
 HELD` summary reads whether the run left the right result on disk.
