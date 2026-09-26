@@ -708,12 +708,16 @@ attribution line, not the word.
   the write itself runs.
 - `.agents/tests/attribution-scrub.sh` drives the commit-msg hook over a set of
   messages and reads what it wrote: that a session link goes whether it sits
-  behind a trailer key or on a line of its own, that the row of dashes a squash
-  merge strands above a removed trailer goes with it, and that a message with
-  nothing to take out comes back unchanged. The case worth having is the one
-  that keeps prose about Claude, Cursor and Gemini intact. A hook that went
-  after the word rather than the attribution line would gut most of the messages
-  in this repository, and nothing would say so until the history was unreadable.
+  behind a trailer key or on a line of its own, and that the pull request
+  footer goes with or without its link. The row of dashes a squash merge
+  strands above a removed trailer goes with it, even when another trailer such
+  as `Signed-off-by:` sits below, and a message with nothing to take out comes
+  back unchanged. The case worth having is the one that keeps prose about
+  Claude, Cursor and Gemini intact. A hook that went after the word rather than
+  the attribution line would gut most of the messages in this repository, and
+  nothing would say so until the history was unreadable. The rehearsal builds
+  its samples from pieces, so the validator reads it like any other file and
+  would catch a real line pasted into it.
 - `.agents/tests/hosting-request.sh` guards the hosting request `/ship`
   writes on a first launch, for a tool that runs on a server somebody else
   runs. The person carries it there by hand, because the kit never contacts
