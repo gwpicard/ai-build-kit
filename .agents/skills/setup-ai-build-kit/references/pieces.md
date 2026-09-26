@@ -319,9 +319,24 @@ with anyone else's.
 
 Information flows one way: issues are the record, and the printout is made from
 them, never read back. A change to a piece goes to the issue, and the printout is
-made again with `.agents/tools/plan-refresh.sh`, so if it looks stale, refresh
-it. Run the refresh when reading or changing the plan rather than on every
-session start, so a session that never touches the plan stays light.
+made again with `sh .agents/tools/plan-refresh.sh`, so if it looks stale,
+refresh it. Run the refresh when reading or changing the plan rather than on
+every session start, so a session that never touches the plan stays light.
+
+Founding copies that helper into the project from this skill's
+`templates/foundation/plan-refresh.sh`, whichever route installed the kit, and
+`/maintain` adds it to a project founded before it shipped. Where a project
+still has no copy, run the same file from the installed setup-ai-build-kit
+skill, from the project's root folder, and say in one line that the next
+`/maintain` adds it to the project. Never sort the pieces by reading the issues
+by hand instead. The printout is what keeps a piece with an open blocker out of
+`To build`, and a hand reading once named a blocked piece as the next one to
+build.
+
+When a command names what can be built next, it names a piece under `To build`
+marked `(ready)` in a printout it has just refreshed, and nothing else. Where
+that group holds no such piece, say that nothing is ready to build now and what
+the rest are waiting on, and name no piece as next.
 
 It carries the time it was written, which is what makes it safe when GitHub is
 unreachable. The agent can say "here is your list as of 18:40, and I cannot

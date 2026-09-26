@@ -380,7 +380,11 @@ fourteen. When the kit has renamed a command, the update also rewrites the
 command list in your AGENTS.md, with your approval, so you are not left to
 edit it by hand. A project founded from a whole copy of the kit also carries
 the kit's own command files, which make each command show twice; the visit
-offers to remove those and leaves anything you wrote yourself alone. A clean checkpoint comes first, so an interrupted update can
+offers to remove those and leaves anything you wrote yourself alone. Every
+visit also checks the small helper that prints your list of pieces to
+`plan.local.md`. A project founded before every installation carried it gets it
+then, so the kit reads what is ready from that list rather than working it out
+by hand. A clean checkpoint comes first, so an interrupted update can
 be recovered. The one update that split the
 old `/build` into what are now `/shape` and `/implement` runs a one-time step that labels your
 existing pieces so they can still be built, and offers to move any older

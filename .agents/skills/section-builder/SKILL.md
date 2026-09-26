@@ -258,8 +258,13 @@ should. A correctly completed build does not need /sync afterward.
 
 Once a person merges the pull request it closes the issue, so there is no
 status to set by hand. After that merge, remove the `building` label and refresh
-the printout with `.agents/tools/plan-refresh.sh` so the person's list matches
+the printout with `sh .agents/tools/plan-refresh.sh` so the person's list matches
 what just happened.
+
+When the report names a next piece, refresh the printout first if this pass has
+not, and name only a piece under its `To build` group marked `(ready)`. Where
+there is none, say nothing is ready to build now and name no piece. Never work
+the next piece out from the issue list by hand.
 
 Write the changelog line from the piece's own `So that` and `Done when`, in
 plain language, dated. Not from its title, and not from the pull request. A

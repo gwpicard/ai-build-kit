@@ -345,8 +345,8 @@ twice, and one of the two would drift. Such a client is also free to skip a skil
 it judges non-standard, so the shared installer is the safer choice.
 
 The setup-ai-build-kit skill carries the project foundation. On its first run it creates
-missing project instructions, harness pointers, environment examples, and the
-placeholder project check. Existing files are preserved. It then creates
+missing project instructions, harness pointers, environment examples, the
+small helper that prints the list of pieces, and the placeholder project check. Existing files are preserved. It then creates
 `masterplan.md` and `CHANGELOG.md` from the founding interview, and opens one
 issue per piece of remaining work.
 

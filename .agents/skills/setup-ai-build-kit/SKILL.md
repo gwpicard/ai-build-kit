@@ -313,8 +313,9 @@ templates/foundation/piece-issue.yml to `.github/ISSUE_TEMPLATE/piece.yml`, open
 one issue per piece, label each shaped piece `ready` (or the matching `needs-`
 label where it still holds an open question for `/shape` to settle), and link the
 ones that genuinely block each other using GitHub's blocked-by relationship.
-Then run `.agents/tools/plan-refresh.sh` once, so the person has their list
-before they need it.
+Then run `sh .agents/tools/plan-refresh.sh` once, so the person has their list
+before they need it. The bootstrap placed that helper in the project, whichever
+route installed the kit.
 
 Set the repository to delete a merged pull request's branch automatically, so
 the branch list does not fill with finished piece branches

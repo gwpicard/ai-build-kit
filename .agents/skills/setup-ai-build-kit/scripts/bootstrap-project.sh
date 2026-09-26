@@ -118,6 +118,7 @@ checks.yml|.github/workflows/checks.yml
 claude-settings.json|.claude/settings.json
 session-start.sh|.agents/hooks/session-start.sh
 check-sensitive-areas.sh|.agents/hooks/check-sensitive-areas.sh
+plan-refresh.sh|.agents/tools/plan-refresh.sh
 env.example|.env.example
 gitignore|.gitignore
 FOUNDATION_FILES
@@ -154,6 +155,7 @@ checks.yml|.github/workflows/checks.yml
 claude-settings.json|.claude/settings.json
 session-start.sh|.agents/hooks/session-start.sh
 check-sensitive-areas.sh|.agents/hooks/check-sensitive-areas.sh
+plan-refresh.sh|.agents/tools/plan-refresh.sh
 env.example|.env.example
 gitignore|.gitignore
 FOUNDATION_FILES

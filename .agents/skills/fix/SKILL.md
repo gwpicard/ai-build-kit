@@ -13,8 +13,10 @@ explained.
 
 When `/fix` arrives with no bug described, look for the repair already on the
 board before asking the person to describe one. Refresh the printout with
-`.agents/tools/plan-refresh.sh` and read its Broken group, the same open issues
-labelled `broken` that `/what-now` surfaces first. If none is labelled `broken`,
+`sh .agents/tools/plan-refresh.sh` and read its Broken group, the same open issues
+labelled `broken` that `/what-now` surfaces first. Where the project has no copy
+of the helper, `.agents/skills/setup-ai-build-kit/references/pieces.md` says what
+to run instead. If none is labelled `broken`,
 ask for the symptom, as step 1 sets out. If exactly one is, name it and use it as
 the report. If more than one is, list them and ask which to take.
 

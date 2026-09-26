@@ -11,8 +11,10 @@ once and needs to see the whole set. Typing it is the person saying so.
 
 ## Read
 
-Refresh the printout with `.agents/tools/plan-refresh.sh` and read
-`plan.local.md`. That is the only source. If GitHub cannot be reached, work from
+Refresh the printout with `sh .agents/tools/plan-refresh.sh` and read
+`plan.local.md`. That is the only source. Where the project has no copy of the
+helper, `.agents/skills/setup-ai-build-kit/references/pieces.md` says what to
+run instead; never sort the pieces by hand. If GitHub cannot be reached, work from
 the printout as it stands and say when it was written, because an old list a
 person can see beats no list at all.
 
