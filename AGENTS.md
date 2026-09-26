@@ -580,9 +580,12 @@ attribution line, not the word.
   it has said it cannot. When it cannot, it says so and names the page. The
   same run, while building, pushed a settings file to the live service and
   switched off a setting it could not switch back on. It also wrote every key
-  to a shared temporary folder. So a command that changes a live service waits
-  for a yes that names the change and says whether it can be undone, and a
-  secret key goes straight into the file that uses it. The check holds the
+  to a shared temporary folder. So a command that changes a live service, other
+  than saving code through the save route, waits for a yes. That yes names
+  everything the command will change, not only the setting the kit meant to
+  change, and says whether it can be undone. The commands the project's recipe
+  names need no second yes, and a secret key goes straight into the file that
+  uses it. The check holds the
   rules in `/ship`, second-opinion, section-builder, WORKFLOW.md and the
   project's own AGENTS.md, and proves each one load-bearing in each file.
 - `.agents/tests/standing-instructions.sh` guards the project's instruction

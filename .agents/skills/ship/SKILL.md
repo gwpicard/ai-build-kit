@@ -206,13 +206,23 @@ and "A secret a check needs" below says how to use it.
 
 #### A change to a live service
 
-A command that changes a live service's settings or data outside the tool's
-own code waits for a yes that names the change and says whether it can be
-undone. Examples are pushing a local settings file to the live project, or
-changing its sign-in settings. Where the kit does not know whether the change
-can be undone, it says that. The commands a recipe's going-live section names
-are the launch the person asked for, and need no further yes. A no leaves the
+A command that changes a live service's settings or data, other than saving
+code through the save route, waits for a yes that names the change and says
+whether it can be undone. Name every setting or record the command will
+change, not only the one you meant to change, taken from the command's own
+preview where it has one. Pushing a whole local settings file changes
+everything in it that differs from the live project. Other examples are
+applying migrations to the live project, or changing its sign-in settings.
+Where the kit does not know whether the change can be undone, it says that.
+
+The commands the project's recipe names, in any section, are the launch the
+person asked for, and need no further yes. Anything the recipe does not name,
+and any push of a settings file, waits for the named yes. A no leaves the
 service as it was, and the step is a warning like any other.
+
+A token in the person's environment that reaches the whole account is used
+only for the reads the recipe names. A change made with it waits for the yes
+above.
 
 A secret key is never written to a shared temporary folder such as `/tmp`.
 Write what a step needs straight into the git-ignored file that uses it.

@@ -61,9 +61,8 @@ If it is not written down, it does not exist. When work lands, add a dated
 `CHANGELOG.md` entry in plain words and commit with a clear message. Each piece
 is one issue, shaped as the `setup-ai-build-kit` skill's `references/pieces.md`
 says. A merged pull request saying `Closes #<number>` closes its piece. Each
-piece has a subject label, set once by change-triage. `plan.local.md` is a
-printout of the open issues, written by `.agents/tools/plan-refresh.sh`. It is
-never a source: a change goes to the issue, and the printout is made again.
+piece has a subject label, set once by change-triage. `plan.local.md` prints the
+open issues via `.agents/tools/plan-refresh.sh`; change the issue, not the file.
 
 When one document says another will do a job, write that job into the other
 document too. The masterplan describes the present only, in roughly one or two
@@ -117,13 +116,14 @@ what stays unconfirmed if they decline, and that a confirmation box comes next.
 
 Keys, passwords, and tokens live in `.env`. Never print, commit, or copy one
 into a document, check, or changelog, or write one to `/tmp`. Record where any
-other secret lives, never its value, in the masterplan's "How it stays
-running", and read it there. If none is recorded, ask once. Rotate a secret
-that appears where it should not, even one given as a reply: record it nowhere,
-say it is now in this chat, and ask for its location. A secret with no known
-location is never called absent. Reach a service only through its tool's own
-commands and keys sent to the browser, never a login another tool stores, as in
-the keychain. If you cannot, say so and ask; never then read it another way.
+other secret lives, never its value, in the masterplan's "How it stays running",
+and read it there. If none is recorded, ask once. Rotate a secret that appears
+where it should not, even one given as a reply: record it nowhere, say it is now
+in this chat, and ask for its location. A secret with no known location is never
+called absent. Never take a login another tool stores for itself, as in the
+keychain or its files, or use one on an API. Use that tool's own commands or
+the project's own keys. If you cannot, say so and ask; never then read it
+another way.
 
 If the project works from confidential files, the setup-ai-build-kit skill
 records their folder and handling rules here. Never stage, commit, print, or
@@ -131,14 +131,14 @@ copy their contents into code, checks, documents, or the changelog.
 
 ## Dangerous actions, and when to stop and ask
 
-The restrictions in the `setup-ai-build-kit` skill's
-`references/blocked-commands.md` always apply. Save a checkpoint before
-sweeping work. Stop and ask when:
+The `setup-ai-build-kit` skill's `references/blocked-commands.md` always
+applies. Save a checkpoint before sweeping work. Stop and ask when:
 
 - the work exceeds the agreed slice, or needs a new dependency or service;
 - the request changes data, access, money, automatic actions, reliance, or
   external users, or would delete data or do anything irreversible or outside
-  this computer, such as a live service's settings: say if it can be undone;
+  this computer, such as a live service's settings: name all it changes and
+  if it can be undone;
 - a sensitive area's caution is a person who has not yet looked, or a risk
   notice is waiting on the person's answer;
 - the masterplan is silent on a consequential decision, or the harness lacks a

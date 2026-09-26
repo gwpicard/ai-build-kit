@@ -141,14 +141,19 @@ and ask the person, naming the page where it lives. Once you have said you
 cannot read something, never read it another way. A key the person gave this
 project, kept where the masterplan records it, belongs to the project.
 
-A command that changes a live service's settings or data outside the tool's
-own code waits for a yes that names the change and says whether it can be
-undone, or that you do not know. Pushing a local settings file to the live
-project is one; so is changing its sign-in settings. Ask before you run it,
-never after. In an unattended run nobody is there to say yes, so leave it
-unrun and say so on the piece. A secret key is never written to a shared
-temporary folder such as `/tmp`. Write what the build needs straight into the
-git-ignored file that uses it.
+A command that changes a live service's settings or data, other than saving
+code through the save route, waits for a yes that names the change and says
+whether it can be undone, or that you do not know. Name every setting or
+record the command will change, not only the one you meant to change, taken
+from the command's own preview where it has one. Pushing a whole local
+settings file changes everything in it that differs from the live project.
+Applying migrations to the live project needs the yes too, and so does
+changing its sign-in settings. Ask before you run it, never after. In an
+unattended run nobody is there to say yes, so leave it unrun and say so on the
+piece. A secret key is never written to a shared temporary folder such as
+`/tmp`. Write what the build needs straight into the git-ignored file that
+uses it. A secret key read through a tool's own commands is piped straight
+into that file and never shown.
 
 When the piece carries `visual`, or the change touches a screen file whatever
 subject the piece carries, load and follow `screen-check`. A screen file is one
