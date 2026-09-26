@@ -65,25 +65,55 @@ kept() {
   fi
 }
 
-session_trailer='Say the thing
+# The attribution words are built from pieces rather than written out. The
+# validator refuses a tracked file carrying them, and a sample built this way
+# gives it nothing to find, so this file needs no exemption. A real line pasted
+# in here by mistake is still caught.
+session=$(printf 'claude.ai/code/%s' 'session_')
+coauthor=$(printf 'Co-%sed-By: Claude' 'Author')
+vendor=$(printf 'noreply@%s.com' 'anthropic')
 
-Claude-Session: https://claude.ai/code/session_0000000000000000000000'
+session_trailer="Say the thing
 
-coauthor_trailer='Say the thing
+Claude-Session: https://${session}0000000000000000000000"
 
-Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>'
+coauthor_trailer="Say the thing
 
-squashed='Say the thing
+$coauthor Opus 5 (1M context) <$vendor>"
+
+squashed="Say the thing
 
 Some body text.
 
 ---------
 
-Co-authored-by: Claude <noreply@anthropic.com>'
+$coauthor <$vendor>"
+
+# The same squash merge with another trailer below the removed one. The dashes
+# are no longer the last line, and they are still stranded.
+squashed_signed="Say the thing
+
+Some body text.
+
+---------
+
+$coauthor <$vendor>
+Signed-off-by: A Person <a.person@example.com>"
+
+# A row of dashes with a kept line under it is not stranded.
+dashes_kept='Say the thing
+
+---------
+
+Signed-off-by: A Person <a.person@example.com>'
 
 footer='Say the thing
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)'
+
+plain_footer='Say the thing
+
+🤖 Generated with Claude Code'
 
 about_the_tools='Rename the command that shapes a piece
 
@@ -91,25 +121,36 @@ Claude Code now carries a /plan of its own, which starts its read-only plan
 mode. The command is now /shape, and it reads the same in Claude, Cursor and
 Gemini alike.'
 
-bare_link='Say the thing
+bare_link="Say the thing
 
-https://claude.ai/code/session_0000000000000000000000'
+https://${session}0000000000000000000000"
+
+# A sentence that names the tool is not the footer, even when it uses the
+# footer's words.
+footer_words_in_prose='Say the thing
+
+The first draft was generated with Claude Code and then rewritten by hand.'
 
 plain='Say the thing
 
 A body with nothing to take out of it.'
 
-gone "the session link goes" "$session_trailer" 'claude.ai/code/session_'
-gone "the co-author trailer goes" "$coauthor_trailer" 'Co-Authored-By: Claude'
-gone "the vendor address goes with it" "$coauthor_trailer" 'noreply@anthropic.com'
+gone "the session link goes" "$session_trailer" "$session"
+gone "the co-author trailer goes" "$coauthor_trailer" "$coauthor"
+gone "the vendor address goes with it" "$coauthor_trailer" "$vendor"
 gone "the pull request footer goes" "$footer" 'Generated with [Claude Code]'
-gone "a bare session link goes" "$bare_link" 'claude.ai/code/session_'
+gone "the footer without its link goes" "$plain_footer" 'Generated with Claude Code'
+kept "a sentence using the footer's words stays" "$footer_words_in_prose" 'generated with Claude Code and then'
+gone "a bare session link goes" "$bare_link" "$session"
 
 # A squash merge writes a row of dashes above the trailer it folds in. Take the
 # trailer and leave the dashes, and every rewritten message ends on punctuation
 # with nothing after it.
 gone "the stranded squash separator goes too" "$squashed" '---------'
 kept "the body above the separator stays" "$squashed" 'Some body text.'
+gone "the separator goes when another trailer follows" "$squashed_signed" '---------'
+kept "and that other trailer stays" "$squashed_signed" 'Signed-off-by: A Person'
+kept "a separator with a kept line under it stays" "$dashes_kept" '---------'
 
 # The subject line is the one part of a message that is always read.
 kept "the subject line survives" "$session_trailer" 'Say the thing'
@@ -129,6 +170,14 @@ else
   fail "a clean message was edited"
 fi
 
+# The samples above are built from pieces so that the validator can read this
+# file like any other. An exemption by path would let a real line pasted in here
+# pass unseen, so require that the validator names no such exemption.
+if grep -qF '.agents/tests/attribution-scrub.sh' "$ROOT/.agents/tools/validate-kit.sh"; then
+  fail "the validator still leaves this file out of its attribution scan"
+fi
+ok "the validator reads this file like any other"
+
 # The control. A check that cannot fail proves nothing, so take the rule out of
 # a copy of the hook and require the run to notice.
 #
@@ -139,7 +188,7 @@ fi
 sed '/claude.ai\/code\/session_/d' "$HOOK" > "$WORK/hook-without-the-rule"
 printf '%s\n' "$bare_link" > "$WORK/msg"
 sh "$WORK/hook-without-the-rule" "$WORK/msg"
-if grep -qF 'claude.ai/code/session_' "$WORK/msg"; then
+if grep -qF "$session" "$WORK/msg"; then
   ok "removing the session rule is caught"
 else
   fail "the hook still removed the session link without its rule, so nothing here is guarded"

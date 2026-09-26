@@ -110,14 +110,15 @@ echo "== Attribution =="
 # covers the other way in, which is somebody pasting a message into a document.
 #
 # The words are built here rather than written out, so this check does not
-# report itself. Two files are left out because carrying the words is their
-# job: the hook, and the rehearsal that drives it. Naming them here keeps the
-# exception where a reader of the check can see it.
+# report itself. The rehearsal that drives the hook builds its samples the same
+# way, so it needs no exception. One file is left out because carrying the
+# words is its job: the hook. Naming it here keeps the exception where a reader
+# of the check can see it.
 attr_session=$(printf 'claude.ai/code/%s' 'session_')
 attr_author=$(printf 'Co-%sed-By: Claude' 'Author')
 attr_vendor=$(printf 'noreply@%s.com' 'anthropic')
 attr_hits=$(git -C "$ROOT" ls-files 2>/dev/null \
-  | grep -v -x -e '.githooks/commit-msg' -e '.agents/tests/attribution-scrub.sh' \
+  | grep -v -x -e '.githooks/commit-msg' \
   | while IFS= read -r attr_file; do
       grep -HnIiF -e "$attr_session" -e "$attr_author" -e "$attr_vendor" \
         "$ROOT/$attr_file" 2>/dev/null | sed "s|^$ROOT/||"
