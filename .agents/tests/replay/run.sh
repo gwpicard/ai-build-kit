@@ -143,6 +143,16 @@ run_once() {
   git -C "$project" add -A
   git -C "$project" commit -q -m "Project before the scenario"
 
+  # Some starting states grow from that first commit, such as a pull request,
+  # which is a branch cut from it and pushed to the remote next door. A
+  # preparation with a second half in `<name>.after-commit.sh` has it run here.
+  if [ -n "$prepare" ] && [ -f "$REPLAY_DIR/prepare/$prepare.after-commit.sh" ]; then
+    sh "$REPLAY_DIR/prepare/$prepare.after-commit.sh" "$project" || {
+      echo "  preparation '$prepare' failed after the first commit for scenario $number" >&2
+      return 1
+    }
+  fi
+
   provider_new_session
   transcript="$WORK/s${number}-r${repeat}.transcript"
   turns="$WORK/s${number}-r${repeat}-turns"

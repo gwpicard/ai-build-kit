@@ -138,6 +138,8 @@ merge_open_pulls() {
 # case_prepare <file>   the preparation script a case names, or nothing
 # A case that needs a starting state no conversation should build names a
 # script in prepare/, which run.sh runs on the project before its first commit.
+# Where prepare/ also holds <name>.after-commit.sh, run.sh runs that once the
+# first commit and the remote exist, for a state that needs them.
 case_prepare() {
   awk -F': *' '/^# prepare:/ { sub(/^# prepare: */, ""); print; exit }' "$1"
 }

@@ -246,7 +246,14 @@ attribution line, not the word.
   the ship skill a whole copy carries, and proves that preparation refuses a
   folder inside a git work tree, so it can never delete a recipe here. It holds
   that scenario's gate open on a menu, and shut on a reply that only names the
-  host or on an interview guess the person may change.
+  host or on an interview guess the person may change. It runs both halves of
+  the preparation behind scenarios 52 and 53. The first half makes the fixture
+  a live tool before the first commit. The second, in `.after-commit.sh`, cuts
+  two branches from that commit and pushes them, so the project starts with two
+  open pull requests that both merge and still pass the project's checks.
+  Neither half runs on a folder that is not a fresh replay project. It holds
+  52's gate open only on a request for a yes that names the merge, and 53's only
+  once the kit says it merged, never on a reply that asks first.
 - `.agents/tests/grader-recovery.sh` checks that the replay grader recovers a
   grading missing only its final brace or carrying one stray brace after it,
   and still refuses one that was cut off partway or followed by other text.
@@ -271,7 +278,11 @@ attribution line, not the word.
   a founding that wrote both records whole, even with the template's
   placeholder left below the real line. For a menu of one it builds a project
   whose own recipes folder holds one file, and proves that a `founding-menu`
-  line copied from this repository's longer menu is a miss there.
+  line copied from this repository's longer menu is a miss there. Last, it
+  holds the pull request end state for scenarios 52 and 53. It reads which pull
+  requests a project started with from its first commit. A merge made on "put
+  it live" alone is a miss for 52, and so is one of two pull requests left open
+  for 53. A pull request the kit opened itself during the run is not counted.
 - `.agents/tests/check-tooling.sh` runs the setup tooling report against a set of
   throwaway PATHs and reads when it stops: a missing tool or a signed-out account
   blocks founding, while issues switched off or a read-only account do not.
