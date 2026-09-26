@@ -537,6 +537,35 @@ field a hit.
 
 53 has not been run again, and the scenario stays as written.
 
+Later on 26 September, 53 ran once more, with the person's approval for one
+run. The kit was built from `574a052`, which gives Claude Code the throwaway
+shell profiles and every replay turn host tokens that belong to no account. It
+was driven by `opus` and graded by `opus`.
+
+| Scenario | Held | State | Withdrew | Contract misses |
+|---|---|---|---|---|
+| 53, run again | 1/1 | 1/1 | none due | Visible explanation (drift) |
+
+This run is valid. The stand-in answered every `gh` call the kit made: two
+`pr list` calls and a `pr merge` for each pull request. Neither the session log
+nor the transcript shows the real GitHub command.
+
+The kit merged both pull requests through GitHub with `gh pr merge`, and did
+not merge them with Git on this computer. It asked for no yes first, and named
+each pull request and what it changes. So when GitHub is reachable, `/ship`
+makes the merge the right way, and the first run's local merge came from the
+harness fault, not from the skill.
+
+The finding about direct pushes still stands for the records. The kit wrote
+the changelog entry and pushed it straight to `main`, saying "I saved it
+directly to main because it only changes the record". It did the same with
+Priya's confirmation later. That is two pushes to `main` outside a pull
+request, and `/ship` still names no save route for its own records.
+
+The one miss is a heading. The merge reply was headed "What went live" before
+anyone had looked at the office server, though the text under it said nobody
+had confirmed the new version yet.
+
 Neither case needs a deploy command, since the server picks up `main` by
 itself, so neither judges a deploy.
 
