@@ -166,6 +166,22 @@ live address it produced in the masterplan's "How it stays running" section.
 A tool with no recorded address is not called live, on a recipe or off one:
 tell the person so plainly, and keep it out of CHANGELOG.md as a launch.
 
+#### A secret a check needs
+
+This holds at every go-live, on a recipe or off one. Before a check that needs
+a secret, such as the database password for the backup, the restore or the
+database guard, read where that secret lives from the masterplan's "How it
+stays running" section. Use it from there, and never show it. When no location
+is recorded, or the secret is not where the record says, ask the person once
+where it lives. Record their answer in that section as a location, never a
+value, and run the check.
+
+If they cannot say, the check could not run, and that is a warning like any
+other. Its line and its changelog entry say that the kit does not know where
+the secret is kept. Never write that the secret is absent, missing or not on
+this computer: the kit only knows that it did not find it.
+Give no reason for a skipped check that the kit did not itself confirm.
+
 #### Merging and deploying
 
 These rules hold at every go-live, on a recipe or off one, and on Build with

@@ -52,6 +52,11 @@ Keep those facts only there. The changelog records only that the ownership
 check ran and when, without copying its answers. A later ownership check reads
 that section and returns any missing or changed fact to this rule.
 
+For a credential, the fact is where it lives: a file path, a password manager
+entry's name, or an environment variable's name, and never its value. AGENTS.md's
+Secrets rule says how a later session reads it and what it says when the
+location is unknown.
+
 ## The three build paths
 
 Use these three names everywhere, and do not alternate between path, tier,

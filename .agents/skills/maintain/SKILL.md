@@ -131,7 +131,7 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    without a guessed count. Then update project dependencies and check for known
    vulnerabilities. Report what changed; apply on approval.
 10. Once live: read the error alerts and the bills. Anything real becomes a piece, for implement to take: open an issue in the shape the `setup-ai-build-kit` skill's `references/pieces.md` describes. A finding nobody wrote down is a finding nobody acts on.
-11. Verify backups still run where the tool has any. Confirm the named operational owner from the masterplan still holds that role, and that no critical service or credential is tied to someone who has left.
+11. Verify backups still run where the tool has any. A check that needs a secret reads where it lives from the masterplan first, asks once when that is unknown, and never calls the secret absent. Confirm the named operational owner from the masterplan still holds that role, and that no critical service or credential is tied to someone who has left.
 12. Check whether use or reliance has grown enough that the fit check should run again; if it has, run it before anything else this visit.
 13. On every build path, count every line in the project's AGENTS.md, including
     blank lines, and read it for a directory layout, dependency list,

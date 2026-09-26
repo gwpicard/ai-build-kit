@@ -42,6 +42,8 @@ Use it to find the failed step and the smallest repeatable case. If the record
 is absent or cannot be reached, say what evidence is missing and continue with
 the other sources below; never ask the person to read logs. The project's
 Secrets and Confidential files rules still apply to anything read or reported.
+A step that needs a secret reads where it lives from the masterplan first, as
+the Secrets rule says, and asks once when that is unknown.
 
 Before ranking causes, read `CHANGELOG.md` and closed pieces for the same area.
 A repair already tried and failed is ruled out or named as a repeat; a cause

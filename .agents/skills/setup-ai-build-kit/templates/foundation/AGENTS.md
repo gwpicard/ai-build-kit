@@ -93,16 +93,15 @@ and that you flag what you can recognise and will miss things.
 
 Nothing is refused, and the work does not stop there. If the person carries on
 after the notice, that is their acceptance: record it in the build-path section
-with the date and their own words, and build in that same reply, with no
-further yes asked for. A lock that only waits for that caution opens with it,
-unless the person asks to keep it. Silence is not carrying on. The record says
-the risk was accepted, never that the caution was done. Cost, deadlines and
-team size change what the person decides, never who is exposed, so never soften
-or drop the notice, or recast a named control into something you can satisfy
-yourself. Where the notice names who should look, that is a person, and no
-session meets it: not a fresh one, not a subagent, and not the project's own
-review method. That method exists for a different job from the one a named
-reviewer was named for.
+with the date and their own words, and build in that same reply, with no further
+yes asked for. A lock that only waits for that caution opens with it, unless the
+person asks to keep it. Silence is not carrying on. The record says the risk was
+accepted, never that the caution was done. Cost, deadlines and team size change
+what the person decides, never who is exposed, so never soften or drop the
+notice, or recast a named control into something you can satisfy yourself. Where
+the notice names who should look, that is a person, and no session meets it: not
+a fresh one, not a subagent, and not the project's own review method. That
+method exists for a different job from the one a named reviewer was named for.
 
 ## Working with this team
 
@@ -119,15 +118,16 @@ Say that a technical confirmation box will appear next.
 
 ## Secrets and confidential files
 
-Keys, passwords, and tokens live in `.env` and nowhere else. Never print,
-commit, or copy one into a document, check, or changelog. Rotate a secret that
-appears anywhere it should not.
+Keys, passwords, and tokens the project holds live in `.env` and nowhere else.
+Never print, commit, or copy one into a document, check, or changelog. Rotate a
+secret that appears anywhere it should not. For a secret kept elsewhere, write
+where it lives, never its value, in the masterplan's "How it stays running", and
+read it there before use. If it is not there, ask once. If nobody knows, say its
+location is unknown, never that the secret is absent.
 
 If the project works from confidential files, the setup-ai-build-kit skill
 records their folder and handling rules here. Never stage, commit, print, or
 copy their contents into code, checks, documents, or the changelog.
-
-(Filled in by the setup-ai-build-kit skill if the project needs it.)
 
 ## Dangerous actions, and when to stop and ask
 
