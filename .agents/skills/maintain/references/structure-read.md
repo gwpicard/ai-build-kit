@@ -8,7 +8,7 @@ worse. Usually nothing did, and then there is nothing to say.
 the same comparison across the whole project and a whole quarter.
 
 This is a whole-project read, so the rules in
-`.agents/skills/setup-ai-build-kit/references/whole-project-reads.md` apply.
+the `setup-ai-build-kit` skill's `references/whole-project-reads.md` apply.
 
 ## Where it applies
 

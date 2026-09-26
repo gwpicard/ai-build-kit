@@ -6,7 +6,7 @@ project stopped having it. Someone who does not read code has no way to tell.
 This read finds those names.
 
 This is a whole-project read, so the rules in
-`.agents/skills/setup-ai-build-kit/references/whole-project-reads.md` apply.
+the `setup-ai-build-kit` skill's `references/whole-project-reads.md` apply.
 
 ## Where it applies
 
@@ -35,8 +35,8 @@ reach. No read can check it, and this one does not try.
 
 ## Engines, best first
 
-1. `python3 .agents/skills/sync/scripts/document-claims.py`, run from the
-   project root. It reads the documents above, checks every file, link,
+1. `python3 <skill folder>/scripts/document-claims.py`, where `<skill folder>` is
+   this installed sync skill's folder, run from the project root. It reads the documents above, checks every file, link,
    `npm run`, `pnpm run`, `yarn run` and `make` command, and environment
    variable they name, and prints one line for each that no longer exists. It
    prints nothing when every name still exists. It lists documents changed

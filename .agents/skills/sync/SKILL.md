@@ -31,18 +31,18 @@ else, or recovering after an optional automation failed to run.
    alone never closes or relabels a piece. If the dates cannot be read, say the
    stale-piece check could not be made; do not guess from the local printout.
 
-   Correct the pieces to match reality, and append any changelog lines the work missed, dated. On a project with issues there is usually little to do, because a merged pull request saying `Closes #<number>` closes its own piece. Look for the exceptions: a piece marked `building` that nobody is building, a piece still open whose work plainly landed, a `blocked` label whose blocker has gone. Say what you found rather than correcting it quietly. Closing a piece is the person's decision, and a stale `blocked` label is worth offering to remove, since the blocked-by link already decides what `/implement` does. Whatever somebody did on GitHub by hand stands, as `.agents/skills/setup-ai-build-kit/references/pieces.md` describes. Refresh the printout afterwards.
+   Correct the pieces to match reality, and append any changelog lines the work missed, dated. On a project with issues there is usually little to do, because a merged pull request saying `Closes #<number>` closes its own piece. Look for the exceptions: a piece marked `building` that nobody is building, a piece still open whose work plainly landed, a `blocked` label whose blocker has gone. Say what you found rather than correcting it quietly. Closing a piece is the person's decision, and a stale `blocked` label is worth offering to remove, since the blocked-by link already decides what `/implement` does. Whatever somebody did on GitHub by hand stands, as the `setup-ai-build-kit` skill's `references/pieces.md` describes. Refresh the printout afterwards.
 
-3. Correct masterplan.md where reality moved. Load `.agents/skills/setup-ai-build-kit/references/masterplan-changes.md`, merge each landed piece's `## Masterplan change` that has not yet been applied, and move the trued-against mark to the saved state you checked. Read from the older of that mark and the last changelog entry, so an up-to-date history cannot hide a stale page. Never rewrite the build-path section directly; if the project's character has changed, rerun the fit check instead and let it produce the new section.
+3. Correct masterplan.md where reality moved. Load the `setup-ai-build-kit` skill's `references/masterplan-changes.md`, merge each landed piece's `## Masterplan change` that has not yet been applied, and move the trued-against mark to the saved state you checked. Read from the older of that mark and the last changelog entry, so an up-to-date history cannot hide a stale page. Never rewrite the build-path section directly; if the project's character has changed, rerun the fit check instead and let it produce the new section.
 
    Re-read every "rests on" clause in the masterplan against what it names,
-   following `.agents/skills/setup-ai-build-kit/references/pieces.md`'s decision
-   rules. When its support has gone, say in one line which decision lost its
+   following the decision rules in the `setup-ai-build-kit` skill's
+   `references/pieces.md`. When its support has gone, say in one line which decision lost its
    ground: "The rule that a job closes once rested on a test that no longer
    exists." Keep the decision on the page and ask what should settle it;
    never quietly remove a rule because its evidence went missing.
 
-4. Check the plan still covers the page. Load `.agents/skills/setup-ai-build-kit/references/coverage-read.md` and compare the masterplan's promises against the pieces. Reconciling after an interruption or an outside contribution is exactly when a promise quietly loses its piece.
+4. Check the plan still covers the page. Load the `setup-ai-build-kit` skill's `references/coverage-read.md` and compare the masterplan's promises against the pieces. Reconciling after an interruption or an outside contribution is exactly when a promise quietly loses its piece.
 
    On every build path, count the words in the masterplan's core sections.
    Leave out `Build path`, the optional `Key terms` and `How it stays running`

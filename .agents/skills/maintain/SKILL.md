@@ -107,7 +107,7 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    the project's copy is already current.
 6. Re-read the capability profile's reach-check engine against what the
    harness and project can use now. Keep the same preference order as
-   `.agents/skills/section-builder/references/reach-check.md`, and update the
+   the `section-builder` skill's `references/reach-check.md`, and update the
    profile when a better engine has appeared or the recorded one has gone.
 7. Run the sensitive-area check installed during founding. It is silent outside
    Build with care. Where it names a missing path or an unassigned source folder,
@@ -125,12 +125,12 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    enabled, stop and ask the person to reinstall it after the marketplace is
    reachable.
 9. Read the masterplan's trued-against mark and count landed changes since it
-   using `.agents/skills/setup-ai-build-kit/references/masterplan-changes.md`.
+   using the `setup-ai-build-kit` skill's `references/masterplan-changes.md`.
    When data, permissions or connections were touched, report the count and
    offer /sync in one line. An absent or unusable mark gets the same offer
    without a guessed count. Then update project dependencies and check for known
    vulnerabilities. Report what changed; apply on approval.
-10. Once live: read the error alerts and the bills. Anything real becomes a piece, for implement to take: open an issue in the shape `.agents/skills/setup-ai-build-kit/references/pieces.md` describes. A finding nobody wrote down is a finding nobody acts on.
+10. Once live: read the error alerts and the bills. Anything real becomes a piece, for implement to take: open an issue in the shape the `setup-ai-build-kit` skill's `references/pieces.md` describes. A finding nobody wrote down is a finding nobody acts on.
 11. Verify backups still run where the tool has any. Confirm the named operational owner from the masterplan still holds that role, and that no critical service or credential is tied to someone who has left.
 12. Check whether use or reliance has grown enough that the fit check should run again; if it has, run it before anything else this visit.
 13. On every build path, count every line in the project's AGENTS.md, including
@@ -213,8 +213,8 @@ the project already migrated does nothing here.
    signed in kept its pieces in `plan.md`, which nothing reads any more. Where
    that file is on disk, say so plainly and offer to move its rows into issues:
    guide the GitHub setup first if it is not ready
-   (`.agents/skills/setup-ai-build-kit/references/manual-setup.md`), open one issue per row in
-   the shape `.agents/skills/setup-ai-build-kit/references/pieces.md` describes, carry each
+   (the `setup-ai-build-kit` skill's `references/manual-setup.md`), open one issue per row in
+   the shape the `setup-ai-build-kit` skill's `references/pieces.md` describes, carry each
    row's subjects across as labels, label a shaped row `ready`, and label an
    unshaped one with the question it still waits on. Do this on the clean
    checkpoint, name what moved, and only then remove `plan.md`. Where the person
@@ -380,7 +380,9 @@ is a step here rather than advice:
    themselves has no marker and is never touched. List every file under
    `.claude/commands/`, `.cursor/commands/` and `.gemini/commands/` that
    carries the marker.
-2. Find retired skill folders. A folder under `.agents/skills/` counts only
+2. Find retired skill folders. Look in both `.agents/skills/` and
+   `.claude/skills/`, since an installation for Claude Code alone keeps its
+   skills only in the second. A folder there counts only
    when it carries one of the kit's former names, `build`, `start` or `plan`,
    and the lockfile does not list it. Any other folder there is the person's
    own and is left alone.
@@ -463,7 +465,7 @@ would gain nothing.
    would add a Dockerfile and a health route, and move the tool to [deploy
    target]. Shall I file it as a piece? Nothing changes if you say no."
 9. Change nothing without approval. On a yes, open an issue in the shape
-   `.agents/skills/setup-ai-build-kit/references/pieces.md` describes, titled
+   the `setup-ai-build-kit` skill's `references/pieces.md` describes, titled
    as a move onto the recipe. It holds the recipe's file name and the changes
    the offer named. Leave it for /shape and /implement like any other piece.
    Do not make the move during the visit. The `Recipe:` line changes only
@@ -509,12 +511,12 @@ Everything above, plus:
    reliance grown? Are the named sensitive areas and their cautions still
    accurate? Name a new area when the answers require it. Where an area was
    named or given a boundary since the last full visit, offer the boundary
-   rule in `.agents/skills/setup-ai-build-kit/references/boundary-rules.md`,
+   rule in the `setup-ai-build-kit` skill's `references/boundary-rules.md`,
    and change or remove an existing rule with its area, on a yes. An area comes off
    only when a genuine redesign has removed what put it there; an acceptance
    drops its caution and leaves the area named. Where the person asks for a
    handover, or a caution names a person the team has to find, prepare
-   `.agents/skills/ship/templates/handover.md` for the area or the whole
+   the `ship` skill's `templates/handover.md` for the area or the whole
    build.
 6. Put today's date on the `last-full-pass` line as well as the
    `last-light-pass` line in `.ai-build-kit-maintenance`.

@@ -58,7 +58,7 @@ rs_guard "$BUILDER" "section-builder's test-strength offer"
 
 rs_reset
 rs_rule "fix offers to test the regression check" "on build with care, where a runner exists for the project's language, offer to check the regression test by breaking the repaired code on purpose"
-rs_rule "fix loads the shared rules" 'follow `\.agents/skills/section-builder/references/test-strength\.md` for this optional check'
+rs_rule "fix loads the shared rules" 'follow the `section-builder` skill.s `references/test-strength\.md` for this optional check'
 rs_rule "fix limits the run to its repair" 'keep the run to the repaired code and the regression test'
 rs_rule "fix does not repeat the offer at save" 'do not offer it again when section-builder saves the repair'
 rs_guard "$FIX" "fix's test-strength offer"

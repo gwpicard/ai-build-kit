@@ -40,6 +40,8 @@ rs_rule "an adapter is recognised by its marker" \
   'recognised only by the generated marker on its first lines'
 rs_rule "and never by its name" \
   'never by its name: a command file the person wrote'
+rs_rule "retired folders are looked for in both skill folders" \
+  'look in both .\.agents/skills/. and .\.claude/skills/.'
 rs_rule "a retired folder is one of the former names" \
   'one of the kit.s former names, .build., .start. or .plan.'
 rs_rule "and absent from the lockfile" \

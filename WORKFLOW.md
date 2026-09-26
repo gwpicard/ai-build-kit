@@ -400,6 +400,8 @@ differ from the default. /maintain counts the lines every month and offers a
 trim if the file reaches 200, or contains a folder layout, dependency list,
 architecture overview or style rule an automatic check could enforce. You see
 one line saying how long it is and what can go. Nothing is cut without your yes.
+A newly founded project starts well under the limit, with room left for what
+founding writes into the file.
 
 A project with no recipe may still be built much like one on the menu, with
 the same framework and the same data service, even if it runs somewhere else or

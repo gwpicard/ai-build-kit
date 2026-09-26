@@ -33,7 +33,7 @@ Choose the save route before changing anything:
 3. **Flagged route.** The work touches a named sensitive area whose caution
    is neither done nor accepted. Before building inside the area, give the
    risk notice once, in full, as
-   `.agents/skills/setup-ai-build-kit/references/fit-check.md` describes. If
+   the `setup-ai-build-kit` skill's `references/fit-check.md` describes. If
    the person carries on after it, write the `Accepted:` line with their
    words and the date, read it back, and build and save the piece on the
    pull-request route. Do this in the reply that answers them, and do not
@@ -139,7 +139,7 @@ result rather than describing a redo. When this build came from `/fix`, use the
 same boundary: a fault on a screen gets the rules and any other fault does not.
 
 When filing a new piece for work this build uncovers, follow the rule for work
-found during a build in `.agents/skills/setup-ai-build-kit/references/pieces.md`.
+found during a build in the `setup-ai-build-kit` skill's `references/pieces.md`.
 Put the originating title on the new piece's surface and name the new piece
 on the originating record. Say one line such as "Found while building the
 invoice list." Keep the current build within its agreed scope.
@@ -213,7 +213,7 @@ proves the behaviour, and the review exists for what the check cannot see.
 
 Before saving on any route, apply the piece's `## Masterplan change` and update
 the trued-against mark as
-`.agents/skills/setup-ai-build-kit/references/masterplan-changes.md` describes.
+the `setup-ai-build-kit` skill's `references/masterplan-changes.md` describes.
 The record changes in step 9 are part of this save, not a later /sync task.
 
 Checkpoint route: update the records, commit, and state the saved checkpoint.

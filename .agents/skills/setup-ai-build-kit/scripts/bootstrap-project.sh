@@ -58,22 +58,49 @@ fi
 # Codex, Cursor, Gemini CLI and GitHub Copilot read .agents/skills. Claude Code
 # alone reads .claude/skills, so choosing only Claude Code leaves nothing in
 # .agents/skills. With several coding agents, one folder holds the skill and the
-# other links to it, or holds a second copy of the same installation.
+# other links to it, or holds a second copy of the same installation. A second
+# copy is told from a different installation by comparing the two folders,
+# since the installer's copy option makes both real folders.
+note() {
+  echo "AI Build Kit setup note: $1" >&2
+}
+
 INSTALLED_HERE=no
+SAME_COPY=no
 OTHER_INSTALLATION=no
+DIFFERING_FOLDER=
 for skills_folder in .agents/skills .claude/skills; do
   installed_start="$PROJECT_ROOT/$skills_folder/setup-ai-build-kit"
-  [ -d "$installed_start" ] || continue
-  installed_start=$(CDPATH= cd -- "$installed_start" && pwd -P)
-  if [ "$installed_start" = "$SKILL_ROOT" ]; then
+  [ -e "$installed_start" ] || [ -L "$installed_start" ] || continue
+  # A link that leads nowhere, or a link loop, cannot be read at all. Passing
+  # over it in silence would found the project beside a folder that fails every
+  # coding agent that looks there.
+  [ -d "$installed_start" ] || \
+    fail "$skills_folder/setup-ai-build-kit is a broken link; remove it or install the kit again"
+  if [ ! -f "$installed_start/SKILL.md" ]; then
+    note "$skills_folder/setup-ai-build-kit is an empty folder. Founding carries on; the installer puts the skill there the next time it runs."
+    continue
+  fi
+  resolved_start=$(CDPATH= cd -- "$installed_start" && pwd -P)
+  if [ "$resolved_start" = "$SKILL_ROOT" ]; then
     INSTALLED_HERE=yes
+  elif diff -rq "$installed_start" "$SKILL_ROOT" >/dev/null 2>&1; then
+    SAME_COPY=yes
   else
     OTHER_INSTALLATION=yes
+    DIFFERING_FOLDER=$skills_folder
   fi
 done
 
+# The running skill is whole, so a differing copy in the other folder does not
+# stop founding. It means another coding agent reads a different version of
+# the kit, which the person should hear about once.
+if [ "$INSTALLED_HERE" = "yes" ] && [ "$OTHER_INSTALLATION" = "yes" ]; then
+  note "$DIFFERING_FOLDER/setup-ai-build-kit differs from the copy running now, so another coding agent reads a different version of the kit. Founding carries on with this one; /maintain, or the installer's update, brings the two level."
+fi
+
 if [ "$INSTALLED_HERE" = "no" ]; then
-  if [ "$OTHER_INSTALLATION" = "yes" ]; then
+  if [ "$OTHER_INSTALLATION" = "yes" ] || [ "$SAME_COPY" = "yes" ]; then
     [ "$PLUGIN_INSTALLATION" != "yes" ] || \
       fail "this project has both an installed AI Build Kit plugin and a separate AI Build Kit skill installation; keep one before running start"
     fail "the chosen project belongs to a different setup-ai-build-kit skill installation"
