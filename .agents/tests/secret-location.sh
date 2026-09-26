@@ -30,11 +30,12 @@ rs_exists "$FOUNDATION" "$FIT" "$MASTERPLAN" "$SHIP" "$FIX" "$MAINTAIN" "$WORKFL
 # location down and the rule that reads it back both live there. That file sits
 # at its line ceiling, so it carries the short form; /ship, the fit check and
 # the masterplan section carry the detail.
-rs_rule "the project's own secrets stay in .env" 'keys, passwords, and tokens the project holds live in `\.env` and nowhere else'
-rs_rule "a secret kept elsewhere has its location written down" 'for a secret kept elsewhere, write where it lives, never its value, in the masterplan.s "how it stays running"'
-rs_rule "a step reads the location before it uses the secret" 'and read it there before use'
-rs_rule "an unrecorded or wrong location is asked about once" 'if it is not there, ask once'
-rs_rule "an unknown location is never a missing secret" 'if nobody knows, say its location is unknown, never that the secret is absent'
+rs_rule "the project's own secrets stay in .env" 'keys, passwords, and tokens live in `\.env`\.'
+rs_rule "a secret kept elsewhere has its location written down" 'record where any other secret lives, never its value, in the masterplan.s "how it stays running", and read it there'
+rs_rule "an unrecorded location is asked about once" 'if none is recorded, ask once'
+rs_rule "a secret given as a reply is rotated" 'rotate a secret that appears where it should not, even one given as a reply'
+rs_rule "a secret given as a reply is recorded nowhere and its location asked for" 'record it nowhere, say it is now in this chat, and ask for its location'
+rs_rule "an unknown location is never a missing secret" 'a secret with no known location is never called absent'
 rs_guard "$FOUNDATION" "the project's Secrets rule"
 rs_require "values still stay out of documents" "$FOUNDATION" 'keys, passwords, and tokens.*never print, commit, or copy'
 
@@ -44,8 +45,12 @@ rs_reset
 rs_rule "the rule holds on and off a recipe" 'this holds at every go-live, on a recipe or off one'
 rs_rule "the backup, restore and database guard are named" 'such as the database password for the backup, the restore or the database guard'
 rs_rule "ship reads the recorded location first" 'read where that secret lives from the masterplan.s "how it stays running" section'
-rs_rule "the secret is never shown" 'use it from there, and never show it'
-rs_rule "ship asks once when the location is unknown or wrong" 'when no location is recorded, or the secret is not where the record says, ask the person once where it lives'
+rs_rule "the secret is passed by its location" 'pass it by its location, as a command built in the person.s shell or read inside a script'
+rs_rule "the value is never read or shown" 'never read, print or show the value'
+rs_rule "checking the record never reads the secret" 'checking the record means checking that the file or variable exists, never reading it'
+rs_rule "ship asks once when the location is unknown or wrong" 'when no location is recorded, or nothing is where the record says, ask the person once where it lives'
+rs_rule "a secret given as the answer is recorded nowhere" 'if the answer is the secret itself, record it nowhere'
+rs_rule "the person hears it is in the conversation and is asked to rotate it" 'say plainly that it is now in this conversation, ask the person to rotate it, and ask for its location instead'
 rs_rule "ship records the answer as a location" 'record their answer in that section as a location, never a value, and run the check'
 rs_rule "no answer is an ordinary warning" 'if they cannot say, the check could not run, and that is a warning like any other'
 rs_rule "the warning says the location is unknown" 'its line and its changelog entry say that the kit does not know where the secret is kept'

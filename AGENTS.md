@@ -471,7 +471,9 @@ attribution line, not the word.
   database guard, and wrote in the changelog that the database password was
   not on this computer, when the person had named its file in an earlier
   session. So `/ship` asks once, and a check that still cannot run says the
-  location is unknown, never that the secret is absent. The project's own
+  location is unknown, never that the secret is absent. A secret is passed by
+  its location and never read or shown, and one given as an answer is recorded
+  nowhere and the person is asked to rotate it. The project's own
   AGENTS.md sits at its line ceiling, so it carries the short form of the rule
   and the check guards both.
 - `.agents/tests/standing-instructions.sh` guards the project's instruction

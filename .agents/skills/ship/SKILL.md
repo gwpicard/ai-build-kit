@@ -171,16 +171,22 @@ tell the person so plainly, and keep it out of CHANGELOG.md as a launch.
 This holds at every go-live, on a recipe or off one. Before a check that needs
 a secret, such as the database password for the backup, the restore or the
 database guard, read where that secret lives from the masterplan's "How it
-stays running" section. Use it from there, and never show it. When no location
-is recorded, or the secret is not where the record says, ask the person once
-where it lives. Record their answer in that section as a location, never a
-value, and run the check.
+stays running" section. Pass it by its location, as a command built in the
+person's shell or read inside a script. Never read, print or show the value.
+Checking the record means checking that the file or variable exists, never
+reading it. When no location is recorded, or nothing is where the record says,
+ask the person once where it lives. Record their answer in that section as a
+location, never a value, and run the check.
+
+If the answer is the secret itself, record it nowhere. Say plainly that it is
+now in this conversation, ask the person to rotate it, and ask for its location
+instead.
 
 If they cannot say, the check could not run, and that is a warning like any
 other. Its line and its changelog entry say that the kit does not know where
 the secret is kept. Never write that the secret is absent, missing or not on
-this computer: the kit only knows that it did not find it.
-Give no reason for a skipped check that the kit did not itself confirm.
+this computer: the kit only knows that it did not find it. Give no reason
+for a skipped check that the kit did not itself confirm.
 
 #### Merging and deploying
 

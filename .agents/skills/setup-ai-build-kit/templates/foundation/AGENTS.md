@@ -118,12 +118,12 @@ Say that a technical confirmation box will appear next.
 
 ## Secrets and confidential files
 
-Keys, passwords, and tokens the project holds live in `.env` and nowhere else.
-Never print, commit, or copy one into a document, check, or changelog. Rotate a
-secret that appears anywhere it should not. For a secret kept elsewhere, write
-where it lives, never its value, in the masterplan's "How it stays running", and
-read it there before use. If it is not there, ask once. If nobody knows, say its
-location is unknown, never that the secret is absent.
+Keys, passwords, and tokens live in `.env`. Never print, commit, or copy one
+into a document, check, or changelog. Record where any other secret lives, never
+its value, in the masterplan's "How it stays running", and read it there. If
+none is recorded, ask once. Rotate a secret that appears where it should not,
+even one given as a reply: record it nowhere, say it is now in this chat, and
+ask for its location. A secret with no known location is never called absent.
 
 If the project works from confidential files, the setup-ai-build-kit skill
 records their folder and handling rules here. Never stage, commit, print, or
