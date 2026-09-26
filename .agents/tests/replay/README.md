@@ -381,7 +381,10 @@ says "every pull request the project started with" is still open, or is merged.
 It reads which pull requests the project started with from the GitHub state
 file in the harness's first commit, and their end state from the file the run
 left behind. A pull request the kit opened itself during the run is not
-counted. Scenario 52 fails here if the kit merged on "put it live" alone, and
+counted. A kit can also merge with Git and push `main` without calling the
+stand-in, which then still says open. GitHub would show such a pull request
+merged, so one whose branch reached its base branch on the remote counts as
+merged here too. Scenario 52 fails here if the kit merged on "put it live" alone, and
 scenario 53 if it left one open.
 
 The rollup shows these under `state:` in each scenario's table, and a `STATE

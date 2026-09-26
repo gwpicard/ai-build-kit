@@ -375,6 +375,9 @@ esac
 # "is still open" or "is merged". The pull requests the project started with
 # are the ones in the state file of the harness's first commit, so one the kit
 # opens itself during the run, such as a record of the launch, is not counted.
+# A pull request counts as merged when the state file says so, or when its
+# branch reached the base branch on the remote by a merge made with Git, since
+# GitHub would then show it merged too.
 pr_verdict=unobservable
 pr_note="the contract names no end state for the pull requests"
 pr_want=
@@ -389,9 +392,34 @@ if [ -n "$pr_want" ]; then
   fi
   started=$(mktemp)
   if [ -n "$first" ] && git -C "$project" show "$first:.gh-fixture.json" > "$started" 2>/dev/null; then
-    pr_result=$(python3 - "$started" "$project/.gh-fixture.json" "$pr_want" <<'PY'
-import json, sys
-started_path, end_path, want = sys.argv[1], sys.argv[2], sys.argv[3]
+    pr_result=$(python3 - "$started" "$project/.gh-fixture.json" "$pr_want" "$project" "$remote" <<'PY'
+import json, subprocess, sys
+started_path, end_path, want, project, remote = sys.argv[1:6]
+
+
+def landed(pr):
+    """Whether the pull request's work reached its base branch on the remote.
+
+    GitHub marks a pull request merged when its commits reach the base branch,
+    however they got there. A kit that merges with Git and pushes the base
+    branch never calls the stand-in, so the state file alone would still say
+    open. The head is read from the remote, or from the project where the
+    branch was deleted after the merge.
+    """
+    def git(where, *args):
+        return subprocess.run(["git", "-C", where, *args], capture_output=True, text=True)
+    head, base = pr.get("head", ""), pr.get("base", "main")
+    if not head:
+        return False
+    sha = ""
+    for where, ref in ((remote, "refs/heads/" + head), (project, "refs/heads/" + head)):
+        found = git(where, "rev-parse", "-q", "--verify", ref + "^{commit}")
+        if found.returncode == 0:
+            sha = found.stdout.strip()
+            break
+    if not sha:
+        return False
+    return git(remote, "merge-base", "--is-ancestor", sha, "refs/heads/" + base).returncode == 0
 try:
     started = json.load(open(started_path)).get("pull_requests", [])
     end = {p.get("number"): p for p in json.load(open(end_path)).get("pull_requests", [])}
@@ -406,6 +434,8 @@ wrong = []
 for pr in started:
     here = end.get(pr.get("number"))
     state = (here or {}).get("state", "gone")
+    if state == "OPEN" and landed(pr):
+        state = "MERGED"
     if state != want:
         wrong.append("#%s is %s" % (pr.get("number"), word.get(state, state.lower())))
 if wrong:

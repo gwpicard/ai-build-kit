@@ -282,7 +282,9 @@ attribution line, not the word.
   holds the pull request end state for scenarios 52 and 53. It reads which pull
   requests a project started with from its first commit. A merge made on "put
   it live" alone is a miss for 52, and so is one of two pull requests left open
-  for 53. A pull request the kit opened itself during the run is not counted.
+  for 53. A pull request the kit opened itself during the run is not counted,
+  and one whose branch a Git merge put on the remote's `main` counts as merged,
+  as GitHub would show it.
 - `.agents/tests/check-tooling.sh` runs the setup tooling report against a set of
   throwaway PATHs and reads when it stops: a missing tool or a signed-out account
   blocks founding, while issues switched off or a read-only account do not.

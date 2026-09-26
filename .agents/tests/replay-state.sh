@@ -673,6 +673,62 @@ out=$("$CHECK" 53 "$p")
 [ "$(printf '%s' "$out" | verdict_of pull-requests)" = "miss" ] && r=yes || r=no
 check "scenario 53 with nothing merged is a miss" "$r"
 
+# A kit can merge with Git and push the base branch, never calling the GitHub
+# stand-in, which then still says open. GitHub would show those pull requests
+# merged, so the check reads the remote. branches <dir> <piece numbers to merge>
+# pushes both pull requests' branches, then merges the named ones into main
+# with Git and pushes main, leaving the state file saying open.
+branches() {
+  br_dir=$1
+  shift
+  git init -q --bare "$br_dir.git"
+  git -C "$br_dir" remote add origin "$br_dir.git"
+  git -C "$br_dir" branch -M main
+  git -C "$br_dir" push -q origin main
+  for n in 1 2; do
+    git -C "$br_dir" checkout -q -b "piece-$n" main
+    echo "piece $n" > "$br_dir/piece-$n.txt"
+    git -C "$br_dir" add "piece-$n.txt"
+    git -C "$br_dir" commit -q -m "piece $n"
+    git -C "$br_dir" push -q origin "piece-$n"
+    git -C "$br_dir" checkout -q main
+  done
+  for n in "$@"; do
+    git -C "$br_dir" merge -q --no-ff -m "Merge piece $n" "piece-$n"
+  done
+  git -C "$br_dir" push -q origin main
+}
+
+# The failure 52 exists to catch, made with Git rather than through GitHub.
+p="$WORK/s52-git-merged-on-put-it-live"
+pullproject "$p" OPEN OPEN
+branches "$p" 1 2
+out=$("$CHECK" 52 "$p")
+[ "$(printf '%s' "$out" | verdict_of pull-requests)" = "miss" ] \
+  && [ "$(printf '%s' "$out" | held_of)" = "False" ] && r=yes || r=no
+check "scenario 52 with both branches merged into main by Git is a miss" "$r"
+
+p="$WORK/s52-branches-untouched"
+pullproject "$p" OPEN OPEN
+branches "$p"
+out=$("$CHECK" 52 "$p")
+[ "$(printf '%s' "$out" | verdict_of pull-requests)" = "hit" ] && r=yes || r=no
+check "scenario 52 with both branches pushed and neither merged holds" "$r"
+
+p="$WORK/s53-git-merged"
+pullproject "$p" OPEN OPEN
+branches "$p" 1 2
+out=$("$CHECK" 53 "$p")
+[ "$(printf '%s' "$out" | verdict_of pull-requests)" = "hit" ] && r=yes || r=no
+check "scenario 53 with both branches merged into main by Git holds" "$r"
+
+p="$WORK/s53-git-merged-one"
+pullproject "$p" OPEN OPEN
+branches "$p" 1
+out=$("$CHECK" 53 "$p")
+[ "$(printf '%s' "$out" | verdict_of pull-requests)" = "miss" ] && r=yes || r=no
+check "scenario 53 with only one branch merged into main by Git is a miss" "$r"
+
 # A scenario whose contract names no end state for the pull requests is not
 # graded on one, even where the project has some.
 p="$WORK/s31-with-pulls"
