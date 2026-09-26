@@ -651,29 +651,30 @@ stays on this computer, and the next section says how to try one.
 
 ## Trying unreleased work as a person would
 
-Do this before any release that touches founding or `/ship`. The rehearsals
-check the rules as written. This run checks what a person sees when they
-install the kit, found a project and launch it, which no rehearsal reaches.
+Do this before any release that touches founding or `/ship`. It checks what a
+person sees, which no rehearsal reaches. It asks the person for one GitHub click
+and one Supabase project. The Supabase Free plan allows two active projects, so
+one of those two slots must be unused. Pick a number for the run and put it
+wherever `N` appears.
 
-It asks the person for two actions: one GitHub click to let Vercel's app see a
-throwaway repository, and one Supabase project made in the dashboard. The
-Supabase Free plan allows two active projects, so one of the two must be free.
-Pick a number for the run and put it wherever `N` appears below.
-
-1. Build a preview from `main`, with nothing unsaved, and note the commit.
+1. Build a preview from a clean `main`. The builder copies the working tree, so
+   run this in the checkout that holds `main`, not a worktree on another branch.
 
    ```
+   git switch main
+   git branch --show-current
+   git status --short
    git pull --ff-only
    git rev-parse --short HEAD
    .agents/skills/setup-ai-build-kit/scripts/check-tooling.sh --recipe .agents/skills/ship/recipes/nextjs-supabase-on-vercel.md
    .agents/tools/build-release.sh v0.0.0-preview.N /private/tmp/abk-preview-N
    ```
 
-   The tooling report must end with every tool ready. The builder refuses a
+   The branch must print `main`, and the status must print nothing. Note the
+   commit. Every line of the tooling report says ready. The builder refuses a
    folder that already exists, so a second build takes the next number.
 
-2. Install the preview twice, into two empty folders, with the shared
-   installer and the local path.
+2. Install the preview twice, into two empty folders.
 
    ```
    mkdir /private/tmp/abk-try-N-claude && cd /private/tmp/abk-try-N-claude && git init -q -b main
@@ -683,21 +684,19 @@ Pick a number for the run and put it wherever `N` appears below.
    npx skills add /private/tmp/abk-preview-N -a claude-code -a codex -s '*' -y
    ```
 
-   The first puts the fourteen skills in `.claude/skills/`. The second puts
-   them in `.agents/skills/`, with links to them in `.claude/skills/`. In both,
-   `ship/recipes/` must hold every recipe that `.agents/skills/ship/recipes/`
-   holds here.
+   The first puts the fourteen skills in `.claude/skills/`, the second in
+   `.agents/skills/` with links in `.claude/skills/`. In both, `ship/recipes/`
+   holds the same recipes as `ls <kit checkout>/.agents/skills/ship/recipes/`.
 
    Each `skills-lock.json` now records `"sourceType": "local"`, with a path into
    `/private/tmp/abk-preview-N`. A project installed this way cannot update
    later, and a `/maintain` visit there can fail once that folder is gone.
-   Keep it for this run only.
 
-3. Found a small internal tool in each folder. Open Claude Code there, run
+3. Found a small internal tool in each folder: open Claude Code, run
    `/setup-ai-build-kit`, and ask for something small, such as a page where a
-   team keeps short notes. Say yes to a private GitHub repository named
-   `abk-try-N` in the first folder, and no in the second. Then read three
-   things in each folder:
+   team keeps short notes. When founding offers a GitHub repository, say yes
+   and name it `abk-try-N` in the first folder. Say no in the second. Then
+   check in each folder:
 
    - During the interview, the kit showed the recipe menu, marked one recipe
      as recommended, and said it would use that one unless told otherwise.
@@ -706,41 +705,61 @@ Pick a number for the run and put it wherever `N` appears below.
      menu.
 
    A failed check is a finding. File it as an issue, and do not fix it in the
-   throwaway project. An open issue may already explain it, so link the two.
+   throwaway project.
 
 4. In the first folder only, run `/implement` on one ready piece, then `/ship`
-   once, to a Vercel project named `abk-try-N`. Two steps belong to the person.
-   On GitHub they open Settings, Applications, Installed GitHub Apps, choose
-   Configure beside Vercel, add `abk-try-N` under Only select repositories,
-   and save. Then they make a Supabase project named `abk-try-N` in the
-   dashboard, with a password made and copied like this:
+   once, asking for a Vercel project named `abk-try-N`. Without that name,
+   `/ship` names the project after the tool. The person does two things:
+
+   - On GitHub, Settings, Applications, Installed GitHub Apps, Configure beside
+     Vercel. GitHub asks for a passkey or password before it shows that page.
+     Add `abk-try-N` under Only select repositories, and save.
+   - In the Supabase dashboard, make a project named `abk-try-N`, and paste a
+     password made and copied like this:
 
    ```
    mkdir -p ~/.config/abk-try-N
    (umask 077 && openssl rand -hex 24 > ~/.config/abk-try-N/db.pw)
    pbcopy < ~/.config/abk-try-N/db.pw
+   pbcopy < /dev/null
    ```
 
-   The file can be read by this account only, and neither command prints the
-   password. When the kit asks where the password is kept, give it the file's
-   path. A secret never goes into the chat.
+   Only this account can read the file, and no command prints the password.
+   The last line empties the clipboard once the password is pasted. When the
+   kit asks where the password is kept, give it the file's path. A secret
+   never goes into the chat.
 
-5. Tear everything down, and check each item is gone.
+5. Tear everything down.
 
    ```
    vercel project rm abk-try-N
    gh auth refresh -h github.com -s delete_repo
    gh repo delete <owner>/abk-try-N --yes
+   gh auth refresh -h github.com -r delete_repo
    trash /private/tmp/abk-try-N-claude /private/tmp/abk-try-N-both /private/tmp/abk-preview-N ~/.config/abk-try-N
    ```
 
-   Answer `y` when Vercel asks. `gh repo delete` needs the `delete_repo` scope,
-   which the refresh adds after a sign-in in the browser. Delete the Supabase
-   project in the dashboard, since `supabase projects delete` cancels its own
-   confirmation without a real terminal. The local folders go to the Trash,
-   since a deletion with no undo is on the blocked list in
-   `.agents/guard/blocked-commands.md`. Recent versions of macOS include
-   `trash`. Where it is missing, `mv <folder> ~/.Trash/` does the same.
+   Answer `y` when Vercel asks. The first refresh adds the scope that
+   `gh repo delete` needs, and the second takes it off the token again. Delete
+   the Supabase project in the dashboard, since `supabase projects delete`
+   cancels its own confirmation without a real terminal. If Vercel's GitHub app
+   was installed for this run, uninstall it under Installed GitHub Apps. The
+   local folders go to the Trash, since a deletion with no undo is on the
+   blocked list in `.agents/guard/blocked-commands.md`. Where `trash` is
+   missing, `mv <folder> ~/.Trash/` does the same.
+
+   Then check that each item is gone:
+
+   ```
+   vercel project ls
+   gh repo view <owner>/abk-try-N
+   ls /private/tmp/abk-*
+   ls ~/.config/abk-try-N
+   ```
+
+   `vercel project ls` does not list `abk-try-N`. `gh repo view` answers
+   "Could not resolve". Both `ls` lines find nothing. The Supabase dashboard no
+   longer lists the project.
 
 6. Write a dated log: the preview version and the commit it was built from,
    each check and whether it held, with the words that show it, what the run

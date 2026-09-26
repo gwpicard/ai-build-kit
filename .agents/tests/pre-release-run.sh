@@ -78,7 +78,28 @@ rs_ok "installs for Claude Code and Codex from the built folder"
   || rs_fail "the section should give exactly two install lines"
 rs_ok "exactly two install lines"
 
+# The builder copies the working tree, so the build starts from a clean main,
+# checked by the commands a maintainer can read the answer from.
+for cmd in 'git switch main' 'git branch --show-current' 'git status --short' 'git pull --ff-only'; do
+  grep -qE "^ *$cmd\$" "$SECTION" || rs_fail "the build step does not run: $cmd"
+done
+first_git=$(grep -nE '^ *git (switch main|pull --ff-only)$' "$SECTION" | head -1)
+case "$first_git" in
+  *'git switch main') rs_ok "the build switches to main and checks it is clean before pulling" ;;
+  *) rs_fail "the build pulls before switching to main" ;;
+esac
+
 # Teardown has to remove everything the run creates.
+grep -qE '^ *gh auth refresh -h github\.com -r delete_repo$' "$SECTION" || rs_fail "teardown leaves the delete_repo scope on the token"
+remove_at=$(grep -nE '^ *gh auth refresh -h github\.com -r delete_repo$' "$SECTION" | cut -d: -f1)
+delete_at=$(grep -nE '^ *gh repo delete ' "$SECTION" | cut -d: -f1)
+[ "$remove_at" -gt "$delete_at" ] || rs_fail "the delete_repo scope is removed before the repository is deleted"
+rs_ok "teardown takes the delete_repo scope off again after the delete"
+for cmd in 'vercel project ls' 'gh repo view <owner>/abk-try-N' 'ls /private/tmp/abk-\*' 'ls ~/.config/abk-try-N'; do
+  grep -qE "^ *$cmd\$" "$SECTION" || rs_fail "teardown does not check with: $cmd"
+done
+grep -qF '"Could not resolve"' "$SECTION" || rs_fail "teardown does not say what a deleted repository answers"
+rs_ok "teardown checks that each item is gone"
 grep -qE '^ *vercel project rm abk-try-N$' "$SECTION" || rs_fail "teardown does not remove the Vercel project"
 rs_ok "teardown removes the Vercel project"
 grep -qE '^ *gh auth refresh -h github\.com -s delete_repo$' "$SECTION" || rs_fail "teardown does not ask for the delete_repo scope"
@@ -108,13 +129,26 @@ rs_rule "the Recipe line check" "grep '\\^recipe:' agents\\.md"
 rs_rule "the founding-menu check" 'grep founding-menu \.ai-build-kit-maintenance'
 rs_rule "a failure is filed, not fixed in place" 'do not fix it in the throwaway project'
 rs_rule "the password file is private" 'umask 077'
-rs_rule "the password is copied without printing" 'pbcopy <'
+rs_rule "the password is copied without printing" 'pbcopy < ~/\.config/abk-try-n/db\.pw'
 rs_rule "secrets stay out of the chat" 'a secret never goes into the chat'
 rs_rule "Supabase is deleted in the dashboard" 'delete the supabase project in the dashboard'
 rs_rule "what the log records" 'the commit it was built from'
 rs_rule "the release waits" 'the release waits'
-# Guarded in the real document rather than the extracted section, so the
-# mutation audit can find each rule where it lives and delete it there.
-rs_guard "$DOC" "MAINTAINING.md's pre-release run"
+rs_rule "names the repository at founding" 'name it `abk-try-n` in the first folder'
+rs_rule "names the Vercel project in the ship request" 'asking for a vercel project named `abk-try-n`'
+rs_rule "GitHub asks for a passkey first" 'asks for a passkey or password'
+rs_rule "the clipboard is emptied" 'pbcopy < /dev/null'
+rs_rule "the Vercel app is uninstalled" 'uninstall it under installed github apps'
+rs_rule "a clean main is required" 'the status must print nothing'
+
+# The rules are read from the extracted section, so a copy of a phrase
+# elsewhere in MAINTAINING.md cannot hide its removal here. The mutation audit
+# lists them against the real document, since that is the file it edits, and
+# the section is gone by the time it reads the list.
+if [ -n "${RS_LIST:-}" ]; then
+  rs_guard "$DOC" "MAINTAINING.md's pre-release run"
+else
+  rs_guard "$SECTION" "the pre-release run section"
+fi
 
 rs_done

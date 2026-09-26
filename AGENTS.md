@@ -186,13 +186,17 @@ attribution line, not the word.
   `docs/MAINTAINING.md` that tries a preview of `main` as a person would. The
   run needs real accounts and a person, so this check holds only what can be
   judged offline. Every repository path the steps name exists, and the builder
-  accepts the preview version they give. The two installer lines are the ones
-  that worked in a real run. The teardown removes the Vercel project, the
-  repository and every local folder, with no recursive forced delete. It also
-  holds the rules that keep the run safe: the lockfile caveat, a failure filed
-  rather than fixed in the throwaway project, a password that never enters the
-  chat, and a release that waits for a decision on what the run found. Steps
-  that drifted from the tools would otherwise surface on release day.
+  accepts the preview version they give. The build starts from a clean `main`,
+  since the builder copies the working tree. The two installer lines are the
+  ones that worked in a real run. The teardown removes the Vercel project, the
+  repository and every local folder, with no recursive forced delete, takes
+  the delete scope off the token again, and checks that each item is gone. It
+  also holds the rules that keep the run safe, read from the section itself so
+  a copy elsewhere cannot hide a removal: the names given at founding and in
+  `/ship`, the lockfile caveat, a failure filed rather than fixed in the
+  throwaway project, a password that never enters the chat, and a release
+  that waits for a decision on what the run found. Steps that drifted from the
+  tools would otherwise surface on release day.
 - `.agents/tests/claude-plugin.sh` rehearses the Claude command boundary, an
   isolated install, project bootstrap, failed and successful updates, and
   removal.
