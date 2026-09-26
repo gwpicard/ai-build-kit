@@ -15,7 +15,8 @@
 #
 # A recipe may add one section to the eight, "## Settings the kit can read",
 # between health and the proven section. When it is there, it is held to the
-# same three lines as the others.
+# same three lines as the others, and the proven section gives it an outcome
+# line.
 #
 # With --template the two dates may still read YYYY-MM-DD and "Who runs it:"
 # may still be a placeholder, since the blank has nothing real to give. Every
@@ -138,6 +139,7 @@ for file in "$@"; do
     section == "Proven" {
       for (i = 1; i < n; i++)
         if (index($0, order[i] ": ") == 1 && length($0) > length(order[i]) + 2) outcome[order[i]] = 1
+      if (index($0, extra ": ") == 1 && length($0) > length(extra) + 2) outcome[extra] = 1
       next
     }
     section != "" && /^Shared part: / {
@@ -167,6 +169,7 @@ for file in "$@"; do
         if (!realrun) problem("\"## Proven\" does not open with \"Real run:\" and a date")
         for (i = 1; i < n; i++)
           if (!(order[i] in outcome)) problem("\"## Proven\" has no outcome line for " order[i])
+        if (hasextra && !(extra in outcome)) problem("\"## Proven\" has no outcome line for " extra)
       }
       exit bad
     }

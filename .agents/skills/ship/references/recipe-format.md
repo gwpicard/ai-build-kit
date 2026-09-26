@@ -74,7 +74,10 @@ rather than asking the person to look them up. Such a read uses only a key the
 project already sends to the browser. A setting that needs a secret key to read
 does not belong here, and the section says what the kit cannot read and why.
 The section carries the same three lines as the others, or a `Shared part:`
-link. It is not one of the eight, and /ship gives it no line of its own.
+link. It is not one of the eight, and /ship gives it no line of its own. A
+recipe that carries it gives it an outcome line in its proven section, starting
+`Settings the kit can read:`, like each of the eight. A shared part proven in
+another recipe's real run may say so there instead.
 
 ## What proven means
 

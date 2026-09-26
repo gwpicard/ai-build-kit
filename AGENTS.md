@@ -806,8 +806,8 @@ attribution line, not the word.
   refuses one that does not source the rule-shape helper or name its recipe
   file. This check shows the tool refusing both, and a recipe with no
   `Command-line tools:` line. It also holds the one section a recipe may add,
-  the settings the kit can read, which sits after health and carries the same
-  three lines.
+  the settings the kit can read, which sits after health, carries the same
+  three lines, and needs an outcome line in the proven section.
 - `.agents/tests/recipe-nextjs-supabase-on-vercel.sh` and
   `.agents/tests/recipe-nextjs-supabase-on-coolify.sh` guard the first recipe
   pair offline. They share `.agents/tests/lib/recipe-rehearsal.sh`. Each holds

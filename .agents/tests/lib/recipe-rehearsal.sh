@@ -235,10 +235,12 @@ case "$url" in
   https://api.supabase.com/v1/projects/*/advisors/security) echo '{"lints":[]}' ;;
   # The sign-in settings answer to the public key alone, sent as apikey. A
   # bearer token is how a secret key or a signed-in session would be sent, and
-  # a settings read must never carry one.
+  # a settings read must never carry one. The run gives each secret key a value
+  # of its own, so a read sending one as apikey is refused by what it sent.
   https://*.supabase.co/auth/v1/settings)
     case "$headers" in "|apikey: "?*) ;; *) refuse "$url" "headers$headers" ;; esac
     case "$headers" in *"|apikey: "*"|"*) refuse "$url" "headers$headers" ;; esac
+    case "$headers" in *service-role-stand-in*|*secret-stand-in*) refuse "$url" "a secret key sent as apikey" ;; esac
     echo '{"external":{"email":true},"disable_signup":false,"mailer_autoconfirm":false}' ;;
   https://*/api/health|http://localhost:3000/api/health) echo '{"status":"ok","database":"ok"}' ;;
   *) refuse "$url" ;;
@@ -329,7 +331,9 @@ rr_run_commands() {
   [ -s "$rs_dir/commands" ] || { echo "  no command in the recipe uses one of its tools"; return 1; }
   while IFS= read -r rr_cmd; do
     rr_exit=0
-    (cd "$rs_dir/work" && PATH="$rs_dir/bin:$PATH" SUPABASE_ACCESS_TOKEN=stand-in SUPABASE_DB_URL=stand-in VALUE=stand-in sh -c "$rr_cmd") >/dev/null 2>"$rs_dir/refusal" || rr_exit=$?
+    (cd "$rs_dir/work" && PATH="$rs_dir/bin:$PATH" SUPABASE_ACCESS_TOKEN=stand-in SUPABASE_DB_URL=stand-in VALUE=stand-in \
+      NEXT_PUBLIC_SUPABASE_ANON_KEY=public-stand-in SUPABASE_SERVICE_ROLE_KEY=service-role-stand-in \
+      SUPABASE_SECRET_KEY=secret-stand-in sh -c "$rr_cmd") >/dev/null 2>"$rs_dir/refusal" || rr_exit=$?
     # git check-ignore answers status 1 when no path is ignored, which is the
     # answer a recipe's check can ask for. Every other command must succeed.
     case "$rr_exit $rr_cmd" in "1 git check-ignore "*) rr_exit=0 ;; esac
@@ -420,14 +424,16 @@ rr_stand_ins() {
   if grep -qF 'parts/supabase-settings.md' "$RR_RECIPE"; then
     mkdir -p "$rs_dir/secret/parts"
     cp "$RR_PARTS"/*.md "$rs_dir/secret/parts/"
-    sed 's#-H "apikey: <public key>"#-H "Authorization: Bearer <secret key>"#' \
-      "$RR_PARTS/supabase-settings.md" > "$rs_dir/secret/parts/supabase-settings.md"
-    cmp -s "$RR_PARTS/supabase-settings.md" "$rs_dir/secret/parts/supabase-settings.md" &&
-      rs_fail "the secret-key copy of the settings part changed nothing"
     cp "$RR_RECIPE" "$rs_dir/secret/$rr_name"
-    rr_run_commands "$rs_dir/secret/$rr_name" >/dev/null &&
-      rs_fail "a settings read sent with a secret key was not refused"
-    rs_ok "a settings read sent with a secret key is refused"
+    for rr_secret in SUPABASE_SERVICE_ROLE_KEY SUPABASE_SECRET_KEY; do
+      sed "s#apikey: \$NEXT_PUBLIC_SUPABASE_ANON_KEY#apikey: \$$rr_secret#" \
+        "$RR_PARTS/supabase-settings.md" > "$rs_dir/secret/parts/supabase-settings.md"
+      cmp -s "$RR_PARTS/supabase-settings.md" "$rs_dir/secret/parts/supabase-settings.md" &&
+        rs_fail "the secret-key copy of the settings part changed nothing"
+      rr_run_commands "$rs_dir/secret/$rr_name" >/dev/null &&
+        rs_fail "a settings read sending $rr_secret was not refused"
+    done
+    rs_ok "a settings read sending the service role key or a secret key is refused"
   fi
 }
 
@@ -495,10 +501,11 @@ rr_guard_supabase_parts() {
   rs_reset
   rs_rule "the review reads before it asks" 'the launch review reads these settings itself before it asks the person about any of them'
   rs_rule "the settings answer to the public key" 'supabase answers a project.s sign-in settings to anyone holding its public key, which the tool already sends to the browser'
-  rs_rule "the read is the settings address with the key as apikey" 'curl -fss -h "apikey: <public key>" https://<project ref>\.supabase\.co/auth/v1/settings'
-  rs_rule "the key comes from the project's own files" 'takes the public key and the project address from the project.s own environment file'
+  rs_rule "the read is the settings address with the public key as apikey" 'curl -fss -h "apikey: \$next_public_supabase_anon_key" https://<project ref>\.supabase\.co/auth/v1/settings'
+  rs_rule "the key comes from the project's own files" 'with .next_public_supabase_anon_key. taken from the project.s own .\.env\.local.'
   rs_rule "false means confirm email is on" '.false. means the dashboard.s "confirm email" setting is on, and .true. means it is off'
-  rs_rule "the public key and nothing else" 'the kit uses the public key for this read and nothing else, never the service role key or a secret key'
+  rs_rule "the public key and nothing else" 'the kit sends the public key for this read and nothing else'
+  rs_rule "a secret key is never sent" 'it never sends the service role key or a secret key, whatever the variable holding it is called'
   rs_rule "the redirect list is not in the answer" 'the list of addresses sign-in may send a person back to is not in this answer'
   rs_rule "the person is asked for the redirect list, and told why" 'so the kit asks the person to look at that list, and says that the public key cannot read it'
   rs_rule "no setting in the answer is asked about" 'asks the person about no setting this answer holds'

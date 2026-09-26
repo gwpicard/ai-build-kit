@@ -58,6 +58,7 @@ rs_rule "a recipe may say which settings the kit reads" 'a recipe may carry one 
 rs_rule "the review reads them rather than asking" 'so the launch review reads them rather than asking the person to look them up'
 rs_rule "only a key the browser already has" 'such a read uses only a key the project already sends to the browser'
 rs_rule "a secret-key read does not belong" 'a setting that needs a secret key to read does not belong here'
+rs_rule "the section gets an outcome line" 'a recipe that carries it gives it an outcome line in its proven section, starting .settings the kit can read:.'
 
 # --- what proven means ---------------------------------------------------
 rs_rule "rehearsals guard the rules" 'offline rehearsals guard its rules'
@@ -208,9 +209,16 @@ cp "$rs_dir/parts/whole.md" "$rs_dir/parts/shared.md"
 awk '
   $0 == "## Proven" { print "## Settings the kit can read"; print ""; print "Shared part: [shared](parts/shared.md)"; print "" }
   { print }
+  END { print "Settings the kit can read: filled in" }
 ' "$FILLED" > "$rs_dir/settings.md"
 "$CHECKER" "$rs_dir/settings.md" >/dev/null
-rs_ok "a recipe with a settings section after health passes"
+rs_ok "a recipe with a settings section after health, and its outcome line, passes"
+
+sed '/^Settings the kit can read: /d' "$rs_dir/settings.md" > "$rs_dir/mutant.md"
+if "$CHECKER" "$rs_dir/mutant.md" >/dev/null; then
+  rs_fail "a settings section with no outcome line in the proven section passed"
+fi
+rs_ok "a settings section with no outcome line in the proven section is refused"
 
 sed '/^Who runs it:/d' "$rs_dir/parts/whole.md" > "$rs_dir/parts/shared.md"
 if "$CHECKER" "$rs_dir/settings.md" >/dev/null; then
