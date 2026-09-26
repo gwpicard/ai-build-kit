@@ -50,6 +50,10 @@ cat > "$BIN/claude" <<'STUB'
 #!/bin/sh
 set -eu
 printf 'claude %s\n' "$*" >> "$PROVIDER_LOG"
+# What a turn's environment says about the host's accounts.
+printf '%s|%s|%s|%s|%s|%s\n' "${VERCEL_TOKEN:-}" "${SUPABASE_ACCESS_TOKEN:-}" \
+  "${DOCKER_HOST:-}" "${DOCKER_CONFIG:-}" "${PGPASSFILE:-}" "${PGSERVICEFILE:-}" \
+  > "$PROVIDER_LOG.host-env"
 # Which gh a login shell finds here, the way Claude Code's Bash tool builds its
 # environment from one.
 printf '%s\n' "${ZDOTDIR:-}" > "$PROVIDER_LOG.zdotdir"
@@ -181,6 +185,21 @@ if command -v zsh >/dev/null 2>&1; then
     && pass "a login shell in a Claude turn finds the host's stand-ins first" \
     || fail_provider "a login shell in a Claude turn found $(cat "$PROVIDER_LOG.login-vercel")"
 fi
+# A turn must find no account in the host's real tools either. The harness
+# sets a token that belongs to no account for Vercel and Supabase, an engine
+# that does not exist for Docker, and no stored password for the database.
+grep -q 'provider_isolate_host "$project"' "$RUNNER" \
+  && pass "every replay turn isolates the host's tools" \
+  || fail_provider "run.sh no longer isolates the host's tools for each turn"
+(
+  provider_isolate_host "$TEST_WORK/project"
+  provider_turn "$TEST_WORK/project" "first turn" "$TEST_WORK/claude-host.json" \
+    "$TEST_WORK/claude-host-reply"
+) || fail_provider "Claude could not start a turn with the host isolated"
+[ "$(cat "$PROVIDER_LOG.host-env")" = "replay-no-account|replay-no-account|unix:///nonexistent/replay.sock|$TEST_WORK/project/.docker-empty|/dev/null|/dev/null" ] \
+  && pass "a replay turn carries no account for Vercel, Supabase, Docker or the database" \
+  || fail_provider "a replay turn's host environment was: $(cat "$PROVIDER_LOG.host-env")"
+
 provider_check
 provider_new_session
 claude_reply="$TEST_WORK/claude-reply"

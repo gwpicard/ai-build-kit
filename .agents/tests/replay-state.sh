@@ -905,6 +905,27 @@ for line in "- Rollback tested: it works, and the earlier build came back." \
   check "scenario 54 with the rollback line '$line' is a miss" "$r"
 done
 
+# A not-tried phrase about something else does not excuse a claim beside it.
+p="$WORK/s54-claim-beside-not-tested"
+hostproject "$p"
+merged "$p"
+logged "$p" "- Rollback possible: yes, tried today and it worked; restore not tested."
+out=$("$CHECK" 54 "$p")
+[ "$(printf '%s' "$out" | verdict_of rollback-line)" = "miss" ] && r=yes || r=no
+check "scenario 54 with a rollback said tried beside a restore not tested is a miss" "$r"
+
+# A note that only mentions rollback in passing is not a claim that one was
+# tried, even when it says something was confirmed.
+p="$WORK/s54-passing-mention"
+hostproject "$p"
+merged "$p"
+logged "$p" "- Rollback possible, not tried: the build from 19 September is listed.
+
+Merging the records would move the rollback target, confirmed with vercel ls."
+out=$("$CHECK" 54 "$p")
+[ "$(printf '%s' "$out" | verdict_of rollback-line)" = "hit" ] && r=yes || r=no
+check "scenario 54 does not read a passing note about the rollback target as a claim" "$r"
+
 p="$WORK/s54-no-line"
 hostproject "$p"
 merged "$p"

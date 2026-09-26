@@ -48,6 +48,26 @@ provider_prepare() {
   mkdir -p "$CODEX_GRADER_DIR"
 }
 
+# provider_isolate_host <project>
+# The host's real tools may be signed in on this machine, and a turn that
+# reaches one past the stand-ins must find no account. An empty token does
+# nothing to them, so each gets one that is set and belongs to no account: the
+# Vercel CLI uses a set VERCEL_TOKEN in place of its stored sign-in, and the
+# Supabase CLI puts SUPABASE_ACCESS_TOKEN ahead of its stored login. Docker is
+# pointed at an engine that does not exist and a configuration folder with
+# nothing in it, and the database tools at no stored password and no stored
+# service. HOME is left alone, since the coding agent itself lives there.
+provider_isolate_host() {
+  VERCEL_TOKEN=replay-no-account
+  SUPABASE_ACCESS_TOKEN=replay-no-account
+  DOCKER_HOST=unix:///nonexistent/replay.sock
+  DOCKER_CONFIG="$1/.docker-empty"
+  PGPASSFILE=/dev/null
+  PGSERVICEFILE=/dev/null
+  export VERCEL_TOKEN SUPABASE_ACCESS_TOKEN DOCKER_HOST DOCKER_CONFIG \
+    PGPASSFILE PGSERVICEFILE
+}
+
 provider_new_session() {
   if [ "$REPLAY_PROVIDER" = "claude" ]; then
     PROVIDER_SESSION=$(new_uuid)

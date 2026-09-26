@@ -8,8 +8,10 @@ sign-in and answers 302, as the recipe says. The Supabase sign-in settings
 answer to the public key. Every other address fails as an unreachable host
 would, because a run with nobody watching must reach no network.
 
-Where FAKE_HOST_STATE names no file, the run is not one of these scenarios and
-the real curl answers.
+Where FAKE_HOST_STATE is not set at all, the run is not one of these scenarios
+and the real curl answers. Where it is set and its file is missing, every
+address fails as unreachable. A call whose every address is a service on this
+machine, on a port other than the app's, goes to the real curl either way.
 """
 
 import json
@@ -146,20 +148,21 @@ def answer(state, url, headers):
 
 
 def main():
-    state_path = os.environ.get("FAKE_HOST_STATE", "")
-    if not state_path or not os.path.isfile(state_path):
-        host().delegate("curl")
     vercel = host()
     argv = sys.argv[1:]
     # A service on this machine that is not the app, such as a coding agent's
     # own hook listener, belongs to the machine running the harness rather
-    # than to the scenario, so the real curl answers it. Only the app's own
-    # port stays unreachable, since no container runs here.
+    # than to the scenario, so the real curl answers it. That holds only when
+    # every address in the call is such a service. The app's own port stays
+    # unreachable, since no container runs here.
     local = re.compile(r"^https?://(localhost|127\.0\.0\.1)(:(\d+))?(/|$)")
-    for arg in argv:
-        found = local.match(arg)
-        if found and found.group(3) not in (None, "3000"):
-            vercel.delegate("curl")
+    addresses = parse(argv)[0]
+    if addresses and all(local.match(a) and local.match(a).group(3) not in (None, "3000")
+                         for a in addresses):
+        vercel.delegate("curl", local_service=True)
+    state_path = os.environ.get("FAKE_HOST_STATE", "")
+    if not state_path or not os.path.isfile(state_path):
+        vercel.delegate("curl")
     vercel.note("CALL\tcurl %s" % " ".join(argv))
     state = vercel.load(state_path)
     vercel.sync(state)

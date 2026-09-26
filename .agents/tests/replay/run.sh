@@ -43,8 +43,9 @@ WORK=${REPLAY_WORK:-${TMPDIR:-/tmp}/abk-replay-$$}
 RESULTS=${REPLAY_RESULTS:-${XDG_STATE_HOME:-$HOME/.local/state}/abk-replay/results}
 GH_DIR="$REPLAY_DIR/fake-github"
 # Stand-ins for a host's command-line tools, for a scenario that launches on a
-# recipe. Each hands the call to the real command unless the run's host state
-# file exists, so a scenario that never set one up behaves as before.
+# recipe. The harness names a host state file for every run, so in a scenario
+# that never wrote one each answers as a tool signed in to nothing, and never
+# hands the call to the real command, which may be signed in on this machine.
 HOST_DIR="$REPLAY_DIR/fake-host"
 
 command -v python3 >/dev/null 2>&1 || fail "python3 is needed to read run output"
@@ -235,6 +236,9 @@ run_once() {
     GIT_TERMINAL_PROMPT=0
     export GH_CONFIG_DIR GH_TOKEN GITHUB_TOKEN GH_ENTERPRISE_TOKEN \
       GITHUB_ENTERPRISE_TOKEN GIT_TERMINAL_PROMPT
+    # The host's tools may be signed in on this machine too. provider.sh says
+    # how each is kept from reaching an account.
+    provider_isolate_host "$project"
 
     # A turn that says "I merged your fix" has to be true, or the kit rightly
     # answers that the fix never went live and the case measures nothing. So the

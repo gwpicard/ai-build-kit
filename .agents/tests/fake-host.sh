@@ -9,11 +9,15 @@
 # live address that follows the newest working build.
 #
 # The rest matters as much. A deploy's output carries its success line near the
-# end, so a kit that cuts it short cannot tell it worked; the other tools fail
-# the way an unsigned, unstarted machine fails; and a run with no host state
-# reaches the real command, so every other scenario behaves as before.
+# end, so a kit that cuts it short cannot tell it worked. The other tools fail
+# the way a machine signed in to nothing fails. A secret a command carried is
+# masked in the log. Outside a replay each stand-in hands the call to the real
+# command. Inside one, a missing host state file never does, because the real
+# command may be signed in on this machine; the harness also gives every turn
+# tokens that belong to no account, which replay-provider.sh checks.
 #
-# Everything here runs against throwaway folders. No network, no account.
+# Everything here runs against throwaway folders and stubs of the real tools.
+# No network, no account.
 
 set -eu
 
@@ -106,12 +110,16 @@ merged=$(git --git-dir "$p.git" rev-parse main)
 [ "$merged" != "$first" ] \
   && pass "merging the pull request moves main on the remote" \
   || fail "the merge did not move main"
-case "$(vercel ls --prod)" in
+case "$(vercel ls --environment production)" in
   *"Building"*) pass "the host shows the merge as building the first time it is asked" ;;
   *) fail "the host did not show the merge building" ;;
 esac
+case "$(vercel ls)" in
+  *"Building"*) pass "and still building the second time, so a check straight after a merge sees it running" ;;
+  *) fail "the merge was ready by the second call" ;;
+esac
 [ "$(health_commit)" = "$merged" ] \
-  && pass "the next call finds it ready, and the live address serves it" \
+  && pass "the call after that finds it ready, and the live address serves it" \
   || fail "the live address does not serve the merge"
 case "$(curl -fsS https://noticeboard-office.vercel.app/sign-in)" in
   *">Email me a sign-in link<"*) pass "the live sign-in page shows the new wording" ;;
@@ -127,27 +135,37 @@ echo "== A second deploy is visible =="
 # A deploy from this computer builds whatever the folder holds, so bring the
 # merge down first, as a kit deploying main by hand would.
 git -C "$p" pull -q --ff-only origin main
-full=$(vercel deploy --prod --yes)
+address=$(vercel deploy --prod --yes 2>/dev/null)
+case "$address" in
+  https://noticeboard-*-office-tools.vercel.app) pass "a deploy writes only its address to stdout" ;;
+  *) fail "a deploy wrote this to stdout: $address" ;;
+esac
+full=$(vercel deploy --prod --yes 2>&1)
 case "$full" in
   *"Production: https://"*"Aliased: https://noticeboard-office.vercel.app"*)
-    pass "the whole deploy output says it went live, and where" ;;
+    pass "its whole output says it went live, and where" ;;
   *) fail "the whole deploy output has no success line" ;;
 esac
-short=$(vercel deploy --prod --yes | tail -3)
+short=$(vercel deploy --prod --yes 2>&1 | tail -3)
 case "$short" in
   *"Production: https://"*|*"Aliased"*) fail "the last three lines already show the success line" ;;
   *) pass "its last three lines do not, so output cut short cannot tell it worked" ;;
 esac
-[ "$(printf '%s\n' "$full" | wc -l | tr -d ' ')" -gt 40 ] \
-  && pass "the deploy output is long, as a real build log is" \
-  || fail "the deploy output is short enough to read at a glance"
-[ "$(production_count "$merged")" = "3" ] \
+[ "$(vercel deploy --prod --yes --logs 2>&1 | wc -l | tr -d ' ')" -gt 60 ] \
+  && pass "with --logs the build log comes too, as a real one does" \
+  || fail "the deploy output with --logs is short"
+[ "$(production_count "$merged")" = "5" ] \
   && pass "each deploy of the same version adds a production build of it to the list" \
   || fail "deploying the same version again left $(production_count "$merged") builds of it"
-vercel redeploy noticeboard-office.vercel.app >/dev/null
-[ "$(production_count "$merged")" = "4" ] \
+vercel redeploy noticeboard-office.vercel.app >/dev/null 2>&1
+[ "$(production_count "$merged")" = "6" ] \
   && pass "a redeploy is another build of the same version too" \
   || fail "a redeploy did not show in the list"
+waiting=$(vercel deploy --prod --yes --no-wait 2>/dev/null)
+case "$(vercel inspect "$waiting" --wait)" in
+  *"Ready"*) pass "inspect --wait finds a build that was still running ready" ;;
+  *) fail "inspect --wait did not wait for the build" ;;
+esac
 
 echo "== A rollback is recorded =="
 earlier=$(python3 -c 'import json, sys; s = json.load(open(sys.argv[1])); print([d["url"] for d in s["deployments"] if d.get("before_run") and d["state"] == "READY" and d["target"] == "production"][0])' "$FAKE_HOST_STATE")
@@ -201,19 +219,75 @@ else
   pass "curl reaches no address outside the scenario"
 fi
 
+echo "== Options the real command does not take =="
+for probe in "ls --prod" "ls --confirm" "inspect noticeboard-office.vercel.app --yes" \
+             "deploy --public"; do
+  # shellcheck disable=SC2086
+  if vercel $probe >/dev/null 2>&1; then
+    fail "vercel $probe was accepted, though the real command refuses it"
+  else
+    pass "vercel $probe is refused, as the real command refuses it"
+  fi
+done
+for probe in "ls --all" "ls --limit 5" "inspect noticeboard-office.vercel.app -F json" \
+             "deploy --dry"; do
+  # shellcheck disable=SC2086
+  vercel $probe >/dev/null 2>&1 \
+    && pass "vercel $probe is accepted, as the real command accepts it" \
+    || fail "vercel $probe was refused, though the real command takes it"
+done
+
+echo "== Secrets stay out of the log =="
+psql --dbname "postgresql://postgres:pw-stand-in@db.example.invalid:5432/postgres" \
+  --command "select 1" >/dev/null 2>&1 || true
+curl -fsS -H "Authorization: Bearer tok-stand-in" \
+  https://api.supabase.com/v1/projects/ref/advisors/security >/dev/null 2>&1 || true
+vercel ls --token vtok-stand-in >/dev/null 2>&1 || true
+if grep -q -e pw-stand-in -e tok-stand-in -e vtok-stand-in "$FAKE_HOST_LOG"; then
+  fail "a password or token reached the host log"
+else
+  pass "a database address, a bearer token and a --token value are masked in the log"
+fi
+
 echo "== Any other run =="
-# With no host state, each stand-in hands the call to the next command of that
-# name on PATH, so a scenario that never set one up behaves as before.
+# With no FAKE_HOST_STATE at all, the run is not a replay, and each stand-in
+# hands the call to the next command of that name on PATH.
 mkdir -p "$WORK/real"
 for tool in vercel curl docker supabase psql; do
   printf '#!/bin/sh\necho "real %s"\n' "$tool" > "$WORK/real/$tool"
   chmod +x "$WORK/real/$tool"
 done
 for tool in vercel curl docker supabase psql; do
-  got=$(FAKE_HOST_STATE="$WORK/none.json" PATH="$HOST_DIR:$WORK/real:$PATH" "$tool" --version)
+  got=$(env -u FAKE_HOST_STATE PATH="$HOST_DIR:$WORK/real:$PATH" "$tool" --version)
   [ "$got" = "real $tool" ] \
-    && pass "with no host state, $tool is the real command" \
-    || fail "with no host state, $tool answered: $got"
+    && pass "outside a replay, $tool is the real command" \
+    || fail "outside a replay, $tool answered: $got"
+done
+
+# A replay names a host state file for every run. Where that file is missing,
+# the real command, which may be signed in on this machine, must never answer.
+# Each tool answers as one signed in to nothing, and only --version and --help
+# succeed.
+for tool in vercel curl docker supabase psql; do
+  got=$(FAKE_HOST_STATE="$WORK/none.json" PATH="$HOST_DIR:$WORK/real:$PATH" "$tool" --version)
+  case "$got" in
+    "real $tool") fail "in a replay with no host state, $tool --version reached the real command" ;;
+    "") fail "in a replay with no host state, $tool --version said nothing" ;;
+    *) pass "in a replay with no host state, $tool --version answers without the real command" ;;
+  esac
+  FAKE_HOST_STATE="$WORK/none.json" PATH="$HOST_DIR:$WORK/real:$PATH" "$tool" --help >/dev/null 2>&1 \
+    && pass "and $tool --help succeeds" \
+    || fail "$tool --help failed in a replay with no host state"
+done
+for call in "vercel ls" "supabase projects list" "docker info" "psql --command select" \
+            "curl -fsS https://example.com/"; do
+  # shellcheck disable=SC2086
+  got=$(FAKE_HOST_STATE="$WORK/none.json" PATH="$HOST_DIR:$WORK/real:$PATH" $call 2>/dev/null) \
+    && fail "in a replay with no host state, $call succeeded" \
+    || case "$got" in
+         real*) fail "in a replay with no host state, $call reached the real command" ;;
+         *) pass "in a replay with no host state, $call fails as a tool signed in to nothing" ;;
+       esac
 done
 
 # A service on this machine that is not the app, such as a coding agent's own
@@ -223,6 +297,14 @@ got=$(PATH="$HOST_DIR:$WORK/real:$PATH" curl -sS http://127.0.0.1:50102/hook)
 [ "$got" = "real curl" ] \
   && pass "a local service on another port is left to the real curl" \
   || fail "a local service on another port was answered by the stand-in: $got"
+got=$(FAKE_HOST_STATE="$WORK/none.json" PATH="$HOST_DIR:$WORK/real:$PATH" curl -sS http://127.0.0.1:50102/hook)
+[ "$got" = "real curl" ] \
+  && pass "even in a replay with no host state" \
+  || fail "a local service was refused in a replay with no host state: $got"
+got=$(PATH="$HOST_DIR:$WORK/real:$PATH" curl -sS http://127.0.0.1:50102/hook https://example.com/ 2>/dev/null) || true
+[ "$got" != "real curl" ] \
+  && pass "a call that also names an outside address is not left to the real curl" \
+  || fail "a call naming a local service and an outside address reached the real curl"
 if PATH="$HOST_DIR:$WORK/real:$PATH" curl -fsS http://localhost:3000/api/health >/dev/null 2>&1; then
   fail "the app's own local port answered, though no container runs"
 else

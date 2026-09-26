@@ -515,6 +515,10 @@ expect "nor on a reply saying what happens once it is merged" wait "$gate54" \
   "Once the change is merged, Vercel builds main and the live address moves." 0
 expect "nor on a reply saying it has not merged yet" wait "$gate54" \
   "I have not merged it yet, because the checks are still running." 0
+expect "nor on a status line saying it has not merged yet" wait "$gate54" \
+  "**Merged:** not yet. The checks are still running." 0
+expect "but it does open on a status line naming what was merged" send "$gate54" \
+  "**Merged:** pull request 1, the sign-in wording." 0
 expect "nor on a reply saying what it would do if it merged" wait "$gate54" \
   "If I merged it now, Vercel would build the new version." 0
 

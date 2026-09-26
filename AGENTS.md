@@ -199,16 +199,21 @@ attribution line, not the word.
   stand-in host keeps a list of deployments beside the project and builds each
   push to `main`, as a host connected to the repository does. The check merges
   a pull request and holds that the list gains one build, shown as building the
-  first time it is asked and ready after, and that the live address then serves
-  it. Every deploy of a version the list already holds adds another build of
-  it, and a rollback moves the live address and is recorded. A deploy's output
-  is long, with its success line near the end, so the last three lines do not
-  show whether it worked. It also holds that Supabase, Docker and the database
-  fail the way a machine that is not signed in fails, that a command nobody
-  modelled is refused to the log, and that with no host state each stand-in
-  hands the call to the real command, so every other scenario runs as before.
-  A service on this machine on a port other than the app's, such as a coding
-  agent's own hook listener, is left to the real curl too.
+  first two times it is asked and ready after, and that the live address then
+  serves it. Every deploy of a version the list already holds adds another
+  build of it, and a rollback moves the live address and is recorded. A deploy
+  writes its address to stdout and its progress to stderr, with the success
+  line near the end, so the last three lines do not show whether it worked.
+  Options follow the real command's help: an option it refuses is refused. It
+  also holds that Supabase, Docker and the database fail the way a machine
+  that is not signed in fails, that a command nobody modelled is refused to
+  the log, and that a password, token or database address is masked there.
+  Outside a replay each stand-in hands the call to the real command. Inside
+  one, a missing host state file never does, since the real command may be
+  signed in: each tool then answers as one signed in to nothing, and only
+  `--version` and `--help` succeed. A call whose every address is a service on
+  this machine on a port other than the app's, such as a coding agent's own
+  hook listener, is left to the real curl.
 - `.agents/tests/replay-provider.sh` checks both replay providers without a
   model call. It stubs Claude Code and Codex, then proves each first turn,
   resumed turn and grader route. It also holds the throwaway shell profiles
@@ -216,7 +221,10 @@ attribution line, not the word.
   and for Claude Code, whose Bash tool once found the real one through the
   person's own login profile. A login shell started with those profiles must
   find the stand-in, and the host's stand-ins right after it, ahead of a
-  deploy command that may be signed in.
+  deploy command that may be signed in. A turn also carries a Vercel and a
+  Supabase token that belong to no account, a Docker engine that does not
+  exist, and no stored database password, so a real host tool finds no
+  account either.
 - `.agents/tests/plan-printout.sh` runs the printout against a fixed set of
   issues and reads what it wrote: which group each piece lands in, whether a
   waiting piece says why, whether a shaped piece says it is ready, and whether a
@@ -280,8 +288,8 @@ attribution line, not the word.
   writes the stand-in host's list of what the first launch left. The tool's
   tests pass on `main` and on the branch where Node can read TypeScript by
   itself. It holds 54's gate open on a reply saying the kit merged, and shut
-  on one asking first, saying what happens once it is merged, or saying it has
-  not merged yet.
+  on one asking first, saying what happens once it is merged, saying it has
+  not merged yet, or reading "Merged: not yet".
 - `.agents/tests/grader-recovery.sh` checks that the replay grader recovers a
   grading missing only its final brace or carrying one stray brace after it,
   and still refuses one that was cut off partway or followed by other text.
@@ -322,7 +330,9 @@ attribution line, not the word.
   build two versions, and a rollback nobody asked for. A new changelog line
   has to say rollback is possible and not tried, wherever the run saved it. A
   line saying rollback was tested, or "yes" with no "not tried", is a miss, and
-  so is one calling rollback impossible when an earlier build is listed.
+  so is one calling rollback impossible when an earlier build is listed. A
+  not-tried phrase about the restore does not excuse a rollback said to be
+  tried beside it, and a passing note about the rollback target is not judged.
 - `.agents/tests/check-tooling.sh` runs the setup tooling report against a set of
   throwaway PATHs and reads when it stops: a missing tool or a signed-out account
   blocks founding, while issues switched off or a read-only account do not.

@@ -14,24 +14,30 @@ rather than passing quietly.
 
 The host builds from the project's GitHub connection. Each push to `main` on
 the remote next door becomes a production deployment, read from that remote's
-reflog the next time anything asks. A new build shows as Building to the call
-that first sees it and as Ready to every call after, and the live address
-moves to it then. `deploy`, `redeploy` and `promote` make or move a deployment
-themselves, which is how a second deploy of the same version shows up.
+reflog the next time anything asks. A new build shows as Building to the first
+two calls that see it and as Ready after that, or at once to `inspect --wait`,
+and the live address moves to it then. `deploy`, `redeploy` and `promote` make
+or move a deployment themselves, which is how a second deploy of the same
+version shows up.
 
-`deploy` prints a long build log with the success line and the address near
-the end, then a few lines of hints. A kit that cuts that output short cannot
-tell whether it worked. Reading all of it, or the list of deployments, can.
+`deploy` writes the address alone to stdout and its progress to stderr, as the
+real command does. The success line comes near the end, followed by a few
+lines of hints, so a kit that keeps only the last lines cannot tell whether it
+worked. Reading all of it, or the list of deployments, can. The build log is
+printed only with `--logs`.
 
 State lives in one JSON file named by FAKE_HOST_STATE, beside the project
-rather than in it. Every call is logged to FAKE_HOST_LOG. Where the state file
-does not exist, the run is not one of these scenarios, and the real command
-answers as it would without this folder on PATH.
+rather than in it. Every call is logged to FAKE_HOST_LOG, with any secret it
+carried masked. Where FAKE_HOST_STATE is not set at all, the run is not one of
+these scenarios, and the real command answers as it would without this folder
+on PATH. Where it is set and the file is missing, the call is answered as a
+signed-out tool, never by the real command.
 """
 
 import json
 import os
 import random
+import re
 import string
 import subprocess
 import sys
@@ -43,8 +49,39 @@ VERSION = "60.0.0"
 HEADER = "Vercel CLI %s" % VERSION
 
 
-def delegate(name):
-    """Hand the call to the real command, for any run that is not ours."""
+SIGNED_OUT = {
+    "vercel": ("Error: No existing credentials found. Please run `vercel login` or pass "
+               "\"--token\"", 1),
+    "curl": ("curl: (6) Could not resolve host", 6),
+}
+
+
+def signed_out(name):
+    """Answer as a tool that is installed and signed in to nothing. A replay
+    whose host state file is missing gets this, never the real command, so a
+    preparation that failed cannot hand a run somebody's account."""
+    args = sys.argv[1:]
+    if args[:1] in (["--version"], ["-v"], ["-V"]):
+        print(VERSION if name == "vercel" else "%s (replay stand-in)" % name)
+        sys.exit(0)
+    if args[:1] in (["--help"], ["-h"]):
+        print("Usage: %s [options] [command]" % name)
+        sys.exit(0)
+    message, code = SIGNED_OUT.get(name, ("%s: not signed in" % name, 1))
+    sys.stderr.write(message + "\n")
+    sys.exit(code)
+
+
+def delegate(name, local_service=False):
+    """Hand the call to the real command, for any run that is not ours.
+
+    Only a run with no FAKE_HOST_STATE at all is not ours. Where it is set and
+    its file is missing, the run is a replay whose preparation failed, and the
+    call is answered as a signed-out tool instead. A call to a service on this
+    machine that is not the app is the one exception, since it reaches no
+    account and no network."""
+    if STATE and not local_service:
+        signed_out(name)
     here = os.path.realpath(os.path.dirname(os.path.abspath(__file__)))
     for folder in os.environ.get("PATH", "").split(os.pathsep):
         if not folder or os.path.realpath(folder) == here:
@@ -68,11 +105,31 @@ def sibling(name):
     return module
 
 
+MASKS = [
+    (re.compile(r"(postgres(ql)?://)[^\s'\"]+", re.I), r"\1[masked]"),
+    (re.compile(r"(--dbname[= ])(\S+)"), r"\1[masked]"),
+    (re.compile(r"((--token|-t)[= ])(\S+)"), r"\1[masked]"),
+    (re.compile(r"(Authorization:\s*)[^'\"\n]+", re.I), r"\1[masked]"),
+    (re.compile(r"(Bearer\s+)\S+", re.I), r"\1[masked]"),
+]
+
+
+def mask(line):
+    """Keep a secret a command carried out of the log."""
+    for pattern, replacement in MASKS:
+        line = pattern.sub(replacement, line)
+    return line
+
+
+def err(line):
+    sys.stderr.write(line + "\n")
+
+
 def note(line):
     if not LOG:
         return
     with open(LOG, "a") as handle:
-        handle.write(line + "\n")
+        handle.write(mask(line) + "\n")
 
 
 def unsupported(argv, why="not modelled"):
@@ -115,7 +172,7 @@ def add_deployment(state, commit, target, source, branch="main", ready=False):
         "commit": commit,
         "source": source,
         "state": "READY" if ready else "BUILDING",
-        "seen": False,
+        "seen": 0,
         "created": now(),
     }
     state["deployments"].append(dep)
@@ -142,16 +199,24 @@ def sync(state):
     return [add_deployment(state, commit, "production", "git") for commit in fresh]
 
 
+# How many calls see a new build as Building before it is Ready. Two gives a
+# kit that checks straight after a merge a real chance to see a build still
+# running, and to deploy again instead of waiting.
+BUILDING_CALLS = 2
+
+
 def tick(state):
-    """A build the last call saw as Building is Ready now, and a production
-    build that becomes Ready takes the live address. A build nobody has seen
-    yet is seen, and stays Building for this one call."""
+    """Count this call against every build still running. A build that has
+    been seen as Building by BUILDING_CALLS calls is Ready now, and a
+    production build that becomes Ready takes the live address."""
     for dep in state["deployments"]:
-        if dep["state"] == "BUILDING" and dep["seen"]:
+        if dep["state"] != "BUILDING":
+            continue
+        seen = int(dep.get("seen") or 0)
+        if seen >= BUILDING_CALLS:
             finish(state, dep)
-    for dep in state["deployments"]:
-        if dep["state"] == "BUILDING":
-            dep["seen"] = True
+        else:
+            dep["seen"] = seen + 1
 
 
 def finish(state, dep):
@@ -185,7 +250,7 @@ STATUS = {"READY": "● Ready", "BUILDING": "● Building", "ERROR": "● Error"
 # Options every command takes, and whether each takes a value.
 GLOBAL = {"--cwd": True, "--scope": True, "-S": True, "--team": True, "-T": True,
           "--token": True, "-t": True, "--debug": False, "-d": False,
-          "--no-color": False, "--global-config": True, "-Q": True,
+          "--no-color": False, "--non-interactive": False, "--global-config": True, "-Q": True,
           "--local-config": True, "-A": True}
 
 
@@ -297,16 +362,17 @@ def git_branch(where):
 
 
 def cmd_ls(state, argv):
-    words, options = parse(argv, {"--prod", "--yes", "-y", "--json", "--confirm"},
+    words, options = parse(argv, {"--yes", "-y", "--json", "--all", "-a"},
                            {"--environment", "--meta", "-m", "--policy", "-p",
-                            "--next", "-N", "--status", "-s", "--format", "-F"})
+                            "--next", "-N", "--status", "-s", "--format", "-F",
+                            "--limit"})
     if words is None or len(words) > 1 or (words and words[0] != state["project"]):
         unsupported(["ls"] + argv, "an option or project the command does not take")
     deps = list(reversed(state["deployments"]))
-    environment = options.get("--environment") or ("production" if options.get("--prod") else "")
+    environment = options.get("--environment") or ""
     if environment:
         deps = [d for d in deps if d["target"] == environment]
-    if options.get("--json") or options.get("--format") == "json":
+    if options.get("--json") or options.get("--format") == "json" or options.get("-F") == "json":
         print(json.dumps({"deployments": [
             {"uid": d["id"], "name": state["project"], "url": d["url"],
              "state": d["state"], "readyState": d["state"], "target": d["target"],
@@ -328,8 +394,8 @@ def cmd_ls(state, argv):
 
 
 def cmd_inspect(state, argv):
-    words, options = parse(argv, {"--logs", "-l", "--wait", "--json", "--yes", "-y"},
-                           {"--timeout"})
+    words, options = parse(argv, {"--logs", "-l", "--wait", "--json"},
+                           {"--timeout", "--format", "-F"})
     if words is None or len(words) != 1:
         unsupported(["inspect"] + argv, "one deployment and only the options the command documents")
     dep = find(state, words[0])
@@ -339,7 +405,7 @@ def cmd_inspect(state, argv):
         sys.exit(1)
     if options.get("--wait") and dep["state"] == "BUILDING":
         finish(state, dep)
-    if options.get("--json"):
+    if options.get("--json") or "json" in (options.get("--format"), options.get("-F")):
         print(json.dumps({"id": dep["id"], "url": dep["url"], "name": state["project"],
                           "target": dep["target"], "readyState": dep["state"],
                           "createdAt": dep["created"],
@@ -373,9 +439,10 @@ def cmd_inspect(state, argv):
 
 def cmd_deploy(state, argv, redeploy=False):
     flags = {"--prod", "--yes", "-y", "--no-wait", "--force", "-f", "--with-cache",
-             "--public", "--skip-domain", "--logs", "-l", "--prebuilt"}
+             "--skip-domain", "--logs", "-l", "--prebuilt", "--json", "--dry",
+             "--guidance", "--turbo"}
     valued = {"--target", "--env", "-e", "--build-env", "-b", "--meta", "-m",
-              "--regions", "--archive"}
+              "--regions", "--archive", "--format", "-F", "--project"}
     if redeploy:
         flags = {"--no-wait", "--yes", "-y"}
         valued = {"--target"}
@@ -401,36 +468,46 @@ def cmd_deploy(state, argv, redeploy=False):
         target = "production" if (options.get("--prod") or
                                   options.get("--target") == "production") else "preview"
         source = "cli"
-    dep = add_deployment(state, commit, target, source, branch=branch)
-    dep["seen"] = True
-    label = "Production" if target == "production" else "Preview"
-    print(HEADER)
-    print("Retrieving project…")
-    print("Deploying %s/%s" % (state["team"], state["project"]))
-    if not redeploy:
-        print("Uploading [--------------------] (0.0B/41.2KB)")
-        print("Uploading [==========----------] (20.6KB/41.2KB)")
-        print("Uploading [====================] (41.2KB/41.2KB)")
-    print("Inspect: https://vercel.com/%s/%s/%s [2s]"
-          % (state["team"], state["project"], dep["id"][4:]))
-    print("%s: https://%s [2s]" % (label, dep["url"]))
-    if options.get("--no-wait"):
-        print("Note: Deployment is still processing...")
+    if options.get("--dry"):
+        err("%s\nDetected framework: Next.js\nNothing was deployed (--dry)." % HEADER)
         return
-    print("Building...")
-    for line in build_log(state, dep):
-        print("%s  %s" % (dep["created"][11:19], line) if line else "")
+    dep = add_deployment(state, commit, target, source, branch=branch)
+    label = "Production" if target == "production" else "Preview"
+    as_json = options.get("--json") or "json" in (options.get("--format"), options.get("-F"))
+    err(HEADER)
+    err("Retrieving project…")
+    err("Deploying %s/%s" % (state["team"], state["project"]))
+    if not redeploy:
+        err("Uploading [--------------------] (0.0B/41.2KB)")
+        err("Uploading [==========----------] (20.6KB/41.2KB)")
+        err("Uploading [====================] (41.2KB/41.2KB)")
+    err("Inspect: https://vercel.com/%s/%s/%s [2s]"
+        % (state["team"], state["project"], dep["id"][4:]))
+    err("%s: https://%s [2s]" % (label, dep["url"]))
+    if options.get("--no-wait"):
+        err("Note: Deployment is still processing...")
+        print("https://%s" % dep["url"])
+        return
+    err("Building...")
+    if options.get("--logs") or options.get("-l"):
+        for line in build_log(state, dep):
+            err("%s  %s" % (dep["created"][11:19], line) if line else "")
     finish(state, dep)
-    print("%s: https://%s [48s]" % (label, dep["url"]))
+    err("%s: https://%s [48s]" % (label, dep["url"]))
     if target == "production" and state.get("alias") == dep["id"]:
-        print("Aliased: https://%s [48s]" % state["production_url"])
-    print()
-    print("Common next commands:")
-    print("- `vercel inspect %s --logs`" % dep["url"])
-    print("- `vercel redeploy %s`" % dep["url"])
-    print("- `vercel logs %s`" % dep["url"])
-    print()
-    print("Tip: run `vercel ls` to see every deployment of this project.")
+        err("Aliased: https://%s [48s]" % state["production_url"])
+    if as_json:
+        print(json.dumps({"id": dep["id"], "url": dep["url"], "target": target,
+                          "readyState": dep["state"]}, indent=2))
+    else:
+        print("https://%s" % dep["url"])
+    err("")
+    err("Common next commands:")
+    err("- `vercel inspect %s --logs`" % dep["url"])
+    err("- `vercel redeploy %s`" % dep["url"])
+    err("- `vercel logs %s`" % dep["url"])
+    err("")
+    err("Tip: run `vercel ls` to see every deployment of this project.")
 
 
 def cmd_move(state, argv, kind):
@@ -508,6 +585,10 @@ def main():
     if not STATE or not os.path.isfile(STATE):
         delegate("vercel")
     argv = sys.argv[1:]
+    if "--help" in argv or "-h" in argv:
+        note("CALL\tvercel %s" % " ".join(argv))
+        print("%s\n\n  Usage: vercel [options] <command>" % HEADER)
+        return
     note("CALL\tvercel %s" % " ".join(argv))
     state = load()
     sync(state)

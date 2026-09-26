@@ -555,7 +555,7 @@ Vercel recipe's tools, and this is the first run through them.
 
 | Scenario | Held | State | Withdrew | Contract misses |
 |---|---|---|---|---|
-| 54 | 1/1 | 1/1 | none due | none |
+| 54 | 1/1 | 1/1 | none due | none as graded; the warnings miss under the tightened contract |
 
 The kit merged the pull request through GitHub without asking again. It read
 the host's list and the live health route before it called the change live,
@@ -572,9 +572,18 @@ possible, not tried". The kit also warned that merging that records pull
 request would build again and move the rollback target, and advised leaving
 it open until the next change.
 
-The warnings the first launch recorded were said once, in the first reply. The
-last reply named them in one line and pointed to the changelog, and the grader
-counted that as said once.
+The warnings were not handled as the skill asks. The first launch's changelog
+already held four of them. The first reply gave three again in full, the
+backup, the restore and the local container check, each with its reason, and
+gave only the open-tables check as a pointer to the changelog. The skill asks
+for a one-line pointer to any warning the changelog already holds. The contract
+then allowed one full mention in the whole `/ship`, so the grader passed it.
+The contract has since been tightened to match the skill, and under it this
+run's first reply is a miss. It is filed as a finding.
+
+Two of the scenario's points were not exercised. The host builds `main` from
+its Git connection, so no deploy command ran. The rule to read a deploy's whole
+output, and the one line owed before a second deploy, had nothing to act on.
 
 Every `gh`, `vercel`, `curl`, `supabase` and `docker` call the session made
 appears in the stand-ins' logs, and a lookup of each tool inside the session
@@ -587,5 +596,15 @@ the records pull request, which changed nothing it was graded on. The gate now
 takes that wording, and `gated-turns.sh` holds it. The curl stand-in also
 answered this machine's own hook listener, which failed quietly; it now leaves
 such local services to the real curl. Neither change has been replayed.
+
+Changed after this run, following review, and not replayed: the gate no longer
+opens on "Merged: not yet"; the contract asks for a one-line pointer to each
+warning the changelog holds and says no other push may reach `main`; the host
+shows a new build as building for two calls, and its deploy writes its progress
+to stderr and its build log only with `--logs`; its options follow the real
+command's help; the rollback-line check judges only the rollback line and any
+line saying a rollback was run; the host log masks secrets; a replay with no
+host state never reaches a real tool; and every turn carries tokens that belong
+to no account.
 
 This is one run of one case, and it replaces none of the tables above.
