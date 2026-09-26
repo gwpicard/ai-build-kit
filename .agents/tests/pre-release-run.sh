@@ -95,7 +95,7 @@ remove_at=$(grep -nE '^ *gh auth refresh -h github\.com -r delete_repo$' "$SECTI
 delete_at=$(grep -nE '^ *gh repo delete ' "$SECTION" | cut -d: -f1)
 [ "$remove_at" -gt "$delete_at" ] || rs_fail "the delete_repo scope is removed before the repository is deleted"
 rs_ok "teardown takes the delete_repo scope off again after the delete"
-for cmd in 'vercel project ls' 'gh repo view <owner>/abk-try-N' 'ls /private/tmp/abk-\*' 'ls ~/.config/abk-try-N'; do
+for cmd in 'vercel project ls' 'gh repo view <owner>/abk-try-N' 'ls /private/tmp/abk-\*' 'ls ~/.config/abk-try-N' 'ls ~/Backups/abk-try-N' 'ls -dlt /private/tmp/\* \| head -20'; do
   grep -qE "^ *$cmd\$" "$SECTION" || rs_fail "teardown does not check with: $cmd"
 done
 grep -qF '"Could not resolve"' "$SECTION" || rs_fail "teardown does not say what a deleted repository answers"
@@ -107,13 +107,24 @@ rs_ok "teardown asks for the delete_repo scope"
 grep -qE '^ *gh repo delete <owner>/abk-try-N --yes$' "$SECTION" || rs_fail "teardown does not delete the repository"
 rs_ok "teardown deletes the repository"
 trash_line=$(grep -E '^ *trash ' "$SECTION" || true)
-for f in /private/tmp/abk-try-N-claude /private/tmp/abk-try-N-both "$preview" '~/.config/abk-try-N'; do
+for f in /private/tmp/abk-try-N-claude /private/tmp/abk-try-N-both "$preview" '~/.config/abk-try-N' '~/Backups/abk-try-N'; do
   case " $trash_line " in
     *" $f "*) ;;
     *) rs_fail "teardown does not move $f to the Trash" ;;
   esac
 done
-rs_ok "teardown moves both projects, the build and the password folder to the Trash"
+rs_ok "teardown moves both projects, the build, the password folder and the backups to the Trash"
+
+# Supabase's create form marks a lowercase hex password as not secure enough,
+# so the password line is the mixed-case one that passed in a real run.
+pw_line="(umask 077 && openssl rand -base64 48 | tr -d '/+=\\n' | cut -c1-40 > ~/.config/abk-try-N/db.pw)"
+grep -qF "$pw_line" "$SECTION" || rs_fail "missing the password line the create form accepts: $pw_line"
+if grep -qF 'openssl rand -hex' "$SECTION"; then
+  rs_fail "the section still makes a hex password, which the create form marks as not secure"
+fi
+rs_ok "the password line makes mixed-case letters and digits"
+grep -qE '^ *gh auth status$' "$SECTION" || rs_fail "teardown does not show the token's scopes before adding one"
+rs_ok "teardown shows the token's scopes first"
 if grep -qE 'rm +-[a-z]*r[a-z]*f|rm +-[a-z]*f[a-z]*r' "$SECTION"; then
   rs_fail "the section uses a recursive forced delete"
 fi
@@ -138,7 +149,16 @@ rs_rule "names the repository at founding" 'name it `abk-try-n` in the first fol
 rs_rule "names the Vercel project in the ship request" 'asking for a vercel project named `abk-try-n`'
 rs_rule "GitHub asks for a passkey first" 'asks for a passkey or password'
 rs_rule "the clipboard is emptied" 'pbcopy < /dev/null'
-rs_rule "the Vercel app is uninstalled" 'uninstall it under installed github apps'
+rs_rule "the Vercel app keeps its selection" 'add `abk-try-n` to that selection, and never replace or clear it'
+rs_rule "the Vercel app stays installed" 'so leave the app installed'
+rs_rule "only an app installed for the run goes" 'only if it was installed for this run, uninstall it'
+rs_rule "the person runs the scope refreshes" 'so the person runs it, since an agent cannot finish it alone'
+rs_rule "a scope already there is not added" 'already there from an earlier run, skip the first refresh'
+rs_rule "why the password mixes case" 'marks a lowercase hex password as not secure enough'
+rs_rule "the stale form message" 'check the project list rather than the form'
+rs_rule "the backups are named" '~/backups/abk-try-n` holds the database'
+rs_rule "the kit's temporary files are named" 'restore-test folders and logs'
+rs_rule "only the run's temporary files go" 'trash only what the run made'
 rs_rule "a clean main is required" 'the status must print nothing'
 
 # The rules are read from the extracted section, so a copy of a phrase

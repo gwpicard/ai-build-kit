@@ -713,38 +713,58 @@ wherever `N` appears.
 
    - On GitHub, Settings, Applications, Installed GitHub Apps, Configure beside
      Vercel. GitHub asks for a passkey or password before it shows that page.
-     Add `abk-try-N` under Only select repositories, and save.
+     Add `abk-try-N` under Only select repositories, and save. The app may
+     already be installed with other repositories selected. Add `abk-try-N` to
+     that selection, and never replace or clear it.
    - In the Supabase dashboard, make a project named `abk-try-N`, and paste a
      password made and copied like this:
 
    ```
    mkdir -p ~/.config/abk-try-N
-   (umask 077 && openssl rand -hex 24 > ~/.config/abk-try-N/db.pw)
+   (umask 077 && openssl rand -base64 48 | tr -d '/+=\n' | cut -c1-40 > ~/.config/abk-try-N/db.pw)
    pbcopy < ~/.config/abk-try-N/db.pw
    pbcopy < /dev/null
    ```
 
-   Only this account can read the file, and no command prints the password.
-   The last line empties the clipboard once the password is pasted. When the
-   kit asks where the password is kept, give it the file's path. A secret
-   never goes into the chat.
+   The password is 40 letters and digits in mixed case, since the create form
+   marks a lowercase hex password as not secure enough. Only this account can
+   read the file, and no command prints the password. The last line empties
+   the clipboard once the password is pasted. When the kit asks where the
+   password is kept, give it the file's path. A secret never goes into the
+   chat. When Chrome or an agent fills the form, it can show a stale "Password
+   not secure enough" message and still create the project, so check the
+   project list rather than the form.
 
 5. Tear everything down.
 
    ```
    vercel project rm abk-try-N
+   gh auth status
    gh auth refresh -h github.com -s delete_repo
    gh repo delete <owner>/abk-try-N --yes
    gh auth refresh -h github.com -r delete_repo
-   trash /private/tmp/abk-try-N-claude /private/tmp/abk-try-N-both /private/tmp/abk-preview-N ~/.config/abk-try-N
+   trash /private/tmp/abk-try-N-claude /private/tmp/abk-try-N-both /private/tmp/abk-preview-N ~/.config/abk-try-N ~/Backups/abk-try-N
    ```
 
-   Answer `y` when Vercel asks. The first refresh adds the scope that
-   `gh repo delete` needs, and the second takes it off the token again. Delete
-   the Supabase project in the dashboard, since `supabase projects delete`
-   cancels its own confirmation without a real terminal. If Vercel's GitHub app
-   was installed for this run, uninstall it under Installed GitHub Apps. The
-   local folders go to the Trash, since a deletion with no undo is on the
+   Answer `y` when Vercel asks. `gh auth status` lists the token's scopes. If
+   `delete_repo` is already there from an earlier run, skip the first refresh.
+   The first refresh adds the scope that `gh repo delete` needs, and the second
+   takes it off the token again. Each refresh waits for a confirmation in the
+   browser, so the person runs it, since an agent cannot finish it alone.
+
+   Delete the Supabase project in the dashboard, since
+   `supabase projects delete` cancels its own confirmation without a real
+   terminal. Deleting the repository also removes it from the selection of
+   Vercel's GitHub app, so leave the app installed. Only if it was installed
+   for this run, uninstall it under Installed GitHub Apps.
+
+   `/ship` leaves two things on this computer. `~/Backups/abk-try-N` holds the
+   database's roles, structure and data, and the `trash` line above takes it.
+   The kit also writes temporary files in `/private/tmp`, such as restore-test
+   folders and logs, whose names this section cannot know. List the newest
+   with `ls -dlt /private/tmp/* | head -20`, and trash only what the run made.
+
+   The local folders go to the Trash, since a deletion with no undo is on the
    blocked list in `.agents/guard/blocked-commands.md`. Where `trash` is
    missing, `mv <folder> ~/.Trash/` does the same.
 
@@ -755,11 +775,14 @@ wherever `N` appears.
    gh repo view <owner>/abk-try-N
    ls /private/tmp/abk-*
    ls ~/.config/abk-try-N
+   ls ~/Backups/abk-try-N
+   ls -dlt /private/tmp/* | head -20
    ```
 
    `vercel project ls` does not list `abk-try-N`. `gh repo view` answers
-   "Could not resolve". Both `ls` lines find nothing. The Supabase dashboard no
-   longer lists the project.
+   "Could not resolve". The first three `ls` lines find nothing, and the last
+   shows none of the run's temporary files. The Supabase dashboard no longer
+   lists the project.
 
 6. Write a dated log: the preview version and the commit it was built from,
    each check and whether it held, with the words that show it, what the run
