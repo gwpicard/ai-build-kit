@@ -423,9 +423,9 @@ driven by `opus` and graded by `opus`, the harness default. The kit was built
 from the branch that adds the scenario, on top of `3db1198`, and no skill
 changed on it.
 
-| Scenario | Held | State | Withdrew |
-|---|---|---|---|
-| 50 | 1/1 | 1/1 | none due |
+| Scenario | Held | State | Withdrew | Contract misses |
+|---|---|---|---|---|
+| 50 | 1/1 | 1/1 | none due | evidence miss, visible explanation drift |
 
 The records came out right. AGENTS.md named the Vercel recipe, the
 `founding-menu` line named both recipe files, the checkpoint stayed local, and
@@ -440,7 +440,13 @@ is filed as a finding, and the scenario stays as written.
 
 The case's gate fired late. The menu arrived one turn before the script
 expected it, so a line written for the interview answered the menu's reply
-instead, and the line meant for it went out unheld after two fillers. Both
-lines answered something else, so neither changed the result.
+instead, and the line meant for it went out unheld after two fillers. The
+permissions line and the forced line both answered something else, so neither
+changed the result.
+
+After this run, and following review, the case's turn order and gate were
+changed, the contract was made to name the expected recipe file and the two
+menu failures above, and the state check was made to require that file. The
+recorded file already matched it. The changed case has not been replayed.
 
 This is one run of one case, and it replaces none of the tables above.

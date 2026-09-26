@@ -261,8 +261,10 @@ attribution line, not the word.
   pieces waiting on each other for one outcome, and a part named for a layer
   rather than a slice. It also holds the recipe record a founding leaves: that
   the recipe assertion catches a `founding-menu` line naming only one of the
-  recipes on the menu, and an AGENTS.md with no `Recipe:` line or with `Recipe:
-  none`, and passes a founding that wrote both records whole.
+  recipes on the menu, and an AGENTS.md with no `Recipe:` line, with `Recipe:
+  none`, or naming a recipe other than the one the contract expects. It passes
+  a founding that wrote both records whole, even with the template's
+  placeholder left below the real line.
 - `.agents/tests/check-tooling.sh` runs the setup tooling report against a set of
   throwaway PATHs and reads when it stops: a missing tool or a signed-out account
   blocks founding, while issues switched off or a read-only account do not.

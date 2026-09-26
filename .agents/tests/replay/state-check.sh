@@ -279,8 +279,12 @@ fi
 # Only a scenario whose Evidence field names the founding-menu line is graded
 # here, so the contract decides. The menu is the files directly in the ship
 # skill's recipes folder: the copy the run was installed with when there is
-# one, and this repository's own otherwise, which is what that copy was built
-# from.
+# one, and this repository's own otherwise, as it stands when the check runs.
+#
+# Where the Evidence field names a concrete `Recipe: <file>.md`, the record has
+# to name that file. The grader reads only the transcript, so this is the one
+# place a run that recorded the wrong recipe is caught. Without one, any file on
+# the menu will do.
 evidence=$(scenario_field "$number" "Evidence" 2>/dev/null || true)
 rec_verdict=unobservable
 rec_note="the contract names no founding-menu line for this scenario"
@@ -289,9 +293,9 @@ case "$evidence" in
     recipes="$project/.agents/skills/ship/recipes"
     [ -d "$recipes" ] || recipes="$ROOT/.agents/skills/ship/recipes"
     rec_result=$(python3 - "$recipes" "$project/AGENTS.md" \
-      "$project/.ai-build-kit-maintenance" <<'PY'
+      "$project/.ai-build-kit-maintenance" "$evidence" <<'PY'
 import os, re, sys
-folder, agents, upkeep = sys.argv[1], sys.argv[2], sys.argv[3]
+folder, agents, upkeep, evidence = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
 menu = sorted(f for f in os.listdir(folder)
               if f.endswith(".md") and os.path.isfile(os.path.join(folder, f)))
 problems = []
@@ -299,20 +303,30 @@ if not menu:
     print("unobservable|no recipe menu to compare against")
     sys.exit()
 
-chosen = None
+named = re.findall(r"Recipe:\s*([A-Za-z0-9._-]+\.md)", evidence)
+expected = named[-1] if named else None
+
+values = []
 try:
     for line in open(agents):
         # A line that opens with the record, perhaps as a list item, in bold or
-        # in code quotes. A later line wins, as a later edit would.
+        # in code quotes.
         found = re.match(r"\s*(?:[-*]\s+)?`?(?:\*\*)?Recipe:(?:\*\*)?\s*`?([^`\s]+)`?", line)
         if found:
-            chosen = found.group(1).rstrip(".,;")
+            values.append(found.group(1).rstrip(".,;"))
 except OSError:
     pass
+# A line naming a recipe file wins over one saying none, so the template's own
+# placeholder left behind cannot hide a real record. Among equals, the later
+# line wins, as a later edit would.
+files = [v for v in values if v.endswith(".md")]
+chosen = files[-1] if files else (values[-1] if values else None)
 if chosen is None:
     problems.append("AGENTS.md records no Recipe: line")
 elif chosen not in menu:
     problems.append("AGENTS.md records Recipe: %s, which is not a file on the menu" % chosen)
+elif expected and chosen != expected:
+    problems.append("AGENTS.md records Recipe: %s, but the contract expects %s" % (chosen, expected))
 
 listed = None
 try:

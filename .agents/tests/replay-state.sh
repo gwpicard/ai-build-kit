@@ -473,6 +473,16 @@ first=${menu%%,*}
 [ -n "$menu" ] && [ "$first" != "$menu" ] && r=yes || r=no
 check "the recipe menu holds more than one recipe, so a line naming one is short" "$r"
 
+# The recipe the contract expects is read from scenario 50's own Evidence field,
+# and "other" is any file on the menu that is not it.
+expected=$(awk '/^## 50\./ { on = 1; next } /^## / { on = 0 } on && /^- Evidence:/' \
+  "$TESTS_DIR/scenarios.md" | grep -o 'Recipe: [A-Za-z0-9._-]*\.md' | tail -1)
+expected=${expected#Recipe: }
+other=$(printf '%s\n' "$menu" | tr ',' '\n' | grep -vxF "$expected" | head -1)
+[ -n "$expected" ] && [ -n "$other" ] \
+  && printf '%s\n' "$menu" | tr ',' '\n' | grep -qxF "$expected" && r=yes || r=no
+check "scenario 50's contract names a recipe on the menu" "$r"
+
 # recipeproject <dir> <recipe line or empty> <founding-menu files or empty>
 recipeproject() {
   mkdir -p "$1"
@@ -486,7 +496,7 @@ recipeproject() {
 # The founding the contract describes: the chosen recipe by file name, and the
 # whole menu on the founding-menu line.
 p="$WORK/s50-right"
-recipeproject "$p" "Recipe: $first" "$menu"
+recipeproject "$p" "Recipe: $expected" "$menu"
 out=$("$CHECK" 50 "$p")
 [ "$(printf '%s' "$out" | verdict_of recipe-record)" = "hit" ] \
   && [ "$(printf '%s' "$out" | held_of)" = "True" ] && r=yes || r=no
@@ -495,11 +505,28 @@ check "scenario 50 with the recipe recorded and the whole menu listed holds" "$r
 # A founding-menu line naming only the recipe chosen reads fine, and makes every
 # other recipe look new to next month's visit.
 p="$WORK/s50-one-recipe"
-recipeproject "$p" "Recipe: $first" "$first"
+recipeproject "$p" "Recipe: $expected" "$expected"
 out=$("$CHECK" 50 "$p")
 [ "$(printf '%s' "$out" | verdict_of recipe-record)" = "miss" ] \
   && [ "$(printf '%s' "$out" | held_of)" = "False" ] && r=yes || r=no
 check "scenario 50 with a founding-menu line naming one recipe is a miss" "$r"
+
+# A recipe on the menu, but not the one recommended. The grader cannot see the
+# file, so this is the only place that run is caught.
+p="$WORK/s50-other-recipe"
+recipeproject "$p" "Recipe: $other" "$menu"
+out=$("$CHECK" 50 "$p")
+[ "$(printf '%s' "$out" | verdict_of recipe-record)" = "miss" ] \
+  && [ "$(printf '%s' "$out" | held_of)" = "False" ] && r=yes || r=no
+check "scenario 50 with the other recipe recorded is a miss" "$r"
+
+# The template's placeholder left below a real record must not win over it.
+p="$WORK/s50-placeholder-left"
+recipeproject "$p" "Recipe: $expected" "$menu"
+printf '%s\n' '`Recipe: none`, then run, test, type check and lint commands' >> "$p/AGENTS.md"
+out=$("$CHECK" 50 "$p")
+[ "$(printf '%s' "$out" | verdict_of recipe-record)" = "hit" ] && r=yes || r=no
+check "a leftover Recipe: none placeholder below the real line does not hide it" "$r"
 
 # The menu shown and the choice never written: /ship would find no recipe.
 p="$WORK/s50-no-recipe-line"
