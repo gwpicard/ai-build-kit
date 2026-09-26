@@ -265,6 +265,14 @@ recipe, so the case measures whether founding keeps the recommended one and
 carries on rather than asking again. It gets through founding because the
 person answers plainly and the tool is small, the same reason 31 does.
 
+Scenario 51 founds a charity office's room booking sheet with one recipe on the
+menu. Its case names `# prepare: one-recipe-menu`, which takes every other
+recipe out of the installed kit before the first commit. It measures whether a
+menu of one is still shown, recommended and named the default, and whether
+founding says what the recipe's tool report found. Its gate waits for the menu
+itself rather than for a host's name, which a reply can carry without showing
+any menu.
+
 ## How grading works
 
 The grader is a separate session that receives the contract and the transcript

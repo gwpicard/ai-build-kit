@@ -49,6 +49,19 @@ rs_rule "only the recipes that fit are shown" \
 
 # --- one recommended, in plain words -------------------------------------
 rs_rule "a single fitting recipe is recommended" 'if one recipe fits, recommend it'
+
+# --- a menu of one -------------------------------------------------------
+# A real founding with one recipe on the menu skipped the menu, its two
+# questions and the recipe's tool report, although step 11 already carried the
+# rules for any menu. It chose the recipe quietly and reported it afterwards as
+# "so I chose it". So a menu of one is named as a menu, with the same rules.
+rs_rule "the two questions are asked even for a single recipe" \
+  'ask them even when the menu holds a single recipe, unless the interview already answered them'
+rs_rule "a single recipe is still shown as a menu" 'recommend it and still show it as a menu'
+rs_rule "a menu of one follows the same rules, default sentence included" \
+  'a menu of one follows every rule below, as a longer menu does, including the sentence naming it the default'
+rs_rule "and is shown before the stand-up begins, not reported afterwards" \
+  'shown in a reply before the stand-up begins, never only as a choice reported in the completion report'
 rs_rule "several are settled by the recipe's own line" \
   'if several fit, recommend the one whose .recommended when:. line best matches'
 rs_rule "and a tie goes to the first by file name" \
@@ -84,6 +97,10 @@ rs_rule "the recipe's tools are checked" \
   'run .scripts/check-tooling\.sh --recipe <recipe file>.'
 rs_rule "with the path found beside this skill" \
   'passing the chosen file.s path inside the ship skill.s .recipes/. folder beside it'
+rs_rule "the report runs whatever the menu held" \
+  'run it for every chosen recipe, a menu of one included, before the first checkpoint'
+rs_rule "and what it found reaches the completion report" \
+  'let the completion report.s recipe line say what it found'
 rs_rule "a missing tool becomes a setup task" \
   'add it to the masterplan as a setup task, and carry on'
 rs_rule "and that report never stops founding" 'that report never stops founding'
@@ -130,6 +147,10 @@ rs_require_load_bearing "the completion report says what a recipe gives" \
   "$REPORT" '.recipe: <file name>\.md. in agents\.md -> '
 rs_require_load_bearing "the format records the file name with .md" \
   "$FORMAT" '.recipe: <file name>\.md., the file name with .\.md. included'
+rs_require_load_bearing "the completion report says what the tool report found" \
+  "$REPORT" 'the recipe.s tool report, on the same line -> '
+rs_require_load_bearing "the report's recipe bullet asks for the tools" \
+  "$REPORT" 'whether this computer has the tools those checks use\.\]'
 rs_require_load_bearing "and what an own stack does not" \
   "$REPORT" 'so it cannot check the launch steps a recipe would'
 rs_require_load_bearing "the masterplan links the recipe rather than copying it" \
@@ -138,6 +159,10 @@ rs_require_load_bearing "WORKFLOW says one is recommended" \
   "$WORKFLOW" 'shows the recipes that fit, with one recommended'
 rs_require_load_bearing "WORKFLOW says an own stack gets one warning" \
   "$WORKFLOW" 'you can bring your own stack instead: it says once what it then cannot check'
+rs_require_load_bearing "WORKFLOW says a single recipe is still shown" \
+  "$WORKFLOW" 'when only one recipe fits, you still see it the same way, recommended and named the default'
+rs_require_load_bearing "WORKFLOW says the recipe's tools are checked" \
+  "$WORKFLOW" 'checks this computer for the tools that recipe.s launch checks use'
 rs_require_load_bearing "WORKFLOW says no answer takes the recommended one" \
   "$WORKFLOW" 'if you do not answer, it takes the recommended recipe and carries on'
 rs_require_load_bearing "WORKFLOW says founding notes the menu" \
