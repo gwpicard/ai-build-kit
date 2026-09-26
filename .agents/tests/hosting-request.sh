@@ -16,6 +16,7 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 . "$ROOT/.agents/tests/lib/rule-shape.sh"
 
 SHIP="$ROOT/.agents/skills/ship/SKILL.md"
+HOSTING="$ROOT/.agents/skills/ship/references/hosting-request.md"
 SETUP="$ROOT/.agents/skills/setup-ai-build-kit/SKILL.md"
 MASTERPLAN="$ROOT/.agents/skills/setup-ai-build-kit/templates/masterplan.md"
 WORKFLOW="$ROOT/WORKFLOW.md"
@@ -23,7 +24,7 @@ README="$ROOT/README.md"
 SOURCES="$ROOT/docs/SOURCES.md"
 
 rs_init "Hosting request rules"
-rs_exists "$SHIP" "$SETUP" "$MASTERPLAN" "$WORKFLOW" "$README" "$SOURCES"
+rs_exists "$SHIP" "$HOSTING" "$SETUP" "$MASTERPLAN" "$WORKFLOW" "$README" "$SOURCES"
 
 # When it applies.
 rs_rule "it applies to a server this session cannot reach" 'where the tool will run on a server this session cannot reach'
@@ -32,6 +33,20 @@ rs_rule "the person carries it by hand" 'the person carries a short request ther
 
 # The first launch.
 rs_rule "it is written into How it stays running" 'on a first launch, read the masterplan.s "how it stays running" section\. when it holds no hosting request, write one there'
+rs_rule "the skill points at the request's own file" 'write one there, as `references/hosting-request\.md` says'
+
+# The launch waits for an answer. The wait belongs to the launch, so it stays in
+# the skill, while how the answer is recorded lives with the request.
+rs_rule "the launch waits for an address" 'the first launch is not finished until an address is recorded under the request'
+rs_rule "the person hears it is not live yet" 'tell the person plainly that the tool is not live yet and is waiting on the server.s answer'
+rs_rule "it is not recorded as live meanwhile" 'do not write it into changelog\.md as live'
+rs_guard "$SHIP" "ship's hosting request"
+
+# The request itself, its answer and a later launch live in one reference file
+# the skill points at, since they are one procedure used only when a server
+# this session cannot reach runs the tool.
+rs_reset
+rs_rule "the request lives in How it stays running" 'the request lives in the masterplan.s "how it stays running" section'
 rs_rule "it is filled from the project, not by asking" 'filled from the project itself rather than by asking the person'
 rs_rule "the repo and branch field" 'repo: +<url>, branch <branch>'
 rs_rule "the lane field" 'lane: +internal \(private network\) \| public \(internet\)'
@@ -51,12 +66,9 @@ rs_rule "on a recipe the health check is always filled" 'a project on a recipe a
 rs_rule "the block is printed for pasting" 'print the same block in the reply, so the person can paste it'
 rs_rule "the one line the person hears" 'this tool needs a home\. take this request to whoever runs the server\.'
 
-# The answer. The launch waits for it, and it is recorded whenever it arrives,
-# not only in the session that wrote the request. A person often carries the
-# request away and comes back days later, in a new session.
-rs_rule "the launch waits for an address" 'the first launch is not finished until an address is recorded under the request'
-rs_rule "the person hears it is not live yet" 'tell the person plainly that the tool is not live yet and is waiting on the server.s answer'
-rs_rule "it is not recorded as live meanwhile" 'do not write it into changelog\.md as live'
+# The answer is recorded whenever it arrives, not only in the session that
+# wrote the request. A person often carries the request away and comes back
+# days later, in a new session.
 rs_rule "an answer is recorded in any session" 'whenever the person pastes an answer, in this session or a later one, record its address and names under the request'
 rs_rule "a secret in the answer is left out" 'leave out any secret value it carries'
 
@@ -65,14 +77,15 @@ rs_rule "a later launch reads it back" 'on a later /ship, read the recorded host
 rs_rule "a missing answer is noticed" 'where no address is recorded under it, the request went out and no answer came back'
 rs_rule "a missing answer is said and the request printed again" 'say so plainly, print the request again for the person to carry, and ask them to paste the answer here when it arrives'
 rs_rule "a changed field is updated and printed again" 'where the project has changed a field since, update that line from the project and print the request again'
-rs_guard "$SHIP" "ship's hosting request"
+rs_guard "$HOSTING" "the hosting request's own file"
 
 # Only the live paths. Explore privately never moves work to a live address, so
-# the request must sit after that branch ends and before Build with care begins.
+# the pointer to the request must sit after that branch ends and before Build
+# with care begins.
 rs_require_order "the request sits after Explore privately" "$SHIP" \
-  '^### Build and run it' 'Hosting request$'
+  '^### Build and run it' 'references/hosting-request\.md'
 rs_require_order "the request sits inside Build and run it" "$SHIP" \
-  'Hosting request$' '^### Build with care'
+  'references/hosting-request\.md' '^### Build with care'
 
 # The skills name no hosting, data or deploy product. A recipe file and the
 # shared parts it links are the one place in the skills that may, since naming

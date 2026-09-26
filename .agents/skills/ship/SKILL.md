@@ -115,50 +115,15 @@ it, then stop.
    recipe" below says, is the address the first launch waits for.
 
    On a first launch, read the masterplan's "How it stays running" section.
-   When it holds no hosting request, write one there, filled from the project
-   itself rather than by asking the person:
-
-   ```
-   Hosting request
-   Repo:          <url>, branch <branch>
-   Lane:          internal (private network) | public (internet)
-   Port:          <port the tool listens on>
-   Env vars:      <names only>
-   Persist:       <paths that must survive a restart, or none>
-   Healthcheck:   <path, or none>
-   Build:         Dockerfile at root, image has curl or wget | lock file or requirements.txt, plus a Procfile | neither yet
-   Bind:          0.0.0.0 | reads HOST and PORT | 127.0.0.1 (not hostable yet)
-   ```
-
-   Take the lane from the fit check: internal unless somebody outside the team
-   signs in or relies on it. Take Build from the files at the project's root,
-   and Bind from the address the server listens on when it starts. The server
-   builds and checks the tool from those two facts, so read them from the code
-   rather than from a plan. A tool that listens only on 127.0.0.1 cannot be
-   reached from outside its container: say so once, and record it. Env vars
-   carry names only; values are entered on the server. Never write a value, key, password or token into the request.
-   Where the project does not say, write `none` rather than guess. A project
-   on a recipe always has a health route, because the recipe's health section
-   names one, so there Healthcheck is that path and never `none`. Print the
-   same block in the reply, so the person can paste it, and say once: "This
-   tool needs a home. Take this request to whoever runs the server. Paste what
-   they send back here, and I will record it for the next /ship."
+   When it holds no hosting request, write one there, as
+   `references/hosting-request.md` says. That file gives its fields, where
+   each comes from, the one line the person hears, how to record the answer,
+   and how a later /ship reads the request back.
 
    The first launch is not finished until an address is recorded under the
    request, or by the kit's own going-live on a recipe. Until then, tell the person plainly that the tool is not live yet
    and is waiting on the server's answer. Do not write it into CHANGELOG.md as
    live.
-
-   Whenever the person pastes an answer, in this session or a later one,
-   record its address and names under the request, and leave out any secret
-   value it carries.
-
-   On a later /ship, read the recorded hosting request back instead of asking
-   again. Where no address is recorded under it, the request went out and no
-   answer came back. Say so plainly, print the request again for the person to
-   carry, and ask them to paste the answer here when it arrives. Where the
-   project has changed a field since, update that line from the project and
-   print the request again for the person to carry.
 
 #### On a recipe
 
@@ -298,7 +263,7 @@ then on: re-run the evidence for what changed since the last ship, and move
 that over. On a recipe, run its eight checks again, as above; a warning the
 changelog already holds gets a one-line pointer rather than the warning again.
 The hosting request recorded at the first launch still holds, and
-step 4 says how to read it. If reliance, data sensitivity, or consequence has
+`references/hosting-request.md` says how to read it back. If reliance, data sensitivity, or consequence has
 grown since the build path was last checked, rerun the fit check before
 shipping further.
 
