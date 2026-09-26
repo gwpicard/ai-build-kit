@@ -288,6 +288,13 @@ second deploy of the same version leaves nothing older to roll back to, and
 /ship says so before running one. A warning you have already heard is not
 repeated in the same /ship.
 
+Some checks need a secret, such as a database password kept in a file on your
+computer. When you tell the kit where one lives, in any session, it writes down
+where, never the secret itself, in the masterplan's "How it stays running"
+section. A later /ship reads that line before the backup, restore or database
+check. If nothing is recorded, it asks you once. If you cannot say, the warning
+says the kit does not know where the secret is kept, and never that it is gone.
+
 On both live paths, /ship checks that the tool keeps a plain record of what each
 request did, without personal data, secrets or confidential file contents. If
 it does not, you hear once: "The tool keeps no record of what each request did,

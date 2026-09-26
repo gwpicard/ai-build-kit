@@ -463,6 +463,19 @@ attribution line, not the word.
   neither waits for the record nor asks the person to choose to go without it.
   It also holds the repair step that reads the tool's record after launch,
   alongside the person's report.
+- `.agents/tests/secret-location.sh` guards where a secret the project keeps
+  outside `.env` is written down: its location, never its value, in the
+  masterplan's "How it stays running" section, read back before any step
+  that needs it. It holds hardest to what a check says when nobody knows the
+  location. A real launch once skipped the backup, the restore and the
+  database guard, and wrote in the changelog that the database password was
+  not on this computer, when the person had named its file in an earlier
+  session. So `/ship` asks once, and a check that still cannot run says the
+  location is unknown, never that the secret is absent. A secret is passed by
+  its location and never read or shown, and one given as an answer is recorded
+  nowhere and the person is asked to rotate it. The project's own
+  AGENTS.md sits at its line ceiling, so it carries the short form of the rule
+  and the check guards both.
 - `.agents/tests/standing-instructions.sh` guards the project's instruction
   ceiling and the monthly offer to trim repeated code information. It removes
   each written rule in turn and drives the validator's own count at the limit.
