@@ -20,7 +20,7 @@ thing in different words.
 
 It reads the project and writes nothing. Run it from the project root:
 
-    python3 .agents/skills/maintain/scripts/document-bloat.py
+    python3 <maintain skill folder>/scripts/document-bloat.py
 """
 
 import os

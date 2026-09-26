@@ -15,7 +15,7 @@ When `/fix` arrives with no bug described, look for the repair already on the
 board before asking the person to describe one. Refresh the printout with
 `sh .agents/tools/plan-refresh.sh` and read its Broken group, the same open issues
 labelled `broken` that `/what-now` surfaces first. Where the project has no copy
-of the helper, `.agents/skills/setup-ai-build-kit/references/pieces.md` says what
+of the helper, the `setup-ai-build-kit` skill's `references/pieces.md` says what
 to run instead. If none is labelled `broken`,
 ask for the symptom, as step 1 sets out. If exactly one is, name it and use it as
 the report. If more than one is, list them and ask which to take.
@@ -49,7 +49,7 @@ already established ranks first. When that history changes the ranking, say one
 line: "This was tried on <date> and did not hold, so it is ruled out." The
 history is evidence to check against the present, not a verdict to copy.
 
-Load `.agents/skills/section-builder/references/reach-check.md` and run its
+Load the `section-builder` skill's `references/reach-check.md` and run its
 reach check now. Run the existing tests it finds before writing a new focused
 test. Prefer the existing test when it catches the exact symptom; add the new
 regression test after the cause is known.
@@ -101,7 +101,7 @@ the strongest manual or operational evidence available instead.
 
 On Build with care, where a runner exists for the project's language, offer
 to check the regression test by breaking the repaired code on purpose. Follow
-`.agents/skills/section-builder/references/test-strength.md` for this optional
+the `section-builder` skill's `references/test-strength.md` for this optional
 check, its one-line report, and the misses listed on the repair's piece. Keep
 the run to the repaired code and the regression test; do not offer it again
 when section-builder saves the repair.
@@ -110,7 +110,7 @@ when section-builder saves the repair.
 
 Name every temporary log and harness added during the repair, remove each one,
 then run the regression evidence without them. On Build and run it and Build
-with care, run the trim in `.agents/skills/section-builder/references/trim.md`
+with care, run the trim in the `section-builder` skill's `references/trim.md`
 on the repair, so the repair keeps only what the fix needed. Confirm the
 original symptom is gone, record the cause in the changelog in plain language,
 update the other records, and use section-builder's save and review route for
@@ -165,7 +165,7 @@ known one, so it waits behind the notice below.
 
 Declining the fourth attempt is what owes the notice, not the route you pick
 after it. Give it in the same reply that declines, in the shape
-`.agents/skills/setup-ai-build-kit/references/fit-check.md` sets out: name who is
+the `setup-ai-build-kit` skill's `references/fit-check.md` sets out: name who is
 exposed, which here is whoever relies on the broken behaviour, say they are still
 relying on something that is producing wrong results, say that another attempt on
 a cause nobody has established can hide the fault rather than remove it, and say

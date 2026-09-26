@@ -69,7 +69,7 @@ common is that both touch this project. A pause on every request teaches people
 to skip the pause.
 
 Those are labels on the issue, and the issue is written to the shape in
-`.agents/skills/setup-ai-build-kit/references/pieces.md`. Refresh the printout afterwards, so
+the `setup-ai-build-kit` skill's `references/pieces.md`. Refresh the printout afterwards, so
 the person's list matches what was just agreed.
 
 A later session reads the stored subjects rather than reclassifying the piece
@@ -110,7 +110,7 @@ marked for filing, so `/shape` writes it with its label and starts nothing.
 
 A setup or operational task the person has to do themselves is written onto the
 piece as its `## Waiting on you` section, in the shape
-`.agents/skills/setup-ai-build-kit/references/pieces.md` describes. Do the step
+the `setup-ai-build-kit` skill's `references/pieces.md` describes. Do the step
 yourself where you can; write it down only where you cannot.
 
 A repair takes `broken` as well as its subjects, which is what points `/what-now`
@@ -130,7 +130,7 @@ behaves, and building past it is how safe projects quietly become unsafe
 ones.
 
 Where that check leaves a trigger standing, give the risk notice described in
-`.agents/skills/setup-ai-build-kit/references/fit-check.md` before routing the flagged work,
+the `setup-ai-build-kit` skill's `references/fit-check.md` before routing the flagged work,
 and hold it. Nothing is refused and nothing stops there: if the person carries
 on after the notice, record the acceptance as fit-check.md says and route the
 work. What may not happen is the notice quietly going away, or you deciding on

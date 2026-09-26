@@ -144,6 +144,48 @@ fi
 [ ! -e "$FOREIGN/AGENTS.md" ] || \
   fail "Claude plugin bootstrap wrote project files beside a Claude-Code-only installation"
 
+# A second copy is the same installation only while it matches. A copy whose
+# SKILL.md differs is another installation, even when the running one sits
+# beside it, and founding between the two would follow whichever a coding
+# agent happened to read.
+MIXED="$SCRATCH/mixed"
+mkdir -p "$MIXED/.agents" "$MIXED/.claude"
+cp -R "$PACK/.agents/skills" "$MIXED/.agents/skills"
+cp -R "$PACK/.agents/skills" "$MIXED/.claude/skills"
+printf '%s\n' "An older release." >> "$MIXED/.agents/skills/setup-ai-build-kit/SKILL.md"
+if (cd "$MIXED" && .claude/skills/setup-ai-build-kit/scripts/bootstrap-project.sh \
+  >/dev/null 2>&1); then
+  fail "the bootstrap accepted two skill folders holding different installations"
+fi
+[ ! -e "$MIXED/AGENTS.md" ] || \
+  fail "the bootstrap wrote project files beside a different installation"
+
+# A link that leads nowhere, a link loop and an empty folder in the other skill
+# folder are each refused by name, never passed over.
+refuses_broken_entry() {
+  label=$1
+  project="$SCRATCH/broken-$2"
+  mkdir -p "$project/.agents" "$project/.claude/skills"
+  cp -R "$PACK/.agents/skills" "$project/.agents/skills"
+  entry="$project/.claude/skills/setup-ai-build-kit"
+  case "$2" in
+    dangling) ln -s "$project/nowhere" "$entry" ;;
+    loop) ln -s "$entry" "$entry" ;;
+    empty) mkdir "$entry" ;;
+  esac
+  said=$(cd "$project" && \
+    .agents/skills/setup-ai-build-kit/scripts/bootstrap-project.sh 2>&1 >/dev/null) && \
+    fail "the bootstrap accepted $label"
+  case "$said" in
+    *.claude/skills/setup-ai-build-kit*) ;;
+    *) fail "the refusal of $label does not name the folder: $said" ;;
+  esac
+  [ ! -e "$project/AGENTS.md" ] || fail "the bootstrap wrote project files beside $label"
+}
+refuses_broken_entry "a link that leads nowhere" dangling
+refuses_broken_entry "a link loop" loop
+refuses_broken_entry "an empty skill folder" empty
+
 REDIRECTED="$SCRATCH/redirected"
 OUTSIDE="$SCRATCH/outside"
 mkdir -p "$REDIRECTED/.agents" "$OUTSIDE"

@@ -29,7 +29,7 @@ rs_rule "it reads every document" 'every markdown document the project saves, no
 rs_rule "the records and kit files are left out" 'the kit.s own files, and anything in a folder whose name starts with a dot are left out'
 rs_rule "a README is never unreferenced" 'a readme is never one of these'
 rs_rule "stale names are left to the sync read" 'a document that names things the project no longer has is not counted here'
-rs_rule "the shipped script is an engine" '`python3 \.agents/skills/maintain/scripts/document-bloat\.py`'
+rs_rule "the shipped script is an engine" '`python3 <skill folder>/scripts/document-bloat\.py`, where `<skill folder>` is this installed maintain skill.s folder'
 rs_rule "the last resort is reading directly" 'read the documents directly for the same two kinds'
 rs_rule "each finding is confirmed" 'drop anything that does not survive'
 rs_rule "a finding is only an offer" 'that is why a finding is only ever an offer'

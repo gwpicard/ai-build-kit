@@ -19,7 +19,7 @@ belongs to `/shape` first.
 
 `sh .agents/tools/plan-refresh.sh` prints the open issues into `plan.local.md`.
 Refresh first, then read that, and never sort the pieces by hand in its place.
-`.agents/skills/setup-ai-build-kit/references/pieces.md` describes how the
+The `setup-ai-build-kit` skill's `references/pieces.md` describes how the
 pieces are kept, and what to run in a project that has no copy of the helper.
 
 When GitHub cannot be reached, say so, say when the printout was last written,

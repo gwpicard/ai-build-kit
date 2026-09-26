@@ -34,7 +34,7 @@ rs_guard "$PIECES" "the decision and discovery rules"
 
 rs_reset
 rs_rule "the masterplan allows the same optional line" 'on every build path, key terms and decided lines may carry an optional one-line "rests on" clause in plain words'
-rs_rule "the template points to the decision rules" 'follow the decision rules in .agents/skills/setup-ai-build-kit/references/pieces\.md'
+rs_rule "the template points to the decision rules" 'follow the decision rules in the `setup-ai-build-kit` skill.s `references/pieces\.md`'
 rs_guard "$TEMPLATE" "the masterplan template"
 
 rs_reset
@@ -45,7 +45,7 @@ rs_rule "shape settles the question through its usual route" 'name the actual ru
 rs_guard "$SHAPE" "the shaping read"
 
 rs_reset
-rs_rule "building follows the discovery rule when it files work" 'when filing a new piece for work this build uncovers, follow the rule for work found during a build in `.agents/skills/setup-ai-build-kit/references/pieces\.md`'
+rs_rule "building follows the discovery rule when it files work" 'when filing a new piece for work this build uncovers, follow the rule for work found during a build in the `setup-ai-build-kit` skill.s `references/pieces\.md`'
 rs_rule "building writes both records" 'put the originating title on the new piece.s surface and name the new piece on the originating record'
 rs_rule "building says where the work came from" 'say one line such as "found while building the invoice list\."'
 rs_guard "$BUILDER" "the build's discovery record"

@@ -83,7 +83,7 @@ rs_require_order "the trim runs before the hand-over" "$BUILDER" \
   'references/trim\.md' '^Stop\. Give the exact action'
 
 rs_require_load_bearing "/fix runs the trim on a repair" "$FIX" \
-  'run the trim in `\.agents/skills/section-builder/references/trim\.md`'
+  'run the trim in the `section-builder` skill.s `references/trim\.md`'
 rs_require "WORKFLOW says what the trim takes out" "$WORKFLOW" \
   'takes out anything the change added that nothing needs'
 rs_require "WORKFLOW says it only removes or folds" "$WORKFLOW" \

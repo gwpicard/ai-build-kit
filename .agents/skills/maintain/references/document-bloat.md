@@ -12,7 +12,7 @@ that no longer exists, in the documents that matter most. This read looks for
 whole documents, or whole paragraphs, that are not needed.
 
 This is a whole-project read, so the rules in
-`.agents/skills/setup-ai-build-kit/references/whole-project-reads.md` apply.
+the `setup-ai-build-kit` skill's `references/whole-project-reads.md` apply.
 
 ## Where it applies
 
@@ -46,8 +46,8 @@ read here can find them.
    `jscpd --format markdown --min-lines 1 --reporters json --output <temporary folder> .`
    for repeated text. It also finds a copy with small changes. Point the report
    at a temporary folder outside the project and delete it afterwards.
-2. `python3 .agents/skills/maintain/scripts/document-bloat.py`, run from the
-   project root. It finds both kinds and prints one line for each. It prints
+2. `python3 <skill folder>/scripts/document-bloat.py`, where `<skill folder>` is
+   this installed maintain skill's folder, run from the project root. It finds both kinds and prints one line for each. It prints
    nothing when there are none. It finds only word-for-word repeats.
 3. Where neither can run, read the documents directly for the same two kinds,
    and say in the internal evidence that this was the fallback.

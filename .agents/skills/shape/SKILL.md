@@ -13,7 +13,7 @@ separate, deliberate step.
 
 Read masterplan.md first, build-path section first, then the project's pieces,
 the same way `/implement` does. Refresh the printout and read that.
-`.agents/skills/setup-ai-build-kit/references/pieces.md` describes how the pieces are kept.
+The `setup-ai-build-kit` skill's `references/pieces.md` describes how the pieces are kept.
 
 Whenever shaping touches a decision, re-read any "rests on" clause in the
 piece's `## Decided` or the masterplan, following pieces.md's decision rules.
@@ -30,7 +30,7 @@ update the masterplan first, or stop and rerun the fit check. Say which route
 you chose and why, in one line.
 
 Clear, piece-sized work becomes a ready piece straight away: write it into the
-shape `.agents/skills/setup-ai-build-kit/references/pieces.md` describes, take its subjects
+shape the `setup-ai-build-kit` skill's `references/pieces.md` describes, take its subjects
 from change-triage rather than choosing them yourself, and label it `ready`.
 That is a new issue, and it starts unassigned: a person is assigned only when
 `/implement` picks the piece up to build it, never when `/shape` creates it. Then
@@ -58,7 +58,7 @@ masterplan gains a weekly summary email." Use the actual change in that line;
 for "nothing", say the masterplan already covers it. Do not apply a future change while shaping.
 
 When writing the `Under the hood` notes for a project with code, load
-`.agents/skills/section-builder/references/reach-check.md` and run its reach
+the `section-builder` skill's `references/reach-check.md` and run its reach
 check. Use the live result to name the code seams and existing covering tests,
 instead of researching them again from nothing. Keep the result on the piece as
 build context only; never create a separate index or record for it.
@@ -127,22 +127,22 @@ is why a piece has reached `ready` with no `## Done when` in it and nobody
 noticed until the files were read.
 
 - `needs-clarification` runs clarify. Write what comes out into the shape
-  `.agents/skills/setup-ai-build-kit/references/pieces.md` describes, and keep the person's
+  the `setup-ai-build-kit` skill's `references/pieces.md` describes, and keep the person's
   original words underneath, because their words are what a refinement can be
   checked against and what to return to when it reads wrong.
 - `needs-prototype` settles the piece with something to look at. Where the
   person already has a mock, a sketch, or anything else that shows it, follow
-  `.agents/skills/clarify/references/existing-artifact.md` and build toward
+  the `clarify` skill's `references/existing-artifact.md` and build toward
   that, rather than building a throwaway to rediscover a decision they have
   already made. Otherwise run the decision prototype in
-  `.agents/skills/clarify/references/decision-prototype.md`. Either way, the
+  the `clarify` skill's `references/decision-prototype.md`. Either way, the
   decision goes back onto the piece in words.
 - `needs-research` runs one of two steps and records what it finds on the
   piece. A question about one external fact, such as what a provider's API
   supports, runs the source check in
-  `.agents/skills/change-triage/references/source-check.md`. A question about
+  the `change-triage` skill's `references/source-check.md`. A question about
   whether something already exists that could do the work runs
-  `.agents/skills/change-triage/references/existing-work.md`. Say which step you
+  the `change-triage` skill's `references/existing-work.md`. Say which step you
   ran and why, in one line, because a question can plausibly match either.
 
 Two of those three need the person in the room. An interview needs somebody to

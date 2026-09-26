@@ -175,7 +175,10 @@ attribution line, not the word.
   fails, and a hosted job is billed for every minute of it.
 - `.agents/tests/release-builder.sh` checks the assembled public release boundary.
 - `.agents/tests/starter-rehearsal.sh` checks that installed skills can prepare
-  a clean, independently saved project with founding records.
+  a clean, independently saved project with founding records. It also holds
+  what founding refuses in the skill folders: a second copy whose SKILL.md
+  differs from the running one, and a link that leads nowhere, a link loop or
+  an empty folder, each named in the refusal rather than passed over.
 - `.agents/tests/release-publication.sh` rehearses first and later publication
   against a disposable local destination.
 - `.agents/tests/claude-plugin.sh` rehearses the Claude command boundary, an
@@ -211,7 +214,13 @@ attribution line, not the word.
   for the GitHub CLI. It then drives the step `/maintain` runs on every visit,
   which adds the helper to a project founded before it shipped, replaces an
   older copy, changes nothing the second time, and refuses a folder that is not
-  a founded project or a helper path that is a link.
+  a founded project or a helper path that is a link. On the same six layouts
+  it opens every pointer the founded AGENTS.md, the masterplan and the skills
+  name to a file inside a skill. A pointer names the skill and the path inside
+  it, never a fixed project folder, because a project installed for Claude Code
+  alone has no `.agents/skills/` and a plugin keeps its skills outside the
+  project. The check fails on a pointer to a file no skill has, and on the old
+  fixed form.
 - `.agents/tests/queue-groups.sh` guards what `/queue` may call safe to build
   together. The rule that matters is that it reads the printout's grouping rather
   than working safety out again, since the printout is where the guarantee comes
@@ -455,8 +464,14 @@ attribution line, not the word.
   alongside the person's report.
 - `.agents/tests/standing-instructions.sh` guards the project's instruction
   ceiling and the monthly offer to trim repeated code information. It removes
-  each written rule in turn and drives the validator's own count at the limit,
-  so a template of 199 lines passes and one of 200 fails.
+  each written rule in turn and drives the validator's own count at the limit.
+  The ceiling is for the founded file, so the count adds a fixed budget for the
+  lines founding writes to the template's own: with a budget of 35, a template
+  of 164 lines passes and one of 165 fails. A template of 196 lines once passed
+  while a fresh founding came out at 219. It then fills the shipped template
+  the way founding does, with a recipe line and the rules block the Next.js
+  starter appends, and requires what founding added to fit the budget and the
+  result to stay under 200.
 - `.agents/tests/triage-overlap.sh` guards the warning that another open piece
   would be built in the same place: what change-triage compares, that it names
   the clash before the routing step rather than after it, that it blocks

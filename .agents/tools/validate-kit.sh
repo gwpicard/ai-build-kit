@@ -540,14 +540,38 @@ pass "markdown links and skill/reference/template paths resolve"
 # resolve relative to (a) the containing file's own directory, or (b) the
 # skills root, whichever exists. The check above only catches references
 # already spelled out with a full .agents/... path prefix.
+#
+# A file in another skill is written as the `other-skill` skill's
+# `references/foo.md`, since the skills folder differs from one installation
+# to the next. That form is read as other-skill/references/foo.md, including
+# when the line breaks between the skill's name and its path.
 skillmdfiles=$(find "$SKILLS" -name '*.md' | sort)
 relpat='(references|templates|recipes)/[A-Za-z0-9_./-]+[.]md|[a-z][a-z-]*/(references|templates|recipes)/[A-Za-z0-9_./-]+[.]md'
 qualifiedpat='[.]agents/(skills|tests|guard|hooks|tools)/[A-Za-z0-9_./-]+[.](md|sh)'
 relhits=$(printf '%s\n' "$skillmdfiles" | while IFS= read -r f; do
   [ -n "$f" ] || continue
-  awk -v pat="$relpat" -v qualified="$qualifiedpat" '
+  awk -v pat="$relpat" -v qualified="$qualifiedpat" -v q="'" '
+    BEGIN {
+      named = "`[a-z][a-z-]*` skill" q "s `"
+      named_at_end = "`[a-z][a-z-]*` skill" q "s[ \t]*$"
+    }
+    FNR == 1 { carry = "" }
     {
       line = $0
+      if (carry != "") {
+        sub(/^[ \t]*`/, "`" carry "/", line)
+        carry = ""
+      }
+      while (match(line, named)) {
+        name = substr(line, RSTART + 1)
+        sub(/`.*$/, "", name)
+        line = substr(line, 1, RSTART - 1) "`" name "/" substr(line, RSTART + RLENGTH)
+      }
+      if (match(line, named_at_end)) {
+        carry = substr(line, RSTART + 1)
+        sub(/`.*$/, "", carry)
+        line = substr(line, 1, RSTART - 1)
+      }
       gsub(qualified, "", line)
       rest = line
       while (match(rest, pat)) {
@@ -663,15 +687,22 @@ fi
 
 # Keep the project template short enough to read every session. The maintainer's
 # own AGENTS.md has a different job and is outside this ceiling.
+#
+# The ceiling applies to the file a project ends up with, not to the template.
+# Founding writes the project line, the capability profile, the stack section
+# and its recipe line, and a framework's own starter may append its rules block
+# too. A template of 196 lines passed here while a fresh founding came out at
+# 219, so the template must leave room for a fixed budget of founding's lines.
+founding_budget=35
 foundation_agents="$SKILLS/setup-ai-build-kit/templates/foundation/AGENTS.md"
 if [ ! -f "$foundation_agents" ]; then
   fail "$foundation_agents: missing"
 else
   foundation_lines=$(awk 'END { print NR }' "$foundation_agents")
-  if [ "$foundation_lines" -lt 200 ]; then
-    pass "the foundation instructions stay under 200 lines ($foundation_lines)"
+  if [ $((foundation_lines + founding_budget)) -lt 200 ]; then
+    pass "the foundation instructions leave room for founding under 200 lines ($foundation_lines + $founding_budget)"
   else
-    fail "the foundation instructions have $foundation_lines lines; keep them under 200"
+    fail "the foundation instructions have $foundation_lines lines; with founding's $founding_budget they reach 200"
   fi
 fi
 

@@ -6,7 +6,7 @@ uses any more, and dependencies nothing imports. The proposals then rest on
 what is in the project rather than on what the session happened to notice.
 
 This is a whole-project read, so the rules in
-`.agents/skills/setup-ai-build-kit/references/whole-project-reads.md` apply.
+the `setup-ai-build-kit` skill's `references/whole-project-reads.md` apply.
 
 ## Where it applies
 

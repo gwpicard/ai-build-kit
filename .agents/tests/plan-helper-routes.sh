@@ -1,7 +1,8 @@
 #!/usr/bin/env sh
 # plan-helper-routes.sh: prove every installation route leaves a founded
 # project with a working plan printout helper, and that /maintain's step adds
-# it to a project founded before it shipped.
+# it to a project founded before it shipped. On the same routes, prove every
+# pointer to a file inside a skill opens.
 #
 # The helper used to live in the kit's own tools folder, outside every skill.
 # The shared installer and both plugins carry skills and nothing else, so only
@@ -167,6 +168,90 @@ AGENT_PROJECT="$SCRATCH/agent-plugin-project"
 mkdir -p "$AGENT_PROJECT"
 founds_with_helper "$AGENT_PROJECT" "Agent Plugins folder" \
   "$AGENT_PLUGIN/skills/setup-ai-build-kit/scripts/bootstrap-project.sh"
+
+echo "== Every pointer to a skill's file finds it, on every route =="
+
+# A founded project's AGENTS.md and masterplan, and the skills themselves, name
+# files inside other skills: the rules for a piece, the fit check, the trim. They
+# once named them at .agents/skills/..., which a project installed for Claude
+# Code alone, or through either plugin, does not have. So a pointer names the
+# skill and the path inside it, and the coding agent finds the skill wherever it
+# was installed. Here each route's own layout resolves every pointer.
+
+# The pointers in a set of files, one "skill|path" per line, read with the lines
+# joined so a pointer wrapped across two lines is still found.
+pointers_in() {
+  for f in "$@"; do tr '\n' ' ' < "$f"; echo; done \
+    | tr -s ' ' \
+    | grep -oE "\`[a-z-]+\` skill's \`[^\`]+\`" \
+    | sed -E "s/^\`([a-z-]+)\` skill's \`([^\`]+)\`$/\1|\2/" \
+    | sort -u
+}
+
+# Print each pointer whose file is missing from the given skills folder.
+missing_pointers() {
+  skills=$1
+  shift
+  pointers_in "$@" | while IFS='|' read -r skill path; do
+    [ -f "$skills/$skill/$path" ] || echo "$skill/$path"
+  done
+}
+
+# A path into a named skill at a fixed project folder is the form this replaced.
+fixed_paths_in() {
+  grep -nE '\.(agents|claude)/skills/[a-z-]+/' "$@" 2>/dev/null || true
+}
+
+pointers_resolve() {
+  route=$1
+  skills=$2
+  project=$3
+  masterplan="$SCRATCH/masterplan-$(echo "$route" | tr -c 'a-z' '-').md"
+  cp "$skills/setup-ai-build-kit/templates/masterplan.md" "$masterplan"
+  docs_found=$(pointers_in "$project/AGENTS.md" "$masterplan" | wc -l | tr -d ' ')
+  missing=$(missing_pointers "$skills" "$project/AGENTS.md" "$masterplan")
+  fixed=$(fixed_paths_in "$project/AGENTS.md" "$masterplan")
+  if [ "$docs_found" -ge 4 ] && [ -z "$missing" ] && [ -z "$fixed" ]; then
+    pass "$route: the $docs_found pointers in the founded AGENTS.md and masterplan all open"
+  else
+    fail "$route: founded documents found $docs_found pointers; missing: $missing; fixed paths: $fixed"
+  fi
+  skill_files=$(find -L "$skills"/ -name '*.md' -o -name '*.py' | sort)
+  # shellcheck disable=SC2086
+  skills_found=$(pointers_in $skill_files | wc -l | tr -d ' ')
+  # shellcheck disable=SC2086
+  missing=$(missing_pointers "$skills" $skill_files)
+  # shellcheck disable=SC2086
+  fixed=$(fixed_paths_in $skill_files)
+  if [ "$skills_found" -ge 10 ] && [ -z "$missing" ] && [ -z "$fixed" ]; then
+    pass "$route: the $skills_found pointers between skills all open"
+  else
+    fail "$route: skills found $skills_found pointers; missing: $missing; fixed paths: $fixed"
+  fi
+}
+
+pointers_resolve "whole copy" "$WHOLE/.agents/skills" "$WHOLE"
+pointers_resolve "shared installer, several coding agents, as Claude Code reads it" \
+  "$SHARED/.claude/skills" "$SHARED"
+pointers_resolve "shared installer, several coding agents, as the others read it" \
+  "$SHARED/.agents/skills" "$SHARED"
+pointers_resolve "shared installer, Claude Code alone" "$CLAUDE_ONLY/.claude/skills" "$CLAUDE_ONLY"
+pointers_resolve "Claude Code plugin" "$PACK/.agents/skills" "$CLAUDE_PLUGIN"
+pointers_resolve "Agent Plugins folder" "$AGENT_PLUGIN/skills" "$AGENT_PROJECT"
+
+# The check has to be able to fail. A pointer to a file no skill has is reported,
+# and so is the old fixed path, in a copy of a founded AGENTS.md.
+broken="$SCRATCH/broken-AGENTS.md"
+cp "$CLAUDE_ONLY/AGENTS.md" "$broken"
+printf '%s\n' "Read the \`setup-ai-build-kit\` skill's \`references/no-such-file.md\`." >> "$broken"
+[ "$(missing_pointers "$CLAUDE_ONLY/.claude/skills" "$broken")" = \
+  "setup-ai-build-kit/references/no-such-file.md" ] && \
+  pass "a pointer to a file the skill does not have is reported" || \
+  fail "a pointer to a missing file went unreported"
+printf '%s\n' 'The rules are in `.agents/skills/setup-ai-build-kit/references/pieces.md`.' >> "$broken"
+[ -n "$(fixed_paths_in "$broken")" ] && \
+  pass "a pointer at a fixed project folder is reported" || \
+  fail "a pointer at a fixed project folder went unreported"
 
 echo "== /maintain adds the helper to a project founded before it shipped =="
 

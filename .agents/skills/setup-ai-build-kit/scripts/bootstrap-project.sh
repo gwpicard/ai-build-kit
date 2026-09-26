@@ -58,22 +58,38 @@ fi
 # Codex, Cursor, Gemini CLI and GitHub Copilot read .agents/skills. Claude Code
 # alone reads .claude/skills, so choosing only Claude Code leaves nothing in
 # .agents/skills. With several coding agents, one folder holds the skill and the
-# other links to it, or holds a second copy of the same installation.
+# other links to it, or holds a second copy of the same installation. A second
+# copy is told from a different installation by comparing the two SKILL.md
+# files, since the installer's copy option makes both real folders.
 INSTALLED_HERE=no
+SAME_COPY=no
 OTHER_INSTALLATION=no
 for skills_folder in .agents/skills .claude/skills; do
   installed_start="$PROJECT_ROOT/$skills_folder/setup-ai-build-kit"
-  [ -d "$installed_start" ] || continue
-  installed_start=$(CDPATH= cd -- "$installed_start" && pwd -P)
-  if [ "$installed_start" = "$SKILL_ROOT" ]; then
+  [ -e "$installed_start" ] || [ -L "$installed_start" ] || continue
+  # A link that leads nowhere, a link loop, or a folder with no skill in it is
+  # an installation that went wrong. Passing over it in silence would found
+  # the project beside something nobody can read.
+  [ -d "$installed_start" ] || \
+    fail "$skills_folder/setup-ai-build-kit is a broken link; remove it or install the kit again"
+  [ -f "$installed_start/SKILL.md" ] || \
+    fail "$skills_folder/setup-ai-build-kit holds no skill; remove the folder or install the kit again"
+  resolved_start=$(CDPATH= cd -- "$installed_start" && pwd -P)
+  if [ "$resolved_start" = "$SKILL_ROOT" ]; then
     INSTALLED_HERE=yes
+  elif cmp -s "$installed_start/SKILL.md" "$SKILL_ROOT/SKILL.md"; then
+    SAME_COPY=yes
   else
     OTHER_INSTALLATION=yes
   fi
 done
 
+if [ "$INSTALLED_HERE" = "yes" ] && [ "$OTHER_INSTALLATION" = "yes" ]; then
+  fail "the two skill folders hold different AI Build Kit installations; install the kit again so both match, or remove one"
+fi
+
 if [ "$INSTALLED_HERE" = "no" ]; then
-  if [ "$OTHER_INSTALLATION" = "yes" ]; then
+  if [ "$OTHER_INSTALLATION" = "yes" ] || [ "$SAME_COPY" = "yes" ]; then
     [ "$PLUGIN_INSTALLATION" != "yes" ] || \
       fail "this project has both an installed AI Build Kit plugin and a separate AI Build Kit skill installation; keep one before running start"
     fail "the chosen project belongs to a different setup-ai-build-kit skill installation"
