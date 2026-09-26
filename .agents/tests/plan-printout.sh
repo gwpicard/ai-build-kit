@@ -14,7 +14,7 @@
 set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
-REFRESH="$ROOT/tools/plan-refresh.sh"
+REFRESH="$ROOT/skills/setup-ai-build-kit/templates/foundation/plan-refresh.sh"
 
 FAIL=0
 fail() {

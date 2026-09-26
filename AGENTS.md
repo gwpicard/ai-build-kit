@@ -200,6 +200,18 @@ attribution line, not the word.
   held-up piece names the piece holding it rather than its number. It also holds
   the invariant `/queue` rests on, that a piece with an open blocker never
   reaches the buildable group while a piece whose blocker has closed does.
+- `.agents/tests/plan-helper-routes.sh` proves the helper that writes the
+  printout reaches every project. It ships inside the setup-ai-build-kit skill,
+  because the shared installer and both plugins carry skills and nothing else,
+  and a project without it once fell back to reading the issues by hand and
+  named a blocked piece as the next one to build. The check lays out a project
+  the way each route leaves one: a whole copy, the shared installer for several
+  coding agents and for Claude Code alone, the Claude Code plugin and the Agent
+  Plugins folder. It founds each one and runs the printout against a stand-in
+  for the GitHub CLI. It then drives the step `/maintain` runs on every visit,
+  which adds the helper to a project founded before it shipped, replaces an
+  older copy, changes nothing the second time, and refuses a folder that is not
+  a founded project or a helper path that is a link.
 - `.agents/tests/queue-groups.sh` guards what `/queue` may call safe to build
   together. The rule that matters is that it reads the printout's grouping rather
   than working safety out again, since the printout is where the guarantee comes
@@ -207,7 +219,9 @@ attribution line, not the word.
   question keeping a piece out of both groups, the command reporting and never
   building, and `/what-now` keeping its cap of three things, because a
   `/what-now` that grew the whole list would undo the split that earned the ninth
-  command.
+  command. The same rule reaches the end of a build: `/implement` and
+  section-builder name a next piece only from the printout's `To build` group,
+  and never from a hand reading of the issues.
 - `.agents/tests/gated-turns.sh` checks the rule that decides when a scripted
   replay turn is due: that a turn with no precondition still fires by position,
   that one with a precondition waits until the kit has said the thing it

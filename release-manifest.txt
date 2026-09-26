@@ -20,7 +20,6 @@
 .agents/skills/sync|
 .agents/skills/what-now|
 .agents/tools/build-adapters.sh|
-.agents/tools/plan-refresh.sh|
 .claude/commands|
 .claude/skills/change-triage|
 .claude/skills/clarify|

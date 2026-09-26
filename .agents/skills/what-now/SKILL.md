@@ -13,8 +13,10 @@ masterplan.md (build-path section first), the project's pieces, the recent
 changelog, the capability profile in AGENTS.md, git status, the recent commits
 and merged pull requests, and any open pull requests.
 
-Refresh the printout with `.agents/tools/plan-refresh.sh` and read
-`plan.local.md`. If GitHub cannot be reached, work from the printout and say when
+Refresh the printout with `sh .agents/tools/plan-refresh.sh` and read
+`plan.local.md`. Where the project has no copy of the helper,
+`.agents/skills/setup-ai-build-kit/references/pieces.md` says what to run
+instead; never sort the pieces by hand. If GitHub cannot be reached, work from the printout and say when
 it was written, because an old list a person can see beats no list at all. Note
 whether the project has launched (the changelog says), whether work sits
 half-done (git status says), whether a finished piece is waiting for its

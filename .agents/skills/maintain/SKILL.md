@@ -102,7 +102,9 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    written with four build paths" below; that too is decided by what the
    masterplan says rather than by which update this is. On the shared route,
    also run "Tidying a project founded from a whole copy of the kit" below
-   whenever the leftovers it names are present.
+   whenever the leftovers it names are present. On every route and every
+   visit, run "Adding the plan printout helper" below; it does nothing when
+   the project's copy is already current.
 6. Re-read the capability profile's reach-check engine against what the
    harness and project can use now. Keep the same preference order as
    `.agents/skills/section-builder/references/reach-check.md`, and update the
@@ -165,6 +167,29 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
     the next one is due." If the project's Claude settings existed before AI
     Build Kit did, add that the reminder cannot appear by itself there, and that
     `/what-now` reports it when asked.
+
+## Adding the plan printout helper
+
+`plan.local.md` is written by `.agents/tools/plan-refresh.sh` in the project.
+That helper ships inside the setup-ai-build-kit skill and founding copies it
+in. A project founded before that has no copy, unless it came from a whole copy
+of the kit, and then its copy may be older. An update refreshes skills and
+nothing else, so the helper would never arrive.
+
+On the clean checkpoint from step 2, and after the update where the person
+approved one, run `sh <installed setup-ai-build-kit skill>/scripts/place-plan-helper.sh`
+from the project root. It adds the helper when it is missing, replaces a copy
+that differs from the installed one, and changes nothing when the copy is
+current, so it is safe on every visit.
+
+Where it added the helper, say one sentence: "I have added the helper that
+prints your list of pieces, so /what-now, /queue and /implement read what is
+ready from it rather than from the issues by hand." Where it replaced one, say
+that the helper was brought up to date. Save either change with the visit's
+other changes and add a dated changelog line. When it changed nothing, say
+nothing. Where the harness cannot run the script and the project has no
+helper, copy the installed skill's `templates/foundation/plan-refresh.sh` to
+`.agents/tools/plan-refresh.sh` by hand.
 
 ## Migrating a project founded before /shape and /implement
 

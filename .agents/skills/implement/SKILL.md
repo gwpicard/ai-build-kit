@@ -17,9 +17,10 @@ Shaping, sizing, and settling a question all happen in `/shape`, so this command
 never has to guess what a piece means. A request that is not yet a ready piece
 belongs to `/shape` first.
 
-`.agents/tools/plan-refresh.sh` prints the open issues into `plan.local.md`.
-Refresh first, then read that. `.agents/skills/setup-ai-build-kit/references/pieces.md`
-describes how the pieces are kept.
+`sh .agents/tools/plan-refresh.sh` prints the open issues into `plan.local.md`.
+Refresh first, then read that, and never sort the pieces by hand in its place.
+`.agents/skills/setup-ai-build-kit/references/pieces.md` describes how the
+pieces are kept, and what to run in a project that has no copy of the helper.
 
 When GitHub cannot be reached, say so, say when the printout was last written,
 and work from it. The piece already in hand carries on. Anything that would
@@ -109,6 +110,16 @@ decide, because reassigning somebody's work is their call.
 
 Two people building the same piece is what claiming a piece exists to prevent,
 so say it the moment you see it rather than at the end.
+
+## Naming the next piece
+
+When the report at the end of a build names what can be built next, read it off
+the printout section-builder has just refreshed. Name only a piece under
+`To build` marked `(ready)`, and never the piece just built. Where that group
+holds no such piece, say that nothing is ready to build now, say what the rest
+are waiting on, and name no piece as next. Never work the next piece out from
+the issue list or its blocked-by links by hand: the printout already keeps a
+piece with an open blocker out of `To build`, and a hand reading does not.
 
 ## Typed with auto, or handed to a goal mode
 

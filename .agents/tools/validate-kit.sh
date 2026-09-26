@@ -803,7 +803,7 @@ fi
 # means, which is the one thing a piece exists to stop. Shaping lives in /shape.
 shapefile="$SKILLS/shape/SKILL.md"
 whatnowfile="$SKILLS/what-now/SKILL.md"
-refresh="$ROOT/.agents/tools/plan-refresh.sh"
+refresh="$SKILLS/setup-ai-build-kit/templates/foundation/plan-refresh.sh"
 if [ -f "$pieces" ] && [ -f "$shapefile" ] && [ -f "$whatnowfile" ] && [ -f "$refresh" ]; then
   nr_ok=1
   grep -qF "## An issue somebody typed by hand" "$pieces" || \
@@ -904,7 +904,7 @@ fi
 # Sub-issues for a piece made of parts: the rule that keeps a part
 # (same outcome) apart from a blocked-by piece (different outcome), a container
 # parent /implement does not build directly, and a printout that reads the parts.
-refreshtool="$ROOT/.agents/tools/plan-refresh.sh"
+refreshtool="$SKILLS/setup-ai-build-kit/templates/foundation/plan-refresh.sh"
 if [ -f "$pieces" ] && [ -f "$implementfile" ] && [ -f "$refreshtool" ]; then
   sub_ok=1
   grep -qF "Same outcome means a sub-issue; a different outcome" "$pieces" || \

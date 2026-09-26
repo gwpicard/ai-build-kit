@@ -23,6 +23,8 @@ SKILL="$ROOT/.agents/skills/queue/SKILL.md"
 WORKFLOW="$ROOT/WORKFLOW.md"
 PIECES="$ROOT/.agents/skills/setup-ai-build-kit/references/pieces.md"
 WHATNOW="$ROOT/.agents/skills/what-now/SKILL.md"
+IMPLEMENT="$ROOT/.agents/skills/implement/SKILL.md"
+BUILDER="$ROOT/.agents/skills/section-builder/SKILL.md"
 
 rs_init "Queue grouping checks"
 
@@ -75,5 +77,25 @@ rs_require "pieces.md says what /queue actually offers" \
 # doing the same thing.
 rs_require "what-now still caps itself at three things" \
   "$WHATNOW" 'name at most three things'
+
+# The same safety reaches the end of a build. The report there names what can
+# be built next, and it once named a piece that was waiting on another, because
+# the list had been read by hand. So the next piece comes from the printout's
+# To build group, and from nothing else.
+rs_reset
+rs_rule "the next piece comes from the refreshed printout's ready group" \
+  'name only a piece under `to build` marked `\(ready\)`'
+rs_rule "the piece just built is never named as next" 'never the piece just built'
+rs_rule "with nothing ready, no piece is named as next" 'name no piece as next'
+rs_rule "the next piece is never worked out by hand" \
+  'never work the next piece out from the issue list'
+rs_guard "$IMPLEMENT" "the /implement skill's next-piece rule"
+
+rs_require_load_bearing "section-builder names a next piece only from To build" \
+  "$BUILDER" 'name only a piece under its `to build` group'
+rs_require_load_bearing "section-builder never works the next piece out by hand" \
+  "$BUILDER" 'never work the next piece out from the issue list by hand'
+rs_require_load_bearing "pieces.md forbids sorting the pieces by hand" \
+  "$PIECES" 'never sort the pieces by reading the issues by hand'
 
 rs_done

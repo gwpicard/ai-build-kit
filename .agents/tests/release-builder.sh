@@ -49,6 +49,8 @@ for required in \
   .agents/skills/setup-ai-build-kit/scripts/bootstrap-project.sh \
   .agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md \
   .agents/skills/setup-ai-build-kit/templates/foundation/session-start.sh \
+  .agents/skills/setup-ai-build-kit/templates/foundation/plan-refresh.sh \
+  .agents/skills/setup-ai-build-kit/scripts/place-plan-helper.sh \
   .agents/skills/setup-ai-build-kit/templates/maintenance-record \
   .agents/skills/screen-check/SKILL.md \
   .agents/skills/ship/references/recipe-format.md \
@@ -60,9 +62,9 @@ for required in \
   agent-plugin/skills/screen-check/SKILL.md \
   agent-plugin/skills/setup-ai-build-kit/SKILL.md \
   agent-plugin/skills/setup-ai-build-kit/scripts/bootstrap-project.sh \
+  agent-plugin/skills/setup-ai-build-kit/templates/foundation/plan-refresh.sh \
   .agents/guard/blocked-commands.md \
   .agents/tools/build-adapters.sh \
-  .agents/tools/plan-refresh.sh \
   .agents/hooks \
   .claude/settings.json \
   .github/copilot-instructions.md \
@@ -96,6 +98,7 @@ for forbidden in \
   .agents/tools/rehearse-merged-tree.sh \
   .agents/tools/preflight-cutover.sh \
   .agents/tools/validate-kit.sh \
+  .agents/tools/plan-refresh.sh \
   .agents/tools/build-release.sh; do
   [ ! -e "$FIRST/$forbidden" ] || fail "starter contains maintainer-only $forbidden"
 done
