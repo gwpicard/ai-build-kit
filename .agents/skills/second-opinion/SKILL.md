@@ -38,11 +38,17 @@ click?
 Before a finding asks the person to look up a setting of a service the tool
 uses, check whether you can read it yourself with what you already have: an
 address the service answers in public, a command-line tool this session is
-already signed in to, or the project's own files. On a recipe, the recipe's
-`Settings the kit can read` section says how. Where you can, read it and report
-the value and what it means. Use only a key the project already sends to the
-browser, never a secret key, a service key or a password. Ask the person only
-for a setting you cannot read that way, and say why you cannot.
+already signed in to, through that tool's own commands, or the project's own
+files. On a recipe, the recipe's `Settings the kit can read` section says how.
+Where you can, read it and report the value and what it means. Use only a key
+the project already sends to the browser, never a secret key, a service key or
+a password. Ask the person only for a setting you cannot read that way, and say
+why you cannot.
+
+Never read a stored login, token or password out of the keychain, a credential
+store, or another tool's own files, and never call a service's management API
+with one. Once you have said you cannot read a setting, never read it another
+way.
 
 ## Axis 3: Screen
 

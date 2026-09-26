@@ -85,7 +85,7 @@ rs_rule "the general list is warnings" 'each item that applies and is not in pla
 rs_rule "the review follows the setting rule" 'before the review asks the person to look up a setting, it follows "a setting the kit can read" below'
 rs_rule "the rule holds for the review and every check" 'this holds for the launch review and for every check in this skill, on a recipe or off one'
 rs_rule "the kit checks whether it can read the setting first" 'before you ask the person to look up a setting of a service the tool uses, check whether the kit can read it with what it already has'
-rs_rule "the three routes it already has" 'an address the service answers in public, a command-line tool this session is already signed in to, or the project.s own files'
+rs_rule "the three routes it already has" 'an address the service answers in public, a command-line tool this session is already signed in to, through that tool.s own commands, or the project.s own files'
 rs_rule "it reads and reports instead of asking" 'where it can, read the setting and report its value in one plain line, instead of asking'
 rs_rule "the recipe says which settings and how" 'its `settings the kit can read` section, where it has one, says which settings the kit reads and how'
 rs_rule "only a key the browser already has" 'such a read uses only a key the project already sends to the browser'
