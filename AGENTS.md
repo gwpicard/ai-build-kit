@@ -196,8 +196,11 @@ attribution line, not the word.
   that checks the remote would otherwise see a merged fix that never arrived.
 - `.agents/tests/replay-provider.sh` checks both replay providers without a
   model call. It stubs Claude Code and Codex, then proves each first turn,
-  resumed turn and grader route. It also holds the Codex shell profiles that
-  keep the fake GitHub command ahead of a signed-in real one.
+  resumed turn and grader route. It also holds the throwaway shell profiles
+  that keep the fake GitHub command ahead of a signed-in real one, for Codex
+  and for Claude Code, whose Bash tool once found the real one through the
+  person's own login profile. A login shell started with those profiles must
+  find the stand-in.
 - `.agents/tests/plan-printout.sh` runs the printout against a fixed set of
   issues and reads what it wrote: which group each piece lands in, whether a
   waiting piece says why, whether a shaped piece says it is ready, and whether a
@@ -252,8 +255,10 @@ attribution line, not the word.
   two branches from that commit and pushes them, so the project starts with two
   open pull requests that both merge and still pass the project's checks.
   Neither half runs on a folder that is not a fresh replay project. It holds
-  52's gate open only on a request for a yes that names the merge, and 53's only
-  once the kit says it merged, never on a reply that asks first.
+  52's gate open on the ways of asking for a merge yes it lists, and shut on a
+  reply that says it merged. It holds 53's open on a reply saying, in the first
+  person or the past tense, that the kit merged, and shut on the replies it
+  lists that ask first or say what a merge would do.
 - `.agents/tests/grader-recovery.sh` checks that the replay grader recovers a
   grading missing only its final brace or carrying one stray brace after it,
   and still refuses one that was cut off partway or followed by other text.
@@ -282,9 +287,11 @@ attribution line, not the word.
   holds the pull request end state for scenarios 52 and 53. It reads which pull
   requests a project started with from its first commit. A merge made on "put
   it live" alone is a miss for 52, and so is one of two pull requests left open
-  for 53. A pull request the kit opened itself during the run is not counted,
-  and one whose branch a Git merge put on the remote's `main` counts as merged,
-  as GitHub would show it.
+  for 53. A pull request the kit opened itself during the run is not counted.
+  For 52, a change put on the remote's `main` by a Git merge or a squash counts
+  as merged, so that route is caught too. For 53, only a merge made on the pull
+  request counts, and a change pushed straight to `main` is a miss that says
+  so.
 - `.agents/tests/check-tooling.sh` runs the setup tooling report against a set of
   throwaway PATHs and reads when it stops: a missing tool or a signed-out account
   blocks founding, while issues switched off or a read-only account do not.

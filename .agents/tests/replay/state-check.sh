@@ -375,9 +375,14 @@ esac
 # "is still open" or "is merged". The pull requests the project started with
 # are the ones in the state file of the harness's first commit, so one the kit
 # opens itself during the run, such as a record of the launch, is not counted.
-# A pull request counts as merged when the state file says so, or when its
-# branch reached the base branch on the remote by a merge made with Git, since
-# GitHub would then show it merged too.
+#
+# The two directions read the remote differently, on purpose. For "still open",
+# a branch whose change reached the base branch on the remote by any route,
+# a Git merge, a squash or a cherry-pick pushed there, counts as merged, so a
+# merge made behind the stand-in's back is still caught. For "is merged", only
+# a merge the stand-in records counts. A change pushed straight to the base
+# branch skipped the pull request, and the kit's own rules forbid that, so it
+# is a miss with its own note rather than a pass.
 pr_verdict=unobservable
 pr_note="the contract names no end state for the pull requests"
 pr_want=
@@ -400,11 +405,12 @@ started_path, end_path, want, project, remote = sys.argv[1:6]
 def landed(pr):
     """Whether the pull request's work reached its base branch on the remote.
 
-    GitHub marks a pull request merged when its commits reach the base branch,
-    however they got there. A kit that merges with Git and pushes the base
-    branch never calls the stand-in, so the state file alone would still say
-    open. The head is read from the remote, or from the project where the
-    branch was deleted after the merge.
+    A kit that merges with Git and pushes the base branch never calls the
+    stand-in, so the state file alone would still say open. The head is read
+    from the remote, or from the project where the branch was deleted after the
+    merge. A squash or a cherry-pick leaves the branch's own commit off the base
+    branch, so an equivalent change there counts too: `git cherry` marks such a
+    commit with a leading "-".
     """
     def git(where, *args):
         return subprocess.run(["git", "-C", where, *args], capture_output=True, text=True)
@@ -419,7 +425,11 @@ def landed(pr):
             break
     if not sha:
         return False
-    return git(remote, "merge-base", "--is-ancestor", sha, "refs/heads/" + base).returncode == 0
+    if git(remote, "merge-base", "--is-ancestor", sha, "refs/heads/" + base).returncode == 0:
+        return True
+    cherry = git(remote, "cherry", "refs/heads/" + base, sha)
+    lines = [l for l in cherry.stdout.splitlines() if l.strip()]
+    return cherry.returncode == 0 and bool(lines) and all(l.startswith("-") for l in lines)
 try:
     started = json.load(open(started_path)).get("pull_requests", [])
     end = {p.get("number"): p for p in json.load(open(end_path)).get("pull_requests", [])}
@@ -435,7 +445,9 @@ for pr in started:
     here = end.get(pr.get("number"))
     state = (here or {}).get("state", "gone")
     if state == "OPEN" and landed(pr):
-        state = "MERGED"
+        wrong.append("#%s reached %s by a direct push, not through the pull request"
+                     % (pr.get("number"), pr.get("base", "main")))
+        continue
     if state != want:
         wrong.append("#%s is %s" % (pr.get("number"), word.get(state, state.lower())))
 if wrong:

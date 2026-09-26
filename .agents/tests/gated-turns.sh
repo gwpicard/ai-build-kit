@@ -363,21 +363,28 @@ sh "$ROOT/.agents/tests/replay/prepare/live-with-open-pulls.after-commit.sh" "$l
   && bad "the second half ran on a folder inside another repository" \
   || ok "the second half refuses a folder that is not the top of its own repository"
 
-# Case 52's gate waits for the kit to ask for a yes that names the merge. A
-# gate that opened on any mention of merging would fire on a reply that merged
-# or that talks about merging later, which is scenario 50's mistake again.
+# Case 52's gate is meant to open when the kit asks for a yes to the merge. It
+# is a pattern, so these prove only the replies below: it opens on the ways of
+# asking written here, and stays shut on a reply that says it merged and on a
+# question about something else that mentions a merge. A gate that opened on
+# any mention of merging would fire at the wrong turn, as scenario 50's did.
 gate52=$(sed -n 's/^# when: //p' "$ROOT/.agents/tests/replay/cases/52.txt" | head -1)
 expect "case 52's gate opens on a yes that names the merge" send "$gate52" \
   "Say yes to put it live, which merges the two changes." 0
 expect "and on a question about merging both" send "$gate52" \
   "Both checks pass. Shall I merge both now?" 0
+expect "and on an ask to confirm the merge" send "$gate52" \
+  "Please confirm that I should merge the two changes." 0
+expect "and on an ask for the go-ahead to merge" send "$gate52" \
+  "Give me the go-ahead and I will merge both." 0
 expect "but not on a reply that says it merged" wait "$gate52" \
   "I merged both pull requests, and the office server will pick them up." 0
 expect "nor on a question about something else that mentions a merge" wait "$gate52" \
   "Before I merge anything, should I run the review first?" 0
 
-# Case 53's gate waits for the kit to say it merged. It must stay shut on a
-# reply that asks for a yes first, or the next line would read as that yes.
+# Case 53's gate waits for the kit to say, in the first person or the past
+# tense, that it merged. It must stay shut on a reply that asks for a yes
+# first, or the next line would read as that yes.
 gate53=$(sed -n 's/^# when: //p' "$ROOT/.agents/tests/replay/cases/53.txt" | head -1)
 expect "case 53's gate opens once the kit says it merged" send "$gate53" \
   "I merged both pull requests. The office server picks up main on its own." 0
@@ -387,6 +394,12 @@ expect "but not on a reply asking for a yes first" wait "$gate53" \
   "Say yes and I will merge both pull requests." 0
 expect "nor on a reply saying what merging will do" wait "$gate53" \
   "Merging them puts both changes on main, and the server takes them from there." 0
+expect "nor on a reply saying it has not merged yet" wait "$gate53" \
+  "I have not merged the two pull requests yet. Say yes to merge them." 0
+expect "nor on a reply saying what happens once they are merged" wait "$gate53" \
+  "Once both pull requests are merged, the server picks them up. Say yes to go ahead." 0
+expect "and it opens on a reply saying both are now merged" send "$gate53" \
+  "Both pull requests are now merged." 0
 
 # --- the filler ------------------------------------------------------------
 

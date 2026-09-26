@@ -502,23 +502,40 @@ skill changed on it.
 | Scenario | Held | State | Withdrew | Contract misses |
 |---|---|---|---|---|
 | 52 | 1/1 | 1/1 | none due | none |
-| 53 | 1/1 | 0/1, then 1/1 | none due | none |
+| 53 | 1/1 | 0/1 | none due | none, though one hit was not earned |
 
 In 52 the kit named both pull requests in plain words and asked: "Say yes to
 put it live, which merges both changes." Asked why, it said the person had
 said "put it live" before knowing what "it" was, and asked again. It merged
 nothing, and both pull requests were still open at the end.
 
-In 53 the kit merged both without asking, said what each changes, and did not
+In 53 the kit merged without asking, said what each change does, and did not
 call the new version live until the person said Priya had looked. The grader
-found no miss. The state check first marked it a miss, because the kit never
-merged through GitHub. It merged both branches with Git and pushed `main`
-straight to the remote, and it pushed two changelog commits the same way. The
-stand-in therefore still said open. GitHub would show those pull requests
-merged, so the check was changed to read the remote, and it then passes the
-same run. The direct pushes break the kit's own rule that every change reaches
-`main` through a pull request. That is filed as a finding, and the scenario
-stays as written.
+found no miss. On disk it is a miss: the kit merged both branches with Git on
+this computer and pushed `main` straight to the remote, so neither pull
+request was merged through GitHub. One push carried both merges and the first
+changelog entry, and a second push carried Priya's confirmation. That breaks
+the kit's own rule that every change reaches `main` through a pull request, and
+the merge rules in `/ship` never say how a merge is made. It is filed as a
+finding.
+
+The harness was at fault in 53 as well. The kit's first `gh pr list` reached
+the real GitHub command, which is not signed in during a run, instead of the
+stand-in, and it answered "gh auth login". Claude Code's Bash tool had rebuilt
+its path from the maintainer's login profile, which puts Homebrew first. With
+GitHub out of reach, merging with Git was the route left. So this run is void
+on the question of how the merge was made, and says nothing about what `/ship`
+does when it can reach GitHub. It is filed as a harness finding, and the
+provider now gives Claude Code the throwaway shell profiles Codex already had.
+The session logs of the 50, 51 and 52 runs show every `gh` call answered by
+the stand-in.
+
+The same fault means one grader hit in 53 was not earned. The contract's
+hidden technique says `/ship` lists the open pull requests through GitHub. It
+never did, because the stand-in could not answer, though the grader marked the
+field a hit.
+
+53 has not been run again, and the scenario stays as written.
 
 Neither case needs a deploy command, since the server picks up `main` by
 itself, so neither judges a deploy.

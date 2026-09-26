@@ -50,6 +50,12 @@ cat > "$BIN/claude" <<'STUB'
 #!/bin/sh
 set -eu
 printf 'claude %s\n' "$*" >> "$PROVIDER_LOG"
+# Which gh a login shell finds here, the way Claude Code's Bash tool builds its
+# environment from one.
+printf '%s\n' "${ZDOTDIR:-}" > "$PROVIDER_LOG.zdotdir"
+if command -v zsh >/dev/null 2>&1; then
+  zsh -l -c 'command -v gh' > "$PROVIDER_LOG.login-gh" 2>/dev/null || true
+fi
 case " $* " in
   *" --allowedTools  "*)
     printf '%s\n' '{"result":"{\"scenario\":1,\"verdicts\":{\"Expected path\":{\"verdict\":\"hit\",\"quote\":\"kept\",\"note\":\"kept\"}},\"pushback\":{\"verdict\":\"unobservable\",\"quote\":\"\",\"note\":\"none\"},\"held\":true,\"held_clause\":0,\"held_note\":\"held\"}"}'
@@ -110,10 +116,10 @@ grep -q "exec resume.*codex-thread" "$PROVIDER_LOG" \
 grep -q "shell_environment_policy.inherit=all" "$PROVIDER_LOG" \
   && pass "Codex inherits the isolated replay environment" \
   || fail_provider "Codex did not inherit the replay environment"
-grep -qF "$GH_DIR" "$WORK/codex-shell/.zprofile" \
+grep -qF "$GH_DIR" "$WORK/replay-shell/.zprofile" \
   && pass "the Codex zsh profile restores fake GitHub after login" \
   || fail_provider "the Codex zsh profile does not name fake GitHub"
-grep -qF "$GH_DIR" "$WORK/codex-shell/bash-env" \
+grep -qF "$GH_DIR" "$WORK/replay-shell/bash-env" \
   && pass "the Codex bash profile restores fake GitHub after login" \
   || fail_provider "the Codex bash profile does not name fake GitHub"
 
@@ -138,6 +144,34 @@ grep -q -- "--ephemeral.*--sandbox read-only" "$PROVIDER_LOG" \
 REPLAY_PROVIDER=claude
 MODEL=opus
 GRADER_MODEL=opus
+
+# Claude Code's Bash tool builds its environment from a login shell, which
+# reads the person's own profile. On a Mac with Homebrew first in that profile,
+# the real gh won over the stand-in in one recorded run. So the Claude route
+# gets the same throwaway profiles as Codex. Start from nothing, so the Codex
+# preparation above cannot stand in for it.
+unset ZDOTDIR BASH_ENV
+rm -rf "$WORK/replay-shell"
+printf '#!/bin/sh\necho stand-in\n' > "$GH_DIR/gh"
+chmod +x "$GH_DIR/gh"
+provider_prepare
+provider_new_session
+grep -qF "$GH_DIR" "$WORK/replay-shell/.zprofile" \
+  && [ "${ZDOTDIR:-}" = "$WORK/replay-shell" ] \
+  && pass "the Claude route writes the profile that puts fake GitHub first" \
+  || fail_provider "the Claude route has no profile that puts fake GitHub first"
+provider_turn "$TEST_WORK/project" "first turn" "$TEST_WORK/claude-zdot.json" \
+  "$TEST_WORK/claude-zdot-reply" || fail_provider "Claude could not start a turn"
+[ "$(cat "$PROVIDER_LOG.zdotdir")" = "$WORK/replay-shell" ] \
+  && pass "a Claude turn runs with that profile" \
+  || fail_provider "a Claude turn ran without the throwaway profile"
+# A login shell, which reads that profile, finds the stand-in rather than the
+# person's own gh. Where this machine has no zsh there is nothing to try.
+if command -v zsh >/dev/null 2>&1; then
+  [ "$(cat "$PROVIDER_LOG.login-gh")" = "$GH_DIR/gh" ] \
+    && pass "a login shell in a Claude turn finds fake GitHub first" \
+    || fail_provider "a login shell in a Claude turn found $(cat "$PROVIDER_LOG.login-gh")"
+fi
 provider_check
 provider_new_session
 claude_reply="$TEST_WORK/claude-reply"

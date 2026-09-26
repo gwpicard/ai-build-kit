@@ -21,21 +21,25 @@ provider_check() {
 }
 
 provider_prepare() {
-  [ "$REPLAY_PROVIDER" = "codex" ] || return 0
-
-  # Codex executes commands through a login shell. On macOS that shell rebuilds
-  # PATH, which used to expose the real signed-in gh instead of the rehearsal
-  # stand-in. These throwaway profiles put the stand-in back after login. Bash
-  # reads BASH_ENV for its non-interactive shell; zsh reads .zprofile.
-  CODEX_SHELL_HOME="$WORK/codex-shell"
-  mkdir -p "$CODEX_SHELL_HOME"
+  # Both providers run commands through a login shell, and on macOS a login
+  # shell rebuilds PATH from the person's own profile. A profile that puts
+  # Homebrew first puts the real gh ahead of the rehearsal stand-in. Codex
+  # starts each command that way. Claude Code's Bash tool reads a snapshot of a
+  # login shell, and when that snapshot is taken the real gh answers. It did in
+  # one run, saying "gh auth login", while other commands in the same run
+  # reached the stand-in. These throwaway profiles put the stand-in back after
+  # login. Bash reads BASH_ENV for its non-interactive shell; zsh reads the
+  # .zprofile in ZDOTDIR instead of the person's own.
+  REPLAY_SHELL_HOME="$WORK/replay-shell"
+  mkdir -p "$REPLAY_SHELL_HOME"
   printf 'export PATH="%s:$PATH"\n' "$GH_DIR" \
-    > "$CODEX_SHELL_HOME/.zprofile"
-  cp "$CODEX_SHELL_HOME/.zprofile" "$CODEX_SHELL_HOME/bash-env"
-  ZDOTDIR=$CODEX_SHELL_HOME
-  BASH_ENV="$CODEX_SHELL_HOME/bash-env"
+    > "$REPLAY_SHELL_HOME/.zprofile"
+  cp "$REPLAY_SHELL_HOME/.zprofile" "$REPLAY_SHELL_HOME/bash-env"
+  ZDOTDIR=$REPLAY_SHELL_HOME
+  BASH_ENV="$REPLAY_SHELL_HOME/bash-env"
   export ZDOTDIR BASH_ENV
 
+  [ "$REPLAY_PROVIDER" = "codex" ] || return 0
   CODEX_GRADER_DIR="$WORK/codex-grader"
   mkdir -p "$CODEX_GRADER_DIR"
 }

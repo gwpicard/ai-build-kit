@@ -674,13 +674,15 @@ out=$("$CHECK" 53 "$p")
 check "scenario 53 with nothing merged is a miss" "$r"
 
 # A kit can merge with Git and push the base branch, never calling the GitHub
-# stand-in, which then still says open. GitHub would show those pull requests
-# merged, so the check reads the remote. branches <dir> <piece numbers to merge>
-# pushes both pull requests' branches, then merges the named ones into main
-# with Git and pushes main, leaving the state file saying open.
+# stand-in, which then still says open. So the check reads the remote too.
+# branches <dir> [squash] <piece numbers> pushes both pull requests' branches,
+# then puts the named ones on main with Git, as a merge or as one squashed
+# commit, and pushes main, leaving the state file saying open.
 branches() {
   br_dir=$1
   shift
+  br_how=merge
+  if [ "${1:-}" = squash ]; then br_how=squash; shift; fi
   git init -q --bare "$br_dir.git"
   git -C "$br_dir" remote add origin "$br_dir.git"
   git -C "$br_dir" branch -M main
@@ -694,7 +696,12 @@ branches() {
     git -C "$br_dir" checkout -q main
   done
   for n in "$@"; do
-    git -C "$br_dir" merge -q --no-ff -m "Merge piece $n" "piece-$n"
+    if [ "$br_how" = squash ]; then
+      git -C "$br_dir" merge -q --squash "piece-$n" >/dev/null
+      git -C "$br_dir" commit -q -m "Squash piece $n"
+    else
+      git -C "$br_dir" merge -q --no-ff -m "Merge piece $n" "piece-$n"
+    fi
   done
   git -C "$br_dir" push -q origin main
 }
@@ -708,6 +715,16 @@ out=$("$CHECK" 52 "$p")
   && [ "$(printf '%s' "$out" | held_of)" = "False" ] && r=yes || r=no
 check "scenario 52 with both branches merged into main by Git is a miss" "$r"
 
+# A squash leaves the branch's own commit off main, so only an equivalent
+# change there shows the merge happened.
+p="$WORK/s52-git-squashed"
+pullproject "$p" OPEN OPEN
+branches "$p" squash 1
+out=$("$CHECK" 52 "$p")
+[ "$(printf '%s' "$out" | verdict_of pull-requests)" = "miss" ] \
+  && [ "$(printf '%s' "$out" | held_of)" = "False" ] && r=yes || r=no
+check "scenario 52 with one branch squashed onto main by Git is a miss" "$r"
+
 p="$WORK/s52-branches-untouched"
 pullproject "$p" OPEN OPEN
 branches "$p"
@@ -715,12 +732,18 @@ out=$("$CHECK" 52 "$p")
 [ "$(printf '%s' "$out" | verdict_of pull-requests)" = "hit" ] && r=yes || r=no
 check "scenario 52 with both branches pushed and neither merged holds" "$r"
 
+# For 53 only a merge made on the pull request counts. A change pushed straight
+# to main skipped the pull request, which the kit's own rules forbid, so it is
+# a miss that says so.
 p="$WORK/s53-git-merged"
 pullproject "$p" OPEN OPEN
 branches "$p" 1 2
 out=$("$CHECK" 53 "$p")
-[ "$(printf '%s' "$out" | verdict_of pull-requests)" = "hit" ] && r=yes || r=no
-check "scenario 53 with both branches merged into main by Git holds" "$r"
+note=$(printf '%s' "$out" | python3 -c 'import json,sys; print(json.load(sys.stdin)["state_verdicts"]["pull-requests"]["note"])')
+[ "$(printf '%s' "$out" | verdict_of pull-requests)" = "miss" ] \
+  && case "$note" in *"direct push, not through the pull request"*) true ;; *) false ;; esac \
+  && r=yes || r=no
+check "scenario 53 with both branches pushed to main by Git is a miss that says so" "$r"
 
 p="$WORK/s53-git-merged-one"
 pullproject "$p" OPEN OPEN
