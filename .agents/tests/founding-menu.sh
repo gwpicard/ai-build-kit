@@ -56,12 +56,12 @@ rs_rule "a single fitting recipe is recommended" 'if one recipe fits, recommend 
 # rules for any menu. It chose the recipe quietly and reported it afterwards as
 # "so I chose it". So a menu of one is named as a menu, with the same rules.
 rs_rule "the two questions are asked even for a single recipe" \
-  'ask them even when only one recipe could fit, unless the interview already answered them'
+  'ask them even when the menu holds a single recipe, unless the interview already answered them'
 rs_rule "a single recipe is still shown as a menu" 'recommend it and still show it as a menu'
 rs_rule "a menu of one follows the same rules, default sentence included" \
   'a menu of one follows every rule below, as a longer menu does, including the sentence naming it the default'
-rs_rule "and is shown before the first checkpoint, not reported afterwards" \
-  'shown before the first checkpoint, never only as a choice reported in the completion report'
+rs_rule "and is shown before the stand-up begins, not reported afterwards" \
+  'shown in a reply before the stand-up begins, never only as a choice reported in the completion report'
 rs_rule "several are settled by the recipe's own line" \
   'if several fit, recommend the one whose .recommended when:. line best matches'
 rs_rule "and a tie goes to the first by file name" \

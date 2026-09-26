@@ -19,6 +19,14 @@ set -eu
 project=${1:?project directory}
 keep=nextjs-supabase-on-vercel.md
 
+# The harness runs this before the project's first commit, so a folder already
+# inside a git work tree is not a replay project. Refusing it means the script
+# can never delete a recipe from the repository it lives in.
+if git -C "$project" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  echo "one-recipe-menu.sh: $project is inside a git work tree, so it is not a fresh replay project" >&2
+  exit 1
+fi
+
 folders=$(find "$project" -path "$project/.git" -prune -o -type d -path '*/skills/ship/recipes' -print)
 [ -n "$folders" ] || { echo "one-recipe-menu.sh: no ship recipes folder in $project" >&2; exit 1; }
 

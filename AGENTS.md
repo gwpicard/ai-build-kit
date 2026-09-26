@@ -243,8 +243,10 @@ attribution line, not the word.
   `# prepare:` line, which has the harness build a starting state no
   conversation should, such as scenario 49's instructions past their ceiling.
   It runs the preparation that leaves scenario 51 one recipe in both copies of
-  the ship skill a whole copy carries, and holds that scenario's gate open on a
-  menu and shut on a reply that only names the host.
+  the ship skill a whole copy carries, and proves that preparation refuses a
+  folder inside a git work tree, so it can never delete a recipe here. It holds
+  that scenario's gate open on a menu, and shut on a reply that only names the
+  host or on an interview guess the person may change.
 - `.agents/tests/grader-recovery.sh` checks that the replay grader recovers a
   grading missing only its final brace or carrying one stray brace after it,
   and still refuses one that was cut off partway or followed by other text.
@@ -312,24 +314,24 @@ attribution line, not the word.
   because the wait had no exit and cost two measured runs their whole founding.
 - `.agents/tests/founding-menu.sh` guards the recipe menu founding offers. The
   menu is the files directly in the `recipes/` folder of the installed ship
-  skill, found beside the founding skill and never at a project path, since
-  the two plugin routes install the skills elsewhere and a project path there
-  finds an empty menu. A shared part or a recipe still waiting for its real
-  run is never offered. Exactly one recipe is recommended, with a tie going to
-  the first by file name, and the same reply says it is the default, so
-  showing the menu never ends the turn. A menu of one is still shown, with the
-  same rules and the same default sentence, before the first checkpoint rather
+  skill, found beside the founding skill and never at a project path, since the
+  two plugin routes install the skills elsewhere and a project path there finds
+  an empty menu. A shared part or a recipe still waiting for its real run is
+  never offered. Exactly one recipe is recommended, with a tie going to the
+  first by file name, and the same reply says it is the default, so showing the
+  menu never ends the turn. A menu of one is still shown, with the same rules
+  and the same default sentence, in a reply before the stand-up begins rather
   than reported in the completion report, and the two questions before it are
   asked unless the interview answered them. A real founding with one recipe
   skipped all of that while the rules for any menu were already written. A
-  person may bring their own stack and
-  hears once what the kit then cannot check. The choice is recorded by file
-  name with `.md` included, and neither the menu nor the recipe's tool report
-  ever stops founding. That report runs for every chosen recipe, a menu of one
-  included, and the completion report says what it found. Whatever the choice, founding writes every file on the
+  person may bring their own stack and hears once what the kit then cannot
+  check. The choice is recorded by file name with `.md` included, and neither
+  the menu nor the recipe's tool report ever stops founding. That report runs
+  for every chosen recipe, a menu of one included, and the completion report
+  says what it found. Whatever the choice, founding writes every file on the
   menu into a `founding-menu` line in `.ai-build-kit-maintenance` before the
-  first checkpoint, so the monthly visit can tell a recipe added later from
-  one the person already passed over. Product names are left to
+  first checkpoint, so the monthly visit can tell a recipe added later from one
+  the person already passed over. Product names are left to
   `hosting-request.sh`.
   `agent-plugin.sh` and `claude-plugin.sh` each check that every menu recipe
   arrives in their installed layout.

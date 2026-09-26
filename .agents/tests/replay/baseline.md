@@ -474,11 +474,17 @@ The menu itself failed the contract, in the same way as scenario 50's run. The
 recipe first appeared in the completion report, after the project was stood up,
 as a choice already made. It was never called recommended or the default, and
 the own-stack option was not offered. The new line in step 11 did not change
-that. It is filed as a finding, and the scenario stays as written.
+that. It is filed as a finding, and the scenario stays as written. The harness
+records only each turn's final message, never the text a turn writes between
+commands, but this run's session log shows the menu was not shown mid-turn
+either.
 
 The gate waited for the menu, which never came before the completion report. So
 two fillers went to the interview's slot-rules question and its summary, and
 the line meant for the menu's reply went out unheld, after the stand-up. It
 answered only something else, so it did not change the result.
+
+After this run, and following review, the skill's wording, the case's gate and
+its preparation were changed. The changed case has not been replayed.
 
 This is one run of one case, and it replaces none of the tables above.

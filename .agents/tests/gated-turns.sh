@@ -257,6 +257,21 @@ mkdir -p "$WORK/none"
 sh "$ROOT/.agents/tests/replay/prepare/one-recipe-menu.sh" "$WORK/none" 2>/dev/null \
   && bad "a project with no recipes folder was prepared without complaint" \
   || ok "a project with no recipes folder stops the preparation"
+# The harness prepares a project before its first commit, so a folder already
+# inside a git work tree is never one. The refusal is what stops the script
+# ever deleting a recipe from this repository.
+inside="$WORK/inside"
+mkdir -p "$inside/.agents/skills/ship/recipes"
+: > "$inside/.agents/skills/ship/recipes/nextjs-supabase-on-vercel.md"
+: > "$inside/.agents/skills/ship/recipes/nextjs-supabase-on-coolify.md"
+git -C "$inside" init -q
+sh "$ROOT/.agents/tests/replay/prepare/one-recipe-menu.sh" "$inside" 2>/dev/null \
+  && bad "the preparation ran inside a git work tree" \
+  || ok "the preparation refuses a folder inside a git work tree"
+[ -f "$inside/.agents/skills/ship/recipes/nextjs-supabase-on-coolify.md" ] \
+  && ok "and removes nothing there" \
+  || bad "the preparation removed a recipe inside a git work tree"
+
 grep -q '^# prepare: one-recipe-menu$' "$ROOT/.agents/tests/replay/cases/51.txt" \
   && ok "case 51 has the harness leave one recipe on the menu" \
   || bad "case 51 no longer names its preparation"
@@ -272,6 +287,8 @@ expect "and on a menu that offers an own stack" send "$gate51" \
   "It is the only recipe that fits. You may bring your own stack instead." 0
 expect "but not on a reply that only names the host" wait "$gate51" \
   "The tool runs on Vercel and Supabase, and you own both accounts." 0
+expect "nor on an interview guess the person may change" wait "$gate51" \
+  "I'll use this unless you choose otherwise. My default guess is bookings on the hour." 0
 
 # --- the filler ------------------------------------------------------------
 
