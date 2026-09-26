@@ -463,6 +463,66 @@ out=$("$CHECK" 31 "$p")
 [ "$(printf '%s' "$out" | verdict_of issue-invariants)" = "unobservable" ] && r=yes || r=no
 check "a founding run's own issues leave the fixture invariant unobservable" "$r"
 
+# --- the recipe record -----------------------------------------------------
+# Scenario 50 founds with both recipes on the menu. The menu is read from the
+# recipes folder rather than written out here, so a recipe added later is on it
+# without this file changing.
+menu=$(find "$TESTS_DIR/../skills/ship/recipes" -maxdepth 1 -type f -name '*.md' \
+  -exec basename {} \; | sort | paste -sd, -)
+first=${menu%%,*}
+[ -n "$menu" ] && [ "$first" != "$menu" ] && r=yes || r=no
+check "the recipe menu holds more than one recipe, so a line naming one is short" "$r"
+
+# recipeproject <dir> <recipe line or empty> <founding-menu files or empty>
+recipeproject() {
+  mkdir -p "$1"
+  printf '# AGENTS.md\n\n## Stack, and how to run and check it\n\n' > "$1/AGENTS.md"
+  [ -n "$2" ] && printf '%s\n' "$2" >> "$1/AGENTS.md"
+  printf 'last-check|2026-09-26\n' > "$1/.ai-build-kit-maintenance"
+  [ -n "$3" ] && printf 'founding-menu|2026-09-26|%s\n' "$3" >> "$1/.ai-build-kit-maintenance"
+  return 0
+}
+
+# The founding the contract describes: the chosen recipe by file name, and the
+# whole menu on the founding-menu line.
+p="$WORK/s50-right"
+recipeproject "$p" "Recipe: $first" "$menu"
+out=$("$CHECK" 50 "$p")
+[ "$(printf '%s' "$out" | verdict_of recipe-record)" = "hit" ] \
+  && [ "$(printf '%s' "$out" | held_of)" = "True" ] && r=yes || r=no
+check "scenario 50 with the recipe recorded and the whole menu listed holds" "$r"
+
+# A founding-menu line naming only the recipe chosen reads fine, and makes every
+# other recipe look new to next month's visit.
+p="$WORK/s50-one-recipe"
+recipeproject "$p" "Recipe: $first" "$first"
+out=$("$CHECK" 50 "$p")
+[ "$(printf '%s' "$out" | verdict_of recipe-record)" = "miss" ] \
+  && [ "$(printf '%s' "$out" | held_of)" = "False" ] && r=yes || r=no
+check "scenario 50 with a founding-menu line naming one recipe is a miss" "$r"
+
+# The menu shown and the choice never written: /ship would find no recipe.
+p="$WORK/s50-no-recipe-line"
+recipeproject "$p" "" "$menu"
+out=$("$CHECK" 50 "$p")
+[ "$(printf '%s' "$out" | verdict_of recipe-record)" = "miss" ] \
+  && [ "$(printf '%s' "$out" | held_of)" = "False" ] && r=yes || r=no
+check "scenario 50 with no Recipe: line is a miss" "$r"
+
+# Recipe: none says the person chose their own stack, which this person never did.
+p="$WORK/s50-recipe-none"
+recipeproject "$p" "Recipe: none" "$menu"
+out=$("$CHECK" 50 "$p")
+[ "$(printf '%s' "$out" | verdict_of recipe-record)" = "miss" ] && r=yes || r=no
+check "scenario 50 with Recipe: none is a miss" "$r"
+
+# A scenario whose contract names no founding-menu line is not graded on one.
+p="$WORK/s31-no-menu"
+recipeproject "$p" "" ""
+out=$("$CHECK" 31 "$p")
+[ "$(printf '%s' "$out" | verdict_of recipe-record)" = "unobservable" ] && r=yes || r=no
+check "a scenario that names no founding-menu line leaves the recipe record unobservable" "$r"
+
 # No GitHub state at all is nothing to grade, not a failure.
 p="$WORK/issues-absent"
 mkdir -p "$p"

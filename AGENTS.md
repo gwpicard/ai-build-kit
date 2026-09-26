@@ -259,7 +259,10 @@ attribution line, not the word.
   without ever being sized, and that the split assertion catches a request cut
   up the wrong way: a part wanting a different outcome from its parent, two
   pieces waiting on each other for one outcome, and a part named for a layer
-  rather than a slice.
+  rather than a slice. It also holds the recipe record a founding leaves: that
+  the recipe assertion catches a `founding-menu` line naming only one of the
+  recipes on the menu, and an AGENTS.md with no `Recipe:` line or with `Recipe:
+  none`, and passes a founding that wrote both records whole.
 - `.agents/tests/check-tooling.sh` runs the setup tooling report against a set of
   throwaway PATHs and reads when it stops: a missing tool or a signed-out account
   blocks founding, while issues switched off or a read-only account do not.
