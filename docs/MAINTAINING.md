@@ -515,6 +515,13 @@ summary, and state any action an existing user must take. Use
 `skip-release-notes` only when a merged pull request has no useful place in the
 project's public history.
 
+Edit the notes in the Release's web page. An edit through the API is where a
+draft loses its tag: a `PATCH /releases/{id}` that sends only `body` resets the
+draft's `tag_name` to `untagged-...`, and the tag and target then have to be set
+again before publishing. If the notes must change through the API, send
+`tag_name` and `target_commitish` with every edit to a draft, whatever else the
+edit changes.
+
 Publishing the draft is the release. There is nothing to copy anywhere and no
 credential to mint, because the repository the version is prepared in is the
 repository people install from.
@@ -623,6 +630,12 @@ git rev-list -n1 vX.Y.Z
 
 Those two have to match. Create `stable` by hand at the right commit rather
 than cutting a release to move it.
+
+To check a promotion from the remote side, compare `stable` with the tag
+itself. The release tags are lightweight, and a lightweight tag has no `^{}`
+form, so `git ls-remote origin 'refs/tags/vX.Y.Z^{}'` prints nothing and looks
+like a mismatch. `git ls-remote origin refs/heads/stable refs/tags/vX.Y.Z`
+prints both commits, and they have to be the same.
 
 The bridge for projects installed before the shared installer is retired. Only
 v0.1.0 and v0.1.1 shipped a `/maintain` that could reach it, v0.1.0 was never

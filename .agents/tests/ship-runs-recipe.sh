@@ -78,7 +78,7 @@ rs_guard "$SHIP" "ship's recipe rules"
 
 rs_require_absent "the general list is no longer a requirement" "$SHIP" 'require whatever of this actually applies'
 rs_require_order "the Recipe line is read before any path runs" "$SHIP" 'Read the `Recipe:` line' '^## 1\. Follow the current path'
-rs_require_order "the recipe's checks come after the hosting request" "$SHIP" 'Hosting request$' '^#### On a recipe$'
+rs_require_order "the recipe's checks come after the hosting request" "$SHIP" 'references/hosting-request\.md' '^#### On a recipe$'
 
 # No product name in the skill. The names come from the recipes themselves, the
 # word after " on " in each recipe title, so a new recipe's target is covered

@@ -34,7 +34,8 @@ Where the folder holds no recipe yet, say so at the top of the note and carry on
 with the rest of the read. The upstream sources and the default stacks are
 still worth reading, and a new recipe can still be proposed.
 
-Read the kit's hosting request in `.agents/skills/ship/SKILL.md` as well. It is
+Read the kit's hosting request in
+`.agents/skills/ship/references/hosting-request.md` as well. It is
 the block of fields `/ship` writes on a first launch for a tool that runs on a
 server somebody else runs.
 

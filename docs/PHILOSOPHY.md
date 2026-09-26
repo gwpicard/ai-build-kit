@@ -333,7 +333,10 @@ own stack says so, and the kit carries on with fewer promises.
 
 They never need to learn how the place they run on does a rollback or where its
 backups live, because the recipe carries that. It applies only to a project
-that chose a recipe, and one on its own stack works as before. Recipes make the
+that chose a recipe. On its own stack a project gets the general checks, and
+those are warnings too: a check not done is said once and written in the
+changelog, and the launch goes ahead. The one launch check /ship waits for is
+the address, since a tool with no recorded address is not live. Recipes make the
 kit bigger, and that should be said plainly. What they take away is the
 question /ship used to put to every project, how a backup, a rollback and a
 restore would work, which a person on a recipe no longer has to invent. The menu
