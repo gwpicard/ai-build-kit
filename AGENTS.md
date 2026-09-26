@@ -194,13 +194,27 @@ attribution line, not the word.
   It also holds that opening a pull request closes nothing, and that a merge
   closes the piece and lands the branch on the remote's `main`, since a kit
   that checks the remote would otherwise see a merged fix that never arrived.
+- `.agents/tests/fake-host.sh` checks the replay harness's stand-ins for a
+  host's tools, which scenario 54 launches through on the Vercel recipe. The
+  stand-in host keeps a list of deployments beside the project and builds each
+  push to `main`, as a host connected to the repository does. The check merges
+  a pull request and holds that the list gains one build, shown as building the
+  first time it is asked and ready after, and that the live address then serves
+  it. Every deploy of a version the list already holds adds another build of
+  it, and a rollback moves the live address and is recorded. A deploy's output
+  is long, with its success line near the end, so the last three lines do not
+  show whether it worked. It also holds that Supabase, Docker and the database
+  fail the way a machine that is not signed in fails, that a command nobody
+  modelled is refused to the log, and that with no host state each stand-in
+  hands the call to the real command, so every other scenario runs as before.
 - `.agents/tests/replay-provider.sh` checks both replay providers without a
   model call. It stubs Claude Code and Codex, then proves each first turn,
   resumed turn and grader route. It also holds the throwaway shell profiles
   that keep the fake GitHub command ahead of a signed-in real one, for Codex
   and for Claude Code, whose Bash tool once found the real one through the
   person's own login profile. A login shell started with those profiles must
-  find the stand-in.
+  find the stand-in, and the host's stand-ins right after it, ahead of a
+  deploy command that may be signed in.
 - `.agents/tests/plan-printout.sh` runs the printout against a fixed set of
   issues and reads what it wrote: which group each piece lands in, whether a
   waiting piece says why, whether a shaped piece says it is ready, and whether a
@@ -258,7 +272,14 @@ attribution line, not the word.
   52's gate open on the ways of asking for a merge yes it lists, and shut on a
   reply that says it merged. It holds 53's open on a reply saying, in the first
   person or the past tense, that the kit merged, and shut on the replies it
-  lists that ask first or say what a merge would do.
+  lists that ask first or say what a merge would do. It runs both halves of
+  scenario 54's preparation, which writes a small Next.js tool live once on
+  the Vercel recipe into a blank kit, cuts the one pull request's branch, and
+  writes the stand-in host's list of what the first launch left. The tool's
+  tests pass on `main` and on the branch where Node can read TypeScript by
+  itself. It holds 54's gate open on a reply saying the kit merged, and shut
+  on one asking first, saying what happens once it is merged, or saying it has
+  not merged yet.
 - `.agents/tests/grader-recovery.sh` checks that the replay grader recovers a
   grading missing only its final brace or carrying one stray brace after it,
   and still refuses one that was cut off partway or followed by other text.
@@ -291,7 +312,15 @@ attribution line, not the word.
   For 52, a change put on the remote's `main` by a Git merge or a squash counts
   as merged, so that route is caught too. For 53, only a merge made on the pull
   request counts, and a change pushed straight to `main` is a miss that says
-  so.
+  so. For scenario 54, a second launch on the Vercel recipe, it holds the
+  deploy and the rollback line. One new production build of the merge passes,
+  counted from the pushes to `main` even when nobody asked the host. The same
+  version built twice is a miss, whether the kit deployed it again or
+  redeployed what was already live, and so are no new build, two pushes that
+  build two versions, and a rollback nobody asked for. A new changelog line
+  has to say rollback is possible and not tried, wherever the run saved it. A
+  line saying rollback was tested, or "yes" with no "not tried", is a miss, and
+  so is one calling rollback impossible when an earlier build is listed.
 - `.agents/tests/check-tooling.sh` runs the setup tooling report against a set of
   throwaway PATHs and reads when it stops: a missing tool or a signed-out account
   blocks founding, while issues switched off or a read-only account do not.

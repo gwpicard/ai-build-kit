@@ -2,7 +2,8 @@
 # provider.sh: run replay turns and graders through Claude Code or Codex.
 
 # The caller sets REPLAY_PROVIDER, MODEL, GRADER_MODEL, WORK, REPLAY_DIR,
-# TIMEOUT_CMD and GH_DIR before loading this file.
+# TIMEOUT_CMD and GH_DIR before loading this file, and HOST_DIR where it has
+# stand-ins for a host's tools.
 
 provider_check() {
   case "$REPLAY_PROVIDER" in
@@ -30,9 +31,12 @@ provider_prepare() {
   # reached the stand-in. These throwaway profiles put the stand-in back after
   # login. Bash reads BASH_ENV for its non-interactive shell; zsh reads the
   # .zprofile in ZDOTDIR instead of the person's own.
+  # The host's stand-ins go second, for the same reason: a login shell would
+  # otherwise find the person's own deploy command, which may be signed in.
+  REPLAY_TOOLS="$GH_DIR${HOST_DIR:+:$HOST_DIR}"
   REPLAY_SHELL_HOME="$WORK/replay-shell"
   mkdir -p "$REPLAY_SHELL_HOME"
-  printf 'export PATH="%s:$PATH"\n' "$GH_DIR" \
+  printf 'export PATH="%s:$PATH"\n' "$REPLAY_TOOLS" \
     > "$REPLAY_SHELL_HOME/.zprofile"
   cp "$REPLAY_SHELL_HOME/.zprofile" "$REPLAY_SHELL_HOME/bash-env"
   ZDOTDIR=$REPLAY_SHELL_HOME
@@ -138,7 +142,7 @@ provider_turn() {
         resume_args="--session-id $PROVIDER_SESSION"
       fi
       # shellcheck disable=SC2086
-      (cd "$project" && PATH="$GH_DIR:$PATH" \
+      (cd "$project" && PATH="${REPLAY_TOOLS:-$GH_DIR}:$PATH" \
         ${TIMEOUT_CMD:+$TIMEOUT_CMD 1800} claude -p "$message" \
         $resume_args \
         --strict-mcp-config \
@@ -161,10 +165,10 @@ PY
       ;;
     codex)
       if [ -n "$PROVIDER_SESSION" ]; then
-        (cd "$project" && PATH="$GH_DIR:$PATH" \
+        (cd "$project" && PATH="${REPLAY_TOOLS:-$GH_DIR}:$PATH" \
           run_codex_resume "$message" "$raw" "$reply") || return 1
       else
-        (cd "$project" && PATH="$GH_DIR:$PATH" \
+        (cd "$project" && PATH="${REPLAY_TOOLS:-$GH_DIR}:$PATH" \
           run_codex_start "$message" "$raw" "$reply") || return 1
         PROVIDER_SESSION=$(codex_thread_id "$raw")
         [ -n "$PROVIDER_SESSION" ] || return 1

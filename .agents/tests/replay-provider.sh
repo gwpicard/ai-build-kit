@@ -21,7 +21,7 @@ pass() {
 TEST_WORK=$(mktemp -d)
 trap 'rm -rf "$TEST_WORK"' EXIT INT TERM
 BIN="$TEST_WORK/bin"
-mkdir -p "$BIN" "$TEST_WORK/project" "$TEST_WORK/fake-github"
+mkdir -p "$BIN" "$TEST_WORK/project" "$TEST_WORK/fake-github" "$TEST_WORK/fake-host"
 PROVIDER_LOG="$TEST_WORK/provider.log"
 export PROVIDER_LOG
 
@@ -55,6 +55,7 @@ printf 'claude %s\n' "$*" >> "$PROVIDER_LOG"
 printf '%s\n' "${ZDOTDIR:-}" > "$PROVIDER_LOG.zdotdir"
 if command -v zsh >/dev/null 2>&1; then
   zsh -l -c 'command -v gh' > "$PROVIDER_LOG.login-gh" 2>/dev/null || true
+  zsh -l -c 'command -v vercel' > "$PROVIDER_LOG.login-vercel" 2>/dev/null || true
 fi
 case " $* " in
   *" --allowedTools  "*)
@@ -83,6 +84,7 @@ new_uuid() {
 REPLAY_DIR="$ROOT/.agents/tests/replay"
 WORK="$TEST_WORK/work"
 GH_DIR="$TEST_WORK/fake-github"
+HOST_DIR="$TEST_WORK/fake-host"
 TIMEOUT_CMD=
 mkdir -p "$WORK"
 . "$PROVIDER"
@@ -154,6 +156,8 @@ unset ZDOTDIR BASH_ENV
 rm -rf "$WORK/replay-shell"
 printf '#!/bin/sh\necho stand-in\n' > "$GH_DIR/gh"
 chmod +x "$GH_DIR/gh"
+printf '#!/bin/sh\necho stand-in\n' > "$HOST_DIR/vercel"
+chmod +x "$HOST_DIR/vercel"
 provider_prepare
 provider_new_session
 grep -qF "$GH_DIR" "$WORK/replay-shell/.zprofile" \
@@ -171,6 +175,11 @@ if command -v zsh >/dev/null 2>&1; then
   [ "$(cat "$PROVIDER_LOG.login-gh")" = "$GH_DIR/gh" ] \
     && pass "a login shell in a Claude turn finds fake GitHub first" \
     || fail_provider "a login shell in a Claude turn found $(cat "$PROVIDER_LOG.login-gh")"
+  # The host's stand-ins come next, so a login shell never finds a deploy
+  # command that may be signed in to somebody's account.
+  [ "$(cat "$PROVIDER_LOG.login-vercel")" = "$HOST_DIR/vercel" ] \
+    && pass "a login shell in a Claude turn finds the host's stand-ins first" \
+    || fail_provider "a login shell in a Claude turn found $(cat "$PROVIDER_LOG.login-vercel")"
 fi
 provider_check
 provider_new_session

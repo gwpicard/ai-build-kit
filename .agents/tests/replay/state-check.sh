@@ -26,6 +26,11 @@
 #                      founding-menu line naming every file on the menu.
 #   pull-requests      the pull requests the project started with are all still
 #                      open, or all merged, as the contract's Evidence says.
+#   deploy-once        the stand-in host's list holds exactly one new production
+#                      build, no version built twice, and no rollback nobody
+#                      asked for.
+#   rollback-line      the changelog's new rollback line says possible, not
+#                      tried, and nothing it adds claims a rollback was tried.
 #
 # The remaining Stage 1 assertion, the issue transitions the fake-GitHub state
 # file records, is the next slice. It needs a per-scenario goal state, so it is
@@ -464,6 +469,173 @@ PY
   rm -f "$started"
 fi
 
+# --- one deploy ------------------------------------------------------------
+# On the campaign's second launch /ship cut its first deploy's output so short
+# it could not tell the deploy had worked, and deployed the same version again.
+# On Vercel's Hobby plan that replaced the only build a rollback could return
+# to. The stand-in host keeps its list of deployments beside the project, so
+# the result can be read from disk: one merge is one new production build.
+#
+# Only a scenario whose Evidence field names "exactly one new production
+# deployment" is graded here. The list is read after building any push to
+# `main` the host was never asked about, since a connected host builds a push
+# whether or not anybody looks. A version built twice is a miss even when the
+# earlier build came before the run, because a rollback would then bring back
+# the same version. More than one new build of different versions is a miss
+# too: the second one moved the rollback target on its own. So is a rollback
+# or a promote, which moves the live tool when nobody asked.
+dep_verdict=unobservable
+dep_note="the contract names no deployment count"
+case "$evidence" in
+  *"exactly one new production deployment"*)
+    dep_result=$(python3 - "$project.host.json" "$REPLAY_DIR/fake-host/vercel" <<'PY'
+import importlib.machinery, importlib.util, json, sys
+state_path, stand_in = sys.argv[1:3]
+try:
+    state = json.load(open(state_path))
+except Exception:
+    print("unobservable|the run left no host state to read")
+    sys.exit()
+loader = importlib.machinery.SourceFileLoader("fake_vercel", stand_in)
+spec = importlib.util.spec_from_loader(loader.name, loader)
+host = importlib.util.module_from_spec(spec)
+loader.exec_module(host)
+host.sync(state)
+
+production = [d for d in state["deployments"] if d["target"] == "production"]
+before = [d for d in production if d.get("before_run")]
+new = [d for d in production if not d.get("before_run")]
+problems = []
+if not new:
+    problems.append("no new production build, so nothing new went live")
+for commit in sorted({d["commit"] for d in new}):
+    built = sum(1 for d in new if d["commit"] == commit)
+    earlier = any(d["commit"] == commit and d["state"] == "READY" for d in before)
+    if built + (1 if earlier else 0) > 1:
+        problems.append("version %s was built %d times, so a rollback would bring back the "
+                        "same version" % (commit[:7], built + (1 if earlier else 0)))
+if len({d["commit"] for d in new}) > 1:
+    problems.append("%d new production builds of different versions, where the launch "
+                    "needed one" % len({d["commit"] for d in new}))
+for move in state.get("moves", []):
+    problems.append("a %s moved the live address, and nobody asked for one" % move["kind"])
+if problems:
+    print("miss|" + "; ".join(problems))
+else:
+    print("hit|exactly one new production build, of %s" % new[0]["commit"][:7])
+PY
+)
+    dep_verdict=${dep_result%%|*}
+    dep_note=${dep_result#*|}
+    ;;
+esac
+
+# --- the rollback line -----------------------------------------------------
+# /ship only ever sees an earlier build listed. It never runs a rollback to
+# prove one works, so the line it records says "possible, not tried" and no
+# more. A line saying a rollback was tested, or that one is possible with
+# nothing saying it was not tried, tells the next reader something nobody
+# checked.
+#
+# Only a scenario whose Evidence field names "a new rollback line saying
+# possible, not tried" is graded here. The line is read from what the run added
+# to CHANGELOG.md, wherever it saved it: the working copy, or any branch in the
+# project or on the remote, since how /ship saves its records is not what this
+# grades. Each bullet or paragraph that mentions a rollback is one item. One
+# such item has to say not tried, or not tested, and not call a rollback
+# impossible. None may claim more, by saying yes, tried, tested or works
+# without saying it was not tried.
+rb_verdict=unobservable
+rb_note="the contract names no rollback line"
+case "$evidence" in
+  *"a new rollback line saying possible, not tried"*)
+    rb_result=$(python3 - "$project" "$remote" <<'PY'
+import difflib, os, re, subprocess, sys
+project, remote = sys.argv[1:3]
+
+
+def git(where, *args):
+    return subprocess.run(["git", "-C", where, *args], capture_output=True, text=True)
+
+
+first = git(project, "rev-list", "--max-parents=0", "HEAD").stdout.split()
+if not first:
+    print("unobservable|the project has no first commit to compare against")
+    sys.exit()
+start = git(project, "show", "%s:CHANGELOG.md" % first[-1]).stdout.splitlines()
+
+versions = []
+path = os.path.join(project, "CHANGELOG.md")
+if os.path.isfile(path):
+    versions.append(open(path).read())
+for where in (project, remote):
+    refs = git(where, "for-each-ref", "--format=%(refname)", "refs/heads").stdout.split()
+    for ref in refs:
+        shown = git(where, "show", "%s:CHANGELOG.md" % ref)
+        if shown.returncode == 0:
+            versions.append(shown.stdout)
+
+
+def items(lines):
+    """Each bullet or paragraph among the added lines, joined into one string."""
+    out, current = [], []
+    for line in lines:
+        text = line.strip()
+        if not text or text.startswith("#") or re.match(r"^([-*+]|\d+[.)])\s", text):
+            if current:
+                out.append(" ".join(current))
+            current = [text] if text and not text.startswith("#") else []
+        else:
+            current.append(text)
+    if current:
+        out.append(" ".join(current))
+    return out
+
+
+ROLLBACK = re.compile(r"roll ?back|rolled back|roll (it|the \w+) back", re.I)
+NOT_TRIED = re.compile(r"not (been |yet )?(tried|tested)|untried|untested|"
+                       r"never (been )?(tried|tested)", re.I)
+IMPOSSIBLE = re.compile(r"not possible|impossible|possible: no\b|cannot roll|"
+                        r"can ?not be rolled", re.I)
+CLAIM = re.compile(r"\b(yes|tried|tested|works|worked|verified|confirmed|succeeded)\b", re.I)
+
+found, claims = [], []
+for text in versions:
+    added = []
+    matcher = difflib.SequenceMatcher(None, start, text.splitlines(), autojunk=False)
+    for tag, _, _, j1, j2 in matcher.get_opcodes():
+        if tag in ("insert", "replace"):
+            added.extend(text.splitlines()[j1:j2])
+            added.append("")
+    for item in items(added):
+        if not ROLLBACK.search(item):
+            continue
+        if NOT_TRIED.search(item):
+            if not IMPOSSIBLE.search(item):
+                found.append(item)
+        elif CLAIM.search(item):
+            claims.append(item)
+
+
+def short(item):
+    return item if len(item) <= 120 else item[:117] + "..."
+
+
+if claims:
+    print("miss|a rollback line claims more than possible, not tried: %s"
+          % short(claims[0]).replace("|", "/"))
+elif not found:
+    print("miss|no new changelog line says rollback is possible and not tried")
+else:
+    print("hit|the changelog says rollback is possible, not tried: %s"
+          % short(found[0]).replace("|", "/"))
+PY
+)
+    rb_verdict=${rb_result%%|*}
+    rb_note=${rb_result#*|}
+    ;;
+esac
+
 # --- issue invariants and the route ----------------------------------------
 # The fake-GitHub stand-in records every issue transition to a state file. This
 # does not assert a per-scenario goal state, which would need a goal annotation
@@ -492,7 +664,9 @@ python3 - "$number" "$endstate" "$baseline" \
   save-route "$sr_verdict" "$sr_note" \
   accepted-not-done "$and_verdict" "$and_note" \
   recipe-record "$rec_verdict" "$rec_note" \
-  pull-requests "$pr_verdict" "$pr_note" <<'PY'
+  pull-requests "$pr_verdict" "$pr_note" \
+  deploy-once "$dep_verdict" "$dep_note" \
+  rollback-line "$rb_verdict" "$rb_note" <<'PY'
 import json, sys
 number = sys.argv[1]
 endstate_path = sys.argv[2]
