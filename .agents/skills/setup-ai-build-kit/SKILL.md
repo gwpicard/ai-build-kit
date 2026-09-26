@@ -354,9 +354,10 @@ and this step is only finished once they exist.
 ## 11. Stand the project up
 
 Ask two questions: will the team use this in a browser, and does it need to
-work when your machine is off? From those answers and the interview, name the
-app's shape in one plain sentence, such as "a web app your team signs in to,
-with saved data".
+work when your machine is off? Ask them even when only one recipe could fit,
+unless the interview already answered them. From those answers and the
+interview, name the app's shape in one plain sentence, such as "a web app your
+team signs in to, with saved data".
 
 Then offer the recipe menu. A recipe is one build stack paired with one place
 to run it, which the kit knows well enough to check at launch. The installed
@@ -368,9 +369,12 @@ not the `parts/` folder, and not a recipe kept anywhere else while it waits for
 its real run. Read each file's `Fits:` line and keep the ones that fit the
 shape.
 
-If one recipe fits, recommend it. If several fit, recommend the one whose
-`Recommended when:` line best matches what the interview said, or the first by
-file name when none or several match. Show the ones that fit with exactly one
+If one recipe fits, recommend it and still show it as a menu. A menu of one
+follows every rule below, as a longer menu does, including the sentence naming
+it the default, and it is shown before the first checkpoint, never only as a
+choice reported in the completion report. If several fit, recommend the one
+whose `Recommended when:` line best matches what the interview said, or the
+first by file name when none or several match. Show the ones that fit with exactly one
 recommended. For each, say in plain words what it promises: the launch steps
 the kit can check on it, such as preview, rollback, backup and restore. Say
 what running it involves in the same plain words, meaning which accounts the
@@ -405,7 +409,9 @@ AGENTS.md's stack section as `Recipe: <file name>.md`, the file name exactly
 as it sits in the folder with `.md` included, so /ship can open it. Run
 `scripts/check-tooling.sh --recipe <recipe file>` from this installed skill
 folder, passing the chosen file's path inside the ship skill's `recipes/`
-folder beside it. A tool it reports missing is needed before the first /ship,
+folder beside it. Run it for every chosen recipe, a menu of one included,
+before the first checkpoint, and let the completion report's recipe line say
+what it found. A tool it reports missing is needed before the first /ship,
 not now: name it once, add it to the masterplan as a setup task, and carry on.
 That report never stops founding.
 

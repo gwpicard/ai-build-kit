@@ -464,7 +464,9 @@ out=$("$CHECK" 31 "$p")
 check "a founding run's own issues leave the fixture invariant unobservable" "$r"
 
 # --- the recipe record -----------------------------------------------------
-# Scenario 50 founds with both recipes on the menu. The menu is read from the
+# Scenario 50 founds with every recipe on the menu, and scenario 51 with one. A
+# project with no recipes folder of its own is read against this repository's
+# folder, so scenario 50's states are built without one. The menu is read from the
 # recipes folder rather than written out here, so a recipe added later is on it
 # without this file changing.
 menu=$(find "$TESTS_DIR/../skills/ship/recipes" -maxdepth 1 -type f -name '*.md' \
@@ -542,6 +544,45 @@ recipeproject "$p" "Recipe: none" "$menu"
 out=$("$CHECK" 50 "$p")
 [ "$(printf '%s' "$out" | verdict_of recipe-record)" = "miss" ] && r=yes || r=no
 check "scenario 50 with Recipe: none is a miss" "$r"
+
+# Scenario 51 founds with a menu of one: the harness leaves one recipe in the
+# installed kit. The check reads the menu from the project's own recipes folder,
+# so a founding-menu line copied from this repository's longer menu names a file
+# the run never had, and one naming the single installed file holds.
+one=$(awk '/^## 51\./ { on = 1; next } /^## / { on = 0 } on && /^- Evidence:/' \
+  "$TESTS_DIR/scenarios.md" | grep -o 'Recipe: [A-Za-z0-9._-]*\.md' | tail -1)
+one=${one#Recipe: }
+[ -n "$one" ] && printf '%s\n' "$menu" | tr ',' '\n' | grep -qxF "$one" && r=yes || r=no
+check "scenario 51's contract names a recipe this repository ships" "$r"
+
+# oneproject <dir> <founding-menu files>: a founding with only the one recipe
+# installed, the way the harness's preparation leaves it.
+oneproject() {
+  recipeproject "$1" "Recipe: $one" "$2"
+  mkdir -p "$1/.agents/skills/ship/recipes/parts"
+  : > "$1/.agents/skills/ship/recipes/$one"
+  : > "$1/.agents/skills/ship/recipes/parts/shared.md"
+}
+
+p="$WORK/s51-right"
+oneproject "$p" "$one"
+out=$("$CHECK" 51 "$p")
+[ "$(printf '%s' "$out" | verdict_of recipe-record)" = "hit" ] \
+  && [ "$(printf '%s' "$out" | held_of)" = "True" ] && r=yes || r=no
+check "scenario 51 with the one installed recipe recorded and listed holds" "$r"
+
+p="$WORK/s51-menu-from-memory"
+oneproject "$p" "$menu"
+out=$("$CHECK" 51 "$p")
+[ "$(printf '%s' "$out" | verdict_of recipe-record)" = "miss" ] \
+  && [ "$(printf '%s' "$out" | held_of)" = "False" ] && r=yes || r=no
+check "scenario 51 with a founding-menu line naming recipes the run never had is a miss" "$r"
+
+p="$WORK/s51-no-menu-line"
+oneproject "$p" ""
+out=$("$CHECK" 51 "$p")
+[ "$(printf '%s' "$out" | verdict_of recipe-record)" = "miss" ] && r=yes || r=no
+check "scenario 51 with no founding-menu line is a miss" "$r"
 
 # A scenario whose contract names no founding-menu line is not graded on one.
 p="$WORK/s31-no-menu"

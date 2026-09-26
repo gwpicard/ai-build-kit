@@ -230,6 +230,49 @@ grep -q 'case_prepare' "$ROOT/.agents/tests/replay/run.sh" \
   && ok "the harness runs a case's preparation" \
   || bad "run.sh no longer runs a case's preparation"
 
+# Scenario 51 founds with a menu of one recipe. A whole copy of the kit carries
+# the ship skill in two places, and the kit may read either, so both must lose
+# the same files while the shared parts stay.
+one="$WORK/one"
+for base in .agents agent-plugin; do
+  mkdir -p "$one/$base/skills/ship/recipes/parts"
+  for f in nextjs-supabase-on-vercel.md nextjs-supabase-on-coolify.md; do
+    : > "$one/$base/skills/ship/recipes/$f"
+  done
+  : > "$one/$base/skills/ship/recipes/parts/shared.md"
+done
+sh "$ROOT/.agents/tests/replay/prepare/one-recipe-menu.sh" "$one" \
+  && ok "the one-recipe preparation runs" \
+  || bad "the one-recipe preparation failed"
+for base in .agents agent-plugin; do
+  left=$(find "$one/$base/skills/ship/recipes" -maxdepth 1 -type f -name '*.md' -exec basename {} \;)
+  [ "$left" = "nextjs-supabase-on-vercel.md" ] \
+    && ok "the menu under $base holds only the Vercel recipe" \
+    || bad "the menu under $base holds: $left"
+  [ -f "$one/$base/skills/ship/recipes/parts/shared.md" ] \
+    && ok "and its shared parts are left alone" \
+    || bad "the shared parts under $base were removed"
+done
+mkdir -p "$WORK/none"
+sh "$ROOT/.agents/tests/replay/prepare/one-recipe-menu.sh" "$WORK/none" 2>/dev/null \
+  && bad "a project with no recipes folder was prepared without complaint" \
+  || ok "a project with no recipes folder stops the preparation"
+grep -q '^# prepare: one-recipe-menu$' "$ROOT/.agents/tests/replay/cases/51.txt" \
+  && ok "case 51 has the harness leave one recipe on the menu" \
+  || bad "case 51 no longer names its preparation"
+
+# Case 51's gate waits for the menu itself. Scenario 50's gate waited for a
+# host's name, which a reply can carry without showing any menu, and it fired
+# late. So a reply that only names the host must not open this gate, while a
+# menu naming the recipe recommended and the default must.
+gate51=$(sed -n 's/^# when: //p' "$ROOT/.agents/tests/replay/cases/51.txt" | head -1)
+expect "case 51's gate opens on a menu of one" send "$gate51" \
+  "1. **Recommended: Next.js and Supabase on Vercel.** This is the default, and I will carry on with it unless you choose another." 0
+expect "and on a menu that offers an own stack" send "$gate51" \
+  "It is the only recipe that fits. You may bring your own stack instead." 0
+expect "but not on a reply that only names the host" wait "$gate51" \
+  "The tool runs on Vercel and Supabase, and you own both accounts." 0
+
 # --- the filler ------------------------------------------------------------
 
 [ -n "$(case_filler "$WORK/case.txt")" ] \

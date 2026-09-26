@@ -113,9 +113,12 @@ Before it stands the project up, it names the kind of tool you are building and
 shows the recipes that fit, with one recommended. A recipe is one build stack
 paired with one place to run it, which the kit knows well enough to check at
 launch. For each one it says what the kit can check and what running it
-involves, such as the accounts you will hold. You can bring your own stack
-instead: it says once what it then cannot check, and records your choice. If
-you do not answer, it takes the recommended recipe and carries on. Where no
+involves, such as the accounts you will hold. When only one recipe fits, you
+still see it the same way, recommended and named the default. You can bring
+your own stack instead: it says once what it then cannot check, and records
+your choice. If you do not answer, it takes the recommended recipe and carries
+on. It then checks this computer for the tools that recipe's launch checks use,
+and the completion report says whether any is missing. Where no
 recipe fits, such as a command-line tool, it says so in one line and picks a
 conventional stack. The choice is written in AGENTS.md, in the stack section,
 and the kit notes which recipes were on the menu, so a later check-up can offer
