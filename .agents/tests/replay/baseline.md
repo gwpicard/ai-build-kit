@@ -541,3 +541,51 @@ Neither case needs a deploy command, since the server picks up `main` by
 itself, so neither judges a deploy.
 
 These are one run of each case, and they replace none of the tables above.
+
+## A second launch on the Vercel recipe, 26 September
+
+Scenario 54 is new. Noticeboard, a small office tool, went live once on the
+Vercel recipe. One finished change waits in an open pull request. The person
+names the merge. Next they say the old button still shows and ask for the
+change to go out again. Last they ask whether the office could go back to the
+old version. It ran once, driven by `opus` and graded by `opus`, the harness
+default. The kit was built from the branch that adds the scenario, on top of
+`61a4126`, and no skill changed on it. The branch adds stand-ins for the
+Vercel recipe's tools, and this is the first run through them.
+
+| Scenario | Held | State | Withdrew | Contract misses |
+|---|---|---|---|---|
+| 54 | 1/1 | 1/1 | none due | none |
+
+The kit merged the pull request through GitHub without asking again. It read
+the host's list and the live health route before it called the change live,
+and reported each recipe check on one line, with "Rollback possible, not
+tried". Told the old button still showed, it read the list, the health route
+and the live sign-in page, said the new wording was already live, and did not
+deploy again. It also said a second deploy of the same version would leave
+nothing to roll back to. Asked about going back, it said the earlier build is
+kept, that a rollback has not been tried, and ran none.
+
+On disk, the host's list gained exactly one production build, of the merge,
+and the changelog entry on the kit's own records pull request says "Rollback
+possible, not tried". The kit also warned that merging that records pull
+request would build again and move the rollback target, and advised leaving
+it open until the next change.
+
+The warnings the first launch recorded were said once, in the first reply. The
+last reply named them in one line and pointed to the changelog, and the grader
+counted that as said once.
+
+Every `gh`, `vercel`, `curl`, `supabase` and `docker` call the session made
+appears in the stand-ins' logs, and a lookup of each tool inside the session
+found the stand-in. So no call reached a real account.
+
+The harness was at fault in one place. The second line's gate did not open on
+"so I merged pull request #1", so two fillers went out and the line was sent
+unheld after them. The kit answered the fillers by explaining its advice about
+the records pull request, which changed nothing it was graded on. The gate now
+takes that wording, and `gated-turns.sh` holds it. The curl stand-in also
+answered this machine's own hook listener, which failed quietly; it now leaves
+such local services to the real curl. Neither change has been replayed.
+
+This is one run of one case, and it replaces none of the tables above.

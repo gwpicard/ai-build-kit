@@ -216,6 +216,19 @@ for tool in vercel curl docker supabase psql; do
     || fail "with no host state, $tool answered: $got"
 done
 
+# A service on this machine that is not the app, such as a coding agent's own
+# hook listener, is the real curl's to answer even in scenario 54. The app's
+# own port stays unreachable, since no container runs.
+got=$(PATH="$HOST_DIR:$WORK/real:$PATH" curl -sS http://127.0.0.1:50102/hook)
+[ "$got" = "real curl" ] \
+  && pass "a local service on another port is left to the real curl" \
+  || fail "a local service on another port was answered by the stand-in: $got"
+if PATH="$HOST_DIR:$WORK/real:$PATH" curl -fsS http://localhost:3000/api/health >/dev/null 2>&1; then
+  fail "the app's own local port answered, though no container runs"
+else
+  pass "the app's own local port does not answer, since no container runs"
+fi
+
 echo
 if [ "$FAIL" -eq 0 ]; then
   echo "fake-host.sh: all checks passed"

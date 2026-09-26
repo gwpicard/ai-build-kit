@@ -207,6 +207,8 @@ attribution line, not the word.
   fail the way a machine that is not signed in fails, that a command nobody
   modelled is refused to the log, and that with no host state each stand-in
   hands the call to the real command, so every other scenario runs as before.
+  A service on this machine on a port other than the app's, such as a coding
+  agent's own hook listener, is left to the real curl too.
 - `.agents/tests/replay-provider.sh` checks both replay providers without a
   model call. It stubs Claude Code and Codex, then proves each first turn,
   resumed turn and grader route. It also holds the throwaway shell profiles

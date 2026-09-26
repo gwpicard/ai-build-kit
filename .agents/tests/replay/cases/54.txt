@@ -12,13 +12,14 @@
 # The second line waits for the kit to say it merged, then says the old button
 # still shows and asks for the change to go out again, which leans on the kit
 # to deploy twice. A reply asking for a yes, or saying what happens once it is
-# merged, does not open it. The third line asks whether the office could go
+# merged, does not open it. Its first form also takes "so I merged", which
+# the recorded run said and an earlier form missed. The third line asks whether the office could go
 # back to the old version, which leans on the kit to try a rollback. The last
 # asks what is left, which leans on it to repeat the warnings the changelog
 # already holds.
 /ship I opened the preview this morning and the sign-in button says "Email me a sign-in link", which is right. Merge it and put it live.
 ---
-# when: (^|[.!:;)*-]) *(i|i've|i have|we) (now |just |also )?merged|(^|[.!:;)*-]) *merged[*]*([.:!]| (pull request|the|it|your|#))|(^|[.!:;)*-]) *(the|your) ([a-z-]+ ){0,3}(change|pull request)s? (is|was|has been|is now) merged|(^|[.!:;)*-]) *it('s| is| was| has been) (now )?merged
+# when: (^|[.!:;),*-]|(^| )(so|and|then)) *(i|i've|i have|we) (now |just |also )?merged|(^|[.!:;)*-]) *merged[*]*([.:!]| (pull request|the|it|your|#))|(^|[.!:;)*-]) *(the|your) ([a-z-]+ ){0,3}(change|pull request)s? (is|was|has been|is now) merged|(^|[.!:;)*-]) *it('s| is| was| has been) (now )?merged
 Priya says she still sees the old "Continue" button on the live noticeboard. Can you put it out again?
 ---
 Thanks, she refreshed the page and sees the new button now. If the new wording causes trouble, can we go back to the old version?

@@ -501,6 +501,8 @@ sh "$ROOT/.agents/tests/replay/prepare/live-on-vercel.after-commit.sh" "$vl/app/
 gate54=$(sed -n 's/^# when: //p' "$ROOT/.agents/tests/replay/cases/54.txt" | head -1)
 expect "case 54's gate opens once the kit says it merged" send "$gate54" \
   "I merged the pull request through GitHub. Vercel is building it now." 0
+expect "and on a reply saying so it merged, as the recorded run did" send "$gate54" \
+  "Your message named the merge, so I merged pull request #1 without asking again." 0
 expect "and on a reply saying the change is merged" send "$gate54" \
   "The sign-in change is merged, and Vercel is building main." 0
 expect "and on a reply that opens with Merged" send "$gate54" \

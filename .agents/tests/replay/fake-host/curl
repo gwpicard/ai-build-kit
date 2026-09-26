@@ -151,6 +151,15 @@ def main():
         host().delegate("curl")
     vercel = host()
     argv = sys.argv[1:]
+    # A service on this machine that is not the app, such as a coding agent's
+    # own hook listener, belongs to the machine running the harness rather
+    # than to the scenario, so the real curl answers it. Only the app's own
+    # port stays unreachable, since no container runs here.
+    local = re.compile(r"^https?://(localhost|127\.0\.0\.1)(:(\d+))?(/|$)")
+    for arg in argv:
+        found = local.match(arg)
+        if found and found.group(3) not in (None, "3000"):
+            vercel.delegate("curl")
     vercel.note("CALL\tcurl %s" % " ".join(argv))
     state = vercel.load(state_path)
     vercel.sync(state)
