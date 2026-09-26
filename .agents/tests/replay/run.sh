@@ -42,6 +42,11 @@ WORK=${REPLAY_WORK:-${TMPDIR:-/tmp}/abk-replay-$$}
 # REPLAY_RESULTS moves it somewhere else.
 RESULTS=${REPLAY_RESULTS:-${XDG_STATE_HOME:-$HOME/.local/state}/abk-replay/results}
 GH_DIR="$REPLAY_DIR/fake-github"
+# Stand-ins for a host's command-line tools, for a scenario that launches on a
+# recipe. The harness names a host state file for every run, so in a scenario
+# that never wrote one each answers as a tool signed in to nothing, and never
+# hands the call to the real command, which may be signed in on this machine.
+HOST_DIR="$REPLAY_DIR/fake-host"
 
 command -v python3 >/dev/null 2>&1 || fail "python3 is needed to read run output"
 [ -x "$ROOT/.agents/tools/build-release.sh" ] || fail "release builder is missing"
@@ -208,6 +213,12 @@ run_once() {
     FAKE_GH_STATE="$project/.gh-fixture.json"
     FAKE_GH_LOG="$WORK/s${number}-r${repeat}-gh.log"
     export FAKE_GH_STATE FAKE_GH_LOG
+    # The stand-in host keeps its list of deployments beside the project rather
+    # than in it, so the kit never commits it. Only a preparation that launches
+    # on a recipe writes that file.
+    FAKE_HOST_STATE="$project.host.json"
+    FAKE_HOST_LOG="$WORK/s${number}-r${repeat}-host.log"
+    export FAKE_HOST_STATE FAKE_HOST_LOG
     # PATH is a suggestion rather than a boundary. A session that doubts an
     # answer could look for the real tool, find it at its usual place, and use
     # the maintainer's own signed-in account. The credentials are taken away
@@ -225,6 +236,9 @@ run_once() {
     GIT_TERMINAL_PROMPT=0
     export GH_CONFIG_DIR GH_TOKEN GITHUB_TOKEN GH_ENTERPRISE_TOKEN \
       GITHUB_ENTERPRISE_TOKEN GIT_TERMINAL_PROMPT
+    # The host's tools may be signed in on this machine too. provider.sh says
+    # how each is kept from reaching an account.
+    provider_isolate_host "$project"
 
     # A turn that says "I merged your fix" has to be true, or the kit rightly
     # answers that the fix never went live and the case measures nothing. So the

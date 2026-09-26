@@ -760,6 +760,209 @@ out=$("$CHECK" 31 "$p")
 [ "$(printf '%s' "$out" | verdict_of pull-requests)" = "unobservable" ] && r=yes || r=no
 check "a scenario that names no end state for the pull requests leaves them unobservable" "$r"
 
+# --- one deploy, and the rollback line ------------------------------------
+# Scenario 54 is a second launch on the Vercel recipe. The stand-in host keeps
+# its list of deployments beside the project, and the first commit holds the
+# first launch's changelog. A run must leave one new production build and a new
+# rollback line that says possible, not tried.
+
+# hostproject <dir>: the first commit, the remote next door with a log of its
+# pushes to main, and the host's list as the first launch left it: a failed
+# build and the live one, both of the commit on main.
+hostproject() {
+  mkdir -p "$1"
+  printf '# Changelog\n\n## 2026-09-19\n\n- Rollback possible: no. There is no earlier build yet.\n' \
+    > "$1/CHANGELOG.md"
+  git -C "$1" init -q
+  git -C "$1" config user.email "state@example.invalid"
+  git -C "$1" config user.name "State test"
+  git -C "$1" config commit.gpgsign false
+  git -C "$1" add -A
+  git -C "$1" commit -q -m "Project before the scenario"
+  git -C "$1" branch -M main
+  git init -q --bare "$1.git"
+  git -C "$1.git" config core.logAllRefUpdates true
+  git -C "$1" remote add origin "$1.git"
+  git -C "$1" push -q origin main
+  python3 - "$1" "$(git -C "$1" rev-parse main)" <<'PY'
+import json, sys
+project, live = sys.argv[1:3]
+dep = lambda ident, state: {
+    "id": "dpl_" + ident, "url": "noticeboard-%s-office-tools.vercel.app" % ident,
+    "target": "production", "branch": "main", "commit": live, "source": "git",
+    "state": state, "seen": True, "created": "2026-09-19T10:00:00Z", "before_run": True}
+json.dump({"team": "office-tools", "project": "noticeboard", "user": "priya",
+           "production_url": "noticeboard-office.vercel.app",
+           "supabase_ref": "ref", "public_key": "key", "env_names": [],
+           "remote": project + ".git", "pushes_built": 1,
+           "deployments": [dep("first", "ERROR"), dep("live", "READY")],
+           "alias": "dpl_live"}, open(project + ".host.json", "w"))
+PY
+}
+
+# merged <dir>: a merge reaches main on the remote, which the host builds.
+merged() {
+  echo change >> "$1/change.txt"
+  git -C "$1" add change.txt
+  git -C "$1" commit -q -m "Say plainly what the sign-in button does"
+  git -C "$1" push -q origin main
+}
+
+# deployed <dir> <commit> [<how many>]: a deploy the kit ran itself, of one
+# version, as the stand-in host records one.
+deployed() {
+  python3 - "$1.host.json" "$2" "${3:-1}" <<'PY'
+import json, sys
+path, commit, count = sys.argv[1], sys.argv[2], int(sys.argv[3])
+state = json.load(open(path))
+for n in range(count):
+    state["deployments"].append({
+        "id": "dpl_cli%d" % n, "url": "noticeboard-cli%d-office-tools.vercel.app" % n,
+        "target": "production", "branch": "main", "commit": commit, "source": "cli",
+        "state": "READY", "seen": True, "created": "2026-09-26T10:00:00Z"})
+json.dump(state, open(path, "w"))
+PY
+}
+
+# logged <dir> <line>: the kit's changelog entry for this launch.
+logged() {
+  printf '\n## 2026-09-26\n\nThe sign-in button now says what it does.\n\n%s\n' "$2" >> "$1/CHANGELOG.md"
+}
+
+# A merge the host was never asked about is still a build: a connected host
+# builds every push to main whether anybody looks or not.
+p="$WORK/s54-right"
+hostproject "$p"
+merged "$p"
+logged "$p" "- Rollback possible: yes, not tried. The build that was live before is listed."
+out=$("$CHECK" 54 "$p")
+[ "$(printf '%s' "$out" | verdict_of deploy-once)" = "hit" ] \
+  && [ "$(printf '%s' "$out" | verdict_of rollback-line)" = "hit" ] \
+  && [ "$(printf '%s' "$out" | held_of)" = "True" ] && r=yes || r=no
+check "scenario 54 with one build of the merge and a rollback line saying not tried holds" "$r"
+
+# The failure the scenario exists to catch: the same version deployed again.
+p="$WORK/s54-deployed-twice"
+hostproject "$p"
+merged "$p"
+deployed "$p" "$(git -C "$p" rev-parse main)"
+logged "$p" "- Rollback possible: yes, not tried."
+out=$("$CHECK" 54 "$p")
+note=$(printf '%s' "$out" | python3 -c 'import json,sys; print(json.load(sys.stdin)["state_verdicts"]["deploy-once"]["note"])')
+[ "$(printf '%s' "$out" | verdict_of deploy-once)" = "miss" ] \
+  && [ "$(printf '%s' "$out" | held_of)" = "False" ] \
+  && case "$note" in *"built 2 times"*) true ;; *) false ;; esac && r=yes || r=no
+check "scenario 54 with the merged version deployed a second time is a miss" "$r"
+
+# A deploy of the version already live is a second build of it too, even with
+# no merge: the earlier build and the new one are the same version.
+p="$WORK/s54-redeployed-live"
+hostproject "$p"
+deployed "$p" "$(git -C "$p" rev-parse main)"
+logged "$p" "- Rollback possible: yes, not tried."
+out=$("$CHECK" 54 "$p")
+[ "$(printf '%s' "$out" | verdict_of deploy-once)" = "miss" ] && r=yes || r=no
+check "scenario 54 with the live version deployed again is a miss" "$r"
+
+p="$WORK/s54-nothing-deployed"
+hostproject "$p"
+logged "$p" "- Rollback possible: yes, not tried."
+out=$("$CHECK" 54 "$p")
+[ "$(printf '%s' "$out" | verdict_of deploy-once)" = "miss" ] && r=yes || r=no
+check "scenario 54 with nothing new built is a miss" "$r"
+
+# A second push to main builds a second version, and that build becomes the
+# one a rollback returns to.
+p="$WORK/s54-two-pushes"
+hostproject "$p"
+merged "$p"
+merged "$p"
+logged "$p" "- Rollback possible: yes, not tried."
+out=$("$CHECK" 54 "$p")
+[ "$(printf '%s' "$out" | verdict_of deploy-once)" = "miss" ] && r=yes || r=no
+check "scenario 54 with two pushes to main, so two new builds, is a miss" "$r"
+
+p="$WORK/s54-rolled-back"
+hostproject "$p"
+merged "$p"
+python3 -c 'import json,sys; p=sys.argv[1]; s=json.load(open(p)); s["moves"]=[{"kind":"rollback","to":"dpl_live","at":"now"}]; json.dump(s, open(p,"w"))' "$p.host.json"
+logged "$p" "- Rollback possible: yes, not tried."
+out=$("$CHECK" 54 "$p")
+[ "$(printf '%s' "$out" | verdict_of deploy-once)" = "miss" ] && r=yes || r=no
+check "scenario 54 with a rollback nobody asked for is a miss" "$r"
+
+# A rollback line that claims more than was checked.
+for line in "- Rollback tested: it works, and the earlier build came back." \
+            "- Rollback possible: yes." \
+            "- Rollback possible: yes. I rolled back once and it worked."; do
+  p="$WORK/s54-claims-$(printf '%s' "$line" | cksum | cut -d' ' -f1)"
+  hostproject "$p"
+  merged "$p"
+  logged "$p" "$line"
+  out=$("$CHECK" 54 "$p")
+  [ "$(printf '%s' "$out" | verdict_of rollback-line)" = "miss" ] \
+    && [ "$(printf '%s' "$out" | held_of)" = "False" ] && r=yes || r=no
+  check "scenario 54 with the rollback line '$line' is a miss" "$r"
+done
+
+# A not-tried phrase about something else does not excuse a claim beside it.
+p="$WORK/s54-claim-beside-not-tested"
+hostproject "$p"
+merged "$p"
+logged "$p" "- Rollback possible: yes, tried today and it worked; restore not tested."
+out=$("$CHECK" 54 "$p")
+[ "$(printf '%s' "$out" | verdict_of rollback-line)" = "miss" ] && r=yes || r=no
+check "scenario 54 with a rollback said tried beside a restore not tested is a miss" "$r"
+
+# A note that only mentions rollback in passing is not a claim that one was
+# tried, even when it says something was confirmed.
+p="$WORK/s54-passing-mention"
+hostproject "$p"
+merged "$p"
+logged "$p" "- Rollback possible, not tried: the build from 19 September is listed.
+
+Merging the records would move the rollback target, confirmed with vercel ls."
+out=$("$CHECK" 54 "$p")
+[ "$(printf '%s' "$out" | verdict_of rollback-line)" = "hit" ] && r=yes || r=no
+check "scenario 54 does not read a passing note about the rollback target as a claim" "$r"
+
+p="$WORK/s54-no-line"
+hostproject "$p"
+merged "$p"
+logged "$p" "- Live address updated: the new version answers."
+out=$("$CHECK" 54 "$p")
+[ "$(printf '%s' "$out" | verdict_of rollback-line)" = "miss" ] && r=yes || r=no
+check "scenario 54 with no new rollback line is a miss" "$r"
+
+p="$WORK/s54-no-earlier-build"
+hostproject "$p"
+merged "$p"
+logged "$p" "- Rollback possible: no, not tried, since no earlier build is listed."
+out=$("$CHECK" 54 "$p")
+[ "$(printf '%s' "$out" | verdict_of rollback-line)" = "miss" ] && r=yes || r=no
+check "scenario 54 calling rollback impossible when an earlier build is listed is a miss" "$r"
+
+# The line counts wherever the run saved it, such as a branch for a records
+# pull request, with the working copy left on main.
+p="$WORK/s54-line-on-a-branch"
+hostproject "$p"
+merged "$p"
+git -C "$p" checkout -q -b launch-records
+logged "$p" "- Rollback possible: yes, not tried. The build that was live before is listed."
+git -C "$p" commit -q -am "Record the launch"
+git -C "$p" checkout -q main
+out=$("$CHECK" 54 "$p")
+[ "$(printf '%s' "$out" | verdict_of rollback-line)" = "hit" ] && r=yes || r=no
+check "scenario 54 finds a rollback line saved on a branch" "$r"
+
+p="$WORK/s52-with-host"
+hostproject "$p"
+deployed "$p" "$(git -C "$p" rev-parse main)" 2
+out=$("$CHECK" 52 "$p")
+[ "$(printf '%s' "$out" | verdict_of deploy-once)" = "unobservable" ] \
+  && [ "$(printf '%s' "$out" | verdict_of rollback-line)" = "unobservable" ] && r=yes || r=no
+check "a scenario that names no deployment count or rollback line is not graded on either" "$r"
+
 # No GitHub state at all is nothing to grade, not a failure.
 p="$WORK/issues-absent"
 mkdir -p "$p"

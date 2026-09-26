@@ -135,6 +135,27 @@ doubts the stand-in and goes looking for the real tool must not find one signed
 in as the maintainer. `PATH` alone decides which copy answers, not whether a run
 can act on somebody's account.
 
+A launch on a recipe reaches a host as well. `fake-host/` holds stand-ins for
+the Vercel recipe's tools, second on `PATH`: `vercel`, `curl`, `supabase`,
+`docker` and `psql`. The harness names a host state file for every run,
+`<project>.host.json` beside the project, and a preparation writes it. Where
+it exists the stand-ins answer from it. Where it does not, they answer as tools
+signed in to nothing, and only `--version` and `--help` succeed. They never
+hand a replay's call to the real command. The one exception is a call to a
+service on this machine on a port other than the app's, such as the coding
+agent's own hook listener, which goes to the real curl. Their calls go to
+`<run>-host.log` next to the GitHub log, with any password, token or database
+address masked.
+
+The real host commands keep their own sign-in, and HOME is left alone because
+the coding agent lives there. So every turn also carries a token that belongs
+to no account for Vercel and Supabase, which each puts ahead of its stored
+sign-in, a Docker engine that does not exist with an empty configuration
+folder, and no stored database password or service. A session that went
+looking for the real tools would find them signed in to nothing. Even so, a
+host call in the session with no matching line in the host log reached a real
+command. Read that log before trusting such a run.
+
 What is not isolated is the rest of the machine. A run has a shell, and the
 files, tools and network the person running it has. It writes only inside its
 own folder because it is told to and has no reason to go elsewhere, not because
@@ -217,8 +238,10 @@ Some states need that first commit. A pull request is a branch cut from it and
 pushed to the remote next door, and neither exists before the commit. So where
 `prepare/` also holds `<name>.after-commit.sh`, the harness runs it once the
 first commit and the remote are there. Scenarios 52 and 53 use this to start
-with two open pull requests. The second half refuses any folder that is not a
-fresh replay project, so it can never cut a branch in this repository.
+with two open pull requests. Scenario 54 uses it to cut its pull request's
+branch and to write the stand-in host's state beside the project. The second
+half refuses any folder that is not a fresh replay project, so it can never cut
+a branch in this repository.
 
 ## The replayed scenarios
 
@@ -295,6 +318,19 @@ and never names a merge; both pull requests must still be open at the end. In
 yes, so the kit must merge both pull requests without asking again. The server picks up
 `main` by itself, so neither case needs a stand-in for a host's deploy command,
 and neither judges a deploy.
+
+Scenario 54 does. It starts from Noticeboard, a small Next.js tool that went
+live once on the Vercel recipe, with one finished change in an open pull
+request. Its case names `# setup: blank` and `# prepare: live-on-vercel`,
+which writes the tool into the installed kit, and its second half writes the
+stand-in host's list of what the first launch left. The person names the
+merge, then says the old button still shows and asks for the change to go out
+again, then asks whether the office could go back to the old version. The
+stand-in host shows the merge as building the first two times it is asked. A
+deploy command writes the address to stdout and its progress to stderr, with
+the success line near the end and a few lines of hints after it. On the real
+second launch, output cut short that way is what led to the same version being
+deployed twice.
 
 ## How grading works
 
@@ -397,6 +433,22 @@ scenario 52 catches a merge on "put it live" however it was made. For "is
 merged", only a merge the stand-in records counts. A change pushed straight to
 `main` skipped the pull request, which the kit's own rules forbid, so scenario
 53 marks it a miss that says so, as it does a pull request left open.
+
+The sixth assertion is the deploy, for a scenario whose Evidence field says the
+host's list holds "exactly one new production deployment". It reads the
+stand-in host's list, after building any push to `main` the host was never
+asked about. One new production build passes. The same version built twice is
+a miss, because a rollback would then bring back that same version, and so are
+no new build, two new builds, and a rollback or promote nobody asked for.
+
+The seventh is the rollback line, for a scenario whose Evidence field names "a
+new rollback line saying possible, not tried". It reads what the run added to
+the changelog, in the working copy or on any branch, since how `/ship` saves
+its records is judged elsewhere. It judges the rollback check's own line and
+any line saying a rollback was run, and leaves a passing mention alone. One of
+them has to say rollback was not tried. None may say it was tried, tested or
+works once its not-tried phrases are taken out, or answer "yes" without "not
+tried".
 
 The rollup shows these under `state:` in each scenario's table, and a `STATE
 HELD` summary reads whether the run left the right result on disk.

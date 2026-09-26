@@ -2,7 +2,8 @@
 # provider.sh: run replay turns and graders through Claude Code or Codex.
 
 # The caller sets REPLAY_PROVIDER, MODEL, GRADER_MODEL, WORK, REPLAY_DIR,
-# TIMEOUT_CMD and GH_DIR before loading this file.
+# TIMEOUT_CMD and GH_DIR before loading this file, and HOST_DIR where it has
+# stand-ins for a host's tools.
 
 provider_check() {
   case "$REPLAY_PROVIDER" in
@@ -30,9 +31,12 @@ provider_prepare() {
   # reached the stand-in. These throwaway profiles put the stand-in back after
   # login. Bash reads BASH_ENV for its non-interactive shell; zsh reads the
   # .zprofile in ZDOTDIR instead of the person's own.
+  # The host's stand-ins go second, for the same reason: a login shell would
+  # otherwise find the person's own deploy command, which may be signed in.
+  REPLAY_TOOLS="$GH_DIR${HOST_DIR:+:$HOST_DIR}"
   REPLAY_SHELL_HOME="$WORK/replay-shell"
   mkdir -p "$REPLAY_SHELL_HOME"
-  printf 'export PATH="%s:$PATH"\n' "$GH_DIR" \
+  printf 'export PATH="%s:$PATH"\n' "$REPLAY_TOOLS" \
     > "$REPLAY_SHELL_HOME/.zprofile"
   cp "$REPLAY_SHELL_HOME/.zprofile" "$REPLAY_SHELL_HOME/bash-env"
   ZDOTDIR=$REPLAY_SHELL_HOME
@@ -42,6 +46,26 @@ provider_prepare() {
   [ "$REPLAY_PROVIDER" = "codex" ] || return 0
   CODEX_GRADER_DIR="$WORK/codex-grader"
   mkdir -p "$CODEX_GRADER_DIR"
+}
+
+# provider_isolate_host <project>
+# The host's real tools may be signed in on this machine, and a turn that
+# reaches one past the stand-ins must find no account. An empty token does
+# nothing to them, so each gets one that is set and belongs to no account: the
+# Vercel CLI uses a set VERCEL_TOKEN in place of its stored sign-in, and the
+# Supabase CLI puts SUPABASE_ACCESS_TOKEN ahead of its stored login. Docker is
+# pointed at an engine that does not exist and a configuration folder with
+# nothing in it, and the database tools at no stored password and no stored
+# service. HOME is left alone, since the coding agent itself lives there.
+provider_isolate_host() {
+  VERCEL_TOKEN=replay-no-account
+  SUPABASE_ACCESS_TOKEN=replay-no-account
+  DOCKER_HOST=unix:///nonexistent/replay.sock
+  DOCKER_CONFIG="$1/.docker-empty"
+  PGPASSFILE=/dev/null
+  PGSERVICEFILE=/dev/null
+  export VERCEL_TOKEN SUPABASE_ACCESS_TOKEN DOCKER_HOST DOCKER_CONFIG \
+    PGPASSFILE PGSERVICEFILE
 }
 
 provider_new_session() {
@@ -138,7 +162,7 @@ provider_turn() {
         resume_args="--session-id $PROVIDER_SESSION"
       fi
       # shellcheck disable=SC2086
-      (cd "$project" && PATH="$GH_DIR:$PATH" \
+      (cd "$project" && PATH="${REPLAY_TOOLS:-$GH_DIR}:$PATH" \
         ${TIMEOUT_CMD:+$TIMEOUT_CMD 1800} claude -p "$message" \
         $resume_args \
         --strict-mcp-config \
@@ -161,10 +185,10 @@ PY
       ;;
     codex)
       if [ -n "$PROVIDER_SESSION" ]; then
-        (cd "$project" && PATH="$GH_DIR:$PATH" \
+        (cd "$project" && PATH="${REPLAY_TOOLS:-$GH_DIR}:$PATH" \
           run_codex_resume "$message" "$raw" "$reply") || return 1
       else
-        (cd "$project" && PATH="$GH_DIR:$PATH" \
+        (cd "$project" && PATH="${REPLAY_TOOLS:-$GH_DIR}:$PATH" \
           run_codex_start "$message" "$raw" "$reply") || return 1
         PROVIDER_SESSION=$(codex_thread_id "$raw")
         [ -n "$PROVIDER_SESSION" ] || return 1

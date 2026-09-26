@@ -21,7 +21,7 @@ pass() {
 TEST_WORK=$(mktemp -d)
 trap 'rm -rf "$TEST_WORK"' EXIT INT TERM
 BIN="$TEST_WORK/bin"
-mkdir -p "$BIN" "$TEST_WORK/project" "$TEST_WORK/fake-github"
+mkdir -p "$BIN" "$TEST_WORK/project" "$TEST_WORK/fake-github" "$TEST_WORK/fake-host"
 PROVIDER_LOG="$TEST_WORK/provider.log"
 export PROVIDER_LOG
 
@@ -50,11 +50,16 @@ cat > "$BIN/claude" <<'STUB'
 #!/bin/sh
 set -eu
 printf 'claude %s\n' "$*" >> "$PROVIDER_LOG"
+# What a turn's environment says about the host's accounts.
+printf '%s|%s|%s|%s|%s|%s\n' "${VERCEL_TOKEN:-}" "${SUPABASE_ACCESS_TOKEN:-}" \
+  "${DOCKER_HOST:-}" "${DOCKER_CONFIG:-}" "${PGPASSFILE:-}" "${PGSERVICEFILE:-}" \
+  > "$PROVIDER_LOG.host-env"
 # Which gh a login shell finds here, the way Claude Code's Bash tool builds its
 # environment from one.
 printf '%s\n' "${ZDOTDIR:-}" > "$PROVIDER_LOG.zdotdir"
 if command -v zsh >/dev/null 2>&1; then
   zsh -l -c 'command -v gh' > "$PROVIDER_LOG.login-gh" 2>/dev/null || true
+  zsh -l -c 'command -v vercel' > "$PROVIDER_LOG.login-vercel" 2>/dev/null || true
 fi
 case " $* " in
   *" --allowedTools  "*)
@@ -83,6 +88,7 @@ new_uuid() {
 REPLAY_DIR="$ROOT/.agents/tests/replay"
 WORK="$TEST_WORK/work"
 GH_DIR="$TEST_WORK/fake-github"
+HOST_DIR="$TEST_WORK/fake-host"
 TIMEOUT_CMD=
 mkdir -p "$WORK"
 . "$PROVIDER"
@@ -154,6 +160,8 @@ unset ZDOTDIR BASH_ENV
 rm -rf "$WORK/replay-shell"
 printf '#!/bin/sh\necho stand-in\n' > "$GH_DIR/gh"
 chmod +x "$GH_DIR/gh"
+printf '#!/bin/sh\necho stand-in\n' > "$HOST_DIR/vercel"
+chmod +x "$HOST_DIR/vercel"
 provider_prepare
 provider_new_session
 grep -qF "$GH_DIR" "$WORK/replay-shell/.zprofile" \
@@ -171,7 +179,27 @@ if command -v zsh >/dev/null 2>&1; then
   [ "$(cat "$PROVIDER_LOG.login-gh")" = "$GH_DIR/gh" ] \
     && pass "a login shell in a Claude turn finds fake GitHub first" \
     || fail_provider "a login shell in a Claude turn found $(cat "$PROVIDER_LOG.login-gh")"
+  # The host's stand-ins come next, so a login shell never finds a deploy
+  # command that may be signed in to somebody's account.
+  [ "$(cat "$PROVIDER_LOG.login-vercel")" = "$HOST_DIR/vercel" ] \
+    && pass "a login shell in a Claude turn finds the host's stand-ins first" \
+    || fail_provider "a login shell in a Claude turn found $(cat "$PROVIDER_LOG.login-vercel")"
 fi
+# A turn must find no account in the host's real tools either. The harness
+# sets a token that belongs to no account for Vercel and Supabase, an engine
+# that does not exist for Docker, and no stored password for the database.
+grep -q 'provider_isolate_host "$project"' "$RUNNER" \
+  && pass "every replay turn isolates the host's tools" \
+  || fail_provider "run.sh no longer isolates the host's tools for each turn"
+(
+  provider_isolate_host "$TEST_WORK/project"
+  provider_turn "$TEST_WORK/project" "first turn" "$TEST_WORK/claude-host.json" \
+    "$TEST_WORK/claude-host-reply"
+) || fail_provider "Claude could not start a turn with the host isolated"
+[ "$(cat "$PROVIDER_LOG.host-env")" = "replay-no-account|replay-no-account|unix:///nonexistent/replay.sock|$TEST_WORK/project/.docker-empty|/dev/null|/dev/null" ] \
+  && pass "a replay turn carries no account for Vercel, Supabase, Docker or the database" \
+  || fail_provider "a replay turn's host environment was: $(cat "$PROVIDER_LOG.host-env")"
+
 provider_check
 provider_new_session
 claude_reply="$TEST_WORK/claude-reply"

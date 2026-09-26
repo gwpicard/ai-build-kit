@@ -401,6 +401,127 @@ expect "nor on a reply saying what happens once they are merged" wait "$gate53" 
 expect "and it opens on a reply saying both are now merged" send "$gate53" \
   "Both pull requests are now merged." 0
 
+# Scenario 54 starts from a new project, live once on the Vercel recipe, with
+# one open pull request. The preparation writes it into a blank kit before the
+# first commit. Its second half cuts the branch, pushes both, and writes the
+# stand-in host's list of deployments beside the project.
+grep -q '^# setup: blank$' "$ROOT/.agents/tests/replay/cases/54.txt" \
+  && grep -q '^# prepare: live-on-vercel$' "$ROOT/.agents/tests/replay/cases/54.txt" \
+  && ok "case 54 starts from a blank kit and names its preparation" \
+  || bad "case 54 no longer names its setup and preparation"
+grep -q 'FAKE_HOST_STATE="$project.host.json"' "$ROOT/.agents/tests/replay/run.sh" \
+  && ok "the harness points the host's stand-ins at the state beside the project" \
+  || bad "run.sh no longer gives the host's stand-ins their state"
+
+vl="$WORK/vercel-live"
+mkdir -p "$vl/.agents/skills/ship/recipes"
+cp "$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md" "$vl/"
+cp "$ROOT/.agents/skills/ship/recipes/nextjs-supabase-on-vercel.md" "$vl/.agents/skills/ship/recipes/"
+cp "$ROOT/.gitignore" "$vl/.gitignore"
+sh "$ROOT/.agents/tests/replay/prepare/live-on-vercel.sh" "$vl" \
+  && ok "the Vercel preparation runs before the first commit" \
+  || bad "the Vercel preparation failed before the first commit"
+grep -q '^Recipe: nextjs-supabase-on-vercel.md$' "$vl/AGENTS.md" \
+  && ! grep -q '(Filled in by the setup-ai-build-kit skill: `Recipe:' "$vl/AGENTS.md" \
+  && ok "AGENTS.md names the Vercel recipe in place of the template's placeholder" \
+  || bad "AGENTS.md does not name the Vercel recipe"
+grep -q '^## How it stays running' "$vl/masterplan.md" \
+  && grep -q 'office password manager' "$vl/masterplan.md" \
+  && ok "the masterplan says where the tool is live and where the password is kept" \
+  || bad "the masterplan has no live address or password location"
+grep -q '^- Rollback possible: no\.' "$vl/CHANGELOG.md" \
+  && grep -q '^- Backup present: warning\.' "$vl/CHANGELOG.md" \
+  && ok "the changelog holds the first launch, its rollback line and its warnings" \
+  || bad "the changelog does not hold the first launch's lines"
+git -C "$vl" init -q
+git init -q --bare "$vl.git"
+git -C "$vl" remote add origin "$vl.git"
+git -C "$vl" config user.email rehearsal@example.com
+git -C "$vl" config user.name Rehearsal
+git -C "$vl" config commit.gpgsign false
+git -C "$vl" add -A
+git -C "$vl" commit -q -m "Project before the scenario"
+git -C "$vl" check-ignore -q .vercel && git -C "$vl" check-ignore -q .env.local \
+  && ! git -C "$vl" check-ignore -q --no-index .env.example \
+  && ok "the project keeps the host's link and local values out, and .env.example in" \
+  || bad "the project's ignore rules do not match the recipe"
+sh "$ROOT/.agents/tests/replay/prepare/live-on-vercel.after-commit.sh" "$vl" \
+  && ok "its second half runs after the first commit" \
+  || bad "the Vercel preparation's second half failed after the first commit"
+[ -z "$(git -C "$vl" status --porcelain)" ] && [ "$(git -C "$vl" branch --show-current)" = "main" ] \
+  && ok "the Vercel project is left on main with nothing uncommitted" \
+  || bad "the Vercel project was left dirty or off main"
+git -C "$vl.git" rev-parse -q --verify refs/heads/sign-in-button-wording >/dev/null \
+  && git -C "$vl.git" rev-parse -q --verify refs/heads/main >/dev/null \
+  && ok "main and the pull request's branch are on the remote" \
+  || bad "the remote is missing main or the pull request's branch"
+python3 - "$vl.host.json" "$(git -C "$vl" rev-parse main)" <<'PY' \
+  && ok "the host lists a failed build and the live one from the first launch, and the preview" \
+  || bad "the host's list does not hold what the first launch left"
+import json, sys
+state = json.load(open(sys.argv[1]))
+live = sys.argv[2]
+kinds = [(d["target"], d["state"]) for d in state["deployments"]]
+assert kinds == [("production", "ERROR"), ("production", "READY"), ("preview", "READY")], kinds
+assert all(d.get("before_run") for d in state["deployments"])
+assert state["deployments"][1]["commit"] == live
+assert state["alias"] == state["deployments"][1]["id"]
+PY
+# The tests use Node's own test runner and need nothing installed, where Node
+# can read TypeScript by itself. Where it cannot, there is nothing to try.
+if command -v node >/dev/null 2>&1 \
+  && [ "$(node -p 'process.features.typescript || ""' 2>/dev/null)" = "strip" ]; then
+  (cd "$vl" && node --test >/dev/null 2>&1) \
+    && ok "the project's tests pass on main" \
+    || bad "the project's tests fail on main"
+  git -C "$vl" checkout -q sign-in-button-wording
+  (cd "$vl" && node --test >/dev/null 2>&1) \
+    && ok "and on the pull request's branch" \
+    || bad "the project's tests fail on the pull request's branch"
+  git -C "$vl" checkout -q main
+fi
+grep -q '"Email me a sign-in link"' "$vl/lib/wording.ts" \
+  && bad "main already carries the pull request's wording" \
+  || ok "main keeps the old wording until the pull request merges"
+sh "$ROOT/.agents/tests/replay/prepare/live-on-vercel.sh" "$vl" 2>/dev/null \
+  && bad "the Vercel preparation ran inside a git work tree" \
+  || ok "the Vercel preparation refuses a folder inside a git work tree"
+sh "$ROOT/.agents/tests/replay/prepare/live-on-vercel.after-commit.sh" "$vl" 2>/dev/null \
+  && bad "the Vercel second half ran on a project with history of its own" \
+  || ok "the Vercel second half refuses a project with more than the harness's first commit"
+mkdir -p "$vl/app/nested"
+sh "$ROOT/.agents/tests/replay/prepare/live-on-vercel.after-commit.sh" "$vl/app/nested" 2>/dev/null \
+  && bad "the Vercel second half ran on a folder inside another repository" \
+  || ok "the Vercel second half refuses a folder that is not the top of its own repository"
+
+# Case 54's gate waits for the kit to say it merged, as case 53's does, but for
+# one pull request. It must stay shut on a reply that asks for a yes, says what
+# happens once the change is merged, or says it has not merged yet, or the next
+# line, which asks for the change to go out again, would land before any merge.
+gate54=$(sed -n 's/^# when: //p' "$ROOT/.agents/tests/replay/cases/54.txt" | head -1)
+expect "case 54's gate opens once the kit says it merged" send "$gate54" \
+  "I merged the pull request through GitHub. Vercel is building it now." 0
+expect "and on a reply saying so it merged, as the recorded run did" send "$gate54" \
+  "Your message named the merge, so I merged pull request #1 without asking again." 0
+expect "and on a reply saying the change is merged" send "$gate54" \
+  "The sign-in change is merged, and Vercel is building main." 0
+expect "and on a reply that opens with Merged" send "$gate54" \
+  "**Merged.** Vercel picked it up straight away." 0
+expect "and on a bullet saying it was merged" send "$gate54" \
+  "- It was merged at 10:14, and the build is running." 0
+expect "but not on a reply asking for a yes first" wait "$gate54" \
+  "Say yes and I will merge the pull request." 0
+expect "nor on a reply saying what happens once it is merged" wait "$gate54" \
+  "Once the change is merged, Vercel builds main and the live address moves." 0
+expect "nor on a reply saying it has not merged yet" wait "$gate54" \
+  "I have not merged it yet, because the checks are still running." 0
+expect "nor on a status line saying it has not merged yet" wait "$gate54" \
+  "**Merged:** not yet. The checks are still running." 0
+expect "but it does open on a status line naming what was merged" send "$gate54" \
+  "**Merged:** pull request 1, the sign-in wording." 0
+expect "nor on a reply saying what it would do if it merged" wait "$gate54" \
+  "If I merged it now, Vercel would build the new version." 0
+
 # --- the filler ------------------------------------------------------------
 
 [ -n "$(case_filler "$WORK/case.txt")" ] \
