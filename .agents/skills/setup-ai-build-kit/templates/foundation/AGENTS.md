@@ -58,12 +58,11 @@ never calls a screen accessible, compliant, or good.
 ## The records
 
 If it is not written down, it does not exist. When work lands, add a dated
-`CHANGELOG.md` entry in plain words and commit with a clear message. The
-remaining work lives in this project's issues, one per piece, in the shape
-the `setup-ai-build-kit` skill's `references/pieces.md` describes. A merged pull
-request saying `Closes #<number>` closes its piece. Each piece carries a subject
-label, set once by change-triage and read by later sessions. `plan.local.md` is
-a printout of the open issues, written by `.agents/tools/plan-refresh.sh`. It is
+`CHANGELOG.md` entry in plain words and commit with a clear message. Each piece
+is one issue, shaped as the `setup-ai-build-kit` skill's `references/pieces.md`
+says. A merged pull request saying `Closes #<number>` closes its piece. Each
+piece has a subject label, set once by change-triage. `plan.local.md` is a
+printout of the open issues, written by `.agents/tools/plan-refresh.sh`. It is
 never a source: a change goes to the issue, and the printout is made again.
 
 When one document says another will do a job, write that job into the other
@@ -76,8 +75,7 @@ Use the save route the build path and the change require. Private, disposable
 exploration may end in a confirmed checkpoint. Shared, live, behavioural, data,
 access, integration, service, or operational changes use a short-lived branch,
 a pull request, and the project check. A human decides whether to merge.
-Present what changed, what was checked, and what remains uncertain. Never ask
-the person to read code or logs.
+Present what changed, what was checked, and what remains uncertain.
 
 ## Sensitive areas
 
@@ -105,25 +103,27 @@ method exists for a different job from the one a named reviewer was named for.
 
 ## Working with this team
 
-The people directing the work are not required to read code. A report describes
-what they achieved, in plain language. Define a technical term once when it
-cannot be avoided, and describe verification as an action with an expected
-result. Keep progress updates tied to a decision, blocker, or visible outcome.
-Do not narrate routine inspection, command output, retries, or waiting.
+The people directing the work are never asked to read code or logs: report
+what they achieved in plain words, define a technical term once where it cannot
+be avoided, and describe a check as an action with an expected result. Keep
+progress updates tied to a decision, blocker, or visible outcome, never routine
+inspection, command output, retries, or waiting.
 
-Immediately before a technical confirmation, explain what the person will
-notice, why it is needed, whether anything leaves the computer, whether the
-action is temporary or saved, and what remains unconfirmed if they decline.
-Say that a technical confirmation box will appear next.
+Immediately before a technical confirmation, say what the person will notice,
+why it is needed, if anything leaves the computer, if it is temporary or saved,
+what stays unconfirmed if they decline, and that a confirmation box comes next.
 
 ## Secrets and confidential files
 
 Keys, passwords, and tokens live in `.env`. Never print, commit, or copy one
-into a document, check, or changelog. Record where any other secret lives, never
-its value, in the masterplan's "How it stays running", and read it there. If
-none is recorded, ask once. Rotate a secret that appears where it should not,
-even one given as a reply: record it nowhere, say it is now in this chat, and
-ask for its location. A secret with no known location is never called absent.
+into a document, check, or changelog, or write one to `/tmp`. Record where any
+other secret lives, never its value, in the masterplan's "How it stays
+running", and read it there. If none is recorded, ask once. Rotate a secret
+that appears where it should not, even one given as a reply: record it nowhere,
+say it is now in this chat, and ask for its location. A secret with no known
+location is never called absent. Reach a service only through its tool's own
+commands and keys sent to the browser, never a login another tool stores, as in
+the keychain. If you cannot, say so and ask; never then read it another way.
 
 If the project works from confidential files, the setup-ai-build-kit skill
 records their folder and handling rules here. Never stage, commit, print, or
@@ -138,7 +138,7 @@ sweeping work. Stop and ask when:
 - the work exceeds the agreed slice, or needs a new dependency or service;
 - the request changes data, access, money, automatic actions, reliance, or
   external users, or would delete data or do anything irreversible or outside
-  this computer;
+  this computer, such as a live service's settings: say if it can be undone;
 - a sensitive area's caution is a person who has not yet looked, or a risk
   notice is waiting on the person's answer;
 - the masterplan is silent on a consequential decision, or the harness lacks a

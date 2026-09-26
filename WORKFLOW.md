@@ -285,8 +285,21 @@ because a tool with no recorded address is not live.
 
 Before the launch review asks you to look up a setting, the kit reads it itself
 where it can: from an address the service answers in public, with the key your
-tool already sends to the browser, or from a tool it is already signed in to.
-It asks you only about a setting it cannot read, and says why it cannot.
+tool already sends to the browser, or through the commands of a tool it is
+already signed in to. It asks you only about a setting it cannot read, and says
+why it cannot.
+
+The kit never takes a login another tool keeps for itself, such as one stored
+in your computer's keychain. That login can reach everything on your account,
+not only this tool. Once the kit has told you it cannot read a setting, it does
+not then read it some other way. It asks you, and names the page where the
+setting lives.
+
+A command that changes a live service's settings or data outside your tool's
+code waits for your yes, in /implement and in /ship alike. The kit names the
+change first and says whether it can be undone. A real build once switched off
+a live setting it then could not switch back on. The commands a recipe's
+going-live section runs are the launch you asked for, and need no second yes.
 
 /ship never merges a pull request you have not agreed to. It names each one and
 what it changes, then asks for a yes that names the merge. Saying "put it live"

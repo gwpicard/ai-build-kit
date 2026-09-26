@@ -169,20 +169,53 @@ tell the person so plainly, and keep it out of CHANGELOG.md as a launch.
 
 #### A setting the kit can read
 
-This holds for the launch review and for every check in this skill, on a
-recipe or off one. Before you ask the person to look up a setting of a service
-the tool uses, check whether the kit can read it with what it already has: an
+This holds for the launch review and for every check in this skill, on a recipe
+or off one. Before you ask the person to look up a setting of a service the
+tool uses, check whether the kit can read it with what it already has: an
 address the service answers in public, a command-line tool this session is
-already signed in to, or the project's own files. Where it can, read the
-setting and report its value in one plain line, instead of asking. On a
-recipe, its `Settings the kit can read` section, where it has one, says which
-settings the kit reads and how.
+already signed in to, through that tool's own commands, or the project's own
+files. Where it can, read the setting and report its value in one plain line,
+instead of asking. On a recipe, its `Settings the kit can read` section, where
+it has one, says which settings the kit reads and how.
 
 Such a read uses only a key the project already sends to the browser. Never use
 a secret key, a service key or a password to read a setting, and never sign in
 to anything new for it. Ask the person only for a setting the kit cannot read
 that way, and say in the same sentence why it cannot, for example that the
 service shows it only on its own settings page.
+
+#### A login the kit does not own
+
+This holds for the launch review and for every step in this skill that
+reaches a service. The kit uses only what a tool offers through its own
+commands, and the keys the tool already sends to the browser. It never reads a
+stored login, token or password out of the keychain, a credential store, or
+another tool's own files, such as its settings or sign-in file. It never calls
+a service's management API with such a login. A command-line tool uses its own
+sign-in when the kit runs that tool's commands, and the kit never takes that
+sign-in out to use it another way.
+
+When the kit cannot read or change a setting that way, it says so truthfully
+and asks the person, naming the page where the setting lives. Once it has said
+it cannot read something, it never reads it another way. If the person asks it
+to try, it says again what it can reach and what it cannot.
+
+This is about a login another tool keeps for itself. A key the person gave
+this project, kept where the masterplan records it, belongs to the project,
+and "A secret a check needs" below says how to use it.
+
+#### A change to a live service
+
+A command that changes a live service's settings or data outside the tool's
+own code waits for a yes that names the change and says whether it can be
+undone. Examples are pushing a local settings file to the live project, or
+changing its sign-in settings. Where the kit does not know whether the change
+can be undone, it says that. The commands a recipe's going-live section names
+are the launch the person asked for, and need no further yes. A no leaves the
+service as it was, and the step is a warning like any other.
+
+A secret key is never written to a shared temporary folder such as `/tmp`.
+Write what a step needs straight into the git-ignored file that uses it.
 
 #### A secret a check needs
 

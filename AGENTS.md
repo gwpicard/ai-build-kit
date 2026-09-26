@@ -570,6 +570,21 @@ attribution line, not the word.
   nowhere and the person is asked to rotate it. The project's own
   AGENTS.md sits at its line ceiling, so it carries the short form of the rule
   and the check guards both.
+- `.agents/tests/no-stored-logins.sh` guards what the kit may use to reach a
+  service, and what waits for the person before a live service changes. A real
+  launch told the person it could not read a sign-in setting, then read the
+  service tool's stored login out of the keychain and used it to read and
+  change that setting. That login reaches every project on the account. So the
+  kit uses only a tool's own commands and the keys the tool already sends to
+  the browser. It never takes a login another tool keeps, and never reads what
+  it has said it cannot. When it cannot, it says so and names the page. The
+  same run, while building, pushed a settings file to the live service and
+  switched off a setting it could not switch back on. It also wrote every key
+  to a shared temporary folder. So a command that changes a live service waits
+  for a yes that names the change and says whether it can be undone, and a
+  secret key goes straight into the file that uses it. The check holds the
+  rules in `/ship`, second-opinion, section-builder, WORKFLOW.md and the
+  project's own AGENTS.md, and proves each one load-bearing in each file.
 - `.agents/tests/standing-instructions.sh` guards the project's instruction
   ceiling and the monthly offer to trim repeated code information. It removes
   each written rule in turn and drives the validator's own count at the limit.
