@@ -193,8 +193,10 @@ attribution line, not the word.
   not secure enough. The teardown removes the Vercel project, the repository
   and every local folder, including the backups `/ship` writes, with no
   recursive forced delete. It shows the token's scopes first, takes the
-  delete scope off again, and checks that each item is gone, the backups and
-  the kit's temporary files included. It also holds the rules that keep the
+  delete scope off again, and checks that each item is gone, the backups
+  included. The kit's temporary files are the ones newer than a marker left
+  at the start of the run, since a listing cut to a fixed length can pass
+  while they remain, and the marker goes last. It also holds the rules that keep the
   run safe, read from the section itself so a copy elsewhere cannot hide a
   removal: the names given at founding and in `/ship`, the lockfile caveat, a
   failure filed rather than fixed in the throwaway project, a password that

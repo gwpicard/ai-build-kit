@@ -95,7 +95,7 @@ remove_at=$(grep -nE '^ *gh auth refresh -h github\.com -r delete_repo$' "$SECTI
 delete_at=$(grep -nE '^ *gh repo delete ' "$SECTION" | cut -d: -f1)
 [ "$remove_at" -gt "$delete_at" ] || rs_fail "the delete_repo scope is removed before the repository is deleted"
 rs_ok "teardown takes the delete_repo scope off again after the delete"
-for cmd in 'vercel project ls' 'gh repo view <owner>/abk-try-N' 'ls /private/tmp/abk-\*' 'ls ~/.config/abk-try-N' 'ls ~/Backups/abk-try-N' 'ls -dlt /private/tmp/\* \| head -20'; do
+for cmd in 'vercel project ls' 'gh repo view <owner>/abk-try-N' 'ls /private/tmp/abk-\*' 'ls ~/.config/abk-try-N' 'ls ~/Backups/abk-try-N' 'ls ~/.abk-try-N-start'; do
   grep -qE "^ *$cmd\$" "$SECTION" || rs_fail "teardown does not check with: $cmd"
 done
 grep -qF '"Could not resolve"' "$SECTION" || rs_fail "teardown does not say what a deleted repository answers"
@@ -106,7 +106,7 @@ grep -qE '^ *gh auth refresh -h github\.com -s delete_repo$' "$SECTION" || rs_fa
 rs_ok "teardown asks for the delete_repo scope"
 grep -qE '^ *gh repo delete <owner>/abk-try-N --yes$' "$SECTION" || rs_fail "teardown does not delete the repository"
 rs_ok "teardown deletes the repository"
-trash_line=$(grep -E '^ *trash ' "$SECTION" || true)
+trash_line=$(grep -E '^ *trash .*abk-try-N-claude' "$SECTION" || true)
 for f in /private/tmp/abk-try-N-claude /private/tmp/abk-try-N-both "$preview" '~/.config/abk-try-N' '~/Backups/abk-try-N'; do
   case " $trash_line " in
     *" $f "*) ;;
@@ -125,6 +125,27 @@ fi
 rs_ok "the password line makes mixed-case letters and digits"
 grep -qE '^ *gh auth status$' "$SECTION" || rs_fail "teardown does not show the token's scopes before adding one"
 rs_ok "teardown shows the token's scopes first"
+
+# The kit's temporary files have names nobody can list in advance, and other
+# sessions write to /private/tmp too, so the run's files are the ones newer
+# than a marker left at the start. A newest-first listing cut to a fixed
+# length can pass while the run's files are still there.
+grep -qE '^ *touch ~/\.abk-try-N-start$' "$SECTION" || rs_fail "step 1 does not leave the start marker"
+touch_at=$(grep -nE '^ *touch ~/\.abk-try-N-start$' "$SECTION" | cut -d: -f1)
+build_at=$(grep -nE '^ *\.agents/tools/build-release\.sh ' "$SECTION" | cut -d: -f1)
+[ "$touch_at" -lt "$build_at" ] || rs_fail "the start marker is left after the preview is built"
+rs_ok "the start marker is left before anything is made"
+grep -qE '^ *find /private/tmp -maxdepth 1 -newer ~/\.abk-try-N-start$' "$SECTION" \
+  || rs_fail "teardown does not list the temporary files newer than the marker"
+find_at=$(grep -nE '^ *find /private/tmp -maxdepth 1 -newer ' "$SECTION" | cut -d: -f1)
+mark_trash_at=$(grep -nE '^ *trash ~/\.abk-try-N-start$' "$SECTION" | cut -d: -f1)
+[ -n "$mark_trash_at" ] || rs_fail "teardown does not move the start marker to the Trash"
+[ "$mark_trash_at" -gt "$find_at" ] || rs_fail "the start marker goes before the listing that needs it"
+rs_ok "teardown lists the run's temporary files by the marker, then trashes the marker"
+if grep -qF 'head -20' "$SECTION"; then
+  rs_fail "the section still lists temporary files by a fixed count"
+fi
+rs_ok "no listing is cut to a fixed count"
 if grep -qE 'rm +-[a-z]*r[a-z]*f|rm +-[a-z]*f[a-z]*r' "$SECTION"; then
   rs_fail "the section uses a recursive forced delete"
 fi
@@ -152,13 +173,16 @@ rs_rule "the clipboard is emptied" 'pbcopy < /dev/null'
 rs_rule "the Vercel app keeps its selection" 'add `abk-try-n` to that selection, and never replace or clear it'
 rs_rule "the Vercel app stays installed" 'so leave the app installed'
 rs_rule "only an app installed for the run goes" 'only if it was installed for this run, uninstall it'
-rs_rule "the person runs the scope refreshes" 'so the person runs it, since an agent cannot finish it alone'
+rs_rule "the person runs the scope refreshes" 'which an agent cannot give, so the person runs it'
+rs_rule "the scope comes off even if it was there before" 'even when it was there before the run'
+rs_rule "an unknown item is left alone" 'if you cannot tell who made an item, leave it'
 rs_rule "a scope already there is not added" 'already there from an earlier run, skip the first refresh'
 rs_rule "why the password mixes case" 'marks a lowercase hex password as not secure enough'
+rs_rule "the password is random" '40 letters and digits drawn at random, in mixed case'
 rs_rule "the stale form message" 'check the project list rather than the form'
 rs_rule "the backups are named" '~/backups/abk-try-n` holds the database'
 rs_rule "the kit's temporary files are named" 'restore-test folders and logs'
-rs_rule "only the run's temporary files go" 'trash only what the run made'
+rs_rule "only the run's temporary files go" 'newer than the marker from step 1, trash what the run made'
 rs_rule "a clean main is required" 'the status must print nothing'
 
 # The rules are read from the extracted section, so a copy of a phrase

@@ -661,6 +661,7 @@ wherever `N` appears.
    run this in the checkout that holds `main`, not a worktree on another branch.
 
    ```
+   touch ~/.abk-try-N-start
    git switch main
    git branch --show-current
    git status --short
@@ -670,8 +671,9 @@ wherever `N` appears.
    .agents/tools/build-release.sh v0.0.0-preview.N /private/tmp/abk-preview-N
    ```
 
-   The branch must print `main`, and the status must print nothing. Note the
-   commit. Every line of the tooling report says ready. The builder refuses a
+   The first line leaves a marker file whose time is the start of the run, so
+   teardown can find what the run made. The branch must print `main`, and the
+   status must print nothing. Note the commit. Every line of the tooling report says ready. The builder refuses a
    folder that already exists, so a second build takes the next number.
 
 2. Install the preview twice, into two empty folders.
@@ -726,7 +728,7 @@ wherever `N` appears.
    pbcopy < /dev/null
    ```
 
-   The password is 40 letters and digits in mixed case, since the create form
+   The password is 40 letters and digits drawn at random, in mixed case, since the create form
    marks a lowercase hex password as not secure enough. Only this account can
    read the file, and no command prints the password. The last line empties
    the clipboard once the password is pasted. When the kit asks where the
@@ -749,8 +751,10 @@ wherever `N` appears.
    Answer `y` when Vercel asks. `gh auth status` lists the token's scopes. If
    `delete_repo` is already there from an earlier run, skip the first refresh.
    The first refresh adds the scope that `gh repo delete` needs, and the second
-   takes it off the token again. Each refresh waits for a confirmation in the
-   browser, so the person runs it, since an agent cannot finish it alone.
+   takes it off the token again. It takes the scope off on purpose, even when
+   it was there before the run, since a token keeps no more reach than it
+   needs. Each refresh waits for a confirmation in the browser, which an agent
+   cannot give, so the person runs it.
 
    Delete the Supabase project in the dashboard, since
    `supabase projects delete` cancels its own confirmation without a real
@@ -761,8 +765,16 @@ wherever `N` appears.
    `/ship` leaves two things on this computer. `~/Backups/abk-try-N` holds the
    database's roles, structure and data, and the `trash` line above takes it.
    The kit also writes temporary files in `/private/tmp`, such as restore-test
-   folders and logs, whose names this section cannot know. List the newest
-   with `ls -dlt /private/tmp/* | head -20`, and trash only what the run made.
+   folders and logs, whose names this section cannot know. List everything
+   there that is newer than the marker from step 1, trash what the run made,
+   and list again. Other sessions write there too. If you cannot tell who made
+   an item, leave it. Trash the marker last, once the list shows nothing the
+   run made:
+
+   ```
+   find /private/tmp -maxdepth 1 -newer ~/.abk-try-N-start
+   trash ~/.abk-try-N-start
+   ```
 
    The local folders go to the Trash, since a deletion with no undo is on the
    blocked list in `.agents/guard/blocked-commands.md`. Where `trash` is
@@ -776,13 +788,12 @@ wherever `N` appears.
    ls /private/tmp/abk-*
    ls ~/.config/abk-try-N
    ls ~/Backups/abk-try-N
-   ls -dlt /private/tmp/* | head -20
+   ls ~/.abk-try-N-start
    ```
 
    `vercel project ls` does not list `abk-try-N`. `gh repo view` answers
-   "Could not resolve". The first three `ls` lines find nothing, and the last
-   shows none of the run's temporary files. The Supabase dashboard no longer
-   lists the project.
+   "Could not resolve". Every `ls` line finds nothing. The Supabase dashboard
+   no longer lists the project.
 
 6. Write a dated log: the preview version and the commit it was built from,
    each check and whether it held, with the words that show it, what the run
