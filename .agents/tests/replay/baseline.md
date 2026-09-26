@@ -414,3 +414,33 @@ evidence field missed in all three runs, as in every run of this case since
 September, and it is a separate gap.
 
 This is one case on one model, and it replaces none of the tables above.
+
+## The founding menu with two recipes, 26 September
+
+Scenario 50 is new. A small video team founds a sign-out log for its shared
+cameras, with both recipes on the menu, and never picks one. It ran once,
+driven by `opus` and graded by `opus`, the harness default. The kit was built
+from the branch that adds the scenario, on top of `3db1198`, and no skill
+changed on it.
+
+| Scenario | Held | State | Withdrew |
+|---|---|---|---|
+| 50 | 1/1 | 1/1 | none due |
+
+The records came out right. AGENTS.md named the Vercel recipe, the
+`founding-menu` line named both recipe files, the checkpoint stayed local, and
+the kit never asked about the menu again or quoted a price.
+
+The menu itself failed the contract. It first appeared inside the completion
+report, after the project was already stood up, so the person never saw a
+choice they could still make. The second recipe was not named, only called
+"the other option on the menu", and no sentence said the recommended recipe was
+the default. The evidence field missed and the visible explanation drifted. It
+is filed as a finding, and the scenario stays as written.
+
+The case's gate fired late. The menu arrived one turn before the script
+expected it, so a line written for the interview answered the menu's reply
+instead, and the line meant for it went out unheld after two fillers. Both
+lines answered something else, so neither changed the result.
+
+This is one run of one case, and it replaces none of the tables above.
