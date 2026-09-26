@@ -78,10 +78,11 @@ Claude Code or through the Agent Plugins format. If it reports that the
 project has both a plugin and a separate AI Build Kit skill installation, stop
 before preparing the project. Keep the plugin when one coding agent runs the
 project, or keep the shared skills installation when the project uses more
-than one coding agent. Never leave both active. If it reports a broken link, a
-skill folder with no skill in it, or two skill folders holding different
-installations, say so in plain words and offer to install the kit again the
-same way, which repairs all three.
+than one coding agent. Never leave both active. If it stops at a broken link,
+say so in plain words and offer to install the kit again the same way, which
+repairs it. If it prints a setup note instead, about an empty skill folder or a
+second copy that differs from this one, founding carries on: say the note once,
+in plain words, and record it as an open question in the masterplan.
 
 A folder holding the kit and nothing else is the normal place to found a
 project, not a reason to stop. A fresh installation leaves `README.md`,

@@ -35,34 +35,31 @@ five run in the background when a command needs them.
 
 When a skill says to run another skill, load that installed skill and follow
 it. The skills sit in `.agents/skills/`, `.claude/skills/` or a plugin's folder,
-depending on how the kit was installed. A pointer such as the `ship` skill's
-`templates/handover.md` names a file in there, and so does `<name>/SKILL.md`
-when native discovery is unavailable. Keep project rules in this file instead.
+by install route. A pointer such as the `ship` skill's `templates/handover.md`
+names a file there, as does `<name>/SKILL.md` without native discovery. Put
+project-specific rules in this file instead of editing an installed skill.
 
 ## The workflow
 
 The user describes intent in plain language; change-triage chooses the route.
 Build one agreed, visible slice at a time. Do not add behaviour the slice did
-not ask for, and do not widen a fix into a tidy-up.
+not ask for, and do not widen a fix into a tidy-up. When a written instruction
+and an automatic check disagree, trust the check and say so plainly. It tests
+the real work, and an instruction can fall out of date.
 
 Every promised behaviour needs evidence: an automated check where a machine can
 judge it reliably, a guided manual check for visual or exploratory work, a
 source check for a decision that rests on an external fact, and a rehearsal for
-backup, restore, migration, rollback, or other operational claims.
-
-When a piece carries `visual`, or a change touches a screen file, load
-`screen-check` before the guided manual check. It reads this project's design
-rules first and never calls a screen accessible, compliant, or good.
-
-When a written instruction and an automatic check disagree, trust the check and
-say so plainly. It tests the real work, and an instruction can fall out of date.
+backup, restore, migration, rollback, or other operational claims. When a
+piece carries `visual`, or a change touches a screen file, load `screen-check`
+before the guided manual check. It reads this project's design rules first and
+never calls a screen accessible, compliant, or good.
 
 ## The records
 
 If it is not written down, it does not exist. When work lands, add a dated
-`CHANGELOG.md` entry in plain words and commit with a clear message.
-
-The remaining work lives in this project's issues, one per piece, in the shape
+`CHANGELOG.md` entry in plain words and commit with a clear message. The
+remaining work lives in this project's issues, one per piece, in the shape
 the `setup-ai-build-kit` skill's `references/pieces.md` describes. A merged pull
 request saying `Closes #<number>` closes its piece. Each piece carries a subject
 label, set once by change-triage and read by later sessions. `plan.local.md` is

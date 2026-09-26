@@ -176,9 +176,10 @@ attribution line, not the word.
 - `.agents/tests/release-builder.sh` checks the assembled public release boundary.
 - `.agents/tests/starter-rehearsal.sh` checks that installed skills can prepare
   a clean, independently saved project with founding records. It also holds
-  what founding refuses in the skill folders: a second copy whose SKILL.md
-  differs from the running one, and a link that leads nowhere, a link loop or
-  an empty folder, each named in the refusal rather than passed over.
+  what founding does with the other skill folder. A link that leads nowhere
+  and a link loop are refused by name before anything is written. A second
+  copy that differs from the running one, or an empty folder, gets one note
+  naming the folder, and founding carries on, since the running skill is whole.
 - `.agents/tests/release-publication.sh` rehearses first and later publication
   against a disposable local destination.
 - `.agents/tests/claude-plugin.sh` rehearses the Claude command boundary, an
@@ -466,12 +467,12 @@ attribution line, not the word.
   ceiling and the monthly offer to trim repeated code information. It removes
   each written rule in turn and drives the validator's own count at the limit.
   The ceiling is for the founded file, so the count adds a fixed budget for the
-  lines founding writes to the template's own: with a budget of 35, a template
-  of 164 lines passes and one of 165 fails. A template of 196 lines once passed
-  while a fresh founding came out at 219. It then fills the shipped template
-  the way founding does, with a recipe line and the rules block the Next.js
-  starter appends, and requires what founding added to fit the budget and the
-  result to stay under 200.
+  lines founding writes to the template's own, and a margin of 5: with the
+  measured 23 lines and the Next.js starter's 10, a template of 161 lines
+  passes and one of 162 fails. A template of 196 lines once passed while a
+  fresh founding came out at 219. It then fills the shipped template the way
+  founding does, adding the measured 23 lines and the Next.js rules block, and
+  requires the result to fit the budget and stay 5 lines under 200.
 - `.agents/tests/triage-overlap.sh` guards the warning that another open piece
   would be built in the same place: what change-triage compares, that it names
   the clash before the routing step rather than after it, that it blocks

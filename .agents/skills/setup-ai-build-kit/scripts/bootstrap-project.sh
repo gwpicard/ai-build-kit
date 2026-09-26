@@ -59,33 +59,44 @@ fi
 # alone reads .claude/skills, so choosing only Claude Code leaves nothing in
 # .agents/skills. With several coding agents, one folder holds the skill and the
 # other links to it, or holds a second copy of the same installation. A second
-# copy is told from a different installation by comparing the two SKILL.md
-# files, since the installer's copy option makes both real folders.
+# copy is told from a different installation by comparing the two folders,
+# since the installer's copy option makes both real folders.
+note() {
+  echo "AI Build Kit setup note: $1" >&2
+}
+
 INSTALLED_HERE=no
 SAME_COPY=no
 OTHER_INSTALLATION=no
+DIFFERING_FOLDER=
 for skills_folder in .agents/skills .claude/skills; do
   installed_start="$PROJECT_ROOT/$skills_folder/setup-ai-build-kit"
   [ -e "$installed_start" ] || [ -L "$installed_start" ] || continue
-  # A link that leads nowhere, a link loop, or a folder with no skill in it is
-  # an installation that went wrong. Passing over it in silence would found
-  # the project beside something nobody can read.
+  # A link that leads nowhere, or a link loop, cannot be read at all. Passing
+  # over it in silence would found the project beside a folder that fails every
+  # coding agent that looks there.
   [ -d "$installed_start" ] || \
     fail "$skills_folder/setup-ai-build-kit is a broken link; remove it or install the kit again"
-  [ -f "$installed_start/SKILL.md" ] || \
-    fail "$skills_folder/setup-ai-build-kit holds no skill; remove the folder or install the kit again"
+  if [ ! -f "$installed_start/SKILL.md" ]; then
+    note "$skills_folder/setup-ai-build-kit is an empty folder. Founding carries on; the installer puts the skill there the next time it runs."
+    continue
+  fi
   resolved_start=$(CDPATH= cd -- "$installed_start" && pwd -P)
   if [ "$resolved_start" = "$SKILL_ROOT" ]; then
     INSTALLED_HERE=yes
-  elif cmp -s "$installed_start/SKILL.md" "$SKILL_ROOT/SKILL.md"; then
+  elif diff -rq "$installed_start" "$SKILL_ROOT" >/dev/null 2>&1; then
     SAME_COPY=yes
   else
     OTHER_INSTALLATION=yes
+    DIFFERING_FOLDER=$skills_folder
   fi
 done
 
+# The running skill is whole, so a differing copy in the other folder does not
+# stop founding. It means another coding agent reads a different version of
+# the kit, which the person should hear about once.
 if [ "$INSTALLED_HERE" = "yes" ] && [ "$OTHER_INSTALLATION" = "yes" ]; then
-  fail "the two skill folders hold different AI Build Kit installations; install the kit again so both match, or remove one"
+  note "$DIFFERING_FOLDER/setup-ai-build-kit differs from the copy running now, so another coding agent reads a different version of the kit. Founding carries on with this one; /maintain, or the installer's update, brings the two level."
 fi
 
 if [ "$INSTALLED_HERE" = "no" ]; then

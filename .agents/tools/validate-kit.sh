@@ -692,17 +692,20 @@ fi
 # Founding writes the project line, the capability profile, the stack section
 # and its recipe line, and a framework's own starter may append its rules block
 # too. A template of 196 lines passed here while a fresh founding came out at
-# 219, so the template must leave room for a fixed budget of founding's lines.
-founding_budget=35
+# 219, so the template must leave room for a fixed budget of founding's lines:
+# the 23 that founding measured on the recipe campaign, and the 10 of the
+# Next.js starter's block, with a margin of 5 more under the ceiling.
+founding_budget=33
+founding_margin=5
 foundation_agents="$SKILLS/setup-ai-build-kit/templates/foundation/AGENTS.md"
 if [ ! -f "$foundation_agents" ]; then
   fail "$foundation_agents: missing"
 else
   foundation_lines=$(awk 'END { print NR }' "$foundation_agents")
-  if [ $((foundation_lines + founding_budget)) -lt 200 ]; then
-    pass "the foundation instructions leave room for founding under 200 lines ($foundation_lines + $founding_budget)"
+  if [ $((foundation_lines + founding_budget + founding_margin)) -lt 200 ]; then
+    pass "the foundation instructions leave room for founding under 200 lines ($foundation_lines + $founding_budget + $founding_margin)"
   else
-    fail "the foundation instructions have $foundation_lines lines; with founding's $founding_budget they reach 200"
+    fail "the foundation instructions have $foundation_lines lines; with founding's $founding_budget and a margin of $founding_margin they reach 200"
   fi
 fi
 

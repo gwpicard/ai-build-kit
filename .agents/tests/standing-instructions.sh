@@ -48,7 +48,8 @@ rs_require_load_bearing "setup writes commands and exceptions within the rule" "
 rs_require_load_bearing "WORKFLOW explains the offer and the person's choice" "$WORKFLOW" 'one line saying how long it is and what can go\. nothing is cut without your yes'
 rs_require_load_bearing "the validator counts the foundation template" "$VALIDATOR" 'foundation_agents="\$skills/setup-ai-build-kit/templates/foundation/agents\.md"'
 rs_require_load_bearing "the validator sets a budget for founding's lines" "$VALIDATOR" 'founding_budget=[0-9][0-9]* '
-rs_require_load_bearing "the validator counts founding's budget against the ceiling" "$VALIDATOR" 'if \[ \$\(\(foundation_lines \+ founding_budget\)\) -lt 200 \]'
+rs_require_load_bearing "the validator counts founding's budget against the ceiling" "$VALIDATOR" 'if \[ \$\(\(foundation_lines \+ founding_budget \+ founding_margin\)\) -lt 200 \]'
+rs_require_load_bearing "the validator keeps a margin under the ceiling" "$VALIDATOR" 'founding_margin=[0-9][0-9]* '
 # The harness pads the file, not the kit: asked to write a folder layout into
 # its own AGENTS.md, the kit refused, as that file tells it to.
 rs_require_load_bearing "the rehearsal has the harness pad a disposable project" "$ROOT/.agents/tests/replay/cases/49.txt" '# prepare: long-instructions'
@@ -64,7 +65,10 @@ if [ -z "${RS_LIST:-}" ]; then
   [ -s "$rs_dir/ceiling" ] || rs_fail "the validator's ceiling block is missing"
   budget=$(sed -n 's/^founding_budget=\([0-9][0-9]*\)$/\1/p' "$rs_dir/ceiling")
   [ -n "$budget" ] || rs_fail "the validator names no budget for founding's lines"
-  room=$((199 - budget))
+  margin=$(sed -n 's/^founding_margin=\([0-9][0-9]*\)$/\1/p' "$rs_dir/ceiling")
+  [ -n "$margin" ] || rs_fail "the validator names no margin under the ceiling"
+  [ "$margin" -ge 5 ] || rs_fail "the margin under the ceiling is $margin lines, fewer than 5"
+  room=$((199 - budget - margin))
   mkdir -p "$rs_dir/skills/setup-ai-build-kit/templates/foundation"
   padded="$rs_dir/skills/setup-ai-build-kit/templates/foundation/AGENTS.md"
   count_passes() {
@@ -75,8 +79,8 @@ if [ -z "${RS_LIST:-}" ]; then
   count_passes || rs_fail "the shipped foundation leaves no room for founding's $budget lines"
   rs_ok "the shipped foundation passes the real count, founding's $budget lines included"
   awk -v n="$room" 'BEGIN {for (i=1; i<=n; i++) print "line"}' > "$padded"
-  count_passes || rs_fail "$room lines should pass, since $room and $budget make 199"
-  rs_ok "$room lines pass, since $room and $budget make 199"
+  count_passes || rs_fail "$room lines should pass, since $room, $budget and $margin make 199"
+  rs_ok "$room lines pass, since $room, $budget and $margin make 199"
   printf 'line' >> "$padded"
   if count_passes; then rs_fail "$((room + 1)) lines passed without a final newline"; fi
   rs_ok "$((room + 1)) lines fail even without a final newline"
@@ -86,12 +90,12 @@ if [ -z "${RS_LIST:-}" ]; then
   if count_passes; then rs_fail "a template of 196 lines passed with no room for founding"; fi
   rs_ok "a template of 196 lines no longer passes"
 
-  # The founded result. Fill the template the way founding does, with the
-  # project line, capability profile and stack section of the recipe
-  # campaign's first launch, then append the rules block the Next.js starter
-  # writes into AGENTS.md. It is wrapped as the template is, which spends more
-  # lines than founding's own long lines do. What founding adds has to fit the
-  # budget, and the founded file has to stay under the ceiling.
+  # The founded result. Fill the template the way founding does, with a
+  # project line, capability profile and stack section shaped like the recipe
+  # campaign's first launch and adding the 23 lines founding measured there,
+  # then append the rules block the Next.js starter writes into AGENTS.md. What
+  # founding adds has to fit the budget, and the founded file has to stay under
+  # the ceiling with the margin to spare.
   cat > "$rs_dir/project" <<'PROJECT'
 A sign-up list for the team's weekly football, with a shared page of who is
 playing.
@@ -109,6 +113,9 @@ PROJECT
   engine: none; the agent reads imports and callers directly.
 - Hooks: yes. SessionStart runs `.agents/hooks/session-start.sh`; command blocks
   live in `.claude/settings.json`.
+- Online account access: GitHub, signed in. Vercel and Supabase: the person
+  signs in during the first launch. Online authentication: the GitHub command
+  line tool's own sign-in.
 PROFILE
   cat > "$rs_dir/stack" <<'STACK'
 Recipe: nextjs-supabase-on-vercel.md
@@ -122,6 +129,10 @@ Recipe: nextjs-supabase-on-vercel.md
   email-link sign-in). Never hand-build sign-in.
 - Next.js keeps its own agent rules in the block at the end of this file; read
   them before writing Next.js code.
+- Hosting: Vercel, linked to the GitHub repository, so a merge to `main`
+  deploys. The database runs on hosted Supabase.
+- Launch checks: `/ship` runs the recipe's eight sections and records the
+  address in the changelog.
 - Design tool: none recorded.
 STACK
   founded="$rs_dir/founded-AGENTS.md"
@@ -143,6 +154,11 @@ STACK
     }
     { print }
   ' "$FOUNDATION" > "$founded"
+  template_lines=$(awk 'END { print NR }' "$FOUNDATION")
+  filled=$(( $(awk 'END { print NR }' "$founded") - template_lines ))
+  [ "$filled" -eq 23 ] || \
+    rs_fail "the stand-in founding adds $filled lines, not the 23 measured on the campaign"
+  rs_ok "the stand-in founding adds the 23 lines measured on the campaign"
   cat >> "$founded" <<'NEXTJS'
 
 <!-- BEGIN:nextjs-agent-rules -->
@@ -161,15 +177,14 @@ NEXTJS
      grep -qF '(Filled in by the setup-ai-build-kit skill:' "$founded"; then
     rs_fail "the founded rehearsal did not fill the template the way founding does"
   fi
-  template_lines=$(awk 'END { print NR }' "$FOUNDATION")
   founded_lines=$(awk 'END { print NR }' "$founded")
   added=$((founded_lines - template_lines))
   [ "$added" -le "$budget" ] || \
     rs_fail "a usual founding adds $added lines, more than the budget of $budget"
   rs_ok "a usual founding, the Next.js rules included, adds $added lines, within the budget of $budget"
-  [ "$founded_lines" -lt 200 ] || \
-    rs_fail "a usual founding leaves AGENTS.md at $founded_lines lines"
-  rs_ok "a usual founding leaves AGENTS.md at $founded_lines lines, under the ceiling"
+  [ $((founded_lines + margin)) -lt 200 ] || \
+    rs_fail "a usual founding leaves AGENTS.md at $founded_lines lines, inside the margin of $margin"
+  rs_ok "a usual founding leaves AGENTS.md at $founded_lines lines, $margin or more under the ceiling"
 fi
 
 rs_done

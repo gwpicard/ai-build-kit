@@ -144,24 +144,48 @@ fi
 [ ! -e "$FOREIGN/AGENTS.md" ] || \
   fail "Claude plugin bootstrap wrote project files beside a Claude-Code-only installation"
 
-# A second copy is the same installation only while it matches. A copy whose
-# SKILL.md differs is another installation, even when the running one sits
-# beside it, and founding between the two would follow whichever a coding
-# agent happened to read.
+# A second copy that differs from the running one means another coding agent
+# reads a different version of the kit. The running skill is whole, so founding
+# carries on, and the bootstrap says so once, naming the folder. A copy that
+# differs only in a reference file counts, since the whole folder is compared.
 MIXED="$SCRATCH/mixed"
 mkdir -p "$MIXED/.agents" "$MIXED/.claude"
 cp -R "$PACK/.agents/skills" "$MIXED/.agents/skills"
 cp -R "$PACK/.agents/skills" "$MIXED/.claude/skills"
-printf '%s\n' "An older release." >> "$MIXED/.agents/skills/setup-ai-build-kit/SKILL.md"
-if (cd "$MIXED" && .claude/skills/setup-ai-build-kit/scripts/bootstrap-project.sh \
-  >/dev/null 2>&1); then
-  fail "the bootstrap accepted two skill folders holding different installations"
-fi
-[ ! -e "$MIXED/AGENTS.md" ] || \
-  fail "the bootstrap wrote project files beside a different installation"
+printf '%s\n' "An older release." >> \
+  "$MIXED/.agents/skills/setup-ai-build-kit/references/pieces.md"
+said=$(cd "$MIXED" && \
+  .claude/skills/setup-ai-build-kit/scripts/bootstrap-project.sh 2>&1 >/dev/null) || \
+  fail "the bootstrap stopped founding over a second copy that differs"
+[ -f "$MIXED/AGENTS.md" ] || \
+  fail "the bootstrap did not prepare the project beside a differing copy"
+case "$said" in
+  *".agents/skills/setup-ai-build-kit differs"*/maintain*) ;;
+  *) fail "the note about a differing copy does not name the folder and /maintain: $said" ;;
+esac
+[ "$(printf '%s\n' "$said" | grep -c 'differs')" -eq 1 ] || \
+  fail "the note about a differing copy was not said exactly once: $said"
 
-# A link that leads nowhere, a link loop and an empty folder in the other skill
-# folder are each refused by name, never passed over.
+# A matching copy says nothing.
+said=$(cd "$COPIED" && \
+  .claude/skills/setup-ai-build-kit/scripts/bootstrap-project.sh 2>&1 >/dev/null)
+[ -z "$said" ] || fail "a matching second copy produced a note: $said"
+
+# An empty folder in the other skill folder is a note, and founding carries on.
+EMPTY="$SCRATCH/empty-entry"
+mkdir -p "$EMPTY/.agents" "$EMPTY/.claude/skills/setup-ai-build-kit"
+cp -R "$PACK/.agents/skills" "$EMPTY/.agents/skills"
+said=$(cd "$EMPTY" && \
+  .agents/skills/setup-ai-build-kit/scripts/bootstrap-project.sh 2>&1 >/dev/null) || \
+  fail "the bootstrap stopped founding over an empty skill folder"
+[ -f "$EMPTY/AGENTS.md" ] || fail "the bootstrap did not prepare the project beside an empty folder"
+case "$said" in
+  *".claude/skills/setup-ai-build-kit is an empty folder"*) ;;
+  *) fail "the note about an empty folder does not name it: $said" ;;
+esac
+
+# A link that leads nowhere and a link loop cannot be read at all. Each is
+# refused by name before anything is written, never passed over.
 refuses_broken_entry() {
   label=$1
   project="$SCRATCH/broken-$2"
@@ -171,20 +195,18 @@ refuses_broken_entry() {
   case "$2" in
     dangling) ln -s "$project/nowhere" "$entry" ;;
     loop) ln -s "$entry" "$entry" ;;
-    empty) mkdir "$entry" ;;
   esac
   said=$(cd "$project" && \
     .agents/skills/setup-ai-build-kit/scripts/bootstrap-project.sh 2>&1 >/dev/null) && \
     fail "the bootstrap accepted $label"
   case "$said" in
-    *.claude/skills/setup-ai-build-kit*) ;;
+    *".claude/skills/setup-ai-build-kit is a broken link"*) ;;
     *) fail "the refusal of $label does not name the folder: $said" ;;
   esac
   [ ! -e "$project/AGENTS.md" ] || fail "the bootstrap wrote project files beside $label"
 }
 refuses_broken_entry "a link that leads nowhere" dangling
 refuses_broken_entry "a link loop" loop
-refuses_broken_entry "an empty skill folder" empty
 
 REDIRECTED="$SCRATCH/redirected"
 OUTSIDE="$SCRATCH/outside"
