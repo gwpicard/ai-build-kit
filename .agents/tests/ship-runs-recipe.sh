@@ -21,9 +21,11 @@ SHIP="$ROOT/.agents/skills/ship/SKILL.md"
 EVIDENCE="$ROOT/.agents/skills/ship/references/evidence-run.md"
 WORKFLOW="$ROOT/WORKFLOW.md"
 SCENARIOS="$ROOT/.agents/tests/scenarios.md"
+SECOND="$ROOT/.agents/skills/second-opinion/SKILL.md"
+FORMAT="$ROOT/.agents/skills/ship/references/recipe-format.md"
 
 rs_init "Ship-runs-recipe rules"
-rs_exists "$SHIP" "$EVIDENCE" "$WORKFLOW" "$SCENARIOS"
+rs_exists "$SHIP" "$EVIDENCE" "$WORKFLOW" "$SCENARIOS" "$SECOND" "$FORMAT"
 
 # Which recipe, if any.
 rs_rule "reads the project's Recipe line" 'read the `recipe:` line in the stack section of the project.s agents\.md'
@@ -74,7 +76,35 @@ rs_rule "a later ship runs the checks again" 'on a recipe, run its eight checks 
 # Off a recipe.
 rs_rule "off a recipe the general list applies" 'off a recipe, check whatever of this actually applies'
 rs_rule "the general list is warnings" 'each item that applies and is not in place is a warning: name it once in one plain line, record it in changelog\.md with the date, and carry on\. none of them holds the launch'
+
+# A setting the kit can read. A real run stopped and asked the person to open
+# a dashboard for a setting the service answered in public with the key the
+# tool already sends to the browser. Asking costs the person a turn and a trip
+# they did not need, so the kit reads first, with nothing secret, and asks only
+# for what it cannot read, saying why.
+rs_rule "the review follows the setting rule" 'before the review asks the person to look up a setting, it follows "a setting the kit can read" below'
+rs_rule "the rule holds for the review and every check" 'this holds for the launch review and for every check in this skill, on a recipe or off one'
+rs_rule "the kit checks whether it can read the setting first" 'before you ask the person to look up a setting of a service the tool uses, check whether the kit can read it with what it already has'
+rs_rule "the three routes it already has" 'an address the service answers in public, a command-line tool this session is already signed in to, or the project.s own files'
+rs_rule "it reads and reports instead of asking" 'where it can, read the setting and report its value in one plain line, instead of asking'
+rs_rule "the recipe says which settings and how" 'its `settings the kit can read` section, where it has one, says which settings the kit reads and how'
+rs_rule "only a key the browser already has" 'such a read uses only a key the project already sends to the browser'
+rs_rule "never a secret for a read" 'never use a secret key, a service key or a password to read a setting, and never sign in to anything new for it'
+rs_rule "it asks only for what it cannot read, and says why" 'ask the person only for a setting the kit cannot read that way, and say in the same sentence why it cannot'
 rs_guard "$SHIP" "ship's recipe rules"
+rs_require_order "the setting rule sits beside the other go-live rules" "$SHIP" '^#### A setting the kit can read$' '^#### A secret a check needs$'
+
+# The review may run in a session that reads only second-opinion, so the rule
+# has to be there as well.
+rs_require_load_bearing "second-opinion reads a setting before asking" "$SECOND" 'before a finding asks the person to look up a setting of a service the tool uses, check whether you can read it yourself with what you already have'
+rs_require_load_bearing "second-opinion points at the recipe's section" "$SECOND" 'the recipe.s `settings the kit can read` section says how'
+rs_require_load_bearing "second-opinion uses no secret for a read" "$SECOND" 'use only a key the project already sends to the browser, never a secret key, a service key or a password'
+rs_require_load_bearing "second-opinion asks only for what it cannot read" "$SECOND" 'ask the person only for a setting you cannot read that way, and say why you cannot'
+
+# The format lets a recipe say which settings the kit reads.
+rs_require_load_bearing "the format has the optional settings section" "$FORMAT" 'a recipe may carry one more section, `## settings the kit can read`, between health and the proven section'
+rs_require_load_bearing "the format keeps secrets out of the section" "$FORMAT" 'a setting that needs a secret key to read does not belong here'
+rs_require_load_bearing "the section is not one of the eight" "$FORMAT" 'it is not one of the eight, and /ship gives it no line of its own'
 
 rs_require_absent "the general list is no longer a requirement" "$SHIP" 'require whatever of this actually applies'
 rs_require_order "the Recipe line is read before any path runs" "$SHIP" 'Read the `Recipe:` line' '^## 1\. Follow the current path'
@@ -118,6 +148,9 @@ rs_require_load_bearing "WORKFLOW says who runs each check" "$WORKFLOW" 'where a
 rs_require_load_bearing "WORKFLOW says a check is a warning" "$WORKFLOW" 'a check that fails or cannot run is a warning, said once and written in the changelog, and the launch goes ahead'
 rs_require_load_bearing "WORKFLOW keeps the address wait" "$WORKFLOW" 'the one thing a first launch waits for is its address'
 rs_require_load_bearing "WORKFLOW says the general list is warnings" "$WORKFLOW" 'anything missing from it is a warning you hear once and find in the changelog'
+
+rs_require_load_bearing "WORKFLOW says the kit reads a setting before asking" "$WORKFLOW" 'before the launch review asks you to look up a setting, the kit reads it itself where it can'
+rs_require_load_bearing "WORKFLOW says it asks only for what it cannot read" "$WORKFLOW" 'it asks you only about a setting it cannot read, and says why it cannot'
 
 rs_require_load_bearing "scenario 20 runs the eight checks" "$SCENARIOS" 'on a recipe, operational readiness is the recipe.s eight checks in its order'
 rs_require_load_bearing "scenario 20 keeps the general list off a recipe" "$SCENARIOS" 'off a recipe, operational readiness is the general list, and each missing item is a warning'

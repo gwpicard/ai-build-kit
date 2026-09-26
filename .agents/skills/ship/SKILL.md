@@ -55,7 +55,8 @@ it, then stop.
 
 1. Run the full evidence run.
 2. Run second-opinion using the best independent method recorded in
-   AGENTS.md.
+   AGENTS.md. Before the review asks the person to look up a setting, it
+   follows "A setting the kit can read" below.
 3. Operational readiness, before any first live use. On a recipe, the
    recipe's own checks replace the general list; "On a recipe" below says how
    to run them. Off a recipe, check whatever of this actually applies: a named
@@ -165,6 +166,23 @@ is the address. Where the kit ran the going-live section itself, record the
 live address it produced in the masterplan's "How it stays running" section.
 A tool with no recorded address is not called live, on a recipe or off one:
 tell the person so plainly, and keep it out of CHANGELOG.md as a launch.
+
+#### A setting the kit can read
+
+This holds for the launch review and for every check in this skill, on a
+recipe or off one. Before you ask the person to look up a setting of a service
+the tool uses, check whether the kit can read it with what it already has: an
+address the service answers in public, a command-line tool this session is
+already signed in to, or the project's own files. Where it can, read the
+setting and report its value in one plain line, instead of asking. On a
+recipe, its `Settings the kit can read` section, where it has one, says which
+settings the kit reads and how.
+
+Such a read uses only a key the project already sends to the browser. Never use
+a secret key, a service key or a password to read a setting, and never sign in
+to anything new for it. Ask the person only for a setting the kit cannot read
+that way, and say in the same sentence why it cannot, for example that the
+service shows it only on its own settings page.
 
 #### A secret a check needs
 

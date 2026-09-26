@@ -49,6 +49,10 @@ Who runs it: a companion or the person, result read back
 
 Shared part: [the Next.js container and its health route](parts/nextjs-container.md)
 
+## Settings the kit can read
+
+Shared part: [sign-in settings on hosted Supabase](parts/supabase-settings.md)
+
 ## Proven
 
 Real run: 2026-09-25
@@ -63,3 +67,4 @@ Restore: Not run again here. Restore is a shared part proven once, and as the re
 Secrets: Both names in `.env.example` were set in Coolify for build time and run time, each as a live row and a preview row, and the pasted list carried no value. No public name carries a secret, and no value is in the repository or the Dockerfile.
 Logs: The container's output since the deployment held no error lines. The build log held two routine lines from Coolify itself, a missing build helper container and an orphan container warning during the rolling update, and none from the app.
 Health: Coolify's check against `127.0.0.1:3000/api/health` passed on every deployment. Coolify's source shows the check runs `curl` and falls back to `wget`, and the `node:22-alpine` image has only `wget`. From the person's machine over the private network, `/api/health` gave 200 with `"database":"ok"`.
+Settings the kit can read: Not run again here. It is a shared part proven once, and its outcome comes from the Vercel recipe's real run.

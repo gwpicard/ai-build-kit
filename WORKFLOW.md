@@ -280,6 +280,11 @@ fails or cannot run is a warning, said once and written in the changelog, and
 the launch goes ahead. The one thing a first launch waits for is its address,
 because a tool with no recorded address is not live.
 
+Before the launch review asks you to look up a setting, the kit reads it itself
+where it can: from an address the service answers in public, with the key your
+tool already sends to the browser, or from a tool it is already signed in to.
+It asks you only about a setting it cannot read, and says why it cannot.
+
 /ship never merges a pull request you have not agreed to. It names each one and
 what it changes, then asks for a yes that names the merge. Saying "put it live"
 before any merge was named is not that yes, so it asks again. When a deploy's

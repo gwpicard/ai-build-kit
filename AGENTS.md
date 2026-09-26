@@ -781,7 +781,11 @@ attribution line, not the word.
   their next run rather than through a deploy of its own. It also takes
   the deploy target from each recipe's title and refuses one named in `/ship`
   or its evidence run, because a skill that learned one recipe's commands
-  would read wrongly on every other.
+  would read wrongly on every other. And it holds that the launch review
+  reads a setting itself before it asks the person to look one up, with
+  only a key the tool already sends to the browser, and asks only for what
+  it cannot read, saying why. A real run stopped to ask for a setting the
+  service answered in public.
 - `.agents/tests/ship-merges-and-deploys-once.sh` guards how `/ship` merges
   and deploys. In one real run the person said only "put it live" and `/ship`
   merged two pull requests nobody had named to them. So it holds that `/ship`
@@ -806,7 +810,9 @@ attribution line, not the word.
   validator wants a rehearsal named `recipe-<name>.sh` for every recipe, and
   refuses one that does not source the rule-shape helper or name its recipe
   file. This check shows the tool refusing both, and a recipe with no
-  `Command-line tools:` line.
+  `Command-line tools:` line. It also holds the one section a recipe may add,
+  the settings the kit can read, which sits after health, carries the same
+  three lines, and needs an outcome line in the proven section.
 - `.agents/tests/recipe-nextjs-supabase-on-vercel.sh` and
   `.agents/tests/recipe-nextjs-supabase-on-coolify.sh` guard the first recipe
   pair offline. They share `.agents/tests/lib/recipe-rehearsal.sh`. Each holds
