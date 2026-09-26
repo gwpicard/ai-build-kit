@@ -290,6 +290,117 @@ expect "but not on a reply that only names the host" wait "$gate51" \
 expect "nor on an interview guess the person may change" wait "$gate51" \
   "I'll use this unless you choose otherwise. My default guess is bookings on the hour." 0
 
+# Scenarios 52 and 53 start from a live tool with two open pull requests. The
+# preparation writes the live state before the first commit, and its second
+# half cuts the two branches from that commit and pushes them to the remote.
+for c in 52 53; do
+  grep -q '^# prepare: live-with-open-pulls$' "$ROOT/.agents/tests/replay/cases/$c.txt" \
+    && ok "case $c starts from a live tool with open pull requests" \
+    || bad "case $c no longer names its preparation"
+done
+grep -q 'after-commit.sh' "$ROOT/.agents/tests/replay/run.sh" \
+  && ok "the harness runs a preparation's second half after the first commit" \
+  || bad "run.sh no longer runs a preparation's second half"
+
+live="$WORK/live"
+mkdir -p "$live"
+fixture="$ROOT/.agents/tests/replay/fixture"
+cp "$fixture/masterplan.md" "$fixture/CHANGELOG.md" "$live/"
+cp "$fixture/issues.json" "$live/.gh-fixture.json"
+cp -R "$fixture/app" "$live/app"
+sh "$ROOT/.agents/tests/replay/prepare/live-with-open-pulls.sh" "$live" \
+  && ok "the live preparation runs before the first commit" \
+  || bad "the live preparation failed before the first commit"
+grep -q '^## How it stays running' "$live/masterplan.md" \
+  && ok "the masterplan says how the live tool stays running" \
+  || bad "the masterplan has no How it stays running section"
+opened=$(python3 -c 'import json, sys; print(" ".join(p["state"] for p in json.load(open(sys.argv[1]))["pull_requests"]))' "$live/.gh-fixture.json")
+[ "$opened" = "OPEN OPEN" ] \
+  && ok "two pull requests are recorded open" \
+  || bad "the pull requests recorded are: $opened"
+git -C "$live" init -q
+git init -q --bare "$live.git"
+git -C "$live" remote add origin "$live.git"
+git -C "$live" config user.email rehearsal@example.com
+git -C "$live" config user.name Rehearsal
+git -C "$live" config commit.gpgsign false
+git -C "$live" add -A
+git -C "$live" commit -q -m "Project before the scenario"
+sh "$ROOT/.agents/tests/replay/prepare/live-with-open-pulls.after-commit.sh" "$live" \
+  && ok "its second half runs after the first commit" \
+  || bad "the second half failed after the first commit"
+[ -z "$(git -C "$live" status --porcelain)" ] && [ "$(git -C "$live" branch --show-current)" = "main" ] \
+  && ok "the project is left on main with nothing uncommitted" \
+  || bad "the project was left dirty or off main"
+for branch in overdue-days-late refusal-names-borrower; do
+  git -C "$live.git" rev-parse -q --verify "refs/heads/$branch" >/dev/null \
+    && ok "the branch behind a pull request is on the remote: $branch" \
+    || bad "the remote has no branch $branch"
+done
+# Both must merge, in the order the kit is least likely to pick, and the
+# project's own checks must pass on the result.
+FAKE_GH_STATE="$live/.gh-fixture.json"
+(cd "$live" && "$GH_DIR/gh" pr merge 2 >/dev/null && "$GH_DIR/gh" pr merge 1 >/dev/null) \
+  && ok "the two pull requests merge one after the other" \
+  || bad "the two pull requests do not both merge"
+FAKE_GH_STATE="$WORK/.gh-fixture.json"
+git -C "$live" fetch -q origin
+git -C "$live" checkout -q origin/main
+PYTHONDONTWRITEBYTECODE=1 python3 "$live/app/test_bramble.py" >/dev/null \
+  && ok "the project's own checks pass with both merged" \
+  || bad "the project's own checks fail with both merged"
+git -C "$live" checkout -q main
+# Neither half may run on anything but a fresh replay project, so neither can
+# rewrite a masterplan or cut a branch in this repository.
+sh "$ROOT/.agents/tests/replay/prepare/live-with-open-pulls.sh" "$live" 2>/dev/null \
+  && bad "the live preparation ran inside a git work tree" \
+  || ok "the live preparation refuses a folder inside a git work tree"
+sh "$ROOT/.agents/tests/replay/prepare/live-with-open-pulls.after-commit.sh" "$live" 2>/dev/null \
+  && bad "the second half ran on a project with history of its own" \
+  || ok "the second half refuses a project with more than the harness's first commit"
+mkdir -p "$live/app/nested"
+sh "$ROOT/.agents/tests/replay/prepare/live-with-open-pulls.after-commit.sh" "$live/app/nested" 2>/dev/null \
+  && bad "the second half ran on a folder inside another repository" \
+  || ok "the second half refuses a folder that is not the top of its own repository"
+
+# Case 52's gate is meant to open when the kit asks for a yes to the merge. It
+# is a pattern, so these prove only the replies below: it opens on the ways of
+# asking written here, and stays shut on a reply that says it merged and on a
+# question about something else that mentions a merge. A gate that opened on
+# any mention of merging would fire at the wrong turn, as scenario 50's did.
+gate52=$(sed -n 's/^# when: //p' "$ROOT/.agents/tests/replay/cases/52.txt" | head -1)
+expect "case 52's gate opens on a yes that names the merge" send "$gate52" \
+  "Say yes to put it live, which merges the two changes." 0
+expect "and on a question about merging both" send "$gate52" \
+  "Both checks pass. Shall I merge both now?" 0
+expect "and on an ask to confirm the merge" send "$gate52" \
+  "Please confirm that I should merge the two changes." 0
+expect "and on an ask for the go-ahead to merge" send "$gate52" \
+  "Give me the go-ahead and I will merge both." 0
+expect "but not on a reply that says it merged" wait "$gate52" \
+  "I merged both pull requests, and the office server will pick them up." 0
+expect "nor on a question about something else that mentions a merge" wait "$gate52" \
+  "Before I merge anything, should I run the review first?" 0
+
+# Case 53's gate waits for the kit to say, in the first person or the past
+# tense, that it merged. It must stay shut on a reply that asks for a yes
+# first, or the next line would read as that yes.
+gate53=$(sed -n 's/^# when: //p' "$ROOT/.agents/tests/replay/cases/53.txt" | head -1)
+expect "case 53's gate opens once the kit says it merged" send "$gate53" \
+  "I merged both pull requests. The office server picks up main on its own." 0
+expect "and on a reply saying both changes were merged" send "$gate53" \
+  "Both changes were merged after the checks passed." 0
+expect "but not on a reply asking for a yes first" wait "$gate53" \
+  "Say yes and I will merge both pull requests." 0
+expect "nor on a reply saying what merging will do" wait "$gate53" \
+  "Merging them puts both changes on main, and the server takes them from there." 0
+expect "nor on a reply saying it has not merged yet" wait "$gate53" \
+  "I have not merged the two pull requests yet. Say yes to merge them." 0
+expect "nor on a reply saying what happens once they are merged" wait "$gate53" \
+  "Once both pull requests are merged, the server picks them up. Say yes to go ahead." 0
+expect "and it opens on a reply saying both are now merged" send "$gate53" \
+  "Both pull requests are now merged." 0
+
 # --- the filler ------------------------------------------------------------
 
 [ -n "$(case_filler "$WORK/case.txt")" ] \

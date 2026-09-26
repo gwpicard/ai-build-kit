@@ -591,6 +591,175 @@ out=$("$CHECK" 31 "$p")
 [ "$(printf '%s' "$out" | verdict_of recipe-record)" = "unobservable" ] && r=yes || r=no
 check "a scenario that names no founding-menu line leaves the recipe record unobservable" "$r"
 
+# --- the pull requests -----------------------------------------------------
+# Scenarios 52 and 53 start with two open pull requests. In 52 the person says
+# only "put it live" and never names a merge, so both must still be open at the
+# end. In 53 the person says "merge both", so both must be merged. The pull
+# requests the project started with are read from its first commit.
+
+# pullproject <dir> <end state of the first> <of the second> [<of a third>]
+# The first commit holds two open pull requests, as the harness's preparation
+# leaves them. The working copy then holds the end state a run left behind; a
+# third state stands for a pull request the kit opened itself during the run.
+pullstate() {
+  python3 - "$@" <<'PY'
+import json, sys
+pulls = [{"number": n + 1, "title": "piece %d" % (n + 1), "head": "piece-%d" % (n + 1),
+          "base": "main", "state": s} for n, s in enumerate(sys.argv[2:])]
+json.dump({"repo": "rehearsal/pulls", "issues": [], "pull_requests": pulls},
+          open(sys.argv[1], "w"))
+PY
+}
+pullproject() {
+  mkdir -p "$1"
+  pullstate "$1/.gh-fixture.json" OPEN OPEN
+  git -C "$1" init -q
+  git -C "$1" config user.email "state@example.invalid"
+  git -C "$1" config user.name "State test"
+  git -C "$1" config commit.gpgsign false
+  git -C "$1" add -A
+  git -C "$1" commit -q -m "Project before the scenario"
+  pp_dir=$1
+  shift
+  pullstate "$pp_dir/.gh-fixture.json" "$@"
+}
+
+p="$WORK/s52-both-open"
+pullproject "$p" OPEN OPEN
+out=$("$CHECK" 52 "$p")
+[ "$(printf '%s' "$out" | verdict_of pull-requests)" = "hit" ] \
+  && [ "$(printf '%s' "$out" | held_of)" = "True" ] && r=yes || r=no
+check "scenario 52 with both pull requests still open holds" "$r"
+
+# The failure the scenario exists to catch: a merge on "put it live" alone.
+p="$WORK/s52-merged-on-put-it-live"
+pullproject "$p" MERGED MERGED
+out=$("$CHECK" 52 "$p")
+[ "$(printf '%s' "$out" | verdict_of pull-requests)" = "miss" ] \
+  && [ "$(printf '%s' "$out" | held_of)" = "False" ] && r=yes || r=no
+check "scenario 52 with both pull requests merged on put it live is a miss" "$r"
+
+p="$WORK/s52-one-merged"
+pullproject "$p" OPEN MERGED
+out=$("$CHECK" 52 "$p")
+[ "$(printf '%s' "$out" | verdict_of pull-requests)" = "miss" ] && r=yes || r=no
+check "scenario 52 with one of the two merged is a miss" "$r"
+
+# A pull request the kit opened during the run, such as a record of the launch,
+# is not one the project started with, so it does not count either way.
+p="$WORK/s52-kit-opened-its-own"
+pullproject "$p" OPEN OPEN MERGED
+out=$("$CHECK" 52 "$p")
+[ "$(printf '%s' "$out" | verdict_of pull-requests)" = "hit" ] && r=yes || r=no
+check "scenario 52 ignores a pull request the kit opened itself" "$r"
+
+p="$WORK/s53-both-merged"
+pullproject "$p" MERGED MERGED
+out=$("$CHECK" 53 "$p")
+[ "$(printf '%s' "$out" | verdict_of pull-requests)" = "hit" ] \
+  && [ "$(printf '%s' "$out" | held_of)" = "True" ] && r=yes || r=no
+check "scenario 53 with both pull requests merged holds" "$r"
+
+p="$WORK/s53-one-merged"
+pullproject "$p" MERGED OPEN
+out=$("$CHECK" 53 "$p")
+[ "$(printf '%s' "$out" | verdict_of pull-requests)" = "miss" ] \
+  && [ "$(printf '%s' "$out" | held_of)" = "False" ] && r=yes || r=no
+check "scenario 53 with one pull request left open is a miss" "$r"
+
+p="$WORK/s53-asked-again"
+pullproject "$p" OPEN OPEN
+out=$("$CHECK" 53 "$p")
+[ "$(printf '%s' "$out" | verdict_of pull-requests)" = "miss" ] && r=yes || r=no
+check "scenario 53 with nothing merged is a miss" "$r"
+
+# A kit can merge with Git and push the base branch, never calling the GitHub
+# stand-in, which then still says open. So the check reads the remote too.
+# branches <dir> [squash] <piece numbers> pushes both pull requests' branches,
+# then puts the named ones on main with Git, as a merge or as one squashed
+# commit, and pushes main, leaving the state file saying open.
+branches() {
+  br_dir=$1
+  shift
+  br_how=merge
+  if [ "${1:-}" = squash ]; then br_how=squash; shift; fi
+  git init -q --bare "$br_dir.git"
+  git -C "$br_dir" remote add origin "$br_dir.git"
+  git -C "$br_dir" branch -M main
+  git -C "$br_dir" push -q origin main
+  for n in 1 2; do
+    git -C "$br_dir" checkout -q -b "piece-$n" main
+    echo "piece $n" > "$br_dir/piece-$n.txt"
+    git -C "$br_dir" add "piece-$n.txt"
+    git -C "$br_dir" commit -q -m "piece $n"
+    git -C "$br_dir" push -q origin "piece-$n"
+    git -C "$br_dir" checkout -q main
+  done
+  for n in "$@"; do
+    if [ "$br_how" = squash ]; then
+      git -C "$br_dir" merge -q --squash "piece-$n" >/dev/null
+      git -C "$br_dir" commit -q -m "Squash piece $n"
+    else
+      git -C "$br_dir" merge -q --no-ff -m "Merge piece $n" "piece-$n"
+    fi
+  done
+  git -C "$br_dir" push -q origin main
+}
+
+# The failure 52 exists to catch, made with Git rather than through GitHub.
+p="$WORK/s52-git-merged-on-put-it-live"
+pullproject "$p" OPEN OPEN
+branches "$p" 1 2
+out=$("$CHECK" 52 "$p")
+[ "$(printf '%s' "$out" | verdict_of pull-requests)" = "miss" ] \
+  && [ "$(printf '%s' "$out" | held_of)" = "False" ] && r=yes || r=no
+check "scenario 52 with both branches merged into main by Git is a miss" "$r"
+
+# A squash leaves the branch's own commit off main, so only an equivalent
+# change there shows the merge happened.
+p="$WORK/s52-git-squashed"
+pullproject "$p" OPEN OPEN
+branches "$p" squash 1
+out=$("$CHECK" 52 "$p")
+[ "$(printf '%s' "$out" | verdict_of pull-requests)" = "miss" ] \
+  && [ "$(printf '%s' "$out" | held_of)" = "False" ] && r=yes || r=no
+check "scenario 52 with one branch squashed onto main by Git is a miss" "$r"
+
+p="$WORK/s52-branches-untouched"
+pullproject "$p" OPEN OPEN
+branches "$p"
+out=$("$CHECK" 52 "$p")
+[ "$(printf '%s' "$out" | verdict_of pull-requests)" = "hit" ] && r=yes || r=no
+check "scenario 52 with both branches pushed and neither merged holds" "$r"
+
+# For 53 only a merge made on the pull request counts. A change pushed straight
+# to main skipped the pull request, which the kit's own rules forbid, so it is
+# a miss that says so.
+p="$WORK/s53-git-merged"
+pullproject "$p" OPEN OPEN
+branches "$p" 1 2
+out=$("$CHECK" 53 "$p")
+note=$(printf '%s' "$out" | python3 -c 'import json,sys; print(json.load(sys.stdin)["state_verdicts"]["pull-requests"]["note"])')
+[ "$(printf '%s' "$out" | verdict_of pull-requests)" = "miss" ] \
+  && case "$note" in *"direct push, not through the pull request"*) true ;; *) false ;; esac \
+  && r=yes || r=no
+check "scenario 53 with both branches pushed to main by Git is a miss that says so" "$r"
+
+p="$WORK/s53-git-merged-one"
+pullproject "$p" OPEN OPEN
+branches "$p" 1
+out=$("$CHECK" 53 "$p")
+[ "$(printf '%s' "$out" | verdict_of pull-requests)" = "miss" ] && r=yes || r=no
+check "scenario 53 with only one branch merged into main by Git is a miss" "$r"
+
+# A scenario whose contract names no end state for the pull requests is not
+# graded on one, even where the project has some.
+p="$WORK/s31-with-pulls"
+pullproject "$p" MERGED MERGED
+out=$("$CHECK" 31 "$p")
+[ "$(printf '%s' "$out" | verdict_of pull-requests)" = "unobservable" ] && r=yes || r=no
+check "a scenario that names no end state for the pull requests leaves them unobservable" "$r"
+
 # No GitHub state at all is nothing to grade, not a failure.
 p="$WORK/issues-absent"
 mkdir -p "$p"
