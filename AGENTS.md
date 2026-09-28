@@ -392,6 +392,15 @@ attribution line, not the word.
   Given a recipe, the report also names each command-line tool that recipe's
   launch checks run, and the check holds that a missing one never stops
   founding and that a project naming no recipe is never asked about them.
+  It also runs the report in throwaway projects whose `origin` is the kit's
+  own repository, in https and ssh form, in capitals and with no `.git`, and
+  in one where only GitHub names it. Each time the report says so, asks
+  GitHub nothing more about that repository, and still does not stop
+  founding. A fork under another owner, and a name that only starts like the
+  kit's, are left alone. The report matches with the shell alone, since the
+  check's own PATH once had no `tr` and a lower-casing step failed without a
+  word. Every other case runs from a folder with no `origin`, so the suite
+  gives the same answer wherever it is run from.
 - `.agents/tests/completion-report-shape.sh` guards the source of the /setup
   completion report, which is watched by hand rather than replayed: it proves
   completion-report.md still leads with what is ready, keeps technical state out
@@ -980,6 +989,10 @@ attribution line, not the word.
   branch was cut from, the one time it is written other than by a merge,
   since the settings refuse a push to it. It holds the pointers from `/sync`,
   `/ship`, founding and the push-to-main rule, and WORKFLOW.md telling it.
+  Founding opens issues before any piece pushes, so it holds the same guard
+  there: before the first issue, founding checks which repository the project
+  points at, opens and pushes nothing on the kit's own, asks for the person's,
+  and carries on with none as with no repository.
 - `.agents/tests/recipes.sh` guards the recipe format. A recipe pairs a build
   stack with a place to run it, and it is the only place outside the README
   allowed to name a service a tool runs on, so the rules around that permission
