@@ -696,6 +696,20 @@ attribution line, not the word.
   never listed, including a branch the project says stays, without the kit
   guessing one by its name, and that a branch with work added after its pull
   request merged stays off both lists.
+- `.agents/tests/push-to-main-rules.sh` guards the deny rules a project's
+  Claude Code settings carry against a direct push to `main`. The first rules
+  matched three exact spellings, and a real run pushed with
+  `git push -q origin main`, which none of them matched. Nothing here can run
+  Claude Code's own matcher without a model, so the check carries a small one
+  that follows the documented rule shape, and tests it first against the
+  examples in the documentation's own table. It then feeds it the spellings
+  `blocked-commands.md` says are refused and the ones it says are missed, so
+  the written gap and the rules cannot disagree. A branch that only starts
+  with `main`, such as `main-fix`, must still push. Each rule is taken out in
+  turn to prove it is needed. It also holds the monthly offer that brings the
+  rules to a project founded before them: offered once, named, added only on
+  a yes, with nothing else in the file touched, and a no recorded so the offer
+  returns only when a release adds another rule.
 - `.agents/tests/sync-saves-like-a-piece.sh` guards how /sync saves what it
   corrects. Every skill that changes the records said how it saves them, and
   sync did not: it corrected the pieces, the changelog and the masterplan and

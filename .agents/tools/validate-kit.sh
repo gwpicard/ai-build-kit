@@ -1011,7 +1011,7 @@ if [ -f "$sbfile" ] && [ -f "$blocked" ] && [ -f "$settings" ] && [ -f "$startfi
     { fail "$shapefile: does not say a new issue starts unassigned"; mech_ok=0; }
   grep -qF 'never push a change directly to `main`' "$blocked" || \
     { fail "$blocked: does not block a direct push to main"; mech_ok=0; }
-  grep -qF "git push origin main" "$settings" || \
+  grep -qF "git push * main" "$settings" || \
     { fail "$settings: deny list does not block a direct push to main"; mech_ok=0; }
   grep -qF "delete_branch_on_merge" "$startfile" || \
     { fail "$startfile: does not enable auto-deletion of merged branches"; mech_ok=0; }
@@ -2068,9 +2068,14 @@ Bash(rm -rf:*)"
 # changes flowing through a pull request. This maintainer repository's own
 # settings deliberately do not carry that entry, so the two sets differ here.
 expected_deny_project="$expected_deny
-Bash(git push origin main:*)
-Bash(git push -u origin main:*)
-Bash(git push origin HEAD:main:*)"
+Bash(git push * main)
+Bash(git push * main *)
+Bash(git push * +main)
+Bash(git push * +main *)
+Bash(git push *:main)
+Bash(git push *:main *)
+Bash(git push *refs/heads/main)
+Bash(git push *refs/heads/main *)"
 deny_ok=1
 if command -v python3 >/dev/null 2>&1; then
   py_script=/tmp/validate-kit-deny.$$
