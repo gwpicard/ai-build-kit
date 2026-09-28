@@ -693,6 +693,23 @@ attribution line, not the word.
   retired skill folder only by the kit's former names and absence from the
   lockfile. It holds that the step is run from the monthly pass, removes on
   approval, and that WORKFLOW.md says so.
+- `.agents/tests/older-project-upkeep.sh` guards three things an update never
+  reaches, because it refreshes skills and nothing else. A leftover `plan.md`
+  is offered for a move into issues on every visit that finds it, since it was
+  once offered only on the one visit that first brought in `/shape`, and a
+  project that missed that visit kept it for good. The offer comes back after
+  a no, and a `plan.md` that is plainly the person's own notes is left alone.
+  A pointer in AGENTS.md or the masterplan that names a kit skill's file by
+  its place in `.agents/skills/` opens nothing on a Claude-Code-only or plugin
+  install. So the visit runs a shipped script that lists such lines and, on a
+  yes, rewrites each to name the skill, changing nothing else. The check runs
+  that script. An old project's pointers are found and rewritten to the form
+  today's templates use, and a second run finds nothing. A project founded
+  from today's templates gets no offer. A placeholder, a mention of the
+  folder, and a project's own skill in the same folder are left alone. The
+  script's list of skills is the kit's fourteen, so a rename cannot slip past
+  it. Last, a visit asked to leave kit updates alone does not copy in the
+  reminder script, and says so in one sentence.
 - `.agents/tests/offer-recipe-move.sh` guards the monthly offer to move a
   project onto a recipe. It applies to a project with `Recipe: none` or no
   `Recipe:` line, whose stack matches a recipe's build stack in substance even

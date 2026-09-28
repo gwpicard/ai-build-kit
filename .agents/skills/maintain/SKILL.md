@@ -104,7 +104,11 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    also run "Tidying a project founded from a whole copy of the kit" below
    whenever the leftovers it names are present. On every route and every
    visit, run "Adding the plan printout helper" below; it does nothing when
-   the project's copy is already current.
+   the project's copy is already current. On every visit, run "Pointing the
+   records at a skill by name" below, and whenever a `plan.md` is at the
+   project root, run "Moving a plan.md into issues" below. Both are decided by
+   what is on disk, so a project that missed the update which first needed
+   them still gets them.
 6. Re-read the capability profile's reach-check engine against what the
    harness and project can use now. Keep the same preference order as
    the `section-builder` skill's `references/reach-check.md`, and update the
@@ -165,7 +169,13 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
     file is missing, create it with a `founded` line holding the date
     masterplan.md was first saved, then the two pass lines. If the project has
     no `.agents/hooks/session-start.sh`, copy it from the installed start
-    skill's `templates/foundation/session-start.sh`. Then say one sentence: "I
+    skill's `templates/foundation/session-start.sh`, unless the person asked
+    during this visit to leave kit updates alone. That script comes from the
+    kit, and it changes what the project does later. Read what they asked, not
+    a fixed phrase, and where you skip it, say one sentence instead: "I left
+    out the script that reminds a session when a visit is due, since you asked
+    for no kit updates, so that reminder will not appear by itself; /what-now
+    still reports it when asked." Otherwise say one sentence: "I
     have recorded today's visit, so a session will not remind you again until
     the next one is due." If the project's Claude settings existed before AI
     Build Kit did, add that the reminder cannot appear by itself there, and that
@@ -246,23 +256,66 @@ the project already migrated does nothing here.
    alone; that one is `/shape`'s to shape. Say how many pieces were marked ready,
    so the person can see their backlog is still there.
 
-2. Move a `plan.md` into issues. A project founded without the GitHub tool
-   signed in kept its pieces in `plan.md`, which nothing reads any more. Where
-   that file is on disk, say so plainly and offer to move its rows into issues:
-   guide the GitHub setup first if it is not ready
-   (the `setup-ai-build-kit` skill's `references/manual-setup.md`), open one issue per row in
-   the shape the `setup-ai-build-kit` skill's `references/pieces.md` describes, carry each
-   row's subjects across as labels, label a shaped row `ready`, and label an
-   unshaped one with the question it still waits on. Do this on the clean
-   checkpoint, name what moved, and only then remove `plan.md`. Where the person
-   declines, leave `plan.md` untouched and say its pieces are not picked up until
-   they are moved.
+2. Move a `plan.md` into issues, as "Moving a plan.md into issues" below says.
 
 3. Point `/build` forward. Say once that the old `/build` command has become
    two: `/shape` to shape a new idea into a ready piece, and `/implement` to build
    one. Nothing the person saved is lost; only the command names changed.
 
 Record the migration in the changelog as a dated line.
+
+## Moving a plan.md into issues
+
+Run this on any visit that finds a `plan.md` at the project root, for as long
+as it is there. It used to run only on the visit that first brought in
+`/shape` and `/implement`, and a project that missed that visit kept its
+`plan.md` for good, with nothing to say its pieces were never picked up.
+
+A project founded without the GitHub tool signed in kept its pieces in
+`plan.md`, which nothing reads any more. Where the file is plainly something
+else of the person's, such as their own notes, leave it and say nothing.
+Otherwise say so plainly and offer to move its rows into issues: guide the
+GitHub setup first if it is not ready (the `setup-ai-build-kit` skill's
+`references/manual-setup.md`), open one issue per row in the shape the
+`setup-ai-build-kit` skill's `references/pieces.md` describes, carry each
+row's subjects across as labels, label a shaped row `ready`, and label an
+unshaped one with the question it still waits on. Do this on the clean
+checkpoint, name what moved, and only then remove `plan.md`. Record the move
+in the changelog as a dated line.
+
+Where the person declines, leave `plan.md` untouched and say its pieces are not
+picked up until they are moved. Nothing records the no, so the offer comes back
+on the next visit that still finds the file. Say that too, in the same reply.
+
+## Pointing the records at a skill by name
+
+Run this on every visit. A project founded before the kit named its pointers
+by skill carries lines in AGENTS.md and masterplan.md that name a skill's file
+by its place in the project's `.agents/skills/` folder. A project installed
+for Claude Code alone, or through a plugin, has no such folder, so the line
+opens nothing. The current form names the skill and the path inside it: the
+`setup-ai-build-kit` skill's `references/pieces.md`. An update refreshes the
+skills and never touches these two files, so the old lines stay until the
+visit changes them.
+
+1. From the project root, run `python3 <installed maintain
+   skill>/scripts/old-skill-pointers.py`. It prints each old pointer with its
+   file, line and the new form, and nothing when there is none. It reads only
+   those two files, and it touches only a pointer into one of the kit's
+   fourteen skills with a path inside it. A project's own skill, a placeholder
+   such as `<name>`, and a mention of the folder itself stay as the person
+   wrote them. When it prints nothing, say nothing.
+2. Offer the rewrite once, in one reply: say how many lines in which file, that
+   each keeps its sentence and only the pointer changes, and show one line
+   before and after. Wait for the person's yes.
+3. On a yes, run the same command with `--apply`, then run it again without,
+   and carry on only once it prints nothing. Save the change with the visit's
+   other changes and add a dated changelog line.
+4. Where the person says no, leave both files as they are. The offer comes
+   back on the next visit that still finds an old pointer.
+
+Where the harness cannot run the script, read the two files for the same
+lines and rewrite them by hand, on the same yes.
 
 ## Migrating a project founded before the setup-ai-build-kit rename
 
