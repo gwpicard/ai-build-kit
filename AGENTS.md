@@ -218,6 +218,12 @@ attribution line, not the word.
   It also holds that opening a pull request closes nothing, and that a merge
   closes the piece and lands the branch on the remote's `main`, since a kit
   that checks the remote would otherwise see a merged fix that never arrived.
+  It holds what a first upload into an empty repository calls. The empty
+  repository answers the branch listing with exit 2, and the stand-in says
+  whether it is public or private. It creates `main` through the API only at
+  a commit the repository holds, and only once, and makes `main` the default
+  branch only once it exists. Moving or deleting a branch through the API
+  stays refused.
 - `.agents/tests/fake-host.sh` checks the replay harness's stand-ins for a
   host's tools, which scenario 54 launches through on the Vercel recipe. The
   stand-in host keeps a list of deployments beside the project and builds each
@@ -313,7 +319,17 @@ attribution line, not the word.
   tests pass on `main` and on the branch where Node can read TypeScript by
   itself. It holds 54's gate open on a reply saying the kit merged, and shut
   on one asking first, saying what happens once it is merged, saying it has
-  not merged yet, or reading "Merged: not yet".
+  not merged yet, or reading "Merged: not yet". It carries a `# grants:` line
+  beside the turn it marks, and never into the words sent. It holds that the
+  harness marks each turn in the GitHub log and logs every push the remote
+  receives, and reads one push back. It runs both halves of scenario 55's
+  preparation. The first adds one ready piece and a changelog line saying no
+  code was uploaded. The second names the first branch `main` on a project
+  that started on `master`, and leaves the remote empty, so the branch listing
+  exits 2. Neither half runs on a folder that is not a fresh replay project,
+  and the second refuses a remote that is not empty. It holds 55's gate open
+  on the ways of asking before the upload it lists, and shut on a reply saying
+  the kit already pushed or uploaded, or only reporting a pull request.
 - `.agents/tests/grader-recovery.sh` checks that the replay grader recovers a
   grading missing only its final brace or carrying one stray brace after it,
   and still refuses one that was cut off partway or followed by other text.
@@ -361,7 +377,15 @@ attribution line, not the word.
   tried", is a miss, and so is one calling rollback impossible when an earlier
   build is listed. A not-tried phrase about the restore does not excuse a
   rollback said to be tried beside it, and a passing note about the rollback
-  target is not judged.
+  target is not judged. For scenario 55, a first upload into an empty
+  repository, it reads the GitHub log as a timeline of turns and pushes. A
+  push before the turn marked as the person's yes is a miss, and so is one
+  after a filler, since a filler grants nothing. So are `main` pushed with Git
+  rather than created through the API, `main` on the remote with no API call
+  behind it, nothing uploaded after the yes, and no default branch or pull
+  request. A log with no turn markers is unobservable, not a pass. It also
+  holds that the stand-in's state is read from beside the project, since the
+  copy inside it is a tracked file the kit's own Git work can move.
 - `.agents/tests/check-tooling.sh` runs the setup tooling report against a set of
   throwaway PATHs and reads when it stops: a missing tool or a signed-out account
   blocks founding, while issues switched off or a read-only account do not.

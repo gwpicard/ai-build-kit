@@ -158,6 +158,26 @@ run_once() {
     }
   fi
 
+  # The GitHub stand-in keeps its state beside the project from here on, not
+  # in it. The copy in the first commit still says what the project started
+  # with. A state file inside the project is a tracked file the kit's own Git
+  # work moves: one run committed it on a records branch, switched back to
+  # main, and so put both merged pull requests back to open, for the stand-in
+  # and for the state check alike.
+  ghstate="$project.gh.json"
+  rm -f "$ghstate"
+  if [ -f "$project/.gh-fixture.json" ]; then
+    cp "$project/.gh-fixture.json" "$ghstate"
+  fi
+
+  # Every push that reaches the remote next door is written to the GitHub
+  # log, between the markers for the turns it happened in. That is what shows
+  # whether a push came before or after the person's yes. The hook is in the
+  # bare remote, outside the project, so the kit never sees it.
+  ghlog="$WORK/s${number}-r${repeat}-gh.log"
+  : > "$ghlog"
+  log_pushes "$project.git" "$ghlog"
+
   provider_new_session
   transcript="$WORK/s${number}-r${repeat}.transcript"
   turns="$WORK/s${number}-r${repeat}-turns"
@@ -210,9 +230,19 @@ run_once() {
     # work is answered without an account or a network. It refuses anything it
     # does not model, and logs it, so a command nobody predicted shows up in
     # the transcript rather than passing quietly.
-    FAKE_GH_STATE="$project/.gh-fixture.json"
-    FAKE_GH_LOG="$WORK/s${number}-r${repeat}-gh.log"
+    FAKE_GH_STATE="$ghstate"
+    FAKE_GH_LOG="$ghlog"
     export FAKE_GH_STATE FAKE_GH_LOG
+    # Mark the turn in the log, so a push or a call can be placed against what
+    # the person had said by then. A turn marked `# grants:` in the case is the
+    # one that gives the permission the scenario measures; a filler never is.
+    kind=scripted
+    if [ "$message" = "$filler" ]; then
+      kind=filler
+    elif [ -f "${turnfile%.txt}.grants" ]; then
+      kind=grants
+    fi
+    printf 'TURN\t%s\t%s\n' "$turn" "$kind" >> "$FAKE_GH_LOG"
     # The stand-in host keeps its list of deployments beside the project rather
     # than in it, so the kit never commits it. Only a preparation that launches
     # on a recipe writes that file.
