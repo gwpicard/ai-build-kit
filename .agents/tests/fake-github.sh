@@ -258,7 +258,7 @@ set -e
   || fail "the branch listing of an empty repository exited $empty, not 2"
 
 case "$("$GH" repo view --json nameWithOwner,visibility,isEmpty,defaultBranchRef)" in
-  *'"visibility": "PRIVATE"'*'"isEmpty": true'*'"defaultBranchRef": {"name": ""}'*)
+  *'"visibility": "PRIVATE"'*'"isEmpty": true'*'"defaultBranchRef": null'*)
     pass "repo view says the repository is private, empty, and has no default branch yet" ;;
   *) fail "repo view of an empty repository returned the wrong shape" ;;
 esac
@@ -328,6 +328,7 @@ esac
 # branches, are nothing the kit should reach for.
 for refused in "api -X PATCH repos/rehearsal/upload/git/refs/heads/main -f sha=$base -F force=true" \
                "api -X DELETE repos/rehearsal/upload/git/refs/heads/spare" \
+               "api repos/rehearsal/upload/git/ref -f ref=refs/heads/other -f sha=$base" \
                "api repos/someone/else/git/refs -f ref=refs/heads/main -f sha=$base" \
                "repo edit --default-branch main --visibility public"; do
   if "$GH" $refused > /dev/null 2>&1; then
@@ -359,7 +360,7 @@ fi
 
 # Nothing the kit reached for during this rehearsal should have been refused.
 if grep -q "UNSUPPORTED" "$FAKE_GH_LOG"; then
-  unexpected=$(grep "UNSUPPORTED" "$FAKE_GH_LOG" | grep -vc "search repos\|repo list\|visibility public\|private=false\|force=true\|-X DELETE\|someone/else" || true)
+  unexpected=$(grep "UNSUPPORTED" "$FAKE_GH_LOG" | grep -vc "search repos\|repo list\|visibility public\|private=false\|force=true\|-X DELETE\|someone/else\|git/ref -f" || true)
   if [ "$unexpected" -gt 0 ]; then
     fail "$unexpected modelled command was refused; see $FAKE_GH_LOG"
   fi

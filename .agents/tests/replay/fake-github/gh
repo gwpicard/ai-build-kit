@@ -296,7 +296,7 @@ def api_fields(argv):
     return out
 
 
-def api_refs(argv, state, repo, rest):
+def api_refs(argv, state, repo, rest, kind="refs"):
     """Read a branch, or create one, through the Git Data API.
 
     The first upload of a project creates `main` on GitHub at the commit its
@@ -322,7 +322,8 @@ def api_refs(argv, state, repo, rest):
     def git(*args):
         return subprocess.run(["git", "-C", remote, *args], capture_output=True, text=True)
 
-    if method == "POST" and not rest:
+    # GitHub creates a branch only at git/refs. The singular git/ref reads one.
+    if method == "POST" and not rest and kind == "refs":
         ref, sha = fields.get("ref", ""), fields.get("sha", "")
         if not ref.startswith("refs/heads/") or not sha:
             unsupported(argv, "a new branch needs ref=refs/heads/<name> and sha=<commit>")
@@ -404,7 +405,8 @@ def main():
             "visibility": state.get("visibility", "PRIVATE"),
             "isPrivate": state.get("visibility", "PRIVATE") == "PRIVATE",
             "isEmpty": not heads,
-            "defaultBranchRef": {"name": default if default in heads else ""},
+            # GitHub answers null for an empty repository's default branch.
+            "defaultBranchRef": {"name": default} if default in heads else None,
             "hasIssuesEnabled": True,
             # The rehearsal account owns the repository. The tooling check reads
             # this before founding, and refusing it left that check reporting
@@ -474,9 +476,9 @@ def main():
                 path = arg
                 break
         posting = bool(re.search(r"(?:-X|--method)[= ]POST\b", " ".join(argv)))
-        refs = re.fullmatch(r"/?repos/([^/]+/[^/]+)/git/refs?(?:/(.*))?", path)
+        refs = re.fullmatch(r"/?repos/([^/]+/[^/]+)/git/(refs?)(?:/(.*))?", path)
         if refs:
-            api_refs(argv, state, refs.group(1), refs.group(2))
+            api_refs(argv, state, refs.group(1), refs.group(3), refs.group(2))
             return
         blocked = re.search(r"issues/(\d+)/dependencies/blocked_by", path)
         if blocked and posting:

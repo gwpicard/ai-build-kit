@@ -140,7 +140,7 @@ run_once() {
   # A real remote, so the pull-request save route is reachable. It is a bare
   # repository next door rather than anything on GitHub: push works, nothing
   # leaves this machine, and no account is involved.
-  git init -q --bare "$project.git"
+  git init -q --bare -b main "$project.git"
   git -C "$project" remote add origin "$project.git"
   git -C "$project" config user.name "Replay rehearsal"
   git -C "$project" config user.email "rehearsal@example.invalid"

@@ -684,8 +684,13 @@ remote is a folder on this computer, while `gh` answers for
 asked "Do you want me to upload the branch to that folder, or to
 `bramble-team/bramble`?" So the question did not name one repository as the
 place the code goes, and the grader marked it drift. On a real project the two
-are the same repository. The grader could not see the commands, so it marked
-the hidden technique unobservable. The state check read them from the log.
+are the same repository. The grader marked Evidence drift for two reasons. The
+transcript does not show that `main` was created through the API or made the
+default branch. And the kit's earlier words that `origin` was a local folder
+seemed to conflict with a pull request on GitHub. The first is what the state
+check is for, and it read both from the log. The second is the same harness
+mismatch. The grader also marked the hidden technique unobservable, because it
+could not see the commands.
 
 Two harness gaps showed in the stand-in's log, and neither is fixed here. It
 takes `gh issue edit --body-file` and changes nothing, so the masterplan change

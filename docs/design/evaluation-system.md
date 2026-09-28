@@ -39,7 +39,8 @@ Four things are thin, and all four were confirmed by reading the code.
 1. **It grades the talk, not the world.** `grade_once` in `run.sh` hands the
    grader the contract and the transcript and nothing else. The harness already
    stands up the git repo, the bare remote, the fake-GitHub state file
-   (`.gh-fixture.json`), and copies in `masterplan.md` and `CHANGELOG.md`, then
+   (seeded from `.gh-fixture.json` and now kept beside the project as
+   `<project>.gh.json`), and copies in `masterplan.md` and `CHANGELOG.md`, then
    asserts on none of them. So the grader can read the kit's claim that it
    recorded an acceptance, never whether the file changed. This is the single
    biggest hole.
@@ -109,7 +110,8 @@ the transcript rather than instead of it.
   save route the contract names (checkpoint, or a pull request) is checked
   rather than assumed.
 - Fake-GitHub state: the stand-in already writes every issue and pull-request
-  transition to `.gh-fixture.json`. Read it after the run and assert the issue
+  transition to `<project>.gh.json`, which it keeps beside the project so
+  the kit's own Git work cannot move it. Read it after the run and assert the issue
   transitions the contract names actually happened.
 - Founding records: read `masterplan.md` and `CHANGELOG.md` and assert an
   acceptance was recorded with its date, who accepted, and which named review
