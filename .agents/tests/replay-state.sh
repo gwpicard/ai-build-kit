@@ -762,7 +762,7 @@ standin() {
   sd_dir=$1
   shift
   sd_clone="$sd_dir.merge"
-  git clone -q "$sd_dir.git" "$sd_clone"
+  git clone -q -b main "$sd_dir.git" "$sd_clone"
   git -C "$sd_clone" config user.email "person@example.invalid"
   git -C "$sd_clone" config user.name "Replay person"
   git -C "$sd_clone" config commit.gpgsign false
@@ -774,7 +774,7 @@ standin() {
 }
 record() {
   rc_clone="$1.record"
-  git clone -q "$1.git" "$rc_clone"
+  git clone -q -b main "$1.git" "$rc_clone"
   git -C "$rc_clone" config user.email "kit@example.invalid"
   git -C "$rc_clone" config user.name "Replay kit"
   git -C "$rc_clone" config commit.gpgsign false
