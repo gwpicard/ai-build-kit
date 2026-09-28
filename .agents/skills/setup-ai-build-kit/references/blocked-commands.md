@@ -27,7 +27,12 @@ still apply:
 - never disable authentication or access control to make a check pass;
 - never bypass a red project check to ship or merge;
 - never push a change directly to `main`; every change to `main` goes through a
-  pull request, so shared work reaches it by merge rather than by a direct push;
+  pull request, so shared work reaches it by merge rather than by a direct push.
+  The one exception is the project's first upload: after the person's yes,
+  and only when the remote lists no branch, `main` is created through the
+  GitHub API at the commit the piece's branch was cut from, as
+  section-builder's "The first upload" describes. It is never written by a
+  `git push`;
 - never force or automate a merge over a required review;
 - never activate flagged work before its recorded condition is met or the
   person has accepted the risk on the record;
