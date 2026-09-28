@@ -8,8 +8,9 @@
 # first, naming the repository and whether it is public or private, and it asks
 # once for each project.
 #
-# "Once" is read off the remote rather than kept in a record: a remote that
-# lists no branch has nothing of this project on it. A record could disagree
+# "Once" is read off the remote rather than kept in a record: the code is
+# online only when a remote branch shares history with the local main. A
+# listing that failed is never read as an empty repository. A record could disagree
 # with the remote, and the remote is what the question is about.
 #
 # Each rule here is prose an agent reads. Its absence would not show until the
@@ -32,12 +33,20 @@ rs_exists "$BUILDER" "$SETUP" "$SYNC" "$SHIP" "$BLOCKED" "$WORKFLOW"
 
 # The ask, and when it is due.
 rs_rule "the first push waits for a yes" 'the first push of the project.s code waits for their yes'
-rs_rule "the remote is read before any push" 'before any push, run `git ls-remote --heads origin`'
-rs_rule "no branch listed means the first upload" 'when it lists no branch, nothing from this project is online yet and this push is the first upload'
-rs_rule "a listed branch means no ask" 'when it lists one, the code is already there, so push without asking'
+# A project founded from a whole copy of the kit can still point at the kit.
+rs_rule "origin is checked first" 'before any push, check where `origin` points'
+rs_rule "a project never goes to the kit's own repository" 'where it is the kit.s own repository, `gwpicard/ai-build-kit`, push nothing: say plainly that the project still points at the kit.s repository, and ask for their own\. never push a project there'
+# A listing that failed must never read as an empty repository.
+rs_rule "the listing is read by its exit code" 'run `git ls-remote --exit-code --heads origin` and read its exit code'
+rs_rule "exit 2 means the first upload" 'exit 2 means the repository has no branch: nothing from this project is online yet, and this push is the first upload'
+rs_rule "any other failure is the route that cannot run, never empty" 'any exit other than 0 or 2 means the listing could not be read, because there is no `origin`, github cannot be reached, or the tool is not signed in\. that is the route the project cannot perform right now, with its one-line note, and never an empty repository'
+# A branch on the remote is not enough: it has to be this project's history.
+rs_rule "branches count only when they share history with main" 'the code is already online only when a remote branch shares history with the local `main`, so that `git merge-base` finds a commit they share\. then push without asking'
+rs_rule "unrelated branches push nothing and ask" 'where the repository has branches but none shares history with `main`, push nothing'
+rs_rule "the person is told it holds something else" 'name `owner/name`, say it holds something else, and ask the person what to do'
 # How "once" is known.
-rs_rule "once for each project, known from the remote, with no record" 'that listing is how you know the question was answered: it is asked once for each project, and no record is kept'
-rs_rule "an empty remote earns no unreachable note" 'a remote with nothing on it also has no `main` to bring up to date, and that needs no note'
+rs_rule "once for each project, known from the remote, with no record" 'that is how you know the question was answered: it is asked once for each project, and no record is kept'
+rs_rule "an empty remote earns no unreachable note" 'a remote with nothing on it has no `main` to bring up to date, and that needs no note'
 
 # The build finishes; only the push waits.
 rs_rule "the piece is still built and checked" 'build and check the piece first\. only the push waits'
@@ -48,8 +57,9 @@ rs_rule "an unreadable visibility is said, not guessed" 'where you cannot read t
 
 # What a yes does. The settings refuse a push to main, so the one way main is
 # created is written down rather than left for an agent to improvise.
-rs_rule "a yes creates main on github at the local main" 'create `main` on github at the local `main`'
+rs_rule "a yes creates main at the commit the branch was cut from" 'create `main` on github at the commit the branch was cut from, `git merge-base main <piece branch>`'
 rs_rule "and makes it the default branch" 'make it the default branch'
+rs_rule "the default-branch change is told" 'tell the person in one clause that github now starts from their project.s main copy'
 rs_rule "the one time main is written other than by a merge" 'this is the one time `main` is written other than by a merge'
 
 # A no, and nobody there.
@@ -65,15 +75,17 @@ rs_require_load_bearing "the save step points back at the ask" "$BUILDER" 'the p
 # The other commands that push follow the same rule.
 rs_require_load_bearing "sync's save follows the first upload rule" "$SYNC" 'the project.s first upload waits for the yes section-builder.s "the first upload" describes'
 rs_require_load_bearing "ship's records follow the first upload rule" "$SHIP" 'the project.s first upload waits for the yes section-builder.s "the first upload" describes'
-rs_require_load_bearing "the push-to-main rule names its one exception" "$BLOCKED" 'the one exception is the project.s first upload, which creates `main` on an empty repository'
+rs_require_load_bearing "the push-to-main rule names its one narrow exception" "$BLOCKED" 'the one exception is the project.s first upload: after the person.s yes, and only when the remote lists no branch, `main` is created through the github api at the commit the piece.s branch was cut from'
+rs_require_load_bearing "and main is never written by a git push" "$BLOCKED" 'it is never written by a `git push`'
 
 # Founding's promise stays true, and says what comes next.
-rs_require_load_bearing "founding says the first piece asks before the code goes online" "$SETUP" 'the code stays on this computer until the first piece that pushes asks the person first'
+rs_require_load_bearing "founding says the first piece asks before the code goes online" "$SETUP" 'where the online repository holds none of the code yet, the code stays on this computer until the first piece that pushes asks the person first'
 
 # WORKFLOW.md tells it.
-rs_require_load_bearing "WORKFLOW says the first upload is asked" "$WORKFLOW" 'the first time anything pushes your project.s code online, the agent asks you first, naming the repository and whether it is public or private'
+rs_require_load_bearing "WORKFLOW says the first upload is asked" "$WORKFLOW" 'on either route, the first time anything pushes your project.s code online, the agent asks you first, naming the repository and whether it is public or private'
 rs_require_load_bearing "WORKFLOW says it is asked once for each project" "$WORKFLOW" 'it asks once for each project: once the code is on github, it does not ask again'
 rs_require_load_bearing "WORKFLOW says a no or nobody there keeps the piece local" "$WORKFLOW" 'if you say no, or nobody is there to answer, the piece is still built and checked, and it waits on its own branch on your computer until you say yes'
-rs_require_load_bearing "WORKFLOW's founding story says the first build asks" "$WORKFLOW" 'your code stays there until your first build asks you before putting it online'
+rs_require_load_bearing "WORKFLOW says an unrelated or kit repository gets nothing" "$WORKFLOW" 'if the repository already holds something that is not your project, or still points at the kit.s own repository, nothing is pushed and the agent asks you what to do'
+rs_require_load_bearing "WORKFLOW's founding story says the first build asks" "$WORKFLOW" 'if none of your code is online yet, it stays there until your first build asks you before putting it online'
 
 rs_done

@@ -947,12 +947,15 @@ attribution line, not the word.
   question. So the first push of the code asks first, naming the repository
   and whether it is public or private, while the piece is still built and
   checked. It asks once for each project, and the kit knows that from the
-  remote rather than a record: a remote that lists no branch holds nothing of
-  this project. A no, or a run with nobody there, keeps the piece on its own
-  branch here with a one-line note. A yes creates `main` on GitHub at the
-  local `main`, the one time it is written other than by a merge, since the
-  settings refuse a push to it. It holds the pointers from `/sync`, `/ship`,
-  founding and the push-to-main rule, and WORKFLOW.md telling it.
+  remote rather than a record. The code is online only when a remote branch
+  shares history with the local `main`. A listing that failed is never read
+  as an empty repository. A repository holding something else, or the kit's
+  own repository, gets nothing pushed and a question instead. A no, or a run
+  with nobody there, keeps the piece on its own branch here with a one-line
+  note. A yes creates `main` through the GitHub API at the commit the piece's
+  branch was cut from, the one time it is written other than by a merge,
+  since the settings refuse a push to it. It holds the pointers from `/sync`,
+  `/ship`, founding and the push-to-main rule, and WORKFLOW.md telling it.
 - `.agents/tests/recipes.sh` guards the recipe format. A recipe pairs a build
   stack with a place to run it, and it is the only place outside the README
   allowed to name a service a tool runs on, so the rules around that permission

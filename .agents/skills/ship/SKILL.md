@@ -281,9 +281,8 @@ reports the launch. Where GitHub cannot be reached, save the records on that
 branch, note in one plain line the step that did not happen, and open the pull
 request once GitHub is reachable. The project's first upload waits for the
 yes section-builder's "The first upload" describes. Never push records
-straight to `main`. A
-later confirmation joins that branch while its pull request is open, or a new
-branch and pull request once it has merged.
+straight to `main`. A later confirmation joins that branch while its pull
+request is open, or a new branch and pull request once it has merged.
 
 The records pull request is a merge like any other: name it and ask for a yes
 that names it. The yes to the earlier merge does not cover it, because that

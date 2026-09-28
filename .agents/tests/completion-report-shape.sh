@@ -50,11 +50,12 @@ rs_rule "the pieces going online is translated for the person" \
   "the pieces were opened as issues -> "
 # The first build pushes the code online, and a real run did that straight
 # after this report said nothing was uploaded. The report now says the code
-# waits for the person's yes.
+# waits for the person's yes, and only where none of the code is online yet,
+# since an adopted project may already be on GitHub.
 rs_rule "the report says the first build asks before the code goes online" \
-  "until your first build asks you before putting it online\. \[state"
+  "only where the online repository holds none of the project.s code yet:\] the code stays on this computer until your first build asks you before putting it online\. \[state"
 rs_rule "that line is translated for the person" \
-  "the first push waits for a yes -> "
+  "holds none of the project.s code yet, so the first push waits for a yes -> "
 rs_guard "$REPORT" "the shipped completion-report.md"
 
 rs_done
