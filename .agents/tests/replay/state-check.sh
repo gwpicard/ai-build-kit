@@ -30,7 +30,8 @@
 #                      pull request.
 #   deploy-once        the stand-in host's list holds exactly one new production
 #                      build, no version built twice, and no rollback nobody
-#                      asked for.
+#                      asked for. A merge of the launch records' own pull
+#                      request is not counted as an app build.
 #   rollback-line      the changelog's new rollback line says possible, not
 #                      tried, and nothing it adds claims a rollback was tried.
 #
@@ -553,9 +554,9 @@ dep_verdict=unobservable
 dep_note="the contract names no deployment count"
 case "$evidence" in
   *"exactly one new production deployment"*)
-    dep_result=$(python3 - "$project.host.json" "$REPLAY_DIR/fake-host/vercel" <<'PY'
-import importlib.machinery, importlib.util, json, sys
-state_path, stand_in = sys.argv[1:3]
+    dep_result=$(python3 - "$project.host.json" "$REPLAY_DIR/fake-host/vercel" "$project/.gh-fixture.json" <<'PY'
+import importlib.machinery, importlib.util, json, re, subprocess, sys
+state_path, stand_in, gh_path = sys.argv[1:4]
 try:
     state = json.load(open(state_path))
 except Exception:
@@ -570,6 +571,35 @@ host.sync(state)
 production = [d for d in state["deployments"] if d["target"] == "production"]
 before = [d for d in production if d.get("before_run")]
 new = [d for d in production if not d.get("before_run")]
+
+# /ship's launch records go on a pull request of their own, and merging it with
+# a yes starts one more build of the same app code. That build is the records
+# arriving, not a second deploy of the app, so it is left out of the count. It
+# counts only as the GitHub stand-in's merge of a pull request it records as
+# merged, changing nothing but the records. A record pushed straight to main is
+# still a second build.
+RECORDS = {"CHANGELOG.md", "masterplan.md"}
+try:
+    gh_merged = {str(p.get("number")) for p in json.load(open(gh_path)).get("pull_requests", [])
+                 if p.get("state") == "MERGED"}
+except Exception:
+    gh_merged = set()
+
+
+def records_merge(commit):
+    def git(*args):
+        return subprocess.run(["git", "--git-dir", state.get("remote", ""), *args],
+                              capture_output=True, text=True)
+    shown = git("log", "-1", "--format=%P%x09%s", commit).stdout.strip()
+    parents, _, subject = shown.partition("\t")
+    made = re.match(r"Merge pull request #(\d+) from ", subject)
+    if len(parents.split()) < 2 or not made or made.group(1) not in gh_merged:
+        return False
+    changed = git("diff", "--name-only", parents.split()[0], commit).stdout.split()
+    return bool(changed) and set(changed) <= RECORDS
+
+
+new = [d for d in new if not records_merge(d["commit"])]
 problems = []
 if not new:
     problems.append("no new production build, so nothing new went live")

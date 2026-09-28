@@ -270,19 +270,28 @@ reached, the merge waits: say in one line that the person can merge it on
 GitHub themselves.
 
 The records /ship writes during a launch, such as its CHANGELOG.md entries and
-a confirmation the person gives later, as in "Priya confirmed it is live", take
-the save route the build path already requires: the three routes
-section-builder names, with no fourth for records. On the checkpoint route, a
-checkpoint commit is enough. Otherwise put them on one branch for this /ship,
-cut from the up-to-date `main`, stage only the files /ship itself changed, and
-open one pull request for them. Never push records straight to `main`. A later
-confirmation joins that branch while its pull request is open, or a new branch
-and pull request once it has merged. The records pull request is a merge like
-any other: name it and ask for a yes that names it. The yes to the earlier
-merge does not cover it, because that pull request did not exist when the
-person gave it. Uncommitted work of the person's stays exactly where it is:
-never sweep it into the records commit, and never discard it to get a clean
-tree.
+a confirmation the person gives later, such as a colleague saying the new
+version is live, take the save route the build path already requires: the
+three routes section-builder names, with no fourth for records. On the
+checkpoint route, a checkpoint commit is enough. Otherwise put them on one
+branch for this /ship, cut from the up-to-date `main`, and stage only the files
+/ship itself changed. Open one pull request for them, once, after the launch is
+checked and its records are written, and ask for its yes in the reply that
+reports the launch. Where GitHub cannot be reached, save the records on that
+branch, note in one plain line the step that did not happen, and open the pull
+request once GitHub is reachable. Never push records straight to `main`. A
+later confirmation joins that branch while its pull request is open, or a new
+branch and pull request once it has merged.
+
+The records pull request is a merge like any other: name it and ask for a yes
+that names it. The yes to the earlier merge does not cover it, because that
+pull request did not exist when the person gave it. Where the host builds every
+change to `main`, merging it starts one more build of the same code and moves
+the rollback target. Say so in the line that asks for its yes, and offer to
+leave it open so it goes out with the next change. If they say yes, correct the
+rollback line on that branch before the merge. Merging it writes no record of
+its own. Uncommitted work of the person's stays exactly where it is: never
+sweep it into the records commit, and never discard it to get a clean tree.
 
 Before you decide a deploy failed, read its whole output, or read the host's
 own list of deployments or have it read. Where the kit cannot reach the host,
