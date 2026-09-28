@@ -34,6 +34,9 @@
 #                      request is not counted as an app build.
 #   rollback-line      the changelog's new rollback line says possible, not
 #                      tried, and nothing it adds claims a rollback was tried.
+#   first-upload       nothing reached the empty remote before the person's
+#                      yes, and main was then created through the API, made
+#                      the default branch, and given a pull request.
 #
 # The remaining Stage 1 assertion, the issue transitions the fake-GitHub state
 # file records, is the next slice. It needs a per-scenario goal state, so it is
@@ -55,6 +58,14 @@ project=${2:?project directory}
 masterplan="$project/masterplan.md"
 changelog="$project/CHANGELOG.md"
 remote="$project.git"
+# The GitHub stand-in's state at the end of the run. The harness keeps it
+# beside the project, where the kit's Git work cannot move it. An older run, or
+# an end state built by hand, keeps it inside the project instead.
+ghstate="$project.gh.json"
+[ -f "$ghstate" ] || ghstate="$project/.gh-fixture.json"
+# The stand-in's log: its calls, the pushes the remote received, and a marker
+# for each turn of the conversation, in the order they happened.
+ghlog="$project-gh.log"
 
 # --- the project's own repository ------------------------------------------
 # Read the project's own repository, not a parent it happens to sit inside. git
@@ -407,7 +418,7 @@ if [ -n "$pr_want" ]; then
   fi
   started=$(mktemp)
   if [ -n "$first" ] && git -C "$project" show "$first:.gh-fixture.json" > "$started" 2>/dev/null; then
-    pr_result=$(python3 - "$started" "$project/.gh-fixture.json" "$pr_want" "$project" "$remote" <<'PY'
+    pr_result=$(python3 - "$started" "$ghstate" "$pr_want" "$project" "$remote" <<'PY'
 import json, re, subprocess, sys
 started_path, end_path, want, project, remote = sys.argv[1:6]
 
@@ -554,7 +565,7 @@ dep_verdict=unobservable
 dep_note="the contract names no deployment count"
 case "$evidence" in
   *"exactly one new production deployment"*)
-    dep_result=$(python3 - "$project.host.json" "$REPLAY_DIR/fake-host/vercel" "$project/.gh-fixture.json" <<'PY'
+    dep_result=$(python3 - "$project.host.json" "$REPLAY_DIR/fake-host/vercel" "$ghstate" <<'PY'
 import importlib.machinery, importlib.util, json, re, subprocess, sys
 state_path, stand_in, gh_path = sys.argv[1:4]
 try:
@@ -748,6 +759,86 @@ PY
     ;;
 esac
 
+# --- the first upload ------------------------------------------------------
+# Founding tells the person no code is uploaded, and a pre-release run then
+# pushed a project's main to its empty GitHub repository on its first
+# /implement, without asking. So the first push waits for a yes that names the
+# repository, and main is then created through the API at the commit the
+# piece was cut from, never pushed.
+#
+# Only a scenario whose Evidence field says "no push to the remote before the
+# person's yes" is graded here. The GitHub log is the timeline: run.sh writes a
+# marker for each turn, the one carrying the yes marked `grants`, and the
+# remote's hook writes each push it received. The stand-in's state file says
+# which branches the API created, which default branch was set, and which pull
+# requests were opened.
+fu_verdict=unobservable
+fu_note="the contract names no first upload"
+case "$evidence" in
+  *"no push to the remote before the person's yes"*)
+    if [ ! -f "$ghlog" ] || ! grep -q '^TURN	' "$ghlog" 2>/dev/null; then
+      fu_note="no GitHub log with turn markers to read the pushes against"
+    else
+      fu_result=$(python3 - "$ghlog" "$ghstate" "$remote" <<'PY'
+import json, subprocess, sys
+log_path, state_path, remote = sys.argv[1:4]
+
+granted = False
+saw_grant = False
+early, main_pushed, after = [], [], []
+for line in open(log_path).read().splitlines():
+    parts = line.split("\t")
+    if parts[0] == "TURN" and len(parts) > 2 and parts[2] == "grants":
+        granted = saw_grant = True
+    elif parts[0] == "PUSH" and len(parts) > 1:
+        ref = parts[1]
+        branch = ref[len("refs/heads/"):] if ref.startswith("refs/heads/") else ref
+        if not granted:
+            early.append(branch)
+        else:
+            after.append(branch)
+        if ref == "refs/heads/main":
+            main_pushed.append(branch)
+if not saw_grant:
+    print("unobservable|the person's yes was never sent, so there is nothing to place the pushes against")
+    sys.exit()
+try:
+    state = json.load(open(state_path))
+except Exception:
+    state = {}
+made = [r.get("ref") for r in state.get("refs_created", [])]
+main_on_remote = subprocess.run(
+    ["git", "-C", remote, "rev-parse", "-q", "--verify", "refs/heads/main"],
+    capture_output=True, text=True).returncode == 0
+opened = [p for p in state.get("pull_requests", []) if p.get("base", "main") == "main"]
+
+wrong = []
+if early:
+    wrong.append("%s reached the remote before the person's yes" % ", ".join(sorted(set(early))))
+if main_pushed:
+    wrong.append("main was pushed with Git rather than created through the API")
+if not early and not after:
+    wrong.append("nothing was uploaded after the person's yes")
+if not main_on_remote:
+    wrong.append("main was never created on the remote")
+elif "refs/heads/main" not in made and not main_pushed:
+    wrong.append("main reached the remote but not through the API")
+if main_on_remote and state.get("default_branch") != "main":
+    wrong.append("main was never made the default branch")
+if not opened:
+    wrong.append("no pull request into main was opened")
+if wrong:
+    print("miss|" + "; ".join(wrong))
+else:
+    print("hit|nothing was pushed before the yes, main was created through the API, and a pull request is open")
+PY
+)
+      fu_verdict=${fu_result%%|*}
+      fu_note=${fu_result#*|}
+    fi
+    ;;
+esac
+
 # --- issue invariants and the route ----------------------------------------
 # The fake-GitHub stand-in records every issue transition to a state file. This
 # does not assert a per-scenario goal state, which would need a goal annotation
@@ -763,7 +854,7 @@ esac
 # each step leaves a record, so a label that came off with nothing written down
 # is a promise nobody kept. The end state is only the fixture's when its
 # repository matches, so a founding run that made its own issues is left alone.
-endstate="$project/.gh-fixture.json"
+endstate="$ghstate"
 baseline="$REPLAY_DIR/fixture/issues.json"
 
 # --- emit ------------------------------------------------------------------
@@ -778,7 +869,8 @@ python3 - "$number" "$endstate" "$baseline" \
   recipe-record "$rec_verdict" "$rec_note" \
   pull-requests "$pr_verdict" "$pr_note" \
   deploy-once "$dep_verdict" "$dep_note" \
-  rollback-line "$rb_verdict" "$rb_note" <<'PY'
+  rollback-line "$rb_verdict" "$rb_note" \
+  first-upload "$fu_verdict" "$fu_note" <<'PY'
 import json, sys
 number = sys.argv[1]
 endstate_path = sys.argv[2]

@@ -91,6 +91,60 @@ def find(state, number):
     return None
 
 
+def origin_path():
+    """The project's remote as a path Git can reach, or None without one.
+
+    A relative remote is relative to the project, not to wherever Git runs.
+    """
+    done = subprocess.run(["git", "remote", "get-url", "origin"],
+                          capture_output=True, text=True)
+    if done.returncode != 0:
+        return None
+    remote = done.stdout.strip()
+    if not os.path.isabs(remote) and "://" not in remote:
+        remote = os.path.abspath(remote)
+    return remote
+
+
+def remote_heads(remote):
+    """The branches on the remote, as {name: sha}. Empty for an empty remote."""
+    if not remote:
+        return {}
+    done = subprocess.run(["git", "ls-remote", "--heads", remote],
+                          capture_output=True, text=True)
+    heads = {}
+    for line in done.stdout.splitlines():
+        sha, _, ref = line.partition("\t")
+        if ref.startswith("refs/heads/"):
+            heads[ref[len("refs/heads/"):]] = sha
+    return heads
+
+
+def print_json_or_jq(argv, payload):
+    """Print the payload, or the part a --jq dotted path such as .visibility names.
+
+    Anything richer than a dotted path is refused rather than guessed at, so a
+    filter nobody modelled shows up in the log.
+    """
+    expression = flag(argv, "--jq") or flag(argv, "-q")
+    if expression is None:
+        print(json.dumps(payload))
+        return
+    if not re.fullmatch(r"(\.[A-Za-z_][A-Za-z0-9_]*)+", expression):
+        unsupported(argv, "unmodelled --jq filter")
+    value = payload
+    for key in expression.strip(".").split("."):
+        value = value.get(key) if isinstance(value, dict) else None
+    if value is None:
+        print("null")
+    elif isinstance(value, (dict, list)):
+        print(json.dumps(value))
+    elif isinstance(value, bool):
+        print("true" if value else "false")
+    else:
+        print(value)
+
+
 def land_on_remote(pr):
     """Merge the pull request's branch into its base on the project's remote.
 
@@ -222,6 +276,102 @@ def flags_all(argv, name):
     return out
 
 
+def api_fields(argv):
+    """The key=value pairs given with -f, -F, --field or --raw-field."""
+    out, i = {}, 0
+    while i < len(argv):
+        arg = argv[i]
+        value = None
+        if arg in ("-f", "-F", "--field", "--raw-field") and i + 1 < len(argv):
+            value = argv[i + 1]
+            i += 2
+        elif arg.startswith(("--field=", "--raw-field=")):
+            value = arg.split("=", 1)[1]
+            i += 1
+        else:
+            i += 1
+        if value is not None and "=" in value:
+            key, _, val = value.partition("=")
+            out[key] = val
+    return out
+
+
+def api_refs(argv, state, repo, rest, kind="refs"):
+    """Read a branch, or create one, through the Git Data API.
+
+    The first upload of a project creates `main` on GitHub at the commit its
+    first piece was cut from, rather than pushing it. That is the one way the
+    kit writes `main` other than by a merge, so it is modelled here and nothing
+    else is: moving or deleting a branch through the API stays refused. The
+    remote next door stands in for the repository, so a branch made here is a
+    real branch there, which a later `git ls-remote` or merge will find.
+    """
+    if repo != state["repo"]:
+        unsupported(argv, "not this project's repository")
+    fields = api_fields(argv)
+    method = None
+    for i, arg in enumerate(argv):
+        if arg in ("-X", "--method") and i + 1 < len(argv):
+            method = argv[i + 1].upper()
+        elif arg.startswith(("-X=", "--method=")):
+            method = arg.split("=", 1)[1].upper()
+    # gh sends POST on its own once a field is given.
+    method = method or ("POST" if fields else "GET")
+    remote = origin_path()
+
+    def git(*args):
+        return subprocess.run(["git", "-C", remote, *args], capture_output=True, text=True)
+
+    # GitHub creates a branch only at git/refs. The singular git/ref reads one.
+    if method == "POST" and not rest and kind == "refs":
+        ref, sha = fields.get("ref", ""), fields.get("sha", "")
+        if not ref.startswith("refs/heads/") or not sha:
+            unsupported(argv, "a new branch needs ref=refs/heads/<name> and sha=<commit>")
+        if not remote:
+            unsupported(argv, "no remote to create the branch in")
+        if git("cat-file", "-e", sha + "^{commit}").returncode != 0:
+            sys.stderr.write('{"message":"Object does not exist","status":"422"}\n'
+                             "gh: Object does not exist (HTTP 422)\n")
+            sys.exit(1)
+        if git("rev-parse", "-q", "--verify", ref).returncode == 0:
+            sys.stderr.write('{"message":"Reference already exists","status":"422"}\n'
+                             "gh: Reference already exists (HTTP 422)\n")
+            sys.exit(1)
+        if git("update-ref", ref, sha).returncode != 0:
+            unsupported(argv, "the remote refused the new branch")
+        state.setdefault("refs_created", []).append({"ref": ref, "sha": sha})
+        save(state)
+        print_json_or_jq(argv, {
+            "ref": ref,
+            "url": "https://api.github.com/repos/%s/git/%s" % (repo, ref),
+            "object": {"sha": sha, "type": "commit"},
+        })
+        return
+
+    if method == "GET":
+        heads = remote_heads(remote)
+        if not heads:
+            sys.stderr.write('{"message":"Git Repository is empty.","status":"409"}\n'
+                             "gh: Git Repository is empty. (HTTP 409)\n")
+            sys.exit(1)
+        wanted = (rest or "").rstrip("/")
+        if wanted in ("", "heads"):
+            print_json_or_jq(argv, [{"ref": "refs/heads/" + name,
+                                     "object": {"sha": sha, "type": "commit"}}
+                                    for name, sha in sorted(heads.items())])
+            return
+        if wanted.startswith("heads/") and wanted[len("heads/"):] in heads:
+            name = wanted[len("heads/"):]
+            print_json_or_jq(argv, {"ref": "refs/heads/" + name,
+                                    "object": {"sha": heads[name], "type": "commit"}})
+            return
+        sys.stderr.write('{"message":"Not Found","status":"404"}\n'
+                         "gh: Not Found (HTTP 404)\n")
+        sys.exit(1)
+
+    unsupported(argv, "unmodelled git refs call")
+
+
 def main():
     argv = sys.argv[1:]
     if not argv:
@@ -240,11 +390,23 @@ def main():
 
     if command == "repo" and len(argv) > 1 and argv[1] == "view":
         owner, _, name = state["repo"].partition("/")
+        # An empty repository has no branch, so GitHub reports no default
+        # branch for it until the first one arrives. The remote next door
+        # stands in for the repository, so both are read from there.
+        heads = remote_heads(origin_path())
+        default = state.get("default_branch") or ("main" if "main" in heads else "")
         available = {
             "nameWithOwner": state["repo"],
             "name": name,
             "owner": {"login": owner},
-            "visibility": "PRIVATE",
+            "url": "https://github.com/%s" % state["repo"],
+            # The first upload names whether the repository is public or
+            # private. A scenario may set it; private is what founding makes.
+            "visibility": state.get("visibility", "PRIVATE"),
+            "isPrivate": state.get("visibility", "PRIVATE") == "PRIVATE",
+            "isEmpty": not heads,
+            # GitHub answers null for an empty repository's default branch.
+            "defaultBranchRef": {"name": default} if default in heads else None,
             "hasIssuesEnabled": True,
             # The rehearsal account owns the repository. The tooling check reads
             # this before founding, and refusing it left that check reporting
@@ -257,17 +419,44 @@ def main():
             unknown = [n for n in names if n not in available]
             if unknown:
                 unsupported(argv, "unmodelled repo fields: %s" % ",".join(unknown))
-            print(json.dumps({n: available[n] for n in names}))
+            print_json_or_jq(argv, {n: available[n] for n in names})
         else:
             print(json.dumps({"nameWithOwner": state["repo"]}))
         return
 
     if command == "repo" and len(argv) > 1 and argv[1] == "edit":
-        # Founding switches on deleting a merged branch. That is the only
-        # repository setting the kit changes, so it is the only one answered.
-        if argv[2:] != ["--delete-branch-on-merge"]:
+        # Two settings are answered. Founding switches on deleting a merged
+        # branch, and the first upload makes main the default branch once it
+        # exists. Anything else is a setting nobody modelled.
+        rest = argv[2:]
+        if rest and not rest[0].startswith("-"):
+            if rest[0] != state["repo"]:
+                unsupported(argv, "not this project's repository")
+            rest = rest[1:]
+        changes = {}
+        i = 0
+        while i < len(rest):
+            if rest[i] == "--delete-branch-on-merge":
+                changes["delete_branch_on_merge"] = True
+                i += 1
+            elif rest[i] == "--default-branch" and i + 1 < len(rest):
+                changes["default_branch"] = rest[i + 1]
+                i += 2
+            elif rest[i].startswith("--default-branch="):
+                changes["default_branch"] = rest[i].split("=", 1)[1]
+                i += 1
+            else:
+                unsupported(argv, "unmodelled repo setting")
+        if not changes:
             unsupported(argv, "unmodelled repo setting")
-        state["delete_branch_on_merge"] = True
+        branch = changes.get("default_branch")
+        if branch is not None and branch not in remote_heads(origin_path()):
+            # GitHub refuses a default branch that does not exist yet.
+            sys.stderr.write("HTTP 422: The branch %s was not found. "
+                             "Please push that ref first or create it via the Git Data API.\n"
+                             % branch)
+            sys.exit(1)
+        state.update(changes)
         save(state)
         print("Edited repository %s" % state["repo"])
         return
@@ -282,10 +471,15 @@ def main():
         # The path is not always argv[1]: -X POST and --method POST come first.
         path = ""
         for arg in argv[1:]:
-            if not arg.startswith("-") and "/" in arg:
+            # A field such as ref=refs/heads/main carries a slash too.
+            if not arg.startswith("-") and "/" in arg and not re.match(r"^[\w\[\]]+=", arg):
                 path = arg
                 break
         posting = bool(re.search(r"(?:-X|--method)[= ]POST\b", " ".join(argv)))
+        refs = re.fullmatch(r"/?repos/([^/]+/[^/]+)/git/(refs?)(?:/(.*))?", path)
+        if refs:
+            api_refs(argv, state, refs.group(1), refs.group(3), refs.group(2))
+            return
         blocked = re.search(r"issues/(\d+)/dependencies/blocked_by", path)
         if blocked and posting:
             # Recording a dependency the agent worked out during the run. The
@@ -348,12 +542,30 @@ def main():
             # The same setting through the API, which is the form the setup
             # skill names. Anything else in the body is a setting nobody
             # modelled, so it is refused rather than quietly accepted.
+            # The first upload may set the default branch this way too, and
+            # only to a branch the repository already has.
             fields = [a for a in argv if re.match(r"^\w+=", a)]
-            if fields != ["delete_branch_on_merge=true"]:
+            changes = {}
+            for field in fields:
+                key, _, value = field.partition("=")
+                if field == "delete_branch_on_merge=true":
+                    changes["delete_branch_on_merge"] = True
+                elif key == "default_branch" and value:
+                    changes["default_branch"] = value
+                else:
+                    unsupported(argv, "unmodelled repo setting")
+            if not changes:
                 unsupported(argv, "unmodelled repo setting")
-            state["delete_branch_on_merge"] = True
+            branch = changes.get("default_branch")
+            if branch is not None and branch not in remote_heads(origin_path()):
+                sys.stderr.write('{"message":"Validation Failed","status":"422"}\n'
+                                 "gh: Validation Failed (HTTP 422)\n")
+                sys.exit(1)
+            state.update(changes)
             save(state)
-            print(json.dumps({"full_name": state["repo"], "delete_branch_on_merge": True}))
+            answer = {"full_name": state["repo"]}
+            answer.update(changes)
+            print(json.dumps(answer))
             return
         if re.search(r"repos/[^/]+/[^/]+/issues($|\?)", path):
             want = "open" if "state=open" in path else None

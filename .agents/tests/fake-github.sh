@@ -230,6 +230,116 @@ else
   pass "a branch with no pull request says so, as the real CLI does"
 fi
 
+echo "== The first upload into an empty repository =="
+
+# A founded project's repository exists on GitHub but holds nothing. The first
+# upload reads that, names the repository and whether it is public or private,
+# and on a yes pushes the piece's branch, creates main through the API at the
+# commit the branch was cut from, and makes main the default branch. Branches
+# are named in every init, since Git's default branch is master on some hosts.
+up="$WORK/upload"
+git init -q -b main "$up"
+git -C "$up" config user.email rehearsal@example.com
+git -C "$up" config user.name Rehearsal
+git -C "$up" config commit.gpgsign false
+git -C "$up" commit -q --allow-empty -m "Founded"
+git init -q --bare -b main "$up.git"
+git -C "$up" remote add origin "$up.git"
+FAKE_GH_STATE="$WORK/upload.json"
+printf '{"repo": "rehearsal/upload", "next": 1, "issues": []}\n' > "$FAKE_GH_STATE"
+cd "$up"
+
+set +e
+git ls-remote --exit-code --heads origin > /dev/null 2>&1
+empty=$?
+set -e
+[ "$empty" -eq 2 ] \
+  && pass "an empty repository answers the branch listing with exit 2" \
+  || fail "the branch listing of an empty repository exited $empty, not 2"
+
+case "$("$GH" repo view --json nameWithOwner,visibility,isEmpty,defaultBranchRef)" in
+  *'"visibility": "PRIVATE"'*'"isEmpty": true'*'"defaultBranchRef": null'*)
+    pass "repo view says the repository is private, empty, and has no default branch yet" ;;
+  *) fail "repo view of an empty repository returned the wrong shape" ;;
+esac
+[ "$("$GH" repo view --json visibility -q .visibility)" = "PRIVATE" ] \
+  && pass "repo view answers --jq .visibility with the bare word" \
+  || fail "repo view --jq .visibility did not print PRIVATE"
+printf '{"repo": "rehearsal/upload", "next": 1, "issues": [], "visibility": "PUBLIC"}\n' > "$WORK/public.json"
+[ "$(FAKE_GH_STATE="$WORK/public.json" "$GH" repo view --json visibility -q .visibility)" = "PUBLIC" ] \
+  && pass "a scenario can make the repository public" \
+  || fail "the visibility a scenario set was not read back"
+
+if "$GH" repo edit --default-branch main > /dev/null 2>&1; then
+  fail "main became the default branch before it existed"
+else
+  pass "main cannot be the default branch before it exists, as on GitHub"
+fi
+
+git checkout -q -b first-piece
+echo piece > piece.txt
+git add piece.txt
+git commit -q -m "The first piece"
+git push -q origin first-piece
+base=$(git merge-base main first-piece)
+
+if "$GH" api repos/rehearsal/upload/git/refs -f ref=refs/heads/main -f sha=0123456789abcdef0123456789abcdef01234567 > /dev/null 2>&1; then
+  fail "main was created at a commit the repository does not hold"
+else
+  pass "a commit the repository does not hold is refused, as on GitHub"
+fi
+made=$("$GH" api repos/rehearsal/upload/git/refs -f ref=refs/heads/main -f sha="$base")
+case "$made" in
+  *'"ref": "refs/heads/main"'*"$base"*) pass "the API creates main at the commit the piece was cut from" ;;
+  *) fail "creating main through the API returned '$made'" ;;
+esac
+[ "$(git -C "$up.git" rev-parse refs/heads/main)" = "$base" ] \
+  && pass "and main is on the remote at that commit, with no push" \
+  || fail "the remote's main is not at the merge base"
+git ls-remote --exit-code --heads origin > /dev/null 2>&1 \
+  && pass "the branch listing then exits 0" \
+  || fail "the branch listing still says the repository is empty"
+case "$("$GH" api repos/rehearsal/upload/git/ref/heads/main --jq .object.sha)" in
+  "$base") pass "the new branch reads back through the API" ;;
+  *) fail "reading main back through the API gave the wrong commit" ;;
+esac
+if "$GH" api repos/rehearsal/upload/git/refs -f ref=refs/heads/main -f sha="$base" > /dev/null 2>&1; then
+  fail "main was created twice"
+else
+  pass "a branch that already exists cannot be created again"
+fi
+# The fields may come before the path, and a field's slash is not the path.
+"$GH" api --method POST -f ref=refs/heads/spare -f sha="$base" repos/rehearsal/upload/git/refs > /dev/null \
+  && pass "the fields may come before the path" \
+  || fail "fields before the path were misread"
+
+"$GH" repo edit --default-branch main > /dev/null \
+  && pass "repo edit --default-branch main is accepted once main exists" \
+  || fail "repo edit --default-branch main was refused"
+case "$("$GH" repo view --json defaultBranchRef,isEmpty)" in
+  *'"defaultBranchRef": {"name": "main"}'*'"isEmpty": false'*) pass "and main reads back as the default branch" ;;
+  *) fail "the default branch did not read back as main" ;;
+esac
+"$GH" api -X PATCH repos/rehearsal/upload -f default_branch=main > /dev/null \
+  && pass "the API form of the default branch is accepted" \
+  || fail "the API form of the default branch was refused"
+
+# Moving or deleting a branch through the API, and another repository's
+# branches, are nothing the kit should reach for.
+for refused in "api -X PATCH repos/rehearsal/upload/git/refs/heads/main -f sha=$base -F force=true" \
+               "api -X DELETE repos/rehearsal/upload/git/refs/heads/spare" \
+               "api repos/rehearsal/upload/git/ref -f ref=refs/heads/other -f sha=$base" \
+               "api repos/someone/else/git/refs -f ref=refs/heads/main -f sha=$base" \
+               "repo edit --default-branch main --visibility public"; do
+  if "$GH" $refused > /dev/null 2>&1; then
+    fail "'$refused' was answered; it should be refused"
+  else
+    pass "'$refused' is refused"
+  fi
+done
+cd "$WORK/project"
+FAKE_GH_STATE="$WORK/.gh-fixture.json"
+
 echo "== What it still refuses =="
 
 # A project's own agent has no business searching GitHub, so a refusal here is
@@ -250,7 +360,7 @@ fi
 
 # Nothing the kit reached for during this rehearsal should have been refused.
 if grep -q "UNSUPPORTED" "$FAKE_GH_LOG"; then
-  unexpected=$(grep "UNSUPPORTED" "$FAKE_GH_LOG" | grep -vc "search repos\|repo list\|visibility public\|private=false" || true)
+  unexpected=$(grep "UNSUPPORTED" "$FAKE_GH_LOG" | grep -vc "search repos\|repo list\|visibility public\|private=false\|force=true\|-X DELETE\|someone/else\|git/ref -f" || true)
   if [ "$unexpected" -gt 0 ]; then
     fail "$unexpected modelled command was refused; see $FAKE_GH_LOG"
   fi
