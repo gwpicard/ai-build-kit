@@ -6,6 +6,7 @@ Build stack: Next.js with TypeScript and the App Router, with a Dockerfile that 
 Deploy target: Vercel, with the project's GitHub repository connected so that each push builds
 Command-line tools: vercel, supabase, docker, psql, curl, git
 Last checked: 2026-09-25
+Plan terms: Vercel's free Hobby plan is for personal, non-commercial use only, and Vercel counts a tool built by a paid employee as commercial, so a work team needs the paid Pro plan (read 2026-09-29 at https://vercel.com/docs/limits/fair-use-guidelines#commercial-usage)
 
 ## Preview
 
