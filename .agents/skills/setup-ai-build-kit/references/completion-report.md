@@ -15,6 +15,7 @@ Internal facts recorded for later agents, and what the user hears instead:
 - the current branch is ahead of its remote -> "The saved work has not been uploaded."
 - the commit identifier -> only in the checkpoint reference at the very end, never leading the report.
 - no push occurred -> "No code was uploaded or published."
+- the first push waits for a yes -> "The code stays on this computer until your first build asks you before putting it online."
 - the pieces were opened as issues -> "The build steps are listed as issues in the project's online repository."
 - `Recipe: <file name>.md` in AGENTS.md -> "The tool will run on [the recipe's name, from its file], and the kit can check its launch steps."
 - the recipe's tool report, on the same line -> "This computer has the tools those checks use." or "Before the first launch this computer needs [each missing tool, in plain words]; that is on the plan as a setup task."
@@ -71,6 +72,8 @@ A checkpoint has been saved inside the project on this computer.
 
 No code was uploaded or published. The build steps are listed as issues in the
 project's online repository, which is where the kit keeps the work still to do.
+The code stays on this computer until your first build asks you before putting
+it online.
 [State whether an online project copy exists and whether it was updated.]
 
 Private preview address: `[address]`

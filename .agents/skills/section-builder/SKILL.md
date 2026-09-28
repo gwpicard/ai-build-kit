@@ -63,6 +63,33 @@ the person their working project is broken, which is both untrue and the fastest
 way to make them distrust the record they are relying on. Open the pull request
 once GitHub is reachable again.
 
+**The first upload.** Founding told the person nothing would be uploaded, so
+the first push of the project's code waits for their yes. Before any push, run
+`git ls-remote --heads origin`. When it lists no branch, nothing from this
+project is online yet and this push is the first upload. When it lists one,
+the code is already there, so push without asking. That listing is how you
+know the question was answered: it is asked once for each project, and no
+record is kept. A remote with nothing on it also has no `main` to bring up to
+date, and that needs no note.
+
+Build and check the piece first. Only the push waits. In the reply that
+reports the piece, ask for a yes that names the upload: the repository as
+`owner/name`, and whether it is public or private, read with
+`gh repo view --json visibility`. Where you cannot read that, say so rather
+than guess. Close to: "This is the first time your project's code goes
+online. It goes to owner/name, which is private. Shall I upload it?"
+
+On a yes, push the piece's branch, then create `main` on GitHub at the local
+`main` with `gh api repos/<owner>/<name>/git/refs -f ref=refs/heads/main -f
+sha=<commit>`, make it the default branch with `gh repo edit --default-branch
+main`, and open the pull request. This is the one time `main` is written
+other than by a merge. It holds only what the person already has, so it
+changes nothing anybody relies on. On a no, keep the piece on its own branch
+on this computer. That is the route the project cannot perform right now,
+with its one-line note, and the next piece that pushes asks again. In an
+unattended run nobody is there to say yes, so never upload on the person's
+behalf: keep the work local and note it on the piece.
+
 Label the piece `building` and assign it to whoever is building it before
 changing anything. That is what stops two people starting the same piece, and it
 costs one call.
@@ -244,7 +271,7 @@ Checkpoint route: update the records, commit, and state the saved checkpoint.
 
 Pull-request route: update the records, commit, push, open a pull request
 titled after the piece with a plain-language summary, and run the project
-checks. Where the piece is an issue, write `Closes #<number>` in the pull
+checks. The project's first upload waits for the yes in step 1. Where the piece is an issue, write `Closes #<number>` in the pull
 request body, so merging it closes the piece rather than leaving somebody to
 remember. Never present it as ready until the check is green; if it goes red,
 say so plainly, pull the failing output yourself, fix through the normal

@@ -515,7 +515,9 @@ into. It stands an initial state up rather than changing anything anybody
 relies on, so there is nothing yet for a reviewer to compare against and nothing
 live to protect. Do not push it, do not open a pull request for it, and do not
 read a remote being reachable as a reason to use one. Founding already told the
-person "Nothing will be uploaded", and that has to stay true.
+person "Nothing will be uploaded", and that has to stay true. The code stays on
+this computer until the first piece that pushes asks the person first, as
+section-builder's "The first upload" describes.
 
 section-builder chooses between the checkpoint, pull-request and flagged routes
 for each piece built afterwards, on what that piece touches. That choice is
