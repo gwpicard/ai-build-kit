@@ -208,8 +208,9 @@ the missing rules, once.
    read its `permissions.deny` list, and the one in the installed
    setup-ai-build-kit skill's `templates/foundation/claude-settings.json`.
    Take the rules from that file, never from memory.
-2. List each rule the template holds that names `git push` and the project's
-   list lacks. When there is none, say nothing.
+2. List each rule the template holds that names both `git push` and `main`,
+   and the project's list lacks. Leave out every other rule, such as the
+   force-push ones, since the person may have removed one on purpose. When there is none, say nothing.
 3. Read the `push-rules-declined` line in `.ai-build-kit-maintenance`, if there
    is one. Where it already lists every missing rule, the earlier no stands,
    and you say nothing.

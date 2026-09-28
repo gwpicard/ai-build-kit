@@ -325,8 +325,9 @@ Set the repository to delete a merged pull request's branch automatically, so
 the branch list does not fill with finished piece branches
 (`gh api -X PATCH repos/OWNER/REPO -F delete_branch_on_merge=true`), and say in
 one line that you did. That is the whole of the pull-request hygiene the kit sets
-up on the repository. A direct push to `main` is blocked by the guard in
-references/blocked-commands.md rather than by a branch protection rule.
+up on the repository. A direct push to `main` is forbidden by
+references/blocked-commands.md, and the Claude Code settings refuse the usual
+ways of writing one, rather than a branch protection rule.
 
 The labels GitHub creates on a new repository are `bug`, `documentation`,
 `duplicate`, `enhancement`, `good first issue`, `help wanted`, `invalid`,

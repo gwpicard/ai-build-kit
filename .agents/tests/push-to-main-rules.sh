@@ -250,7 +250,9 @@ fi
 # The monthly offer in /maintain.
 rs_rule "no settings file ends the step" 'where the project has no `\.claude/settings\.json`, this step ends'
 rs_rule "the rules come from the installed template" 'take the rules from that file, never from memory'
-rs_rule "nothing missing means nothing said" 'lacks\. when there is none, say nothing'
+rs_rule "nothing missing means nothing said" 'when there is none, say nothing'
+rs_rule "only rules naming a push to main are offered" 'names both `git push` and `main`'
+rs_rule "a removed force-push rule is not brought back" 'the person may have removed one on purpose'
 rs_rule "an earlier no stands" 'where it already lists every missing rule, the earlier no stands'
 rs_rule "offered once in one reply" 'offer the change once, in one reply'
 rs_rule "it names the rules" 'name the rules it adds'
