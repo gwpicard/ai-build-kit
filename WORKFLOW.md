@@ -245,7 +245,7 @@ Every piece saves through one of three routes. The checkpoint route commits, and
 
 Next to the merge button sits that check. It re-runs the project's real commands on a clean machine, so the pull request's claims get verified rather than trusted. Those commands include the mechanical checks your project's language offers, a type check and a linter wherever it has them, which catch a whole class of mistakes before anyone tries the tool. They use each tool's own default rules, so a red tick points at a real mistake rather than a matter of taste. The agent runs the same checks before it hands any work over. Green means the checks that exist really passed, which is a smaller promise than nothing being wrong: it covers the behaviour somebody thought to check and nothing else. Red means don't merge; say it to /fix, and the agent reads what failed itself. You never read the machine's logs, and you never merge over a red check.
 
-A human decides whether to merge, always; after a merge, everyone pulls main. Flagged areas also get the review the build path names before the pull request is offered as ready. A direct push to `main` is blocked, so every change reaches it through a pull request, and each piece starts from an up-to-date `main`.
+A human decides whether to merge, always; after a merge, everyone pulls main. Flagged areas also get the review the build path names before the pull request is offered as ready. A direct push to `main` is forbidden, and in Claude Code the project settings refuse the usual ways of writing one, so every change reaches it through a pull request. Each piece starts from an up-to-date `main`.
 
 ## 8. Sensitive areas, and the risk notice
 
@@ -456,6 +456,13 @@ records as merged. The second kind comes from a pull request that combined its
 changes into one, which Git cannot check. It never removes a branch itself,
 and it cannot tell whether somebody still plans to use one. When there are
 none, you hear nothing.
+
+In Claude Code, the settings founding gave your project refuse a direct push
+to `main`. When a later release catches more ways of writing that push, the
+monthly visit names the new rules and offers to add them to
+`.claude/settings.json`, once. It adds nothing without your yes and leaves the
+rest of the file as it is. A no is recorded, and the offer comes back only
+when a release adds another rule.
 
 /maintain writes the date of each visit into the project. When more than a month
 has gone by, opening a session says so and names /maintain. A tool that cannot

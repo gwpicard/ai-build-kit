@@ -8,8 +8,8 @@ deny list, mirror these entries there as mechanical enforcement:
 
 - `git reset --hard`
 - `git push --force` and `git push -f`
-- a direct push to `main` (`git push origin main`, `git push -u origin main`,
-  `git push origin HEAD:main`)
+- a direct push to `main`, in the spellings listed under "A direct push to
+  `main`" below
 - `git clean -f` and `git clean -fd`
 - `rm -rf`
 
@@ -38,3 +38,47 @@ still apply:
 Save a checkpoint before sweeping work. If one of these actions appears
 necessary, stop, explain why, and let the person decide with the reason in
 front of them.
+
+## A direct push to `main`
+
+The Claude Code settings the kit installs refuse a push that names `main` as
+the branch, with any options before or after it, in any order. A deny rule
+there reads the words of the command as written. So it catches the spellings
+below, and it misses a push where `main` is not written out, or where git is
+not called as `git push`.
+
+These spellings are refused:
+
+- `git push origin main`
+- `git push -u origin main`
+- `git push -q origin main`
+- `git push --quiet --set-upstream origin main`
+- `git push --force origin main`
+- `git push -f origin main`
+- `git push origin main --force`
+- `git push origin HEAD:main`
+- `git push origin +HEAD:main`
+- `git push origin HEAD:refs/heads/main`
+- `git push origin +main`
+- `git push origin refs/heads/main`
+- `git push origin --delete main`
+
+A branch whose name only starts with `main`, such as `main-fix`, still
+pushes. The rules may also refuse a push where `main` is the value of an
+option, such as `git push -o main origin feature`. That push is rare, and the
+person can run it themselves.
+
+These spellings are not refused, and the rule above still forbids them:
+
+- `git push` or `git push origin` while `main` is checked out, since git
+  chooses the branch and the command never names it
+- `git push origin HEAD` while `main` is checked out
+- `git push origin "main"` or `git push origin 'main'`, with quotes
+- `git push origin $BRANCH`, with the branch in a variable
+- `git push origin heads/main`, a shortened name
+- `git push --all origin` and `git push --mirror origin`, which push every
+  branch
+- `git -C . push origin main` and `git -c push.default=current push origin
+  main`, with an option between `git` and `push`
+- `/usr/bin/git push origin main`, with git called by its full path
+- `sh -c 'git push origin main'`, with the push inside another shell

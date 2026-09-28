@@ -157,7 +157,10 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
     command that removes it. List this computer and GitHub separately. Keep
     the ones Git confirms apart from the ones only GitHub records as merged.
     Never remove a branch. When no branch qualifies, say nothing.
-16. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
+16. Run "Adding the rules that stop a push to `main`" below. It says nothing
+    when the project already has them, or when the person said no to the same
+    rules before.
+17. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
     today's date on the `last-light-pass` line, written as YYYY-MM-DD. If that
     file is missing, create it with a `founded` line holding the date
     masterplan.md was first saved, then the two pass lines. If the project has
@@ -192,6 +195,40 @@ other changes and add a dated changelog line. When it changed nothing, say
 nothing. Where the harness cannot run the script and the project has no
 helper, copy the installed skill's `templates/foundation/plan-refresh.sh` to
 `.agents/tools/plan-refresh.sh` by hand.
+
+## Adding the rules that stop a push to `main`
+
+Founding copies the kit's Claude Code settings into `.claude/settings.json`
+once, and no update touches that file again. A project founded before the kit
+learned a new way to write a push to `main` keeps the older rules, and a push
+the older rules miss goes through with nothing to stop it. So the visit offers
+the missing rules, once.
+
+1. Where the project has no `.claude/settings.json`, this step ends. Otherwise
+   read its `permissions.deny` list, and the one in the installed
+   setup-ai-build-kit skill's `templates/foundation/claude-settings.json`.
+   Take the rules from that file, never from memory.
+2. List each rule the template holds that names both `git push` and `main`,
+   and the project's list lacks. Leave out every other rule, such as the
+   force-push ones, since the person may have removed one on purpose. When there is none, say nothing.
+3. Read the `push-rules-declined` line in `.ai-build-kit-maintenance`, if there
+   is one. Where it already lists every missing rule, the earlier no stands,
+   and you say nothing.
+4. Offer the change once, in one reply. Name the rules it adds, and say in
+   plain words what they stop: a push to `main` written with an option before
+   the remote, such as `-q`, or as `HEAD:refs/heads/main`. Say that it adds
+   lines to the deny list and changes nothing else in the file. Say too that
+   the `setup-ai-build-kit` skill's `references/blocked-commands.md` lists the
+   spellings the rules still cannot catch. Ask for a yes.
+5. On a yes, add only the missing rules to the end of `permissions.deny`. Keep
+   every other entry and setting as it is, even an older push rule the new
+   ones cover. Check that the file still reads as valid JSON. Save it with the
+   visit's other changes and add a dated changelog line.
+6. On a no, change nothing. Record the no as one line in
+   `.ai-build-kit-maintenance`, replacing any earlier one:
+   `push-rules-declined|<YYYY-MM-DD>|<the rules offered, separated by " ; ">`.
+   A later visit offers again only when a new release adds a rule that line
+   does not list.
 
 ## Migrating a project founded before /shape and /implement
 
