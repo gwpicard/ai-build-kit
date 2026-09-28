@@ -936,6 +936,11 @@ attribution line, not the word.
   kit runs itself writes no hosting request, since nobody runs a server to
   carry one to, and its own address meets the wait. The rollback line says
   "possible, not tried", because the kit only saw an earlier build listed.
+  On a later launch the changelog is read first, and a warning it already
+  holds for the same section is one line pointing to it, while a new or
+  changed one is still said in full. That rule sits beside the reporting
+  steps, since a real second launch repeated every old warning when it sat
+  only in the later-launch section.
   Build with care reaches the same checks, and a settled area goes live on
   their next run rather than through a deploy of its own. It also takes
   the deploy target from each recipe's title and refuses one named in `/ship`
