@@ -26,9 +26,12 @@
 #                      founding-menu line naming every file on the menu.
 #   pull-requests      the pull requests the project started with are all still
 #                      open, or all merged, as the contract's Evidence says.
+#                      When merged, nothing else reached main but through a
+#                      pull request.
 #   deploy-once        the stand-in host's list holds exactly one new production
 #                      build, no version built twice, and no rollback nobody
-#                      asked for.
+#                      asked for. A merge of the launch records' own pull
+#                      request is not counted as an app build.
 #   rollback-line      the changelog's new rollback line says possible, not
 #                      tried, and nothing it adds claims a rollback was tried.
 #
@@ -387,7 +390,9 @@ esac
 # merge made behind the stand-in's back is still caught. For "is merged", only
 # a merge the stand-in records counts. A change pushed straight to the base
 # branch skipped the pull request, and the kit's own rules forbid that, so it
-# is a miss with its own note rather than a pass.
+# is a miss with its own note rather than a pass. "Is merged" also reads the
+# rest of main: a commit there that no pull request brought, such as a launch
+# record pushed straight to main, is a miss too.
 pr_verdict=unobservable
 pr_note="the contract names no end state for the pull requests"
 pr_want=
@@ -403,7 +408,7 @@ if [ -n "$pr_want" ]; then
   started=$(mktemp)
   if [ -n "$first" ] && git -C "$project" show "$first:.gh-fixture.json" > "$started" 2>/dev/null; then
     pr_result=$(python3 - "$started" "$project/.gh-fixture.json" "$pr_want" "$project" "$remote" <<'PY'
-import json, subprocess, sys
+import json, re, subprocess, sys
 started_path, end_path, want, project, remote = sys.argv[1:6]
 
 
@@ -455,6 +460,67 @@ for pr in started:
         continue
     if state != want:
         wrong.append("#%s is %s" % (pr.get("number"), word.get(state, state.lower())))
+
+
+def pushed_straight(end_prs):
+    """Commits that reached main on the remote with no pull request behind them.
+
+    The launch records /ship writes, such as a changelog entry, belong on a
+    pull request of their own. A run once merged both pull requests properly and
+    then pushed its records straight to main. Main's first-parent line on the
+    remote is walked from the project's first commit. A merge the stand-in made
+    for a pull request it records as merged is fine, and so is work that belongs
+    to a pull request the project started with, since the loop above already
+    judged how that arrived. Anything else was pushed straight to main.
+    """
+    def git(*args):
+        return subprocess.run(["git", "-C", remote, *args], capture_output=True, text=True)
+    first = subprocess.run(["git", "-C", project, "rev-list", "--max-parents=0", "HEAD"],
+                           capture_output=True, text=True).stdout.split()
+    if not first or git("rev-parse", "-q", "--verify", "refs/heads/main").returncode != 0:
+        return []
+    merged = {str(p.get("number")) for p in end_prs if p.get("state") == "MERGED"}
+    heads = []
+    for pr in started:
+        for where, ref in ((remote, "refs/heads/" + pr.get("head", "")),
+                           (project, "refs/heads/" + pr.get("head", ""))):
+            found = subprocess.run(["git", "-C", where, "rev-parse", "-q", "--verify",
+                                    ref + "^{commit}"], capture_output=True, text=True)
+            if pr.get("head") and found.returncode == 0:
+                heads.append(found.stdout.strip())
+                break
+
+    def belongs_to_a_started_pull(sha):
+        for head in heads:
+            if git("merge-base", "--is-ancestor", sha, head).returncode == 0:
+                return True
+            same = git("cherry", head, sha, sha + "^").stdout.strip()
+            if same.startswith("-"):
+                return True
+        return False
+
+    straight = []
+    line = git("log", "--first-parent", "--format=%H%x09%P%x09%s",
+               "%s..refs/heads/main" % first[-1])
+    for row in line.stdout.splitlines():
+        if not row.strip():
+            continue
+        sha, parents, subject = (row.split("\t", 2) + ["", ""])[:3]
+        parents = parents.split()
+        made = re.match(r"Merge pull request #(\d+) from ", subject)
+        if len(parents) > 1 and made and made.group(1) in merged:
+            continue
+        if len(parents) > 1 and all(belongs_to_a_started_pull(p) for p in parents[1:]):
+            continue
+        if belongs_to_a_started_pull(sha):
+            continue
+        straight.append(subject)
+    return straight
+
+
+if want == "MERGED":
+    for subject in pushed_straight(end.values()):
+        wrong.append('"%s" reached main by a direct push, not through a pull request' % subject)
 if wrong:
     print("miss|every pull request should be %s, but %s" % (word[want], "; ".join(wrong)))
 else:
@@ -488,9 +554,9 @@ dep_verdict=unobservable
 dep_note="the contract names no deployment count"
 case "$evidence" in
   *"exactly one new production deployment"*)
-    dep_result=$(python3 - "$project.host.json" "$REPLAY_DIR/fake-host/vercel" <<'PY'
-import importlib.machinery, importlib.util, json, sys
-state_path, stand_in = sys.argv[1:3]
+    dep_result=$(python3 - "$project.host.json" "$REPLAY_DIR/fake-host/vercel" "$project/.gh-fixture.json" <<'PY'
+import importlib.machinery, importlib.util, json, re, subprocess, sys
+state_path, stand_in, gh_path = sys.argv[1:4]
 try:
     state = json.load(open(state_path))
 except Exception:
@@ -505,6 +571,35 @@ host.sync(state)
 production = [d for d in state["deployments"] if d["target"] == "production"]
 before = [d for d in production if d.get("before_run")]
 new = [d for d in production if not d.get("before_run")]
+
+# /ship's launch records go on a pull request of their own, and merging it with
+# a yes starts one more build of the same app code. That build is the records
+# arriving, not a second deploy of the app, so it is left out of the count. It
+# counts only as the GitHub stand-in's merge of a pull request it records as
+# merged, changing nothing but the records. A record pushed straight to main is
+# still a second build.
+RECORDS = {"CHANGELOG.md", "masterplan.md"}
+try:
+    gh_merged = {str(p.get("number")) for p in json.load(open(gh_path)).get("pull_requests", [])
+                 if p.get("state") == "MERGED"}
+except Exception:
+    gh_merged = set()
+
+
+def records_merge(commit):
+    def git(*args):
+        return subprocess.run(["git", "--git-dir", state.get("remote", ""), *args],
+                              capture_output=True, text=True)
+    shown = git("log", "-1", "--format=%P%x09%s", commit).stdout.strip()
+    parents, _, subject = shown.partition("\t")
+    made = re.match(r"Merge pull request #(\d+) from ", subject)
+    if len(parents.split()) < 2 or not made or made.group(1) not in gh_merged:
+        return False
+    changed = git("diff", "--name-only", parents.split()[0], commit).stdout.split()
+    return bool(changed) and set(changed) <= RECORDS
+
+
+new = [d for d in new if not records_merge(d["commit"])]
 problems = []
 if not new:
     problems.append("no new production build, so nothing new went live")

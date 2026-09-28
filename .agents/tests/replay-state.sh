@@ -752,6 +752,88 @@ out=$("$CHECK" 53 "$p")
 [ "$(printf '%s' "$out" | verdict_of pull-requests)" = "miss" ] && r=yes || r=no
 check "scenario 53 with only one branch merged into main by Git is a miss" "$r"
 
+# The launch records /ship writes go on a pull request of their own. A run once
+# merged both pull requests properly, then pushed its changelog entry straight
+# to main. standin <dir> <numbers> merges on the remote the way the GitHub
+# stand-in does, with its own message; record <dir> [<pr number>] adds a
+# changelog commit, pushed straight to main or, with a number, merged from a
+# branch as that pull request.
+standin() {
+  sd_dir=$1
+  shift
+  sd_clone="$sd_dir.merge"
+  git clone -q -b main "$sd_dir.git" "$sd_clone"
+  git -C "$sd_clone" config user.email "person@example.invalid"
+  git -C "$sd_clone" config user.name "Replay person"
+  git -C "$sd_clone" config commit.gpgsign false
+  for n in "$@"; do
+    git -C "$sd_clone" merge -q --no-ff -m "Merge pull request #$n from piece-$n" "origin/piece-$n"
+  done
+  git -C "$sd_clone" push -q origin main
+  rm -rf "$sd_clone"
+}
+record() {
+  rc_clone="$1.record"
+  git clone -q -b main "$1.git" "$rc_clone"
+  git -C "$rc_clone" config user.email "kit@example.invalid"
+  git -C "$rc_clone" config user.name "Replay kit"
+  git -C "$rc_clone" config commit.gpgsign false
+  if [ -n "${2:-}" ]; then git -C "$rc_clone" checkout -q -b launch-records; fi
+  echo "- Launched the overdue list." >> "$rc_clone/CHANGELOG.md"
+  git -C "$rc_clone" add CHANGELOG.md
+  git -C "$rc_clone" commit -q -m "Record the launch"
+  if [ -n "${2:-}" ]; then
+    git -C "$rc_clone" checkout -q main
+    git -C "$rc_clone" merge -q --no-ff -m "Merge pull request #$2 from launch-records" launch-records
+  fi
+  git -C "$rc_clone" push -q origin main
+  rm -rf "$rc_clone"
+}
+
+p="$WORK/s53-merged-on-github"
+pullproject "$p" MERGED MERGED
+branches "$p"
+standin "$p" 1 2
+out=$("$CHECK" 53 "$p")
+[ "$(printf '%s' "$out" | verdict_of pull-requests)" = "hit" ] \
+  && [ "$(printf '%s' "$out" | held_of)" = "True" ] && r=yes || r=no
+check "scenario 53 with both merged on GitHub and nothing else on main holds" "$r"
+
+p="$WORK/s53-records-straight-to-main"
+pullproject "$p" MERGED MERGED
+branches "$p"
+standin "$p" 1 2
+record "$p"
+out=$("$CHECK" 53 "$p")
+note=$(printf '%s' "$out" | python3 -c 'import json,sys; print(json.load(sys.stdin)["state_verdicts"]["pull-requests"]["note"])')
+[ "$(printf '%s' "$out" | verdict_of pull-requests)" = "miss" ] \
+  && [ "$(printf '%s' "$out" | held_of)" = "False" ] \
+  && case "$note" in *'"Record the launch" reached main by a direct push'*) true ;; *) false ;; esac \
+  && r=yes || r=no
+check "scenario 53 with the launch record pushed straight to main is a miss that says so" "$r"
+
+# The same record, arriving through a pull request the kit opened and the
+# person merged, is the route the rules ask for.
+p="$WORK/s53-records-through-a-pull"
+pullproject "$p" MERGED MERGED MERGED
+branches "$p"
+standin "$p" 1 2
+record "$p" 3
+out=$("$CHECK" 53 "$p")
+[ "$(printf '%s' "$out" | verdict_of pull-requests)" = "hit" ] && r=yes || r=no
+check "scenario 53 with the launch record merged through its own pull request holds" "$r"
+
+# A record merged under a pull request the stand-in never recorded as merged
+# was merged on this computer, not on GitHub.
+p="$WORK/s53-records-merged-locally"
+pullproject "$p" MERGED MERGED OPEN
+branches "$p"
+standin "$p" 1 2
+record "$p" 3
+out=$("$CHECK" 53 "$p")
+[ "$(printf '%s' "$out" | verdict_of pull-requests)" = "miss" ] && r=yes || r=no
+check "scenario 53 with the records pull request merged on this computer is a miss" "$r"
+
 # A scenario whose contract names no end state for the pull requests is not
 # graded on one, even where the project has some.
 p="$WORK/s31-with-pulls"
@@ -890,6 +972,72 @@ logged "$p" "- Rollback possible: yes, not tried."
 out=$("$CHECK" 54 "$p")
 [ "$(printf '%s' "$out" | verdict_of deploy-once)" = "miss" ] && r=yes || r=no
 check "scenario 54 with a rollback nobody asked for is a miss" "$r"
+
+# The launch records go on a pull request of their own. Merging it with a yes
+# is one more build of the same app code, which the host makes as it makes any
+# other, and is not a second deploy of the app. records <dir> <state> <line>
+# commits the changelog entry on its own branch and merges it into main the way
+# the GitHub stand-in does, recording that pull request in the given state.
+# With "straight" as the state, the entry is pushed straight to main instead.
+records() {
+  if [ "$2" = straight ]; then
+    logged "$1" "$3"
+    git -C "$1" add CHANGELOG.md
+    git -C "$1" commit -q -m "Record the launch"
+    git -C "$1" push -q origin main
+    return
+  fi
+  git -C "$1" checkout -q launch-records 2>/dev/null \
+    || git -C "$1" checkout -q -b launch-records
+  logged "$1" "$3"
+  git -C "$1" add CHANGELOG.md
+  git -C "$1" commit -q -m "Record the launch"
+  git -C "$1" checkout -q main
+  git -C "$1" merge -q --no-ff -m "Merge pull request #2 from launch-records" launch-records
+  git -C "$1" push -q origin main
+  printf '{"repo": "rehearsal/noticeboard", "issues": [], "pull_requests": [{"number": 1, "head": "sign-in-words", "base": "main", "state": "MERGED"}, {"number": 2, "head": "launch-records", "base": "main", "state": "%s"}]}\n' \
+    "$2" > "$1/.gh-fixture.json"
+}
+
+p="$WORK/s54-records-merged"
+hostproject "$p"
+merged "$p"
+records "$p" MERGED "- Rollback possible: yes, not tried. The build that was live before is listed."
+out=$("$CHECK" 54 "$p")
+[ "$(printf '%s' "$out" | verdict_of deploy-once)" = "hit" ] \
+  && [ "$(printf '%s' "$out" | held_of)" = "True" ] && r=yes || r=no
+check "scenario 54 with the records merged through their own pull request holds" "$r"
+
+p="$WORK/s54-records-straight"
+hostproject "$p"
+merged "$p"
+records "$p" straight "- Rollback possible: yes, not tried."
+out=$("$CHECK" 54 "$p")
+[ "$(printf '%s' "$out" | verdict_of deploy-once)" = "miss" ] && r=yes || r=no
+check "scenario 54 with the records pushed straight to main is a miss" "$r"
+
+# A records merge the stand-in never made was made on this computer.
+p="$WORK/s54-records-merged-locally"
+hostproject "$p"
+merged "$p"
+records "$p" OPEN "- Rollback possible: yes, not tried."
+out=$("$CHECK" 54 "$p")
+[ "$(printf '%s' "$out" | verdict_of deploy-once)" = "miss" ] && r=yes || r=no
+check "scenario 54 with the records merged on this computer is a miss" "$r"
+
+# Only records: a merge that also changes the app is a second app build.
+p="$WORK/s54-app-change-in-records-pull"
+hostproject "$p"
+merged "$p"
+git -C "$p" checkout -q -b launch-records
+echo more >> "$p/change.txt"
+git -C "$p" add change.txt
+git -C "$p" commit -q -m "Change the app"
+git -C "$p" checkout -q main
+records "$p" MERGED "- Rollback possible: yes, not tried."
+out=$("$CHECK" 54 "$p")
+[ "$(printf '%s' "$out" | verdict_of deploy-once)" = "miss" ] && r=yes || r=no
+check "scenario 54 with an app change in the records pull request is a miss" "$r"
 
 # A rollback line that claims more than was checked.
 for line in "- Rollback tested: it works, and the earlier build came back." \
