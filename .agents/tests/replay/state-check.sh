@@ -26,6 +26,8 @@
 #                      founding-menu line naming every file on the menu.
 #   pull-requests      the pull requests the project started with are all still
 #                      open, or all merged, as the contract's Evidence says.
+#                      When merged, nothing else reached main but through a
+#                      pull request.
 #   deploy-once        the stand-in host's list holds exactly one new production
 #                      build, no version built twice, and no rollback nobody
 #                      asked for.
@@ -387,7 +389,9 @@ esac
 # merge made behind the stand-in's back is still caught. For "is merged", only
 # a merge the stand-in records counts. A change pushed straight to the base
 # branch skipped the pull request, and the kit's own rules forbid that, so it
-# is a miss with its own note rather than a pass.
+# is a miss with its own note rather than a pass. "Is merged" also reads the
+# rest of main: a commit there that no pull request brought, such as a launch
+# record pushed straight to main, is a miss too.
 pr_verdict=unobservable
 pr_note="the contract names no end state for the pull requests"
 pr_want=
@@ -403,7 +407,7 @@ if [ -n "$pr_want" ]; then
   started=$(mktemp)
   if [ -n "$first" ] && git -C "$project" show "$first:.gh-fixture.json" > "$started" 2>/dev/null; then
     pr_result=$(python3 - "$started" "$project/.gh-fixture.json" "$pr_want" "$project" "$remote" <<'PY'
-import json, subprocess, sys
+import json, re, subprocess, sys
 started_path, end_path, want, project, remote = sys.argv[1:6]
 
 
@@ -455,6 +459,67 @@ for pr in started:
         continue
     if state != want:
         wrong.append("#%s is %s" % (pr.get("number"), word.get(state, state.lower())))
+
+
+def pushed_straight(end_prs):
+    """Commits that reached main on the remote with no pull request behind them.
+
+    The launch records /ship writes, such as a changelog entry, belong on a
+    pull request of their own. A run once merged both pull requests properly and
+    then pushed its records straight to main. Main's first-parent line on the
+    remote is walked from the project's first commit. A merge the stand-in made
+    for a pull request it records as merged is fine, and so is work that belongs
+    to a pull request the project started with, since the loop above already
+    judged how that arrived. Anything else was pushed straight to main.
+    """
+    def git(*args):
+        return subprocess.run(["git", "-C", remote, *args], capture_output=True, text=True)
+    first = subprocess.run(["git", "-C", project, "rev-list", "--max-parents=0", "HEAD"],
+                           capture_output=True, text=True).stdout.split()
+    if not first or git("rev-parse", "-q", "--verify", "refs/heads/main").returncode != 0:
+        return []
+    merged = {str(p.get("number")) for p in end_prs if p.get("state") == "MERGED"}
+    heads = []
+    for pr in started:
+        for where, ref in ((remote, "refs/heads/" + pr.get("head", "")),
+                           (project, "refs/heads/" + pr.get("head", ""))):
+            found = subprocess.run(["git", "-C", where, "rev-parse", "-q", "--verify",
+                                    ref + "^{commit}"], capture_output=True, text=True)
+            if pr.get("head") and found.returncode == 0:
+                heads.append(found.stdout.strip())
+                break
+
+    def belongs_to_a_started_pull(sha):
+        for head in heads:
+            if git("merge-base", "--is-ancestor", sha, head).returncode == 0:
+                return True
+            same = git("cherry", head, sha, sha + "^").stdout.strip()
+            if same.startswith("-"):
+                return True
+        return False
+
+    straight = []
+    line = git("log", "--first-parent", "--format=%H%x09%P%x09%s",
+               "%s..refs/heads/main" % first[-1])
+    for row in line.stdout.splitlines():
+        if not row.strip():
+            continue
+        sha, parents, subject = (row.split("\t", 2) + ["", ""])[:3]
+        parents = parents.split()
+        made = re.match(r"Merge pull request #(\d+) from ", subject)
+        if len(parents) > 1 and made and made.group(1) in merged:
+            continue
+        if len(parents) > 1 and all(belongs_to_a_started_pull(p) for p in parents[1:]):
+            continue
+        if belongs_to_a_started_pull(sha):
+            continue
+        straight.append(subject)
+    return straight
+
+
+if want == "MERGED":
+    for subject in pushed_straight(end.values()):
+        wrong.append('"%s" reached main by a direct push, not through a pull request' % subject)
 if wrong:
     print("miss|every pull request should be %s, but %s" % (word[want], "; ".join(wrong)))
 else:

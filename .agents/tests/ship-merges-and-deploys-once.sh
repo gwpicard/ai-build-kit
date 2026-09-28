@@ -8,6 +8,13 @@
 # earlier build a rollback would reach was gone. It also listed warnings again
 # that it had already given in the same visit.
 #
+# Two more came from the same launch. With GitHub out of reach, the kit merged
+# on this computer and pushed `main`. With GitHub in reach, it merged properly
+# but pushed its changelog entries and a later confirmation straight to `main`,
+# saying they only changed the record. So a merge is made on the pull request,
+# and the launch records take the save route a piece takes, on a pull request of
+# their own that needs its own yes.
+#
 # Each rule here is prose an agent reads, and its absence would not show on
 # screen until the next run did the same thing again.
 
@@ -37,6 +44,26 @@ rs_rule "a no leaves the pull request open" 'a no leaves the pull request open'
 # a question they already answered.
 rs_rule "a merge the person already named is the yes" 'where their own words already named the merge, as in "merge both and put it live", that is the yes: do not ask again'
 
+# How the merge is made.
+rs_rule "an approved merge is made on the pull request" 'make an approved merge on the pull request itself, such as with `gh pr merge`'
+rs_rule "never a local merge and a push of main" 'never merge the branch on this computer and push `main`'
+rs_rule "an unreachable github makes the merge wait, said in one line" 'where github cannot be reached, the merge waits: say in one line that the person can merge it on github themselves'
+
+# How the launch records are saved.
+rs_rule "the records take the build path's save route" 'take the save route the build path already requires: the three routes section-builder names, with no fourth for records'
+rs_rule "the records include a later confirmation" 'a confirmation the person gives later'
+rs_rule "a checkpoint commit is enough on the checkpoint route" 'on the checkpoint route, a checkpoint commit is enough'
+rs_rule "one branch for each ship, cut from the current main" 'one branch for this /ship, cut from the up-to-date `main`'
+rs_rule "only ship's own files are staged" 'stage only the files /ship itself changed'
+rs_rule "the records get one pull request" 'open one pull request for them'
+rs_rule "records are never pushed straight to main" 'never push records straight to `main`'
+rs_rule "a later confirmation joins the open records branch, or a new one" 'a later confirmation joins that branch while its pull request is open, or a new branch and pull request once it has merged'
+rs_rule "the records merge is named and asked for" 'the records pull request is a merge like any other: name it and ask for a yes that names it'
+rs_rule "the earlier merge yes does not cover it" 'the yes to the earlier merge does not cover it'
+rs_rule "the person's uncommitted work stays where it is" 'uncommitted work of the person.s stays exactly where it is'
+rs_rule "it is never swept into the records commit" 'never sweep it into the records commit'
+rs_rule "and never discarded for a clean tree" 'never discard it to get a clean tree'
+
 # The deploy runs once unless it plainly did not go live.
 rs_rule "the whole output or the deployment list is read first" 'before you decide a deploy failed, read its whole output, or read the host.s own list of deployments or have it read'
 # On a server the kit never contacts, the list comes back as a paste.
@@ -61,5 +88,11 @@ rs_require_load_bearing "WORKFLOW says put it live is not that yes" "$WORKFLOW" 
 rs_require_load_bearing "WORKFLOW says ship checks before deploying again" "$WORKFLOW" '/ship checks whether it went live before it tries again'
 rs_require_load_bearing "WORKFLOW says a second deploy spends the rollback" "$WORKFLOW" 'a second deploy of the same version leaves nothing older to roll back to'
 rs_require_load_bearing "WORKFLOW says a warning is not repeated" "$WORKFLOW" 'a warning you have already heard is not repeated in the same /ship'
+rs_require_load_bearing "WORKFLOW says the merge is made on the pull request" "$WORKFLOW" '/ship makes each merge on the pull request itself, never by merging on your computer and pushing `main`'
+rs_require_load_bearing "WORKFLOW says an unreachable github makes the merge wait" "$WORKFLOW" 'if github cannot be reached, the merge waits, and you can merge it on github yourself'
+rs_require_load_bearing "WORKFLOW says records are saved the way a piece is" "$WORKFLOW" 'the records /ship writes during a launch, such as its changelog entries and a later "priya confirmed it is live", take the same save route as a piece'
+rs_require_load_bearing "WORKFLOW says records get their own pull request, never main" "$WORKFLOW" 'one pull request for each /ship, never straight to `main`'
+rs_require_load_bearing "WORKFLOW says the records merge needs its own yes" "$WORKFLOW" 'merging that pull request needs its own yes'
+rs_require_load_bearing "WORKFLOW says unsaved work is left alone" "$WORKFLOW" 'kept out of the records and never thrown away'
 
 rs_done

@@ -264,6 +264,26 @@ hosting step, or to any question asked before the merge was named does not
 cover it: ask again, and merge nothing until they answer. A no leaves the pull
 request open and the live tool as it was.
 
+Make an approved merge on the pull request itself, such as with `gh pr merge`.
+Never merge the branch on this computer and push `main`. Where GitHub cannot be
+reached, the merge waits: say in one line that the person can merge it on
+GitHub themselves.
+
+The records /ship writes during a launch, such as its CHANGELOG.md entries and
+a confirmation the person gives later, as in "Priya confirmed it is live", take
+the save route the build path already requires: the three routes
+section-builder names, with no fourth for records. On the checkpoint route, a
+checkpoint commit is enough. Otherwise put them on one branch for this /ship,
+cut from the up-to-date `main`, stage only the files /ship itself changed, and
+open one pull request for them. Never push records straight to `main`. A later
+confirmation joins that branch while its pull request is open, or a new branch
+and pull request once it has merged. The records pull request is a merge like
+any other: name it and ask for a yes that names it. The yes to the earlier
+merge does not cover it, because that pull request did not exist when the
+person gave it. Uncommitted work of the person's stays exactly where it is:
+never sweep it into the records commit, and never discard it to get a clean
+tree.
+
 Before you decide a deploy failed, read its whole output, or read the host's
 own list of deployments or have it read. Where the kit cannot reach the host,
 the person or a companion reads that list and pastes it here. Never cut the

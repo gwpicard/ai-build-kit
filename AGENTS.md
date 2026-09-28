@@ -346,7 +346,8 @@ attribution line, not the word.
   For 52, a change put on the remote's `main` by a Git merge or a squash counts
   as merged, so that route is caught too. For 53, only a merge made on the pull
   request counts, and a change pushed straight to `main` is a miss that says
-  so. For scenario 54, a second launch on the Vercel recipe, it holds the
+  so. So is a launch record pushed straight to `main`, while one merged
+  through a pull request of its own passes. For scenario 54, a second launch on the Vercel recipe, it holds the
   deploy and the rollback line. One new production build of the merge passes,
   counted from the pushes to `main` even when nobody asked the host. The same
   version built twice is a miss, whether the kit deployed it again or
@@ -926,7 +927,13 @@ attribution line, not the word.
   or the host's list of deployments is read first, that no second deploy runs
   before the first is checked, and that a second deploy is announced as
   replacing the rollback target. It also holds that a warning said once is not
-  repeated in the same `/ship`, and that WORKFLOW.md says all of it.
+  repeated in the same `/ship`, and that WORKFLOW.md says all of it. A later
+  run merged properly and then pushed its changelog entries straight to
+  `main`. So it holds that a merge is made on the pull request, never by a
+  merge on this computer and a push of `main`, and that it waits when GitHub
+  cannot be reached. The launch records take the save route a piece takes,
+  on one pull request for each `/ship`, whose merge needs its own yes. The
+  person's uncommitted work is neither swept into that commit nor discarded.
 - `.agents/tests/recipes.sh` guards the recipe format. A recipe pairs a build
   stack with a place to run it, and it is the only place outside the README
   allowed to name a service a tool runs on, so the rules around that permission

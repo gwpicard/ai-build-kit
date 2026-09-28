@@ -311,6 +311,15 @@ second deploy of the same version leaves nothing older to roll back to, and
 /ship says so before running one. A warning you have already heard is not
 repeated in the same /ship.
 
+/ship makes each merge on the pull request itself, never by merging on your
+computer and pushing `main`. If GitHub cannot be reached, the merge waits, and
+you can merge it on GitHub yourself. The records /ship writes during a launch,
+such as its changelog entries and a later "Priya confirmed it is live", take
+the same save route as a piece. On a shared project they go on one branch and
+one pull request for each /ship, never straight to `main`, and merging that
+pull request needs its own yes. Work of yours that is not saved yet is left
+where it is, kept out of the records and never thrown away.
+
 Some checks need a secret, such as a database password kept in a file on your
 computer. When you tell the kit where one lives, in any session, it writes down
 where, never the secret itself, in the masterplan's "How it stays running"
