@@ -396,6 +396,15 @@ or on a server they rent. Never quote a price. Take every product name from the
 recipe file at this moment, and never write one into this skill. Say that they
 may bring their own stack instead.
 
+Read each offered recipe's `Plan terms:` line, where it has one. When the
+interview shows the tool is for a work team, a business or any paid work, say
+that line once, in plain words, beside that recipe: which plan such a team
+needs, and that the free one is not meant for them. Never then call that
+recipe's account free or say a free plan fits them. For a personal project
+nobody is paid to build, leave the line out, since it does not apply. Where the
+interview did not say, ask nothing: give the line once as a condition, such as
+"if this is for work".
+
 In the same reply, say that the recommended recipe is the default and that
 founding carries on with it unless they pick another. Showing the menu does not
 end the turn: carry on with the setup below while they read it. If they give no

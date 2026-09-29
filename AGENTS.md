@@ -463,7 +463,12 @@ attribution line, not the word.
   says what it found. Whatever the choice, founding writes every file on the
   menu into a `founding-menu` line in `.ai-build-kit-maintenance` before the
   first checkpoint, so the monthly visit can tell a recipe added later from one
-  the person already passed over. Product names are left to
+  the person already passed over. Where a recipe carries a `Plan terms:`
+  line, founding says it once beside that recipe to a work team, a business
+  or paid work, never calls that account free, leaves it out for a personal
+  project nobody is paid to build, and asks nothing when the interview did not
+  say. Two foundings for a work team missed that line's fact, and one called
+  the account free. Product names are left to
   `hosting-request.sh`.
   `agent-plugin.sh` and `claude-plugin.sh` each check that every menu recipe
   arrives in their installed layout.
@@ -1023,7 +1028,11 @@ attribution line, not the word.
   file. This check shows the tool refusing both, and a recipe with no
   `Command-line tools:` line. It also holds the one section a recipe may add,
   the settings the kit can read, which sits after health, carries the same
-  three lines, and needs an outcome line in the proven section.
+  three lines, and needs an outcome line in the proven section. And it holds
+  the optional `Plan terms:` opening line, which says who a free plan is not
+  for. A copy of it with no date, no source page, a date in the future or not
+  real, or no sentence before the date is refused, since terms change without
+  notice and an undated restriction cannot be told from a current one.
 - `.agents/tests/recipe-nextjs-supabase-on-vercel.sh` and
   `.agents/tests/recipe-nextjs-supabase-on-coolify.sh` guard the first recipe
   pair offline. They share `.agents/tests/lib/recipe-rehearsal.sh`. Each holds
@@ -1039,7 +1048,10 @@ attribution line, not the word.
   else. Once it moves onto the menu it must pass outright, and a copy left in
   both places fails. On the Coolify recipe the rule held hardest is that every
   check needing the server is run by the companion or the person and read
-  back, since the kit never contacts that server.
+  back, since the kit never contacts that server. The Vercel recipe also
+  holds its `Plan terms:` line: the free plan is for personal, non-commercial
+  use, a work team needs the paid plan, and the line names the date and the
+  page it was read from.
 - `.agents/tests/compatibility-grades.sh` guards the grade each coding agent
   carries in `docs/COMPATIBILITY.md`. The page once named four agents and
   presented them alike, while the replay harness had recorded runs on only
