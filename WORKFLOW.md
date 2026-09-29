@@ -433,8 +433,12 @@ then, so the kit reads what is ready from that list rather than working it out
 by hand. A clean checkpoint comes first, so an interrupted update can
 be recovered. The one update that split the
 old `/build` into what are now `/shape` and `/implement` runs a one-time step that labels your
-existing pieces so they can still be built, and offers to move any older
-`plan.md` list into your project's issues; it says what it changed. The first
+existing pieces so they can still be built; it says what it changed. Any
+visit that finds an older `plan.md` list offers to move it into your project's
+issues, and keeps offering until it is moved. Any visit that finds a line in
+AGENTS.md or the masterplan pointing at a skill's file by a folder your
+installation may not have offers to name the skill instead, changing only
+those lines, and only on your yes. The first
 visit after the kit changed how it decides the build path offers to rewrite
 the build-path section of your masterplan to the new shape, shows the old text
 above the new, keeps every accepted risk word for word, and changes nothing
@@ -483,7 +487,8 @@ when a release adds another rule.
 /maintain writes the date of each visit into the project. When more than a month
 has gone by, opening a session says so and names /maintain. A tool that cannot
 run anything when a session opens says it when you type /what-now instead.
-Nothing is blocked and nothing changes without a command.
+Nothing is blocked and nothing changes without a command. If you ask a visit to
+leave kit updates alone, it does not add that reminder either, and says so.
 
 The quarterly visit is fuller, with a hot-spot tidy-up and an ownership check
 that can name a new sensitive area or, after a genuine redesign, take one off.
