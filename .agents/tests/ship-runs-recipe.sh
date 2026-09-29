@@ -73,6 +73,18 @@ rs_rule "a kit-run launch records its address" 'where the kit ran the going-live
 rs_rule "no recorded address, not called live" 'a tool with no recorded address is not called live, on a recipe or off one'
 rs_rule "a later ship runs the checks again" 'on a recipe, run its eight checks again'
 
+# A later launch. The pointer rule once sat only under "After the first
+# launch", a hundred lines below the steps that write the lines, and a real
+# second launch gave every old warning again in full, twice. So it sits beside
+# the reporting now, and each half of it is held: the changelog is read first,
+# an old warning is only a pointer, and a new one is still said in full, since
+# a rule that folded new warnings into pointers would hide them.
+rs_rule "a later launch reads the changelog first" 'on a launch after the first, read changelog\.md before you write these lines'
+rs_rule "an old warning is a one-line pointer" 'where it already holds the same warning for the same section, that section.s line is a one-line pointer and nothing more'
+rs_rule "the pointer drops the reason and the risk" 'leave out the reason and the risk, and add no second changelog entry for it'
+rs_rule "a new or changed warning is said in full" 'a warning the changelog does not hold, or one whose cause has changed, is new: say it once in full'
+rs_rule "the later-launch section points to the rule" '"on a recipe" says how a warning the changelog already holds is given: as a one-line pointer, never again in full'
+
 # Off a recipe.
 rs_rule "off a recipe the general list applies" 'off a recipe, check whatever of this actually applies'
 rs_rule "the general list is warnings" 'each item that applies and is not in place is a warning: name it once in one plain line, record it in changelog\.md with the date, and carry on\. none of them holds the launch'
@@ -148,6 +160,7 @@ rs_require_load_bearing "WORKFLOW says who runs each check" "$WORKFLOW" 'where a
 rs_require_load_bearing "WORKFLOW says a check is a warning" "$WORKFLOW" 'a check that fails or cannot run is a warning, said once and written in the changelog, and the launch goes ahead'
 rs_require_load_bearing "WORKFLOW keeps the address wait" "$WORKFLOW" 'the one thing a first launch waits for is its address'
 rs_require_load_bearing "WORKFLOW says the general list is warnings" "$WORKFLOW" 'anything missing from it is a warning you hear once and find in the changelog'
+rs_require_load_bearing "WORKFLOW says an old warning comes back as a pointer" "$WORKFLOW" 'a warning the changelog already holds comes back as one line pointing to it, so anything given in full is new'
 
 rs_require_load_bearing "WORKFLOW says the kit reads a setting before asking" "$WORKFLOW" 'before the launch review asks you to look up a setting, the kit reads it itself where it can'
 rs_require_load_bearing "WORKFLOW says it asks only for what it cannot read" "$WORKFLOW" 'it asks you only about a setting it cannot read, and says why it cannot'

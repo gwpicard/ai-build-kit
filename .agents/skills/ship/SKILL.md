@@ -161,11 +161,21 @@ words, and leaves the command out.
 A check that failed, could not run, or got no answer is a warning. Say it once,
 on that section's line, record it in CHANGELOG.md with the date and the
 section, and go on to the next section. Do not hold the launch for it, and do
-not ask the person to choose to go live without it. The one wait that remains
-is the address. Where the kit ran the going-live section itself, record the
-live address it produced in the masterplan's "How it stays running" section.
-A tool with no recorded address is not called live, on a recipe or off one:
-tell the person so plainly, and keep it out of CHANGELOG.md as a launch.
+not ask the person to choose to go live without it.
+
+On a launch after the first, read CHANGELOG.md before you write these lines.
+Where it already holds the same warning for the same section, that section's
+line is a one-line pointer and nothing more, such as "backup present: still
+none, as the changelog has recorded since 19 September". Leave out the reason
+and the risk, and add no second changelog entry for it. A warning the
+changelog does not hold, or one whose cause has changed, is new: say it once
+in full, as above.
+
+The one wait that remains is the address. Where the kit ran the going-live
+section itself, record the live address it produced in the masterplan's "How
+it stays running" section. A tool with no recorded address is not called live,
+on a recipe or off one: tell the person so plainly, and keep it out of
+CHANGELOG.md as a launch.
 
 #### A setting the kit can read
 
@@ -373,8 +383,9 @@ Applies only once Build and run it, or Build with care outside its named
 areas or in an area whose caution is done or accepted, has actually gone live
 at least once. Lighter from
 then on: re-run the evidence for what changed since the last ship, and move
-that over. On a recipe, run its eight checks again, as above; a warning the
-changelog already holds gets a one-line pointer rather than the warning again.
+that over. On a recipe, run its eight checks again, as above. "On a recipe"
+says how a warning the changelog already holds is given: as a one-line
+pointer, never again in full.
 The hosting request recorded at the first launch still holds, and
 `references/hosting-request.md` says how to read it back. If reliance, data sensitivity, or consequence has
 grown since the build path was last checked, rerun the fit check before
