@@ -48,6 +48,13 @@ happened in one recorded run. So the harness writes throwaway shell profiles
 under the working folder, and points both providers at them, to keep the fake
 GitHub command first on `PATH`.
 
+The profiles make that unlikely rather than impossible, and a run that loses
+the stand-in still reads normally. So before grading, the harness reads the
+transcript and the provider's own record of the session for the two sentences
+only the real, signed-out GitHub command prints. A run carrying either is
+written as not graded, naming the sentence and the file it was found in, and
+the roll-up lists it apart from the counts.
+
 A whole conversation takes around twenty minutes, so runs overlap. `JOBS` sets
 how many at a time and defaults to four.
 

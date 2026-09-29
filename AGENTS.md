@@ -254,7 +254,14 @@ attribution line, not the word.
   deploy command that may be signed in. A turn also carries a Vercel and a
   Supabase token that belong to no account, a Docker engine that does not
   exist, and no stored database password, so a real host tool finds no
-  account either.
+  account either. The profiles lower the odds and do not remove them, so it
+  also holds what happens when the real GitHub command answers anyway. The
+  runner reads the transcript and the provider's own record of the session,
+  found by the id it writes beside the run, for the two sentences only the
+  real, signed-out command prints. It does that before grading, and a run
+  carrying either is written as not graded, with its reason, and left out of
+  the roll-up's counts. A kit telling the person to run `gh auth login` is
+  advice and not a sign, and the stand-in must never print either sentence.
 - `.agents/tests/plan-printout.sh` runs the printout against a fixed set of
   issues and reads what it wrote: which group each piece lands in, whether a
   waiting piece says why, whether a shaped piece says it is ready, and whether a
