@@ -172,6 +172,29 @@ rs_report "and those lines are left exactly as they were" \
 rs_report "a sentence that already says the gets no second one" \
   "$(grep -qF "Read the \`setup-ai-build-kit\` skill's \`references/fit-check.md\` file." "$WORK/blocks/AGENTS.md" && echo yes || echo no)"
 
+# A third review found a fence of four backticks closed by the first line of
+# three, which is how a code block is shown inside a code block. The command
+# inside was rewritten, and every line after it read the wrong way round. A
+# fence closes only on a run of the same mark at least as long as its opener.
+mkdir -p "$WORK/nested"
+cat > "$WORK/nested/AGENTS.md" <<'EOF'
+````markdown
+```
+cat .agents/skills/shape/SKILL.md
+```
+````
+After `.agents/skills/setup-ai-build-kit/references/pieces.md` here.
+~~~
+```
+cat .agents/skills/shape/SKILL.md
+~~~
+Then `.agents/skills/setup-ai-build-kit/references/fit-check.md` too.
+EOF
+nested=$(python3 "$SCRIPT" "$WORK/nested")
+rs_report "a block shown inside a longer fence stays a code block, and prose after it is read as prose" \
+  "$([ "$(printf '%s\n' "$nested" | grep -c 'left as written: it sits inside a code block')" = 2 ] \
+     && [ "$(printf '%s\n' "$nested" | grep -c "skill's \`references/")" = 2 ] && echo yes || echo no)"
+
 mkdir -p "$WORK/crlf" "$WORK/unreadable"
 printf 'line one\r\nSee `.agents/skills/setup-ai-build-kit/references/pieces.md`.\r\nlast\r\n' > "$WORK/crlf/AGENTS.md"
 printf "line one\r\nSee the \`setup-ai-build-kit\` skill's \`references/pieces.md\`.\r\nlast\r\n" > "$WORK/crlf/expected"

@@ -62,7 +62,8 @@ POINTER = re.compile(
 )
 # A code span opens and closes with the same run of backticks.
 CODE_SPAN = re.compile(r"(`+)(.+?)(?<!`)\1(?!`)")
-FENCE = re.compile(r"^ {0,3}(```|~~~)")
+FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
+CLOSING_FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})[ \t]*\r?\n?$")
 
 # The installed skills sit beside this skill. Where they can be read, a new
 # pointer is written only for a file the skill still has.
@@ -147,7 +148,11 @@ def main(argv):
                 in_block = True
             elif fence is not None:
                 in_block = True
-                if line.lstrip(" ").startswith(fence):
+                # A fence closes only on a run of the same mark at least as
+                # long as the one that opened it, with nothing after it, so a
+                # block shown inside a longer fence stays inside.
+                closer = CLOSING_FENCE.match(line)
+                if closer and closer.group(1)[0] == fence[0] and len(closer.group(1)) >= len(fence):
                     fence = None
             else:
                 in_block = line.startswith("    ") or line.startswith("\t")

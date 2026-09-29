@@ -738,7 +738,9 @@ attribution line, not the word.
   A second review added three more: a fenced or indented code block, a span
   in double backticks, and a file with Windows line endings, which must come
   back with only the pointer changed. A file that is not readable text gets
-  one line rather than a crash.
+  one line rather than a crash. A third review found a block shown inside a
+  longer fence, which closed at the first shorter one, so a fence now closes
+  only on a run of the same mark at least as long as its opener.
   A project founded from today's templates gets no offer. A placeholder, a
   mention of the folder, and a project's own skill in the same folder are
   never found. The script's list of skills is the kit's fourteen, so a rename
