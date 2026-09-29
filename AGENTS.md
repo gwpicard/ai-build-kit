@@ -735,6 +735,10 @@ attribution line, not the word.
   a pointer that stands alone, as a whole code span or a bare path, is
   rewritten. One inside a command, a link, a longer path, or naming a file the
   skill no longer has is listed with its reason and left exactly as it was.
+  A second review added three more: a fenced or indented code block, a span
+  in double backticks, and a file with Windows line endings, which must come
+  back with only the pointer changed. A file that is not readable text gets
+  one line rather than a crash.
   A project founded from today's templates gets no offer. A placeholder, a
   mention of the folder, and a project's own skill in the same folder are
   never found. The script's list of skills is the kit's fourteen, so a rename

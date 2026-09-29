@@ -177,9 +177,9 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
     due." Where you skipped the script, say instead: "I have recorded today's
     visit. I left out the script that reminds a session when a visit is due,
     since you asked for no kit updates, so that reminder will not appear by
-    itself; /what-now still reports it when asked." If the project's Claude settings existed before AI
-    Build Kit did, add that the reminder cannot appear by itself there, and that
-    `/what-now` reports it when asked.
+    itself; /what-now still reports it when asked." If the project's Claude
+    settings existed before AI Build Kit did, add that the reminder cannot
+    appear by itself there, and that `/what-now` reports it when asked.
 
 ## Adding the plan printout helper
 
@@ -308,12 +308,16 @@ visit changes them.
 2. A line ending in the new form is one the script can rewrite: the pointer
    stands alone, as a whole code span or a bare path, and the skill still has
    the file. A line ending in `left as written:` gives the reason it cannot,
-   such as a pointer inside a command or a link, where a rewrite would break
-   the line. Those are never rewritten.
+   such as a pointer inside a code block, a command or a link, where a
+   rewrite would break the line. Those are never rewritten. A rewrite changes
+   the pointers and nothing else in the file, line endings included.
 3. Offer the rewrite once, in one reply: say how many lines in which file, that
    each keeps its sentence and only the pointer changes, and show one line
    before and after. Name each line left as written, with its reason, as one
-   the person may want to change by hand. Wait for the person's yes.
+   the person may want to change by hand. Wait for the person's yes. Where the
+   script finds only lines left as written, offer nothing: say in one line how
+   many there are and in which file, since they come back on every visit
+   until the person changes them.
 4. On a yes, run the same command with `--apply`, then run it again without,
    and carry on only once no line it prints ends in a new form. Save the
    change with the visit's other changes and add a dated changelog line.

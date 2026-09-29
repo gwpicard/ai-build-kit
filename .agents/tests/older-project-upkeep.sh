@@ -42,7 +42,9 @@ rs_rule "the rewrite waits for a yes" 'as one the person may want to change by h
 rs_rule "the rewrite is read back" 'run it again without, and carry on only once no line it prints ends in a new form'
 rs_rule "a former skill name is found" 'under today.s name or one it had before, such as `start` for `setup-ai-build-kit`'
 rs_rule "only a pointer that stands alone is rewritten" 'the pointer stands alone, as a whole code span or a bare path, and the skill still has the file'
-rs_rule "a line left as written is never rewritten" 'a line ending in `left as written:` gives the reason it cannot, such as a pointer inside a command or a link, where a rewrite would break the line\. those are never rewritten'
+rs_rule "a line left as written is never rewritten" 'a line ending in `left as written:` gives the reason it cannot, such as a pointer inside a code block, a command or a link, where a rewrite would break the line\. those are never rewritten'
+rs_rule "a rewrite changes nothing else" 'a rewrite changes the pointers and nothing else in the file, line endings included'
+rs_rule "lines only left as written get one line, not an offer" 'where the script finds only lines left as written, offer nothing: say in one line how many there are and in which file'
 rs_rule "the person hears which lines were left" 'name each line left as written, with its reason, as one the person may want to change by hand'
 rs_rule "no rewrite by hand when the script cannot run" 'where the harness cannot run the script, leave the files as they are and say that the check did not run'
 rs_rule "a no changes nothing" 'where the person says no, leave both files as they are\. the offer comes back on the next visit that still finds an old pointer'
@@ -141,6 +143,45 @@ rs_report "two standalone pointers on one line are both rewritten" \
   "$(grep -qF "Two: the \`ship\` skill's \`templates/handover.md\` and the \`setup-ai-build-kit\` skill's \`references/pieces.md\`." "$WORK/awkward/AGENTS.md" && echo yes || echo no)"
 rs_report "after the rewrite, nothing is left to rewrite" \
   "$([ -z "$(python3 "$SCRIPT" "$WORK/awkward" | grep -v 'left as written: ')" ] && echo yes || echo no)"
+
+# A second review found three more ways to break a line: a command in a fenced
+# or indented code block has no backticks on its own line, a pointer between
+# double backticks sat in a span the first check did not see, and a file with
+# Windows line endings came back with every line changed. Each of those lines
+# stays exactly as it was, and the rewrite keeps the file's line endings.
+mkdir -p "$WORK/blocks"
+cat > "$WORK/blocks/AGENTS.md" <<'EOF'
+```sh
+cat .agents/skills/setup-ai-build-kit/references/pieces.md
+```
+    cat .agents/skills/ship/templates/handover.md
+Double `` .agents/skills/setup-ai-build-kit/references/pieces.md `` here.
+Folder .agents/skills/ship/recipes here.
+Read the `.agents/skills/setup-ai-build-kit/references/fit-check.md` file.
+EOF
+head -6 "$WORK/blocks/AGENTS.md" > "$WORK/blocks/untouched"
+blocks_listed=$(python3 "$SCRIPT" "$WORK/blocks")
+python3 "$SCRIPT" --apply "$WORK/blocks" >/dev/null
+rs_report "a pointer in a code block, in double backticks, or naming a folder is listed with its reason" \
+  "$(printf '%s\n' "$blocks_listed" | grep -q 'left as written: it sits inside a code block' \
+     && [ "$(printf '%s\n' "$blocks_listed" | grep -c 'left as written: it sits inside a code block')" = 2 ] \
+     && printf '%s\n' "$blocks_listed" | grep -q 'left as written: it sits inside a code span in double backticks' \
+     && printf '%s\n' "$blocks_listed" | grep -q 'left as written: it names a folder, not a file' && echo yes || echo no)"
+rs_report "and those lines are left exactly as they were" \
+  "$(head -6 "$WORK/blocks/AGENTS.md" | cmp -s - "$WORK/blocks/untouched" && echo yes || echo no)"
+rs_report "a sentence that already says the gets no second one" \
+  "$(grep -qF "Read the \`setup-ai-build-kit\` skill's \`references/fit-check.md\` file." "$WORK/blocks/AGENTS.md" && echo yes || echo no)"
+
+mkdir -p "$WORK/crlf" "$WORK/unreadable"
+printf 'line one\r\nSee `.agents/skills/setup-ai-build-kit/references/pieces.md`.\r\nlast\r\n' > "$WORK/crlf/AGENTS.md"
+printf "line one\r\nSee the \`setup-ai-build-kit\` skill's \`references/pieces.md\`.\r\nlast\r\n" > "$WORK/crlf/expected"
+python3 "$SCRIPT" --apply "$WORK/crlf" >/dev/null
+rs_report "a file with Windows line endings keeps them, and only the pointer changes" \
+  "$(cmp -s "$WORK/crlf/AGENTS.md" "$WORK/crlf/expected" && echo yes || echo no)"
+printf 'ok\n\377\376 not text\n' > "$WORK/unreadable/AGENTS.md"
+unreadable=$(python3 "$SCRIPT" "$WORK/unreadable" 2>&1) && code=0 || code=$?
+rs_report "a file that is not readable text gets one line, not a crash" \
+  "$([ "$code" = 0 ] && printf '%s\n' "$unreadable" | grep -q 'left as written: it is not readable text' && echo yes || echo no)"
 
 # A project founded today, from the shipped templates, gets nothing.
 cp "$TEMPLATES/foundation/AGENTS.md" "$WORK/current/AGENTS.md"

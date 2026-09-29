@@ -26,11 +26,13 @@ own skill under the same folder, a placeholder such as `<name>`, and a mention
 of the folder itself are never found, since those are the person's words or
 still true.
 
-A pointer is rewritten only where it stands alone: as a whole code span, or as
-a bare path between spaces, at the end of a sentence, or on a line of its own.
-Inside a longer code span, such as a command, or inside a link, a rewrite would
-break the line, so the pointer is listed with the reason and left for the
-person. So is a pointer to a file the skill no longer has.
+A pointer is rewritten only where it stands alone in prose: as a whole code
+span in single backticks, or as a bare path between spaces, at the end of a
+sentence, or on a line of its own. Inside a code block, a longer code span such
+as a command, or a link, a rewrite would break the line, so the pointer is
+listed with the reason and left for the person. So is a pointer to a file the
+skill no longer has. A rewrite changes only those pointers: every other
+character of the file, line endings included, stays as it was.
 """
 
 import os
@@ -58,51 +60,66 @@ POINTER = re.compile(
     r"\.agents/skills/(" + "|".join(re.escape(s) for s in NAMES) + r")/"
     r"([A-Za-z0-9_./-]*[A-Za-z0-9_-])"
 )
+# A code span opens and closes with the same run of backticks.
+CODE_SPAN = re.compile(r"(`+)(.+?)(?<!`)\1(?!`)")
+FENCE = re.compile(r"^ {0,3}(```|~~~)")
 
 # The installed skills sit beside this skill. Where they can be read, a new
 # pointer is written only for a file the skill still has.
 INSTALLED = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
-def target_exists(skill, path):
+def target_problem(skill, path):
+    """Say why the new pointer would open nothing, or return None."""
     if not os.path.isdir(os.path.join(INSTALLED, skill)):
-        return True
-    return os.path.isfile(os.path.join(INSTALLED, skill, path))
+        return None
+    where = os.path.join(INSTALLED, skill, path)
+    if os.path.isfile(where):
+        return None
+    if os.path.isdir(where):
+        return "it names a folder, not a file"
+    return "the `%s` skill no longer has that file" % skill
 
 
-def stands_alone(line, start, end):
-    """Say whether the pointer at line[start:end] can be rewritten, and why not."""
-    inside_span = line[:start].count("`") % 2 == 1
-    if inside_span:
-        if line[start - 1] == "`" and end < len(line) and line[end] == "`":
-            return True, ""
-        return False, "it sits inside a longer code span, such as a command"
+def placement(line, start, end):
+    """Say how the pointer at line[start:end] sits: (rewrite start, end) or a reason."""
+    for span in CODE_SPAN.finditer(line):
+        if span.start() < start and end <= span.end():
+            if len(span.group(1)) == 1 and span.start(2) == start and span.end(2) == end:
+                return (span.start(), span.end()), None
+            if len(span.group(1)) > 1:
+                return None, "it sits inside a code span in double backticks"
+            return None, "it sits inside a longer code span, such as a command"
     before = line[start - 1] if start > 0 else " "
     if before not in " \t":
-        return False, "it sits inside a link, brackets or another path"
+        return None, "it sits inside a link, brackets or another path"
     after = line[end:end + 2] + "\n"
-    if after[0] in " \t\n" or (after[0] in ".,;:!?" and after[1] in " \t\n"):
-        return True, ""
-    return False, "it runs on into more of a path or an address"
+    if after[0] in " \t\r\n" or (after[0] in ".,;:!?" and after[1] in " \t\r\n"):
+        return (start, end), None
+    return None, "it runs on into more of a path or an address"
 
 
-def findings(line):
+def findings(line, in_block):
     """Yield (start, end, old, new-or-None, reason) for each pointer on the line."""
     for match in POINTER.finditer(line):
         skill = FORMER_NAMES.get(match.group(1), match.group(1))
         path = match.group(2)
-        start, end = match.start(), match.end()
-        alone, why = stands_alone(line, start, end)
-        whole_span = alone and start > 0 and line[start - 1] == "`"
-        if whole_span:
-            start, end = start - 1, end + 1
+        if in_block:
+            yield match.start(), match.end(), match.group(0), None, "it sits inside a code block"
+            continue
+        where, why = placement(line, match.start(), match.end())
+        if where is None:
+            yield match.start(), match.end(), match.group(0), None, why
+            continue
+        start, end = where
         old = line[start:end]
-        if not alone:
-            yield start, end, old, None, why
-        elif not target_exists(skill, path):
-            yield start, end, old, None, "the `%s` skill no longer has that file" % skill
-        else:
-            yield start, end, old, "the `%s` skill's `%s`" % (skill, path), ""
+        problem = target_problem(skill, path)
+        if problem:
+            yield start, end, old, None, problem
+            continue
+        # "Read the `...`" already has its article.
+        article = "" if line[:start].lower().endswith("the ") else "the "
+        yield start, end, old, "%s`%s` skill's `%s`" % (article, skill, path), ""
 
 
 def main(argv):
@@ -112,13 +129,29 @@ def main(argv):
     for name in FILES:
         path = os.path.join(project, name)
         try:
-            with open(path, encoding="utf-8") as handle:
+            # newline="" keeps each line's own ending, so a rewrite changes the
+            # pointers and nothing else.
+            with open(path, encoding="utf-8", newline="") as handle:
                 lines = handle.readlines()
         except OSError:
             continue
+        except UnicodeDecodeError:
+            print("%s\t\tleft as written: it is not readable text, so it was not searched" % name)
+            continue
         changed = False
+        fence = None
         for number, line in enumerate(lines, 1):
-            found = list(findings(line))
+            opener = FENCE.match(line)
+            if fence is None and opener:
+                fence = opener.group(1)
+                in_block = True
+            elif fence is not None:
+                in_block = True
+                if line.lstrip(" ").startswith(fence):
+                    fence = None
+            else:
+                in_block = line.startswith("    ") or line.startswith("\t")
+            found = list(findings(line, in_block))
             for start, end, old, new, why in found:
                 if new is None:
                     print("%s:%d\t%s\tleft as written: %s" % (name, number, old, why))
@@ -133,7 +166,7 @@ def main(argv):
                 lines[number - 1] = new_line
                 changed = True
         if apply and changed:
-            with open(path, "w", encoding="utf-8") as handle:
+            with open(path, "w", encoding="utf-8", newline="") as handle:
                 handle.writelines(lines)
     return 0
 
