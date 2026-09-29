@@ -254,7 +254,14 @@ attribution line, not the word.
   deploy command that may be signed in. A turn also carries a Vercel and a
   Supabase token that belong to no account, a Docker engine that does not
   exist, and no stored database password, so a real host tool finds no
-  account either.
+  account either. The profiles lower the odds and do not remove them, so it
+  also holds what happens when the real GitHub command answers anyway. The
+  runner reads the transcript and the provider's own record of the session,
+  found by the id it writes beside the run, for the two sentences only the
+  real, signed-out command prints. It does that before grading, and a run
+  carrying either is written as not graded, with its reason, and left out of
+  the roll-up's counts. A kit telling the person to run `gh auth login` is
+  advice and not a sign, and the stand-in must never print either sentence.
 - `.agents/tests/plan-printout.sh` runs the printout against a fixed set of
   issues and reads what it wrote: which group each piece lands in, whether a
   waiting piece says why, whether a shaped piece says it is ready, and whether a
@@ -392,6 +399,17 @@ attribution line, not the word.
   Given a recipe, the report also names each command-line tool that recipe's
   launch checks run, and the check holds that a missing one never stops
   founding and that a project naming no recipe is never asked about them.
+  It also runs the report in throwaway projects whose `origin` is the kit's
+  own repository, in https and ssh form, in capitals and with no `.git`, and
+  in one where only GitHub names it. Where `origin` names the kit, the
+  stand-in reports a neutral name, so only the origin match can catch it.
+  Each time the report says so, asks GitHub nothing more about that
+  repository where `origin` already named it, and still does not stop
+  founding. A fork under another owner, and a name that only starts like the
+  kit's, are left alone. The report matches with the shell alone, since the
+  check's own PATH once had no `tr` and a lower-casing step failed without a
+  word. Every other case runs from a folder with no `origin`, so the suite
+  gives the same answer wherever it is run from.
 - `.agents/tests/completion-report-shape.sh` guards the source of the /setup
   completion report, which is watched by hand rather than replayed: it proves
   completion-report.md still leads with what is ready, keeps technical state out
@@ -445,7 +463,12 @@ attribution line, not the word.
   says what it found. Whatever the choice, founding writes every file on the
   menu into a `founding-menu` line in `.ai-build-kit-maintenance` before the
   first checkpoint, so the monthly visit can tell a recipe added later from one
-  the person already passed over. Product names are left to
+  the person already passed over. Where a recipe carries a `Plan terms:`
+  line, founding says it once beside that recipe to a work team, a business
+  or paid work, never calls that account free, leaves it out for a personal
+  project nobody is paid to build, and asks nothing when the interview did not
+  say. Two foundings for a work team missed that line's fact, and one called
+  the account free. Product names are left to
   `hosting-request.sh`.
   `agent-plugin.sh` and `claude-plugin.sh` each check that every menu recipe
   arrives in their installed layout.
@@ -953,6 +976,11 @@ attribution line, not the word.
   kit runs itself writes no hosting request, since nobody runs a server to
   carry one to, and its own address meets the wait. The rollback line says
   "possible, not tried", because the kit only saw an earlier build listed.
+  On a later launch the changelog is read first, and a warning it already
+  holds for the same section is one line pointing to it, while a new or
+  changed one is still said in full. That rule sits beside the reporting
+  steps, since a real second launch repeated every old warning when it sat
+  only in the later-launch section.
   Build with care reaches the same checks, and a settled area goes live on
   their next run rather than through a deploy of its own. It also takes
   the deploy target from each recipe's title and refuses one named in `/ship`
@@ -997,6 +1025,11 @@ attribution line, not the word.
   branch was cut from, the one time it is written other than by a merge,
   since the settings refuse a push to it. It holds the pointers from `/sync`,
   `/ship`, founding and the push-to-main rule, and WORKFLOW.md telling it.
+  Founding opens issues before any piece pushes, so it holds the same guard
+  there: before the first issue, founding checks which repository the project
+  points at and changes nothing on the kit's own: no issue, label, setting or
+  push. It asks for the person's, runs the report again once `origin` points
+  there, and with none says the pieces wait for a repository of their own.
 - `.agents/tests/recipes.sh` guards the recipe format. A recipe pairs a build
   stack with a place to run it, and it is the only place outside the README
   allowed to name a service a tool runs on, so the rules around that permission
@@ -1012,7 +1045,11 @@ attribution line, not the word.
   file. This check shows the tool refusing both, and a recipe with no
   `Command-line tools:` line. It also holds the one section a recipe may add,
   the settings the kit can read, which sits after health, carries the same
-  three lines, and needs an outcome line in the proven section.
+  three lines, and needs an outcome line in the proven section. And it holds
+  the optional `Plan terms:` opening line, which says who a free plan is not
+  for. A copy of it with no date, no source page, a date in the future or not
+  real, or no sentence before the date is refused, since terms change without
+  notice and an undated restriction cannot be told from a current one.
 - `.agents/tests/recipe-nextjs-supabase-on-vercel.sh` and
   `.agents/tests/recipe-nextjs-supabase-on-coolify.sh` guard the first recipe
   pair offline. They share `.agents/tests/lib/recipe-rehearsal.sh`. Each holds
@@ -1028,7 +1065,10 @@ attribution line, not the word.
   else. Once it moves onto the menu it must pass outright, and a copy left in
   both places fails. On the Coolify recipe the rule held hardest is that every
   check needing the server is run by the companion or the person and read
-  back, since the kit never contacts that server.
+  back, since the kit never contacts that server. The Vercel recipe also
+  holds its `Plan terms:` line: the free plan is for personal, non-commercial
+  use, a work team needs the paid plan, and the line names the date and the
+  page it was read from.
 - `.agents/tests/compatibility-grades.sh` guards the grade each coding agent
   carries in `docs/COMPATIBILITY.md`. The page once named four agents and
   presented them alike, while the replay harness had recorded runs on only

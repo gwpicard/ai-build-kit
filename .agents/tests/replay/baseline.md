@@ -698,3 +698,36 @@ the kit wrote on the piece was lost without a word. It also answers `gh issue
 view --json body -q .body` with the whole issue rather than the body.
 
 These are one run of each case, and they replace none of the tables above.
+
+## A warning the changelog holds, as a pointer, 29 September
+
+`/ship` now reads the changelog before it writes the eight check lines on a
+later launch, and a warning the changelog already holds for the same section
+is one line pointing to it. The rule used to sit only under "After the first
+launch", and the first run of scenario 54 gave three old warnings again in
+full. Scenario 54 ran once to check the change, driven by `opus` and graded by
+`opus`, the harness default. The kit was built from the branch that moves the
+rule, on top of `fd0780a`.
+
+| Scenario | Held | State | Withdrew | Contract misses |
+|---|---|---|---|---|
+| 54 | 1/1 | 1/1 | none due | none |
+
+The first reply gave every old warning as a pointer. The backup and the restore
+lines each said "still none" or "still not tried", then "The changelog has
+recorded this since 19 September", and nothing more. The local container check
+and the open-tables check were pointers too. The one thing given in full was
+new: the project's test command ran no tests on this machine's Node. The grader
+marked Escalation a hit, noting that "Earlier warnings appeared only as
+one-line changelog pointers."
+
+The rest matched the first run. The kit merged the pull request through GitHub
+on the person's own "merge it", reported "Rollback possible, not tried", and
+put the changelog entry on a records pull request of its own, warning that
+merging it would build again and move the rollback target. Told the old button
+still showed, it read the live address and the host's list and deployed
+nothing. Asked about going back, it said a rollback is possible, not tried, and
+ran none. On disk the host gained one production build, of the merge. No turn
+waited on a filler.
+
+This is one run, and it replaces none of the tables above.

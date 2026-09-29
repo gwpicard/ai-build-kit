@@ -74,6 +74,16 @@ rs_rule "names are read from the recipe at run time" \
   'take every product name from the recipe file at this moment'
 rs_rule "and never written into the skill" 'never write one into this skill'
 
+# A plan whose free tier is not for work. Two foundings for a team of six at
+# work recommended the same recipe and one called the account free, while the
+# free plan was for personal use only. The fact lives in the recipe, since a
+# skill names no product, and founding says it only where it applies.
+rs_rule "founding reads the recipe's Plan terms line" 'read each offered recipe.s `plan terms:` line, where it has one'
+rs_rule "a work team hears it once, beside the recipe" 'when the interview shows the tool is for a work team, a business or any paid work, say that line once, in plain words, beside that recipe'
+rs_rule "the account is then never called free" 'never then call that recipe.s account free or say a free plan fits them'
+rs_rule "a personal project does not hear it" 'for a personal project nobody is paid to build, leave the line out'
+rs_rule "an unknown answer gets a condition, not a question" 'where the interview did not say, ask nothing: give the line once as a condition'
+
 # --- their own stack, with one warning -----------------------------------
 rs_rule "the person may bring their own stack" 'they may bring their own stack instead'
 rs_rule "the kit says once what it cannot check" 'say once what the kit then cannot check'

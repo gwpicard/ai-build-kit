@@ -162,6 +162,31 @@ refused "one section that does not say who runs it" '/^## Secrets$/,/^## /{/^Who
 refused "a Who runs it value outside the three" '/^## Preview$/,/^## /s/^Who runs it: .*/Who runs it: the service/'
 refused "two sections out of order" 's/^## Backup$/## TEMP/; s/^## Restore$/## Backup/; s/^## TEMP$/## Restore/'
 
+# The optional Plan terms line. Terms change without notice, so a line that
+# does not say when and where it was read cannot be told from a current one.
+TERMS="$rs_dir/terms.md"
+sed '/^Last checked:/a\
+Plan terms: The free plan is for personal use only, so a work team needs the paid plan (read 2024-03-01 at https://example.com/terms)
+' "$FILLED" > "$TERMS"
+grep -q '^Plan terms:' "$TERMS" || rs_fail "the Plan terms line was not added, so the next checks prove nothing"
+"$CHECKER" "$TERMS" >/dev/null
+rs_ok "a recipe with a dated Plan terms line passes"
+terms_refused() {
+  sed -e "$2" "$TERMS" > "$rs_dir/terms-mutant.md"
+  if cmp -s "$TERMS" "$rs_dir/terms-mutant.md"; then
+    rs_fail "the edit for '$1' changed nothing, so it proves nothing"
+  fi
+  if "$CHECKER" "$rs_dir/terms-mutant.md" >/dev/null; then
+    rs_fail "a recipe with $1 passed"
+  fi
+  rs_ok "a recipe with $1 is refused"
+}
+terms_refused "a Plan terms line with no date" 's/ (read 2024-03-01 at https:\/\/example.com\/terms)$//'
+terms_refused "a Plan terms line with no source page" 's/ at https:\/\/example.com\/terms)$/)/'
+terms_refused "a Plan terms date in the future" 's/(read 2024-03-01/(read 2999-03-01/'
+terms_refused "a Plan terms date that is not real" 's/(read 2024-03-01/(read 2025-02-29/'
+terms_refused "a Plan terms line with no sentence" 's/^Plan terms: .* (read/Plan terms: (read/'
+
 # --- shared parts ----------------------------------------------------------
 mkdir -p "$rs_dir/parts"
 printf '%s\n' 'How it works: filled in' 'How it is checked: filled in' 'Who runs it: the kit' \

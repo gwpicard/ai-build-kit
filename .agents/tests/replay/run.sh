@@ -296,6 +296,7 @@ run_once() {
     printf '\n' >> "$transcript"
   done
 
+  printf '%s\n' "${PROVIDER_SESSION:-}" > "$WORK/s${number}-r${repeat}.session"
   printf '%s' "$transcript"
 }
 
@@ -361,6 +362,25 @@ json.dump({"scenario": int(scenario),
           open(out, "w"))
 PY
     echo "  scenario $1 run $2 ended early at $got of $want turns, not graded"
+    return
+  fi
+
+  # A run whose GitHub commands reached the real CLI measured the harness, not
+  # the kit. The real one finds no account during a run, so the kit carries on
+  # without pull requests or issues, and what it does next is partly the
+  # harness's doing. The transcript still reads normally, so this is looked for
+  # here: the grader would score the run as if nothing had gone wrong.
+  if sign=$({ printf '%s\n' "$transcript"
+              provider_session_records "$WORK/s${1}-r${2}"; } | real_gh_answered); then
+    python3 - "$out" "$1" "$sign" <<'PY'
+import json, sys
+out, scenario, sign = sys.argv[1], sys.argv[2], sys.argv[3]
+json.dump({"scenario": int(scenario),
+           "error": "the real GitHub CLI answered a command (%s); not graded, "
+                    "because the kit worked without the stand-in" % sign},
+          open(out, "w"))
+PY
+    echo "  scenario $1 run $2 reached the real GitHub CLI, not graded"
     return
   fi
 

@@ -27,6 +27,16 @@ The file opens with six lines.
   against the current documentation of everything it names. The date moves only
   when somebody did that.
 
+A seventh line may follow them. `Plan terms:` says, in one plain sentence, who
+a free or entry plan the recipe relies on is not for, such as personal,
+non-commercial use only, and which plan such a person needs instead. It ends
+with when and where the terms were read, as `(read YYYY-MM-DD at <source
+page>)`, and the source page is the service's own. Terms change without
+notice, and a restriction with no date cannot be told from a current one. The
+line never quotes a price. Founding reads it when it offers the recipe, and
+says it only to a person it applies to. A recipe whose plans carry no such
+limit leaves the line out.
+
 Then comes one section for each of the eight things a live tool needs, in this
 order: preview, going live, rollback, backup, restore, secrets, logs and health.
 

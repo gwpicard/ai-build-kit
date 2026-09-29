@@ -20,6 +20,11 @@ line. `check-tooling.sh --recipe <recipe file>` adds one line for each: ready,
 or missing and needed before the first `/ship`. A missing one never stops
 founding, because a project that uses no recipe needs none of them.
 
+The report also says when the project still points at the kit's own
+repository, which a whole copy of the kit can keep as its `origin`. It then
+asks GitHub nothing more about that repository, and founding opens no piece
+there. That line does not stop founding either.
+
 When `check-tooling.sh` reports a tool as missing, `manual-setup.md` guides the
 install one step at a time. Keep this list and the script in step: a tool added
 to one belongs in the other.

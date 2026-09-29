@@ -113,8 +113,10 @@ Before it stands the project up, it names the kind of tool you are building and
 shows the recipes that fit, with one recommended. A recipe is one build stack
 paired with one place to run it, which the kit knows well enough to check at
 launch. For each one it says what the kit can check and what running it
-involves, such as the accounts you will hold. When only one recipe fits, you
-still see it the same way, recommended and named the default. You can bring
+involves, such as the accounts you will hold. If the tool is for work and a
+recipe's free plan is for personal use only, it tells you once which plan a
+work team needs; a personal project does not hear it. When only one recipe
+fits, you still see it the same way, recommended and named the default. You can bring
 your own stack instead: it says once what it then cannot check, and records
 your choice. If you do not answer, it takes the recommended recipe and carries
 on. It then checks this computer for the tools that recipe's launch checks use,
@@ -358,7 +360,7 @@ names only, never a password or key. You take it to whoever runs the server,
 and paste back what they send. On a later launch /ship reads the request back
 rather than asking again.
 
-After the first launch, shipping gets lighter: it re-checks what changed since the last ship and moves that over, rechecking the build path first if reliance or consequence has grown.
+After the first launch, shipping gets lighter: it re-checks what changed since the last ship and moves that over, rechecking the build path first if reliance or consequence has grown. A warning the changelog already holds comes back as one line pointing to it, so anything given in full is new.
 
 ## 10. Autonomy: /implement auto and goal modes
 

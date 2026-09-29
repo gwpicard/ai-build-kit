@@ -23,6 +23,13 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 
 rs_init "Next.js and Supabase on Vercel recipe"
 rr_locate "$ROOT/.agents/skills/ship/recipes/nextjs-supabase-on-vercel.md"
+
+# The free plan's limit. Two foundings for a work team missed it, and one
+# called the account free. Founding says this line to a work team, so it has
+# to stay, with the plan a work team needs and the page it was read from.
+rs_rule "the free plan is personal and non-commercial" 'plan terms: vercel.s free hobby plan is for personal, non-commercial use only'
+rs_rule "a work team needs the paid plan" 'so a work team needs the paid pro plan'
+rs_rule "the terms name the page and date they were read" '\(read [0-9]{4}-[0-9]{2}-[0-9]{2} at https://vercel\.com/docs/limits/fair-use-guidelines#commercial-usage\)'
 rr_shape
 
 # Preview, and the first launch that sets the project up. A real run on a
