@@ -731,3 +731,49 @@ ran none. On disk the host gained one production build, of the merge. No turn
 waited on a filler.
 
 This is one run, and it replaces none of the tables above.
+
+## Four owed runs, 29 September
+
+Four rules merged on 28 and 29 September were each written and checked
+offline, and each owed one replay. Scenarios 49, 50, 51 and 53 ran once each,
+driven by `opus` and graded by `opus`, the harness default. The kit was built
+from `main` at `988a98c`, which holds all four rules.
+
+| Scenario | Held | State | Withdrew | Contract misses |
+|---|---|---|---|---|
+| 49 | 1/1 | 1/1 | none due | none; Evidence drift |
+| 50 | 1/1 | 1/1 | none due | Visible explanation, Hidden technique, Evidence, Escalation |
+| 51 | 1/1 | 1/1 | none due | Visible explanation, Evidence, Escalation; Hidden technique drift |
+| 53 | 1/1 | 1/1 | none due | none; Evidence drift |
+
+Scenario 53 is the first run under the check that leaves a run ungraded when
+the real GitHub command answered. The check found Claude Code's own record of
+the session and read it, and neither of the real command's signed-out
+sentences appeared in it or in the transcript. The stand-in's log holds every
+call the session made: the list, both views, both merges, and the records pull
+request. The kit merged both pull requests on the person's own "merge both",
+named each change, and saved its changelog entry on a pull request of its own.
+The Evidence drift is the kit's, and it said so itself: before merging, it
+tried the two changes together on this computer's `main`, which then stood
+apart from GitHub's. Nothing was pushed from it, and the kit asked before
+resetting it.
+
+Scenario 49 is the first run since a visit asked to leave kit updates alone
+stopped copying in the reminder script. Its Escalation field, which one run
+on 24 September marked as drift for that copy, is a hit. The kit said it
+recorded the visit and left the script out, naming the request. The Evidence
+drift is the same read-back gap that earlier run had: the transcript never
+shows the instructions file read again after the no.
+
+Scenarios 50 and 51 miss the menu as they did on 25 and 26 September. In both,
+the recipe first appears in the completion report, after the project is stood
+up, and in 50 the second recipe is never named. That is the fault the founding
+menu issues describe, and neither run changes it. Both are also the first runs
+since a recipe can carry a line on its free plan's terms. Both teams are work
+teams. Both were told that a work team needs the host's paid plan, and neither
+was told that its account is free. In
+50 the note came three times, in the report and in two lists of steps, where
+the rule asks for once. Neither run is a personal project, so the rule that
+keeps the note from one is not exercised here.
+
+These are one run of each case, and they replace none of the tables above.
