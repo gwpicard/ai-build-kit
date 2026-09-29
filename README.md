@@ -17,7 +17,7 @@ decisions the agent cannot make for you.
 | | |
 |---|---|
 | What it is | Nine commands you type into your coding agent, the process behind them, and three records that hold your project's memory. |
-| Who it is for | Anyone directing an AI coding agent who wants what it builds to keep working. People who came to software from another job, and developers trying agent-led work for the first time. |
+| Who it is for | Technical builders who direct agents and want what they build to keep working, whether they came to software from engineering or from another job. You should be at home with Git, branches and pull requests. You never need to read the code. |
 | Works with | Claude Code, which is tested. Codex is expected to work. Cursor, Gemini CLI, and any other agent that can read and edit project files, run shell commands, and use Git are experimental. [How much is proved on each](docs/COMPATIBILITY.md#how-much-has-been-proved-on-each-agent). |
 | You need | A coding agent, Git, and Node for the `npx` route. |
 | Install, Claude Code only | `claude plugin marketplace add gwpicard/ai-build-kit`, then `claude plugin install ai-build-kit@ai-build-kit --scope local` |
@@ -182,7 +182,7 @@ Two simpler protections sit underneath. Destructive commands are on a blocked li
 | Bare agent tools (Claude Code, Cursor, Codex) | An agent's full power, with no process around it. | Anyone. | Nothing up front, everything by experience. | Nothing. You choose when to plan, test, review and save, every time. |
 | Developer skill packs (GitHub Spec Kit, Superpowers, agent-skills, Waza) | A discipline the agent applies, written by engineers for engineers. | People who read code and already have the habits. | A dozen or more skills and the order they run in. | The order of work, once you have learned it. |
 | Books and guides on agentic engineering | A way of thinking about working with agents. No tooling. | Developers and tech leads. | A book. | Nothing on your machine. |
-| AI Build Kit | Nine commands, three records, one build path. The least process that keeps agent-built software reliable. | People who came to software from another job, and developers trying agent-led work for the first time. | Nine command names, each named after the moment you need it. | Which route a request takes, what evidence it needs, how it is saved, and when a piece touches something sensitive enough to stop and tell you. |
+| AI Build Kit | Nine commands, three records, one build path. The least process that keeps agent-built software reliable. | Technical builders who direct agents, from engineering or from another job. | Nine command names, each named after the moment you need it. | Which route a request takes, what evidence it needs, how it is saved, and when a piece touches something sensitive enough to stop and tell you. |
 
 Each is good at something. The builders are the fastest start. The bare agent is the most powerful. The skill packs are the strongest guarantee that an engineer's agent behaves. The kit is the shortest path from an idea to a tool that still works in six weeks, for somebody who does not want to run a process by hand.
 

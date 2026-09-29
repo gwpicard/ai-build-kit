@@ -126,13 +126,18 @@ check_five() {
     rs_fail "$1 does not answer all five questions"
   fi
   rs_ok "$1 answers all five questions"
-  # Prove each answer is load-bearing: remove it and require a miss.
-  printf '%s\n' "$FIVE" | while IFS= read -r marker; do
+  # Prove each answer is load-bearing: remove it and require a miss. The loop
+  # reads a here-document rather than a pipe, because a pipeline runs its body
+  # in a subshell where rs_fail would exit the subshell and nothing else.
+  while IFS= read -r marker; do
+    [ -n "$marker" ] || continue
     mutant=$(printf '%s' "$block" | sed -E "s@$marker@@g")
     if [ -z "$(five_missing "$mutant")" ]; then
       rs_fail "$1: removing the answer marked '$marker' was not caught"
     fi
-  done
+  done <<FIVEMARKERS
+$FIVE
+FIVEMARKERS
   rs_ok "$1: removing any one answer is caught"
 }
 

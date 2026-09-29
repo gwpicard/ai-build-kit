@@ -11,6 +11,13 @@ The fourteen skills use the open Agent Skills folder format. Each skill keeps it
 own instructions and supporting files together. A command that needs a
 background skill loads it by name.
 
+Claude Code comes first. The kit is designed and measured on it, and a feature
+that needs more than the portable core, such as a run that builds several
+pieces in a chain with nobody watching, is built for Claude Code before
+anything else. Other coding agents get the one-at-a-time core: one piece
+shaped, built, checked and saved at a time, with the same records and the same
+rules. The grades below say how much of that has been proved on each agent.
+
 ## How much has been proved on each agent
 
 Meeting the portable core means the kit should work on an agent. It does not
