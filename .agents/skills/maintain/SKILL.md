@@ -168,16 +168,16 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
     today's date on the `last-light-pass` line, written as YYYY-MM-DD. If that
     file is missing, create it with a `founded` line holding the date
     masterplan.md was first saved, then the two pass lines. If the project has
-    no `.agents/hooks/session-start.sh`, copy it from the installed start
-    skill's `templates/foundation/session-start.sh`, unless the person asked
-    during this visit to leave kit updates alone. That script comes from the
-    kit, and it changes what the project does later. Read what they asked, not
-    a fixed phrase, and where you skip it, say one sentence instead: "I left
-    out the script that reminds a session when a visit is due, since you asked
-    for no kit updates, so that reminder will not appear by itself; /what-now
-    still reports it when asked." Otherwise say one sentence: "I
-    have recorded today's visit, so a session will not remind you again until
-    the next one is due." If the project's Claude settings existed before AI
+    no `.agents/hooks/session-start.sh`, copy it from the installed
+    setup-ai-build-kit skill's `templates/foundation/session-start.sh`, unless
+    the person asked during this visit to leave kit updates alone. That script
+    comes from the kit, and it changes what the project does later. Read what
+    they asked, not a fixed phrase. Then say one sentence: "I have recorded
+    today's visit, so a session will not remind you again until the next one is
+    due." Where you skipped the script, say instead: "I have recorded today's
+    visit. I left out the script that reminds a session when a visit is due,
+    since you asked for no kit updates, so that reminder will not appear by
+    itself; /what-now still reports it when asked." If the project's Claude settings existed before AI
     Build Kit did, add that the reminder cannot appear by itself there, and that
     `/what-now` reports it when asked.
 
@@ -299,23 +299,31 @@ skills and never touches these two files, so the old lines stay until the
 visit changes them.
 
 1. From the project root, run `python3 <installed maintain
-   skill>/scripts/old-skill-pointers.py`. It prints each old pointer with its
-   file, line and the new form, and nothing when there is none. It reads only
-   those two files, and it touches only a pointer into one of the kit's
-   fourteen skills with a path inside it. A project's own skill, a placeholder
-   such as `<name>`, and a mention of the folder itself stay as the person
-   wrote them. When it prints nothing, say nothing.
-2. Offer the rewrite once, in one reply: say how many lines in which file, that
+   skill>/scripts/old-skill-pointers.py`. It reads only those two files and
+   prints one line for each old pointer it finds, and nothing when there is
+   none. It finds a pointer into one of the kit's skills under today's name
+   or one it had before, such as `start` for `setup-ai-build-kit`. A project's
+   own skill, a placeholder such as `<name>`, and a mention of the folder
+   itself are never found. When it prints nothing, say nothing.
+2. A line ending in the new form is one the script can rewrite: the pointer
+   stands alone, as a whole code span or a bare path, and the skill still has
+   the file. A line ending in `left as written:` gives the reason it cannot,
+   such as a pointer inside a command or a link, where a rewrite would break
+   the line. Those are never rewritten.
+3. Offer the rewrite once, in one reply: say how many lines in which file, that
    each keeps its sentence and only the pointer changes, and show one line
-   before and after. Wait for the person's yes.
-3. On a yes, run the same command with `--apply`, then run it again without,
-   and carry on only once it prints nothing. Save the change with the visit's
-   other changes and add a dated changelog line.
-4. Where the person says no, leave both files as they are. The offer comes
+   before and after. Name each line left as written, with its reason, as one
+   the person may want to change by hand. Wait for the person's yes.
+4. On a yes, run the same command with `--apply`, then run it again without,
+   and carry on only once no line it prints ends in a new form. Save the
+   change with the visit's other changes and add a dated changelog line.
+5. Where the person says no, leave both files as they are. The offer comes
    back on the next visit that still finds an old pointer.
 
-Where the harness cannot run the script, read the two files for the same
-lines and rewrite them by hand, on the same yes.
+Where the harness cannot run the script, leave the files as they are and say
+that the check did not run. A rewrite by hand cannot tell a pointer that stands
+alone from one inside a command, and getting that wrong breaks the person's
+line.
 
 ## Migrating a project founded before the setup-ai-build-kit rename
 

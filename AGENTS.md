@@ -727,12 +727,20 @@ attribution line, not the word.
   install. So the visit runs a shipped script that lists such lines and, on a
   yes, rewrites each to name the skill, changing nothing else. The check runs
   that script. An old project's pointers are found and rewritten to the form
-  today's templates use, and a second run finds nothing. A project founded
-  from today's templates gets no offer. A placeholder, a mention of the
-  folder, and a project's own skill in the same folder are left alone. The
-  script's list of skills is the kit's fourteen, so a rename cannot slip past
-  it. Last, a visit asked to leave kit updates alone does not copy in the
-  reminder script, and says so in one sentence.
+  today's templates use, and a second run finds nothing. So are the pointers
+  of the earliest releases, which name the founding skill by its first name,
+  `start`, since the rename removed that folder and those open nothing on any
+  route. A review found the first version missed them. The same review found
+  it rewrote a pointer inside a command or a link and broke the line. So only
+  a pointer that stands alone, as a whole code span or a bare path, is
+  rewritten. One inside a command, a link, a longer path, or naming a file the
+  skill no longer has is listed with its reason and left exactly as it was.
+  A project founded from today's templates gets no offer. A placeholder, a
+  mention of the folder, and a project's own skill in the same folder are
+  never found. The script's list of skills is the kit's fourteen, so a rename
+  cannot slip past it. Last, a visit asked to leave kit updates alone does not
+  copy in the reminder script, still says the visit was recorded, and says the
+  reminder was left out.
 - `.agents/tests/offer-recipe-move.sh` guards the monthly offer to move a
   project onto a recipe. It applies to a project with `Recipe: none` or no
   `Recipe:` line, whose stack matches a recipe's build stack in substance even

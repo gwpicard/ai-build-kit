@@ -38,14 +38,20 @@ rs_rule "a no to the move comes back next visit" 'nothing records the no, so the
 rs_rule "the pointer step runs every visit" 'pointing the records at a skill by name run this on every visit'
 rs_rule "it runs the shipped script" 'scripts/old-skill-pointers\.py'
 rs_rule "nothing to change says nothing" 'when it prints nothing, say nothing'
-rs_rule "the rewrite waits for a yes" 'show one line before and after\. wait for the person.s yes'
-rs_rule "the rewrite is read back" 'run it again without, and carry on only once it prints nothing'
+rs_rule "the rewrite waits for a yes" 'as one the person may want to change by hand\. wait for the person.s yes'
+rs_rule "the rewrite is read back" 'run it again without, and carry on only once no line it prints ends in a new form'
+rs_rule "a former skill name is found" 'under today.s name or one it had before, such as `start` for `setup-ai-build-kit`'
+rs_rule "only a pointer that stands alone is rewritten" 'the pointer stands alone, as a whole code span or a bare path, and the skill still has the file'
+rs_rule "a line left as written is never rewritten" 'a line ending in `left as written:` gives the reason it cannot, such as a pointer inside a command or a link, where a rewrite would break the line\. those are never rewritten'
+rs_rule "the person hears which lines were left" 'name each line left as written, with its reason, as one the person may want to change by hand'
+rs_rule "no rewrite by hand when the script cannot run" 'where the harness cannot run the script, leave the files as they are and say that the check did not run'
 rs_rule "a no changes nothing" 'where the person says no, leave both files as they are\. the offer comes back on the next visit that still finds an old pointer'
 
 # The reminder script after a no to kit updates.
 rs_rule "the hook is skipped after no kit updates" 'unless the person asked during this visit to leave kit updates alone'
 rs_rule "the request is read, not matched" 'read what they asked, not a fixed phrase'
 rs_rule "a skipped hook is said in one sentence" 'i left out the script that reminds a session when a visit is due, since you asked for no kit updates'
+rs_rule "the visit is still said to be recorded" 'where you skipped the script, say instead: "i have recorded today.s visit\.'
 
 rs_guard "$MAINTAIN" "the maintain skill"
 
@@ -93,6 +99,48 @@ rs_report "only the pointer lines changed" \
   "$([ "$(diff "$WORK/old/AGENTS.before" "$WORK/old/AGENTS.md" | grep -c '^<')" = 1 ] && echo yes || echo no)"
 rs_report "a second run finds nothing" \
   "$([ -z "$(python3 "$SCRIPT" "$WORK/old")" ] && echo yes || echo no)"
+
+# A project founded on the earliest releases, whose pointers name the founding
+# skill by its first name. The rename migration removes that folder, so these
+# open nothing on any route, and they are the ones a visit most needs to find.
+mkdir -p "$WORK/first"
+cat > "$WORK/first/AGENTS.md" <<'EOF'
+The restrictions in `.agents/skills/start/references/blocked-commands.md` always apply.
+EOF
+cat > "$WORK/first/masterplan.md" <<'EOF'
+<!-- Rewritten only by re-running the fit check, which lives at
+.agents/skills/start/references/fit-check.md. The agent reads this section
+first, every session. -->
+EOF
+python3 "$SCRIPT" --apply "$WORK/first" >/dev/null
+rs_report "a pointer under the founding skill's first name is rewritten to today's" \
+  "$(grep -qF "The restrictions in the \`setup-ai-build-kit\` skill's \`references/blocked-commands.md\` always apply." "$WORK/first/AGENTS.md" \
+     && grep -qF "the \`setup-ai-build-kit\` skill's \`references/fit-check.md\`. The agent reads this section" "$WORK/first/masterplan.md" && echo yes || echo no)"
+
+# Lines where a rewrite would break what the person wrote. Each is listed with
+# its reason and left exactly as it was, and a line with two standalone
+# pointers has both rewritten.
+mkdir -p "$WORK/awkward"
+cat > "$WORK/awkward/AGENTS.md" <<'EOF'
+Run `python3 .agents/skills/maintain/scripts/old-skill-pointers.py` monthly.
+See [pieces](.agents/skills/setup-ai-build-kit/references/pieces.md) for more.
+Folder `.agents/skills/ship/recipes/` holds recipes.
+Anchor .agents/skills/setup-ai-build-kit/references/pieces.md#shape here.
+Prefixed ./.agents/skills/setup-ai-build-kit/references/pieces.md here.
+Gone `.agents/skills/setup-ai-build-kit/references/no-such-file.md` here.
+Two: `.agents/skills/ship/templates/handover.md` and `.agents/skills/start/references/pieces.md`.
+EOF
+head -6 "$WORK/awkward/AGENTS.md" > "$WORK/awkward/untouched"
+listed_awkward=$(python3 "$SCRIPT" "$WORK/awkward")
+python3 "$SCRIPT" --apply "$WORK/awkward" >/dev/null
+rs_report "a pointer inside a command, a link, a longer path, or to a missing file is listed with its reason" \
+  "$([ "$(printf '%s\n' "$listed_awkward" | grep -c 'left as written: ')" = 6 ] && echo yes || echo no)"
+rs_report "and each of those lines is left exactly as it was" \
+  "$(head -6 "$WORK/awkward/AGENTS.md" | cmp -s - "$WORK/awkward/untouched" && echo yes || echo no)"
+rs_report "two standalone pointers on one line are both rewritten" \
+  "$(grep -qF "Two: the \`ship\` skill's \`templates/handover.md\` and the \`setup-ai-build-kit\` skill's \`references/pieces.md\`." "$WORK/awkward/AGENTS.md" && echo yes || echo no)"
+rs_report "after the rewrite, nothing is left to rewrite" \
+  "$([ -z "$(python3 "$SCRIPT" "$WORK/awkward" | grep -v 'left as written: ')" ] && echo yes || echo no)"
 
 # A project founded today, from the shipped templates, gets nothing.
 cp "$TEMPLATES/foundation/AGENTS.md" "$WORK/current/AGENTS.md"
