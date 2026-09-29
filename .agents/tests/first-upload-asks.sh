@@ -85,8 +85,10 @@ rs_require_load_bearing "founding says the first piece asks before the code goes
 # has to be caught there too, or the pieces land on it before the first upload
 # rule is ever reached. check-tooling.sh runs the report that finds it.
 rs_require_load_bearing "founding checks the repository before the first issue" "$SETUP" 'before the first issue, check which repository the project points at'
-rs_require_load_bearing "founding opens nothing on the kit's repository" "$SETUP" 'where it does, open nothing and push nothing there: say in one line that the project still points at the kit.s repository, and ask for the person.s own'
-rs_require_load_bearing "founding carries on with none as with no repository" "$SETUP" 'with none, carry on as when no repository exists'
+rs_require_load_bearing "founding changes nothing on the kit's repository" "$SETUP" 'where it does, change nothing there: open no issue, make or remove no label, change no setting, and push nothing'
+rs_require_load_bearing "founding asks for the person's own" "$SETUP" 'say in one line that the project still points at the kit.s repository, and ask for the person.s own'
+rs_require_load_bearing "a new repository gets the report again" "$SETUP" 'point `origin` at it, run the report again, and carry on with what it finds'
+rs_require_load_bearing "founding carries on with none, pieces waiting" "$SETUP" 'with none, save everything else and say plainly that the pieces are created once the project has a repository of its own'
 rs_require_order "the check comes before the pieces become issues" "$SETUP" 'Before the first issue, check which repository' 'Each piece becomes an issue, written to the shape'
 
 # WORKFLOW.md tells it.

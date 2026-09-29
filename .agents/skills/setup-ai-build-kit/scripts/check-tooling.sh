@@ -120,7 +120,7 @@ if [ "$kit_origin" = yes ]; then
   echo "This project still points at the kit's own repository, $KIT_REPOSITORY: no piece is opened there and nothing is pushed there. Ask for the person's own repository, or carry on with none."
 fi
 
-# 3. The tools a recipe's checks run, only when a recipe is named. A recipe
+# 4. The tools a recipe's checks run, only when a recipe is named. A recipe
 # lists them on its "Command-line tools:" line. They are needed before the
 # first launch, not before founding, so a missing one never sets blocked: a
 # project that uses no recipe needs none of them.

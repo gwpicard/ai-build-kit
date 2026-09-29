@@ -310,10 +310,13 @@ Before the first issue, check which repository the project points at. A project
 founded from a whole copy of the kit can keep the kit's `origin`, and the
 GitHub tool would then open its pieces on the kit's own repository,
 `gwpicard/ai-build-kit`. The tooling report in scripts/check-tooling.sh says
-so when it finds that. Where it does, open nothing and push nothing there: say
-in one line that the project still points at the kit's repository, and ask for
-the person's own. With one, point `origin` at it and carry on. With none, carry
-on as when no repository exists, as the last paragraph of this step says.
+so when it finds that. Where it does, change nothing there: open no issue, make
+or remove no label, change no setting, and push nothing. Say in one line that
+the project still points at the kit's repository, and ask for the person's own.
+With one, point `origin` at it, run the report again, and carry on with what it
+finds. With none, save everything else and say plainly that the pieces are
+created once the project has a repository of its own, the way the last
+paragraph of this step handles a GitHub setup that cannot be finished.
 
 Each piece becomes an issue, written to the shape in references/pieces.md. This
 needs a GitHub repository and the GitHub command line tool signed in; where that

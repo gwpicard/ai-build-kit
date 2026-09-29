@@ -164,6 +164,12 @@ kit_case() {
       && ! printf '%s\n' "$out" | grep -q "Issues are switched\|Labels can" \
       && pass "$1: the report names the kit's repository and skips its lookups" \
       || fail "$1: the kit's repository was not caught"
+    # Where `origin` names the kit, the report must not ask GitHub at all.
+    if [ -n "$2" ]; then
+      grep -q "repo view" "$WORK/gh.log" \
+        && fail "$1: the report asked GitHub about the kit's repository anyway" \
+        || pass "$1: the report asks GitHub nothing about it"
+    fi
   else
     printf '%s\n' "$out" | grep -q "kit's own repository" \
       && fail "$1: a repository of the person's own was taken for the kit's" \
@@ -172,12 +178,13 @@ kit_case() {
 }
 KIT_JSON='{"nameWithOwner":"gwpicard/ai-build-kit","hasIssuesEnabled":true,"viewerPermission":"ADMIN"}'
 OWN_JSON='{"nameWithOwner":"someone/ai-build-kit","hasIssuesEnabled":true,"viewerPermission":"ADMIN"}'
-kit_case "an https origin" "https://github.com/gwpicard/ai-build-kit.git" "$KIT_JSON" kit
-grep -q "repo view" "$WORK/gh.log" \
-  && fail "the report asked GitHub about the kit's repository anyway" \
-  || pass "the report asks GitHub nothing about the kit's repository"
-kit_case "an ssh origin in capitals" "git@github.com:GWPicard/AI-Build-Kit.git" "$KIT_JSON" kit
-kit_case "an origin with no .git" "https://github.com/gwpicard/ai-build-kit" "$KIT_JSON" kit
+# Where the origin names the kit, the stand-in reports a neutral name, so only
+# the origin match can catch it. The one case with no origin is the only one
+# that leans on the name GitHub reports.
+NEUTRAL_JSON='{"nameWithOwner":"someone/project","hasIssuesEnabled":true,"viewerPermission":"ADMIN"}'
+kit_case "an https origin" "https://github.com/gwpicard/ai-build-kit.git" "$NEUTRAL_JSON" kit
+kit_case "an ssh origin in capitals" "git@github.com:GWPicard/AI-Build-Kit.git" "$NEUTRAL_JSON" kit
+kit_case "an origin with no .git" "https://github.com/gwpicard/ai-build-kit" "$NEUTRAL_JSON" kit
 kit_case "a name only GitHub reports" "" "$KIT_JSON" kit
 kit_case "a fork under another owner" "https://github.com/someone/ai-build-kit.git" "$OWN_JSON" not-kit
 kit_case "a name that only starts like the kit's" "https://github.com/gwpicard/ai-build-kit-notes.git" '{"nameWithOwner":"gwpicard/ai-build-kit-notes","hasIssuesEnabled":true,"viewerPermission":"ADMIN"}' not-kit
