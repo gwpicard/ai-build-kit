@@ -54,13 +54,13 @@ contract a machine can build against. `/queue` plans. `/implement` runs.
 |---|---|
 | Audience | Technical builders who direct agents. The workflow never depends on reading code, and it assumes git, branches and pull requests are familiar. |
 | Records | Every record is written for agents first, with a short human header. Only public documents meant for people, such as the README, stay human-first. `AGENTS.md` becomes an index of rules and pointers with a line ceiling checked when work is saved. |
-| States | Each piece is in exactly one state: idea, shaping, ready, building, to check, done, or parked. The states can be read as the columns of a board. A `needs-` reason is a note inside shaping, and "held up by another piece" is a link, never a state. |
+| States | Each open piece is in exactly one state: idea, shaping, ready, building, to check, or parked. A closed issue is done; an idea deliberately left out stays closed and labelled parked. The states can be read as the columns of a board. A `needs-` reason is a note inside shaping, and "held up by another piece" is a link, never a state. |
 | Capture | An idea can be captured in plain words or with `/shape`. It is always filed as an issue. An issue opened by hand with no state counts as an idea. `/shape` always tries to reach ready. |
 | Research | A research piece declares, before it starts, whether its result will need the person's decision. |
 | The bar | One bar for every piece, applied in proportion to it. Every field is considered, and a field that does not apply says why in one line. Checks scale with the change, so a colour change does not run the whole suite. The standards always apply. |
 | Readiness check | Before a piece turns ready, a fresh session that did not shape it checks it against a fixed list. A miss sends it back to shaping. The list is fixed because an open "find the gaps" review always finds some. |
 | Checks first | Each check a machine can run exists and fails on today's code before the code is written, in its own commit. An existing test changes only when the piece names it. Checks only a person can make are exempt. |
-| Walk-through | The agent may drive the tool with sample data, record what it saw, and close the piece. The person opts in when they want to check a piece themselves. |
+| Walk-through | The agent may drive the tool with sample data and record what it saw, standing in for the person's try before saving. The piece still goes to to check and closes when it merges. The person opts in when they want to try a piece themselves. |
 | Open choice in a run | Split by how hard it is to undo. A choice about data shape, sync, or what leaves the device stops that piece and sends it back to shaping. A choice that is easy to undo takes the most reversible option and is flagged in the pull request. Either way the run moves on to the next unblocked piece. |
 | Pull requests | One pull request per piece. The parts of one parent share a pull request. |
 | Chains | A piece that depends on one built but not yet merged stacks on it in dependency order, so the stack merges cleanly in order. |
@@ -79,7 +79,7 @@ check reads the whole piece.
 
 **Human header**
 
-- **So that**: the outcome, in one line.
+- **So that**: one outcome for the person.
 - **Done when**, in two groups. *Works*: checkable rules, each naming its check.
   *When it is not the normal case*: one line for each state that can arise, each
   with its check, or "does not arise, because".
@@ -100,8 +100,8 @@ check reads the whole piece.
   its number and where it is measured, and which rule wins where two apply.
 - **Relies on**: each existing thing the piece uses, confirmed to exist and to
   give the data needed.
-- **Touches**: the areas changed, and the open pieces that share them. Areas,
-  never file paths, because paths go stale.
+- **Touches**: one line naming the areas changed, by skill, record or document
+  name, never a file path, because paths go stale.
 - **Under the hood**: the build approach, and the existing tests this piece may
   change, with the reason.
 - **Evidence**: the kind of proof, summarising the checks on the Done when lines.
