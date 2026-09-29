@@ -171,11 +171,11 @@ and the risk, and add no second changelog entry for it. A warning the
 changelog does not hold, or one whose cause has changed, is new: say it once
 in full, as above.
 
-The one wait that remains
-is the address. Where the kit ran the going-live section itself, record the
-live address it produced in the masterplan's "How it stays running" section.
-A tool with no recorded address is not called live, on a recipe or off one:
-tell the person so plainly, and keep it out of CHANGELOG.md as a launch.
+The one wait that remains is the address. Where the kit ran the going-live
+section itself, record the live address it produced in the masterplan's "How
+it stays running" section. A tool with no recorded address is not called live,
+on a recipe or off one: tell the person so plainly, and keep it out of
+CHANGELOG.md as a launch.
 
 #### A setting the kit can read
 
