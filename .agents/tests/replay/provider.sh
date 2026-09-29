@@ -76,6 +76,54 @@ provider_new_session() {
   fi
 }
 
+# provider_session_records <run-prefix>
+# Print, one to a line, the files where the provider kept what each command in
+# a run printed. The transcript holds only what the person and the kit said, so
+# a command answered by the wrong tool shows up here and nowhere else. Codex
+# writes every event into the turn's raw output. Claude Code keeps its own
+# record of the session under its configuration folder, named by the session id
+# the harness chose. run_once writes that id beside the run, because it runs in
+# a subshell and the caller never sees the variable.
+provider_session_records() {
+  prefix=$1
+  session=
+  [ -f "$prefix.session" ] && session=$(cat "$prefix.session")
+  case "$REPLAY_PROVIDER" in
+    claude)
+      [ -n "$session" ] || return 0
+      find "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/projects" -maxdepth 2 \
+        -name "$session.jsonl" 2>/dev/null || true
+      ;;
+    codex)
+      for raw in "$prefix"-t*.json; do
+        [ -f "$raw" ] && printf '%s\n' "$raw"
+      done
+      ;;
+  esac
+  return 0
+}
+
+# real_gh_answered
+# Read file names from stdin, one to a line, and print the first sign that the
+# real GitHub CLI answered a command. During a run the real one finds no
+# account, so it says one of two things the stand-in never says. A kit that
+# tells somebody to run "gh auth login" is not a sign; the real tool's own
+# sentences are. Exits 0 when it finds one and 1 when it finds none.
+REAL_GH_SIGNED_OUT="To get started with GitHub CLI, please run"
+REAL_GH_NO_HOSTS="You are not logged into any GitHub hosts"
+real_gh_answered() {
+  while IFS= read -r record; do
+    [ -f "$record" ] || continue
+    sign=$(grep -o -F -e "$REAL_GH_SIGNED_OUT" -e "$REAL_GH_NO_HOSTS" \
+      "$record" 2>/dev/null | head -n 1)
+    if [ -n "$sign" ]; then
+      printf '"%s" in %s\n' "$sign" "$(basename "$record")"
+      return 0
+    fi
+  done
+  return 1
+}
+
 codex_thread_id() {
   python3 - "$1" <<'PY'
 import json

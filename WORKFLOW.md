@@ -360,7 +360,7 @@ names only, never a password or key. You take it to whoever runs the server,
 and paste back what they send. On a later launch /ship reads the request back
 rather than asking again.
 
-After the first launch, shipping gets lighter: it re-checks what changed since the last ship and moves that over, rechecking the build path first if reliance or consequence has grown.
+After the first launch, shipping gets lighter: it re-checks what changed since the last ship and moves that over, rechecking the build path first if reliance or consequence has grown. A warning the changelog already holds comes back as one line pointing to it, so anything given in full is new.
 
 ## 10. Autonomy: /implement auto and goal modes
 

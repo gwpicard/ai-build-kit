@@ -242,6 +242,80 @@ grep -q "Expected path.*recorded build path" "$GRADER" \
   && pass "the grader treats Expected path as a build path" \
   || fail_provider "the grader still confuses the path with a build command"
 
+# A run that lost the stand-in reads normally, so the harness has to find it.
+# The transcript holds only what was said, so the provider's own record of each
+# command's output is read too. The signs are the real, signed-out CLI's own
+# sentences. A kit telling the person to run "gh auth login" is advice, and
+# must not cost a run its grade.
+RECORDS="$TEST_WORK/records"
+mkdir -p "$RECORDS"
+printf '%s\n' '### kit reply 1' 'Please run gh auth login, then try again.' \
+  > "$RECORDS/advice.transcript"
+printf '%s\n' '{"type":"tool_result","content":"To get started with GitHub CLI, please run:  gh auth login"}' \
+  > "$RECORDS/signed-out.jsonl"
+printf '%s\n' '{"type":"tool_result","content":"You are not logged into any GitHub hosts. To log in, run: gh auth login"}' \
+  > "$RECORDS/no-hosts.jsonl"
+
+if printf '%s\n' "$RECORDS/advice.transcript" | real_gh_answered >/dev/null; then
+  fail_provider "a kit's advice to sign in was taken for the real GitHub CLI"
+else
+  pass "advice to run gh auth login is not a sign of the real CLI"
+fi
+for record in signed-out no-hosts; do
+  sign=$(printf '%s\n' "$RECORDS/advice.transcript" "$RECORDS/$record.jsonl" \
+    | real_gh_answered) \
+    && case $sign in *"$record.jsonl"*) true ;; *) false ;; esac \
+    && pass "the real CLI's $record sentence is found and its file named" \
+    || fail_provider "the real CLI's $record sentence was not found"
+done
+if grep -qF -e "$REAL_GH_SIGNED_OUT" -e "$REAL_GH_NO_HOSTS" \
+  "$ROOT/.agents/tests/replay/fake-github/gh"; then
+  fail_provider "the stand-in prints a sentence that marks the real CLI"
+else
+  pass "the stand-in never prints the real CLI's signed-out sentences"
+fi
+
+# Claude Code keeps the session under its configuration folder, by the id the
+# harness chose and wrote beside the run. Codex keeps it in each turn's output.
+CLAUDE_CONFIG_DIR="$TEST_WORK/claude-config"
+export CLAUDE_CONFIG_DIR
+mkdir -p "$CLAUDE_CONFIG_DIR/projects/-some-project"
+: > "$CLAUDE_CONFIG_DIR/projects/-some-project/claude-session.jsonl"
+printf '%s\n' claude-session > "$RECORDS/s01-r1.session"
+REPLAY_PROVIDER=claude
+provider_session_records "$RECORDS/s01-r1" | grep -q '/claude-session.jsonl$' \
+  && pass "the Claude Code session record is found by the recorded id" \
+  || fail_provider "the Claude Code session record was not found"
+: > "$RECORDS/s01-r1-t1.json"
+: > "$RECORDS/s01-r1-t2.json"
+REPLAY_PROVIDER=codex
+[ "$(provider_session_records "$RECORDS/s01-r1" | wc -l | tr -d ' ')" = 2 ] \
+  && pass "every Codex turn's output is read as its session record" \
+  || fail_provider "the Codex turn outputs were not all listed"
+REPLAY_PROVIDER=claude
+
+grep -q 'PROVIDER_SESSION:-}" > "$WORK/s${number}-r${repeat}.session"' "$RUNNER" \
+  && pass "the runner writes each run's session id beside it" \
+  || fail_provider "the runner no longer records the session id"
+awk '/real_gh_answered\); then/ { seen = 1 }
+     /grade_once "\$1"/ { if (seen) found = 1; exit }
+     END { exit found ? 0 : 1 }' "$RUNNER" \
+  && pass "the runner looks for the real CLI before it grades" \
+  || fail_provider "the runner grades without looking for the real CLI"
+
+ROLLUP_RESULTS="$TEST_WORK/rollup"
+mkdir -p "$ROLLUP_RESULTS"
+printf '%s\n' '{"scenario":53,"error":"the real GitHub CLI answered a command (\"To get started with GitHub CLI, please run\" in s.jsonl); not graded"}' \
+  > "$ROLLUP_RESULTS/s53-r1.json"
+printf '%s\n' '{"scenario":53,"held":true,"verdicts":{}}' > "$ROLLUP_RESULTS/s53-r2.json"
+rolled=$(sh "$ROOT/.agents/tests/replay/rollup.sh" "$ROLLUP_RESULTS")
+printf '%s\n' "$rolled" | grep -q 'Scenario 53   held 1/1' \
+  && pass "a run the real CLI answered is left out of the rate" \
+  || fail_provider "a run the real CLI answered was counted in the rate"
+printf '%s\n' "$rolled" | grep -q 's53-r1.json: the real GitHub CLI answered' \
+  && pass "the roll-up says why a run was not graded" \
+  || fail_provider "the roll-up names an ungraded run without its reason"
+
 if (REPLAY_PROVIDER=unknown; provider_check) >/dev/null 2>&1; then
   fail_provider "an unknown replay provider was accepted"
 else

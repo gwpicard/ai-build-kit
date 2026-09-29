@@ -36,7 +36,7 @@ if not runs:
     print("No graded runs found in %s" % results)
     raise SystemExit(0)
 
-broken = [n for n, d in runs if d.get("error")]
+broken = [(n, d["error"]) for n, d in runs if d.get("error")]
 runs = [(n, d) for n, d in runs if not d.get("error")]
 
 by_scenario = collections.defaultdict(list)
@@ -122,9 +122,9 @@ if pushback_rows:
 
 if broken:
     print()
-    print("Runs whose grading failed, not counted above:")
-    for name in broken:
-        print("  %s" % name)
+    print("Runs not graded, not counted above:")
+    for name, reason in broken:
+        print("  %s: %s" % (name, reason))
 
 print()
 PY
