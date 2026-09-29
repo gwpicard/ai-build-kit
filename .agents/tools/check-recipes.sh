@@ -87,6 +87,17 @@ for file in "$@"; do
       if (!realdate(value)) problem(label " is not a real date written YYYY-MM-DD: " value)
       else if (value > today) problem(label " is in the future: " value)
     }
+    # An optional opening line. The terms of a plan change without notice, so the
+    # line has to say when they were read and where, or nobody can tell a
+    # stale restriction from a current one.
+    function planterms(line) {
+      if (!match(line, /^Plan terms: [^(]+ \(read [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] at [^)]+\)$/)) {
+        problem("\"Plan terms:\" does not read as a sentence ending \"(read YYYY-MM-DD at <source page>)\"")
+        return
+      }
+      match(line, /\(read [0-9-]+ at /)
+      datecheck("Plan terms", substr(line, RSTART + 6, 10))
+    }
     function whocheck(where, value) {
       if (mode == "template" && value ~ /^</) return 1
       if (value == "the kit" || value == "a companion or the person, result read back" || value == "a person looking") return 1
@@ -135,6 +146,7 @@ for file in "$@"; do
     section == "" && /^Deploy target: ./    { head["Deploy target"] = 1 }
     section == "" && /^Command-line tools: ./ { head["Command-line tools"] = 1 }
     section == "" && /^Last checked:/       { head["Last checked"] = 1; datecheck("Last checked", substr($0, 15)) }
+    section == "" && /^Plan terms:/         { planterms($0) }
     section == "Proven" && /^Real run:/     { realrun = 1; datecheck("Real run", substr($0, 11)); next }
     section == "Proven" {
       for (i = 1; i < n; i++)
