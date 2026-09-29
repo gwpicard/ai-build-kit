@@ -115,8 +115,8 @@ paired with one place to run it, which the kit knows well enough to check at
 launch. For each one it says what the kit can check and what running it
 involves, such as the accounts you will hold. If the tool is for work and a
 recipe's free plan is for personal use only, it tells you once which plan a
-work team needs; a personal project does not hear it. When only one recipe fits, you
-still see it the same way, recommended and named the default. You can bring
+work team needs; a personal project does not hear it. When only one recipe
+fits, you still see it the same way, recommended and named the default. You can bring
 your own stack instead: it says once what it then cannot check, and records
 your choice. If you do not answer, it takes the recommended recipe and carries
 on. It then checks this computer for the tools that recipe's launch checks use,
