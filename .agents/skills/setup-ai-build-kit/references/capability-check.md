@@ -54,6 +54,12 @@ still goes ahead. Say which labels could not be made and which of GitHub's own
 could not be removed. A missing label costs a little clarity on the list; it
 stops nothing.
 
+Where `origin` is the kit's own repository, which a whole copy of the kit can
+keep, the report says so and skips the issue and label lookups. That
+repository is not the person's, so nothing is opened or pushed there. Founding
+asks for their own before the first issue, and carries on with none as it does
+when no repository exists.
+
 A remote address is never treated as proof that the current person has an
 account or access to it. A previous commit's author is never treated as the
 current person's identity.

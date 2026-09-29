@@ -58,17 +58,44 @@ else
   blocked=1
 fi
 
-# 2. What the signed-in account can do on this repository, once one is set up.
+# 2. Whether this project still points at the kit's own repository. A project
+# founded from a whole copy of the kit can keep the kit's `origin`, and then the
+# GitHub tool would open the project's pieces as issues there, and a later push
+# would aim the person's code at it. `origin` is read with Git alone, so this
+# answers whether or not the GitHub tool is ready, and the name GitHub reports is
+# compared too. It does not stop founding, which carries on as it does with no
+# repository.
+KIT_REPOSITORY=gwpicard/ai-build-kit
+# GitHub reads owner and name in any case. The pattern spells both cases out
+# with the shell alone, so the report needs nothing beyond the tools it checks.
+KIT_PATTERN='[Gg][Ww][Pp][Ii][Cc][Aa][Rr][Dd]/[Aa][Ii]-[Bb][Uu][Ii][Ll][Dd]-[Kk][Ii][Tt]'
+is_kit_repository() {
+  case $1 in
+    $KIT_PATTERN | *[Gg][Ii][Tt][Hh][Uu][Bb].[Cc][Oo][Mm][:/]$KIT_PATTERN | \
+    *[Gg][Ii][Tt][Hh][Uu][Bb].[Cc][Oo][Mm][:/]$KIT_PATTERN.git | \
+    *[Gg][Ii][Tt][Hh][Uu][Bb].[Cc][Oo][Mm][:/]$KIT_PATTERN/) return 0 ;;
+  esac
+  return 1
+}
+kit_origin=no
+origin_url=$(git remote get-url origin 2>/dev/null || true)
+if [ -n "$origin_url" ] && is_kit_repository "$origin_url"; then
+  kit_origin=yes
+fi
+
+# 3. What the signed-in account can do on this repository, once one is set up.
 # These need a repository and python3, so they run only when both are here. On a
 # fresh project with no repository yet, they wait until one exists.
-if [ "$gh_ready" = yes ] && command -v python3 >/dev/null 2>&1; then
+if [ "$gh_ready" = yes ] && command -v python3 >/dev/null 2>&1 && [ "$kit_origin" = no ]; then
   repo_json=$(gh repo view --json nameWithOwner,hasIssuesEnabled,viewerPermission 2>/dev/null || true)
-  if [ -n "$repo_json" ]; then
-    read_field() {
-      printf '%s' "$repo_json" \
-        | python3 -c "import json,sys; print(json.load(sys.stdin).get('$1',''))" 2>/dev/null \
-        || true
-    }
+  read_field() {
+    printf '%s' "$repo_json" \
+      | python3 -c "import json,sys; print(json.load(sys.stdin).get('$1',''))" 2>/dev/null \
+      || true
+  }
+  if [ -n "$repo_json" ] && is_kit_repository "$(read_field nameWithOwner)"; then
+    kit_origin=yes
+  elif [ -n "$repo_json" ]; then
     issues_on=$(read_field hasIssuesEnabled)
     perm=$(read_field viewerPermission)
 
@@ -89,7 +116,11 @@ if [ "$gh_ready" = yes ] && command -v python3 >/dev/null 2>&1; then
   fi
 fi
 
-# 3. The tools a recipe's checks run, only when a recipe is named. A recipe
+if [ "$kit_origin" = yes ]; then
+  echo "This project still points at the kit's own repository, $KIT_REPOSITORY: no piece is opened there and nothing is pushed there. Ask for the person's own repository, or carry on with none."
+fi
+
+# 4. The tools a recipe's checks run, only when a recipe is named. A recipe
 # lists them on its "Command-line tools:" line. They are needed before the
 # first launch, not before founding, so a missing one never sets blocked: a
 # project that uses no recipe needs none of them.

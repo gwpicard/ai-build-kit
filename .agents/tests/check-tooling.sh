@@ -56,9 +56,12 @@ SH
 
 run_check() {
   # Run the report with PATH set to the controlled bin alone, so a tool left out
-  # of it is genuinely missing.
-  PATH="$WORK/bin" HOME="$HOME" "$CHECK" 2>&1
+  # of it is genuinely missing. The report reads `origin`, so it runs from a
+  # folder of its own: run from this repository, it would find the kit's own
+  # repository and rightly skip the checks these cases are about.
+  (cd "$WORK/plain" && PATH="$WORK/bin" HOME="$HOME" "$CHECK" 2>&1)
 }
+mkdir -p "$WORK/plain"
 
 echo "== Everything ready =="
 
@@ -126,6 +129,66 @@ out=$(run_check) && code=0 || code=$?
 printf '%s\n' "$out" | grep -q "No GitHub repository is set up yet" \
   && pass "it says the repository checks wait until one exists" \
   || fail "the no-repository line is missing"
+
+echo "== A whole copy that still points at the kit's own repository =="
+
+# Founding from a whole copy of the kit can keep the kit's `origin`. The GitHub
+# tool would then open the person's pieces on the kit's repository, so the
+# report says so and skips the lookups, and founding asks for their own. It
+# does not stop founding. A fork under another owner is the person's own and
+# is left alone. The stand-in logs every call, so a lookup made anyway shows.
+write_logging_gh() {
+  cat >"$WORK/bin/gh" <<SH
+#!/usr/bin/env sh
+echo "\$*" >> "$WORK/gh.log"
+case "\$1 \$2" in
+  "auth status") exit 0 ;;
+  "repo view") echo '$1' ;;
+  *) echo '{}' ;;
+esac
+SH
+  chmod +x "$WORK/bin/gh"
+}
+kit_case() {
+  # kit_case <description> <origin url> <what gh reports> <kit|not-kit>
+  project="$WORK/copy-$(printf '%s' "$1" | tr -c 'a-z' '-')"
+  mkdir -p "$project"
+  git -C "$project" init -q
+  [ -z "$2" ] || git -C "$project" remote add origin "$2"
+  write_logging_gh "$3"
+  : > "$WORK/gh.log"
+  out=$(cd "$project" && PATH="$WORK/bin" HOME="$HOME" "$CHECK" 2>&1) && code=0 || code=$?
+  [ "$code" -eq 0 ] || fail "$1: the report stopped founding with $code"
+  if [ "$4" = kit ]; then
+    printf '%s\n' "$out" | grep -q "still points at the kit's own repository, gwpicard/ai-build-kit: no piece is opened there and nothing is pushed there" \
+      && ! printf '%s\n' "$out" | grep -q "Issues are switched\|Labels can" \
+      && pass "$1: the report names the kit's repository and skips its lookups" \
+      || fail "$1: the kit's repository was not caught"
+    # Where `origin` names the kit, the report must not ask GitHub at all.
+    if [ -n "$2" ]; then
+      grep -q "repo view" "$WORK/gh.log" \
+        && fail "$1: the report asked GitHub about the kit's repository anyway" \
+        || pass "$1: the report asks GitHub nothing about it"
+    fi
+  else
+    printf '%s\n' "$out" | grep -q "kit's own repository" \
+      && fail "$1: a repository of the person's own was taken for the kit's" \
+      || pass "$1: the person's own repository is left alone"
+  fi
+}
+KIT_JSON='{"nameWithOwner":"gwpicard/ai-build-kit","hasIssuesEnabled":true,"viewerPermission":"ADMIN"}'
+OWN_JSON='{"nameWithOwner":"someone/ai-build-kit","hasIssuesEnabled":true,"viewerPermission":"ADMIN"}'
+# Where the origin names the kit, the stand-in reports a neutral name, so only
+# the origin match can catch it. The one case with no origin is the only one
+# that leans on the name GitHub reports.
+NEUTRAL_JSON='{"nameWithOwner":"someone/project","hasIssuesEnabled":true,"viewerPermission":"ADMIN"}'
+kit_case "an https origin" "https://github.com/gwpicard/ai-build-kit.git" "$NEUTRAL_JSON" kit
+kit_case "an ssh origin in capitals" "git@github.com:GWPicard/AI-Build-Kit.git" "$NEUTRAL_JSON" kit
+kit_case "an origin with no .git" "https://github.com/gwpicard/ai-build-kit" "$NEUTRAL_JSON" kit
+kit_case "a name only GitHub reports" "" "$KIT_JSON" kit
+kit_case "a fork under another owner" "https://github.com/someone/ai-build-kit.git" "$OWN_JSON" not-kit
+kit_case "a name that only starts like the kit's" "https://github.com/gwpicard/ai-build-kit-notes.git" '{"nameWithOwner":"gwpicard/ai-build-kit-notes","hasIssuesEnabled":true,"viewerPermission":"ADMIN"}' not-kit
+write_gh 0 '{"nameWithOwner":"someone/project","hasIssuesEnabled":true,"viewerPermission":"ADMIN"}'
 
 echo "== The tools a recipe's checks run =="
 

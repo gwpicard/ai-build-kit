@@ -81,6 +81,16 @@ rs_require_load_bearing "and main is never written by a git push" "$BLOCKED" 'it
 # Founding's promise stays true, and says what comes next.
 rs_require_load_bearing "founding says the first piece asks before the code goes online" "$SETUP" 'where the online repository holds none of the code yet, the code stays on this computer until the first piece that pushes asks the person first'
 
+# Founding opens issues before any piece pushes, so the kit's own repository
+# has to be caught there too, or the pieces land on it before the first upload
+# rule is ever reached. check-tooling.sh runs the report that finds it.
+rs_require_load_bearing "founding checks the repository before the first issue" "$SETUP" 'before the first issue, check which repository the project points at'
+rs_require_load_bearing "founding changes nothing on the kit's repository" "$SETUP" 'where it does, change nothing there: open no issue, make or remove no label, change no setting, and push nothing'
+rs_require_load_bearing "founding asks for the person's own" "$SETUP" 'say in one line that the project still points at the kit.s repository, and ask for the person.s own'
+rs_require_load_bearing "a new repository gets the report again" "$SETUP" 'point `origin` at it, run the report again, and carry on with what it finds'
+rs_require_load_bearing "founding carries on with none, pieces waiting" "$SETUP" 'with none, save everything else and say plainly that the pieces are created once the project has a repository of its own'
+rs_require_order "the check comes before the pieces become issues" "$SETUP" 'Before the first issue, check which repository' 'Each piece becomes an issue, written to the shape'
+
 # WORKFLOW.md tells it.
 rs_require_load_bearing "WORKFLOW says the first upload is asked" "$WORKFLOW" 'on either route, the first time anything pushes your project.s code online, the agent asks you first, naming the repository and whether it is public or private'
 rs_require_load_bearing "WORKFLOW says it is asked once for each project" "$WORKFLOW" 'it asks once for each project: once the code is on github, it does not ask again'
