@@ -151,8 +151,7 @@ requests to merge, unless they pre-approved merging.
 
 ## Slices
 
-Built in this order. Each is its own pull request, stacked on the one before
-where they share files. The epic's sub-issues carry the full contract for each.
+Built in this order. Each is its own pull request, stacked on the one before. The epic's sub-issues carry the full contract for each.
 
 1. **Philosophy and audience.** PHILOSOPHY, README, WORKFLOW's opening and
    COMPATIBILITY say who the kit is for, that records are agent-first, that the
@@ -173,9 +172,11 @@ where they share files. The epic's sub-issues carry the full contract for each.
    pre-approved agent merge, and `/ship` promoting from preview to live.
 9. **The runner.** `/implement` runs the plan with claims, stacking, the state
    file, the live page, the open-choice rule and the end-of-run report.
-10. **Worktrees.** The kit's worktree life cycle, the linked `.env`, and
+10. **The runner's rehearsal.** A replay case drives a run over three fixture
+    pieces and the harness grades the end state.
+11. **Worktrees.** The kit's worktree life cycle, the linked `.env`, and
     `/maintain` removing leftovers.
-11. **`/queue` plans.** The printed plan with order, groups and the command that
+12. **`/queue` plans.** The printed plan with order, groups and the command that
     runs it.
 
 ## What stays
