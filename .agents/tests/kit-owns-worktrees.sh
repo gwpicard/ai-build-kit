@@ -62,7 +62,7 @@ rs_rule "the checkpoint route gets no worktree" \
 
 # The .env link.
 rs_rule "the .env is a link, never a copy" \
-  'the worktree.s `\.env` is a link to the main folder.s `\.env`, never a copy'
+  'the worktree.s `\.env` is a link to the main folder.s `\.env` rather than a copy'
 rs_rule "with no .env nothing is linked" \
   'with no `\.env` in the main folder, nothing is linked'
 rs_rule "a link that cannot be made means no secrets, said once" \
@@ -100,7 +100,7 @@ rs_rule "the run state stays in the main folder" \
 # What unsaved work is, and clearing a worktree away.
 rs_rule "no unsaved work: no uncommitted change" \
   'a worktree holds no unsaved work when it has no uncommitted change'
-rs_rule "and no commit missing from a remote branch" 'no commit missing from a remote branch'
+rs_rule "and no commit only this computer holds" 'no commit that only this computer holds'
 rs_rule "a closed pull request clears the worktree at the next run or sync" \
   'when a piece.s pull request has merged or closed, its worktree is removed at the next run.s start or the next `/sync`'
 rs_rule "only when it holds no unsaved work" \
@@ -109,10 +109,10 @@ rs_rule "unsaved work is kept and named" \
   'a worktree holding unsaved work is kept, and named with what is unsaved'
 rs_rule "an unfinished run's worktree is never touched" \
   'it never touches a worktree an unfinished run is still building'
-rs_rule "removal is never forced" 'removal is `git worktree remove`, never forced'
+rs_rule "removal is never forced" 'removal uses `git worktree remove` without force'
 rs_rule "removing a worktree never removes the main .env" \
-  'removes its link to `\.env`, never the main `\.env`'
-rs_rule "and never deletes a branch" 'and never deletes a branch'
+  'takes away the worktree.s link to `\.env` and leaves the main `\.env` alone'
+rs_rule "and never deletes a branch" 'it deletes no branch'
 rs_rule "leftovers go to /maintain" \
   'is listed by `/maintain`, which removes each on a yes'
 rs_rule "a run clears the worktrees of pieces it let go" \

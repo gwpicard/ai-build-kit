@@ -421,6 +421,10 @@ A run decides piece by piece what it can take. A piece needs to be ready, checke
 
 Each piece goes through the same steps as a single build: claimed, checks written first and seen to fail, built, walked through, reviewed. Each piece arrives as its own pull request, and the parts of one piece share one. A piece that needs another built earlier in the run is built on top of it, and its pull request says which to merge first.
 
+In Claude Code, each piece in a run is built in its own copy of the project, a worktree in `.agents/worktrees/` named after the piece, so your own folder stays on its branch and one piece's half-built work never sits under another's. Other coding agents build a run's pieces one after another in your one folder.
+
+Each copy links to your `.env` rather than copying it, and installs its own dependencies. Its dev server runs on a free port the run records, and the hand-over names that port. The kit clears a copy away once its pull request has merged or closed and nothing in it is unsaved, at the next run or the next /sync. A copy holding unsaved work is kept and named.
+
 If the run meets a choice nobody made, a hard one, about stored data, syncing or what leaves the tool, sends that piece back to shaping with the question on it. An easy one takes the option simplest to undo and is flagged in the pull request. A piece that fails three attempts is parked with a note on what it revealed. Either way the run moves on.
 
 The run keeps a state file in your project, which git ignores, and a live progress page where your coding agent can publish one. If a session dies, a new session picks the run up from its state file, and /what-now and /sync both offer to resume it.
@@ -540,6 +544,12 @@ records as merged. The second kind comes from a pull request that combined its
 changes into one, which Git cannot check. It never removes a branch itself,
 and it cannot tell whether somebody still plans to use one. When there are
 none, you hear nothing.
+
+/maintain also lists any worktree a run left behind whose pull request has
+closed, such as one from a session that died before it could clear up. It
+removes each one you say yes to, never by force, and keeps one that holds
+unsaved work, saying what is unsaved. Removing a worktree leaves its branch,
+which the list of old branches picks up at the next visit.
 
 A project founded before the six states gets one offer to move onto them. Pieces waiting on a question gain shaping, open pieces with no state gain idea, and a piece labelled blocked becomes parked with its reason. Ideas you closed as parked stay as they are. Nothing changes without your yes, and a no is recorded, so the offer comes back only when a release changes the states again.
 

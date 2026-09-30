@@ -43,7 +43,10 @@
 #                      and a piece with an unsettled record back in shaping,
 #                      or left ready and skipped with a reason naming it.
 #                      A piece parked after three attempts leaves the one
-#                      stacked on it unbuilt and skipped with a reason.
+#                      stacked on it unbuilt and skipped with a reason. On
+#                      the worktree route, each worktree sits under
+#                      .agents/worktrees/, the main folder is left off every
+#                      piece's branch, and no run state lives in a worktree.
 #
 # The remaining Stage 1 assertion, the issue transitions the fake-GitHub state
 # file records, is the next slice. It needs a per-scenario goal state, so it is
@@ -881,6 +884,13 @@ esac
 # merged, the state file holds that answer and no pull request of the plan is
 # merged. A branch never has two pull requests, since a resumed run
 # looks for the open one before it opens another.
+#
+# On Claude Code each piece is built in a worktree of its own, recorded in the
+# state file. The run state then still lives in the main folder and never in a
+# worktree, each worktree sits under .agents/worktrees/, the main folder is not
+# left on any piece's branch, and the worktrees folder is never committed. A run
+# with no worktree recorded worked in one checkout, so the main folder's branch
+# is not judged there.
 rp_verdict=unobservable
 rp_note="the contract names no run over a plan"
 case "$evidence" in
@@ -894,13 +904,14 @@ case "$evidence" in
       rp_note="no starting state in the project's first commit to read the plan from"
     else
       tracked=$(git -C "$project" log --all --format= --name-only -- .agents/runs 2>/dev/null | grep . || true)
+      tracked_wt=$(git -C "$project" log --all --format= --name-only -- .agents/worktrees 2>/dev/null | grep . || true)
       case "$evidence" in
         *"Nothing is merged"*) nothing_merged=yes ;;
         *) nothing_merged=no ;;
       esac
-      rp_result=$(python3 - "$started" "$ghstate" "$project" "$remote" "$tracked" "$nothing_merged" <<'PY'
+      rp_result=$(python3 - "$started" "$ghstate" "$project" "$remote" "$tracked" "$nothing_merged" "$tracked_wt" <<'PY'
 import glob, json, os, re, subprocess, sys
-start_path, end_path, project, remote, tracked, evidence_says_nothing_merged = sys.argv[1:7]
+start_path, end_path, project, remote, tracked, evidence_says_nothing_merged, tracked_wt = sys.argv[1:8]
 
 start = json.load(open(start_path))
 nothing_merged = evidence_says_nothing_merged == "yes"
@@ -941,6 +952,12 @@ names = {run_name, str(run.get("run", run_name))}
 progress = os.path.join(folder, "progress.md")
 if not os.path.isfile(progress) or not open(progress).read().strip():
     problems.append("there is no progress.md beside the state file")
+
+if tracked_wt.strip():
+    problems.append("the worktrees folder was committed (%s)" % tracked_wt.split()[0])
+inside = glob.glob(os.path.join(project, ".agents", "worktrees", "*", ".agents", "runs", "*", "state.json"))
+if inside:
+    problems.append("a run state was written inside a worktree (%s)" % os.path.relpath(inside[0], project))
 
 order = [p.get("number") for p in run.get("pieces", [])]
 pieces = {p.get("number"): p for p in run.get("pieces", [])}
@@ -999,6 +1016,16 @@ def let_go(n, issue, piece, how):
     if added:
         problems.append("piece %s was %s but still carries the run's assignee" % (n, how))
 
+
+recorded = [p for p in pieces.values() if p.get("worktree")]
+for piece in recorded:
+    if not str(piece["worktree"]).startswith(".agents/worktrees/"):
+        problems.append("piece %s's worktree %s is not under .agents/worktrees/" % (piece.get("number"), piece["worktree"]))
+if recorded:
+    head = subprocess.run(["git", "-C", project, "symbolic-ref", "--short", "-q", "HEAD"],
+                          capture_output=True, text=True).stdout.strip()
+    if head and head in [p.get("branch") for p in pieces.values()]:
+        problems.append("the run left the main folder on piece branch %s" % head)
 
 for n in numbers:
     here = pieces.get(n)

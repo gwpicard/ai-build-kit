@@ -21,12 +21,15 @@ work is lying around, stop and say so: it gets finished or cleared first
 (what-now owns that conversation). Never build on top of half-done work.
 Bring the shared `main` branch up to date and start the piece from it, on every
 save route including the checkpoint route, so no piece begins from a stale copy.
-One start differs.
+Two starts differ, as the `implement` skill's `references/running-longer.md`
+says. On Claude Code, a piece in a run starts in its own worktree under
+`.agents/worktrees/`, with its dependencies installed there before its start
+ritual, and the main folder is never switched to the piece's branch.
 A piece in a run that stacks on another piece built in that run and not yet
-merged starts from that piece's branch, and a later part of a parent continues
-on the branch its first part cut, as the `implement` skill's
-`references/running-longer.md` says. Where `main` cannot be reached, start from
-the local copy and note that in one plain line.
+merged starts from that piece's branch, in a worktree of its own on Claude
+Code, and a later part of a parent continues on the branch, and in the
+worktree, its first part cut. Where `main` cannot be reached, start from the
+local copy and note that in one plain line.
 
 Choose the save route before changing anything:
 
@@ -329,7 +332,9 @@ line on the piece asks for that piece alone. A `check-myself|yes` line in
 when the person asks for it, and takes it out when they ask to stop. With
 either, walk through the piece first, then give one address to open and up to
 three numbered things to try there, each with what they should see. The address
-is the preview, or a local server started from the piece's branch. Before giving
+is the preview, or a local server started from the piece's branch. In a run on
+Claude Code, that server runs in the piece's worktree on the port its run state
+records, and the hand-over names that port and that worktree. Before giving
 it, send a request to it and give the address that answered. Where the usual
 port was taken or the server stopped, that is the address you actually used.
 Where none answers, say so and give no address. Then stop, and save nothing

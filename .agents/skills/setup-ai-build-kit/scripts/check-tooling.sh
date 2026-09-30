@@ -32,6 +32,23 @@ blocked=0
 # 1. The tools the kit's own scripts run.
 if command -v git >/dev/null 2>&1; then
   echo "Git is ready: the kit saves each project version with it."
+  # A run on Claude Code builds each piece in its own worktree, which Git has
+  # offered since 2.5. An older Git still founds and builds one piece at a
+  # time, so this says so and blocks nothing. The version is read with the
+  # shell alone, since the report may run with nothing else on its PATH.
+  git_version=$(git --version 2>/dev/null || true)
+  git_version=${git_version#git version }
+  git_major=${git_version%%.*}
+  git_rest=${git_version#*.}
+  git_minor=${git_rest%%[!0-9]*}
+  case "$git_major$git_minor" in
+    '' | *[!0-9]*) ;;
+    *)
+      if [ "$git_major" -lt 2 ] || { [ "$git_major" -eq 2 ] && [ "$git_minor" -lt 5 ]; }; then
+        echo "Git is version $git_version, older than 2.5: a run cannot give each piece its own worktree, so it builds them one after another in this folder. Updating Git lifts that."
+      fi
+      ;;
+  esac
 else
   echo "Git is missing: install it so the kit can save project versions. See manual-setup.md."
   blocked=1

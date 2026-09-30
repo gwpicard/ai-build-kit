@@ -474,7 +474,9 @@ launch, and the person takes it there.
 
 Choose routine technical parts quietly. Record run and check commands and any
 non-standard conventions under AGENTS.md's stack section, keeping its content
-rule and line ceiling. Leave dependency lists in the code. In the conversation,
+rule and line ceiling. Name the install command among them, since a run
+installs each worktree's dependencies with it. Leave dependency lists in the
+code. In the conversation,
 describe what the setup lets the person do. Name
 a product or service only when it creates a choice, cost, account, access step,
 ownership duty, or product limit that the person needs to understand.

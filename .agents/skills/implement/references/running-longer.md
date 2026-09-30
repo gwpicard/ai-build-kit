@@ -9,11 +9,20 @@ file carries the memory, and everything gets a cap.
 
 ## Capability rule
 
-Assume nothing beyond ordinary sequential agent work: no native goal mode, no
-background agents, no worktrees. A run works in one checkout, one piece after
-another, in the way a person would run them by hand. Where the coding agent can
-start a session that did not build the piece, use it for the readiness check
-and the independent review, as those steps already say.
+Assume nothing beyond ordinary sequential agent work: no native goal mode and
+no background agents. The pieces are still built one after another.
+
+On Claude Code, each piece in a run is built in its own worktree, a second
+working copy of the project on the piece's branch, as "Each piece in its own
+worktree" below says. The main folder, the project folder the run started in,
+stays on the branch it was on: a run never switches the main folder to a
+piece's branch. On any other coding agent, or where Git is older than 2.5 and
+has no worktrees, a run works in one checkout, one piece after another, in the
+way a person would run them by hand.
+
+Where the coding agent can start a session that did not build the piece, use
+it for the readiness check and the independent review, as those steps already
+say.
 
 ## Which pieces a run may take
 
@@ -52,9 +61,10 @@ A piece that is not eligible stays where it is. The report says why.
 
 ## Before the run starts
 
-Check that Git is clean, as section-builder's step 1 does. Refresh the
-printout. The plan is the pieces the person named, or with `queue` every piece
-under `To build` marked `(ready)`. Either way, the plan also takes each piece
+Check that Git is clean, as section-builder's step 1 does. On Claude Code,
+clear away the worktrees whose pull requests have closed, as "Clearing a
+worktree away" below says. Refresh the printout. The plan is the pieces the
+person named, or with `queue` every piece under `To build` marked `(ready)`. Either way, the plan also takes each piece
 under `Held up` whose open blockers are all in the same plan, and orders it
 after them, so it stacks on them rather than waiting for a later run. Order the
 plan by the blocked-by links, so a piece comes after every piece it depends on,
@@ -89,6 +99,8 @@ folder ignores itself and nothing tracked changes.
       "state": "to check",
       "branch": "12-invoice-list",
       "base": "main",
+      "worktree": ".agents/worktrees/12-invoice-list",
+      "port": 4012,
       "pull_request": 31,
       "attempts": 1,
       "flags": ["Sorted the list newest first; the piece did not say."],
@@ -107,6 +119,10 @@ folder ignores itself and nothing tracked changes.
   backed off, or not reached before the run ended). The last five are final.
 - `branch` is the piece's branch, and `base` is the branch it was cut from:
   `main`, or the branch of the piece it stacks on.
+- `worktree` is the piece's worktree folder, relative to the main folder, or
+  `null` where the piece has none.
+- `port` is the port the piece's dev server listens on, or `null` where no
+  dev server was started for it.
 - `pull_request` is the number of its pull request, or `null` before one opens.
 - `attempts` counts the failed attempts at its build.
 - `flags` holds each easy-to-undo choice the builder made alone, one line each.
@@ -126,6 +142,83 @@ starts, and update it each time the state file changes. It shows each piece's
 title, state and pull request link, and nothing else. Where the page cannot be
 published, say so once, and carry on with the state file as the record.
 
+## Each piece in its own worktree
+
+This section applies on Claude Code. The kit owns each worktree from the moment
+it opens to the moment it is cleared away, so the person never tracks which
+copy holds which piece. Run the `implement` skill's `scripts/worktree.sh` from
+the main folder, as `sh <installed implement skill>/scripts/worktree.sh`, for
+each step it names.
+
+- **Where it lives.** A piece's worktree is
+  `.agents/worktrees/<issue number>-<short name>`, on the piece's branch.
+  `worktree.sh open <name> <branch> <base>` makes it. Where the project's
+  `.gitignore` has no `.agents/worktrees/` line, it first writes a
+  `.gitignore` holding `*` inside `.agents/worktrees/`, so git ignores the
+  folder and nothing tracked changes. A harness's own worktree folder, such as
+  `.claude/worktrees/`, is left alone.
+- **Its base.** Bring `main` up to date with `git fetch origin` and cut from
+  `origin/main`, or from the branch of the piece it stacks on. Where `origin`
+  cannot be reached, cut from the local `main`. Nothing here checks out a
+  branch in the main folder.
+- **The parts of one parent** share the parent's worktree, since one branch can
+  be checked out in only one place.
+- **The checkpoint route** gets no worktree. Its commit goes on `main` in the
+  main folder, as section-builder's checkpoint route says, since `main` is
+  checked out there.
+- **The `.env`.** The worktree's `.env` is a link to the main folder's `.env`
+  rather than a copy, so each secret stays in one file. Each other file at the top of
+  the main folder whose name starts with `.env.` and that git ignores, such as
+  `.env.local`, is linked the same way. With no `.env` in the main folder,
+  nothing is linked. Where the link cannot be made on this system, the piece
+  runs without secrets: say so once, and flag each part of it that needs a
+  key. Never copy the file instead.
+- **Its dependencies.** Before the start ritual, install them inside the
+  worktree with the install command AGENTS.md's stack section records. Where
+  it records none, use the install step of the project check in
+  `.github/workflows/checks.yml`. Where neither has one, there is nothing to
+  install.
+- **Its port.** A dev server started for the piece listens on a free port.
+  `worktree.sh port <issue number>` prints one nothing else is listening on.
+  Record it as `port` in the run state, start the server on it, and name that
+  address in the walk-through and the hand-over. Stop the server once the
+  piece's pull request is open.
+- **A path already there.** Where the worktree's path exists from an earlier
+  run, `open` reuses it only when it is on the same branch and holds no
+  unsaved work. Otherwise it names the path and the reason, and the run skips
+  that piece with that reason.
+- **A full disk.** Where making a worktree or installing into it fails because
+  the disk is full, the run stops at the next piece: it starts no other piece,
+  leaves the piece in hand as "When the run ends" says, and gives the reason
+  in the report.
+- **The run state stays in the main folder.** A run writes `state.json` and
+  `progress.md` to the main folder's `.agents/runs/`, never inside a worktree,
+  so a new session opened in the project resumes from them.
+
+A worktree holds no unsaved work when it has no uncommitted change, counting a
+new file git does not ignore, and no commit that only this computer holds.
+`worktree.sh unsaved <path>` says which, if any.
+
+### Clearing a worktree away
+
+When a piece's pull request has merged or closed, its worktree is removed at
+the next run's start or the next `/sync`, by `worktree.sh tidy`. It removes a
+worktree only when it holds no unsaved work. A worktree holding unsaved work is
+kept, and named with what is unsaved. It never touches a worktree an unfinished
+run is still building, and it says nothing about one whose pull request is
+still open.
+
+Removal uses `git worktree remove` without force. It takes away the
+worktree's link to `.env` and leaves the main `.env` alone. It deletes no
+branch: the monthly list of old branches offers that once the work is in
+`main`. Any
+worktree left over, such as one whose session died, is listed by `/maintain`,
+which removes each on a yes.
+
+A single `/implement` outside a run works in the main folder, as always, unless
+the person asks for a worktree. Then it opens one for the piece in the same
+way, and the same rules clear it away.
+
 ## For each piece
 
 Take the pieces in the plan's order. For each one:
@@ -144,10 +237,14 @@ Take the pieces in the plan's order. For each one:
    claimant backs off, so a piece is never left `building` with no run behind
    it. A piece that cannot be claimed is never started.
 2. **Branch it.** Cut its branch from the up-to-date `main`, or from the
-   branch of the piece it stacks on. Record `branch` and `base`.
+   branch of the piece it stacks on. On Claude Code, open the branch in the
+   piece's own worktree and install its dependencies there, as the next
+   section says. Record `branch`, `base` and `worktree`.
 3. **Run the start ritual.** Read the run state, start the tool, and run a smoke
-   check: the tool starts and its first screen or command answers. Then confirm
-   each of the piece's Relies on lines still holds, by reading what it names.
+   check: the tool starts and its first screen or command answers. On Claude
+   Code, do this inside the piece's worktree, with a dev server on the piece's
+   own port. Then confirm each of the piece's Relies on lines still holds, by
+   reading what it names.
 4. **Write the checks first**, as section-builder's step 4 says, and show that
    they fail.
 5. **Build it**, as section-builder's step 5 says, and verify it with the
@@ -248,9 +345,12 @@ unfinished, offer the newest and name the other.
 
 Resuming is the same run, so its `merge_preapproved` stands. Read `state.json`
 and `progress.md`, and take the pieces from where they stand. A piece shown as
-`building` continues from its last commit: check out its branch, read what its
-commits already hold, run its checks, and carry on from the first step not
-done. Read its claim back first. Where the claim is no longer this run's, back
+`building` continues from its last commit: on Claude Code, open its worktree
+again with `worktree.sh open --resume`, which reuses the one already there,
+and elsewhere check out its branch. Where that worktree holds an uncommitted
+change, the script keeps it as it is: park the piece with that reason, since
+the session that made the change is gone. Read what its commits already hold,
+run its checks, and carry on from the first step not done. Read its claim back first. Where the claim is no longer this run's, back
 off it as step 1 says.
 
 `/sync` removes a run's folder once every piece in it is merged, closed or
@@ -273,7 +373,12 @@ every piece in a final state before the report:
   `gh issue edit <number> --add-label ready --remove-label building --remove-assignee @me`,
   delete this run's claim comment, and mark it `skipped`. Where something was
   built, push the branch and park it with the reason, as a failed piece is
-  parked.
+  parked;
+- on Claude Code, remove the worktree this run opened for each piece it
+  parked, sent back to shaping or skipped, with `worktree.sh remove <path>`.
+  Its branch is pushed first, or holds nothing new. The script keeps a
+  worktree holding unsaved work, and the report names it. A piece in
+  `to check` keeps its worktree until its pull request closes.
 
 Where `merge_preapproved` is true, sweep the pieces in `to check` before the
 report, bases first. Merge each one whose project check is now green and that
@@ -287,7 +392,8 @@ The report, in plain words, is one list and a merge order:
 - each piece with its pull request and its state, in the merge order, bases
   before the pieces stacked on them;
 - under each piece, its flagged choices, and what the walk-through could not
-  see;
+  see. Where a dev server ran for it, give its worktree and the address on
+  its recorded port, so the person can start it there and try it;
 - where `merge_preapproved` was true, which pieces were merged, and for each
   piece that was not, the merge condition it failed, in the words of
   the `section-builder` skill's `references/merge.md`. A piece held back
