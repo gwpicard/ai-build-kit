@@ -264,6 +264,72 @@ def render(heading, group, note, marked=True):
         lines.append("       %s" % issue["html_url"])
     lines.append("")
 
+# The areas a piece changes, from its Touches line: one bare line,
+# `Touches: <area>, <area>`, or the line under a `### Touches` heading on a
+# piece opened with the GitHub form. Names are compared without regard to
+# capitals. None means the piece has no Touches line, so nothing says what it
+# changes. Code blocks are skipped, since a line there is an example.
+def touches(issue):
+    lines_in = (issue.get("body") or "").splitlines()
+    fenced, under_heading = False, False
+    for raw in lines_in:
+        line = raw.strip()
+        if line.startswith("```"):
+            fenced = not fenced
+            continue
+        if fenced:
+            continue
+        if line.lower().startswith("touches:"):
+            text = line[len("touches:"):]
+        elif under_heading and line:
+            if line.startswith("#"):
+                under_heading = False
+                continue
+            text = line
+        else:
+            if line.lower() == "### touches":
+                under_heading = True
+            continue
+        areas = [a.strip().strip("`").strip().rstrip(".").strip().lower()
+                 for a in text.split(",")]
+        areas = [a for a in areas if a and a != "_no response_"]
+        return areas or None
+    return None
+
+# Which pieces free to build can go together. Two pieces share a group only
+# when no area on their Touches lines matches, so a group is safe to build in
+# one run in any order. Pieces are placed in number order, each in the first
+# group it clashes with nothing in. A piece with no Touches line goes alone,
+# because nothing says what it would change.
+def go_together(group):
+    placed = []
+    for issue in group:
+        areas = touches(issue)
+        if areas is not None:
+            for members in placed:
+                if members[0][1] is None:
+                    continue
+                if not any(set(areas) & set(a) for _, a in members):
+                    members.append((issue, areas))
+                    break
+            else:
+                placed.append([(issue, areas)])
+        else:
+            placed.append([(issue, None)])
+    return placed
+
+def render_groups(group):
+    if not group:
+        return
+    lines.append("Go together")
+    for n, members in enumerate(go_together(group), 1):
+        lines.append("  Group %d" % n)
+        for issue, areas in members:
+            note = ("(touches %s)" % ", ".join(areas) if areas is not None
+                    else "(Touches unknown, so it goes alone)")
+            lines.append("    #%-4s %s   %s" % (issue["number"], issue["title"], note))
+    lines.append("")
+
 notes_by_number = {i["number"]: n for i, n in needs_attention}
 render("Needs attention", [i for i, _ in needs_attention],
        lambda i: notes_by_number[i["number"]], marked=False)
@@ -271,6 +337,7 @@ render("Broken", broken, lambda i: "(being fixed)" if "building" in labels(i) el
 render("Idea", columns["idea"], held_note)
 render("Shaping", columns["shaping"], held_note)
 render("To build", columns["ready"], lambda i: "")
+render_groups(columns["ready"])
 render("Held up", held_up, held_note)
 render("Building", columns["building"], held_note)
 render("To check", columns["to check"], held_note)

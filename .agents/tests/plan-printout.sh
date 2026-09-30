@@ -414,7 +414,9 @@ echo "== Which ready pieces go together =="
 #
 # Guest list export and Export to spreadsheet both name exports. Booking
 # reminders names the guest list under a form heading. Seat map has no Touches
-# line and Gift wrap left the form's field empty. Deposits is ready but held up
+# line and Gift wrap left the form's field empty. Refund receipts clashes with
+# every group before Seat map's, so it is the piece that would join Seat map if
+# a piece going alone could be joined. Deposits is ready but held up
 # by an open piece, so it is in no group to build now. Guest list export and
 # Refund button share nothing, so they must end up together, or a printout that
 # put every piece alone would pass the rest of this.
@@ -433,7 +435,7 @@ cat >"$WORK/groups.json" <<'JSON'
    "body": "## Done when\nSeats show.", "assignees": [],
    "labels": [{"name": "ready"}]},
   {"number": 5, "title": "Booking reminders", "html_url": "http://x/5",
-   "body": "### Done when\n\nA reminder goes out.\n\n### Touches\n\nTouches: Guest List\n",
+   "body": "### Done when\n\nA reminder goes out.\n\n### Touches\n\nGuest List\n",
    "assignees": [], "labels": [{"name": "ready"}]},
   {"number": 6, "title": "Deposits", "html_url": "http://x/6",
    "body": "## Done when\nA deposit is held.\n\nTouches: payments\n",
@@ -444,6 +446,9 @@ cat >"$WORK/groups.json" <<'JSON'
    "assignees": [], "labels": [{"name": "idea"}]},
   {"number": 8, "title": "Gift wrap", "html_url": "http://x/8",
    "body": "## Done when\nA gift is wrapped.\n\n### Touches\n\n_No response_\n",
+   "assignees": [], "labels": [{"name": "ready"}]},
+  {"number": 9, "title": "Refund receipts", "html_url": "http://x/9",
+   "body": "## Done when\nA receipt is sent.\n\nTouches: refunds, settings\n",
    "assignees": [], "labels": [{"name": "ready"}]}
 ]
 JSON
@@ -483,7 +488,7 @@ if [ -f "$TOGETHER" ]; then
 
   missing=""
   for piece in "Guest list export" "Refund button" "Export to spreadsheet" \
-      "Seat map" "Booking reminders" "Gift wrap"; do
+      "Seat map" "Booking reminders" "Gift wrap" "Refund receipts"; do
     [ "$(grouped | grep -c "$piece")" -eq 1 ] || missing="$missing, $piece"
   done
   [ -z "$missing" ] \
@@ -497,8 +502,9 @@ if [ -f "$TOGETHER" ]; then
 
   a=$(group_of "Guest list export"); b=$(group_of "Booking reminders")
   [ -n "$a" ] && [ -n "$b" ] && [ "$a" != "$b" ] \
+    && grouped | grep "Booking reminders" | grep -q "touches guest list" \
     && pass "a Touches line under a form heading is read and compared the same way" \
-    || fail "Booking reminders touches the guest list but is not in a separate group from Guest list export"
+    || fail "Booking reminders' Touches under the form heading was not read, or it shares a group with Guest list export"
 
   a=$(group_of "Guest list export"); b=$(group_of "Refund button")
   [ -n "$a" ] && [ "$a" = "$b" ] \

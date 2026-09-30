@@ -289,7 +289,11 @@ attribution line, not the word.
   be reached, the last printout is left alone and the refresh says when it was
   written. It also holds the invariant `/queue` rests on, that a piece with an
   open blocker never reaches the buildable group while a piece whose blocker
-  has closed does.
+  has closed does. And it holds the groups of free pieces the printout works
+  out from each piece's `Touches:` line, under `Go together`: two pieces naming
+  the same area, in any capitals, never share a group, a line under the form's
+  own heading counts, a piece with no line goes alone and says its Touches is
+  unknown, and a held-up piece is in no group.
 - `.agents/tests/piece-states.sh` guards the model the printout draws: every
   open piece carries exactly one of six states, `idea`, `shaping`, `ready`,
   `building`, `to check` and `parked`, written in that order in `pieces.md`. A
@@ -361,14 +365,20 @@ attribution line, not the word.
   project. The check fails on a pointer to a file no skill has, and on the old
   fixed form.
 - `.agents/tests/queue-groups.sh` guards what `/queue` may call safe to build
-  together. The rule that matters is that it reads the printout's grouping rather
-  than working safety out again, since the printout is where the guarantee comes
-  from. It also guards the blocker being named rather than numbered, a waiting
-  question keeping a piece out of both groups, a sized piece never marked ready
+  together, and the plan it prints. The rule that matters is that it reads the
+  printout's grouping rather than working safety out again, since the printout
+  is where the guarantee comes from. The plan has five parts in a fixed order:
+  the order a run builds in, the groups, what a run can do with each piece, what
+  stacks on what, and last the exact command that runs it, `/implement queue` or
+  `/implement` with the numbers. Each of the five verdicts is held, and so are
+  a piece with no Touches line going alone and no command when nothing is ready.
+  It also guards the blocker being named rather than numbered, a waiting
+  question keeping a piece out of the plan, a sized piece never marked ready
   being named under `Idea` with its blocker named wherever it sits, the command
-  reporting and never building, and `/what-now` keeping its cap of three things, because a
-  `/what-now` that grew the whole list would undo the split that earned the ninth
-  command. The same rule reaches the end of a build: `/implement` and
+  reporting and never labelling, claiming or building, and `/what-now` keeping
+  its cap of three things while offering `/queue` when asked what else can be
+  worked on, because a `/what-now` that grew the whole list would undo the split
+  that earned the ninth command. The same rule reaches the end of a build: `/implement` and
   section-builder name a next piece only from the printout's `To build` group,
   and never from a hand reading of the issues.
 - `.agents/tests/gated-turns.sh` checks the rule that decides when a scripted

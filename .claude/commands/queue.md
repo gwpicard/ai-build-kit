@@ -1,5 +1,5 @@
 ---
-description: The whole list of ready work at once, for somebody taking on more than one piece.
+description: The plan a run would follow, for somebody taking on more than one piece.
 ---
 <!-- GENERATED from .agents/skills/queue/. Do not edit here; regenerate with .agents/tools/build-adapters.sh -->
 
