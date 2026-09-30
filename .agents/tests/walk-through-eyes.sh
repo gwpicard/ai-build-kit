@@ -58,7 +58,12 @@ rs_rule "an office file becomes a PDF first" \
   'soffice --headless --convert-to pdf --outdir <folder> <file>'
 rs_rule "then goes the PDF route" 'then the pdf route'
 rs_rule "an image is read directly" 'png, jpeg, gif or webp: read it directly'
-rs_rule "an SVG is turned into a PNG first" 'magick <file> <file>\.png'
+# The picture goes to the folder too. Written beside the SVG, it would land in
+# the piece's worktree whenever the SVG is there.
+rs_rule "an SVG is turned into a PNG in the pictures folder" \
+  'magick <file> <folder>/<name>\.png'
+rs_rule "the page count says whether pages were left unseen" \
+  '`pdfinfo <file>`, from the same package, gives the page count'
 rs_rule "each image is opened with the file reader" \
   'open each image with your file reader'
 # The risk the issue names: a model judges the picture, so the report says
@@ -86,6 +91,8 @@ rs_guard "$BUILDER" "section-builder"
 
 # The old wording put the folder wherever the build was running, which on a
 # run is the piece's worktree.
+rs_require_absent "an SVG's picture is never written beside the SVG" \
+  "$BUILDER" 'magick <file> <file>\.png'
 rs_require_absent "section-builder no longer keeps pictures in a folder relative to the build" \
   "$BUILDER" 'keep them in `\.agents/tmp/walkthrough'
 

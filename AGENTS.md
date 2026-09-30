@@ -1466,8 +1466,9 @@ attribution line, not the word.
   nothing. So it holds the means in the order step 6 tries them: the coding
   agent's own browser tool, then Playwright only where it is already there, a
   PDF rendered one picture a page for the first 30 pages with the rest named
-  as not seen, an office file made into a PDF first, and an SVG made into a
-  picture. The kit never installs a browser. Each picture is opened with the
+  as not seen, `pdfinfo` giving the page count, an office file made into a PDF
+  first, and an SVG made into a picture in the pictures folder rather than
+  beside the SVG, where it would land in the worktree. The kit never installs a browser. Each picture is opened with the
   file reader, and the report says what it was compared against. Every
   picture goes to the main folder's walk-through folder, one for each piece,
   never inside a worktree, where it would count as unsaved work and keep the

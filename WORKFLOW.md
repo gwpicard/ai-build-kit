@@ -165,8 +165,8 @@ interpret. You can ask for the structure to be fixed before saving, or leave it
 and have that choice recorded on the piece.
 
 Before the walk-through, or your own try when you ask for one, the kit takes out
-anything the change added that nothing needs, such as a helper only one place uses or code nothing calls. It
-only removes things or folds them into the one place that uses them, never
+anything the change added that nothing needs, such as a helper only one place
+uses or code nothing calls. It only removes things or folds them into the one place that uses them, never
 reshapes the code, and runs the tests after every step. Anything that would
 need reshaping, such as a function grown hard to follow, is listed on the piece
 for you to decide instead.
@@ -262,8 +262,8 @@ worked round.
 Once the piece is built, the agent walks through the tool itself with sample
 data, the way you would, and records what it saw. It keeps every picture it
 takes in the main folder's `.agents/tmp/walkthrough/<issue number>/`, which
-never reaches GitHub, and never inside a piece's worktree. Founding offers to plan that sample data, or a test account, when the
-tool has sign-in or builds up history over weeks. The walk-through stands in
+never reaches GitHub, and never inside a piece's worktree. Founding offers to
+plan that sample data, or a test account, when the tool has sign-in or builds up history over weeks. The walk-through stands in
 for your try before saving, and a piece on a pull request still waits in to
 check until you merge it, or until a pre-approved run merges it, so you can try
 it then. When the agent could not see the screen, it says what it could not
