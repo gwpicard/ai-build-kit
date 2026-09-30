@@ -136,7 +136,7 @@ The coverage read includes who can see and do what, the data the tool holds,
 and its outside connections. It names any gaps together and offers once to add
 the missing work. You decide whether it belongs in the plan.
 
-Already built something, in an app builder, a chat assistant, or an earlier attempt? /setup-ai-build-kit adopts it instead of replacing it: it reads what exists, interviews you about what the tool is supposed to do, writes the masterplan for what's actually there, and pins down current behaviour with tests before anything changes.
+Already built something, in an app builder, a chat assistant, or an earlier attempt? /setup-ai-build-kit adopts it instead of replacing it: it reads what exists, interviews you about what the tool is supposed to do, writes the masterplan for what's actually there, and pins down current behaviour with tests before anything changes. Where it already runs its tests on every pull request, that automation stays its project check: founding records which workflow it is, adds no failing check beside it, and asks before adding the kit's own steps to it.
 
 The masterplan carries a picture of everything outside the tool that it reaches: where it keeps your data, and each outside service. You confirm each one at founding, and the picture is redrawn whenever a piece adds or drops a connection, so a tool never quietly reaches something you did not agree to.
 
@@ -539,6 +539,11 @@ check that does not count it. The monthly visit offers once to move it onto the
 index: each lasting fact goes to its one home, dates and issue numbers leave
 the file, and the check gains the step that counts it. Nothing moves without
 your yes, and a no is not asked again.
+
+A project founded before that record, where the kit's placeholder check sits
+red beside CI of the project's own, is offered once to record its own as the
+check and remove the placeholder. Nothing changes without your yes, and a no is
+asked again only when the project's workflows change.
 
 A project with no recipe may still be built much like one on the menu, with
 the same framework and the same data service, even if it runs somewhere else or

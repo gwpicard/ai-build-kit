@@ -146,7 +146,7 @@ rs_rule "the leftover list leaves other tools' worktrees alone" \
   'it leaves alone every worktree another tool made'
 rs_guard "$MAINTAIN" "the maintain skill"
 rs_require_order "the offer comes before recording the visit" "$MAINTAIN" \
-  '^20\. Run "Linking ignored build files' '^21\. Record the visit'
+  '^20\. Run "Linking ignored build files' '^22\. Record the visit'
 
 # WORKFLOW.md tells it.
 rs_require_load_bearing "WORKFLOW says ignored build files are linked" "$WORKFLOW" \

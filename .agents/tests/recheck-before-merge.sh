@@ -132,7 +132,7 @@ rs_require_load_bearing "WORKFLOW says the sweep merges one at a time" "$WORKFLO
 # --- /sync reads the check on main -----------------------------------------------
 
 rs_require_load_bearing "/sync reads the newest check run on main" "$SYNC" \
-  'gh run list --branch main --workflow checks\.yml --limit 1 --json status,conclusion'
+  'gh run list --branch main --workflow <file> --limit 1 --json status,conclusion'
 rs_require_load_bearing "/sync names a run still going as waiting" "$SYNC" \
   'a run still in progress is named as waiting, never as a finding'
 rs_require_load_bearing "/sync leads with a red main" "$SYNC" \

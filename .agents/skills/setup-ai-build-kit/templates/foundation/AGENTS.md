@@ -146,8 +146,8 @@ What each line means is in the `setup-ai-build-kit` skill's
 
 (Filled in by the setup-ai-build-kit skill: harness, file access, shell, Git,
 local save identity, online repository, online account access, online
-authentication, project check, browser availability, independent-review method,
-and optional harness capabilities.)
+authentication, `Project check: <workflow file>, job <job name>`, browser
+availability, independent-review method, and optional harness capabilities.)
 
 ## Stack, and how to run and check it
 
