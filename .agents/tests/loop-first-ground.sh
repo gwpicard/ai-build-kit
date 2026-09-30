@@ -64,22 +64,26 @@ OLD_GROWTH='the kit should get smaller as often as it gets bigger'
 rs_require_absent "the worktree rejection is gone" "$PHILOSOPHY" "$OLD_REJECTION"
 rs_require_absent "the old growth sentence is gone" "$PHILOSOPHY" "$OLD_GROWTH"
 
+# Prove each absence rule can fail: put the old sentence back on a copy and run
+# the same rs_require_absent against it, in a subshell so its failure exits the
+# subshell only. It has to refuse the copy.
+absence_catches() {
+  # absence_catches <description> <restored-copy> <pattern>
+  if ( rs_require_absent "$1" "$2" "$3" ) >/dev/null 2>&1; then
+    rs_fail "restoring $1 was not caught"
+  fi
+  rs_ok "restoring $1 is caught"
+}
+
 if [ -z "${RS_LIST:-}" ]; then
   restored="$rs_dir/philosophy-restored.md"
-  cp "$PHILOSOPHY" "$restored"
-  printf '\nParallel agents on separate worktrees, rejected. Fails question 4.\n' >> "$restored"
-  if rs_fold "$restored" | grep -qE "$OLD_REJECTION"; then
-    rs_ok "restoring the worktree rejection is caught"
-  else
-    rs_fail "restoring the worktree rejection was not caught"
-  fi
-  cp "$PHILOSOPHY" "$restored"
-  printf '\nThe kit should get smaller as often as it gets bigger.\n' >> "$restored"
-  if rs_fold "$restored" | grep -qE "$OLD_GROWTH"; then
-    rs_ok "restoring the old growth sentence is caught"
-  else
-    rs_fail "restoring the old growth sentence was not caught"
-  fi
+  # Put each old sentence back where its replacement now stands.
+  sed 's/^Separate worktrees for parallel pieces, added\./Parallel agents on separate worktrees, rejected./' \
+    "$PHILOSOPHY" > "$restored"
+  absence_catches "the worktree rejection" "$restored" "$OLD_REJECTION"
+  sed 's/^Growth has to replace work that was already happening without the kit; anything$/The kit should get smaller as often as it gets bigger. Growth has to replace/' \
+    "$PHILOSOPHY" > "$restored"
+  absence_catches "the old growth sentence" "$restored" "$OLD_GROWTH"
 fi
 
 # --- each new worked example answers all five questions ------------------
@@ -101,7 +105,9 @@ example_block() {
 
 # The five answers, one marker each: the command it fits under, what the
 # person sees, the one sentence, what they do when it goes wrong, and what they
-# never need to learn.
+# never need to learn. The fourth has to name a command the person types before
+# the sentence ends, because "check the logs" is not an answer and neither is
+# the kit acting with nobody told.
 FIVE='fits under
 sees
 the sentence is
@@ -150,8 +156,15 @@ rs_require_load_bearing "the README's audience line names technical builders who
   "$README" '\| who it is for \| technical builders who direct agents'
 rs_require_load_bearing "WORKFLOW.md's opening names technical builders who direct agents" \
   "$WORKFLOW" 'technical builders who direct agents'
-rs_require_order "and says it in its opening, before the command table" \
-  "$WORKFLOW" 'technical builders who direct agents' '^## 1\. Commands'
+# The order is read on folded text, so rewrapping the opening cannot break it.
+if [ -z "${RS_LIST:-}" ]; then
+  wf_order=$(rs_fold "$WORKFLOW" | awk '{
+    a = index($0, "technical builders who direct agents")
+    b = index($0, "## 1. commands")
+    print (a > 0 && b > 0 && a < b) ? "yes" : "no"
+  }')
+  rs_report "and says it in its opening, before the command table" "$wf_order"
+fi
 rs_require_load_bearing "COMPATIBILITY says Claude Code comes first" \
   "$COMPAT" 'claude code comes first'
 rs_require_load_bearing "COMPATIBILITY names what other coding agents get" \

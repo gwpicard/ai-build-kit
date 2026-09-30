@@ -1100,7 +1100,8 @@ attribution line, not the word.
   and pull requests and never have to read code. Records are written for agents
   first under a short plain header, while a public document such as the README
   stays written for people. The worktree and loop worked examples are added and
-  each answers all five questions, and taking any one answer out is caught. The
+  each answers all five questions, with the answer for when it goes wrong
+  naming a command the person types. Taking any one answer out is caught. The
   test-first example still rejects the universal practice and states the
   narrower rule that a machine check fails before the code. The kit may grow
   only to replace work that was already happening without it. The check puts

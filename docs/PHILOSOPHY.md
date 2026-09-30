@@ -276,12 +276,14 @@ first list empty?
 `/queue`, the whole ready list at once, added as a ninth command. It failed
 question 1 under every existing command, which is the answer that mattered:
 `/what-now` was doing orientation and overview at once, and the cap that keeps
-orientation usable is what squeezed the overview out. The person sees two lists
-when they type it, what can be built together now and what is waiting on what.
-The sentence is "it shows everything ready to build at once, and what is waiting
-on what". When the list looks wrong they type it again, since it is printed from
-the issues and never edited. They never need to learn that a piece can depend on
-another piece.
+orientation usable is what squeezed the overview out. The person sees the plan
+when they type it: the ready pieces in order, which can be built together
+because they share no area, what is waiting on what, and the command that runs
+the plan. The sentence is "it shows everything ready to build, in order, and
+how to run it". When the plan looks wrong they type it again, since it is
+printed from the issues and never edited. They never need to learn that a piece
+can depend on another piece. The loop example below says what running the plan
+does.
 
 Specialised agent role systems, rejected. Fails question 1, because each role is
 a new thing to know, and question 3, because there is no one-sentence version.
@@ -296,11 +298,13 @@ project then ran parallel worktrees for weeks anyway, set up by hand each time,
 and they collided because nobody owned them. So the kit owns each worktree from
 start to finish.
 
-It fits under /implement, which opens one worktree for each piece it builds,
-named after the piece, and removes it when the piece's pull request closes. The
-person sees the piece's name on its branch and its pull request. The sentence is
-"each piece is built in its own copy of the project, and the kit clears it
-away". When a copy goes wrong or is left behind, /maintain removes it. They
+It fits under /implement, which opens one worktree for each piece in a run,
+named after the piece, and clears it away once its pull request has closed and
+nothing in it is unsaved. A single /implement outside a run works in the main
+folder as before. The person sees the piece's name on its branch and its pull
+request. The sentence is "each piece in a run is built in its own copy of the
+project, and the kit clears it away". When something goes wrong with a copy,
+such as one left behind, they type /maintain, which offers to remove it. They
 never need to track which copy holds which piece.
 
 Tight bug reproduction before a fix, added. It fits under /fix; the user sees
