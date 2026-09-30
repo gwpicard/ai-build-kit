@@ -331,7 +331,8 @@ versus actual, and fix it at the root.
 
 First read the capability profile's `Walk-through eyes:` line, which says what
 this machine can look with. A project founded before that line existed has
-none, so check each tool below with `command -v` now and say once what you found.
+none, so check each tool below with `command -v` now and say once what you
+found.
 
 Try the means for the piece's output in this order:
 
@@ -341,14 +342,17 @@ Try the means for the piece's output in this order:
   the project or the machine already has Playwright. The kit never installs a
   browser.
 - A PDF: `pdftoppm -png -r 80 -f 1 -l 30 <file> <folder>/page`, from Poppler,
-  which writes one image for each of the first 30 pages. In a longer file, the
-  pages past the thirtieth are named as not seen.
+  which writes one image for each of the first 30 pages. `pdfinfo <file>`,
+  from the same package, gives the page count. In a longer file, the pages
+  past the thirtieth are named as not seen, and the piece goes to `to check`.
 - A Word, PowerPoint, Excel or OpenDocument file:
   `soffice --headless --convert-to pdf --outdir <folder> <file>`, from
-  LibreOffice, and then the PDF route.
+  LibreOffice, and then the PDF route. Where the command is named
+  `libreoffice`, it takes the same options.
 - An image in PNG, JPEG, GIF or WebP: read it directly. An SVG:
-  `magick <file> <file>.png`, from ImageMagick, and read the PNG. Where only an
-  older ImageMagick is installed, `convert` takes the same two names.
+  `magick <file> <folder>/<name>.png`, from ImageMagick, and read the PNG.
+  Where only an older ImageMagick is installed, `convert` takes the same two
+  names.
 
 Open each image with your file reader, which shows it to you. Record what each
 one showed and what you compared it against, such as the Done when line, the
