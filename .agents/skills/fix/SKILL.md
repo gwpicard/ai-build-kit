@@ -113,6 +113,14 @@ it pass, then rerun the original, unminimised case. When no credible
 automated boundary exists, record that as a maintainability finding and use
 the strongest manual or operational evidence available instead.
 
+The checks-first and test rules in section-builder's step 4 apply to a repair
+too. Commit the failing regression check on its own before the fix, so the saved
+history shows it catching the fault first. An existing test changes only where
+the repair's issue names it under `Under the hood`, with the reason. Any other
+test that stands in the way is reported as wrong, never weakened, skipped or
+deleted, and section-builder's test guard runs before the repair is saved, with
+the repair's issue as the piece.
+
 On Build with care, where a runner exists for the project's language, offer
 to check the regression test by breaking the repaired code on purpose. Follow
 the `section-builder` skill's `references/test-strength.md` for this optional

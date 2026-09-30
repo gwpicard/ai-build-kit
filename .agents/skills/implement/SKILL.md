@@ -68,6 +68,10 @@ A piece carrying a `## Waiting on you` section cannot be built until that step i
 done. Do not attempt it, and do not pass it over in silence. Say what the step
 is, in the words the piece uses, and that building carries on once it is done.
 
+The `Waiting on you: try it` line is different: it asks for the person's own try
+once the piece is built, so build the piece, and section-builder waits for them
+before saving.
+
 In an unattended run, name the step, leave the piece where it is, and take the
 next ready piece, so the run keeps working and the step is waiting when the
 person comes back.
