@@ -96,8 +96,8 @@ These spellings are not refused, and the rule above still forbids them:
 Where the masterplan's `Goes live:` line says `on every merge`, each merge puts
 the tool live. There the kit adds two rules to the ask list in the project's
 Claude Code settings, so Claude Code shows its confirmation box before the
-merge runs, whatever the session was told. Like a deny rule, an ask rule reads
-the words of the command as written.
+merge runs, whatever the session was told. Like a deny rule, an ask rule
+matches only the command as it is typed.
 
 These merges are asked about:
 
