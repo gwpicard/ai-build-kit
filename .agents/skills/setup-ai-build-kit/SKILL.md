@@ -327,10 +327,10 @@ public one, so a project that wants to stay private still uses one. Do this with
 label set in references/pieces.md, the six states `idea`, `shaping`, `ready`,
 `building`, `to check` and `parked` among them,
 delete the labels GitHub made by itself, copy templates/foundation/piece-issue.yml
-to `.github/ISSUE_TEMPLATE/piece.yml`, open one issue per piece as `shaping`
-(with the matching `needs-` label where it still holds an open question for
-`/shape` to settle), and link the ones that genuinely block each other using
-GitHub's blocked-by relationship. Founding runs the readiness check in the
+to `.github/ISSUE_TEMPLATE/piece.yml`, open one issue per piece, each
+`shaping` with the matching `needs-` label where it still holds an open
+question for `/shape` to settle and `shaping` alone otherwise, and link the
+ones that genuinely block each other using GitHub's blocked-by relationship. Founding runs the readiness check in the
 `shape` skill's `references/readiness-check.md` on each shaped piece through a
 session that did not shape it, and labels a piece `ready` only when its
 `## Readiness` section names no blocking gap. Where the coding agent cannot

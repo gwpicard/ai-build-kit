@@ -154,8 +154,8 @@ The check and the section are described in the `shape` skill's
 ## Rules that are not fields
 
 - No open choice a person would notice. The refused phrases, and the rule that
-  a vague count or size needs a number, are item 10 of the list in the `shape`
-  skill's `references/readiness-check.md`.
+  a vague count or size needs a number, are item 10 of the list in
+  the `shape` skill's `references/readiness-check.md`.
 - Lists are complete: a list of examples does not stand in for the whole.
 - Each Done when line is false on today's code and true after, through this
   piece alone.
