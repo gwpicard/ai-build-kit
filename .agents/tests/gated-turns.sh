@@ -676,6 +676,83 @@ expect "nor on a reply that only reports a pull request" wait "$gate55" \
 expect "nor on a reply saying the code was uploaded" wait "$gate55" \
   "I uploaded the code to bramble-team/bramble, which is private." 0
 
+# Scenario 57 runs /implement queue over three ready pieces: one to build, one
+# that waits on it and so stacks on its branch, and one whose stored record has
+# a shape nobody settled. The code is already online, so the first upload's
+# question never arises and the run can open pull requests with nobody there.
+grep -q '^# prepare: three-ready-pieces$' "$ROOT/.agents/tests/replay/cases/57.txt" \
+  && grep -q '^/implement queue' "$ROOT/.agents/tests/replay/cases/57.txt" \
+  && ok "case 57 names its preparation and opens with /implement queue" \
+  || bad "case 57 no longer names its preparation or no longer opens with /implement queue"
+
+tr="$WORK/threeready"
+mkdir -p "$tr"
+cp "$fixture/masterplan.md" "$fixture/CHANGELOG.md" "$tr/"
+cp "$fixture/issues.json" "$tr/.gh-fixture.json"
+cp -R "$fixture/app" "$tr/app"
+sh "$ROOT/.agents/tests/replay/prepare/three-ready-pieces.sh" "$tr" \
+  && ok "the three-ready-pieces preparation runs before the first commit" \
+  || bad "the three-ready-pieces preparation failed before the first commit"
+shape=$(python3 - "$tr/.gh-fixture.json" <<'PY'
+import json, sys
+state = json.load(open(sys.argv[1]))
+ready = [i for i in state["issues"] if i["state"] == "open" and "ready" in i["labels"]]
+numbers = [i["number"] for i in ready]
+bar = all("## Done when" in i["body"] and "## Readiness" in i["body"] for i in ready)
+stacked = [i for i in ready if set(i.get("blocked_by", [])) & set(numbers)]
+unsettled = [i for i in ready if "is not settled" in i["body"]]
+print(len(ready), bar, len(stacked), len(unsettled),
+      bool(stacked) and not stacked[0] in unsettled)
+PY
+)
+[ "$shape" = "3 True 1 1 True" ] \
+  && ok "three pieces are ready and meet the bar, one waits on another, and one leaves its record's shape unsettled" \
+  || bad "the three-ready-pieces state reads: $shape"
+git init -q -b master "$tr"
+git init -q --bare -b main "$tr.git"
+git -C "$tr" remote add origin "$tr.git"
+git -C "$tr" config user.email rehearsal@example.com
+git -C "$tr" config user.name Rehearsal
+git -C "$tr" config commit.gpgsign false
+git -C "$tr" add -A
+git -C "$tr" commit -q -m "Project before the scenario"
+sh "$ROOT/.agents/tests/replay/prepare/three-ready-pieces.after-commit.sh" "$tr" \
+  && ok "its second half runs after the first commit" \
+  || bad "the second half failed after the first commit"
+[ "$(git -C "$tr" branch --show-current)" = "main" ] && [ -z "$(git -C "$tr" status --porcelain)" ] \
+  && ok "the project is left on main, with nothing uncommitted" \
+  || bad "the project was left off main, or dirty"
+[ "$(git -C "$tr.git" rev-parse -q --verify refs/heads/main 2>/dev/null)" = "$(git -C "$tr" rev-parse main)" ] \
+  && ok "the remote already holds main, so the code is online before the run" \
+  || bad "the remote does not hold the project's main"
+PYTHONDONTWRITEBYTECODE=1 python3 "$tr/app/test_bramble.py" >/dev/null \
+  && ok "the project's own checks pass before the run" \
+  || bad "the project's own checks fail before the run"
+sh "$ROOT/.agents/tests/replay/prepare/three-ready-pieces.sh" "$tr" 2>/dev/null \
+  && bad "the three-ready-pieces preparation ran inside a git work tree" \
+  || ok "the three-ready-pieces preparation refuses a folder inside a git work tree"
+git -C "$tr" commit -q --allow-empty -m "later work"
+sh "$ROOT/.agents/tests/replay/prepare/three-ready-pieces.after-commit.sh" "$tr" 2>/dev/null \
+  && bad "the second half ran on a project with history of its own" \
+  || ok "the second half refuses a project with more than the harness's first commit"
+mkdir -p "$tr/app/nested"
+sh "$ROOT/.agents/tests/replay/prepare/three-ready-pieces.after-commit.sh" "$tr/app/nested" 2>/dev/null \
+  && bad "the second half ran on a folder inside another repository" \
+  || ok "the second half refuses a folder that is not the top of its own repository"
+
+# Case 57's gate waits for the one question a run asks before it starts:
+# whether pieces that pass may be merged while nobody watches. A plan that has
+# not asked yet leaves the answer nothing to answer.
+gate57=$(sed -n 's/^# when: //p' "$ROOT/.agents/tests/replay/cases/57.txt" | head -1)
+expect "case 57's gate opens on the question the run asks before it starts" send "$gate57" \
+  "Before I start: may pieces that pass be merged during the run?" 0
+expect "and on an ask whether the kit may merge" send "$gate57" \
+  "Approve the plan, and say whether I should merge the pieces that pass." 0
+expect "and on an ask for pre-approval" send "$gate57" \
+  "Do you pre-approve merges for this run?" 0
+expect "but not on a plan that has not asked yet" wait "$gate57" \
+  "Here is the plan: the days-late piece, then the overdue list on top of it, then the note." 0
+
 # --- the cases on disk -----------------------------------------------------
 
 for c in 05 08; do

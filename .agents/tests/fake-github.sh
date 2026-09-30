@@ -230,6 +230,126 @@ else
   pass "a branch with no pull request says so, as the real CLI does"
 fi
 
+echo "== A pull request stacked on another =="
+
+# A run builds a piece that waits on another piece of the same run on top of
+# that piece's branch, and its pull request aims at that branch rather than at
+# main. GitHub refuses a base that is not a branch on the repository, so the
+# stand-in does too, and a kit that opens the stacked pull request before the
+# branch under it is uploaded finds out here rather than on the day.
+git fetch -q origin
+git checkout -q main
+git merge -q --ff-only origin/main
+git checkout -q -b invoices
+echo invoice > invoice.txt
+git add invoice.txt
+git commit -q -m "Keep an invoice"
+git checkout -q -b invoice-totals
+echo total > total.txt
+git add total.txt
+git commit -q -m "Total the invoices"
+
+before=$("$GH" pr list --state all --json number)
+if "$GH" pr create --title "Total the invoices" --body "Merge the invoice piece first." \
+    --head invoice-totals --base invoices > /dev/null 2>&1; then
+  fail "a pull request was opened on a base that is not on the remote"
+else
+  pass "a base that is not on the remote is refused, as on GitHub"
+fi
+[ "$("$GH" pr list --state all --json number)" = "$before" ] \
+  && pass "and the refused pull request was not recorded" \
+  || fail "a refused pull request was recorded anyway"
+
+git push -q origin invoices invoice-totals
+printf 'Closes #1\n\nThe invoice piece.\n' > "$WORK/invoices-body.md"
+base_url=$("$GH" pr create --title "Keep an invoice" --body-file "$WORK/invoices-body.md" \
+  --head invoices --base main)
+base_pr=${base_url##*/}
+case "$("$GH" pr view "$base_pr" --json body)" in
+  *'The invoice piece.'*) pass "pr create reads the body from --body-file" ;;
+  *) fail "pr create lost the body given with --body-file" ;;
+esac
+
+stacked_url=$(printf 'Merge #%s first, then this one.\n' "$base_pr" \
+  | "$GH" pr create --title "Total the invoices" --body-file - --head invoice-totals --base invoices)
+stacked_pr=${stacked_url##*/}
+stacked_view=$("$GH" pr view "$stacked_pr" --json baseRefName,headRefName)
+case "$stacked_view" in
+  *'"baseRefName": "invoices"'*) pass "a stacked pull request reads back with the branch it stacks on as its base" ;;
+  *) fail "the stacked pull request did not keep its base: $stacked_view" ;;
+esac
+case "$("$GH" pr view "$stacked_pr" --json body)" in
+  *"Merge #$base_pr first"*) pass "pr create reads the body from standard input with --body-file -" ;;
+  *) fail "pr create lost the body given on standard input" ;;
+esac
+
+listed=$("$GH" pr list --base invoices --json number,baseRefName)
+case "$listed" in
+  *"\"number\": $stacked_pr"*) pass "pr list --base finds the stacked pull request" ;;
+  *) fail "pr list --base invoices returned '$listed'" ;;
+esac
+case "$listed" in
+  *'"baseRefName": "main"'*) fail "pr list --base also listed a pull request aimed at main" ;;
+  *) pass "and leaves out the one aimed at main" ;;
+esac
+case "$("$GH" pr list --state all --json number,state)" in
+  *'"MERGED"'*) pass "pr list --state all includes a merged pull request" ;;
+  *) fail "pr list --state all left out the merged pull request" ;;
+esac
+if "$GH" pr list --json number,nosuchfield > /dev/null 2>&1; then
+  fail "pr list answered a field nobody modelled"
+else
+  pass "pr list refuses a field nobody modelled, as pr view does"
+fi
+
+# The base merges first. The stacked pull request is then aimed at main, as
+# the merge rule says, and merges there.
+"$GH" pr merge "$base_pr" > /dev/null || fail "the base pull request did not merge"
+if "$GH" pr edit "$stacked_pr" --base no-such-branch > /dev/null 2>&1; then
+  fail "a pull request was moved onto a base that is not on the remote"
+else
+  pass "moving a pull request onto a base that is not on the remote is refused"
+fi
+"$GH" pr edit "$stacked_pr" --base main > /dev/null \
+  && pass "pr edit --base moves a stacked pull request onto main" \
+  || fail "pr edit --base main was refused"
+case "$("$GH" pr view "$stacked_pr" --json baseRefName)" in
+  *'"baseRefName": "main"'*) pass "and it reads back as aimed at main" ;;
+  *) fail "the stacked pull request still does not aim at main" ;;
+esac
+"$GH" pr merge "$stacked_pr" > /dev/null || fail "the stacked pull request did not merge"
+git fetch -q origin
+git merge-base --is-ancestor origin/invoice-totals origin/main \
+  && pass "the stacked pull request lands on the remote's main after the move" \
+  || fail "the remote's main does not carry the stacked branch"
+
+echo "== A claim on a piece =="
+
+# A run claims a piece and reads the claim back, and backs off by taking its
+# own name off a piece somebody else claimed first.
+"$GH" issue edit 2 --add-assignee @me --add-label building > /dev/null
+printf 'Claimed by run 2026-09-30-2215\n' > "$WORK/claim.md"
+"$GH" issue comment 2 --body-file "$WORK/claim.md" > /dev/null \
+  && pass "issue comment accepts --body-file" \
+  || fail "issue comment --body-file was refused"
+case "$("$GH" issue view 2 --json labels,assignees,comments)" in
+  *'Claimed by run 2026-09-30-2215'*) pass "issue view shows the comments, so a claim can be read back" ;;
+  *) fail "issue view does not show the claim comment" ;;
+esac
+"$GH" issue edit 2 --remove-assignee @me > /dev/null \
+  && pass "issue edit --remove-assignee is accepted" \
+  || fail "issue edit --remove-assignee was refused"
+case "$("$GH" issue view 2)" in
+  *'"assignees": []'*) pass "and the assignee is gone" ;;
+  *) fail "the assignee is still on the piece" ;;
+esac
+printf '## Done when\n- a refund is recorded\n\nWhere is the refund kept?\n' > "$WORK/question.md"
+"$GH" issue edit 2 --body-file "$WORK/question.md" > /dev/null
+case "$("$GH" issue view 2)" in
+  *'Where is the refund kept?'*) pass "issue edit reads the body from --body-file" ;;
+  *) fail "issue edit lost the body given with --body-file" ;;
+esac
+
 echo "== The first upload into an empty repository =="
 
 # A founded project's repository exists on GitHub but holds nothing. The first
@@ -360,7 +480,7 @@ fi
 
 # Nothing the kit reached for during this rehearsal should have been refused.
 if grep -q "UNSUPPORTED" "$FAKE_GH_LOG"; then
-  unexpected=$(grep "UNSUPPORTED" "$FAKE_GH_LOG" | grep -vc "search repos\|repo list\|visibility public\|private=false\|force=true\|-X DELETE\|someone/else\|git/ref -f" || true)
+  unexpected=$(grep "UNSUPPORTED" "$FAKE_GH_LOG" | grep -vc "search repos\|repo list\|nosuchfield\|visibility public\|private=false\|force=true\|-X DELETE\|someone/else\|git/ref -f" || true)
   if [ "$unexpected" -gt 0 ]; then
     fail "$unexpected modelled command was refused; see $FAKE_GH_LOG"
   fi
