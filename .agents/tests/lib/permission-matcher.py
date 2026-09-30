@@ -84,13 +84,39 @@ def self_test():
     return problems
 
 
-def read_list(text, marker, keep):
+def section(text, heading):
+    """The lines under a `## ` heading, up to the next one. None when absent.
+
+    Two sections of blocked-commands.md carry lists that open with the same
+    marker, so a reader that took the first match would read the push lists
+    twice and the delete lists never.
+    """
+    lines = text.splitlines()
+    for i, line in enumerate(lines):
+        if line.startswith("## ") and line[3:].strip() == heading:
+            break
+    else:
+        return None
+    body = []
+    for line in lines[i + 1:]:
+        if line.startswith("## "):
+            break
+        body.append(line)
+    return "\n".join(body)
+
+
+def read_list(text, marker, keep, heading=None):
     """The backticked spellings in the bullet list that follows a marker line.
 
     A bullet may wrap onto indented lines. Only spellings for which keep()
-    is true are returned, so prose in backticks is left out. None when the
-    marker is not in the text.
+    is true are returned, so prose in backticks is left out. With a heading,
+    the marker is looked for only under that `## ` heading. None when the
+    heading or the marker is not in the text.
     """
+    if heading is not None:
+        text = section(text, heading)
+        if text is None:
+            return None
     lines = text.splitlines()
     for i, line in enumerate(lines):
         if marker in line:
