@@ -413,15 +413,21 @@ rather than asking again.
 
 After the first launch, shipping gets lighter: it re-checks what changed since the last ship and moves that over, rechecking the build path first if reliance or consequence has grown. A warning the changelog already holds comes back as one line pointing to it, so anything given in full is new.
 
-## 10. Autonomy: /implement auto and goal modes
+## 10. Running a plan: /implement queue
 
-Autonomy is earned. Once a project has three normal pieces built cleanly, no open review finding, and a plan made of ready pieces a machine can prove done, "/implement auto" can build several of them in a row without you between them. You approve the plan once, then it runs; the trade is that you check a batch at the end instead of each piece as it lands.
+Give /implement several piece numbers, or type "/implement queue" for every ready piece, and it builds them one after another without you between them. "/implement auto" is the same thing. It says the plan once: each piece in order, whether the run can take it and why not, and which pieces build on another. You approve it once, and say whether pieces that pass may be merged while you are away. Then it runs.
 
-The run only picks up pieces whose done line names a check a machine can judge. Pieces that need your eyes stay in the plan for you. Every piece still gets its own evidence and its own saved snapshot. A piece that fails three attempts gets parked with a note on what it revealed, and the run moves on rather than grinding on it; anything touching a named sensitive area stops the run entirely.
+A run decides piece by piece what it can take. A piece needs to be ready, checked by a session that did not shape it, and complete enough to build with nobody to ask. A piece in a sensitive area is taken only once your acceptance is on the record, and a run never gives one for you. A piece you asked to try yourself is built and then waits for you in to check, whatever you said about merging.
 
-You come back to a report of what was built, what got parked and why, and a checklist of things to try, riskiest first. Where the build path requires a pull request, that's how the batch arrives; work the checklist, then merge. If the run disappointed you, improve the documents rather than the code. Sharpen the done lines, add the missing rule to the masterplan, and run it again.
+Each piece goes through the same steps as a single build: claimed, checks written first and seen to fail, built, walked through, reviewed. Each piece arrives as its own pull request, and the parts of one piece share one. A piece that needs another built earlier in the run is built on top of it, and its pull request says which to merge first.
 
-Some harnesses provide goal or long-run modes, such as Claude Code's `/goal`: "keep going until this condition holds". Same run, same rules: take the condition from a done line, a named sensitive area still stops it, and the result still lands through the save route the build path requires.
+If the run meets a choice nobody made, a hard one, about stored data, syncing or what leaves the tool, sends that piece back to shaping with the question on it. An easy one takes the option simplest to undo and is flagged in the pull request. A piece that fails three attempts is parked with a note on what it revealed. Either way the run moves on.
+
+The run keeps a state file in your project, which git ignores, and a live progress page where your coding agent can publish one. If a session dies, a new session picks the run up from its state file, and /what-now and /sync both offer to resume it.
+
+When nothing is left that the run can take, it stops at once with one report: each piece, its pull request and where it stands, the choices flagged for you, what was parked and why, and the order to merge in. You answer with the pull requests to merge. If the run disappointed you, improve the documents rather than the code. Sharpen the done lines, add the missing rule to the masterplan, and run it again.
+
+Some harnesses provide goal or long-run modes, such as Claude Code's `/goal`: "keep going until this condition holds". Same run, same rules: take the condition from a done line, a named sensitive area still stops it, and each piece still lands through the save route the build path requires.
 
 ## 11. Team use
 

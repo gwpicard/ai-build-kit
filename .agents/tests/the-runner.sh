@@ -66,7 +66,7 @@ rs_rule "field: attempts" '"attempts": 1'
 rs_rule "field: flags" '"flags": \['
 rs_rule "merge_preapproved is the answer before the run" '`merge_preapproved` is the person.s answer before the run'
 rs_rule "the states a piece can hold in a run" '`state` is one of `waiting` \(not started\), `building`, `to check`, `merged`, `parked`, `shaping`'
-rs_rule "the reason names the merge condition failed" 'naming the condition in `references/merge\.md` that it failed'
+rs_rule "the reason names the merge condition failed" 'naming the condition it failed in the `section-builder` skill.s `references/merge\.md`'
 rs_rule "the state is written after every step" 'write the state file after every step that changes a piece, before the next step starts'
 rs_rule "progress.md is a short log" '`progress\.md`, beside it, is a short log'
 rs_rule "a live page is published from the state file" 'publish a live progress page from the state file'
@@ -117,7 +117,7 @@ rs_rule "the run never idles when nothing is left" 'the run ends at once with it
 rs_rule "the report leads with what was parked" 'what was parked and why'
 rs_rule "the report gives each pull request in merge order" 'each piece with its pull request and its state, in the merge order'
 rs_rule "the report gives each flagged choice" 'under each piece, its flagged choices'
-rs_rule "the report names the condition a piece failed" 'the condition in `references/merge\.md` it failed'
+rs_rule "the report names the condition a piece failed" 'the merge condition it failed, in the words of'
 rs_guard "$LONGER" "running-longer.md"
 
 rs_require_order "the claim comes before the branch" "$LONGER" '^1\. \*\*Claim it' '^2\. \*\*Branch it'
