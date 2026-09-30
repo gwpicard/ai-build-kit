@@ -474,6 +474,9 @@ where a change to `main` goes live, and `through /ship` otherwise. Off a
 recipe, write `Goes live: not hosted` where the interview or the two questions
 above say nothing is hosted, because people install the tool, copy it, or run
 it on their own computer. Otherwise write no line, and the first merge asks.
+In the same save, set the confirmation box as the `section-builder` skill's
+`references/merge.md` says under "The confirmation box on a merge that goes
+live": `add` for `on every merge`, `remove` for any other value.
 
 On any stack, recipe or not, use managed services for anything storing
 sign-ins, payments, or files; those never get hand-built, however capable you

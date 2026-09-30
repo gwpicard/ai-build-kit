@@ -972,8 +972,9 @@ attribution line, not the word.
   Claude Code settings carry against a direct push to `main`. The first rules
   matched three exact spellings, and a real run pushed with
   `git push -q origin main`, which none of them matched. Nothing here can run
-  Claude Code's own matcher without a model, so the check carries a small one
-  that follows the documented rule shape, and tests it first against the
+  Claude Code's own matcher without a model, so the check uses a small one in
+  `.agents/tests/lib/permission-matcher.py`, shared with `merge-ask-rule.sh`,
+  that follows the documented rule shape and is tested first against the
   examples in the documentation's own table. It then feeds it the spellings
   `blocked-commands.md` says are refused and the ones it says are missed, so
   the written gap and the rules cannot disagree. A branch that only starts
@@ -982,6 +983,21 @@ attribution line, not the word.
   rules to a project founded before them: offered once, named, added only on
   a yes, with nothing else in the file touched, and a no recorded so the offer
   returns only when a release adds another rule.
+- `.agents/tests/merge-ask-rule.sh` guards the confirmation box Claude Code
+  shows before a merge on a project whose every merge goes live. The rule that
+  a person decides what merges holds only while an agent follows it, and two
+  projects built with the kit saw merges made on the agent's own judgement,
+  one over a red check. An ask rule binds every session, so the two rules live
+  in one template file and one script writes them. The check feeds the shared
+  matcher the merges `blocked-commands.md` says are asked about, the commands
+  it says never are and the merges it says are missed, and takes each rule out
+  in turn. It drives the script on a copy of the founded settings: every deny
+  rule and the session-start hook stay, and a remove gives back the file as it
+  was. A missing file, a file that is not JSON, the person's own ask rule and
+  a line that stops saying `on every merge` each get their own case. It holds
+  that founding, the merge step and `/ship` run the script whenever they write
+  the line, the one-time offer in `/maintain` with a no recorded, and that this
+  repository's own settings never carry the rules.
 - `.agents/tests/sync-saves-like-a-piece.sh` guards how /sync saves what it
   corrects. Every skill that changes the records said how it saves them, and
   sync did not: it corrected the pieces, the changelog and the masterplan and

@@ -306,7 +306,7 @@ rs_rule "no settings file or another value ends the step" \
 rs_rule "the rules come from the installed template" \
   'read the rules in the installed setup-ai-build-kit skill.s `templates/merge-ask-rules\.json`, never from memory'
 rs_rule "nothing missing means nothing said on the visit" \
-  'list each one the project.s `permissions\.ask` list lacks\. when there is none, say nothing'
+  'list each one the project.s `permissions\.ask` list lacks\. where it lacks none, say nothing'
 rs_rule "an earlier no stands for the box" \
   'read the `merge-ask-declined` line in `\.ai-build-kit-maintenance`, if there is one\. where it already lists every missing rule, the earlier no stands'
 rs_rule "offered once, naming what they do" \
@@ -321,7 +321,7 @@ rs_rule "the offer returns only for a new rule" \
   'a later visit offers again only when the template holds a rule that line does not list'
 rs_guard "$MAINTAIN" "maintain's confirmation box offer"
 rs_require "the monthly pass runs the offer" "$MAINTAIN" \
-  '22\. run "adding the confirmation box on merges that go live" below'
+  'rules before\. then run "adding the confirmation box on merges that go live" below'
 rs_require "the maintenance record names the declined line" "$RECORD" 'merge-ask-declined'
 
 # --- the written gap --------------------------------------------------------------------

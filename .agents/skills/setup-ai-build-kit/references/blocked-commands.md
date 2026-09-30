@@ -90,3 +90,40 @@ These spellings are not refused, and the rule above still forbids them:
   main`, with an option between `git` and `push`
 - `/usr/bin/git push origin main`, with git called by its full path
 - `sh -c 'git push origin main'`, with the push inside another shell
+
+## A merge that goes live
+
+Where the masterplan's `Goes live:` line says `on every merge`, each merge puts
+the tool live. There the kit adds two rules to the ask list in the project's
+Claude Code settings, so Claude Code shows its confirmation box before the
+merge runs, whatever the session was told. Like a deny rule, an ask rule reads
+the words of the command as written.
+
+These merges are asked about:
+
+- `gh pr merge`, which merges the pull request of the branch checked out
+- `gh pr merge 12`
+- `gh pr merge 12 --squash`
+- `gh pr merge --merge 12`
+- `gh pr merge 12 --auto`
+- `gh api -X PUT repos/o/r/pulls/12/merge`
+
+The second rule also asks before `gh api repos/o/r/pulls/12/merge` with no
+method, which only reads whether the pull request has merged. Answer the box,
+or read the same thing with `gh pr view 12`.
+
+These commands are never asked about:
+
+- `gh pr view 12`
+- `gh pr list`
+- `gh pr checks 12`
+- `gh api repos/o/r/pulls/12`
+
+These merges are not asked about, and a merge still needs a yes that names it:
+
+- a merge made on GitHub's website
+- a merge through another program, or with `gh` called another way, such as
+  `/opt/homebrew/bin/gh pr merge 12`, `sh -c 'gh pr merge 12'`, or
+  `gh api graphql` with a merge in its query
+- any merge in a session in `bypassPermissions` mode, which skips every
+  confirmation box

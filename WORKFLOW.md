@@ -324,6 +324,10 @@ At the end, a pre-approved run merges its pieces one at a time, each brought up 
 
 The kit's default is that a merge reaches a preview and /ship puts it live. The masterplan's "How it stays running" section records which way your tool goes live. Where your host puts every merge live instead, the ask says "this goes live now", and the first such merge runs /ship's first-launch checks before it happens. A tool with no live address, such as a library people install or a program they run on their own computer, records `not hosted` instead. Its merges are never a launch, and a run may merge them. If the masterplan does not say, the first merge asks which of the three it is, once.
 
+Where your host puts every merge live, Claude Code also shows its own confirmation box before each merge, so no merge goes live without a person seeing it, whatever the session was told. Founding, the merge step and /ship add the box when they record that every merge goes live, and take it out when that changes.
+
+The monthly visit offers it once to a project that recorded the line before the box existed, and a no is kept. A merge made on GitHub's website, or in a session set to skip every confirmation box, does not meet it, so the rule that a person says yes to each merge still holds. Other coding agents have no such box and keep the written rule alone.
+
 After a merge, everyone pulls main. Flagged areas also get the review the build path names before the pull request is offered as ready. A direct push to `main` is forbidden, and in Claude Code the project settings refuse the usual ways of writing one, so every change reaches it through a pull request. Each piece starts from an up-to-date `main`.
 
 ## 8. Sensitive areas, and the risk notice
