@@ -90,7 +90,7 @@ Command names say when to use them.
 | I'm starting something | `/setup-ai-build-kit` | Interview, fit check, founding documents. |
 | I want it to... (a new idea) | `/shape` | Turns your idea into a ready piece. |
 | Build the next ready piece | `/implement` | Builds a ready piece to confirmed and saved. |
-| I'm taking on several things | `/queue` | Everything ready to build, and what is waiting on what. |
+| I'm taking on several things | `/queue` | Everything ready to build, what is waiting on what, and the command that runs it. |
 | It's broken | `/fix` | Cause before code, and evidence that keeps it fixed. |
 | I think it's ready | `/ship` | Checks everything, then takes it live, one path at a time. |
 | I'm done for today | `/sync` | Documents caught up with reality. |

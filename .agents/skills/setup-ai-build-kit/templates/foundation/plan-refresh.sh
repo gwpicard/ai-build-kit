@@ -66,8 +66,9 @@ listing=$(gh api "repos/$repo/issues?state=open&per_page=100" --paginate 2>/dev/
   exit 1
 }
 
-# A blocker is named by its title rather than its number. A number is a thing
-# the reader has to go and look up, and the commands that read this file have to
+# A blocker is named by its title rather than its number. Its number rides
+# along only so the printout can tell whether the blocker is in the plan a run
+# would follow. A number is a thing the reader has to go and look up, and the commands that read this file have to
 # say "deposits cannot start until card payments is set up" rather than
 # "blocked by #9". Carrying the title here means neither of them has to match a
 # number back to a line somewhere else in the file and hope it is still there.
@@ -79,7 +80,8 @@ try:
     items = json.load(sys.stdin)
 except Exception:
     raise SystemExit(0)
-print(", ".join(i["title"] for i in items if i.get("state") == "open"))
+print(json.dumps([[i.get("number"), i["title"]] for i in items
+                  if i.get("state") == "open"]))
 ' 2>/dev/null || true
 }
 
@@ -117,11 +119,18 @@ out, listing_file, blocker_raw = sys.argv[1], sys.argv[2], sys.argv[3]
 issues = [i for i in json.load(open(listing_file))
           if not i.get("pull_request") and i.get("state", "open") == "open"]
 
-blockers = {}
+# For each held-up piece, its open blockers as (number, title) pairs, and the
+# titles joined for the line that names them.
+blocked_by, blockers = {}, {}
 for line in blocker_raw.splitlines():
     if "\t" in line:
-        number, names = line.split("\t", 1)
-        blockers[int(number)] = names.strip()
+        number, found = line.split("\t", 1)
+        try:
+            pairs = [(n, t) for n, t in json.loads(found)]
+        except Exception:
+            pairs = []
+        blocked_by[int(number)] = pairs
+        blockers[int(number)] = ", ".join(t for _, t in pairs)
 
 stamp = subprocess.run(["date", "+%d %b, %H:%M"], capture_output=True,
                        text=True).stdout.strip()
@@ -264,43 +273,141 @@ def render(heading, group, note, marked=True):
         lines.append("       %s" % issue["html_url"])
     lines.append("")
 
-# The areas a piece changes, from its Touches line: one bare line,
-# `Touches: <area>, <area>`, or the line under a `### Touches` heading on a
-# piece opened with the GitHub form. Names are compared without regard to
-# capitals. None means the piece has no Touches line, so nothing says what it
-# changes. Code blocks are skipped, since a line there is an example.
-def touches(issue):
-    lines_in = (issue.get("body") or "").splitlines()
-    fenced, under_heading = False, False
-    for raw in lines_in:
+import re
+
+# The lines of a piece's body outside code blocks, stripped. A line inside a
+# block fenced with ``` or ~~~ is an example, never the piece's own line.
+def body_lines(issue):
+    fence, kept = None, []
+    for raw in (issue.get("body") or "").splitlines():
         line = raw.strip()
-        if line.startswith("```"):
-            fenced = not fenced
+        mark = line[:3]
+        if mark in ("```", "~~~"):
+            fence = None if fence == mark else (fence or mark)
             continue
-        if fenced:
-            continue
+        if fence is None:
+            kept.append(line)
+    return kept
+
+def heading(line, name):
+    return re.match(r"^#{2,3}\s*%s\s*$" % name, line, re.I) is not None
+
+# The areas a piece changes, from its Touches line: one bare line,
+# `Touches: <area>, <area>`, or the line under a `## Touches` or `### Touches`
+# heading, as on a piece opened with the GitHub form. Backticks and a closing
+# full stop are trimmed in any order, and names are compared without regard to
+# capitals. None means the piece has no Touches line, so nothing says what it
+# changes.
+def touches(issue):
+    under_heading = False
+    for line in body_lines(issue):
         if line.lower().startswith("touches:"):
             text = line[len("touches:"):]
+        elif heading(line, "touches"):
+            under_heading = True
+            continue
         elif under_heading and line:
             if line.startswith("#"):
-                under_heading = False
-                continue
+                return None
             text = line
         else:
-            if line.lower() == "### touches":
-                under_heading = True
             continue
-        areas = [a.strip().strip("`").strip().rstrip(".").strip().lower()
+        areas = [re.sub(r"^[\s`]+|[\s`.]+$", "", a).lower()
                  for a in text.split(",")]
         areas = [a for a in areas if a and a != "_no response_"]
         return areas or None
     return None
 
+# What the printout can read on a ready piece that decides what a run can do
+# with it. The masterplan's sensitive areas are not on the piece, so /queue
+# checks those itself. The marks, in the order a reader weighs them:
+#   (needs you)        a `## Waiting on you` step other than `try it`
+#   (not ready)        its `## Readiness` section's first line says Not ready
+#   (not yet checked)  it has no `## Readiness` section
+#   (try it)           a `Waiting on you: try it` line
+def verdict_marks(issue):
+    body = body_lines(issue)
+    marks = []
+    for n, line in enumerate(body):
+        if heading(line, "waiting on you"):
+            step = next((l for l in body[n + 1:] if l), "")
+            if step and not step.startswith("#") \
+                    and step.lower().rstrip(".") != "try it":
+                marks.append("needs you")
+            break
+    readiness = None
+    for n, line in enumerate(body):
+        if heading(line, "readiness"):
+            readiness = next((l for l in body[n + 1:] if l), "")
+            break
+    if readiness is None or readiness.startswith("#") or not readiness:
+        marks.append("not yet checked")
+    elif re.search(r"\bnot ready\b", readiness, re.I):
+        marks.append("not ready")
+    elif not re.search(r"\bready\b", readiness, re.I):
+        marks.append("not yet checked")
+    if any(re.match(r"^waiting on you:\s*try it\.?$", l, re.I) for l in body):
+        marks.append("try it")
+    return marks
+
+# A run cannot take a piece that needs the person or is not ready.
+def run_cannot_take(issue):
+    return bool({"needs you", "not ready"} & set(verdict_marks(issue)))
+
+# The plan a run would follow: every piece under To build, and every held-up
+# piece whose open blockers are all in the plan, found again and again until
+# nothing more joins. A piece whose chain reaches a blocker outside the plan
+# waits its turn.
+by_number = {i["number"]: i for i in issues}
+in_plan = {i["number"] for i in columns["ready"]}
+joined = True
+while joined:
+    joined = False
+    for issue in held_up:
+        n = issue["number"]
+        pairs = blocked_by.get(n, [])
+        if n not in in_plan and pairs and all(b in in_plan for b, _ in pairs):
+            in_plan.add(n)
+            joined = True
+
+# A piece in the plan that stacks on a piece the run cannot take waits for it,
+# and says why: the base's own reason, or what the base itself waits for.
+def waits_for(issue, seen=()):
+    n = issue["number"]
+    for b, title in blocked_by.get(n, []):
+        base = by_number.get(b)
+        if base is None or b in seen:
+            continue
+        if run_cannot_take(base):
+            why = ("needs you" if "needs you" in verdict_marks(base)
+                   else "is not ready")
+            return "waits for %s, which %s" % (title, why)
+        deeper = waits_for(base, seen + (n,))
+        if deeper:
+            return "waits for %s, which %s" % (title, deeper)
+    return ""
+
+def marks_text(issue):
+    return " ".join("(%s)" % m for m in verdict_marks(issue))
+
+def to_build_note(issue):
+    return marks_text(issue)
+
+def held_up_note(issue):
+    parts = [held_note(issue)]
+    if issue["number"] in in_plan:
+        parts.append("(in the plan)")
+        wait = waits_for(issue)
+        if wait:
+            parts.append("(%s)" % wait)
+    parts.append(marks_text(issue))
+    return " ".join(p for p in parts if p)
+
 # Which pieces free to build can go together. Two pieces share a group only
-# when no area on their Touches lines matches, so a group is safe to build in
-# one run in any order. Pieces are placed in number order, each in the first
-# group it clashes with nothing in. A piece with no Touches line goes alone,
-# because nothing says what it would change.
+# when no area on their Touches lines matches, so the pull requests of one
+# group can merge in any order among themselves. Pieces are placed in number
+# order, each in the first group it clashes with nothing in. A piece with no
+# Touches line goes alone, because nothing says what it would change.
 def go_together(group):
     placed = []
     for issue in group:
@@ -336,9 +443,9 @@ render("Needs attention", [i for i, _ in needs_attention],
 render("Broken", broken, lambda i: "(being fixed)" if "building" in labels(i) else "")
 render("Idea", columns["idea"], held_note)
 render("Shaping", columns["shaping"], held_note)
-render("To build", columns["ready"], lambda i: "")
+render("To build", columns["ready"], to_build_note)
 render_groups(columns["ready"])
-render("Held up", held_up, held_note)
+render("Held up", held_up, held_up_note)
 render("Building", columns["building"], held_note)
 render("To check", columns["to check"], held_note)
 render("Parked", columns["parked"], held_note)
