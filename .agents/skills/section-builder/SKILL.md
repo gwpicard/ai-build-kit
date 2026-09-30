@@ -431,12 +431,31 @@ is recorded.
 
 ## 9. Sync the records
 
-Normal completion updates: the piece, its changelog file, the masterplan through
-the piece's recorded change, and AGENTS.md only when a durable operating
-convention changed. Where the piece added, removed, or changed something outside
-the tool that it reaches, update the masterplan's connections picture too, and
-say in one line what the tool now reaches, so the person can say whether it
-should. A correctly completed build does not need /sync afterward.
+Each fact the piece settled goes to one home, and nowhere else:
+
+- what changed for the person: the piece's changelog file, below;
+- the product, its promises and decisions: the masterplan, through the piece's
+  recorded change;
+- lasting technical design, how a part of the tool works and the rules it
+  keeps: `docs/<concept>.md`, one concept to a file, under the headings What it
+  is, How it works, Rules, and Where it lives. Update the concept's file where
+  it has one. A fact that fits no concept file yet starts a new one, named for
+  its concept, never a general notes file, and gets a line in AGENTS.md's
+  technical design section;
+- a durable operating convention: one short rule in AGENTS.md, or a pointer to
+  the file that owns it;
+- anything particular to this piece: the piece itself.
+
+AGENTS.md holds rules and pointers only. Never write a date, an issue number or
+a code name into it. A code name is a function, variable or file name from the
+project's code; those belong in the concept file, the piece or the changelog
+file. The project check goes red when AGENTS.md passes 200 lines, so move
+detail to its home rather than past the ceiling.
+
+Where the piece added, removed, or changed something outside the tool that it
+reaches, update the masterplan's connections picture too, and say in one line
+what the tool now reaches, so the person can say whether it should. A
+correctly completed build does not need /sync afterward.
 
 Once a person merges the pull request it closes the issue, so there is no
 status to set by hand. After that merge, take `to check` off the closed issue,

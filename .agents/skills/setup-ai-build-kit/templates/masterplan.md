@@ -1,13 +1,17 @@
 # Masterplan
 
+(A short header for the person, written by the setup-ai-build-kit skill: two or
+three plain sentences on what the tool is, who uses it, and where it stands.)
+
 Trued against: not yet checked
 
 <!-- The saved code state last compared with this page. The agent follows
 the `setup-ai-build-kit` skill's `references/masterplan-changes.md`; the person
 never has to read a hash. -->
 
-<!-- What the tool is now. Present tense. Keep the core readable in roughly
-one to two pages. Optional sections appear only when they carry real decisions.
+<!-- What the tool is now. Present tense. Everything below the header is
+written for the agent first: complete and exact, so a build never has to guess.
+Keep the core readable in roughly one to two pages. Optional sections appear only when they carry real decisions.
 On every build path, key terms and decided lines may carry an optional one-line
 "rests on" clause in plain words, naming the evidence behind the decision.
 Follow the decision rules in

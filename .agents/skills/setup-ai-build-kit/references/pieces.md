@@ -218,7 +218,9 @@ much context as a piece deserves.
 
 Context that reaches past one piece does not live here. A decision that affects
 the whole product goes in the masterplan, in plain words. A technical convention
-that affects the whole codebase goes in AGENTS.md's stack section. The piece
+that affects the whole codebase goes in AGENTS.md's stack section, as one short
+rule. Lasting technical design goes in its own `docs/<concept>.md`, one concept
+to a file, as the `section-builder` skill's `SKILL.md` routes it. The piece
 holds only what is particular to it.
 
 ## Labels

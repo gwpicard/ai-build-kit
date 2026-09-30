@@ -100,7 +100,7 @@ rs_rule "the monthly step runs the index move" 'run "moving the instructions ont
 rs_rule "a project on the index hears nothing" 'the project is already on the index: say nothing'
 rs_rule "a second visit after a yes finds the move done" 'a second visit after a yes finds both and says nothing'
 rs_rule "an earlier no to the index stands" 'where there is an `index-declined` line, the earlier no stands'
-rs_rule "the move reads the installed template" 'from the installed setup-ai-build-kit skill.s `templates/foundation/agents\.md`'
+rs_rule "the move reads the installed template" 'from the installed `setup-ai-build-kit` skill.s `templates/foundation/agents\.md`'
 rs_rule "no fact is lost in the move" 'every fact that leaves agents\.md lands in its home'
 rs_rule "design moves to concept files" 'lasting technical design moves into `docs/<concept>\.md`, one concept to a file'
 rs_rule "dates, issue numbers and code names leave AGENTS.md" 'dates, issue numbers and code names leave agents\.md'

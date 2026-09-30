@@ -45,13 +45,13 @@ Two of them are files you can open. The third, what's left to build, lives in yo
 | the project's issues | What's left to build: one issue per piece, each with what done looks like, its evidence, and what it needs. `/what-now` reads them for you. |
 | CHANGELOG.md | What happened, dated, in plain language, when work actually landed. Each piece writes its entry to its own small file in `changes/`, so two pieces built at the same time never change the same lines; /sync and /ship fold those files into CHANGELOG.md under the day each reached `main`. |
 
-`AGENTS.md` sits alongside the three records as the instruction file the agent reads to know how this repository works: the rules, the stack, the capability profile, the conventions.
+`AGENTS.md` sits alongside the three records as the instruction file the agent reads to know how this repository works. It is a short index: the standing rules, then a pointer for each topic to the file that owns it, such as the stack's recipe or a design note in `docs/`. The records are written for the agent first, each under a short header you can read, such as the few plain sentences that open the masterplan.
 
 The dividing rule: the masterplan describes the present, the plan holds the future, and the moment a sentence is about when, why, or how something was built, it belongs in the changelog.
 
 You can work with the issues yourself, and nothing you do there will be undone. Open one and write it however you like, in as little as half a sentence. /shape settles what done means with you and marks the piece ready; /implement builds only ready pieces and never guesses past an open question. If a piece is not ready when you reach for /implement, it points you to /shape and takes the next ready piece instead.
 
-A piece is written in two layers. The short header you read says, in plain words, what the piece is for, what done means, including the cases that are not the normal one, such as empty or failing, and what it changes in the masterplan. Below it sits the agent layer, which is complete: every choice you would notice by trying the tool, the data it stores, anything that leaves the tool, the rules it must still meet, what it relies on and which areas it touches. A field that does not apply says why in one line, so a small piece stays short. The build detail sits in a collapsed "under the hood" section you never have to open. Anything that affects the whole product is written into the masterplan instead, and anything technical that affects the whole project goes into AGENTS.md, so no fact is copied into two places.
+A piece is written in two layers. The short header you read says, in plain words, what the piece is for, what done means, including the cases that are not the normal one, such as empty or failing, and what it changes in the masterplan. Below it sits the agent layer, which is complete: every choice you would notice by trying the tool, the data it stores, anything that leaves the tool, the rules it must still meet, what it relies on and which areas it touches. A field that does not apply says why in one line, so a small piece stays short. The build detail sits in a collapsed "under the hood" section you never have to open. Anything that affects the whole product is written into the masterplan instead. Lasting technical design goes into its own file in `docs/`, one concept to a file, and AGENTS.md keeps only rules and a pointer to each file, so no fact is copied into two places.
 
 A decision can say what it rests on, in one short line beside it. When /shape
 uses that decision, or /sync checks the masterplan, the agent reads its support
@@ -498,7 +498,14 @@ trim if the file reaches 200, or contains a folder layout, dependency list,
 architecture overview or style rule an automatic check could enforce. You see
 one line saying how long it is and what can go. Nothing is cut without your yes.
 A newly founded project starts well under the limit, with room left for what
-founding writes into the file.
+founding writes into the file. Between visits, the project check goes red when
+AGENTS.md passes 200 lines, and names both numbers.
+
+A project founded before AGENTS.md became an index has a longer file, and a
+check that does not count it. The monthly visit offers once to move it onto the
+index: each lasting fact goes to its one home, dates and issue numbers leave
+the file, and the check gains the step that counts it. Nothing moves without
+your yes, and a no is not asked again.
 
 A project with no recipe may still be built much like one on the menu, with
 the same framework and the same data service, even if it runs somewhere else or

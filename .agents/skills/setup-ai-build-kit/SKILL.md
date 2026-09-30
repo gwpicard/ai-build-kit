@@ -219,9 +219,12 @@ to an ownership question becomes a founding task rather than a path move.
 ## 7. Write the masterplan
 
 Create masterplan.md from templates/masterplan.md, filled from the interview,
-present tense throughout. The build-path section goes first: the fit check's
-result. Create CHANGELOG.md from its template, empty; it has to exist before
-the next step writes its first line to it. Create `.ai-build-kit-maintenance`
+present tense throughout. Open it with its short header for the person: two or
+three plain sentences on what the tool is, who uses it, and where it stands.
+Write everything below the header for the agent first, complete and exact. The
+build-path section goes first: the fit check's result. Create CHANGELOG.md from
+its template, empty; it has to exist before the next step writes its first line
+to it. Create `.ai-build-kit-maintenance`
 from `templates/maintenance-record` and put today's date on its `founded` line.
 Leave the two pass lines empty, because `/maintain` fills those in. Do not
 mention that small file to the person. Do not create team.md; it no
