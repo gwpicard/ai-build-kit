@@ -307,8 +307,9 @@ and record what it produced.
 The walk-through stands in for the person's try before saving. It does not close
 the piece: on the pull-request route the piece still moves to `to check` and
 closes when its pull request merges, so the person can still try it before they
-merge. Its report never calls a screen accessible, compliant or good;
-`screen-check` says what it may claim.
+merge. The person's decision is the merge: the walk-through is the check before
+saving unless the person opted in. Its report never calls a screen accessible,
+compliant or good; `screen-check` says what it may claim.
 
 Where the coding agent cannot drive a browser or take screenshots, record what
 it could check, such as the text a request to the page returned, and name what

@@ -617,4 +617,6 @@ switch off the services.
 
 ## What stays yours
 
-Two things no skill ever takes: saying clearly what you want going in (a real example, the output you expect, what done means), and trying the result before it's saved. The system automates the routine and never the judgement.
+Three things no skill ever takes: saying clearly what you want going in (a real example, the output you expect, what done means), deciding what merges and what goes live, and accepting a risk after its notice.
+
+Trying every piece is not on that list. The agent's walk-through checks each piece before it is saved, and records what it saw. Trying a piece yourself is always open to you: put a `Waiting on you: try it` line on one piece, or ask to check every piece. The system automates the routine and never the judgement.

@@ -96,11 +96,11 @@ old_story() {
   for f in "$1/README.md" "$1/WORKFLOW.md" "$1/docs/PHILOSOPHY.md" \
     "$1/llms.txt"; do
     [ -f "$f" ] || continue
-    rs_fold "$f" | grep -qiE "$OLD" && echo "$f"
+    if rs_fold "$f" | grep -qE "$OLD"; then echo "$f"; fi
   done
   if [ -d "$1/.agents/skills" ]; then
     find "$1/.agents/skills" -type f | while read -r f; do
-      rs_fold "$f" | grep -qiE "$OLD" && echo "$f"
+      if rs_fold "$f" | grep -qE "$OLD"; then echo "$f"; fi
     done
   fi
   return 0
