@@ -246,6 +246,18 @@ picture back in plain words and let the team confirm each outside connection
 before going on: that it should reach their email, their calendar, whatever the
 picture shows. A connection nobody meant to agree to is cheapest to catch here.
 
+Where the tool has sign-in, or keeps a history that grows over weeks, offer a
+small set of sample data or test accounts once, so that each build can walk
+through the tool with something in it. Say it close to: "Each build checks its
+work by using the tool the way you would. Shall I plan a few made-up records and
+a test account for that?" Write the answer as a `Sample data:` line in the
+masterplan's "How it stays running": what the set holds and where it lives, or
+that the person said no. A yes becomes a piece when the plan is cut in step 10.
+A test account's password goes where the Secrets rule says, never into the
+masterplan. The offer never holds founding up: with no answer, write
+`Sample data: not agreed yet` and carry on. A tool with neither sign-in nor a growing
+history needs no offer, since a build makes up the small case it needs.
+
 On Build with care, write the sensitive-area paths and any one-line boundaries
 from `references/fit-check.md`, read each area and its home back in plain words,
 then run the sensitive-area check installed by the bootstrap step. On the other
