@@ -31,17 +31,21 @@ you chose and why, in one line.
 
 Clear, piece-sized work becomes a ready piece straight away: write it into the
 shape the `setup-ai-build-kit` skill's `references/pieces.md` describes, take its subjects
-from change-triage rather than choosing them yourself, and label it `ready`.
-That is a new issue, and it starts unassigned: a person is assigned only when
-`/implement` picks the piece up to build it, never when `/shape` creates it. Then
-make the build offer below.
+from change-triage rather than choosing them yourself, and label it `ready`
+once the readiness check below finds no blocking gap. That is a new issue,
+opened as `shaping` so the check has a piece to read, and it starts unassigned:
+a person is assigned only when `/implement` picks the piece up to build it,
+never when `/shape` creates it. Then make the build offer below.
 
-Shape the piece in its two layers. The surface stays plain and comprehensive
-about anything that affects the product, so it never reads as simpler than the
-work is: a fact that would change a product decision goes on the surface, in the
-person's words. The build context that only affects how the code gets written
-goes in the collapsed `Under the hood` section, so the person never has to read
-it and `/implement` still has it. Route context that reaches past this piece by
+Shape the piece in its two layers, as pieces.md describes. The header stays
+short and plain, so it never reads as simpler than the work is. The agent layer
+is complete: consider every field, and where one does not apply, say why in one
+line. Every choice a person would notice by trying the tool is decided in
+`## Decided`, with its reason, rather than left for the build. Scale the piece to
+its change: a colour change answers most fields in one line. The build context
+that only affects how the code gets written goes in the collapsed
+`Under the hood` section, so the person never has to read it and `/implement`
+still has it. Route context that reaches past this piece by
 how far it reaches: a whole-product decision to the masterplan, a whole-codebase
 convention to AGENTS.md's stack section. A piece must be small enough for a fresh
 session to hold whole; where it is not, cut it down. Any groundwork the piece
@@ -113,18 +117,45 @@ lacks it.
 - Starting on an idea moves it to `shaping`, with `needs-clarification` beside
   it until the interview finds a different reason:
   `gh issue edit <number> --add-label shaping --add-label needs-clarification --remove-label idea`.
-- A piece reaches `ready` only when it meets the bar: a `## Done when`, no open
-  question, and what settled it written in `## Decided`, read back as the next
-  section says. Then, in one step:
+- A piece reaches `ready` only when the readiness check finds no blocking gap:
+  a session that did not shape it has written a `## Readiness` section saying
+  Ready, and the piece is read back as the sections below say. Then, in one
+  step:
   `gh issue edit <number> --add-label ready --remove-label shaping --remove-label <its needs- label>`.
 - A piece this command cannot finish stays `shaping` with the `needs-` label that
-  says why, and the question written on it.
+  says why, and the question written on it. A blocking gap the check found is
+  such a question: it stays written on the piece, and the piece stays `shaping`.
 - A `parked` piece sent back for another look moves to `shaping` the same way,
   with the reason it was parked kept on it:
   `gh issue edit <number> --add-label shaping --add-label needs-clarification --remove-label parked`.
 
 Where GitHub cannot be reached, the label cannot move, so say so and leave the
 piece as it is.
+
+## The readiness check
+
+Before a piece moves to `ready`, a session that did not shape it checks it
+against the fixed list in the `shape` skill's `references/readiness-check.md`.
+The session that shaped a piece has the same blind spots when it judges the
+piece, so it would miss the same gaps twice. Start a subagent that carries none
+of this conversation, where the coding agent has one, and give it the piece's
+number and that file. A fork of this session does not count.
+
+Where the coding agent cannot start a subagent, say in one line that the check
+needs a new session, and give the exact line to paste there:
+"This piece needs a check by a session that did not shape it. In a new session,
+paste: /shape <number> check readiness". Leave the piece `shaping` meanwhile.
+Typed that way, in a session that did not shape the piece, run the check
+yourself.
+
+The check writes a `## Readiness` section on the piece: the date, "checked by a
+session that did not shape it", Ready or Not ready, and its notes. Read that
+section back and let it decide the move. With no blocking gap, move the piece to
+`ready`. A blocking gap keeps the piece in `shaping`, with the gap written on it
+and the `needs-` label that says who can close it. Notes stay on the piece
+for the builder. Say the result in one line, such as "A session that did not
+shape this piece checked it: ready, with two notes for the builder." After a gap
+is closed, run the check again in a new subagent.
 
 ## When a piece is waiting on a question
 
@@ -136,7 +167,7 @@ by hand and never sized. It is an idea, so move it to `shaping` with
 
 Run the step the label names, write what settled it into the piece's `## Decided`
 section, and only then take the label off, with `shaping`, and mark the piece
-`ready`. The record
+`ready` once the readiness check finds no blocking gap. The record
 goes first because the label is the only thing saying the question was ever open:
 once it is gone, a piece settled properly and a piece nobody looked at read
 exactly alike.
@@ -174,9 +205,9 @@ noticed until the files were read.
   Before it starts, write one line on the piece: "Needs your decision: yes" or
   "Needs your decision: no", saying whether its result will need the person to
   choose. With no, and a result that settles every question, move the piece to
-  `ready` once it meets the bar, with nobody there. With no, and a result that
-  leaves a question open, the piece stays `shaping` with `needs-research` and
-  the gap written on it. With yes, write what it
+  `ready` once the readiness check finds no blocking gap, with nobody there.
+  With no, and a result that leaves a question open, the piece stays `shaping`
+  with `needs-research` and the gap written on it. With yes, write what it
   found, then swap `needs-research` for `needs-clarification` in one step, so
   the piece waits for the person rather than for a guess:
   `gh issue edit <number> --add-label needs-clarification --remove-label needs-research`.
@@ -236,8 +267,10 @@ changelog entry; the piece is the record.
 ## Done when
 
 The request has exactly one route, the piece is written into its proper shape
-and labelled `ready`, or `shaping` with the question it still waits on, or `idea`
-when the person only asked to note it, each move took the old state off in the
+with every field considered and labelled `ready` only after a session that did
+not shape it wrote a `## Readiness` section naming no blocking gap, or `shaping`
+with the question it still waits on, or `idea` when the person only asked to
+note it, each move took the old state off in the
 same step, a routed question was
 started unless the person asked to file it, the person's original words are kept
 underneath a refinement, and nothing was built except

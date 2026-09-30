@@ -8,8 +8,8 @@
 # documents, so a quiet edit that put the old ground back would leave those
 # changes resting on nothing.
 #
-# It holds the audience, the agent-first records, the worktree and loop worked
-# examples with all five answers, the narrower checks-first rule, the reason
+# It holds the audience, the agent-first records, the worktree, loop and
+# two-layer piece worked examples with all five answers, the narrower checks-first rule, the reason
 # the kit is allowed to grow, and the Claude Code first line on the
 # compatibility page. Two old sentences must stay gone: the worktree rejection
 # and the promise that the kit shrinks as often as it grows. Each is put back
@@ -149,6 +149,7 @@ FIVEMARKERS
 
 check_five "the worktree example" 'separate worktrees for parallel pieces, added'
 check_five "the loop example" 'the loop, added'
+check_five "the two-layer piece example" 'a piece written in two layers, added'
 
 # --- the other documents say the same ------------------------------------
 

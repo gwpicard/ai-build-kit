@@ -60,6 +60,18 @@ two people acting at once, no permission, an external service unavailable,
 data that already exists, or an action interrupted halfway through. Only ask
 the cases that could actually happen here.
 
+## When a piece touches states, data or the outside
+
+When the interview is shaping one piece, three subjects come up only when the
+piece touches them. Where the change can show a case that is not the normal
+one, such as empty, failing, slow or left part-way, ask what the person should
+see in it. Where it stores or changes a record, ask who else writes it, what
+happens at its limit, and what delete and undo mean. Where anything leaves the
+tool, ask what goes, to whom, and whether the recipient is new. Skip each
+subject the piece does not touch, so a colour change hears none of them. The
+answers fill the piece's `### When it is not the normal case`, `## Data` and
+`## Leaves the tool`.
+
 ## When conversation cannot settle it
 
 If a behavioural or visual decision cannot be settled by talking it through,
