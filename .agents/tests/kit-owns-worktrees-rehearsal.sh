@@ -9,6 +9,11 @@
 # removed after its pull request closes only when nothing in it is unsaved.
 # Removing the wrong worktree loses somebody's work, and nothing would say so.
 #
+# It also runs the worktree-links line, which links ignored build files such
+# as fonts into each worktree and refuses confidential, env, tracked, outside
+# and missing paths by name, and a sibling worktree standing for another
+# tool's, which the script must never list, change or remove.
+#
 # A stand-in for the GitHub command line tool answers the pull request lookup
 # from a small file, and a wrapper around git records every call, so a forced
 # removal is caught even if it happened to succeed. No network, no account.
@@ -515,8 +520,14 @@ cat >> "$L/.ai-build-kit-maintenance" <<'REC'
 founded|2026-09-01
 confidential|private
 confidential|data/secret
-worktree-links|fonts ; samples/big input.csv ; brand assets ; private/report.pdf ; data ; .env.production ; tool.txt ; ../elsewhere.txt ; /etc/hosts ; gone.bin
+worktree-links|fonts ; samples/big input.csv ; brand assets ; private/report.pdf ; data ; .env.production ; tool.txt ; ../elsewhere.txt ; /etc/hosts ; gone.bin ; loose.txt ; extra
 REC
+echo "loose" > "$L/loose.txt"
+# An ignore line the main folder has and has not saved yet, so a worktree cut
+# from origin/main does not have it.
+echo "extra/" >> "$L/.gitignore"
+mkdir -p "$L/extra"
+echo "extra" > "$L/extra/x.bin"
 
 out=$(run "$L" candidates)
 case $out in *fonts*) r=yes ;; *) r=no ;; esac
@@ -534,13 +545,15 @@ out=$(run "$L" open 50-report 50-report origin/main) && code=0 || code=$?
 LW="$L/.agents/worktrees/50-report"
 [ "$code" -eq 0 ] && r=yes || r=no
 check "a piece whose line names refused paths still opens" "$r"
-[ -L "$LW/fonts" ] && [ "$(readlink "$LW/fonts")" = "../../../fonts" ] && [ -f "$LW/fonts/Brand.ttf" ] && r=yes || r=no
-check "a listed folder is a relative link to the main folder's own" "$r"
+[ -d "$LW/fonts" ] && [ ! -L "$LW/fonts" ] && [ -L "$LW/fonts/Brand.ttf" ] && \
+  [ "$(readlink "$LW/fonts/Brand.ttf")" = "../../../../fonts/Brand.ttf" ] && \
+  cmp -s "$LW/fonts/Brand.ttf" "$L/fonts/Brand.ttf" && r=yes || r=no
+check "a listed folder is made in the worktree, each thing in it a relative link to the main folder's own" "$r"
 [ -d "$LW/samples" ] && [ ! -L "$LW/samples" ] && [ -L "$LW/samples/big input.csv" ] && \
   [ "$(readlink "$LW/samples/big input.csv")" = "../../../../samples/big input.csv" ] && \
   cmp -s "$LW/samples/big input.csv" "$L/samples/big input.csv" && r=yes || r=no
 check "a file inside an ignored folder the worktree lacks gets the folder made and the file linked, spaces and all" "$r"
-[ -L "$LW/brand assets" ] && [ -f "$LW/brand assets/logo.svg" ] && r=yes || r=no
+[ -L "$LW/brand assets/logo.svg" ] && [ -f "$LW/brand assets/logo.svg" ] && r=yes || r=no
 check "a folder whose name has a space is linked" "$r"
 [ ! -e "$LW/private/report.pdf" ] && case $out in *"private/report.pdf"*"confidential"*) true ;; *) false ;; esac && r=yes || r=no
 check "a path inside a confidential folder is refused by name" "$r"
@@ -556,6 +569,10 @@ case $out in *"Not linked /etc/hosts:"*"outside the project"*) r=yes ;; *) r=no 
 check "an absolute path is refused as outside the project" "$r"
 [ ! -e "$LW/gone.bin" ] && case $out in *"gone.bin"*"not in the main folder"*"built without gone.bin"*) true ;; *) false ;; esac && r=yes || r=no
 check "a listed path deleted from the main folder is named, not linked, and the piece flagged" "$r"
+[ ! -e "$LW/loose.txt" ] && case $out in *"Not linked loose.txt:"*"does not ignore it"*) true ;; *) false ;; esac && r=yes || r=no
+check "a path git does not ignore is refused, so no link shows as a new file to save" "$r"
+[ ! -e "$LW/extra/x.bin" ] && case $out in *"Not linked extra/x.bin:"*"worktree does not ignore the link"*"built without extra/x.bin"*) true ;; *) false ;; esac && r=yes || r=no
+check "a link the worktree's own ignore rules do not cover is taken away and named" "$r"
 copies=$(find "$L/.agents/worktrees" -name 'Brand.ttf' -type f 2>/dev/null || true)
 [ -z "$copies" ] && r=yes || r=no
 check "no copy of a listed file exists in the worktree" "$r"
@@ -576,7 +593,7 @@ check "the copy is left as it is" "$r"
 rm -f "$LW/samples/big input.csv"
 
 out=$(PATH="$WORK/noln:$PATH"; export PATH; run "$L" open 51-no-link 51-no-link origin/main) && code=0 || code=$?
-[ "$code" -eq 0 ] && [ ! -e "$L/.agents/worktrees/51-no-link/fonts" ] && r=yes || r=no
+[ "$code" -eq 0 ] && [ ! -e "$L/.agents/worktrees/51-no-link/fonts/Brand.ttf" ] && r=yes || r=no
 check "where a listed link cannot be made, the piece goes on and nothing is copied" "$r"
 case $out in *"built without fonts"*) r=yes ;; *) r=no ;; esac
 check "and it says the piece is built without that path" "$r"
