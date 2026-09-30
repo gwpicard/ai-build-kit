@@ -270,6 +270,10 @@ rs_rule "add keeps everything else" \
   'it adds only the rules that are missing to the end of `permissions\.ask`, creates that list when there is none, and keeps every other entry and setting as it is'
 rs_rule "the one line after adding" \
   'claude code will now show a confirmation box before each merge, because every merge goes live'
+rs_rule "a recipe that settles a missing line writes it and sets the box" \
+  'where the recipe settled it with no question asked, write the line the same way, `on every merge` or `through /ship`, and set the box with it'
+rs_rule "a recipe that wins over not hosted adds the box" \
+  'where a recipe wins over a `not hosted` line and says a change to `main` goes live, as above, the merge goes live, so run `add` there too'
 rs_rule "any other value removes them" \
   'whoever writes any other value runs the same command with `remove`'
 rs_rule "remove takes out only the kit's rules" \

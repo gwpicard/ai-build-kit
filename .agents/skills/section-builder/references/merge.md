@@ -177,6 +177,8 @@ their answer into "How it stays running" as the `Goes live:` line, with the
 merge's save or the next one, so the question is asked once for each project.
 In the same save, set the confirmation box as "The confirmation box on a merge
 that goes live" says.
+Where the recipe settled it with no question asked, write the line the same way,
+`on every merge` or `through /ship`, and set the box with it.
 
 On `on every merge`, the ask says so, as "this goes live now": for example, "Say
 yes to merge 12, which adds the invoice list. This goes live now." Where no live
@@ -205,7 +207,9 @@ to the end of `permissions.ask`, creates that list when there is none, and keeps
 every other entry and setting as it is. Then say one line: "Claude Code will now
 show a confirmation box before each merge, because every merge goes live."
 
-Whoever writes any other value runs the same command with `remove`. It takes
+Where a recipe wins over a `not hosted` line and says a change to `main` goes
+live, as above, the merge goes live, so run `add` there too. Whoever writes any
+other value runs the same command with `remove`. It takes
 out exactly the template's rules, and the `ask` list too when that leaves it
 empty. A rule the person wrote stays. Where it took something out, say one
 line: "Claude Code will no longer show its confirmation box before a merge,
