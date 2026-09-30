@@ -373,6 +373,38 @@ out=$(run "$R" remove "$N") && code=0 || code=$?
 [ "$code" -eq 1 ] && [ -f "$N/.agents/tmp/note.md" ] && r=yes || r=no
 check "remove, at the end of a run or on a yes, keeps it too" "$r"
 
+echo "== Walk-through pictures go to the main folder =="
+
+# section-builder names the lookup that finds the main folder. It is taken from
+# the shipped text and run as written, from inside a worktree and from the main
+# folder, so a lookup that named the wrong folder, or a rule that went, fails
+# here rather than in somebody's run.
+BUILDER="$ROOT/.agents/skills/section-builder/SKILL.md"
+LOOKUP=$(sed -n 's/.*`\(git worktree list --porcelain[^`]*\)`.*/\1/p' "$BUILDER" | head -n 1)
+[ -n "$LOOKUP" ] || fail "section-builder names no lookup for the main folder"
+ok "section-builder names the lookup for the main folder"
+run "$R" open 40-walkthrough 40-walkthrough origin/main >/dev/null
+K="$R/.agents/worktrees/40-walkthrough"
+rm -rf "$R/.agents/tmp"
+main=$(cd "$K" && sh -c "$LOOKUP")
+[ "$(cd "$main" && pwd -P)" = "$(cd "$R" && pwd -P)" ] && r=yes || r=no
+check "from inside a worktree, the lookup names the main folder" "$r"
+main_here=$(cd "$R" && sh -c "$LOOKUP")
+[ "$(cd "$main_here" && pwd -P)" = "$(cd "$R" && pwd -P)" ] && r=yes || r=no
+check "from the main folder, the lookup names the main folder itself" "$r"
+mkdir -p "$main/.agents/tmp/walkthrough/40"
+echo "picture" > "$main/.agents/tmp/walkthrough/40/step-1.png"
+[ -z "$(git -C "$R" status --porcelain)" ] && r=yes || r=no
+check "a picture in the main folder's walkthrough folder never reaches git" "$r"
+[ ! -e "$K/.agents/tmp" ] && r=yes || r=no
+check "and nothing was written inside the worktree" "$r"
+pr "40-walkthrough MERGED $(git -C "$K" rev-parse HEAD)"
+out=$(run "$R" remove "$K") && code=0 || code=$?
+[ "$code" -eq 0 ] && [ ! -d "$K" ] && r=yes || r=no
+check "the worktree is cleared away once its pull request closes" "$r"
+[ -f "$R/.agents/tmp/walkthrough/40/step-1.png" ] && r=yes || r=no
+check "and the picture outlives it, in the one place the person looks" "$r"
+
 echo "== A copy of .env where a link would go =="
 
 run "$R" open 31-copy 31-copy origin/main >/dev/null
