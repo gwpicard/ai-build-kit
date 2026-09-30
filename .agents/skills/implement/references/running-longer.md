@@ -60,7 +60,28 @@ A piece the person opted in to check, with a `Waiting on you: try it` line or a
 stops at `to check` with a line in its pull request saying it waits for the
 person's try, and it is never merged under pre-approval.
 
-A piece that is not eligible stays where it is. The report says why.
+A hard open choice in a piece is not a reason to skip it. A hard choice is
+about the shape of stored data, how records sync, or what leaves the tool, and
+it is open when the piece's `## Done when` and `## Decided` lines leave it
+open. Where the run can see one when it plans or claims a piece, send it back
+to shaping before claiming it. Write the question on the piece, then move it
+with no claim to undo: `gh issue edit <number> --add-label shaping --add-label needs-clarification --remove-label ready`.
+Cut no branch and write no claim, since nothing was built. Mark it `shaping`
+in the state file, and the plan names it as going back, with its question. Left
+`ready` and skipped, it would come back to every run, and nothing on it would
+tell the person a question was waiting.
+
+An easy open choice seen at the plan leaves the piece eligible. It is built,
+and the builder picks the option easiest to undo and flags it, as "An open
+choice met while building" below says.
+
+The self-sufficiency test keeps its other job. A piece whose `Under the hood`
+notes lack what the build needs, with no open choice in it, is skipped with the
+reason and stays `ready`. Where a piece has both a hard open choice and a
+missing fact, the hard choice wins, and it goes back to shaping.
+
+Apart from a hard open choice, a piece that is not eligible stays where it is.
+The report says why.
 
 ## Before the run starts
 
@@ -75,7 +96,8 @@ and by number where the links leave a choice. The parts of one parent sit
 together in that order.
 
 Say the plan once: each piece in order, whether it is eligible and why not
-where it is not, and which pieces will stack on another. Say that the live page
+where it is not, each piece going back to shaping with its question, and which
+pieces will stack on another. Say that the live page
 below publishes the pieces' titles and progress to the coding agent's page
 service, and offer to run without it. Then ask once whether pieces that pass
 may be merged during the run, as the `section-builder` skill's
@@ -289,7 +311,9 @@ Take the pieces in the plan's order. Where `at_once` is above 1, the steps
 below are shared out as "Building a group at the same time" says. For each one:
 
 1. **Claim it.** Read the piece first. A piece that already carries `building`
-   is being built somewhere else: the claim refuses it, so skip it. Otherwise
+   is being built somewhere else: the claim refuses it, so skip it. A piece
+   whose text shows a hard open choice goes back to shaping unclaimed, as
+   "Which pieces a run may take" says, and the run takes the next. Otherwise
    make section-builder's one-step claim, and add a comment naming this run,
    `Claimed by run <run name>`. Then read the claim back with
    `gh issue view <number> --json labels,assignees,comments`. The earliest
@@ -424,7 +448,9 @@ request.
 ## An open choice met while building
 
 A piece can meet a choice its Done when and `Decided` lines do not settle. Split
-it by how hard it is to undo.
+it by how hard it is to undo. A hard choice the run could already see in the
+piece goes back before the claim, as "Which pieces a run may take" says. This
+section is for one the build uncovers.
 
 A hard choice, about the shape of stored data, how records sync, or what leaves
 the tool, stops that piece. Write the question on the piece, push the branch
