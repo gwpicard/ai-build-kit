@@ -308,15 +308,15 @@ rs_rule "the rules come from the installed template" \
 rs_rule "nothing missing means nothing said on the visit" \
   'list each one the project.s `permissions\.ask` list lacks\. where it lacks none, say nothing'
 rs_rule "an earlier no stands for the box" \
-  'read the `merge-ask-declined` line in `\.ai-build-kit-maintenance`, if there is one\. where it already lists every missing rule, the earlier no stands'
+  'read the `merge-ask-declined` line in `\.ai-build-kit-maintenance`, if there is one\. where that line names every missing rule, the person.s no stands'
 rs_rule "offered once, naming what they do" \
   'offer them once, in one reply\. name the rules, and say in plain words what they do: claude code shows a confirmation box before each merge, because every merge puts the tool live'
 rs_rule "the offer says it changes nothing else" \
-  'it adds lines to the ask list, changes nothing else in the file, and works on claude code only\. ask for a yes'
+  'it adds lines to the ask list, leaves the rest of the file as it was, and works on claude code only\. wait for a yes'
 rs_rule "a yes runs the script" \
   'on a yes, run `python3 <installed setup-ai-build-kit skill>/scripts/merge-ask-rules\.py add \.claude/settings\.json`'
 rs_rule "a no changes nothing and is recorded" \
-  'on a no, change nothing\. record the no as one line in `\.ai-build-kit-maintenance`, replacing any earlier one: `merge-ask-declined\|<yyyy-mm-dd>\|<the rules offered, separated by " ; ">`'
+  'on a no, leave the file as it is\. record the no as one line in `\.ai-build-kit-maintenance`, replacing any earlier one: `merge-ask-declined\|<yyyy-mm-dd>\|<the rules offered, separated by " ; ">`'
 rs_rule "the offer returns only for a new rule" \
   'a later visit offers again only when the template holds a rule that line does not list'
 rs_guard "$MAINTAIN" "maintain's confirmation box offer"
@@ -335,7 +335,7 @@ rs_rule "the missed list" 'these merges are not asked about, and a merge still n
 rs_rule "a website merge is missed" 'a merge made on github.s website'
 rs_rule "another program is missed" 'a merge through another program'
 rs_rule "bypassPermissions skips the box" 'any merge in a session in `bypasspermissions` mode, which skips every confirmation box'
-rs_rule "the rules read the words as written" 'an ask rule reads the words of the command as written'
+rs_rule "the rules read the words as written" 'like a deny rule, an ask rule matches only the command as it is typed'
 rs_guard "$BLOCKED" "blocked-commands.md"
 
 # --- the story ------------------------------------------------------------------------

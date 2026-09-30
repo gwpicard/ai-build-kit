@@ -278,19 +278,19 @@ live with nothing mechanical in the way. So the visit offers the rules, once.
    `templates/merge-ask-rules.json`, never from memory, and list each one the
    project's `permissions.ask` list lacks. Where it lacks none, say nothing.
 3. Read the `merge-ask-declined` line in `.ai-build-kit-maintenance`, if there
-   is one. Where it already lists every missing rule, the earlier no stands,
+   is one. Where that line names every missing rule, the person's no stands,
    and you say nothing.
 4. Offer them once, in one reply. Name the rules, and say in plain words what
    they do: Claude Code shows a confirmation box before each merge, because
    every merge puts the tool live. Say that it adds lines to the ask list,
-   changes nothing else in the file, and works on Claude Code only. Ask for a
-   yes.
+   leaves the rest of the file as it was, and works on Claude Code only. Wait
+   for a yes.
 5. On a yes, run
    `python3 <installed setup-ai-build-kit skill>/scripts/merge-ask-rules.py add .claude/settings.json`
    from the project root. Where it exits 1, the file is not valid JSON: say
    so, name the file, and change nothing. Save the change with the visit's
    other changes and add a dated changelog line.
-6. On a no, change nothing. Record the no as one line in
+6. On a no, leave the file as it is. Record the no as one line in
    `.ai-build-kit-maintenance`, replacing any earlier one:
    `merge-ask-declined|<YYYY-MM-DD>|<the rules offered, separated by " ; ">`.
    A later visit offers again only when the template holds a rule that line
