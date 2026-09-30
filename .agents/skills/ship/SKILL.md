@@ -301,10 +301,12 @@ version is live, take the save route the build path already requires: the
 three routes section-builder names, with no fourth for records. On the
 checkpoint route, a checkpoint commit is enough. Otherwise put them on one
 branch for this /ship, cut from the up-to-date `main`, and stage only the files
-/ship itself changed. On that branch, or in the checkpoint commit, fold the
-files in `changes/` into CHANGELOG.md with the `sync` skill's
-`scripts/fold-changes.py`, as /sync does, so the pieces this launch carries
-reach the history with it. Fold first and write the launch lines after, so
+/ship itself changed. On that branch, or in the checkpoint commit, fold any
+files still waiting in `changes/` into CHANGELOG.md with the `sync` skill's
+`scripts/fold-changes.py`, as /sync does. Each merge folds its own piece's
+file, so these are the ones a merge made on GitHub by hand left behind, and
+folding them here means the pieces this launch carries reach the history with
+it. Fold first and write the launch lines after, so
 the launch sits above the pieces it launched under the same date. Where an
 earlier records pull request that folded files is still open, say so in one
 line and do not fold again until it merges. Open one pull request for them, once, after the

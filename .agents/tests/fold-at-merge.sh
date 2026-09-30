@@ -115,7 +115,7 @@ done
 # --- the round 2 design addendum ----------------------------------------------
 
 rs_reset
-rs_rule "it points at the first design note" 'loop-first-redesign\.md'
+rs_rule "it points at the first design note" 'read \[loop-first-redesign\.md\]\(loop-first-redesign\.md\) first'
 rs_rule "decision: the fold at the merge" 'the fold at the merge'
 rs_rule "decision: goes live not hosted" '`goes live: not hosted`'
 rs_rule "decision: up to date and checked again before a merge" \

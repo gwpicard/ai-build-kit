@@ -268,6 +268,7 @@ git -C "$W/other" checkout -q r
 mkdir -p "$W/race-hooks"
 cat > "$W/race-hooks/post-merge" <<EOF
 #!/bin/sh
+unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_PREFIX
 [ -e "$W/raced" ] && exit 0
 : > "$W/raced"
 printf 'from elsewhere\n' > "$W/other/elsewhere.txt"
@@ -279,7 +280,7 @@ chmod +x "$W/race-hooks/post-merge"
 git -C "$W/work" config core.hooksPath "$W/race-hooks"
 git -C "$W/work" checkout -q r
 head=$(git -C "$W/work" rev-parse HEAD)
-main_before=$(git -C "$W/work" rev-parse origin/main)
+main_before=$(git -C "$W/hub" rev-parse main)
 run "$W/work"
 git -C "$W/work" config core.hooksPath "$W/no-hooks"
 if [ -e "$W/raced" ]; then r=yes; else r=no; fi; rs_report "the race happened between the fetch and the push" "$r"

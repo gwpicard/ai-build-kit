@@ -7,8 +7,8 @@
 Ask the coding agent to read `AGENTS.md` before making changes. The project's
 current shape is recorded in `masterplan.md`, its remaining work in this
 project's issues, and its history in `CHANGELOG.md`. Each finished piece first
-writes its entry to its own file in `changes/`, and these are gathered into
-`CHANGELOG.md` from time to time.
+writes its entry to its own file in `changes/`, and merging the piece folds it
+into `CHANGELOG.md`.
 
 ## What the agent will and will not do
 

@@ -43,7 +43,7 @@ Two of them are files you can open. The third, what's left to build, lives in yo
 |---|---|
 | masterplan.md | What the tool is, in the present tense. Its first part, the build-path section, records how careful this project needs to be. |
 | the project's issues | What's left to build: one issue per piece, each with what done looks like, its evidence, and what it needs. `/what-now` reads them for you. |
-| CHANGELOG.md | What happened, dated, in plain language, when work actually landed. Each piece writes its entry to its own small file in `changes/`, so two pieces built at the same time never change the same lines; /sync and /ship fold those files into CHANGELOG.md under the day each reached `main`. |
+| CHANGELOG.md | What happened, dated, in plain language, when work actually landed. Each piece writes its entry to its own small file in `changes/`, so two pieces built at the same time never change the same lines. Merging a piece folds its file, and any still waiting, into CHANGELOG.md under the day each reached `main`; /sync and /ship catch any a merge made on GitHub by hand left behind. |
 
 `AGENTS.md` sits alongside the three records as the instruction file the agent reads to know how this repository works. It is a short index: the standing rules, then a pointer for each topic to the file that owns it, such as the stack's recipe or a design note in `docs/`. The records are written for the agent first, each under a short header you can read, such as the few plain sentences that open the masterplan.
 
@@ -301,6 +301,8 @@ Next to the merge button sits that check. It re-runs the project's real commands
 
 No command merges a pull request you have not agreed to. The same merge step serves /implement, /fix, /ship and /sync, so the rule holds on every route. The agent names each pull request and what it changes, then asks for a yes that names the merge, and a reply such as "merge 1, 2 and 4" covers each one it names. Saying "put it live" before any merge was named is not that yes, so it asks again. Each merge is made on the pull request itself, never by merging on your computer and pushing `main`, and a pull request stacked on another is merged after it. If GitHub cannot be reached, the merge waits, and you can merge it on GitHub yourself.
 
+Just before the merge, the agent brings the pull request up to date with `main` and folds the waiting changelog files into CHANGELOG.md, as one more commit on the pull request. It then waits for the project check on that commit and merges only when it is green, so each merge takes one more run of the check. Merges happen one at a time, so two pieces built side by side never conflict over the changelog, and nobody has to type a command for the history to stay whole. If `main` changed the same lines as the piece, nothing merges and the agent names the files for /fix.
+
 Before a run, you can say that pieces which pass may be merged. That covers merges that reach a preview: nothing goes live without your yes naming it, or /ship. The agent then merges a piece only when its check is green, its review found nothing worth stopping for, it flags nothing for you to confirm, it touches no sensitive area, you have not asked to try it yourself, and its merge would not go live. Anything else waits for you in to check, and the report says which condition it missed. That permission ends with the run.
 
 The kit's default is that a merge reaches a preview and /ship puts it live. The masterplan's "How it stays running" section records which way your tool goes live. Where your host puts every merge live instead, the ask says "this goes live now", and the first such merge runs /ship's first-launch checks before it happens.
@@ -379,8 +381,9 @@ yes. Where your host builds every change to `main`, /ship tells you that
 merging it starts one more build and moves the rollback target, and offers to
 leave it for the next change. Work of yours that is not saved yet is left where
 it is, kept out of the records and never thrown away. The same records pull
-request folds the pieces' files in `changes/` into CHANGELOG.md, so the history
-holds what this launch carried.
+request folds any files still waiting in `changes/` into CHANGELOG.md, such as
+one from a merge made on GitHub by hand, so the history holds what this launch
+carried.
 
 Some checks need a secret, such as a database password kept in a file on your
 computer. When you tell the kit where one lives, in any session, it writes down
@@ -445,7 +448,7 @@ Nothing else changes when a second person arrives: naming a piece before startin
 
 ## 12. Sync and maintenance
 
-Normal /implement and /fix completion updates the records directly; you don't need /sync after a piece that finished cleanly. /sync exists for interrupted work, work done outside the workflow, long sessions whose context went foggy, and handovers. A report-only reminder can optionally run at session end, where the tool supports it, but nothing writes to the records without a skill deciding to. /sync also re-reads the masterplan against your pieces, and says if a promise has lost the piece that builds it. Its corrections are saved the way a piece is saved, through the route your build path requires, so on a shared project they arrive as a pull request you decide to merge, and uncommitted work it finds on arrival is reported and left alone. It also folds the pieces' files in `changes/` into CHANGELOG.md, the way /ship does when it launches, and only files already on `main` are folded.
+Normal /implement and /fix completion updates the records directly; you don't need /sync after a piece that finished cleanly. /sync exists for interrupted work, work done outside the workflow, long sessions whose context went foggy, and handovers. A report-only reminder can optionally run at session end, where the tool supports it, but nothing writes to the records without a skill deciding to. /sync also re-reads the masterplan against your pieces, and says if a promise has lost the piece that builds it. Its corrections are saved the way a piece is saved, through the route your build path requires, so on a shared project they arrive as a pull request you decide to merge, and uncommitted work it finds on arrival is reported and left alone. It also folds any files still waiting in `changes/` into CHANGELOG.md, the way /ship does when it launches. Each merge folds its own piece's file, so these are the ones a merge made on GitHub by hand left behind, and only files already on `main` are folded.
 
 /sync also picks up changes a finished piece was meant to make to the
 masterplan but never did. It checks what actually landed, applies what is still
