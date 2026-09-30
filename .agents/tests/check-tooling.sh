@@ -118,6 +118,34 @@ printf '%s\n' "$out" | grep -q "cannot create or delete labels" \
   && pass "it reports the account cannot manage labels" \
   || fail "the no-labels line is missing"
 
+echo "== A Git older than worktrees =="
+
+# A run on Claude Code gives each piece its own worktree, which Git has had
+# since 2.5. An older Git still founds and builds, one piece after another in
+# one folder, so the report names the version and blocks nothing.
+write_gh 0 '{"nameWithOwner":"someone/project","hasIssuesEnabled":true,"viewerPermission":"ADMIN"}'
+out=$(run_check) && code=0 || code=$?
+printf '%s\n' "$out" | grep -q "older than 2.5" \
+  && fail "a current Git was reported as older than 2.5" \
+  || pass "a current Git gets no version line"
+real_git=$(command -v git)
+rm -f "$WORK/bin/git"
+cat >"$WORK/bin/git" <<SH
+#!/usr/bin/env sh
+[ "\$1" = "--version" ] && { echo "git version 2.4.1"; exit 0; }
+exec "$real_git" "\$@"
+SH
+chmod +x "$WORK/bin/git"
+out=$(run_check) && code=0 || code=$?
+[ "$code" -eq 0 ] \
+  && pass "an older Git does not stop founding" \
+  || fail "an older Git returned $code"
+printf '%s\n' "$out" | grep -q "Git is version 2.4.1, older than 2.5" \
+  && pass "it names the older Git's version" \
+  || fail "the older-Git line is missing"
+rm -f "$WORK/bin/git"
+ln -s "$real_git" "$WORK/bin/git"
+
 echo "== Signed in, no repository yet =="
 
 # A fresh project has no repository, so the issue and label checks wait.
