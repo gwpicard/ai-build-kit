@@ -32,6 +32,9 @@ README="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/README.md"
 TEMPLATE="$ROOT/.agents/skills/setup-ai-build-kit/templates/CHANGELOG.md"
 WORKFLOW="$ROOT/WORKFLOW.md"
 FOLD="$ROOT/.agents/skills/sync/scripts/fold-changes.py"
+PIECES="$ROOT/.agents/skills/setup-ai-build-kit/references/pieces.md"
+WHATNOW="$ROOT/.agents/skills/what-now/SKILL.md"
+TRIAGE="$ROOT/.agents/skills/change-triage/SKILL.md"
 
 rs_init "Changelog file checks"
 rs_exists "$BUILDER" "$FIX" "$SYNC" "$SHIP" "$MAINTAIN" "$SETUP" "$AGENTS" "$README" "$TEMPLATE" "$WORKFLOW"
@@ -51,6 +54,7 @@ rs_rule "the checkpoint route names the issue instead" 'the file names the issue
 rs_rule "the issue number keeps two short names apart" 'the issue number keeps two pieces with the same short name apart'
 rs_rule "work with no issue uses the pull request number" 'where the work has no issue, use the pull request.s number'
 rs_rule "the file carries no date" 'the file carries no date'
+rs_rule "checkpoint work with neither takes the date and branch name" 'changes/<yyyy-mm-dd>-<short name>\.md'
 rs_guard "$BUILDER" "section-builder's changelog file"
 
 rs_require_load_bearing "section-builder opens the pull request before writing the file" \
@@ -76,8 +80,22 @@ rs_rule "so an unmerged piece never enters the history" 'never puts an unmerged 
 rs_rule "a file nobody committed is left alone" 'a file nobody has committed stays where it is'
 rs_rule "the direct writers are named" 'founding, /ship, /maintain and /sync write `changelog\.md` directly'
 rs_rule "only pieces write the folder" 'only section-builder and /fix write to `changes/`'
+# Without these, /sync reads a waiting file as work the changelog missed and
+# writes the entry a second time, or folds files a records pull request still
+# open has already folded.
+rs_rule "the read counts a waiting entry as written" 'counting an entry waiting in `changes/` as written'
+rs_rule "no second line for work waiting in changes/" 'counts as written, so never add a second line for the same work'
+rs_rule "no fold while an earlier fold is still open" 'do not fold again until it merges, since a second fold would write the same entries twice'
 rs_guard "$SYNC" "sync's fold"
 
+rs_require_load_bearing "/ship folds before it writes the launch lines" \
+  "$SHIP" 'fold first and write the launch lines after'
+rs_require_load_bearing "/ship does not fold while an earlier fold is still open" \
+  "$SHIP" 'still open, say so in one line and do not fold again until it merges'
+rs_require_load_bearing "pieces.md counts a waiting entry as a changelog line" \
+  "$PIECES" 'counting an entry waiting in `changes/` as a line'
+rs_require_load_bearing "/what-now reads the waiting entries" "$WHATNOW" 'recent changelog and `changes/`'
+rs_require_load_bearing "change-triage reads the waiting entries" "$TRIAGE" 'recent changelog and `changes/`'
 rs_require_load_bearing "/ship folds on its records branch with the same script" \
   "$SHIP" 'fold the files in `changes/` into changelog\.md with the `sync` skill.s `scripts/fold-changes\.py`'
 
@@ -221,5 +239,86 @@ at 2026-07-06 commit -q -m "Fold the changes files"
 out=$(python3 "$FOLD")
 if [ -z "$out" ] && [ -z "$(git status --porcelain --untracked-files=no)" ]; then r=yes; else r=no; fi
 rs_report "a second fold finds nothing and writes nothing" "$r"
+
+# A reopened piece writes a file under a name the last fold already took away.
+# It is dated by the day it arrived this time, never the first time.
+gitc switch -q main
+at 2026-07-06 merge -q --no-ff -m "merge the fold" records
+gitc switch -q -c piece-12-again main
+mkdir -p changes
+printf 'Signing in now also remembers you on a second device.\n\nhttps://example.invalid/pull/52\n' > changes/12-sign-in.md
+git add changes/12-sign-in.md
+at 2026-07-08 commit -q -m "piece 12 reopened"
+gitc switch -q main
+at 2026-07-09 merge -q --no-ff -m "merge 12 again" piece-12-again
+gitc switch -q -c records-2 main
+python3 "$FOLD" > /dev/null
+log=$(cat CHANGELOG.md)
+top=$(printf '%s\n' "$log" | grep -n '^## 2026-07-09$' | cut -d: -f1)
+again=$(printf '%s\n' "$log" | grep -n 'second device' | cut -d: -f1)
+old=$(printf '%s\n' "$log" | grep -n '^## 2026-07-06$' | cut -d: -f1)
+if [ -n "$top" ] && [ -n "$again" ] && [ -n "$old" ] && [ "$top" -lt "$again" ] &&
+  [ "$again" -lt "$old" ]; then r=yes; else r=no; fi
+rs_report "a name used again is dated by the day it arrived this time" "$r"
+git add CHANGELOG.md
+at 2026-07-09 commit -q -m "Fold again"
+
+# A day that already has its own heading takes the new line at its top, with
+# no second heading for the same day.
+gitc switch -q main
+at 2026-07-09 merge -q --no-ff -m "merge the second fold" records-2
+gitc switch -q -c piece-21 main
+mkdir -p changes
+printf 'The report prints on one page.\n\nhttps://example.invalid/pull/60\n' > changes/21-report.md
+git add changes/21-report.md
+at 2026-07-09 commit -q -m "piece 21"
+gitc switch -q main
+at 2026-07-09 merge -q --no-ff -m "merge 21" piece-21
+gitc switch -q -c records-3 main
+python3 "$FOLD" > /dev/null
+log=$(cat CHANGELOG.md)
+heads=$(printf '%s\n' "$log" | grep -c '^## 2026-07-09$' || true)
+head=$(printf '%s\n' "$log" | grep -n '^## 2026-07-09$' | cut -d: -f1)
+report=$(printf '%s\n' "$log" | grep -n 'one page' | cut -d: -f1)
+again=$(printf '%s\n' "$log" | grep -n 'second device' | cut -d: -f1)
+if [ "$heads" = 1 ] && [ -n "$report" ] && [ "$head" -lt "$report" ] &&
+  [ "$report" -lt "$again" ]; then r=yes; else r=no; fi
+rs_report "an entry for a day that has its heading goes at the top of it" "$r"
+
+# A changelog whose headings carry a title after the date, as a real one did.
+# Those headings set the order and are never merged into, and a new day never
+# lands at the end of the file.
+cd "$WORK"
+git init -q -b main titled
+cd titled
+printf '# Changelog\n\n## 2026-07-10 Launch of the booking page\n\n- Went live.\n\n## 2026-07-01 First version\n\n- Founded.\n' > CHANGELOG.md
+git add -A
+at 2026-07-01 commit -q -m "A changelog with titled headings"
+mkdir -p changes
+printf 'Bookings can be cancelled.\n\nhttps://example.invalid/pull/7\n' > changes/7-cancel.md
+git add -A
+at 2026-07-05 commit -q -m "piece 7"
+printf 'Bookings show the room.\n\nhttps://example.invalid/pull/8\n' > changes/8-room.md
+git add -A
+at 2026-07-12 commit -q -m "piece 8"
+printf 'Bookings show the price.\n\nhttps://example.invalid/pull/9\n' > changes/9-price.md
+git add -A
+at 2026-07-10 commit -q -m "piece 9, the launch day"
+python3 "$FOLD" > /dev/null
+log=$(cat CHANGELOG.md)
+n12=$(printf '%s\n' "$log" | grep -n '^## 2026-07-12$' | cut -d: -f1)
+room=$(printf '%s\n' "$log" | grep -n 'show the room' | cut -d: -f1)
+launch=$(printf '%s\n' "$log" | grep -n '^## 2026-07-10 Launch' | cut -d: -f1)
+price=$(printf '%s\n' "$log" | grep -n 'show the price' | cut -d: -f1)
+n05=$(printf '%s\n' "$log" | grep -n '^## 2026-07-05$' | cut -d: -f1)
+cancel=$(printf '%s\n' "$log" | grep -n 'can be cancelled' | cut -d: -f1)
+first=$(printf '%s\n' "$log" | grep -n '^## 2026-07-01 First' | cut -d: -f1)
+last=$(printf '%s\n' "$log" | tail -1)
+if [ -n "$n12" ] && [ -n "$room" ] && [ -n "$launch" ] && [ -n "$n05" ] && [ -n "$cancel" ] &&
+  [ -n "$first" ] && [ "$n12" -lt "$room" ] && [ "$room" -lt "$launch" ] &&
+  [ -n "$price" ] && [ "$launch" -lt "$price" ] && [ "$price" -lt "$n05" ] &&
+  [ "$n05" -lt "$cancel" ] && [ "$cancel" -lt "$first" ] &&
+  [ "$last" = "- Founded." ]; then r=yes; else r=no; fi
+rs_report "titled headings set the order, and a new day never lands at the end" "$r"
 
 rs_done

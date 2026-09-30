@@ -7,8 +7,8 @@
 # and are not have to be left alone: a README nothing links to, the project
 # records and the kit's own files, a short sentence two documents share, and a
 # page naming files the project no longer has, which the document read in
-# /sync reports one name at a time, and a changelog file waiting in `changes/`. A clean project produces nothing, and the
-# script writes nothing.
+# /sync reports one name at a time, and a changelog file waiting in
+# `changes/`. A clean project produces nothing, and the script writes nothing.
 #
 # Leaving those alone is the half that matters. A tidy-up offered for a note
 # somebody wanted, or for a sentence that belongs in both places, teaches the
