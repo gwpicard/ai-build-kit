@@ -26,11 +26,43 @@ nothing until they answer. A no leaves the pull request open.
 Merge only a pull request whose project check is green. Never merge over a red
 check: say it is red, and take it to `/fix`.
 
+A green check says the pull request passed against the `main` it was cut from.
+Once another pull request merges, that answer is out of date, and two pieces
+that each pass alone can break `main` together. So every merge, fold or no fold,
+first brings the branch up to date with `main` and checks it again. Once the
+merge is approved, run this skill's `scripts/bring-up-to-date.sh`, as "The fold
+before the merge" says, and wait for the project check on the commit its last
+line prints, with `gh pr checks <number> --watch`. Merge only on green. The
+check waited on is the project check on GitHub, never a run on this computer,
+since the check on GitHub is the one the green tick reports.
+
+Where `main` has not moved since the branch's last check and nothing is left to
+fold, the script makes no commit and prints the head the branch already has.
+The green check already on that head stands, with no second wait. A piece's own
+file in `changes/` is always left to fold, so this covers only a pull request
+with no changelog file, such as one opened outside the kit.
+
+When the update stops the merge, nothing merges:
+
+- Where the merge from `main` conflicts, the script exits 1 and names each
+  conflicting file. Name the files in the reply, add one comment to the pull
+  request naming them with `gh pr comment <number>`, and take the piece to
+  `/fix`, as a red check is.
+- Where the check turns red only after `main` was taken in, say that the piece
+  passed alone and fails with what merged since. Name the pieces merged since
+  the branch's last green check, read with
+  `git log --first-parent --oneline <old base>..origin/main`, where the old base
+  is `git merge-base <head before the update> origin/main`. Name them by title,
+  as the merge commits give them. Take it to `/fix`.
+- Where `origin` cannot be reached, the script exits 2 and nothing changed.
+  Give the one line "How the merge is made" gives.
+
 A pull request that stacks on another piece's branch is never merged before its
 base. Where the base is still open, say which to merge first, and merge the base
 first when the person's yes names both. Once the base has merged, check that the
 stacked pull request now aims at `main`, and change it with
-`gh pr edit <number> --base main` where it does not, before you merge it.
+`gh pr edit <number> --base main` where it does not. Then bring it up to date
+and check it again, as above, before you merge it.
 
 ## The fold before the merge
 
@@ -164,7 +196,7 @@ live, so pre-approval covers it too.
 
 With pre-approval, merge a piece only when all six hold:
 
-1. its project check is green;
+1. its project check is green on the commit brought up to date with `main`;
 2. its review found nothing worth stopping for;
 3. its pull request flags no choice for the person to confirm, and names nothing
    the walk-through could not see;
