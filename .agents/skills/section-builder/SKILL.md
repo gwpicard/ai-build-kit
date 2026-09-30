@@ -323,7 +323,8 @@ to wait in, so take the opt-in path below: give the person an address and things
 to try, and save nothing until they reply.
 
 Hand over what the walk-through found: the actions, what they showed, any known
-limitation, where the screenshots are, and whether the evidence behind it is
+limitation, where the screenshots are, given as the full path of the
+walk-through folder in the main folder, and whether the evidence behind it is
 automated, manual, source-backed, or operational. Describe any gap as expected
 versus actual, and fix it at the root.
 
@@ -359,7 +360,14 @@ one showed and what you compared it against, such as the Done when line, the
 project's design system, or the same screen before the piece.
 
 `<folder>` is that folder in the main folder, never a folder inside a worktree.
-The main folder is the first one `git worktree list` names. A picture inside a
+Find the main folder with this command:
+
+`git worktree list --porcelain | sed -n '1s/^worktree //p'`
+
+It prints the first `worktree` line, which is always the main folder. Outside a
+worktree it prints the folder you are in, so nothing changes there. Create that
+folder where it does not exist yet; the foundation's `.gitignore` already
+ignores `.agents/tmp/`. A picture inside a
 worktree counts as unsaved work there and keeps the worktree after its pull
 request closes. Each piece has its own folder, so walk-throughs running side by
 side never overwrite each other.

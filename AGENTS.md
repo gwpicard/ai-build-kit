@@ -714,7 +714,10 @@ attribution line, not the word.
   is unchanged, since the floor is meant to add nothing for the person to learn.
   It holds that the type check and lint leave `.agents/worktrees/` out, since
   a run's worktrees are whole copies of the project, and that doing so changes
-  no rule.
+  no rule. The test run leaves them out too: the floor names the setting for
+  Vitest, Jest and Node's own runner, says pytest and Go need nothing, and
+  has a runner with no such setting recorded in the stack section and
+  founding carry on. WORKFLOW.md says the checks leave the copies out.
   `.agents/tests/check-floor-rehearsal.sh` is the half that runs. It founds a
   throwaway Python project from the shipped workflow template, takes its
   commands from the shipped table, and watches the check go red at the type
@@ -1413,7 +1416,10 @@ attribution line, not the word.
   It holds too that the checkpoint route needs the main folder on `main`,
   that the dev server runs until the hand-over and the report says how to
   start it again, that a run's worktrees do not carry the confidential
-  folder, and that `/maintain` offers `git worktree prune` on a yes.
+  folder, and that `/maintain` offers `git worktree prune` on a yes. It
+  holds that section-builder finds the main folder for walk-through pictures
+  from the first line of `git worktree list --porcelain`, makes the folder
+  when it is missing, and names its full path in the hand-over.
   `.agents/tests/kit-owns-worktrees-rehearsal.sh` runs the shipped
   `worktree.sh` in a throwaway project with a stand-in GitHub. It opens a
   worktree and a stacked one and reads that git ignores them, the main
@@ -1451,7 +1457,12 @@ attribution line, not the word.
   `main` checked out in it. Run from there, `open` cuts the piece from
   `origin/main` into the main folder's `.agents/worktrees/` and says so, the
   run state is read from the main folder, and `tidy`, `leftovers` and
-  `remove` never list, change or remove the sibling.
+  `remove` never list, change or remove the sibling. It also runs the
+  lookup section-builder names for the main folder, as written, from inside
+  a worktree and from the main folder, and both give the main folder. A
+  walk-through picture written there never reaches git, leaves nothing in the
+  worktree, and outlives the worktree, which is cleared away once its pull
+  request closes.
 - `.agents/tests/worktree-links.sh` guards the ignored build files a run's
   worktree links. One project's build needed licensed fonts git ignores, and
   the agent copied them into each worktree by hand before committing them
