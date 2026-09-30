@@ -1203,8 +1203,13 @@ attribution line, not the word.
   open choice sends the piece back to shaping and an easy one is flagged, and
   either way the run moves on. The state file's fields, the live page, and a
   new session resuming from the state file are held too, as is a run that ends
-  at once when nothing is left. It holds `/what-now` and `/sync` offering to
-  resume, section-builder's stacked start, and the validator's step 1 wording
+  at once when nothing is left. So is what review of the first draft found:
+  a held-up piece whose blockers are all in the plan joins it and stacks, the
+  earliest claim comment wins a race and only the later run backs off, every
+  way a run ends leaves each piece in a final state, a parent's pull request
+  opens after its last finished part, the checkpoint route has its own steps,
+  and pre-approved merges are swept at the end, bases first. It holds
+  `/what-now` and `/sync` offering to resume, section-builder's stacked start, and the validator's step 1 wording
   that matches it.
 - `.agents/tests/first-upload-asks.sh` guards the yes the project's first
   upload waits for. Founding tells the person nothing will be uploaded, and in

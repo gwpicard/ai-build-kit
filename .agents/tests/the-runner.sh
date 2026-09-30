@@ -118,6 +118,41 @@ rs_rule "the report leads with what was parked" 'what was parked and why'
 rs_rule "the report gives each pull request in merge order" 'each piece with its pull request and its state, in the merge order'
 rs_rule "the report gives each flagged choice" 'under each piece, its flagged choices'
 rs_rule "the report names the condition a piece failed" 'the merge condition it failed, in the words of'
+
+# What review of the first draft found. Each is a way a run could go wrong
+# quietly: a stack that never forms, a race nobody wins, a run that ends with
+# pieces stranded in `building`, a parent whose pull request never opens, and
+# pre-approved merges that never happen because the check was still running.
+rs_rule "the plan takes held-up pieces whose blockers are all in it" 'the plan also takes each piece under `held up` whose open blockers are all in the same plan'
+rs_rule "the earliest claim comment wins" 'the earliest `claimed by run` comment on the piece wins'
+rs_rule "the later claimant deletes its own comment" 'delete this run.s own comment'
+rs_rule "only the later claimant backs off" 'only the later claimant backs off, so a piece is never left `building` with no run behind it'
+rs_rule "the run name carries seconds" '`<yyyy-mm-dd>-<hhmmss>`'
+rs_rule "the page's reach is said and can be declined" 'publishes the pieces. titles and progress to the coding agent.s page service, and offer to run without it'
+rs_rule "pre-approval carries into a resumed run" 'carries into the run when it is resumed'
+rs_rule "a resumed run reuses an open pull request" 'look first for a pull request already open from its branch'
+rs_rule "the checkpoint route in a run" 'steps 8 to 10 become the checkpoint commit and closing the piece'
+rs_rule "a stacked smoke failure skips only the unbuilt pieces" 'skips only the pieces on that stack not yet built'
+rs_rule "a built base stays in to check" 'a base already built stays in `to check`'
+rs_rule "a squash-merged base means a rebase onto main" 'rebase the stacked branch onto `main` before its own merge'
+rs_rule "a stacked piece whose base goes back is skipped" 'a stacked piece whose base goes back to shaping, or is parked, is skipped'
+rs_rule "a parent's pull request opens after its last finished part" 'the pull request opens after the last part that finishes its build'
+rs_rule "a finished part waits for the parent's pull request" 'waits in `building` with the reason `waiting for the parent.s pull request`'
+rs_rule "the parts' changelog files follow the pull request" 'each part.s changelog file is written once it opens'
+rs_rule "no finished part, no pull request" 'where no part finishes, nothing opens'
+rs_rule "a piece sent back loses the run's assignee" 'needs-clarification --remove-label building --remove-assignee'
+rs_rule "a sent-back piece's branch is pushed" 'push the branch and keep it'
+rs_rule "a parked piece loses the run's assignee" '<number> --add-label parked --remove-label building --remove-assignee'
+rs_rule "a sensitive area stops the piece, not the run" 'the run goes on; only that piece stops'
+rs_rule "a goal mode stops the piece, never the run" 'stops the piece that touches it, never the run'
+rs_rule "every way a run ends leaves final states" 'however it ends, whether it ran out of pieces, the smoke check failed on `main`, github could not be reached, or the build path would change'
+rs_rule "waiting pieces become skipped at the end" 'every `waiting` piece becomes `skipped`, with the reason the run ended'
+rs_rule "an unbuilt piece in hand goes back to ready" 'where nothing was built on it yet, move it back to `ready`'
+rs_rule "a built piece in hand is parked" 'where something was built, push the branch and park it with the reason'
+rs_rule "a finished run is never offered for resuming" 'a run whose every piece is in a final state is finished, and is never offered for resuming'
+rs_rule "two unfinished runs: the newest is offered" 'where two runs are unfinished, offer the newest and name the other'
+rs_rule "pre-approved merges are swept at the end, bases first" 'sweep the pieces in `to check` before the report, bases first'
+rs_rule "the sweep merges only what meets all six" 'meets all six conditions'
 rs_guard "$LONGER" "running-longer.md"
 
 rs_require_order "the claim comes before the branch" "$LONGER" '^1\. \*\*Claim it' '^2\. \*\*Branch it'
@@ -172,6 +207,8 @@ rs_require_load_bearing "WORKFLOW says a new session picks the run up" "$WORKFLO
   'a new session picks the run up from its state file'
 rs_require_load_bearing "WORKFLOW says a sensitive piece is never taken without an acceptance" "$WORKFLOW" \
   'a piece in a sensitive area is taken only once your acceptance is on the record'
+rs_require_load_bearing "WORKFLOW says a goal mode stops only the piece" "$WORKFLOW" \
+  'a named sensitive area stops the piece that touches it, never the run'
 rs_require_absent "WORKFLOW no longer calls autonomy earned" "$WORKFLOW" 'autonomy is earned'
 
 rs_done
