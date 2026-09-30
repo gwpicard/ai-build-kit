@@ -130,4 +130,17 @@ found=$(old_story "$copy")
 [ -n "$found" ] || rs_fail "the old sentence in a foundation template was not found"
 rs_ok "the old sentence in a foundation template is found"
 
+# Two sentences outlived the change above, each timing a step by the person's
+# try as if one always came: the trim in WORKFLOW.md and the screen rules. The
+# walk-through comes before saving on every piece, so they are timed by it.
+SCREEN="$ROOT/.agents/skills/screen-check/SKILL.md"
+rs_require_absent "WORKFLOW.md does not time the trim by a try that may not come" \
+  "$WORKFLOW" 'before you try a piece, the kit takes out'
+rs_require "WORKFLOW.md times the trim by the walk-through" \
+  "$WORKFLOW" 'before the walk-through, or your own try when you ask for one, the kit takes out'
+rs_require_absent "screen-check does not time the rules by a try that may not come" \
+  "$SCREEN" 'the first result before the person tries it'
+rs_require "screen-check times the rules by the walk-through" \
+  "$SCREEN" 'the first result before the walk-through looks at it, or the person tries it'
+
 rs_done
