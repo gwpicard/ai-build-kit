@@ -864,6 +864,15 @@ esac
 # stacked on it is never built, keeps `ready`, and is skipped with a reason.
 # The state file lists every piece, a piece after the one it waits on, and the
 # run's folder is never committed.
+#
+# However a run ends, it leaves every piece in a final state: none `waiting` or
+# `building` in the state file, and none labelled `building` with no run behind
+# it. A part may wait for its parent's pull request while a run is still going,
+# but this scenario has no parts and its run has ended. A claim holds only when
+# the earliest claim comment names this run, since the later claimant backs off.
+# A piece sent back or parked keeps its branch on the remote and loses the
+# run's assignee. A branch never has two pull requests, since a resumed run
+# looks for the open one before it opens another.
 rp_verdict=unobservable
 rp_note="the contract names no run over a plan"
 case "$evidence" in
@@ -952,9 +961,39 @@ def holds(base, tip):
                           capture_output=True).returncode == 0
 
 
+def comment_text(c):
+    return c if isinstance(c, str) else c.get("body", "")
+
+
 def claimed(issue):
-    return any(("Claimed by run %s" % name) in (c if isinstance(c, str) else c.get("body", ""))
-               for c in issue.get("comments", []) for name in names)
+    claims = [comment_text(c) for c in issue.get("comments", [])
+              if comment_text(c).strip().startswith("Claimed by run")]
+    return bool(claims) and any(("Claimed by run %s" % name) in claims[0] for name in names)
+
+
+start_assignees = {i["number"]: set(i.get("assignees", [])) for i in plan}
+
+
+def let_go(n, issue, piece, how):
+    """A piece sent back or parked keeps its branch and loses the run's assignee."""
+    branch = piece.get("branch") or ""
+    if not branch or not on_remote(branch):
+        problems.append("piece %s was %s but its branch is not on the remote" % (n, how))
+    added = set(issue.get("assignees", [])) - start_assignees.get(n, set())
+    if added:
+        problems.append("piece %s was %s but still carries the run's assignee" % (n, how))
+
+
+for n in numbers:
+    here = pieces.get(n)
+    if here and here.get("state") in ("waiting", "building"):
+        problems.append("the run ended with piece %s still %s in the state file" % (n, here.get("state")))
+    if "building" in end_issue.get(n, {}).get("labels", []):
+        problems.append("piece %s carries building with no run behind it" % n)
+heads = [pr.get("head") for pr in pulls if pr.get("head")]
+for head in sorted(set(heads)):
+    if heads.count(head) > 1 and head in [p.get("branch") for p in pieces.values()]:
+        problems.append("branch %s has %d pull requests, not one" % (head, heads.count(head)))
 
 
 run_pulls = [pull_for(n) for n in numbers]
@@ -985,6 +1024,7 @@ for n in numbers:
             problems.append("piece %s went back to shaping with no question written on it" % n)
         if state != "shaping":
             problems.append("the state file marks piece %s %s, not shaping" % (n, state))
+        let_go(n, issue, piece, "sent back to shaping")
         continue
 
     parked_under = [a for a in waits_on[n] if (pieces.get(a) or {}).get("state") == "parked"]
@@ -998,6 +1038,7 @@ for n in numbers:
             problems.append("piece %s was parked after %s attempts, not three attempts" % (n, piece.get("attempts")))
         if not (piece.get("reason") or "").strip():
             problems.append("parked piece %s carries no reason" % n)
+        let_go(n, issue, piece, "parked")
         continue
     if parked_under:
         if pr is not None or state in ("to check", "merged", "building"):

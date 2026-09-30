@@ -320,6 +320,18 @@ def refuse_base(argv, base):
         sys.exit(1)
 
 
+def comment_body(comment):
+    """A comment's text. An older state file keeps a comment as a bare string."""
+    return comment if isinstance(comment, str) else comment.get("body", "")
+
+
+def comment_id(issue, index, comment):
+    """A comment's id. A bare string from an older state file gets one from its place."""
+    if isinstance(comment, dict) and "id" in comment:
+        return comment["id"]
+    return issue["number"] * 100000 + index + 1
+
+
 def flags_all(argv, name):
     out, i = [], 0
     while i < len(argv):
@@ -531,6 +543,19 @@ def main():
                 path = arg
                 break
         posting = bool(re.search(r"(?:-X|--method)[= ]POST\b", " ".join(argv)))
+        # Deleting a comment by its id, as a run does with its own claim
+        # comment when another run claimed the piece first.
+        gone = re.fullmatch(r"/?repos/[^/]+/[^/]+/issues/comments/(\d+)", path)
+        if gone and re.search(r"(?:-X|--method)[= ]DELETE\b", " ".join(argv)):
+            for issue in state["issues"]:
+                comments = issue.get("comments", [])
+                for n, c in enumerate(comments):
+                    if str(comment_id(issue, n, c)) == gone.group(1):
+                        del comments[n]
+                        save(state)
+                        return
+            sys.stderr.write("gh: Not Found (HTTP 404)\n")
+            sys.exit(1)
         refs = re.fullmatch(r"/?repos/([^/]+/[^/]+)/git/(refs?)(?:/(.*))?", path)
         if refs:
             api_refs(argv, state, refs.group(1), refs.group(3), refs.group(2))
@@ -672,8 +697,12 @@ def main():
                 # The comments come with the view, so a run can read back the
                 # claim it just made, as `--json comments` does on GitHub.
                 shown = issue_public(state, issue)
-                shown["comments"] = [{"author": {"login": "replay-person"}, "body": c}
-                                     for c in issue.get("comments", [])]
+                shown["comments"] = [
+                    {"id": comment_id(issue, n, c), "author": {"login": "replay-person"},
+                     "body": comment_body(c),
+                     "url": "https://github.com/%s/issues/%s#issuecomment-%s"
+                            % (state["repo"], issue["number"], comment_id(issue, n, c))}
+                    for n, c in enumerate(issue.get("comments", []))]
                 print(json.dumps(shown))
                 save(state)
                 return
@@ -705,10 +734,22 @@ def main():
             issue = find(state, re.sub(r"\D", "", argv[2]) or "0")
             if issue is None:
                 unsupported(argv, "no such issue")
-            issue.setdefault("comments", []).append(body_of(argv) or "")
+            comments = issue.setdefault("comments", [])
+            if "--delete-last" in argv:
+                # A run that lost a claim race deletes its own claim comment.
+                # The stand-in has one author, so the last comment is its own.
+                if not comments:
+                    sys.stderr.write("no comments found for current user\n")
+                    sys.exit(1)
+                comments.pop()
+                save(state)
+                return
+            state["comment_next"] = state.get("comment_next", 1) + 1
+            made = {"id": state["comment_next"] - 1 + 900000, "body": body_of(argv) or ""}
+            comments.append(made)
             save(state)
             print("https://github.com/%s/issues/%s#issuecomment-%s"
-                  % (state["repo"], issue["number"], len(issue["comments"])))
+                  % (state["repo"], issue["number"], made["id"]))
             return
 
         unsupported(argv, "unmodelled issue subcommand")

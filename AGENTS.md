@@ -226,9 +226,12 @@ attribution line, not the word.
   stays refused. It holds a pull request stacked on another piece's branch:
   a base the remote does not hold is refused, as on GitHub, `pr list` filters
   by base, and `pr edit --base main` moves the pull request onto `main` once
-  the piece under it has merged. A body given with `--body-file` is read, from
-  a file or from standard input, and a piece's comments come back with it, so
-  a run can read its claim back.
+  the piece under it has merged. `pr list --head` finds the pull request open
+  from a branch, so a resumed run never opens a second. A body given with
+  `--body-file` is read, from a file or from standard input. A piece's
+  comments come back with it, each with its id, so a run can read its claim
+  back, and a comment can be deleted by that id through the API or with
+  `--delete-last`, as a run that lost a claim race deletes its own.
 - `.agents/tests/fake-host.sh` checks the replay harness's stand-ins for a
   host's tools, which scenario 54 launches through on the Vercel recipe. The
   stand-in host keeps a list of deployments beside the project and builds each
@@ -473,9 +476,12 @@ attribution line, not the word.
   carries its commits on the remote and says which to merge first. The piece
   whose record's shape is not settled is back in shaping with its question
   and no pull request, and nothing is merged when the person said not to.
-  Each of those taken away is a miss. A first piece parked after three
-  attempts passes when the piece on top of it was never built, keeps `ready`
-  and is skipped with a reason. It also holds that `baseline.md` names the
+  However the run ended, no piece is left `waiting` or `building`, the
+  earliest claim on a built piece names the run, a branch has one pull
+  request, and a piece sent back or parked keeps its branch on the remote and
+  loses the run's assignee. Each of those taken away is a miss. A first piece
+  parked after three attempts passes when the piece on top of it was never
+  built, keeps `ready` and is skipped with a reason. It also holds that `baseline.md` names the
   scenario's run, measured or owed.
 - `.agents/tests/check-tooling.sh` runs the setup tooling report against a set of
   throwaway PATHs and reads when it stops: a missing tool or a signed-out account
