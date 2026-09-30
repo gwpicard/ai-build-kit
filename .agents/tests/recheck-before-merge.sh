@@ -60,7 +60,7 @@ rs_rule "it names what merged since the last green check" \
   'git log --first-parent --oneline <old base>\.\.origin/main'
 rs_rule "the old base is where the checked head met main" \
   'the old base is `git merge-base <head before the update> origin/main`'
-rs_rule "red only after the update goes to /fix" 'what merged since\. take it to `/fix`'
+rs_rule "red only after the update goes to /fix" 'as the merge commits give them\. take it to `/fix`'
 rs_rule "origin out of reach merges nothing" \
   'where `origin` cannot be reached, the script exits 2 and nothing changed'
 rs_rule "a stacked pull request is re-aimed, then brought up to date" \
@@ -119,7 +119,7 @@ fi
 # --- the merge step's story in WORKFLOW -----------------------------------------
 
 rs_require_load_bearing "WORKFLOW says every merge is brought up to date" "$WORKFLOW" \
-  'before every merge, whether or not there is anything to fold, the agent brings the pull request up to date'
+  'up to date with `main`, on every merge whether or not there is anything to fold'
 rs_require_load_bearing "WORKFLOW says a piece green alone can fail with what merged since" "$WORKFLOW" \
   'passed alone and fails with what merged since'
 rs_require_load_bearing "WORKFLOW says the sweep merges one at a time" "$WORKFLOW" \
