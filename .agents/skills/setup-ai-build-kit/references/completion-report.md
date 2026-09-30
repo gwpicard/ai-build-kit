@@ -20,6 +20,7 @@ Internal facts recorded for later agents, and what the user hears instead:
 - `Recipe: <file name>.md` in AGENTS.md -> "The tool will run on [the recipe's name, from its file], and the kit can check its launch steps."
 - the recipe's tool report, on the same line -> "This computer has the tools those checks use." or "Before the first launch this computer needs [each missing tool, in plain words]; that is on the plan as a setup task."
 - `Recipe: none` in AGENTS.md -> "The tool runs on a stack the kit has no recipe for, so it cannot check the launch steps a recipe would."
+- an adopted project keeps its own AGENTS.md, and it is above 200 lines -> "Your project's instructions are [the count] lines, above the 200 its automatic check allows, so that check will show red until you type /maintain, which moves the detail to where it belongs."
 
 These commands and states stay wherever agents already keep them (AGENTS.md,
 the changelog); the report never leads with them.

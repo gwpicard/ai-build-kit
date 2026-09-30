@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """List the names a project's documents mention that no longer exist.
 
-Reads README.md and every document AGENTS.md points at. For each line it looks
+Reads README.md and every document AGENTS.md points at. Where AGENTS.md points
+at `docs/README.md`, the list of the project's concept files, each document
+that list names is read too, since the list is how AGENTS.md points at them.
+Nothing else under `docs/` is read. For each line it looks
 for five kinds of name and checks that each still exists: a file or folder, a
 link to another file, an `npm run`, `pnpm run`, `yarn run` or `make` command,
 and an environment variable. It prints one line per name that does not exist,
@@ -38,6 +41,7 @@ import sys
 
 KIT_OWNED = {"WORKFLOW.md", "AGENTS.md", "masterplan.md", "CHANGELOG.md", "plan.local.md"}
 CHANGES = "changes"
+CONCEPTS = os.path.join("docs", "README.md")
 EXTENSIONS = (
     ".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs", ".py", ".rb", ".go", ".rs",
     ".java", ".kt", ".cs", ".php", ".md", ".json", ".yml", ".yaml", ".toml",
@@ -60,23 +64,36 @@ def ignored(path):
     ).returncode == 0
 
 
+def named_documents(source, found):
+    """Add each Markdown document `source` names that exists, in order."""
+    with open(source, encoding="utf-8") as handle:
+        text = handle.read()
+    named = LINK.findall(text) + CODE_SPAN.findall(text)
+    for name in named:
+        name = name.split("#")[0].strip()
+        if not name.endswith(".md") or name.startswith(("http:", "https:")):
+            continue
+        # A name in the concept list may be written from the docs/ folder.
+        candidates = [os.path.normpath(name)]
+        if source != "AGENTS.md":
+            candidates.append(os.path.normpath(os.path.join(os.path.dirname(source), name)))
+        for name in candidates:
+            if os.path.basename(name) in KIT_OWNED or name.startswith((".agents", CHANGES + "/")):
+                break
+            if os.path.isfile(name):
+                if name not in found:
+                    found.append(name)
+                break
+
+
 def documents():
     found = []
     if os.path.isfile("README.md"):
         found.append("README.md")
     if os.path.isfile("AGENTS.md"):
-        with open("AGENTS.md", encoding="utf-8") as handle:
-            text = handle.read()
-        named = LINK.findall(text) + CODE_SPAN.findall(text)
-        for name in named:
-            name = name.split("#")[0].strip()
-            if not name.endswith(".md") or name.startswith(("http:", "https:")):
-                continue
-            name = os.path.normpath(name)
-            if os.path.basename(name) in KIT_OWNED or name.startswith((".agents", CHANGES + "/")):
-                continue
-            if os.path.isfile(name) and name not in found:
-                found.append(name)
+        named_documents("AGENTS.md", found)
+    if CONCEPTS in found:
+        named_documents(CONCEPTS, found)
     return found
 
 

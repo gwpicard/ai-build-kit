@@ -13,6 +13,8 @@ You build one piece, directed by someone who will judge it by behaviour. Follow 
 Read the piece in full, including its `Under the hood` notes, the masterplan's
 build-path section, and any whole-product decision in the masterplan or
 whole-codebase convention in AGENTS.md's stack section that the piece points to.
+Read too each concept file the piece touches, from the list in
+`docs/README.md`, since that is where the design it builds on is written.
 The under-the-hood notes carry the build context so this does not have to be
 worked out from nothing. Check git status; if uncommitted
 work is lying around, stop and say so: it gets finished or cleared first
@@ -438,10 +440,11 @@ Each fact the piece settled goes to one home, and nowhere else:
   recorded change;
 - lasting technical design, how a part of the tool works and the rules it
   keeps: `docs/<concept>.md`, one concept to a file, under the headings What it
-  is, How it works, Rules, and Where it lives. Update the concept's file where
-  it has one. A fact that fits no concept file yet starts a new one, named for
-  its concept, never a general notes file, and gets a line in AGENTS.md's
-  technical design section;
+  is, How it works, Rules, and Where it lives. A concept file is one listed in
+  `docs/README.md`, a line each with its name and what it owns. Update the
+  concept's file where it has one. A fact that fits no concept file yet starts
+  a new one, named for its concept, never a general notes file, and gets a line
+  in `docs/README.md`, never in AGENTS.md;
 - a durable operating convention: one short rule in AGENTS.md, or a pointer to
   the file that owns it;
 - anything particular to this piece: the piece itself.

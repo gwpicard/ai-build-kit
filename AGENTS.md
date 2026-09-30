@@ -682,7 +682,9 @@ attribution line, not the word.
   not taken for files, and a file name written from another folder is found
   where the project keeps it. Every founded project's documents name its
   commands that way, and an earlier version reported each one as a missing
-  file. It also proves a clean project produces nothing, the script writes
+  file. Concept files are read through the list in `docs/README.md` once
+  AGENTS.md points at it, and a file in `docs/` the list does not name is not
+  read. It also proves a clean project produces nothing, the script writes
   nothing, and the document changed longest ago comes first. A piece's file
   in `changes/` is part of the changelog, so it is never read as a document,
   and neither the folder nor a file the last fold took away is called missing.
@@ -844,7 +846,10 @@ attribution line, not the word.
   when a release changes the states. A project founded before AGENTS.md became
   an index is offered the move onto it once, with the ceiling step for its
   check in the same offer. No fact is lost, a second visit after a yes says
-  nothing, and a no is recorded and not asked again.
+  nothing, and a no is recorded with the template's section headings, so the
+  offer comes back once when a release changes them. On a project already on
+  the index, the monthly trim moves each fact to its home rather than cutting
+  it.
 - `.agents/tests/offer-recipe-move.sh` guards the monthly offer to move a
   project onto a recipe. It applies to a project with `Recipe: none` or no
   `Recipe:` line, whose stack matches a recipe's build stack in substance even
@@ -932,8 +937,12 @@ attribution line, not the word.
   topic, and every such file is one a skill has or the kit writes into a
   project. It proves the count on copies with a section padded, a pointer
   removed or broken, a notes file named, and a date or issue number added. It
+  then fills a founded stand-in the way standing-instructions.sh does. There
+  only the capability profile and the stack section, which founding fills, may
+  pass 12 lines, and they are exempt by name. It
   holds section-builder's route for each kind of fact to one home, with a
-  concept file for lasting technical design, and the masterplan's short header.
+  concept file for lasting technical design listed in `docs/README.md`, never
+  in AGENTS.md, and the masterplan's short header.
   Last, it runs the ceiling step from the shipped project check in a throwaway
   folder: 200 lines pass, 201 fail with or without a final newline, and the
   failure names both numbers and `/maintain`.
