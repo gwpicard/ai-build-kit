@@ -232,11 +232,13 @@ expect_problem "an issue number in the file is caught" "an issue number is writt
 
 # --- the project check holds the ceiling, run both ways ----------------------
 
-# The step's own script, as it ships: the lines under its `run: |`.
+# The step's own script, as it ships: its one-line `run:`, or the lines under
+# a `run: |`.
 step="$rs_dir/ceiling-step.sh"
 awk '
   /- name: Check the AGENTS\.md ceiling/ { found = 1; next }
-  found && /run: \|/ { match($0, /^ */); indent = RLENGTH; inside = 1; next }
+  found && !inside && /^ *run: *\|/ { match($0, /^ */); indent = RLENGTH; inside = 1; next }
+  found && !inside && /^ *run: / { sub(/^ *run: /, ""); print; exit }
   inside {
     match($0, /^ */)
     if ($0 !~ /^[ \t]*$/ && RLENGTH <= indent) exit
