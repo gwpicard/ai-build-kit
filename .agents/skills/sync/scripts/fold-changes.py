@@ -22,7 +22,10 @@ runs it that way on a pull request's branch that has just taken in `main`,
 where the newest commit adding a file from `main` is the branch's own merge of
 `main`, dated today. A file `<ref>` already holds is dated by the day it reached
 `<ref>`, following the first parents of `<ref>`. A file `<ref>` does not hold is
-the pull request's own, and is dated today, the day of this merge.
+the pull request's own, and is dated today, the day of this merge. A file whose
+line CHANGELOG.md already holds is removed without being written again: a
+stacked branch still carries its base's file after the base merged by squash,
+since the squash added and folded it in one commit.
 
 It never stages CHANGELOG.md or commits: the save route does that. It prints
 one line for each file folded, and nothing when there is nothing to fold. Run
@@ -177,15 +180,29 @@ def main():
     if not ready:
         return 0
 
-    # Newest first: the latest arrival, then the higher issue number.
-    ready.sort(reverse=True)
-    entries = [(day, entry(name)) for _, _, name, day in ready]
-
     if os.path.isfile(CHANGELOG):
         with open(CHANGELOG, encoding="utf-8") as handle:
             changelog = handle.read()
     else:
         changelog = "# Changelog\n"
+
+    if main_ref:
+        written = set(changelog.split("\n"))
+        fresh = []
+        for item in ready:
+            if entry(item[2]) in written:
+                git("rm", "-q", "--", item[2])
+                print(f"removed {item[2]}, already in {CHANGELOG}")
+            else:
+                fresh.append(item)
+        ready = fresh
+        if not ready:
+            return 0
+
+    # Newest first: the latest arrival, then the higher issue number.
+    ready.sort(reverse=True)
+    entries = [(day, entry(name)) for _, _, name, day in ready]
+
     with open(CHANGELOG, "w", encoding="utf-8") as handle:
         handle.write(fold(changelog, entries))
 

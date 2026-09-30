@@ -294,6 +294,45 @@ if [ "$code" = 0 ] &&
   git -C "$W/work" merge-base --is-ancestor "$(git -C "$W/other" rev-parse HEAD)" origin/r; then r=yes; else r=no; fi
 rs_report "asking again takes in the other push and folds" "$r"
 
+# --- a commit only this computer holds ---------------------------------------------------
+
+piece l changes/20-l.md "Labels can be sorted."
+printf 'not pushed\n' > "$W/work/local-only.txt"
+git -C "$W/work" add -A
+git -C "$W/work" commit -q -m "a commit the pull request does not show"
+head=$(git -C "$W/work" rev-parse HEAD)
+remote_l=$(git -C "$W/work" rev-parse origin/l)
+run "$W/work"
+git -C "$W/work" fetch -q origin
+if [ "$code" = 3 ] && [ "$(git -C "$W/work" rev-parse HEAD)" = "$head" ] &&
+  [ "$(git -C "$W/work" rev-parse origin/l)" = "$remote_l" ]; then r=yes; else r=no; fi
+rs_report "a commit the pull request does not show is never pushed by the fold (exit 3)" "$r"
+
+# --- a stacked pull request whose base merged by squash ---------------------------------
+
+piece v changes/24-v.md "Invoices can be duplicated."
+git -C "$W/work" checkout -q -b w v
+git -C "$W/work" branch -q --unset-upstream 2>/dev/null || true
+printf 'Duplicated invoices keep their notes.\n\nhttps://example.invalid/pull/w\n' > "$W/work/changes/25-w.md"
+git -C "$W/work" add -A
+git -C "$W/work" commit -q -m w
+git -C "$W/work" push -q origin w
+git -C "$W/work" checkout -q v
+run "$W/work"
+git -C "$W/hub" fetch -q origin
+git -C "$W/hub" checkout -q main
+git -C "$W/hub" merge -q --ff-only origin/main
+git -C "$W/hub" merge -q --squash origin/v >/dev/null
+git -C "$W/hub" commit -q -m "Squash v"
+git -C "$W/hub" push -q origin main
+git -C "$W/work" checkout -q w
+run "$W/work"
+log=$(on_origin w)
+if [ "$code" = 0 ] && [ "$(count "$log" 'be duplicated')" = 1 ] &&
+  [ "$(count "$log" 'keep their notes')" = 1 ] &&
+  [ -z "$(git -C "$W/work" ls-tree --name-only origin/w changes/)" ]; then r=yes; else r=no; fi
+rs_report "a stacked branch after a squash-merged base writes the base's entry once" "$r"
+
 # --- the branch is not on this computer ------------------------------------------------
 
 piece s changes/21-s.md "Tasks can be starred."

@@ -70,7 +70,7 @@ contract a machine can build against. `/queue` plans. `/implement` runs.
 | Progress | A run keeps a state file. A live page is published from it wherever the coding agent can publish one, and the state file alone serves elsewhere. |
 | Agent merge | An agent merges only when the person pre-approved it before the run. |
 | Launch | Merges reach a preview. `/ship` promotes to live, with its checks. |
-| Changelog | One file per piece, folded into `CHANGELOG.md` by `/sync` or `/ship`. |
+| Changelog | One file per piece, folded into `CHANGELOG.md` by `/sync` or `/ship`. Round 2 moves the fold to the merge. |
 | Portability | Claude Code first. Other coding agents get the one-at-a-time core, and the compatibility page says so. |
 | Size | The kit grows, and PHILOSOPHY says why: the growth replaces improvisation that already happened, with its safety built in. |
 
