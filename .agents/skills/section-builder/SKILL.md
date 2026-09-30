@@ -42,7 +42,7 @@ Choose the save route before changing anything:
    to keep it. If they do not carry on, build only up to the recorded
    condition. In an unattended run nobody is there to carry on, so never
    write an acceptance on the person's behalf: stop at the condition.
-   Stopping there, safely prepared and correctly recorded as blocked, is one
+   Stopping there, safely prepared and correctly recorded as parked, is one
    of section-builder's two successful outcomes; see step 8.
 
 Pull-request and flagged routes work on a short-lived branch cut from the
@@ -107,9 +107,14 @@ one-line note, and the next piece that pushes asks again. In an unattended
 run nobody is there to say yes, so never upload on the person's behalf: keep
 the work local and note it on the piece.
 
-Label the piece `building` and assign it to whoever is building it before
-changing anything. That is what stops two people starting the same piece, and it
-costs one call.
+Claim the piece before changing anything. Label the piece `building` and assign
+it to whoever is building it, in one step,
+`gh issue edit <number> --add-label building --remove-label ready --add-assignee <login>`.
+Whatever state it carried comes off in that step, such as `parked` for a piece
+whose condition is now met. That is what stops two people starting the same
+piece, and it costs one call. Where GitHub cannot be reached, the claim fails:
+say so, and do not start the piece. A piece already claimed carries on if
+GitHub drops out later, as the route note above says.
 
 ## 2. Agree the visible result
 
@@ -174,6 +179,11 @@ Implement only the agreed behaviour, end to end and visible, in the smallest
 reasonable change. Run focused checks as you go. Avoid speculative
 abstraction; prefer managed services and the project's existing conventions.
 Stop and say so if the change is expanding past what was agreed.
+
+A piece whose build fails three attempts stops there: move it from `building`
+to `parked` in one step, `gh issue edit <number> --add-label parked --remove-label building`,
+with one line on what kept failing, and route it as `/fix`'s escalation says.
+Never let a fourth attempt run on the same guess.
 
 A build may reach a service the tool uses, for example to read its keys or set
 it up. Use only what a tool offers through its own commands, and the keys the
@@ -285,12 +295,17 @@ the `setup-ai-build-kit` skill's `references/masterplan-changes.md` describes.
 The record changes in step 9 are part of this save, not a later /sync task.
 
 Checkpoint route: update the records, commit, and state the saved checkpoint.
+There is no pull request to wait on, and the person confirmed the behaviour in
+step 6, so close the issue and take `building` off it in the same step.
 
 Pull-request route: update the records, commit, push, open a pull request
 titled after the piece with a plain-language summary, and run the project
 checks. The project's first upload waits for the yes in step 1. Where the
 piece is an issue, write `Closes #<number>` in the pull request body, so
-merging it closes the piece rather than leaving somebody to remember. Never present it as ready until the check is green; if it goes red,
+merging it closes the piece rather than leaving somebody to remember. When the
+pull request opens, move the piece from `building` to `to check` in the same
+step, `gh issue edit <number> --add-label "to check" --remove-label building`,
+since it now waits for the person to try it or merge it. Never present it as ready until the check is green; if it goes red,
 say so plainly, pull the failing output yourself, fix through the normal
 steps, and push again.
 
@@ -305,13 +320,14 @@ pull-request route for everything up to the condition, then:
 
 - record the exact condition that must be met, and say that /ship prepares a
   handover for the area on request;
-- label the piece `blocked`;
-- name what unblocked work may still continue;
+- move the piece from `building` to `parked` in one step, with the condition
+  written on it, `gh issue edit <number> --add-label parked --remove-label building`;
+- name what other work may still continue;
 - state plainly that the flagged capability is not ready or live, with no
   softer wording that could be read otherwise.
 
 A piece that ends here, with all five done, is safely prepared and correctly
-blocked. Report it as a completed pass, and leave it alone until the
+parked. Report it as a completed pass, and leave it alone until the
 condition is met or the person carries on after the notice and the acceptance
 is recorded.
 
@@ -325,7 +341,8 @@ say in one line what the tool now reaches, so the person can say whether it
 should. A correctly completed build does not need /sync afterward.
 
 Once a person merges the pull request it closes the issue, so there is no
-status to set by hand. After that merge, remove the `building` label and refresh
+status to set by hand. After that merge, take `to check` off the closed issue,
+since a closed issue is done and carries no state, and refresh
 the printout with `sh .agents/tools/plan-refresh.sh` so the person's list matches
 what just happened.
 
@@ -359,6 +376,6 @@ One of two outcomes, both complete passes:
   machine check run and green, the user-facing result is confirmed where needed,
   required review is satisfied, the records match reality, and the selected save
   route is complete.
-- Safely blocked: the piece stopped at its recorded condition, marked
-  `blocked`, with the caution recorded on it, unblocked work
+- Safely parked: the piece stopped at its recorded condition, moved from
+  `building` to `parked`, with the caution recorded on it, work that can go on
   identified, and no claim that the flagged capability is ready or live.

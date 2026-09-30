@@ -36,8 +36,9 @@ Two groups, in this order.
 them, which is what makes them safe to take on at once. Say the count first, in
 one line, then the pieces.
 
-**These wait their turn.** The blocked pieces, one line each, saying which piece
-releases it: "deposits cannot start until card payments is built". Where a chain
+**These wait their turn.** The pieces under `Held up`, one line each, saying
+which piece releases it: "deposits cannot start until card payments is built".
+Where a chain
 runs deeper than one, the order falls out of the chain itself, so put the piece
 that unlocks the most first and let the rest follow it.
 
@@ -49,6 +50,10 @@ the three it needs and leave it out of both groups. It is not ready and it is no
 blocked by work; it is waiting on somebody. The same goes for a piece with a
 `Waiting on you` step: name it as the person's own to do, and never ask for a
 key, a password, or a token in a message.
+
+A piece under `Building` or `To check` is in neither group. The first is already
+claimed, and the second is built and waiting for the person to try it or merge
+it. Say how many are under `To check`, in one line, when any are.
 
 A piece that has been sized but never marked ready sits under `Idea`, not under
 `To build`, so `/implement` will not take it either. Name it with those, and say

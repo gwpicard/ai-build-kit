@@ -287,6 +287,20 @@ attribution line, not the word.
   is the edit that slips through. It also holds that founding names the six
   labels when it makes the label set, and that WORKFLOW.md explains the states
   in one place.
+- `.agents/tests/state-moves.sh` guards the commands that keep the board true.
+  Each move takes the old state off in the same step as it puts the new one
+  on, and the check reads every label command in `/shape`, `/implement`,
+  section-builder and `/fix` for its removal on the same line, then proves a
+  copy that drops one fails. It holds capture, a note asked for outright filed
+  as an `idea` in the person's words with nothing settled, and `/shape` moving
+  an idea to `shaping` and only a piece that meets the bar to `ready`. A
+  research piece says before it starts whether its result needs the person.
+  `/implement` claims a piece as `building` before any work and starts nothing
+  it could not claim, and section-builder moves it to `to check` when its pull
+  request opens, or to `parked` at a recorded condition or after three failed
+  attempts. It also holds `/what-now` naming a piece in `to check` as the
+  person's own, and `/sync` repairing two states on a piece or a state on a
+  closed issue while never touching a closed `parked` idea.
 - `.agents/tests/plan-helper-routes.sh` proves the helper that writes the
   printout reaches every project. It ships inside the setup-ai-build-kit skill,
   because the shared installer and both plugins carry skills and nothing else,
@@ -693,8 +707,9 @@ attribution line, not the word.
   changing a connection redraws it rather than letting it go stale.
 - `.agents/tests/manual-step.sh` guards the step only the person can do: the
   rules for a piece's `Waiting on you` section, that `parked` keeps the two
-  meanings it already has on an open piece, that /implement neither builds such a piece nor skips
-  it in silence, and that /what-now names it as the person's own to-do without
+  meanings it already has on an open piece, in `pieces.md` and where /implement
+  acts on them, that /implement neither builds such a piece nor skips it in
+  silence, and that /what-now names it as the person's own to-do without
   ever asking for a key in a message.
 - `.agents/tests/screen-rules.sh` guards the screen rules, their two build-time
   entry points, and the limit on what their report may claim. It proves the
@@ -736,7 +751,7 @@ attribution line, not the word.
   retired skill folder only by the kit's former names and absence from the
   lockfile. It holds that the step is run from the monthly pass, removes on
   approval, and that WORKFLOW.md says so.
-- `.agents/tests/older-project-upkeep.sh` guards three things an update never
+- `.agents/tests/older-project-upkeep.sh` guards four things an update never
   reaches, because it refreshes skills and nothing else. A leftover `plan.md`
   is offered for a move into issues on every visit that finds it, since it was
   once offered only on the one visit that first brought in `/shape`, and a
@@ -764,9 +779,14 @@ attribution line, not the word.
   A project founded from today's templates gets no offer. A placeholder, a
   mention of the folder, and a project's own skill in the same folder are
   never found. The script's list of skills is the kit's fourteen, so a rename
-  cannot slip past it. Last, a visit asked to leave kit updates alone does not
+  cannot slip past it. A visit asked to leave kit updates alone does not
   copy in the reminder script, still says the visit was recorded, and says the
-  reminder was left out.
+  reminder was left out. Last, a project founded before the piece states is
+  offered the move onto them once: a waiting piece gains `shaping`, a piece
+  with no state gains `idea`, `blocked` becomes `parked` with its reason, and
+  closed issues are left alone. It changes nothing without a yes, a second
+  visit finds nothing to move, and a no is recorded so the offer returns only
+  when a release changes the states.
 - `.agents/tests/offer-recipe-move.sh` guards the monthly offer to move a
   project onto a recipe. It applies to a project with `Recipe: none` or no
   `Recipe:` line, whose stack matches a recipe's build stack in substance even
@@ -866,8 +886,9 @@ attribution line, not the word.
   files a piece for later. Typed with words it starts the step with no offer
   first, since typing it was already the choice, and it says in one line when
   that step takes a sitting. The person can say "later" at any point, or ask
-  for a note in the first place, and the piece is filed with its question,
-  their words and its `needs-` label, with nothing started. It also holds that
+  for a note in the first place. A piece deferred part-way is filed with its
+  question, their words and its `needs-` label, with nothing started, and a
+  note asked for outright is filed as an `idea` in their own words. It also holds that
   the old every-time offer stays gone, that change-triage recognises a request
   to file, that pieces.md says roughly what each waiting label costs to settle,
   and that /what-now calls a planning session when more pieces are waiting

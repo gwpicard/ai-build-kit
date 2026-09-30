@@ -458,7 +458,7 @@ reported, and it is not what decides whether the case held.
 
 - Expected result: the piece records the step in plain words, `/implement` stops on it rather than attempting it or passing it over, and `/what-now` names it as the person's own thing to do.
 - Visible explanation: "nothing can happen on the payment piece until somebody opens the card account, and it takes about ten minutes", with where to go and what to bring back, and what starts moving again once it is done.
-- Hidden technique: the piece's `## Waiting on you` section, written by change-triage where step 2 classified a setup or operational task; the `blocked` label keeps the two meanings it already has rather than gaining a third.
+- Hidden technique: the piece's `## Waiting on you` section, written by change-triage where step 2 classified a setup or operational task; the `parked` label keeps the two meanings it already has rather than gaining a third.
 - Evidence: the step reads as something the person could follow without help, the piece is not built while it is outstanding, and no key, password, or token appears in the recorded step or is asked for in a message.
 - Save route: unaffected; recording the step writes to the piece and nothing else.
 - Review: none is due for the recording itself. The work that follows the step takes its normal route.

@@ -21,6 +21,17 @@ back around and getting built by accident, and it only works if somebody looks. 
 misunderstanding or a setup problem rather than a real gap? Does it contradict
 an existing rule in the masterplan?
 
+## Capture: a note for later
+
+When the person asks only to note an idea, in plain words such as "note this
+for later" or "just file this idea", or types `/shape later` or `/shape idea`
+with it, do not classify or route it. They asked to write it down, not to have
+it shaped. Run Step 1's search, and say so if it matches an open piece or a
+parked idea. Otherwise file it as an issue labelled `idea`, with the person's
+own words as the body and nothing settled: no `## Done when`, no subjects, and
+no route. Say in one line that it is filed as an idea and that `/shape` picks it
+up. Steps 2 to 4 wait until then.
+
 ## Step 2: Classify intent
 
 One of: repair of promised behaviour; new behaviour; clarification or
@@ -95,18 +106,17 @@ particular to one piece stays on that piece. This keeps the masterplan free of
 implementation terms and keeps each concept in one home.
 
 Where the request is a piece and the route is a question rather than a ready
-piece, put the route on the issue: `needs-clarification` for clarify,
-`needs-prototype` for a decision prototype, `needs-research` for a source check
-or a search for existing work.
-Take the label off and mark it `ready` once the question is answered.
+piece, label the issue `shaping` with the `needs-` label that names the route:
+`needs-clarification` for clarify, `needs-prototype` for a decision prototype,
+`needs-research` for a source check or a search for existing work. Once the
+question is answered, `/shape` takes both off and adds `ready` in the same step.
 Without the label the reason a piece is waiting lives only in the session that
 found it, and the next person to open the list sees a piece that has simply
 stopped.
 
 `/shape` starts the routed step straight away unless the person asked only to
-file the piece. Recognise that request in their plain words, such as "note this
-for later" or "just file this idea". Route the piece as usual and hand it back
-marked for filing, so `/shape` writes it with its label and starts nothing.
+file the piece. That request is capture, above, so a note asked for outright
+never reaches this step.
 
 A setup or operational task the person has to do themselves is written onto the
 piece as its `## Waiting on you` section, in the shape
