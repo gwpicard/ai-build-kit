@@ -42,11 +42,14 @@ rs_rule "a piece waiting on a question is in neither group" \
   'leave it out of both groups'
 rs_rule "an empty group is not printed" 'rather than printing an empty group'
 # Found by reading a real printout rather than by reasoning about one: a piece
-# that is shaped but never marked ready sits in the buildable group with no
-# marker, and neither /queue nor /implement will take it. Silence about it is
-# worst when that piece is the one holding another up.
+# that is shaped but never marked ready is taken by neither /queue nor
+# /implement. It used to sit in the buildable group with no marker; since the
+# states it sits under Idea. Silence about it is worst when that piece is the
+# one holding another up, so its blocker is named wherever it sits.
 rs_rule "a sized but unmarked piece is named, not silently dropped" \
-  'carrying no marker at all has been sized but never marked ready'
+  'sized but never marked ready sits under `idea`'
+rs_rule "a held-up piece's blocker is named under idea or shaping" \
+  'blocker may sit under `idea` or `shaping`, so name it there'
 rs_rule "it never asks for a secret in a message" \
   'never ask for a key, a password, or a token in a message'
 rs_rule "it reports and does not build" 'this command only ever reports'

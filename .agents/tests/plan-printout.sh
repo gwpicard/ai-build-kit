@@ -81,7 +81,8 @@ cat >"$WORK/issues.json" <<'JSON'
    "issue_dependencies_summary": {"blocked_by": 1, "total": 1}},
   {"number": 13, "title": "Invoice download", "html_url": "http://x/13",
    "body": "## Done when\nAn invoice downloads.", "assignees": [],
-   "labels": [{"name": "finance"}, {"name": "to check"}]},
+   "labels": [{"name": "finance"}, {"name": "to check"}],
+   "issue_dependencies_summary": {"blocked_by": 1, "total": 1}},
   {"number": 14, "title": "Loyalty points", "html_url": "http://x/14",
    "body": "## Done when\nPoints add up.\n\nParked after three failed attempts.",
    "assignees": [], "labels": [{"name": "finance"}, {"name": "parked"}]},
@@ -122,6 +123,8 @@ case "$1 $2" in
        # closed, so it is free to build. Both go through the same call, and only
        # the state in the answer tells them apart.
        *"/issues/11/dependencies/blocked_by")
+         echo '[{"number":1,"title":"Card checkout","state":"open"}]' ;;
+       *"/issues/13/dependencies/blocked_by")
          echo '[{"number":1,"title":"Card checkout","state":"open"}]' ;;
        *"/issues/12/dependencies/blocked_by")
          echo '[{"number":2,"title":"Rename the header","state":"closed"}]' ;;
@@ -201,6 +204,10 @@ under "Building" "Rename the header" \
 under "To check" "Invoice download" \
   && pass "a piece whose pull request waits for the person is under To check" \
   || fail "Invoice download is not under To check"
+
+section "To check" | grep "Invoice download" | grep -q "needs Card checkout" \
+  && pass "a piece to check that another piece holds up names it" \
+  || fail "Invoice download does not name Card checkout as its blocker"
 
 under "Parked" "Loyalty points" \
   && pass "an open parked piece is under Parked" \

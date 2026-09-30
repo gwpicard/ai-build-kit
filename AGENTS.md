@@ -309,8 +309,9 @@ attribution line, not the word.
   together. The rule that matters is that it reads the printout's grouping rather
   than working safety out again, since the printout is where the guarantee comes
   from. It also guards the blocker being named rather than numbered, a waiting
-  question keeping a piece out of both groups, the command reporting and never
-  building, and `/what-now` keeping its cap of three things, because a
+  question keeping a piece out of both groups, a sized piece never marked ready
+  being named under `Idea` with its blocker named wherever it sits, the command
+  reporting and never building, and `/what-now` keeping its cap of three things, because a
   `/what-now` that grew the whole list would undo the split that earned the ninth
   command. The same rule reaches the end of a build: `/implement` and
   section-builder name a next piece only from the printout's `To build` group,
