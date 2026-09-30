@@ -70,6 +70,12 @@ building, and give the reason in the counts themselves: one piece ready and four
 nobody can build yet. Where the ready pieces outnumber the waiting ones, say
 nothing about it and let the usual advice stand.
 
+A piece under `To check` is the person's own: it is built, and its pull request
+is waiting for them to try it or merge it. Name it apart from the agent's work,
+in the piece's own words: "the overdue list is built and waiting for you to try
+it and merge it". Nothing moves it on except the person, so a piece left there
+unnamed waits for good.
+
 A piece waiting on the person is named apart from the rest, as their own thing
 to do rather than something the agent is working through: "nothing can happen on
 the payment piece until somebody opens the card account, and it takes about ten

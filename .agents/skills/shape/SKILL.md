@@ -85,31 +85,56 @@ The person can say "later" at any point in a step. File the piece then, with
 anything the step has already agreed written onto it, and stop.
 
 Filing is also something the person can ask for outright, in words such as
-"note this for later" or "just file this idea". Run change-triage as usual so
-the piece gets its route and its subjects, then file it without starting any
-step. It is not a separate command. A clear, piece-sized request filed this way
-is simply a ready piece, written without the build offer.
+"note this for later" or "just file this idea", or by typing `/shape later` or
+`/shape idea` with the idea. That is capture, and change-triage handles it: file
+it without starting any step, as an issue labelled `idea`, in their own words,
+with nothing settled. It is not a separate command. The idea is shaped the next
+time somebody runs `/shape` on it.
 
-Filing writes the piece in full: the person's own words, the question it still
-waits on in plain language, and the label that names who can settle it. It is
-the same piece a session settling the question now would have started from, so
-a fresh session picks it up with nothing lost. Then stop. Do not begin the step,
-or carry on with one already started, and do not raise the question again in
-the same session.
+Filing part-way through a step writes the piece in full: the person's own words,
+the question it still waits on in plain language, and the label that names who
+can settle it. It is the same piece a session settling the question now would
+have started from, so a fresh session picks it up with nothing lost. Then stop.
+Do not begin the step, or carry on with one already started, and do not raise
+the question again in the same session.
 
-A piece filed this way carries its `needs-` label and no `ready` label, which is
-what keeps it out of `/implement` until its question is answered. Deferring the
-question never lets the piece be built with the question still open.
+A piece filed part-way stays `shaping`: it carries its `needs-` label and no
+`ready` label, which is what keeps it out of `/implement` until its question is
+answered. Deferring the question never lets the piece be built with the question
+still open.
+
+## Moving a piece's state
+
+This command takes the old state off in the same step as it puts the new one
+on, with one command, so a piece never shows in two columns of the board.
+
+- Starting on an idea moves it to `shaping`, with `needs-clarification` beside
+  it until the interview finds a different reason:
+  `gh issue edit <number> --add-label shaping --add-label needs-clarification --remove-label idea`.
+- A piece reaches `ready` only when it meets the bar: a `## Done when`, no open
+  question, and what settled it written in `## Decided`, read back as the next
+  section says. Then, in one step:
+  `gh issue edit <number> --add-label ready --remove-label shaping --remove-label <its needs- label>`.
+- A piece this command cannot finish stays `shaping` with the `needs-` label that
+  says why, and the question written on it.
+- A `parked` piece sent back for another look moves to `shaping` the same way,
+  with the reason it was parked kept on it:
+  `gh issue edit <number> --add-label shaping --add-label needs-clarification --remove-label parked`.
+
+Where GitHub cannot be reached, the label cannot move, so say so and leave the
+piece as it is.
 
 ## When a piece is waiting on a question
 
 A piece labelled `needs-clarification`, `needs-prototype`, or `needs-research`
 has a question to settle before its code could be written. Settling that
 question is the work of this command. An issue with no `## Done when` was typed
-by hand and never sized, so treat it as `needs-clarification`.
+by hand and never sized. It is an idea, so move it to `shaping` with
+`needs-clarification`, as the section above says, and shape it.
 
 Run the step the label names, write what settled it into the piece's `## Decided`
-section, and only then take the label off and mark the piece `ready`. The record
+section, and only then take the label off, with `shaping`, and mark the piece
+`ready`. The record
 goes first because the label is the only thing saying the question was ever open:
 once it is gone, a piece settled properly and a piece nobody looked at read
 exactly alike.
@@ -144,6 +169,13 @@ noticed until the files were read.
   whether something already exists that could do the work runs
   the `change-triage` skill's `references/existing-work.md`. Say which step you
   ran and why, in one line, because a question can plausibly match either.
+  Before it starts, write one line on the piece: "Needs your decision: yes" or
+  "Needs your decision: no", saying whether its result will need the person to
+  choose. With no, and a result that settles every question, move the piece to
+  `ready` once it meets the bar, with nobody there. With yes, write what it
+  found, then swap `needs-research` for `needs-clarification` in one step, so
+  the piece waits for the person rather than for a guess:
+  `gh issue edit <number> --add-label needs-clarification --remove-label needs-research`.
 
 Two of those three need the person in the room. An interview needs somebody to
 interview, and a prototype exists so somebody can react to it. Research does
@@ -162,7 +194,7 @@ label rather than shaping past it. A piece whose question is settled carries the
 ## Typed alone, or given a piece
 
 Typed alone, take the lowest-numbered piece still waiting on a question, or the
-next unsized note, and shape it as above. When nothing is waiting and every
+next idea, and shape it as above. When nothing is waiting and every
 piece is already ready, say so and point the person at `/implement` to build the
 next one. The command does not run out of things to do quietly; it says the
 plan is shaped.
@@ -200,7 +232,9 @@ changelog entry; the piece is the record.
 ## Done when
 
 The request has exactly one route, the piece is written into its proper shape
-and labelled `ready` or with the question it still waits on, a routed question was
+and labelled `ready`, or `shaping` with the question it still waits on, or `idea`
+when the person only asked to note it, each move took the old state off in the
+same step, a routed question was
 started unless the person asked to file it, the person's original words are kept
 underneath a refinement, and nothing was built except
 through an accepted build offer.

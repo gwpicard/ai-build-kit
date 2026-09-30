@@ -20,6 +20,13 @@ to run instead. If none is labelled `broken`,
 ask for the symptom, as step 1 sets out. If exactly one is, name it and use it as
 the report. If more than one is, list them and ask which to take.
 
+Where the repair has an issue, claim it before step 1, the way section-builder's
+step 1 claims a piece: add `building` and take off whatever state it carried, in
+one step, `gh issue edit <number> --add-label building --remove-label <its state>`.
+Where GitHub cannot be reached, say so and do not start on it, since a repair
+nobody could claim may be claimed by somebody else. The save then moves it on as
+section-builder's step 8 says.
+
 Read masterplan.md, build-path section first. If the behaviour being asked
 for was never promised there, say so kindly and hand the request to `/shape`,
 which shapes new work; a new wish treated as a repair ends up in the wrong
@@ -195,6 +202,12 @@ asking for one more go are all reasons the person may decide differently, and
 none of them is a reason the fault is now understood. Asking for one more go
 after hearing the notice is the person carrying on, which is theirs to choose:
 record the acceptance as below, then make the attempt.
+
+Where the person does not carry on, move the repair's piece from `building` to
+`parked` in one step,
+`gh issue edit <number> --add-label parked --remove-label building`, with one
+line on what the three attempts revealed and the route you chose. `broken` stays
+on it, because the fault is still there.
 
 ### Before the next attempt
 

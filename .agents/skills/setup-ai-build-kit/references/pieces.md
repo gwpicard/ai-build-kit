@@ -255,6 +255,10 @@ cannot create one, because they are a collaborator without write access, the wor
 carries on without the label and the agent says which one is missing. A piece
 that cannot be labelled is still a piece.
 
+A project founded before the states has no state labels until `/maintain` moves
+it onto them. Until then, a command that needs one creates it with
+`gh label create` before its first move.
+
 ## Status, owner, and order
 
 Closed already means done, so no label repeats it. An open piece carries one of

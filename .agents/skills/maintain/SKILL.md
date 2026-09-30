@@ -164,7 +164,10 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
 16. Run "Adding the rules that stop a push to `main`" below. It says nothing
     when the project already has them, or when the person said no to the same
     rules before.
-17. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
+17. Run "Moving the pieces onto the states" below. It says nothing when the
+    project is already on them, or when the person said no to the same states
+    before.
+18. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
     today's date on the `last-light-pass` line, written as YYYY-MM-DD. If that
     file is missing, create it with a `founded` line holding the date
     masterplan.md was first saved, then the two pass lines. If the project has
@@ -240,6 +243,51 @@ the missing rules, once.
    A later visit offers again only when a new release adds a rule that line
    does not list.
 
+## Moving the pieces onto the states
+
+A project founded before the six states in the `setup-ai-build-kit` skill's
+`references/pieces.md` keeps its pieces labelled the old way: `ready`,
+`building`, a `needs-` label, `blocked`, or nothing. No board can be drawn from
+that, and an update refreshes the skills and never the issues. So the visit
+offers the move, once. It changes labels, so do it only after the clean
+checkpoint from step 2.
+
+1. Read the repository's labels with `gh label list`, and the open issues with
+   their labels. Where all six state labels exist and no open issue carries
+   `blocked`, the project is already on the states: say nothing, and this step
+   ends. That is also what a second visit finds after a yes, so it changes
+   nothing.
+2. Read the `states-declined` line in `.ai-build-kit-maintenance`, if there is
+   one. Where it lists the same six states pieces.md lists today, the earlier
+   no stands. Say nothing, and this step ends.
+3. Work out the move before saying anything. It reaches open issues only:
+   - an open piece with a `needs-` label and no `shaping` gains `shaping`;
+   - an open piece with no state label gains `idea`, except a piece made of
+     parts, which carries no state of its own;
+   - a `blocked` piece becomes `parked`, losing `blocked` and any `ready` or
+     `building` beside it, with its reason kept. Where no reason is written,
+     add one line saying it was labelled blocked before the states and nobody
+     recorded why;
+   - each of the six state labels that does not exist yet is created.
+
+   Closed issues are left alone, and a closed `parked` idea above all, since
+   that label is what keeps it out.
+4. Offer it once, in one reply. Say how many pieces each change reaches and
+   which labels it creates. Say that it changes labels, and adds nothing to a
+   piece except that one missing reason. Then wait for the answer.
+5. On a yes, create the missing labels with `gh label create`, then make each
+   change with one command that takes the old label off as it puts the new one
+   on. Refresh the printout and check that Needs attention names none of the
+   pieces moved. Save with the visit's other changes and add a dated changelog
+   line.
+6. Where the person says no, leave every label as it is. Record the no as one
+   line in `.ai-build-kit-maintenance`, replacing any earlier one:
+   `states-declined|<YYYY-MM-DD>|idea,shaping,ready,building,to check,parked`.
+   A later visit offers again only when a release changes the states, so that
+   the list in pieces.md no longer matches the line.
+
+Where GitHub cannot be reached, say that this step did not run.
+
 ## Migrating a project founded before /shape and /implement
 
 Run this once, on the visit whose update first replaces `/build` with `/shape`
@@ -279,7 +327,7 @@ GitHub setup first if it is not ready (the `setup-ai-build-kit` skill's
 `references/manual-setup.md`), open one issue per row in the shape the
 `setup-ai-build-kit` skill's `references/pieces.md` describes, carry each
 row's subjects across as labels, label a shaped row `ready`, and label an
-unshaped one with the question it still waits on. Do this on the clean
+unshaped one `shaping` with the question it still waits on. Do this on the clean
 checkpoint, name what moved, and only then remove `plan.md`. Record the move
 in the changelog as a dated line.
 
