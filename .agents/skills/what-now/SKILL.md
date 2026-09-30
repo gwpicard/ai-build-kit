@@ -11,7 +11,7 @@ You are the safety net under the other six commands. Someone who forgets everyth
 
 masterplan.md (build-path section first), the project's pieces, the recent
 changelog and `changes/`, the capability profile in AGENTS.md, git status, the recent commits
-and merged pull requests, and any open pull requests.
+and merged pull requests, any open pull requests, and a run's state file in `.agents/runs/`.
 
 Refresh the printout with `sh .agents/tools/plan-refresh.sh` and read
 `plan.local.md`. Where the project has no copy of the helper,
@@ -76,6 +76,11 @@ in the piece's own words: "the overdue list is built and waiting for you to try
 it and merge it". Nothing moves it on except the person, so a piece left there
 unnamed waits for good.
 
+An unfinished run is named next, after anything broken or failing: a run whose
+state file still shows a piece waiting or being built. Say how far it got and
+what is left, in piece names, and offer to resume it. Its recovery route is
+below.
+
 A piece waiting on the person is named apart from the rest, as their own thing
 to do rather than something the agent is working through: "nothing can happen on
 the payment piece until somebody opens the card account, and it takes about ten
@@ -104,6 +109,15 @@ Explain what it appears to belong to, then offer a choice: continue it, save
 it as a checkpoint, or clear it after showing exactly what would be lost.
 Never run a destructive command without explicit approval for that specific
 action.
+
+### An unfinished run
+
+A run of several pieces stopped part-way, usually because its session ended.
+Name the pieces it finished, the one it was building and the ones still
+waiting, read from the state file rather than remembered. Offer to resume it
+with `/implement queue`, which carries on from where the state file says it
+stopped, the piece it was building from its last commit. Change nothing
+yourself.
 
 ### Merge or rebase conflict
 

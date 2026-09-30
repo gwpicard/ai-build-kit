@@ -1009,6 +1009,10 @@ if [ -f "$sbfile" ] && [ -f "$blocked" ] && [ -f "$settings" ] && [ -f "$startfi
   mech_ok=1
   grep -qF "save route including the checkpoint route" "$sbfile" || \
     { fail "$sbfile: does not start every piece from up-to-date main"; mech_ok=0; }
+  # The one exception: a piece in a run that stacks on a piece built earlier in
+  # that run starts from that piece's branch, so the stack merges in order.
+  grep -qF "A piece in a run that stacks on another piece built in that run" "$sbfile" || \
+    { fail "$sbfile: does not start a stacked piece in a run from the branch it stacks on"; mech_ok=0; }
   grep -qF "starts unassigned" "$shapefile" || \
     { fail "$shapefile: does not say a new issue starts unassigned"; mech_ok=0; }
   grep -qF 'never push a change directly to `main`' "$blocked" || \
@@ -1020,7 +1024,7 @@ if [ -f "$sbfile" ] && [ -f "$blocked" ] && [ -f "$settings" ] && [ -f "$startfi
   # Whether the pull-request route may merge is the one merge step's rule, in
   # section-builder's references/merge.md, and one-merge-step.sh guards it.
   [ "$mech_ok" -eq 1 ] && \
-    pass "pieces start from fresh main, new issues are unassigned, main is push-guarded, and merged branches auto-delete"
+    pass "pieces start from fresh main or the branch they stack on in a run, new issues are unassigned, main is push-guarded, and merged branches auto-delete"
 fi
 
 # Machine-check-first evidence: where a machine can check a piece, that
