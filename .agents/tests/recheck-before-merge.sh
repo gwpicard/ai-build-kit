@@ -60,7 +60,7 @@ rs_rule "it names what merged since the last green check" \
   'git log --first-parent --oneline <old base>\.\.origin/main'
 rs_rule "the old base is where the checked head met main" \
   'the old base is `git merge-base <head before the update> origin/main`'
-rs_rule "red only after the update goes to /fix" 'as the merge commits give them\. take it to `/fix`'
+rs_rule "red only after the update goes to /fix" 'where the subject names only the branch\. take it to `/fix`'
 rs_rule "origin out of reach merges nothing" \
   'where `origin` cannot be reached, the script exits 2 and nothing changed'
 rs_rule "a stacked pull request is re-aimed, then brought up to date" \
@@ -82,6 +82,10 @@ rs_rule "a piece that conflicts or turns red stays in to check with its reason" 
 rs_rule "the sweep goes on, skipping what stacks on it" \
   'the sweep goes on with the pieces that do not stack on it, and skips each one that does, with that reason'
 rs_rule "the report says how long the sweep waited" 'how long the sweep waited for checks'
+rs_rule "the other five conditions are tested before the update" \
+  'test the other five before bringing a piece up to date'
+rs_rule "a conflict in the sweep still gets its comment" 'a conflict still gets its one comment on the pull request'
+rs_require_load_bearing "/sync says when no run was ever green" "$SYNC" 'where no run has ever been green'
 rs_guard "$LONGER" "the run's sweep"
 rs_require_absent "the sweep no longer merges on a check that is merely green now" "$LONGER" \
   'merge each one whose project check is now green'

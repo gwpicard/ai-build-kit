@@ -395,11 +395,14 @@ its `gh pr merge` finish before the next piece is brought up to date, so each
 piece is checked against a `main` that holds every merge before it. Merge a
 piece only when it meets all six conditions in the `section-builder` skill's
 `references/merge.md`, the first of which is a green check on the commit
-brought up to date, and mark it `merged`.
+brought up to date, and mark it `merged`. Test the other five before bringing a
+piece up to date, so a piece held back for another reason gets no new commit
+and no run of the check.
 
 A piece whose merge from `main` conflicts, or whose check turns red only once
 `main` is taken in, is not merged. It stays in `to check`, and its `reason` says
-which of the two happened. The sweep goes on with the pieces that do not stack
+which of the two happened. A conflict still gets its one comment on the pull
+request, as the merge step says. The sweep goes on with the pieces that do not stack
 on it, and skips each one that does, with that reason. Each merge waits for one
 more run of the check, so a sweep over five pieces on a ten-minute check takes
 about fifty minutes.

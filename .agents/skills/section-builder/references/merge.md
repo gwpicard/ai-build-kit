@@ -52,8 +52,9 @@ When the update stops the merge, nothing merges:
   passed alone and fails with what merged since. Name the pieces merged since
   the branch's last green check, read with
   `git log --first-parent --oneline <old base>..origin/main`, where the old base
-  is `git merge-base <head before the update> origin/main`. Name them by title,
-  as the merge commits give them. Take it to `/fix`.
+  is `git merge-base <head before the update> origin/main`. Name each by its pull
+  request's title, from the merge commit's subject, or from its body where the
+  subject names only the branch. Take it to `/fix`.
 - Where `origin` cannot be reached, the script exits 2 and nothing changed.
   Give the one line "How the merge is made" gives.
 
