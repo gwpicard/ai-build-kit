@@ -261,11 +261,11 @@ it keeps them in `.agents/tmp/walkthrough/<issue number>/`, which never reaches
 GitHub. Founding offers to plan that sample data, or a test account, when the
 tool has sign-in or builds up history over weeks. The walk-through stands in
 for your try before saving, and a piece on a pull request still waits in to
-check until you merge it, so you can try it then. When the agent could not see
-the screen, it says what it could not check. On a pull request the piece waits
-for you in to check as usual. On the checkpoint route, which has no pull
-request, the agent gives you something to try and waits for your reply before
-saving.
+check until you merge it, or until a pre-approved run merges it, so you can try
+it then. When the agent could not see the screen, it says what it could not
+check. On a pull request the piece waits for you in to check as usual. On the
+checkpoint route, which has no pull request, the agent gives you something to
+try and waits for your reply before saving.
 
 To try one piece yourself before it is saved, put a `Waiting on you: try it`
 line on it. To try every piece, ask for that in any command, and the agent
@@ -297,7 +297,7 @@ Next to the merge button sits that check. It re-runs the project's real commands
 
 No command merges a pull request you have not agreed to. The same merge step serves /implement, /fix, /ship and /sync, so the rule holds on every route. The agent names each pull request and what it changes, then asks for a yes that names the merge, and a reply such as "merge 1, 2 and 4" covers each one it names. Saying "put it live" before any merge was named is not that yes, so it asks again. Each merge is made on the pull request itself, never by merging on your computer and pushing `main`, and a pull request stacked on another is merged after it. If GitHub cannot be reached, the merge waits, and you can merge it on GitHub yourself.
 
-Before a run, you can say that pieces which pass may be merged. The agent then merges a piece only when its check is green, its review found nothing worth stopping for, it flags nothing for you to confirm, it touches no sensitive area, and you have not asked to try it yourself. Anything else waits for you in to check, and the report says which condition it missed. That permission ends with the run.
+Before a run, you can say that pieces which pass may be merged. That covers merges that reach a preview: nothing goes live without your yes naming it, or /ship. The agent then merges a piece only when its check is green, its review found nothing worth stopping for, it flags nothing for you to confirm, it touches no sensitive area, you have not asked to try it yourself, and its merge would not go live. Anything else waits for you in to check, and the report says which condition it missed. That permission ends with the run.
 
 The kit's default is that a merge reaches a preview and /ship puts it live. The masterplan's "How it stays running" section records which way your tool goes live. Where your host puts every merge live instead, the ask says "this goes live now", and the first such merge runs /ship's first-launch checks before it happens.
 

@@ -40,13 +40,13 @@ an installed skill.
 
 The user describes intent in plain language; change-triage chooses the route.
 Build one agreed, visible slice at a time. Add nothing the slice did not ask
-for, and never widen a fix into a tidy-up. When an instruction and an automatic
-check disagree, trust the check and say so: it tests the real work, and an
-instruction can fall out of date. Use the save route the build path and the
-change require. Private, disposable exploration may end in a saved checkpoint.
-Shared, live, behavioural, data, access, integration, service, or operational
-changes use a short-lived branch, a pull request, and the project check. Commit
-with a clear message. A merge waits for a yes naming it or a run's
+for, and never widen a fix into a tidy-up. When a written instruction and an
+automatic check disagree, trust the check and say so plainly: it tests the real
+work, and an instruction can fall out of date. Use the save route the build
+path and change require. Private, disposable exploration may end in a confirmed
+checkpoint. Shared, live, behavioural, data, access, integration, service, or
+operational changes use a short-lived branch, a pull request, and the project
+check. Commit with a clear message. A merge needs a yes naming it or a run's
 pre-approval. Present what changed, what was checked and what is uncertain.
 
 Every promised behaviour needs evidence: an automated check where a machine can
