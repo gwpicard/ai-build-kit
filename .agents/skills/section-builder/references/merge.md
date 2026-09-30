@@ -175,6 +175,8 @@ the merge reaches a preview, the merge goes live, or nothing is hosted. Treat
 it as going live until the person says it does not. Write
 their answer into "How it stays running" as the `Goes live:` line, with the
 merge's save or the next one, so the question is asked once for each project.
+In the same save, set the confirmation box as "The confirmation box on a merge
+that goes live" says.
 
 On `on every merge`, the ask says so, as "this goes live now": for example, "Say
 yes to merge 12, which adds the invoice list. This goes live now." Where no live
@@ -185,6 +187,44 @@ going-live step, and `/ship` records what it found, the live address included,
 so a later merge is not taken for a first launch. Where `/ship` itself makes the
 merge, it has already run those checks, and the merge step does not run them a
 second time.
+
+## The confirmation box on a merge that goes live
+
+Claude Code can show its own confirmation box before a command runs, and it
+shows it whatever the session was told. Two rules make it ask before a merge.
+The rules sit in the `setup-ai-build-kit` skill's
+`templates/merge-ask-rules.json`. Take them from that file, never from memory. The same skill's
+`scripts/merge-ask-rules.py` writes them, so every step that records the
+`Goes live:` line changes the file the same way.
+
+Whoever writes `Goes live: on every merge`, whether founding, this step or
+`/ship`, runs
+`python3 <installed setup-ai-build-kit skill>/scripts/merge-ask-rules.py add .claude/settings.json`
+from the project root, in the same save. It adds only the rules that are missing
+to the end of `permissions.ask`, creates that list when there is none, and keeps
+every other entry and setting as it is. Then say one line: "Claude Code will now
+show a confirmation box before each merge, because every merge goes live."
+
+Whoever writes any other value runs the same command with `remove`. It takes
+out exactly the template's rules, and the `ask` list too when that leaves it
+empty. A rule the person wrote stays. Where it took something out, say one
+line: "Claude Code will no longer show its confirmation box before a merge,
+because a merge no longer goes live."
+
+The script's exit decides the rest:
+
+- 0: done. It prints each rule it added or took out, and nothing when nothing
+  changed: say nothing then.
+- 1: the file is not valid JSON, and it was left untouched. Write nothing, and
+  say in the reply that `.claude/settings.json` could not be read, so the box
+  was not set up.
+- 2: the project has no `.claude/settings.json`, because it does not use Claude
+  Code. Write nothing, and leave the line out of the reply.
+
+The box is a second guard. The written rule, a yes that names the merge, still
+holds on every route, and on other coding agents it is the only one. The
+`setup-ai-build-kit` skill's `references/blocked-commands.md` lists the merges
+the box does not catch.
 
 ## Pre-approval for a run
 
@@ -208,6 +248,9 @@ With pre-approval, merge a piece only when all six hold:
    `not hosted`. Where it says `on every merge`, where the recipe says a change
    to `main` goes live, or where the route is not known, the merge would go
    live.
+
+A pre-approved run never meets the confirmation box, because condition 6 keeps
+it from making a merge that goes live.
 
 A piece that fails any of the six is not merged. It stays in `to check` for the
 person, and the run's report names the condition it failed. The rule for a

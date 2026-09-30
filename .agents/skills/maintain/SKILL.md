@@ -172,7 +172,9 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
     Never remove a branch. When no branch qualifies, say nothing.
 16. Run "Adding the rules that stop a push to `main`" below. It says nothing
     when the project already has them, or when the person said no to the same
-    rules before.
+    rules before. Then run "Adding the confirmation box on merges that go
+    live" below. It says nothing unless every merge goes live and the rules
+    are missing, and nothing when the person said no to the same rules before.
 17. Run "Moving the pieces onto the states" below. It says nothing when the
     project is already on them, or when the person said no to the same states
     before.
@@ -261,6 +263,37 @@ the missing rules, once.
    `.ai-build-kit-maintenance`, replacing any earlier one:
    `push-rules-declined|<YYYY-MM-DD>|<the rules offered, separated by " ; ">`.
    A later visit offers again only when a new release adds a rule that line
+   does not list.
+
+## Adding the confirmation box on merges that go live
+
+Founding, the merge step and `/ship` set Claude Code's confirmation box when
+they record that every merge goes live. A project that recorded that line
+before the kit did so has the line and not the box, and a merge there goes
+live with nothing mechanical in the way. So the visit offers the rules, once.
+
+1. Where the project has no `.claude/settings.json`, or the masterplan's
+   `Goes live:` line does not say `on every merge`, this step ends.
+2. Read the rules in the installed setup-ai-build-kit skill's
+   `templates/merge-ask-rules.json`, never from memory, and list each one the
+   project's `permissions.ask` list lacks. Where it lacks none, say nothing.
+3. Read the `merge-ask-declined` line in `.ai-build-kit-maintenance`, if there
+   is one. Where it already lists every missing rule, the earlier no stands,
+   and you say nothing.
+4. Offer them once, in one reply. Name the rules, and say in plain words what
+   they do: Claude Code shows a confirmation box before each merge, because
+   every merge puts the tool live. Say that it adds lines to the ask list,
+   changes nothing else in the file, and works on Claude Code only. Ask for a
+   yes.
+5. On a yes, run
+   `python3 <installed setup-ai-build-kit skill>/scripts/merge-ask-rules.py add .claude/settings.json`
+   from the project root. Where it exits 1, the file is not valid JSON: say
+   so, name the file, and change nothing. Save the change with the visit's
+   other changes and add a dated changelog line.
+6. On a no, change nothing. Record the no as one line in
+   `.ai-build-kit-maintenance`, replacing any earlier one:
+   `merge-ask-declined|<YYYY-MM-DD>|<the rules offered, separated by " ; ">`.
+   A later visit offers again only when the template holds a rule that line
    does not list.
 
 ## Moving the pieces onto the states

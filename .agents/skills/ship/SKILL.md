@@ -291,6 +291,9 @@ At any launch, first or later, where "How it stays running" has no `Goes live:`
 line, write one, from the recipe's going-live section or from what the person
 says: `through /ship`, `on every merge` or `not hosted`. An older project gets
 the line this way, at its next launch.
+In the same save, set the confirmation box as the `section-builder` skill's
+`references/merge.md` says under "The confirmation box on a merge that goes
+live": `add` for `on every merge`, `remove` for any other value.
 
 #### Releasing a tool that is not hosted
 
