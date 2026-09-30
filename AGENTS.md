@@ -291,9 +291,14 @@ attribution line, not the word.
   open blocker never reaches the buildable group while a piece whose blocker
   has closed does. And it holds the groups of free pieces the printout works
   out from each piece's `Touches:` line, under `Go together`: two pieces naming
-  the same area, in any capitals, never share a group, a line under the form's
-  own heading counts, a piece with no line goes alone and says its Touches is
-  unknown, and a held-up piece is in no group.
+  the same area, in any capitals and with backticks or a full stop, never share
+  a group, a line under a Touches heading counts and one in a code block does
+  not, a piece with no line goes alone and says its Touches is unknown, and a
+  held-up piece is in no group. It holds the marks read from each ready piece's
+  body, needs you, not ready, not yet checked and try it, and that a held-up
+  piece joins the plan only when every open blocker in its chain is in it. A
+  piece stacked on one a run cannot take says it waits for it, and why, down
+  the chain.
 - `.agents/tests/piece-states.sh` guards the model the printout draws: every
   open piece carries exactly one of six states, `idea`, `shaping`, `ready`,
   `building`, `to check` and `parked`, written in that order in `pieces.md`. A
@@ -370,8 +375,11 @@ attribution line, not the word.
   is where the guarantee comes from. The plan has five parts in a fixed order:
   the order a run builds in, the groups, what a run can do with each piece, what
   stacks on what, and last the exact command that runs it, `/implement queue` or
-  `/implement` with the numbers. Each of the five verdicts is held, and so are
-  a piece with no Touches line going alone and no command when nothing is ready.
+  `/implement` with the numbers. Each verdict is held, read from the
+  printout's marks and never by opening a piece, and so are a piece with no
+  Touches line going alone, a piece that waits for its base never reaching the
+  numbered command, no command when nothing is ready or a run can take
+  nothing, and an older helper with no groups sent to `/maintain`.
   It also guards the blocker being named rather than numbered, a waiting
   question keeping a piece out of the plan, a sized piece never marked ready
   being named under `Idea` with its blocker named wherever it sits, the command

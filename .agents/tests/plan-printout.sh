@@ -449,6 +449,34 @@ cat >"$WORK/groups.json" <<'JSON'
    "assignees": [], "labels": [{"name": "ready"}]},
   {"number": 9, "title": "Refund receipts", "html_url": "http://x/9",
    "body": "## Done when\nA receipt is sent.\n\nTouches: refunds, settings\n",
+   "assignees": [], "labels": [{"name": "ready"}]},
+  {"number": 10, "title": "Deposit refunds", "html_url": "http://x/10",
+   "body": "## Done when\nA deposit comes back.\n\nTouches: deposits\n",
+   "assignees": [], "labels": [{"name": "ready"}],
+   "issue_dependencies_summary": {"blocked_by": 1, "total": 1}},
+  {"number": 11, "title": "Calendar invites", "html_url": "http://x/11",
+   "body": "## Done when\nAn invite goes out.\n\nTouches: invites\n\n## Readiness\n2026-09-30, checked by a session that did not shape it: Ready\n",
+   "assignees": [], "labels": [{"name": "ready"}],
+   "issue_dependencies_summary": {"blocked_by": 1, "total": 1}},
+  {"number": 12, "title": "Calendar sync", "html_url": "http://x/12",
+   "body": "## Done when\nThe calendar syncs.\n\nTouches: `calendar`.\n\n## Readiness\n2026-09-30, checked by a session that did not shape it: Not ready\n- BLOCKING Data: nobody said which calendar wins.\n",
+   "assignees": [], "labels": [{"name": "ready"}]},
+  {"number": 13, "title": "Calendar colours", "html_url": "http://x/13",
+   "body": "## Done when\nDays are coloured.\n\n~~~\nTouches: menu\n~~~\n\n## Touches\nCalendar\n\n## Readiness\n2026-09-30, checked by a session that did not shape it: Ready\n",
+   "assignees": [], "labels": [{"name": "ready"}]},
+  {"number": 14, "title": "Invite reminders", "html_url": "http://x/14",
+   "body": "## Done when\nA reminder follows the invite.\n\nTouches: reminders\n",
+   "assignees": [], "labels": [{"name": "ready"}],
+   "issue_dependencies_summary": {"blocked_by": 1, "total": 1}},
+  {"number": 15, "title": "Stock sync", "html_url": "http://x/15",
+   "body": "## Done when\nStock matches.\n\nTouches: stock\n",
+   "assignees": [], "labels": [{"name": "ready"}],
+   "issue_dependencies_summary": {"blocked_by": 1, "total": 1}},
+  {"number": 16, "title": "Supplier account", "html_url": "http://x/16",
+   "body": "## Done when\nOrders reach the supplier.\n\n## Waiting on you\nOpen the supplier account and put its key in .env.\n\nTouches: suppliers\n",
+   "assignees": [], "labels": [{"name": "ready"}]},
+  {"number": 17, "title": "Menu photos", "html_url": "http://x/17",
+   "body": "## Done when\nEach dish has a photo.\n\nWaiting on you: try it\n\nTouches: menu\n\n## Readiness\n2026-09-30, checked by a session that did not shape it: Ready\n",
    "assignees": [], "labels": [{"name": "ready"}]}
 ]
 JSON
@@ -460,6 +488,14 @@ case "$1 $2" in
        *"/issues?"*) cat "$FIXTURE" ;;
        *"/issues/6/dependencies/blocked_by")
          echo '[{"number":7,"title":"Card checkout","state":"open"}]' ;;
+       *"/issues/10/dependencies/blocked_by")
+         echo '[{"number":6,"title":"Deposits","state":"open"}]' ;;
+       *"/issues/11/dependencies/blocked_by")
+         echo '[{"number":12,"title":"Calendar sync","state":"open"}]' ;;
+       *"/issues/14/dependencies/blocked_by")
+         echo '[{"number":11,"title":"Calendar invites","state":"open"}]' ;;
+       *"/issues/15/dependencies/blocked_by")
+         echo '[{"number":1,"title":"Guest list export","state":"open"}]' ;;
        *) echo '[]' ;;
      esac ;;
 esac
@@ -530,6 +566,67 @@ if [ -f "$TOGETHER" ]; then
   section "Held up" "$TOGETHER" | grep "Deposits" | grep -q "needs Card checkout" \
     && pass "and it still names the piece holding it up" \
     || fail "Deposits does not name Card checkout under Held up"
+
+  # Backticks and a closing full stop come off in either order, a `## Touches`
+  # heading counts like the form's, and a line inside a ~~~ block is an
+  # example rather than the piece's own.
+  a=$(group_of "Calendar sync"); b=$(group_of "Calendar colours")
+  [ -n "$a" ] && [ -n "$b" ] && [ "$a" != "$b" ] \
+    && grouped | grep "Calendar sync" | grep -q "(touches calendar)" \
+    && grouped | grep "Calendar colours" | grep -q "(touches calendar)" \
+    && pass "an area written in backticks with a full stop clashes with the bare name" \
+    || fail "Calendar sync and Calendar colours both touch the calendar but are not in separate groups"
+
+  echo "== What a run can do with each ready piece =="
+
+  # The marks the printout can read on the piece itself. /queue reads them here
+  # and never opens the pieces, so the printout stays its only source.
+  mark_on() {
+    section "$1" "$TOGETHER" | grep "$2" | grep -q "$3"
+  }
+  mark_on "To build" "Guest list export" "(not yet checked)" \
+    && pass "a piece with no Readiness section is marked not yet checked" \
+    || fail "Guest list export has no Readiness section but is not marked not yet checked"
+  mark_on "To build" "Calendar sync" "(not ready)" \
+    && pass "a piece whose Readiness says Not ready is marked not ready" \
+    || fail "Calendar sync is not marked not ready"
+  mark_on "To build" "Supplier account" "(needs you)" \
+    && pass "a piece with a step of the person's is marked needs you" \
+    || fail "Supplier account is not marked needs you"
+  mark_on "To build" "Menu photos" "(try it)" \
+    && ! mark_on "To build" "Menu photos" "(needs you)" \
+    && pass "a try it line is marked try it, never needs you" \
+    || fail "Menu photos is not marked try it alone"
+  section "To build" "$TOGETHER" | grep "Calendar colours" | grep -qE "\\((not |needs you|try it)" \
+    && fail "Calendar colours is checked Ready but carries a mark" \
+    || pass "a piece checked Ready with nothing of the person's carries no mark"
+
+  echo "== Which held-up pieces are in the plan =="
+
+  # A held-up piece joins the plan only when every open blocker in its chain
+  # is in the plan. Deposits waits on an idea, so it waits its turn, and so does
+  # Deposit refunds, which waits on Deposits.
+  mark_on "Held up" "Deposits" "(in the plan)" \
+    && fail "Deposits waits on an idea but was put in the plan" \
+    || pass "a piece whose blocker is outside the plan waits its turn"
+  mark_on "Held up" "Deposit refunds" "(in the plan)" \
+    && fail "Deposit refunds waits on Deposits, which is outside the plan, but was put in it" \
+    || pass "a piece further down a chain that leaves the plan waits its turn too"
+  mark_on "Held up" "Stock sync" "(in the plan)" \
+    && ! mark_on "Held up" "Stock sync" "(waits for" \
+    && pass "a piece whose blocker is ready joins the plan and stacks on it" \
+    || fail "Stock sync is not in the plan, or says it waits"
+
+  # A piece stacked on one a run cannot take waits for it, with the reason,
+  # and so does the piece stacked on that one.
+  mark_on "Held up" "Calendar invites" "(in the plan)" \
+    && mark_on "Held up" "Calendar invites" "(waits for Calendar sync, which is not ready)" \
+    && pass "a piece stacked on one that is not ready waits for it and says why" \
+    || fail "Calendar invites does not say it waits for Calendar sync, which is not ready"
+  mark_on "Held up" "Invite reminders" "(in the plan)" \
+    && mark_on "Held up" "Invite reminders" "(waits for Calendar invites, which waits for Calendar sync, which is not ready)" \
+    && pass "the wait passes down the chain with each reason" \
+    || fail "Invite reminders does not say it waits for Calendar invites and why"
 else
   fail "no printout was written for the groups fixture"
 fi

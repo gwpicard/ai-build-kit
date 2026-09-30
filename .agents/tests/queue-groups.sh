@@ -73,7 +73,7 @@ rs_rule "the verdict part" '\*\*what a run can do with each\.\*\*'
 rs_rule "the stack part" '\*\*the stack\.\*\*'
 rs_rule "the command part" '\*\*the command\.\*\*'
 rs_rule "the plan takes what /implement queue would take, in blocked-by order" \
-  'whose open blockers are all in the plan'
+  'whose open blockers are all in the plan, all the way down its chain'
 # The groups come from the printout, which compares the Touches lines. A /queue
 # that grouped the pieces itself would be a second answer to the same question,
 # and the two would drift.
@@ -81,7 +81,14 @@ rs_rule "the groups are read as printed" 'as the printout wrote them'
 rs_rule "the groups are never worked out again" 'never group the pieces yourself'
 rs_rule "a piece with no Touches line goes alone, and says why" \
   'its touches line is missing, so it goes alone'
-rs_rule "verdict: a run can take it" 'a run can take it:'
+rs_rule "verdict: a run can take it" \
+  "a run can take it: none of the above holds, so the readiness section's first line says ready"
+rs_rule "on explore privately, only disposable work a machine can check" \
+  'on explore privately, say the run.s own condition'
+rs_rule "verdict: a piece stacked on one a run cannot take waits for it, with the reason" \
+  'waits for the piece it stacks on: the printout marks it'
+rs_rule "the verdicts come from the printout's marks" \
+  "the printout's marks settle all but the first"
 rs_rule "verdict: a sensitive area without acceptance needs the person" \
   'needs you: it lies in a sensitive area'
 rs_rule "verdict: an opted-in piece is still taken and stops at to check" \
@@ -99,6 +106,21 @@ rs_rule "otherwise the command names the pieces by number" \
   '`/implement` followed by the numbers'
 rs_rule "with nothing ready, it says what would make something ready and prints no command" \
   'usually `/shape`, and print no command'
+rs_rule "with nothing a run can take, the command is left off" \
+  'where a run can take none of the pieces in the plan, leave the command off'
+rs_rule "the numbers include a not-yet-checked piece and an opted-in piece" \
+  'the numbers include a piece not yet checked and a piece that waits for the person.s try'
+rs_rule "a piece a run cannot take is never in the numbered command" \
+  'or waits for the piece it stacks on is never among them'
+# The printout is the only source for the pieces. A /queue that opened each
+# piece itself would be a second reading that could disagree with the first.
+rs_rule "it never opens the pieces themselves" 'never open the pieces themselves'
+rs_rule "an older helper with no groups is named, and /maintain refreshes it" \
+  'the next `/maintain` refreshes it, and print no groups and no command'
+rs_rule "the groups say what merges in any order" \
+  'can merge in any order among themselves'
+rs_rule "a run still builds one piece at a time" \
+  '`/implement queue` still builds the whole plan one piece at a time'
 
 rs_guard "$SKILL" "the /queue skill"
 
