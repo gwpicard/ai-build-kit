@@ -160,8 +160,11 @@ on its branch.
 
 On Claude Code, each piece in a run is built in its own worktree under
 `.agents/worktrees/`, named after the piece, while the main folder stays on its
-branch. The kit clears a worktree away once its pull request has closed and
-nothing in it is unsaved. Outside a run, a single piece is built in the main
+branch. Where the plan holds a group of pieces that can go together, the run
+asks once whether to build a group's pieces at the same time, warns that this
+uses more memory, and builds one at a time unless the person gives a number.
+The kit clears a worktree away once its pull request has closed and nothing in
+it is unsaved. Outside a run, a single piece is built in the main
 folder, as always, unless the person asks for a worktree: then open one the
 way `references/running-longer.md` says.
 
