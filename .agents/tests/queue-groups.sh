@@ -97,7 +97,8 @@ rs_rule "the command is /implement queue when a run can take everything" \
   '`/implement queue` when a run can take every piece'
 rs_rule "otherwise the command names the pieces by number" \
   '`/implement` followed by the numbers'
-rs_rule "with nothing a run can take, no command is printed" 'print no command'
+rs_rule "with nothing ready, it says what would make something ready and prints no command" \
+  'usually `/shape`, and print no command'
 
 rs_guard "$SKILL" "the /queue skill"
 

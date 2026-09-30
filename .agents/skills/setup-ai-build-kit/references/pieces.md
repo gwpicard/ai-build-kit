@@ -342,7 +342,10 @@ next, but which of them can be taken on at the same time. A piece can be shaped
 and still be held up, so `ready` alone does not mean startable. What `/queue`
 offers is the ready pieces the printout has already put under `To build`, and a
 piece with an open blocker is never there. That is what makes the group safe to
-take on at once: no two pieces in it are waiting on each other. Shape still
+take on at once: no two pieces in it are waiting on each other. The printout
+also compares their `Touches:` lines and prints the pieces in groups, two
+pieces naming the same area never in one, and `/queue` reads the groups rather
+than working them out again. Shape still
 decides too, so a piece somebody labelled `ready` without giving it a
 `## Done when` is a note, and `/queue` does not offer it either.
 
