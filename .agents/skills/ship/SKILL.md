@@ -288,7 +288,10 @@ branch for this /ship, cut from the up-to-date `main`, and stage only the files
 /ship itself changed. On that branch, or in the checkpoint commit, fold the
 files in `changes/` into CHANGELOG.md with the `sync` skill's
 `scripts/fold-changes.py`, as /sync does, so the pieces this launch carries
-reach the history with it. Open one pull request for them, once, after the
+reach the history with it. Fold first and write the launch lines after, so
+the launch sits above the pieces it launched under the same date. Where an
+earlier records pull request that folded files is still open, say so in one
+line and do not fold again until it merges. Open one pull request for them, once, after the
 launch is checked and its records are written, and ask for its yes in the reply that
 reports the launch. Where GitHub cannot be reached, save the records on that
 branch, note in one plain line the step that did not happen, and open the pull

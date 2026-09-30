@@ -912,7 +912,13 @@ attribution line, not the word.
   each entry newest first under the day it reached `main`, keeps the lines
   already there, and empties the folder. A file on an unmerged branch and one
   nobody committed stay out of the history, and a project with no `changes/`
-  folder gets nothing written.
+  folder gets nothing written. A real changelog titled its headings after the
+  date, and the first fold put new days at the end of the file, so a titled
+  heading now sets the order and is never merged into. A name used again by a
+  reopened piece is dated by the day it arrived that time. It also holds that
+  an entry waiting in `changes/` counts as written, so `/sync` never adds it
+  twice, and that neither `/sync` nor `/ship` folds while an earlier records
+  pull request that folded is still open.
 - `.agents/tests/settled-is-recorded.sh` guards the record a settled question
   has to leave: that what settled it is written into the piece before the label
   comes off, and that the piece is read back to decide whether the label goes

@@ -10,7 +10,7 @@ You are the safety net under the other six commands. Someone who forgets everyth
 ## Read
 
 masterplan.md (build-path section first), the project's pieces, the recent
-changelog, the capability profile in AGENTS.md, git status, the recent commits
+changelog and `changes/`, the capability profile in AGENTS.md, git status, the recent commits
 and merged pull requests, and any open pull requests.
 
 Refresh the printout with `sh .agents/tools/plan-refresh.sh` and read

@@ -456,7 +456,8 @@ every merge after the first would conflict there. `/sync` and `/ship` fold the
 files into `CHANGELOG.md` later. Create the `changes/` folder when the project
 has none; an older project gets it from its first piece. The issue number keeps
 two pieces with the same short name apart. Where the work has no issue, use the
-pull request's number instead.
+pull request's number instead. Checkpoint work with neither takes the date and
+the branch's short name, `changes/<YYYY-MM-DD>-<short name>.md`.
 
 The file holds one or two sentences on what changed for the person, then the
 pull request's link on its own line. Write it after the pull request opens, as

@@ -5,8 +5,12 @@ Each piece writes its changelog entry into its own file in `changes/`, so two
 pieces built at the same time never change the same lines. This gathers those
 files into CHANGELOG.md: each becomes one line, `- <its text>`, under a
 `## YYYY-MM-DD` heading for the day the file reached `main`, newest first. A
-heading that already exists takes the new lines at its top. The folded files
-are then removed with `git rm`, which stages their removal.
+heading that is exactly that date takes the new lines at its top. Any other
+`## ` heading that begins with a date, such as `## 2026-09-29 Launch`, only
+sets the order: a new date goes above the first heading older than it, and
+above the first `## ` heading of any kind when none is older, never at the end
+of the file. The folded files are then removed with `git rm`, which stages
+their removal.
 
 It reads only files saved in the current commit, so it folds only what is on
 the branch being saved. Run it on a branch cut from the up-to-date `main`, and
@@ -27,7 +31,8 @@ import sys
 
 FOLDER = "changes"
 CHANGELOG = "CHANGELOG.md"
-DATED = re.compile(r"^## (\d{4}-\d{2}-\d{2})\s*$")
+EXACT = re.compile(r"^## (\d{4}-\d{2}-\d{2})\s*$")
+STARTS = re.compile(r"^## (\d{4}-\d{2}-\d{2})\b")
 
 
 def git(*args):
@@ -46,13 +51,15 @@ def saved_files():
 def arrival(name):
     """The day and moment the file reached this branch's line of history.
 
-    Following only first parents, the earliest commit that touched the file is
-    the one that brought it: the merge of its pull request, or the checkpoint
-    commit on the checkpoint route.
+    Following only first parents, the newest commit that added the file is the
+    one that brought it: the merge of its pull request, or the checkpoint commit
+    on the checkpoint route. The newest, because a name used before, folded and
+    removed, then written again by a reopened piece, was added more than once.
     """
-    lines = git("log", "--first-parent", "--format=%ct %cs", "HEAD", "--", name).split("\n")
+    lines = git("log", "--first-parent", "--diff-filter=A", "--format=%ct %cs",
+                "HEAD", "--", name).split("\n")
     lines = [line for line in lines if line.strip()]
-    moment, day = lines[-1].split()
+    moment, day = lines[0].split()
     return int(moment), day
 
 
@@ -83,14 +90,13 @@ def fold(changelog, entries):
         for index, line in enumerate(lines):
             if "<!--" in line:
                 in_comment = True
-            if not in_comment:
-                match = DATED.match(line)
-                if match:
-                    headings.append((index, match.group(1)))
+            if not in_comment and line.startswith("## "):
+                exact, starts = EXACT.match(line), STARTS.match(line)
+                headings.append((index, starts.group(1) if starts else None, bool(exact)))
             if "-->" in line:
                 in_comment = False
 
-        same = [index for index, heading in headings if heading == day]
+        same = [index for index, heading, exact in headings if exact and heading == day]
         if same:
             at = same[0] + 1
             while at < len(lines) and not lines[at].strip():
@@ -98,11 +104,12 @@ def fold(changelog, entries):
             lines[at:at] = new
             continue
 
-        older = [index for index, heading in headings if heading < day]
+        older = [index for index, heading, _ in headings if heading and heading < day]
         block = ["## " + day, ""] + new + [""]
         if older:
-            at = older[0]
-            lines[at:at] = block
+            lines[older[0]:older[0]] = block
+        elif headings:
+            lines[headings[0][0]:headings[0][0]] = block
         else:
             while lines and not lines[-1].strip():
                 lines.pop()
