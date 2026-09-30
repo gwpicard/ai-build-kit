@@ -53,6 +53,10 @@ it, then stop.
 
 ### Build and run it
 
+Where the `Goes live:` line says `not hosted` and no recipe is named, going
+live is a release. Run steps 1 and 2, then follow "Releasing a tool that is
+not hosted" below in place of steps 3 and 4.
+
 1. Run the full evidence run.
 2. Run second-opinion using the best independent method recorded in
    AGENTS.md. Before the review asks the person to look up a setting, it
@@ -267,7 +271,8 @@ line in the masterplan's "How it stays running" section, as described in the
 `section-builder` skill's `references/merge.md`. On `through /ship`, merged
 work waits on a preview, and going live is a promote. On `on every merge`,
 there is nothing to promote: each merge was a launch, and `merge.md` ran the
-first-launch checks before the first of them.
+first-launch checks before the first of them. On `not hosted`, there is nothing
+to promote either: going live is a release, as the next section says.
 
 To promote, name what will go live: each change merged since the last launch,
 one plain line each, read from the files in `changes/` and the pull requests
@@ -284,7 +289,53 @@ and write their answer there.
 
 At any launch, first or later, where "How it stays running" has no `Goes live:`
 line, write one, from the recipe's going-live section or from what the person
-says. An older project gets the line this way, at its next launch.
+says: `through /ship`, `on every merge` or `not hosted`. An older project gets
+the line this way, at its next launch.
+
+#### Releasing a tool that is not hosted
+
+This applies where the `Goes live:` line says `not hosted` and no recipe is
+named. No server runs such a tool, so going live means cutting a release: a Git
+tag with a GitHub release. Where a recipe is named as well, the two disagree.
+Say so once, follow the recipe, since a recipe is a place the tool runs, and
+leave this section out.
+
+Name what the release holds: each change since the last release tag, one plain
+line each, read from the files in `changes/` and the lines of CHANGELOG.md
+above its newest `Released` line, or every line when there is none. Where
+nothing changed since the last release, say so and make no release.
+
+Run the checks this path requires before the release: the evidence run and the
+review, steps 1 and 2 above. Leave out the request record check and the
+monitoring caution, since nothing serves requests. Write no hosting request,
+wait for no address, and write no rollback line.
+
+Then read the tags GitHub holds with `git fetch --tags`, where there is a
+remote, and this computer's with `git tag --list`. Propose the next minor
+version after the newest tag of the form `vX.Y.Z`: `v1.4.2` gives `v1.5.0`.
+Where no tag has that form, propose `v0.1.0`. Where the newest tag has another
+form, name the tag you found in one line, and still count from the newest one
+of the form `vX.Y.Z`. The person may name another tag in their reply. Where the
+tag already exists, because somebody made it by hand, name it and ask for
+another, and create nothing until the person names one.
+
+Ask for a yes that names the release, for example: "Say yes to release v1.5.0
+with these three changes." Release only on that yes. A yes to a merge does not
+cover the release, and neither does a yes given before the changes were named.
+A no leaves everything as it was.
+
+On that yes, write the lines you named to a notes file in `.agents/tmp/`, which
+git ignores, and run
+`gh release create <tag> --target main --title <tag> --notes-file <file>`.
+Where GitHub cannot be reached, no release is made: say in one line that the
+release waits and can be asked for again once GitHub answers. Where the project
+has no GitHub repository, or saves on the checkpoint route, the release is a
+local annotated tag instead, made on the same named yes with
+`git tag -a <tag> -m "<tag>" main`. Say that the tag stays on this computer and
+nothing was published.
+
+The launch record in CHANGELOG.md reads `Released <tag>`, saved the way
+"Merging and deploying" below says for every record a launch writes.
 
 #### Merging and deploying
 
@@ -422,5 +473,7 @@ to a live address. Build and run it, and Build with care outside its named
 areas or in an area whose caution is done or accepted: the team can rely on
 the copy they use, each readiness item is in place or recorded as a warning,
 on a recipe each of the eight checks has its line, and the changelog
-says what went live, when, and under which build path. Where a handover was
+says what went live, when, and under which build path. On a tool that is not
+hosted, the release was made on a yes naming it, or the reply says why it
+waits, and the changelog reads `Released <tag>`. Where a handover was
 asked for, it is complete and says what it does not cover.

@@ -75,6 +75,7 @@ Nobody named here was asked first, and nobody named here has endorsed the kit.
 | [coolify-devops](https://github.com/KasperHonore/coolify-devops) | The hosting request `/ship` writes on a first launch, its fields, and the rule that the person carries it to the server by hand rather than the server fetching it |
 | [towncrier](https://github.com/twisted/towncrier) | Each change writing its own small news file, gathered into the one changelog when a release is cut, so changes made side by side never edit the same lines |
 | [GitHub's rule that a branch is up to date before merging](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches#require-status-checks-before-merging) | Taking in the latest `main` and running the check again on the result before a merge, which is where the merge step folds the waiting changelog files |
+| [Semantic Versioning](https://semver.org/) | The `vX.Y.Z` tag form `/ship` reads for a tool that is not hosted, and proposing the next minor version for a release the person can rename |
 | [W3C's WCAG 2.2 quick reference](https://www.w3.org/WAI/WCAG22/quickref/) | The criteria behind keyboard operation, visible and unobscured focus, contrast, reflow, target size, consistent identification, labels, and errors |
 
 Copyright © 2023 W3C®. This software or document includes material copied from
