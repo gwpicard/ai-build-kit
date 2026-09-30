@@ -1298,7 +1298,7 @@ attribution line, not the word.
   runs the evidence run and the review, and proposes the next minor tag, or
   `v0.1.0` with none. It releases only on a yes naming the release, and makes
   a local tag where there is no GitHub repository. It writes no hosting
-  request, address or rollback line. It also holds the template, founding
+  request, address or rollback line, on Build with care as well. It also holds the template, founding
   writing the line from answers it already has, and WORKFLOW.md.
 - `.agents/tests/the-runner.sh` guards how `/implement` runs a plan of ready
   pieces with nobody watching, given several numbers or `queue`. In a real

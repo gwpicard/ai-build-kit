@@ -54,8 +54,8 @@ it, then stop.
 ### Build and run it
 
 Where the `Goes live:` line says `not hosted` and no recipe is named, going
-live is a release. Run steps 1 and 2, then follow "Releasing a tool that is
-not hosted" below in place of steps 3 and 4.
+live is a release. Follow "Releasing a tool that is not hosted" below, which
+says when steps 1 and 2 run, in place of steps 3 and 4.
 
 1. Run the full evidence run.
 2. Run second-opinion using the best independent method recorded in
@@ -405,6 +405,12 @@ above: evidence run, second-opinion, operational readiness, then go live one
 connection at a time. On a recipe, readiness and going live are the recipe's
 checks, as "On a recipe" says.
 
+On a tool that is `not hosted`, with no recipe named, readiness and going live
+give way to the release, inside the named areas as well as outside them. Give
+each area's caution or risk notice as below, then make one release as
+"Releasing a tool that is not hosted" says, with no readiness check and no
+go-live step of its own for any area.
+
 Inside a named area, take each area in turn:
 
 1. read its line in the build-path section: what touches it, its caution, and
@@ -461,7 +467,9 @@ then on: re-run the evidence for what changed since the last ship, and move
 that over. On a recipe, run its eight checks again, as above. "On a recipe"
 says how a warning the changelog already holds is given: as a one-line
 pointer, never again in full.
-The hosting request recorded at the first launch still holds, and
+On a tool that is not hosted, each later /ship is another release, made as
+"Releasing a tool that is not hosted" says. The hosting request recorded at the
+first launch still holds, and
 `references/hosting-request.md` says how to read it back. If reliance, data sensitivity, or consequence has
 grown since the build path was last checked, rerun the fit check before
 shipping further.

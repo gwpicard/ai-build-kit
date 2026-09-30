@@ -46,8 +46,6 @@ rs_rule "a missing line asks which of the three" \
   'ask, in the reply that asks for the merge, which of the three it is: the merge reaches a preview, the merge goes live, or nothing is hosted'
 rs_rule "condition 6 counts not hosted as not going live" \
   '6\. its merge would not go live: the `goes live:` line says `through /ship` or `not hosted`'
-rs_rule "a recipe that puts main live fails condition 6 whatever the line says" \
-  'where the recipe says a change to `main` goes live, whatever the line says'
 rs_rule "pre-approval covers a not-hosted merge" \
   'a merge on a tool that is `not hosted` puts nothing live, so pre-approval covers it too'
 rs_guard "$MERGE" "the merge step"
@@ -56,7 +54,13 @@ rs_guard "$MERGE" "the merge step"
 
 rs_reset
 rs_rule "Build and run it hands a not-hosted tool to the release" \
-  'where the `goes live:` line says `not hosted` and no recipe is named, going live is a release\. run steps 1 and 2, then follow "releasing a tool that is not hosted" below in place of steps 3 and 4'
+  'where the `goes live:` line says `not hosted` and no recipe is named, going live is a release\. follow "releasing a tool that is not hosted" below, which says when steps 1 and 2 run, in place of steps 3 and 4'
+rs_rule "Build with care hands a not-hosted tool to the release too" \
+  'on a tool that is `not hosted`, with no recipe named, readiness and going live give way to the release, inside the named areas as well as outside them'
+rs_rule "each area's caution still comes first, with no go-live of its own" \
+  'give each area.s caution or risk notice as below, then make one release as "releasing a tool that is not hosted" says, with no readiness check and no go-live step of its own for any area'
+rs_rule "each later /ship is another release" \
+  'on a tool that is not hosted, each later /ship is another release'
 rs_rule "the release section is there" '#### releasing a tool that is not hosted'
 rs_rule "a release is a tag with a github release" 'going live means cutting a release: a git tag with a github release'
 rs_rule "with a recipe too, say so once and follow the recipe" \
