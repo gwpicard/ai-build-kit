@@ -38,7 +38,8 @@ PACK="$SCRATCH/pack"
 
 # --- the stand-in for the GitHub CLI -------------------------------------
 # Three pieces: one ready and free, one ready but held up by the first, and
-# one still waiting on a question. Only the first may be named as buildable.
+# one still being shaped. Only the first may be named as buildable, and the
+# second is under Held up, naming the first.
 mkdir -p "$SCRATCH/bin"
 cat >"$SCRATCH/issues.json" <<'JSON'
 [
@@ -51,7 +52,7 @@ cat >"$SCRATCH/issues.json" <<'JSON'
    "issue_dependencies_summary": {"blocked_by": 1, "total": 1}},
   {"number": 3, "title": "make the calendar nicer", "html_url": "http://x/3",
    "body": "half a sentence", "assignees": [],
-   "labels": [{"name": "needs-clarification"}]}
+   "labels": [{"name": "shaping"}, {"name": "needs-clarification"}]}
 ]
 JSON
 cat >"$SCRATCH/bin/gh" <<'SH'
@@ -90,7 +91,7 @@ prints_the_plan() {
   [ -f "$out" ] || { fail "$route: no printout was written"; return; }
   if section "$out" "To build" | grep "Card checkout" | grep -q "(ready)" && \
      ! section "$out" "To build" | grep -q "Weekly payouts" && \
-     section "$out" "Blocked" | grep "Weekly payouts" | grep -q "needs Card checkout"; then
+     section "$out" "Held up" | grep "Weekly payouts" | grep -q "needs Card checkout"; then
     pass "$route: the printout runs, and a held-up piece is kept out of To build"
   else
     fail "$route: the printout does not keep the held-up piece out of To build"
