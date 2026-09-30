@@ -1398,6 +1398,9 @@ attribution line, not the word.
   project, a deleted one and one git does not ignore are each refused by
   name. So is a link the worktree's own ignore rules would show as a new
   file, which happens when the main folder's ignore line is not saved yet.
+  A link in the main folder leading outside the project or into the
+  confidential folder is refused, and a folder keeping one tracked
+  placeholder still links its ignored files.
   Links are never unsaved work, and removal leaves the main files. The
   candidates list leaves out dependency folders, env files, the kit's folder,
   confidential folders and anything deeper than two levels. Last, a sibling

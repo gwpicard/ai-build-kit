@@ -82,7 +82,9 @@ those questions, and then the run goes on with nobody in between.
 ## The run state
 
 A run keeps its state in `.agents/runs/<run name>/`, where the run name is the
-date and time it started, `<YYYY-MM-DD>-<HHMMSS>`. Git ignores the folder.
+date and time it started, `<YYYY-MM-DD>-<HHMMSS>`. That is always the main
+folder's `.agents/runs/`, the first worktree git lists, even when the session
+sits in another tool's worktree, so every session finds the same run. Git ignores the folder.
 Where the project's `.gitignore` has no `.agents/runs/` line, write a
 `.gitignore` holding `*` inside `.agents/runs/` before anything else, so the
 folder ignores itself and nothing tracked changes.

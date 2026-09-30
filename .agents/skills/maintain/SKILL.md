@@ -407,8 +407,8 @@ founded before that has no line, so the visit offers it, once.
    nothing, and this step ends.
 2. From the project root, run `sh <installed implement skill>/scripts/worktree.sh candidates`.
    It lists the ignored files and folders at the top two levels, leaving out
-   dependency and build folders, every `.env` file, `.agents/` and any folder
-   on a `confidential` line. Leave out the folder AGENTS.md records as
+   dependency and build folders, every `.env` file, `.agents/`, `.claude/`,
+   system files such as `.DS_Store`, and any folder on a `confidential` line. Leave out the folder AGENTS.md records as
    confidential as well. Where nothing is left, say nothing, and this step
    ends.
 3. Where every path it lists is already on a `worktree-links-declined` line,

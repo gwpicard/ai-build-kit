@@ -219,13 +219,36 @@ refusal() {
     printf "%s, which never reaches a run's worktree" "$why"
     return
   fi
-  if [ -n "$(git ls-files -- ":(literal)$1" 2>/dev/null | sed -n '1p')" ]; then
+  # A folder is checked entry by entry, so only a tracked file itself is
+  # refused here, and a folder keeping one tracked placeholder still links.
+  if [ "$(git ls-files -- ":(literal)$1" 2>/dev/null | sed -n '1p')" = "$1" ]; then
     printf 'git tracks it, so the worktree already has it'; return
   fi
   if [ ! -e "$MAIN/$1" ] && [ ! -L "$MAIN/$1" ]; then
     printf 'it is not in the main folder. Flag the piece: built without %s' "$1"; return
   fi
-  if ! git check-ignore -q -- "$1" 2>/dev/null; then
+  # A path that is itself a link, or sits under one, is judged by where it
+  # leads.
+  real=$(python3 -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "$MAIN/$1" 2>/dev/null || true)
+  top=$(pwd -P)
+  if [ -n "$real" ]; then
+    case $real in
+      "$top" | "$top"/*) ;;
+      *) printf 'it leads outside the project'; return ;;
+    esac
+    inner=${real#"$top"}
+    inner=${inner#/}
+    if [ -n "$inner" ] && [ "$inner" != "$1" ]; then
+      why=$(confidential_reason "$inner")
+      if [ -n "$why" ]; then
+        printf "it leads to %s: %s, which never reaches a run's worktree" "$inner" "$why"
+        return
+      fi
+    fi
+  fi
+  # A folder's own entries are each checked, since `fonts/*` beside a kept
+  # `!fonts/.gitkeep` ignores the files and not the folder.
+  if { [ ! -d "$MAIN/$1" ] || [ -L "$MAIN/$1" ]; } && ! git check-ignore -q -- "$1" 2>/dev/null; then
     printf 'git does not ignore it, so its link would show as a new file to save'
   fi
 }
@@ -445,7 +468,12 @@ cmd_open() {
   wt="$WT_DIR/$name"
   rel=".agents/worktrees/$name"
   ignore_folder "$name"
-  if [ -n "$STARTED" ] && [ "$(cd "$STARTED" && pwd -P)" != "$(pwd -P)" ]; then
+  started_at=""
+  [ -z "$STARTED" ] || started_at=$(cd "$STARTED" 2>/dev/null && pwd -P || true)
+  # The kit's own worktree folder may not exist yet.
+  kit_worktrees="$(pwd -P)/.agents/worktrees"
+  if [ -n "$started_at" ] && [ "$started_at" != "$(pwd -P)" ] && \
+    case "$started_at/" in "$kit_worktrees"/*) false ;; *) true ;; esac; then
     say "This session is in $STARTED, another worktree. The run's state and its pieces' worktrees live in the main folder, $MAIN."
   fi
 
