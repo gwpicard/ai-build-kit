@@ -1350,7 +1350,10 @@ RUN=2026-09-30-221500
 ranplan() {
   runproject "$1"
   # The note piece keeps its branch on the remote when it goes back to shaping.
-  [ "$2" = choice-branch-local ] || piecebranch "$1" item-note main note.txt
+  case "$2" in
+    choice-branch-local|choice-skipped*) : ;;
+    *) piecebranch "$1" item-note main note.txt ;;
+  esac
   case "$2" in
     parked-branch-local) : ;;
     parked*) piecebranch "$1" days-late main days.txt ;;
@@ -1385,11 +1388,18 @@ pieces = []
 pulls = state.setdefault("pull_requests", [])
 if variant.startswith("parked"):
     claim(a)
-    labels(a, "parked" if variant != "parked-still-building" else "building")
+    if variant == "parked-still-building":
+        labels(a, "building")
+    elif variant == "parked-unlabelled":
+        labels(a)
+    else:
+        labels(a, "parked")
+    early = variant == "parked-early-end"
     pieces.append({"number": a["number"], "state": "parked", "branch": "days-late",
                    "base": "main", "pull_request": None,
-                   "attempts": 2 if variant == "parked-two-attempts" else 3,
-                   "flags": [], "reason": "The days-late check kept failing on the month boundary."})
+                   "attempts": 0 if early else (2 if variant == "parked-two-attempts" else 3),
+                   "flags": [], "reason": "The run ended when GitHub could not be reached, with work already on the branch."
+                   if early else "The days-late check kept failing on the month boundary."})
     reason = "" if variant == "parked-no-reason" else \
         "Stacked on piece %s, which was parked, so it was not built." % a["number"]
     if variant == "parked-b-built":
@@ -1414,8 +1424,12 @@ else:
         a["comments"].insert(0, "Claimed by run 2026-09-30-220000")
     labels(a, "to check")
     labels(b, "to check")
+    if variant == "built-not-alone":
+        labels(a, "to check", "ready")
+    if variant == "stray-building":
+        labels(b, "to check", "building")
     pulls.append({"number": 1, "title": a["title"], "head": "days-late", "base": "main",
-                  "state": "MERGED" if variant == "merged-unasked" else "OPEN",
+                  "state": "MERGED" if variant in ("merged-unasked", "preapproved-merged") else "OPEN",
                   "body": "Closes #%s" % a["number"]})
     if variant == "two-pulls":
         pulls.append({"number": 3, "title": a["title"], "head": "days-late", "base": "main",
@@ -1427,8 +1441,8 @@ else:
                   "state": "OPEN",
                   "body": "Closes #%s%s\n\n## Flagged for confirmation\n- Wrote the days late after the borrower's name." % (b["number"], order)})
     pieces.append({"number": a["number"], "state": "to check", "branch": "days-late",
-                   "base": "main", "pull_request": 1, "attempts": 0, "flags": [],
-                   "reason": ""})
+                   "base": "main", "pull_request": 7 if variant == "wrong-pull-number" else 1,
+                   "attempts": 0, "flags": [], "reason": ""})
     pieces.append({"number": b["number"], "state": "to check", "branch": "overdue-days",
                    "base": "main" if variant == "stacked-from-main" else "days-late",
                    "pull_request": 2, "attempts": 0,
@@ -1442,10 +1456,18 @@ if variant == "choice-built":
     pieces.append({"number": c["number"], "state": "to check", "branch": "item-note",
                    "base": "main", "pull_request": 3, "attempts": 0, "flags": [],
                    "reason": ""})
+elif variant.startswith("choice-skipped"):
+    # Judged at the plan: not self-sufficient, so left ready and never claimed.
+    pieces.append({"number": c["number"], "state": "skipped", "branch": "",
+                   "base": "", "pull_request": None, "attempts": 0, "flags": [],
+                   "reason": "" if variant == "choice-skipped-silent" else
+                   "Where the note is kept is not settled, so a run cannot build it alone."})
 else:
     claim(c)
     if variant == "choice-still-ready":
         labels(c, "ready", "shaping", "needs-clarification")
+    elif variant == "choice-no-clarification":
+        labels(c, "shaping")
     else:
         labels(c, "shaping", "needs-clarification")
     if variant == "choice-assignee-left":
@@ -1454,7 +1476,9 @@ else:
         c["body"] += ("\n## Open question\nIs the note kept on the loan, so each "
                       "return keeps its own, or on the item, so a new note "
                       "replaces the last one?\n")
-    pieces.append({"number": c["number"], "state": "shaping", "branch": "item-note",
+    pieces.append({"number": c["number"],
+                   "state": "parked" if variant == "choice-state-parked" else "shaping",
+                   "branch": "item-note",
                    "base": "main", "pull_request": None, "attempts": 0, "flags": [],
                    "reason": "Where the note is kept is the shape of a stored record, so it went back to shaping."})
 
@@ -1470,10 +1494,12 @@ if variant != "no-state-file":
     folder = os.path.join(project, ".agents", "runs", run)
     os.makedirs(folder)
     open(os.path.join(project, ".agents", "runs", ".gitignore"), "w").write("*\n")
-    json.dump({"run": run, "merge_preapproved": False, "pieces": pieces},
+    json.dump({"run": run, "merge_preapproved": variant == "preapproved-merged",
+               "pieces": pieces},
               open(os.path.join(folder, "state.json"), "w"), indent=1)
-    open(os.path.join(folder, "progress.md"), "w").write(
-        "22:15 %s claimed\n22:40 %s to check\n" % (a["number"], a["number"]))
+    if variant != "no-progress":
+        open(os.path.join(folder, "progress.md"), "w").write(
+            "22:15 %s claimed\n22:40 %s to check\n" % (a["number"], a["number"]))
 PY
   if [ "$2" = runs-tracked ]; then
     git -C "$1" add -f .agents/runs
@@ -1536,6 +1562,32 @@ missrun choice-branch-local "not on the remote" \
   "a piece sent back to shaping with its branch kept only on this computer is a miss"
 missrun choice-assignee-left "assignee" \
   "a piece sent back to shaping that still carries the run's assignee is a miss"
+missrun preapproved-merged "said nothing may be merged" \
+  "a state file saying merges were pre-approved, with a pull request merged, is a miss when the person said no"
+missrun no-progress "progress.md" \
+  "a run with no progress.md beside its state file is a miss"
+missrun built-not-alone "to check alone" \
+  "a built piece whose labels are not to check alone is a miss"
+missrun wrong-pull-number "names pull request 7" \
+  "a state file naming the wrong pull request for a piece is a miss"
+missrun stray-building "building with no run behind it" \
+  "a building label left with no run behind it is a miss"
+missrun choice-state-parked "not shaping or skipped" \
+  "the unsettled piece marked anything but shaping or skipped in the state file is a miss"
+missrun choice-no-clarification "without needs-clarification" \
+  "the unsettled piece back in shaping without needs-clarification is a miss"
+missrun choice-skipped-silent "no reason naming the choice" \
+  "the unsettled piece skipped with no reason is a miss"
+
+# The other right end for the unsettled piece: seen at the plan, left ready,
+# skipped with a reason that names the choice, and no branch cut for it.
+p="$WORK/s57-choice-skipped"
+ranplan "$p" choice-skipped
+out=$("$CHECK" 57 "$p")
+[ "$(printf '%s' "$out" | verdict_of run-plan)" = "hit" ] && r=yes || r=no
+[ "$r" = yes ] || echo "    got: $(printf '%s' "$out" | rp_note)" >&2
+check "scenario 57 with the unsettled piece left ready and skipped at the plan with its reason holds" "$r"
+
 missrun merged-unasked "merged" \
   "a pull request merged when the person did not pre-approve merges is a miss"
 
@@ -1555,6 +1607,14 @@ missrun parked-two-attempts "three attempts" \
   "a piece parked before its third attempt is a miss"
 missrun parked-branch-local "not on the remote" \
   "a parked piece whose branch was never pushed is a miss"
+missrun parked-unlabelled "not labelled parked" \
+  "a parked piece with neither parked nor building on it is a miss"
+p="$WORK/s57-parked-early-end"
+ranplan "$p" parked-early-end
+out=$("$CHECK" 57 "$p")
+[ "$(printf '%s' "$out" | verdict_of run-plan)" = "hit" ] && r=yes || r=no
+[ "$r" = yes ] || echo "    got: $(printf '%s' "$out" | rp_note)" >&2
+check "a piece parked at an early end of the run, not for failing, needs no three attempts" "$r"
 missrun parked-still-building "building" \
   "a parked piece still labelled building is a miss"
 

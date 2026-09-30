@@ -14,7 +14,7 @@
 # The last line leans on that order.
 /implement queue
 ---
-# when: merg[a-z]* (during|while)|pre-?approv|(may|can|shall|should) i merge|whether (i|to) merge|i should merge
+# when: merg[a-z]* (during|while)|pre-?approv|(may|can|shall|should) i merge|whether (i|to) merge|i should merge|(should|shall|may|can) (the )?(passing )?pieces[a-z ]* be merged|want me to merge
 Go ahead with that plan. Do not merge anything during the run; I will merge the pull requests myself afterwards.
 ---
 Thanks. Which order do I merge them in?

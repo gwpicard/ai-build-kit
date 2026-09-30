@@ -750,6 +750,10 @@ expect "and on an ask whether the kit may merge" send "$gate57" \
   "Approve the plan, and say whether I should merge the pieces that pass." 0
 expect "and on an ask for pre-approval" send "$gate57" \
   "Do you pre-approve merges for this run?" 0
+expect "and on an ask whether passing pieces should be merged" send "$gate57" \
+  "Should passing pieces be merged during the run, or left for you?" 0
+expect "and on an ask whether the person wants the kit to merge" send "$gate57" \
+  "Do you want me to merge each piece that passes?" 0
 expect "but not on a plan that has not asked yet" wait "$gate57" \
   "Here is the plan: the days-late piece, then the overdue list on top of it, then the note." 0
 

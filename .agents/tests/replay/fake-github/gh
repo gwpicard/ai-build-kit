@@ -213,6 +213,26 @@ def pr_url(state, pr):
     return "https://github.com/%s/pull/%s" % (state["repo"], pr["number"])
 
 
+def head_oid(pr):
+    """The commit at the tip of the pull request's branch.
+
+    Read from the project while the pull request is open, so a later push moves
+    it, and recorded when it merges, since a merged branch may be deleted.
+    /maintain's stale-branch listing compares a branch against this.
+    """
+    if pr.get("head_oid"):
+        return pr["head_oid"]
+    head = pr.get("head", "")
+    if not head:
+        return ""
+    for ref in ("refs/remotes/origin/" + head, "refs/heads/" + head):
+        found = subprocess.run(["git", "rev-parse", "-q", "--verify", ref],
+                               capture_output=True, text=True)
+        if found.returncode == 0:
+            return found.stdout.strip()
+    return ""
+
+
 def pr_fields(state, pr, names):
     """The subset of a pull request that --json asks for.
 
@@ -228,6 +248,7 @@ def pr_fields(state, pr, names):
         "state": pr.get("state", "OPEN"),
         "url": pr_url(state, pr),
         "headRefName": pr.get("head", ""),
+        "headRefOid": head_oid(pr),
         "baseRefName": pr.get("base", "main"),
         "mergeable": "MERGEABLE",
         "isDraft": False,
@@ -297,14 +318,23 @@ def on_remote(branch):
     stacked pull request before uploading the branch under it is refused here
     as it would be there. A project with no remote cannot be asked, so it is
     let through, as before.
+
+    The stand-in only ever asks a remote that is a folder on this computer, as
+    every replay's is. An origin that is a network address is never contacted:
+    the base counts as missing, and stderr says why.
     """
     try:
         remote = subprocess.run(["git", "remote", "get-url", "origin"],
                                 capture_output=True, text=True)
         if remote.returncode != 0:
             return True
+        url = remote.stdout.strip()
+        if "://" in url or re.match(r"^[^/]+@[^/]+:", url) or not os.path.isdir(url):
+            sys.stderr.write("gh (rehearsal stand-in): origin is not a folder on this "
+                             "computer, so the branch %s is taken as missing\n" % branch)
+            return False
         found = subprocess.run(["git", "ls-remote", "--exit-code", "--heads",
-                                "origin", "refs/heads/" + branch],
+                                url, "refs/heads/" + branch],
                                capture_output=True, text=True)
         return found.returncode == 0
     except OSError:
@@ -326,10 +356,37 @@ def comment_body(comment):
 
 
 def comment_id(issue, index, comment):
-    """A comment's id. A bare string from an older state file gets one from its place."""
+    """A comment's numeric id, as the REST API gives it.
+
+    A new comment takes the next id from 1000001 up. A bare string from an
+    older state file has none, so it gets one from its place, in a range of its
+    own from 2000000000 up, so the two can never collide.
+    """
     if isinstance(comment, dict) and "id" in comment:
         return comment["id"]
-    return issue["number"] * 100000 + index + 1
+    return 2000000000 + issue["number"] * 10000 + index
+
+
+def comment_node(number):
+    """A comment's node id, as `gh issue view --json comments` gives it."""
+    return "IC_kwDOReplay%s" % number
+
+
+def rest_comment(state, issue, index, comment):
+    """One comment in the shape the REST comments endpoint returns."""
+    number = comment_id(issue, index, comment)
+    return {"id": number, "node_id": comment_node(number),
+            "body": comment_body(comment), "user": {"login": "replay-person"},
+            "html_url": "https://github.com/%s/issues/%s#issuecomment-%s"
+                        % (state["repo"], issue["number"], number)}
+
+
+def add_comment(state, issue, body):
+    state["comment_next"] = state.get("comment_next", 1000001)
+    made = {"id": state["comment_next"], "body": body}
+    state["comment_next"] += 1
+    issue.setdefault("comments", []).append(made)
+    return made
 
 
 def flags_all(argv, name):
@@ -545,6 +602,23 @@ def main():
         posting = bool(re.search(r"(?:-X|--method)[= ]POST\b", " ".join(argv)))
         # Deleting a comment by its id, as a run does with its own claim
         # comment when another run claimed the piece first.
+        # The comments on one piece, listed with their numeric ids, or one added.
+        listed = re.fullmatch(r"/?repos/[^/]+/[^/]+/issues/(\d+)/comments", path)
+        if listed:
+            issue = find(state, listed.group(1))
+            if issue is None:
+                unsupported(argv, "no such issue")
+            if posting:
+                body = api_fields(argv).get("body")
+                if body is None:
+                    unsupported(argv, "no body given for the comment")
+                made = add_comment(state, issue, body)
+                save(state)
+                print(json.dumps(rest_comment(state, issue, len(issue["comments"]) - 1, made)))
+                return
+            print(json.dumps([rest_comment(state, issue, n, c)
+                              for n, c in enumerate(issue.get("comments", []))]))
+            return
         gone = re.fullmatch(r"/?repos/[^/]+/[^/]+/issues/comments/(\d+)", path)
         if gone and re.search(r"(?:-X|--method)[= ]DELETE\b", " ".join(argv)):
             for issue in state["issues"]:
@@ -697,8 +771,11 @@ def main():
                 # The comments come with the view, so a run can read back the
                 # claim it just made, as `--json comments` does on GitHub.
                 shown = issue_public(state, issue)
+                # As on GitHub, the id here is the comment's node id. The
+                # numeric id a deletion takes comes from the REST listing.
                 shown["comments"] = [
-                    {"id": comment_id(issue, n, c), "author": {"login": "replay-person"},
+                    {"id": comment_node(comment_id(issue, n, c)),
+                     "author": {"login": "replay-person"},
                      "body": comment_body(c),
                      "url": "https://github.com/%s/issues/%s#issuecomment-%s"
                             % (state["repo"], issue["number"], comment_id(issue, n, c))}
@@ -744,9 +821,7 @@ def main():
                 comments.pop()
                 save(state)
                 return
-            state["comment_next"] = state.get("comment_next", 1) + 1
-            made = {"id": state["comment_next"] - 1 + 900000, "body": body_of(argv) or ""}
-            comments.append(made)
+            made = add_comment(state, issue, body_of(argv) or "")
             save(state)
             print("https://github.com/%s/issues/%s#issuecomment-%s"
                   % (state["repo"], issue["number"], made["id"]))
@@ -847,6 +922,7 @@ def main():
             if not land_on_remote(pr):
                 sys.stderr.write("Pull request #%s is not mergeable\n" % pr["number"])
                 sys.exit(1)
+            pr["head_oid"] = head_oid(pr)
             pr["state"] = "MERGED"
             for number in re.findall(r"[Cc]loses #(\d+)", pr.get("body", "")):
                 issue = find(state, number)
