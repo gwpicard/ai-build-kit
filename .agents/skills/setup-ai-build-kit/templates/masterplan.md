@@ -87,9 +87,12 @@ goes live, rolls back, and is backed up and restored. Link it rather than
 copying it, and write here only what it cannot know, such as who owns billing.
 
 A `Goes live:` line says how the tool goes live: `through /ship`, the kit's
-default, where a merge reaches a preview and /ship promotes it, or `on every
-merge`, where the host puts each merge to `main` live. The merge step in the
-`section-builder` skill's `references/merge.md` reads it before every merge.
+default, where a merge reaches a preview and /ship promotes it, `on every
+merge`, where the host puts each merge to `main` live, or `not hosted`, where no
+server runs the tool for people to reach, because people install it, copy it,
+or run it on their own computer. On `not hosted`, a merge is never a launch, and
+/ship makes a release instead. The merge step in the `section-builder` skill's
+`references/merge.md` reads it before every merge.
 
 A `Sample data:` line says what made-up records or test accounts each build
 walks through the tool with, and where they live, or that there are none.

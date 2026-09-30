@@ -462,6 +462,15 @@ That report never stops founding.
 Without a recipe, set up accordingly: one established, conventional stack,
 because the agent is strongest where the conventions run deepest.
 
+Write the masterplan's `Goes live:` line in "How it stays running" before the
+first checkpoint, from answers founding already has, and ask nothing new for
+it. On a recipe, write what its going-live section says, read as the
+`section-builder` skill's `references/merge.md` reads it: `on every merge`
+where a change to `main` goes live, and `through /ship` otherwise. Off a
+recipe, write `Goes live: not hosted` where the interview or the two questions
+above say nothing is hosted, because people install the tool, copy it, or run
+it on their own computer. Otherwise write no line, and the first merge asks.
+
 On any stack, recipe or not, use managed services for anything storing
 sign-ins, payments, or files; those never get hand-built, however capable you
 feel, unless a person who does that work for a living owns a different design
