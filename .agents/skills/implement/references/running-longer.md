@@ -350,7 +350,8 @@ works in.
   run at the same time, and never more than `at_once` background agents at
   once. A piece that stacks on another is never in its base's group, so it is
   built after its base, never alongside it. A piece in no group is built on its
-  own.
+  own. The groups are taken in the plan's order, and the next one starts once
+  no piece of the one before is still with a background agent.
 - **Before an agent starts.** For each piece, the coordinating session makes
   the claim itself, one piece at a time, as step 1 says. It then opens the
   piece's worktree with `worktree.sh open` and takes its port with
@@ -359,14 +360,18 @@ works in.
 - **What an agent does.** It is given the piece's number, its worktree path,
   its port and the run name. It loads section-builder and does steps 3 to 6 of
   "For each piece" inside its worktree: the start ritual, the checks first, the
-  build and the walk-through. It commits, pushes its branch and reports back
-  what it built, the choices it flagged and what the walk-through could not
-  see. It never reviews any piece, opens a pull request, writes the run state
-  or merges.
+  build and the walk-through. It commits its work on the piece's branch and
+  reports back what it built, the commit that holds the checks, the choices it
+  flagged and what the walk-through could not see. It never pushes, since a
+  first upload waits for the person and the checkpoint route stays on this
+  computer. It never reviews any piece, opens a pull request, writes the run
+  state or merges.
 - **After an agent reports.** The coordinating session starts that piece's
   independent review itself, as step 7 says, since the review runs from a
   session that did not build the piece. It then opens the pull request and
-  writes the changelog file, as steps 8 and 9 say, one piece at a time. Where
+  writes the changelog file, as steps 8 and 9 say, one piece at a time. Step 8
+  is where the branch is first pushed. A problem the review finds is fixed by
+  the coordinating session in the piece's worktree before that. Where
   the trigger names a person, the review stays theirs: a background agent never
   meets a named review.
 - **One writer.** The coordinating session is the only writer of `state.json`,
@@ -378,7 +383,10 @@ works in.
   checked again.
 - **An agent that never reports.** A background agent that ends without
   reporting back counts as a failed attempt at its piece, under the
-  three-attempt rule in "When a piece fails", and the run goes on.
+  three-attempt rule in "When a piece fails", and the run goes on. A smoke
+  check that fails on `main` ends the run as it does for one piece: start no
+  new agent, wait for the ones still building to report, and leave each piece
+  as "When the run ends" says.
 - **Two pieces that change one file.** Two pieces of one group can change the
   same file although their `Touches:` lines differ. The second merge's check
   against the latest `main` then finds the conflict, and the

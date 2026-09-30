@@ -400,8 +400,9 @@ attribution line, not the word.
   and that only one group runs at once. It holds hardest that the session
   which started the run alone claims, writes the run state, runs each review,
   opens each pull request and merges one at a time, while a background agent
-  only builds one piece in its own worktree, and that an agent which never
-  reports counts as a failed attempt.
+  only builds one piece in its own worktree and never pushes, and that an
+  agent which never reports counts as a failed attempt. A pushing agent would
+  make a first upload nobody was asked about.
 - `.agents/tests/gated-turns.sh` checks the rule that decides when a scripted
   replay turn is due: that a turn with no precondition still fires by position,
   that one with a precondition waits until the kit has said the thing it
