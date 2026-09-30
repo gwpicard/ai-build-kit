@@ -73,6 +73,11 @@ Three cases are settled here, so no checker has to decide them again:
   checked on its own.
 - A piece shaped before this check existed has no `## Readiness` section. It
   stays `ready`, and a run checks it before claiming it.
+- Founding runs this check on each piece it shapes, through a session that did
+  not shape it, and labels a piece `ready` only on no blocking gap. Where the
+  coding agent cannot start one, founding labels its shaped pieces `ready`
+  without a `## Readiness` section, and each is checked before any run claims
+  it, as a piece from before the check is.
 
 ## What it writes
 
@@ -94,7 +99,13 @@ first line stands alone.
 `/shape` reads the section back and moves the piece by what it says. Ready
 moves the piece to `ready`. Not ready keeps it `shaping`, with each blocking gap
 written on the piece. The `needs-` label beside `shaping` says who can close
-the gap: `needs-clarification` when a person has to choose, `needs-research`
-when a fact has to be confirmed or code read. Once a gap is closed, a session
-that did not shape the piece runs the check again, which a new subagent always
-is.
+the gap:
+
+- `needs-clarification` for a gap a person must settle, including a Relies on
+  line whose code does not exist or does not return what the piece needs;
+- `needs-research` for a fact from outside the project;
+- `needs-prototype` for a gap on item 13, a flow the person has not seen.
+
+The checker reads the project's code itself, so reading code is never the
+reason for a label. Once a gap is closed, a session that did not shape the
+piece runs the check again, which a new subagent always is.

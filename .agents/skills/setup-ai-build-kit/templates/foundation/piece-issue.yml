@@ -48,7 +48,7 @@ body:
         - Nothing free in the range: the list says so. Check: empty-range test.
         - Two people book the last item at once: one is refused. Check: race test.
     validations:
-      required: true
+      required: false
 
   - type: textarea
     id: masterplan-change
@@ -143,8 +143,8 @@ body:
     attributes:
       label: Touches
       description: >
-        One line naming the areas changed, by skill, record or document name,
-        never a file path.
+        One line that starts with "Touches:" and names the areas changed, by
+        skill, record or document name, never a file path.
       placeholder: "Touches: bookings, availability calendar"
     validations:
       required: false

@@ -80,6 +80,11 @@ operational rehearsal, summarising the checks on the Done when lines>
 The header is `So that`, `Done when`, `Masterplan change`, `Not in this piece`
 and `Waiting on you`. Everything from `## Decided` down is the agent layer.
 
+A piece opened with the GitHub form shows every field as a `###` heading, so
+Done when and "When it is not the normal case" sit side by side and Touches
+has a `### Touches` heading of its own. `/shape` rewrites it to the layout above
+when it shapes the piece.
+
 ## Field rules
 
 One bar applies to every piece, in proportion to the piece. Every field is
@@ -148,9 +153,9 @@ The check and the section are described in the `shape` skill's
 
 ## Rules that are not fields
 
-- No open choice a person would notice. Phrases such as "decide during build",
-  "consider", "or accept the limit", "TBD", "if needed", and "e.g." inside a
-  list are refused. A vague word needs a number.
+- No open choice a person would notice. The refused phrases, and the rule that
+  a vague count or size needs a number, are item 10 of the list in the `shape`
+  skill's `references/readiness-check.md`.
 - Lists are complete: a list of examples does not stand in for the whole.
 - Each Done when line is false on today's code and true after, through this
   piece alone.

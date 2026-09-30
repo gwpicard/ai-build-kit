@@ -24,7 +24,11 @@ words, then settle any question this opens through the usual shaping route.
 
 ## Typed with words
 
-Run change-triage on the request and follow its route: shape it into a ready
+Typed as `/shape <number> check readiness`, this is not a request. Skip
+change-triage and run the readiness check on that piece, as the readiness check
+section below says.
+
+Otherwise run change-triage on the request and follow its route: shape it into a ready
 piece now, run clarify first, run a decision prototype, run a source check,
 update the masterplan first, or stop and rerun the fit check. Say which route
 you chose and why, in one line.
@@ -229,13 +233,17 @@ label rather than shaping past it. A piece whose question is settled carries the
 ## Typed alone, or given a piece
 
 Typed alone, take the lowest-numbered piece still waiting on a question, or the
-next idea, and shape it as above. When nothing is waiting and every
+next idea, and shape it as above. A `shaping` piece with no `needs-` label is
+waiting for its readiness check: its shaping finished and the check never ran,
+so run the check on it rather than shaping it again. When nothing is waiting and every
 piece is already ready, say so and point the person at `/implement` to build the
 next one. The command does not run out of things to do quietly; it says the
 plan is shaped.
 
 Given an issue number, settle that piece rather than the lowest-numbered one, so
-somebody with one piece in mind is not made to work through the list. Where that
+somebody with one piece in mind is not made to work through the list. Given it
+as `/shape <number> check readiness`, run the readiness check on that piece and
+nothing else. Where that
 piece is already ready, say so and make the build offer instead.
 
 Where the person says they are not staying, take the pieces the agent can settle
