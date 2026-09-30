@@ -365,9 +365,9 @@ Find the main folder with this command:
 `git worktree list --porcelain | sed -n '1s/^worktree //p'`
 
 It prints the first `worktree` line, which is always the main folder. Outside a
-worktree it prints the folder you are in, so nothing changes there. Create that
-folder where it does not exist yet; the foundation's `.gitignore` already
-ignores `.agents/tmp/`. A picture inside a
+worktree it prints the top of the project you are in, which is the main folder,
+so nothing changes there. Create that folder where it does not exist yet; the
+foundation's `.gitignore` already ignores `.agents/tmp/`. A picture inside a
 worktree counts as unsaved work there and keeps the worktree after its pull
 request closes. Each piece has its own folder, so walk-throughs running side by
 side never overwrite each other.
