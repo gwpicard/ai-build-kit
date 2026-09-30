@@ -1,0 +1,151 @@
+#!/usr/bin/env python3
+"""Fold the files in changes/ into CHANGELOG.md.
+
+Each piece writes its changelog entry into its own file in `changes/`, so two
+pieces built at the same time never change the same lines. This gathers those
+files into CHANGELOG.md: each becomes one line, `- <its text>`, under a
+`## YYYY-MM-DD` heading for the day the file reached `main`, newest first. A
+heading that already exists takes the new lines at its top. The folded files
+are then removed with `git rm`, which stages their removal.
+
+It reads only files saved in the current commit, so it folds only what is on
+the branch being saved. Run it on a branch cut from the up-to-date `main`, and
+a file still waiting on another branch never enters the history. A file nobody
+has committed, or one with changes nobody has committed, is left where it is.
+
+It never stages CHANGELOG.md or commits: the save route does that. It prints
+one line for each file folded, and nothing when there is nothing to fold. Run
+it from the project root:
+
+    python3 <sync skill folder>/scripts/fold-changes.py
+"""
+
+import os
+import re
+import subprocess
+import sys
+
+FOLDER = "changes"
+CHANGELOG = "CHANGELOG.md"
+DATED = re.compile(r"^## (\d{4}-\d{2}-\d{2})\s*$")
+
+
+def git(*args):
+    result = subprocess.run(["git", *args], capture_output=True, text=True)
+    if result.returncode != 0:
+        raise RuntimeError(result.stderr.strip() or "git " + " ".join(args) + " failed")
+    return result.stdout
+
+
+def saved_files():
+    """The Markdown files in changes/ saved in the current commit."""
+    listed = git("ls-tree", "--name-only", "HEAD", FOLDER + "/").split("\n")
+    return [name for name in listed if name.endswith(".md")]
+
+
+def arrival(name):
+    """The day and moment the file reached this branch's line of history.
+
+    Following only first parents, the earliest commit that touched the file is
+    the one that brought it: the merge of its pull request, or the checkpoint
+    commit on the checkpoint route.
+    """
+    lines = git("log", "--first-parent", "--format=%ct %cs", "HEAD", "--", name).split("\n")
+    lines = [line for line in lines if line.strip()]
+    moment, day = lines[-1].split()
+    return int(moment), day
+
+
+def issue_number(name):
+    match = re.match(r"(\d+)", os.path.basename(name))
+    return int(match.group(1)) if match else 0
+
+
+def entry(name):
+    text = git("show", "HEAD:" + name)
+    words = " ".join(line.strip() for line in text.split("\n") if line.strip())
+    if words.startswith("- "):
+        words = words[2:]
+    return "- " + words
+
+
+def fold(changelog, entries):
+    """Insert each (day, line) into the changelog text, newest day first."""
+    lines = changelog.split("\n")
+    by_day = {}
+    for day, line in entries:
+        by_day.setdefault(day, []).append(line)
+
+    for day in sorted(by_day, reverse=True):
+        new = by_day[day]
+        headings = []
+        in_comment = False
+        for index, line in enumerate(lines):
+            if "<!--" in line:
+                in_comment = True
+            if not in_comment:
+                match = DATED.match(line)
+                if match:
+                    headings.append((index, match.group(1)))
+            if "-->" in line:
+                in_comment = False
+
+        same = [index for index, heading in headings if heading == day]
+        if same:
+            at = same[0] + 1
+            while at < len(lines) and not lines[at].strip():
+                at += 1
+            lines[at:at] = new
+            continue
+
+        older = [index for index, heading in headings if heading < day]
+        block = ["## " + day, ""] + new + [""]
+        if older:
+            at = older[0]
+            lines[at:at] = block
+        else:
+            while lines and not lines[-1].strip():
+                lines.pop()
+            lines += [""] + block
+    text = "\n".join(lines)
+    return text if text.endswith("\n") else text + "\n"
+
+
+def main():
+    try:
+        names = saved_files()
+    except RuntimeError as problem:
+        print("fold-changes: " + str(problem), file=sys.stderr)
+        return 1
+
+    ready = []
+    for name in names:
+        if git("status", "--porcelain", "--", name).strip():
+            print(f"fold-changes: {name} has changes nobody has committed; left as it is",
+                  file=sys.stderr)
+            continue
+        moment, day = arrival(name)
+        ready.append((moment, issue_number(name), name, day))
+    if not ready:
+        return 0
+
+    # Newest first: the latest arrival, then the higher issue number.
+    ready.sort(reverse=True)
+    entries = [(day, entry(name)) for _, _, name, day in ready]
+
+    if os.path.isfile(CHANGELOG):
+        with open(CHANGELOG, encoding="utf-8") as handle:
+            changelog = handle.read()
+    else:
+        changelog = "# Changelog\n"
+    with open(CHANGELOG, "w", encoding="utf-8") as handle:
+        handle.write(fold(changelog, entries))
+
+    for _, _, name, day in ready:
+        git("rm", "-q", "--", name)
+        print(f"folded {name} under {day}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

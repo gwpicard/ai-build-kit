@@ -682,7 +682,9 @@ attribution line, not the word.
   where the project keeps it. Every founded project's documents name its
   commands that way, and an earlier version reported each one as a missing
   file. It also proves a clean project produces nothing, the script writes
-  nothing, and the document changed longest ago comes first.
+  nothing, and the document changed longest ago comes first. A piece's file
+  in `changes/` is part of the changelog, so it is never read as a document,
+  and neither the folder nor a file the last fold took away is called missing.
 - `.agents/tests/document-bloat.sh` guards the quarterly read for documents
   that repeat each other or are no longer needed: that it reads every
   document rather than only the ones AGENTS.md points at, never offers the
@@ -694,8 +696,9 @@ attribution line, not the word.
   paragraph and a note nothing names. It proves both are found, and that a
   README nobody links to, the records, a short shared sentence and a page
   naming files the project no longer has are left alone, since the document
-  read in `/sync` reports those one name at a time. A clean project produces
-  nothing, and the script writes nothing.
+  read in `/sync` reports those one name at a time. A piece's file waiting in
+  `changes/` is left alone too, even when it repeats a paragraph. A clean
+  project produces nothing, and the script writes nothing.
 - `.agents/tests/request-record.sh` guards the request record checked before
   live use, its data exclusions, and the monitoring caution given once unless
   someone already receives alerts. A missing record is a warning said once and
@@ -895,6 +898,21 @@ attribution line, not the word.
   interruption, so a dirty tree is the ordinary case, and the two easy ways to
   get a clean branch are to sweep that work into sync's own commit or to
   discard it. Both destroy the thing sync was called to reconcile.
+- `.agents/tests/changelog-files.sh` guards the changelog file each piece
+  writes and the fold that gathers them. Every piece used to add its entry at
+  the top of `CHANGELOG.md`, so two pieces built at the same time changed the
+  same lines, and in a real project nearly every merge in a batch conflicted
+  there. So section-builder and `/fix` write one file per piece in `changes/`,
+  after the pull request opens so it can carry the link, and `/sync` and
+  `/ship` fold the files in with the shipped `fold-changes.py`. It holds those
+  rules, and that founding, `/ship`, `/maintain` and `/sync` still write
+  `CHANGELOG.md` directly. It then runs the fold in a throwaway repository. Two
+  branches that each add a file merge with no conflict, while a control that
+  adds both entries at the top of `CHANGELOG.md` conflicts. The fold writes
+  each entry newest first under the day it reached `main`, keeps the lines
+  already there, and empties the folder. A file on an unmerged branch and one
+  nobody committed stay out of the history, and a project with no `changes/`
+  folder gets nothing written.
 - `.agents/tests/settled-is-recorded.sh` guards the record a settled question
   has to leave: that what settled it is written into the piece before the label
   comes off, and that the piece is read back to decide whether the label goes

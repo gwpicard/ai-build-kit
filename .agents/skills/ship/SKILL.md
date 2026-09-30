@@ -285,8 +285,11 @@ version is live, take the save route the build path already requires: the
 three routes section-builder names, with no fourth for records. On the
 checkpoint route, a checkpoint commit is enough. Otherwise put them on one
 branch for this /ship, cut from the up-to-date `main`, and stage only the files
-/ship itself changed. Open one pull request for them, once, after the launch is
-checked and its records are written, and ask for its yes in the reply that
+/ship itself changed. On that branch, or in the checkpoint commit, fold the
+files in `changes/` into CHANGELOG.md with the `sync` skill's
+`scripts/fold-changes.py`, as /sync does, so the pieces this launch carries
+reach the history with it. Open one pull request for them, once, after the
+launch is checked and its records are written, and ask for its yes in the reply that
 reports the launch. Where GitHub cannot be reached, save the records on that
 branch, note in one plain line the step that did not happen, and open the pull
 request once GitHub is reachable. The project's first upload waits for the

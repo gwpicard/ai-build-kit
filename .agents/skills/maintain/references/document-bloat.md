@@ -23,8 +23,9 @@ Explore privately.
 
 Every Markdown document the project saves, not only the ones AGENTS.md points
 at, because unlisted documents are where bloat collects. The records (the
-masterplan, the changelog, AGENTS.md), the kit's own files, and anything in a
-folder whose name starts with a dot are left out.
+masterplan, the changelog with its waiting files in `changes/`, AGENTS.md), the
+kit's own files, and anything in a folder whose name starts with a dot are left
+out.
 
 ## What counts as bloat
 

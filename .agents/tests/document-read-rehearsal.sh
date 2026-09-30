@@ -10,6 +10,9 @@
 # than the project does. A document AGENTS.md never points at is not read at
 # all. A clean project produces no output, and the script writes nothing.
 #
+# A piece's changelog file in `changes/` is part of the changelog: never read
+# as a document, and never stale once the last fold has taken it away.
+#
 # The false-positive half is the one that matters most. A read that flags true
 # things gets ignored, and then the stale name it also found is ignored with it.
 
@@ -52,7 +55,7 @@ EOF
 cat > README.md <<'EOF'
 # Shop
 
-It sells things.
+It sells things. Each finished piece's entry waits in `changes/` until it is folded into the changelog.
 EOF
 git add -A
 commit "A project whose documents are true"
@@ -82,7 +85,15 @@ npm run test
 ```
 
 Type `/implement` to build. The code is at `owner/shop` and `github.com/owner/shop`, the entry file is `index.js`, and releases use `release.sh`.
+
+The last fold took in `changes/12-old-login.md`.
 EOF
+# A piece's changelog file is part of the changelog. It is never read as a
+# document, even when AGENTS.md names it, and a name in `changes/` that the last
+# fold took away is not stale.
+mkdir -p changes
+printf '%s\n' 'Signing in now remembers you, as `src/remember.js` does.' > changes/7-sign-in.md
+printf '%s\n' '' 'The newest entry is `changes/7-sign-in.md`.' >> AGENTS.md
 git add -A
 commit "The README drifts"
 
@@ -109,6 +120,8 @@ echo "  ok: a bare file name kept in a folder is found there"
 
 printf '%s\n' "$out" | grep -q 'unlisted' && fail "a document AGENTS.md never points at was read"
 printf '%s\n' "$out" | grep -q 'gone/by/design' && fail "the kit's own WORKFLOW.md was read"
+printf '%s\n' "$out" | grep -q 'changes' && fail "a changelog file in changes/ was read or reported"
+echo "  ok: the changes/ folder and the files in it are part of the changelog, never reported"
 echo "  ok: only the README and the documents AGENTS.md points at are read"
 
 printf '%s\n' "$out" | grep -qE '[0-9]+ *%|score|grade' && fail "a score reached the output"
