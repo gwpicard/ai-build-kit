@@ -1174,12 +1174,14 @@ attribution line, not the word.
   happened as a merge and `/ship`'s checks never ran. It holds the named yes,
   a reply naming several counting for each one it names, the merge made on
   the pull request, a stacked pull request never merged before its base, and
-  nothing merged while GitHub cannot be reached. It holds the five conditions
+  nothing merged while GitHub cannot be reached. It holds the six conditions
   under which an agent merges on the person's pre-approval of a run, each
-  proved load-bearing, and that a piece failing one stays in `to check` with
-  the reason. It holds the masterplan's `Goes live:` line, the ask that says
-  "this goes live now" where every merge goes live, and the first such merge
-  running `/ship`'s first-launch checks before it. It fails on section-builder,
+  proved load-bearing, the last being that the merge would not go live, so
+  pre-approval never puts code live. A piece failing one stays in `to check`
+  with the reason. It holds the masterplan's `Goes live:` line, written once
+  when it is missing, the ask that says "this goes live now" where every merge
+  goes live, and the first such merge running `/ship`'s first-launch checks
+  before it. It fails on section-builder,
   `/implement`, `/fix`, `/ship` or `/sync` restating the rule rather than
   pointing at it, and holds `/ship`'s promote from a preview to live on a yes
   that names it. It replaces the validator's string that held section-builder

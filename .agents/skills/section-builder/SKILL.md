@@ -411,7 +411,7 @@ steps, and push again.
 
 Once the check is green the piece is ready for review. Merge it only as
 `references/merge.md` says: on a yes that names it, or under the person's
-pre-approval of a run when the piece meets all five of its conditions.
+pre-approval of a run when the piece meets all six of its conditions.
 Otherwise the pass stops there. Report the piece as ready for review, not as
 done.
 

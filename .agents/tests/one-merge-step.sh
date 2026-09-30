@@ -40,7 +40,7 @@ rs_exists "$MERGE" "$SB" "$IMPLEMENT" "$LONGER" "$FIX" "$SHIP" "$SYNC" \
 
 # The yes that names the merge.
 rs_rule "a person decides the merge" 'a person decides whether to merge\.'
-rs_rule "each pull request is named with what it changes" 'name each pull request in one plain line'
+rs_rule "each pull request is named with what it changes" 'name each pull request in one plain line: its number, its title and what it changes for the person'
 rs_rule "the yes asked for names the merge" 'ask for a yes that names the merge'
 rs_rule "merge only on a reply that covers it" 'merge only when the person.s reply plainly covers that merge'
 rs_rule "a reply naming several counts for each one it names" 'a reply that names several pull requests, such as "merge 1, 2 and 4", counts for each one it names and for none it leaves out'
@@ -59,25 +59,32 @@ rs_rule "never a local merge and a push of main" 'never merge the branch on this
 rs_rule "the branch is never deleted by hand" 'never delete the branch yourself'
 rs_rule "an unreachable github merges nothing" 'where github cannot be reached, nothing merges'
 rs_rule "and says when to try again" 'it can be asked for again once github answers'
+rs_rule "and that the person can merge it on github" 'the person can merge it on github themselves'
 
 # When a merge goes live.
 rs_rule "the masterplan records how the tool goes live" 'records how the tool goes live in its `goes live:` line'
 rs_rule "the default is a preview, and /ship promotes" '`through /ship` is the kit.s default: a merge reaches a preview, and `/ship` promotes it to live'
 rs_rule "a missing line is treated as live until the person says not" 'treat it as going live until the person says it does not'
+rs_rule "the answer is recorded, so it is asked once" 'write their answer into "how it stays running" as the `goes live:` line'
+rs_rule "the question is asked once for each project" 'so the question is asked once for each project'
 rs_rule "the ask says this goes live now" 'the ask says so, as "this goes live now"'
 rs_rule "the first such merge runs the first-launch checks first" 'this merge is the first launch\. before asking for it, load the `ship` skill and run its first-launch checks'
+rs_rule "the live address is recorded, so later merges are not first launches" 'the live address included, so a later merge is not taken for a first launch'
+rs_rule "a merge /ship makes does not rerun the checks" 'where `/ship` itself makes the merge, it has already run those checks, and the merge step does not run them a second time'
 
 # Pre-approval.
 rs_rule "pre-approval is written in the run's state file" 'write that as `merge_preapproved` in the run.s state file'
 rs_rule "it ends with the run" 'holds for that run alone and ends with it'
-rs_rule "all five conditions must hold" 'merge a piece only when all five hold'
+rs_rule "pre-approval covers merges that reach a preview" 'it covers merges that reach a preview\. nothing goes live without the person.s yes naming it, or `/ship`'
+rs_rule "all six conditions must hold" 'merge a piece only when all six hold'
 rs_rule "condition: the check is green" '1\. its project check is green'
 rs_rule "condition: the review found nothing worth stopping for" '2\. its review found nothing worth stopping for'
-rs_rule "condition: no flagged choice" '3\. its pull request flags no choice for the person to confirm'
+rs_rule "condition: no flagged choice" '3\. its pull request flags no choice for the person to confirm, and names nothing the walk-through could not see'
 rs_rule "condition: no sensitive area" '4\. it touches no sensitive area named in the build-path section, accepted or not'
-rs_rule "condition: the person has not opted in to check it" '5\. the person has not opted in to check it'
+rs_rule "condition: the person has not opted in to check it" '5\. the person has not opted in to check it: the piece has no `waiting on you: try it` line, and `\.ai-build-kit-maintenance` has no `check-myself\|yes` line'
+rs_rule "condition: the merge would not go live" '6\. its merge would not go live: the `goes live:` line says `through /ship`'
+rs_rule "an unknown route counts as going live" 'or where the route is not known, the merge would go live'
 rs_rule "a piece that fails one stays in to check, with the reason" 'it stays in `to check` for the person, and the run.s report names the condition it failed'
-rs_rule "no agent merge is ever a first launch" 'where a merge would be the first launch, the agent does not make it'
 rs_guard "$MERGE" "the merge step"
 
 # Every route points at the step. section-builder's line replaces the
@@ -109,12 +116,12 @@ rs_require_load_bearing "/ship promotes only on a yes naming it" "$SHIP" 'promot
 rs_require_load_bearing "a merge yes does not cover the promote" "$SHIP" 'a yes to a merge does not cover it'
 rs_require_load_bearing "a no leaves the live tool as it was" "$SHIP" 'a no leaves the live tool as it was'
 rs_require_load_bearing "on every merge there is nothing to promote" "$SHIP" 'on `on every merge`, there is nothing to promote'
-rs_require_load_bearing "a first launch writes the Goes live line" "$SHIP" 'where "how it stays running" has no `goes live:` line, write one'
+rs_require_load_bearing "any launch writes a missing Goes live line" "$SHIP" 'at any launch, first or later, where "how it stays running" has no `goes live:` line, write one'
 
 # The records.
 rs_require_load_bearing "the masterplan template carries the Goes live line" "$MASTERPLAN" 'a `goes live:` line says how the tool goes live'
 rs_require_absent "the founded AGENTS.md no longer says a human alone merges" "$FOUNDED" 'a human decides whether to merge'
-rs_require_load_bearing "the founded AGENTS.md names the yes or the pre-approval" "$FOUNDED" 'a merge waits for a yes naming it or a run.s pre-approval'
+rs_require_load_bearing "the founded AGENTS.md names the yes or the pre-approval" "$FOUNDED" 'a merge needs a yes naming it or a run.s pre-approval'
 
 # WORKFLOW.md tells it once, for every route.
 rs_require_load_bearing "WORKFLOW says every route shares the step" "$WORKFLOW" 'the same merge step serves /implement, /fix, /ship and /sync'
@@ -125,6 +132,9 @@ rs_require_load_bearing "WORKFLOW says the merge is made on the pull request" "$
 rs_require_load_bearing "WORKFLOW says an unreachable github makes the merge wait" "$WORKFLOW" 'if github cannot be reached, the merge waits, and you can merge it on github yourself'
 rs_require_load_bearing "WORKFLOW gives the pre-approval conditions" "$WORKFLOW" 'you can say that pieces which pass may be merged'
 rs_require_load_bearing "WORKFLOW says the permission ends with the run" "$WORKFLOW" 'that permission ends with the run'
+rs_require_load_bearing "WORKFLOW says pre-approval never puts code live" "$WORKFLOW" 'that covers merges that reach a preview: nothing goes live without your yes naming it, or /ship'
+rs_require_load_bearing "WORKFLOW says a pre-approved run may merge a piece in to check" "$WORKFLOW" 'or until a pre-approved run merges it'
+rs_require_load_bearing "WORKFLOW says a merge yes does not cover the promote" "$WORKFLOW" 'a yes to a merge does not cover it'
 rs_require_load_bearing "WORKFLOW says an every-merge host is named in the ask" "$WORKFLOW" 'the ask says "this goes live now", and the first such merge runs /ship.s first-launch checks before it happens'
 rs_require_load_bearing "WORKFLOW says /ship promotes" "$WORKFLOW" '/ship names what will go live, runs its checks, and promotes on your yes'
 rs_require_absent "WORKFLOW no longer says a human alone merges, always" "$WORKFLOW" 'a human decides whether to merge, always'

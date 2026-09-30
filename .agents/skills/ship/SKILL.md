@@ -282,9 +282,9 @@ that section names. Off a recipe, promote the way "How it stays running"
 records. Where it records nothing, ask the person how the preview is put live,
 and write their answer there.
 
-On a first launch, where "How it stays running" has no `Goes live:` line, write
-one, from the recipe's going-live section or from what the person says. An
-older project gets the line this way, at its next launch.
+At any launch, first or later, where "How it stays running" has no `Goes live:`
+line, write one, from the recipe's going-live section or from what the person
+says. An older project gets the line this way, at its next launch.
 
 #### Merging and deploying
 

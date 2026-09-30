@@ -143,7 +143,7 @@ piece with an open blocker out of `To build`, and a hand reading does not.
 
 A built piece's pull request merges only as the `section-builder` skill's
 `references/merge.md` says: on a yes that names it, or under the person's
-pre-approval of a run, for a piece that meets all five of its conditions.
+pre-approval of a run, for a piece that meets all six of its conditions.
 
 ## Typed with auto, or handed to a goal mode
 

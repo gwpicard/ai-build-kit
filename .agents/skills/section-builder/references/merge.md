@@ -51,23 +51,29 @@ each merge to `main` live, so the merge is itself a launch.
 Where the line is missing, read the going-live section of the project's recipe.
 Where it says a change to `main` goes live, treat the merge as `on every merge`.
 Otherwise ask, in the reply that asks for the merge, whether merging puts the
-tool live, and treat it as going live until the person says it does not.
+tool live, and treat it as going live until the person says it does not. Write
+their answer into "How it stays running" as the `Goes live:` line, with the
+merge's save or the next one, so the question is asked once for each project.
 
 On `on every merge`, the ask says so, as "this goes live now": for example, "Say
 yes to merge 12, which adds the invoice list. This goes live now." Where no live
 address is recorded in "How it stays running", this merge is the first launch.
 Before asking for it, load the `ship` skill and run its first-launch checks on
 the current build path, up to going live. The merge is then that path's
-going-live step, and `/ship` records what it found.
+going-live step, and `/ship` records what it found, the live address included,
+so a later merge is not taken for a first launch. Where `/ship` itself makes the
+merge, it has already run those checks, and the merge step does not run them a
+second time.
 
 ## Pre-approval for a run
 
 Before a run starts, the person may say that pieces which pass may be merged.
 Write that as `merge_preapproved` in the run's state file. It holds for that run
 alone and ends with it, so it never reaches a later run or a piece built outside
-one. Where a merge goes live, the question that asks for pre-approval says so.
+one. It covers merges that reach a preview. Nothing goes live without the
+person's yes naming it, or `/ship`.
 
-With pre-approval, merge a piece only when all five hold:
+With pre-approval, merge a piece only when all six hold:
 
 1. its project check is green;
 2. its review found nothing worth stopping for;
@@ -75,10 +81,11 @@ With pre-approval, merge a piece only when all five hold:
    the walk-through could not see;
 4. it touches no sensitive area named in the build-path section, accepted or not;
 5. the person has not opted in to check it: the piece has no `Waiting on you:
-   try it` line, and `.ai-build-kit-maintenance` has no `check-myself|yes` line.
+   try it` line, and `.ai-build-kit-maintenance` has no `check-myself|yes` line;
+6. its merge would not go live: the `Goes live:` line says `through /ship`. Where
+   it says `on every merge`, where the recipe says a change to `main` goes live,
+   or where the route is not known, the merge would go live.
 
-A piece that fails any of the five is not merged. It stays in `to check` for the
+A piece that fails any of the six is not merged. It stays in `to check` for the
 person, and the run's report names the condition it failed. The rule for a
-stacked pull request holds under pre-approval too. Where a merge would be the
-first launch, the agent does not make it, because the first launch is `/ship`'s,
-with the person there.
+stacked pull request holds under pre-approval too.
