@@ -87,8 +87,9 @@ Run the script in the first of these that fits:
 - otherwise in the main folder, when the main folder is on that branch with no
   uncommitted change;
 - otherwise in a worktree opened for the merge with the `implement` skill's
-  `scripts/worktree.sh open <issue number>-<short name> <branch> origin/<branch>`,
-  so a branch not held on this computer is made from the pull request's own
+  `scripts/worktree.sh`, as
+  `worktree.sh open <issue number>-<short name> <branch> origin/<branch>`, so a
+  branch not held on this computer is made from the pull request's own
   branch and never cut fresh from `main`. `worktree.sh tidy` clears it away
   once the pull request closes.
 
