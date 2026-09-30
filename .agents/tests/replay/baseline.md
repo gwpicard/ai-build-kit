@@ -801,3 +801,11 @@ one. The stand-in GitHub command gained what a run reaches for: a pull request
 aimed at another piece's branch, a search for the pull request open from a
 branch, a body read from a file, and the comments on a piece with their ids,
 so a claim can be read back and a losing claim deleted.
+
+The note piece has two right ends. A run that meets the open choice while
+building sends it back to shaping with `needs-clarification` and its
+question. A run that sees at the plan that nobody can build it alone leaves it
+`ready` and marks it skipped, with a reason naming the choice. The runner's
+rules do not yet say which a run should do with a hard choice it sees before
+the claim, so the state check accepts both. Built, merged, or skipped with no
+reason is still a miss.

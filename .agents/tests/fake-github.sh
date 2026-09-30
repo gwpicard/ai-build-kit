@@ -302,6 +302,13 @@ esac
 [ "$("$GH" pr list --head no-such-branch --json number)" = "[]" ] \
   && pass "and answers an empty list for a branch with none" \
   || fail "pr list --head invented a pull request for a branch with none"
+# /maintain's stale-branch listing compares a branch with the tip GitHub
+# recorded for its merged pull request.
+oid=$("$GH" pr list --state merged --head deposits --base main --json number,headRefOid)
+case "$oid" in
+  *"\"headRefOid\": \"$(git rev-parse deposits)\""*) pass "pr list gives a merged pull request's head commit" ;;
+  *) fail "pr list --json headRefOid returned '$oid'" ;;
+esac
 case "$("$GH" pr list --state all --json number,state)" in
   *'"MERGED"'*) pass "pr list --state all includes a merged pull request" ;;
   *) fail "pr list --state all left out the merged pull request" ;;
@@ -311,6 +318,18 @@ if "$GH" pr list --json number,nosuchfield > /dev/null 2>&1; then
 else
   pass "pr list refuses a field nobody modelled, as pr view does"
 fi
+
+# A remote that is a network address is never contacted. Its branches cannot
+# be read, so a base other than main counts as missing, and stderr says so.
+git remote set-url origin https://example.invalid/rehearsal/project.git
+if "$GH" pr create --title "Anything" --body "x" --head invoice-totals --base invoices > /dev/null 2> "$WORK/far.err"; then
+  fail "a base was taken as present on a remote that was never asked"
+else
+  grep -q 'not a folder on this computer' "$WORK/far.err" \
+    && pass "a network remote is never asked, and the base counts as missing" \
+    || fail "the refusal did not say the remote was not asked"
+fi
+git remote set-url origin "$WORK/project.git"
 
 # The base merges first. The stacked pull request is then aimed at main, as
 # the merge rule says, and merges there.
@@ -346,12 +365,27 @@ case "$("$GH" issue view 2 --json labels,assignees,comments)" in
   *'Claimed by run 2026-09-30-2215'*) pass "issue view shows the comments, so a claim can be read back" ;;
   *) fail "issue view does not show the claim comment" ;;
 esac
-# The later claimant deletes its own claim comment. The API form takes the
-# comment's id, which the view gives; the CLI form deletes the last one.
+# The later claimant deletes its own claim comment. As on GitHub, the view
+# gives each comment its node id, the REST listing gives the numeric id, and a
+# deletion through the API takes the numeric one. The CLI form deletes the last.
 "$GH" issue comment 2 --body "Claimed by run 2026-09-30-221501" > /dev/null
-later=$("$GH" issue view 2 --json comments | python3 -c 'import json, sys; print([c["id"] for c in json.load(sys.stdin)["comments"] if c["body"].startswith("Claimed by run 2026-09-30-221501")][0])')
+case "$("$GH" issue view 2 --json comments)" in
+  *'"id": "IC_'*) pass "issue view gives each comment its node id, as GitHub does" ;;
+  *) fail "issue view does not give node ids for the comments" ;;
+esac
+node=$("$GH" issue view 2 --json comments | python3 -c 'import json, sys; print(json.load(sys.stdin)["comments"][-1]["id"])')
+if "$GH" api -X DELETE "repos/rehearsal/project/issues/comments/$node" > /dev/null 2>&1; then
+  fail "a comment was deleted by its node id, which the REST endpoint does not take"
+else
+  pass "a deletion by node id is refused, as the REST endpoint refuses it"
+fi
+later=$("$GH" api repos/rehearsal/project/issues/2/comments | python3 -c 'import json, sys; print([c["id"] for c in json.load(sys.stdin) if c["body"].startswith("Claimed by run 2026-09-30-221501")][0])')
+case "$later" in
+  [0-9]*) pass "the REST listing gives each comment its numeric id" ;;
+  *) fail "the REST listing gave '$later' as the id" ;;
+esac
 "$GH" api -X DELETE "repos/rehearsal/project/issues/comments/$later" > /dev/null \
-  && pass "a comment can be deleted through the API by its id" \
+  && pass "a comment can be deleted through the API by its numeric id" \
   || fail "deleting a comment through the API was refused"
 case "$("$GH" issue view 2 --json comments)" in
   *'221501'*) fail "the deleted comment is still on the piece" ;;
@@ -372,6 +406,24 @@ case "$("$GH" issue view 2 --json comments)" in
   *'Claimed by run 2026-09-30-2215'*) pass "and removes the last comment only" ;;
   *) fail "--delete-last took more than the last comment" ;;
 esac
+# A state file written before comments had ids keeps each as a bare string.
+# Those get ids from a range of their own, so they never collide with new ones.
+python3 - "$FAKE_GH_STATE" <<'PY2'
+import json, sys
+state = json.load(open(sys.argv[1]))
+for issue in state["issues"]:
+    if issue["number"] == 1:
+        issue["comments"] = ["An older comment."]
+json.dump(state, open(sys.argv[1], "w"))
+PY2
+ids=$( { "$GH" api repos/rehearsal/project/issues/1/comments; "$GH" api repos/rehearsal/project/issues/2/comments; } \
+  | python3 -c 'import json, sys; ids = [c["id"] for line in sys.stdin for c in json.loads(line)]; print(len(ids), len(set(ids)))')
+[ "$(echo "$ids" | cut -d' ' -f1)" = "$(echo "$ids" | cut -d' ' -f2)" ] \
+  && pass "an older bare comment and the new ones never share an id" \
+  || fail "two comments share an id: $ids"
+"$GH" api --method POST repos/rehearsal/project/issues/1/comments -f body="Added through the API." > /dev/null \
+  && pass "a comment can be added through the API" \
+  || fail "adding a comment through the API was refused"
 "$GH" issue edit 2 --remove-assignee @me > /dev/null \
   && pass "issue edit --remove-assignee is accepted" \
   || fail "issue edit --remove-assignee was refused"

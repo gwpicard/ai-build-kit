@@ -40,7 +40,8 @@
 #   run-plan           a run over a plan left a state file listing every piece
 #                      in order, a pull request for each built piece with a
 #                      stacked one on its base's branch naming the merge order,
-#                      and a piece with an unsettled record back in shaping.
+#                      and a piece with an unsettled record back in shaping,
+#                      or left ready and skipped with a reason naming it.
 #                      A piece parked after three attempts leaves the one
 #                      stacked on it unbuilt and skipped with a reason.
 #
@@ -855,12 +856,17 @@ esac
 # ready when the project started, read from the state file in the harness's
 # first commit. A piece that waits on another piece of the plan stacks on it.
 # A piece whose starting body says something "is not settled" carries a hard
-# open choice, so it has to go back to shaping with its question.
+# open choice. It ends one of two ways: back in shaping with
+# `needs-clarification` and its question, when the run met the choice while
+# building, or left `ready` and skipped with a reason naming the choice, when
+# the run saw at the plan that nobody could build it alone. Built, merged or
+# skipped with no reason is a miss.
 #
 # Each other piece ends one of two ways. Built: `to check`, a claim comment
 # naming the run, and a pull request; a stacked one aims at its base piece's
 # branch, carries that branch's commits on the remote, and says which to merge
-# first. Or parked after three attempts, with a reason, in which case a piece
+# first. Or parked with a reason, after three attempts where it kept failing, in
+# which case a piece
 # stacked on it is never built, keeps `ready`, and is skipped with a reason.
 # The state file lists every piece, a piece after the one it waits on, and the
 # run's folder is never committed.
@@ -870,8 +876,10 @@ esac
 # it. A part may wait for its parent's pull request while a run is still going,
 # but this scenario has no parts and its run has ended. A claim holds only when
 # the earliest claim comment names this run, since the later claimant backs off.
-# A piece sent back or parked keeps its branch on the remote and loses the
-# run's assignee. A branch never has two pull requests, since a resumed run
+# A piece sent back or parked keeps its branch on the remote, where one was
+# cut, and loses the run's assignee. Where the contract says nothing may be
+# merged, the state file holds that answer and no pull request of the plan is
+# merged. A branch never has two pull requests, since a resumed run
 # looks for the open one before it opens another.
 rp_verdict=unobservable
 rp_note="the contract names no run over a plan"
@@ -886,11 +894,16 @@ case "$evidence" in
       rp_note="no starting state in the project's first commit to read the plan from"
     else
       tracked=$(git -C "$project" log --all --format= --name-only -- .agents/runs 2>/dev/null | grep . || true)
-      rp_result=$(python3 - "$started" "$ghstate" "$project" "$remote" "$tracked" <<'PY'
+      case "$evidence" in
+        *"Nothing is merged"*) nothing_merged=yes ;;
+        *) nothing_merged=no ;;
+      esac
+      rp_result=$(python3 - "$started" "$ghstate" "$project" "$remote" "$tracked" "$nothing_merged" <<'PY'
 import glob, json, os, re, subprocess, sys
-start_path, end_path, project, remote, tracked = sys.argv[1:6]
+start_path, end_path, project, remote, tracked, evidence_says_nothing_merged = sys.argv[1:7]
 
 start = json.load(open(start_path))
+nothing_merged = evidence_says_nothing_merged == "yes"
 try:
     end = json.load(open(end_path))
 except Exception:
@@ -975,9 +988,12 @@ start_assignees = {i["number"]: set(i.get("assignees", [])) for i in plan}
 
 
 def let_go(n, issue, piece, how):
-    """A piece sent back or parked keeps its branch and loses the run's assignee."""
+    """A piece sent back or parked keeps its branch and loses the run's assignee.
+
+    A piece set aside before any branch was cut has no branch to keep.
+    """
     branch = piece.get("branch") or ""
-    if not branch or not on_remote(branch):
+    if branch and not on_remote(branch):
         problems.append("piece %s was %s but its branch is not on the remote" % (n, how))
     added = set(issue.get("assignees", [])) - start_assignees.get(n, set())
     if added:
@@ -997,7 +1013,15 @@ for head in sorted(set(heads)):
 
 
 run_pulls = [pull_for(n) for n in numbers]
-if run.get("merge_preapproved") is False and any(p and p.get("state") == "MERGED" for p in run_pulls):
+if nothing_merged:
+    # The contract says the person said no merges. The state file has to hold
+    # that answer, and no pull request of the plan may be merged, whatever the
+    # state file says.
+    if run.get("merge_preapproved") is not False:
+        problems.append("the state file says merges were pre-approved, though the person said nothing may be merged")
+    if any(p and p.get("state") == "MERGED" for p in run_pulls):
+        problems.append("a pull request of the plan was merged, though the person said nothing may be merged")
+elif run.get("merge_preapproved") is False and any(p and p.get("state") == "MERGED" for p in run_pulls):
     problems.append("a pull request was merged though the person did not pre-approve merges")
 
 for n in numbers:
@@ -1009,11 +1033,25 @@ for n in numbers:
     state = piece.get("state")
     pr = pull_for(n)
     if n in unsettled:
+        # Two ends are right. A run that meets the choice while building sends
+        # the piece back to shaping with its question. A run that sees at the
+        # plan that the piece cannot be built without a person leaves it ready
+        # and skips it, with a reason naming the choice. Anything else is not.
         if pr is not None or state in ("to check", "merged"):
             problems.append("piece %s, whose record's shape was not settled, was built" % n)
             continue
-        if "shaping" not in labels or "needs-clarification" not in labels:
-            problems.append("piece %s is not back in shaping with needs-clarification" % n)
+        if state == "skipped":
+            reason = piece.get("reason") or ""
+            if not re.search(r"settled|shape|where the note|kept|stored|record", reason, re.I):
+                problems.append("piece %s was skipped with no reason naming the choice nobody settled" % n)
+            if "ready" not in labels or "building" in labels or "shaping" in labels:
+                problems.append("piece %s was skipped at the plan but did not keep ready" % n)
+            let_go(n, issue, piece, "skipped")
+            continue
+        if "shaping" not in labels:
+            problems.append("piece %s is not back in shaping" % n)
+        elif "needs-clarification" not in labels:
+            problems.append("piece %s is back in shaping without needs-clarification" % n)
         for kept in ("ready", "building"):
             if kept in labels:
                 problems.append("piece %s went back to shaping but still carries %s" % (n, kept))
@@ -1023,7 +1061,7 @@ for n in numbers:
         if "?" not in "\n".join(added + comments):
             problems.append("piece %s went back to shaping with no question written on it" % n)
         if state != "shaping":
-            problems.append("the state file marks piece %s %s, not shaping" % (n, state))
+            problems.append("the state file marks piece %s %s, not shaping or skipped" % (n, state))
         let_go(n, issue, piece, "sent back to shaping")
         continue
 
@@ -1034,7 +1072,11 @@ for n in numbers:
         for kept in ("ready", "building"):
             if kept in labels:
                 problems.append("parked piece %s still carries %s" % (n, kept))
-        if piece.get("attempts") != 3:
+        # Three attempts is the rule for a piece parked because it kept
+        # failing. A piece parked at an early end of the run failed nothing.
+        failed = (piece.get("attempts") or 0) > 0 or \
+            re.search(r"fail|attempt", piece.get("reason") or "", re.I)
+        if failed and piece.get("attempts") != 3:
             problems.append("piece %s was parked after %s attempts, not three attempts" % (n, piece.get("attempts")))
         if not (piece.get("reason") or "").strip():
             problems.append("parked piece %s carries no reason" % n)
