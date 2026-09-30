@@ -46,7 +46,9 @@ rs_rule "the product goes to the masterplan" 'the product, its promises and deci
 rs_rule "lasting technical design goes to a concept file" 'lasting technical design, how a part of the tool works and the rules it keeps: `docs/<concept>\.md`, one concept to a file'
 rs_rule "a concept file has fixed headings" 'under the headings what it is, how it works, rules, and where it lives'
 rs_rule "a new fact starts a concept file, never a notes file" 'a fact that fits no concept file yet starts a new one, named for its concept, never a general notes file'
-rs_rule "a new concept file is listed in AGENTS.md" 'gets a line in agents\.md.s technical design section'
+rs_rule "a concept file is one the list names" 'a concept file is one listed in `docs/readme\.md`'
+rs_rule "a new concept file is listed there, not in AGENTS.md" 'gets a line in `docs/readme\.md`, never in agents\.md'
+rs_rule "a build reads the concept files it touches" 'read too each concept file the piece touches'
 rs_rule "AGENTS.md takes rules and pointers only" 'agents\.md holds rules and pointers only'
 rs_rule "no date, issue number or code name in AGENTS.md" 'never write a date, an issue number or a code name into it'
 rs_rule "a code name is defined" 'a code name is a function, variable or file name from the project.s code'
@@ -61,6 +63,8 @@ rs_rule "the file keeps out dates, issue numbers and code names" 'never a date, 
 rs_rule "the file names the check on its ceiling" 'the project check fails above 200 lines'
 rs_rule "concept files are one concept to a file" 'lasting technical design lives in `docs/<concept>\.md`, one concept to a file'
 rs_rule "a fact with no concept file starts one" 'a fact that fits no file yet starts a new concept file, never a general notes file'
+rs_rule "the concept files are listed in docs/README.md, not here" '`docs/readme\.md` lists the concept files, and only those'
+rs_rule "the build path is read right after the masterplan's header" 'read the build-path section of `masterplan\.md`, right after its short header'
 rs_guard "$FOUNDATION" "the founded AGENTS.md"
 
 # --- the masterplan: a short header, the rest for the agent ------------------
@@ -85,6 +89,11 @@ rs_require_load_bearing "WORKFLOW says design has one file per concept" "$WORKFL
 rs_require_load_bearing "WORKFLOW says the check goes red past the ceiling" "$WORKFLOW" 'the project check goes red when agents\.md passes 200 lines, and names both numbers'
 rs_require_absent "WORKFLOW no longer sends whole-project detail to AGENTS.md" "$WORKFLOW" 'anything technical that affects the whole project goes into agents\.md'
 rs_require "the project check carries the ceiling step" "$CHECKS" 'name: check the agents\.md ceiling'
+rs_require_load_bearing "founding puts the build path right after the header" "$SETUP" 'the build-path section comes right after the header'
+rs_require_load_bearing "change-triage routes design to its concept file" "$SKILLS/change-triage/SKILL.md" 'lasting technical design into its concept file, listed in `docs/readme\.md`'
+rs_require_load_bearing "shape routes design to its concept file" "$SKILLS/shape/SKILL.md" 'lasting technical design to its concept file listed in `docs/readme\.md`'
+rs_require_load_bearing "an adopted file past the ceiling is named in the founding report" \
+  "$SKILLS/setup-ai-build-kit/references/completion-report.md" 'above the 200 its automatic check allows, so that check will show red until you type /maintain'
 
 # --- the template is an index: counted, and every pointer opened -------------
 
@@ -124,7 +133,9 @@ index_problems() {
     entries=$((entries + 1))
     base=${named%.name}
     lines=$(cat "$base.lines")
-    [ "$lines" -le 12 ] || echo "$section: $lines lines, more than 12"
+    filled=no
+    printf '%s\n' "${EXEMPT:-}" | grep -qxF "$section" && filled=yes
+    [ "$filled" = yes ] || [ "$lines" -le 12 ] || echo "$section: $lines lines, more than 12"
     joined=$(tr '\n' ' ' < "$base.text" | tr -s ' ')
     skill_pointers=$(printf '%s\n' "$joined" \
       | grep -oE "\`[a-z-]+\` skill's \`[^\`]+\`" || true)
@@ -140,6 +151,14 @@ index_problems() {
       path=$(printf '%s' "$pointer" | sed -E "s/.*skill's \`([^\`]+)\`$/\1/")
       [ -f "$SKILLS/$skill/$path" ] || echo "$section: the $skill skill has no $path"
     done
+    # What founding writes into a filled section is the project's own, such
+    # as a folder its framework keeps, so only the kit's own pointers there
+    # are opened.
+    if [ "$filled" = yes ]; then
+      records=$(printf '%s\n' "$records" | while IFS= read -r r; do
+        if record_resolves "$r"; then echo "$r"; fi
+      done)
+    fi
     printf '%s\n' "$records" | while IFS= read -r record; do
       [ -n "$record" ] || continue
       record_resolves "$record" || echo "$section: $record is not a record the kit writes"
@@ -164,6 +183,7 @@ record_resolves() {
     CHANGELOG.md) [ -f "$TEMPLATES/CHANGELOG.md" ] ;;
     changes/) grep -qF 'changes/<issue number>-<short name>.md' "$BUILDER" ;;
     'docs/<concept>.md') grep -qF '`docs/<concept>.md`' "$BUILDER" ;;
+    docs/README.md) tr '\n' ' ' < "$BUILDER" | tr -s ' ' | grep -qF 'one listed in `docs/README.md`' ;;
     .agents/tools/plan-refresh.sh) [ -f "$TEMPLATES/foundation/plan-refresh.sh" ] ;;
     plan.local.md) grep -qF 'plan.local.md' "$TEMPLATES/foundation/plan-refresh.sh" ;;
     .github/workflows/checks.yml) [ -f "$CHECKS" ] ;;
@@ -229,6 +249,55 @@ expect_problem "a date in the file is caught" "a date is written"
 hash='#'
 { cat "$FOUNDATION"; echo "Fixed in ${hash}214."; } > "$mutant"
 expect_problem "an issue number in the file is caught" "an issue number is written"
+
+# --- a founded file: the sections founding fills are exempt by name ----------
+
+# Founding fills the capability profile and the stack section with the
+# project's own facts, so in a founded file those two may pass 12 lines. They
+# are exempt by name, and only they: every other section keeps the limit. The
+# stand-in is filled the way standing-instructions.sh fills its own, with the
+# rules block a Next.js starter appends.
+founded="$rs_dir/founded.md"
+awk '
+  /^## Capability profile$/ { want = "profile" }
+  /^## Stack, and how to run and check it$/ { want = "stack" }
+  /^\(One line, written by the setup-ai-build-kit skill\.\)$/ {
+    print "A sign-up list for the team'"'"'s weekly football."; next
+  }
+  want != "" && /^\(Filled in by the setup-ai-build-kit skill:/ { inside = 1 }
+  inside {
+    if ($0 ~ /\)$/) {
+      inside = 0
+      for (i = 1; i <= 16; i++) print "- " want " fact " i ", as founding writes it."
+      want = ""
+    }
+    next
+  }
+  { print }
+' "$FOUNDATION" > "$founded"
+printf '%s\n' '' '<!-- BEGIN:nextjs-agent-rules -->' '' '# This is NOT the Next.js you know' '' \
+  'Read the relevant guide in `node_modules/next/dist/docs/` first.' '' \
+  '<!-- END:nextjs-agent-rules -->' >> "$founded"
+grep -qF -- '- profile fact 16' "$founded" && grep -qF -- '- stack fact 16' "$founded" || \
+  rs_fail "the stand-in founding did not fill the two sections"
+filled_exempt='Capability profile
+Stack, and how to run and check it'
+problems=$(EXEMPT="$filled_exempt" index_problems "$founded")
+if [ -n "$problems" ]; then
+  printf '%s\n' "$problems" | sed 's/^/  /' >&2
+  rs_fail "a founded AGENTS.md is not a short index once founding fills it"
+fi
+rs_ok "a founded file passes, with only the capability profile and stack section past 12 lines"
+problems=$(index_problems "$founded")
+rs_report "without the exemption, the filled sections are counted" \
+  "$(printf '%s\n' "$problems" | grep -q '^Capability profile: ' && echo yes || echo no)"
+awk -v target="## $first_entry" '
+  { print }
+  $0 == target { for (i = 1; i <= 12; i++) print "padding line " i }
+' "$founded" > "$mutant"
+problems=$(EXEMPT="$filled_exempt" index_problems "$mutant")
+rs_report "in a founded file, a section not named in the exemption still keeps 12 lines" \
+  "$(printf '%s\n' "$problems" | grep -qF "$first_entry: " && echo yes || echo no)"
 
 # --- the project check holds the ceiling, run both ways ----------------------
 

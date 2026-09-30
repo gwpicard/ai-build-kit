@@ -222,7 +222,7 @@ Create masterplan.md from templates/masterplan.md, filled from the interview,
 present tense throughout. Open it with its short header for the person: two or
 three plain sentences on what the tool is, who uses it, and where it stands.
 Write everything below the header for the agent first, complete and exact. The
-build-path section goes first: the fit check's result. Create CHANGELOG.md from
+build-path section comes right after the header: the fit check's result. Create CHANGELOG.md from
 its template, empty; it has to exist before the next step writes its first line
 to it. Create `.ai-build-kit-maintenance`
 from `templates/maintenance-record` and put today's date on its `founded` line.

@@ -155,6 +155,13 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
     short and carries none of that content, say nothing. Where step 18 will
     offer the move onto the index this visit, make that offer instead of the
     trim, since the move does the trim's work.
+
+    On a project already on the index, the trim is a move, never a cut: on a
+    yes, each fact goes to its home as step 18's move sends it. Lasting
+    technical design goes to its `docs/<concept>.md`, history to a file in
+    `changes/`, product facts to the masterplan, and dates, issue numbers and
+    code names leave AGENTS.md. That is the fix the project check's red
+    message names.
 14. Unless the project explores privately, run "Offering a move onto a
     recipe" below. When no recipe on the menu is close to the project's stack,
     it says nothing.
@@ -313,7 +320,8 @@ records, so do it only after the clean checkpoint from step 2.
    the project is already on the index: say nothing, and this step ends. A
    second visit after a yes finds both and says nothing.
 2. Read `.ai-build-kit-maintenance`. Where there is an `index-declined` line,
-   the earlier no stands: say nothing, and this step ends.
+   and the section headings it lists are the ones the installed template has
+   today, the earlier no stands: say nothing, and this step ends.
 3. Work out the move before saying anything, from the installed
    `setup-ai-build-kit` skill's `templates/foundation/AGENTS.md`:
    - under `## Standing rules`, the kit's rules take the template's wording,
@@ -322,7 +330,8 @@ records, so do it only after the clean checkpoint from step 2.
      that owns its topic;
    - lasting technical design moves into `docs/<concept>.md`, one concept to a
      file, under the headings What it is, How it works, Rules, and Where it
-     lives, each file listed in the technical design section;
+     lives, each file listed with what it owns in `docs/README.md`, and the
+     technical design section pointing at that list;
    - history moves into the changelog, and product facts into the masterplan;
    - dates, issue numbers and code names leave AGENTS.md;
    - the ceiling step comes with the move: copy the step named
@@ -339,11 +348,15 @@ records, so do it only after the clean checkpoint from step 2.
    which is why the two come together. Then wait for the answer.
 5. On a yes, make the move and add the ceiling step, then count AGENTS.md
    again and check that it is at or under 200 lines and that every file it
-   points at exists. Save with the visit's other changes and add a dated
-   changelog line.
+   points at exists. Where it is still above 200 lines, name the sections that
+   remain large and offer the trim from step 13 for them, in one line. Save
+   with the visit's other changes and add a dated changelog line.
 6. Where the person says no, change nothing. Record the no as one line in
-   `.ai-build-kit-maintenance`: `index-declined|<YYYY-MM-DD>`. The offer does
-   not come back. The trim offer in step 13 still runs on every visit.
+   `.ai-build-kit-maintenance`, replacing any earlier one:
+   `index-declined|<YYYY-MM-DD>|<the template's section headings, separated by " ; ">`.
+   The offer does not come back until a release changes those headings, and
+   then it comes back once. The trim offer in step 13 still runs on every
+   visit.
 
 ## Migrating a project founded before /shape and /implement
 

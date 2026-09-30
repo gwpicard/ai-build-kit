@@ -154,5 +154,23 @@ python3 "$SCRIPT" | grep -qF "$(printf 'docs/setup.md:4\tcommand\tmake release')
   fail "a make target the Makefile does not have was not named"
 echo "  ok: a make target the Makefile does not have is named"
 
+# --- the concept list: AGENTS.md points at docs/README.md, which lists them ---
+
+# A founded project lists its concept files in docs/README.md and points at
+# that list from AGENTS.md, so a concept file is read through the list. A file
+# in docs/ the list does not name, such as a whole copy's own documents, is not.
+printf '%s\n' '# Concept files' '' '- `sign-in.md`: how signing in works.' > docs/README.md
+printf '%s\n' '# Sign-in' '' '## Where it lives' '' 'In `src/sign-in.js`.' > docs/sign-in.md
+printf '%s\n' '' 'Concept files are listed in `docs/README.md`.' >> AGENTS.md
+git add -A
+commit "A concept list and one concept file"
+out=$(python3 "$SCRIPT")
+printf '%s\n' "$out" | grep -qF "$(printf 'docs/sign-in.md:5\tfile\tsrc/sign-in.js')" ||
+  fail "a concept file listed in docs/README.md was not read: $out"
+echo "  ok: a concept file listed in docs/README.md is read through the list"
+printf '%s\n' "$out" | grep -q 'unlisted' && fail "a docs file the list does not name was read"
+echo "  ok: a file in docs/ the list does not name is still not read"
+[ -z "$(git status --porcelain)" ] || fail "the script wrote into the project"
+
 echo
 echo "document-read-rehearsal.sh: stale names found at their lines, true ones left alone"

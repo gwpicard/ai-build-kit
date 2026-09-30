@@ -2,13 +2,14 @@
 
 (One line, written by the setup-ai-build-kit skill.)
 
-Standing instructions for this project, read at the start of every session. This
-file is an index: the standing rules in short form, then a pointer for each
-topic to the file that owns it. Before any work, read the build-path section at
-the top of `masterplan.md`. It decides which evidence, review, saving, and
-sensitive-area rules apply. Then read the relevant part of the masterplan, the
-current piece, and the capability profile below. Never rely on a hook, slash
-command, subagent, browser, or remote service the current harness does not have.
+Standing instructions for this project, read every session. This file is an
+index: the standing rules in short form, then a pointer for each topic to the
+file that owns it. Before any work, read the build-path section of
+`masterplan.md`, right after its short header. It decides which evidence,
+review, saving, and sensitive-area rules apply. Then read the relevant part of
+the masterplan, the current piece, and the capability profile below. Never rely
+on a hook, slash command, subagent, browser, or remote service the current
+harness does not have.
 
 Keep this file under 200 lines and hold only what the code cannot show: the
 save and review routes, conventions that differ from the default, and pointers
@@ -31,11 +32,11 @@ five run in the background when a command needs them.
 - Background skills: `clarify`, `change-triage`, `screen-check`,
   `section-builder`, `second-opinion`.
 
-When a skill says to run another skill, load that installed skill and follow
-it. Skills sit in `.agents/skills/`, `.claude/skills/` or a plugin's folder, by
-install route; a pointer such as the `ship` skill's `templates/handover.md`, or
-`<name>/SKILL.md` without native discovery, names a file there. Put project
-rules here instead of editing an installed skill.
+When a skill says to run another skill, load that installed skill and follow it.
+Skills sit in `.agents/skills/`, `.claude/skills/` or a plugin's folder; a
+pointer such as the `ship` skill's `templates/handover.md`, or `<name>/SKILL.md`
+without native discovery, names a file there. Keep project rules here, never in
+an installed skill.
 
 The user describes intent in plain language; change-triage chooses the route.
 Build one agreed, visible slice at a time. Do not add behaviour the slice did
@@ -64,6 +65,20 @@ inspection, command output, retries, or waiting. Immediately before a technical
 confirmation, say what the person will notice, why it is needed, if anything
 leaves the computer, if it is temporary or saved, what stays unconfirmed if
 they decline, and that a confirmation box comes next.
+
+The `setup-ai-build-kit` skill's `references/blocked-commands.md` always
+applies. Save a checkpoint before sweeping work. Stop and ask when:
+
+- the work exceeds the agreed slice, or needs a new dependency or service;
+- the request changes data, access, money, automatic actions, reliance, or
+  external users, or would delete data or do anything irreversible or outside
+  this computer, such as a live service's settings: name all it changes and
+  if it can be undone;
+- a sensitive area's caution is a person who has not yet looked, or a risk
+  notice is waiting on the person's answer;
+- the masterplan is silent on a consequential decision, or the harness lacks a
+  required capability;
+- the expected result cannot be reproduced or verified.
 
 ### Sensitive areas
 
@@ -104,40 +119,25 @@ another way. If the project works from confidential files, founding records
 their folder and handling rules here. Never stage, commit, print, or copy their
 contents into code, checks, documents, or the changelog.
 
-### Dangerous actions, and when to stop and ask
-
-The `setup-ai-build-kit` skill's `references/blocked-commands.md` always
-applies. Save a checkpoint before sweeping work. Stop and ask when:
-
-- the work exceeds the agreed slice, or needs a new dependency or service;
-- the request changes data, access, money, automatic actions, reliance, or
-  external users, or would delete data or do anything irreversible or outside
-  this computer, such as a live service's settings: name all it changes and
-  if it can be undone;
-- a sensitive area's caution is a person who has not yet looked, or a risk
-  notice is waiting on the person's answer;
-- the masterplan is silent on a consequential decision, or the harness lacks a
-  required capability;
-- the expected result cannot be reproduced or verified.
-
 ## The records
 
 If it is not written down, it does not exist. `masterplan.md` holds the product
 in the present tense, in roughly one or two pages; its build-path section
 changes only by rerunning the fit check. Each piece is one issue, shaped as the
-`setup-ai-build-kit` skill's `references/pieces.md` says, and a merged pull
-request saying `Closes #<number>` closes it. `plan.local.md` is a printout from
-`.agents/tools/plan-refresh.sh`; change the issue, not the file. A piece writes
-its entry to its own file in `changes/`, which /sync or /ship folds into
-`CHANGELOG.md`. When one document says another will do a job, write that job
-into the other document too.
+`setup-ai-build-kit` skill's `references/pieces.md` says, with a subject label
+set once by change-triage; a merged pull request saying `Closes #<number>`
+closes it. `plan.local.md` is a printout from `.agents/tools/plan-refresh.sh`;
+change the issue, not the file. A piece writes its entry to its own file in
+`changes/`, which /sync or /ship folds into `CHANGELOG.md`. When one document
+says another will do a job, write that job into the other document too.
 
 ## Technical design
 
 Lasting technical design lives in `docs/<concept>.md`, one concept to a file,
 under the headings What it is, How it works, Rules, and Where it lives. A fact
 that fits no file yet starts a new concept file, never a general notes file.
-List each file here, one line each, so /sync reads it.
+`docs/README.md` lists the concept files, and only those, each with what it
+owns.
 
 ## Capability profile
 

@@ -99,7 +99,6 @@ rs_rule "the offer returns only when the states change" \
 rs_rule "the monthly step runs the index move" 'run "moving the instructions onto the index" below'
 rs_rule "a project on the index hears nothing" 'the project is already on the index: say nothing'
 rs_rule "a second visit after a yes finds the move done" 'a second visit after a yes finds both and says nothing'
-rs_rule "an earlier no to the index stands" 'where there is an `index-declined` line, the earlier no stands'
 rs_rule "the move reads the installed template" 'from the installed `setup-ai-build-kit` skill.s `templates/foundation/agents\.md`'
 rs_rule "no fact is lost in the move" 'every fact that leaves agents\.md lands in its home'
 rs_rule "design moves to concept files" 'lasting technical design moves into `docs/<concept>\.md`, one concept to a file'
@@ -108,8 +107,13 @@ rs_rule "the ceiling step comes with the move" 'the ceiling step comes with the 
 rs_rule "a file already past the ceiling hears why they come together" 'where agents\.md is already above 200 lines, say that the step alone would turn the check red'
 rs_rule "the move is offered once" 'offer the move onto the index once, in one reply'
 rs_rule "nothing moves without a yes" 'on a yes, make the move and add the ceiling step'
-rs_rule "a no is recorded" 'index-declined\|<yyyy-mm-dd>'
-rs_rule "a no is not asked again" 'the offer does not come back'
+rs_rule "a no is recorded with the template's headings" 'index-declined\|<yyyy-mm-dd>\|<the template.s section headings'
+rs_rule "a no is not asked again until the template changes" 'the offer does not come back until a release changes those headings, and then it comes back once'
+rs_rule "the no stands only while the headings match" 'the section headings it lists are the ones the installed template has today, the earlier no stands'
+rs_rule "a file still past the ceiling hears which sections remain" 'where it is still above 200 lines, name the sections that remain large and offer the trim'
+rs_rule "concept files are listed in docs/README.md" 'each file listed with what it owns in `docs/readme\.md`'
+rs_rule "on the index, the trim moves facts to their homes" 'on a project already on the index, the trim is a move, never a cut'
+rs_rule "the trim takes dates, issue numbers and code names out" 'history to a file in `changes/`, product facts to the masterplan, and dates, issue numbers and code names leave agents\.md'
 
 rs_guard "$MAINTAIN" "the maintain skill"
 

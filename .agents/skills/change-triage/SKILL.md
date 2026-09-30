@@ -105,7 +105,8 @@ and cut into pieces on the plan, order confirmed with the user.
 
 Context is routed by how far it reaches. A decision that affects the whole
 product goes into the masterplan, in plain words. A technical convention that
-affects the whole codebase goes into AGENTS.md's stack section. Anything
+affects the whole codebase goes into AGENTS.md's stack section, and lasting
+technical design into its concept file, listed in `docs/README.md`. Anything
 particular to one piece stays on that piece. This keeps the masterplan free of
 implementation terms and keeps each concept in one home.
 
