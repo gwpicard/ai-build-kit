@@ -514,8 +514,10 @@ attribution line, not the word.
   pull request. The one that waits on another aims at that piece's branch,
   carries its commits on the remote and says which to merge first. The piece
   whose record's shape is not settled is back in shaping with its question
-  and no pull request, or left `ready` and skipped with a reason naming the
-  choice. Nothing is merged when the person said not to, and the state file
+  and no pull request, with a branch where the run met the choice while
+  building and none where it saw the choice at the plan. Left `ready` and
+  skipped is a miss, even with a reason, and the check fails while scenario
+  57's Evidence line still allows it. Nothing is merged when the person said not to, and the state file
   says merges were not pre-approved. However the run ended, no piece is left
   `waiting` or `building`, the earliest claim on a built piece names the run,
   a branch has one pull request, and a piece sent back or parked keeps any
@@ -1371,7 +1373,12 @@ attribution line, not the word.
   already building, to the state update. A dependent piece stacks and names
   the merge order, and the parts of one parent share a pull request. A hard
   open choice sends the piece back to shaping and an easy one is flagged, and
-  either way the run moves on. The state file's fields, the live page, and a
+  either way the run moves on. A hard choice the run can already see when it
+  plans or claims a piece sends it back too, with its question, no branch and
+  no claim. Skipped and left `ready`, such a piece came back to every run with
+  nothing telling the person a question waited. An easy choice seen then
+  leaves the piece eligible, and a missing fact alone still skips it. The
+  state file's fields, the live page, and a
   new session resuming from the state file are held too, as is a run that ends
   at once when nothing is left. So is what review of the first draft found:
   a held-up piece whose blockers are all in the plan joins it and stacks, the
