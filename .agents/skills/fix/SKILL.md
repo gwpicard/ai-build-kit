@@ -119,7 +119,8 @@ history shows it catching the fault first. An existing test changes only where
 the repair's issue names it under `Under the hood`, with the reason. Any other
 test that stands in the way is reported as wrong, never weakened, skipped or
 deleted, and section-builder's test guard runs before the repair is saved, with
-the repair's issue as the piece.
+the repair's issue as the piece. A repair with no issue yet gives the guard the
+repair's report saved as the piece text, which names no test.
 
 On Build with care, where a runner exists for the project's language, offer
 to check the regression test by breaking the repaired code on purpose. Follow

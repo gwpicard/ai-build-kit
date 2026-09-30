@@ -11,7 +11,8 @@ Every build on Build and run it and on Build with care, including a repair
 that /fix saves. Not on Explore privately, where the work is thrown away.
 
 It runs once, after the tests, the type check and the linter pass and before
-the person tries the result, so they judge the piece as it will be saved.
+the walk-through, or the person's try when they opt in, so the piece is judged
+as it will be saved.
 
 ## What it looks at
 

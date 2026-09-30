@@ -168,7 +168,8 @@ with it is not a control at all.
 
 Controls fall into three groups. Some are always required because they are cheap
 and prevent common harm: secrets stay out of code, destructive actions stop for
-approval, and the user confirms promised behaviour. Some are triggered by the
+approval, and promised behaviour is confirmed, by the agent's walk-through or by
+the person when they opt in to try it. Some are triggered by the
 path or the change: automated tests, pull requests, independent review, restored
 backups. The rest are the cautions a sensitive area carries, done before the
 area goes live or accepted on the record, and where a caution is a person, no

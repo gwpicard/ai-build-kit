@@ -114,7 +114,7 @@ The first `/ship` is the heaviest, because it takes the tool live. Later ones on
 
 `/maintain` is not in the picture because it runs on its own clock rather than in this order: about monthly from the day the project is founded, whether or not it has gone live. The project tells you when one is due.
 
-Every piece runs the same cycle: agree the behaviour in one plain sentence, choose the evidence it needs, build the smallest complete slice, try it by hand, then save it through the route the build path requires.
+Every piece runs the same cycle: agree the behaviour in one plain sentence, choose the evidence it needs, build the smallest complete slice, have the agent walk through it with sample data (or try it yourself if you opt in), then save it through the route the build path requires.
 
 ## Examples
 

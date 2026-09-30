@@ -170,9 +170,12 @@ name, under both `### Works` and `### When it is not the normal case`. Then run
 each one on today's code and record that it fails: the Done when line, the
 check, and the failure it showed. Commit the checks on their own, before the
 code, in a commit that holds nothing else, so the saved history shows each check
-failing before the change that makes it pass. Checks only a person can make are
-exempt, such as whether a layout reads well: name them, and leave them to the
-walk-through in step 6.
+failing before the change that makes it pass. Where the project's pre-commit
+hook refuses a commit whose checks fail, commit the checks together with the
+first code commit instead, and put the failing run's output in the hand-over. A
+committed check changes only by being reported: the guard in step 8 lists it if
+it changes. Checks only a person can make are exempt, such as whether a layout
+reads well: name them, and leave them to the walk-through in step 6.
 
 A check that passes on today's code proves nothing about this piece. Where it
 passes because the check is wrong, fix the check. Where it passes because the
@@ -180,9 +183,13 @@ behaviour already exists, the Done when line is wrong: say so in the hand-over
 and do not build that line.
 
 Write each new check in a new test file where the project's layout allows, so
-that writing checks changes no existing test. An existing test may change only
-when the piece's `Under the hood` names it and gives the reason. Step 8 runs the
-guard that holds this before anything is saved.
+that writing checks changes no existing test. Where the layout allows no new
+file, such as a single test file or tests kept inside the code, add the check to
+the existing file and name that file in the hand-over as one the piece's `Under
+the hood` must name. Never put a new check back to get past the guard. An
+existing test may change only when the piece's `Under the hood` names it and
+gives the reason. Step 8 runs the guard that holds this before anything is
+saved.
 
 A test that has to change for the piece to pass, when the piece does not name
 it, means the test or the piece is wrong. So does a Done when line that cannot
@@ -274,7 +281,8 @@ records none for the language, there is nothing to run.
 Once those pass, on Build and run it and Build with care, load
 `references/trim.md` and run its single pass. It takes out what this change
 added that the behaviour does not need, and it only removes or folds, so the
-person tries the piece as it will be saved. Give its one line at hand-over, or
+walk-through, or the person's try when they opt in, sees the piece as it will be
+saved. Give its one line at hand-over, or
 nothing when it found nothing.
 
 Then walk through the piece. Drive the tool yourself with the project's sample
@@ -295,9 +303,12 @@ merge. Its report never calls a screen accessible, compliant or good;
 
 Where the coding agent cannot drive a browser or take screenshots, record what
 it could check, such as the text a request to the page returned, and name what
-it could not see. A piece that changes what somebody sees then goes to
-`to check` for the person rather than closing, on the checkpoint route too, as
-step 8 says.
+it could not see. On the pull-request route, a piece that changes what somebody
+sees then goes to `to check` for the person rather than closing, and the pull
+request says what the walk-through could not see. On the checkpoint route, where
+the walk-through could not see what somebody would see, there is no pull request
+to wait in, so take the opt-in path below: give the person an address and things
+to try, and save nothing until they reply.
 
 Hand over what the walk-through found: the actions, what they showed, any known
 limitation, where the screenshots are, and whether the evidence behind it is
@@ -307,18 +318,23 @@ versus actual, and fix it at the root.
 ### When the person tries it themselves
 
 A person can ask to try a piece before it is saved. A `Waiting on you: try it`
-line on the piece asks for that piece alone. A `check-myself: yes` line in
-`.ai-build-kit-maintenance` asks for every piece. With either, walk through the
-piece first, then give one address to open and up to three numbered things to
-try there, each with what they should see. The address is the preview, or a
-local server started from the piece's branch. Before giving it, send a request
-to it and give the address that answered. Where the usual port was taken or the
-server stopped, that is the address you actually used. Where none answers, say
-so and give no address. Then stop, and save nothing until the person replies.
+line on the piece asks for that piece alone. A `check-myself|yes` line in
+`.ai-build-kit-maintenance` asks for every piece. Any command writes that line
+when the person asks for it, and takes it out when they ask to stop. With
+either, walk through the piece first, then give one address to open and up to
+three numbered things to try there, each with what they should see. The address
+is the preview, or a local server started from the piece's branch. Before giving
+it, send a request to it and give the address that answered. Where the usual
+port was taken or the server stopped, that is the address you actually used.
+Where none answers, say so and give no address. Then stop, and save nothing
+until the person replies.
 
-In an unattended run nobody is there to try it. Commit the piece on its own
-branch on this computer, push nothing, leave it in `building` with one line on
-the piece saying it waits for the person's try, and take the next piece.
+In an unattended run nobody is there to try it. On the pull-request route, save
+the piece as step 8 says, open its pull request and move it to `to check`, and
+write in the pull request that it waits for the person's try before it is
+merged. Then take the next piece. On the checkpoint route, commit it on its own
+branch without closing the piece, note on the piece that it waits for the
+person's try, and take the next piece.
 
 ## 7. Run required review
 
@@ -353,13 +369,16 @@ proves the behaviour, and the review exists for what the check cannot see.
 
 ## 8. Save
 
-Before anything is saved, on any route, run this skill's
-`scripts/test-guard.sh <base> <piece file>` from the project's folder. The base
-is the commit the piece started from, which on a branch is
-`git merge-base main HEAD`. The piece file holds the piece's text, saved with
-`gh issue view <number> --json body --jq .body` into `.agents/tmp/`. The guard lists each existing test file changed
-since the base that the piece's `Under the hood` does not name. Put each listed
-file back as it was at the base, `git checkout <base> -- <file>`, and run the
+Before anything is saved, on any route, run this skill's `scripts/test-guard.sh
+<base> <piece file> <checks commit>` from the project's folder. The base is the
+commit the piece's branch was cut from: `main`, or the branch of the piece it
+stacks on. The checks commit is the one step 4 made. The piece file holds the
+piece's text, saved with `gh issue view <number> --json body --jq .body` into
+`.agents/tmp/`. The guard lists each existing test file changed since the base
+that the piece's `Under the hood` does not name, and any check changed since its
+own commit. Put each listed file back as it was, `git checkout <base> --
+<file>`, or `git checkout <checks commit> -- <file>` for a check. Where the
+guard says a listed file was moved, remove the moved copy too. Then run the
 checks again. Where the piece cannot pass without that change, step 4 says what
 to report.
 
@@ -372,11 +391,9 @@ Checkpoint route: update the records, commit, and state the saved checkpoint.
 There is no pull request to wait on, and the walk-through in step 6, or the
 person's own try where they asked for one, stood in for their check, so close
 the issue and take `building` off it in the same step. This is the one route
-where a piece closes when it is saved rather than when a pull request merges.
-It passes through `to check` only where the walk-through could not see what
-somebody would see: then make the same move the pull-request route makes below,
-from `building` to `to check` in one step, and the piece closes once the person
-has tried it.
+where a piece closes when it is saved rather than when a pull request merges,
+and it never passes through `to check`. Where the walk-through could not see
+what somebody would see, the person's try in step 6 comes before this save.
 
 Pull-request route: update the records, commit, push, open a pull request
 titled after the piece with a plain-language summary, and run the project

@@ -198,7 +198,7 @@ One line looks alike and means something else. A piece carrying a
 `Waiting on you: try it` line is built as usual. The line sits on its own rather
 than as a section, and asks for the person's own try before the piece is saved:
 once it is built, section-builder gives them an address and up to three things
-to try, and waits. A `check-myself: yes` line in `.ai-build-kit-maintenance`
+to try, and waits. A `check-myself|yes` line in `.ai-build-kit-maintenance`
 asks the same for every piece.
 
 ## The two layers of a piece
