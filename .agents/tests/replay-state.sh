@@ -1351,7 +1351,7 @@ ranplan() {
   runproject "$1"
   # The note piece keeps its branch on the remote when it goes back to shaping.
   case "$2" in
-    choice-branch-local|choice-skipped*) : ;;
+    choice-branch-local|choice-skipped*|choice-at-plan) : ;;
     *) piecebranch "$1" item-note main note.txt ;;
   esac
   case "$2" in
@@ -1457,11 +1457,23 @@ if variant == "choice-built":
                    "base": "main", "pull_request": 3, "attempts": 0, "flags": [],
                    "reason": ""})
 elif variant.startswith("choice-skipped"):
-    # Judged at the plan: not self-sufficient, so left ready and never claimed.
+    # Judged at the plan and left ready and skipped. That end is a miss: the
+    # piece would come back to every run with nobody told a question waits.
     pieces.append({"number": c["number"], "state": "skipped", "branch": "",
                    "base": "", "pull_request": None, "attempts": 0, "flags": [],
                    "reason": "" if variant == "choice-skipped-silent" else
                    "Where the note is kept is not settled, so a run cannot build it alone."})
+elif variant == "choice-at-plan":
+    # Seen at the plan: back to shaping with its question before any claim,
+    # and no branch cut, since nothing was built.
+    labels(c, "shaping", "needs-clarification")
+    c["body"] += ("\n## Open question\nIs the note kept on the loan, so each "
+                  "return keeps its own, or on the item, so a new note "
+                  "replaces the last one?\n")
+    pieces.append({"number": c["number"], "state": "shaping", "branch": "",
+                   "base": "", "pull_request": None, "attempts": 0, "flags": [],
+                   "reason": "Where the note is kept is the shape of a stored record, "
+                             "seen at the plan, so it went back to shaping."})
 else:
     claim(c)
     if variant == "choice-still-ready":
@@ -1595,21 +1607,39 @@ missrun wrong-pull-number "names pull request 7" \
   "a state file naming the wrong pull request for a piece is a miss"
 missrun stray-building "building with no run behind it" \
   "a building label left with no run behind it is a miss"
-missrun choice-state-parked "not shaping or skipped" \
-  "the unsettled piece marked anything but shaping or skipped in the state file is a miss"
+missrun choice-state-parked "not shaping" \
+  "the unsettled piece marked anything but shaping in the state file is a miss"
 missrun choice-no-clarification "without needs-clarification" \
   "the unsettled piece back in shaping without needs-clarification is a miss"
-missrun choice-skipped-silent "no reason naming the choice" \
+missrun choice-skipped-silent "left ready and skipped" \
   "the unsettled piece skipped with no reason is a miss"
 
-# The other right end for the unsettled piece: seen at the plan, left ready,
-# skipped with a reason that names the choice, and no branch cut for it.
-p="$WORK/s57-choice-skipped"
-ranplan "$p" choice-skipped
+# A hard choice the run can see before it claims the piece sends the piece back
+# to shaping, the same as one met while building. Left ready and skipped, it
+# comes back to every run and nothing tells the person a question waits, so
+# that end is a miss even with a reason naming the choice.
+missrun choice-skipped "left ready and skipped" \
+  "scenario 57 with the unsettled piece left ready and skipped at the plan is a miss"
+
+# The plan-time end: back in shaping with needs-clarification and its question,
+# no branch cut and no claim written, since nothing was built.
+p="$WORK/s57-choice-at-plan"
+ranplan "$p" choice-at-plan
 out=$("$CHECK" 57 "$p")
-[ "$(printf '%s' "$out" | verdict_of run-plan)" = "hit" ] && r=yes || r=no
+[ "$(printf '%s' "$out" | verdict_of run-plan)" = "hit" ] \
+  && [ "$(printf '%s' "$out" | held_of)" = "True" ] && r=yes || r=no
 [ "$r" = yes ] || echo "    got: $(printf '%s' "$out" | rp_note)" >&2
-check "scenario 57 with the unsettled piece left ready and skipped at the plan with its reason holds" "$r"
+check "scenario 57 with the unsettled piece sent back to shaping at the plan, with no branch, holds" "$r"
+
+# The contract says the same. Scenario 57's Evidence line once allowed the
+# skipped end, and a grader reading it would pass a run the state check fails.
+ev57=$(awk '/^## 57\./{on=1; next} /^## /{on=0} on && /^- Evidence:/' "$TESTS_DIR/scenarios.md")
+case "$ev57" in
+  *"may instead leave the note piece \`ready\`"*) r=no ;;
+  *"at the plan"*"shaping"*) r=yes ;;
+  *) r=no ;;
+esac
+check "scenario 57's Evidence line allows no skipped end, and names the plan-time send-back" "$r"
 
 missrun merged-unasked "merged" \
   "a pull request merged when the person did not pre-approve merges is a miss"
