@@ -315,7 +315,12 @@ attribution line, not the word.
   `Touches:` format. It holds the fourteen items of the readiness list, its
   severity rule and what it cannot catch, and that `/shape` has a session that
   did not shape the piece run it: a subagent carrying none of the conversation,
-  or a new session given the exact line to paste. The check writes a
+  or a new session given the exact line to paste, which `/shape` routes
+  straight to the check. `/shape` typed alone picks up a piece still waiting
+  for its check, change-triage and founding make a piece ready only through
+  it, and each kind of gap gets the `needs-` label for who can close it. The
+  list's bodies are compared with a stored copy, word for word. The check
+  writes a
   `## Readiness` section, and a blocking gap keeps the piece in `shaping` with
   the gap written on it. A Relies on line nobody could read is a blocking gap,
   a container passes when its parts are pieces, and a piece shaped before the
@@ -1162,8 +1167,8 @@ attribution line, not the word.
   The kit is for technical builders who direct agents, who know Git, branches
   and pull requests and never have to read code. Records are written for agents
   first under a short plain header, while a public document such as the README
-  stays written for people. The worktree and loop worked examples are added and
-  each answers all five questions, with the answer for when it goes wrong
+  stays written for people. The worktree and loop worked examples are added,
+  and they and the two-layer piece example each answer all five questions, with the answer for when it goes wrong
   naming a command the person types. Taking any one answer out is caught. The
   test-first example still rejects the universal practice and states the
   narrower rule that a machine check fails before the code. The kit may grow

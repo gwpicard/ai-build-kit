@@ -97,7 +97,9 @@ check; prepare the handover; give the risk notice where a sensitive area
 survives redesign. Say the route and the reason in one line.
 
 Piece-sized and clear (one sitting, a done line you could write now, small
-enough for a fresh session to hold whole) becomes a ready piece. Too vague to
+enough for a fresh session to hold whole) becomes a ready piece once the
+readiness check finds no blocking gap, run by a session that did not shape it,
+as the `shape` skill's `references/readiness-check.md` says. Too vague to
 size runs clarify first. Bigger than a piece gets written into the masterplan
 and cut into pieces on the plan, order confirmed with the user.
 
@@ -111,10 +113,12 @@ Where the request is a piece and the route is a question rather than a ready
 piece, label the issue `shaping` with the `needs-` label that names the route:
 `needs-clarification` for clarify, `needs-prototype` for a decision prototype,
 `needs-research` for a source check or a search for existing work. Once the
-question is answered, `/shape` takes both off and adds `ready` in the same step.
+question is answered and the readiness check finds no blocking gap, `/shape`
+takes both off and adds `ready` in the same step.
 Without the label the reason a piece is waiting lives only in the session that
 found it, and the next person to open the list sees a piece that has simply
-stopped.
+stopped. The one `shaping` piece with no `needs-` label is a piece waiting for
+its readiness check, which `/shape` typed alone picks up and runs.
 
 `/shape` starts the routed step straight away unless the person asked only to
 file the piece. That request is capture, above, so a note asked for outright

@@ -26,6 +26,9 @@ PIECES="$SKILLS/setup-ai-build-kit/references/pieces.md"
 READINESS="$SKILLS/shape/references/readiness-check.md"
 SHAPE="$SKILLS/shape/SKILL.md"
 CLARIFY="$SKILLS/clarify/SKILL.md"
+TRIAGE="$SKILLS/change-triage/SKILL.md"
+SETUP="$SKILLS/setup-ai-build-kit/SKILL.md"
+COMPAT="$ROOT/docs/COMPATIBILITY.md"
 FOUNDED="$SKILLS/setup-ai-build-kit/templates/foundation/AGENTS.md"
 WORKFLOW="$ROOT/WORKFLOW.md"
 PHILOSOPHY="$ROOT/docs/PHILOSOPHY.md"
@@ -35,6 +38,7 @@ BASELINE="$ROOT/.agents/tests/replay/baseline.md"
 
 rs_init "Piece contract and readiness checks"
 rs_exists "$FORM" "$PIECES" "$READINESS" "$SHAPE" "$CLARIFY" "$FOUNDED" \
+  "$TRIAGE" "$SETUP" "$COMPAT" \
   "$WORKFLOW" "$PHILOSOPHY" "$SCENARIOS" "$CASE" "$BASELINE"
 
 # --- the issue form: the header, then the agent layer ---------------------
@@ -58,6 +62,7 @@ rs_rule "the header comes before the agent layer, in order" \
   'id: so-that.*id: done-when.*id: not-the-normal-case.*id: masterplan-change.*id: not-in-this-piece.*the fields below are the agent layer.*id: decided.*id: data .*id: leaves-the-tool.*id: must-still-hold.*id: relies-on.*id: touches.*id: under-the-hood.*id: evidence'
 rs_rule "a field that does not apply says why" \
   'a field that does not apply says why in one line\.'
+rs_rule "the Touches field asks for the line format" 'one line that starts with "touches:"'
 rs_guard "$FORM" "the piece form"
 
 rs_require_absent "the form no longer says most pieces leave Decided empty" \
@@ -107,8 +112,11 @@ rs_rule "the Evidence field rule" \
   'names the kind of proof, summarising the checks on the done when lines'
 rs_rule "Readiness is the stored result later steps read" \
   '`## readiness` is written by the readiness check and read by every later step'
-rs_rule "no open choice a person would notice" \
-  'no open choice a person would notice\. phrases such as "decide during build"'
+rs_rule "no open choice a person would notice, pointing at item 10" \
+  'no open choice a person would notice\. the refused phrases, and the rule that a vague count or size needs a number, are item 10 of the list'
+rs_rule "a form-made piece is rewritten to this layout" \
+  'a piece opened with the github form shows every field as a `###` heading'
+rs_rule "and /shape rewrites it" '`/shape` rewrites it to the layout above'
 rs_rule "lists are complete" 'lists are complete: a list of examples does not stand in for the whole'
 rs_rule "each Done when line is false before and true after" \
   'false on today.s code and true after, through this piece alone'
@@ -176,7 +184,39 @@ rs_rule "a blocking line rules out Ready" 'a piece with a blocking line cannot c
 rs_rule "notes never hold a piece back" 'notes stay on the piece for the builder, and never hold the piece back'
 rs_rule "not ready keeps the piece in shaping with the gap on it" \
   'not ready keeps it `shaping`, with each blocking gap written on the piece'
+rs_rule "a gap a person must settle is needs-clarification" \
+  '`needs-clarification` for a gap a person must settle, including a relies on line whose code does not exist or does not return what the piece needs'
+rs_rule "a fact from outside is needs-research" '`needs-research` for a fact from outside the project'
+rs_rule "an unseen flow is needs-prototype" '`needs-prototype` for a gap on item 13'
+rs_rule "reading code is never a label" 'reading code is never the reason for a label'
+rs_rule "founding runs the check, or leaves pieces to be checked before a run" \
+  'founding runs this check on each piece it shapes, through a session that did not shape it, and labels a piece `ready` only on no blocking gap'
+rs_rule "founding without a subagent labels ready with no Readiness section" \
+  'founding labels its shaped pieces `ready` without a `## readiness` section, and each is checked before any run claims it'
 rs_guard "$READINESS" "readiness-check.md"
+
+# The list itself, byte for byte. The rules above hold each item's opening, and
+# this holds the bodies, since a softened clause inside an item reads as well
+# as the original and would pass every pattern. The sum is of the block from
+# "How to run it:" to "stay required.", copied from the slice that wrote it.
+LIST_SUM=b062ac77e4745eb17f6a08c02e128d2e1b7eb74eb0815e1ed3345966bd2ed2f6
+list_sum() {
+  sed -n '/^How to run it:$/,/screen-check stay required\.$/p' "$1" > "$rs_dir/list"
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$rs_dir/list" | cut -c1-64
+  else
+    shasum -a 256 "$rs_dir/list" | cut -c1-64
+  fi
+}
+if [ -z "${RS_LIST:-}" ]; then
+  [ "$(list_sum "$READINESS")" = "$LIST_SUM" ] \
+    && rs_ok "the readiness list matches its stored copy word for word" \
+    || rs_fail "the readiness list no longer matches its stored copy"
+  sed 's/One sitting\./Roughly one sitting./' "$READINESS" > "$rs_dir/softened.md"
+  [ "$(list_sum "$rs_dir/softened.md")" != "$LIST_SUM" ] \
+    && rs_ok "a softened item is caught" \
+    || rs_fail "a softened item was not caught"
+fi
 
 # --- /shape runs the check and moves by its result ------------------------
 
@@ -201,11 +241,32 @@ rs_rule "every field is considered when shaping" \
 rs_rule "every noticeable choice is decided" \
   'every choice a person would notice by trying the tool is decided in `## decided`'
 rs_rule "shaping scales with the change" 'a colour change answers most fields in one line'
+rs_rule "the pasted line is routed, never triaged" \
+  'typed as `/shape <number> check readiness`, this is not a request\. skip change-triage'
+rs_rule "given a number with check readiness, only the check runs" \
+  'given it as `/shape <number> check readiness`, run the readiness check on that piece and nothing else'
+rs_rule "typed alone picks up a piece waiting for its check" \
+  'a `shaping` piece with no `needs-` label is waiting for its readiness check'
 rs_rule "Done when of /shape names the check" \
   'labelled `ready` only after a session that did not shape it wrote a `## readiness` section naming no blocking gap'
 rs_guard "$SHAPE" "the /shape skill"
 
 rs_require_absent "the old bar is gone from /shape" "$SHAPE" 'meets the bar'
+
+# --- change-triage and founding go through the check too -----------------
+
+rs_require_load_bearing "change-triage makes a clear piece ready only after the check" \
+  "$TRIAGE" 'becomes a ready piece once the readiness check finds no blocking gap'
+rs_require_load_bearing "change-triage adds ready after an answered question only after the check" \
+  "$TRIAGE" 'question is answered and the readiness check finds no blocking gap'
+rs_require_load_bearing "change-triage says what a shaping piece with no reason is" \
+  "$TRIAGE" 'the one `shaping` piece with no `needs-` label is a piece waiting for its readiness check'
+rs_require_load_bearing "founding runs the check through a session that did not shape the piece" \
+  "$SETUP" 'founding runs the readiness check in the `shape` skill.s `references/readiness-check\.md` on each shaped piece through a session that did not shape it'
+rs_require_load_bearing "founding without a subagent leaves the check for before a run" \
+  "$SETUP" 'labels each shaped piece `ready` without a `## readiness` section, and the piece is checked before any run claims it'
+rs_require_load_bearing "the compatibility page gives the route without a subagent" \
+  "$COMPAT" '/shape <number> check readiness'
 
 # --- clarify asks only what the piece touches ------------------------------
 
