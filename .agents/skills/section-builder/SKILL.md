@@ -298,8 +298,9 @@ Then walk through the piece. Drive the tool yourself with the project's sample
 data, the way the person would use it, and record what you saw: each action,
 what the screen or output showed, and whether it matches the Done when line. The
 masterplan's "How it stays running" says what sample data the project keeps.
-Where it keeps none, make up the smallest case the piece needs and say so. Take
-a screenshot at each step where the coding agent can take one, and keep them in
+Where it keeps none, make up the smallest case the piece needs and say so. At
+each step, look at what the person would see, as "How the walk-through looks"
+below says, and keep every screenshot and render in the main folder's
 `.agents/tmp/walkthrough/<issue number>/`, which git ignores. For a piece with
 no face, such as a scheduled job or an email, trigger it against a made-up case
 and record what it produced.
@@ -325,6 +326,48 @@ Hand over what the walk-through found: the actions, what they showed, any known
 limitation, where the screenshots are, and whether the evidence behind it is
 automated, manual, source-backed, or operational. Describe any gap as expected
 versus actual, and fix it at the root.
+
+### How the walk-through looks
+
+First read the capability profile's `Walk-through eyes:` line, which says what
+this machine can look with. A project founded before that line existed has
+none, so check each tool below with `command -v` now and say once what you found.
+
+Try the means for the piece's output in this order:
+
+- A web page: the coding agent's own browser tool where it has one, such as
+  Claude in Chrome on Claude Code. Otherwise Playwright's command line,
+  `npx --no-install playwright screenshot --full-page <address> <file>`, where
+  the project or the machine already has Playwright. The kit never installs a
+  browser.
+- A PDF: `pdftoppm -png -r 80 -f 1 -l 30 <file> <folder>/page`, from Poppler,
+  which writes one image for each of the first 30 pages. In a longer file, the
+  pages past the thirtieth are named as not seen.
+- A Word, PowerPoint, Excel or OpenDocument file:
+  `soffice --headless --convert-to pdf --outdir <folder> <file>`, from
+  LibreOffice, and then the PDF route.
+- An image in PNG, JPEG, GIF or WebP: read it directly. An SVG:
+  `magick <file> <file>.png`, from ImageMagick, and read the PNG. Where only an
+  older ImageMagick is installed, `convert` takes the same two names.
+
+Open each image with your file reader, which shows it to you. Record what each
+one showed and what you compared it against, such as the Done when line, the
+project's design system, or the same screen before the piece.
+
+`<folder>` is that folder in the main folder, never a folder inside a worktree.
+The main folder is the first one `git worktree list` names. A picture inside a
+worktree counts as unsaved work there and keeps the worktree after its pull
+request closes. Each piece has its own folder, so walk-throughs running side by
+side never overwrite each other.
+
+Where a renderer fails on the file, such as a PDF it cannot open, record that as
+a finding about the piece, expected versus actual. Treat it as the renderer's
+fault only when you can say why, and say it.
+
+Where no means fits the output, or the coding agent cannot read images, record
+that you could not look and what you checked instead. The piece then takes the
+could-not-see path above: on the pull-request route it goes to `to check` and
+the pull request names what was not seen, pages past the thirtieth included.
 
 ### When the person tries it themselves
 

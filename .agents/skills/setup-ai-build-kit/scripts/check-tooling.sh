@@ -17,7 +17,8 @@
 #
 # Run from anywhere inside the project. With --recipe <recipe file>, it also
 # reports the command-line tools that recipe's launch checks run. Those never
-# stop founding.
+# stop founding. Nor do the tools the walk-through looks with, which it always
+# reports, with the install command for each one missing.
 
 set -eu
 
@@ -172,6 +173,57 @@ if [ -n "$recipe" ]; then
   else
     echo "The recipe file $recipe was not found, so the tools its checks run were not looked for."
   fi
+fi
+
+# 5. What the walk-through can look with. Before a piece is saved the agent
+# walks through it and looks at what the person would see: a web page through a
+# browser, and a PDF, a document or a drawing turned into pictures it reads.
+# These tools make that possible. A missing one never sets blocked, since the
+# walk-through then names what it could not see and the piece waits for the
+# person. For each missing one the report prints the install command for this
+# platform. The kit never runs it: installing is the person's choice.
+if [ -f /System/Library/CoreServices/SystemVersion.plist ]; then
+  platform=mac
+elif [ -f /etc/debian_version ]; then
+  platform=debian
+else
+  platform=other
+fi
+install_line() {
+  # install_line <Homebrew formula> <apt package>
+  case "$platform" in
+    mac) printf 'brew install %s' "$1" ;;
+    debian) printf 'sudo apt install %s' "$2" ;;
+    *) printf 'install %s with your system%ss package manager' "$2" "'" ;;
+  esac
+}
+eyes_missing() {
+  # eyes_missing <tool> <what it is for> <install command>
+  echo "$1 is missing: $2. To add it, run: $3. It does not stop founding."
+}
+
+if command -v pdftoppm >/dev/null 2>&1; then
+  echo "pdftoppm is ready: the walk-through turns each page of a PDF into a picture with it."
+else
+  eyes_missing pdftoppm "without it the walk-through cannot look at a PDF" "$(install_line poppler poppler-utils)"
+fi
+if command -v soffice >/dev/null 2>&1 || command -v libreoffice >/dev/null 2>&1; then
+  echo "soffice is ready: the walk-through turns a Word, PowerPoint, Excel or OpenDocument file into a PDF with it."
+else
+  eyes_missing soffice "without it the walk-through cannot look at a Word, PowerPoint, Excel or OpenDocument file" "$(install_line '--cask libreoffice' libreoffice)"
+fi
+# An older ImageMagick, which some Linux releases still ship, names the same
+# command convert.
+if command -v magick >/dev/null 2>&1 || command -v convert >/dev/null 2>&1; then
+  echo "magick is ready: the walk-through turns an SVG drawing into a picture with it."
+else
+  eyes_missing magick "without it the walk-through cannot look at an SVG drawing" "$(install_line imagemagick imagemagick)"
+fi
+# --no-install asks only what is already here, so the report downloads nothing.
+if command -v npx >/dev/null 2>&1 && npx --no-install playwright --version >/dev/null 2>&1; then
+  echo "Playwright is ready: the walk-through takes a screenshot of a web page with it where the coding agent has no browser tool of its own."
+else
+  eyes_missing Playwright "without it, and without a browser tool in the coding agent, the walk-through cannot take a screenshot of a web page" "npm install --save-dev playwright && npx playwright install --with-deps chromium"
 fi
 
 if [ "$blocked" -ne 0 ]; then
