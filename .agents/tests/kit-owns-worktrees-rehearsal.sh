@@ -31,9 +31,15 @@ trap 'rm -rf "$WORK"' EXIT INT TERM
 
 REAL_GIT=$(command -v git)
 mkdir -p "$WORK/bin"
+# Only the script's own calls are logged: `run` marks them. FAKE_GIT_VERSION
+# stands in for an older Git.
 cat > "$WORK/bin/git" <<SH
 #!/usr/bin/env sh
-printf '%s\n' "\$*" >> "$WORK/git.log"
+[ -z "\${WT_REHEARSAL_LOG:-}" ] || printf '%s\n' "\$*" >> "$WORK/git.log"
+if [ -n "\${FAKE_GIT_VERSION:-}" ] && [ "\$1" = "--version" ]; then
+  echo "git version \$FAKE_GIT_VERSION"
+  exit 0
+fi
 exec "$REAL_GIT" "\$@"
 SH
 chmod +x "$WORK/bin/git"
@@ -43,6 +49,7 @@ chmod +x "$WORK/bin/git"
 # signed-out tool does.
 cat > "$WORK/bin/gh" <<SH
 #!/usr/bin/env sh
+printf '%s\n' "\$*" >> "$WORK/gh.log"
 [ -z "\${GH_FAIL:-}" ] || exit 1
 [ "\$1 \$2" = "pr list" ] || exit 1
 head=""
@@ -71,7 +78,7 @@ run() {
   # run <project> <args...>: the script from the project's main folder.
   dir=$1
   shift
-  (cd "$dir" && sh "$SCRIPT" "$@")
+  (cd "$dir" && WT_REHEARSAL_LOG=1 && export WT_REHEARSAL_LOG && sh "$SCRIPT" "$@")
 }
 pr() { printf '%s\n' "$*" >> "$WORK/prs"; }
 branch_of() { git -C "$1" symbolic-ref --short HEAD; }
@@ -286,19 +293,6 @@ out=$(run "$P" remove "$P") && code=0 || code=$?
 [ "$code" -eq 1 ] && [ -d "$P/.git" ] && r=yes || r=no
 check "the main folder itself can never be removed" "$r"
 
-if grep -E 'worktree remove.*(--force|(^| )-f( |$))' "$WORK/git.log" >/dev/null; then
-  fail "a worktree was removed by force"
-fi
-ok "no worktree was ever removed by force"
-if grep -E '^(branch -[dD]|push .*--delete)' "$WORK/git.log" >/dev/null; then
-  fail "a branch was deleted"
-fi
-ok "no branch was ever deleted"
-if grep -E '^(checkout|switch) ' "$WORK/git.log" >/dev/null; then
-  fail "a branch was checked out"
-fi
-ok "the script never checks a branch out"
-
 echo "== No .env, and no ignore line =="
 
 Q="$WORK/bare-project"
@@ -349,6 +343,159 @@ second=$(run "$Q" port 12)
 kill "$listener" 2>/dev/null || true
 [ -n "$second" ] && [ "$second" != "$port" ] && r=yes || r=no
 check "a port something is listening on is never given" "$r"
+
+echo "== Ignored files that are still work =="
+
+R="$WORK/review-project"
+project "$R" "$IGNORE"
+pr_clear() { : > "$WORK/prs"; }
+run "$R" open 30-notes 30-notes origin/main >/dev/null
+N="$R/.agents/worktrees/30-notes"
+mkdir -p "$N/node_modules/pkg" "$N/dist" "$N/.agents/tmp"
+echo dep > "$N/node_modules/pkg/index.js"
+echo build > "$N/dist/app.js"
+run "$R" unsaved "$N" >/dev/null && r=yes || r=no
+check "dependency and build folders are not unsaved work" "$r"
+echo "a note only here" > "$N/.agents/tmp/note.md"
+out=$(run "$R" unsaved "$N") && code=0 || code=$?
+[ "$code" -eq 1 ] && case $out in *"ignored file"*) true ;; *) false ;; esac && r=yes || r=no
+check "an ignored real file outside those folders is unsaved work" "$r"
+pr "30-notes MERGED $(git -C "$N" rev-parse HEAD)"
+out=$(run "$R" tidy)
+[ -f "$N/.agents/tmp/note.md" ] && case $out in *"Kept .agents/worktrees/30-notes"*"ignored file"*) true ;; *) false ;; esac && r=yes || r=no
+check "tidy keeps and names a worktree holding an ignored file" "$r"
+out=$(run "$R" remove "$N") && code=0 || code=$?
+[ "$code" -eq 1 ] && [ -f "$N/.agents/tmp/note.md" ] && r=yes || r=no
+check "remove, at the end of a run or on a yes, keeps it too" "$r"
+
+echo "== A copy of .env where a link would go =="
+
+run "$R" open 31-copy 31-copy origin/main >/dev/null
+C="$R/.agents/worktrees/31-copy"
+rm -f "$C/.env"
+cp "$R/.env" "$C/.env"
+out=$(run "$R" unsaved "$C") && code=0 || code=$?
+[ "$code" -eq 1 ] && r=yes || r=no
+check "a copy of .env in a worktree is unsaved work, so it is never removed" "$r"
+out=$(run "$R" open --resume 31-copy 31-copy origin/main) && code=0 || code=$?
+case $out in *"A copy of .env already sits in this worktree"*"copy outside the main folder"*) r=yes ;; *) r=no ;; esac
+check "an existing copy of .env is named and not linked" "$r"
+case $out in *"No .env in the main folder"*) r=no ;; *) r=yes ;; esac
+check "and it is never called a missing .env" "$r"
+[ ! -L "$C/.env" ] && r=yes || r=no
+check "the copy is left as it is" "$r"
+rm -f "$C/.env"
+
+T="$WORK/nested-project"
+project "$T" "$IGNORE"
+rm -f "$T/.env" "$T/.env.local"
+mkdir -p "$T/app"
+echo "SECRET_KEY=not-a-real-secret" > "$T/app/.env"
+out=$(run "$T" open 32-nested 32-nested origin/main)
+case $out in *"A .env sits in app rather than at the top"*) r=yes ;; *) r=no ;; esac
+check "a .env only in a subfolder is named, and nothing is linked" "$r"
+case $out in *"No .env in the main folder"*) r=no ;; *) r=yes ;; esac
+check "and the main folder is not said to have none" "$r"
+
+echo "== A worktree on no branch =="
+
+run "$R" open 33-detached 33-detached origin/main >/dev/null
+D="$R/.agents/worktrees/33-detached"
+"$REAL_GIT" -C "$D" checkout -q --detach
+: > "$WORK/gh.log"
+out=$(run "$R" tidy)
+[ -d "$D" ] && r=yes || r=no
+check "tidy never removes a worktree on no branch" "$r"
+out=$(run "$R" leftovers)
+case $out in *"33-detached: it is on no branch"*) r=yes ;; *) r=no ;; esac
+check "leftovers lists a worktree on no branch" "$r"
+if grep -E -- '--head( |$)(--|$)' "$WORK/gh.log" >/dev/null || grep -E -- '--head  ' "$WORK/gh.log" >/dev/null; then
+  fail "the pull requests were asked about an empty branch"
+fi
+ok "no pull request lookup is ever made for an empty branch"
+run "$R" remove "$D" >/dev/null && [ ! -d "$D" ] && r=yes || r=no
+check "a clean worktree on no branch can be removed on a yes" "$r"
+
+echo "== Skip reasons and a folder that is gone =="
+
+out=$(run "$R" open 34-bad-base 34-bad-base no-such-base) && code=0 || code=$?
+[ "$code" -eq 1 ] && case $out in *"fatal:"*) true ;; *) false ;; esac && r=yes || r=no
+check "a skip gives git's own reason line" "$r"
+"$REAL_GIT" -C "$R" show-ref --verify -q refs/heads/34-bad-base && r=no || r=yes
+check "a failed open leaves no branch behind" "$r"
+run "$R" open 35-gone 35-gone origin/main >/dev/null
+rm -rf "$R/.agents/worktrees/35-gone"
+out=$(run "$R" open 35-gone 35-gone origin/main) && code=0 || code=$?
+[ "$code" -eq 1 ] && case $out in *"git worktree prune"*) true ;; *) false ;; esac && r=yes || r=no
+check "a folder git still lists but is gone names git worktree prune" "$r"
+out=$(run "$R" leftovers)
+case $out in *"35-gone is gone"*"git worktree prune"*) r=yes ;; *) r=no ;; esac
+check "and the leftover list names it too" "$r"
+"$REAL_GIT" -C "$R" worktree prune
+
+echo "== A failed open deletes only the branch it made =="
+
+chmod 555 "$R/.agents/worktrees"
+out=$(run "$R" open 36-readonly 36-readonly origin/main) && code=0 || code=$?
+chmod 755 "$R/.agents/worktrees"
+[ "$code" -eq 1 ] && r=yes || r=no
+check "an open that cannot make its folder skips the piece" "$r"
+"$REAL_GIT" -C "$R" show-ref --verify -q refs/heads/36-readonly && r=no || r=yes
+check "the branch that open made is deleted again" "$r"
+"$REAL_GIT" -C "$R" branch -q --no-track 37-existing origin/main
+chmod 555 "$R/.agents/worktrees"
+out=$(run "$R" open 37-existing 37-existing origin/main) && code=0 || code=$?
+chmod 755 "$R/.agents/worktrees"
+"$REAL_GIT" -C "$R" show-ref --verify -q refs/heads/37-existing && r=yes || r=no
+check "a branch that existed before is kept when open fails" "$r"
+
+echo "== A Git older than 2.17 =="
+
+out=$(FAKE_GIT_VERSION=2.16.4; export FAKE_GIT_VERSION; run "$R" open 38-old 38-old origin/main) && code=0 || code=$?
+[ "$code" -eq 4 ] && [ ! -d "$R/.agents/worktrees/38-old" ] && case $out in *"older than 2.17"*) true ;; *) false ;; esac && r=yes || r=no
+check "an older Git gets the one-checkout route and no worktree" "$r"
+
+echo "== A port taken only on ::1 =="
+
+if python3 -c 'import socket; s = socket.socket(socket.AF_INET6); s.bind(("::1", 0))' 2>/dev/null; then
+  free=$(run "$R" port 40)
+  python3 - "$free" "$WORK/listening6" <<'PY' &
+import socket, sys, time
+s = socket.socket(socket.AF_INET6)
+s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+s.bind(("::1", int(sys.argv[1])))
+s.listen(1)
+open(sys.argv[2], "w").write("ready")
+time.sleep(20)
+PY
+  listener6=$!
+  tries=0
+  while [ ! -f "$WORK/listening6" ] && [ $tries -lt 50 ]; do
+    python3 -c 'import time; time.sleep(0.1)'
+    tries=$((tries + 1))
+  done
+  again=$(run "$R" port 40)
+  kill "$listener6" 2>/dev/null || true
+  [ -n "$again" ] && [ "$again" != "$free" ] && r=yes || r=no
+  check "a port something listens on at ::1 is never given" "$r"
+else
+  echo "  note: this computer has no IPv6 loopback, so the ::1 case was not run"
+fi
+
+echo "== What git was asked to do =="
+
+if grep -E 'worktree remove.*(--force|(^| )-f( |$))' "$WORK/git.log" >/dev/null; then
+  fail "a worktree was removed by force"
+fi
+ok "no worktree was ever removed by force"
+if grep -E '^(-C [^ ]+ )?(branch (-[dD]|--delete)|push .*--delete)' "$WORK/git.log" >/dev/null; then
+  fail "a branch was deleted with git branch or a push"
+fi
+ok "no branch was deleted with git branch or a push"
+if grep -E '^(-C [^ ]+ )?(checkout|switch)( |$)' "$WORK/git.log" >/dev/null; then
+  fail "a branch was checked out"
+fi
+ok "the script never checks a branch out"
 
 echo
 echo "kit-owns-worktrees-rehearsal.sh: all $pass checks passed"

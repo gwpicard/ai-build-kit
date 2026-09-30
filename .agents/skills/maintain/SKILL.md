@@ -371,8 +371,9 @@ list in step 15, since git will not remove a branch that is checked out.
 
 1. Run `sh <installed implement skill>/scripts/worktree.sh leftovers` from the
    project root. It lists each worktree under `.agents/worktrees/` whose pull
-   request has merged or closed, or that never had one, and that no unfinished
-   run is still building. It changes nothing. When it lists none, say nothing.
+   request has merged or closed, or that never had one, or that is on no
+   branch, and that no unfinished run is still building. It changes nothing.
+   When it lists none, say nothing.
 2. Name each one in plain words: the piece, what happened to its pull request,
    and whether it holds unsaved work. Offer to remove the ones that hold none,
    each by name, in one reply.
@@ -383,7 +384,10 @@ list in step 15, since git will not remove a branch that is checked out.
 4. Never remove a worktree that holds unsaved work. Keep it, and say what is
    unsaved: the uncommitted changes, or the commits only this computer
    holds.
-5. Never remove a branch here. Removing a worktree leaves its branch, and
+5. Where it names a worktree whose folder is already gone while git still
+   lists it, offer to run `git worktree prune`, which clears only that record.
+   Run it on a yes.
+6. Never remove a branch here. Removing a worktree leaves its branch, and
    step 15 lists that branch at the next visit once its work is in the default
    branch.
 

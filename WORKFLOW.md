@@ -423,7 +423,7 @@ Each piece goes through the same steps as a single build: claimed, checks writte
 
 In Claude Code, each piece in a run is built in its own copy of the project, a worktree in `.agents/worktrees/` named after the piece, so your own folder stays on its branch and one piece's half-built work never sits under another's. Other coding agents build a run's pieces one after another in your one folder.
 
-Each copy links to your `.env` rather than copying it, and installs its own dependencies. Its dev server runs on a free port the run records, and the hand-over names that port. The kit clears a copy away once its pull request has merged or closed and nothing in it is unsaved, at the next run or the next /sync. A copy holding unsaved work is kept and named.
+Each copy links to your `.env` rather than copying it, and installs its own dependencies. Its dev server runs on a free port the run records, and the hand-over names that port. The server stops once the pull request opens, and the run's report says how to start it again. The kit clears a copy away once its pull request has merged or closed and nothing in it is unsaved, at the next run or the next /sync. A copy holding unsaved work is kept and named.
 
 If the run meets a choice nobody made, a hard one, about stored data, syncing or what leaves the tool, sends that piece back to shaping with the question on it. An easy one takes the option simplest to undo and is flagged in the pull request. A piece that fails three attempts is parked with a note on what it revealed. Either way the run moves on.
 

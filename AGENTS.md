@@ -503,8 +503,8 @@ attribution line, not the word.
   Given a recipe, the report also names each command-line tool that recipe's
   launch checks run, and the check holds that a missing one never stops
   founding and that a project naming no recipe is never asked about them.
-  A Git older than 2.5, which has no worktrees, gets one line naming its
-  version, and founding carries on.
+  A Git older than 2.17, which has no `git worktree remove`, gets one line
+  naming its version, and founding carries on.
   It also runs the report in throwaway projects whose `origin` is the kit's
   own repository, in https and ssh form, in capitals and with no `.git`, and
   in one where only GitHub names it. Where `origin` names the kit, the
@@ -672,6 +672,9 @@ attribution line, not the word.
   first, and the later reads point at them, so a rule that went from the file
   would loosen every read at once. It also holds that the green-tick sentence
   is unchanged, since the floor is meant to add nothing for the person to learn.
+  It holds that the type check and lint leave `.agents/worktrees/` out, since
+  a run's worktrees are whole copies of the project, and that doing so changes
+  no rule.
   `.agents/tests/check-floor-rehearsal.sh` is the half that runs. It founds a
   throwaway Python project from the shipped workflow template, takes its
   commands from the shipped table, and watches the check go red at the type
@@ -1278,6 +1281,10 @@ attribution line, not the word.
   the visit, the foundation's ignore line, the install command founding
   records, the tooling report's line for an older Git, the blocked forced
   removal, and WORKFLOW.md and the compatibility page telling it.
+  It holds too that the checkpoint route needs the main folder on `main`,
+  that the dev server runs until the hand-over and the report says how to
+  start it again, that a run's worktrees do not carry the confidential
+  folder, and that `/maintain` offers `git worktree prune` on a yes.
   `.agents/tests/kit-owns-worktrees-rehearsal.sh` runs the shipped
   `worktree.sh` in a throwaway project with a stand-in GitHub. It opens a
   worktree and a stacked one and reads that git ignores them, the main
@@ -1289,7 +1296,16 @@ attribution line, not the word.
   holding an unpushed commit stay and are named. It holds that an open pull
   request's worktree and one a run is building are left alone, that the
   leftover list removes nothing, and that git never saw a forced removal, a
-  branch deletion or a checkout.
+  branch deletion or a checkout, with or without `-C`. A file git ignores
+  that is a real file outside a dependency or build folder counts as unsaved,
+  so tidy, remove and the end of a run keep that worktree. A copy of `.env`
+  already in a worktree is named and never called missing, and a `.env` only
+  in a subfolder is named rather than linked. A worktree on no branch is
+  listed and never tidied, and no pull request is asked about an empty
+  branch. A skip gives git's own `fatal:` line, a folder git lists but is gone
+  names `git worktree prune`, and a failed open deletes only a branch it made
+  itself. A Git older than 2.17 gets no worktree, and a port taken only on
+  `::1` is never given.
 - `.agents/tests/first-upload-asks.sh` guards the yes the project's first
   upload waits for. Founding tells the person nothing will be uploaded, and in
   a real run the first piece then pushed the whole project to GitHub with no

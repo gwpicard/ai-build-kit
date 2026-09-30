@@ -47,6 +47,14 @@ ignore red, and that is worse than having no check. So:
   checks that pass, write the other as `Lint: not yet, <count> existing
   problems` in the stack section, and file one piece to clear them.
 
+Leave `.agents/worktrees/` out of the type check and the lint. A run on Claude
+Code builds each piece in a worktree there, a whole second copy of the
+project, and a check run from the main folder would otherwise read every copy
+as well and report the same problem several times. Use the tool's own setting
+for folders it skips, such as ESLint's `ignores`, ruff's `extend-exclude`,
+mypy's `exclude` or the `exclude` list in `tsconfig.json`. This only keeps the
+copies out. It changes no rule.
+
 ## Wiring
 
 Put each command in its own named step, `Type check` and `Lint`, after install
