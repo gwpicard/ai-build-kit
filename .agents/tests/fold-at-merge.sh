@@ -67,7 +67,7 @@ rs_rule "runs in the piece's worktree first" 'in the piece.s worktree under `\.a
 rs_rule "then the main folder when it is on the branch and clean" \
   'in the main folder, when the main folder is on that branch with no uncommitted change'
 rs_rule "otherwise a worktree made from the pull request's branch" \
-  'in a worktree opened for the merge with the `implement` skill.s `scripts/worktree\.sh open <issue number>-<short name> <branch> origin/<branch>`'
+  'in a worktree opened for the merge with the `implement` skill.s `scripts/worktree\.sh`, as `worktree\.sh open <issue number>-<short name> <branch> origin/<branch>`'
 rs_rule "never cut fresh from main" 'never cut fresh from `main`'
 rs_rule "the main folder never changes branch for a merge" 'the main folder is never switched to another branch for a merge'
 rs_rule "uncommitted work never enters the fold" "the person.s work is never swept into the fold"
