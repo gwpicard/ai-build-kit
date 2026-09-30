@@ -109,8 +109,8 @@ the work local and note it on the piece.
 
 Claim the piece before changing anything. Label the piece `building` and assign
 it to whoever is building it, in one step,
-`gh issue edit <number> --add-label building --remove-label ready --add-assignee <login>`.
-Whatever state it carried comes off in that step, such as `parked` for a piece
+`gh issue edit <number> --add-label building --remove-label ready --add-assignee <login>`,
+creating the label first if the project lacks it. Whatever state it carried comes off in that step, such as `parked` for a piece
 whose condition is now met. That is what stops two people starting the same
 piece, and it costs one call. Where GitHub cannot be reached, the claim fails:
 say so, and do not start the piece. A piece already claimed carries on if
@@ -296,7 +296,9 @@ The record changes in step 9 are part of this save, not a later /sync task.
 
 Checkpoint route: update the records, commit, and state the saved checkpoint.
 There is no pull request to wait on, and the person confirmed the behaviour in
-step 6, so close the issue and take `building` off it in the same step.
+step 6, so close the issue and take `building` off it in the same step. This is
+the one route where a piece closes when it is saved rather than when a pull
+request merges, and it never passes through `to check`.
 
 Pull-request route: update the records, commit, push, open a pull request
 titled after the piece with a plain-language summary, and run the project

@@ -48,8 +48,8 @@ subject labels rather than reclassifying it; the classification was settled in
 
 Claim the piece before any work: move it from `ready` to `building` and assign
 it, in one step,
-`gh issue edit <number> --add-label building --remove-label ready --add-assignee @me`.
-section-builder's step 1 makes that move, so two sessions never start the same
+`gh issue edit <number> --add-label building --remove-label ready --add-assignee @me`,
+creating the label first if the project lacks it. section-builder's step 1 makes that move, so two sessions never start the same
 piece. Where GitHub cannot be reached the claim cannot be made, so say so and do
 not start the piece: a piece nobody could claim may be claimed by somebody else.
 

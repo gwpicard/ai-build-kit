@@ -150,7 +150,7 @@ Typed alone, /implement takes the next ready piece from the plan. It agrees with
 
 Each command moves a piece to its next state and takes the old one off in the same step, so a piece never shows in two columns. /shape moves an idea to shaping, and a shaped piece to ready. /implement claims a ready piece as building before it changes anything, and moves it to to check when its pull request opens. From there the piece is yours to try and merge, and /what-now names it as yours.
 
-A piece that stops at a recorded condition, or fails three attempts, is parked with the reason written on it. If GitHub cannot be reached, /implement says so and does not start a piece it could not claim. /sync puts right a piece carrying two states, or a closed issue still carrying one, and tells you what it changed. It never touches an idea you closed as parked.
+A piece that stops at a recorded condition, or fails three attempts, is parked with the reason written on it. If GitHub cannot be reached, /implement says so and does not start a piece it could not claim, and /fix does not start a repair it could not claim either. /sync puts right a piece carrying two states, or a closed issue still carrying one, and tells you what it changed. It never touches an idea you closed as parked.
 
 Before saving, the kit checks what else the change touches and runs the tests
 that already cover those parts first. If it reaches another part of the tool,

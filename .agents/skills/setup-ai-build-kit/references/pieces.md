@@ -224,8 +224,9 @@ three mean the same thing to `/implement`: not ready, and here is why.
 
 `ready` is the positive counterpart to those three. `/shape` adds `ready` once
 a piece is fully shaped: it has a `## Done when` line and waits on no question,
-so `shaping` and its reason come off as `ready` goes on. `/implement` swaps that label for `building` when it
-picks the piece up, and the merged pull request closes it.
+so `shaping` and its reason come off as `ready` goes on. `/implement` swaps that
+label for `building` when it picks the piece up. The piece is in `to check`
+while its pull request is open, and the merged pull request closes it.
 A piece never carries `ready` and a `needs-` label at the same time; settling
 the question is what moves it from one to the other.
 
@@ -241,6 +242,8 @@ decides too, so a piece somebody labelled `ready` without giving it a
 Those seventeen are the only labels the kit owns: the seven subjects, the six
 states, `broken`, and the three `needs-` reasons. Any other label on an issue
 belongs to somebody else, so the kit reads past it and never removes it.
+`blocked` is the kit's former label rather than somebody else's, which is why
+`/maintain` may take it off when it moves an older project onto the states.
 
 The nine labels GitHub puts on a new repository are the one exception, and only
 at founding. `bug`, `documentation`, `duplicate`, `enhancement`, `good first

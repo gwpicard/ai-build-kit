@@ -71,8 +71,18 @@ rs_rule "an earlier no to the same states stands" \
 rs_rule "a waiting piece gains shaping" \
   'an open piece with a `needs-` label and no `shaping` gains `shaping`'
 rs_rule "a piece with no state gains idea" 'an open piece with no state label gains `idea`'
-rs_rule "blocked becomes parked with its reason" \
-  'a `blocked` piece becomes `parked`, losing `blocked` and any `ready` or `building` beside it, with its reason kept'
+rs_rule "the check also looks at the pieces, not only the labels" \
+  'no open piece carries a `needs-` label without `shaping`, the project is already on the states'
+rs_rule "because the labels alone do not settle it" 'the labels alone do not settle it'
+rs_rule "a piece made of parts gains no state" \
+  'except a piece made of parts, which carries no state of its own'
+rs_rule "blocked used as a dependency hint loses the label and stays buildable" \
+  'a `blocked` piece with a blocked-by link and no written reason was using the old label as a hint'
+rs_rule "that piece keeps or gains ready" 'so it loses `blocked` and keeps `ready`, or gains it'
+rs_rule "any other blocked becomes parked with its reason" \
+  'any other `blocked` piece becomes `parked`, losing `blocked` and any `ready` or `building` beside it, with its reason kept'
+rs_rule "a missing reason is written as not recorded" \
+  'labelled blocked before the piece states; reason not recorded'
 rs_rule "closed issues, a parked idea above all, are left alone" \
   'closed issues are left alone, and a closed `parked` idea above all'
 rs_rule "the offer says what it reaches" 'say how many pieces each change reaches'

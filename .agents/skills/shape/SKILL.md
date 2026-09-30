@@ -106,7 +106,9 @@ still open.
 ## Moving a piece's state
 
 This command takes the old state off in the same step as it puts the new one
-on, with one command, so a piece never shows in two columns of the board.
+on, with one command, so a piece never shows in two columns of the board. It
+follows pieces.md for an older project, creating the label first if the project
+lacks it.
 
 - Starting on an idea moves it to `shaping`, with `needs-clarification` beside
   it until the interview finds a different reason:
@@ -172,7 +174,9 @@ noticed until the files were read.
   Before it starts, write one line on the piece: "Needs your decision: yes" or
   "Needs your decision: no", saying whether its result will need the person to
   choose. With no, and a result that settles every question, move the piece to
-  `ready` once it meets the bar, with nobody there. With yes, write what it
+  `ready` once it meets the bar, with nobody there. With no, and a result that
+  leaves a question open, the piece stays `shaping` with `needs-research` and
+  the gap written on it. With yes, write what it
   found, then swap `needs-research` for `needs-clarification` in one step, so
   the piece waits for the person rather than for a guess:
   `gh issue edit <number> --add-label needs-clarification --remove-label needs-research`.
