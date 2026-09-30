@@ -798,5 +798,6 @@ written. Until it runs, `replay-state.sh` holds the end state by hand. It
 builds the right end, the end where the first piece is parked after three
 attempts, and each wrong end, and proves the state check catches every wrong
 one. The stand-in GitHub command gained what a run reaches for: a pull request
-aimed at another piece's branch, a body read from a file, and the comments on
-a piece, so a claim can be read back.
+aimed at another piece's branch, a search for the pull request open from a
+branch, a body read from a file, and the comments on a piece with their ids,
+so a claim can be read back and a losing claim deleted.

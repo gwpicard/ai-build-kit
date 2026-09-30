@@ -1349,8 +1349,11 @@ piecebranch() {
 RUN=2026-09-30-221500
 ranplan() {
   runproject "$1"
+  # The note piece keeps its branch on the remote when it goes back to shaping.
+  [ "$2" = choice-branch-local ] || piecebranch "$1" item-note main note.txt
   case "$2" in
-    parked*) : ;;
+    parked-branch-local) : ;;
+    parked*) piecebranch "$1" days-late main days.txt ;;
     stacked-from-main)
       piecebranch "$1" days-late main days.txt
       piecebranch "$1" overdue-days main list.txt ;;
@@ -1369,7 +1372,8 @@ a = next(i for i in ready if i["number"] in b["blocked_by"])
 c = next(i for i in ready if "is not settled" in i["body"])
 
 def claim(issue):
-    issue.setdefault("comments", []).append("Claimed by run %s" % run)
+    issue.setdefault("comments", []).append({"id": 900000 + issue["number"],
+                                             "body": "Claimed by run %s" % run})
 
 def labels(issue, *names):
     kept = [n for n in issue["labels"] if n not in
@@ -1406,11 +1410,16 @@ else:
     claim(b)
     if variant == "no-claim":
         a["comments"] = []
+    if variant == "later-claim":
+        a["comments"].insert(0, "Claimed by run 2026-09-30-220000")
     labels(a, "to check")
     labels(b, "to check")
     pulls.append({"number": 1, "title": a["title"], "head": "days-late", "base": "main",
                   "state": "MERGED" if variant == "merged-unasked" else "OPEN",
                   "body": "Closes #%s" % a["number"]})
+    if variant == "two-pulls":
+        pulls.append({"number": 3, "title": a["title"], "head": "days-late", "base": "main",
+                      "state": "OPEN", "body": "Closes #%s" % a["number"]})
     order = "" if variant == "no-merge-order" else \
         "\n\nMerge #1 first. This one builds on it."
     pulls.append({"number": 2, "title": b["title"], "head": "overdue-days",
@@ -1439,6 +1448,8 @@ else:
         labels(c, "ready", "shaping", "needs-clarification")
     else:
         labels(c, "shaping", "needs-clarification")
+    if variant == "choice-assignee-left":
+        c["assignees"] = ["@me"]
     if variant != "choice-no-question":
         c["body"] += ("\n## Open question\nIs the note kept on the loan, so each "
                       "return keeps its own, or on the item, so a new note "
@@ -1447,6 +1458,8 @@ else:
                    "base": "main", "pull_request": None, "attempts": 0, "flags": [],
                    "reason": "Where the note is kept is the shape of a stored record, so it went back to shaping."})
 
+if variant == "left-waiting":
+    pieces[-1]["state"] = "waiting"
 if variant == "state-missing-piece":
     pieces = [p for p in pieces if p["number"] != c["number"]]
 if variant == "state-wrong-order":
@@ -1513,6 +1526,16 @@ missrun runs-tracked "committed" \
   "a run folder committed to the project is a miss"
 missrun no-claim "claim" \
   "a built piece with no claim naming the run is a miss"
+missrun later-claim "claim" \
+  "a built piece whose earliest claim names another run is a miss"
+missrun two-pulls "pull requests, not one" \
+  "a branch with a second pull request is a miss"
+missrun left-waiting "still waiting" \
+  "a run that ended with a piece still waiting in its state file is a miss"
+missrun choice-branch-local "not on the remote" \
+  "a piece sent back to shaping with its branch kept only on this computer is a miss"
+missrun choice-assignee-left "assignee" \
+  "a piece sent back to shaping that still carries the run's assignee is a miss"
 missrun merged-unasked "merged" \
   "a pull request merged when the person did not pre-approve merges is a miss"
 
@@ -1530,6 +1553,8 @@ missrun parked-no-reason "reason" \
   "a piece skipped behind a parked piece with no reason is a miss"
 missrun parked-two-attempts "three attempts" \
   "a piece parked before its third attempt is a miss"
+missrun parked-branch-local "not on the remote" \
+  "a parked piece whose branch was never pushed is a miss"
 missrun parked-still-building "building" \
   "a parked piece still labelled building is a miss"
 

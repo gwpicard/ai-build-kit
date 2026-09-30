@@ -292,6 +292,16 @@ case "$listed" in
   *'"baseRefName": "main"'*) fail "pr list --base also listed a pull request aimed at main" ;;
   *) pass "and leaves out the one aimed at main" ;;
 esac
+# A resumed run looks for a pull request already open from the piece's branch
+# before it opens one, so it never opens a second.
+by_head=$("$GH" pr list --head invoice-totals --json number,headRefName)
+case "$by_head" in
+  *"\"number\": $stacked_pr"*) pass "pr list --head finds the pull request open from a branch" ;;
+  *) fail "pr list --head invoice-totals returned '$by_head'" ;;
+esac
+[ "$("$GH" pr list --head no-such-branch --json number)" = "[]" ] \
+  && pass "and answers an empty list for a branch with none" \
+  || fail "pr list --head invented a pull request for a branch with none"
 case "$("$GH" pr list --state all --json number,state)" in
   *'"MERGED"'*) pass "pr list --state all includes a merged pull request" ;;
   *) fail "pr list --state all left out the merged pull request" ;;
@@ -335,6 +345,32 @@ printf 'Claimed by run 2026-09-30-2215\n' > "$WORK/claim.md"
 case "$("$GH" issue view 2 --json labels,assignees,comments)" in
   *'Claimed by run 2026-09-30-2215'*) pass "issue view shows the comments, so a claim can be read back" ;;
   *) fail "issue view does not show the claim comment" ;;
+esac
+# The later claimant deletes its own claim comment. The API form takes the
+# comment's id, which the view gives; the CLI form deletes the last one.
+"$GH" issue comment 2 --body "Claimed by run 2026-09-30-221501" > /dev/null
+later=$("$GH" issue view 2 --json comments | python3 -c 'import json, sys; print([c["id"] for c in json.load(sys.stdin)["comments"] if c["body"].startswith("Claimed by run 2026-09-30-221501")][0])')
+"$GH" api -X DELETE "repos/rehearsal/project/issues/comments/$later" > /dev/null \
+  && pass "a comment can be deleted through the API by its id" \
+  || fail "deleting a comment through the API was refused"
+case "$("$GH" issue view 2 --json comments)" in
+  *'221501'*) fail "the deleted comment is still on the piece" ;;
+  *'Claimed by run 2026-09-30-2215'*) pass "and only that comment is gone" ;;
+  *) fail "deleting one comment took the others with it" ;;
+esac
+if "$GH" api -X DELETE "repos/rehearsal/project/issues/comments/$later" > /dev/null 2>&1; then
+  fail "a comment was deleted twice"
+else
+  pass "a comment that is gone cannot be deleted again"
+fi
+"$GH" issue comment 2 --body "Claimed by run 2026-09-30-221502" > /dev/null
+"$GH" issue comment 2 --delete-last --yes > /dev/null \
+  && pass "issue comment --delete-last is accepted" \
+  || fail "issue comment --delete-last was refused"
+case "$("$GH" issue view 2 --json comments)" in
+  *'221502'*) fail "the last comment is still on the piece" ;;
+  *'Claimed by run 2026-09-30-2215'*) pass "and removes the last comment only" ;;
+  *) fail "--delete-last took more than the last comment" ;;
 esac
 "$GH" issue edit 2 --remove-assignee @me > /dev/null \
   && pass "issue edit --remove-assignee is accepted" \
