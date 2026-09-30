@@ -105,10 +105,11 @@ there.
 Read the repository's current state before doing anything else. Check whether
 masterplan.md and CHANGELOG.md already exist, whether the project's pieces
 exist as issues, and whether any of them look complete or
-half-written. Check for unfinished setup: a placeholder still in the file the
+half-written. Check for unfinished setup: an uncommitted change, an open
+question left in the changelog, or a placeholder still in the file the
 capability profile's `Project check:` line records, which is
 `.github/workflows/checks.yml` only where that is the file recorded or no line
-is written yet, an uncommitted change, an open question left in the changelog. Say plainly where the process is resuming from. Never
+is written yet. Say plainly where the process is resuming from. Never
 overwrite an existing record without saying so and getting agreement first.
 
 Look for `.agents/tmp/setup-notes.md` in that read. It holds the answers agreed

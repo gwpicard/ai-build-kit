@@ -18,7 +18,10 @@ A workflow counts where its file in `.github/workflows/` ends in `.yml` or
 `test`. The bootstrap script looks for one the same way. Where it finds one,
 it copies no `checks.yml` beside it and prints one line naming the file.
 
-Three workflows look close and do not count:
+Four workflows look close and do not count:
+
+- The kit's own placeholder `checks.yml`, whose `Install and test` step says
+  no tests have run, never counts, although that sentence contains the word.
 
 - A workflow on pull requests that runs no tests, such as a labeller, is not a
   project check. The project's workflows stay as they are, and the kit's
@@ -75,6 +78,9 @@ tools report.
   steps are written for a POSIX shell. Say why in one line, and record `; kit
   steps not added`.
 
-Both steps need only `sh` and `awk`. A job on a container image without them
-turns red on the first pull request after a yes, and `/fix` then names the
-step.
+Both steps need only `sh` and `awk`, and both read files from the project
+root. A job on a container image without those tools, or one whose
+`defaults.run.working-directory` points below the root, turns red on the first
+pull request after a yes, and `/fix` then names the step. Where the job sets
+such a folder, give each added step `working-directory: .` so it runs from the
+root.

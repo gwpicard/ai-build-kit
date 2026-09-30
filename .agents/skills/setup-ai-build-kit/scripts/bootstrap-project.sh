@@ -229,5 +229,5 @@ gitignore|.gitignore
 FOUNDATION_FILES
 
 [ -z "$own_ci" ] || \
-  echo "AI Build Kit found $own_ci running this project's tests on pull requests, so it stays the project check and the kit added no checks.yml"
+  echo "AI Build Kit found $own_ci running this project's tests on pull requests, so the kit added no checks.yml beside it"
 echo "AI Build Kit prepared $created project file(s) and kept $kept existing file(s)"
