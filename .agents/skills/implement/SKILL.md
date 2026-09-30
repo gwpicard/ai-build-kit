@@ -174,8 +174,9 @@ sends a piece back to shaping, and the run moves on. It ends with one report:
 each piece, its pull request and its state, the choices flagged for the person,
 what was parked and why, and the merge order.
 
-The run keeps its state in `.agents/runs/`, so a session that dies loses
-nothing. Where an unfinished run's state file is in `.agents/runs/`, offer to
+The run keeps its state in the main folder's `.agents/runs/`, the first
+worktree git lists, even when this session sits in another tool's worktree,
+so a session that dies loses nothing. Where an unfinished run's state file is in `.agents/runs/`, offer to
 resume it before taking anything new, whether this command was typed alone or
 with `queue`.
 

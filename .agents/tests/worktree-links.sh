@@ -73,6 +73,16 @@ rs_rule "and says where in one line" 'says so in one line when it starts'
 rs_rule "a run never checks main out" 'never checks `main` out'
 rs_guard "$LONGER" "running-longer.md"
 
+# Every session finds the run in the main folder, wherever it sits.
+rs_require_load_bearing "/implement keeps the run state in the main folder" "$SKILLS/implement/SKILL.md" \
+  'the run keeps its state in the main folder.s `\.agents/runs/`, the first worktree git lists, even when this session sits in another tool.s worktree'
+rs_require_load_bearing "/sync reads the main folder's run state" "$SKILLS/sync/SKILL.md" \
+  'read each run.s state file under the main folder.s `\.agents/runs/`'
+rs_require_load_bearing "/what-now reads the main folder's run state" "$SKILLS/what-now/SKILL.md" \
+  '`\.agents/runs/` of the main folder'
+rs_require_load_bearing "running-longer says every session finds the same run" "$LONGER" \
+  'always the main folder.s `\.agents/runs/`, the first worktree git lists, even when the session sits in another tool.s worktree'
+
 # The script links the line and lists the candidates founding asks about.
 rs_require_load_bearing "worktree.sh reads the worktree-links line" "$SCRIPT" \
   'worktree-links\|'

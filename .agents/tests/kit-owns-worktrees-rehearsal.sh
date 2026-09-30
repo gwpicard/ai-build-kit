@@ -520,8 +520,20 @@ cat >> "$L/.ai-build-kit-maintenance" <<'REC'
 founded|2026-09-01
 confidential|private
 confidential|data/secret
-worktree-links|fonts ; samples/big input.csv ; brand assets ; private/report.pdf ; data ; .env.production ; tool.txt ; ../elsewhere.txt ; /etc/hosts ; gone.bin ; loose.txt ; extra
+worktree-links|fonts ; samples/big input.csv ; brand assets ; private/report.pdf ; data ; .env.production ; tool.txt ; ../elsewhere.txt ; /etc/hosts ; gone.bin ; loose.txt ; extra ; kept ; far.txt ; hidden
 REC
+# A folder whose files are ignored while a placeholder in it is tracked.
+mkdir -p "$L/kept"
+printf 'kept/*\n!kept/.gitkeep\nfar.txt\nhidden\n' >> "$L/.gitignore"
+: > "$L/kept/.gitkeep"
+echo "icon" > "$L/kept/icon.otf"
+"$REAL_GIT" -C "$L" add .gitignore kept/.gitkeep
+"$REAL_GIT" -C "$L" commit -q -m "Keep the kept folder"
+"$REAL_GIT" -C "$L" push -q origin main 2>/dev/null
+# Links in the main folder that lead outside the project and into the
+# confidential folder.
+ln -s "$WORK/elsewhere.txt" "$L/far.txt"
+ln -s private "$L/hidden"
 echo "loose" > "$L/loose.txt"
 # An ignore line the main folder has and has not saved yet, so a worktree cut
 # from origin/main does not have it.
@@ -563,7 +575,7 @@ check "a path holding a confidential folder is refused by name" "$r"
 check "an env file on the line is refused, and left to the .env rule" "$r"
 [ ! -L "$LW/tool.txt" ] && case $out in *"Not linked tool.txt:"*"git tracks it"*) true ;; *) false ;; esac && r=yes || r=no
 check "a tracked file is refused, since the worktree already has it" "$r"
-[ ! -e "$WORK/elsewhere.txt.link" ] && case $out in *"Not linked ../elsewhere.txt:"*"outside the project"*) true ;; *) false ;; esac && r=yes || r=no
+case $out in *"Not linked ../elsewhere.txt:"*"outside the project"*) r=yes ;; *) r=no ;; esac
 check "a path outside the project is refused" "$r"
 case $out in *"Not linked /etc/hosts:"*"outside the project"*) r=yes ;; *) r=no ;; esac
 check "an absolute path is refused as outside the project" "$r"
@@ -573,6 +585,12 @@ check "a listed path deleted from the main folder is named, not linked, and the 
 check "a path git does not ignore is refused, so no link shows as a new file to save" "$r"
 [ ! -e "$LW/extra/x.bin" ] && case $out in *"Not linked extra/x.bin:"*"worktree does not ignore the link"*"built without extra/x.bin"*) true ;; *) false ;; esac && r=yes || r=no
 check "a link the worktree's own ignore rules do not cover is taken away and named" "$r"
+[ -L "$LW/kept/icon.otf" ] && [ -f "$LW/kept/.gitkeep" ] && [ ! -L "$LW/kept/.gitkeep" ] && r=yes || r=no
+check "a folder keeping one tracked placeholder links its ignored files and leaves the placeholder" "$r"
+[ ! -e "$LW/far.txt" ] && case $out in *"Not linked far.txt:"*"leads outside the project"*) true ;; *) false ;; esac && r=yes || r=no
+check "a main-folder link leading outside the project is refused" "$r"
+[ ! -e "$LW/hidden" ] && case $out in *"Not linked hidden:"*"confidential"*) true ;; *) false ;; esac && r=yes || r=no
+check "a main-folder link leading into the confidential folder is refused" "$r"
 copies=$(find "$L/.agents/worktrees" -name 'Brand.ttf' -type f 2>/dev/null || true)
 [ -z "$copies" ] && r=yes || r=no
 check "no copy of a listed file exists in the worktree" "$r"
@@ -597,6 +615,9 @@ out=$(PATH="$WORK/noln:$PATH"; export PATH; run "$L" open 51-no-link 51-no-link 
 check "where a listed link cannot be made, the piece goes on and nothing is copied" "$r"
 case $out in *"built without fonts"*) r=yes ;; *) r=no ;; esac
 check "and it says the piece is built without that path" "$r"
+out=$(run "$L/.agents/worktrees/51-no-link" open 53-from-kit 53-from-kit origin/main)
+case $out in *"another worktree"*) r=no ;; *) r=yes ;; esac
+check "opened from one of the kit's own worktrees, it is not called another tool's" "$r"
 
 pr "50-report MERGED $(git -C "$LW" rev-parse HEAD)"
 out=$(run "$L" tidy)
