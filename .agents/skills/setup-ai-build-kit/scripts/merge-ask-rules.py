@@ -23,6 +23,7 @@ Exit 1: the file is not valid JSON, or not in the shape Claude Code reads. It
 is left untouched.
 Exit 2: there is no such file, so the project does not use Claude Code.
 Nothing is written.
+Exit 64: the command was not given as above. Nothing is read or written.
 """
 
 import json
