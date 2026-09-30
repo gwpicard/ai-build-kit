@@ -299,6 +299,12 @@ case "$by_head" in
   *"\"number\": $stacked_pr"*) pass "pr list --head finds the pull request open from a branch" ;;
   *) fail "pr list --head invoice-totals returned '$by_head'" ;;
 esac
+# The worktree script asks for the head commit, so a merged piece whose branch
+# has gone from the remote still counts its merged work as saved.
+case "$("$GH" pr list --head invoice-totals --state all --json state,headRefOid)" in
+  *"\"headRefOid\": \"$(git rev-parse invoice-totals)\""*) pass "pr list --json headRefOid gives the head branch's commit" ;;
+  *) fail "pr list --json headRefOid did not give the head branch's commit" ;;
+esac
 [ "$("$GH" pr list --head no-such-branch --json number)" = "[]" ] \
   && pass "and answers an empty list for a branch with none" \
   || fail "pr list --head invented a pull request for a branch with none"

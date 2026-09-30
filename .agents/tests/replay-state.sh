@@ -1482,6 +1482,14 @@ else:
                    "base": "main", "pull_request": None, "attempts": 0, "flags": [],
                    "reason": "Where the note is kept is the shape of a stored record, so it went back to shaping."})
 
+if variant.startswith("wt-"):
+    # The worktree route: each piece that has a branch records its worktree.
+    for piece in pieces:
+        if piece.get("branch"):
+            piece["worktree"] = ".agents/worktrees/%s-%s" % (piece["number"], piece["branch"])
+            piece["port"] = None
+    if variant == "wt-elsewhere":
+        pieces[0]["worktree"] = "../elsewhere/%s" % pieces[0]["number"]
 if variant == "left-waiting":
     pieces[-1]["state"] = "waiting"
 if variant == "state-missing-piece":
@@ -1505,6 +1513,21 @@ PY
     git -C "$1" add -f .agents/runs
     git -C "$1" commit -q -m "Keep the run's state"
   fi
+  case "$2" in
+    wt-*)
+      mkdir -p "$1/.agents/worktrees"
+      printf '*\n' > "$1/.agents/worktrees/.gitignore" ;;
+  esac
+  case "$2" in
+    wt-state-inside)
+      mkdir -p "$1/.agents/worktrees/days-late/.agents/runs/$RUN"
+      cp "$1/.agents/runs/$RUN/state.json" "$1/.agents/worktrees/days-late/.agents/runs/$RUN/" ;;
+    wt-main-moved)
+      git -C "$1" checkout -q days-late ;;
+    wt-tracked)
+      git -C "$1" add -f .agents/worktrees
+      git -C "$1" commit -q -m "Keep the worktrees folder" ;;
+  esac
 }
 rp_note() {
   python3 -c 'import json,sys; print(json.load(sys.stdin)["state_verdicts"]["run-plan"]["note"])'
@@ -1590,6 +1613,24 @@ check "scenario 57 with the unsettled piece left ready and skipped at the plan w
 
 missrun merged-unasked "merged" \
   "a pull request merged when the person did not pre-approve merges is a miss"
+
+# On Claude Code each piece is built in its own worktree. The state file then
+# records each one, the run state stays in the main folder, the main folder
+# never moves onto a piece's branch, and the worktrees folder is never saved.
+p="$WORK/s57-wt-right"
+ranplan "$p" wt-right
+out=$("$CHECK" 57 "$p")
+[ "$(printf '%s' "$out" | verdict_of run-plan)" = "hit" ] && r=yes || r=no
+[ "$r" = yes ] || echo "    got: $(printf '%s' "$out" | rp_note)" >&2
+check "scenario 57 run in worktrees, with the main folder left on main, holds" "$r"
+missrun wt-state-inside "inside a worktree" \
+  "a run state written inside a worktree is a miss"
+missrun wt-main-moved "main folder" \
+  "a run that left the main folder on a piece's branch is a miss"
+missrun wt-elsewhere ".agents/worktrees/" \
+  "a worktree recorded outside .agents/worktrees/ is a miss"
+missrun wt-tracked "committed" \
+  "a worktrees folder committed to the project is a miss"
 
 # The other end the contract allows: the first piece fails three times and is
 # parked, the piece stacked on it is skipped and says why, and nothing is built
