@@ -6,9 +6,9 @@
 # it, and /what-now names it as the person's own to-do.
 #
 # Three ways this could go wrong quietly, so all three are checked: the section
-# disappears; it turns into a third meaning for `blocked`, which would make the
-# two it already has unreadable; or it becomes a place to ask for a key, which
-# would put a secret in a tracked file.
+# disappears; it turns into another meaning for `parked`, which would make the
+# two it already has on an open piece unreadable; or it becomes a place to ask
+# for a key, which would put a secret in a tracked file.
 
 set -eu
 
@@ -31,16 +31,17 @@ rs_rule "the agent does what it can rather than asking" \
   'never ask for something the agent could'
 rs_rule "it never carries the secret it asks for" \
   'never carries the secret it asks for'
-rs_rule "it is not a third meaning for blocked" 'this is not .blocked'
+rs_rule "it is not another meaning for parked" 'this is not .parked'
+# The reason this is a section rather than a third meaning for `parked` is that
+# both meanings an open piece already has are load-bearing for /implement. If
+# either is ever dropped, the reasoning behind the section goes with it.
+rs_rule "parked still covers a piece stopped at a recorded condition" \
+  'covers a piece stopped at a recorded condition'
+rs_rule "parked still covers a piece parked after three failed attempts" \
+  'a piece parked after three failed attempts'
+rs_rule "a piece waiting on the person keeps its state" \
+  'keeps whatever state it had'
 rs_guard "$PIECES" "pieces.md"
-
-# The reason this is a section rather than a third `blocked` is that both
-# existing meanings are load-bearing for /implement. If either is ever dropped,
-# the reasoning behind the section goes with it.
-rs_require "blocked still means a piece stopped at a recorded condition" \
-  "$IMPLEMENT" 'stopped at a recorded condition'
-rs_require "blocked still means a piece parked after repeated failure" \
-  "$IMPLEMENT" 'parked after repeated failure'
 
 rs_require "change-triage routes the setup task it already classifies" \
   "$TRIAGE" 'a step only the person can do'
