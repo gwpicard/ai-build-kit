@@ -58,7 +58,8 @@ rs_rule "the old state comes off in the same step" \
   'takes the old state off in the same step as it puts the new one on'
 rs_rule "starting on an idea moves it to shaping" \
   '<number> --add-label shaping --add-label needs-clarification --remove-label idea'
-rs_rule "ready only when the piece meets the bar" 'reaches `ready` only when it meets the bar'
+rs_rule "ready only when the readiness check finds no blocking gap" \
+  'reaches `ready` only when the readiness check finds no blocking gap'
 rs_rule "shaping and its reason come off as ready goes on" \
   '<number> --add-label ready --remove-label shaping --remove-label'
 rs_rule "a piece it cannot finish stays in shaping with its reason" \
@@ -72,7 +73,7 @@ rs_rule "capture is filed as an idea, not shaped" \
 rs_rule "research says before it starts whether it needs the person" \
   'before it starts, write one line on the piece: "needs your decision: yes" or "needs your decision: no"'
 rs_rule "research needing nobody moves the piece to ready" \
-  'with no, and a result that settles every question, move the piece to `ready` once it meets the bar'
+  'with no, and a result that settles every question, move the piece to `ready` once the readiness check finds no blocking gap'
 rs_rule "research that leaves a question open stays shaping with the gap" \
   'the piece stays `shaping` with `needs-research` and the gap written on it'
 rs_rule "research needing the person hands the piece back to them" \

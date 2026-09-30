@@ -293,7 +293,8 @@ attribution line, not the word.
   section-builder and `/fix` for its removal on the same line, then proves a
   copy that drops one fails. It holds capture, a note asked for outright filed
   as an `idea` in the person's words with nothing settled, and `/shape` moving
-  an idea to `shaping` and only a piece that meets the bar to `ready`. A
+  an idea to `shaping`, and to `ready` only a piece whose readiness check
+  found no blocking gap. A
   research piece says before it starts whether its result needs the person.
   `/implement` claims a piece as `building` before any work and starts nothing
   it could not claim, and section-builder moves it to `to check` when its pull
@@ -301,6 +302,27 @@ attribution line, not the word.
   attempts. It also holds `/what-now` naming a piece in `to check` as the
   person's own, and `/sync` repairing two states on a piece or a state on a
   closed issue while never touching a closed `parked` idea.
+- `.agents/tests/piece-contract.sh` guards the piece contract and the check a
+  piece passes before it turns ready. A real project's pieces were detailed and
+  still missed whole categories, such as states nobody named, data rules and
+  things leaving the device, because the template asked for none of them and
+  the session that shaped a piece was the one that judged it complete. So it
+  holds the issue form's fields in order, a short header and then the agent
+  layer, with Done when kept as the heading the printout reads and split into
+  Works and the cases that are not the normal one. It holds each field rule in
+  `pieces.md`, the rules that are not fields, the `Decided` guidance that every
+  choice a person would notice is decided on the piece, and the one-line
+  `Touches:` format. It holds the fourteen items of the readiness list, its
+  severity rule and what it cannot catch, and that `/shape` has a session that
+  did not shape the piece run it: a subagent carrying none of the conversation,
+  or a new session given the exact line to paste. The check writes a
+  `## Readiness` section, and a blocking gap keeps the piece in `shaping` with
+  the gap written on it. A Relies on line nobody could read is a blocking gap,
+  a container passes when its parts are pieces, and a piece shaped before the
+  check stays ready. It also holds that clarify asks about those cases, data
+  and what leaves the tool only when the piece touches them, that WORKFLOW.md
+  and PHILOSOPHY tell it, that the list stays out of the founded AGENTS.md, and
+  that the replay case for it is written and listed as owed.
 - `.agents/tests/plan-helper-routes.sh` proves the helper that writes the
   printout reaches every project. It ships inside the setup-ai-build-kit skill,
   because the shared installer and both plugins carry skills and nothing else,

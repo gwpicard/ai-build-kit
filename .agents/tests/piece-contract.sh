@@ -76,7 +76,7 @@ rs_rule "the template carries Leaves the tool" '## leaves the tool <what goes wh
 rs_rule "the template carries Must still hold" '## must still hold <each rule'
 rs_rule "the template carries Relies on" '## relies on <each existing thing'
 rs_rule "the template carries the Touches line" 'touches: <area>, <area> <details>'
-rs_rule "the template ends on Readiness" '## readiness <written by the readiness check'
+rs_rule "the template ends on Readiness" '## readiness <written only by the readiness check>'
 rs_rule "every field is considered" \
   'every field is considered\. a field in the agent layer that does not apply says why in one line'
 rs_rule "the bar scales with the change" \
@@ -109,7 +109,7 @@ rs_rule "Readiness is the stored result later steps read" \
   '`## readiness` is written by the readiness check and read by every later step'
 rs_rule "no open choice a person would notice" \
   'no open choice a person would notice\. phrases such as "decide during build"'
-rs_rule "lists are complete" 'lists are complete, never examples'
+rs_rule "lists are complete" 'lists are complete: a list of examples does not stand in for the whole'
 rs_rule "each Done when line is false before and true after" \
   'false on today.s code and true after, through this piece alone'
 rs_rule "split, never shrink" 'split, never shrink\. no stub, placeholder or "for now" stands in for a line'
@@ -170,7 +170,7 @@ rs_rule "a container passes when its parts are pieces" \
 rs_rule "a piece from before the check stays ready and is checked before a run claims it" \
   'a piece shaped before this check existed has no `## readiness` section\. it stays `ready`, and a run checks it before claiming it'
 rs_rule "the section carries the date, who checked, the verdict and notes" \
-  '## readiness <yyyy-mm-dd>, checked by a session that did not shape it\. verdict: ready \| not ready - blocking <item>: .* - note <item>:'
+  '## readiness <yyyy-mm-dd>, checked by a session that did not shape it: ready \| not ready - blocking <item>: .* - note <item>:'
 rs_rule "the section is the stored result" 'that section is the stored result every later step reads'
 rs_rule "a blocking line rules out Ready" 'a piece with a blocking line cannot carry the verdict ready'
 rs_rule "notes never hold a piece back" 'notes stay on the piece for the builder, and never hold the piece back'

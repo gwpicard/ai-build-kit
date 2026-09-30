@@ -320,17 +320,26 @@ wrong thing, they say so and the question gets split. They never need to
 understand prototype branches or throwaway architecture.
 
 A piece written in two layers, added. It fits under /shape and /implement. The
-person sees a plain surface that stays comprehensive about anything affecting the
-product, so a simple read is never a false one; the build detail sits in a
-collapsed "under the hood" section they never have to open. The sentence is "you
-read the plain part; the agent reads the rest". When it goes wrong, the surface
-missed something that changed a product decision, and /shape puts it back on the
-surface. They never need to read the build notes, but nothing that affects their
-product is hidden from them. This answers the question a workshop raised: a ready
-piece must carry enough to build without fresh research, which matters most when
-/implement runs a batch with nobody watching. Context that reaches past one piece
-is not duplicated onto it: a whole-product decision lives in the masterplan, a
-whole-codebase convention in AGENTS.md, so each concept keeps one home.
+person sees a short header in plain words: what the piece is for, what done
+means, including the cases that are not the normal one, and what it changes in
+the masterplan. Below it the agent layer is complete: every choice they would
+notice by trying the tool, the data it stores, what leaves the tool, the rules
+it must still meet, what it relies on and what it touches. A field that does
+not apply says why in one line. The sentence is "you read the header; the agent
+reads the rest, and nothing you would notice is left for the build to decide".
+When it goes wrong, a session that did not shape the piece usually finds the
+gap before the piece turns ready, and /shape asks them about it; a gap found
+later goes back through /shape with the piece's number. They never need to read
+the agent layer, and nothing that affects their product is missing from it.
+
+A real project showed why the agent layer has to be complete. Its pieces were
+detailed and still missed whole categories: states nobody named, data and sync
+rules, things leaving the device. Its builder made 85 choices alone. A ready
+piece must carry enough to build without fresh research, which matters most
+when /implement runs a batch with nobody watching. Context that reaches past one
+piece is not duplicated onto it: a whole-product decision lives in the
+masterplan, a whole-codebase convention in AGENTS.md, so each concept keeps one
+home.
 
 Universal test-first, rejected. Every promised behaviour needs evidence, but
 the evidence may be an automated test, a manual visual check, a source-backed

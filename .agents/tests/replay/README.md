@@ -364,6 +364,12 @@ is how the pre-release run of 26 September 2026 ended its first `/implement`
 before the kit pushed `main` without asking. The yes comes only once the kit
 asks for it.
 
+Scenario 56 shapes a small request that stores a new record: a steward's note
+on a returned loan. It starts from the fixture and needs no preparation. It
+measures whether the piece gains its data rules and a `## Readiness` section
+written by a session that did not shape it before it turns `ready`. The person
+answers the data questions plainly, so a sound piece can end ready in one pass.
+
 ## How grading works
 
 The grader is a separate session that receives the contract and the transcript
