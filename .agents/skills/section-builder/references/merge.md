@@ -61,7 +61,9 @@ different states of `main`.
 This skill's `scripts/bring-up-to-date.sh <folder>` does steps 1 to 3 in the
 folder given, which must be on the pull request's branch. It first undoes, with
 a new commit, any `Fold the changelog` on the branch that `main` does not hold
-yet, so an older fold never merges beside a newer one. A retry after a session
+yet, so an older fold never merges beside a newer one. An entry
+`CHANGELOG.md` already holds is never written again, which covers a stacked
+pull request whose base was merged by squash. A retry after a session
 died, or after another merge folded the same waiting files, therefore writes
 each entry once. Its last line is the commit the check must pass on. Its exit
 decides the reply:
@@ -74,10 +76,15 @@ decides the reply:
   uncommitted work. Nothing changed. Where GitHub could not be reached, give
   the one line "How the merge is made" gives.
 - 3: the push was refused, usually because somebody pushed to the branch
-  meanwhile. Nothing merges: say the merge waits and why. Asking again takes
-  their commit in.
+  meanwhile, or this computer holds commits on the branch that the pull request
+  does not. The script's message says which. Nothing merges: say the merge
+  waits and why. After a refused push, asking again takes their commit in.
 
-Where an earlier records pull request that folded files is still open, pass
+Where GitHub then refuses the merge because `main` moved after the check,
+run the step again, so the fold is made on the newer `main`.
+
+Where an earlier records pull request that folded files, other than the one
+being merged, is still open, pass
 `--no-fold` and say so in one line, so the same entry is never written twice.
 The branch still takes in `main`.
 
@@ -90,13 +97,16 @@ Run the script in the first of these that fits:
   `scripts/worktree.sh`, as
   `worktree.sh open <issue number>-<short name> <branch> origin/<branch>`, so a
   branch not held on this computer is made from the pull request's own
-  branch and never cut fresh from `main`. `worktree.sh tidy` clears it away
+  branch and never cut fresh from `main`. A pull request with no issue, such
+  as a records pull request, uses its own number in place of the issue's. `worktree.sh tidy` clears it away
   once the pull request closes.
 
 The main folder is never switched to another branch for a merge, and a folder
 holding uncommitted work is never used, so the person's work is never swept
-into the fold. Where the piece's own worktree holds uncommitted work, the merge
-waits, and the reply names what is unsaved there.
+into the fold. Where the folder already on that branch holds uncommitted work,
+whether the piece's own worktree or the main folder, no second worktree can
+hold the same branch: the merge waits, and the reply names what is unsaved
+there.
 
 ## How the merge is made
 

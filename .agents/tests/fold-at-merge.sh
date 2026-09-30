@@ -61,7 +61,7 @@ rs_rule "a conflict leaves the branch as it was and names the files" \
 rs_rule "origin out of reach changes nothing" '2: `origin` could not be reached'
 rs_rule "a refused push merges nothing" '3: the push was refused'
 rs_rule "an open records fold means --no-fold" \
-  'where an earlier records pull request that folded files is still open, pass `--no-fold` and say so in one line'
+  'where an earlier records pull request that folded files, other than the one being merged, is still open, pass `--no-fold` and say so in one line'
 rs_rule "so an entry is never written twice" 'so the same entry is never written twice'
 rs_rule "runs in the piece's worktree first" 'in the piece.s worktree under `\.agents/worktrees/` when it has one'
 rs_rule "then the main folder when it is on the branch and clean" \
@@ -71,6 +71,20 @@ rs_rule "otherwise a worktree made from the pull request's branch" \
 rs_rule "never cut fresh from main" 'never cut fresh from `main`'
 rs_rule "the main folder never changes branch for a merge" 'the main folder is never switched to another branch for a merge'
 rs_rule "uncommitted work never enters the fold" "the person.s work is never swept into the fold"
+rs_rule "a dirty folder already on the branch makes the merge wait" \
+  'no second worktree can hold the same branch: the merge waits, and the reply names what is unsaved there'
+rs_rule "an entry already written is never written again" \
+  'an entry `changelog\.md` already holds is never written again, which covers a stacked pull request whose base was merged by squash'
+rs_rule "a merge refused because main moved runs the step again" \
+  'where github then refuses the merge because `main` moved after the check, run the step again'
+rs_rule "exit 3 also covers local commits the pull request lacks" \
+  'or this computer holds commits on the branch that the pull request does not'
+rs_rule "a pull request with no issue uses its own number" \
+  'a pull request with no issue, such as a records pull request, uses its own number'
+rs_require_load_bearing "a squash-merged base is taken in at the merge, never rebased" \
+  "$ROOT/.agents/skills/implement/references/running-longer.md" \
+  'the stacked branch takes in `main` at its own merge, as the `section-builder` skill.s `references/merge\.md` describes'
+
 rs_guard "$MERGE" "the merge step's fold"
 
 rs_require_order "step 1 comes before step 2" "$MERGE" '^1\. On the pull request' '^2\. Fold every file'

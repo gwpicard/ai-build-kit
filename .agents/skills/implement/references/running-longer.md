@@ -285,9 +285,11 @@ stack not yet built, with the reason. A base already built stays in `to check`.
 A piece that depends on one built earlier in this run and not yet merged stacks
 on it. Its branch is cut from that piece's branch, its pull request aims at
 that branch, and the pull request says which to merge first, so the stack
-merges cleanly in order. When the base merges by squash, rebase the stacked
-branch onto `main` before its own merge; the `section-builder` skill's
-`references/merge.md` re-aims its pull request. A piece whose blocker is open and not in this run is not eligible. A
+merges cleanly in order. When the base merges by squash, the stacked branch
+takes in `main` at its own merge, as the `section-builder` skill's
+`references/merge.md` describes, never by a rebase, since that needs a force
+push. The same step re-aims its pull request, and the base's entry is not
+written twice. A piece whose blocker is open and not in this run is not eligible. A
 stacked piece whose base goes back to shaping, or is parked, is skipped with
 that reason.
 

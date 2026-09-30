@@ -1020,7 +1020,10 @@ attribution line, not the word.
   exits 1, names the file and leaves the branch as it was. An unreachable
   `origin`, a folder on no branch and one with uncommitted work exit 2 and
   change nothing. A push refused because somebody pushed meanwhile exits 3,
-  and asking again takes their commit in. A branch not on this computer is
+  and asking again takes their commit in. A commit only this computer holds
+  is never pushed by the fold, and exits 3 too. A stacked branch whose base
+  merged by squash still carries the base's file, and the fold removes it
+  without writing its entry twice. A branch not on this computer is
   opened from `origin/<branch>`, a project with no `changes/` folder gets
   nothing written, and the checkpoint route folds in a second commit.
 - `.agents/tests/agent-first-records.sh` guards the founded AGENTS.md as a

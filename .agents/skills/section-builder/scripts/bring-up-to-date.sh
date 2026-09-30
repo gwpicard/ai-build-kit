@@ -14,14 +14,16 @@
 #              pull request that folded files is still open
 #
 # In order, it:
-# 1. fetches `origin`, and starts from GitHub's copy of the branch, or from this
-#    computer's copy where that is ahead;
+# 1. fetches `origin`, and starts from GitHub's copy of the branch, which the
+#    pull request shows; it stops where this computer holds commits that copy
+#    does not;
 # 2. undoes, with `git revert`, each `Fold the changelog` commit on the branch
 #    that `main` does not hold and nothing has undone yet, so an older fold is
 #    never merged beside a newer one;
 # 3. takes in `origin/main` with a merge commit, never a rebase;
-# 4. runs the sync skill's `scripts/fold-changes.py --main origin/main`, and
-#    commits what it folded as `Fold the changelog`;
+# 4. runs the sync skill's `scripts/fold-changes.py --main origin/main`, which
+#    never writes an entry CHANGELOG.md already holds, and commits what it
+#    folded as `Fold the changelog`;
 # 5. pushes to the branch on `origin`, never with force, and moves the local
 #    branch to match.
 #
@@ -36,8 +38,8 @@
 #      conflicting file is named and the branch is as it was
 #   2  nothing changed: `origin` could not be reached, the folder is not on a
 #      pull request's branch, or it holds uncommitted work
-#   3  the push was refused, or GitHub's copy of the branch and this computer's
-#      have gone different ways; the branch is as it was and nothing merges
+#   3  the push was refused, or this computer holds commits on the branch that
+#      the pull request does not; the branch is as it was and nothing merges
 
 set -u
 
@@ -78,12 +80,12 @@ git rev-parse -q --verify "refs/remotes/origin/main^{commit}" >/dev/null ||
   stop 2 "origin has no main; nothing changed"
 local_head=$(git rev-parse HEAD)
 
+# Start from GitHub's copy, the one the pull request shows and the yes covered.
+# A commit only this computer holds was never in it, so the merge waits.
 if git merge-base --is-ancestor "$local_head" "$remote"; then
   start=$remote
-elif git merge-base --is-ancestor "$remote" "$local_head"; then
-  start=$local_head
 else
-  stop 3 "this computer's copy of $branch and GitHub's have gone different ways, so the merge waits; nothing changed"
+  stop 3 "this computer holds commits on $branch that the pull request does not, so the merge waits until they are pushed or dropped; nothing changed"
 fi
 
 # back_out <code> <message>: return to the branch as it was, and stop.
