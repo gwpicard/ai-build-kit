@@ -265,6 +265,61 @@ def flag(argv, name):
     return None
 
 
+def body_of(argv):
+    """The body given with --body, or read from --body-file, or None.
+
+    The kit writes a long body to a file and passes --body-file, or pipes it in
+    with --body-file -, far more often than it quotes one on the command line.
+    A stand-in that ignored the file stored an empty body, and a scenario that
+    reads the body afterwards failed for a reason the kit did not cause.
+    """
+    body = flag(argv, "--body")
+    if body is not None:
+        return body
+    path = flag(argv, "--body-file")
+    if path is None:
+        return None
+    if path == "-":
+        return sys.stdin.read()
+    try:
+        with open(path) as handle:
+            return handle.read()
+    except OSError:
+        sys.stderr.write("open %s: no such file or directory\n" % path)
+        sys.exit(1)
+
+
+def on_remote(branch):
+    """Whether the project's remote holds the branch. True with no remote.
+
+    GitHub refuses a pull request whose base is not a branch on the repository.
+    A stacked piece's base is another piece's branch, so a kit that opens the
+    stacked pull request before uploading the branch under it is refused here
+    as it would be there. A project with no remote cannot be asked, so it is
+    let through, as before.
+    """
+    try:
+        remote = subprocess.run(["git", "remote", "get-url", "origin"],
+                                capture_output=True, text=True)
+        if remote.returncode != 0:
+            return True
+        found = subprocess.run(["git", "ls-remote", "--exit-code", "--heads",
+                                "origin", "refs/heads/" + branch],
+                               capture_output=True, text=True)
+        return found.returncode == 0
+    except OSError:
+        return True
+
+
+def refuse_base(argv, base):
+    """Refuse a base other than main that the remote does not hold, as GitHub does."""
+    if base != "main" and not on_remote(base):
+        note("REFUSED\t%s\tbase %s is not a branch on the remote" % (" ".join(argv), base))
+        sys.stderr.write(
+            "pull request create failed: GraphQL: Base ref must be a branch (%s)\n" % base)
+        sys.exit(1)
+
+
 def flags_all(argv, name):
     out, i = [], 0
     while i < len(argv):
@@ -590,7 +645,7 @@ def main():
             issue = {
                 "number": state["next"],
                 "title": flag(argv, "--title") or "",
-                "body": flag(argv, "--body") or "",
+                "body": body_of(argv) or "",
                 "state": "open",
                 "labels": [l for value in flags_all(argv, "--label")
                            for l in value.split(",")],
@@ -614,7 +669,12 @@ def main():
             elif sub == "reopen":
                 issue["state"] = "open"
             elif sub == "view":
-                print(json.dumps(issue_public(state, issue)))
+                # The comments come with the view, so a run can read back the
+                # claim it just made, as `--json comments` does on GitHub.
+                shown = issue_public(state, issue)
+                shown["comments"] = [{"author": {"login": "replay-person"}, "body": c}
+                                     for c in issue.get("comments", [])]
+                print(json.dumps(shown))
                 save(state)
                 return
             else:
@@ -630,7 +690,11 @@ def main():
                     for name in value.split(","):
                         if name not in issue["assignees"]:
                             issue["assignees"].append(name)
-                body = flag(argv, "--body")
+                for value in flags_all(argv, "--remove-assignee"):
+                    for name in value.split(","):
+                        if name in issue["assignees"]:
+                            issue["assignees"].remove(name)
+                body = body_of(argv)
                 if body is not None:
                     issue["body"] = body
             save(state)
@@ -641,7 +705,7 @@ def main():
             issue = find(state, re.sub(r"\D", "", argv[2]) or "0")
             if issue is None:
                 unsupported(argv, "no such issue")
-            issue.setdefault("comments", []).append(flag(argv, "--body") or "")
+            issue.setdefault("comments", []).append(body_of(argv) or "")
             save(state)
             print("https://github.com/%s/issues/%s#issuecomment-%s"
                   % (state["repo"], issue["number"], len(issue["comments"])))
@@ -655,13 +719,15 @@ def main():
             # "Closes #N" does nothing yet. GitHub closes the issue when the
             # pull request merges, and closing it here told the kit a piece was
             # done while its fix sat unmerged.
-            body = flag(argv, "--body") or ""
+            body = body_of(argv) or ""
+            base = flag(argv, "--base") or "main"
+            refuse_base(argv, base)
             pr = {
                 "number": len(pulls(state)) + 1,
                 "title": flag(argv, "--title") or "",
                 "body": body,
                 "head": flag(argv, "--head") or current_branch(),
-                "base": flag(argv, "--base") or "main",
+                "base": base,
                 "state": "OPEN",
             }
             pulls(state).append(pr)
@@ -714,10 +780,18 @@ def main():
             pr = find_pr(state, argv[2])
             if pr is None:
                 unsupported(argv, "no such pull request")
-            for name, key in (("--title", "title"), ("--body", "body")):
-                value = flag(argv, name)
-                if value is not None:
-                    pr[key] = value
+            title = flag(argv, "--title")
+            if title is not None:
+                pr["title"] = title
+            body = body_of(argv)
+            if body is not None:
+                pr["body"] = body
+            # A stacked pull request is moved onto main once the piece under it
+            # has merged, as the merge rule says.
+            base = flag(argv, "--base")
+            if base is not None:
+                refuse_base(argv, base)
+                pr["base"] = base
             save(state)
             print(pr_url(state, pr))
             return
@@ -742,9 +816,24 @@ def main():
             return
 
         if sub == "list":
-            print(json.dumps([pr_fields(state, pr,
-                                        ["number", "title", "state", "headRefName"])[0]
-                              for pr in pulls(state) if pr.get("state") == "OPEN"]))
+            # --state, --base and --head filter as on GitHub, so a run can find
+            # the pull requests stacked on a piece's branch. --json picks the
+            # fields and refuses one nobody modelled, as pr view does.
+            want = (flag(argv, "--state") or "open").upper()
+            if want not in ("OPEN", "MERGED", "CLOSED", "ALL"):
+                unsupported(argv, "unmodelled pr list state")
+            base, head = flag(argv, "--base"), flag(argv, "--head")
+            chosen = [pr for pr in pulls(state)
+                      if (want == "ALL" or pr.get("state", "OPEN") == want)
+                      and (base is None or pr.get("base", "main") == base)
+                      and (head is None or pr.get("head") == head)]
+            names = [n for n in (flag(argv, "--json") or "").split(",") if n]
+            if not names:
+                names = ["number", "title", "state", "headRefName"]
+            _, unknown = pr_fields(state, {"number": 0}, names)
+            if unknown:
+                unsupported(argv, "unmodelled pr fields: %s" % ",".join(unknown))
+            print(json.dumps([pr_fields(state, pr, names)[0] for pr in chosen]))
             return
         if sub == "status":
             print("[]")
