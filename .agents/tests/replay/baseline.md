@@ -784,6 +784,19 @@ Scenario 56 is owed one run. It shapes a small piece that stores a note on a
 loan, and it measures whether the piece ends `ready` with a `## Data` section
 and a `## Readiness` section written by a session that did not shape it. The
 readiness check was written and guarded offline, and no replay has run it yet.
-The stand-in GitHub command ignores `gh issue edit --body-file`, so a run that
-writes the piece's body that way may lose it for a harness reason. Read the
-transcript before counting a missing section against the kit.
+The stand-in GitHub command ignored `gh issue edit --body-file` when this was
+written, so a run that wrote the piece's body that way lost it for a harness
+reason. It reads the file now. Read the transcript before counting a missing
+section against the kit all the same.
+
+Scenario 57 is owed one run. It runs `/implement queue` over three ready
+pieces: one to build, one that waits on it and so stacks on its branch, and one
+whose stored record has a shape nobody settled, which has to go back to
+shaping with its question. The run builds and reviews two pieces with nobody
+watching, which takes a model and tokens, and none was spent when the case was
+written. Until it runs, `replay-state.sh` holds the end state by hand. It
+builds the right end, the end where the first piece is parked after three
+attempts, and each wrong end, and proves the state check catches every wrong
+one. The stand-in GitHub command gained what a run reaches for: a pull request
+aimed at another piece's branch, a body read from a file, and the comments on
+a piece, so a claim can be read back.
