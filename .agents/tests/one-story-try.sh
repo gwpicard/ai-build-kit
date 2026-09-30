@@ -12,8 +12,7 @@
 #
 # So this check reads the story back from all four files and proves each
 # sentence load-bearing. It also searches every shipped document and skill,
-# the foundation templates included, for the old wording given as a duty, and
-# proves the search finds it on a copy with the old sentence put back.
+# the foundation templates included, for the old wording, and proves the search finds it on a copy with the old sentence put back.
 
 set -eu
 
@@ -49,6 +48,8 @@ rs_rule "trying a piece yourself is always open to you" \
   'trying a piece yourself is always open to you'
 rs_rule "one piece opts in with its line" '`waiting on you: try it` line'
 rs_rule "or the person asks to check every piece" 'ask to check every piece'
+rs_rule "a walk-through that could not see gives the person something to try" \
+  'when it could not see the screen, it says so and gives you something to try'
 rs_rule "the closing sentence is unchanged" \
   'the system automates the routine and never the judgement'
 rs_guard "$section" "WORKFLOW.md's \"What stays yours\""
@@ -79,15 +80,17 @@ rs_require "PHILOSOPHY keeps its controls sentence" \
 
 rs_reset
 rs_rule "the person's decision is the merge" \
-  'the person.s decision is the merge: the walk-through is the check before saving unless the person opted in'
+  'the person.s decision is the merge: the walk-through is the check before saving unless the person opted in or the walk-through could not see'
 rs_guard "$BUILDER" "section-builder"
 rs_require "section-builder keeps the walk-through standing in for the try" \
   "$BUILDER" 'the walk-through stands in for the person.s try before saving'
 
 # --- the old sentence, nowhere ---------------------------------------------
 
-# The old wording made a try of every result the person's duty. It is refused
-# in every document and skill the kit ships, the foundation templates included,
+# The old wording made a try of every result the person's duty. Any use of
+# "try the result" is refused, not only the duty, since a machine cannot tell
+# the two apart and a new use can say "try a piece" instead. It is refused in
+# every document and skill the kit ships, the foundation templates included,
 # so a template carrying it in future fails too.
 OLD='try(ing)? the results?( before it.s saved)?'
 
