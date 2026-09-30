@@ -106,7 +106,8 @@ itself and nothing tracked changes.
 - `flags` holds each easy-to-undo choice the builder made alone, one line each.
 - `reason` says why a piece was parked, sent back, skipped, or not merged under
   pre-approval, naming the condition it failed in
-  the `section-builder` skill's `references/merge.md`.
+  the `section-builder` skill's `references/merge.md`, such as a merge that
+  would go live.
 
 Write the state file after every step that changes a piece, before the next
 step starts, so it always says where the run stands. `progress.md`, beside it,
@@ -247,7 +248,8 @@ The report, in plain words, is one list and a merge order:
   see;
 - where `merge_preapproved` was true, which pieces were merged, and for each
   piece that was not, the merge condition it failed, in the words of
-  the `section-builder` skill's `references/merge.md`;
+  the `section-builder` skill's `references/merge.md`. A piece held back
+  because its merge would go live says so, and waits for the person or `/ship`;
 - what was not eligible, and why.
 
 The person answers with the pull requests to merge, and each merge follows the

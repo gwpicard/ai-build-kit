@@ -415,7 +415,7 @@ After the first launch, shipping gets lighter: it re-checks what changed since t
 
 ## 10. Running a plan: /implement queue
 
-Give /implement several piece numbers, or type "/implement queue" for every ready piece, and it builds them one after another without you between them. "/implement auto" is the same thing. It says the plan once: each piece in order, whether the run can take it and why not, and which pieces build on another. You approve it once, and say whether pieces that pass may be merged while you are away. Then it runs.
+Give /implement several piece numbers, or type "/implement queue" for every ready piece, and it builds them one after another without you between them. "/implement auto" is the same thing. It says the plan once: each piece in order, whether the run can take it and why not, and which pieces build on another. You approve it once, and say whether pieces that pass may be merged while you are away. A merge that would put the tool live still waits for you. Then it runs.
 
 A run decides piece by piece what it can take. A piece needs to be ready, checked by a session that did not shape it, and complete enough to build with nobody to ask. A piece in a sensitive area is taken only once your acceptance is on the record, and a run never gives one for you. A piece you asked to try yourself is built and then waits for you in to check, whatever you said about merging.
 
