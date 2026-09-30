@@ -389,6 +389,19 @@ attribution line, not the word.
   that earned the ninth command. The same rule reaches the end of a build: `/implement` and
   section-builder name a next piece only from the printout's `To build` group,
   and never from a hand reading of the issues.
+- `.agents/tests/parallel-run.sh` guards the question a run asks before it
+  builds a group's pieces at the same time. People who took on several pieces
+  built their own coordinator when the kit offered none, and the kit's rules
+  reached only as far as its brief: claims and reviews were skipped, and a
+  merge went ahead on a standing yes. So on Claude Code the run asks in fixed
+  words, with the memory warning, only when the plan holds a group of two or
+  more pieces it can take, and one at a time is the default. It holds the
+  answer's bounds, `at_once` in the state file and its survival on resume,
+  and that only one group runs at once. It holds hardest that the session
+  which started the run alone claims, writes the run state, runs each review,
+  opens each pull request and merges one at a time, while a background agent
+  only builds one piece in its own worktree, and that an agent which never
+  reports counts as a failed attempt.
 - `.agents/tests/gated-turns.sh` checks the rule that decides when a scripted
   replay turn is due: that a turn with no precondition still fires by position,
   that one with a precondition waits until the kit has said the thing it

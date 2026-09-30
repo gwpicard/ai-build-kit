@@ -66,8 +66,9 @@ never group the pieces yourself. The pieces of one group can be built at the
 same time in any order, because no two pieces in it change the same area. Two
 pieces that each pass alone can still fail together, so each still merges one
 at a time, brought up to date with `main` and checked again first.
-`/implement queue` still builds the whole plan one piece at a time, whatever
-the groups say. Say each group in one line of piece names. Where a piece's line says its Touches is
+`/implement queue` builds one piece at a time by default, whatever the groups
+say. On Claude Code it asks before the run starts whether to build a group's
+pieces at the same time, and warns that this uses more memory. Say each group in one line of piece names. Where a piece's line says its Touches is
 unknown, say that its Touches line is missing, so it goes alone until `/shape`
 writes one. A piece under `Held up` is in no group, since it is not free to
 start.
