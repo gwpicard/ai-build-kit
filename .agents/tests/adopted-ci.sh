@@ -65,6 +65,8 @@ rs_rule "job rule 3: none, so checks.yml is copied and recorded" \
   'else none\. no job of the project.s runs tests, so copy the kit.s `checks\.yml` where it is missing and record it'
 rs_rule "founding names the file and job in one line" \
   'say in one line which file and job you chose'
+rs_rule "the kit's placeholder never counts" \
+  'the kit.s own placeholder `checks\.yml`, whose `install and test` step says no tests have run, never counts'
 rs_rule "several jobs and no test command: the first is named" \
   'a workflow with several jobs and no test command recorded yet takes the second rule'
 rs_rule "the record's form" \
@@ -130,7 +132,7 @@ rs_require_load_bearing "/sync step 1 finds the last green run in it" "$SYNC" \
 rs_require_load_bearing "/sync step 6 updates the recorded job" "$SYNC" \
   'update the job the capability profile.s `project check:` line records'
 rs_require_load_bearing "/sync step 6 asks when the recorded file is gone" "$SYNC" \
-  'where the recorded file no longer exists, say that the recorded project check no longer exists and ask which workflow is the check now'
+  'where the recorded file no longer exists, or no longer has the recorded job, say that the recorded project check no longer exists and ask which workflow is the check now'
 rs_require_load_bearing "/sync edits nothing until that is answered" "$SYNC" \
   'edit nothing until that is answered'
 rs_require_load_bearing "the check floor sits in the recorded job" "$FLOOR" "$POINTER"
@@ -177,10 +179,12 @@ rs_ok "every reader gives the default rule"
 rs_reset
 rs_rule "the monthly visit runs the offer" \
   '21\. run "recording the project.s own check" below'
-rs_rule "a recorded project check hears nothing" \
-  'where the capability profile.s `project check:` line names a file, say nothing'
 rs_rule "only while checks.yml holds the placeholder" \
-  'where `\.github/workflows/checks\.yml` no longer holds the kit.s placeholder `install and test` step'
+  'where `\.github/workflows/checks\.yml` no longer holds the kit.s placeholder `install and test` step, say nothing'
+rs_rule "a line naming checks.yml is no reason to stop" \
+  'a `project check:` line that names `checks\.yml`, or no file, is no reason to stop'
+rs_rule "a line naming the other workflow leaves only the removal" \
+  'where the line already names that other workflow, the record is done, and the offer below is only the removal of the placeholder'
 rs_rule "only beside another workflow that runs tests on pull requests" \
   'where no other workflow in `\.github/workflows/` runs on `pull_request` with a `run:` line containing `test`'
 rs_rule "an earlier no stands until the workflows change" \

@@ -184,10 +184,9 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
 20. Run "Linking ignored build files into run worktrees" below. It says
     nothing when the project already has the links, has nothing to link, or
     said no to the same files before.
-21. Run "Recording the project's own check" below. It says nothing when the
-    project check is already recorded, when no placeholder sits beside CI of
-    the project's own, or when the person said no before and the workflow
-    files have not changed since.
+21. Run "Recording the project's own check" below. It says nothing when no
+    placeholder sits beside CI of the project's own, or when the person said
+    no before and the workflow files have not changed since.
 22. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
     today's date on the `last-light-pass` line, written as YYYY-MM-DD. If that
     file is missing, create it with a `founded` line holding the date
@@ -443,11 +442,14 @@ given the kit's placeholder `checks.yml` beside CI of its own that already
 runs its tests. Every pull request then shows a red check beside a working
 one. The visit offers to put that right, once.
 
-1. Where the capability profile's `Project check:` line names a file, say
-   nothing, and this step ends. Do the same where
-   `.github/workflows/checks.yml` no longer holds the kit's placeholder
-   `Install and test` step, or where no other workflow in `.github/workflows/`
-   runs on `pull_request` with a `run:` line containing `test`.
+1. Where `.github/workflows/checks.yml` no longer holds the kit's placeholder
+   `Install and test` step, say nothing, and this step ends. Do the same
+   where no other workflow in `.github/workflows/` runs on `pull_request` with
+   a `run:` line containing `test`. A `Project check:` line that names
+   `checks.yml`, or no file, is no reason to stop: an older founding wrote
+   that form beside CI of the project's own. Where the line already names
+   that other workflow, the record is done, and the offer below is only the
+   removal of the placeholder.
 2. Read the `project-check-declined` line in `.ai-build-kit-maintenance`, if
    there is one. Where no commit dated after that line's date has changed
    `.github/workflows/`, the earlier no stands: say nothing, and this step
