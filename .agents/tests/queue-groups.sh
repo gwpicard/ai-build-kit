@@ -120,13 +120,15 @@ rs_rule "an older helper with no groups is named, and /maintain refreshes it" \
 # A group once promised its pull requests could merge in any order. Two pieces
 # that each pass alone can still fail together, so a group says what can be
 # built in any order, and each piece still merges one at a time after the
-# re-check the merge step makes.
+# re-check the merge step makes. A run builds one piece at a time unless the
+# person chooses more on Claude Code, which parallel-run.sh guards in the run's
+# own rules.
 rs_rule "the groups say what can be built in any order" \
   'the pieces of one group can be built at the same time in any order'
 rs_rule "each piece in a group still merges one at a time" \
   'so each still merges one at a time'
-rs_rule "a run still builds one piece at a time" \
-  '`/implement queue` still builds the whole plan one piece at a time'
+rs_rule "a run builds one piece at a time unless the person chooses more" \
+  '`/implement queue` builds one piece at a time by default, whatever the groups say'
 
 rs_guard "$SKILL" "the /queue skill"
 
