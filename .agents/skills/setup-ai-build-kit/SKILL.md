@@ -136,15 +136,17 @@ repeating this when a resumed session already covered it in step 0.
 First run `scripts/check-tooling.sh` from this installed skill folder. It reports
 whether Git, the GitHub command line tool, and python3 are ready and signed in,
 so a missing one is caught here rather than at the later step that creates the
-issues. If the harness cannot run the script, work through
+issues. It also says what the walk-through can look with. A missing one of
+those never stops founding: pass on the install command it prints, and leave
+installing to the person. If the harness cannot run the script, work through
 references/required-tools.md by hand. When a tool is missing, guide the install
 following references/manual-setup.md before going on.
 
 Load references/capability-check.md and work through it. Record the result in
 AGENTS.md under Capability profile: harness name when known, file read/write,
 shell, Git, local save identity, online repository, online account access,
-online authentication, available test/runtime commands, browser or preview
-access, independent-review options, the reach-check engine, hook support, and
+online authentication, available test/runtime commands, the walk-through's
+eyes, independent-review options, the reach-check engine, hook support, and
 subagent support. Choose a
 fallback for anything missing. Do not make the user configure an optional
 feature before the interview; a missing capability becomes a setup task or a

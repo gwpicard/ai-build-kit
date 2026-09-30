@@ -164,8 +164,8 @@ through each other or a named boundary being crossed. There is no score to
 interpret. You can ask for the structure to be fixed before saving, or leave it
 and have that choice recorded on the piece.
 
-Before you try a piece, the kit takes out anything the change added that
-nothing needs, such as a helper only one place uses or code nothing calls. It
+Before the walk-through, or your own try when you ask for one, the kit takes out
+anything the change added that nothing needs, such as a helper only one place uses or code nothing calls. It
 only removes things or folds them into the one place that uses them, never
 reshapes the code, and runs the tests after every step. Anything that would
 need reshaping, such as a function grown hard to follow, is listed on the piece
@@ -260,9 +260,9 @@ in the way, or a done line that cannot be met, is reported to you and never
 worked round.
 
 Once the piece is built, the agent walks through the tool itself with sample
-data, the way you would, and records what it saw. Where it can take screenshots
-it keeps them in `.agents/tmp/walkthrough/<issue number>/`, which never reaches
-GitHub. Founding offers to plan that sample data, or a test account, when the
+data, the way you would, and records what it saw. It keeps every picture it
+takes in the main folder's `.agents/tmp/walkthrough/<issue number>/`, which
+never reaches GitHub, and never inside a piece's worktree. Founding offers to plan that sample data, or a test account, when the
 tool has sign-in or builds up history over weeks. The walk-through stands in
 for your try before saving, and a piece on a pull request still waits in to
 check until you merge it, or until a pre-approved run merges it, so you can try
@@ -270,6 +270,19 @@ it then. When the agent could not see the screen, it says what it could not
 check. On a pull request the piece waits for you in to check as usual. On the
 checkpoint route, which has no pull request, the agent gives you something to
 try and waits for your reply before saving.
+
+The walk-through looks at what you would see. For a web page, it takes a
+screenshot with the coding agent's own browser tool, or with Playwright where
+the project already has it. For a PDF, a document or an image, it turns each
+page into a picture and reads it, up to the first 30 pages of a long file.
+Whatever it could not look at, it names, and the piece waits in to check for
+you.
+
+Founding writes down what your computer can look with on a `Walk-through eyes:`
+line, and the tooling report prints the install command for each tool that is
+missing: Poppler for PDFs, LibreOffice for Word and other office files,
+ImageMagick for SVG drawings. To give the walk-through more eyes, run that
+command yourself, since the kit never installs them.
 
 To try one piece yourself before it is saved, put a `Waiting on you: try it`
 line on it. To try every piece, ask for that in any command, and the agent
