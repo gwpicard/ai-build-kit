@@ -82,7 +82,8 @@ rs_rule "condition: the review found nothing worth stopping for" '2\. its review
 rs_rule "condition: no flagged choice" '3\. its pull request flags no choice for the person to confirm, and names nothing the walk-through could not see'
 rs_rule "condition: no sensitive area" '4\. it touches no sensitive area named in the build-path section, accepted or not'
 rs_rule "condition: the person has not opted in to check it" '5\. the person has not opted in to check it: the piece has no `waiting on you: try it` line, and `\.ai-build-kit-maintenance` has no `check-myself\|yes` line'
-rs_rule "condition: the merge would not go live" '6\. its merge would not go live: the `goes live:` line says `through /ship`'
+# A tool that is not hosted has no live address, so its merge goes nowhere.
+rs_rule "condition: the merge would not go live" '6\. its merge would not go live: the `goes live:` line says `through /ship` or `not hosted`'
 rs_rule "an unknown route counts as going live" 'or where the route is not known, the merge would go live'
 rs_rule "a piece that fails one stays in to check, with the reason" 'it stays in `to check` for the person, and the run.s report names the condition it failed'
 rs_guard "$MERGE" "the merge step"
