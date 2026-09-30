@@ -35,7 +35,7 @@ else, or recovering after an optional automation failed to run.
 
    Two label mistakes are repaired rather than only reported, because each makes the board say something untrue and putting it right changes no decision anybody made:
 
-   - A piece carrying two state labels keeps the one what happened supports. An open pull request that closes it means `to check`, and work saved on a branch for it with no pull request means `building`. `parked` stays wherever its reason is written on the piece. Where nothing shows which, keep the state earliest in the board order, since an earlier state only asks for another look, while a later one lets a piece be built or merged on a claim nobody made. Take the others off in one step.
+   - A piece carrying two state labels keeps the one what happened supports. An open pull request that closes it means `to check`, and work saved on a branch for it with no pull request means `building`. Where one of the two is `parked`, keep `parked` whatever else shows, and never repair a pair containing it to a state that can be built. Where nothing shows which, keep the state earliest in the board order, since an earlier state only asks for another look, while a later one lets a piece be built or merged on a claim nobody made. Take the others off in one step.
    - A closed issue carrying a state other than `parked` loses that label, since a closed issue is done and carries no state.
 
    Never remove `parked` from a closed issue. That is an idea somebody left out on purpose, and the label is what keeps it out. Say what you changed, piece by piece, then refresh the printout.

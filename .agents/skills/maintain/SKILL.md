@@ -253,10 +253,13 @@ offers the move, once. It changes labels, so do it only after the clean
 checkpoint from step 2.
 
 1. Read the repository's labels with `gh label list`, and the open issues with
-   their labels. Where all six state labels exist and no open issue carries
-   `blocked`, the project is already on the states: say nothing, and this step
-   ends. That is also what a second visit finds after a yes, so it changes
-   nothing.
+   their labels. Where all six state labels exist, no open issue carries
+   `blocked`, and no open piece carries a `needs-` label without `shaping`, the
+   project is already on the states: say nothing, and this step ends. The
+   labels alone do not settle it, because a command creates a missing state
+   label the first time it needs one, so an older project soon has all six
+   while its pieces still carry the old form. That is also what a second visit
+   finds after a yes, so it changes nothing.
 2. Read the `states-declined` line in `.ai-build-kit-maintenance`, if there is
    one. Where it lists the same six states pieces.md lists today, the earlier
    no stands. Say nothing, and this step ends.
@@ -264,10 +267,14 @@ checkpoint from step 2.
    - an open piece with a `needs-` label and no `shaping` gains `shaping`;
    - an open piece with no state label gains `idea`, except a piece made of
      parts, which carries no state of its own;
-   - a `blocked` piece becomes `parked`, losing `blocked` and any `ready` or
-     `building` beside it, with its reason kept. Where no reason is written,
-     add one line saying it was labelled blocked before the states and nobody
-     recorded why;
+   - a `blocked` piece with a blocked-by link and no written reason was using
+     the old label as a hint that another piece comes first. That is a link,
+     never a state, so it loses `blocked` and keeps `ready`, or gains it where
+     it has a `## Done when` and no question, and `idea` otherwise;
+   - any other `blocked` piece becomes `parked`, losing `blocked` and any
+     `ready` or `building` beside it, with its reason kept. Where no reason is
+     written, add one line: "Labelled blocked before the piece states; reason
+     not recorded.";
    - each of the six state labels that does not exist yet is created.
 
    Closed issues are left alone, and a closed `parked` idea above all, since

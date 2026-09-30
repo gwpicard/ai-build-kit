@@ -20,19 +20,24 @@ to run instead. If none is labelled `broken`,
 ask for the symptom, as step 1 sets out. If exactly one is, name it and use it as
 the report. If more than one is, list them and ask which to take.
 
-Where the repair has an issue, claim it before step 1, the way section-builder's
-step 1 claims a piece: add `building` and take off whatever state it carried, in
-one step, `gh issue edit <number> --add-label building --remove-label <its state>`.
-Where GitHub cannot be reached, say so and do not start on it, since a repair
-nobody could claim may be claimed by somebody else. The save then moves it on as
-section-builder's step 8 says.
-
 Read masterplan.md, build-path section first. If the behaviour being asked
 for was never promised there, say so kindly and hand the request to `/shape`,
 which shapes new work; a new wish treated as a repair ends up in the wrong
 procedure. Nobody
 can misfile work by picking the wrong command; catching that is this step's
 whole job.
+
+Only once the repair is confirmed as promised behaviour, and where it has an
+issue, claim it before step 1, the way section-builder's step 1 claims a piece:
+add `building` and take off whatever state it carried, in one step,
+`gh issue edit <number> --add-label building --remove-label <its state>`,
+creating the label first if the project lacks it. Where the issue carries no
+state label, add `building` alone. Where GitHub cannot be reached, say so and do
+not start on it, since a repair nobody could claim may be claimed by somebody
+else. Where a claim was made and the request then turns out to belong to
+`/shape`, move it back to the state it had in one step, so nothing is left in
+`building` that nobody is building. The save then moves it on as
+section-builder's step 8 says.
 
 ## 1. Define the symptom
 

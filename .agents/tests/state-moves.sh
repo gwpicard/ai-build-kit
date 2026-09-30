@@ -44,6 +44,10 @@ rs_rule "a note for later is not classified or routed" 'do not classify or route
 rs_rule "it is filed as an idea in the person's words, nothing settled" \
   'file it as an issue labelled `idea`, with the person.s own words as the body and nothing settled'
 rs_rule "/shape later and /shape idea are capture too" '`/shape later` or `/shape idea`'
+rs_rule "a duplicate note is added to the existing piece as a comment" \
+  'add the person.s words to that issue as a comment and say which one'
+rs_rule "a new issue only when the person says it is different" \
+  'file a new issue only if the person says theirs is different'
 rs_rule "a routed question labels the piece shaping with its reason" \
   'label the issue `shaping` with the `needs-` label that names the route'
 rs_guard "$TRIAGE" "change-triage"
@@ -69,6 +73,8 @@ rs_rule "research says before it starts whether it needs the person" \
   'before it starts, write one line on the piece: "needs your decision: yes" or "needs your decision: no"'
 rs_rule "research needing nobody moves the piece to ready" \
   'with no, and a result that settles every question, move the piece to `ready` once it meets the bar'
+rs_rule "research that leaves a question open stays shaping with the gap" \
+  'the piece stays `shaping` with `needs-research` and the gap written on it'
 rs_rule "research needing the person hands the piece back to them" \
   'swap `needs-research` for `needs-clarification` in one step'
 rs_guard "$SHAPE" "the /shape skill"
@@ -99,6 +105,8 @@ rs_rule "opening the pull request moves it to to check" \
   '<number> --add-label "to check" --remove-label building'
 rs_rule "the checkpoint route closes the piece and takes building off" \
   'close the issue and take `building` off it in the same step'
+rs_rule "the checkpoint route is named as the one exception" \
+  'the one route where a piece closes when it is saved rather than when a pull request merges'
 rs_rule "the flagged route parks it with the condition written on it" \
   'move the piece from `building` to `parked` in one step, with the condition written on it'
 rs_rule "three failed attempts park it with the reason" \
@@ -118,6 +126,14 @@ rs_require_absent "and no longer marks it blocked" "$LONGER" 'mark it `blocked`'
 # /fix follows the same moves.
 rs_require_load_bearing "/fix claims the repair before it starts" \
   "$FIX" 'add `building` and take off whatever state it carried, in one step'
+rs_require_load_bearing "/fix claims only once the repair is confirmed as promised" \
+  "$FIX" 'only once the repair is confirmed as promised behaviour'
+rs_require_order "/fix claims after the promise check" "$FIX" \
+  'never promised there' 'the repair is confirmed as promised'
+rs_require_load_bearing "/fix moves a claim back when the request goes to /shape" \
+  "$FIX" 'move it back to the state it had in one step'
+rs_require_load_bearing "/fix adds building alone to an issue with no state" \
+  "$FIX" 'where the issue carries no state label, add `building` alone'
 rs_require_load_bearing "/fix parks the repair when the person does not carry on" \
   "$FIX" 'move the repair.s piece from `building` to `parked` in one step'
 
@@ -137,6 +153,13 @@ grep -c -- '--add-label' "$SHAPE" "$IMPLEMENT" "$BUILDER" "$FIX" \
   | grep -q ':0$' && rs_report "each of the four writes its moves as commands" no \
   || rs_report "each of the four writes its moves as commands" yes
 sed -E 's/ --remove-label ready//' "$IMPLEMENT" > "$rs_dir/implement-unpaired"
+# An older project may lack a state label until /maintain moves it. Each move
+# site points at pieces.md's rule rather than failing on the missing label.
+for site in "$SHAPE" "$IMPLEMENT" "$BUILDER" "$FIX"; do
+  rs_require_load_bearing "$(basename "$(dirname "$site")") creates a missing state label first" \
+    "$site" 'creating the label first if the project lacks it'
+done
+
 rs_report "a copy that drops a removal is caught" \
   "$([ "$(pairs_ok "$rs_dir/implement-unpaired")" = no ] && echo yes || echo no)"
 
@@ -159,6 +182,8 @@ rs_reset
 rs_rule "two states on one piece is repaired" 'a piece carrying two state labels keeps the one'
 rs_rule "the evidence decides which state stays" \
   'an open pull request that closes it means `to check`'
+rs_rule "a pair containing parked stays parked" \
+  'never repair a pair containing it to a state that can be built'
 rs_rule "with no evidence, the earliest state stays" \
   'keep the state earliest in the board order'
 rs_rule "a closed issue loses a state other than parked" \
@@ -178,6 +203,8 @@ rs_require_load_bearing "WORKFLOW.md says to check is yours" \
   "$WORKFLOW" 'moves it to to check when its pull request opens'
 rs_require_load_bearing "WORKFLOW.md says an unreachable GitHub starts nothing" \
   "$WORKFLOW" 'does not start a piece it could not claim'
+rs_require_load_bearing "WORKFLOW.md says /fix starts no repair it could not claim" \
+  "$WORKFLOW" 'does not start a repair it could not claim'
 rs_require_load_bearing "WORKFLOW.md says a note is filed as an idea" \
   "$WORKFLOW" 'as an idea in your own words'
 rs_require_absent "WORKFLOW.md no longer says a stopped piece is marked blocked" \

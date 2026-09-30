@@ -26,8 +26,10 @@ an existing rule in the masterplan?
 When the person asks only to note an idea, in plain words such as "note this
 for later" or "just file this idea", or types `/shape later` or `/shape idea`
 with it, do not classify or route it. They asked to write it down, not to have
-it shaped. Run Step 1's search, and say so if it matches an open piece or a
-parked idea. Otherwise file it as an issue labelled `idea`, with the person's
+it shaped. Run Step 1's search first. Where it matches an open piece or a
+parked idea, add the person's words to that issue as a comment and say which
+one, and file a new issue only if the person says theirs is different.
+Otherwise file it as an issue labelled `idea`, with the person's
 own words as the body and nothing settled: no `## Done when`, no subjects, and
 no route. Say in one line that it is filed as an idea and that `/shape` picks it
 up. Steps 2 to 4 wait until then.
