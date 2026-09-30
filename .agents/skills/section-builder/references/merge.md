@@ -173,8 +173,8 @@ With pre-approval, merge a piece only when all six hold:
    try it` line, and `.ai-build-kit-maintenance` has no `check-myself|yes` line;
 6. its merge would not go live: the `Goes live:` line says `through /ship` or
    `not hosted`. Where it says `on every merge`, where the recipe says a change
-   to `main` goes live, whatever the line says, or where the route is not
-   known, the merge would go live.
+   to `main` goes live, or where the route is not known, the merge would go
+   live.
 
 A piece that fails any of the six is not merged. It stays in `to check` for the
 person, and the run's report names the condition it failed. The rule for a
