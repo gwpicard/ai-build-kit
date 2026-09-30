@@ -19,7 +19,7 @@ the printout as it stands and say when it was written, because an old list a
 person can see beats no list at all.
 
 The printout has already done the sorting. A piece under `To build` marked
-`(ready)` is shaped and free to start. A piece under `Blocked` names the piece
+`(ready)` is shaped and free to start. A piece under `Held up` names the piece
 holding it up. Nothing else needs working out, and a piece with an open blocker
 is never under `To build`, so a ready piece cannot be waiting on another ready
 piece.

@@ -29,7 +29,7 @@ rs_exists "$PIECES" "$SETUP" "$WORKFLOW"
 rs_rule "exactly one state sits on an open piece" \
   'exactly one of the six sits on an open piece, never two'
 rs_rule "the six states are defined in board order" \
-  '- `idea`, [^;]*; - `shaping`, [^;]*; - `ready`, [^;]*; - `building`, [^;]*; - `to check`, [^;]*; - `parked`, '
+  '[-] `idea`, [^;]*; - `shaping`, [^;]*; - `ready`, [^;]*; - `building`, [^;]*; - `to check`, [^;]*; - `parked`, '
 rs_rule "two states on one piece is named, never guessed" \
   'two state labels on one piece is a mistake'
 rs_rule "a closed issue is done and carries no state" \
@@ -69,7 +69,7 @@ rs_guard "$PIECES" "pieces.md"
 rs_require_absent "labels are no longer made only when first needed" \
   "$PIECES" 'a label is created when it is first needed'
 rs_require_absent "blocked is no longer a label the kit defines" \
-  "$PIECES" '- `blocked`,'
+  "$PIECES" '[-] `blocked`,'
 
 # "Exactly one" is the rule a careless edit loosens rather than deletes. A copy
 # that allows two must fail the rule set, not only a copy with the line gone.

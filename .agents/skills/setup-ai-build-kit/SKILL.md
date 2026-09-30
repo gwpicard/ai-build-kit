@@ -324,11 +324,13 @@ is not yet in place, guide the person through it now, following
 references/manual-setup.md, because the pieces live as issues and there is no
 file-based substitute. A private repository keeps issues just as well as a
 public one, so a project that wants to stay private still uses one. Do this without narrating it: create the
-label set, delete the labels GitHub made by itself, copy
-templates/foundation/piece-issue.yml to `.github/ISSUE_TEMPLATE/piece.yml`, open
-one issue per piece, label each shaped piece `ready` (or the matching `needs-`
-label where it still holds an open question for `/shape` to settle), and link the
-ones that genuinely block each other using GitHub's blocked-by relationship.
+label set in references/pieces.md, the six states `idea`, `shaping`, `ready`,
+`building`, `to check` and `parked` among them,
+delete the labels GitHub made by itself, copy templates/foundation/piece-issue.yml
+to `.github/ISSUE_TEMPLATE/piece.yml`, open one issue per piece, label each shaped
+piece `ready` (or `shaping` with the matching `needs-` label where it still holds
+an open question for `/shape` to settle), and link the ones that genuinely block
+each other using GitHub's blocked-by relationship.
 Then run `sh .agents/tools/plan-refresh.sh` once, so the person has their list
 before they need it. The bootstrap placed that helper in the project, whichever
 route installed the kit.
@@ -552,7 +554,7 @@ The build path is recorded, the records exist (masterplan.md, CHANGELOG.md, and
 the pieces as issues), AGENTS.md contains the capability profile and project
 commands, the masterplan has had whatever review its build path called for or a
 changelog line saying why none ran, the initial state is saved as a local
-checkpoint, the plan is made of visible pieces each labelled `ready` or with its
-open question, one check passes, and the user has received the plain-language
+checkpoint, the plan is made of visible pieces each carrying one state, `ready` or
+`shaping` with its open question, one check passes, and the user has received the plain-language
 completion report, which ends on a clean cut naming `/implement` and `/shape`
 rather than an offer to build in this session.

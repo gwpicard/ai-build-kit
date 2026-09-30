@@ -95,10 +95,9 @@ for something the agent could go and do instead. It never carries the secret it
 asks for: say where the key goes, and the key itself stays out of every tracked
 file, as it always does.
 
-This is not `blocked`. That label already means two things, a piece safely
-stopped at a recorded condition and a piece parked after repeated failure, and a
-third meaning would make all three unreadable. A piece waiting on the person
-keeps whatever labels it had.
+This is not `parked`. On an open piece that label already covers a piece stopped at a recorded condition
+and a piece parked after three failed attempts, and a third meaning would make
+all three unreadable. A piece waiting on the person keeps whatever state it had.
 
 ## The two layers of a piece
 
@@ -144,16 +143,47 @@ Ticking every subject that fits, rather than the closest single one, stops the
 kit dropping a true fact about a piece: a checkout is `finance` and
 `external service`, and picking one would lose the evidence the other requires.
 
-Four more labels carry state that open and closed cannot:
+### States
 
+Every open piece is in exactly one state, and one label says which. The six
+states, in the order a piece moves through them:
+
+- `idea`, written down and not yet worked on;
+- `shaping`, while a question about it is being settled;
+- `ready`, when the piece is shaped and waiting to be built;
 - `building`, while somebody is working on it;
-- `blocked`, when something outside the project holds it up;
-- `parked`, on a closed issue, for an idea deliberately left out;
+- `to check`, built, with its pull request waiting for the person;
+- `parked`, stopped, with the reason written on the piece.
+
+Exactly one of the six sits on an open piece, never two. Two state labels on one
+piece is a mistake, and the printout names it under Needs attention rather than
+guessing which one is true.
+
+A closed issue is done and carries no state label. The one exception is an idea
+deliberately left out, which stays a closed issue labelled `parked` (see Parked
+ideas below).
+
+An open issue with no state label counts as `idea`, because anybody can open
+one by hand and nobody has to label it. Shape still decides, so an issue
+labelled `ready` without a `## Done when` is an idea too, and the printout also
+names it under Needs attention.
+
+An open piece is `parked` in two cases. It stopped at a recorded condition, such
+as a caution that has to happen before a sensitive area goes live, or it was
+parked after three failed attempts. Either way the reason is written on the
+piece. `parked` replaces the `blocked` label. A project founded before the
+states may still carry `blocked`, and the printout shows it as parked.
+
+Held up by another piece is never a state. It is a blocked-by link (see Status,
+owner, and order), so a ready piece waiting on another stays `ready`, and the
+printout shows it as held up.
+
+One more label sits beside the state rather than replacing it:
+
 - `broken`, when the piece is repairing something that used to work.
 
 `broken` sends the work to `/fix` rather than to `/implement`, and it sits
-alongside the subjects rather than replacing them, because a broken thing is
-still about something.
+alongside the subjects too, because a broken thing is still about something.
 
 Three more say the piece is waiting on a question, and each says who can answer
 it:
@@ -169,7 +199,9 @@ it:
   this one alone, with nobody present.
 
 So the label already says whether the person is needed, and the list shows it at
-a glance. No further label carries that.
+a glance. No further label carries that. Each one is the reason beside
+`shaping`, and only ever beside it: a `needs-` label on a piece in any other
+state is a mistake, and the printout names it under Needs attention.
 
 They cost different amounts to settle, which is why `/shape` names the cost in
 one line before it starts a sitting, so the person can say "later" and file the
@@ -185,16 +217,14 @@ the prototype produced, or what the interview agreed. Without that the label is
 the only sign the question was ever asked, and taking it off leaves a piece that
 looks the same whether the work happened or not.
 
-Anything nobody has sized starts at `needs-clarification`. The interview swaps
+A piece nobody has sized enters shaping with `needs-clarification` beside it.
+The interview swaps
 that for one of the other two once it finds what is actually in the way. All
 three mean the same thing to `/implement`: not ready, and here is why.
 
-One more is the positive counterpart to those three:
-
-- `ready`, when the piece is shaped and waiting to be built.
-
-`/shape` adds `ready` once a piece is fully shaped: it has a `## Done when` line
-and waits on no question. `/implement` swaps that label for `building` when it
+`ready` is the positive counterpart to those three. `/shape` adds `ready` once
+a piece is fully shaped: it has a `## Done when` line and waits on no question,
+so `shaping` and its reason come off as `ready` goes on. `/implement` swaps that label for `building` when it
 picks the piece up, and the merged pull request closes it.
 A piece never carries `ready` and a `needs-` label at the same time; settling
 the question is what moves it from one to the other.
@@ -208,7 +238,8 @@ take on at once: no two pieces in it are waiting on each other. Shape still
 decides too, so a piece somebody labelled `ready` without giving it a
 `## Done when` is a note, and `/queue` does not offer it either.
 
-Those fifteen are the only labels the kit owns. Any other label on an issue
+Those seventeen are the only labels the kit owns: the seven subjects, the six
+states, `broken`, and the three `needs-` reasons. Any other label on an issue
 belongs to somebody else, so the kit reads past it and never removes it.
 
 The nine labels GitHub puts on a new repository are the one exception, and only
@@ -218,15 +249,16 @@ decision: they were there before anybody arrived. `/setup-ai-build-kit` deletes 
 which ones went. After founding they are somebody's to keep, so the ordinary
 rule applies again and the kit leaves them alone.
 
-A label is created when it is first needed. Where the person's account cannot
-create one, because they are a collaborator without write access, the work
+Founding creates the kit's labels at the start, the six states among them, so a
+piece can carry its state from the day it is opened. Where the person's account
+cannot create one, because they are a collaborator without write access, the work
 carries on without the label and the agent says which one is missing. A piece
 that cannot be labelled is still a piece.
 
 ## Status, owner, and order
 
-Open and closed already mean "to build" and "built". Do not add labels that
-repeat them.
+Closed already means done, so no label repeats it. An open piece carries one of
+the six states above, and nothing else says where it stands.
 
 The assignee is who is building it. This works the same whether one person or
 five are on the project, so nothing changes on the day a second person arrives.
@@ -268,12 +300,13 @@ Anybody can open an issue, from a phone, in half a sentence. That is a request
 rather than a piece, and it cannot be built or proved as it stands.
 
 Shape is what decides, not who wrote it or whether anyone remembered to mark it.
-An issue with no `## Done when` has not been sized. Label it
-`needs-clarification` the first time you see one, so somebody reading the list on
-GitHub can tell which entries are still notes. The label is there for people; the
-agent goes by shape, so an unlabelled note is still a note.
+An issue with no `## Done when` has not been sized. It is an idea, and where it
+carries no state label, label it `idea` the first time you see it, so somebody
+reading the list on GitHub can tell which entries are still notes. The label is
+there for people; the agent goes by shape, so an unlabelled note is still a note.
 
-If the interview finds that talking will not settle it, swap the label for the
+Shaping it makes it `shaping`, with `needs-clarification` beside it. If the
+interview finds that talking will not settle it, swap that reason for the
 `needs-` label that says why (see Labels above), and say which you moved it to
 and why, because a label change nobody explained reads as the agent losing track.
 
@@ -302,7 +335,7 @@ the form it expected.
 | Assigns somebody else | `/implement` skips it and says who has it, rather than quietly taking it |
 | Adds `building` | Treats the piece as under way and leaves it alone |
 | Closes an issue by hand | It stays closed. `/sync` may say that no changelog line matches it, and ask whether it was done or dropped |
-| Reopens a closed issue | Treats it as work again, and takes off a `parked` label, because reopening is the decision to unpark it |
+| Reopens a closed issue | Treats it as work again, and takes off a `parked` label, because reopening is the decision to unpark it. With no state left, it counts as an idea |
 | Edits the body so `## Done when` is gone | Treats it as a request rather than a piece, and refines it before building |
 | Adds labels of their own | Leaves them alone |
 | Puts two subject labels on one piece | Takes both, and satisfies what each one demands |
@@ -333,13 +366,24 @@ by hand instead. The printout is what keeps a piece with an open blocker out of
 `To build`, and a hand reading once named a blocked piece as the next one to
 build.
 
+The printout reads the states as the columns of a board. It prints, in this
+order: Needs attention, Broken, then the states in the order idea, shaping,
+ready, building, to check and parked, and last Made of parts. Within ready, the
+pieces free to start are headed `To build`, and the ones waiting on another
+piece are headed `Held up`, each naming the piece holding it. Needs attention
+lists a piece carrying two states, a `needs-` label without `shaping`, and a
+`ready` piece with no `## Done when`, each once, with the labels named. A parent
+with parts carries no state of its own and prints under Made of parts. A closed
+issue never prints.
+
 When a command names what can be built next, it names a piece under `To build`
 marked `(ready)` in a printout it has just refreshed, and nothing else. Where
 that group holds no such piece, say that nothing is ready to build now and what
 the rest are waiting on, and name no piece as next.
 
 It carries the time it was written, which is what makes it safe when GitHub is
-unreachable. The agent can say "here is your list as of 18:40, and I cannot
+unreachable. A refresh that cannot reach GitHub leaves the last printout as it
+was and says when that one was written. The agent can say "here is your list as of 18:40, and I cannot
 reach GitHub to confirm it is current" rather than leaving somebody with
 nothing. Work that would change the plan waits until GitHub is back, because
 the agent will not update issues it cannot see. The piece already in hand
