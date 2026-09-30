@@ -45,11 +45,13 @@ that unlocks the most first and let the rest follow it.
 Piece names, never issue numbers. The person cannot follow a number, and the
 printout carries the name of the blocking piece already.
 
-Where a piece is waiting on a question rather than on another piece, say which of
-the three it needs and leave it out of both groups. It is not ready and it is not
-blocked by work; it is waiting on somebody. The same goes for a piece with a
+Where a piece is waiting on a question rather than on another piece, say which
+of the three it needs and leave it out of both groups. It is not ready and it is
+not blocked by work; it is waiting on somebody. The same goes for a piece with a
 `Waiting on you` step: name it as the person's own to do, and never ask for a
-key, a password, or a token in a message.
+key, a password, or a token in a message. A `Waiting on you: try it` line alone
+does not keep a piece out of the groups: the piece is buildable, and it stops at
+`to check` for the person's try.
 
 A piece under `Building` or `To check` is in neither group. The first is already
 claimed, and the second is built and waiting for the person to try it or merge

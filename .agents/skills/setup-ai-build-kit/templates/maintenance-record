@@ -1,9 +1,9 @@
 # AI Build Kit check-up dates. UTC, written as YYYY-MM-DD. start writes founded,
 # and a founding-menu line naming the recipes on the menu it showed; maintain
 # writes the two pass lines, and a recipe-move-declined line when the person
-# turns down a move onto a recipe. A check-myself: yes line, written when the
-# person asks to try every piece before it is saved, is read by section-builder.
-# Nothing else edits this file.
+# turns down a move onto a recipe. Any command writes a check-myself|yes line
+# when the person asks to try every piece before it is saved, and takes it out
+# when they ask to stop; section-builder reads it. Nothing else edits this file.
 founded|
 last-light-pass|
 last-full-pass|

@@ -250,9 +250,10 @@ checks a colour change needs, and the full check on the pull request runs the
 rest.
 
 The agent changes an existing test only when the piece names it and says why. A
-small script lists any other test that changed, and that test is put back
-before the piece is saved. A test in the way, or a done line that cannot be met,
-is reported to you and never worked round.
+small script lists any other test that changed, and any check that changed after
+it was first saved, and each one is put back before the piece is saved. A test
+in the way, or a done line that cannot be met, is reported to you and never
+worked round.
 
 Once the piece is built, the agent walks through the tool itself with sample
 data, the way you would, and records what it saw. Where it can take screenshots
@@ -261,14 +262,19 @@ GitHub. Founding offers to plan that sample data, or a test account, when the
 tool has sign-in or builds up history over weeks. The walk-through stands in
 for your try before saving, and a piece on a pull request still waits in to
 check until you merge it, so you can try it then. When the agent could not see
-the screen, it says what it could not check, and the piece waits for you in to
-check even on the checkpoint route.
+the screen, it says what it could not check. On a pull request the piece waits
+for you in to check as usual. On the checkpoint route, which has no pull
+request, the agent gives you something to try and waits for your reply before
+saving.
 
 To try one piece yourself before it is saved, put a `Waiting on you: try it`
-line on it. To try every piece, ask for a `check-myself: yes` line in
-`.ai-build-kit-maintenance`. You then get one address, which the agent has
+line on it. To try every piece, ask for that in any command, and the agent
+writes a `check-myself|yes` line in `.ai-build-kit-maintenance`. Ask again to
+stop, and it takes the line out. You then get one address, which the agent has
 checked answers, and up to three numbered things to try there, and nothing is
-saved until you reply.
+saved until you reply. When nobody is there, as in an unattended run, the piece
+goes to to check with a pull request saying it waits for your try before it is
+merged.
 
 On Build with care, /implement can offer to break the changed code on purpose
 to check whether its tests notice. /fix offers the same check for the test
