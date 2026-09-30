@@ -57,7 +57,8 @@ Secrets and Confidential files rules still apply to anything read or reported.
 A step that needs a secret reads where it lives from the masterplan first, as
 the Secrets rule says, and asks once when that is unknown.
 
-Before ranking causes, read `CHANGELOG.md` and closed pieces for the same area.
+Before ranking causes, read `CHANGELOG.md` and closed pieces for the same area,
+with the entries in `changes/` not yet folded into it.
 A repair already tried and failed is ruled out or named as a repeat; a cause
 already established ranks first. When that history changes the ranking, say one
 line: "This was tried on <date> and did not hold, so it is ruled out." The
@@ -135,9 +136,9 @@ Name every temporary log and harness added during the repair, remove each one,
 then run the regression evidence without them. On Build and run it and Build
 with care, run the trim in the `section-builder` skill's `references/trim.md`
 on the repair, so the repair keeps only what the fix needed. Confirm the
-original symptom is gone, record the cause in the changelog in plain language,
-update the other records, and use section-builder's save and review route for
-the change itself.
+original symptom is gone, write the cause in plain language into the repair's
+file in `changes/`, as section-builder's step 9 describes, update the other
+records, and use section-builder's save and review route for the change itself.
 The report says which temporary items were removed and that the evidence still
 passed.
 

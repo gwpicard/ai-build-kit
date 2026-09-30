@@ -399,8 +399,9 @@ Pull-request route: update the records, commit, push, open a pull request
 titled after the piece with a plain-language summary, and run the project
 checks. The project's first upload waits for the yes in step 1. Where the
 piece is an issue, write `Closes #<number>` in the pull request body, so
-merging it closes the piece rather than leaving somebody to remember. When the
-pull request opens, move the piece from `building` to `to check` in the same
+merging it closes the piece rather than leaving somebody to remember. Once it
+is open, write the piece's changelog file, as step 9 describes, and push it.
+When the pull request opens, move the piece from `building` to `to check` in the same
 step, `gh issue edit <number> --add-label "to check" --remove-label building`,
 since it now waits for the person to try it or merge it. Never present it as ready until the check is green; if it goes red,
 say so plainly, pull the failing output yourself, fix through the normal
@@ -430,7 +431,7 @@ is recorded.
 
 ## 9. Sync the records
 
-Normal completion updates: the piece, a changelog line, the masterplan through
+Normal completion updates: the piece, its changelog file, the masterplan through
 the piece's recorded change, and AGENTS.md only when a durable operating
 convention changed. Where the piece added, removed, or changed something outside
 the tool that it reaches, update the masterplan's connections picture too, and
@@ -448,11 +449,28 @@ not, and name only a piece under its `To build` group marked `(ready)`. Where
 there is none, say nothing is ready to build now and name no piece. Never work
 the next piece out from the issue list by hand.
 
-Write the changelog line from the piece's own `So that` and `Done when`, in
-plain language, dated. Not from its title, and not from the pull request. A
-changelog assembled out of titles reads like a list of tasks, and this record
-exists so somebody who has not read the code understands what happened to their
-project six months later.
+The piece's changelog entry goes into its own file,
+`changes/<issue number>-<short name>.md`, never into `CHANGELOG.md`. Two pieces
+built at the same time would both add a line at the top of that one file, and
+every merge after the first would conflict there. `/sync` and `/ship` fold the
+files into `CHANGELOG.md` later. Create the `changes/` folder when the project
+has none; an older project gets it from its first piece. The issue number keeps
+two pieces with the same short name apart. Where the work has no issue, use the
+pull request's number instead.
+
+The file holds one or two sentences on what changed for the person, then the
+pull request's link on its own line. Write it after the pull request opens, as
+a second commit on the same branch, so it can carry the link. One file per
+piece: a later commit or review round rewrites that file and never adds another.
+On the checkpoint route there is no pull request, so the file names the issue
+instead and goes into the checkpoint commit. The file carries no date, because
+the fold dates it by the day it reached `main`.
+
+Write those sentences from the piece's own `So that` and `Done when`, in plain
+language. Not from its title, and not from the pull request. A changelog
+assembled out of titles reads like a list of tasks, and this record exists so
+somebody who has not read the code understands what happened to their project
+six months later.
 
 ## Excuses that don't hold
 

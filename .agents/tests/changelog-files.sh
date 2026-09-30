@@ -91,7 +91,7 @@ rs_require "/sync still appends the lines the work missed" "$SYNC" 'append any c
 # --- the records name both places ---------------------------------------------
 
 rs_require_load_bearing "the founded AGENTS.md names the folder" "$AGENTS" 'its own file in `changes/`'
-rs_require_load_bearing "the founded AGENTS.md says the fold gathers it" "$AGENTS" '/sync or /ship folds? (them|the files) into `changelog\.md`'
+rs_require_load_bearing "the founded AGENTS.md says the fold gathers it" "$AGENTS" 'which /sync or /ship folds into `changelog\.md`'
 rs_require_load_bearing "the founded README names the folder" "$README" '`changes/`'
 rs_require_load_bearing "the changelog template says where new entries wait" "$TEMPLATE" '`changes/`'
 rs_require_load_bearing "WORKFLOW names the folder" "$WORKFLOW" 'its own small file in `changes/`'
@@ -155,14 +155,17 @@ rs_ok "the control: two entries added at the top of CHANGELOG.md conflict"
 gitc switch -q -c piece-12 main
 mkdir -p changes
 printf 'Signing in now remembers you for a week.\n\nhttps://example.invalid/pull/31\n' > changes/12-sign-in.md
+git add -A
 at 2026-07-03 commit -q -m "piece 12"
 gitc switch -q -c piece-15 main
 mkdir -p changes
 printf 'Signing in with a wrong password now says which part was wrong.\n\nhttps://example.invalid/pull/33\n' > changes/15-sign-in.md
+git add -A
 at 2026-07-03 commit -q -m "piece 15"
 gitc switch -q -c piece-20 main
 mkdir -p changes
 printf 'The export includes the date column.\n\nhttps://example.invalid/pull/40\n' > changes/20-export.md
+git add -A
 at 2026-07-03 commit -q -m "piece 20, never merged"
 
 gitc switch -q main
