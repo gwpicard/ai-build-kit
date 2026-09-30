@@ -16,8 +16,8 @@ On Claude Code, each piece in a run is built in its own worktree, a second
 working copy of the project on the piece's branch, as "Each piece in its own
 worktree" below says. The main folder, the project folder the run started in,
 stays on the branch it was on: a run never switches the main folder to a
-piece's branch. On any other coding agent, or where Git is older than 2.5 and
-has no worktrees, a run works in one checkout, one piece after another, in the
+piece's branch. On any other coding agent, or where Git is older than 2.17,
+the first with `git worktree remove`, a run works in one checkout, one piece after another, in the
 way a person would run them by hand.
 
 Where the coding agent can start a session that did not build the piece, use
@@ -164,15 +164,18 @@ each step it names.
 - **The parts of one parent** share the parent's worktree, since one branch can
   be checked out in only one place.
 - **The checkpoint route** gets no worktree. Its commit goes on `main` in the
-  main folder, as section-builder's checkpoint route says, since `main` is
-  checked out there.
+  main folder, as section-builder's checkpoint route says, so the main folder
+  must be on `main`. Where it is on another branch, the piece stops with that
+  reason, since a run never switches the main folder.
 - **The `.env`.** The worktree's `.env` is a link to the main folder's `.env`
-  rather than a copy, so each secret stays in one file. Each other file at the top of
-  the main folder whose name starts with `.env.` and that git ignores, such as
-  `.env.local`, is linked the same way. With no `.env` in the main folder,
-  nothing is linked. Where the link cannot be made on this system, the piece
+  rather than a copy, so each secret stays in one file. Each other file at the
+  top of the main folder whose name starts with `.env.` and that git ignores,
+  such as `.env.local`, is linked the same way. With no `.env` in the main
+  folder, nothing is linked, and a `.env` found only in a subfolder is named
+  rather than linked. Where the link cannot be made on this system, the piece
   runs without secrets: say so once, and flag each part of it that needs a
-  key. Never copy the file instead.
+  key. Never copy the file instead. Where a copy already sits in the
+  worktree, the script names it and leaves it, and the piece is flagged.
 - **Its dependencies.** Before the start ritual, install them inside the
   worktree with the install command AGENTS.md's stack section records. Where
   it records none, use the install step of the project check in
@@ -181,8 +184,8 @@ each step it names.
 - **Its port.** A dev server started for the piece listens on a free port.
   `worktree.sh port <issue number>` prints one nothing else is listening on.
   Record it as `port` in the run state, start the server on it, and name that
-  address in the walk-through and the hand-over. Stop the server once the
-  piece's pull request is open.
+  address in the walk-through and the hand-over. The server keeps running
+  until the hand-over is given, and stops when the piece's pull request opens.
 - **A path already there.** Where the worktree's path exists from an earlier
   run, `open` reuses it only when it is on the same branch and holds no
   unsaved work. Otherwise it names the path and the reason, and the run skips
@@ -196,7 +199,10 @@ each step it names.
   so a new session opened in the project resumes from them.
 
 A worktree holds no unsaved work when it has no uncommitted change, counting a
-new file git does not ignore, and no commit that only this computer holds.
+new file git does not ignore, and no commit that only this computer holds. A
+file git ignores counts as unsaved too when it is a real file rather than a
+link and sits outside a dependency or build folder, such as `node_modules`,
+`.next`, `dist` or `build`, since a note or a copied key can live there.
 `worktree.sh unsaved <path>` says which, if any.
 
 ### Clearing a worktree away
@@ -375,10 +381,11 @@ every piece in a final state before the report:
   built, push the branch and park it with the reason, as a failed piece is
   parked;
 - on Claude Code, remove the worktree this run opened for each piece it
-  parked, sent back to shaping or skipped, with `worktree.sh remove <path>`.
-  Its branch is pushed first, or holds nothing new. The script keeps a
-  worktree holding unsaved work, and the report names it. A piece in
-  `to check` keeps its worktree until its pull request closes.
+  parked, sent back to shaping or skipped, with `worktree.sh remove <path>`,
+  only when nothing in it is unsaved, as defined above. Its branch is pushed
+  first, or holds nothing new. A worktree still holding unsaved work is kept,
+  and the report names it with what is unsaved. A piece in `to check` keeps
+  its worktree until its pull request closes.
 
 Where `merge_preapproved` is true, sweep the pieces in `to check` before the
 report, bases first. Merge each one whose project check is now green and that
@@ -392,8 +399,10 @@ The report, in plain words, is one list and a merge order:
 - each piece with its pull request and its state, in the merge order, bases
   before the pieces stacked on them;
 - under each piece, its flagged choices, and what the walk-through could not
-  see. Where a dev server ran for it, give its worktree and the address on
-  its recorded port, so the person can start it there and try it;
+  see. Where a dev server ran for it, the server has stopped, so say how to
+  start it again rather than give an address: in its worktree, run the install
+  and run commands AGENTS.md records, on the port `worktree.sh port <issue
+  number>` gives;
 - where `merge_preapproved` was true, which pieces were merged, and for each
   piece that was not, the merge condition it failed, in the words of
   the `section-builder` skill's `references/merge.md`. A piece held back

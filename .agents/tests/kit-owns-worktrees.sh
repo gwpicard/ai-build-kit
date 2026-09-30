@@ -44,7 +44,7 @@ rs_rule "on Claude Code each piece in a run has its own worktree" \
 rs_rule "a run never switches the main folder's branch" \
   'a run never switches the main folder to a piece.s branch'
 rs_rule "other coding agents keep one checkout" \
-  'on any other coding agent, or where git is older than 2\.5 and has no worktrees, a run works in one checkout'
+  'on any other coding agent, or where git is older than 2\.17, the first with `git worktree remove`, a run works in one checkout'
 rs_rule "cutting a worktree checks nothing out in the main folder" \
   'nothing here checks out a branch in the main folder'
 
@@ -81,8 +81,20 @@ rs_rule "the walk-through and hand-over name the address" \
   'name that address in the walk-through and the hand-over'
 rs_rule "the state file carries the worktree" '"worktree": "\.agents/worktrees/12-invoice-list"'
 rs_rule "the state file carries the port" '"port": 4012'
-rs_rule "the report gives the worktree and the port" \
-  'give its worktree and the address on its recorded port'
+rs_rule "the report says how to start a stopped server again" \
+  'say how to start it again rather than give an address'
+rs_rule "the server runs until the hand-over and stops at the pull request" \
+  'the server keeps running until the hand-over is given, and stops when the piece.s pull request opens'
+rs_rule "the checkpoint route needs the main folder on main" \
+  'where it is on another branch, the piece stops with that reason'
+rs_rule "an ignored real file is unsaved" \
+  'a file git ignores counts as unsaved too when it is a real file rather than a link and sits outside a dependency or build folder'
+rs_rule "a .env only in a subfolder is named" \
+  'a `\.env` found only in a subfolder is named rather than linked'
+rs_rule "a copy already there is named and flagged" \
+  'where a copy already sits in the worktree, the script names it and leaves it, and the piece is flagged'
+rs_rule "the end of a run keeps a worktree holding unsaved work" \
+  'a worktree still holding unsaved work is kept, and the report names it with what is unsaved'
 
 # The cases that are not the normal one.
 rs_rule "an existing path is reused only on the same branch with nothing unsaved" \
@@ -172,17 +184,23 @@ rs_require_load_bearing "/maintain never forces a removal" "$MAINTAIN" \
   'it uses `git worktree remove` and never forces it'
 rs_require_load_bearing "/maintain keeps a worktree holding unsaved work" "$MAINTAIN" \
   'never remove a worktree that holds unsaved work'
+rs_require_load_bearing "/maintain offers git worktree prune on a yes" "$MAINTAIN" \
+  'offer to run `git worktree prune`, which clears only that record\. run it on a yes'
+rs_require_load_bearing "/maintain lists a worktree on no branch" "$MAINTAIN" \
+  'or that is on no branch, and that no unfinished run is still building'
 rs_require_load_bearing "/maintain never removes a branch here" "$MAINTAIN" \
   'never remove a branch here'
 
 # Founding: the ignore line, the install command, and the git version.
 rs_require "the foundation .gitignore ignores the worktrees" "$IGNORE" '\.agents/worktrees/'
+rs_require_load_bearing "a run's worktrees do not carry the confidential folder" "$SETUP" \
+  'the worktrees the kit opens for a run do not carry that folder, so a piece that needs those files is built with the person present'
 rs_require_load_bearing "founding records the install command" "$SETUP" \
   'name the install command among them'
 rs_require "the stack section asks for the install command" "$TEMPLATE" \
   'then install, run, test, type check and lint commands'
 rs_require_load_bearing "the tooling report names an older Git" "$TOOLING" \
-  'older than 2\.5: a run cannot give each piece its own worktree'
+  'older than 2\.17: a run cannot give each piece its own worktree'
 
 # Forced removal stays off limits.
 rs_require_load_bearing "the blocked commands refuse a forced worktree removal" "$BLOCKED" \
