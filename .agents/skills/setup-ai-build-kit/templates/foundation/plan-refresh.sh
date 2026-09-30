@@ -273,7 +273,7 @@ render("Shaping", columns["shaping"], held_note)
 render("To build", columns["ready"], lambda i: "")
 render("Held up", held_up, held_note)
 render("Building", columns["building"], held_note)
-render("To check", columns["to check"], lambda i: "")
+render("To check", columns["to check"], held_note)
 render("Parked", columns["parked"], held_note)
 render("Made of parts", parents,
        lambda i: "(%d of %d parts done, build the parts)" % (sub_summary(i)[1], sub_summary(i)[0]))
