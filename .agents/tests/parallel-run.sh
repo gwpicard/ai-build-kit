@@ -84,8 +84,16 @@ rs_rule "each agent is given the number, worktree, port and run name" \
   'it is given the piece.s number, its worktree path, its port and the run name'
 rs_rule "each agent does steps 3 to 6 in its worktree" \
   'it loads section-builder and does steps 3 to 6 of "for each piece" inside its worktree'
-rs_rule "each agent pushes its branch and reports back" \
-  'pushes its branch and reports back'
+rs_rule "each agent commits and reports back" \
+  'it commits its work on the piece.s branch and reports back'
+# A pushing agent would make a first upload nobody was asked about, and push a
+# checkpoint-route piece that must stay on this computer.
+rs_rule "a background agent never pushes" \
+  'it never pushes, since a first upload waits for the person and the checkpoint route stays on this computer'
+rs_rule "the groups are taken in the plan's order" \
+  'the groups are taken in the plan.s order'
+rs_rule "a smoke failure on main starts no new agent" \
+  'start no new agent, wait for the ones still building to report'
 rs_rule "a background agent never reviews a piece" \
   'it never reviews any piece'
 rs_rule "the coordinating session runs each review" \
