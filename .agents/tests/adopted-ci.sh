@@ -146,10 +146,11 @@ rs_require_load_bearing "the index move respects a no to the kit's steps" "$rs_d
   'where that line ends `; kit steps not added`'
 
 # No reader names checks.yml or project-check as the only place. The default
-# rule and the template's own path are the two ways it may still appear.
+# rule, the template's own path and the name of the reference that owns the
+# record are the ways either may still appear.
 DEFAULT='\(`\.github/workflows/checks\.yml`, job `project-check`, where that line names no file\)'
 bare_names() {
-  rs_fold "$1" | sed -E "s@$DEFAULT@@g; s@templates/foundation/checks\.yml@@g" |
+  rs_fold "$1" | sed -E "s@$DEFAULT@@g; s@templates/foundation/checks\.yml@@g; s@project-check\.md@@g" |
     grep -oE 'checks\.yml|project-check' || true
 }
 for reader in "$SYNC" "$FLOOR" "$BOUNDARY" "$LONGER" "$rs_dir/index-move"; do

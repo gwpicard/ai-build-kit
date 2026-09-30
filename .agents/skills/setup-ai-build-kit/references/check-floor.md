@@ -2,7 +2,9 @@
 
 Every founded project gets its language's own mechanical checks on the first
 day: a type check and a linter, wherever the language has them. They sit in
-`jobs.project-check` beside install and test, so they turn the same tick red.
+the job the capability profile's `Project check:` line records
+(`.github/workflows/checks.yml`, job `project-check`, where that line names no
+file), beside install and test, so they turn the same tick red.
 The person meets no new idea. Green still means the checks that exist really
 passed, and red still means don't merge and tell /fix.
 
@@ -58,7 +60,9 @@ copies out. It changes no rule.
 ## Wiring
 
 Put each command in its own named step, `Type check` and `Lint`, after install
-and before test, so a red tick says which one failed. Write the same commands
+and before test, so a red tick says which one failed. In a job of the
+project's own, they come with the kit's steps `project-check.md` offers, go in
+only on a yes, and sit at the end of its steps. Write the same commands
 in AGENTS.md's stack section, so the agent can run them locally before it hands
 work over.
 

@@ -148,7 +148,7 @@ bootstrap "$P"
 cmp -s "$TEMPLATE" "$P/.github/workflows/checks.yml" || \
   fail "a pull request workflow that runs no tests stopped checks.yml being copied"
 ok "a pull request workflow that runs no tests is not a project check"
-grep -q 'labeller' "$P/.github/workflows/labeller.yml" || \
+grep -q 'labelled' "$P/.github/workflows/labeller.yml" || \
   fail "the labeller was changed"
 ok "and the project's workflows stay as they are"
 

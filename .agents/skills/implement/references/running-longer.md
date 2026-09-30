@@ -198,9 +198,10 @@ each step it names.
   work, and removing the worktree leaves the main folder's file in place.
 - **Its dependencies.** Before the start ritual, install them inside the
   worktree with the install command AGENTS.md's stack section records. Where
-  it records none, use the install step of the project check in
-  `.github/workflows/checks.yml`. Where neither has one, there is nothing to
-  install.
+  it records none, use the install step of the project check, in the job
+  the capability profile's `Project check:` line records
+  (`.github/workflows/checks.yml`, job `project-check`, where that line names
+  no file). Where neither has one, there is nothing to install.
 - **Its port.** A dev server started for the piece listens on a free port.
   `worktree.sh port <issue number>` prints one nothing else is listening on.
   Record it as `port` in the run state, start the server on it, and name that

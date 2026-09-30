@@ -15,7 +15,9 @@ Check:
 8. Online authentication works, when uploads, pull requests, or online checks
    are required.
 9. The project can be started or its runtime can be installed.
-10. The test or smoke-check command can be discovered or created.
+10. The test or smoke-check command can be discovered or created. Record the
+    project check as the capability profile's `Project check:` line, as
+    `project-check.md` says.
 11. A browser or preview can be reached, when behaviour needs visual checking.
 12. An independent-review route exists: subagent, separate session, or a
     user-opened clean chat.

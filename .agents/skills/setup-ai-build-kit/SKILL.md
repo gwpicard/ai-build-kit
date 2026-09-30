@@ -105,9 +105,10 @@ there.
 Read the repository's current state before doing anything else. Check whether
 masterplan.md and CHANGELOG.md already exist, whether the project's pieces
 exist as issues, and whether any of them look complete or
-half-written. Check for unfinished setup: a placeholder still in
-`.github/workflows/checks.yml`, an uncommitted change, an open question left
-in the changelog. Say plainly where the process is resuming from. Never
+half-written. Check for unfinished setup: a placeholder still in the file the
+capability profile's `Project check:` line records, which is
+`.github/workflows/checks.yml` only where that is the file recorded or no line
+is written yet, an uncommitted change, an open question left in the changelog. Say plainly where the process is resuming from. Never
 overwrite an existing record without saying so and getting agreement first.
 
 Look for `.agents/tmp/setup-notes.md` in that read. It holds the answers agreed
@@ -519,29 +520,34 @@ own. Write the paths the person confirms to a `worktree-links|<path> ; <path>`
 line in `.ai-build-kit-maintenance`. Where founding ends with no answer, write
 no line: `/maintain` offers the question again.
 
-Wire the project check according to the build path. If
-`.github/workflows/checks.yml` is missing, copy it from
-`templates/foundation/checks.yml`. Explore privately needs a
-local test or smoke command, and the remote pull-request check stays
-optional; Build and run it, and Build with care, both need the remote check
-working before any shared or live behavioural work.
+Wire the project check according to the build path. Where the bootstrap
+script named a workflow of the project's own that already runs its tests on
+pull requests, or `.github/workflows/` holds one, load
+`references/project-check.md`: it chooses the job, records it, and offers the
+kit's steps once. Otherwise, if `.github/workflows/checks.yml` is missing, copy
+it from `templates/foundation/checks.yml`, and record `Project check:
+.github/workflows/checks.yml, job project-check` in the capability profile.
+Explore privately needs a local test or smoke command, and the remote
+pull-request check stays optional; Build and run it, and Build with care, both
+need the remote check working before any shared or live behavioural work.
 
-Configure only `jobs.project-check`.
+Configure only the job the `Project check:` line records.
 
-Inside that job, replace the placeholder `Install and test` commands with the
-project's real install and check commands. Load `references/check-floor.md`:
-those commands include a type check and a linter wherever the project's
+In the kit's own `checks.yml`, replace the placeholder `Install and test`
+commands with the project's real install and check commands. A job of the
+project's own already runs its real commands, so leave them as they are.
+Load `references/check-floor.md`: those commands include a type check and a linter wherever the project's
 language has them, and a language without one is recorded as having none.
 On Build with care, where an area in the map names a boundary, load
 `references/boundary-rules.md` and offer once to have the check hold it.
 
 An older project may still carry the legacy `source-kit-validation` job and
 its repository conditions. Leave that job and its conditions unchanged. Edit
-only `jobs.project-check` in either layout.
+only the recorded job in either layout.
 
 Do not replace the entire workflow file from memory. Edit only the
-placeholder step unless the project genuinely requires a broader workflow
-change.
+placeholder step, or add the steps `references/project-check.md` offers, unless
+the project genuinely requires a broader workflow change.
 
 Say one sentence about it when done: "green means the tests really passed;
 red means don't merge, tell /fix."
