@@ -76,9 +76,11 @@ Each piece is labelled with what it is about. The labels are not decoration: the
 
 A piece often carries two, because a checkout is finance and an outside service at once. More labels means more proof and a more careful save.
 
-Four labels say where a piece stands instead: `building` when somebody is on it, `blocked` when something outside the project holds it up, `parked` on something you decided against, and `broken` for a repair, which sends it to `/fix`.
+Every open piece is in exactly one state, and a label says which: `idea` when it is only written down, `shaping` while a question about it is being settled, `ready` when it can be built, `building` while somebody is on it, `to check` when its pull request is waiting for you, and `parked` when it has stopped, with the reason written on it. An issue you open with no label counts as an idea. A closed issue is done, except an idea you decided against, which stays closed and labelled `parked`.
 
-Three more say it is waiting on a question rather than on a person: `needs-clarification` (talking it through settles it), `needs-prototype` (a throwaway is needed first to see what it should look like), and `needs-research` (a fact from outside the project is needed). Anything you jot down starts at `needs-clarification`; `/shape` settles it and marks the piece `ready`, and `/implement` builds only ready pieces. What settled it is written onto the piece before the label changes, so a month later you can see what was decided rather than only that something was.
+A piece waiting on another piece keeps its state and is linked to it. `plan.local.md` prints the states as the columns of a board, after anything that needs attention, such as a piece carrying two states, and anything broken. `broken` sits beside the state on a repair, and sends it to `/fix`.
+
+Three more labels sit beside `shaping` and say what the question needs: `needs-clarification` (talking it through settles it), `needs-prototype` (a throwaway is needed first to see what it should look like), and `needs-research` (a fact from outside the project is needed). Anything you jot down starts as an idea; `/shape` settles it and marks the piece `ready`, and `/implement` builds only ready pieces. What settled it is written onto the piece before the label changes, so a month later you can see what was decided rather than only that something was.
 
 ## 3. The build path
 

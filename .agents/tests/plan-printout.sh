@@ -31,12 +31,13 @@ trap 'rm -rf "$WORK"' EXIT INT TERM
 # One issue per case the printout has to tell apart. The states come first,
 # then the mistakes it has to name, then what it must leave out.
 #
-# #7 carries both `broken` and `building`, because a repair somebody has already
-# started is the case where two groups could each claim the same piece. #3
-# carries `blocked`, the label an older project still has before anything moves
-# it, which has to read as parked. #1 carries no state at all, which counts as an
-# idea. #18 and #19 are closed, and the endpoint asks only for open issues, so a
-# stand-in that returns them anyway proves the printout checks for itself.
+# Duplicate bookings carries both `broken` and `building`, because a repair
+# somebody has already started is the case where two groups could each claim
+# the same piece. Weekly payouts carries `blocked`, the label an older project
+# still has before anything moves it, which has to read as parked. Card checkout
+# carries no state at all, which counts as an idea. Email reminders and Old
+# export are closed, and the endpoint asks only for open issues, so a stand-in
+# that returns them anyway proves the printout checks for itself.
 cat >"$WORK/issues.json" <<'JSON'
 [
   {"number": 1, "title": "Card checkout", "html_url": "http://x/1",
@@ -364,7 +365,10 @@ cat >"$WORK/older.json" <<'JSON'
    "labels": [{"name": "blocked"}]},
   {"number": 4, "title": "make the calendar nicer", "html_url": "http://x/4",
    "body": "half a sentence", "assignees": [],
-   "labels": [{"name": "needs-clarification"}]}
+   "labels": [{"name": "needs-clarification"}]},
+  {"number": 5, "title": "Deposits", "html_url": "http://x/5",
+   "body": "## Done when\nA deposit is held.", "assignees": [],
+   "labels": [{"name": "ready"}, {"name": "blocked"}]}
 ]
 JSON
 mkdir -p "$WORK/older"
@@ -380,6 +384,14 @@ if [ -f "$OLDER" ]; then
     || fail "an older project's labels are grouped wrongly"
 else
   fail "no printout was written for an older project"
+fi
+# The old labels let `blocked` sit beside `ready`. That is how an older project
+# looks rather than two states at once, so it reads as parked and nothing more.
+if [ -f "$OLDER" ]; then
+  section "Parked" "$OLDER" | grep -q "Deposits" \
+    && ! section "Needs attention" "$OLDER" | grep -q "Deposits" \
+    && pass "an older project's blocked beside ready prints as parked, not as a mistake" \
+    || fail "an older project's blocked beside ready is not read as parked"
 fi
 
 echo "== When GitHub cannot be reached =="

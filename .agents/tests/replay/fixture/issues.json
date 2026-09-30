@@ -121,6 +121,7 @@
       "state": "open",
       "labels": [
         "behaviour",
+        "shaping",
         "needs-research"
       ],
       "assignees": [],
@@ -133,6 +134,7 @@
       "state": "open",
       "labels": [
         "visual",
+        "shaping",
         "needs-clarification"
       ],
       "assignees": [],
@@ -145,6 +147,7 @@
       "state": "open",
       "labels": [
         "visual",
+        "shaping",
         "needs-prototype"
       ],
       "assignees": [],

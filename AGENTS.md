@@ -263,11 +263,30 @@ attribution line, not the word.
   the roll-up's counts. A kit telling the person to run `gh auth login` is
   advice and not a sign, and the stand-in must never print either sentence.
 - `.agents/tests/plan-printout.sh` runs the printout against a fixed set of
-  issues and reads what it wrote: which group each piece lands in, whether a
-  waiting piece says why, whether a shaped piece says it is ready, and whether a
-  held-up piece names the piece holding it rather than its number. It also holds
-  the invariant `/queue` rests on, that a piece with an open blocker never
-  reaches the buildable group while a piece whose blocker has closed does.
+  issues and reads what it wrote: that the groups print as a board, in the
+  order Needs attention, Broken, the six states and Made of parts, which group
+  each piece lands in, whether a waiting piece says why, whether a shaped piece
+  says it is ready, and whether a held-up piece names the piece holding it
+  rather than its number. An open issue with no state is an idea. A piece with
+  two states, or a `needs-` label without `shaping`, prints once, under Needs
+  attention, and a `ready` piece with no Done when prints as an idea and is
+  named there too. A closed issue never prints. An older project's labels still
+  group, with `blocked` read as parked, even beside `ready`. When GitHub cannot
+  be reached, the last printout is left alone and the refresh says when it was
+  written. It also holds the invariant `/queue` rests on, that a piece with an
+  open blocker never reaches the buildable group while a piece whose blocker
+  has closed does.
+- `.agents/tests/piece-states.sh` guards the model the printout draws: every
+  open piece carries exactly one of six states, `idea`, `shaping`, `ready`,
+  `building`, `to check` and `parked`, written in that order in `pieces.md`. A
+  closed issue is done, except an idea left out, which stays closed and
+  `parked`. An open issue with no state is an idea, a `needs-` label is the
+  reason beside `shaping` only, held up by another piece is a link rather than
+  a state, and `parked` replaces `blocked`. It fails on a copy of `pieces.md`
+  that allows two states, not only on one with the rule gone, because loosening
+  is the edit that slips through. It also holds that founding names the six
+  labels when it makes the label set, and that WORKFLOW.md explains the states
+  in one place.
 - `.agents/tests/plan-helper-routes.sh` proves the helper that writes the
   printout reaches every project. It ships inside the setup-ai-build-kit skill,
   because the shared installer and both plugins carry skills and nothing else,
@@ -672,8 +691,8 @@ attribution line, not the word.
   internal, that founding reads it back for confirmation, and that a piece
   changing a connection redraws it rather than letting it go stale.
 - `.agents/tests/manual-step.sh` guards the step only the person can do: the
-  rules for a piece's `Waiting on you` section, that `blocked` keeps the two
-  meanings it already has, that /implement neither builds such a piece nor skips
+  rules for a piece's `Waiting on you` section, that `parked` keeps the two
+  meanings it already has on an open piece, that /implement neither builds such a piece nor skips
   it in silence, and that /what-now names it as the person's own to-do without
   ever asking for a key in a message.
 - `.agents/tests/screen-rules.sh` guards the screen rules, their two build-time
