@@ -114,11 +114,11 @@ rs_require_load_bearing "a first launch writes the Goes live line" "$SHIP" 'wher
 # The records.
 rs_require_load_bearing "the masterplan template carries the Goes live line" "$MASTERPLAN" 'a `goes live:` line says how the tool goes live'
 rs_require_absent "the founded AGENTS.md no longer says a human alone merges" "$FOUNDED" 'a human decides whether to merge'
-rs_require_load_bearing "the founded AGENTS.md names the yes or the pre-approval" "$FOUNDED" 'a merge waits for the person.s yes naming it, or their pre-approval of a run'
+rs_require_load_bearing "the founded AGENTS.md names the yes or the pre-approval" "$FOUNDED" 'a merge waits for a yes naming it or a run.s pre-approval'
 
 # WORKFLOW.md tells it once, for every route.
 rs_require_load_bearing "WORKFLOW says every route shares the step" "$WORKFLOW" 'the same merge step serves /implement, /fix, /ship and /sync'
-rs_require_load_bearing "WORKFLOW says nothing merges unasked" "$WORKFLOW" 'nothing merges a pull request you have not agreed to'
+rs_require_load_bearing "WORKFLOW says nothing merges unasked" "$WORKFLOW" 'no command merges a pull request you have not agreed to'
 rs_require_load_bearing "WORKFLOW says a reply naming several counts for each" "$WORKFLOW" 'a reply such as "merge 1, 2 and 4" covers each one it names'
 rs_require_load_bearing "WORKFLOW says put it live is not that yes" "$WORKFLOW" 'saying "put it live" before any merge was named is not that yes'
 rs_require_load_bearing "WORKFLOW says the merge is made on the pull request" "$WORKFLOW" 'each merge is made on the pull request itself, never by merging on your computer and pushing `main`'

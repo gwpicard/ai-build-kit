@@ -139,6 +139,12 @@ are waiting on, and name no piece as next. Never work the next piece out from
 the issue list or its blocked-by links by hand: the printout already keeps a
 piece with an open blocker out of `To build`, and a hand reading does not.
 
+## Merging
+
+A built piece's pull request merges only as the `section-builder` skill's
+`references/merge.md` says: on a yes that names it, or under the person's
+pre-approval of a run, for a piece that meets all five of its conditions.
+
 ## Typed with auto, or handed to a goal mode
 
 Auto is not an ordinary peer to normal building; it is earned, not default.

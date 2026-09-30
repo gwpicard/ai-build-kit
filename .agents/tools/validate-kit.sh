@@ -1017,10 +1017,10 @@ if [ -f "$sbfile" ] && [ -f "$blocked" ] && [ -f "$settings" ] && [ -f "$startfi
     { fail "$settings: deny list does not block a direct push to main"; mech_ok=0; }
   grep -qF "delete_branch_on_merge" "$startfile" || \
     { fail "$startfile: does not enable auto-deletion of merged branches"; mech_ok=0; }
-  grep -qF "Do not merge the pull request, and do not delete the branch" "$sbfile" || \
-    { fail "$sbfile: pull-request route does not stop before merge and leave it to a person"; mech_ok=0; }
+  # Whether the pull-request route may merge is the one merge step's rule, in
+  # section-builder's references/merge.md, and one-merge-step.sh guards it.
   [ "$mech_ok" -eq 1 ] && \
-    pass "pieces start from fresh main, new issues are unassigned, main is push-guarded, merged branches auto-delete, and the agent leaves the merge to a person"
+    pass "pieces start from fresh main, new issues are unassigned, main is push-guarded, and merged branches auto-delete"
 fi
 
 # Machine-check-first evidence: where a machine can check a piece, that

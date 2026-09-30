@@ -139,8 +139,9 @@ on the repair, so the repair keeps only what the fix needed. Confirm the
 original symptom is gone, write the cause in plain language into the repair's
 file in `changes/`, as section-builder's step 9 describes, update the other
 records, and use section-builder's save and review route for the change itself.
-The report says which temporary items were removed and that the evidence still
-passed.
+The repair's pull request merges only as the `section-builder` skill's
+`references/merge.md` says, like any other. The report says which temporary
+items were removed and that the evidence still passed.
 
 Where the repair had an issue, take the `broken` label off once the symptom is
 gone. A repair that stays labelled broken keeps reporting a fault that no longer
