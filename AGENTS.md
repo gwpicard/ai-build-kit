@@ -514,11 +514,11 @@ attribution line, not the word.
   pull request. The one that waits on another aims at that piece's branch,
   carries its commits on the remote and says which to merge first. The piece
   whose record's shape is not settled is back in shaping with its question
-  and no pull request, with a branch where the run met the choice while
-  building and none where it saw the choice at the plan. Left `ready` and
-  skipped is a miss, even with a reason, and the check fails while scenario
-  57's Evidence line still allows it. Nothing is merged when the person said not to, and the state file
-  says merges were not pre-approved. However the run ended, no piece is left
+  and no pull request, with or without a branch, since a run that sees the
+  choice at the plan cuts none. Left `ready` and skipped is a miss, even with
+  a reason, and the check fails while scenario 57's Evidence line still allows
+  it. Nothing is merged when the person said not to, and the state file says
+  merges were not pre-approved. However the run ended, no piece is left
   `waiting` or `building`, the earliest claim on a built piece names the run,
   a branch has one pull request, and a piece sent back or parked keeps any
   branch it had on the remote and loses the run's assignee. Each of those
@@ -1378,8 +1378,8 @@ attribution line, not the word.
   no claim. Skipped and left `ready`, such a piece came back to every run with
   nothing telling the person a question waited. An easy choice seen then
   leaves the piece eligible, and a missing fact alone still skips it. The
-  state file's fields, the live page, and a
-  new session resuming from the state file are held too, as is a run that ends
+  state file's fields, the live page, and a new session resuming from the
+  state file are held too, as is a run that ends
   at once when nothing is left. So is what review of the first draft found:
   a held-up piece whose blockers are all in the plan joins it and stacks, the
   earliest claim comment wins a race and only the later run backs off, every

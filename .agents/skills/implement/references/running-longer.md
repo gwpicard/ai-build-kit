@@ -64,7 +64,8 @@ A hard open choice in a piece is not a reason to skip it. A hard choice is
 about the shape of stored data, how records sync, or what leaves the tool, and
 it is open when the piece's `## Done when` and `## Decided` lines leave it
 open. Where the run can see one when it plans or claims a piece, send it back
-to shaping before claiming it. Write the question on the piece, then move it
+to shaping before claiming it, once the person has approved the plan. Write
+the question on the piece, then move it
 with no claim to undo: `gh issue edit <number> --add-label shaping --add-label needs-clarification --remove-label ready`.
 Cut no branch and write no claim, since nothing was built. Mark it `shaping`
 in the state file, and the plan names it as going back, with its question. Left
