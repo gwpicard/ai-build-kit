@@ -409,10 +409,11 @@ since it now waits for the person to try it or merge it. Never present it as rea
 say so plainly, pull the failing output yourself, fix through the normal
 steps, and push again.
 
-Once the check is green the piece is ready for review, and the run stops
-there. Do not merge the pull request, and do not delete the branch. A person
-decides whether to merge, always. Report the piece as ready for review, not as
-done, and leave the merge to them.
+Once the check is green the piece is ready for review. Merge it only as
+`references/merge.md` says: on a yes that names it, or under the person's
+pre-approval of a run when the piece meets all five of its conditions.
+Otherwise the pass stops there. Report the piece as ready for review, not as
+done.
 
 Flagged route: where the person carried on and the acceptance is recorded,
 this is the pull-request route and nothing below applies. Otherwise do the
@@ -460,7 +461,7 @@ reaches, update the masterplan's connections picture too, and say in one line
 what the tool now reaches, so the person can say whether it should. A
 correctly completed build does not need /sync afterward.
 
-Once a person merges the pull request it closes the issue, so there is no
+Once the pull request merges it closes the issue, so there is no
 status to set by hand. After that merge, take `to check` off the closed issue,
 since a closed issue is done and carries no state, and refresh
 the printout with `sh .agents/tools/plan-refresh.sh` so the person's list matches

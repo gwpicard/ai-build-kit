@@ -8,7 +8,7 @@
 # checked out, and a record that disagrees with what is saved is the drift sync
 # exists to remove. So the corrections take the save route the build path
 # already requires, the same three a piece uses, and on the shared route they
-# arrive as a pull request a person decides to merge.
+# arrive as a pull request that merges only on the person's yes.
 #
 # The rule about uncommitted work is the one worth guarding hardest. Sync is run
 # after an interruption, so a dirty tree is the ordinary case rather than the
@@ -45,8 +45,10 @@ rs_rule "a pull request is opened" 'open a pull request titled after the reconci
 rs_rule "the project check runs" 'run the project check'
 rs_rule "the summary paragraph is the pull request body" \
   'is the body of that pull request'
-rs_rule "sync never merges" 'never merge it'
-rs_rule "a person decides" 'a person decides whether to merge, always'
+# Whether sync's pull request merges is the one merge step's to say, and
+# one-merge-step.sh holds the rule there. Sync keeps the pointer.
+rs_rule "sync merges only through the merge step" 'merge it only as the `section-builder` skill.s `references/merge\.md` says'
+rs_rule "sync never deletes the branch" 'never delete the branch yourself'
 rs_rule "and it says why a direct commit is drift" 'a second kind of drift'
 rs_rule "an unreachable github is a missing step, not a hazard" \
   'a missing step is not a hazard'

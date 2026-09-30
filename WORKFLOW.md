@@ -295,7 +295,13 @@ On either route, the first time anything pushes your project's code online, the 
 
 Next to the merge button sits that check. It re-runs the project's real commands on a clean machine, so the pull request's claims get verified rather than trusted. Those commands include the mechanical checks your project's language offers, a type check and a linter wherever it has them, which catch a whole class of mistakes before anyone tries the tool. They use each tool's own default rules, so a red tick points at a real mistake rather than a matter of taste. The agent runs the same checks before it hands any work over. Green means the checks that exist really passed, which is a smaller promise than nothing being wrong: it covers the behaviour somebody thought to check and nothing else. Red means don't merge; say it to /fix, and the agent reads what failed itself. You never read the machine's logs, and you never merge over a red check.
 
-A human decides whether to merge, always; after a merge, everyone pulls main. Flagged areas also get the review the build path names before the pull request is offered as ready. A direct push to `main` is forbidden, and in Claude Code the project settings refuse the usual ways of writing one, so every change reaches it through a pull request. Each piece starts from an up-to-date `main`.
+No command merges a pull request you have not agreed to. The same merge step serves /implement, /fix, /ship and /sync, so the rule holds on every route. The agent names each pull request and what it changes, then asks for a yes that names the merge, and a reply such as "merge 1, 2 and 4" covers each one it names. Saying "put it live" before any merge was named is not that yes, so it asks again. Each merge is made on the pull request itself, never by merging on your computer and pushing `main`, and a pull request stacked on another is merged after it. If GitHub cannot be reached, the merge waits, and you can merge it on GitHub yourself.
+
+Before a run, you can say that pieces which pass may be merged. The agent then merges a piece only when its check is green, its review found nothing worth stopping for, it flags nothing for you to confirm, it touches no sensitive area, and you have not asked to try it yourself. Anything else waits for you in to check, and the report says which condition it missed. That permission ends with the run.
+
+The kit's default is that a merge reaches a preview and /ship puts it live. The masterplan's "How it stays running" section records which way your tool goes live. Where your host puts every merge live instead, the ask says "this goes live now", and the first such merge runs /ship's first-launch checks before it happens.
+
+After a merge, everyone pulls main. Flagged areas also get the review the build path names before the pull request is offered as ready. A direct push to `main` is forbidden, and in Claude Code the project settings refuse the usual ways of writing one, so every change reaches it through a pull request. Each piece starts from an up-to-date `main`.
 
 ## 8. Sensitive areas, and the risk notice
 
@@ -353,26 +359,24 @@ once pushed a whole settings file to change one thing, and switched off a live
 setting it then could not switch back on. The commands your project's recipe
 names are the launch you asked for, and need no second yes.
 
-/ship never merges a pull request you have not agreed to. It names each one and
-what it changes, then asks for a yes that names the merge. Saying "put it live"
-before any merge was named is not that yes, so it asks again. When a deploy's
-result is unclear, /ship checks whether it went live before it tries again. A
-second deploy of the same version leaves nothing older to roll back to, and
-/ship says so before running one. A warning you have already heard is not
-repeated in the same /ship.
+/ship merges the way every route does, as section 7 describes. Where merges
+reach a preview, going live is a promote: /ship names what will go live, runs
+its checks, and promotes on your yes. A yes to a merge does not cover it. When
+a deploy's result is unclear, /ship checks whether it went live before it tries
+again. A second deploy of the same version leaves nothing older to roll back
+to, and /ship says so before running one. A warning you have already heard is
+not repeated in the same /ship.
 
-/ship makes each merge on the pull request itself, never by merging on your
-computer and pushing `main`. If GitHub cannot be reached, the merge waits, and
-you can merge it on GitHub yourself. The records /ship writes during a launch,
-such as its changelog entries and a colleague later saying the new version is
-live, take the same save route as a piece. On a shared project they go on one
-branch and one pull request for each /ship, never straight to `main`, and
-merging that pull request needs its own yes. Where your host builds every
-change to `main`, /ship tells you that merging it starts one more build and
-moves the rollback target, and offers to leave it for the next change. Work
-of yours that is not saved yet is left where it is, kept out of the records
-and never thrown away. The same records pull request folds the pieces' files in
-`changes/` into CHANGELOG.md, so the history holds what this launch carried.
+The records /ship writes during a launch, such as its changelog entries and a
+colleague later saying the new version is live, take the same save route as a
+piece. On a shared project they go on one branch and one pull request for each
+/ship, never straight to `main`, and merging that pull request needs its own
+yes. Where your host builds every change to `main`, /ship tells you that
+merging it starts one more build and moves the rollback target, and offers to
+leave it for the next change. Work of yours that is not saved yet is left where
+it is, kept out of the records and never thrown away. The same records pull
+request folds the pieces' files in `changes/` into CHANGELOG.md, so the history
+holds what this launch carried.
 
 Some checks need a secret, such as a database password kept in a file on your
 computer. When you tell the kit where one lives, in any session, it writes down
