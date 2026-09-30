@@ -16,7 +16,9 @@ that needs more than the portable core, such as a run that builds several
 pieces in a chain with nobody watching, is built for Claude Code before
 anything else. Other coding agents get the one-at-a-time core: one piece
 shaped, built, checked and saved at a time, with the same records and the same
-rules. The grades below say how much of that has been proved on each agent.
+rules. A run there builds its pieces one after another in one folder, where
+Claude Code gives each piece its own worktree. The grades below say how much of
+that has been proved on each agent.
 
 ## How much has been proved on each agent
 

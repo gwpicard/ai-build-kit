@@ -158,6 +158,13 @@ walked through and reviewed, and opens its own pull request, with the parts of
 one parent sharing one. A piece that depends on another built in the run stacks
 on its branch.
 
+On Claude Code, each piece in a run is built in its own worktree under
+`.agents/worktrees/`, named after the piece, while the main folder stays on its
+branch. The kit clears a worktree away once its pull request has closed and
+nothing in it is unsaved. Outside a run, a single piece is built in the main
+folder, as always, unless the person asks for a worktree: then open one the
+way `references/running-longer.md` says.
+
 Whether the run may take a piece is decided for each piece. A piece is taken
 only when it is ready, carries a Ready readiness result, is
 self-sufficient enough to build without a person present, waits on no step of
