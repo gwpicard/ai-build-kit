@@ -45,6 +45,8 @@ rs_rule "moving detail needs agreement" 'move detail only with a yes'
 rs_rule "the present plan keeps its promises and decisions" 'keeping every present promise and decision on the masterplan'
 rs_rule "no agreement leaves the page intact and sync continues" 'otherwise, leave it intact and carry on'
 rs_rule "a short page stays quiet" 'at or below the measure, say nothing'
+rs_rule "shortening moves technical design to its concept file" 'lasting technical design goes to its `docs/<concept>\.md`'
+rs_rule "shortening never creates a catch-all document" 'never into a new catch-all document'
 rs_guard "$SYNC" "the masterplan length offer"
 
 rs_require_load_bearing "WORKFLOW explains the length offer" "$WORKFLOW" 'when the core masterplan grows beyond roughly two pages, /sync says so once and offers to move detail'
