@@ -4,7 +4,9 @@ The design for turning the kit into a system that works through a backlog one
 piece at a time, or several in a chain, with nobody watching. It records the
 decisions the maintainer made on 29 and 30 September 2026, the evidence behind
 them, and the slices that build it. Each slice is a sub-issue of the epic that
-points here. Read this file before building any of them.
+points here. Read this file before building any of them. The second round's
+decisions, from slice 13 on, are in
+[loop-first-round-2.md](loop-first-round-2.md).
 
 ## Why
 

@@ -128,8 +128,8 @@ changes only by rerunning the fit check. Each piece is one issue, shaped as the
 set once by change-triage; a merged pull request saying `Closes #<number>`
 closes it. `plan.local.md` is a printout from `.agents/tools/plan-refresh.sh`;
 change the issue, not the file. A piece writes its entry to its own file in
-`changes/`, which /sync or /ship folds into `CHANGELOG.md`. When one document
-says another will do a job, write that job into the other document too.
+`changes/`; its merge folds it into `CHANGELOG.md`, or later /sync or /ship.
+When one document says another will do a job, write it into that one too.
 
 ## Technical design
 

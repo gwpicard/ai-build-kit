@@ -484,8 +484,10 @@ the next piece out from the issue list by hand.
 The piece's changelog entry goes into its own file,
 `changes/<issue number>-<short name>.md`, never into `CHANGELOG.md`. Two pieces
 built at the same time would both add a line at the top of that one file, and
-every merge after the first would conflict there. `/sync` and `/ship` fold the
-files into `CHANGELOG.md` later. Create the `changes/` folder when the project
+every merge after the first would conflict there. The merge folds the files into
+`CHANGELOG.md`, as `references/merge.md` says, and `/sync` and `/ship` fold any
+files still waiting, such as one a merge made on GitHub by hand left behind.
+Create the `changes/` folder when the project
 has none; an older project gets it from its first piece. The issue number keeps
 two pieces with the same short name apart. Where the work has no issue, use the
 pull request's number instead. Checkpoint work with neither takes the date and
@@ -496,8 +498,10 @@ pull request's link on its own line. Write it after the pull request opens, as
 a second commit on the same branch, so it can carry the link. One file per
 piece: a later commit or review round rewrites that file and never adds another.
 On the checkpoint route there is no pull request, so the file names the issue
-instead and goes into the checkpoint commit. The file carries no date, because
-the fold dates it by the day it reached `main`.
+instead and goes into the checkpoint commit. With no merge to fold it, run the
+`sync` skill's `scripts/fold-changes.py` from the project root and commit the
+fold as a second checkpoint commit, so the history there stays whole too. The
+file carries no date, because the fold dates it by the day it reached `main`.
 
 Write those sentences from the piece's own `So that` and `Done when`, in plain
 language. Not from its title, and not from the pull request. A changelog
