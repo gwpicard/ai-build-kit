@@ -176,6 +176,24 @@ each step it names.
   runs without secrets: say so once, and flag each part of it that needs a
   key. Never copy the file instead. Where a copy already sits in the
   worktree, the script names it and leaves it, and the piece is flagged.
+- **Ignored build files.** A build can need a file git ignores that holds no
+  secret, such as a licensed font or a large sample input. The
+  `worktree-links` line in `.ai-build-kit-maintenance` lists them, each path
+  relative to the project root, a file or a folder. `open` links each one the
+  way it links `.env`: a relative symbolic link, never a copy, making the
+  link's folder in the worktree first where it is missing. A listed folder is
+  made as a real folder and each thing in it is linked, because git does not
+  ignore a link named after an ignored folder. The script refuses a path, and
+  names the reason, when it sits in or holds a folder on a `confidential`
+  line, is named `.env` or starts with `.env.`, is tracked by git, lies outside
+  the project, or is not in the main folder. It refuses one git does not
+  ignore too, since the link would be a new file to save.
+- **When a listed file does not arrive.** With no `worktree-links` line, only
+  the `.env` files are linked. Where a listed path is missing or its link
+  cannot be made, the piece goes on: say so once and flag the piece "built
+  without <path>". Where a copy already sits at a listed path, the script
+  names it and leaves it, and the piece is flagged. A link is never unsaved
+  work, and removing the worktree leaves the main folder's file in place.
 - **Its dependencies.** Before the start ritual, install them inside the
   worktree with the install command AGENTS.md's stack section records. Where
   it records none, use the install step of the project check in
@@ -224,6 +242,18 @@ which removes each on a yes.
 A single `/implement` outside a run works in the main folder, as always, unless
 the person asks for a worktree. Then it opens one for the piece in the same
 way, and the same rules clear it away.
+
+### Beside another tool's worktrees
+
+The kit opens, tidies, lists and removes only the worktrees under the main
+folder's `.agents/worktrees/`. It never touches a worktree another tool made,
+such as a multi-agent coding environment's, wherever that sits. The main folder
+is always the first worktree git lists. A run started inside another tool's
+worktree keeps its run state in the main folder's `.agents/runs/` and its
+pieces' worktrees under the main folder's `.agents/worktrees/`, and `open`
+says so in one line when it starts. Each piece is cut from `origin/main`, and
+the run never checks `main` out, so it works where the other tool's worktree
+has `main` checked out.
 
 ## For each piece
 

@@ -83,7 +83,7 @@ rs_require_load_bearing "worktree.sh lists the candidates" "$SCRIPT" \
 
 # Founding, step 11.
 rs_require_load_bearing "founding lists the ignored candidates with the script" "$SETUP" \
-  'the `implement` skill.s `scripts/worktree\.sh candidates`'
+  'the `implement` skill.s `scripts/worktree\.sh` with `candidates`'
 rs_require_load_bearing "founding asks once which a build needs" "$SETUP" \
   'ask once which of them a build or a walk-through needs'
 rs_require_load_bearing "the question carries a best guess" "$SETUP" \
@@ -101,13 +101,14 @@ rs_require_load_bearing "founding writes the confidential line" "$SETUP" \
 rs_require_load_bearing ".worktreeinclude is for Claude Code's own worktrees" "$SETUP" \
   'that list is for claude code.s own worktrees\. the kit.s run worktrees read the `worktree-links` line instead'
 
-# The maintenance record's header names both lines and who writes them.
+# The maintenance record's header names both lines and who writes them. Its
+# lines are comments, so a folded line break leaves a `# ` between words.
 rs_require_load_bearing "the header names the worktree-links line" "$RECORD" \
-  'setup-ai-build-kit writes a worktree-links line'
+  'setup-ai-build-kit writes a (# )?worktree-links (# )?line'
 rs_require_load_bearing "the header names the confidential line" "$RECORD" \
-  'and a confidential line naming the confidential folder'
+  'and a confidential (# )?line (# )?naming (# )?the (# )?confidential (# )?folder'
 rs_require_load_bearing "the header names the declined line" "$RECORD" \
-  'maintain writes a worktree-links line too, or a worktree-links-declined line'
+  'maintain writes a (# )?worktree-links (# )?line (# )?too, (# )?or (# )?a (# )?worktree-links-declined'
 
 # /maintain: the offer to a project founded before the links.
 rs_reset

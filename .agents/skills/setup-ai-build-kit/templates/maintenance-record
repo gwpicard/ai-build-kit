@@ -3,7 +3,13 @@
 # writes the two pass lines, and a recipe-move-declined line when the person
 # turns down a move onto a recipe. Any command writes a check-myself|yes line
 # when the person asks to try every piece before it is saved, and takes it out
-# when they ask to stop; section-builder reads it. Nothing else edits this file.
+# when they ask to stop; section-builder reads it. setup-ai-build-kit writes a
+# worktree-links line naming the ignored files a run's worktrees link, as
+# `worktree-links|<path> ; <path>`, and a confidential line naming the
+# confidential folder, as `confidential|<folder>`; the implement skill's
+# worktree script reads both. maintain writes a worktree-links line too, or a
+# worktree-links-declined line when the person turns the links down. Nothing
+# else edits this file.
 founded|
 last-light-pass|
 last-full-pass|

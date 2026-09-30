@@ -1391,7 +1391,31 @@ attribution line, not the word.
   branch. A skip gives git's own `fatal:` line, a folder git lists but is gone
   names `git worktree prune`, and a failed open deletes only a branch it made
   itself. A Git older than 2.17 gets no worktree, and a port taken only on
-  `::1` is never given.
+  `::1` is never given. It also runs the `worktree-links` line. A listed
+  folder is made in the worktree with each thing in it linked, a file inside
+  an ignored folder gets its folder made, and a name with a space is linked.
+  A confidential path, an env file, a tracked file, a path outside the
+  project, a deleted one and one git does not ignore are each refused by
+  name. So is a link the worktree's own ignore rules would show as a new
+  file, which happens when the main folder's ignore line is not saved yet.
+  Links are never unsaved work, and removal leaves the main files. The
+  candidates list leaves out dependency folders, env files, the kit's folder,
+  confidential folders and anything deeper than two levels. Last, a sibling
+  worktree made with `git worktree add` stands for another tool's, with
+  `main` checked out in it. Run from there, `open` cuts the piece from
+  `origin/main` into the main folder's `.agents/worktrees/` and says so, the
+  run state is read from the main folder, and `tidy`, `leftovers` and
+  `remove` never list, change or remove the sibling.
+- `.agents/tests/worktree-links.sh` guards the ignored build files a run's
+  worktree links. One project's build needed licensed fonts git ignores, and
+  the agent copied them into each worktree by hand before committing them
+  after a risk notice. So founding asks once, with a guess, which ignored
+  files a build needs, asks nothing when there are none, never ends the turn
+  on that question, and writes a `worktree-links` line and a `confidential`
+  line. It holds the refusals and the other tools' worktrees in
+  `running-longer.md`, the `/maintain` offer that records a no and returns
+  only for a new path, the maintenance record's header, and WORKFLOW.md
+  telling it.
 - `.agents/tests/first-upload-asks.sh` guards the yes the project's first
   upload waits for. Founding tells the person nothing will be uploaded, and in
   a real run the first piece then pushed the whole project to GitHub with no
