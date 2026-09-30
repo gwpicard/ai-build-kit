@@ -54,29 +54,34 @@ A piece that is not eligible stays where it is. The report says why.
 
 Check that Git is clean, as section-builder's step 1 does. Refresh the
 printout. The plan is the pieces the person named, or with `queue` every piece
-under `To build` marked `(ready)`. Order it by the blocked-by links, so a piece
-comes after every piece it depends on, and by number where the links leave a
-choice. The parts of one parent sit together in that order.
+under `To build` marked `(ready)`. Either way, the plan also takes each piece
+under `Held up` whose open blockers are all in the same plan, and orders it
+after them, so it stacks on them rather than waiting for a later run. Order the
+plan by the blocked-by links, so a piece comes after every piece it depends on,
+and by number where the links leave a choice. The parts of one parent sit
+together in that order.
 
 Say the plan once: each piece in order, whether it is eligible and why not
-where it is not, and which pieces will stack on another. Then ask once whether
-pieces that pass may be merged during the run, as the `section-builder` skill's
-`references/merge.md` describes. The person approves the plan and answers that
-question, and then the run goes on with nobody in between.
+where it is not, and which pieces will stack on another. Say that the live page
+below publishes the pieces' titles and progress to the coding agent's page
+service, and offer to run without it. Then ask once whether pieces that pass
+may be merged during the run, as the `section-builder` skill's
+`references/merge.md` describes. The person approves the plan and answers
+those questions, and then the run goes on with nobody in between.
 
 ## The run state
 
 A run keeps its state in `.agents/runs/<run name>/`, where the run name is the
-date and time it started, `<YYYY-MM-DD>-<HHMM>`. Git ignores the folder. Where
-the project's `.gitignore` has no `.agents/runs/` line, write a `.gitignore`
-holding `*` inside `.agents/runs/` before anything else, so the folder ignores
-itself and nothing tracked changes.
+date and time it started, `<YYYY-MM-DD>-<HHMMSS>`. Git ignores the folder.
+Where the project's `.gitignore` has no `.agents/runs/` line, write a
+`.gitignore` holding `*` inside `.agents/runs/` before anything else, so the
+folder ignores itself and nothing tracked changes.
 
 `state.json` is the record a new session resumes from:
 
 ```json
 {
-  "run": "2026-09-30-2215",
+  "run": "2026-09-30-221500",
   "merge_preapproved": false,
   "pieces": [
     {
@@ -94,18 +99,19 @@ itself and nothing tracked changes.
 ```
 
 - `merge_preapproved` is the person's answer before the run: `true` or
-  `false`. It holds for this run alone.
+  `false`. It holds for this run alone, and carries into the run when it is
+  resumed.
 - `pieces` lists every piece in the plan, in the order the run takes them.
 - `state` is one of `waiting` (not started), `building`, `to check`, `merged`,
   `parked`, `shaping` (sent back with a question) or `skipped` (not eligible,
-  or backed off).
+  backed off, or not reached before the run ended). The last five are final.
 - `branch` is the piece's branch, and `base` is the branch it was cut from:
   `main`, or the branch of the piece it stacks on.
 - `pull_request` is the number of its pull request, or `null` before one opens.
 - `attempts` counts the failed attempts at its build.
 - `flags` holds each easy-to-undo choice the builder made alone, one line each.
-- `reason` says why a piece was parked, sent back, skipped, or not merged under
-  pre-approval, naming the condition it failed in
+- `reason` says why a piece was parked, sent back, skipped, waits, or was not
+  merged under pre-approval, naming the condition it failed in
   the `section-builder` skill's `references/merge.md`, such as a merge that
   would go live.
 
@@ -114,11 +120,11 @@ step starts, so it always says where the run stands. `progress.md`, beside it,
 is a short log: one line for each step, with the time, the piece and what
 happened. Neither file ever holds a key, a password or a person's data.
 
-Wherever the coding agent can publish a page, publish a live progress page from
-the state file when the run starts, and update it each time the state file
-changes. It shows each piece's title, state and pull request link, and nothing
-else. Where the page cannot be published, say so once, and carry on with the
-state file as the record.
+Unless the person chose to run without it, and wherever the coding agent can
+publish a page, publish a live progress page from the state file when the run
+starts, and update it each time the state file changes. It shows each piece's
+title, state and pull request link, and nothing else. Where the page cannot be
+published, say so once, and carry on with the state file as the record.
 
 ## For each piece
 
@@ -128,12 +134,15 @@ Take the pieces in the plan's order. For each one:
    is being built somewhere else: the claim refuses it, so skip it. Otherwise
    make section-builder's one-step claim, and add a comment naming this run,
    `Claimed by run <run name>`. Then read the claim back with
-   `gh issue view <number> --json labels,assignees,comments`. Where it shows an
-   assignee other than this run's, or a claim comment from another run, back
-   off that piece: take your own assignee off with
-   `gh issue edit <number> --remove-assignee @me`, leave the label, mark it
-   `skipped` with the reason, and take the next piece. A piece that cannot be
-   claimed is never started.
+   `gh issue view <number> --json labels,assignees,comments`. The earliest
+   `Claimed by run` comment on the piece wins. Where it names another run, this
+   run is the later claimant, so back off that piece: delete this run's own
+   comment, take this run's assignee off with
+   `gh issue edit <number> --remove-assignee @me` only where the winning run
+   uses a different login, leave the label, which is now the winner's, mark
+   the piece `skipped` with the reason, and take the next piece. Only the later
+   claimant backs off, so a piece is never left `building` with no run behind
+   it. A piece that cannot be claimed is never started.
 2. **Branch it.** Cut its branch from the up-to-date `main`, or from the
    branch of the piece it stacks on. Record `branch` and `base`.
 3. **Run the start ritual.** Read the run state, start the tool, and run a smoke
@@ -148,7 +157,9 @@ Take the pieces in the plan's order. For each one:
    trigger names a person, the review is theirs, and the pull request says it
    is still owed.
 8. **Open its pull request**, as section-builder's step 8 says, aimed at the
-   piece's `base`. Put every flagged choice in it under `## Flagged for
+   piece's `base`. Look first for a pull request already open from its branch,
+   `gh pr list --head <branch>`, and use that one, so a resumed run never opens
+   a second. Put every flagged choice in it under `## Flagged for
    confirmation`, one line each.
 9. **Write its changelog file**, as section-builder's step 9 says.
 10. **Move it to `to check`.** Where `merge_preapproved` is true, merge it only
@@ -157,24 +168,37 @@ Take the pieces in the plan's order. For each one:
 11. **Update the run state** and the live page, and add the step to
     `progress.md`.
 
+On Explore privately, a piece on the checkpoint route has no pull request.
+Steps 8 to 10 become the checkpoint commit and closing the piece, as
+section-builder's step 8 says for that route, and its state is `merged`.
+
 A Relies on line that no longer holds is an open choice of the hard kind below.
 A smoke check that fails on `main` ends the run, because every later piece
-relies on it. One that fails on a stacked branch parks the pieces on that
-stack.
+relies on it. One that fails on a stacked branch skips only the pieces on that
+stack not yet built, with the reason. A base already built stays in `to check`.
 
 ## Stacks and parts
 
 A piece that depends on one built earlier in this run and not yet merged stacks
 on it. Its branch is cut from that piece's branch, its pull request aims at
 that branch, and the pull request says which to merge first, so the stack
-merges cleanly in order. A piece whose blocker is open and not in this run is
-not eligible.
+merges cleanly in order. When the base merges by squash, rebase the stacked
+branch onto `main` before its own merge; the `section-builder` skill's
+`references/merge.md` re-aims its pull request. A piece whose blocker is open and not in this run is not eligible. A
+stacked piece whose base goes back to shaping, or is parked, is skipped with
+that reason.
 
 The parts of one parent share one branch and one pull request. The first part
 built cuts the branch, named after the parent, and each later part continues
-on it. The pull request opens once the last part in the run is built. It
-closes each part it carries with its own `Closes #<number>` line, and each
-part writes its own changelog file.
+on it. The pull request opens after the last part that finishes its build,
+once no later part of that parent is left to build in the run. A part that
+finished earlier waits in `building` with the reason `waiting for the parent's
+pull request`. The pull request closes each part it carries with its own
+`Closes #<number>` line, and each part's changelog file is written once it
+opens. Where no part finishes, nothing opens. Where the run ends before the
+pull request can open, the finished parts stay on the pushed branch, are
+parked with the reason, and the report names them as built but in no pull
+request.
 
 ## An open choice met while building
 
@@ -182,9 +206,9 @@ A piece can meet a choice its Done when and `Decided` lines do not settle. Split
 it by how hard it is to undo.
 
 A hard choice, about the shape of stored data, how records sync, or what leaves
-the tool, stops that piece. Write the question on the piece, keep the branch,
-and send it back to shaping,
-`gh issue edit <number> --add-label shaping --add-label needs-clarification --remove-label building`.
+the tool, stops that piece. Write the question on the piece, push the branch
+and keep it, and send it back to shaping,
+`gh issue edit <number> --add-label shaping --add-label needs-clarification --remove-label building --remove-assignee @me`.
 Mark it `shaping` in the state file.
 
 An easy choice, one a later change can undo without touching stored data, takes
@@ -198,28 +222,29 @@ Either way the run moves on to the next unblocked piece.
 
 Retry within the piece, up to three attempts, the same number fix uses. After
 the third, park it: move it from `building` to `parked` in one step,
-`gh issue edit <number> --add-label parked --remove-label building`, with one
-line on what kept failing, and take the next piece. Never let one piece consume
-the run. Route the parked piece further when the failure points somewhere
-specific: send it back to `/shape`, which settles a missing decision, chases a
-missing external fact, or reassesses a shape the team could not safely own,
-rather than a fourth attempt. A piece stacked on a parked piece is skipped,
-and stays `ready` for a later run.
+`gh issue edit <number> --add-label parked --remove-label building --remove-assignee @me`,
+with one line on what kept failing, push its branch, and take the next piece.
+Never let one piece consume the run. Route the parked piece further when the
+failure points somewhere specific: send it back to `/shape`, which settles a
+missing decision, chases a missing external fact, or reassesses a shape the
+team could not safely own, rather than a fourth attempt.
 
 A blocking failure never stops the whole run unless it touches something every
 later piece relies on: the smoke check on `main`, a GitHub that cannot be
 reached, so no piece can be claimed, or anything that would change the build
 path. A piece stops at any touch of a named sensitive area that carries no
 recorded acceptance, even one the plan did not expect: section-builder's
-flagged route parks it at the condition, and the run takes the next piece.
-Never guess to keep a run going.
+flagged route parks it at the condition, and the run takes the next piece. The
+run goes on; only that piece stops. Never guess to keep a run going.
 
 ## Resuming
 
 A new session resumes from the state file, never from memory. A run is
-unfinished while any piece in its state file is `waiting` or `building`.
-`/implement` typed alone or with `queue`, `/what-now` and `/sync` each notice
-an unfinished run and offer to resume it.
+unfinished while any piece in its state file is `waiting` or `building`. A run
+whose every piece is in a final state is finished, and is never offered for
+resuming. `/implement` typed alone or with `queue`, `/what-now` and `/sync`
+each notice an unfinished run and offer to resume it. Where two runs are
+unfinished, offer the newest and name the other.
 
 Resuming is the same run, so its `merge_preapproved` stands. Read `state.json`
 and `progress.md`, and take the pieces from where they stand. A piece shown as
@@ -238,6 +263,23 @@ The run ends when no eligible piece is left to take. That includes the moment
 every remaining piece is held up, parked or skipped: the run ends at once with
 its report, and never waits for something to change.
 
+However it ends, whether it ran out of pieces, the smoke check failed on
+`main`, GitHub could not be reached, or the build path would change, leave
+every piece in a final state before the report:
+
+- every `waiting` piece becomes `skipped`, with the reason the run ended;
+- the piece in hand keeps its branch. Where nothing was built on it yet, move
+  it back to `ready`,
+  `gh issue edit <number> --add-label ready --remove-label building --remove-assignee @me`,
+  delete this run's claim comment, and mark it `skipped`. Where something was
+  built, push the branch and park it with the reason, as a failed piece is
+  parked.
+
+Where `merge_preapproved` is true, sweep the pieces in `to check` before the
+report, bases first. Merge each one whose project check is now green and that
+meets all six conditions in the `section-builder` skill's
+`references/merge.md`, and mark it `merged`.
+
 The report, in plain words, is one list and a merge order:
 
 - what was parked and why, and what went back to shaping with its question,
@@ -250,7 +292,7 @@ The report, in plain words, is one list and a merge order:
   piece that was not, the merge condition it failed, in the words of
   the `section-builder` skill's `references/merge.md`. A piece held back
   because its merge would go live says so, and waits for the person or `/ship`;
-- what was not eligible, and why.
+- what was not eligible, or not reached, and why.
 
 The person answers with the pull requests to merge, and each merge follows the
 `section-builder` skill's `references/merge.md`.
@@ -265,9 +307,10 @@ readable project into a mystery.
 Some tools ship a /goal feature: state a condition and the agent keeps going
 until a separate model judges it met. Treat it as a run wearing the tool's
 clothes, under the same rules: the condition comes from a done line or a plan
-area's done lines, read aloud; sensitive areas stay stop conditions the goal
-may not cross; the three-attempt parking rule still applies per piece; the
-state file is kept the same way; and each piece still lands through the save
-route the build path requires. Any merge follows the `section-builder` skill's
-`references/merge.md`, however long the machine ran: on a yes that names it,
-or on the person's pre-approval given before the run.
+area's done lines, read aloud; a named sensitive area without a recorded
+acceptance stops the piece that touches it, never the run; the three-attempt
+parking rule still applies per piece; the state file is kept the same way; and
+each piece still lands through the save route the build path requires. Any
+merge follows the `section-builder` skill's `references/merge.md`, however long
+the machine ran: on a yes that names it, or on the person's pre-approval given
+before the run.
