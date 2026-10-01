@@ -62,8 +62,10 @@ order falls out of the chain itself, so put the piece that unlocks the most
 first and let the rest follow it.
 
 **The groups.** Read the `Go together` groups as the printout wrote them, and
-never group the pieces yourself. The pull requests of one group can merge in
-any order among themselves, because no two pieces in it change the same area.
+never group the pieces yourself. The pieces of one group can be built at the
+same time in any order, because no two pieces in it change the same area. Two
+pieces that each pass alone can still fail together, so each still merges one
+at a time, brought up to date with `main` and checked again first.
 `/implement queue` still builds the whole plan one piece at a time, whatever
 the groups say. Say each group in one line of piece names. Where a piece's line says its Touches is
 unknown, say that its Touches line is missing, so it goes alone until `/shape`

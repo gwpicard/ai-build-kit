@@ -390,9 +390,22 @@ every piece in a final state before the report:
   its worktree until its pull request closes.
 
 Where `merge_preapproved` is true, sweep the pieces in `to check` before the
-report, bases first. Merge each one whose project check is now green and that
-meets all six conditions in the `section-builder` skill's
-`references/merge.md`, and mark it `merged`.
+report, bases first. Merge them one at a time: each one's update, its check and
+its `gh pr merge` finish before the next piece is brought up to date, so each
+piece is checked against a `main` that holds every merge before it. Merge a
+piece only when it meets all six conditions in the `section-builder` skill's
+`references/merge.md`, the first of which is a green check on the commit
+brought up to date, and mark it `merged`. Test the other five before bringing a
+piece up to date, so a piece held back for another reason gets no new commit
+and no run of the check.
+
+A piece whose merge from `main` conflicts, or whose check turns red only once
+`main` is taken in, is not merged. It stays in `to check`, and its `reason` says
+which of the two happened. A conflict still gets its one comment on the pull
+request, as the merge step says. The sweep goes on with the pieces that do not stack
+on it, and skips each one that does, with that reason. Each merge waits for one
+more run of the check, so a sweep over five pieces on a ten-minute check takes
+about fifty minutes.
 
 The report, in plain words, is one list and a merge order:
 
@@ -405,9 +418,11 @@ The report, in plain words, is one list and a merge order:
   start it again rather than give an address: in its worktree, run the install
   and run commands AGENTS.md records, on the port `worktree.sh port <issue
   number>` gives;
-- where `merge_preapproved` was true, which pieces were merged, and for each
-  piece that was not, the merge condition it failed, in the words of
-  the `section-builder` skill's `references/merge.md`. A piece held back
+- where `merge_preapproved` was true, which pieces were merged, how long the
+  sweep waited for checks, and for each piece that was not, the merge condition
+  it failed, in the words of the `section-builder` skill's
+  `references/merge.md`, or that it conflicted with `main` or turned red once
+  `main` was taken in. A piece held back
   because its merge would go live says so, and waits for the person or `/ship`;
 - what was not eligible, or not reached, and why.
 

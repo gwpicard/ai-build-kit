@@ -1026,6 +1026,26 @@ attribution line, not the word.
   without writing its entry twice. A branch not on this computer is
   opened from `origin/<branch>`, a project with no `changes/` folder gets
   nothing written, and the checkpoint route folds in a second commit.
+- `.agents/tests/recheck-before-merge.sh` guards the rule that no pull request
+  merges on a check that ran against an older `main`. On an outside project two
+  pull requests merged one after the other, each green, and together turned
+  `main` red, while `/queue` told the person a group could merge in any order.
+  So every merge, fold or no fold, brings the branch up to date and waits for
+  the check on GitHub on the commit the script prints. Where `main` has not
+  moved and nothing waits to fold, there is no commit and no second wait. A
+  conflict gets one comment naming the files and goes to `/fix`, and so does a
+  check that turns red only after the update, naming what merged since. A
+  stacked pull request is re-aimed, then brought up to date. The run's sweep
+  finishes each merge before the next piece is brought up to date, leaves a
+  piece that conflicts or turns red in `to check` with its reason, and skips
+  what stacks on it. No skill, template or WORKFLOW.md says a group can merge
+  in any order, and `/sync` leads with a red check on `main`.
+  `.agents/tests/recheck-before-merge-rehearsal.sh` shows why: in a throwaway
+  repository, one branch renames a function and another calls its old name.
+  Each passes alone, and once the first merges, the second fails on the branch
+  the script brought up to date. The script never merges anything itself, and
+  on a branch already holding `main` with nothing to fold it makes no commit
+  and prints the unchanged head.
 - `.agents/tests/agent-first-records.sh` guards the founded AGENTS.md as a
   short index. In a real project it grew from 206 lines to 1,019, because the
   build step sent every whole-project technical fact there, dates, issue

@@ -117,8 +117,14 @@ rs_rule "a piece a run cannot take is never in the numbered command" \
 rs_rule "it never opens the pieces themselves" 'never open the pieces themselves'
 rs_rule "an older helper with no groups is named, and /maintain refreshes it" \
   'the next `/maintain` refreshes it, and print no groups and no command'
-rs_rule "the groups say what merges in any order" \
-  'can merge in any order among themselves'
+# A group once promised its pull requests could merge in any order. Two pieces
+# that each pass alone can still fail together, so a group says what can be
+# built in any order, and each piece still merges one at a time after the
+# re-check the merge step makes.
+rs_rule "the groups say what can be built in any order" \
+  'the pieces of one group can be built at the same time in any order'
+rs_rule "each piece in a group still merges one at a time" \
+  'so each still merges one at a time'
 rs_rule "a run still builds one piece at a time" \
   '`/implement queue` still builds the whole plan one piece at a time'
 
