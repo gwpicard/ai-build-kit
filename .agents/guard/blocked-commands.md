@@ -21,13 +21,21 @@ drops are too varied to pattern-match, so they remain instruction-only along
 with the standing-restriction entries below, none of which reduce to a single
 shell pattern.
 
+When the coding agent refuses a command, or this list forbids it, stop. Then
+tell the person in one line which command was refused and what it was for,
+and let them decide. Never reach the same result another way: another
+spelling, another tool such as `find -delete` or a script, or the same work
+split into steps.
+
 ## Commands
 
 - git reset --hard (throws away unsaved work)
 - git checkout . and git restore . (the same thing wearing different clothes; allowed only inside fix's reset step, announced out loud first)
 - git push --force (rewrites shared history under teammates' feet)
 - git clean -fd (deletes files git never saved)
-- rm -rf (deletes anything, recursively, with no undo)
+- a recursive delete in any spelling, such as rm -rf, rm -r or rm --recursive (deletes anything, recursively, with no undo)
+- git reflog expire (throws away the history Git uses to recover lost work)
+- git gc with --prune (the same, for work nothing points at any more)
 - any command that drops or empties a database table
 
 ## Standing restrictions

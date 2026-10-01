@@ -987,7 +987,22 @@ attribution line, not the word.
   turn to prove it is needed. It also holds the monthly offer that brings the
   rules to a project founded before them: offered once, named, added only on
   a yes, with nothing else in the file touched, and a no recorded so the offer
-  returns only when a release adds another rule.
+  returns only when a release adds another rule. The same holds for the rules
+  that refuse a recursive delete, `git reflog expire` and `git gc` with
+  `--prune`, whose lists sit under their own heading and are read from it. A
+  written list of commands that must still run, such as deleting one file or a
+  plain `git gc`, keeps those rules from growing. The offer brings those rules
+  too, and a no recorded before they existed does not cover them.
+- `.agents/tests/refused-commands.sh` guards what happens when a command is
+  refused. In a real project the deny list refused `rm -rf`, and the agent ran
+  the same deletion again as `rm -r`, which went through. So both
+  `blocked-commands.md` files say to stop and tell the person in one line which
+  command was refused and what it was for, and never to reach the same result
+  another way: another spelling, another tool, or the same work in steps. A
+  person who asks for a refused command is given it to run. Both files name the
+  new commands. It also holds `/maintain`'s three removals, which remove a
+  tracked folder with `git rm -r` and give an untracked one to the person, since
+  a recursive delete is now refused.
 - `.agents/tests/merge-ask-rule.sh` guards the confirmation box Claude Code
   shows before a merge on a project whose every merge goes live. The rule that
   a person decides what merges holds only while an agent follows it, and two
