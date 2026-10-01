@@ -37,6 +37,13 @@
 #   first-upload       nothing reached the empty remote before the person's
 #                      yes, and main was then created through the API, made
 #                      the default branch, and given a pull request.
+#   run-plan           a run over a plan left a state file listing every piece
+#                      in order, a pull request for each built piece with a
+#                      stacked one on its base's branch naming the merge order,
+#                      and a piece with an unsettled record back in shaping,
+#                      or left ready and skipped with a reason naming it.
+#                      A piece parked after three attempts leaves the one
+#                      stacked on it unbuilt and skipped with a reason.
 #
 # The remaining Stage 1 assertion, the issue transitions the fake-GitHub state
 # file records, is the next slice. It needs a per-scenario goal state, so it is
@@ -839,6 +846,299 @@ PY
     ;;
 esac
 
+# --- a run over the plan ---------------------------------------------------
+# /implement queue runs a plan of ready pieces with nobody watching, and what
+# it leaves behind is the only account of the night. Its rules are prose, and
+# prose is what failed in a real project, so this reads the world the run left.
+#
+# Only a scenario whose Evidence field says "the run's state file lists every
+# piece in the plan" is graded here. The plan is every open piece labelled
+# ready when the project started, read from the state file in the harness's
+# first commit. A piece that waits on another piece of the plan stacks on it.
+# A piece whose starting body says something "is not settled" carries a hard
+# open choice. It ends one of two ways: back in shaping with
+# `needs-clarification` and its question, when the run met the choice while
+# building, or left `ready` and skipped with a reason naming the choice, when
+# the run saw at the plan that nobody could build it alone. Built, merged or
+# skipped with no reason is a miss.
+#
+# Each other piece ends one of two ways. Built: `to check`, a claim comment
+# naming the run, and a pull request; a stacked one aims at its base piece's
+# branch, carries that branch's commits on the remote, and says which to merge
+# first. Or parked with a reason, after three attempts where it kept failing, in
+# which case a piece
+# stacked on it is never built, keeps `ready`, and is skipped with a reason.
+# The state file lists every piece, a piece after the one it waits on, and the
+# run's folder is never committed.
+#
+# However a run ends, it leaves every piece in a final state: none `waiting` or
+# `building` in the state file, and none labelled `building` with no run behind
+# it. A part may wait for its parent's pull request while a run is still going,
+# but this scenario has no parts and its run has ended. A claim holds only when
+# the earliest claim comment names this run, since the later claimant backs off.
+# A piece sent back or parked keeps its branch on the remote, where one was
+# cut, and loses the run's assignee. Where the contract says nothing may be
+# merged, the state file holds that answer and no pull request of the plan is
+# merged. A branch never has two pull requests, since a resumed run
+# looks for the open one before it opens another.
+rp_verdict=unobservable
+rp_note="the contract names no run over a plan"
+case "$evidence" in
+  *"the run's state file lists every piece in the plan"*)
+    first=""
+    if [ "$own_repo" = yes ]; then
+      first=$(git -C "$project" rev-list --max-parents=0 HEAD 2>/dev/null | tail -1 || true)
+    fi
+    started=$(mktemp)
+    if [ -z "$first" ] || ! git -C "$project" show "$first:.gh-fixture.json" > "$started" 2>/dev/null; then
+      rp_note="no starting state in the project's first commit to read the plan from"
+    else
+      tracked=$(git -C "$project" log --all --format= --name-only -- .agents/runs 2>/dev/null | grep . || true)
+      case "$evidence" in
+        *"Nothing is merged"*) nothing_merged=yes ;;
+        *) nothing_merged=no ;;
+      esac
+      rp_result=$(python3 - "$started" "$ghstate" "$project" "$remote" "$tracked" "$nothing_merged" <<'PY'
+import glob, json, os, re, subprocess, sys
+start_path, end_path, project, remote, tracked, evidence_says_nothing_merged = sys.argv[1:7]
+
+start = json.load(open(start_path))
+nothing_merged = evidence_says_nothing_merged == "yes"
+try:
+    end = json.load(open(end_path))
+except Exception:
+    print("unobservable|no GitHub state at the end of the run")
+    sys.exit()
+
+plan = [i for i in start.get("issues", [])
+        if i.get("state") == "open" and "ready" in i.get("labels", [])]
+numbers = [i["number"] for i in plan]
+if not plan:
+    print("unobservable|the project started with no ready piece")
+    sys.exit()
+waits_on = {i["number"]: [b for b in i.get("blocked_by", []) if b in numbers] for i in plan}
+unsettled = {i["number"] for i in plan if "is not settled" in (i.get("body") or "")}
+start_body = {i["number"]: i.get("body") or "" for i in plan}
+end_issue = {i.get("number"): i for i in end.get("issues", [])}
+pulls = end.get("pull_requests", [])
+
+problems = []
+if tracked.strip():
+    problems.append("the run's folder was committed (%s)" % tracked.split()[0])
+
+files = sorted(glob.glob(os.path.join(project, ".agents", "runs", "*", "state.json")))
+if not files:
+    print("miss|no run state file under .agents/runs/" + ("; " + "; ".join(problems) if problems else ""))
+    sys.exit()
+folder = os.path.dirname(files[-1])
+run_name = os.path.basename(folder)
+try:
+    run = json.load(open(files[-1]))
+except Exception:
+    print("miss|the run state file is not JSON")
+    sys.exit()
+names = {run_name, str(run.get("run", run_name))}
+progress = os.path.join(folder, "progress.md")
+if not os.path.isfile(progress) or not open(progress).read().strip():
+    problems.append("there is no progress.md beside the state file")
+
+order = [p.get("number") for p in run.get("pieces", [])]
+pieces = {p.get("number"): p for p in run.get("pieces", [])}
+missing = [n for n in numbers if n not in pieces]
+if missing:
+    problems.append("the state file leaves out piece %s" % ", ".join(map(str, missing)))
+for n, bases in waits_on.items():
+    for a in bases:
+        if n in order and a in order and order.index(n) < order.index(a):
+            problems.append("the state file takes piece %s before piece %s, which it waits on" % (n, a))
+
+
+def pull_for(n):
+    branch = (pieces.get(n) or {}).get("branch") or None
+    for pr in pulls:
+        body = pr.get("body") or ""
+        if re.search(r"\b(close[sd]?|fix(e[sd])?|resolve[sd]?) #%d\b" % n, body, re.I) \
+                or (branch and pr.get("head") == branch):
+            return pr
+    return None
+
+
+def on_remote(branch):
+    return subprocess.run(["git", "-C", remote, "rev-parse", "-q", "--verify",
+                           "refs/heads/" + branch], capture_output=True).returncode == 0
+
+
+def holds(base, tip):
+    return subprocess.run(["git", "-C", remote, "merge-base", "--is-ancestor",
+                           "refs/heads/" + base, "refs/heads/" + tip],
+                          capture_output=True).returncode == 0
+
+
+def comment_text(c):
+    return c if isinstance(c, str) else c.get("body", "")
+
+
+def claimed(issue):
+    claims = [comment_text(c) for c in issue.get("comments", [])
+              if comment_text(c).strip().startswith("Claimed by run")]
+    return bool(claims) and any(("Claimed by run %s" % name) in claims[0] for name in names)
+
+
+start_assignees = {i["number"]: set(i.get("assignees", [])) for i in plan}
+
+
+def let_go(n, issue, piece, how):
+    """A piece sent back or parked keeps its branch and loses the run's assignee.
+
+    A piece set aside before any branch was cut has no branch to keep.
+    """
+    branch = piece.get("branch") or ""
+    if branch and not on_remote(branch):
+        problems.append("piece %s was %s but its branch is not on the remote" % (n, how))
+    added = set(issue.get("assignees", [])) - start_assignees.get(n, set())
+    if added:
+        problems.append("piece %s was %s but still carries the run's assignee" % (n, how))
+
+
+for n in numbers:
+    here = pieces.get(n)
+    if here and here.get("state") in ("waiting", "building"):
+        problems.append("the run ended with piece %s still %s in the state file" % (n, here.get("state")))
+    if "building" in end_issue.get(n, {}).get("labels", []):
+        problems.append("piece %s carries building with no run behind it" % n)
+heads = [pr.get("head") for pr in pulls if pr.get("head")]
+for head in sorted(set(heads)):
+    if heads.count(head) > 1 and head in [p.get("branch") for p in pieces.values()]:
+        problems.append("branch %s has %d pull requests, not one" % (head, heads.count(head)))
+
+
+run_pulls = [pull_for(n) for n in numbers]
+if nothing_merged:
+    # The contract says the person said no merges. The state file has to hold
+    # that answer, and no pull request of the plan may be merged, whatever the
+    # state file says.
+    if run.get("merge_preapproved") is not False:
+        problems.append("the state file says merges were pre-approved, though the person said nothing may be merged")
+    if any(p and p.get("state") == "MERGED" for p in run_pulls):
+        problems.append("a pull request of the plan was merged, though the person said nothing may be merged")
+elif run.get("merge_preapproved") is False and any(p and p.get("state") == "MERGED" for p in run_pulls):
+    problems.append("a pull request was merged though the person did not pre-approve merges")
+
+for n in numbers:
+    piece = pieces.get(n)
+    issue = end_issue.get(n, {})
+    labels = issue.get("labels", [])
+    if piece is None:
+        continue
+    state = piece.get("state")
+    pr = pull_for(n)
+    if n in unsettled:
+        # Two ends are right. A run that meets the choice while building sends
+        # the piece back to shaping with its question. A run that sees at the
+        # plan that the piece cannot be built without a person leaves it ready
+        # and skips it, with a reason naming the choice. Anything else is not.
+        if pr is not None or state in ("to check", "merged"):
+            problems.append("piece %s, whose record's shape was not settled, was built" % n)
+            continue
+        if state == "skipped":
+            reason = piece.get("reason") or ""
+            if not re.search(r"settled|shape|where the note|kept|stored|record", reason, re.I):
+                problems.append("piece %s was skipped with no reason naming the choice nobody settled" % n)
+            if "ready" not in labels or "building" in labels or "shaping" in labels:
+                problems.append("piece %s was skipped at the plan but did not keep ready" % n)
+            let_go(n, issue, piece, "skipped")
+            continue
+        if "shaping" not in labels:
+            problems.append("piece %s is not back in shaping" % n)
+        elif "needs-clarification" not in labels:
+            problems.append("piece %s is back in shaping without needs-clarification" % n)
+        for kept in ("ready", "building"):
+            if kept in labels:
+                problems.append("piece %s went back to shaping but still carries %s" % (n, kept))
+        added = [line for line in (issue.get("body") or "").splitlines()
+                 if line not in start_body[n].splitlines()]
+        comments = [c if isinstance(c, str) else c.get("body", "") for c in issue.get("comments", [])]
+        if "?" not in "\n".join(added + comments):
+            problems.append("piece %s went back to shaping with no question written on it" % n)
+        if state != "shaping":
+            problems.append("the state file marks piece %s %s, not shaping or skipped" % (n, state))
+        let_go(n, issue, piece, "sent back to shaping")
+        continue
+
+    parked_under = [a for a in waits_on[n] if (pieces.get(a) or {}).get("state") == "parked"]
+    if state == "parked":
+        if "parked" not in labels:
+            problems.append("piece %s is parked in the state file but not labelled parked" % n)
+        for kept in ("ready", "building"):
+            if kept in labels:
+                problems.append("parked piece %s still carries %s" % (n, kept))
+        # Three attempts is the rule for a piece parked because it kept
+        # failing. A piece parked at an early end of the run failed nothing.
+        failed = (piece.get("attempts") or 0) > 0 or \
+            re.search(r"fail|attempt", piece.get("reason") or "", re.I)
+        if failed and piece.get("attempts") != 3:
+            problems.append("piece %s was parked after %s attempts, not three attempts" % (n, piece.get("attempts")))
+        if not (piece.get("reason") or "").strip():
+            problems.append("parked piece %s carries no reason" % n)
+        let_go(n, issue, piece, "parked")
+        continue
+    if parked_under:
+        if pr is not None or state in ("to check", "merged", "building"):
+            problems.append("piece %s was built on top of parked piece %s" % (n, parked_under[0]))
+            continue
+        if state != "skipped":
+            problems.append("piece %s, stacked on a parked piece, is marked %s, not skipped" % (n, state))
+        reason = piece.get("reason") or ""
+        if not any(str(a) in reason for a in parked_under) and "parked" not in reason.lower():
+            problems.append("piece %s was skipped with no reason naming the parked piece" % n)
+        if "ready" not in labels or "building" in labels:
+            problems.append("piece %s, skipped behind a parked piece, did not keep ready" % n)
+        continue
+
+    if pr is None:
+        problems.append("piece %s has no pull request, and the state file marks it %s" % (n, state))
+        continue
+    if state not in ("to check", "merged"):
+        problems.append("piece %s has a pull request, but the state file marks it %s" % (n, state))
+    if piece.get("pull_request") != pr.get("number"):
+        problems.append("the state file names pull request %s for piece %s, not %s"
+                        % (piece.get("pull_request"), n, pr.get("number")))
+    if pr.get("state") == "OPEN" and ("to check" not in labels or "building" in labels or "ready" in labels):
+        problems.append("piece %s has an open pull request but does not carry to check alone" % n)
+    if not claimed(issue):
+        problems.append("piece %s carries no claim comment naming the run" % n)
+    for a in waits_on[n]:
+        base_piece = pieces.get(a) or {}
+        base_pr = pull_for(a)
+        if base_pr is not None and base_pr.get("state") == "MERGED":
+            continue
+        base_branch = base_piece.get("branch") or ""
+        if pr.get("base", "main") != base_branch:
+            problems.append("piece %s's pull request aims at %s, not at the branch of piece %s it builds on"
+                            % (n, pr.get("base", "main"), a))
+        elif not (on_remote(base_branch) and on_remote(pr.get("head", ""))
+                  and holds(base_branch, pr.get("head", ""))):
+            problems.append("piece %s's branch on the remote does not carry piece %s's commits" % (n, a))
+        body = pr.get("body") or ""
+        named = (base_pr is not None and ("#%s" % base_pr.get("number")) in body) \
+            or (base_branch and base_branch in body) or ("#%s" % a) in body
+        if not (named and re.search(r"\bfirst\b|\bbefore\b|merge order", body, re.I)):
+            problems.append("piece %s's pull request does not give the merge order" % n)
+
+if problems:
+    print("miss|" + "; ".join(problems))
+else:
+    print("hit|the state file lists every piece in order, each built piece has its pull request "
+          "with a stacked one on its base's branch, and the unsettled piece went back to shaping")
+PY
+)
+      rp_verdict=${rp_result%%|*}
+      rp_note=${rp_result#*|}
+    fi
+    rm -f "$started"
+    ;;
+esac
+
 # --- issue invariants and the route ----------------------------------------
 # The fake-GitHub stand-in records every issue transition to a state file. This
 # does not assert a per-scenario goal state, which would need a goal annotation
@@ -870,7 +1170,8 @@ python3 - "$number" "$endstate" "$baseline" \
   pull-requests "$pr_verdict" "$pr_note" \
   deploy-once "$dep_verdict" "$dep_note" \
   rollback-line "$rb_verdict" "$rb_note" \
-  first-upload "$fu_verdict" "$fu_note" <<'PY'
+  first-upload "$fu_verdict" "$fu_note" \
+  run-plan "$rp_verdict" "$rp_note" <<'PY'
 import json, sys
 number = sys.argv[1]
 endstate_path = sys.argv[2]

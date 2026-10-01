@@ -230,6 +230,214 @@ else
   pass "a branch with no pull request says so, as the real CLI does"
 fi
 
+echo "== A pull request stacked on another =="
+
+# A run builds a piece that waits on another piece of the same run on top of
+# that piece's branch, and its pull request aims at that branch rather than at
+# main. GitHub refuses a base that is not a branch on the repository, so the
+# stand-in does too, and a kit that opens the stacked pull request before the
+# branch under it is uploaded finds out here rather than on the day.
+git fetch -q origin
+git checkout -q main
+git merge -q --ff-only origin/main
+git checkout -q -b invoices
+echo invoice > invoice.txt
+git add invoice.txt
+git commit -q -m "Keep an invoice"
+git checkout -q -b invoice-totals
+echo total > total.txt
+git add total.txt
+git commit -q -m "Total the invoices"
+
+before=$("$GH" pr list --state all --json number)
+if "$GH" pr create --title "Total the invoices" --body "Merge the invoice piece first." \
+    --head invoice-totals --base invoices > /dev/null 2>&1; then
+  fail "a pull request was opened on a base that is not on the remote"
+else
+  pass "a base that is not on the remote is refused, as on GitHub"
+fi
+[ "$("$GH" pr list --state all --json number)" = "$before" ] \
+  && pass "and the refused pull request was not recorded" \
+  || fail "a refused pull request was recorded anyway"
+
+git push -q origin invoices invoice-totals
+printf 'Closes #1\n\nThe invoice piece.\n' > "$WORK/invoices-body.md"
+base_url=$("$GH" pr create --title "Keep an invoice" --body-file "$WORK/invoices-body.md" \
+  --head invoices --base main)
+base_pr=${base_url##*/}
+case "$("$GH" pr view "$base_pr" --json body)" in
+  *'The invoice piece.'*) pass "pr create reads the body from --body-file" ;;
+  *) fail "pr create lost the body given with --body-file" ;;
+esac
+
+stacked_url=$(printf 'Merge #%s first, then this one.\n' "$base_pr" \
+  | "$GH" pr create --title "Total the invoices" --body-file - --head invoice-totals --base invoices)
+stacked_pr=${stacked_url##*/}
+stacked_view=$("$GH" pr view "$stacked_pr" --json baseRefName,headRefName)
+case "$stacked_view" in
+  *'"baseRefName": "invoices"'*) pass "a stacked pull request reads back with the branch it stacks on as its base" ;;
+  *) fail "the stacked pull request did not keep its base: $stacked_view" ;;
+esac
+case "$("$GH" pr view "$stacked_pr" --json body)" in
+  *"Merge #$base_pr first"*) pass "pr create reads the body from standard input with --body-file -" ;;
+  *) fail "pr create lost the body given on standard input" ;;
+esac
+
+listed=$("$GH" pr list --base invoices --json number,baseRefName)
+case "$listed" in
+  *"\"number\": $stacked_pr"*) pass "pr list --base finds the stacked pull request" ;;
+  *) fail "pr list --base invoices returned '$listed'" ;;
+esac
+case "$listed" in
+  *'"baseRefName": "main"'*) fail "pr list --base also listed a pull request aimed at main" ;;
+  *) pass "and leaves out the one aimed at main" ;;
+esac
+# A resumed run looks for a pull request already open from the piece's branch
+# before it opens one, so it never opens a second.
+by_head=$("$GH" pr list --head invoice-totals --json number,headRefName)
+case "$by_head" in
+  *"\"number\": $stacked_pr"*) pass "pr list --head finds the pull request open from a branch" ;;
+  *) fail "pr list --head invoice-totals returned '$by_head'" ;;
+esac
+[ "$("$GH" pr list --head no-such-branch --json number)" = "[]" ] \
+  && pass "and answers an empty list for a branch with none" \
+  || fail "pr list --head invented a pull request for a branch with none"
+# /maintain's stale-branch listing compares a branch with the tip GitHub
+# recorded for its merged pull request.
+oid=$("$GH" pr list --state merged --head deposits --base main --json number,headRefOid)
+case "$oid" in
+  *"\"headRefOid\": \"$(git rev-parse deposits)\""*) pass "pr list gives a merged pull request's head commit" ;;
+  *) fail "pr list --json headRefOid returned '$oid'" ;;
+esac
+case "$("$GH" pr list --state all --json number,state)" in
+  *'"MERGED"'*) pass "pr list --state all includes a merged pull request" ;;
+  *) fail "pr list --state all left out the merged pull request" ;;
+esac
+if "$GH" pr list --json number,nosuchfield > /dev/null 2>&1; then
+  fail "pr list answered a field nobody modelled"
+else
+  pass "pr list refuses a field nobody modelled, as pr view does"
+fi
+
+# A remote that is a network address is never contacted. Its branches cannot
+# be read, so a base other than main counts as missing, and stderr says so.
+git remote set-url origin https://example.invalid/rehearsal/project.git
+if "$GH" pr create --title "Anything" --body "x" --head invoice-totals --base invoices > /dev/null 2> "$WORK/far.err"; then
+  fail "a base was taken as present on a remote that was never asked"
+else
+  grep -q 'not a folder on this computer' "$WORK/far.err" \
+    && pass "a network remote is never asked, and the base counts as missing" \
+    || fail "the refusal did not say the remote was not asked"
+fi
+git remote set-url origin "$WORK/project.git"
+
+# The base merges first. The stacked pull request is then aimed at main, as
+# the merge rule says, and merges there.
+"$GH" pr merge "$base_pr" > /dev/null || fail "the base pull request did not merge"
+if "$GH" pr edit "$stacked_pr" --base no-such-branch > /dev/null 2>&1; then
+  fail "a pull request was moved onto a base that is not on the remote"
+else
+  pass "moving a pull request onto a base that is not on the remote is refused"
+fi
+"$GH" pr edit "$stacked_pr" --base main > /dev/null \
+  && pass "pr edit --base moves a stacked pull request onto main" \
+  || fail "pr edit --base main was refused"
+case "$("$GH" pr view "$stacked_pr" --json baseRefName)" in
+  *'"baseRefName": "main"'*) pass "and it reads back as aimed at main" ;;
+  *) fail "the stacked pull request still does not aim at main" ;;
+esac
+"$GH" pr merge "$stacked_pr" > /dev/null || fail "the stacked pull request did not merge"
+git fetch -q origin
+git merge-base --is-ancestor origin/invoice-totals origin/main \
+  && pass "the stacked pull request lands on the remote's main after the move" \
+  || fail "the remote's main does not carry the stacked branch"
+
+echo "== A claim on a piece =="
+
+# A run claims a piece and reads the claim back, and backs off by taking its
+# own name off a piece somebody else claimed first.
+"$GH" issue edit 2 --add-assignee @me --add-label building > /dev/null
+printf 'Claimed by run 2026-09-30-2215\n' > "$WORK/claim.md"
+"$GH" issue comment 2 --body-file "$WORK/claim.md" > /dev/null \
+  && pass "issue comment accepts --body-file" \
+  || fail "issue comment --body-file was refused"
+case "$("$GH" issue view 2 --json labels,assignees,comments)" in
+  *'Claimed by run 2026-09-30-2215'*) pass "issue view shows the comments, so a claim can be read back" ;;
+  *) fail "issue view does not show the claim comment" ;;
+esac
+# The later claimant deletes its own claim comment. As on GitHub, the view
+# gives each comment its node id, the REST listing gives the numeric id, and a
+# deletion through the API takes the numeric one. The CLI form deletes the last.
+"$GH" issue comment 2 --body "Claimed by run 2026-09-30-221501" > /dev/null
+case "$("$GH" issue view 2 --json comments)" in
+  *'"id": "IC_'*) pass "issue view gives each comment its node id, as GitHub does" ;;
+  *) fail "issue view does not give node ids for the comments" ;;
+esac
+node=$("$GH" issue view 2 --json comments | python3 -c 'import json, sys; print(json.load(sys.stdin)["comments"][-1]["id"])')
+if "$GH" api -X DELETE "repos/rehearsal/project/issues/comments/$node" > /dev/null 2>&1; then
+  fail "a comment was deleted by its node id, which the REST endpoint does not take"
+else
+  pass "a deletion by node id is refused, as the REST endpoint refuses it"
+fi
+later=$("$GH" api repos/rehearsal/project/issues/2/comments | python3 -c 'import json, sys; print([c["id"] for c in json.load(sys.stdin) if c["body"].startswith("Claimed by run 2026-09-30-221501")][0])')
+case "$later" in
+  [0-9]*) pass "the REST listing gives each comment its numeric id" ;;
+  *) fail "the REST listing gave '$later' as the id" ;;
+esac
+"$GH" api -X DELETE "repos/rehearsal/project/issues/comments/$later" > /dev/null \
+  && pass "a comment can be deleted through the API by its numeric id" \
+  || fail "deleting a comment through the API was refused"
+case "$("$GH" issue view 2 --json comments)" in
+  *'221501'*) fail "the deleted comment is still on the piece" ;;
+  *'Claimed by run 2026-09-30-2215'*) pass "and only that comment is gone" ;;
+  *) fail "deleting one comment took the others with it" ;;
+esac
+if "$GH" api -X DELETE "repos/rehearsal/project/issues/comments/$later" > /dev/null 2>&1; then
+  fail "a comment was deleted twice"
+else
+  pass "a comment that is gone cannot be deleted again"
+fi
+"$GH" issue comment 2 --body "Claimed by run 2026-09-30-221502" > /dev/null
+"$GH" issue comment 2 --delete-last --yes > /dev/null \
+  && pass "issue comment --delete-last is accepted" \
+  || fail "issue comment --delete-last was refused"
+case "$("$GH" issue view 2 --json comments)" in
+  *'221502'*) fail "the last comment is still on the piece" ;;
+  *'Claimed by run 2026-09-30-2215'*) pass "and removes the last comment only" ;;
+  *) fail "--delete-last took more than the last comment" ;;
+esac
+# A state file written before comments had ids keeps each as a bare string.
+# Those get ids from a range of their own, so they never collide with new ones.
+python3 - "$FAKE_GH_STATE" <<'PY2'
+import json, sys
+state = json.load(open(sys.argv[1]))
+for issue in state["issues"]:
+    if issue["number"] == 1:
+        issue["comments"] = ["An older comment."]
+json.dump(state, open(sys.argv[1], "w"))
+PY2
+ids=$( { "$GH" api repos/rehearsal/project/issues/1/comments; "$GH" api repos/rehearsal/project/issues/2/comments; } \
+  | python3 -c 'import json, sys; ids = [c["id"] for line in sys.stdin for c in json.loads(line)]; print(len(ids), len(set(ids)))')
+[ "$(echo "$ids" | cut -d' ' -f1)" = "$(echo "$ids" | cut -d' ' -f2)" ] \
+  && pass "an older bare comment and the new ones never share an id" \
+  || fail "two comments share an id: $ids"
+"$GH" api --method POST repos/rehearsal/project/issues/1/comments -f body="Added through the API." > /dev/null \
+  && pass "a comment can be added through the API" \
+  || fail "adding a comment through the API was refused"
+"$GH" issue edit 2 --remove-assignee @me > /dev/null \
+  && pass "issue edit --remove-assignee is accepted" \
+  || fail "issue edit --remove-assignee was refused"
+case "$("$GH" issue view 2)" in
+  *'"assignees": []'*) pass "and the assignee is gone" ;;
+  *) fail "the assignee is still on the piece" ;;
+esac
+printf '## Done when\n- a refund is recorded\n\nWhere is the refund kept?\n' > "$WORK/question.md"
+"$GH" issue edit 2 --body-file "$WORK/question.md" > /dev/null
+case "$("$GH" issue view 2)" in
+  *'Where is the refund kept?'*) pass "issue edit reads the body from --body-file" ;;
+  *) fail "issue edit lost the body given with --body-file" ;;
+esac
+
 echo "== The first upload into an empty repository =="
 
 # A founded project's repository exists on GitHub but holds nothing. The first
@@ -360,7 +568,7 @@ fi
 
 # Nothing the kit reached for during this rehearsal should have been refused.
 if grep -q "UNSUPPORTED" "$FAKE_GH_LOG"; then
-  unexpected=$(grep "UNSUPPORTED" "$FAKE_GH_LOG" | grep -vc "search repos\|repo list\|visibility public\|private=false\|force=true\|-X DELETE\|someone/else\|git/ref -f" || true)
+  unexpected=$(grep "UNSUPPORTED" "$FAKE_GH_LOG" | grep -vc "search repos\|repo list\|nosuchfield\|visibility public\|private=false\|force=true\|-X DELETE\|someone/else\|git/ref -f" || true)
   if [ "$unexpected" -gt 0 ]; then
     fail "$unexpected modelled command was refused; see $FAKE_GH_LOG"
   fi

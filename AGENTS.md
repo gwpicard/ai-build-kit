@@ -223,7 +223,19 @@ attribution line, not the word.
   whether it is public or private. It creates `main` through the API only at
   a commit the repository holds, and only once, and makes `main` the default
   branch only once it exists. Moving or deleting a branch through the API
-  stays refused.
+  stays refused. It holds a pull request stacked on another piece's branch:
+  a base the remote does not hold is refused, as on GitHub, `pr list` filters
+  by base, and `pr edit --base main` moves the pull request onto `main` once
+  the piece under it has merged. `pr list --head` finds the pull request open
+  from a branch, so a resumed run never opens a second, and `--json
+  headRefOid` gives a merged pull request's head commit for the stale-branch
+  listing. A body given with `--body-file` is read, from a file or from
+  standard input. As on GitHub, the view gives each comment its node id and
+  the REST listing its numeric id, a deletion through the API takes only the
+  numeric one, and `--delete-last` removes the last, as a run that lost a
+  claim race deletes its own. An older bare comment gets an id from a range
+  of its own, so ids never collide. A remote that is a network address is
+  never asked, so a base there counts as missing.
 - `.agents/tests/fake-host.sh` checks the replay harness's stand-ins for a
   host's tools, which scenario 54 launches through on the Vercel recipe. The
   stand-in host keeps a list of deployments beside the project and builds each
@@ -397,7 +409,14 @@ attribution line, not the word.
   exits 2. Neither half runs on a folder that is not a fresh replay project,
   and the second refuses a remote that is not empty. It holds 55's gate open
   on the ways of asking before the upload it lists, and shut on a reply saying
-  the kit already pushed or uploaded, or only reporting a pull request.
+  the kit already pushed or uploaded, or only reporting a pull request. It
+  runs both halves of scenario 57's preparation. The first adds three ready
+  pieces, the second waiting on the first and the third leaving the shape of
+  its stored record unsettled. The second puts `main` on the remote, so the
+  code is online before the run. Neither half runs on a folder that is not a
+  fresh replay project. It holds 57's gate open on the question whether
+  pieces that pass may be merged, in each wording it lists, and shut on a plan
+  that has not asked it.
 - `.agents/tests/grader-recovery.sh` checks that the replay grader recovers a
   grading missing only its final brace or carrying one stray brace after it,
   and still refuses one that was cut off partway or followed by other text.
@@ -453,7 +472,26 @@ attribution line, not the word.
   behind it, nothing uploaded after the yes, and no default branch or pull
   request. A log with no turn markers is unobservable, not a pass. It also
   holds that the stand-in's state is read from beside the project, since the
-  copy inside it is a tracked file the kit's own Git work can move.
+  copy inside it is a tracked file the kit's own Git work can move. For
+  scenario 57, `/implement queue` over three ready pieces, it builds the run's
+  end state from the scenario's own preparation. The state file lists every
+  piece, a piece after the one it waits on, and the run's folder is never
+  committed. Each built piece carries `to check`, a claim naming the run and a
+  pull request. The one that waits on another aims at that piece's branch,
+  carries its commits on the remote and says which to merge first. The piece
+  whose record's shape is not settled is back in shaping with its question
+  and no pull request, or left `ready` and skipped with a reason naming the
+  choice. Nothing is merged when the person said not to, and the state file
+  says merges were not pre-approved. However the run ended, no piece is left
+  `waiting` or `building`, the earliest claim on a built piece names the run,
+  a branch has one pull request, and a piece sent back or parked keeps any
+  branch it had on the remote and loses the run's assignee. Each of those
+  taken away is a miss, and so are a missing `progress.md`, the wrong pull
+  request in the state file, and a built piece that carries more than `to
+  check`. A first piece parked after three failed attempts, or at an early
+  end with no attempt, passes when the piece on top of it was never built,
+  keeps `ready` and is skipped with a reason. It also holds that
+  `baseline.md` names the scenario's run, measured or owed.
 - `.agents/tests/check-tooling.sh` runs the setup tooling report against a set of
   throwaway PATHs and reads when it stops: a missing tool or a signed-out account
   blocks founding, while issues switched off or a read-only account do not.

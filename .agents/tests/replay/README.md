@@ -370,6 +370,18 @@ measures whether the piece gains its data rules and a `## Readiness` section
 written by a session that did not shape it before it turns `ready`. The person
 answers the data questions plainly, so a sound piece can end ready in one pass.
 
+Scenario 57 runs `/implement queue` over three ready pieces with nobody
+watching. Its case names `# prepare: three-ready-pieces`, which adds the
+pieces: one that shows how many days late an overdue loan is, one that lists
+the overdue loans with their days late and so waits on the first, and one that
+keeps a steward's note on a returned item, whose Data section leaves open where
+the note is kept. Its second half names the first branch `main` and pushes it,
+so the code is online and the first upload's question never arises. The person
+approves the plan and says nothing may be merged, then asks for the merge
+order. The state check reads the run's state file, the pieces, the pull
+requests and the branches on the remote: the second piece stacked on the
+first's branch, and the note piece back in shaping with its question.
+
 ## How grading works
 
 The grader is a separate session that receives the contract and the transcript
