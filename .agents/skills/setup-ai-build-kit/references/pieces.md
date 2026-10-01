@@ -560,7 +560,7 @@ marked `(ready)` in a printout it has just refreshed, and nothing else. Where
 that group holds no such piece, say that nothing is ready to build now and what
 the rest are waiting on, and name no piece as next.
 
-When a refresh fails, follow this skill's `references/required-tools.md`,
+When a refresh fails, follow [required tools](required-tools.md),
 "When GitHub access fails", before concluding GitHub is unavailable. That
 route requests access through the client when permission is the missing part.
 
