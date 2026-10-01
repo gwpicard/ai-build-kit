@@ -463,6 +463,47 @@ the form it expected.
 | Deletes an issue | Lets it go. If a branch still refers to it, `/sync` says so |
 | Fills the issue form in properly | Nothing special. It is a piece, and it gets built |
 
+## Speaking for the person
+
+Whatever the agent posts under the person's account, somebody else reads as the
+person speaking. So anything another person will read that way waits for a yes
+that covers those exact words. Show the words first, then ask. This covers:
+
+- a comment or a reply on an issue or a pull request;
+- a review of a pull request;
+- a mention of someone by their GitHub name, because GitHub tells them;
+- a message in any other channel the agent can reach.
+
+The same yes is needed before changing the title, the `## So that`, the
+`## Done when` or the scope of an issue or a pull request that another account
+opened. Read the author with `gh issue view <number> --json author`, or
+`gh pr view <number> --json author` for a pull request, and compare it with
+`gh api user --jq .login`. When the author cannot be read, for example because
+GitHub cannot be reached, treat it as another person's and ask.
+
+Some writing is the kit's bookkeeping. These say nothing in the person's voice,
+so they need no yes, on anyone's issue:
+
+- state labels and `needs-` labels;
+- the claim comment a run writes;
+- a `Closes #<number>` line;
+- the question a run or `/shape` writes on a piece it sends back to shaping;
+- the readiness check's gaps and its `## Readiness` section;
+- the shaped sections added above a kept original;
+- the person's own words added as a comment when they asked for exactly that.
+
+When the person says "tell them" something, that is the yes for those words.
+Write what they said, show it, and post them with no second question. Where you
+add or change words, ask about the new version.
+
+When the person says no, post nothing. Give them the words, so they can post
+them themselves if they want to.
+
+A run with nobody watching posts nothing in the person's voice, and it changes
+no title or scope on an issue or a pull request another account opened. Its
+bookkeeping still goes on. What it would have said goes into its report for the
+person to read.
+
 ## The local printout
 
 `plan.local.md` is a printout of the open issues and nothing else. It is

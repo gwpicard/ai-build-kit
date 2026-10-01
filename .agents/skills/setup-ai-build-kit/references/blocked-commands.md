@@ -52,7 +52,11 @@ still apply:
   person has accepted the risk on the record;
 - never withdraw, soften, or redefine a risk notice you have already given, and
   never offer your own reading of your own work as the independent review a
-  build path names.
+  build path names;
+- never post in the person's name to anyone else, or change the title or scope
+  of an issue or a pull request another account opened, without a yes that
+  covers the words. The `setup-ai-build-kit` skill's
+  `references/pieces.md` says what counts, under "Speaking for the person".
 
 Save a checkpoint before sweeping work. If one of these actions appears
 necessary, stop, explain why, and let the person decide with the reason in
