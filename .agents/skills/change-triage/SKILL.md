@@ -200,15 +200,20 @@ no changelog file.
 Run the tool on the content in the main folder, then hand the output to the
 person and say where it is. The output stays out of git unless the person asks
 to keep it. Where the tool writes its output to a folder git already ignores, it
-stays there; otherwise it goes to `.agents/tmp/content/<YYYY-MM-DD>-<short name>/`,
-which the project's `.gitignore` already covers. The person's own input files go
-to the same place unless they are already in the project. That way `git status`
-is as clean after the run as before it, and the next build can start.
+stays there; otherwise it goes to `.agents/tmp/content/<YYYY-MM-DD>-<short name>/`.
+Check first with `git check-ignore -q .agents/tmp/content/` that git ignores
+that folder. A project founded before the kit ignored it may not: there, write
+to a folder made with `mktemp -d` outside the project instead, and offer once
+to add `.agents/tmp/` to `.gitignore` as a small saved change. The person's own
+input files go to the same place unless they are already in the project. That
+way `git status` is as clean after the run as before it, and the next build can
+start.
 
 When the person asks to keep the content or its output in the project, save it
-through the save route the build path uses, as section-builder saves a piece:
-as a small change with its own changelog file and, on the pull-request route,
-its own pull request. Never on a branch that is left unpushed, since its
+through the save route the build path uses, following section-builder's save
+and record steps yourself even though there is no piece: as a small change
+with its own changelog file and, on the pull-request route, its own pull
+request. Never on a branch that is left unpushed, since its
 changelog entry would never reach `main`.
 
 Where the content shows a problem in the tool, because it fails or the output
@@ -219,7 +224,7 @@ and is triaged as usual.
 
 Where the content holds personal data or confidential material, the
 confidential-files rule in AGENTS.md applies, so nothing of it or its output is
-committed without the person's yes. If the person leaves before saying whether
+committed, even when the person asks to keep it, and both stay out of git. If the person leaves before saying whether
 to keep it, nothing is committed: the output stays where it was written, and the
 reply named that place. If the tool cannot run on this computer, say so and
 stop. Anything it would need installed is work on this computer, above.
