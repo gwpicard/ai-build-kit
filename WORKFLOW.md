@@ -220,6 +220,8 @@ Anything touching data, access, or money gets written into the masterplan first.
 
 Work on your own computer rather than on the tool, such as installing or repairing a program, is kept apart from the project. Nothing is installed, replaced or removed outside the project's folder until you have said yes to what it is, where it goes and how to undo it, and nothing about your computer is written into the project. You hear what was done in the reply instead.
 
+Using the tool on your own material, such as running a document through it to see what it makes, needs no piece, since nothing about the tool changes. The output goes to a folder the project does not save, and the reply says where. Ask to keep it and it is saved like any other change, with its own changelog entry. If the run shows the tool getting something wrong, that becomes a /fix or a new piece.
+
 If the request would change what kind of project this is, by bringing in outside users or real money or a promise to someone, the agent re-runs the fit check with you before building. A different build path needs different care before people rely on it.
 
 /fix is for when something that should work doesn't: "/fix the board duplicates cards when I drag them". Paste the whole error if there is one. It builds the tightest repeatable check it can find for the exact symptom and works out the cause before touching code, driving the app in a browser or adding temporary logging when it needs to see what is actually going wrong. It resets failed attempts rather than stacking them, and finishes with evidence that keeps the bug from coming back.

@@ -38,7 +38,7 @@ up. Steps 2 to 4 wait until then.
 
 One of: repair of promised behaviour; new behaviour; clarification or
 copy/presentation change; setup or operational task; work on this computer
-outside the project; a decision that needs
+outside the project; using the tool on content; a decision that needs
 clarify; a decision that needs a prototype; a decision that needs source
 research; a change that alters the build path or a sensitive area.
 
@@ -93,7 +93,8 @@ from scratch.
 
 Route to one of: `/fix`; a ready piece; clarify; a decision
 prototype; a source check; a search for existing work; a step only the person
-can do; work on this computer, done apart from the project; update the
+can do; work on this computer, done apart from the project; using the tool on
+content, done without a piece; update the
 masterplan first; rerun the fit check; prepare the handover; give the risk
 notice where a sensitive area survives redesign. Say the route and the reason in one line.
 
@@ -187,6 +188,41 @@ two requests, each with exactly one route. Say so in one line. Ask about the
 computer part and do it apart, then triage the project part as usual. Where the
 computer work changed project files by accident, and the changes are
 not committed, name them to the person and do not commit them.
+
+### Using the tool on content
+
+Some tools exist to turn content into something, such as a report, a site or
+an import. Using the tool on content means running the tool on the person's
+material to produce an output, or to see how it handles that material, with no
+change to the tool's code, checks or records. It gets no piece, no branch and
+no changelog file.
+
+Run the tool on the content in the main folder, then hand the output to the
+person and say where it is. The output stays out of git unless the person asks
+to keep it. Where the tool writes its output to a folder git already ignores, it
+stays there; otherwise it goes to `.agents/tmp/content/<YYYY-MM-DD>-<short name>/`,
+which the project's `.gitignore` already covers. The person's own input files go
+to the same place unless they are already in the project. That way `git status`
+is as clean after the run as before it, and the next build can start.
+
+When the person asks to keep the content or its output in the project, save it
+through the save route the build path uses, as section-builder saves a piece:
+as a small change with its own changelog file and, on the pull-request route,
+its own pull request. Never on a branch that is left unpushed, since its
+changelog entry would never reach `main`.
+
+Where the content shows a problem in the tool, because it fails or the output
+is wrong, say so in one line, and it becomes a repair through `/fix` or a new
+piece through this triage. The content run itself is not a repair. A request
+that changes the tool so it can handle the content is not content work either,
+and is triaged as usual.
+
+Where the content holds personal data or confidential material, the
+confidential-files rule in AGENTS.md applies, so nothing of it or its output is
+committed without the person's yes. If the person leaves before saying whether
+to keep it, nothing is committed: the output stays where it was written, and the
+reply named that place. If the tool cannot run on this computer, say so and
+stop. Anything it would need installed is work on this computer, above.
 
 ## Step 5: Record only durable information
 

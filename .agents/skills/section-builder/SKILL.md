@@ -557,6 +557,10 @@ has none; an older project gets it from its first piece. The issue number keeps
 two pieces with the same short name apart. Where the work has no issue, use the
 pull request's number instead. Checkpoint work with neither takes the date and
 the branch's short name, `changes/<YYYY-MM-DD>-<short name>.md`.
+Content the person asks to keep after using the tool on it, as the
+`change-triage` skill describes, is saved through the build path's save route with its own changelog
+file, named as work with no issue is, and is never left on a branch nobody
+pushes.
 
 The file holds one or two sentences on what changed for the person, then the
 pull request's link on its own line. Write it after the pull request opens, as
