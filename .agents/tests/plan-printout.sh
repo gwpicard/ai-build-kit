@@ -771,7 +771,7 @@ fi
 case "$stage" in
   repo) echo '{"nameWithOwner":"someone/project"}' ;;
   listing) cat "$FIXTURE" ;;
-  blockers) echo '[]' ;;
+  blockers) echo "${BLOCKER_RESPONSE:-[]}" ;;
 esac
 SH
 chmod +x "$WORK/access/bin/gh"
@@ -793,6 +793,16 @@ for stage in repo listing blockers; do
     && pass "$stage failure preserves the earlier printout" \
     || fail "$stage failure replaced the earlier printout"
 done
+
+cp "$OUT" "$WORK/access/project/plan.local.md"
+before=$(cksum < "$WORK/access/project/plan.local.md")
+said=$(cd "$WORK/access/project" && PATH="$WORK/access/bin:$PATH" \
+  FAIL_STAGE=none BLOCKER_RESPONSE='{}' ERROR_FILE="$WORK/access/error" \
+  FIXTURE="$WORK/issues.json" "$REFRESH" 2>&1) \
+  && fail "a malformed blocker answer reported success"
+[ "$(cksum < "$WORK/access/project/plan.local.md")" = "$before" ] \
+  && pass "a malformed blocker answer preserves the earlier printout" \
+  || fail "a malformed blocker answer replaced the earlier printout"
 
 access_error() {
   printf '%s\n' "$1" > "$WORK/access/error"
