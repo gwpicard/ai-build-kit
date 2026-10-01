@@ -272,7 +272,8 @@ It does not switch on anything the notice did not name, and it does not settle
 another area's caution, which needs its own notice. Where the plan holds a lock
 whose only purpose is to wait for this caution, such as a rule that stays off
 until a named person signs it, the acceptance opens that lock. Change the plan
-in the same reply and say so in one line. Do not keep the lock and ask for a
+in the same reply and say so in one line, which can be the same line that
+names the corrected sentences. Do not keep the lock and ask for a
 further yes to open it. Keep it only if the person asks you to. The named
 person has still not looked, and the record still says accepted, never done.
 

@@ -204,6 +204,8 @@ rs_rule "the area reads accepted, never done" \
   'line .accepted., never .done.'
 rs_rule "silence or other work leaves only that area behind" \
   'silence, a question, or a request for other work is not carrying on'
+rs_rule "nor is a form answer with nothing chosen" \
+  'nor is a form answer with nothing chosen'
 rs_rule "ship goes on in the same reply with no further question" \
   'go on in the same reply, without a further question about that area'
 rs_rule "ship opens a lock that only waits for this caution" \
