@@ -179,6 +179,8 @@ rs_rule "how to give it more eyes" 'to give the walk-through more eyes'
 rs_rule "the kit never installs them" 'the kit never installs them'
 rs_rule "the pictures stay in the main folder" \
   'in the main folder.s `\.agents/tmp/walkthrough/<issue number>/`'
+rs_rule "the workflow excludes another computer and retains unseen gaps" \
+  'a browser on another computer is never used, and anything it could not see stays a verification gap in the final review'
 rs_guard "$WORKFLOW" "WORKFLOW.md"
 rs_require_absent "WORKFLOW.md no longer keeps pictures relative to the build" \
   "$WORKFLOW" 'keeps them in `\.agents/tmp/walkthrough'
