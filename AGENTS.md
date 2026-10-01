@@ -1275,7 +1275,8 @@ attribution line, not the word.
   nothing merged while GitHub cannot be reached. It holds the six conditions
   under which an agent merges on the person's pre-approval of a run, each
   proved load-bearing, the last being that the merge would not go live, so
-  pre-approval never puts code live. A piece failing one stays in `to check`
+  pre-approval never puts code live, and a tool that is `not hosted` meets it.
+  A piece failing one stays in `to check`
   with the reason. It holds the masterplan's `Goes live:` line, written once
   when it is missing, the ask that says "this goes live now" where every merge
   goes live, and the first such merge running `/ship`'s first-launch checks
@@ -1284,6 +1285,21 @@ attribution line, not the word.
   pointing at it, and holds `/ship`'s promote from a preview to live on a yes
   that names it. It replaces the validator's string that held section-builder
   short of a merge.
+- `.agents/tests/not-hosted.sh` guards the third value of the `Goes live:`
+  line, `not hosted`, for a tool no server runs for people to reach. Two
+  projects had no live address at all, a skill library installed from the
+  repository and a report generator run on the person's own computer. The
+  merge step took their merges for launches: it asked the wrong question,
+  started the first-launch checks, and held back a run's pre-approved merges.
+  So it holds that a merge there is never a launch, that pre-approval covers
+  it, and that a missing line asks which of the three it is. A recipe named
+  beside `not hosted` wins, since a recipe is a place the tool runs. It holds
+  what `/ship` does instead: it names each change since the last release,
+  runs the evidence run and the review, and proposes the next minor tag, or
+  `v0.1.0` with none. It releases only on a yes naming the release, and makes
+  a local tag where there is no GitHub repository. It writes no hosting
+  request, address or rollback line, on Build with care as well. It also holds the template, founding
+  writing the line from answers it already has, and WORKFLOW.md.
 - `.agents/tests/the-runner.sh` guards how `/implement` runs a plan of ready
   pieces with nobody watching, given several numbers or `queue`. In a real
   project the agent built its own loop four times, with its rules and state in

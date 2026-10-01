@@ -305,7 +305,7 @@ Just before the merge, the agent brings the pull request up to date with `main` 
 
 Before a run, you can say that pieces which pass may be merged. That covers merges that reach a preview: nothing goes live without your yes naming it, or /ship. The agent then merges a piece only when its check is green, its review found nothing worth stopping for, it flags nothing for you to confirm, it touches no sensitive area, you have not asked to try it yourself, and its merge would not go live. Anything else waits for you in to check, and the report says which condition it missed. That permission ends with the run.
 
-The kit's default is that a merge reaches a preview and /ship puts it live. The masterplan's "How it stays running" section records which way your tool goes live. Where your host puts every merge live instead, the ask says "this goes live now", and the first such merge runs /ship's first-launch checks before it happens.
+The kit's default is that a merge reaches a preview and /ship puts it live. The masterplan's "How it stays running" section records which way your tool goes live. Where your host puts every merge live instead, the ask says "this goes live now", and the first such merge runs /ship's first-launch checks before it happens. A tool with no live address, such as a library people install or a program they run on their own computer, records `not hosted` instead. Its merges are never a launch, and a run may merge them. If the masterplan does not say, the first merge asks which of the three it is, once.
 
 After a merge, everyone pulls main. Flagged areas also get the review the build path names before the pull request is offered as ready. A direct push to `main` is forbidden, and in Claude Code the project settings refuse the usual ways of writing one, so every change reaches it through a pull request. Each piece starts from an up-to-date `main`.
 
@@ -372,6 +372,14 @@ a deploy's result is unclear, /ship checks whether it went live before it tries
 again. A second deploy of the same version leaves nothing older to roll back
 to, and /ship says so before running one. A warning you have already heard is
 not repeated in the same /ship.
+
+On a tool that is not hosted, going live is a release. /ship names each change
+since the last release, runs the evidence run and the review, proposes the next
+version, such as v1.5.0 after v1.4.2, and makes a GitHub release on your yes
+naming it. There is no hosting request, no address and no rollback line. The
+changelog then reads "Released" with the version. Anyone who installs straight
+from `main` still gets each merge the moment it lands: the release marks when
+the kit calls the work live, and it does not hold `main` back.
 
 The records /ship writes during a launch, such as its changelog entries and a
 colleague later saying the new version is live, take the same save route as a

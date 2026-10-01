@@ -122,12 +122,24 @@ on GitHub themselves.
 The masterplan's "How it stays running" section records how the tool goes live
 in its `Goes live:` line. `through /ship` is the kit's default: a merge reaches
 a preview, and `/ship` promotes it to live. `on every merge` means the host puts
-each merge to `main` live, so the merge is itself a launch.
+each merge to `main` live, so the merge is itself a launch. `not hosted` means
+no server runs the tool for people to reach: people install it, copy it, or run
+it on their own computer.
+
+On `not hosted`, a merge is never a launch. The ask never says "this goes live
+now", and no first-launch checks run. What goes live for such a tool is a
+release, which `/ship` makes.
+
+Where AGENTS.md names a recipe and the line says `not hosted`, the recipe wins,
+since a recipe is a place the tool runs. Read its going-live section instead:
+where it says a change to `main` goes live, treat the merge as `on every
+merge`, and otherwise as `through /ship`.
 
 Where the line is missing, read the going-live section of the project's recipe.
 Where it says a change to `main` goes live, treat the merge as `on every merge`.
-Otherwise ask, in the reply that asks for the merge, whether merging puts the
-tool live, and treat it as going live until the person says it does not. Write
+Otherwise ask, in the reply that asks for the merge, which of the three it is:
+the merge reaches a preview, the merge goes live, or nothing is hosted. Treat
+it as going live until the person says it does not. Write
 their answer into "How it stays running" as the `Goes live:` line, with the
 merge's save or the next one, so the question is asked once for each project.
 
@@ -147,7 +159,8 @@ Before a run starts, the person may say that pieces which pass may be merged.
 Write that as `merge_preapproved` in the run's state file. It holds for that run
 alone and ends with it, so it never reaches a later run or a piece built outside
 one. It covers merges that reach a preview. Nothing goes live without the
-person's yes naming it, or `/ship`.
+person's yes naming it, or `/ship`. A merge on a tool that is `not hosted` puts nothing
+live, so pre-approval covers it too.
 
 With pre-approval, merge a piece only when all six hold:
 
@@ -158,9 +171,10 @@ With pre-approval, merge a piece only when all six hold:
 4. it touches no sensitive area named in the build-path section, accepted or not;
 5. the person has not opted in to check it: the piece has no `Waiting on you:
    try it` line, and `.ai-build-kit-maintenance` has no `check-myself|yes` line;
-6. its merge would not go live: the `Goes live:` line says `through /ship`. Where
-   it says `on every merge`, where the recipe says a change to `main` goes live,
-   or where the route is not known, the merge would go live.
+6. its merge would not go live: the `Goes live:` line says `through /ship` or
+   `not hosted`. Where it says `on every merge`, where the recipe says a change
+   to `main` goes live, or where the route is not known, the merge would go
+   live.
 
 A piece that fails any of the six is not merged. It stays in `to check` for the
 person, and the run's report names the condition it failed. The rule for a
