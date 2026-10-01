@@ -212,7 +212,9 @@ attribution line, not the word.
 - `.agents/tests/agent-plugin.sh` checks the assembled Agent Plugins folder
   against the standard and rehearses a project stand-up from it.
 - `.agents/tests/session-start.sh` rehearses the check-up cadence and proves
-  this repository never receives a reminder.
+  this repository never receives a reminder. The hook reads its dates by key,
+  so the `kit` line and the recipe lines in the check-up file, placed first,
+  leave the count alone.
 - `.agents/tests/fake-github.sh` checks the replay harness's stand-in for the
   GitHub CLI: the commands it answers, and the ones it still refuses on purpose.
   It also holds that opening a pull request closes nothing, and that a merge
@@ -601,6 +603,20 @@ attribution line, not the word.
   own branch, and a founding saved off the default branch names that branch in
   its changelog line and its completion report. `adopting.md` and WORKFLOW.md
   carry the same story.
+- `.agents/tests/kit-version-record.sh` guards the record of which kit release
+  a project holds. Two external projects could not tell. One carried an older
+  release's label with newer files, and the other stayed six releases behind
+  for weeks, then updated with a bare `npx skills update` that dropped a
+  renamed skill. So founding writes a `kit|<version>|<commit>` line into
+  `.ai-build-kit-maintenance`, the version from the installed maintain skill's
+  `VERSION` or, in a whole copy, `.ai-build-kit-version`, and the commit its
+  tag points at, following an annotated tag once. A failed lookup writes
+  `unknown` and founding carries on. The first changelog entry names the same
+  two. `/maintain` rewrites the line after an update and writes it where it is
+  missing or disagrees. `/what-now` reads the files rather than the line, and
+  names a newer published release in one line, saying nothing when they match
+  or the call fails. The founded `blocked-commands.md` says the kit is updated
+  only through `/maintain`, and WORKFLOW.md tells the person.
 - `.agents/tests/founding-menu.sh` guards the recipe menu founding offers. The
   menu is the files directly in the `recipes/` folder of the installed ship
   skill, found beside the founding skill and never at a project path, since the
@@ -1332,7 +1348,9 @@ attribution line, not the word.
   since that is what makes a repository write from a workflow acceptable at
   all. It also reads back `/maintain`'s rules about `releases/latest`, the one
   endpoint that cannot answer with a draft, and asserts that neither
-  `docs/MAINTAINING.md` nor the stamp still calls the old gap unavoidable. The
+  `docs/MAINTAINING.md` nor the stamp still calls the old gap unavoidable.
+  `/what-now` names a newer release too, so the check holds that it asks the
+  same endpoint and no other, and never names a draft. The
   real write from inside GitHub Actions is the one thing no local rehearsal can
   reach, so the permission shape of that workflow is guarded in
   `release-publication.sh` and the first published release is the first time

@@ -553,6 +553,15 @@ the build-path section of your masterplan to the new shape, shows the old text
 above the new, keeps every accepted risk word for word, and changes nothing
 without your approval.
 
+Your project records which AI Build Kit release it holds, and the commit that
+release was cut from, in a small file founding writes and every update
+rewrites. So you can always say exactly which kit you have. You do not have to
+wait for the monthly visit to hear about a new one either: when a newer release
+is out, /what-now says so in one line, names both versions and points you to
+/maintain. Update the kit only through /maintain. The installer's own
+`npx skills update` can drop a renamed skill without a word and leave the kit
+half updated, so the agent will not run it for you.
+
 The standing instructions in AGENTS.md stay under 200 lines and hold what the
 code cannot show, such as how work is saved and reviewed and which conventions
 differ from the default. /maintain counts the lines every month and offers a

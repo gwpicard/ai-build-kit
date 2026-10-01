@@ -53,14 +53,18 @@ rs_rule "the first changelog entry names the same version and commit" \
   'first entry under today.s date, naming the same version and commit'
 rs_guard "$SETUP" "the /setup-ai-build-kit skill"
 
-# The record's own header says what the line is and who writes it.
+# The record's own header says what the line is and who writes it. Its lines
+# are comments, so a phrase that wraps carries a '#' and the patterns stop short
+# of a line end.
 rs_reset
 rs_rule "the template documents the kit line" \
   'writes a kit line, as .kit\|<version>\|<commit>.'
-rs_rule "and says what the commit is, and when it is unknown" \
-  'the commit its tag points at, or .unknown.'
-rs_rule "and that maintain rewrites it and adds it where missing" \
-  'maintain rewrites the kit line after an update and adds it where it is missing'
+rs_rule "and says the commit is unknown when the lookup failed" \
+  'or .unknown. when that lookup failed'
+rs_rule "and that maintain rewrites it after an update" \
+  'maintain rewrites the kit line after an'
+rs_rule "and adds it where it is missing" \
+  'adds it where it is missing'
 rs_guard "$RECORD" "the maintenance record template"
 
 # /maintain keeps the line current.
