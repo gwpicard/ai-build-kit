@@ -44,7 +44,7 @@ rs_rule "step 1: take in main with a merge commit" \
 rs_rule "step 2: fold every waiting file" '2\. fold every file now in `changes/` into `changelog\.md`'
 rs_rule "the piece's own and any left behind" "the piece.s own, and any a merge made elsewhere left behind"
 rs_rule "step 3: commit, push and wait on the new commit" \
-  '3\. commit the fold as `fold the changelog`, push the branch, and wait for the project check on that new commit with `gh pr checks <number> --watch`'
+  '3\. commit the fold as `fold the changelog`, push the branch, and wait for the project check on that new commit, as "waiting for the check" says'
 rs_rule "step 4: merge only on green" '4\. merge only when that check is green'
 rs_rule "red merges nothing and goes to /fix" 'red means nothing merges: say so and take it to `/fix`'
 rs_rule "an unfinished check makes the merge wait, said once" \

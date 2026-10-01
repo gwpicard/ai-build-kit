@@ -2,9 +2,10 @@
 
 The one merge step for every route. section-builder, `/implement`, `/fix`,
 `/ship` and `/sync` load it whenever a pull request is ready to merge, and none
-of them keeps its own copy of the rule. It covers the merge alone: the save that
-opened the pull request is section-builder's step 8, and what happens to the
-piece afterwards is its step 9.
+of them keeps its own copy of the rule. It covers the merge, and the wait for
+the project check that the merge and section-builder's step 8 share. The save
+that opened the pull request is section-builder's step 8, and what happens to
+the piece afterwards is its step 9.
 
 ## The yes that names it
 
@@ -21,6 +22,30 @@ do not ask again. A yes to going live, to a hosting step, or to any question
 asked before the merge was named does not cover it: ask again, and merge
 nothing until they answer. A no leaves the pull request open.
 
+## Waiting for the check
+
+Wait with `gh pr checks <number> --watch --fail-fast`. It returns once every
+check has finished or one has failed. Where the coding agent limits how long a
+command may run, run it in the background or with the agent's own tool for
+watching a command, and read its result when it ends. Never a loop of `sleep`
+calls: Claude Code refuses them, and a hand-made loop is easy to misread.
+
+Read the result from the command's final output and exit code, never from a
+watch that ended early. Exit code 8, or an error naming an unknown option,
+means the check is not finished. Where `gh` is too old for `--watch`, run
+`gh pr checks <number>` again when the agent's own watch tool says time has
+passed.
+
+Three cases end without a green check:
+
+- Where `gh pr checks` reports that no checks ran, say so plainly, and never
+  call the pull request green.
+- Where a check never finishes, the watch runs until the agent's own time limit
+  ends it. Say the check has not finished, name it, and leave the piece in
+  `to check`.
+- Where GitHub cannot be reached while waiting, say the check could not be
+  read, and call nothing green.
+
 ## Before any merge
 
 Merge only a pull request whose project check is green. Never merge over a red
@@ -32,7 +57,7 @@ that each pass alone can break `main` together. So every merge, fold or no fold,
 first brings the branch up to date with `main` and checks it again. Once the
 merge is approved, run this skill's `scripts/bring-up-to-date.sh`, as "The fold
 before the merge" says, and wait for the project check on the commit its last
-line prints, with `gh pr checks <number> --watch`. Merge only on green. The
+line prints, as "Waiting for the check" says. Merge only on green. The
 check waited on is the project check on GitHub, never a run on this computer,
 since the check on GitHub is the one the green tick reports.
 
@@ -77,7 +102,7 @@ pre-approval, and before `gh pr merge`:
 2. Fold every file now in `changes/` into `CHANGELOG.md`: the piece's own, and
    any a merge made elsewhere left behind.
 3. Commit the fold as `Fold the changelog`, push the branch, and wait for the
-   project check on that new commit with `gh pr checks <number> --watch`.
+   project check on that new commit, as "Waiting for the check" says.
 4. Merge only when that check is green. Red means nothing merges: say so and
    take it to `/fix`, as the rule above says.
 
