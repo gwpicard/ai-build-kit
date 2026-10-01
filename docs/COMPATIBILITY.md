@@ -110,6 +110,33 @@ skills installed into the project, which is the shared installer's route.
   job, and you set them yourself.
 - Nobody has checked whether Codex keeps the five background skills out of
   your hands.
+- GitHub access depends on the session's network permissions and the CLI's
+  sign-in. See [GitHub access in Codex](#github-access-in-codex).
+
+### GitHub access in Codex
+
+The kit needs a signed-in `gh` with permission to read and change the project's
+repository. Check `gh auth status` and `gh repo view` from the agent's command
+tool. A working terminal or GitHub connector does not prove that tool has the
+same access. A connector can read issues while refusing writes.
+
+For Codex's `workspace-write` sandbox, network access is off by default. Enable
+it in your Codex configuration, then start a new session:
+
+```toml
+[sandbox_workspace_write]
+network_access = true
+```
+
+This enables outbound networking for workspace commands. It does not sign in
+`gh` or grant repository permissions. Managed policies or a client's session
+settings may still restrict access. See [OpenAI's network access guidance](https://developers.openai.com/codex/agent-approvals-security/#network-access).
+
+If the command tool fails while your terminal works, ask the agent to request
+GitHub access through the client's approval mechanism. If `gh` is signed out,
+run `gh auth login` in your terminal. The kit never changes your permission
+settings itself. A failed plan refresh shows a credential-masked GitHub error
+and a recovery step, and leaves the previous printout intact.
 
 ### Known limits of Cursor, Gemini CLI and GitHub Copilot
 

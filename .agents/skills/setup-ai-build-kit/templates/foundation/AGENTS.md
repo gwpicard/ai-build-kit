@@ -38,6 +38,11 @@ pointer such as the `ship` skill's `templates/handover.md`, or `<name>/SKILL.md`
 without native discovery, names a file there. Keep project rules here, never in
 an installed skill.
 
+When GitHub access fails, follow the `setup-ai-build-kit` skill's
+`references/required-tools.md`, "When GitHub access fails". Request the needed
+access through the client's approval mechanism; never treat a failed read as
+an empty plan or switch tools after a refusal without explicit authorisation.
+
 The user describes intent in plain language; change-triage chooses the route.
 Build one agreed, visible slice at a time. Add nothing the slice did not ask
 for, and never widen a fix into a tidy-up. When a written instruction and an

@@ -560,6 +560,10 @@ marked `(ready)` in a printout it has just refreshed, and nothing else. Where
 that group holds no such piece, say that nothing is ready to build now and what
 the rest are waiting on, and name no piece as next.
 
+When a refresh fails, follow this skill's `references/required-tools.md`,
+"When GitHub access fails", before concluding GitHub is unavailable. That
+route requests access through the client when permission is the missing part.
+
 It carries the time it was written, which is what makes it safe when GitHub is
 unreachable. A refresh that cannot reach GitHub leaves the last printout as it
 was and says when that one was written. The agent can say "here is your list as of 18:40, and I cannot
