@@ -491,8 +491,8 @@ the number, and say "after", "builds on" or "merge first", as in "Merge
 mentions another carries one `Closes` line, for the piece it finishes, and
 names the other that way.
 
-Once it
-is open, write the piece's changelog file, as step 9 describes, and push it.
+Once it is open, write the piece's changelog file, as step 9 describes, and
+push it.
 When the pull request opens, move the piece from `building` to `to check` in the same
 step, `gh issue edit <number> --add-label "to check" --remove-label building`,
 since it now waits for the person to try it or merge it. Wait for the check as

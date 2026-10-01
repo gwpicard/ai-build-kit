@@ -32,7 +32,8 @@ calls: Claude Code refuses them, and a hand-made loop is easy to misread.
 
 Read the result from the command's final output and exit code, never from a
 watch that ended early. Exit code 8, or an error naming an unknown option,
-means the check is not finished. Where `gh` is too old for `--watch`, run
+means the check is not finished. Where `gh` names `--fail-fast` as unknown, run
+the watch again without it. Where `gh` is too old for `--watch`, run
 `gh pr checks <number>` again when the agent's own watch tool says time has
 passed.
 
