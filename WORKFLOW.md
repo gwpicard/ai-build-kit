@@ -628,10 +628,19 @@ rest of the file as it is. A no is recorded, and the offer comes back only
 when a release adds another rule.
 
 /maintain writes the date of each visit into the project. When more than a month
-has gone by, opening a session says so and names /maintain. A tool that cannot
-run anything when a session opens says it when you type /what-now instead.
+has gone by, or once 20 changes have landed since the last visit, whichever comes
+first, opening a session says so and names /maintain. A busy project can do a
+month's work in a week, and its records drift just as far. The count is of the
+changes saved to your main branch, and it counts only what this computer already
+holds, so merges made on GitHub since you last pulled show up late.
+
+A tool that cannot run anything when a session opens says it when you type
+/what-now instead, and /what-now asks the same script, so the two agree.
 Nothing is blocked and nothing changes without a command. If you ask a visit to
-leave kit updates alone, it does not add that reminder either, and says so.
+leave kit updates alone, it does not add that reminder either, and says so. A
+project whose reminder script came before the change count is offered the newer
+one at the monthly visit, and a no keeps the old one until the next visit asks
+again.
 
 The quarterly visit is fuller, with a hot-spot tidy-up and an ownership check
 that can name a new sensitive area or, after a genuine redesign, take one off.

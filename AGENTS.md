@@ -214,7 +214,23 @@ attribution line, not the word.
 - `.agents/tests/session-start.sh` rehearses the check-up cadence and proves
   this repository never receives a reminder. The hook reads its dates by key,
   so the `kit` line and the recipe lines in the check-up file, placed first,
-  leave the count alone.
+  leave the count alone. It also holds the count of work. A busy project once
+  did five weeks of work in five days and heard nothing, because only days
+  were counted. So the hook speaks at 20 changes since the last visit, or
+  since founding, however few days passed. The rehearsal saves dated changes
+  in a throwaway project: 19 says nothing, 20 speaks, and changes saved
+  before the visit and the commits inside a merged pull request are left
+  out. It reads `origin/HEAD` first, then `main`, `master` and the branch
+  checked out, and a remote holding fewer changes proves it never fetches.
+  With both due, the day line comes first and the Claude output stays one
+  object. A folder with no history keeps the day rule.
+- `.agents/tests/check-up-counts-work.sh` guards the prose around that count.
+  `/what-now` runs the reminder script in its plain mode and takes its
+  answer, so a session's opening and `/what-now` never disagree. `/maintain`
+  offers the newer script in one line to a project whose copy differs from
+  the template, since an update never reaches it, replaces it only on a yes,
+  and offers again next visit after a no. WORKFLOW.md says days or changes,
+  whichever comes first.
 - `.agents/tests/fake-github.sh` checks the replay harness's stand-in for the
   GitHub CLI: the commands it answers, and the ones it still refuses on purpose.
   It also holds that opening a pull request closes nothing, and that a merge

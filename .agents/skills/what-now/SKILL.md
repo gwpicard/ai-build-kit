@@ -24,10 +24,15 @@ merge click (an open pull request says), whether any check is failing,
 whether an earlier review left an unresolved finding, whether flagged work is
 still waiting, what the build-path section's `Accepted:` lines say the project
 has knowingly given up, whether a manual setup step was left mid-way, whether Git
-shows a merge or rebase conflict, whether a check-up is overdue, taken from
-`.ai-build-kit-maintenance` when that file exists and from the changelog dates
-when it does not, and whether anything on the build path's recheck-when list has
-happened.
+shows a merge or rebase conflict, whether a check-up is overdue, and whether
+anything on the build path's recheck-when list has happened.
+
+For the check-up, run `.agents/hooks/session-start.sh` with no options, its plain
+mode, and take its answer, so what you say and what a session heard when it
+opened always agree. It counts both the days and the changes landed since the
+last visit, and prints nothing when neither is due. Only where the project has no
+such script, take it from `.ai-build-kit-maintenance` when that file exists and
+from the changelog dates when it does not.
 
 Read which AI Build Kit release the project holds from the installed `maintain`
 skill's `VERSION` file, or from `.ai-build-kit-version` at the project root where

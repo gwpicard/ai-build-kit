@@ -1,8 +1,10 @@
 #!/usr/bin/env sh
 # Runs when a working session opens. It says one thing, and only when the
-# project is past its monthly check-up. Otherwise it prints nothing. It reads
-# project files and saved history, edits nothing, and starts no other agent.
-# Every route through it exits 0, so it cannot stop a session from opening.
+# project is past its monthly check-up, or has had enough work land since the
+# last one that a visit is due anyway. Otherwise it prints nothing. It reads
+# project files and saved history, edits nothing, fetches nothing, and starts
+# no other agent. Every route through it exits 0, so it cannot stop a session
+# from opening.
 #
 # start copies this file to .agents/hooks/session-start.sh in the project.
 #
@@ -48,6 +50,10 @@ if [ "$MODE" = claude-hook ] && [ ! -t 0 ]; then
 fi
 
 CADENCE_DAYS=35
+# A busy project can do a month's work in a few days, so the reminder also
+# speaks once this many changes have landed on the default branch since the
+# last visit, however few days that took.
+CHANGES_SINCE_VISIT=20
 RECORD="$ROOT/.ai-build-kit-maintenance"
 today=${AI_BUILD_KIT_TODAY:-$(date -u +%Y-%m-%d 2>/dev/null || true)}
 
@@ -91,8 +97,33 @@ founding_date() {
     -- masterplan.md 2>/dev/null | head -n 1
 }
 
+# The branch the project's work lands on, from what this computer already
+# holds: origin/HEAD where a remote names one, else main, else master, else
+# whatever is checked out. Nothing is fetched, so the count can run late by the
+# merges made online since the last pull, and never costs a network call.
+count_ref() {
+  for ref in origin/HEAD main master HEAD; do
+    if git rev-parse --verify --quiet "$ref^{commit}" >/dev/null 2>&1; then
+      printf '%s\n' "$ref"
+      return 0
+    fi
+  done
+  return 1
+}
+
+# The changes that landed since a YYYY-MM-DD date. On the first-parent line of
+# a branch that only takes pull requests, each one is a merged piece; on a
+# branch saved to directly, each one is a checkpoint.
+changes_since() {
+  case "$1" in
+    [1-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]) ;;
+    *) return 1 ;;
+  esac
+  ref=$(count_ref) || return 1
+  git rev-list --count --first-parent --since="$1T00:00:00Z" "$ref" 2>/dev/null
+}
+
 maintenance_line() {
-  [ -n "$today" ] || return 0
   [ -f "$ROOT/masterplan.md" ] || return 0
 
   visited=$(record_value last-light-pass)
@@ -100,16 +131,36 @@ maintenance_line() {
   [ -n "$last" ] || last=$(founding_date)
   [ -n "$last" ] || return 0
 
-  last_day=$(day_number "$last") || return 0
-  today_day=$(day_number "$today") || return 0
-  elapsed=$((today_day - last_day))
-  [ "$elapsed" -ge "$CADENCE_DAYS" ] || return 0
-
-  if [ -n "$visited" ]; then
-    echo "It has been $elapsed days since the last check-up."
-  else
-    echo "The project is $elapsed days old and has had no check-up yet."
+  said=""
+  last_day=$(day_number "$last" || true)
+  today_day=""
+  [ -z "$today" ] || today_day=$(day_number "$today" || true)
+  if [ -n "$last_day" ] && [ -n "$today_day" ]; then
+    elapsed=$((today_day - last_day))
+    if [ "$elapsed" -ge "$CADENCE_DAYS" ]; then
+      if [ -n "$visited" ]; then
+        echo "It has been $elapsed days since the last check-up."
+      else
+        echo "The project is $elapsed days old and has had no check-up yet."
+      fi
+      said=yes
+    fi
   fi
+
+  changes=$(changes_since "$last" || true)
+  case "$changes" in
+    ''|*[!0-9]*) changes=0 ;;
+  esac
+  if [ "$changes" -ge "$CHANGES_SINCE_VISIT" ]; then
+    if [ -n "$visited" ]; then
+      echo "$changes changes have landed since the last check-up."
+    else
+      echo "$changes changes have landed since founding."
+    fi
+    said=yes
+  fi
+
+  [ -n "$said" ] || return 0
   echo "Type /maintain when you have ten minutes."
 }
 
