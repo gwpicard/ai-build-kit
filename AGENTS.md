@@ -1031,7 +1031,8 @@ attribution line, not the word.
   into the project and sent as a pull request. So change-triage names the
   intent, with the project's own folder as the line, and routes it apart: no
   piece, no branch, no changelog entry and nothing written into a tracked
-  file, with the person told in the reply. Anything installed, replaced,
+  file, with the person told in the reply. A setup step that would install
+  software outside the folder is that work too, so its yes comes first. Anything installed, replaced,
   downloaded to run or removed outside the folder waits for a yes naming what,
   where and how to undo it, a recursive delete goes to the person, and a
   version the project needs goes into AGENTS.md's stack section as a
@@ -1442,7 +1443,8 @@ attribution line, not the word.
   opens after its last finished part, the checkpoint route has its own steps,
   and pre-approved merges are swept at the end, bases first. A piece whose
   build needs software installed outside the project folder is parked with
-  that reason, never installed, and the run takes the next piece. It holds
+  that reason, never installed, and the run takes the next piece, unless the
+  same tool would stop every piece left, which ends the run. It holds
   `/what-now` and `/sync` offering to resume, section-builder's stacked start, and the validator's step 1 wording
   that matches it.
 - `.agents/tests/kit-owns-worktrees.sh` guards the worktree each piece in a

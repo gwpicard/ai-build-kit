@@ -480,7 +480,9 @@ team could not safely own, rather than a fourth attempt.
 A piece whose build needs software installed outside the project folder is
 parked with that reason, such as a tool missing from this computer or one too
 old. The reason names the tool, where it would go and how to undo it. The run
-never installs it, since nobody is there to say yes, and takes the next piece.
+never installs it, since nobody is there to say yes, and takes the next piece. Where the same missing
+tool would stop every piece left, it is a blocking failure every later piece
+relies on, and the run ends with that reason, as below.
 
 A blocking failure never stops the whole run unless it touches something every
 later piece relies on: the smoke check on `main`, a GitHub that cannot be

@@ -217,11 +217,11 @@ for comparison: imports between the parts being changed, and any declared
 sensitive-area boundary. Where no engine is present, read those imports
 directly. Do not save the baseline as a project file or turn it into a score.
 
-Where running the checks or the project's own commands first
-shows a tool missing from this computer, or too old, stop that step. Name the
-tool, where it would go and how to undo it, and wait for a yes, as the
-`change-triage` skill says under "Work on this computer outside the project".
-In a run with nobody watching, park the piece instead, as
+Where installing the project's dependencies, running the checks or running the
+project's own commands first shows a tool missing from this computer, or too
+old, stop that step. Name the tool, where it would go and how to undo it, and
+wait for a yes, as the `change-triage` skill says under "Work on this computer
+outside the project". In a run with nobody watching, park the piece instead, as
 the `implement` skill's `references/running-longer.md` says. Write any version
 the project needs into AGENTS.md's stack section as a requirement.
 
