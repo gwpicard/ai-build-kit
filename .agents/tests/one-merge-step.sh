@@ -61,6 +61,23 @@ rs_rule "an unreachable github merges nothing" 'where github cannot be reached, 
 rs_rule "and says when to try again" 'it can be asked for again once github answers'
 rs_rule "and that the person can merge it on github" 'the person can merge it on github themselves'
 
+# Waiting for the check. Claude Code refuses a chain of sleep commands, and
+# sessions with no written way to wait improvised: nine calls, four watches
+# and four background loops for one pull request, and a watch using an option
+# the installed gh lacked, which ended early and looked like a finished check.
+rs_rule "the wait is one watch that stops at a failure" 'wait with `gh pr checks <number> --watch --fail-fast`'
+rs_rule "the watch returns when the checks finish or one fails" 'returns once every check has finished or one has failed'
+rs_rule "a limited agent runs it in the background or with its own watch tool" 'where the coding agent limits how long a command may run, run it in the background or with the agent.s own tool for watching a command'
+rs_rule "and reads the result when it ends" 'and read its result when it ends'
+rs_rule "never a sleep loop" 'never a loop of `sleep` calls'
+rs_rule "the result comes from the final output and exit code" 'read the result from the command.s final output and exit code, never from a watch that ended early'
+rs_rule "exit 8 or an unknown option is not finished" 'exit code 8, or an error naming an unknown option, means the check is not finished'
+rs_rule "an old gh is asked again when time has passed" 'where `gh` is too old for `--watch`, run `gh pr checks <number>` again when the agent.s own watch tool says time has passed'
+rs_rule "no checks at all is said plainly and never green" 'where `gh pr checks` reports that no checks ran, say so plainly, and never call the pull request green'
+rs_rule "a stuck check runs until the agent's limit ends it" 'where a check never finishes, the watch runs until the agent.s own time limit ends it'
+rs_rule "and the piece stays in to check, the check named" 'say the check has not finished, name it, and leave the piece in `to check`'
+rs_rule "an unreachable github while waiting calls nothing green" 'where github cannot be reached while waiting, say the check could not be read, and call nothing green'
+
 # When a merge goes live.
 rs_rule "the masterplan records how the tool goes live" 'records how the tool goes live in its `goes live:` line'
 rs_rule "the default is a preview, and /ship promotes" '`through /ship` is the kit.s default: a merge reaches a preview, and `/ship` promotes it to live'
@@ -98,6 +115,10 @@ rs_require_load_bearing "/fix points at the step" "$FIX" 'the `section-builder` 
 rs_require_load_bearing "/ship points at the step" "$SHIP" 'any merge follows the `section-builder` skill.s `references/merge\.md`'
 rs_require_load_bearing "/sync points at the step" "$SYNC" 'merge it only as the `section-builder` skill.s `references/merge\.md` says'
 
+# The wait has one home too.
+rs_require_load_bearing "section-builder waits as the merge step says" "$SB" 'wait for the check as `references/merge\.md` says under "waiting for the check"'
+rs_require_load_bearing "a run's sweep waits as the merge step says" "$LONGER" 'wait for each check as the `section-builder` skill.s `references/merge\.md` says under "waiting for the check"'
+
 # And none carries its own copy. A copy is how the rule stayed in /ship while
 # the merges happened elsewhere.
 for skill in "$SB" "$IMPLEMENT" "$LONGER" "$FIX" "$SHIP" "$SYNC"; do
@@ -107,6 +128,9 @@ for skill in "$SB" "$IMPLEMENT" "$LONGER" "$FIX" "$SHIP" "$SYNC"; do
   rs_require_absent "$name restates no covered reply" "$skill" 'reply plainly covers that merge'
   rs_require_absent "$name restates no local-merge ban" "$skill" 'never merge the branch on this computer'
   rs_require_absent "$name keeps no merge for a human alone" "$skill" 'merging belongs to a human'
+  rs_require_absent "$name restates no watch command" "$skill" '[-]-fail-fast'
+  rs_require_absent "$name restates no pending exit code" "$skill" 'exit code 8'
+  rs_require_absent "$name restates no sleep rule" "$skill" 'loop of `sleep` calls'
 done
 
 # /ship promotes from a preview to live.
