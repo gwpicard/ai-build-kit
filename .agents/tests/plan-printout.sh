@@ -819,6 +819,13 @@ case "$said" in
   *) fail "refused access has no permission recovery: $said" ;;
 esac
 
+said=$(access_error "GraphQL: Could not resolve to a Repository with the name 'someone/private-project'. (repository)") \
+  && fail "an inaccessible repository reported success"
+case "$said" in
+  *"permission"*) pass "a GitHub repository lookup refusal is not called a network failure" ;;
+  *) fail "a repository lookup refusal has the wrong recovery: $said" ;;
+esac
+
 # Fake credentials cover environment values, GitHub tokens, request headers,
 # URL credentials and query parameters. None is a real account's credential.
 said=$(access_error 'error connecting to api.github.com
