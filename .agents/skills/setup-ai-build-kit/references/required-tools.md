@@ -54,6 +54,14 @@ tool, or move to an outside terminal unless the person explicitly authorises
 that route. If access remains unavailable, name the limitation and keep the
 last printout; never treat a failed read as an empty backlog or completed work.
 
-If GitHub says the account is signed out, guide `gh auth login` in the person's
-terminal. If it refuses repository access, check the account's permissions for
+An authentication refusal, including HTTP 401, does not prove sign-out. Compare
+`gh auth status --hostname github.com` in the command tool and the person's
+terminal. Report only whether `GH_TOKEN` and `GITHUB_TOKEN` exist, since they
+override stored credentials. Compare the `gh` path, user, `HOME`, `GH_CONFIG_DIR`
+and `XDG_CONFIG_HOME`. Never print a credential or use `--show-token`.
+For Codex, follow [the recovery guide](codex-github.md) when networking or
+credential access differs between those environments.
+
+If those checks establish that the account is signed out, guide `gh auth login`
+in the person's terminal. If it refuses repository access, check the account's permissions for
 that repository. Neither is repaired by enabling network access.

@@ -120,23 +120,33 @@ repository. Check `gh auth status` and `gh repo view` from the agent's command
 tool. A working terminal or GitHub connector does not prove that tool has the
 same access. A connector can read issues while refusing writes.
 
-For Codex's `workspace-write` sandbox, network access is off by default. Enable
-it in your Codex configuration, then start a new session:
+Codex can use either the standard sandbox settings or named permission profiles.
+Use the system active in your configuration, keep filesystem sandboxing and
+allow networking for the workspace. Do not combine the two systems. Start a new
+session after changing settings, and check what the client actually selected.
+The installed setup skill's
+[Codex recovery guide](../.agents/skills/setup-ai-build-kit/references/codex-github.md)
+holds the settings and the checks, including managed restrictions.
 
-```toml
-[sandbox_workspace_write]
-network_access = true
-```
+An HTTP 401 after networking works can mean Codex cannot retrieve the current
+login. Compare token environment presence and the account, executable and
+configuration directory before signing in again. On macOS a terminal can read
+the Keychain while sandboxed Codex cannot. The kit includes a
+[session launcher](../.agents/skills/setup-ai-build-kit/scripts/codex-with-github.py)
+for that case. Run it with python3 from your project's ordinary terminal; the
+agent gives the installed path. It supplies the current login to that Codex
+process in memory and disables shell snapshots. It needs no editor integration
+and does not change your permission settings or credential storage.
 
-This enables outbound networking for workspace commands. It does not sign in
-`gh` or grant repository permissions. Managed policies or a client's session
-settings may still restrict access. See [OpenAI's network access guidance](https://developers.openai.com/codex/agent-approvals-security/#network-access).
+The network and credential route was tried on 1 October 2026 with Codex CLI
+0.159.3 on macOS. Both account and repository reads succeeded in the new command
+tool with a restricted filesystem and networking enabled. Automated checks
+cover launch failure, existing token precedence, credential masking and the
+installation routes. This is evidence for GitHub access, not a replayed founding
+or build, so Codex keeps its grade above.
 
-If the command tool fails while your terminal works, ask the agent to request
-GitHub access through the client's approval mechanism. If `gh` is signed out,
-run `gh auth login` in your terminal. The kit never changes your permission
-settings itself. A failed plan refresh shows a credential-masked GitHub error
-and a recovery step, and leaves the previous printout intact.
+A failed plan refresh shows a credential-masked GitHub error and a recovery step,
+and leaves the previous printout intact.
 
 ### Known limits of Cursor, Gemini CLI and GitHub Copilot
 

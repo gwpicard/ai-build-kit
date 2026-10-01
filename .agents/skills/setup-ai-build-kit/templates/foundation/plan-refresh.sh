@@ -72,7 +72,9 @@ if error.strip():
     print(error.rstrip())
 
 text = error.lower()
-if any(word in text for word in ("gh auth login", "not logged", "not signed", "http 401", "bad credentials")):
+if any(word in text for word in ("http 401", "bad credentials")):
+    print("plan-refresh: gh could not authenticate; compare GH_TOKEN and GITHUB_TOKEN presence and gh auth status in this session and your terminal before signing in again. A sandbox may not read your stored login")
+elif any(word in text for word in ("gh auth login", "not logged", "not signed")):
     print("plan-refresh: gh is not signed in, or its sign-in has expired; run gh auth login in your terminal, then refresh again")
 elif any(word in text for word in ("no git remotes", "none of the git remotes", "no github remote")):
     print("plan-refresh: this project has no GitHub remote; ask the agent to connect it to the project's GitHub repository, then refresh again")

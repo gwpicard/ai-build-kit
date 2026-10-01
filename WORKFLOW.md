@@ -41,8 +41,10 @@ Two of them are files you can open. The third, what's left to build, lives in yo
 
 If refreshing the plan fails, you see the GitHub error with credentials masked
 and a recovery step. The last printout stays as it was, with its age reported.
-For a Codex session that cannot reach GitHub, follow the
+For a Codex session that cannot reach GitHub or use its stored login, follow the
 [GitHub access guidance](docs/COMPATIBILITY.md#github-access-in-codex).
+The kit carries a launcher for a fresh Codex session to use your existing login
+without saving the credential. It runs from an ordinary terminal.
 
 | Record | Purpose |
 |---|---|
