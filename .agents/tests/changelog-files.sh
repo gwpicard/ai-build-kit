@@ -6,7 +6,9 @@
 # at the same time then both changed the same lines, and in a real project
 # nearly every merge in a batch hit that conflict, until the agent wrote its own
 # script to merge the entries. So a piece now writes its own small file in
-# `changes/`, and /sync or /ship folds the files into CHANGELOG.md.
+# `changes/`, and the merge folds the files into CHANGELOG.md, with /sync and
+# /ship folding any a merge made by hand left behind. fold-at-merge.sh holds
+# the merge's fold; this check holds the files and the fold script's order.
 #
 # The rules are prose a coding agent reads, so the first half reads them back
 # and proves each one load-bearing. The second half runs the shipped fold
@@ -97,7 +99,7 @@ rs_require_load_bearing "pieces.md counts a waiting entry as a changelog line" \
 rs_require_load_bearing "/what-now reads the waiting entries" "$WHATNOW" 'recent changelog and `changes/`'
 rs_require_load_bearing "change-triage reads the waiting entries" "$TRIAGE" 'recent changelog and `changes/`'
 rs_require_load_bearing "/ship folds on its records branch with the same script" \
-  "$SHIP" 'fold the files in `changes/` into changelog\.md with the `sync` skill.s `scripts/fold-changes\.py`'
+  "$SHIP" 'fold any files still waiting in `changes/` into changelog\.md with the `sync` skill.s `scripts/fold-changes\.py`'
 
 # The direct writers keep writing. /ship's launch and rollback lines are read by
 # the replay harness, so a fold that took their place would lose them.
@@ -109,11 +111,11 @@ rs_require "/sync still appends the lines the work missed" "$SYNC" 'append any c
 # --- the records name both places ---------------------------------------------
 
 rs_require_load_bearing "the founded AGENTS.md names the folder" "$AGENTS" 'its own file in `changes/`'
-rs_require_load_bearing "the founded AGENTS.md says the fold gathers it" "$AGENTS" 'which /sync or /ship folds into `changelog\.md`'
+rs_require_load_bearing "the founded AGENTS.md says the fold gathers it" "$AGENTS" 'folds it into `changelog\.md`'
 rs_require_load_bearing "the founded README names the folder" "$README" '`changes/`'
 rs_require_load_bearing "the changelog template says where new entries wait" "$TEMPLATE" '`changes/`'
 rs_require_load_bearing "WORKFLOW names the folder" "$WORKFLOW" 'its own small file in `changes/`'
-rs_require_load_bearing "WORKFLOW says the fold gathers them" "$WORKFLOW" '/sync and /ship fold'
+rs_require_load_bearing "WORKFLOW says the fold gathers them" "$WORKFLOW" 'folds its file, and any still waiting, into changelog\.md'
 
 # --- the fold, run ------------------------------------------------------------
 

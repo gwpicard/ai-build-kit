@@ -134,7 +134,7 @@ rs_rule "a resumed run reuses an open pull request" 'look first for a pull reque
 rs_rule "the checkpoint route in a run" 'steps 8 to 10 become the checkpoint commit and closing the piece'
 rs_rule "a stacked smoke failure skips only the unbuilt pieces" 'skips only the pieces on that stack not yet built'
 rs_rule "a built base stays in to check" 'a base already built stays in `to check`'
-rs_rule "a squash-merged base means a rebase onto main" 'rebase the stacked branch onto `main` before its own merge'
+rs_rule "a squash-merged base is taken in at the merge, never rebased" 'takes in `main` at its own merge, as the `section-builder` skill.s `references/merge\.md` describes, never by a rebase'
 rs_rule "a stacked piece whose base goes back is skipped" 'a stacked piece whose base goes back to shaping, or is parked, is skipped'
 rs_rule "a parent's pull request opens after its last finished part" 'the pull request opens after the last part that finishes its build'
 rs_rule "a finished part waits for the parent's pull request" 'waits in `building` with the reason `waiting for the parent.s pull request`'

@@ -17,17 +17,29 @@ the branch being saved. Run it on a branch cut from the up-to-date `main`, and
 a file still waiting on another branch never enters the history. A file nobody
 has committed, or one with changes nobody has committed, is left where it is.
 
+With `--main <ref>`, it dates each file by `<ref>` instead. The merge step
+runs it that way on a pull request's branch that has just taken in `main`,
+where the newest commit adding a file from `main` is the branch's own merge of
+`main`, dated today. A file `<ref>` already holds is dated by the day it reached
+`<ref>`, following the first parents of `<ref>`. A file `<ref>` does not hold is
+the pull request's own, and is dated today, the day of this merge. A file whose
+line CHANGELOG.md already holds is removed without being written again: a
+stacked branch still carries its base's file after the base merged by squash,
+since the squash added and folded it in one commit.
+
 It never stages CHANGELOG.md or commits: the save route does that. It prints
 one line for each file folded, and nothing when there is nothing to fold. Run
 it from the project root:
 
-    python3 <sync skill folder>/scripts/fold-changes.py
+    python3 <sync skill folder>/scripts/fold-changes.py [--main <ref>]
 """
 
+import datetime
 import os
 import re
 import subprocess
 import sys
+import time
 
 FOLDER = "changes"
 CHANGELOG = "CHANGELOG.md"
@@ -46,6 +58,25 @@ def saved_files():
     """The Markdown files in changes/ saved in the current commit."""
     listed = git("ls-tree", "--name-only", "HEAD", FOLDER + "/").split("\n")
     return [name for name in listed if name.endswith(".md")]
+
+
+def held(ref, name):
+    """Whether the commit `ref` names holds the file."""
+    result = subprocess.run(["git", "cat-file", "-e", ref + ":" + name],
+                            capture_output=True, text=True)
+    return result.returncode == 0
+
+
+def arrival_on(ref, name):
+    """The day and moment the file reached `ref`, or today when it has not."""
+    if held(ref, name):
+        lines = git("log", "--first-parent", "--diff-filter=A", "--format=%ct %cs",
+                    ref, "--", name).split("\n")
+        lines = [line for line in lines if line.strip()]
+        if lines:
+            moment, day = lines[0].split()
+            return int(moment), day
+    return int(time.time()), datetime.date.today().isoformat()
 
 
 def arrival(name):
@@ -119,6 +150,19 @@ def fold(changelog, entries):
 
 
 def main():
+    args = sys.argv[1:]
+    main_ref = None
+    if args[:1] == ["--main"] and len(args) == 2:
+        main_ref = args[1]
+    elif args:
+        print("usage: fold-changes.py [--main <ref>]", file=sys.stderr)
+        return 2
+    if main_ref is not None and subprocess.run(
+            ["git", "rev-parse", "-q", "--verify", main_ref + "^{commit}"],
+            capture_output=True).returncode != 0:
+        print("fold-changes: " + main_ref + " names no commit", file=sys.stderr)
+        return 1
+
     try:
         names = saved_files()
     except RuntimeError as problem:
@@ -131,20 +175,34 @@ def main():
             print(f"fold-changes: {name} has changes nobody has committed; left as it is",
                   file=sys.stderr)
             continue
-        moment, day = arrival(name)
+        moment, day = arrival_on(main_ref, name) if main_ref else arrival(name)
         ready.append((moment, issue_number(name), name, day))
     if not ready:
         return 0
-
-    # Newest first: the latest arrival, then the higher issue number.
-    ready.sort(reverse=True)
-    entries = [(day, entry(name)) for _, _, name, day in ready]
 
     if os.path.isfile(CHANGELOG):
         with open(CHANGELOG, encoding="utf-8") as handle:
             changelog = handle.read()
     else:
         changelog = "# Changelog\n"
+
+    if main_ref:
+        written = set(changelog.split("\n"))
+        fresh = []
+        for item in ready:
+            if entry(item[2]) in written:
+                git("rm", "-q", "--", item[2])
+                print(f"removed {item[2]}, already in {CHANGELOG}")
+            else:
+                fresh.append(item)
+        ready = fresh
+        if not ready:
+            return 0
+
+    # Newest first: the latest arrival, then the higher issue number.
+    ready.sort(reverse=True)
+    entries = [(day, entry(name)) for _, _, name, day in ready]
+
     with open(CHANGELOG, "w", encoding="utf-8") as handle:
         handle.write(fold(changelog, entries))
 

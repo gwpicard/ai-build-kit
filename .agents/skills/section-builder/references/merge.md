@@ -32,6 +32,82 @@ first when the person's yes names both. Once the base has merged, check that the
 stacked pull request now aims at `main`, and change it with
 `gh pr edit <number> --base main` where it does not, before you merge it.
 
+## The fold before the merge
+
+Each piece leaves its changelog entry in its own file in `changes/`. The merge
+is what folds those files into `CHANGELOG.md`, so the history stays whole
+without anybody typing a command. After the yes that names the merge, or under
+pre-approval, and before `gh pr merge`:
+
+1. On the pull request's branch, take in the latest `main` with a merge commit,
+   never a rebase or a force push.
+2. Fold every file now in `changes/` into `CHANGELOG.md`: the piece's own, and
+   any a merge made elsewhere left behind.
+3. Commit the fold as `Fold the changelog`, push the branch, and wait for the
+   project check on that new commit with `gh pr checks <number> --watch`.
+4. Merge only when that check is green. Red means nothing merges: say so and
+   take it to `/fix`, as the rule above says.
+
+Where the check has not reported, because it is queued or GitHub is slow, the
+merge waits: say so once in the reply, and never merge on an unfinished check.
+
+Merges are made one at a time, so the fold always runs on a branch that holds
+everything already merged. That is what keeps pieces built side by side free of
+conflict: while they are built, pieces touch only their own file in `changes/`,
+and only the merge writes their entries into `CHANGELOG.md`. A fold made when
+the pull request opened would conflict whenever two pieces started from
+different states of `main`.
+
+This skill's `scripts/bring-up-to-date.sh <folder>` does steps 1 to 3 in the
+folder given, which must be on the pull request's branch. It first undoes, with
+a new commit, any `Fold the changelog` on the branch that `main` does not hold
+yet, so an older fold never merges beside a newer one. An entry
+`CHANGELOG.md` already holds is never written again, which covers a stacked
+pull request whose base was merged by squash. A retry after a session
+died, or after another merge folded the same waiting files, therefore writes
+each entry once. Its last line is the commit the check must pass on. Its exit
+decides the reply:
+
+- 0: wait for the check on that commit.
+- 1: the merge from `main` conflicted. The branch is left exactly as it was, and
+  the script names each conflicting file. Nothing merges: name the files and
+  take it to `/fix`.
+- 2: `origin` could not be reached, or the folder is not on a branch or holds
+  uncommitted work. Nothing changed. Where GitHub could not be reached, give
+  the one line "How the merge is made" gives.
+- 3: the push was refused, usually because somebody pushed to the branch
+  meanwhile, or this computer holds commits on the branch that the pull request
+  does not. The script's message says which. Nothing merges: say the merge
+  waits and why. After a refused push, asking again takes their commit in.
+
+Where GitHub then refuses the merge because `main` moved after the check,
+run the step again, so the fold is made on the newer `main`.
+
+Where an earlier records pull request that folded files, other than the one
+being merged, is still open, pass
+`--no-fold` and say so in one line, so the same entry is never written twice.
+The branch still takes in `main`.
+
+Run the script in the first of these that fits:
+
+- in the piece's worktree under `.agents/worktrees/` when it has one;
+- otherwise in the main folder, when the main folder is on that branch with no
+  uncommitted change;
+- otherwise in a worktree opened for the merge with the `implement` skill's
+  `scripts/worktree.sh`, as
+  `worktree.sh open <issue number>-<short name> <branch> origin/<branch>`, so a
+  branch not held on this computer is made from the pull request's own
+  branch and never cut fresh from `main`. A pull request with no issue, such
+  as a records pull request, uses its own number in place of the issue's. `worktree.sh tidy` clears it away
+  once the pull request closes.
+
+The main folder is never switched to another branch for a merge, and a folder
+holding uncommitted work is never used, so the person's work is never swept
+into the fold. Where the folder already on that branch holds uncommitted work,
+whether the piece's own worktree or the main folder, no second worktree can
+hold the same branch: the merge waits, and the reply names what is unsaved
+there.
+
 ## How the merge is made
 
 Make an approved merge on the pull request itself, with `gh pr merge <number>`.

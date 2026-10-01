@@ -978,8 +978,9 @@ attribution line, not the word.
   the top of `CHANGELOG.md`, so two pieces built at the same time changed the
   same lines, and in a real project nearly every merge in a batch conflicted
   there. So section-builder and `/fix` write one file per piece in `changes/`,
-  after the pull request opens so it can carry the link, and `/sync` and
-  `/ship` fold the files in with the shipped `fold-changes.py`. It holds those
+  after the pull request opens so it can carry the link, and the merge folds
+  the files in with the shipped `fold-changes.py`, with `/sync` and `/ship`
+  folding any a merge made by hand left behind. It holds those
   rules, and that founding, `/ship`, `/maintain` and `/sync` still write
   `CHANGELOG.md` directly. It then runs the fold in a throwaway repository. Two
   branches that each add a file merge with no conflict, while a control that
@@ -994,6 +995,37 @@ attribution line, not the word.
   an entry waiting in `changes/` counts as written, so `/sync` never adds it
   twice, and that neither `/sync` nor `/ship` folds while an earlier records
   pull request that folded is still open.
+- `.agents/tests/fold-at-merge.sh` guards the fold the merge step makes. Two
+  projects used the kit for weeks and nobody typed `/sync` or `/ship` once, so
+  the files in `changes/` piled up and `CHANGELOG.md` stopped on the day they
+  were introduced. The merge now folds them inside the pull request being
+  merged, just before it merges. It holds the four steps in order: take in
+  `main` with a merge commit, fold, commit and push the fold and wait for the
+  check on it, and merge only on green. It holds the reason this cannot
+  conflict, which is that merges are made one at a time, and where the merge
+  runs: the piece's worktree, the main folder when it is on the branch and
+  clean, or a worktree made from the pull request's own branch, never from
+  `main`. A folder holding uncommitted work is never used. It holds the
+  `--no-fold` rule while an earlier records pull request is open, the wait on
+  an unfinished check, the checkpoint route's second commit, and that no
+  document still says only `/sync` or `/ship` folds. It also holds the nine
+  decisions in `docs/design/loop-first-round-2.md`.
+  `.agents/tests/fold-at-merge-rehearsal.sh` runs the shipped
+  `bring-up-to-date.sh` against a bare repository standing in for GitHub. Two
+  pieces merged one after the other leave both lines newest first and
+  `changes/` empty. A file merged on GitHub by hand keeps the day it reached
+  `main`, and the piece's own file takes today. Running it twice, or after
+  another merge folded the same waiting file, writes each entry once, because
+  an older fold `main` does not hold is undone first. A conflict from `main`
+  exits 1, names the file and leaves the branch as it was. An unreachable
+  `origin`, a folder on no branch and one with uncommitted work exit 2 and
+  change nothing. A push refused because somebody pushed meanwhile exits 3,
+  and asking again takes their commit in. A commit only this computer holds
+  is never pushed by the fold, and exits 3 too. A stacked branch whose base
+  merged by squash still carries the base's file, and the fold removes it
+  without writing its entry twice. A branch not on this computer is
+  opened from `origin/<branch>`, a project with no `changes/` folder gets
+  nothing written, and the checkpoint route folds in a second commit.
 - `.agents/tests/agent-first-records.sh` guards the founded AGENTS.md as a
   short index. In a real project it grew from 206 lines to 1,019, because the
   build step sent every whole-project technical fact there, dates, issue
