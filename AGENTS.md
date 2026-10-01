@@ -1023,6 +1023,23 @@ attribution line, not the word.
   words to post. `/shape` keeps another author's words under "Original report"
   and names the author. The founded `blocked-commands.md` carries the
   restriction, and WORKFLOW.md's Team use section tells it.
+- `.agents/tests/own-computer-work.sh` guards work on the person's own
+  computer rather than on the project. In one project a short request about a
+  GitHub command led the agent to install a newer GitHub CLI in the person's
+  home folder without asking. In another, most of a first day went into
+  repairing an editor's install, and facts about that machine were written
+  into the project and sent as a pull request. So change-triage names the
+  intent, with the project's own folder as the line, and routes it apart: no
+  piece, no branch, no changelog entry and nothing written into a tracked
+  file, with the person told in the reply. Anything installed, replaced,
+  downloaded to run or removed outside the folder waits for a yes naming what,
+  where and how to undo it, a recursive delete goes to the person, and a
+  version the project needs goes into AGENTS.md's stack section as a
+  requirement. A mixed request is two requests, each with one route, and
+  project files changed by accident are named and not committed. The founded
+  `blocked-commands.md` carries the restriction after the item on speaking for
+  the person, section-builder points to it in step 4, where the project's
+  commands first run, and WORKFLOW.md's Day to day section tells it.
 - `.agents/tests/merge-ask-rule.sh` guards the confirmation box Claude Code
   shows before a merge on a project whose every merge goes live. The rule that
   a person decides what merges holds only while an agent follows it, and two
@@ -1423,7 +1440,9 @@ attribution line, not the word.
   earliest claim comment wins a race and only the later run backs off, every
   way a run ends leaves each piece in a final state, a parent's pull request
   opens after its last finished part, the checkpoint route has its own steps,
-  and pre-approved merges are swept at the end, bases first. It holds
+  and pre-approved merges are swept at the end, bases first. A piece whose
+  build needs software installed outside the project folder is parked with
+  that reason, never installed, and the run takes the next piece. It holds
   `/what-now` and `/sync` offering to resume, section-builder's stacked start, and the validator's step 1 wording
   that matches it.
 - `.agents/tests/kit-owns-worktrees.sh` guards the worktree each piece in a

@@ -56,7 +56,13 @@ still apply:
 - never post in the person's name to anyone else, or change the title or scope
   of an issue or a pull request another account opened, without a yes that
   covers the words. The `setup-ai-build-kit` skill's
-  `references/pieces.md` says what counts, under "Speaking for the person".
+  `references/pieces.md` says what counts, under "Speaking for the person";
+- never install, replace, download to run, or remove software outside the
+  project folder without a yes that names what it is, where it goes and how to
+  undo it. A removal that needs a recursive delete is the person's to run, as
+  the refused-command rule at the top says. The `change-triage` skill says how
+  such work is kept apart from the project, under "Work on this computer
+  outside the project".
 
 Save a checkpoint before sweeping work. If one of these actions appears
 necessary, stop, explain why, and let the person decide with the reason in

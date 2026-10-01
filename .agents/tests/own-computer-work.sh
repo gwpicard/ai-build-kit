@@ -122,9 +122,9 @@ rs_rule "nothing about the computer is written into the project" \
 rs_guard "$WORKFLOW" "WORKFLOW.md"
 
 rs_require_order "WORKFLOW.md says it in Day to day" "$WORKFLOW" \
-  '^## 5\. Day to day' 'work on your own computer rather than on the tool'
+  '^## 5\. Day to day' 'Work on your own computer rather than on the tool'
 rs_require_order "and before Evidence" "$WORKFLOW" \
-  'work on your own computer rather than on the tool' '^## 6\. Evidence'
+  'Work on your own computer rather than on the tool' '^## 6\. Evidence'
 
 # The founded AGENTS.md sits at its line budget and is not changed for this;
 # the restriction reaches every session through blocked-commands.md, which it
