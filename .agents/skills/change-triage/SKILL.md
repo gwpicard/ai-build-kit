@@ -11,7 +11,7 @@ The user never sorts their own request; you do, and the masterplan is the refere
 ## Step 1: Understand the request
 
 Compare it with the masterplan, the project's pieces, parked ideas, the recent
-changelog, and existing behaviour where that's cheap to check. Before accepting
+changelog and `changes/`, and existing behaviour where that's cheap to check. Before accepting
 it as new work, check: does this already exist under another name? Was it
 deliberately parked or rejected before?
 

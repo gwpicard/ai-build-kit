@@ -43,7 +43,7 @@ Two of them are files you can open. The third, what's left to build, lives in yo
 |---|---|
 | masterplan.md | What the tool is, in the present tense. Its first part, the build-path section, records how careful this project needs to be. |
 | the project's issues | What's left to build: one issue per piece, each with what done looks like, its evidence, and what it needs. `/what-now` reads them for you. |
-| CHANGELOG.md | What happened, dated, in plain language, when work actually landed. |
+| CHANGELOG.md | What happened, dated, in plain language, when work actually landed. Each piece writes its entry to its own small file in `changes/`, so two pieces built at the same time never change the same lines; /sync and /ship fold those files into CHANGELOG.md under the day each reached `main`. |
 
 `AGENTS.md` sits alongside the three records as the instruction file the agent reads to know how this repository works: the rules, the stack, the capability profile, the conventions.
 
@@ -371,7 +371,8 @@ merging that pull request needs its own yes. Where your host builds every
 change to `main`, /ship tells you that merging it starts one more build and
 moves the rollback target, and offers to leave it for the next change. Work
 of yours that is not saved yet is left where it is, kept out of the records
-and never thrown away.
+and never thrown away. The same records pull request folds the pieces' files in
+`changes/` into CHANGELOG.md, so the history holds what this launch carried.
 
 Some checks need a secret, such as a database password kept in a file on your
 computer. When you tell the kit where one lives, in any session, it writes down
@@ -426,7 +427,7 @@ Nothing else changes when a second person arrives: naming a piece before startin
 
 ## 12. Sync and maintenance
 
-Normal /implement and /fix completion updates the records directly; you don't need /sync after a piece that finished cleanly. /sync exists for interrupted work, work done outside the workflow, long sessions whose context went foggy, and handovers. A report-only reminder can optionally run at session end, where the tool supports it, but nothing writes to the records without a skill deciding to. /sync also re-reads the masterplan against your pieces, and says if a promise has lost the piece that builds it. Its corrections are saved the way a piece is saved, through the route your build path requires, so on a shared project they arrive as a pull request you decide to merge, and uncommitted work it finds on arrival is reported and left alone.
+Normal /implement and /fix completion updates the records directly; you don't need /sync after a piece that finished cleanly. /sync exists for interrupted work, work done outside the workflow, long sessions whose context went foggy, and handovers. A report-only reminder can optionally run at session end, where the tool supports it, but nothing writes to the records without a skill deciding to. /sync also re-reads the masterplan against your pieces, and says if a promise has lost the piece that builds it. Its corrections are saved the way a piece is saved, through the route your build path requires, so on a shared project they arrive as a pull request you decide to merge, and uncommitted work it finds on arrival is reported and left alone. It also folds the pieces' files in `changes/` into CHANGELOG.md, the way /ship does when it launches, and only files already on `main` are folded.
 
 /sync also picks up changes a finished piece was meant to make to the
 masterplan but never did. It checks what actually landed, applies what is still

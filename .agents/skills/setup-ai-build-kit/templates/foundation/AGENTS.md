@@ -2,7 +2,7 @@
 
 Standing instructions for this project. Read this file at the start of every
 session. The product lives in `masterplan.md`, the remaining work lives in this
-project's issues, and the history lives in `CHANGELOG.md`.
+project's issues, and the history lives in `CHANGELOG.md` and `changes/`.
 
 Before any work, read the build-path section at the top of `masterplan.md`. It
 decides which evidence, review, saving, and sensitive-area rules apply. Then
@@ -57,12 +57,12 @@ never calls a screen accessible, compliant, or good.
 
 ## The records
 
-If it is not written down, it does not exist. When work lands, add a dated
-`CHANGELOG.md` entry in plain words and commit with a clear message. Each piece
-is one issue, shaped as the `setup-ai-build-kit` skill's `references/pieces.md`
-says. A merged pull request saying `Closes #<number>` closes its piece. Each
-piece has a subject label, set once by change-triage. `plan.local.md` prints the
-open issues via `.agents/tools/plan-refresh.sh`; change the issue, not the file.
+If it is not written down, it does not exist. A piece writes its entry to its
+own file in `changes/`, which /sync or /ship folds into `CHANGELOG.md`. Each
+piece is one issue, shaped as the `setup-ai-build-kit` skill's
+`references/pieces.md` says, with a subject label set once by change-triage.
+A merged pull request saying `Closes #<number>` closes it. `plan.local.md` is a
+printout from `.agents/tools/plan-refresh.sh`; change the issue, not the file.
 
 When one document says another will do a job, write that job into the other
 document too. The masterplan describes the present only, in roughly one or two

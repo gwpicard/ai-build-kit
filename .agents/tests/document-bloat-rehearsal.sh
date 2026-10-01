@@ -7,8 +7,8 @@
 # and are not have to be left alone: a README nothing links to, the project
 # records and the kit's own files, a short sentence two documents share, and a
 # page naming files the project no longer has, which the document read in
-# /sync reports one name at a time. A clean project produces nothing, and the
-# script writes nothing.
+# /sync reports one name at a time, and a changelog file waiting in
+# `changes/`. A clean project produces nothing, and the script writes nothing.
 #
 # Leaving those alone is the half that matters. A tidy-up offered for a note
 # somebody wanted, or for a sentence that belongs in both places, teaches the
@@ -85,6 +85,11 @@ printf '# Shop\n\nIt sells things.\n\n%s\n\nSee [releasing](docs/release.md) and
 printf '# Releasing\n\nA short introduction.\n\n%s\n\nAlways check the total before you pay.\n' "$PARAGRAPH" > docs/release.md
 printf '# Legacy\n\nStart with `src/old.js`, then `src/older.js`, and run `npm run legacy`.\nThe entry point is `src/index.js`.\n' > docs/legacy.md
 printf '# Scratch\n\nSome notes nobody links to.\n' > docs/scratch.md
+# A piece's changelog file waits in changes/ until a fold. Nothing names it
+# and its sentence may repeat the pull request, but it is part of the
+# changelog, never bloat.
+mkdir -p changes
+printf '%s\n' "$PARAGRAPH" > changes/7-release.md
 save "The documents grow"
 
 out=$(python3 "$SCRIPT")
@@ -104,9 +109,10 @@ has "$(printf 'unreferenced\tdocs/scratch.md')" \
 [ "$(printf '%s\n' "$out" | wc -l | tr -d ' ')" = 2 ] ||
   fail "expected exactly two findings, got: $out"
 echo "  ok: the short sentence two documents share is not called a repeat"
-printf '%s\n' "$out" | grep -qE 'masterplan|AGENTS|WORKFLOW|guide\.md|legacy\.md' &&
+printf '%s\n' "$out" | grep -qE 'masterplan|AGENTS|WORKFLOW|guide\.md|legacy\.md|changes/' &&
   fail "a record, a kit file, a live document or the stale-names page was reported"
 echo "  ok: a page naming files the project no longer has is left to the sync read"
+echo "  ok: a changelog file waiting in changes/ is neither unreferenced nor a repeat"
 echo "  ok: nothing else is reported"
 printf '%s\n' "$out" | grep -qE '[0-9]+ *%|score|grade' && fail "a score reached the output"
 echo "  ok: no score, grade or percentage"

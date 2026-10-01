@@ -13,6 +13,10 @@ in a slash. So `/shape`, `owner/name` and `example.com/page` are not taken for
 files. A name written from some other folder is found wherever the project
 keeps a path that ends with it.
 
+The `changes/` folder is part of the changelog. It is empty between folds and
+a finished piece's file leaves it at the next one, so a name inside it is
+never reported.
+
 A document may describe less than the code does, and that is never flagged.
 Only a name that points at nothing is. It never says a document is right,
 because a described flow can change shape without any name going missing.
@@ -33,6 +37,7 @@ import subprocess
 import sys
 
 KIT_OWNED = {"WORKFLOW.md", "AGENTS.md", "masterplan.md", "CHANGELOG.md", "plan.local.md"}
+CHANGES = "changes"
 EXTENSIONS = (
     ".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs", ".py", ".rb", ".go", ".rs",
     ".java", ".kt", ".cs", ".php", ".md", ".json", ".yml", ".yaml", ".toml",
@@ -68,7 +73,7 @@ def documents():
             if not name.endswith(".md") or name.startswith(("http:", "https:")):
                 continue
             name = os.path.normpath(name)
-            if os.path.basename(name) in KIT_OWNED or name.startswith(".agents"):
+            if os.path.basename(name) in KIT_OWNED or name.startswith((".agents", CHANGES + "/")):
                 continue
             if os.path.isfile(name) and name not in found:
                 found.append(name)
@@ -119,6 +124,8 @@ def saved_paths():
 def path_exists(name, document):
     bare = name.split("#")[0].split(":")[0].rstrip("/")
     if not bare:
+        return True
+    if os.path.normpath(bare).split(os.sep)[0] == CHANGES:
         return True
     beside = os.path.join(os.path.dirname(document), bare)
     for candidate in (os.path.normpath(bare), os.path.normpath(beside)):

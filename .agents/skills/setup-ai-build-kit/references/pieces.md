@@ -445,7 +445,7 @@ the form it expected.
 | Assigns themselves | Treats the piece as theirs, and `/implement` will not hand it to anyone else. Assignment says whose it is; `building` says work is under way now |
 | Assigns somebody else | `/implement` skips it and says who has it, rather than quietly taking it |
 | Adds `building` | Treats the piece as under way and leaves it alone |
-| Closes an issue by hand | It stays closed. `/sync` may say that no changelog line matches it, and ask whether it was done or dropped |
+| Closes an issue by hand | It stays closed. `/sync` may say that no changelog line matches it, counting an entry waiting in `changes/` as a line, and ask whether it was done or dropped |
 | Reopens a closed issue | Treats it as work again, and takes off a `parked` label, because reopening is the decision to unpark it. With no state left, it counts as an idea |
 | Edits the body so `## Done when` is gone | Treats it as a request rather than a piece, and refines it before building |
 | Adds labels of their own | Leaves them alone |
