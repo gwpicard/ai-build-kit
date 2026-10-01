@@ -8,9 +8,10 @@ A compact, reliable way to build software with an AI coding agent: the
 discipline of a real process, without the ceremony, and without having to read
 the code.
 
-None of the nine commands asks you to open a file of code. You do need to
-explain what should happen, try the results, and make the product and risk
-decisions the agent cannot make for you.
+None of the nine commands asks you to open a file of code. You say what should
+happen, decide what merges and what goes live, and make the product and risk
+decisions the agent cannot make for you. The agent walks through each piece
+before it is saved, and you try anything you want to see for yourself.
 
 ## At a glance
 
@@ -193,8 +194,9 @@ Much of what the kit does was borrowed from people working in the open. [docs/SO
 **Do I need to know how to code?**
 No. The nine commands are the whole interface, and the kit is built so that
 none of them needs you to read the code or the logs. If you can, nothing
-stops you. You do have to say what should happen, try the result, and make the
-product and risk decisions.
+stops you. You do have to say what should happen, decide what merges and what
+goes live, and make the product and risk decisions. The agent walks through each
+piece itself, and you can try any of them whenever you want to see one working.
 
 **Can a non-developer build software with an AI coding agent safely?**
 Safely enough depends on what the software does. The kit opens with a fit check

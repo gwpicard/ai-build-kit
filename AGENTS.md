@@ -1440,6 +1440,17 @@ attribution line, not the word.
   in one line. A project with no CI, a workflow on `push` alone and a labeller
   on pull requests still get `checks.yml`, and a `checks.yml` the project
   already had is kept untouched.
+- `.agents/tests/one-story-try.sh` guards the one story the kit tells about
+  who tries a piece. The build skill said the agent's walk-through stands in
+  for the person's try, while WORKFLOW.md's "What stays yours" and the README
+  said the person must try each result before it is saved. So it holds that
+  what stays the person's is saying what they want, deciding what merges and
+  what goes live, and accepting a risk after its notice, and that trying a
+  piece is open to them through the opt-in. It reads that from WORKFLOW.md,
+  both README places, PHILOSOPHY.md and section-builder, and proves each
+  sentence load-bearing. It also searches every shipped document and skill,
+  the foundation templates included, for the old wording, and finds it on a
+  copy with the old sentence put back.
 - `.agents/tests/first-upload-asks.sh` guards the yes the project's first
   upload waits for. Founding tells the person nothing will be uploaded, and in
   a real run the first piece then pushed the whole project to GitHub with no
