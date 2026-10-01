@@ -218,6 +218,8 @@ Show a mock of what you want and it settles the question instead, with no throwa
 
 Anything touching data, access, or money gets written into the masterplan first. If another piece already open would be built in the same place, /shape names it before the work starts, so you can decide whether to carry on, wait, or fold the two together.
 
+Work on your own computer rather than on the tool, such as installing or repairing a program, is kept apart from the project. Nothing is installed, replaced or removed outside the project's folder until you have said yes to what it is, where it goes and how to undo it, and nothing about your computer is written into the project. You hear what was done in the reply instead.
+
 If the request would change what kind of project this is, by bringing in outside users or real money or a promise to someone, the agent re-runs the fit check with you before building. A different build path needs different care before people rely on it.
 
 /fix is for when something that should work doesn't: "/fix the board duplicates cards when I drag them". Paste the whole error if there is one. It builds the tightest repeatable check it can find for the exact symptom and works out the cause before touching code, driving the app in a browser or adding temporary logging when it needs to see what is actually going wrong. It resets failed attempts rather than stacking them, and finishes with evidence that keeps the bug from coming back.

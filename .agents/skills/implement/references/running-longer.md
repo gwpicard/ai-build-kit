@@ -477,6 +477,11 @@ failure points somewhere specific: send it back to `/shape`, which settles a
 missing decision, chases a missing external fact, or reassesses a shape the
 team could not safely own, rather than a fourth attempt.
 
+A piece whose build needs software installed outside the project folder is
+parked with that reason, such as a tool missing from this computer or one too
+old. The reason names the tool, where it would go and how to undo it. The run
+never installs it, since nobody is there to say yes, and takes the next piece.
+
 A blocking failure never stops the whole run unless it touches something every
 later piece relies on: the smoke check on `main`, a GitHub that cannot be
 reached, so no piece can be claimed, or anything that would change the build

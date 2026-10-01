@@ -37,7 +37,8 @@ up. Steps 2 to 4 wait until then.
 ## Step 2: Classify intent
 
 One of: repair of promised behaviour; new behaviour; clarification or
-copy/presentation change; setup or operational task; a decision that needs
+copy/presentation change; setup or operational task; work on this computer
+outside the project; a decision that needs
 clarify; a decision that needs a prototype; a decision that needs source
 research; a change that alters the build path or a sensitive area.
 
@@ -92,8 +93,8 @@ from scratch.
 
 Route to one of: `/fix`; a ready piece; clarify; a decision
 prototype; a source check; a search for existing work; a step only the person
-can do; update the masterplan first; rerun the fit
-check; prepare the handover; give the risk notice where a sensitive area
+can do; work on this computer, done apart from the project; update the
+masterplan first; rerun the fit check; prepare the handover; give the risk notice where a sensitive area
 survives redesign. Say the route and the reason in one line.
 
 Piece-sized and clear (one sitting, a done line you could write now, small
@@ -154,6 +155,36 @@ work. What may not happen is the notice quietly going away, or you deciding on
 their behalf that it no longer applies because they pushed back. Repeat the
 request back, however many times it arrives, and route it the same way each
 time.
+
+### Work on this computer outside the project
+
+The project's own folder is the line. Anything under it is project work.
+Anything outside it is the person's computer: installing, updating, repairing
+or removing software, changing system or shell settings, or tidying files
+outside the project folder. Route that work apart. It gets no piece, no branch
+and no changelog entry, and nothing about it is written into any tracked file of
+the project, whether a record, AGENTS.md, code or a document. Tell the person
+what was done in your reply instead. Installing the project's own dependencies
+inside its folder, such as `npm install` or a virtual environment, is project
+work and goes on as the build already does it.
+
+Before anything is installed, replaced, downloaded to run, or removed outside
+the project folder, name what it is, where it goes and how to undo it, and wait for a yes. This
+holds in every command, including a build that finds a tool missing or too old.
+A command that needs administrator rights is given to the person to run. A
+removal that needs a recursive delete is given to the person as well, as the
+`setup-ai-build-kit` skill's `references/blocked-commands.md` says.
+
+Sometimes the project itself needs a fact about the computer, such as "the build
+needs version 3 or later of its typesetting tool". Write it into AGENTS.md's
+stack section as a requirement of the project. Never write it as a record of
+what was done to this machine.
+
+A request that mixes the two, such as "install X and use it in the report", is
+two requests, each with exactly one route. Say so in one line. Ask about the
+computer part and do it apart, then triage the project part as usual. Where the
+computer work changed project files by accident, and the changes are
+not committed, name them to the person and do not commit them.
 
 ## Step 5: Record only durable information
 
