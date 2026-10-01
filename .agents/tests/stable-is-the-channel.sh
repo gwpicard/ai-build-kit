@@ -39,6 +39,7 @@ PROMOTE="$ROOT/.agents/tools/promote-stable.sh"
 VERIFY="$ROOT/.github/workflows/verify-release.yml"
 BRANCHCHECK="$ROOT/.github/workflows/maintainer-branch-check.yml"
 MAINTAIN="$ROOT/.agents/skills/maintain/SKILL.md"
+WHATNOW="$ROOT/.agents/skills/what-now/SKILL.md"
 MAINTAINING="$ROOT/docs/MAINTAINING.md"
 STAMP="$ROOT/.agents/tools/stamp-version.sh"
 CONTRIBUTING="$ROOT/CONTRIBUTING.md"
@@ -277,6 +278,17 @@ rs_rule "a failed call is never reported as up to date" \
 rs_rule "the confirmation after an update reads the same answer back" \
   'now matches the version step 1 read from .releases/latest.'
 rs_guard "$MAINTAIN" "the maintain skill"
+
+# /what-now names a newer release too, and asks the same endpoint for the same
+# reason: a draft or a prerelease is never named as published.
+rs_reset
+rs_rule "/what-now asks the latest published release by that endpoint" \
+  'releases/latest --jq \.tag_name'
+rs_rule "and no other endpoint, the one /maintain asks" \
+  'ask that endpoint and no other, the one ./maintain. asks'
+rs_rule "because it never answers with a draft or a prerelease" \
+  'never answers with a draft or a prerelease'
+rs_guard "$WHATNOW" "the /what-now skill"
 
 # --- the wiring that makes it happen --------------------------------------
 
