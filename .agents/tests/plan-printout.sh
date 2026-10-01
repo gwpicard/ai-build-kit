@@ -128,7 +128,10 @@ cat >"$WORK/issues.json" <<'JSON'
    "sub_issues_summary": {"total": 3, "completed": 0, "percent_completed": 0}},
   {"number": 28, "title": "Lost receipts", "html_url": "http://x/28",
    "body": "receipts stopped sending", "assignees": [],
-   "labels": [{"name": "broken"}, {"name": "building"}]}
+   "labels": [{"name": "broken"}, {"name": "building"}]},
+  {"number": 29, "title": "Room photos", "html_url": "http://x/29",
+   "body": "add photos of each room", "assignees": [],
+   "labels": [{"name": "building"}, {"name": "needs-research"}]}
 ]
 JSON
 
@@ -350,6 +353,13 @@ under "Needs attention" "Guest accounts" \
 under "Needs attention" "Lost receipts" || under "Needs attention" "Duplicate bookings" \
   && fail "a broken piece was named for a missing Done when or Readiness" \
   || pass "a broken piece is never named for a missing Done when or Readiness"
+# A piece whose labels contradict each other prints once, under Needs
+# attention, even when it also skipped a step. Only the two new notes let a
+# piece stay in its column too.
+section "Needs attention" | grep "Room photos" | grep -q "without shaping" \
+  && [ "$(grep -c "Room photos" "$OUT")" -eq 1 ] \
+  && pass "a needs- label without shaping still prints once, whatever else is missing" \
+  || fail "Room photos is not named for its needs- label, or prints more than once"
 [ "$(grep -c "Lost receipts" "$OUT")" -eq 1 ] \
   && pass "a broken piece being fixed prints once, under Broken" \
   || fail "Lost receipts prints more than once"

@@ -207,14 +207,15 @@ def heading(line, name):
 # the way: never shaped, so it has no Done when, or never passed the readiness
 # check, so it has no Readiness section. Either way it looks exactly like a
 # piece that went the proper way, so the printout says what is missing. A
-# parent and a repair are left out: a parent's parts carry the conditions, and
-# a repair goes through /fix rather than shaping. Where both are missing, the
-# first is the whole story.
+# repair is left out, because it goes through /fix rather than shaping, and a
+# parent never reaches Needs attention at all. Where both are missing, the
+# first is the whole story. The Done when test is the one still_a_note() uses,
+# word for word, so the two never disagree about a piece. The Readiness test is
+# the heading match verdict_marks() uses, which ignores case and code blocks.
 def skipped_step(issue):
     names = labels(issue)
     found = state_labels(issue)
-    if "broken" in names or sub_summary(issue)[0] > 0 \
-            or found not in (["building"], ["to check"]):
+    if "broken" in names or found not in (["building"], ["to check"]):
         return ""
     if still_a_note(issue):
         return "(%s with no Done when, so never shaped)" % found[0]
@@ -258,7 +259,7 @@ for issue in sorted(issues, key=lambda i: i["number"]):
         needs_attention.append((issue, note))
         if not (len(state_labels(issue)) == 1
                 and (("ready" in names and still_a_note(issue))
-                     or skipped_step(issue))):
+                     or note == skipped_step(issue))):
             continue
     if "broken" in names:
         broken.append(issue)
