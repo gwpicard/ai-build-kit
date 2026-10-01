@@ -179,7 +179,9 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
 18. Run "Moving the instructions onto the index" below. It says nothing when
     the project is already on the index, or when the person said no to the
     move before.
-19. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
+19. Run "Removing leftover worktrees" below. It says nothing when the project
+    has none.
+20. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
     today's date on the `last-light-pass` line, written as YYYY-MM-DD. If that
     file is missing, create it with a `founded` line holding the date
     masterplan.md was first saved, then the two pass lines. If the project has
@@ -357,6 +359,37 @@ records, so do it only after the clean checkpoint from step 2.
    The offer does not come back until a release changes those headings, and
    then it comes back once. The trim offer in step 13 still runs on every
    visit.
+
+## Removing leftover worktrees
+
+A run on Claude Code builds each piece in a worktree under
+`.agents/worktrees/`, and clears it away once its pull request has closed, as
+the `implement` skill's `references/running-longer.md` says. A worktree can
+still be left over, such as when a session died before the next run or
+`/sync`. A leftover worktree also keeps its branch out of the old-branches
+list in step 15, since git will not remove a branch that is checked out.
+
+1. Run `sh <installed implement skill>/scripts/worktree.sh leftovers` from the
+   project root. It lists each worktree under `.agents/worktrees/` whose pull
+   request has merged or closed, or that never had one, or that is on no
+   branch, and that no unfinished run is still building. It changes nothing.
+   When it lists none, say nothing.
+2. Name each one in plain words: the piece, what happened to its pull request,
+   and whether it holds unsaved work. Offer to remove the ones that hold none,
+   each by name, in one reply.
+3. On a yes to a worktree, remove it with `worktree.sh remove <path>`. It uses
+   `git worktree remove` and never forces it, and it checks again that nothing
+   in the worktree is unsaved and no pull request from it is open. It removes
+   the worktree's link to `.env`, never the main `.env`.
+4. Never remove a worktree that holds unsaved work. Keep it, and say what is
+   unsaved: the uncommitted changes, or the commits only this computer
+   holds.
+5. Where it names a worktree whose folder is already gone while git still
+   lists it, offer to run `git worktree prune`, which clears only that record.
+   Run it on a yes.
+6. Never remove a branch here. Removing a worktree leaves its branch, and
+   step 15 lists that branch at the next visit once its work is in the default
+   branch.
 
 ## Migrating a project founded before /shape and /implement
 

@@ -474,7 +474,9 @@ launch, and the person takes it there.
 
 Choose routine technical parts quietly. Record run and check commands and any
 non-standard conventions under AGENTS.md's stack section, keeping its content
-rule and line ceiling. Leave dependency lists in the code. In the conversation,
+rule and line ceiling. Name the install command among them, since a run
+installs each worktree's dependencies with it. Leave dependency lists in the
+code. In the conversation,
 describe what the setup lets the person do. Name
 a product or service only when it creates a choice, cost, account, access step,
 ownership duty, or product limit that the person needs to understand.
@@ -488,7 +490,9 @@ update the stack section. That later question must never stop founding.
 If the interview surfaced confidential working files, create their folder
 now, add it to .gitignore, and record the handling rules in AGENTS.md. If the
 tool keeps a list of files to carry into a working copy, add the folder there
-too; in Claude Code that list is .worktreeinclude.
+too; in Claude Code that list is .worktreeinclude. The worktrees the kit opens
+for a run do not carry that folder, so a piece that needs those files is built
+with the person present, never in a run.
 
 Wire the project check according to the build path. If
 `.github/workflows/checks.yml` is missing, copy it from

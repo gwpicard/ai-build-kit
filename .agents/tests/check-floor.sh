@@ -40,6 +40,11 @@ rs_rule "an adopted project is not turned red" 'do not turn the tick red for wor
 rs_rule "each command is its own named step" 'put each command in its own named step'
 rs_rule "the same commands go in the stack section" "write the same commands in agents\.md's stack section"
 rs_rule "it follows the shared rules" 'the rules in `whole-project-reads\.md` apply'
+# A run's worktrees are whole copies of the project inside it. A lint from the
+# main folder would read each one again, so the floor keeps them out, and only
+# them: the rules above stay as they are.
+rs_rule "the checks leave the run's worktrees out" 'leave `\.agents/worktrees/` out of the type check and the lint'
+rs_rule "keeping the copies out changes no rule" 'this only keeps the copies out\. it changes no rule'
 rs_guard "$FLOOR" "the shipped check-floor.md"
 
 rs_reset

@@ -18,6 +18,9 @@ still apply:
 
 - `git checkout .` and `git restore .` are allowed only inside the fix skill's
   announced reset step;
+- never remove a worktree by force, with `git worktree remove --force` or
+  `-f`, and never delete a worktree's folder by hand; one holding unsaved work
+  is kept and named;
 - never drop or empty a database table;
 - never migrate a production database without a backup and a rehearsal on a
   copy;

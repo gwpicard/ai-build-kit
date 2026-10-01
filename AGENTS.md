@@ -228,9 +228,11 @@ attribution line, not the word.
   by base, and `pr edit --base main` moves the pull request onto `main` once
   the piece under it has merged. `pr list --head` finds the pull request open
   from a branch, so a resumed run never opens a second, and `--json
-  headRefOid` gives a merged pull request's head commit for the stale-branch
-  listing. A body given with `--body-file` is read, from a file or from
-  standard input. As on GitHub, the view gives each comment its node id and
+  headRefOid` gives a merged pull request's head commit, for the stale-branch
+  listing and for the worktree script, which counts a merged piece's work as
+  saved after its branch has gone from the remote. A body given with
+  `--body-file` is read, from a file or from standard input. As on GitHub, the
+  view gives each comment its node id and
   the REST listing its numeric id, a deletion through the API takes only the
   numeric one, and `--delete-last` removes the last, as a run that lost a
   claim race deletes its own. An older bare comment gets an id from a range
@@ -490,14 +492,19 @@ attribution line, not the word.
   request in the state file, and a built piece that carries more than `to
   check`. A first piece parked after three failed attempts, or at an early
   end with no attempt, passes when the piece on top of it was never built,
-  keeps `ready` and is skipped with a reason. It also holds that
-  `baseline.md` names the scenario's run, measured or owed.
+  keeps `ready` and is skipped with a reason. On the worktree route, where
+  the state file records a worktree for a piece, a run state written inside a
+  worktree is a miss, and so are a worktree outside `.agents/worktrees/`, the
+  main folder left on a piece's branch, and the worktrees folder committed.
+  It also holds that `baseline.md` names the scenario's run, measured or owed.
 - `.agents/tests/check-tooling.sh` runs the setup tooling report against a set of
   throwaway PATHs and reads when it stops: a missing tool or a signed-out account
   blocks founding, while issues switched off or a read-only account do not.
   Given a recipe, the report also names each command-line tool that recipe's
   launch checks run, and the check holds that a missing one never stops
   founding and that a project naming no recipe is never asked about them.
+  A Git older than 2.17, which has no `git worktree remove`, gets one line
+  naming its version, and founding carries on.
   It also runs the report in throwaway projects whose `origin` is the kit's
   own repository, in https and ssh form, in capitals and with no `.git`, and
   in one where only GitHub names it. Where `origin` names the kit, the
@@ -665,6 +672,9 @@ attribution line, not the word.
   first, and the later reads point at them, so a rule that went from the file
   would loosen every read at once. It also holds that the green-tick sentence
   is unchanged, since the floor is meant to add nothing for the person to learn.
+  It holds that the type check and lint leave `.agents/worktrees/` out, since
+  a run's worktrees are whole copies of the project, and that doing so changes
+  no rule.
   `.agents/tests/check-floor-rehearsal.sh` is the half that runs. It founds a
   throwaway Python project from the shipped workflow template, takes its
   commands from the shipped table, and watches the check go red at the type
@@ -1249,6 +1259,53 @@ attribution line, not the word.
   and pre-approved merges are swept at the end, bases first. It holds
   `/what-now` and `/sync` offering to resume, section-builder's stacked start, and the validator's step 1 wording
   that matches it.
+- `.agents/tests/kit-owns-worktrees.sh` guards the worktree each piece in a
+  run is built in on Claude Code. In a real project the person used
+  worktrees every day, set up by hand, and the kit said nothing about them:
+  twelve were left over, over a hundred branches were deleted by hand,
+  secrets were copied into several folders, the main folder was left on a
+  feature branch, and a forced removal was stopped only by Claude Code's own
+  guard. So the kit owns each worktree's whole life, and each rule in
+  `running-longer.md` is proved load-bearing. A piece's worktree is
+  `.agents/worktrees/<issue number>-<short name>`, which git ignores, and the
+  main folder is never switched to a piece's branch. Its `.env` is a link to
+  the main one, never a copy, and a link that cannot be made means the piece
+  runs without secrets and flags what needs a key. Dependencies install
+  before the start ritual, and the dev server's port is recorded in the run
+  state and named in the hand-over. A path already there is reused only on
+  the same branch with nothing unsaved, and a full disk stops the run at the
+  next piece. The run state stays in the main folder. A worktree is removed
+  after its pull request closes only when nothing in it is unsaved, never by
+  force and never with its branch. It holds section-builder's safe start,
+  `/implement`, `/sync`, the leftover step `/maintain` runs before recording
+  the visit, the foundation's ignore line, the install command founding
+  records, the tooling report's line for an older Git, the blocked forced
+  removal, and WORKFLOW.md and the compatibility page telling it.
+  It holds too that the checkpoint route needs the main folder on `main`,
+  that the dev server runs until the hand-over and the report says how to
+  start it again, that a run's worktrees do not carry the confidential
+  folder, and that `/maintain` offers `git worktree prune` on a yes.
+  `.agents/tests/kit-owns-worktrees-rehearsal.sh` runs the shipped
+  `worktree.sh` in a throwaway project with a stand-in GitHub. It opens a
+  worktree and a stacked one and reads that git ignores them, the main
+  folder stays on `main`, and `.env` and `.env.local` arrive as links with no
+  copy anywhere. It holds what counts as unsaved, an existing path reused or
+  skipped, and a dead session's uncommitted change kept. It clears worktrees
+  both ways: a merged one with nothing unsaved goes, keeping its branch and
+  the main `.env`, while a closed one holding a change and a merged one
+  holding an unpushed commit stay and are named. It holds that an open pull
+  request's worktree and one a run is building are left alone, that the
+  leftover list removes nothing, and that git never saw a forced removal, a
+  branch deletion or a checkout, with or without `-C`. A file git ignores
+  that is a real file outside a dependency or build folder counts as unsaved,
+  so tidy, remove and the end of a run keep that worktree. A copy of `.env`
+  already in a worktree is named and never called missing, and a `.env` only
+  in a subfolder is named rather than linked. A worktree on no branch is
+  listed and never tidied, and no pull request is asked about an empty
+  branch. A skip gives git's own `fatal:` line, a folder git lists but is gone
+  names `git worktree prune`, and a failed open deletes only a branch it made
+  itself. A Git older than 2.17 gets no worktree, and a port taken only on
+  `::1` is never given.
 - `.agents/tests/first-upload-asks.sh` guards the yes the project's first
   upload waits for. Founding tells the person nothing will be uploaded, and in
   a real run the first piece then pushed the whole project to GitHub with no
