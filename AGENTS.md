@@ -1017,7 +1017,8 @@ attribution line, not the word.
   scope of an issue or pull request another account opened. It holds how the
   author is read, and that an author nobody can read counts as another
   person's. It holds the bookkeeping that needs no yes, so a run with nobody
-  watching still claims, labels and sends a piece back to shaping, and that
+  watching still claims, labels, names a merge conflict on its own pull
+  request and sends a piece back to shaping, and that
   "tell them" is the yes for the person's own words while a no gives them the
   words to post. `/shape` keeps another author's words under "Original report"
   and names the author. The founded `blocked-commands.md` carries the

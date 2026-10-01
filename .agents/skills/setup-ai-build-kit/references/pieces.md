@@ -430,7 +430,7 @@ interview finds that talking will not settle it, swap that reason for the
 and why, because a label change nobody explained reads as the agent losing track.
 
 Refining one produces the shape above. Keep what the person originally typed
-underneath rather than replacing it, because their words are what a refinement
+underneath, under "Original report", rather than replacing it, because their words are what a refinement
 can be checked against and what to return to when it reads wrong.
 
 ## When somebody acts on GitHub
@@ -476,7 +476,8 @@ that covers those exact words. Show the words first, then ask. This covers:
 
 The same yes is needed before changing the title, the `## So that`, the
 `## Done when` or the scope of an issue or a pull request that another account
-opened. Read the author with `gh issue view <number> --json author`, or
+opened. Adding the shaped sections above the original, kept whole, is not such
+a change. Read the author with `gh issue view <number> --json author`, or
 `gh pr view <number> --json author` for a pull request, and compare it with
 `gh api user --jq .login`. When the author cannot be read, for example because
 GitHub cannot be reached, treat it as another person's and ask.
@@ -486,11 +487,15 @@ so they need no yes, on anyone's issue:
 
 - state labels and `needs-` labels;
 - the claim comment a run writes;
+- the one comment naming the conflicting files when a merge from `main`
+  conflicts;
+- the title and body of a pull request the kit opens for a piece;
 - a `Closes #<number>` line;
 - the question a run or `/shape` writes on a piece it sends back to shaping;
 - the readiness check's gaps and its `## Readiness` section;
 - the shaped sections added above a kept original;
-- the person's own words added as a comment when they asked for exactly that.
+- the person's own words added as a comment when they asked for exactly that,
+  such as capture adding them to a matching issue, whoever opened it.
 
 When the person says "tell them" something, that is the yes for those words.
 Write what they said, show it, and post them with no second question. Where you
