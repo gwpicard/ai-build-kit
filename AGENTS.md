@@ -1041,6 +1041,21 @@ attribution line, not the word.
   `blocked-commands.md` carries the restriction after the item on speaking for
   the person, section-builder points to it in step 4, where the project's
   commands first run, and WORKFLOW.md's Day to day section tells it.
+- `.agents/tests/content-work.sh` guards a request to use the tool on content
+  rather than change it. In one project, testing a document on a report tool
+  produced a report, a branch and two changelog entries outside any piece. The
+  branch was never pushed, so the project's history never mentions that
+  report. So change-triage names the intent and routes it: the run happens in
+  the main folder with no piece, no branch and no changelog file, and the
+  output and the person's input go to a folder git ignores. Content the person
+  asks to keep takes the build path's save route with its own changelog file,
+  and never sits on a branch nobody pushes. A fault the content shows becomes a
+  repair or a piece, confidential content falls under the founded rule, and a
+  person who leaves gets nothing committed. section-builder step 9 points kept
+  content at the save, and WORKFLOW.md's Day to day section tells it. Its
+  rehearsal founds a throwaway project from the shipped gitignore, writes an
+  input and an output where change-triage says they go, and finds `git status`
+  empty, while the same output in a folder git does not ignore shows.
 - `.agents/tests/merge-ask-rule.sh` guards the confirmation box Claude Code
   shows before a merge on a project whose every merge goes live. The rule that
   a person decides what merges holds only while an agent follows it, and two
