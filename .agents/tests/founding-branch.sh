@@ -44,9 +44,11 @@ rs_rule "else a local main, else a local master" \
 rs_rule "with no remote and neither, the current branch is the default" \
   'with no remote and neither of those, the current branch is the default'
 rs_rule "no commits, or already on the default, gets nothing said" \
-  'gets nothing said'
+  'with no commits yet, or one already on the default branch, gets nothing said'
 rs_rule "a detached checkout counts as another branch" \
   'a detached checkout counts as another branch'
+rs_rule "and is named and returned to by its commit" \
+  'git switch --detach <commit>'
 
 # A clean tree on another branch: switch, and say so once.
 rs_rule "unsaved work is read before any switch" 'git status --porcelain'
@@ -73,11 +75,17 @@ rs_rule "a worktree made by another tool is the named cause" \
 # The person's own choice.
 rs_rule "the person can choose their own branch, and founding goes back to it" \
   'switch back to it before the founding save'
+rs_rule "and the choice survives a resume" \
+  'write that choice into the setup notes'
+rs_rule "a refused switch back does not stop founding either" \
+  'where git refuses the switch back'
 
 # Resuming, and the kit's own source.
 rs_rule "the read runs again on resume" 'runs again whenever founding resumes'
-rs_rule "the kit's own source is never switched" \
-  'which the read below recognises, switch nothing'
+rs_rule "founding's own files from an earlier session are not the person's" \
+  'files founding wrote itself in an earlier session are not the person'
+rs_rule "the kit's own source is never switched, named by what marks it" \
+  'where .release-manifest.txt. and .docs/maintaining.md. sit at the root, switch nothing'
 
 # A founding saved off the default branch says so where it lasts.
 rs_rule "a save off the default branch is named" \
