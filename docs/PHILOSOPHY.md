@@ -16,13 +16,18 @@ follow them.
 
 ## Who it is for
 
-Someone who already builds with an AI coding agent and wants what it builds to
-still work six weeks later. Two kinds of person reach for that. One is a
-developer new to agent-led work, who finds their usual discipline either too
-heavy for it or quietly skipped. The other came to software from another job.
-They run a team, a product, an operation or a dataset, and they now have some
-practice at directing an agent and getting a working tool out of it. Both want
-the reliability of a real process. Neither wants to carry the process by hand.
+The kit is for technical builders who direct agents. They build with an AI
+coding agent, want what it builds to still work six weeks later, and spend
+their time directing the work rather than typing it. Some are developers new to
+agent-led work, who find their usual discipline either too heavy for it or
+quietly skipped. Others came to software from another job: they run a team, a
+product, an operation or a dataset, and have learnt to get a working tool out
+of an agent. Both want the reliability of a real process without carrying it by
+hand.
+
+What they share is practice with the tools around the code. The kit assumes
+Git, branches and pull requests are familiar, so it uses those words without
+defining them. It assumes nothing about reading the code itself.
 
 The kit rests on one rule: the workflow never requires reading code. None of the
 nine commands asks anyone to open a file of code, and every check is something a
@@ -103,6 +108,20 @@ whenever a project changes character, decides how much care applies and names
 each part of the work that touches something sensitive, with the one caution
 that goes with it. Being told at the start what you would otherwise discover at
 launch is the most valuable thing here.
+
+## Records are written for agents first
+
+An agent reads a project's records far more often than a person does, and it
+builds from them with nobody watching. So each record, and each piece on the
+board, is written for the agent first: complete, exact, and laid out so a
+machine can build against it without guessing. A short header at the top says in
+plain words what the record holds, for the person who opens it.
+
+Public documents meant for people, such as the README, stay human-first. Their
+reader is deciding whether to use the kit, and no agent builds from them.
+
+The rule about code holds here too. The person reads the header and what the
+agent tells them, and never has to read the rest to know where things stand.
 
 ## Rigour follows the project
 
@@ -257,12 +276,14 @@ first list empty?
 `/queue`, the whole ready list at once, added as a ninth command. It failed
 question 1 under every existing command, which is the answer that mattered:
 `/what-now` was doing orientation and overview at once, and the cap that keeps
-orientation usable is what squeezed the overview out. The person sees two lists
-when they type it, what can be built together now and what is waiting on what.
-The sentence is "it shows everything ready to build at once, and what is waiting
-on what". When the list looks wrong they type it again, since it is printed from
-the issues and never edited. They never need to learn that a piece can depend on
-another piece.
+orientation usable is what squeezed the overview out. The person sees the plan
+when they type it: the ready pieces in order, which can be built together
+because they share no area, what is waiting on what, and the command that runs
+the plan. The sentence is "it shows everything ready to build, in order, and
+how to run it". When the plan looks wrong they type it again, since it is
+printed from the issues and never edited. They never need to learn that a piece
+can depend on another piece. The loop example below says what running the plan
+does.
 
 Specialised agent role systems, rejected. Fails question 1, because each role is
 a new thing to know, and question 3, because there is no one-sentence version.
@@ -271,9 +292,20 @@ Architecture decision records, rejected repeatedly. Fails question 2: the person
 never reads them, and even the repositories that ship them admit their agents
 barely use them.
 
-Parallel agents on separate worktrees, rejected. Fails question 4, because when
-something goes wrong the recovery involves git states the person should never
-have to untangle.
+Separate worktrees for parallel pieces, added. It was once turned down because
+recovery meant git states the person should never have to untangle. A real
+project then ran parallel worktrees for weeks anyway, set up by hand each time,
+and they collided because nobody owned them. So the kit owns each worktree from
+start to finish.
+
+It fits under /implement, which opens one worktree for each piece in a run,
+named after the piece, and clears it away once its pull request has closed and
+nothing in it is unsaved. A single /implement outside a run works in the main
+folder as before. The person sees the piece's name on its branch and its pull
+request. The sentence is "each piece in a run is built in its own copy of the
+project, and the kit clears it away". When something goes wrong with a copy,
+such as one left behind, they type /maintain, which offers to remove it. They
+never need to track which copy holds which piece.
 
 Tight bug reproduction before a fix, added. It fits under /fix; the user sees
 the exact failing case and the evidence that it stopped failing; they never
@@ -302,9 +334,27 @@ whole-codebase convention in AGENTS.md, so each concept keeps one home.
 
 Universal test-first, rejected. Every promised behaviour needs evidence, but
 the evidence may be an automated test, a manual visual check, a source-backed
-fact, or a rehearsed recovery depending on the claim. Where a machine can check
-the claim, that check comes first and must pass; the other three are for the
-claims a machine cannot judge, not a way around one it could.
+fact, or a rehearsed recovery depending on the claim. The other three are for
+the claims a machine cannot judge, not a way around one it could.
+
+Where a machine can judge the claim, a narrower rule applies: each machine check
+exists and fails on today's code before the code is written, in its own commit,
+and passes once the piece is built. A check that fails first proves it can see
+the change. Checks only a person can make are exempt, which is why the universal
+practice stays rejected.
+
+The loop, added: `/queue` plans and `/implement` runs. It fits under those two
+commands, so the count stays at nine. The person types /queue and sees the plan:
+the ready pieces in order, which can be built together because they share no
+area, and the command that runs them. They run that command, leave, and come
+back to one report: each piece, its pull request, its state, the choices
+flagged for them to confirm, and the order to merge.
+
+The sentence is "/queue shows what a run would do, and /implement does it".
+When a piece goes wrong three times, it is parked with the reason and the run
+moves on, and the person takes that piece to /fix or /shape. They never need to
+write down the rules of a run themselves, which is what the real project did
+four times before the kit held them.
 
 A wiki, rejected. Each file under `docs/` owns one concept and sits beside the
 source it describes. A wiki would carry the record away from the work it must
@@ -349,5 +399,13 @@ that now fails a question it used to pass has drifted, usually by accumulating
 explanation rather than by gaining features. That is the maintenance list, and
 MAINTAINING.md carries the same instruction so it has a place to actually happen.
 
-The kit should get smaller as often as it gets bigger. When it does not,
-something went in that should have been shaped differently or left out.
+Growth has to replace work that was already happening without the kit; anything
+else should make the kit smaller. When a change does neither, something went
+in that should have been shaped differently or left out.
+
+The loop-first changes are growth of the first kind. A real project ran batch
+runs, parallel worktrees and merges for six weeks, and the agent improvised each
+one with the kit's rules left behind. The gate that decides which pieces a run
+may take was skipped twice. The kit's growth replaces improvisation that already
+happened, with its safety built in, so the rules travel with the work instead
+of depending on an agent remembering them.

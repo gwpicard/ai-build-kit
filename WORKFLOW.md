@@ -7,6 +7,10 @@ just say what you want done, in your own words, and the agent picks the command
 and says which one. The Claude Code plugin
 adds the prefix `ai-build-kit:`, so `/setup-ai-build-kit` becomes `/ai-build-kit:setup-ai-build-kit`.
 
+The kit is for technical builders who direct agents. It takes Git, branches and
+pull requests as familiar and uses those words without explaining them. It never
+asks you to read the code.
+
 ## 1. Commands
 
 Command names say when to use them.

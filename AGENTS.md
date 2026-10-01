@@ -1094,6 +1094,21 @@ attribution line, not the word.
   default that `baseline.md` never names. A grade raised by editing the page
   rather than by a recorded run is the thing it exists to catch, and it proves
   each refusal on a copy of the page.
+- `.agents/tests/loop-first-ground.sh` guards the ground the loop-first
+  redesign stands on, in `docs/PHILOSOPHY.md` and the documents that repeat it.
+  The kit is for technical builders who direct agents, who know Git, branches
+  and pull requests and never have to read code. Records are written for agents
+  first under a short plain header, while a public document such as the README
+  stays written for people. The worktree and loop worked examples are added and
+  each answers all five questions, with the answer for when it goes wrong
+  naming a command the person types. Taking any one answer out is caught. The
+  test-first example still rejects the universal practice and states the
+  narrower rule that a machine check fails before the code. The kit may grow
+  only to replace work that was already happening without it. The check puts
+  the old worktree rejection and the old promise to shrink as often as it grows
+  back on a copy, and proves each is noticed. It also holds the audience phrase
+  in the README and WORKFLOW.md, and the Claude Code first line on the
+  compatibility page.
 - The checks that guard a rule written as prose share
   `.agents/tests/lib/rule-shape.sh`: declare the rules, and it asserts each one
   and proves it is load-bearing by removing it and requiring the check to fail.
