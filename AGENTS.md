@@ -1186,6 +1186,31 @@ attribution line, not the word.
   pointing at it, and holds `/ship`'s promote from a preview to live on a yes
   that names it. It replaces the validator's string that held section-builder
   short of a merge.
+- `.agents/tests/the-runner.sh` guards how `/implement` runs a plan of ready
+  pieces with nobody watching, given several numbers or `queue`. In a real
+  project the agent built its own loop four times, with its rules and state in
+  temporary files and memory notes. The gate on which pieces a run may take
+  was skipped twice, once on a piece that touched personal data overnight,
+  and resuming a dead session rested on what the agent remembered. So
+  `running-longer.md` holds the run, and each rule is proved load-bearing. A
+  piece is taken on its own merits, never after three clean pieces, and never
+  when it sits in a sensitive area with no recorded acceptance. A piece with
+  no readiness result is checked before it is claimed. A piece the person
+  asked to try stops at `to check`. The eleven steps each piece goes through
+  are held in order, from the claim, read back and refused for a piece
+  already building, to the state update. A dependent piece stacks and names
+  the merge order, and the parts of one parent share a pull request. A hard
+  open choice sends the piece back to shaping and an easy one is flagged, and
+  either way the run moves on. The state file's fields, the live page, and a
+  new session resuming from the state file are held too, as is a run that ends
+  at once when nothing is left. So is what review of the first draft found:
+  a held-up piece whose blockers are all in the plan joins it and stacks, the
+  earliest claim comment wins a race and only the later run backs off, every
+  way a run ends leaves each piece in a final state, a parent's pull request
+  opens after its last finished part, the checkpoint route has its own steps,
+  and pre-approved merges are swept at the end, bases first. It holds
+  `/what-now` and `/sync` offering to resume, section-builder's stacked start, and the validator's step 1 wording
+  that matches it.
 - `.agents/tests/first-upload-asks.sh` guards the yes the project's first
   upload waits for. Founding tells the person nothing will be uploaded, and in
   a real run the first piece then pushed the whole project to GitHub with no

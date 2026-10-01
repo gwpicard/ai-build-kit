@@ -1,6 +1,6 @@
 ---
 name: implement
-description: The everyday command for building a piece that has already been shaped and marked ready. Typed alone it takes the next ready piece from the plan. Given an issue number, or a request that matches a ready piece, it builds that one. A request that is not yet a ready piece goes to shape first; implement builds, it does not shape. "/implement auto" builds several ready pieces in a row. Do not use for repairs of promised behaviour; that is fix.
+description: The everyday command for building a piece that has already been shaped and marked ready. Typed alone it takes the next ready piece from the plan. Given an issue number, or a request that matches a ready piece, it builds that one. A request that is not yet a ready piece goes to shape first; implement builds, it does not shape. Given several issue numbers, or "queue", it runs them as a plan with nobody watching. Do not use for repairs of promised behaviour; that is fix.
 ---
 
 # Implement
@@ -99,7 +99,8 @@ ready, say so plainly rather than shaping the waiting piece here.
 Typed alone, take the next ready piece as above.
 
 Given an issue number, build that piece if it is ready, and send it to `/shape`
-if it is not, saying in one line why it is not ready.
+if it is not, saying in one line why it is not ready. Given several, run them
+as a plan, as the section below says.
 
 Given a request in plain words, check whether it already matches a ready piece.
 Where it does, build that piece. Where it does not, this is new or unshaped
@@ -145,28 +146,31 @@ A built piece's pull request merges only as the `section-builder` skill's
 `references/merge.md` says: on a yes that names it, or under the person's
 pre-approval of a run, for a piece that meets all six of its conditions.
 
-## Typed with auto, or handed to a goal mode
+## Given several pieces, or queue
 
-Auto is not an ordinary peer to normal building; it is earned, not default.
-Before enabling it, require: at least three normal pieces completed cleanly,
-no unresolved review or flagged work waiting, clean Git state, evidence a machine can
-check for every selected piece, no piece still waiting on a question
-(`needs-clarification`, `needs-prototype`, or `needs-research`), every selected
-piece self-sufficient enough to build without a person present, meaning its
-`Under the hood` notes carry what the build needs, nothing needing
-human judgement in the batch,
-no pending build-path transition, and the user's explicit approval of the
-batch. A project has earned auto mode when its records and checks have
-repeatedly predicted successful ordinary builds; the presence of an agent
-feature called "goal" or "auto" does not itself make the project eligible.
+Given several issue numbers, or `queue`, this command runs them as a plan with
+nobody watching. `auto` is another name for `queue`. Load
+`references/running-longer.md` before the run starts and follow it. The shape,
+so the person knows what they are agreeing to: the plan is said once, with each
+piece and whether the run may take it, and the person approves it once and says
+whether pieces that pass may be merged. Each piece is then claimed, built,
+walked through and reviewed, and opens its own pull request, with the parts of
+one parent sharing one. A piece that depends on another built in the run stacks
+on its branch.
 
-Once eligible, load references/running-longer.md before starting and follow
-it. The shape, so the person knows what they are agreeing to: the plan is
-approved once, only ready pieces a machine can prove get taken, a failing piece is
-retried three times and then parked, a named sensitive area stops the run,
-and it ends through the route required by the build path: normally one pull
-request carrying a checklist of things to try before merging, or a confirmed
-checkpoint for eligible private exploration.
+Whether the run may take a piece is decided for each piece. A piece is taken
+only when it is ready, carries a Ready readiness result, is
+self-sufficient enough to build without a person present, waits on no step of
+the person's other than their try, and lies outside every sensitive area that has no recorded
+acceptance. A piece that fails three attempts is parked, a hard open choice
+sends a piece back to shaping, and the run moves on. It ends with one report:
+each piece, its pull request and its state, the choices flagged for the person,
+what was parked and why, and the merge order.
+
+The run keeps its state in `.agents/runs/`, so a session that dies loses
+nothing. Where an unfinished run's state file is in `.agents/runs/`, offer to
+resume it before taking anything new, whether this command was typed alone or
+with `queue`.
 
 ## Done when
 

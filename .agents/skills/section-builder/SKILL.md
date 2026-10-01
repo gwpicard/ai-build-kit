@@ -21,8 +21,12 @@ work is lying around, stop and say so: it gets finished or cleared first
 (what-now owns that conversation). Never build on top of half-done work.
 Bring the shared `main` branch up to date and start the piece from it, on every
 save route including the checkpoint route, so no piece begins from a stale copy.
-Where `main` cannot be reached, start from the local copy and note that in one
-plain line.
+One start differs.
+A piece in a run that stacks on another piece built in that run and not yet
+merged starts from that piece's branch, and a later part of a parent continues
+on the branch its first part cut, as the `implement` skill's
+`references/running-longer.md` says. Where `main` cannot be reached, start from
+the local copy and note that in one plain line.
 
 Choose the save route before changing anything:
 
@@ -48,7 +52,7 @@ Choose the save route before changing anything:
    of section-builder's two successful outcomes; see step 8.
 
 Pull-request and flagged routes work on a short-lived branch cut from the
-up-to-date `main`. The checkpoint route may commit on the current branch once
+up-to-date `main`, or from the branch a piece in a run stacks on. The checkpoint route may commit on the current branch once
 its state is confirmed clean, but it too starts the piece from the up-to-date
 `main` rather than continuing an older branch, so each piece is independent.
 
@@ -398,8 +402,8 @@ and it never passes through `to check`. Where the walk-through could not see
 what somebody would see, the person's try in step 6 comes before this save.
 
 Pull-request route: update the records, commit, push, open a pull request
-titled after the piece with a plain-language summary, and run the project
-checks. The project's first upload waits for the yes in step 1. Where the
+titled after the piece with a plain-language summary, aimed at the branch the
+piece was cut from, and run the project checks. The project's first upload waits for the yes in step 1. Where the
 piece is an issue, write `Closes #<number>` in the pull request body, so
 merging it closes the piece rather than leaving somebody to remember. Once it
 is open, write the piece's changelog file, as step 9 describes, and push it.
