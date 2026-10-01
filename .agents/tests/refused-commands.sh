@@ -73,7 +73,7 @@ rs_rule "an untracked leftover folder goes to the person" 'an untracked leftover
 rs_guard "$MAINTAIN" "maintain's removal steps"
 
 rs_require "WORKFLOW.md says the settings refuse the new commands" "$WORKFLOW" \
-  'also refuse deleting a folder with everything in it, in any common spelling'
+  'the settings also refuse deleting a folder with everything in it, in any common spelling'
 rs_require "WORKFLOW.md says a refused command comes to the person" "$WORKFLOW" \
   'when a command is refused, the agent stops and tells you in one line which command it was and what it was for'
 rs_require "WORKFLOW.md says it never goes round" "$WORKFLOW" \

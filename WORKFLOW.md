@@ -330,6 +330,8 @@ The monthly visit offers it once to a project that recorded the line before the 
 
 After a merge, everyone pulls main. Flagged areas also get the review the build path names before the pull request is offered as ready. A direct push to `main` is forbidden, and in Claude Code the project settings refuse the usual ways of writing one, so every change reaches it through a pull request. Each piece starts from an up-to-date `main`.
 
+The settings also refuse deleting a folder with everything in it, in any common spelling, and the two Git commands that clear the history Git uses to recover lost work. When a command is refused, the agent stops and tells you in one line which command it was and what it was for. It never tries another way round, such as another spelling, another tool or the same work in small steps. The decision is yours, and a command you want run anyway is one the agent gives you to run yourself. On a coding agent with no such settings, the same rule holds in writing.
+
 ## 8. Sensitive areas, and the risk notice
 
 Six areas count as sensitive, and the list is fixed: personal or sensitive data, money, sign-in and permissions, automatic action on people or other systems, irreplaceable live data, and regulated decisions. Each carries a default caution, which is what would normally prevent the harm: a person who did not build the tool reviews who can see what; a managed payment or sign-in service so the tool never holds card details or passwords; a person approves each automatic action until a live run has shown it right; a backup restored once and the change rehearsed on a copy; somebody qualified signs off a regulated rule. The build path's section names each area in your tool's own words, its caution, and whether the caution is done. Where the caution is a backup, a copy or a managed service, the kit does it. Where it is a person, the kit tells you so once, in the risk notice below, and the choice of whether to wait for them is yours. It keeps building everywhere else either way.
@@ -525,7 +527,9 @@ fourteen. When the kit has renamed a command, the update also rewrites the
 command list in your AGENTS.md, with your approval, so you are not left to
 edit it by hand. A project founded from a whole copy of the kit also carries
 the kit's own command files, which make each command show twice; the visit
-offers to remove those and leaves anything you wrote yourself alone. Every
+offers to remove those and leaves anything you wrote yourself alone. It
+removes a saved folder in a way the project's history can undo, and gives you
+the command for a folder that was never saved. Every
 visit also checks the small helper that prints your list of pieces to
 `plan.local.md`. A project founded before every installation carried it gets it
 then, so the kit reads what is ready from that list rather than working it out
@@ -601,7 +605,8 @@ A project founded before the kit could link ignored build files gets one questio
 A project founded before the six states gets one offer to move onto them. Pieces waiting on a question gain shaping, open pieces with no state gain idea, and a piece labelled blocked becomes parked with its reason. Ideas you closed as parked stay as they are. Nothing changes without your yes, and a no is recorded, so the offer comes back only when a release changes the states again.
 
 In Claude Code, the settings founding gave your project refuse a direct push
-to `main`. When a later release catches more ways of writing that push, the
+to `main`, a recursive delete and clearing Git's recovery history. When a
+later release catches more of these, the
 monthly visit names the new rules and offers to add them to
 `.claude/settings.json`, once. It adds nothing without your yes and leaves the
 rest of the file as it is. A no is recorded, and the offer comes back only

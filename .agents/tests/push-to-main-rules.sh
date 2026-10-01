@@ -287,8 +287,12 @@ rs_require "the monthly pass runs the offer" "$MAINTAIN" '16\. run "adding the r
 
 # The written gap.
 rs_reset
-rs_rule "the refused list" 'these spellings are refused:'
-rs_rule "the missed list" 'these spellings are not refused, and the rule above still forbids them'
+# Both sections open their lists with the same words, so each pattern carries
+# the sentence before it, which only its own section has.
+rs_rule "the refused push list" 'not called as `git push`\. these spellings are refused:'
+rs_rule "the missed push list" 'the person can run it themselves\. these spellings are not refused, and the rule above still forbids them'
+rs_rule "the refused delete list" 'they read the command as written\. these spellings are refused:'
+rs_rule "the missed delete list" '`git reflog` still run\. these spellings are not refused, and the rule above still forbids them'
 rs_rule "why some are missed" 'reads the words of the command as written'
 rs_rule "a branch that only starts with main still pushes" 'only starts with `main`, such as `main-fix`, still pushes'
 rs_rule "an option value may be refused too" 'may also refuse a push where `main` is the value of an option'

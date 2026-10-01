@@ -236,22 +236,29 @@ helper, copy the installed skill's `templates/foundation/plan-refresh.sh` to
 Founding copies the kit's Claude Code settings into `.claude/settings.json`
 once, and no update touches that file again. A project founded before the kit
 learned a new way to write a push to `main` keeps the older rules, and a push
-the older rules miss goes through with nothing to stop it. So the visit offers
-the missing rules, once.
+the older rules miss goes through with nothing to stop it. The same holds for
+the rules that refuse deleting a folder with everything in it and clearing
+Git's recovery history. So the visit offers the missing rules, once.
 
 1. Where the project has no `.claude/settings.json`, this step ends. Otherwise
    read its `permissions.deny` list, and the one in the installed
    setup-ai-build-kit skill's `templates/foundation/claude-settings.json`.
    Take the rules from that file, never from memory.
-2. List each rule the template holds that names both `git push` and `main`,
-   and the project's list lacks. Leave out every other rule, such as the
-   force-push ones, since the person may have removed one on purpose. When there is none, say nothing.
+2. List each rule the template holds that the project's list lacks, and that
+   names both `git push` and `main`, or `rm` with a recursive option, or
+   `git reflog expire`, or `git gc` with `--prune`. Leave out every other
+   rule, such as the force-push ones, since the person may have removed one on
+   purpose. When there is none, say nothing.
 3. Read the `push-rules-declined` line in `.ai-build-kit-maintenance`, if there
    is one. Where it already lists every missing rule, the earlier no stands,
-   and you say nothing.
+   and you say nothing. Otherwise offer only the missing rules that line does
+   not list. A line written before the delete rules lists none of them, so the
+   offer comes back once for those.
 4. Offer the change once, in one reply. Name the rules it adds, and say in
    plain words what they stop: a push to `main` written with an option before
-   the remote, such as `-q`, or as `HEAD:refs/heads/main`. Say that it adds
+   the remote, such as `-q`, or as `HEAD:refs/heads/main`; deleting a folder
+   with everything in it, in any common spelling; and clearing the history Git
+   uses to recover lost work. Say that it adds
    lines to the deny list and changes nothing else in the file. Say too that
    the `setup-ai-build-kit` skill's `references/blocked-commands.md` lists the
    spellings the rules still cannot catch. Ask for a yes.
@@ -261,7 +268,7 @@ the missing rules, once.
    visit's other changes and add a dated changelog line.
 6. On a no, change nothing. Record the no as one line in
    `.ai-build-kit-maintenance`, replacing any earlier one:
-   `push-rules-declined|<YYYY-MM-DD>|<the rules offered, separated by " ; ">`.
+   `push-rules-declined|<YYYY-MM-DD>|<every rule declined, this time and before, separated by " ; ">`.
    A later visit offers again only when a new release adds a rule that line
    does not list.
 
@@ -612,7 +619,11 @@ person saved is affected. Two housekeeping steps keep the installation tidy:
    neither exists, the update removed the old skill without adding the new
    one: run the add command from the monthly step, then read the skill folder
    back and carry on only once `setup-ai-build-kit` is there. Where only
-   `setup-ai-build-kit` exists, there is nothing to do.
+   `setup-ai-build-kit` exists, there is nothing to do. On a yes, remove a
+   tracked `start` folder with `git rm -r <folder>`, which the saved history
+   can undo and no deny rule refuses. Where the `start` folder is untracked,
+   give the person the command to run, with the folder's path, since a
+   recursive delete is refused.
 
 2. Point the founding command forward. Rewrite the command list in the
    project's AGENTS.md as "Bringing the project's instructions up to the
@@ -642,7 +653,9 @@ the new name is said out loud rather than only tidied away in the files:
    the update removed the old skill without adding the new one: run the add
    command from the monthly step, then read the skill folder back and carry on
    only once `shape` is there. Where only `shape` exists, there is nothing to
-   do.
+   do. On a yes, remove a tracked `plan` folder with `git rm -r <folder>`, as
+   for `start` above. Where the `plan` folder is untracked, give the person the
+   command to run, with the folder's path.
 
 2. Point the command forward. Rewrite the command list in the project's
    AGENTS.md as "Bringing the project's instructions up to the current names"
@@ -755,8 +768,10 @@ is a step here rather than advice:
    own and is left alone.
 3. Show the list and say what removing it does: each command appears once,
    and the renamed command goes. Remove on approval, and remove the empty
-   folders too. Where the files are tracked, the removal is part of the
-   visit's saved change.
+   folders too. Remove a tracked leftover with `git rm -r <path>`, and the
+   removal is part of the visit's saved change. An untracked file goes with a
+   plain `rm`. An untracked leftover folder goes to the person as the command
+   to run, with its path, since a recursive delete is refused.
 4. Record a changelog line saying what was removed and why.
 
 ## Offering a move onto a recipe

@@ -3,6 +3,13 @@
 Never run these. They can destroy work or cross a boundary the people on this
 project cannot see coming or recover from alone.
 
+When the coding agent refuses a command, or this list forbids it, stop. Then
+tell the person in one line which command was refused and what it was for,
+and let them decide. Never reach the same result another way: another
+spelling, another tool such as `find -delete` or a script, or the same work
+split into steps. When the person asks you to run a refused command, say it
+is refused and give them the command to run themselves.
+
 This instruction holds in every harness. Where the harness supports a command
 deny list, mirror these entries there as mechanical enforcement:
 
@@ -11,7 +18,11 @@ deny list, mirror these entries there as mechanical enforcement:
 - a direct push to `main`, in the spellings listed under "A direct push to
   `main`" below
 - `git clean -f` and `git clean -fd`
-- `rm -rf`
+- a recursive delete in any spelling, such as `rm -rf`, `rm -r` or
+  `rm --recursive`, in the spellings listed under "Deleting files and Git
+  history" below
+- `git reflog expire`
+- `git gc` with `--prune`
 
 The following restrictions do not reduce to one reliable command pattern and
 still apply:
@@ -90,6 +101,36 @@ These spellings are not refused, and the rule above still forbids them:
   main`, with an option between `git` and `push`
 - `/usr/bin/git push origin main`, with git called by its full path
 - `sh -c 'git push origin main'`, with the push inside another shell
+
+## Deleting files and Git history
+
+A recursive delete removes a folder with everything in it, and nothing brings
+back what Git never saved. `git reflog expire` and `git gc --prune` throw away
+the history Git would use to recover lost work, even work that was committed.
+The Claude Code settings the kit installs refuse all three when the command
+starts with the words below. Like the push rules, they read the command as
+written.
+
+These spellings are refused:
+
+- `rm -r build`, `rm -R build` and `rm --recursive build`
+- `rm -rf build`, `rm -fr build`, `rm -Rf build` and `rm -fR build`
+- `rm -r -f build`
+- `git reflog expire --expire=now --all`
+- `git gc --prune=now` and `git gc --aggressive --prune=now`
+
+Deleting a throwaway folder, such as a build folder, is refused too, since a
+rule cannot tell it from the person's work. The person can run it themselves,
+or the project's own clean command can. Deleting one file, such as
+`rm -f notes.txt`, and a plain `git gc` or `git reflog` still run.
+
+These spellings are not refused, and the rule above still forbids them:
+
+- `rm -f -r build`, with the recursive option second
+- `find build -delete`
+- `/bin/rm -r build`, with `rm` called by its full path
+- `sh -c 'rm -r build'`, with the delete inside another shell
+- `git -C . gc --prune=now`, with an option between `git` and `gc`
 
 ## A merge that goes live
 

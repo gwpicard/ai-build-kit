@@ -2076,7 +2076,18 @@ Bash(rm -rf:*)"
 # A project the kit founds also blocks a direct push to main, which keeps
 # changes flowing through a pull request. This maintainer repository's own
 # settings deliberately do not carry that entry, so the two sets differ here.
+# A founded project also refuses a recursive delete in every spelling the deny
+# list can see, and the two Git commands that clear its recovery history. The
+# maintainer's own settings are left as they are.
 expected_deny_project="$expected_deny
+Bash(rm -r:*)
+Bash(rm -R:*)
+Bash(rm -fr:*)
+Bash(rm -Rf:*)
+Bash(rm -fR:*)
+Bash(rm --recursive:*)
+Bash(git reflog expire:*)
+Bash(git gc*--prune*)
 Bash(git push * main)
 Bash(git push * main *)
 Bash(git push * +main)
