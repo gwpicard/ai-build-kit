@@ -364,7 +364,13 @@ run_counted 2026-05-10
 grep -qxF '20 changes have landed since the last check-up.' "$OUT" || \
   fail "with no remote, the count did not fall back to main"
 
-# Then master.
+# Then master. Kept at ten changes beside main first, so a hook that read
+# master ahead of main would stay quiet.
+git -C "$COUNTED" branch -q master "$TENTH"
+run_counted 2026-05-10
+grep -qxF '20 changes have landed since the last check-up.' "$OUT" || \
+  fail "with no remote, the count read master ahead of main"
+git -C "$COUNTED" branch -q -D master
 git -C "$COUNTED" branch -q -m main master
 run_counted 2026-05-10
 grep -qxF '20 changes have landed since the last check-up.' "$OUT" || \
