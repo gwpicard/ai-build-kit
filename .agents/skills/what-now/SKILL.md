@@ -29,6 +29,15 @@ shows a merge or rebase conflict, whether a check-up is overdue, taken from
 when it does not, and whether anything on the build path's recheck-when list has
 happened.
 
+Read which AI Build Kit release the project holds from the installed `maintain`
+skill's `VERSION` file, or from `.ai-build-kit-version` at the project root where
+that file is missing. Those are what the project's files are, so read them even
+where the `kit` line in `.ai-build-kit-maintenance` names another version. Then
+ask for the latest published release with
+`gh api repos/gwpicard/ai-build-kit/releases/latest --jq .tag_name`. Ask that
+endpoint and no other, the one `/maintain` asks, because it never answers with a
+draft or a prerelease.
+
 ## Say
 
 Open with where the build stands, in one line, then which command comes next and
@@ -86,6 +95,12 @@ to do rather than something the agent is working through: "nothing can happen on
 the payment piece until somebody opens the card account, and it takes about ten
 minutes". Say what the step is and where it happens, in the piece's own words,
 because a step nobody names is a step nobody does.
+
+Where the release the project holds and the published one differ, say so in one
+line, close to: "This project holds v0.20.0, and v0.21.0 is published. /maintain
+updates it." Where they match, or the call fails, say nothing about the version.
+A version that matches is not news, and a failed call is no reason to say
+anything either way.
 
 Say piece names, never issue numbers. Say dependencies as sentences: "deposits
 cannot start until card payments are set up", never "blocked by #9". Name at

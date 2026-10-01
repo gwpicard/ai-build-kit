@@ -275,14 +275,29 @@ Create masterplan.md from templates/masterplan.md, filled from the interview,
 present tense throughout. Open it with its short header for the person: two or
 three plain sentences on what the tool is, who uses it, and where it stands.
 Write everything below the header for the agent first, complete and exact. The
-build-path section comes right after the header: the fit check's result. Create CHANGELOG.md from
-its template, empty; it has to exist before the next step writes its first line
-to it. Create `.ai-build-kit-maintenance`
+build-path section comes right after the header: the fit check's result. Create `.ai-build-kit-maintenance`
 from `templates/maintenance-record` and put today's date on its `founded` line.
 Leave the two pass lines empty, because `/maintain` fills those in. Do not
-mention that small file to the person. Do not create team.md; it no
-longer exists. Fill in AGENTS.md's project line and the capability profile
-from step 2. Replace README.md's project-name and purpose placeholders with a
+mention that small file to the person.
+
+Add a line to that file, written as `kit|<version>|<commit>`, so the project
+records which AI Build Kit release it holds. Take the version from the installed
+`maintain` skill's `VERSION` file. A whole copy of the kit can lack that file,
+and then `.ai-build-kit-version` at the project root gives the version. Take the
+commit from the release's tag with
+`gh api repos/gwpicard/ai-build-kit/git/ref/tags/<version> --jq .object.sha`.
+Where that answer's `.object.type` is `tag` rather than `commit`, the tag is
+annotated: read `.object.url` once with `gh api` and take the commit from its
+`.object.sha`. Where the lookup fails, because GitHub is signed out or out of
+reach, write the commit as `unknown` and carry on founding. A missing commit
+never stops a founding.
+
+Create CHANGELOG.md from its template, and write its first entry under today's
+date, naming the same version and commit, close to: "Founded with AI Build Kit
+v0.19.2, commit fd0780a." It has to exist before the next step writes to it.
+
+Do not create team.md; it no longer exists. Fill in AGENTS.md's project line
+and the capability profile from step 2. Replace README.md's project-name and purpose placeholders with a
 short description taken from the masterplan.
 
 Where README.md holds no such placeholders, it is somebody's real file: an

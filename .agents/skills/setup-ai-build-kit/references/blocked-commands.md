@@ -63,6 +63,10 @@ still apply:
   the refused-command rule at the top says. The `change-triage` skill says how
   such work is kept apart from the project, under "Work on this computer
   outside the project".
+- never update the kit with a bare `npx skills update`, which can drop a
+  renamed skill without a word and leave the kit half updated; the kit is
+  updated only through `/maintain`, which uses the route the project installed
+  it by. Where the person asks for an update, run `/maintain`.
 
 Save a checkpoint before sweeping work. If one of these actions appears
 necessary, stop, explain why, and let the person decide with the reason in

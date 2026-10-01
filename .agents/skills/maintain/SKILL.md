@@ -85,7 +85,11 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    confirm the version in the
    installed `agent-plugin/plugin.json` and in that folder's
    `skills/maintain/VERSION`. Run the project's own check and record the kit
-   version in the changelog with the saved change. The foundation created by
+   version in the changelog with the saved change. Once the update is
+   confirmed, rewrite the `kit` line in `.ai-build-kit-maintenance` with the new
+   version and the commit its tag points at, as `kit|<version>|<commit>`. Read
+   the commit the way the `setup-ai-build-kit` skill's step 7 does, and write
+   `unknown` where that lookup fails. The foundation created by
    start, including AGENTS.md, README.md, project records, environment files,
    application code, and the project's check, stays project-owned. When this
    update is the one that first brings in `/shape` and `/implement`, run the
@@ -192,7 +196,11 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
 22. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
     today's date on the `last-light-pass` line, written as YYYY-MM-DD. If that
     file is missing, create it with a `founded` line holding the date
-    masterplan.md was first saved, then the two pass lines. If the project has
+    masterplan.md was first saved, then the two pass lines. Where the file
+    has no `kit` line, or its version differs from this skill's `VERSION`
+    because the kit was updated some other way, write the line from this
+    skill's `VERSION` and its tag's commit, the same way step 5 does. A project
+    founded before the line existed gets it here. If the project has
     no `.agents/hooks/session-start.sh`, copy it from the installed
     setup-ai-build-kit skill's `templates/foundation/session-start.sh`, unless
     the person asked during this visit to leave kit updates alone. That script
