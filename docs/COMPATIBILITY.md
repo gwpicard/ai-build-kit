@@ -277,6 +277,7 @@ after a clean checkpoint and explicit approval.
 | Command invocation | Ask for a skill by name | Native skill picker or slash command |
 | Background skills | Command loads the named skill | Automatic skill triggering |
 | Independent review | A clean separate chat with a prepared instruction | Subagent or separate automated session |
+| Readiness check | Paste `/shape <number> check readiness` into a new session | Subagent that carries none of the shaping conversation |
 | Sync | Run `sync` when needed | Session-end reminder |
 | Check-up due | `what-now` says when a visit is overdue | Said automatically when a session opens |
 | Safety | Standing restrictions and approval gates | Mechanical command deny list |

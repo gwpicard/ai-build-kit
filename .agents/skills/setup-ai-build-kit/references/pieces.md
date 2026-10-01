@@ -19,42 +19,89 @@ issues that never becomes a source of truth.
 The title says what the person will be able to do, in their words. Not a task
 for the agent.
 
+A piece has two layers. The header is short and in plain words, for the person.
+The agent layer below it is complete, for the builder and for the readiness
+check.
+
 ```md
 ## So that
-<the outcome this exists for, in one line>
+<one outcome for the person, in one line>
 
 ## Done when
-- <a condition somebody can check>
-- <another>
-
-## Evidence
-<automated behaviour check | guided manual check | source-backed fact |
-operational rehearsal>
+### Works
+- <a rule somebody can check>. Check: <what proves it>
+### When it is not the normal case
+- <a case this change can show>: <what happens>. Check: <what proves it>
+- <a case>: does not arise, because <why>
 
 ## Masterplan change
 <what the masterplan gains, changes or loses when this lands, or "nothing">
 
 ## Not in this piece
-<the nearest things this is not, so scope does not creep in later>
-
-## Decided
-<only when a decision was actually made that would otherwise be re-argued>
+<the nearest things this is not, so scope does not creep in later, and any
+part of So that which Done when leaves out, with the piece that follows it up>
 
 ## Waiting on you
 <only when the work cannot go further until the person does something the agent
 cannot: where to go, what to do there, and what to bring back>
 
+## Decided
+<every choice a person would notice by trying the tool, with its reason>
+
+## Data
+<each stored record written or changed, or why none is>
+
+## Leaves the tool
+<what goes where, or why nothing does>
+
+## Must still hold
+<each rule, limit or time target the change touches, with its number>
+
+## Relies on
+<each existing thing used and not built here, confirmed>
+
+Touches: <area>, <area>
+
 <details><summary>Under the hood</summary>
 
-<the build approach, the seams, code-level dependencies, any groundwork: the
-technical context a builder needs and the person never has to open>
+<the build approach, and the existing tests this piece may change, with the
+reason: the technical context a builder needs and the person never has to open>
 
 </details>
+
+## Evidence
+<automated behaviour check | guided manual check | source-backed fact |
+operational rehearsal, summarising the checks on the Done when lines>
+
+## Readiness
+<written only by the readiness check>
 ```
 
-`## Done when` is written as conditions somebody can check rather than a
-description. If a line cannot be answered yes or no by trying the tool, it
-belongs in `## So that`.
+The header is `So that`, `Done when`, `Masterplan change`, `Not in this piece`
+and `Waiting on you`. Everything from `## Decided` down is the agent layer.
+
+A piece opened with the GitHub form shows every field as a `###` heading, so
+Done when and "When it is not the normal case" sit side by side and Touches
+has a `### Touches` heading of its own. `/shape` rewrites it to the layout above
+when it shapes the piece.
+
+## Field rules
+
+One bar applies to every piece, in proportion to the piece. Every field is
+considered. A field in the agent layer that does not apply says why in one line,
+such as "Data: none; this piece stores nothing." A colour change answers most
+fields that way and runs only the checks its change needs. The standards always
+apply.
+
+`## So that` states one outcome for the person.
+
+`## Done when` keeps that heading, because the printout and `/implement` read
+it, and holds two groups as `###` subheadings. `### Works` holds checkable
+rules, each naming its check. A rule given by examples names the class and its
+edge members. `### When it is not the normal case` holds one line for each
+state the change can show, such as empty, failing, slow or left part-way, each
+with its check, or "does not arise, because" and the reason. If a line cannot
+be answered yes or no by trying the tool, it belongs in `## So that`.
 
 `## Masterplan change` is always on the surface, in plain words. Name the
 section and what it gains, changes or loses when this piece lands. Most pieces
@@ -69,9 +116,54 @@ This is the piece's delta, meaning its change to the present record. Writing
 it does not apply it early. The save and recovery rules live in
 [masterplan-changes.md](masterplan-changes.md).
 
-`## Decided` is left out entirely on the pieces that had no argument behind
-them, which is most of them. A section of thin prose repeated on every issue
-teaches a reader to skip all of them.
+`## Not in this piece` is required when Done when does not deliver all of So
+that. It names the gap and the piece that follows it up.
+
+`## Decided`: every choice a person would notice is decided here, with its
+reason, so nothing a person would notice is left for the build to choose. A
+piece where no such choice exists says so in one line.
+
+`## Data` covers each stored record the piece writes or changes: where it
+lives, who else writes it and how the writes merge, the order on first open,
+limits and what goes at the limit, backup and restore, and delete and undo.
+
+`## Leaves the tool` covers what goes where, whether the recipient is new,
+which keys, the gate that decides who can reach it, and whether the build
+path's personal-data line changes.
+
+`## Must still hold` names each rule, limit or time target the change touches,
+with its number and where it is measured, and which rule wins where two apply.
+
+`## Relies on` names each existing thing the piece uses, confirmed to exist and
+to give the data needed, by reading or trying it.
+
+`Touches:` is one line, `Touches: <area>, <area>`, with no heading of its own.
+Each area is named by the skill, record or document name, never a file path,
+because paths go stale.
+
+`Under the hood` holds the build approach, and the existing tests this piece
+may change, with the reason.
+
+`## Evidence` names the kind of proof, summarising the checks on the Done when
+lines.
+
+`## Readiness` is written by the readiness check and read by every later step.
+The check and the section are described in the `shape` skill's
+`references/readiness-check.md`.
+
+## Rules that are not fields
+
+- No open choice a person would notice. The refused phrases, and the rule that
+  a vague count or size needs a number, are item 10 of the list in
+  the `shape` skill's `references/readiness-check.md`.
+- Lists are complete: a list of examples does not stand in for the whole.
+- Each Done when line is false on today's code and true after, through this
+  piece alone.
+- Split, never shrink. No stub, placeholder or "for now" stands in for a line.
+- A missed number is a fail, stated at the top of the pull request.
+- Report a wrong test or an impossible line. Never work round it.
+
+## Decisions and what they rest on
 
 A decision in `## Decided`, or a key term or decided line in the masterplan,
 may carry an optional one-line "rests on" clause in plain words. This applies
@@ -87,7 +179,10 @@ in one plain line, without asking the person to read code or understand a
 test name. Keep the decision visible until it is settled through the command's
 usual route; a missing source is not permission to reverse the decision.
 
-`## Waiting on you` is left out the same way, and for a stronger reason: it is
+## Waiting on the person
+
+`## Waiting on you` is left out unless a step belongs to the person, and for a
+stronger reason than any other field: it is
 the one thing on a piece that only the person can clear. It appears when the
 work stops until they sign up for something, hand over a key, or move some data
 themselves. Write it as something they could follow without help, and never ask
@@ -101,18 +196,18 @@ all three unreadable. A piece waiting on the person keeps whatever state it had.
 
 ## The two layers of a piece
 
-The sections above are the surface. They stay in plain words, and they stay
-comprehensive about anything that affects the product, so a simple read is never
-a false one. A fact belongs on the surface when it would change a product
-decision: put it in `## Decided`, or name it as a dependency, in words the person
-would use. A fact belongs under the hood when it only affects how the code gets
-written.
+The header stays in plain words and short, and it stays honest about anything
+that affects the product, so a simple read is never a false one. The agent layer
+is complete. A fact belongs on the piece when it would change what a person sees
+or does, what is stored, or what leaves the tool: put it in `## Decided`, `## Data`
+or `## Leaves the tool`, in words the person would use. A fact belongs under the
+hood when it only affects how the code gets written.
 
-`Under the hood` is a collapsed section for that build context: the approach, the
-seams, code-level dependencies, any groundwork. The person never has to open it,
-and `section-builder` always reads it before building. Most short pieces need
-none of it. This is the same principle the issue already follows, that an issue
-is the agent's memory and carries as much context as a piece deserves.
+`Under the hood` is a collapsed section for that build context: the approach and
+the tests the piece may change. The person never has to open it, and
+`section-builder` always reads it before building. This is the same principle
+the issue already follows, that an issue is the agent's memory and carries as
+much context as a piece deserves.
 
 Context that reaches past one piece does not live here. A decision that affects
 the whole product goes in the masterplan, in plain words. A technical convention
@@ -223,10 +318,12 @@ that for one of the other two once it finds what is actually in the way. All
 three mean the same thing to `/implement`: not ready, and here is why.
 
 `ready` is the positive counterpart to those three. `/shape` adds `ready` once
-a piece is fully shaped: it has a `## Done when` line and waits on no question,
-so `shaping` and its reason come off as `ready` goes on. `/implement` swaps that
-label for `building` when it picks the piece up. The piece is in `to check`
-while its pull request is open, and the merged pull request closes it.
+a piece is fully shaped: it has a `## Done when` line, waits on no question,
+and its `## Readiness` section, written by a session that did not shape it,
+names no blocking gap. `shaping` and its reason come off as `ready` goes on.
+`/implement` swaps that label for `building` when it picks the piece up. The
+piece is in `to check` while its pull request is open, and the merged pull
+request closes it.
 A piece never carries `ready` and a `needs-` label at the same time; settling
 the question is what moves it from one to the other.
 
