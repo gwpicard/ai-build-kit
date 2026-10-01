@@ -72,6 +72,8 @@ rs_rule "the computer part is asked for and done apart" \
   'ask about the computer part and do it apart, then triage the project part as usual'
 rs_rule "project files touched by accident are named, not committed" \
   'name them to the person and do not commit them'
+rs_rule "a setup step outside the folder is computer work, with the yes first" \
+  'a setup step that would install, replace or remove software outside the project folder is work on this computer, below, so the yes it needs comes before you do it'
 rs_guard "$TRIAGE" "the change-triage skill"
 
 rs_require "triage still gives a request exactly one route" "$TRIAGE" \

@@ -94,8 +94,8 @@ from scratch.
 Route to one of: `/fix`; a ready piece; clarify; a decision
 prototype; a source check; a search for existing work; a step only the person
 can do; work on this computer, done apart from the project; update the
-masterplan first; rerun the fit check; prepare the handover; give the risk notice where a sensitive area
-survives redesign. Say the route and the reason in one line.
+masterplan first; rerun the fit check; prepare the handover; give the risk
+notice where a sensitive area survives redesign. Say the route and the reason in one line.
 
 Piece-sized and clear (one sitting, a done line you could write now, small
 enough for a fresh session to hold whole) becomes a ready piece once the
@@ -129,7 +129,9 @@ never reaches this step.
 A setup or operational task the person has to do themselves is written onto the
 piece as its `## Waiting on you` section, in the shape
 the `setup-ai-build-kit` skill's `references/pieces.md` describes. Do the step
-yourself where you can; write it down only where you cannot.
+yourself where you can; write it down only where you cannot. A setup step that
+would install, replace or remove software outside the project folder is work on
+this computer, below, so the yes it needs comes before you do it.
 
 A repair takes `broken` as well as its subjects, which is what points `/what-now`
 and `/fix` at it.
