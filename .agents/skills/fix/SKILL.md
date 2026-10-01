@@ -242,11 +242,17 @@ four in order. Do not start the work until all four are behind you.
 3. **Take carrying on as the acceptance.** Any instruction to go on with the
    work after the notice counts: "just rebuild it", "try it anyway", "patch it
    again". Silence does not, and neither does a question or an instruction
-   given before the notice. Somebody who described the risk before you named it
-   has still not been told by you, so name it yourself.
+   given before the notice, or a form or menu answer with no option selected.
+   Somebody who described the risk before you named it has still not been told
+   by you, so name it yourself.
 4. **Record the acceptance, then build.** The `Accepted:` line goes into the
    masterplan's build-path section before the replacement starts, with the date
-   and the person's own words.
+   and the person's own words. Those are quoted exactly as typed, in quotation
+   marks, and the line names only people the person named and says so when the
+   answer was a selected option. Correct every masterplan sentence the
+   acceptance makes untrue in the same save, such as one saying the area is
+   still waiting for the caution, and name those sentences in one line.
+   fit-check.md has the rest of these rules.
 
 The order carries this. An acceptance collected once the replacement exists is
 not an acceptance, it is a note about something that already happened.

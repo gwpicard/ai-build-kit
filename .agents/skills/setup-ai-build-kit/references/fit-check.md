@@ -211,10 +211,13 @@ a second question to get a cleaner yes, and do not turn an answer down because
 it does not repeat the notice back. The person has heard who is exposed, and
 the choice is theirs.
 
-Three things are not carrying on:
+Four things are not carrying on:
 
 - silence, or a reply that does not ask for the flagged work, such as a
   question, a change of subject, or "I am not sure";
+- an answer from a choice form or menu that came back with no option selected,
+  or with only a note that does not ask for the flagged work. A selected option
+  whose words ask for the flagged work counts, as a typed reply does;
 - an instruction given before the notice. A person who has not been told
   cannot have accepted. Give the notice in full in that reply, and build when
   they carry on after it;
@@ -237,6 +240,24 @@ their own words, and change the area's own line to `accepted` with the date.
 Add both before the flagged work starts, not after it lands. Read the
 build-path section back, and let the line being there decide whether the work
 starts. Then build what was asked for, without asking again.
+
+Their own words are the words the person typed in this conversation, quoted
+exactly, in quotation marks. Do not paraphrase them or sum them up. Name only
+people the person named: a team, a reviewer or an approval they never mentioned
+does not go in the line. Where they carried on by choosing an option in a form
+or menu, quote the option's words and say it was a selected option. Where they
+carried on over several messages, quote the one that asks for the flagged work.
+Where the words hold a secret or a personal detail about somebody, quote the
+rest and mark the cut with `[removed]`. The project's Secrets rule already says
+a secret is never written down.
+
+In the same save as the `Accepted:` line, read the rest of the masterplan for
+every sentence the acceptance makes untrue: one that says the flagged thing is
+excluded, off, kept out, or waiting for the caution. Correct each one to match,
+in the present tense, and say the risk was accepted. A sentence like that in
+another record, such as AGENTS.md or a concept file, is corrected in the same
+save, and the reply names that record. Say in one line which sentences changed.
+Where no sentence is made untrue, change nothing else and say nothing extra.
 
 All of this happens in the reply that answers the person carrying on: write
 the line, read it back, and start the work. Do not end that reply on a

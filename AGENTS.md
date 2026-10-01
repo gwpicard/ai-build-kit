@@ -1235,7 +1235,12 @@ attribution line, not the word.
   acceptance and then kept the flagged part switched off behind a rule that
   waited for the skipped sign-off, and asked again before opening it. The
   acceptance now reaches everything the notice named, so a lock that only
-  waits for the skipped caution opens with it.
+  waits for the skipped caution opens with it. A form or menu answer with no
+  option selected is not carrying on, since a real acceptance was once written
+  from one, naming an approval nobody had mentioned. So the line quotes what
+  the person typed or chose, exactly, and names only people they named. In the
+  same save, every sentence the acceptance makes untrue is corrected, because
+  a masterplan once said licensed files were kept out after they were let in.
 - `.agents/tests/who-can-settle.sh` guards which waiting pieces need the person:
   that the three labels each say who can answer, that /shape never answers a
   person-present question itself, that it can be pointed at one piece and can
