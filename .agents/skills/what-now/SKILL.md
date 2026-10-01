@@ -24,10 +24,24 @@ merge click (an open pull request says), whether any check is failing,
 whether an earlier review left an unresolved finding, whether flagged work is
 still waiting, what the build-path section's `Accepted:` lines say the project
 has knowingly given up, whether a manual setup step was left mid-way, whether Git
-shows a merge or rebase conflict, whether a check-up is overdue, taken from
-`.ai-build-kit-maintenance` when that file exists and from the changelog dates
-when it does not, and whether anything on the build path's recheck-when list has
-happened.
+shows a merge or rebase conflict, whether a check-up is overdue, and whether
+anything on the build path's recheck-when list has happened.
+
+For the check-up, run `.agents/hooks/session-start.sh` with no options, its plain
+mode, and take its answer, so what you say and what a session heard when it
+opened always agree. It counts both the days and the changes landed since the
+last visit, and prints nothing when neither is due. Only where the project has no
+such script, take it from `.ai-build-kit-maintenance` when that file exists and
+from the changelog dates when it does not.
+
+Read which AI Build Kit release the project holds from the installed `maintain`
+skill's `VERSION` file, or from `.ai-build-kit-version` at the project root where
+that file is missing. Those are what the project's files are, so read them even
+where the `kit` line in `.ai-build-kit-maintenance` names another version. Then
+ask for the latest published release with
+`gh api repos/gwpicard/ai-build-kit/releases/latest --jq .tag_name`. Ask that
+endpoint and no other, the one `/maintain` asks, because it never answers with a
+draft or a prerelease.
 
 ## Say
 
@@ -50,6 +64,12 @@ it plainly as failing, because a red check is a fact the person cannot see for
 themselves. An open review finding still waiting, and a setup step left
 half-done, are named in the same place. None of the three is left sitting under a
 "nothing is blocked"; each has its own recovery route below.
+
+A piece being built or waiting for the person's check that was never shaped, or
+never had its readiness check, is named in the same place, once, with what it is
+missing. The printout lists it under Needs attention. Say it in the piece's own
+words: "the late fees piece is being built, but nobody ever wrote down what done
+looks like for it". Name it before it is merged rather than after.
 
 Say how many entries are still notes rather than pieces, when any are, in the
 words a person would use: "two things on the list are still just notes, so I
@@ -87,12 +107,19 @@ the payment piece until somebody opens the card account, and it takes about ten
 minutes". Say what the step is and where it happens, in the piece's own words,
 because a step nobody names is a step nobody does.
 
+Where the release the project holds and the published one differ, say so in one
+line, close to: "This project holds v0.20.0, and v0.21.0 is published. /maintain
+updates it." Where they match, or the call fails, say nothing about the version.
+A version that matches is not news, and a failed call is no reason to say
+anything either way. The version line is not one of the three things named
+below.
+
 Say piece names, never issue numbers. Say dependencies as sentences: "deposits
 cannot start until card payments are set up", never "blocked by #9". Name at
 most three things; if more apply, say how many and name the nearest. More than
 three stops being orientation and becomes a report. When the person asks what
 else can be worked on, still name at most three, and offer /queue for the rest:
-it prints the plan a run would follow and ends on the command that runs it. Match where the project is in its life. Still building toward the first launch: the answer is usually /implement for the next ready piece, /shape to shape a new one, or /ship when the plan has run dry. Live and running: the answer is usually "say what you want to /shape", /fix for the thing that broke, or the /maintain that the recorded check-up dates show is overdue.
+it prints the plan a run would follow and ends on the command that runs it. Match where the project is in its life. Still building toward the first launch: the answer is usually /implement for the next ready piece, /shape to shape a new one, or /ship when the plan has run dry. Live and running: the answer is usually "say what you want to /shape", /fix for the thing that broke, or the /maintain that the check-up reminder shows is due.
 
 End with a short recap of where the tool has got to, in the words a person would
 use. Say what the last stretch of work was about, and whether anything is on the

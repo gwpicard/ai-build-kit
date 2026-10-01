@@ -65,7 +65,56 @@ answer can still be changed afterwards and an unfounded project cannot.
 
 ## 0. Resume safely
 
-First, run `scripts/bootstrap-project.sh` from this installed skill folder in
+Before anything is written, read which branch the folder is on. A founding once
+saved its checkpoint onto a feature branch the person had checked out, so the
+main branch never received the records and the commits were moved across by
+hand. Read the current branch with `git branch --show-current`, or with
+`git rev-parse --abbrev-ref HEAD` where an older Git refuses that. Then read the
+default branch: the remote's, from
+`git symbolic-ref --short refs/remotes/origin/HEAD` with `origin/` taken off,
+else a local `main`, else a local `master`. With no remote and neither of those,
+the current branch is the default.
+
+A folder with no commits yet, or one already on the default branch, gets nothing
+said. A detached checkout counts as another branch: name it by its short commit,
+and go back to it with `git switch --detach <commit>`.
+
+On another branch, look for unsaved work with `git status --porcelain`. Where it
+prints nothing, switch with `git switch <default>`, or with
+`git checkout <default>` where an older Git refuses that. Either one creates the
+default branch from the remote's copy when it exists only there. Then say once,
+in one line, close to: "This folder was on `<branch>`, so I moved it to
+`<default>` before writing anything. That way the records land where every later
+piece starts. Say if you want it founded on `<branch>` instead." This is not a
+question, and founding does not wait for an answer.
+
+Where it prints anything, never switch, because switching would carry or disturb
+the person's work. Say once instead that founding stays on this branch because
+it holds unsaved work, and that the records reach `<default>` only when this
+branch merges.
+
+Where the switch fails, stay on the current branch, say so and why in that same
+one line, and carry on founding; never stop for it. The usual cause is a
+worktree made by another tool, where the default branch is already checked out
+in another folder.
+
+Where the person says to found on their own branch, in the interview or in
+answer to that line, switch back to it before the founding save with
+`git switch <branch>`, and write that choice into the setup notes so a resumed
+founding keeps it. The folder held nothing of theirs unsaved, and founding's own
+files usually move across with the switch. Where Git refuses the switch back,
+because a file founding wrote would overwrite one on their branch, stay, say so
+once, and carry on as for any failed switch. The founding save below says what
+is then written down.
+
+This read runs again whenever founding resumes, from the setup notes or from
+anywhere else, so a founding picked up on another branch meets the same rules.
+Files founding wrote itself in an earlier session are not the person's unsaved
+work: stay on the branch that session left, and say nothing more about it. In
+the kit's own source, where `release-manifest.txt` and `docs/MAINTAINING.md` sit
+at the root, switch nothing.
+
+Then run `scripts/bootstrap-project.sh` from this installed skill folder in
 the project root. It creates only missing project foundation files and leaves
 anything already there untouched. If the harness cannot run the script, copy
 the missing files from `templates/foundation/` to the paths named by the
@@ -226,14 +275,32 @@ Create masterplan.md from templates/masterplan.md, filled from the interview,
 present tense throughout. Open it with its short header for the person: two or
 three plain sentences on what the tool is, who uses it, and where it stands.
 Write everything below the header for the agent first, complete and exact. The
-build-path section comes right after the header: the fit check's result. Create CHANGELOG.md from
-its template, empty; it has to exist before the next step writes its first line
-to it. Create `.ai-build-kit-maintenance`
+build-path section comes right after the header: the fit check's result. Create `.ai-build-kit-maintenance`
 from `templates/maintenance-record` and put today's date on its `founded` line.
 Leave the two pass lines empty, because `/maintain` fills those in. Do not
-mention that small file to the person. Do not create team.md; it no
-longer exists. Fill in AGENTS.md's project line and the capability profile
-from step 2. Replace README.md's project-name and purpose placeholders with a
+mention that small file to the person.
+
+Add a line to that file, written as `kit|<version>|<commit>`, so the project
+records which AI Build Kit release it holds. Take the version from the installed
+`maintain` skill's `VERSION` file. A whole copy of the kit can lack that file,
+and then `.ai-build-kit-version` at the project root gives the version. Take the
+commit from the release's tag with
+`gh api repos/gwpicard/ai-build-kit/git/ref/tags/<version> --jq '.object.type, .object.sha'`.
+Where the type it prints is `tag` rather than `commit`, the tag is annotated:
+read `.object.url` once with `gh api` and take the commit from its
+`.object.sha`. Where the lookup fails, because GitHub is signed out or out of
+reach, write the commit as `unknown` and carry on founding. A missing commit
+never stops a founding. A resumed founding that finds a `kit` line already
+there keeps it.
+
+Create CHANGELOG.md from its template, and write its first entry under today's
+date, naming the same version and commit, close to: "Founded with AI Build Kit
+v0.19.2, commit fd0780a." The first seven characters of the commit are enough
+there. A resumed founding whose CHANGELOG.md already holds that entry writes it
+no second time. It has to exist before the next step writes to it.
+
+Do not create team.md; it no longer exists. Fill in AGENTS.md's project line
+and the capability profile from step 2. Replace README.md's project-name and purpose placeholders with a
 short description taken from the masterplan.
 
 Where README.md holds no such placeholders, it is somebody's real file: an
@@ -474,6 +541,9 @@ where a change to `main` goes live, and `through /ship` otherwise. Off a
 recipe, write `Goes live: not hosted` where the interview or the two questions
 above say nothing is hosted, because people install the tool, copy it, or run
 it on their own computer. Otherwise write no line, and the first merge asks.
+In the same save, set the confirmation box as the `section-builder` skill's
+`references/merge.md` says under "The confirmation box on a merge that goes
+live": `add` for `on every merge`, `remove` for any other value.
 
 On any stack, recipe or not, use managed services for anything storing
 sign-ins, payments, or files; those never get hand-built, however capable you
@@ -600,6 +670,12 @@ person "Nothing will be uploaded", and that has to stay true. Where the online
 repository holds none of the code yet, the code stays on this computer until
 the first piece that pushes asks the person first, as section-builder's "The
 first upload" describes.
+
+Where founding saves anywhere but the default branch, because the person chose
+their own branch, the branch held unsaved work, or the switch failed, say so
+where it lasts. Write a line in CHANGELOG.md under today's date naming the
+branch and the reason, and saying the records reach the default branch when it
+merges. The completion report says the same.
 
 section-builder chooses between the checkpoint, pull-request and flagged routes
 for each piece built afterwards, on what that piece touches. That choice is

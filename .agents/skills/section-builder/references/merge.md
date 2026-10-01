@@ -2,9 +2,10 @@
 
 The one merge step for every route. section-builder, `/implement`, `/fix`,
 `/ship` and `/sync` load it whenever a pull request is ready to merge, and none
-of them keeps its own copy of the rule. It covers the merge alone: the save that
-opened the pull request is section-builder's step 8, and what happens to the
-piece afterwards is its step 9.
+of them keeps its own copy of the rule. It covers the merge, and the wait for
+the project check that the merge and section-builder's step 8 share. The save
+that opened the pull request is section-builder's step 8, and what happens to
+the piece afterwards is its step 9.
 
 ## The yes that names it
 
@@ -21,6 +22,31 @@ do not ask again. A yes to going live, to a hosting step, or to any question
 asked before the merge was named does not cover it: ask again, and merge
 nothing until they answer. A no leaves the pull request open.
 
+## Waiting for the check
+
+Wait with `gh pr checks <number> --watch --fail-fast`. It returns once every
+check has finished or one has failed. Where the coding agent limits how long a
+command may run, run it in the background or with the agent's own tool for
+watching a command, and read its result when it ends. Never a loop of `sleep`
+calls: Claude Code refuses them, and a hand-made loop is easy to misread.
+
+Read the result from the command's final output and exit code, never from a
+watch that ended early. Exit code 8, or an error naming an unknown option,
+means the check is not finished. Where `gh` names `--fail-fast` as unknown, run
+the watch again without it. Where `gh` is too old for `--watch`, run
+`gh pr checks <number>` again when the agent's own watch tool says time has
+passed.
+
+Three cases end without a green check:
+
+- Where `gh pr checks` reports that no checks ran, say so plainly, and never
+  call the pull request green.
+- Where a check never finishes, the watch runs until the agent's own time limit
+  ends it. Say the check has not finished, name it, and leave the piece in
+  `to check`.
+- Where GitHub cannot be reached while waiting, say the check could not be
+  read, and call nothing green.
+
 ## Before any merge
 
 Merge only a pull request whose project check is green. Never merge over a red
@@ -32,7 +58,7 @@ that each pass alone can break `main` together. So every merge, fold or no fold,
 first brings the branch up to date with `main` and checks it again. Once the
 merge is approved, run this skill's `scripts/bring-up-to-date.sh`, as "The fold
 before the merge" says, and wait for the project check on the commit its last
-line prints, with `gh pr checks <number> --watch`. Merge only on green. The
+line prints, as "Waiting for the check" says. Merge only on green. The
 check waited on is the project check on GitHub, never a run on this computer,
 since the check on GitHub is the one the green tick reports.
 
@@ -77,7 +103,7 @@ pre-approval, and before `gh pr merge`:
 2. Fold every file now in `changes/` into `CHANGELOG.md`: the piece's own, and
    any a merge made elsewhere left behind.
 3. Commit the fold as `Fold the changelog`, push the branch, and wait for the
-   project check on that new commit with `gh pr checks <number> --watch`.
+   project check on that new commit, as "Waiting for the check" says.
 4. Merge only when that check is green. Red means nothing merges: say so and
    take it to `/fix`, as the rule above says.
 
@@ -175,6 +201,10 @@ the merge reaches a preview, the merge goes live, or nothing is hosted. Treat
 it as going live until the person says it does not. Write
 their answer into "How it stays running" as the `Goes live:` line, with the
 merge's save or the next one, so the question is asked once for each project.
+In the same save, set the confirmation box as "The confirmation box on a merge
+that goes live" says.
+Where the recipe settled it with no question asked, write the line the same way,
+`on every merge` or `through /ship`, and set the box with it.
 
 On `on every merge`, the ask says so, as "this goes live now": for example, "Say
 yes to merge 12, which adds the invoice list. This goes live now." Where no live
@@ -185,6 +215,46 @@ going-live step, and `/ship` records what it found, the live address included,
 so a later merge is not taken for a first launch. Where `/ship` itself makes the
 merge, it has already run those checks, and the merge step does not run them a
 second time.
+
+## The confirmation box on a merge that goes live
+
+Claude Code can show its own confirmation box before a command runs, and it
+shows it whatever the session was told. Two rules make it ask before a merge.
+The rules sit in the `setup-ai-build-kit` skill's
+`templates/merge-ask-rules.json`. Take them from that file, never from memory. The same skill's
+`scripts/merge-ask-rules.py` writes them, so every step that records the
+`Goes live:` line changes the file the same way.
+
+Whoever writes `Goes live: on every merge`, whether founding, this step or
+`/ship`, runs
+`python3 <installed setup-ai-build-kit skill>/scripts/merge-ask-rules.py add .claude/settings.json`
+from the project root, in the same save. It adds only the rules that are missing
+to the end of `permissions.ask`, creates that list when there is none, and keeps
+every other entry and setting as it is. Then say one line: "Claude Code will now
+show a confirmation box before each merge, because every merge goes live."
+
+Where a recipe wins over a `not hosted` line and says a change to `main` goes
+live, as above, the merge goes live, so run `add` there too. Whoever writes any
+other value runs the same command with `remove`. It takes
+out exactly the template's rules, and the `ask` list too when that leaves it
+empty. A rule the person wrote stays. Where it took something out, say one
+line: "Claude Code will no longer show its confirmation box before a merge,
+because a merge no longer goes live."
+
+The script's exit decides the rest:
+
+- 0: done. It prints each rule it added or took out, and nothing when nothing
+  changed: say nothing then.
+- 1: the file is not valid JSON, and it was left untouched. Write nothing, and
+  say in the reply that `.claude/settings.json` could not be read, so the box
+  was not set up.
+- 2: the project has no `.claude/settings.json`, because it does not use Claude
+  Code. Write nothing, and leave the line out of the reply.
+
+The box is a second guard. The written rule, a yes that names the merge, still
+holds on every route, and on other coding agents it is the only one. The
+`setup-ai-build-kit` skill's `references/blocked-commands.md` lists the merges
+the box does not catch.
 
 ## Pre-approval for a run
 
@@ -208,6 +278,9 @@ With pre-approval, merge a piece only when all six hold:
    `not hosted`. Where it says `on every merge`, where the recipe says a change
    to `main` goes live, or where the route is not known, the merge would go
    live.
+
+A pre-approved run never meets the confirmation box, because condition 6 keeps
+it from making a merge that goes live.
 
 A piece that fails any of the six is not merged. It stays in `to check` for the
 person, and the run's report names the condition it failed. The rule for a

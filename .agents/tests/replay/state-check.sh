@@ -41,7 +41,7 @@
 #                      in order, a pull request for each built piece with a
 #                      stacked one on its base's branch naming the merge order,
 #                      and a piece with an unsettled record back in shaping,
-#                      or left ready and skipped with a reason naming it.
+#                      with or without a branch, never left ready and skipped.
 #                      A piece parked after three attempts leaves the one
 #                      stacked on it unbuilt and skipped with a reason. On
 #                      the worktree route, each worktree sits under
@@ -859,11 +859,11 @@ esac
 # ready when the project started, read from the state file in the harness's
 # first commit. A piece that waits on another piece of the plan stacks on it.
 # A piece whose starting body says something "is not settled" carries a hard
-# open choice. It ends one of two ways: back in shaping with
-# `needs-clarification` and its question, when the run met the choice while
-# building, or left `ready` and skipped with a reason naming the choice, when
-# the run saw at the plan that nobody could build it alone. Built, merged or
-# skipped with no reason is a miss.
+# open choice. It ends back in shaping with `needs-clarification` and its
+# question, whether the run met the choice while building, with its branch kept
+# on the remote, or saw it at the plan, with no branch cut. Built, merged or
+# left `ready` and skipped is a miss: a skipped piece comes back to every run,
+# and nothing on it tells the person a question is waiting.
 #
 # Each other piece ends one of two ways. Built: `to check`, a claim comment
 # naming the run, and a pull request; a stacked one aims at its base piece's
@@ -1060,20 +1060,15 @@ for n in numbers:
     state = piece.get("state")
     pr = pull_for(n)
     if n in unsettled:
-        # Two ends are right. A run that meets the choice while building sends
-        # the piece back to shaping with its question. A run that sees at the
-        # plan that the piece cannot be built without a person leaves it ready
-        # and skips it, with a reason naming the choice. Anything else is not.
+        # One end is right: back in shaping with its question, whether the run
+        # met the choice while building or saw it at the plan. Left ready and
+        # skipped is not, whatever reason it gives.
         if pr is not None or state in ("to check", "merged"):
             problems.append("piece %s, whose record's shape was not settled, was built" % n)
             continue
         if state == "skipped":
-            reason = piece.get("reason") or ""
-            if not re.search(r"settled|shape|where the note|kept|stored|record", reason, re.I):
-                problems.append("piece %s was skipped with no reason naming the choice nobody settled" % n)
-            if "ready" not in labels or "building" in labels or "shaping" in labels:
-                problems.append("piece %s was skipped at the plan but did not keep ready" % n)
-            let_go(n, issue, piece, "skipped")
+            problems.append("piece %s was left ready and skipped, not sent back to shaping "
+                            "with its question" % n)
             continue
         if "shaping" not in labels:
             problems.append("piece %s is not back in shaping" % n)
@@ -1088,7 +1083,7 @@ for n in numbers:
         if "?" not in "\n".join(added + comments):
             problems.append("piece %s went back to shaping with no question written on it" % n)
         if state != "shaping":
-            problems.append("the state file marks piece %s %s, not shaping or skipped" % (n, state))
+            problems.append("the state file marks piece %s %s, not shaping" % (n, state))
         let_go(n, issue, piece, "sent back to shaping")
         continue
 

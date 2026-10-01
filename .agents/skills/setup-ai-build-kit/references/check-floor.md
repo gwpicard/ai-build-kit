@@ -57,6 +57,19 @@ for folders it skips, such as ESLint's `ignores`, ruff's `extend-exclude`,
 mypy's `exclude` or the `exclude` list in `tsconfig.json`. This only keeps the
 copies out. It changes no rule.
 
+Leave it out of the test run too, wherever the project's test runner would find
+tests there, or every piece's tests run again from the main folder. Use the
+runner's own setting, and keep the folders it already skips on the list:
+Vitest's `exclude`, added to `configDefaults.exclude`; Jest's
+`testPathIgnorePatterns`, beside `/node_modules/`, and the same entry in
+`modulePathIgnorePatterns`, so the copies' `package.json` files raise no
+warning; and for Node's own test runner, a test path that does not reach
+`.agents/`, naming the project's own test folder.
+pytest and `go test ./...` already skip folders whose name starts with a dot, so
+they need nothing. Where a runner has no setting to skip a folder, write
+`Tests: the runner reads .agents/worktrees/` in AGENTS.md's stack section and
+carry on, as for a missing tool.
+
 ## Wiring
 
 Put each command in its own named step, `Type check` and `Lint`, after install

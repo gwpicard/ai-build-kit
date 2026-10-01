@@ -430,7 +430,7 @@ interview finds that talking will not settle it, swap that reason for the
 and why, because a label change nobody explained reads as the agent losing track.
 
 Refining one produces the shape above. Keep what the person originally typed
-underneath rather than replacing it, because their words are what a refinement
+underneath, under "Original report", rather than replacing it, because their words are what a refinement
 can be checked against and what to return to when it reads wrong.
 
 ## When somebody acts on GitHub
@@ -463,6 +463,52 @@ the form it expected.
 | Deletes an issue | Lets it go. If a branch still refers to it, `/sync` says so |
 | Fills the issue form in properly | Nothing special. It is a piece, and it gets built |
 
+## Speaking for the person
+
+Whatever the agent posts under the person's account, somebody else reads as the
+person speaking. So anything another person will read that way waits for a yes
+that covers those exact words. Show the words first, then ask. This covers:
+
+- a comment or a reply on an issue or a pull request;
+- a review of a pull request;
+- a mention of someone by their GitHub name, because GitHub tells them;
+- a message in any other channel the agent can reach.
+
+The same yes is needed before changing the title, the `## So that`, the
+`## Done when` or the scope of an issue or a pull request that another account
+opened. Adding the shaped sections above the original, kept whole, is not such
+a change. Read the author with `gh issue view <number> --json author`, or
+`gh pr view <number> --json author` for a pull request, and compare it with
+`gh api user --jq .login`. When the author cannot be read, for example because
+GitHub cannot be reached, treat it as another person's and ask.
+
+Some writing is the kit's bookkeeping. These say nothing in the person's voice,
+so they need no yes, on anyone's issue:
+
+- state labels and `needs-` labels;
+- the claim comment a run writes;
+- the one comment naming the conflicting files when a merge from `main`
+  conflicts;
+- the title and body of a pull request the kit opens for a piece;
+- a `Closes #<number>` line;
+- the question a run or `/shape` writes on a piece it sends back to shaping;
+- the readiness check's gaps and its `## Readiness` section;
+- the shaped sections added above a kept original;
+- the person's own words added as a comment when they asked for exactly that,
+  such as capture adding them to a matching issue, whoever opened it.
+
+When the person says "tell them" something, that is the yes for those words.
+Write what they said, show it, and post them with no second question. Where you
+add or change words, ask about the new version.
+
+When the person says no, post nothing. Give them the words, so they can post
+them themselves if they want to.
+
+A run with nobody watching posts nothing in the person's voice, and it changes
+no title or scope on an issue or a pull request another account opened. Its
+bookkeeping still goes on. What it would have said goes into its report for the
+person to read.
+
 ## The local printout
 
 `plan.local.md` is a printout of the open issues and nothing else. It is
@@ -492,8 +538,14 @@ pieces free to start are headed `To build`, followed by `Go together`, and the
 ones waiting on another piece are headed `Held up`, each naming the piece
 holding it. Needs attention lists a piece carrying two states, a `needs-` label
 without `shaping`, and a `ready` piece with no `## Done when`, each once, with
-the labels named. A parent with parts carries no state of its own and prints
-under Made of parts. A closed issue never prints.
+the labels named. It also lists a `building` or `to check` piece that skipped a
+step. With no `## Done when` it says the piece was never shaped. With a Done
+when but no `## Readiness` section it says the piece had no Readiness check.
+Where both are missing, only the first is said. Such a piece stays in its own
+column as well, because somebody really is building or checking it, and on an
+older project the Readiness note goes once those pieces close. A parent and a
+`broken` piece get neither note. A parent with parts carries no state of its
+own and prints under Made of parts. A closed issue never prints.
 
 `Go together` puts the pieces under `To build` in groups by their `Touches:`
 lines. A held-up piece is marked `(in the plan)` when every open blocker in its

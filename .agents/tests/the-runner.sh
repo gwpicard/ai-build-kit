@@ -104,8 +104,27 @@ rs_rule "an easy choice takes the most reversible option" 'takes the most revers
 rs_rule "a flagged piece is never merged under pre-approval" 'a flagged piece is never merged under pre-approval'
 rs_rule "either way the run moves on" 'either way the run moves on to the next unblocked piece'
 
+# A hard choice the run can see before it claims a piece. Judged not
+# self-sufficient, such a piece was skipped and left ready, so every later run
+# planned it and skipped it again, and nothing on it told the person a question
+# was waiting. It goes back to shaping instead, as one met while building does.
+rs_rule "a hard choice seen at the plan or the claim goes back to shaping" 'where the run can see one when it plans or claims a piece, send it back to shaping before claiming it'
+rs_rule "the plan-time send-back takes ready off" 'with no claim to undo: `gh issue edit <number> --add-label shaping --add-label needs-clarification --remove-label ready`'
+rs_rule "no branch and no claim for a piece sent back at the plan" 'cut no branch and write no claim, since nothing was built'
+rs_rule "the plan names it as going back, with its question" 'the plan names it as going back, with its question'
+rs_rule "an easy choice at the plan leaves the piece eligible" 'an easy open choice seen at the plan leaves the piece eligible'
+rs_rule "a missing fact alone is still skipped and stays ready" 'with no open choice in it, is skipped with the reason and stays `ready`'
+rs_rule "a hard choice wins over a missing fact" 'the hard choice wins, and it goes back to shaping'
+rs_rule "the claim step sends a visible hard choice back" 'a piece whose text shows a hard open choice goes back to shaping unclaimed'
+
 # Failure, and a blocking failure.
 rs_rule "three failed attempts park the piece" 'after the third, park it'
+# A piece whose build needs software installed on this computer, outside the
+# project folder, waits for a yes nobody is there to give in a run. Installing
+# it anyway is how a person's machine got changed without a word.
+rs_rule "a piece needing software outside the project is parked" 'a piece whose build needs software installed outside the project folder is parked with that reason'
+rs_rule "and the run never installs it" 'the run never installs it, since nobody is there to say yes, and takes the next piece'
+rs_rule "one missing tool that stops every piece left ends the run" 'where the same missing tool would stop every piece left, it is a blocking failure'
 rs_rule "a blocking failure stops only what relies on it" 'a blocking failure never stops the whole run unless it touches something every later piece relies on'
 
 # Resuming, and the end of the run.
@@ -210,5 +229,9 @@ rs_require_load_bearing "WORKFLOW says a sensitive piece is never taken without 
 rs_require_load_bearing "WORKFLOW says a goal mode stops only the piece" "$WORKFLOW" \
   'a named sensitive area stops the piece that touches it, never the run'
 rs_require_absent "WORKFLOW no longer calls autonomy earned" "$WORKFLOW" 'autonomy is earned'
+rs_require_load_bearing "WORKFLOW says a hard choice seen before the build goes back first" "$WORKFLOW" \
+  'a hard choice the run can already see in a piece sends it back the same way before any branch is cut'
+rs_require_load_bearing "/implement says the run sends it back whether seen at the plan or met while building" "$IMPLEMENT" \
+  'a hard open choice, seen at the plan or met while building, sends a piece back to shaping'
 
 rs_done

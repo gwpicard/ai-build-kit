@@ -10,7 +10,12 @@
 # worktree script reads both. maintain writes a worktree-links line too, or a
 # worktree-links-declined line when the person turns the links down, and a
 # project-check-declined line when the person turns down recording the
-# project's own CI as its project check. Nothing else edits this file.
+# project's own CI as its project check, and a merge-ask-declined line when
+# the person turns down the confirmation box on merges that go live.
+# setup-ai-build-kit writes a kit line, as `kit|<version>|<commit>`, naming
+# the AI Build Kit release the project holds and the commit its tag points at,
+# or `unknown` when that lookup failed. maintain rewrites the kit line after an
+# update and adds it where it is missing. Nothing else edits this file.
 founded|
 last-light-pass|
 last-full-pass|

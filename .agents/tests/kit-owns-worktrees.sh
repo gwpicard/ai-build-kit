@@ -162,6 +162,17 @@ rs_require_load_bearing "a stacked piece gets a worktree of its own" "$BUILDER" 
   'starts from that piece.s branch, in a worktree of its own on claude code'
 rs_require_load_bearing "the hand-over names the port" "$BUILDER" \
   'the hand-over names that port and that worktree'
+# Walk-through pictures go to the main folder, so a worktree whose only
+# ignored content was a walk-through is still cleared away. The rehearsal runs
+# the lookup these lines name; here they are read back.
+rs_require_load_bearing "the walk-through finds the main folder from the porcelain list" "$BUILDER" \
+  "find the main folder with this command: \`git worktree list --porcelain \| sed -n '1s/\^worktree //p'\`"
+rs_require_load_bearing "that first worktree line is always the main folder" "$BUILDER" \
+  'the first `worktree` line, which is always the main folder'
+rs_require_load_bearing "the walk-through folder is created when missing" "$BUILDER" \
+  'create that folder where it does not exist yet'
+rs_require_load_bearing "the hand-over names the full path of the pictures" "$BUILDER" \
+  'where the screenshots are, given as the full path of the walk-through folder in the main folder'
 
 # /implement, /sync and /maintain.
 rs_require_load_bearing "/implement says a run builds each piece in a worktree" "$IMPLEMENT" \

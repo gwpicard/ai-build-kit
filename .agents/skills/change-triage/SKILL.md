@@ -37,7 +37,8 @@ up. Steps 2 to 4 wait until then.
 ## Step 2: Classify intent
 
 One of: repair of promised behaviour; new behaviour; clarification or
-copy/presentation change; setup or operational task; a decision that needs
+copy/presentation change; setup or operational task; work on this computer
+outside the project; using the tool on content; a decision that needs
 clarify; a decision that needs a prototype; a decision that needs source
 research; a change that alters the build path or a sensitive area.
 
@@ -92,9 +93,10 @@ from scratch.
 
 Route to one of: `/fix`; a ready piece; clarify; a decision
 prototype; a source check; a search for existing work; a step only the person
-can do; update the masterplan first; rerun the fit
-check; prepare the handover; give the risk notice where a sensitive area
-survives redesign. Say the route and the reason in one line.
+can do; work on this computer, done apart from the project; using the tool on
+content, done without a piece; update the
+masterplan first; rerun the fit check; prepare the handover; give the risk
+notice where a sensitive area survives redesign. Say the route and the reason in one line.
 
 Piece-sized and clear (one sitting, a done line you could write now, small
 enough for a fresh session to hold whole) becomes a ready piece once the
@@ -128,7 +130,9 @@ never reaches this step.
 A setup or operational task the person has to do themselves is written onto the
 piece as its `## Waiting on you` section, in the shape
 the `setup-ai-build-kit` skill's `references/pieces.md` describes. Do the step
-yourself where you can; write it down only where you cannot.
+yourself where you can; write it down only where you cannot. A setup step that
+would install, replace or remove software outside the project folder is work on
+this computer, below, so the yes it needs comes before you do it.
 
 A repair takes `broken` as well as its subjects, which is what points `/what-now`
 and `/fix` at it.
@@ -154,6 +158,76 @@ work. What may not happen is the notice quietly going away, or you deciding on
 their behalf that it no longer applies because they pushed back. Repeat the
 request back, however many times it arrives, and route it the same way each
 time.
+
+### Work on this computer outside the project
+
+The project's own folder is the line. Anything under it is project work.
+Anything outside it is the person's computer: installing, updating, repairing
+or removing software, changing system or shell settings, or tidying files
+outside the project folder. Route that work apart. It gets no piece, no branch
+and no changelog entry, and nothing about it is written into any tracked file of
+the project, whether a record, AGENTS.md, code or a document. Tell the person
+what was done in your reply instead. Installing the project's own dependencies
+inside its folder, such as `npm install` or a virtual environment, is project
+work and goes on as the build already does it.
+
+Before anything is installed, replaced, downloaded to run, or removed outside
+the project folder, name what it is, where it goes and how to undo it, and wait for a yes. This
+holds in every command, including a build that finds a tool missing or too old.
+A command that needs administrator rights is given to the person to run. A
+removal that needs a recursive delete is given to the person as well, as the
+`setup-ai-build-kit` skill's `references/blocked-commands.md` says.
+
+Sometimes the project itself needs a fact about the computer, such as "the build
+needs version 3 or later of its typesetting tool". Write it into AGENTS.md's
+stack section as a requirement of the project. Never write it as a record of
+what was done to this machine.
+
+A request that mixes the two, such as "install X and use it in the report", is
+two requests, each with exactly one route. Say so in one line. Ask about the
+computer part and do it apart, then triage the project part as usual. Where the
+computer work changed project files by accident, and the changes are
+not committed, name them to the person and do not commit them.
+
+### Using the tool on content
+
+Some tools exist to turn content into something, such as a report, a site or
+an import. Using the tool on content means running the tool on the person's
+material to produce an output, or to see how it handles that material, with no
+change to the tool's code, checks or records. It gets no piece, no branch and
+no changelog file.
+
+Run the tool on the content in the main folder, then hand the output to the
+person and say where it is. The output stays out of git unless the person asks
+to keep it. Where the tool writes its output to a folder git already ignores, it
+stays there; otherwise it goes to `.agents/tmp/content/<YYYY-MM-DD>-<short name>/`.
+Check first with `git check-ignore -q .agents/tmp/content/` that git ignores
+that folder. A project founded before the kit ignored it may not: there, write
+to a folder made with `mktemp -d` outside the project instead, and offer once
+to add `.agents/tmp/` to `.gitignore` as a small saved change. The person's own
+input files go to the same place unless they are already in the project. That
+way `git status` is as clean after the run as before it, and the next build can
+start.
+
+When the person asks to keep the content or its output in the project, save it
+through the save route the build path uses, following section-builder's save
+and record steps yourself even though there is no piece: as a small change
+with its own changelog file and, on the pull-request route, its own pull
+request. Never on a branch that is left unpushed, since its
+changelog entry would never reach `main`.
+
+Where the content shows a problem in the tool, because it fails or the output
+is wrong, say so in one line, and it becomes a repair through `/fix` or a new
+piece through this triage. The content run itself is not a repair. A request
+that changes the tool so it can handle the content is not content work either,
+and is triaged as usual.
+
+Where the content holds personal data or confidential material, the
+confidential-files rule in AGENTS.md applies, so nothing of it or its output is
+committed, even when the person asks to keep it, and both stay out of git. If the person leaves before saying whether
+to keep it, nothing is committed: the output stays where it was written, and the
+reply named that place. If the tool cannot run on this computer, say so and
+stop. Anything it would need installed is work on this computer, above.
 
 ## Step 5: Record only durable information
 

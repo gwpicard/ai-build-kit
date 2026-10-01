@@ -59,6 +59,23 @@ rs_rule "the line is written and the work started in the same reply" \
   'start the replacement in the reply that answers them'
 rs_rule "no lock is kept that only waits for the skipped caution" \
   'keep no lock that only waits for the skipped caution'
+# A real acceptance was written from a choice form that came back with no
+# option selected, and the line named a team's approval the person never
+# mentioned. So the repair's acceptance carries the same three rules as
+# fit-check.md: an empty form answer is not carrying on, the line quotes what
+# the person typed or chose, and the masterplan stops contradicting it.
+rs_rule "a form answer with no option selected is not carrying on" \
+  'a form or menu answer with no option selected'
+rs_rule "the line quotes the typed words exactly" \
+  'quoted exactly as typed, in quotation marks'
+rs_rule "the line names only people the person named" \
+  'names only people the person named'
+rs_rule "the line says when the answer was a selected option" \
+  'says so when the answer was a selected option'
+rs_rule "untrue masterplan sentences are corrected in the same save" \
+  'correct every masterplan sentence the acceptance makes untrue in the same save'
+rs_rule "the reply names the corrected sentences" \
+  'name those sentences in one line'
 rs_guard "$FIX" "the fix skill"
 
 # fit-check.md is where every skill reads the rule from, so the definition has
@@ -125,6 +142,48 @@ rs_rule "a real scope question may still be asked" \
   'a real question about scope, whose answer changes what gets built, may still be asked'
 rs_rule "no further yes is asked to open it" \
   'do not keep the lock and ask for a further yes to open it'
+# An external project recorded an acceptance from a choice form that returned
+# "(no option selected)", and wrote that another team had given its approval
+# when nobody had said so. A later acceptance let licensed files in while the
+# masterplan's own section still said they were kept out. The rules below hold
+# the empty answer out, keep the line to what the person typed or chose, and
+# make the masterplan say one thing about the area once the line is written.
+rs_rule "there are four things that are not carrying on" \
+  'four things are not carrying on'
+rs_rule "a form that came back with no option is not carrying on" \
+  'a choice form or menu that came back with no option selected'
+rs_rule "nor one with only a note that does not ask for the work" \
+  'or with only a note that does not ask for the flagged work'
+rs_rule "a selected option that asks for the work counts" \
+  'a selected option whose words ask for the flagged work counts, as a typed reply does'
+rs_rule "their own words are what they typed, quoted exactly" \
+  'the words the person typed in this conversation, quoted exactly, in quotation marks'
+rs_rule "no paraphrase and no summary" \
+  'do not paraphrase them or sum them up'
+rs_rule "the line names only people the person named" \
+  'name only people the person named'
+rs_rule "a selected option is quoted and said to be one" \
+  'quote the option.s words and say it was a selected option'
+rs_rule "over several messages, quote the one that asks for the work" \
+  'quote the one that asks for the flagged work'
+rs_rule "a secret or personal detail is cut and marked" \
+  'quote the rest and mark the cut with .\[removed\].'
+rs_rule "the cut points at the secrets rule" \
+  'the project.s secrets rule already says a secret is never written down'
+rs_rule "every sentence the acceptance makes untrue is found" \
+  'every sentence the acceptance makes untrue'
+rs_rule "which sentences those are" \
+  'excluded, off, kept out, or waiting for the caution'
+rs_rule "each is corrected in the present tense, saying the risk was accepted" \
+  'correct each one to match, in the present tense, and say the risk was accepted'
+rs_rule "in the same save as the line" \
+  'in the same save as the .accepted:. line'
+rs_rule "a sentence in another record is corrected too" \
+  'a sentence like that in another record, such as agents.md or a concept file'
+rs_rule "the reply says in one line which sentences changed" \
+  'say in one line which sentences changed'
+rs_rule "with nothing untrue, nothing else changes and nothing extra is said" \
+  'where no sentence is made untrue, change nothing else and say nothing extra'
 rs_guard "$FIT" "the shipped fit-check.md"
 
 # /ship and founding are the other two places the kit used to stop. Each now
@@ -145,6 +204,8 @@ rs_rule "the area reads accepted, never done" \
   'line .accepted., never .done.'
 rs_rule "silence or other work leaves only that area behind" \
   'silence, a question, or a request for other work is not carrying on'
+rs_rule "nor is a form answer with nothing chosen" \
+  'nor is a form answer with nothing chosen'
 rs_rule "ship goes on in the same reply with no further question" \
   'go on in the same reply, without a further question about that area'
 rs_rule "ship opens a lock that only waits for this caution" \
@@ -210,5 +271,15 @@ rs_require_load_bearing "implement lets a blocked piece go on when the person ca
   'until the person carries on after the risk notice and the acceptance is recorded'
 rs_require_load_bearing "an unattended run still stops at a sensitive area" "$RUNNING" \
   'at any touch of a named sensitive area'
+
+# The story is told in WORKFLOW.md as well, so a person reading it knows an
+# empty form is not a yes and what the line will say.
+WORKFLOW="$ROOT/WORKFLOW.md"
+rs_require_load_bearing "WORKFLOW.md says an empty form answer is not carrying on" "$WORKFLOW" \
+  'nor is a form sent back with nothing chosen'
+rs_require_load_bearing "WORKFLOW.md says the line quotes the person exactly" "$WORKFLOW" \
+  'your words quoted exactly as you typed them, or the option you chose'
+rs_require_load_bearing "WORKFLOW.md says contradicting sentences are corrected" "$WORKFLOW" \
+  'any sentence elsewhere that still says the thing is kept out is corrected in the same save'
 
 rs_done

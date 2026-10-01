@@ -184,6 +184,45 @@ def waiting_on(issue):
             return text
     return ""
 
+import re
+
+# The lines of a piece's body outside code blocks, stripped. A line inside a
+# block fenced with ``` or ~~~ is an example, never the piece's own line.
+def body_lines(issue):
+    fence, kept = None, []
+    for raw in (issue.get("body") or "").splitlines():
+        line = raw.strip()
+        mark = line[:3]
+        if mark in ("```", "~~~"):
+            fence = None if fence == mark else (fence or mark)
+            continue
+        if fence is None:
+            kept.append(line)
+    return kept
+
+def heading(line, name):
+    return re.match(r"^#{2,3}\s*%s\s*$" % name, line, re.I) is not None
+
+# A piece being built or waiting for the person's check that skipped a step on
+# the way: never shaped, so it has no Done when, or never passed the readiness
+# check, so it has no Readiness section. Either way it looks exactly like a
+# piece that went the proper way, so the printout says what is missing. A
+# repair is left out, because it goes through /fix rather than shaping, and a
+# parent never reaches Needs attention at all. Where both are missing, the
+# first is the whole story. The Done when test is the one still_a_note() uses,
+# word for word, so the two never disagree about a piece. The Readiness test is
+# the heading match verdict_marks() uses, which ignores case and code blocks.
+def skipped_step(issue):
+    names = labels(issue)
+    found = state_labels(issue)
+    if "broken" in names or found not in (["building"], ["to check"]):
+        return ""
+    if still_a_note(issue):
+        return "(%s with no Done when, so never shaped)" % found[0]
+    if not any(heading(line, "readiness") for line in body_lines(issue)):
+        return "(%s with no Readiness check)" % found[0]
+    return ""
+
 # Why a piece needs a person to look at it, or "" when it does not. Each of these
 # is a mistake in the labels, and the printout names it rather than guessing
 # which label is true.
@@ -198,13 +237,15 @@ def attention(issue):
         return "(carries %s without shaping)" % ", ".join(reasons)
     if "ready" in names and still_a_note(issue):
         return "(labelled ready with no Done when, so still an idea)"
-    return ""
+    return skipped_step(issue)
 
 # The board. A repair and a parent sit outside the columns: a repair because
 # somebody opening this file wants to know what is broken before what is next,
 # and a parent because it carries no state of its own. A piece whose labels
-# contradict each other prints once, under Needs attention, except a ready
-# piece with no Done when, which is an idea and also needs a look.
+# contradict each other prints once, under Needs attention. Two kinds print
+# there and in their column too: a ready piece with no Done when, which is an
+# idea and also needs a look, and a piece that skipped a step on its way to
+# building or to check, which really is being built or checked.
 needs_attention, broken, parents = [], [], []
 columns = {s: [] for s in STATES}
 held_up = []
@@ -216,8 +257,9 @@ for issue in sorted(issues, key=lambda i: i["number"]):
         continue
     if note:
         needs_attention.append((issue, note))
-        if not ("ready" in names and still_a_note(issue)
-                and len(state_labels(issue)) == 1):
+        if not (len(state_labels(issue)) == 1
+                and (("ready" in names and still_a_note(issue))
+                     or note == skipped_step(issue))):
             continue
     if "broken" in names:
         broken.append(issue)
@@ -272,25 +314,6 @@ def render(heading, group, note, marked=True):
         lines.append(head)
         lines.append("       %s" % issue["html_url"])
     lines.append("")
-
-import re
-
-# The lines of a piece's body outside code blocks, stripped. A line inside a
-# block fenced with ``` or ~~~ is an example, never the piece's own line.
-def body_lines(issue):
-    fence, kept = None, []
-    for raw in (issue.get("body") or "").splitlines():
-        line = raw.strip()
-        mark = line[:3]
-        if mark in ("```", "~~~"):
-            fence = None if fence == mark else (fence or mark)
-            continue
-        if fence is None:
-            kept.append(line)
-    return kept
-
-def heading(line, name):
-    return re.match(r"^#{2,3}\s*%s\s*$" % name, line, re.I) is not None
 
 # The areas a piece changes, from its Touches line: one bare line,
 # `Touches: <area>, <area>`, or the line under a `## Touches` or `### Touches`

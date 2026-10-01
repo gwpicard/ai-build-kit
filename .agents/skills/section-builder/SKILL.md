@@ -217,6 +217,14 @@ for comparison: imports between the parts being changed, and any declared
 sensitive-area boundary. Where no engine is present, read those imports
 directly. Do not save the baseline as a project file or turn it into a score.
 
+Where installing the project's dependencies, running the checks or running the
+project's own commands first shows a tool missing from this computer, or too
+old, stop that step. Name the tool, where it would go and how to undo it, and
+wait for a yes, as the `change-triage` skill says under "Work on this computer
+outside the project". In a run with nobody watching, park the piece instead, as
+the `implement` skill's `references/running-longer.md` says. Write any version
+the project needs into AGENTS.md's stack section as a requirement.
+
 ## 5. Build one vertical slice
 
 Implement only the agreed behaviour, end to end and visible, in the smallest
@@ -323,7 +331,8 @@ to wait in, so take the opt-in path below: give the person an address and things
 to try, and save nothing until they reply.
 
 Hand over what the walk-through found: the actions, what they showed, any known
-limitation, where the screenshots are, and whether the evidence behind it is
+limitation, where the screenshots are, given as the full path of the
+walk-through folder in the main folder, and whether the evidence behind it is
 automated, manual, source-backed, or operational. Describe any gap as expected
 versus actual, and fix it at the root.
 
@@ -359,7 +368,14 @@ one showed and what you compared it against, such as the Done when line, the
 project's design system, or the same screen before the piece.
 
 `<folder>` is that folder in the main folder, never a folder inside a worktree.
-The main folder is the first one `git worktree list` names. A picture inside a
+Find the main folder with this command:
+
+`git worktree list --porcelain | sed -n '1s/^worktree //p'`
+
+It prints the first `worktree` line, which is always the main folder. Outside a
+worktree it prints the top of the project you are in, which is the main folder,
+so nothing changes there. Create that folder where it does not exist yet; the
+foundation's `.gitignore` already ignores `.agents/tmp/`. A picture inside a
 worktree counts as unsaved work there and keeps the worktree after its pull
 request closes. Each piece has its own folder, so walk-throughs running side by
 side never overwrite each other.
@@ -459,11 +475,29 @@ Pull-request route: update the records, commit, push, open a pull request
 titled after the piece with a plain-language summary, aimed at the branch the
 piece was cut from, and run the project checks. The project's first upload waits for the yes in step 1. Where the
 piece is an issue, write `Closes #<number>` in the pull request body, so
-merging it closes the piece rather than leaving somebody to remember. Once it
-is open, write the piece's changelog file, as step 9 describes, and push it.
+merging it closes the piece rather than leaving somebody to remember.
+
+A closing word appears only on a `Closes #<number>` line, one line for each
+piece the pull request finishes. GitHub closes an issue when a merged pull
+request or commit puts one of nine closing words straight before its number:
+close, closes, closed, fix, fixes, fixed, resolve, resolves or resolved. It
+reads only the word and the number, so a sentence saying the pull request does
+not close a piece still closes it when the closing word stands straight before
+the number. So in the pull request's title and body, in commit messages and in
+changelog files, no number that names another piece has a closing word before
+it. Name another piece by its number and its title, with no closing word before
+the number, and say "after", "builds on" or "merge first", as in "Merge
+#<number>, the date filter, first." A pull request that finishes one piece and
+mentions another carries one `Closes` line, for the piece it finishes, and
+names the other that way.
+
+Once it is open, write the piece's changelog file, as step 9 describes, and
+push it.
 When the pull request opens, move the piece from `building` to `to check` in the same
 step, `gh issue edit <number> --add-label "to check" --remove-label building`,
-since it now waits for the person to try it or merge it. Never present it as ready until the check is green; if it goes red,
+since it now waits for the person to try it or merge it. Wait for the check as
+`references/merge.md` says under "Waiting for the check", and never present the
+pull request as ready until the check is green; if it goes red,
 say so plainly, pull the failing output yourself, fix through the normal
 steps, and push again.
 
@@ -541,6 +575,10 @@ has none; an older project gets it from its first piece. The issue number keeps
 two pieces with the same short name apart. Where the work has no issue, use the
 pull request's number instead. Checkpoint work with neither takes the date and
 the branch's short name, `changes/<YYYY-MM-DD>-<short name>.md`.
+Content the person asks to keep after using the tool on it, as the
+`change-triage` skill describes, is saved through the build path's save route with its own changelog
+file, named as work with no issue is, and is never left on a branch nobody
+pushes.
 
 The file holds one or two sentences on what changed for the person, then the
 pull request's link on its own line. Write it after the pull request opens, as

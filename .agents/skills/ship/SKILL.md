@@ -291,6 +291,9 @@ At any launch, first or later, where "How it stays running" has no `Goes live:`
 line, write one, from the recipe's going-live section or from what the person
 says: `through /ship`, `on every merge` or `not hosted`. An older project gets
 the line this way, at its next launch.
+In the same save, set the confirmation box as the `section-builder` skill's
+`references/merge.md` says under "The confirmation box on a merge that goes
+live": `add` for `on every merge`, `remove` for any other value.
 
 #### Releasing a tool that is not hosted
 
@@ -430,7 +433,8 @@ Inside a named area, take each area in turn:
    reply, without a further question about that area. A lock whose only
    purpose is to wait for this caution opens with the acceptance, unless the
    person asks to keep it. Silence, a question, or a request for other work
-   is not carrying on: leave that area where it is and ship everything
+   is not carrying on, and nor is a form answer with nothing chosen: leave
+   that area where it is and ship everything
    outside it;
 5. only after the caution is done or accepted does that area get its own
    operational readiness check (including the request record and monitoring

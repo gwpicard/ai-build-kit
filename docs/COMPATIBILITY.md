@@ -17,8 +17,13 @@ pieces in a chain with nobody watching, is built for Claude Code before
 anything else. Other coding agents get the one-at-a-time core: one piece
 shaped, built, checked and saved at a time, with the same records and the same
 rules. A run there builds its pieces one after another in one folder, where
-Claude Code gives each piece its own worktree. The grades below say how much of
-that has been proved on each agent.
+Claude Code gives each piece its own worktree. Only Claude Code offers to build
+a group's pieces at the same time, each with its own background agent.
+Elsewhere, and on Claude Code with Git older than 2.17, the run does not ask
+and builds one piece at a time. Only Claude Code shows a confirmation box
+before a merge that goes live, on a project whose host puts every merge live.
+Elsewhere the written rule, a yes that names the merge, is the only guard. The
+grades below say how much of that has been proved on each agent.
 
 ## How much has been proved on each agent
 

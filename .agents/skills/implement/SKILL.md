@@ -160,8 +160,11 @@ on its branch.
 
 On Claude Code, each piece in a run is built in its own worktree under
 `.agents/worktrees/`, named after the piece, while the main folder stays on its
-branch. The kit clears a worktree away once its pull request has closed and
-nothing in it is unsaved. Outside a run, a single piece is built in the main
+branch. Where the plan holds a group of pieces that can go together, the run
+asks once whether to build a group's pieces at the same time, warns that this
+uses more memory, and builds one at a time unless the person gives a number.
+The kit clears a worktree away once its pull request has closed and nothing in
+it is unsaved. Outside a run, a single piece is built in the main
 folder, as always, unless the person asks for a worktree: then open one the
 way `references/running-longer.md` says.
 
@@ -169,8 +172,9 @@ Whether the run may take a piece is decided for each piece. A piece is taken
 only when it is ready, carries a Ready readiness result, is
 self-sufficient enough to build without a person present, waits on no step of
 the person's other than their try, and lies outside every sensitive area that has no recorded
-acceptance. A piece that fails three attempts is parked, a hard open choice
-sends a piece back to shaping, and the run moves on. It ends with one report:
+acceptance. A piece that fails three attempts is parked, a hard open choice,
+seen at the plan or met while building, sends a piece back to shaping, and the
+run moves on. It ends with one report:
 each piece, its pull request and its state, the choices flagged for the person,
 what was parked and why, and the merge order.
 

@@ -85,7 +85,11 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    confirm the version in the
    installed `agent-plugin/plugin.json` and in that folder's
    `skills/maintain/VERSION`. Run the project's own check and record the kit
-   version in the changelog with the saved change. The foundation created by
+   version in the changelog with the saved change. Once the update is
+   confirmed, rewrite the `kit` line in `.ai-build-kit-maintenance` with the new
+   version and the commit its tag points at, as `kit|<version>|<commit>`. Read
+   the commit the way the `setup-ai-build-kit` skill's step 7 does, and write
+   `unknown` where that lookup fails. The foundation created by
    start, including AGENTS.md, README.md, project records, environment files,
    application code, and the project's check, stays project-owned. When this
    update is the one that first brings in `/shape` and `/implement`, run the
@@ -172,7 +176,9 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
     Never remove a branch. When no branch qualifies, say nothing.
 16. Run "Adding the rules that stop a push to `main`" below. It says nothing
     when the project already has them, or when the person said no to the same
-    rules before.
+    rules before. Then run "Adding the confirmation box on merges that go
+    live" below. It says nothing unless every merge goes live and the rules
+    are missing, and nothing when the person said no to the same rules before.
 17. Run "Moving the pieces onto the states" below. It says nothing when the
     project is already on them, or when the person said no to the same states
     before.
@@ -190,12 +196,23 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
 22. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
     today's date on the `last-light-pass` line, written as YYYY-MM-DD. If that
     file is missing, create it with a `founded` line holding the date
-    masterplan.md was first saved, then the two pass lines. If the project has
+    masterplan.md was first saved, then the two pass lines. Where the file
+    has no `kit` line, or its version differs from this skill's `VERSION`
+    because the kit was updated some other way, write the line from this
+    skill's `VERSION` and its tag's commit, the same way step 5 does. A project
+    founded before the line existed gets it here. If the project has
     no `.agents/hooks/session-start.sh`, copy it from the installed
     setup-ai-build-kit skill's `templates/foundation/session-start.sh`, unless
     the person asked during this visit to leave kit updates alone. That script
     comes from the kit, and it changes what the project does later. Read what
-    they asked, not a fixed phrase. Then say one sentence: "I have recorded
+    they asked, not a fixed phrase. Where the project has the script and it
+    differs from that template, the project kept an older copy, since an update
+    never reaches it. Say in one line: "A newer reminder script counts the work
+    landed since the last visit as well as the days. Shall I replace yours?"
+    Add that replacing it also drops any change made to the project's copy by
+    hand. Replace it only on a yes, and make no offer when the person asked for
+    no kit updates. A no changes nothing, and the next visit makes the same
+    one-line offer again. Then say one sentence: "I have recorded
     today's visit, so a session will not remind you again until the next one is
     due." Where you skipped the script, say instead: "I have recorded today's
     visit. I left out the script that reminds a session when a visit is due,
@@ -234,22 +251,29 @@ helper, copy the installed skill's `templates/foundation/plan-refresh.sh` to
 Founding copies the kit's Claude Code settings into `.claude/settings.json`
 once, and no update touches that file again. A project founded before the kit
 learned a new way to write a push to `main` keeps the older rules, and a push
-the older rules miss goes through with nothing to stop it. So the visit offers
-the missing rules, once.
+the older rules miss goes through with nothing to stop it. The same holds for
+the rules that refuse deleting a folder with everything in it and clearing
+Git's recovery history. So the visit offers the missing rules, once.
 
 1. Where the project has no `.claude/settings.json`, this step ends. Otherwise
    read its `permissions.deny` list, and the one in the installed
    setup-ai-build-kit skill's `templates/foundation/claude-settings.json`.
    Take the rules from that file, never from memory.
-2. List each rule the template holds that names both `git push` and `main`,
-   and the project's list lacks. Leave out every other rule, such as the
-   force-push ones, since the person may have removed one on purpose. When there is none, say nothing.
+2. List each rule the template holds that the project's list lacks, and that
+   names both `git push` and `main`, or `rm` with a recursive option, or
+   `git reflog expire`, or `git gc` with `--prune`. Leave out every other
+   rule, such as the force-push ones, since the person may have removed one on
+   purpose. When there is none, say nothing.
 3. Read the `push-rules-declined` line in `.ai-build-kit-maintenance`, if there
    is one. Where it already lists every missing rule, the earlier no stands,
-   and you say nothing.
+   and you say nothing. Otherwise offer only the missing rules that line does
+   not list. A line written before the delete rules lists none of them, so the
+   offer comes back once for those.
 4. Offer the change once, in one reply. Name the rules it adds, and say in
    plain words what they stop: a push to `main` written with an option before
-   the remote, such as `-q`, or as `HEAD:refs/heads/main`. Say that it adds
+   the remote, such as `-q`, or as `HEAD:refs/heads/main`; deleting a folder
+   with everything in it, in the common spellings; and clearing the history Git
+   uses to recover lost work. Say that it adds
    lines to the deny list and changes nothing else in the file. Say too that
    the `setup-ai-build-kit` skill's `references/blocked-commands.md` lists the
    spellings the rules still cannot catch. Ask for a yes.
@@ -259,8 +283,39 @@ the missing rules, once.
    visit's other changes and add a dated changelog line.
 6. On a no, change nothing. Record the no as one line in
    `.ai-build-kit-maintenance`, replacing any earlier one:
-   `push-rules-declined|<YYYY-MM-DD>|<the rules offered, separated by " ; ">`.
+   `push-rules-declined|<YYYY-MM-DD>|<every rule declined, this time and before, separated by " ; ">`.
    A later visit offers again only when a new release adds a rule that line
+   does not list.
+
+## Adding the confirmation box on merges that go live
+
+Founding, the merge step and `/ship` set Claude Code's confirmation box when
+they record that every merge goes live. A project that recorded that line
+before the kit did so has the line and not the box, and a merge there goes
+live with nothing mechanical in the way. So the visit offers the rules, once.
+
+1. Where the project has no `.claude/settings.json`, or the masterplan's
+   `Goes live:` line does not say `on every merge`, this step ends.
+2. Read the rules in the installed setup-ai-build-kit skill's
+   `templates/merge-ask-rules.json`, never from memory, and list each one the
+   project's `permissions.ask` list lacks. Where it lacks none, say nothing.
+3. Read the `merge-ask-declined` line in `.ai-build-kit-maintenance`, if there
+   is one. Where that line names every missing rule, the person's no stands,
+   and you say nothing.
+4. Offer them once, in one reply. Name the rules, and say in plain words what
+   they do: Claude Code shows a confirmation box before each merge, because
+   every merge puts the tool live. Say that it adds lines to the ask list,
+   leaves the rest of the file as it was, and works on Claude Code only. Wait
+   for a yes.
+5. On a yes, run
+   `python3 <installed setup-ai-build-kit skill>/scripts/merge-ask-rules.py add .claude/settings.json`
+   from the project root. Where it exits 1, the file is not valid JSON: say
+   so, name the file, and change nothing. Save the change with the visit's
+   other changes and add a dated changelog line.
+6. On a no, leave the file as it is. Record the no as one line in
+   `.ai-build-kit-maintenance`, replacing any earlier one:
+   `merge-ask-declined|<YYYY-MM-DD>|<the rules offered, separated by " ; ">`.
+   A later visit offers again only when the template holds a rule that line
    does not list.
 
 ## Moving the pieces onto the states
@@ -579,7 +634,11 @@ person saved is affected. Two housekeeping steps keep the installation tidy:
    neither exists, the update removed the old skill without adding the new
    one: run the add command from the monthly step, then read the skill folder
    back and carry on only once `setup-ai-build-kit` is there. Where only
-   `setup-ai-build-kit` exists, there is nothing to do.
+   `setup-ai-build-kit` exists, there is nothing to do. On a yes, remove a
+   tracked `start` folder with `git rm -r <folder>`, which the saved history
+   can undo and no deny rule refuses. Where the `start` folder is untracked,
+   give the person the command to run, with the folder's path, since a
+   recursive delete is refused.
 
 2. Point the founding command forward. Rewrite the command list in the
    project's AGENTS.md as "Bringing the project's instructions up to the
@@ -609,7 +668,9 @@ the new name is said out loud rather than only tidied away in the files:
    the update removed the old skill without adding the new one: run the add
    command from the monthly step, then read the skill folder back and carry on
    only once `shape` is there. Where only `shape` exists, there is nothing to
-   do.
+   do. On a yes, remove a tracked `plan` folder with `git rm -r <folder>`, as
+   for `start` above. Where the `plan` folder is untracked, give the person the
+   command to run, with the folder's path.
 
 2. Point the command forward. Rewrite the command list in the project's
    AGENTS.md as "Bringing the project's instructions up to the current names"
@@ -722,8 +783,11 @@ is a step here rather than advice:
    own and is left alone.
 3. Show the list and say what removing it does: each command appears once,
    and the renamed command goes. Remove on approval, and remove the empty
-   folders too. Where the files are tracked, the removal is part of the
-   visit's saved change.
+   folders too. Remove a tracked leftover with `git rm -r <path>`, and the
+   removal is part of the visit's saved change. An untracked file goes with a
+   plain `rm`. An untracked leftover folder goes to the person as the command
+   to run, with its path, since a recursive delete is refused. So does a
+   tracked folder that untracked files keep in place after `git rm -r`.
 4. Record a changelog line saying what was removed and why.
 
 ## Offering a move onto a recipe

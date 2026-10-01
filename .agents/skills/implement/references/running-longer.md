@@ -9,8 +9,11 @@ file carries the memory, and everything gets a cap.
 
 ## Capability rule
 
-Assume nothing beyond ordinary sequential agent work: no native goal mode and
-no background agents. The pieces are still built one after another.
+One piece at a time is the default on every coding agent, and nothing is
+assumed beyond ordinary agent work, such as a native goal mode. On Claude Code
+the person may choose more: a run there can build the pieces of one group at
+the same time, each built by its own background agent, as "Building a group at
+the same time" below says.
 
 On Claude Code, each piece in a run is built in its own worktree, a second
 working copy of the project on the piece's branch, as "Each piece in its own
@@ -57,7 +60,29 @@ A piece the person opted in to check, with a `Waiting on you: try it` line or a
 stops at `to check` with a line in its pull request saying it waits for the
 person's try, and it is never merged under pre-approval.
 
-A piece that is not eligible stays where it is. The report says why.
+A hard open choice in a piece is not a reason to skip it. A hard choice is
+about the shape of stored data, how records sync, or what leaves the tool, and
+it is open when the piece's `## Done when` and `## Decided` lines leave it
+open. Where the run can see one when it plans or claims a piece, send it back
+to shaping before claiming it, once the person has approved the plan. Write
+the question on the piece, then move it
+with no claim to undo: `gh issue edit <number> --add-label shaping --add-label needs-clarification --remove-label ready`.
+Cut no branch and write no claim, since nothing was built. Mark it `shaping`
+in the state file, and the plan names it as going back, with its question. Left
+`ready` and skipped, it would come back to every run, and nothing on it would
+tell the person a question was waiting.
+
+An easy open choice seen at the plan leaves the piece eligible. It is built,
+and the builder picks the option easiest to undo and flags it, as "An open
+choice met while building" below says.
+
+The self-sufficiency test keeps its other job. A piece whose `Under the hood`
+notes lack what the build needs, with no open choice in it, is skipped with the
+reason and stays `ready`. Where a piece has both a hard open choice and a
+missing fact, the hard choice wins, and it goes back to shaping.
+
+Apart from a hard open choice, a piece that is not eligible stays where it is.
+The report says why.
 
 ## Before the run starts
 
@@ -72,12 +97,30 @@ and by number where the links leave a choice. The parts of one parent sit
 together in that order.
 
 Say the plan once: each piece in order, whether it is eligible and why not
-where it is not, and which pieces will stack on another. Say that the live page
+where it is not, each piece going back to shaping with its question, and which
+pieces will stack on another. Say that the live page
 below publishes the pieces' titles and progress to the coding agent's page
 service, and offer to run without it. Then ask once whether pieces that pass
 may be merged during the run, as the `section-builder` skill's
-`references/merge.md` describes. The person approves the plan and answers
-those questions, and then the run goes on with nobody in between.
+`references/merge.md` describes.
+
+On Claude Code, where the plan holds a `Go together` group of two or more pieces
+the run can take, ask one more question in the same reply as the merge question,
+in these words: "Build the pieces in a group at the same time? Each one runs its
+own install and its own copy of the tool, so this uses more memory, and on a
+machine with little memory it can crash it. One at a time is the default. Say
+how many at once if you want more than one." On any other coding agent, where
+Git is older than 2.17, or where the plan holds no such group, do not ask: the
+run builds one piece at a time.
+
+The answer is a number from 1 up to the size of the largest group in the plan.
+No answer, or silence, means one at a time. A larger number is taken as that
+size, and the reply says so: "The largest group has three pieces, so three at
+once." Zero, or words that are not a number, mean one at a time, said in one
+line. Record the answer as `at_once`.
+
+The person approves the plan and answers those questions, and then the run
+goes on with nobody in between.
 
 ## The run state
 
@@ -95,6 +138,7 @@ folder ignores itself and nothing tracked changes.
 {
   "run": "2026-09-30-221500",
   "merge_preapproved": false,
+  "at_once": 1,
   "pieces": [
     {
       "number": 12,
@@ -114,6 +158,10 @@ folder ignores itself and nothing tracked changes.
 
 - `merge_preapproved` is the person's answer before the run: `true` or
   `false`. It holds for this run alone, and carries into the run when it is
+  resumed.
+- `at_once` is how many pieces of one group are built at the same time: 1, the
+  default, up to the size of the largest group in the plan. Like
+  `merge_preapproved`, it holds for this run alone and is kept when the run is
   resumed.
 - `pieces` lists every piece in the plan, in the order the run takes them.
 - `state` is one of `waiting` (not started), `building`, `to check`, `merged`,
@@ -260,10 +308,13 @@ has `main` checked out.
 
 ## For each piece
 
-Take the pieces in the plan's order. For each one:
+Take the pieces in the plan's order. Where `at_once` is above 1, the steps
+below are shared out as "Building a group at the same time" says. For each one:
 
 1. **Claim it.** Read the piece first. A piece that already carries `building`
-   is being built somewhere else: the claim refuses it, so skip it. Otherwise
+   is being built somewhere else: the claim refuses it, so skip it. A piece
+   whose text shows a hard open choice goes back to shaping unclaimed, as
+   "Which pieces a run may take" says, and the run takes the next. Otherwise
    make section-builder's one-step claim, and add a comment naming this run,
    `Claimed by run <run name>`. Then read the claim back with
    `gh issue view <number> --json labels,assignees,comments`. The earliest
@@ -313,12 +364,72 @@ A smoke check that fails on `main` ends the run, because every later piece
 relies on it. One that fails on a stacked branch skips only the pieces on that
 stack not yet built, with the reason. A base already built stays in `to check`.
 
+## Building a group at the same time
+
+This section applies on Claude Code, and only where `at_once` is above 1. The
+session that started the run coordinates. A background agent builds each piece:
+an agent the coding agent starts to run in the background, told the folder it
+works in.
+
+- **Which pieces run together.** Only pieces in the same `Go together` group
+  run at the same time, and never more than `at_once` background agents at
+  once. A piece that stacks on another is never in its base's group, so it is
+  built after its base, never alongside it. A piece in no group is built on its
+  own. The groups are taken in the plan's order, and the next one starts once
+  no piece of the one before is still with a background agent.
+- **Before an agent starts.** For each piece, the coordinating session makes
+  the claim itself, one piece at a time, as step 1 says. It then opens the
+  piece's worktree with `worktree.sh open` and takes its port with
+  `worktree.sh port`, before it starts that piece's background agent, and
+  records both.
+- **What an agent does.** It is given the piece's number, its worktree path,
+  its port and the run name. It loads section-builder and does steps 3 to 6 of
+  "For each piece" inside its worktree: the start ritual, the checks first, the
+  build and the walk-through. It commits its work on the piece's branch and
+  reports back what it built, the commit that holds the checks, the choices it
+  flagged and what the walk-through could not see. It never pushes, since a
+  first upload waits for the person and the checkpoint route stays on this
+  computer. It never reviews any piece, opens a pull request, writes the run
+  state or merges.
+- **After an agent reports.** The coordinating session starts that piece's
+  independent review itself, as step 7 says, since the review runs from a
+  session that did not build the piece. It then opens the pull request and
+  writes the changelog file, as steps 8 and 9 say, one piece at a time. Step 8
+  is where the branch is first pushed. A problem the review finds is fixed by
+  the coordinating session in the piece's worktree before that. Where
+  the trigger names a person, the review stays theirs: a background agent never
+  meets a named review.
+- **One writer.** The coordinating session is the only writer of `state.json`,
+  `progress.md` and the live page, so two agents never write the run state at
+  once. It moves each piece to `to check`, and only it merges, one pull request
+  at a time, through the `section-builder` skill's `references/merge.md`, each
+  brought up to date with `main` and checked again first. Where two pieces
+  finish while a merge is under way, it merges them one after the other, each
+  checked again.
+- **An agent that never reports.** A background agent that ends without
+  reporting back counts as a failed attempt at its piece, under the
+  three-attempt rule in "When a piece fails", and the run goes on. A smoke
+  check that fails on `main` ends the run as it does for one piece: start no
+  new agent, wait for the ones still building to report, and leave each piece
+  as "When the run ends" says.
+- **Two pieces that change one file.** Two pieces of one group can change the
+  same file although their `Touches:` lines differ. The second merge's check
+  against the latest `main` then finds the conflict, and the
+  `section-builder` skill's `references/merge.md` takes it to `/fix`.
+- **The browser.** Where a walk-through cannot get the browser because another
+  agent holds it, it records that it could not look, and the piece goes to
+  `to check` for the person, as section-builder's step 6 says for a
+  walk-through that could not see.
+
 ## Stacks and parts
 
 A piece that depends on one built earlier in this run and not yet merged stacks
 on it. Its branch is cut from that piece's branch, its pull request aims at
 that branch, and the pull request says which to merge first, so the stack
-merges cleanly in order. When the base merges by squash, the stacked branch
+merges cleanly in order. It names the base by its number and title with no
+closing word before the number, as in "Merge #<number>, the date filter, first;
+this builds on it", since a closing word there would close the base, as the
+`section-builder` skill's save step says. When the base merges by squash, the stacked branch
 takes in `main` at its own merge, as the `section-builder` skill's
 `references/merge.md` describes, never by a rebase, since that needs a force
 push. The same step re-aims its pull request, and the base's entry is not
@@ -341,7 +452,9 @@ request.
 ## An open choice met while building
 
 A piece can meet a choice its Done when and `Decided` lines do not settle. Split
-it by how hard it is to undo.
+it by how hard it is to undo. A hard choice the run could already see in the
+piece goes back before the claim, as "Which pieces a run may take" says. This
+section is for one the build uncovers.
 
 A hard choice, about the shape of stored data, how records sync, or what leaves
 the tool, stops that piece. Write the question on the piece, push the branch
@@ -367,6 +480,13 @@ failure points somewhere specific: send it back to `/shape`, which settles a
 missing decision, chases a missing external fact, or reassesses a shape the
 team could not safely own, rather than a fourth attempt.
 
+A piece whose build needs software installed outside the project folder is
+parked with that reason, such as a tool missing from this computer or one too
+old. The reason names the tool, where it would go and how to undo it. The run
+never installs it, since nobody is there to say yes, and takes the next piece. Where the same missing
+tool would stop every piece left, it is a blocking failure every later piece
+relies on, and the run ends with that reason, as below.
+
 A blocking failure never stops the whole run unless it touches something every
 later piece relies on: the smoke check on `main`, a GitHub that cannot be
 reached, so no piece can be claimed, or anything that would change the build
@@ -384,7 +504,11 @@ resuming. `/implement` typed alone or with `queue`, `/what-now` and `/sync`
 each notice an unfinished run and offer to resume it. Where two runs are
 unfinished, offer the newest and name the other.
 
-Resuming is the same run, so its `merge_preapproved` stands. Read `state.json`
+Resuming is the same run, so its `merge_preapproved` stands. So does its
+`at_once`: the offer to resume names that number and says the person can lower
+it in their reply. Where the session died with several pieces built at once,
+such as on a machine that ran out of memory, the state file shows each of them
+`building` with its worktree, and each continues as below. Read `state.json`
 and `progress.md`, and take the pieces from where they stand. A piece shown as
 `building` continues from its last commit: on Claude Code, open its worktree
 again with `worktree.sh open --resume`, which reuses the one already there,
@@ -409,7 +533,8 @@ However it ends, whether it ran out of pieces, the smoke check failed on
 every piece in a final state before the report:
 
 - every `waiting` piece becomes `skipped`, with the reason the run ended;
-- the piece in hand keeps its branch. Where nothing was built on it yet, move
+- the piece in hand, or each of them where `at_once` is above 1, keeps its
+  branch. Where nothing was built on it yet, move
   it back to `ready`,
   `gh issue edit <number> --add-label ready --remove-label building --remove-assignee @me`,
   delete this run's claim comment, and mark it `skipped`. Where something was
@@ -438,7 +563,8 @@ which of the two happened. A conflict still gets its one comment on the pull
 request, as the merge step says. The sweep goes on with the pieces that do not stack
 on it, and skips each one that does, with that reason. Each merge waits for one
 more run of the check, so a sweep over five pieces on a ten-minute check takes
-about fifty minutes.
+about fifty minutes. Wait for each check as the `section-builder` skill's
+`references/merge.md` says under "Waiting for the check".
 
 The report, in plain words, is one list and a merge order:
 

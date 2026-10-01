@@ -78,7 +78,7 @@ A piece often carries two, because a checkout is finance and an outside service 
 
 Every open piece is in exactly one state, and a label says which: `idea` when it is only written down, `shaping` while a question about it is being settled, `ready` when it can be built, `building` while somebody is on it, `to check` when its pull request is waiting for you, and `parked` when it has stopped, with the reason written on it. An issue you open with no label counts as an idea. A closed issue is done, except an idea you decided against, which stays closed and labelled `parked`.
 
-A piece waiting on another piece keeps its state and is linked to it. `plan.local.md` prints the states as the columns of a board, after anything that needs attention, such as a piece carrying two states, and anything broken. `broken` sits beside the state on a repair, and sends it to `/fix`.
+A piece waiting on another piece keeps its state and is linked to it. `plan.local.md` prints the states as the columns of a board, after anything that needs attention, such as a piece carrying two states or a piece being built or checked that was never shaped, and anything broken. `broken` sits beside the state on a repair, and sends it to `/fix`.
 
 Three more labels sit beside `shaping` and say what the question needs: `needs-clarification` (talking it through settles it), `needs-prototype` (a throwaway is needed first to see what it should look like), and `needs-research` (a fact from outside the project is needed). Anything you jot down starts as an idea; `/shape` settles it and marks the piece `ready`, and `/implement` builds only ready pieces. What settled it is written onto the piece before the label changes, so a month later you can see what was decided rather than only that something was.
 
@@ -109,7 +109,7 @@ None of these paths is the kit refusing to build. Build with care is where it sa
 
 ## 4. Day one
 
-Type /setup-ai-build-kit. It checks what the current tool can actually do, then tries to talk you out of building if something simpler would do the job. It makes that case once. If you still want the tool, that is your call, and it records the cheaper option and gets on with founding rather than asking again. It interviews you, one question at a time with its best guess attached, and runs the fit check to set the project's build path. From those answers it writes the masterplan, cuts the work into pieces on the plan, and stands the project up with one passing check, saved on your own computer with nothing uploaded. If none of your code is online yet, it stays there until your first build asks you before putting it online. Where the work carries real exposure, it also has an independent method read the masterplan looking for holes before any of that flagged work goes ahead; for an ordinary internal tool it says it skipped that and why, rather than making you wait for it. Before it stands anything up it checks that every promise on the masterplan has a piece that builds it, and names the ones that do not, so you can add them while the plan is minutes old. Interrupt it anywhere; typing /setup-ai-build-kit again resumes where it stopped.
+Type /setup-ai-build-kit. It checks what the current tool can actually do, then tries to talk you out of building if something simpler would do the job. It makes that case once. If you still want the tool, that is your call, and it records the cheaper option and gets on with founding rather than asking again. It interviews you, one question at a time with its best guess attached, and runs the fit check to set the project's build path. From those answers it writes the masterplan, cuts the work into pieces on the plan, and stands the project up with one passing check, saved on your own computer with nothing uploaded. If none of your code is online yet, it stays there until your first build asks you before putting it online. Before it writes anything, it checks which branch your folder is on. If that is not your main branch and nothing there is unsaved, it moves to the main branch and says so in one line, so the setup lands where every later piece starts; tell it if you wanted your own branch. If the branch holds unsaved work it stays put, says why, and the setup reaches the main branch when that branch merges. Where the work carries real exposure, it also has an independent method read the masterplan looking for holes before any of that flagged work goes ahead; for an ordinary internal tool it says it skipped that and why, rather than making you wait for it. Before it stands anything up it checks that every promise on the masterplan has a piece that builds it, and names the ones that do not, so you can add them while the plan is minutes old. Interrupt it anywhere; typing /setup-ai-build-kit again resumes where it stopped.
 
 While it works, the conversation stays on project decisions and results you can
 use. Routine searches, setup commands, retries, and waiting stay behind the
@@ -195,7 +195,7 @@ If the change touched an area the build path flags, the best independent method 
 
 /queue shows the plan a run would follow. Type it when you are taking on several pieces rather than one, or when you ask /what-now what else can be worked on and it points you here. It changes nothing and builds nothing, so /implement is still what does the work. If the list looks out of date, type /queue again, since it is printed fresh from your project's issues every time.
 
-The plan comes in five parts. First the order: every ready piece, then each piece waiting only on those, after what it depends on. A piece waiting on another piece is never in it unless that piece is in the plan too, and whatever still waits gets a line saying which piece has to land first: "deposits cannot start until card payments is built". Next the groups. No two pieces in a group change the same area, going by the Touches line each piece carries, so the pieces in one group can be built at the same time in any order. Each still merges one at a time, brought up to date with `main` and checked again first, since two pieces that each pass alone can still fail together. A piece with no Touches line goes alone. A run still builds the whole plan one piece at a time.
+The plan comes in five parts. First the order: every ready piece, then each piece waiting only on those, after what it depends on. A piece waiting on another piece is never in it unless that piece is in the plan too, and whatever still waits gets a line saying which piece has to land first: "deposits cannot start until card payments is built". Next the groups. No two pieces in a group change the same area, going by the Touches line each piece carries, so the pieces in one group can be built at the same time in any order. Each still merges one at a time, brought up to date with `main` and checked again first, since two pieces that each pass alone can still fail together. A piece with no Touches line goes alone. A run builds the plan one piece at a time unless you choose otherwise: in Claude Code it asks before it starts.
 
 Then what a run can do with each piece: take it, leave it for you because it sits in a sensitive area you have not accepted or waits on a step only you can do, leave it because its readiness check found a gap, check it first because nobody has yet, or build it and stop for your try. A piece built on top of one the run cannot take waits for it, and says why. Then which pieces build on another. The last line is the command that runs the plan, ready to type. With nothing ready there is no command, only what would make something ready.
 
@@ -217,6 +217,10 @@ Typing /shape is the choice to shape, so it starts on a question straight away. 
 Show a mock of what you want and it settles the question instead, with no throwaway built. A prototype comes back as one of two things: a single file you open and click through yourself, or three genuinely different versions to move between and pick from. If setup recorded a design tool, the agent may use its canvas before a real page exists or when you want to draw a redesign. The real page still wins wherever one exists, and without a recorded tool the ordinary coded throwaway stays the default.
 
 Anything touching data, access, or money gets written into the masterplan first. If another piece already open would be built in the same place, /shape names it before the work starts, so you can decide whether to carry on, wait, or fold the two together.
+
+Work on your own computer rather than on the tool, such as installing or repairing a program, is kept apart from the project. Nothing is installed, replaced or removed outside the project's folder until you have said yes to what it is, where it goes and how to undo it, and nothing about your computer is written into the project. You hear what was done in the reply instead.
+
+Using the tool on your own material, such as running a document through it to see what it makes, needs no piece, since nothing about the tool changes. The output goes to a folder the project does not save, and the reply says where. Ask to keep it and it is saved like any other change, with its own changelog entry. If the run shows the tool getting something wrong, that becomes a /fix or a new piece.
 
 If the request would change what kind of project this is, by bringing in outside users or real money or a promise to someone, the agent re-runs the fit check with you before building. A different build path needs different care before people rely on it.
 
@@ -306,11 +310,11 @@ test to protect promised behaviour, never just to raise the count.
 
 ## 7. Saving work
 
-Every piece saves through one of three routes. The checkpoint route commits, and that commit may stay local, so private, disposable exploration can be saved without pushing. The pull-request route pushes and opens a pull request, for shared, live, behavioural, data, access, integration, service, or operational changes. The flagged route does the same, and also attaches the condition the touched area requires; a piece that stops there, marked parked and the condition on record, counts as finished until that condition is met or you carry on after the risk notice and your acceptance is recorded. When you are there and carry on at the notice, the piece is built and saved like any other.
+Every piece saves through one of three routes. The checkpoint route commits, and that commit may stay local, so private, disposable exploration can be saved without pushing. The pull-request route pushes and opens a pull request, for shared, live, behavioural, data, access, integration, service, or operational changes. The flagged route does the same, and also attaches the condition the touched area requires; a piece that stops there, marked parked and the condition on record, counts as finished until that condition is met or you carry on after the risk notice and your acceptance is recorded. When you are there and carry on at the notice, the piece is built and saved like any other. Only the `Closes` line closes a piece: a pull request carries one for each piece it finishes, and names any other piece by its number and title with no closing word such as "fixes" before the number, because GitHub closes a piece on that word even in a sentence saying it does not.
 
 On either route, the first time anything pushes your project's code online, the agent asks you first, naming the repository and whether it is public or private. It asks once for each project: once the code is on GitHub, it does not ask again. If you say no, or nobody is there to answer, the piece is still built and checked, and it waits on its own branch on your computer until you say yes. If the repository already holds something that is not your project, or still points at the kit's own repository, nothing is pushed and the agent asks you what to do.
 
-Next to the merge button sits that check. It re-runs the project's real commands on a clean machine, so the pull request's claims get verified rather than trusted. Those commands include the mechanical checks your project's language offers, a type check and a linter wherever it has them, which catch a whole class of mistakes before anyone tries the tool. They use each tool's own default rules, so a red tick points at a real mistake rather than a matter of taste. The agent runs the same checks before it hands any work over. Green means the checks that exist really passed, which is a smaller promise than nothing being wrong: it covers the behaviour somebody thought to check and nothing else. Red means don't merge; say it to /fix, and the agent reads what failed itself. You never read the machine's logs, and you never merge over a red check.
+Next to the merge button sits that check. It re-runs the project's real commands on a clean machine, so the pull request's claims get verified rather than trusted. Those commands include the mechanical checks your project's language offers, a type check and a linter wherever it has them, which catch a whole class of mistakes before anyone tries the tool. They use each tool's own default rules, so a red tick points at a real mistake rather than a matter of taste. The agent runs the same checks before it hands any work over. Green means the checks that exist really passed, which is a smaller promise than nothing being wrong: it covers the behaviour somebody thought to check and nothing else. Red means don't merge; say it to /fix, and the agent reads what failed itself. You never read the machine's logs, and you never merge over a red check. The agent waits for the check with one command your coding agent allows, and a check that has not finished, or that it could not read, is never called green.
 
 No command merges a pull request you have not agreed to. The same merge step serves /implement, /fix, /ship and /sync, so the rule holds on every route. The agent names each pull request and what it changes, then asks for a yes that names the merge, and a reply such as "merge 1, 2 and 4" covers each one it names. Saying "put it live" before any merge was named is not that yes, so it asks again. Each merge is made on the pull request itself, never by merging on your computer and pushing `main`, and a pull request stacked on another is merged after it. If GitHub cannot be reached, the merge waits, and you can merge it on GitHub yourself.
 
@@ -324,7 +328,13 @@ At the end, a pre-approved run merges its pieces one at a time, each brought up 
 
 The kit's default is that a merge reaches a preview and /ship puts it live. The masterplan's "How it stays running" section records which way your tool goes live. Where your host puts every merge live instead, the ask says "this goes live now", and the first such merge runs /ship's first-launch checks before it happens. A tool with no live address, such as a library people install or a program they run on their own computer, records `not hosted` instead. Its merges are never a launch, and a run may merge them. If the masterplan does not say, the first merge asks which of the three it is, once.
 
+Where your host puts every merge live, Claude Code also shows its own confirmation box before each merge, so no merge goes live without a person seeing it, whatever the session was told. Founding, the merge step and /ship add the box when they record that every merge goes live, and take it out when that changes.
+
+The monthly visit offers it once to a project that recorded the line before the box existed, and a no is kept. A merge made on GitHub's website, or in a session set to skip every confirmation box, does not meet it, so the rule that a person says yes to each merge still holds. Other coding agents have no such box and keep the written rule alone.
+
 After a merge, everyone pulls main. Flagged areas also get the review the build path names before the pull request is offered as ready. A direct push to `main` is forbidden, and in Claude Code the project settings refuse the usual ways of writing one, so every change reaches it through a pull request. Each piece starts from an up-to-date `main`.
+
+The settings also refuse deleting a folder with everything in it, in the common spellings, and the two Git commands that clear the history Git uses to recover lost work. When a command is refused, the agent stops and tells you in one line which command it was and what it was for. It never tries another way round, such as another spelling, another tool or the same work in small steps. The decision is yours, and a command you want run anyway is one the agent gives you to run yourself. On a coding agent with no such settings, the same rule holds in writing.
 
 ## 8. Sensitive areas, and the risk notice
 
@@ -332,9 +342,9 @@ Six areas count as sensitive, and the list is fixed: personal or sensitive data,
 
 Before work in a named area goes ahead, you get a risk notice. It comes once, in full, in one reply. It says who is exposed, what happens to them if it goes wrong, what would normally prevent that, what you can do, and that the kit flags what it can recognise and will miss things. It names people rather than saying something is risky, because the exposure a tool creates usually lands on somebody else.
 
-Then it is your call. You can have the caution done first, take the thing out of scope so the risk goes away, or carry on. Carrying on is accepting the risk: say go ahead in any words and the work goes ahead. You are not asked a second time, and nothing the notice named stays switched off waiting for the check you chose to skip. Saying nothing is not carrying on, and neither is asking a question. Nothing is refused and nothing stops you.
+Then it is your call. You can have the caution done first, take the thing out of scope so the risk goes away, or carry on. Carrying on is accepting the risk: say go ahead in any words and the work goes ahead. You are not asked a second time, and nothing the notice named stays switched off waiting for the check you chose to skip. Saying nothing is not carrying on, and neither is asking a question, nor is a form sent back with nothing chosen. Nothing is refused and nothing stops you.
 
-When you carry on, an acceptance is written into the build-path section before the work starts, as a dated line saying what was skipped, in your own words, with your name. It says the risk was accepted, never that the caution was done. Making a project less careful is a decision you record, not something the agent does on its own, and the accumulated lines are the honest answer to "what did we knowingly skip?" when somebody asks in six months.
+When you carry on, an acceptance is written into the build-path section before the work starts, as a dated line saying what was skipped, with your words quoted exactly as you typed them, or the option you chose, and your name. Any sentence elsewhere that still says the thing is kept out is corrected in the same save, and the agent tells you which ones changed. It says the risk was accepted, never that the caution was done. Making a project less careful is a decision you record, not something the agent does on its own, and the accumulated lines are the honest answer to "what did we knowingly skip?" when somebody asks in six months.
 
 What the agent may not do is take the notice back. Pushing back on the cost, the wait, or the fuss changes what you decide and changes nothing about who is exposed, so the notice stays put however many times it comes up. A named check cannot be quietly turned into something the agent does itself either: where the build path asks for another person's eyes, the agent reading its own work does not count, and neither does a passing test.
 
@@ -447,17 +457,19 @@ After the first launch, shipping gets lighter: it re-checks what changed since t
 
 ## 10. Running a plan: /implement queue
 
-Give /implement several piece numbers, or type "/implement queue" for every ready piece and every piece waiting only on those, and it builds them one after another without you between them. "/implement auto" is the same thing. It says the plan once: each piece in order, whether the run can take it and why not, and which pieces build on another. You approve it once, and say whether pieces that pass may be merged while you are away. A merge that would put the tool live still waits for you. Then it runs.
+Give /implement several piece numbers, or type "/implement queue" for every ready piece and every piece waiting only on those, and it builds them without you between them. "/implement auto" is the same thing. It says the plan once: each piece in order, whether the run can take it and why not, and which pieces build on another. You approve it once, and say whether pieces that pass may be merged while you are away. A merge that would put the tool live still waits for you. Then it runs.
 
 A run decides piece by piece what it can take. A piece needs to be ready, checked by a session that did not shape it, and complete enough to build with nobody to ask. A piece in a sensitive area is taken only once your acceptance is on the record, and a run never gives one for you. A piece you asked to try yourself is built and then waits for you in to check, whatever you said about merging.
 
 Each piece goes through the same steps as a single build: claimed, checks written first and seen to fail, built, walked through, reviewed. Each piece arrives as its own pull request, and the parts of one piece share one. A piece that needs another built earlier in the run is built on top of it, and its pull request says which to merge first.
 
-In Claude Code, each piece in a run is built in its own copy of the project, a worktree in `.agents/worktrees/` named after the piece, so your own folder stays on its branch and one piece's half-built work never sits under another's. Other coding agents build a run's pieces one after another in your one folder.
+In Claude Code, each piece in a run is built in its own copy of the project, a worktree in `.agents/worktrees/` named after the piece, so your own folder stays on its branch and one piece's half-built work never sits under another's. The project's checks, its tests among them, leave those copies out, so a check run from your folder reads each problem once. Other coding agents build a run's pieces one after another in your one folder.
+
+In Claude Code, when the plan has a group of pieces that can go together, the run also asks whether to build a group's pieces at the same time. Each one runs its own install and its own copy of the tool, so this uses more memory, and on a machine with little memory it can crash it. One at a time is the default, and you say a number if you want more. Each piece built alongside others still gets every step of a single build, its own review and its own pull request. The session you started the run in claims each piece, reviews it and opens its pull request, and the pieces merge one at a time, each checked again first. If the session dies, resuming keeps your number and offers to lower it.
 
 Each copy links to your `.env` rather than copying it, and installs its own dependencies. A file your build needs that git ignores and that holds no secret, such as a licensed font, is linked into each copy too, once founding has asked you which ones. Your confidential folder never is. Its dev server runs on a free port the run records, and the hand-over names that port. The server stops once the pull request opens, and the run's report says how to start it again. The kit clears a copy away once its pull request has merged or closed and nothing in it is unsaved, at the next run or the next /sync. A copy holding unsaved work is kept and named.
 
-If the run meets a choice nobody made, a hard one, about stored data, syncing or what leaves the tool, sends that piece back to shaping with the question on it. An easy one takes the option simplest to undo and is flagged in the pull request. A piece that fails three attempts is parked with a note on what it revealed. Either way the run moves on.
+If the run meets a choice nobody made, a hard one, about stored data, syncing or what leaves the tool, sends that piece back to shaping with the question on it. A hard choice the run can already see in a piece sends it back the same way before any branch is cut, and the plan names it as going back, so it does not come back to every run. An easy one takes the option simplest to undo and is flagged in the pull request. A piece that fails three attempts is parked with a note on what it revealed. Either way the run moves on.
 
 The run keeps a state file in your project, which git ignores, and a live progress page where your coding agent can publish one. If a session dies, a new session picks the run up from its state file, and /what-now and /sync both offer to resume it.
 
@@ -470,6 +482,8 @@ Some harnesses provide goal or long-run modes, such as Claude Code's `/goal`: "k
 GitHub collaborators identify who has access. Invite someone under the repository's Settings, then Collaborators. They accept the email, open the repo in their own tool, and make their own .env from .env.example.
 
 Nothing else changes when a second person arrives: naming a piece before starting it already stops two people building the same thing. Each of you gets your own printed list, so there is no shared file to clash over. Open pull requests show work in progress, and /what-now identifies conflicts and unfinished work rather than leaving you to read Git state yourself.
+
+The agent posts under your account, so a colleague reads its comments as you. Nothing goes to a colleague in your name until you have seen the words and said yes, and an issue a colleague opened keeps its title and scope unless you agree to the change. Labels and the kit's own bookkeeping notes go on without asking.
 
 ## 12. Sync and maintenance
 
@@ -519,7 +533,9 @@ fourteen. When the kit has renamed a command, the update also rewrites the
 command list in your AGENTS.md, with your approval, so you are not left to
 edit it by hand. A project founded from a whole copy of the kit also carries
 the kit's own command files, which make each command show twice; the visit
-offers to remove those and leaves anything you wrote yourself alone. Every
+offers to remove those and leaves anything you wrote yourself alone. It
+removes a saved folder in a way the project's history can undo, and gives you
+the command for a folder that was never saved. Every
 visit also checks the small helper that prints your list of pieces to
 `plan.local.md`. A project founded before every installation carried it gets it
 then, so the kit reads what is ready from that list rather than working it out
@@ -536,6 +552,15 @@ visit after the kit changed how it decides the build path offers to rewrite
 the build-path section of your masterplan to the new shape, shows the old text
 above the new, keeps every accepted risk word for word, and changes nothing
 without your approval.
+
+Your project records which AI Build Kit release it holds, and the commit that
+release was cut from, in a small file founding writes and every update
+rewrites. So you can always say exactly which kit you have. You do not have to
+wait for the monthly visit to hear about a new one either: when a newer release
+is out, /what-now says so in one line, names both versions and points you to
+/maintain. Update the kit only through /maintain. The installer's own
+`npx skills update` can drop a renamed skill without a word and leave the kit
+half updated, so the agent will not run it for you.
 
 The standing instructions in AGENTS.md stay under 200 lines and hold what the
 code cannot show, such as how work is saved and reviewed and which conventions
@@ -595,17 +620,27 @@ A project founded before the kit could link ignored build files gets one questio
 A project founded before the six states gets one offer to move onto them. Pieces waiting on a question gain shaping, open pieces with no state gain idea, and a piece labelled blocked becomes parked with its reason. Ideas you closed as parked stay as they are. Nothing changes without your yes, and a no is recorded, so the offer comes back only when a release changes the states again.
 
 In Claude Code, the settings founding gave your project refuse a direct push
-to `main`. When a later release catches more ways of writing that push, the
+to `main`, a recursive delete and clearing Git's recovery history. When a
+later release catches more of these, the
 monthly visit names the new rules and offers to add them to
 `.claude/settings.json`, once. It adds nothing without your yes and leaves the
 rest of the file as it is. A no is recorded, and the offer comes back only
 when a release adds another rule.
 
 /maintain writes the date of each visit into the project. When more than a month
-has gone by, opening a session says so and names /maintain. A tool that cannot
-run anything when a session opens says it when you type /what-now instead.
+has gone by, or once 20 changes have landed since the last visit, whichever comes
+first, opening a session says so and names /maintain. A busy project can do a
+month's work in a week, and its records drift just as far. The count is of the
+changes saved to your main branch, and it counts only what this computer already
+holds, so merges made on GitHub since you last pulled show up late.
+
+A tool that cannot run anything when a session opens says it when you type
+/what-now instead, and /what-now asks the same script, so the two agree.
 Nothing is blocked and nothing changes without a command. If you ask a visit to
-leave kit updates alone, it does not add that reminder either, and says so.
+leave kit updates alone, it does not add that reminder either, and says so. A
+project whose reminder script came before the change count is offered the newer
+one at the monthly visit, and a no keeps the old one until the next visit asks
+again.
 
 The quarterly visit is fuller, with a hot-spot tidy-up and an ownership check
 that can name a new sensitive area or, after a genuine redesign, take one off.

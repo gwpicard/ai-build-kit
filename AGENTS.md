@@ -212,7 +212,25 @@ attribution line, not the word.
 - `.agents/tests/agent-plugin.sh` checks the assembled Agent Plugins folder
   against the standard and rehearses a project stand-up from it.
 - `.agents/tests/session-start.sh` rehearses the check-up cadence and proves
-  this repository never receives a reminder.
+  this repository never receives a reminder. The hook reads its dates by key,
+  so the `kit` line and the recipe lines in the check-up file, placed first,
+  leave the count alone. It also holds the count of work. A busy project once
+  did five weeks of work in five days and heard nothing, because only days
+  were counted. So the hook speaks at 20 changes since the last visit, or
+  since founding, however few days passed. The rehearsal saves dated changes
+  in a throwaway project: 19 says nothing, 20 speaks, and changes saved
+  before the visit and the commits inside a merged pull request are left
+  out. It reads `origin/HEAD` first, then `main`, `master` and the branch
+  checked out, and a remote holding fewer changes proves it never fetches.
+  With both due, the day line comes first and the Claude output stays one
+  object. A folder with no history keeps the day rule.
+- `.agents/tests/check-up-counts-work.sh` guards the prose around that count.
+  `/what-now` runs the reminder script in its plain mode and takes its
+  answer, so a session's opening and `/what-now` never disagree. `/maintain`
+  offers the newer script in one line to a project whose copy differs from
+  the template, since an update never reaches it, replaces it only on a yes,
+  and offers again next visit after a no. WORKFLOW.md says days or changes,
+  whichever comes first.
 - `.agents/tests/fake-github.sh` checks the replay harness's stand-in for the
   GitHub CLI: the commands it answers, and the ones it still refuses on purpose.
   It also holds that opening a pull request closes nothing, and that a merge
@@ -284,7 +302,13 @@ attribution line, not the word.
   rather than its number. An open issue with no state is an idea. A piece with
   two states, or a `needs-` label without `shaping`, prints once, under Needs
   attention, and a `ready` piece with no Done when prints as an idea and is
-  named there too. A closed issue never prints. An older project's labels still
+  named there too. A piece under `building` or `to check` that was never
+  shaped, or never passed the readiness check, looks exactly like one that
+  was, so it is named there with what it is missing and still prints in its
+  own column. Where both are missing, only the missing Done when is named. A
+  parent and a repair are never named that way, and a Readiness heading in
+  another case counts while one with extra words does not. A closed issue
+  never prints. An older project's labels still
   group, with `blocked` read as parked, even beside `ready`. When GitHub cannot
   be reached, the last printout is left alone and the refresh says when it was
   written. It also holds the invariant `/queue` rests on, that a piece with an
@@ -309,7 +333,9 @@ attribution line, not the word.
   that allows two states, not only on one with the rule gone, because loosening
   is the edit that slips through. It also holds that founding names the six
   labels when it makes the label set, and that WORKFLOW.md explains the states
-  in one place.
+  in one place. It holds the two notes for a piece built or checked without
+  being shaped or checked where `pieces.md` and WORKFLOW.md describe them, and
+  that `/what-now` names such a piece once, beside a failing check.
 - `.agents/tests/state-moves.sh` guards the commands that keep the board true.
   Each move takes the old state off in the same step as it puts the new one
   on, and the check reads every label command in `/shape`, `/implement`,
@@ -389,6 +415,20 @@ attribution line, not the word.
   that earned the ninth command. The same rule reaches the end of a build: `/implement` and
   section-builder name a next piece only from the printout's `To build` group,
   and never from a hand reading of the issues.
+- `.agents/tests/parallel-run.sh` guards the question a run asks before it
+  builds a group's pieces at the same time. People who took on several pieces
+  built their own coordinator when the kit offered none, and the kit's rules
+  reached only as far as its brief: claims and reviews were skipped, and a
+  merge went ahead on a standing yes. So on Claude Code the run asks in fixed
+  words, with the memory warning, only when the plan holds a group of two or
+  more pieces it can take, and one at a time is the default. It holds the
+  answer's bounds, `at_once` in the state file and its survival on resume,
+  and that only one group runs at once. It holds hardest that the session
+  which started the run alone claims, writes the run state, runs each review,
+  opens each pull request and merges one at a time, while a background agent
+  only builds one piece in its own worktree and never pushes, and that an
+  agent which never reports counts as a failed attempt. A pushing agent would
+  make a first upload nobody was asked about.
 - `.agents/tests/gated-turns.sh` checks the rule that decides when a scripted
   replay turn is due: that a turn with no precondition still fires by position,
   that one with a precondition waits until the kit has said the thing it
@@ -500,9 +540,11 @@ attribution line, not the word.
   pull request. The one that waits on another aims at that piece's branch,
   carries its commits on the remote and says which to merge first. The piece
   whose record's shape is not settled is back in shaping with its question
-  and no pull request, or left `ready` and skipped with a reason naming the
-  choice. Nothing is merged when the person said not to, and the state file
-  says merges were not pre-approved. However the run ended, no piece is left
+  and no pull request, with or without a branch, since a run that sees the
+  choice at the plan cuts none. Left `ready` and skipped is a miss, even with
+  a reason, and the check fails while scenario 57's Evidence line still allows
+  it. Nothing is merged when the person said not to, and the state file says
+  merges were not pre-approved. However the run ended, no piece is left
   `waiting` or `building`, the earliest claim on a built piece names the run,
   a branch has one pull request, and a piece sent back or parked keeps any
   branch it had on the remote and loses the run's assignee. Each of those
@@ -574,6 +616,31 @@ attribution line, not the word.
   be uploaded. And it guards the masterplan review, which the build path decides
   and which records a missing reviewer as a gap rather than waiting for one,
   because the wait had no exit and cost two measured runs their whole founding.
+- `.agents/tests/founding-branch.sh` guards the read of which branch founding
+  is on. A real founding saved its checkpoint onto a feature branch the person
+  had checked out, `main` never received the records, and the commits were
+  moved across by hand. So the read comes before the bootstrap script writes
+  anything, and finds the default branch from the remote, else a local `main`,
+  else a local `master`. On another branch with nothing unsaved, founding
+  switches and says so in one line. It never switches a branch holding unsaved
+  work, and a switch that fails never stops founding. The person may keep their
+  own branch, and a founding saved off the default branch names that branch in
+  its changelog line and its completion report. `adopting.md` and WORKFLOW.md
+  carry the same story.
+- `.agents/tests/kit-version-record.sh` guards the record of which kit release
+  a project holds. Two external projects could not tell. One carried an older
+  release's label with newer files, and the other stayed six releases behind
+  for weeks, then updated with a bare `npx skills update` that dropped a
+  renamed skill. So founding writes a `kit|<version>|<commit>` line into
+  `.ai-build-kit-maintenance`, the version from the installed maintain skill's
+  `VERSION` or, in a whole copy, `.ai-build-kit-version`, and the commit its
+  tag points at, following an annotated tag once. A failed lookup writes
+  `unknown` and founding carries on. The first changelog entry names the same
+  two. `/maintain` rewrites the line after an update and writes it where it is
+  missing or disagrees. `/what-now` reads the files rather than the line, and
+  names a newer published release in one line, saying nothing when they match
+  or the call fails. The founded `blocked-commands.md` says the kit is updated
+  only through `/maintain`, and WORKFLOW.md tells the person.
 - `.agents/tests/founding-menu.sh` guards the recipe menu founding offers. The
   menu is the files directly in the `recipes/` folder of the installed ship
   skill, found beside the founding skill and never at a project path, since the
@@ -698,7 +765,10 @@ attribution line, not the word.
   is unchanged, since the floor is meant to add nothing for the person to learn.
   It holds that the type check and lint leave `.agents/worktrees/` out, since
   a run's worktrees are whole copies of the project, and that doing so changes
-  no rule.
+  no rule. The test run leaves them out too: the floor names the setting for
+  Vitest, Jest and Node's own runner, says pytest and Go need nothing, and
+  has a runner with no such setting recorded in the stack section and
+  founding carry on. WORKFLOW.md says the checks leave the copies out.
   `.agents/tests/check-floor-rehearsal.sh` is the half that runs. It founds a
   throwaway Python project from the shipped workflow template, takes its
   commands from the shipped table, and watches the check go red at the type
@@ -958,8 +1028,9 @@ attribution line, not the word.
   Claude Code settings carry against a direct push to `main`. The first rules
   matched three exact spellings, and a real run pushed with
   `git push -q origin main`, which none of them matched. Nothing here can run
-  Claude Code's own matcher without a model, so the check carries a small one
-  that follows the documented rule shape, and tests it first against the
+  Claude Code's own matcher without a model, so the check uses a small one in
+  `.agents/tests/lib/permission-matcher.py`, shared with `merge-ask-rule.sh`,
+  that follows the documented rule shape and is tested first against the
   examples in the documentation's own table. It then feeds it the spellings
   `blocked-commands.md` says are refused and the ones it says are missed, so
   the written gap and the rules cannot disagree. A branch that only starts
@@ -967,7 +1038,93 @@ attribution line, not the word.
   turn to prove it is needed. It also holds the monthly offer that brings the
   rules to a project founded before them: offered once, named, added only on
   a yes, with nothing else in the file touched, and a no recorded so the offer
-  returns only when a release adds another rule.
+  returns only when a release adds another rule. The same holds for the rules
+  that refuse a recursive delete, `git reflog expire` and `git gc` with
+  `--prune`, whose lists sit under their own heading and are read from it. A
+  written list of commands that must still run, such as deleting one file or a
+  plain `git gc`, keeps those rules from growing. The offer brings those rules
+  too, and a no recorded before they existed does not cover them.
+- `.agents/tests/refused-commands.sh` guards what happens when a command is
+  refused. In a real project the deny list refused `rm -rf`, and the agent ran
+  the same deletion again as `rm -r`, which went through. So both
+  `blocked-commands.md` files say to stop and tell the person in one line which
+  command was refused and what it was for, and never to reach the same result
+  another way: another spelling, another tool, or the same work in steps. A
+  person who asks for a refused command is given it to run. Both files name the
+  new commands. It also holds `/maintain`'s three removals, which remove a
+  tracked folder with `git rm -r` and give an untracked one to the person, since
+  a recursive delete is now refused. The other steps that cleared a folder say
+  how too: a finished run's folder in `/sync` and an unsaved prototype go to
+  the person as a command, and the temporary folders the trim and the
+  quarterly reads write are made with `mktemp -d` and left for the computer to
+  clear.
+- `.agents/tests/speaks-for-the-person.sh` guards the yes the kit waits for
+  before it speaks for the person to anyone else. In a project where
+  colleagues file issues, the agent posted a comment under the person's
+  account to a colleague, and changed the title and scope of that colleague's
+  issue, before the person had said to go ahead. So `pieces.md` says that a
+  comment, a reply, a review, a mention or a message in another channel waits
+  for a yes on the words, shown first, and so does a change to the title or
+  scope of an issue or pull request another account opened. It holds how the
+  author is read, and that an author nobody can read counts as another
+  person's. It holds the bookkeeping that needs no yes, so a run with nobody
+  watching still claims, labels, names a merge conflict on its own pull
+  request and sends a piece back to shaping, and that
+  "tell them" is the yes for the person's own words while a no gives them the
+  words to post. `/shape` keeps another author's words under "Original report"
+  and names the author. The founded `blocked-commands.md` carries the
+  restriction, and WORKFLOW.md's Team use section tells it.
+- `.agents/tests/own-computer-work.sh` guards work on the person's own
+  computer rather than on the project. In one project a short request about a
+  GitHub command led the agent to install a newer GitHub CLI in the person's
+  home folder without asking. In another, most of a first day went into
+  repairing an editor's install, and facts about that machine were written
+  into the project and sent as a pull request. So change-triage names the
+  intent, with the project's own folder as the line, and routes it apart: no
+  piece, no branch, no changelog entry and nothing written into a tracked
+  file, with the person told in the reply. A setup step that would install
+  software outside the folder is that work too, so its yes comes first. Anything installed, replaced,
+  downloaded to run or removed outside the folder waits for a yes naming what,
+  where and how to undo it, a recursive delete goes to the person, and a
+  version the project needs goes into AGENTS.md's stack section as a
+  requirement. A mixed request is two requests, each with one route, and
+  project files changed by accident are named and not committed. The founded
+  `blocked-commands.md` carries the restriction after the item on speaking for
+  the person, section-builder points to it in step 4, where the project's
+  commands first run, and WORKFLOW.md's Day to day section tells it.
+- `.agents/tests/content-work.sh` guards a request to use the tool on content
+  rather than change it. In one project, testing a document on a report tool
+  produced a report, a branch and two changelog entries outside any piece. The
+  branch was never pushed, so the project's history never mentions that
+  report. So change-triage names the intent and routes it: the run happens in
+  the main folder with no piece, no branch and no changelog file, and the
+  output and the person's input go to a folder git ignores, checked first with
+  `git check-ignore`, or outside the project where an older project's
+  gitignore does not cover it. Content the person
+  asks to keep takes the build path's save route with its own changelog file,
+  and never sits on a branch nobody pushes. A fault the content shows becomes a
+  repair or a piece, confidential content falls under the founded rule, and a
+  person who leaves gets nothing committed. section-builder step 9 points kept
+  content at the save, and WORKFLOW.md's Day to day section tells it. Its
+  rehearsal founds a throwaway project from the shipped gitignore, writes an
+  input and an output where change-triage says they go, and finds `git status`
+  empty, while the same output in a folder git does not ignore shows, and an
+  older gitignore fails the check the skill runs first.
+- `.agents/tests/merge-ask-rule.sh` guards the confirmation box Claude Code
+  shows before a merge on a project whose every merge goes live. The rule that
+  a person decides what merges holds only while an agent follows it, and two
+  projects built with the kit saw merges made on the agent's own judgement,
+  one over a red check. An ask rule binds every session, so the two rules live
+  in one template file and one script writes them. The check feeds the shared
+  matcher the merges `blocked-commands.md` says are asked about, the commands
+  it says never are and the merges it says are missed, and takes each rule out
+  in turn. It drives the script on a copy of the founded settings: every deny
+  rule and the session-start hook stay, and a remove gives back the file as it
+  was. A missing file, a file that is not JSON, the person's own ask rule and
+  a line that stops saying `on every merge` each get their own case. It holds
+  that founding, the merge step and `/ship` run the script whenever they write
+  the line, the one-time offer in `/maintain` with a no recorded, and that this
+  repository's own settings never carry the rules.
 - `.agents/tests/sync-saves-like-a-piece.sh` guards how /sync saves what it
   corrects. Every skill that changes the records said how it saves them, and
   sync did not: it corrected the pieces, the changelog and the masterplan and
@@ -1102,7 +1259,12 @@ attribution line, not the word.
   acceptance and then kept the flagged part switched off behind a rule that
   waited for the skipped sign-off, and asked again before opening it. The
   acceptance now reaches everything the notice named, so a lock that only
-  waits for the skipped caution opens with it.
+  waits for the skipped caution opens with it. A form or menu answer with no
+  option selected is not carrying on, since a real acceptance was once written
+  from one, naming an approval nobody had mentioned. So the line quotes what
+  the person typed or chose, exactly, and names only people they named. In the
+  same save, every sentence the acceptance makes untrue is corrected, because
+  a masterplan once said licensed files were kept out after they were let in.
 - `.agents/tests/who-can-settle.sh` guards which waiting pieces need the person:
   that the three labels each say who can answer, that /shape never answers a
   person-present question itself, that it can be pointed at one piece and can
@@ -1215,7 +1377,9 @@ attribution line, not the word.
   since that is what makes a repository write from a workflow acceptable at
   all. It also reads back `/maintain`'s rules about `releases/latest`, the one
   endpoint that cannot answer with a draft, and asserts that neither
-  `docs/MAINTAINING.md` nor the stamp still calls the old gap unavoidable. The
+  `docs/MAINTAINING.md` nor the stamp still calls the old gap unavoidable.
+  `/what-now` names a newer release too, so the check holds that it asks the
+  same endpoint and no other, and never names a draft. The
   real write from inside GitHub Actions is the one thing no local rehearsal can
   reach, so the permission shape of that workflow is guarded in
   `release-publication.sh` and the first published release is the first time
@@ -1310,7 +1474,24 @@ attribution line, not the word.
   `/implement`, `/fix`, `/ship` or `/sync` restating the rule rather than
   pointing at it, and holds `/ship`'s promote from a preview to live on a yes
   that names it. It replaces the validator's string that held section-builder
-  short of a merge.
+  short of a merge. It also holds how the kit waits for a project check, with
+  one `gh pr checks --watch --fail-fast` run in the background or by the
+  agent's own watch tool, never a `sleep` loop. Sessions with no written way
+  to wait made nine calls and eight watches and loops for one pull request,
+  and a watch using an option the installed `gh` lacked ended early and looked
+  finished. So an exit code of 8, or an unknown option, reads as not finished.
+  No checks at all, a check that never ends and an unreachable GitHub are each
+  said plainly and never called green, and only `merge.md` carries the wait.
+- `.agents/tests/closing-words.sh` guards the rule that only a pull request's
+  `Closes` line closes a piece. GitHub closes an issue on a closing word
+  straight before its number, even in a sentence saying it does not, and an
+  outside project had a piece closed twice that way, the second time by the
+  sentence warning about the first. It holds the nine words, the negated case,
+  the reach into titles, commits and changelog files, and naming another piece
+  by number and title instead, in section-builder, the run's stack example and
+  WORKFLOW.md. It also reads every number in those files and the merge step,
+  fails on a closing word before one outside the `Closes #<number>` line, and
+  proves that reader catches a bad sentence planted in a copy.
 - `.agents/tests/not-hosted.sh` guards the third value of the `Goes live:`
   line, `not hosted`, for a tool no server runs for people to reach. Two
   projects had no live address at all, a skill library installed from the
@@ -1341,14 +1522,22 @@ attribution line, not the word.
   already building, to the state update. A dependent piece stacks and names
   the merge order, and the parts of one parent share a pull request. A hard
   open choice sends the piece back to shaping and an easy one is flagged, and
-  either way the run moves on. The state file's fields, the live page, and a
-  new session resuming from the state file are held too, as is a run that ends
+  either way the run moves on. A hard choice the run can already see when it
+  plans or claims a piece sends it back too, with its question, no branch and
+  no claim. Skipped and left `ready`, such a piece came back to every run with
+  nothing telling the person a question waited. An easy choice seen then
+  leaves the piece eligible, and a missing fact alone still skips it. The
+  state file's fields, the live page, and a new session resuming from the
+  state file are held too, as is a run that ends
   at once when nothing is left. So is what review of the first draft found:
   a held-up piece whose blockers are all in the plan joins it and stacks, the
   earliest claim comment wins a race and only the later run backs off, every
   way a run ends leaves each piece in a final state, a parent's pull request
   opens after its last finished part, the checkpoint route has its own steps,
-  and pre-approved merges are swept at the end, bases first. It holds
+  and pre-approved merges are swept at the end, bases first. A piece whose
+  build needs software installed outside the project folder is parked with
+  that reason, never installed, and the run takes the next piece, unless the
+  same tool would stop every piece left, which ends the run. It holds
   `/what-now` and `/sync` offering to resume, section-builder's stacked start, and the validator's step 1 wording
   that matches it.
 - `.agents/tests/kit-owns-worktrees.sh` guards the worktree each piece in a
@@ -1376,7 +1565,10 @@ attribution line, not the word.
   It holds too that the checkpoint route needs the main folder on `main`,
   that the dev server runs until the hand-over and the report says how to
   start it again, that a run's worktrees do not carry the confidential
-  folder, and that `/maintain` offers `git worktree prune` on a yes.
+  folder, and that `/maintain` offers `git worktree prune` on a yes. It
+  holds that section-builder finds the main folder for walk-through pictures
+  from the first line of `git worktree list --porcelain`, makes the folder
+  when it is missing, and names its full path in the hand-over.
   `.agents/tests/kit-owns-worktrees-rehearsal.sh` runs the shipped
   `worktree.sh` in a throwaway project with a stand-in GitHub. It opens a
   worktree and a stacked one and reads that git ignores them, the main
@@ -1414,7 +1606,12 @@ attribution line, not the word.
   `main` checked out in it. Run from there, `open` cuts the piece from
   `origin/main` into the main folder's `.agents/worktrees/` and says so, the
   run state is read from the main folder, and `tidy`, `leftovers` and
-  `remove` never list, change or remove the sibling.
+  `remove` never list, change or remove the sibling. It also runs the
+  lookup section-builder names for the main folder, as written, from inside
+  a worktree and from the main folder, and both give the main folder. A
+  walk-through picture written there never reaches git, leaves nothing in the
+  worktree, and outlives the worktree, which is cleared away once its pull
+  request closes.
 - `.agents/tests/worktree-links.sh` guards the ignored build files a run's
   worktree links. One project's build needed licensed fonts git ignores, and
   the agent copied them into each worktree by hand before committing them

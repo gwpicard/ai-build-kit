@@ -46,7 +46,9 @@ read here can find them.
 1. Where `jscpd` is already in the project, run
    `jscpd --format markdown --min-lines 1 --reporters json --output <temporary folder> .`
    for repeated text. It also finds a copy with small changes. Point the report
-   at a temporary folder outside the project and delete it afterwards.
+   at a new temporary folder outside the project, made with `mktemp -d`, and
+   leave it there for the computer to clear, since a recursive delete is
+   refused.
 2. `python3 <skill folder>/scripts/document-bloat.py`, where `<skill folder>` is
    this installed maintain skill's folder, run from the project root. It finds both kinds and prints one line for each. It prints
    nothing when there are none. It finds only word-for-word repeats.

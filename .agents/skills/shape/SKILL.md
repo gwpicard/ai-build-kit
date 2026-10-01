@@ -193,6 +193,15 @@ noticed until the files were read.
   the `setup-ai-build-kit` skill's `references/pieces.md` describes, and keep the person's
   original words underneath, because their words are what a refinement can be
   checked against and what to return to when it reads wrong.
+
+  A piece another account opened holds a colleague's words, not the person's.
+  Read its author first, as the `setup-ai-build-kit` skill's
+  `references/pieces.md` describes under "Speaking for the person". Keep their
+  words whole under "Original report", and name the author in your reply, so
+  the person knows whose request is being reshaped. Ask before saving a changed
+  title or scope, and show the new wording when you ask. A body that only adds
+  the shaped sections above, with the original kept whole, is not a change of
+  scope. Post nothing to that author until the person has said yes to the words.
 - `needs-prototype` settles the piece with something to look at. Where the
   person already has a mock, a sketch, or anything else that shows it, follow
   the `clarify` skill's `references/existing-artifact.md` and build toward

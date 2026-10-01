@@ -3,6 +3,13 @@
 Never run these. They can destroy work or cross a boundary the people on this
 project cannot see coming or recover from alone.
 
+When the coding agent refuses a command, or this list forbids it, stop. Then
+tell the person in one line which command was refused and what it was for,
+and let them decide. Never reach the same result another way: another
+spelling, another tool such as `find -delete` or a script, or the same work
+split into steps. When the person asks you to run a refused command, say it
+is refused and give them the command to run themselves.
+
 This instruction holds in every harness. Where the harness supports a command
 deny list, mirror these entries there as mechanical enforcement:
 
@@ -11,7 +18,11 @@ deny list, mirror these entries there as mechanical enforcement:
 - a direct push to `main`, in the spellings listed under "A direct push to
   `main`" below
 - `git clean -f` and `git clean -fd`
-- `rm -rf`
+- a recursive delete in any spelling, such as `rm -rf`, `rm -r` or
+  `rm --recursive`, in the spellings listed under "Deleting files and Git
+  history" below
+- `git reflog expire`
+- `git gc` with `--prune`
 
 The following restrictions do not reduce to one reliable command pattern and
 still apply:
@@ -41,7 +52,21 @@ still apply:
   person has accepted the risk on the record;
 - never withdraw, soften, or redefine a risk notice you have already given, and
   never offer your own reading of your own work as the independent review a
-  build path names.
+  build path names;
+- never post in the person's name to anyone else, or change the title or scope
+  of an issue or a pull request another account opened, without a yes that
+  covers the words. The `setup-ai-build-kit` skill's
+  `references/pieces.md` says what counts, under "Speaking for the person";
+- never install, replace, download to run, or remove software outside the
+  project folder without a yes that names what it is, where it goes and how to
+  undo it. A removal that needs a recursive delete is the person's to run, as
+  the refused-command rule at the top says. The `change-triage` skill says how
+  such work is kept apart from the project, under "Work on this computer
+  outside the project".
+- never update the kit with a bare `npx skills update`, which can drop a
+  renamed skill without a word and leave the kit half updated; the kit is
+  updated only through `/maintain`, which uses the route the project installed
+  it by. Where the person asks for an update, run `/maintain`.
 
 Save a checkpoint before sweeping work. If one of these actions appears
 necessary, stop, explain why, and let the person decide with the reason in
@@ -90,3 +115,72 @@ These spellings are not refused, and the rule above still forbids them:
   main`, with an option between `git` and `push`
 - `/usr/bin/git push origin main`, with git called by its full path
 - `sh -c 'git push origin main'`, with the push inside another shell
+
+## Deleting files and Git history
+
+A recursive delete removes a folder with everything in it, and nothing brings
+back what Git never saved. `git reflog expire` and `git gc --prune` throw away
+the history Git would use to recover lost work, even work that was committed.
+The Claude Code settings the kit installs refuse all three when the command
+starts with the words below. Like the push rules, they read the command as
+written.
+
+These spellings are refused:
+
+- `rm -r build`, `rm -R build` and `rm --recursive build`
+- `rm -rf build`, `rm -fr build`, `rm -Rf build` and `rm -fR build`
+- `rm -r -f build`
+- `git reflog expire --expire=now --all`
+- `git gc --prune=now` and `git gc --aggressive --prune=now`
+
+Deleting a throwaway folder, such as a build folder, is refused too, since a
+rule cannot tell it from the person's work. The person can run it themselves,
+or the project's own clean command can. Deleting one file, such as
+`rm -f notes.txt`, and a plain `git gc` or `git reflog` still run.
+
+These spellings are not refused, and the rule above still forbids them:
+
+- `rm -f -r build`, with the recursive option second
+- `rm -rv build` and `rm -Rfv build`, with another option joined to the
+  recursive one
+- `find build -delete`
+- `/bin/rm -r build`, with `rm` called by its full path
+- `sh -c 'rm -r build'`, with the delete inside another shell
+- `git -C . gc --prune=now`, with an option between `git` and `gc`
+
+## A merge that goes live
+
+Where the masterplan's `Goes live:` line says `on every merge`, each merge puts
+the tool live. There the kit adds two rules to the ask list in the project's
+Claude Code settings, so Claude Code shows its confirmation box before the
+merge runs, whatever the session was told. Like a deny rule, an ask rule
+matches only the command as it is typed.
+
+These merges are asked about:
+
+- `gh pr merge`, which merges the pull request of the branch checked out
+- `gh pr merge 12`
+- `gh pr merge 12 --squash`
+- `gh pr merge --merge 12`
+- `gh pr merge 12 --auto`
+- `gh api -X PUT repos/o/r/pulls/12/merge`
+
+The second rule also asks before `gh api repos/o/r/pulls/12/merge` with no
+method, which only reads whether the pull request has merged. Answer the box,
+or read the same thing with `gh pr view 12`.
+
+These commands are never asked about:
+
+- `gh pr view 12`
+- `gh pr list`
+- `gh pr checks 12`
+- `gh api repos/o/r/pulls/12`
+
+These merges are not asked about, and a merge still needs a yes that names it:
+
+- a merge made on GitHub's website
+- a merge through another program, or with `gh` called another way, such as
+  `/opt/homebrew/bin/gh pr merge 12`, `sh -c 'gh pr merge 12'`, or
+  `gh api graphql` with a merge in its query
+- any merge in a session in `bypassPermissions` mode, which skips every
+  confirmation box
