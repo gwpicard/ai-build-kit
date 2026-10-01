@@ -122,6 +122,19 @@ SH
     || fail "$reason failure was called signed out or did not block founding: $out"
 done
 
+echo "== Authentication cannot be verified inside the session =="
+cat >"$WORK/bin/gh" <<'SH'
+#!/usr/bin/env sh
+echo 'HTTP 401: Requires authentication' >&2
+exit 1
+SH
+chmod +x "$WORK/bin/gh"
+out=$(run_check) && code=0 || code=$?
+[ "$code" -ne 0 ] && printf '%s\n' "$out" | grep -q 'GH_TOKEN' \
+  && ! printf '%s\n' "$out" | grep -q 'nobody is signed in' \
+  && pass "authentication refusal asks about credential sources without claiming sign-out" \
+  || fail "authentication refusal skipped credential diagnosis: $out"
+
 echo "== Signed in, but a soft repository state =="
 
 # Issues off and a read-only account do not block founding: the report says so

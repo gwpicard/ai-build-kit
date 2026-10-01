@@ -810,6 +810,12 @@ access_error() {
     FAIL_STAGE=repo ERROR_FILE="$WORK/access/error" FIXTURE="$WORK/issues.json" \
     GH_TOKEN=synthetic-private-value "$REFRESH" 2>&1)
 }
+said=$(access_error 'HTTP 401: Requires authentication') && fail "unauthenticated gh reported success"
+case "$said" in
+  *"GH_TOKEN"*"terminal"*) pass "authentication refusal asks about credential sources before re-login" ;;
+  *) fail "authentication refusal skipped credential diagnosis: $said" ;;
+esac
+
 said=$(access_error 'To get started with GitHub CLI, please run: gh auth login') \
   && fail "signed-out gh reported success"
 case "$said" in
