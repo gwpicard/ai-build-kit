@@ -793,7 +793,9 @@ else
   # Matched against the definition list rather than the whole file. A state
   # label is also mentioned in the prose that explains it, so a loose search
   # keeps passing after the definition itself has been renamed.
-  for label in building blocked parked broken \
+  # The six states, then the label that sits beside a state, then the reasons
+  # that sit beside `shaping`. `blocked` retired when the states arrived.
+  for label in idea shaping ready building "to check" parked broken \
                needs-clarification needs-prototype needs-research; do
     grep -qF -- "- \`$label\`," "$pieces" || \
       { fail "$pieces: the state label list does not define '$label'"; pc_ok=0; }

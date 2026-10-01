@@ -2,9 +2,10 @@
 # plan-refresh.sh: print the project's open pieces into plan.local.md.
 #
 # Information flows one way. The issues are the record; this file is a printout
-# of them and never a source. Nothing here reads plan.local.md, and nothing
-# anywhere writes back to an issue from it. If the printout looks stale, print
-# it again.
+# of them and never a source. Nothing here reads a piece from plan.local.md, and
+# nothing anywhere writes back to an issue from it. If the printout looks stale,
+# print it again. The one line read back is the time it was written, so a
+# refresh that cannot reach GitHub can say how old the list in hand is.
 #
 # The file is gitignored, so it is one person's view of a shared record and can
 # never collide with anyone else's.
@@ -29,11 +30,23 @@ command -v python3 >/dev/null 2>&1 || {
   exit 1
 }
 
+# When GitHub is out of reach the last printout stays as it was, and this says
+# when it was written, so the person still has a list and knows its age.
+last_written() {
+  written=$(sed -n 's/^Last refreshed: //p' "$OUT" 2>/dev/null | head -1)
+  if [ -n "$written" ]; then
+    echo "plan-refresh: $OUT is left as it was, written $written" >&2
+  else
+    echo "plan-refresh: there is no earlier printout to fall back on" >&2
+  fi
+}
+
 repo=$(gh repo view --json nameWithOwner 2>/dev/null \
   | python3 -c 'import json,sys; print(json.load(sys.stdin).get("nameWithOwner",""))' \
   2>/dev/null || true)
 [ -n "$repo" ] || {
-  echo "plan-refresh: cannot tell which GitHub repository this project belongs to" >&2
+  echo "plan-refresh: could not reach GitHub, or cannot tell which GitHub repository this project belongs to" >&2
+  last_written
   exit 1
 }
 
@@ -49,6 +62,7 @@ repo=$(gh repo view --json nameWithOwner 2>/dev/null \
 # The REST issues endpoint returns pull requests too, so they are filtered out.
 listing=$(gh api "repos/$repo/issues?state=open&per_page=100" --paginate 2>/dev/null) || {
   echo "plan-refresh: could not reach GitHub" >&2
+  last_written
   exit 1
 }
 
@@ -74,7 +88,7 @@ print(", ".join(i["title"] for i in items if i.get("state") == "open"))
 blocked_numbers=$(printf '%s' "$listing" | python3 -c '
 import json, sys
 for i in json.load(sys.stdin):
-    if i.get("pull_request"):
+    if i.get("pull_request") or i.get("state", "open") != "open":
         continue
     if (i.get("issue_dependencies_summary") or {}).get("blocked_by", 0) > 0:
         print(i["number"])
@@ -97,7 +111,11 @@ python3 - "$OUT" "$listing_file" "$blocker_map" <<'PY'
 import json, sys, subprocess
 
 out, listing_file, blocker_raw = sys.argv[1], sys.argv[2], sys.argv[3]
-issues = [i for i in json.load(open(listing_file)) if not i.get("pull_request")]
+# A closed issue is done. The listing asks for open issues only, but the check
+# is made here too, so a closed idea that stays labelled `parked` can never
+# print as work waiting to be done.
+issues = [i for i in json.load(open(listing_file))
+          if not i.get("pull_request") and i.get("state", "open") == "open"]
 
 blockers = {}
 for line in blocker_raw.splitlines():
@@ -127,6 +145,22 @@ def still_a_note(issue):
         return False
     return "## Done when" not in (issue.get("body") or "")
 
+# The six states, in the order a piece moves through them. Exactly one sits on
+# an open piece.
+STATES = ["idea", "shaping", "ready", "building", "to check", "parked"]
+
+# `blocked` is the label an older project used before the states. It reads as
+# parked, the state that replaced it, until something moves it. The old labels
+# let it sit beside `ready` or `building`, so that pair is how an older project
+# looks rather than a mistake, and parked wins.
+def state_labels(issue):
+    names = labels(issue)
+    found = [s for s in STATES if s in names]
+    if "blocked" in names:
+        found = ["parked"] + [s for s in found
+                              if s not in ("ready", "building", "parked")]
+    return found
+
 # What a piece is waiting on, when it is waiting on a question rather than on a
 # person. Written out in words, because the label names are for GitHub and this
 # file is for reading.
@@ -141,21 +175,54 @@ def waiting_on(issue):
             return text
     return ""
 
-# A repair goes at the top. Somebody opening this file wants to know what is
-# broken before they read what is next.
-broken, building, parents, blocked, to_build = [], [], [], [], []
+# Why a piece needs a person to look at it, or "" when it does not. Each of these
+# is a mistake in the labels, and the printout names it rather than guessing
+# which label is true.
+def attention(issue):
+    names = labels(issue)
+    if len(state_labels(issue)) > 1:
+        found = [s for s in STATES if s in names]
+        found += ["blocked"] if "blocked" in names else []
+        return "(carries two states at once: %s)" % ", ".join(found)
+    reasons = [label for label, _ in QUESTIONS if label in names]
+    if reasons and "shaping" not in names:
+        return "(carries %s without shaping)" % ", ".join(reasons)
+    if "ready" in names and still_a_note(issue):
+        return "(labelled ready with no Done when, so still an idea)"
+    return ""
+
+# The board. A repair and a parent sit outside the columns: a repair because
+# somebody opening this file wants to know what is broken before what is next,
+# and a parent because it carries no state of its own. A piece whose labels
+# contradict each other prints once, under Needs attention, except a ready
+# piece with no Done when, which is an idea and also needs a look.
+needs_attention, broken, parents = [], [], []
+columns = {s: [] for s in STATES}
+held_up = []
 for issue in sorted(issues, key=lambda i: i["number"]):
     names = labels(issue)
+    note = attention(issue)
     if sub_summary(issue)[0] > 0:
         parents.append(issue)
-    elif "broken" in names:
+        continue
+    if note:
+        needs_attention.append((issue, note))
+        if not ("ready" in names and still_a_note(issue)
+                and len(state_labels(issue)) == 1):
+            continue
+    if "broken" in names:
         broken.append(issue)
-    elif "building" in names:
-        building.append(issue)
-    elif "blocked" in names or blockers.get(issue["number"]):
-        blocked.append(issue)
+        continue
+    found = state_labels(issue)
+    state = found[0] if found else "idea"
+    # Shape decides. A ready label on a piece nobody sized does not make it
+    # ready, so it waits among the ideas.
+    if state == "ready" and still_a_note(issue):
+        state = "idea"
+    if state == "ready" and blockers.get(issue["number"]):
+        held_up.append(issue)
     else:
-        to_build.append(issue)
+        columns[state].append(issue)
 
 lines = ["Plan (local view, refreshed from GitHub, do not edit)",
          "Last refreshed: %s" % stamp, ""]
@@ -163,26 +230,31 @@ lines = ["Plan (local view, refreshed from GitHub, do not edit)",
 # The question label says why a piece is waiting, so it replaces the generic
 # note marker rather than printing beside it.
 #
-# `ready` is the last of the three to be considered, and only ever the last.
-# Shape decides whether a piece has been sized, so a hand-typed issue somebody
-# labelled `ready` without giving it a Done when is still a note here, and the
-# label does not talk over that. A piece cannot honestly be both waiting on a
-# question and ready, which is why the first two win.
+# `(ready)` marks only a ready piece that has been sized. The commands that read
+# this file name a piece to build only when it carries that mark.
 def state_note(issue):
     text = waiting_on(issue)
     if text:
         return "(%s)" % text
     if still_a_note(issue):
         return "(still a note)"
-    return "(ready)" if "ready" in labels(issue) else ""
+    return "(ready)" if state_labels(issue) == ["ready"] else ""
 
-def render(heading, group, note):
+# A piece held up by another names it, whichever column it sits in.
+def held_note(issue):
+    names = blockers.get(issue["number"])
+    return "(needs %s)" % names if names else ""
+
+# Under Needs attention the labels contradict each other, so the line names the
+# mistake and nothing else. A `(ready)` mark there would read as a piece to build.
+def render(heading, group, note, marked=True):
     if not group:
         return
     lines.append(heading)
     for issue in group:
         who = ", ".join(a["login"] for a in issue.get("assignees", []))
-        suffix = " ".join(p for p in (note(issue), state_note(issue)) if p)
+        mark = state_note(issue) if marked else ""
+        suffix = " ".join(p for p in (note(issue), mark) if p)
         head = "  #%-4s %s" % (issue["number"], issue["title"])
         if who:
             head += "   (%s)" % who
@@ -192,13 +264,19 @@ def render(heading, group, note):
         lines.append("       %s" % issue["html_url"])
     lines.append("")
 
+notes_by_number = {i["number"]: n for i, n in needs_attention}
+render("Needs attention", [i for i, _ in needs_attention],
+       lambda i: notes_by_number[i["number"]], marked=False)
 render("Broken", broken, lambda i: "(being fixed)" if "building" in labels(i) else "")
-render("Building", building, lambda i: "")
+render("Idea", columns["idea"], held_note)
+render("Shaping", columns["shaping"], held_note)
+render("To build", columns["ready"], lambda i: "")
+render("Held up", held_up, held_note)
+render("Building", columns["building"], held_note)
+render("To check", columns["to check"], held_note)
+render("Parked", columns["parked"], held_note)
 render("Made of parts", parents,
        lambda i: "(%d of %d parts done, build the parts)" % (sub_summary(i)[1], sub_summary(i)[0]))
-render("To build", to_build, lambda i: "")
-render("Blocked", blocked,
-       lambda i: "(needs %s)" % blockers[i["number"]] if blockers.get(i["number"]) else "(waiting)")
 
 notes = [i for i in issues if still_a_note(i)]
 if notes:

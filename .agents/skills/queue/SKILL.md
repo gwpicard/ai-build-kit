@@ -19,7 +19,7 @@ the printout as it stands and say when it was written, because an old list a
 person can see beats no list at all.
 
 The printout has already done the sorting. A piece under `To build` marked
-`(ready)` is shaped and free to start. A piece under `Blocked` names the piece
+`(ready)` is shaped and free to start. A piece under `Held up` names the piece
 holding it up. Nothing else needs working out, and a piece with an open blocker
 is never under `To build`, so a ready piece cannot be waiting on another ready
 piece.
@@ -50,11 +50,11 @@ blocked by work; it is waiting on somebody. The same goes for a piece with a
 `Waiting on you` step: name it as the person's own to do, and never ask for a
 key, a password, or a token in a message.
 
-A piece under `To build` carrying no marker at all has been sized but never
-marked ready, so `/implement` will not take it either. Name it with those, and
-say `/shape` is what marks it ready. This is the one case where a piece looks
-buildable in the printout and is not, and it matters most when that piece is the
-one holding another up, because otherwise the person is told to wait for
+A piece that has been sized but never marked ready sits under `Idea`, not under
+`To build`, so `/implement` will not take it either. Name it with those, and say
+`/shape` is what marks it ready. It matters most when that piece is the one
+holding another up. A held-up piece's blocker may sit under `Idea` or
+`Shaping`, so name it there, because otherwise the person is told to wait for
 something they never see.
 
 Where nothing is ready, say so plainly and say what would make something ready,
