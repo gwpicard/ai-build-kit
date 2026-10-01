@@ -1047,7 +1047,9 @@ attribution line, not the word.
   branch was never pushed, so the project's history never mentions that
   report. So change-triage names the intent and routes it: the run happens in
   the main folder with no piece, no branch and no changelog file, and the
-  output and the person's input go to a folder git ignores. Content the person
+  output and the person's input go to a folder git ignores, checked first with
+  `git check-ignore`, or outside the project where an older project's
+  gitignore does not cover it. Content the person
   asks to keep takes the build path's save route with its own changelog file,
   and never sits on a branch nobody pushes. A fault the content shows becomes a
   repair or a piece, confidential content falls under the founded rule, and a
@@ -1055,7 +1057,8 @@ attribution line, not the word.
   content at the save, and WORKFLOW.md's Day to day section tells it. Its
   rehearsal founds a throwaway project from the shipped gitignore, writes an
   input and an output where change-triage says they go, and finds `git status`
-  empty, while the same output in a folder git does not ignore shows.
+  empty, while the same output in a folder git does not ignore shows, and an
+  older gitignore fails the check the skill runs first.
 - `.agents/tests/merge-ask-rule.sh` guards the confirmation box Claude Code
   shows before a merge on a project whose every merge goes live. The rule that
   a person decides what merges holds only while an agent follows it, and two

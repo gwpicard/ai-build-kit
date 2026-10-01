@@ -20,7 +20,9 @@
 # The second half is a rehearsal. It founds a throwaway project from the
 # shipped gitignore, writes an input and an output where change-triage says
 # they go, and finds `git status --porcelain` empty. The same files written to
-# a folder git does not ignore show up, so the rehearsal can fail.
+# a folder git does not ignore show up, so the rehearsal can fail. An older
+# project whose gitignore lacks `.agents/tmp/` fails the `git check-ignore` the
+# skill runs first, which is what sends its output outside the project.
 
 set -eu
 
@@ -58,12 +60,18 @@ rs_rule "an ignored output folder is used as it is" \
   'where the tool writes its output to a folder git already ignores, it stays there'
 rs_rule "otherwise the dated content folder" \
   'otherwise it goes to `\.agents/tmp/content/<yyyy-mm-dd>-<short name>/`'
+rs_rule "git ignoring the folder is checked first" \
+  'check first with `git check-ignore -q \.agents/tmp/content/`'
+rs_rule "where it is not ignored, a temporary folder outside the project" \
+  'write to a folder made with `mktemp -d` outside the project instead'
+rs_rule "and an offer to ignore it" \
+  'offer once to add `\.agents/tmp/` to `\.gitignore` as a small saved change'
 rs_rule "the person's input goes there too" \
   'the person.s own input files go to the same place unless they are already in the project'
 rs_rule "git status is unchanged" \
   '`git status` is as clean after the run as before it'
 rs_rule "kept content goes through the build path's save route" \
-  'save it through the save route the build path uses, as section-builder saves a piece'
+  'save it through the save route the build path uses, following section-builder.s save and record steps yourself'
 rs_rule "with its own changelog file" \
   'as a small change with its own changelog file'
 rs_rule "and its own pull request on that route" \
@@ -78,8 +86,8 @@ rs_rule "changing the tool for the content is not content work" \
   'a request that changes the tool so it can handle the content is not content work'
 rs_rule "confidential content: points at the founded rule" \
   'the confidential-files rule in agents\.md applies'
-rs_rule "nothing of it committed without a yes" \
-  'nothing of it or its output is committed without the person.s yes'
+rs_rule "nothing of it committed, even when kept" \
+  'nothing of it or its output is committed, even when the person asks to keep it'
 rs_rule "a person who leaves: nothing committed" \
   'leaves before saying whether to keep it, nothing is committed'
 rs_rule "the output stays where the reply said" \
@@ -161,5 +169,16 @@ cp "$project/$folder/report.html" "$project/content/report.html"
 shown=$(git -C "$project" status --porcelain)
 rs_report "the same output in a folder git does not ignore shows in git status" \
   "$([ -n "$shown" ] && echo yes || echo no)"
+
+# An older project whose gitignore predates `.agents/tmp/`: the check the
+# skill names tells the two apart, so the run goes outside the project there.
+rs_report "git check-ignore accepts the content folder in a project founded today" \
+  "$(git -C "$project" check-ignore -q .agents/tmp/content/ && echo yes || echo no)"
+older="$rs_dir/older"
+mkdir -p "$older"
+grep -v '^\.agents/tmp/$' "$GITIGNORE" > "$older/.gitignore"
+git -C "$older" init -q
+rs_report "and refuses it in a project whose gitignore does not carry .agents/tmp/" \
+  "$(git -C "$older" check-ignore -q .agents/tmp/content/ && echo no || echo yes)"
 
 rs_done
