@@ -184,7 +184,10 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
 20. Run "Linking ignored build files into run worktrees" below. It says
     nothing when the project already has the links, has nothing to link, or
     said no to the same files before.
-21. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
+21. Run "Recording the project's own check" below. It says nothing when no
+    placeholder sits beside CI of the project's own, or when the person said
+    no before and the workflow files have not changed since.
+22. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
     today's date on the `last-light-pass` line, written as YYYY-MM-DD. If that
     file is missing, create it with a `founded` line holding the date
     masterplan.md was first saved, then the two pass lines. If the project has
@@ -320,10 +323,14 @@ project check has no step that counts the file. An update refreshes the skills
 and never those two files. So the visit offers the move, once. It rewrites
 records, so do it only after the clean checkpoint from step 2.
 
-1. Where the project's AGENTS.md has a `## Standing rules` section and its
-   `.github/workflows/checks.yml` has the `Check the AGENTS.md ceiling` step,
-   the project is already on the index: say nothing, and this step ends. A
-   second visit after a yes finds both and says nothing.
+1. Where the project's AGENTS.md has a `## Standing rules` section and the job
+   the capability profile's `Project check:` line records
+   (`.github/workflows/checks.yml`, job `project-check`, where that line names
+   no file) has the `Check the AGENTS.md ceiling` step, the project is already
+   on the index: say nothing, and this step ends. A second visit after a yes
+   finds both and says nothing. Where that line ends `; kit steps not added`,
+   the person turned the kit's steps down: the section alone puts the project
+   on the index, and the move adds no step.
 2. Read `.ai-build-kit-maintenance`. Where there is an `index-declined` line,
    and the section headings it lists are the ones the installed template has
    today, the earlier no stands: say nothing, and this step ends.
@@ -341,7 +348,7 @@ records, so do it only after the clean checkpoint from step 2.
    - dates, issue numbers and code names leave AGENTS.md;
    - the ceiling step comes with the move: copy the step named
      `Check the AGENTS.md ceiling` from the installed skill's
-     `templates/foundation/checks.yml` into the project check, beside its own
+     `templates/foundation/checks.yml` into the recorded job, beside its own
      steps.
 
    Every fact that leaves AGENTS.md lands in its home. Nothing is deleted, and
@@ -427,6 +434,43 @@ founded before that has no line, so the visit offers it, once.
    `worktree-links-declined|<YYYY-MM-DD>|<the paths offered, separated by " ; ">`.
    A later visit offers again only when a new ignored path appears that the
    line does not list.
+
+## Recording the project's own check
+
+A project founded before founding recorded the project check may have been
+given the kit's placeholder `checks.yml` beside CI of its own that already
+runs its tests. Every pull request then shows a red check beside a working
+one. The visit offers to put that right, once.
+
+1. Where `.github/workflows/checks.yml` no longer holds the kit's placeholder
+   `Install and test` step, say nothing, and this step ends. Do the same
+   where no other workflow in `.github/workflows/` runs on `pull_request` with
+   a `run:` line containing `test`. A `Project check:` line that names
+   `checks.yml`, or no file, is no reason to stop: an older founding wrote
+   that form beside CI of the project's own. Where the line already names
+   that other workflow, the record is done, and the offer below is only the
+   removal of the placeholder.
+2. Read the `project-check-declined` line in `.ai-build-kit-maintenance`, if
+   there is one. Where no commit dated after that line's date has changed
+   `.github/workflows/`, the earlier no stands: say nothing, and this step
+   ends.
+3. Choose the job as the installed `setup-ai-build-kit` skill's
+   `references/project-check.md` says. In one reply, offer three changes,
+   each taken only on its own yes: record that workflow and job as the
+   project check; remove the placeholder `checks.yml`, which turns red on
+   every pull request and checks nothing; and add the kit's steps to that
+   job, saying that this changes the project's own automation and what each
+   step turns red on. Leave the third out on a Windows runner, as that file
+   says. The other two are asked only alongside the record, and happen only
+   after a yes to it.
+4. On a yes to the record, write the `Project check:` line, ending
+   `; kit steps not added` where the steps were not added. Add the steps to
+   the end of the job's steps and change nothing else in the file. Save with
+   the visit's other changes and add a dated changelog line.
+5. Where the person says no to the record, change nothing. Record the no as
+   one line in `.ai-build-kit-maintenance`, replacing any earlier one:
+   `project-check-declined|<YYYY-MM-DD>|<file>`. A later visit offers again
+   only when the workflow files change.
 
 ## Migrating a project founded before /shape and /implement
 

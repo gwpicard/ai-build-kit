@@ -1419,6 +1419,27 @@ attribution line, not the word.
   `running-longer.md`, the `/maintain` offer that records a no and returns
   only for a new path, the maintenance record's header, and WORKFLOW.md
   telling it.
+- `.agents/tests/adopted-ci.sh` guards the rule that an adopted project's own
+  CI is its project check. An adopted skill library already ran its tests on
+  every pull request, and founding still copied the kit's placeholder
+  `checks.yml`, which failed on every pull request beside the working check
+  until the agent deleted it by hand. So founding records the check as one
+  line in the capability profile, `Project check: <workflow file>, job <job
+  name>`, chooses the job by three rules in order, and offers the kit's two
+  steps once, adding them only on a yes and never on a Windows runner. A line
+  that names no file means `checks.yml` and its `project-check` job, so an
+  older project works unchanged. The check holds that `/sync`, the check
+  floor, the boundary rules, the move onto the index, a run's install step and
+  founding's resume read that line, and it searches those readers for a
+  `checks.yml` or `project-check` left outside the default, which is how one
+  reader quietly going back to the fixed file would show. It holds the
+  `/maintain` offer to an older project, which records a no and returns only
+  when the workflow files change. `.agents/tests/adopted-ci-rehearsal.sh` runs
+  the bootstrap in throwaway projects. A workflow on pull requests whose
+  `run:` line or `run:` block runs the tests gets no `checks.yml` and is named
+  in one line. A project with no CI, a workflow on `push` alone and a labeller
+  on pull requests still get `checks.yml`, and a `checks.yml` the project
+  already had is kept untouched.
 - `.agents/tests/first-upload-asks.sh` guards the yes the project's first
   upload waits for. Founding tells the person nothing will be uploaded, and in
   a real run the first piece then pushed the whole project to GitHub with no

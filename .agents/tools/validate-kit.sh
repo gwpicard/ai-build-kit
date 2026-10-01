@@ -1182,7 +1182,10 @@ done
 [ "$quiet_ok" -eq 1 ] && pass "start keeps routine technical activity behind the scenes across harnesses"
 
 syncfile="$SKILLS/sync/SKILL.md"
-if ! grep -qF 'jobs.project-check' "$syncfile"; then
+# The project check is the job the capability profile records, which is an
+# adopted project's own CI where it has one, so sync names that record rather
+# than a fixed job.
+if ! grep -qF 'update the job the capability profile'"'"'s `Project check:` line records' "$syncfile"; then
   fail "$syncfile: does not identify the standalone project check"
 elif grep -qF 'both `if:` conditions' "$syncfile"; then
   fail "$syncfile: still treats private source conditions as part of every project"

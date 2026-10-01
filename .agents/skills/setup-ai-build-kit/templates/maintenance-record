@@ -8,8 +8,9 @@
 # `worktree-links|<path> ; <path>`, and a confidential line naming the
 # confidential folder, as `confidential|<folder>`; the implement skill's
 # worktree script reads both. maintain writes a worktree-links line too, or a
-# worktree-links-declined line when the person turns the links down. Nothing
-# else edits this file.
+# worktree-links-declined line when the person turns the links down, and a
+# project-check-declined line when the person turns down recording the
+# project's own CI as its project check. Nothing else edits this file.
 founded|
 last-light-pass|
 last-full-pass|

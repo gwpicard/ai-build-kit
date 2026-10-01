@@ -150,6 +150,42 @@ env.example|.env.example
 gitignore|.gitignore
 FOUNDATION_FILES
 
+# A project the kit adopts may already run its tests on every pull request, in
+# a workflow of its own. That workflow is then the project check, and the kit's
+# checks.yml would only add a placeholder that fails on purpose beside it. A
+# workflow counts when it runs on pull_request and has a run: line, or a line
+# inside a run: block, containing the word test. A labeller runs on pull
+# requests and tests nothing, and a workflow on push alone checks no pull
+# request, so neither counts. checks.yml itself is left out: where it exists it
+# is kept anyway, and the kit's own placeholder mentions tests.
+runs_tests_on_pull_requests() {
+  grep -q 'pull_request' "$1" || return 1
+  awk '
+    function indent(s) { match(s, /^[ \t-]*/); return RLENGTH }
+    block && indent($0) <= block_indent && $0 !~ /^[ \t]*$/ { block = 0 }
+    block && tolower($0) ~ /(^|[^a-z])(py)?test/ { found = 1 }
+    /^[ \t-]*run:/ {
+      rest = $0
+      sub(/^[ \t-]*run:[ \t]*/, "", rest)
+      if (rest ~ /^[|>]/) { block = 1; block_indent = indent($0) }
+      else if (tolower(rest) ~ /(^|[^a-z])(py)?test/) { found = 1 }
+    }
+    END { exit found ? 0 : 1 }
+  ' "$1"
+}
+
+own_ci=
+if [ -d "$PROJECT_ROOT/.github/workflows" ] && [ ! -L "$PROJECT_ROOT/.github/workflows" ]; then
+  for workflow in "$PROJECT_ROOT"/.github/workflows/*.yml "$PROJECT_ROOT"/.github/workflows/*.yaml; do
+    [ -f "$workflow" ] || continue
+    case "${workflow##*/}" in checks.yml) continue ;; esac
+    if runs_tests_on_pull_requests "$workflow"; then
+      own_ci=".github/workflows/${workflow##*/}"
+      break
+    fi
+  done
+fi
+
 created=0
 kept=0
 
@@ -163,6 +199,11 @@ copy_foundation_file() {
     kept=$((kept + 1))
     return
   fi
+
+  # Beside the project's own CI, the kit's placeholder check is not copied.
+  case "$source_relative" in
+    checks.yml) [ -z "$own_ci" ] || return 0 ;;
+  esac
 
   destination_parent=$(dirname -- "$destination_file")
   mkdir -p "$destination_parent"
@@ -187,4 +228,6 @@ env.example|.env.example
 gitignore|.gitignore
 FOUNDATION_FILES
 
+[ -z "$own_ci" ] || \
+  echo "AI Build Kit found $own_ci running this project's tests on pull requests, so the kit added no checks.yml beside it"
 echo "AI Build Kit prepared $created project file(s) and kept $kept existing file(s)"
