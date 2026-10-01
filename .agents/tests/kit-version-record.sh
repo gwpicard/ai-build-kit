@@ -42,13 +42,17 @@ rs_rule "the version comes from the installed maintain skill's VERSION" \
 rs_rule "a whole copy of the kit falls back to .ai-build-kit-version" \
   '.\.ai-build-kit-version. at the project root gives the version'
 rs_rule "the commit is the one the release's tag points at" \
-  'git/ref/tags/<version> --jq \.object\.sha'
+  'git/ref/tags/<version> --jq .\.object\.type, \.object\.sha.'
 rs_rule "an annotated tag is recognised by its type" \
-  '\.object\.type. is .tag. rather than .commit.'
+  'where the type it prints is .tag. rather than .commit.'
 rs_rule "and followed once to reach the commit" \
   'read .\.object\.url. once'
 rs_rule "a failed lookup writes unknown and founding carries on" \
   'write the commit as .unknown. and carry on founding'
+rs_rule "a resumed founding keeps a kit line already there" \
+  'finds a .kit. line already there keeps it'
+rs_rule "and writes the changelog entry no second time" \
+  'already holds that entry writes it no second time'
 rs_rule "the first changelog entry names the same version and commit" \
   'first entry under today.s date, naming the same version and commit'
 rs_guard "$SETUP" "the /setup-ai-build-kit skill"
@@ -87,6 +91,8 @@ rs_rule "a difference is said in one line naming both and /maintain" \
   'this project holds v0\.20\.0, and v0\.21\.0 is published\. /maintain updates it\.'
 rs_rule "a match or a failed call says nothing about the version" \
   'where they match, or the call fails, say nothing about the version'
+rs_rule "the version line does not count against the cap of three" \
+  'the version line is not one of the three things'
 rs_guard "$WHATNOW" "the /what-now skill"
 
 # The founded list of commands never to run says how the kit is updated.

@@ -285,16 +285,19 @@ records which AI Build Kit release it holds. Take the version from the installed
 `maintain` skill's `VERSION` file. A whole copy of the kit can lack that file,
 and then `.ai-build-kit-version` at the project root gives the version. Take the
 commit from the release's tag with
-`gh api repos/gwpicard/ai-build-kit/git/ref/tags/<version> --jq .object.sha`.
-Where that answer's `.object.type` is `tag` rather than `commit`, the tag is
-annotated: read `.object.url` once with `gh api` and take the commit from its
+`gh api repos/gwpicard/ai-build-kit/git/ref/tags/<version> --jq '.object.type, .object.sha'`.
+Where the type it prints is `tag` rather than `commit`, the tag is annotated:
+read `.object.url` once with `gh api` and take the commit from its
 `.object.sha`. Where the lookup fails, because GitHub is signed out or out of
 reach, write the commit as `unknown` and carry on founding. A missing commit
-never stops a founding.
+never stops a founding. A resumed founding that finds a `kit` line already
+there keeps it.
 
 Create CHANGELOG.md from its template, and write its first entry under today's
 date, naming the same version and commit, close to: "Founded with AI Build Kit
-v0.19.2, commit fd0780a." It has to exist before the next step writes to it.
+v0.19.2, commit fd0780a." The first seven characters of the commit are enough
+there. A resumed founding whose CHANGELOG.md already holds that entry writes it
+no second time. It has to exist before the next step writes to it.
 
 Do not create team.md; it no longer exists. Fill in AGENTS.md's project line
 and the capability profile from step 2. Replace README.md's project-name and purpose placeholders with a

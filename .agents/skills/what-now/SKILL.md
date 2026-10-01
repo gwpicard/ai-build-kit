@@ -100,7 +100,8 @@ Where the release the project holds and the published one differ, say so in one
 line, close to: "This project holds v0.20.0, and v0.21.0 is published. /maintain
 updates it." Where they match, or the call fails, say nothing about the version.
 A version that matches is not news, and a failed call is no reason to say
-anything either way.
+anything either way. The version line is not one of the three things named
+below.
 
 Say piece names, never issue numbers. Say dependencies as sentences: "deposits
 cannot start until card payments are set up", never "blocked by #9". Name at
