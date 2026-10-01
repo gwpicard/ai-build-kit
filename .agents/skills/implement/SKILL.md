@@ -25,7 +25,8 @@ pieces are kept, and what to run in a project that has no copy of the helper.
 When GitHub cannot be reached, say so, say when the printout was last written,
 and work from it. The piece already in hand carries on. Anything that would
 change what is on the plan waits, because an issue that cannot be updated is
-not a record of anything.
+not a record of anything, and that includes starting a new piece, since
+starting one moves its state.
 
 ## Typed alone
 
@@ -45,12 +46,21 @@ evidence and save route from the piece and the build path. Read the piece's
 subject labels rather than reclassifying it; the classification was settled in
 `/shape` and section-builder reads it rather than re-deriving it.
 
-A piece labelled `blocked` needs attention before it counts as buildable again:
-one safely prepared and stopped at a recorded condition stays skipped until that
-condition is met, or until the person carries on after the risk notice and the
-acceptance is recorded; one parked
-after repeated failure (references/running-longer.md) needs routing back to
-`/shape` first, for another look.
+Claim the piece before any work: move it from `ready` to `building` and assign
+it, in one step,
+`gh issue edit <number> --add-label building --remove-label ready --add-assignee @me`,
+creating the label first if the project lacks it. section-builder's step 1 makes that move, so two sessions never start the same
+piece. Where GitHub cannot be reached the claim cannot be made, so say so and do
+not start the piece: a piece nobody could claim may be claimed by somebody else.
+
+A piece labelled `parked` is not buildable as it stands. One safely prepared and
+stopped at a recorded condition stays skipped until that condition is met, or
+until the person carries on after the risk notice and the acceptance is
+recorded; then move it from `parked` to `building` in one step,
+`gh issue edit <number> --add-label building --remove-label parked`, and build.
+One parked after repeated failure (references/running-longer.md) needs routing
+back to `/shape` first, for another look. An older project's `blocked` label
+reads as `parked` until `/maintain` moves it.
 
 ## When a piece waits on the person
 
@@ -70,8 +80,9 @@ could have gone and done.
 
 A piece that still carries `needs-clarification`, `needs-prototype`, or
 `needs-research` has a question to settle before its code is written. An issue
-with no `## Done when` was typed by hand and never sized. Neither is ready, and
-building either one only guesses the answer.
+with no `## Done when` was typed by hand and never sized. An open issue with no
+state label counts as an idea, however full its body, because nobody moved it to
+`ready`. None of them is ready, and building one only guesses the answer.
 
 This command does not settle the question. Settling it is planning, and planning
 is what `/shape` is for. Say in one sentence what the piece is waiting on, and
@@ -94,9 +105,12 @@ question.
 
 ## When the pieces contradict each other
 
-The blocked-by link is the truth and the `blocked` label is only a hint, so read
-the link. A piece whose blockers have all closed is buildable even with the
-label still on it. Say the label looks stale, and leave taking it off to `/sync`.
+The blocked-by link is the truth, so read the link. A ready piece whose blockers
+have all closed is buildable. `parked` is not about another piece: it names a
+stop written on the piece, so it never lifts because a blocker closed.
+
+A piece carrying two states is not built. The printout lists it under Needs
+attention; say so, and leave the repair to `/sync`.
 
 When nothing is ready, because everything open is held up, still waiting on a
 question, or two pieces hold each other up, say so plainly and name what is
@@ -146,4 +160,4 @@ checkpoint for eligible private exploration.
 
 ## Done when
 
-The route was followed, the records are true, and the piece is confirmed and saved through the required route, safely blocked at a recorded condition, or the user knows exactly where things stopped and why.
+The route was followed, the records are true, the piece moved from `ready` to `building` before any work and on to its next state when the pass ended, and the piece is confirmed and saved through the required route, safely parked at a recorded condition, or the user knows exactly where things stopped and why.

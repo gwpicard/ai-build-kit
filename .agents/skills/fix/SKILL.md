@@ -27,6 +27,18 @@ procedure. Nobody
 can misfile work by picking the wrong command; catching that is this step's
 whole job.
 
+Only once the repair is confirmed as promised behaviour, and where it has an
+issue, claim it before step 1, the way section-builder's step 1 claims a piece:
+add `building` and take off whatever state it carried, in one step,
+`gh issue edit <number> --add-label building --remove-label <its state>`,
+creating the label first if the project lacks it. Where the issue carries no
+state label, add `building` alone. Where GitHub cannot be reached, say so and do
+not start on it, since a repair nobody could claim may be claimed by somebody
+else. Where a claim was made and the request then turns out to belong to
+`/shape`, move it back to the state it had in one step, so nothing is left in
+`building` that nobody is building. The save then moves it on as
+section-builder's step 8 says.
+
 ## 1. Define the symptom
 
 Record the exact steps that trigger it, the expected result, the actual
@@ -195,6 +207,12 @@ asking for one more go are all reasons the person may decide differently, and
 none of them is a reason the fault is now understood. Asking for one more go
 after hearing the notice is the person carrying on, which is theirs to choose:
 record the acceptance as below, then make the attempt.
+
+Where the person does not carry on, move the repair's piece from `building` to
+`parked` in one step,
+`gh issue edit <number> --add-label parked --remove-label building`, with one
+line on what the three attempts revealed and the route you chose. `broken` stays
+on it, because the fault is still there.
 
 ### Before the next attempt
 

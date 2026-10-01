@@ -148,6 +148,10 @@ If the tool needs confidential files to work from, say so during the interview. 
 
 Typed alone, /implement takes the next ready piece from the plan. It agrees with you in one sentence what the piece should do, chooses the evidence that piece needs, builds until that evidence holds, then stops so you can try it. Nothing is saved until you confirm it behaves. A piece that is not ready yet, still waiting on a question, goes to /shape first; /implement builds, it does not shape.
 
+Each command moves a piece to its next state and takes the old one off in the same step, so a piece never shows in two columns. /shape moves an idea to shaping, and a shaped piece to ready. /implement claims a ready piece as building before it changes anything, and moves it to to check when its pull request opens. From there the piece is yours to try and merge, and /what-now names it as yours.
+
+A piece that stops at a recorded condition, or fails three attempts, is parked with the reason written on it. If GitHub cannot be reached, /implement says so and does not start a piece it could not claim, and /fix does not start a repair it could not claim either. /sync puts right a piece carrying two states, or a closed issue still carrying one, and tells you what it changed. It never touches an idea you closed as parked.
+
 Before saving, the kit checks what else the change touches and runs the tests
 that already cover those parts first. If it reaches another part of the tool,
 you get one line naming that part and saying whether its tests passed. The
@@ -202,7 +206,7 @@ without a separate /sync visit.
 
 A question a conversation can't settle gets a disposable prototype, a source check, or a search for something that already does the job. Two of those need you there; the research does not, so you can tell /shape you're leaving and it settles what it can alone, then tells you which pieces are waiting on you. Type /shape with a piece's number to settle that one rather than the next in line.
 
-Typing /shape is the choice to shape, so it starts on a question straight away. Before an interview or a prototype it says in one line that this takes a sitting, and you can say "later" at any point: the piece is filed with its question and your words, to come back to. If all you want is to note an idea, say so, for example "note this for later" or "just file this idea", and it is filed with nothing started. Nothing filed can be built until the question is answered, and /what-now tells you when enough pieces are waiting that the session is better spent planning than building.
+Typing /shape is the choice to shape, so it starts on a question straight away. Before an interview or a prototype it says in one line that this takes a sitting, and you can say "later" at any point: the piece is filed with its question and your words, to come back to. If all you want is to note an idea, say so, for example "note this for later" or "just file this idea", or type /shape later with it, and it is filed with nothing started, as an idea in your own words. Nothing filed can be built until the question is answered, and /what-now tells you when enough pieces are waiting that the session is better spent planning than building.
 
 Show a mock of what you want and it settles the question instead, with no throwaway built. A prototype comes back as one of two things: a single file you open and click through yourself, or three genuinely different versions to move between and pick from. If setup recorded a design tool, the agent may use its canvas before a real page exists or when you want to draw a redesign. The real page still wins wherever one exists, and without a recorded tool the ordinary coded throwaway stays the default.
 
@@ -249,7 +253,7 @@ test to protect promised behaviour, never just to raise the count.
 
 ## 7. Saving work
 
-Every piece saves through one of three routes. The checkpoint route commits, and that commit may stay local, so private, disposable exploration can be saved without pushing. The pull-request route pushes and opens a pull request, for shared, live, behavioural, data, access, integration, service, or operational changes. The flagged route does the same, and also attaches the condition the touched area requires; a piece that stops there, plan marked blocked and the condition on record, counts as finished until that condition is met or you carry on after the risk notice and your acceptance is recorded. When you are there and carry on at the notice, the piece is built and saved like any other.
+Every piece saves through one of three routes. The checkpoint route commits, and that commit may stay local, so private, disposable exploration can be saved without pushing. The pull-request route pushes and opens a pull request, for shared, live, behavioural, data, access, integration, service, or operational changes. The flagged route does the same, and also attaches the condition the touched area requires; a piece that stops there, marked parked and the condition on record, counts as finished until that condition is met or you carry on after the risk notice and your acceptance is recorded. When you are there and carry on at the notice, the piece is built and saved like any other.
 
 On either route, the first time anything pushes your project's code online, the agent asks you first, naming the repository and whether it is public or private. It asks once for each project: once the code is on GitHub, it does not ask again. If you say no, or nobody is there to answer, the piece is still built and checked, and it waits on its own branch on your computer until you say yes. If the repository already holds something that is not your project, or still points at the kit's own repository, nothing is pushed and the agent asks you what to do.
 
@@ -482,6 +486,8 @@ records as merged. The second kind comes from a pull request that combined its
 changes into one, which Git cannot check. It never removes a branch itself,
 and it cannot tell whether somebody still plans to use one. When there are
 none, you hear nothing.
+
+A project founded before the six states gets one offer to move onto them. Pieces waiting on a question gain shaping, open pieces with no state gain idea, and a piece labelled blocked becomes parked with its reason. Ideas you closed as parked stay as they are. Nothing changes without your yes, and a no is recorded, so the offer comes back only when a release changes the states again.
 
 In Claude Code, the settings founding gave your project refuse a direct push
 to `main`. When a later release catches more ways of writing that push, the

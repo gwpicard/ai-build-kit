@@ -55,6 +55,14 @@ rs_require "/implement neither builds it nor skips it quietly" \
 rs_require_load_bearing "an unattended run names it and takes the next ready piece" \
   "$IMPLEMENT" 'in an unattended run, name the step'
 
+# /implement is where the two meanings of `parked` are acted on, so they are
+# held there too. Without them a piece parked at a condition and one parked
+# after three failures would be read alike, and a third meaning could creep in.
+rs_require_load_bearing "/implement still skips a piece parked at a recorded condition" \
+  "$IMPLEMENT" 'one safely prepared and stopped at a recorded condition stays skipped'
+rs_require_load_bearing "/implement still routes a piece parked after failure to /shape" \
+  "$IMPLEMENT" 'one parked after repeated failure'
+
 rs_require "/what-now names it apart from work the agent is doing" \
   "$WHATNOW" 'their own thing to do'
 rs_require "/what-now carries a recovery route for it" \
