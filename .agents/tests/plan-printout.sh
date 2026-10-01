@@ -44,7 +44,8 @@ cat >"$WORK/issues.json" <<'JSON'
    "body": "## Done when\nA card is charged.", "assignees": [],
    "labels": [{"name": "finance"}, {"name": "external service"}]},
   {"number": 2, "title": "Rename the header", "html_url": "http://x/2",
-   "body": "## Done when\nIt reads Bookings.", "assignees": [{"login": "ana"}],
+   "body": "## Done when\nIt reads Bookings.\n\n## Readiness\n2026-09-30, checked by a session that did not shape it: Ready",
+   "assignees": [{"login": "ana"}],
    "labels": [{"name": "visual"}, {"name": "building"}]},
   {"number": 3, "title": "Weekly payouts", "html_url": "http://x/3",
    "body": "## Done when\nSellers are paid.", "assignees": [],
@@ -80,8 +81,8 @@ cat >"$WORK/issues.json" <<'JSON'
    "labels": [{"name": "finance"}, {"name": "ready"}],
    "issue_dependencies_summary": {"blocked_by": 1, "total": 1}},
   {"number": 13, "title": "Invoice download", "html_url": "http://x/13",
-   "body": "## Done when\nAn invoice downloads.", "assignees": [],
-   "labels": [{"name": "finance"}, {"name": "to check"}],
+   "body": "## Done when\nAn invoice downloads.\n\n## Readiness\n2026-09-30, checked by a session that did not shape it: Ready",
+   "assignees": [], "labels": [{"name": "finance"}, {"name": "to check"}],
    "issue_dependencies_summary": {"blocked_by": 1, "total": 1}},
   {"number": 14, "title": "Loyalty points", "html_url": "http://x/14",
    "body": "## Done when\nPoints add up.\n\nParked after three failed attempts.",
@@ -105,7 +106,29 @@ cat >"$WORK/issues.json" <<'JSON'
    "body": "jotted on a phone", "assignees": [], "labels": []},
   {"number": 21, "title": "Share a booking link", "html_url": "http://x/21",
    "body": "a link a guest can send on", "assignees": [], "state": "open",
-   "labels": [{"name": "idea"}]}
+   "labels": [{"name": "idea"}]},
+  {"number": 22, "title": "Late fees", "html_url": "http://x/22",
+   "body": "charge a fee when a booking is paid late", "assignees": [],
+   "labels": [{"name": "finance"}, {"name": "building"}]},
+  {"number": 23, "title": "Waiting list", "html_url": "http://x/23",
+   "body": "let guests queue for a full night", "assignees": [],
+   "labels": [{"name": "to check"}]},
+  {"number": 24, "title": "Table plan", "html_url": "http://x/24",
+   "body": "## Done when\nTables can be dragged.", "assignees": [],
+   "labels": [{"name": "building"}]},
+  {"number": 25, "title": "Opening hours", "html_url": "http://x/25",
+   "body": "## Done when\nHours show.\n\n## Readiness check\nlooked fine", "assignees": [],
+   "labels": [{"name": "to check"}]},
+  {"number": 26, "title": "Allergy notes", "html_url": "http://x/26",
+   "body": "## Done when\nA note is kept.\n\n## readiness\n2026-09-30, checked by a session that did not shape it: Ready",
+   "assignees": [], "labels": [{"name": "building"}]},
+  {"number": 27, "title": "Guest accounts", "html_url": "http://x/27",
+   "body": "## So that\nGuests can sign in.", "assignees": [],
+   "labels": [{"name": "building"}],
+   "sub_issues_summary": {"total": 3, "completed": 0, "percent_completed": 0}},
+  {"number": 28, "title": "Lost receipts", "html_url": "http://x/28",
+   "body": "receipts stopped sending", "assignees": [],
+   "labels": [{"name": "broken"}, {"name": "building"}]}
 ]
 JSON
 
@@ -272,6 +295,65 @@ for piece in "Card checkout" "Rename the header" "Loyalty points" "Invoice downl
 done
 pass "a piece with one state is not named under Needs attention"
 
+echo "== A piece built or checked without its earlier steps =="
+
+# A piece can reach building or to check without ever being shaped, or without
+# the readiness check. It looks exactly like one that went the proper way, so
+# the printout names what is missing under Needs attention. It still stays in
+# its own column, because it really is being built or checked.
+note_for() {
+  section "Needs attention" | grep "$1" | grep -qF "$2"
+}
+note_for "Late fees" "(building with no Done when, so never shaped)" \
+  && under "Building" "Late fees" \
+  && pass "a building piece with no Done when is named and stays under Building" \
+  || fail "Late fees is not named as never shaped, or left Building"
+note_for "Waiting list" "(to check with no Done when, so never shaped)" \
+  && under "To check" "Waiting list" \
+  && pass "a piece to check with no Done when is named and stays under To check" \
+  || fail "Waiting list is not named as never shaped, or left To check"
+note_for "Table plan" "(building with no Readiness check)" \
+  && under "Building" "Table plan" \
+  && pass "a building piece with a Done when and no Readiness is named for it" \
+  || fail "Table plan is not named as having no Readiness check"
+
+# A heading with extra words is not the Readiness section.
+note_for "Opening hours" "(to check with no Readiness check)" \
+  && under "To check" "Opening hours" \
+  && pass "a Readiness heading with extra words does not count as the section" \
+  || fail "Opening hours has only a Readiness check heading but is not named"
+
+# Where both are missing, the first one is the whole story.
+section "Needs attention" | grep "Late fees" | grep -q "Readiness" \
+  && fail "Late fees has no Done when and also got the Readiness note" \
+  || pass "a piece missing both shows only the Done when note"
+section "Needs attention" | grep "Waiting list" | grep -q "Readiness" \
+  && fail "Waiting list has no Done when and also got the Readiness note" \
+  || pass "a piece to check missing both shows only the Done when note"
+
+# Each prints once under Needs attention and once in its column, and nowhere
+# else.
+twice=yes
+for piece in "Late fees" "Waiting list" "Table plan" "Opening hours"; do
+  [ "$(grep -c "$piece" "$OUT")" -eq 2 ] || { twice=no; fail "$piece does not print exactly twice"; }
+done
+[ "$twice" = no ] || pass "each prints under Needs attention and in its own column, once each"
+
+# A Readiness heading in another case is still the section. A parent and a
+# repair are not flagged, whatever they carry.
+under "Needs attention" "Allergy notes" \
+  && fail "Allergy notes has a lower-case Readiness section but was named" \
+  || pass "a Readiness heading in another case counts"
+under "Needs attention" "Guest accounts" \
+  && fail "a parent labelled building was named under Needs attention" \
+  || pass "a parent is never named for a missing Done when or Readiness"
+under "Needs attention" "Lost receipts" || under "Needs attention" "Duplicate bookings" \
+  && fail "a broken piece was named for a missing Done when or Readiness" \
+  || pass "a broken piece is never named for a missing Done when or Readiness"
+[ "$(grep -c "Lost receipts" "$OUT")" -eq 1 ] \
+  && pass "a broken piece being fixed prints once, under Broken" \
+  || fail "Lost receipts prints more than once"
+
 echo "== What the printout says about a waiting piece =="
 
 # The label says why a piece is waiting. Printing the label name would push a
@@ -390,6 +472,13 @@ if [ -f "$OLDER" ]; then
     && section "Needs attention" "$OLDER" | grep "make the calendar nicer" | grep -q "shaping" \
     && pass "an older project groups by its old labels, with blocked shown as parked" \
     || fail "an older project's labels are grouped wrongly"
+  # Its piece under way was built before the readiness check existed. The note
+  # names what is missing, in the same words, and does not call it a fault.
+  section "Needs attention" "$OLDER" | grep "Rename the header" \
+    | grep -qF "(building with no Readiness check)" \
+    && section "Building" "$OLDER" | grep -q "Rename the header" \
+    && pass "an older project's piece built before the readiness check says only what is missing" \
+    || fail "an older project's building piece does not get the Readiness note, or left Building"
 else
   fail "no printout was written for an older project"
 fi
