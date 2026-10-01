@@ -58,7 +58,10 @@ else, or recovering after an optional automation failed to run.
    "The masterplan is longer than roughly two pages. Shall I move the detail
    about individual pieces onto those pieces?" Move detail only with a yes,
    keeping every present promise and decision on the masterplan. Otherwise,
-   leave it intact and carry on. At or below the measure, say nothing.
+   leave it intact and carry on. On a yes, detail about a piece goes onto that
+   piece, and lasting technical design goes to its `docs/<concept>.md`, one
+   concept to a file, listed in AGENTS.md, never into a new catch-all document.
+   At or below the measure, say nothing.
 
    Then read the project's own documents against it. Load
    `references/document-read.md` and check the README and every document

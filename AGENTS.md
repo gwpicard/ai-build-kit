@@ -540,8 +540,9 @@ attribution line, not the word.
   pieces, and fails on a copy with any one of those rules removed.
 - `.agents/tests/masterplan-edges.sh` guards where ownership facts are written,
   the settled term a piece keeps through parking or reshaping, and the single
-  offer to shorten an overlong masterplan. It also holds the parked-term
-  rehearsal's setup and expected result.
+  offer to shorten an overlong masterplan, which moves detail onto pieces or
+  concept files and never into a new catch-all document. It also holds the
+  parked-term rehearsal's setup and expected result.
 - `.agents/tests/shape-research.sh` guards the two research steps that share the
   `needs-research` label: the rules that keep an existing-work search honest
   about maintenance, licence, cost, data, and removal, that /shape offers both
@@ -681,7 +682,9 @@ attribution line, not the word.
   not taken for files, and a file name written from another folder is found
   where the project keeps it. Every founded project's documents name its
   commands that way, and an earlier version reported each one as a missing
-  file. It also proves a clean project produces nothing, the script writes
+  file. Concept files are read through the list in `docs/README.md` once
+  AGENTS.md points at it, and a file in `docs/` the list does not name is not
+  read. It also proves a clean project produces nothing, the script writes
   nothing, and the document changed longest ago comes first. A piece's file
   in `changes/` is part of the changelog, so it is never read as a document,
   and neither the folder nor a file the last fold took away is called missing.
@@ -840,7 +843,13 @@ attribution line, not the word.
   with no state gains `idea`, `blocked` becomes `parked` with its reason, and
   closed issues are left alone. It changes nothing without a yes, a second
   visit finds nothing to move, and a no is recorded so the offer returns only
-  when a release changes the states.
+  when a release changes the states. A project founded before AGENTS.md became
+  an index is offered the move onto it once, with the ceiling step for its
+  check in the same offer. No fact is lost, a second visit after a yes says
+  nothing, and a no is recorded with the template's section headings, so the
+  offer comes back once when a release changes them. On a project already on
+  the index, the monthly trim moves each fact to its home rather than cutting
+  it.
 - `.agents/tests/offer-recipe-move.sh` guards the monthly offer to move a
   project onto a recipe. It applies to a project with `Recipe: none` or no
   `Recipe:` line, whose stack matches a recipe's build stack in substance even
@@ -919,6 +928,24 @@ attribution line, not the word.
   an entry waiting in `changes/` counts as written, so `/sync` never adds it
   twice, and that neither `/sync` nor `/ship` folds while an earlier records
   pull request that folded is still open.
+- `.agents/tests/agent-first-records.sh` guards the founded AGENTS.md as a
+  short index. In a real project it grew from 206 lines to 1,019, because the
+  build step sent every whole-project technical fact there, dates, issue
+  numbers and code names included, and only a monthly offer that kept being put
+  off ever read the ceiling. It counts the template's sections: past the
+  standing rules, each is 12 lines or fewer and names the file that owns its
+  topic, and every such file is one a skill has or the kit writes into a
+  project. It proves the count on copies with a section padded, a pointer
+  removed or broken, a notes file named, and a date or issue number added. It
+  then fills a founded stand-in the way standing-instructions.sh does. There
+  only the capability profile and the stack section, which founding fills, may
+  pass 12 lines, and they are exempt by name. It
+  holds section-builder's route for each kind of fact to one home, with a
+  concept file for lasting technical design listed in `docs/README.md`, never
+  in AGENTS.md, and the masterplan's short header.
+  Last, it runs the ceiling step from the shipped project check in a throwaway
+  folder: 200 lines pass, 201 fail with or without a final newline, and the
+  failure names both numbers and `/maintain`.
 - `.agents/tests/settled-is-recorded.sh` guards the record a settled question
   has to leave: that what settled it is written into the piece before the label
   comes off, and that the piece is read back to decide whether the label goes

@@ -51,7 +51,8 @@ that only affects how the code gets written goes in the collapsed
 `Under the hood` section, so the person never has to read it and `/implement`
 still has it. Route context that reaches past this piece by
 how far it reaches: a whole-product decision to the masterplan, a whole-codebase
-convention to AGENTS.md's stack section. A piece must be small enough for a fresh
+convention to AGENTS.md's stack section, lasting technical design to its concept
+file listed in `docs/README.md`. A piece must be small enough for a fresh
 session to hold whole; where it is not, cut it down. Any groundwork the piece
 needs is itself a vertical slice, ordered ahead of the piece that needs it, never
 a separate "database" or "API" layer.

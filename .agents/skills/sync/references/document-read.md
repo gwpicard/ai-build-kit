@@ -17,7 +17,8 @@ that runs sync first.
 
 `README.md`, and every document AGENTS.md points at. Nothing else. A project
 that points at a document from its standing instructions has said that document
-matters. The records sync already trues (the masterplan, the changelog with
+matters. Where AGENTS.md points at `docs/README.md`, the list of the project's
+concept files, each file that list names counts as pointed at too. The records sync already trues (the masterplan, the changelog with
 its waiting files in `changes/`, AGENTS.md itself) are not read again here, and
 nor are the kit's own files or comments in the code. A name in `changes/` is
 never reported missing, since that folder empties at every fold.
