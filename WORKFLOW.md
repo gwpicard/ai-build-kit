@@ -39,6 +39,13 @@ The records are the project's memory. The agent forgets everything between sessi
 
 Two of them are files you can open. The third, what's left to build, lives in your project's issues on GitHub, because that is what lets more than one person work without clashing over the same file. You never have to open it: `/what-now` tells you where things stand, recaps what the recent work was about, names anything broken or left unfinished, and tells you when a piece is waiting on something only you can do, such as opening an account or handing over a key, and a plain list is printed to `plan.local.md` on your own machine so you can always see it, even when GitHub cannot be reached. That printout is a photocopy. Nobody edits it, and changing a piece means telling the agent, not editing the file.
 
+If refreshing the plan fails, you see the GitHub error with credentials masked
+and a recovery step. The last printout stays as it was, with its age reported.
+For a Codex session that cannot reach GitHub or use its stored login, follow the
+[GitHub access guidance](docs/COMPATIBILITY.md#github-access-in-codex).
+The kit carries a launcher for a fresh Codex session to use your existing login
+without saving the credential. It runs from an ordinary terminal.
+
 | Record | Purpose |
 |---|---|
 | masterplan.md | What the tool is, in the present tense. Its first part, the build-path section, records how careful this project needs to be. |

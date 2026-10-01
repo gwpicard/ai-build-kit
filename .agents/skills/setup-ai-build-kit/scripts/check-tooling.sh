@@ -65,11 +65,22 @@ fi
 
 gh_ready=no
 if command -v gh >/dev/null 2>&1; then
-  if gh auth status >/dev/null 2>&1; then
+  if gh_status=$(gh auth status 2>&1); then
     echo "The GitHub command line tool is ready: your pieces are kept as issues, and you are signed in."
     gh_ready=yes
   else
-    echo "The GitHub command line tool is installed but nobody is signed in: sign in before the pieces are founded. See manual-setup.md."
+    # Do not print auth status: it may include credential diagnostics. A failed
+    # network check is not evidence that the account has signed out.
+    case "$gh_status" in
+      *"error connecting"* | *"Could not resolve host"* | *"dial tcp"* | *"timed out"*)
+        echo "The GitHub command line tool cannot reach GitHub: network access may be blocked or unavailable. Request GitHub access for this session, then run this report again." ;;
+      *"HTTP 403"* | *"Resource not accessible"* | *"permission denied"*)
+        echo "The GitHub command line tool was refused permission: check this session's GitHub access and the signed-in account's permissions, then run this report again." ;;
+      *"HTTP 401"* | *"Bad credentials"* | *"Failed to log in"*)
+        echo "The GitHub command line tool could not authenticate: compare GH_TOKEN and GITHUB_TOKEN presence and gh auth status in this session and your terminal before signing in again. A sandbox may not read your stored login." ;;
+      *)
+        echo "The GitHub command line tool is installed but nobody is signed in, or the sign-in could not be verified: run gh auth login if signed out. Check this session's GitHub access otherwise. See manual-setup.md." ;;
+    esac
     blocked=1
   fi
 else

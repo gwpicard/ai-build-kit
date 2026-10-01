@@ -36,7 +36,7 @@ When a skill says to run another skill, load that installed skill and follow it.
 Skills sit in `.agents/skills/`, `.claude/skills/` or a plugin's folder; a
 pointer such as the `ship` skill's `templates/handover.md`, or `<name>/SKILL.md`
 without native discovery, names a file there. Keep project rules here, never in
-an installed skill.
+an installed skill. For GitHub failures, follow the `setup-ai-build-kit` skill's `references/required-tools.md`.
 
 The user describes intent in plain language; change-triage chooses the route.
 Build one agreed, visible slice at a time. Add nothing the slice did not ask

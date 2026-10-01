@@ -102,6 +102,9 @@ founds_with_helper() {
   project=$1
   route=$2
   bootstrap=$3
+  [ -f "${bootstrap%/*}/codex-with-github.py" ] \
+    && pass "$route: the portable Codex credential launcher arrived" \
+    || fail "$route: the portable Codex credential launcher is missing"
   [ ! -e "$project/$TARGET" ] || \
     fail "$route: the helper was in the project before founding, so founding was not tested"
   (cd "$project" && "$bootstrap" >/dev/null) || {

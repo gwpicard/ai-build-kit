@@ -41,11 +41,60 @@ last_written() {
   fi
 }
 
-repo=$(gh repo view --json nameWithOwner 2>/dev/null \
+# Keep diagnostics private until credentials have been masked. All GitHub calls
+# use this wrapper, so a missing blocker answer cannot look like an empty list.
+umask 077
+scratch=$(mktemp -d)
+trap 'rm -rf "$scratch"' EXIT
+trap 'exit 1' INT TERM
+
+github_json() {
+  if gh "$@" 2>"$scratch/github-error"; then
+    return 0
+  fi
+  python3 - "$scratch/github-error" <<'PYERROR' >&2
+import os, re, sys
+
+error = open(sys.argv[1], errors="replace").read()
+# Mask secret environment values as well as credentials in common gh errors
+# and HTTP diagnostics. A failed lookup must never print a credential.
+for key, value in sorted(os.environ.items(), key=lambda item: -len(item[1])):
+    if value and re.search(r"token|password|secret|api_?key", key, re.I):
+        error = error.replace(value, "[redacted]")
+error = re.sub(r"\b(?:gh[pousr]_[A-Za-z0-9_]+|github_pat_[A-Za-z0-9_]+)",
+               "[redacted]", error)
+error = re.sub(r"(?im)(authorization\s*:\s*)[^\r\n]+", r"\1[redacted]", error)
+error = re.sub(r"(?i)(https?://)[^/\s@]+@", r"\1[redacted]@", error)
+error = re.sub(r"(?i)((?:access_token|token|password|secret|api_?key)\s*[=:]\s*)[^\s&]+",
+               r"\1[redacted]", error)
+if error.strip():
+    print("plan-refresh: GitHub CLI error:")
+    print(error.rstrip())
+
+text = error.lower()
+if any(word in text for word in ("http 401", "bad credentials")):
+    print("plan-refresh: gh could not authenticate; compare GH_TOKEN and GITHUB_TOKEN presence and gh auth status in this session and your terminal before signing in again. A sandbox may not read your stored login")
+elif any(word in text for word in ("gh auth login", "not logged", "not signed")):
+    print("plan-refresh: gh is not signed in, or its sign-in has expired; run gh auth login in your terminal, then refresh again")
+elif any(word in text for word in ("no git remotes", "none of the git remotes", "no github remote")):
+    print("plan-refresh: this project has no GitHub remote; ask the agent to connect it to the project's GitHub repository, then refresh again")
+elif any(word in text for word in ("error connecting", "could not resolve host", "network", "connection refused", "timeout", "timed out", "dial tcp")):
+    print("plan-refresh: could not reach GitHub; network access may be blocked or unavailable. Allow GitHub access in this session, then refresh again")
+elif any(word in text for word in ("http 403", "http 404", "permission", "not accessible", "could not resolve to a repository")):
+    print("plan-refresh: check that gh is signed in to an account with permission to access this repository, then refresh again")
+else:
+    print("plan-refresh: could not reach GitHub or read this repository; ask the agent to check GitHub access in this session, then refresh again")
+PYERROR
+  last_written
+  return 1
+}
+
+repo_json=$(github_json repo view --json nameWithOwner) || exit 1
+repo=$(printf '%s' "$repo_json" \
   | python3 -c 'import json,sys; print(json.load(sys.stdin).get("nameWithOwner",""))' \
   2>/dev/null || true)
 [ -n "$repo" ] || {
-  echo "plan-refresh: could not reach GitHub, or cannot tell which GitHub repository this project belongs to" >&2
+  echo "plan-refresh: GitHub returned no repository name; ask the agent to check the project's GitHub repository, then refresh again" >&2
   last_written
   exit 1
 }
@@ -60,11 +109,7 @@ repo=$(gh repo view --json nameWithOwner 2>/dev/null \
 # need a second call, to name what is holding them.
 #
 # The REST issues endpoint returns pull requests too, so they are filtered out.
-listing=$(gh api "repos/$repo/issues?state=open&per_page=100" --paginate 2>/dev/null) || {
-  echo "plan-refresh: could not reach GitHub" >&2
-  last_written
-  exit 1
-}
+listing=$(github_json api "repos/$repo/issues?state=open&per_page=100" --paginate) || exit 1
 
 # A blocker is named by its title rather than its number. Its number rides
 # along only so the printout can tell whether the blocker is in the plan a run
@@ -73,16 +118,19 @@ listing=$(gh api "repos/$repo/issues?state=open&per_page=100" --paginate 2>/dev/
 # "blocked by #9". Carrying the title here means neither of them has to match a
 # number back to a line somewhere else in the file and hope it is still there.
 blockers_for() {
-  gh api "repos/$repo/issues/$1/dependencies/blocked_by" 2>/dev/null \
-    | python3 -c '
+  answer=$(github_json api "repos/$repo/issues/$1/dependencies/blocked_by") || return 1
+  printf '%s' "$answer" | python3 -c '
 import json, sys
-try:
-    items = json.load(sys.stdin)
-except Exception:
-    raise SystemExit(0)
+items = json.load(sys.stdin)
+if not isinstance(items, list):
+    raise SystemExit(1)
 print(json.dumps([[i.get("number"), i["title"]] for i in items
                   if i.get("state") == "open"]))
-' 2>/dev/null || true
+' 2>/dev/null || {
+    echo "plan-refresh: GitHub returned an unreadable blocker list; refresh again before choosing work" >&2
+    last_written
+    return 1
+  }
 }
 
 # Names of the blockers, gathered before the printout is written so a failure
@@ -105,8 +153,7 @@ done
 # The listing goes via a file rather than a pipe. This script reaches python on
 # stdin, so anything piped in as well would be read as part of the script and
 # leave sys.stdin empty by the time the program runs.
-listing_file=$(mktemp)
-trap 'rm -f "$listing_file"' EXIT INT TERM
+listing_file="$scratch/issues.json"
 printf '%s' "$listing" > "$listing_file"
 
 python3 - "$OUT" "$listing_file" "$blocker_map" <<'PY'
