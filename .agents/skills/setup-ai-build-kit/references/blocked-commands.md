@@ -127,6 +127,8 @@ or the project's own clean command can. Deleting one file, such as
 These spellings are not refused, and the rule above still forbids them:
 
 - `rm -f -r build`, with the recursive option second
+- `rm -rv build` and `rm -Rfv build`, with another option joined to the
+  recursive one
 - `find build -delete`
 - `/bin/rm -r build`, with `rm` called by its full path
 - `sh -c 'rm -r build'`, with the delete inside another shell

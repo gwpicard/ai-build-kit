@@ -134,7 +134,7 @@ listed_del_refused = [
     "git gc --aggressive --prune=now",
 ]
 listed_del_missed = [
-    "rm -f -r build", "find build -delete", "/bin/rm -r build",
+    "rm -f -r build", "rm -rv build", "rm -Rfv build", "find build -delete", "/bin/rm -r build",
     "sh -c 'rm -r build'", "git -C . gc --prune=now",
 ]
 for command in listed_del_refused:
@@ -219,8 +219,11 @@ def offered(rule):
     body = rule[len("Bash("):-1]
     if body.startswith("git push") and "main" in body:
         return True
-    if body.startswith("rm ") and body.split()[1].startswith("-") and "r" in body.split()[1].lower():
-        return True
+    if body.startswith("rm "):
+        option = body.split()[1].split(":")[0]
+        if option == "--recursive" or (option.startswith("-") and not option.startswith("--")
+                                        and "r" in option.lower()):
+            return True
     return body.startswith("git reflog expire") or (body.startswith("git gc") and "--prune" in body)
 
 
@@ -266,7 +269,7 @@ rs_rule "the reflog rule is offered" 'or `git reflog expire`, or'
 rs_rule "the gc rule is offered" 'or `git gc` with `--prune`'
 rs_rule "an older no does not cover a rule it never listed" 'otherwise offer only the missing rules that line does not list'
 rs_rule "a no from before the delete rules brings the offer back once" 'a line written before the delete rules lists none of them, so the offer comes back once for those'
-rs_rule "the offer says in plain words what the delete rules stop" 'deleting a folder with everything in it, in any common spelling'
+rs_rule "the offer says in plain words what the delete rules stop" 'deleting a folder with everything in it, in the common spellings'
 rs_rule "and what the history rules stop" 'clearing the history git uses to recover lost work'
 rs_rule "a no keeps every rule declined before" 'every rule declined, this time and before'
 rs_rule "a removed force-push rule is not brought back" 'the person may have removed one on purpose'

@@ -112,7 +112,8 @@ names no unused function at all. That is safe only because every finding is
 limited to this change, looked at a second time, and followed by the tests.
 
 `jscpd` writes a report folder. Point it at a temporary folder outside the
-project and delete it afterwards, so nothing is saved.
+project, made with `mktemp -d`, so nothing is saved. Leave it there for the
+computer to clear, since a recursive delete is refused.
 
 ## The function limit
 

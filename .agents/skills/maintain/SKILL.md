@@ -257,7 +257,7 @@ Git's recovery history. So the visit offers the missing rules, once.
 4. Offer the change once, in one reply. Name the rules it adds, and say in
    plain words what they stop: a push to `main` written with an option before
    the remote, such as `-q`, or as `HEAD:refs/heads/main`; deleting a folder
-   with everything in it, in any common spelling; and clearing the history Git
+   with everything in it, in the common spellings; and clearing the history Git
    uses to recover lost work. Say that it adds
    lines to the deny list and changes nothing else in the file. Say too that
    the `setup-ai-build-kit` skill's `references/blocked-commands.md` lists the
@@ -771,7 +771,8 @@ is a step here rather than advice:
    folders too. Remove a tracked leftover with `git rm -r <path>`, and the
    removal is part of the visit's saved change. An untracked file goes with a
    plain `rm`. An untracked leftover folder goes to the person as the command
-   to run, with its path, since a recursive delete is refused.
+   to run, with its path, since a recursive delete is refused. So does a
+   tracked folder that untracked files keep in place after `git rm -r`.
 4. Record a changelog line saying what was removed and why.
 
 ## Offering a move onto a recipe
