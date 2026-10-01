@@ -194,6 +194,13 @@ This is not `parked`. On an open piece that label already covers a piece stopped
 and a piece parked after three failed attempts, and a third meaning would make
 all three unreadable. A piece waiting on the person keeps whatever state it had.
 
+One line looks alike and means something else. A piece carrying a
+`Waiting on you: try it` line is built as usual. The line sits on its own rather
+than as a section, and asks for the person's own try before the piece is saved:
+once it is built, section-builder gives them an address and up to three things
+to try, and waits. A `check-myself|yes` line in `.ai-build-kit-maintenance`
+asks the same for every piece.
+
 ## The two layers of a piece
 
 The header stays in plain words and short, and it stays honest about anything

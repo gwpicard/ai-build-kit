@@ -146,7 +146,7 @@ If the tool needs confidential files to work from, say so during the interview. 
 
 ## 5. Day to day
 
-Typed alone, /implement takes the next ready piece from the plan. It agrees with you in one sentence what the piece should do, chooses the evidence that piece needs, builds until that evidence holds, then stops so you can try it. Nothing is saved until you confirm it behaves. A piece that is not ready yet, still waiting on a question, goes to /shape first; /implement builds, it does not shape.
+Typed alone, /implement takes the next ready piece from the plan. It agrees with you in one sentence what the piece should do, writes the checks that piece needs and shows they fail, builds until they pass, then walks through the tool itself with sample data before saving the piece for you to check. If you would rather try a piece yourself before it is saved, you can ask for that, as the Evidence section says. A piece that is not ready yet, still waiting on a question, goes to /shape first; /implement builds, it does not shape.
 
 Each command moves a piece to its next state and takes the old one off in the same step, so a piece never shows in two columns. /shape moves an idea to shaping, and a shaped piece to ready. /implement claims a ready piece as building before it changes anything, and moves it to to check when its pull request opens. From there the piece is yours to try and merge, and /what-now names it as yours.
 
@@ -241,6 +241,40 @@ Every promised behaviour gets evidence, in one of four forms:
 - an operational rehearsal, for backups, restores, migrations, rollback, or anything else that only proves itself by being run.
 
 The agent chooses the form the change actually needs; the report says what was proved and what remains a judgement call.
+
+Every check a machine can run is written first and shown to fail on today's
+code, and saved on its own before any code. A check that already passes proves
+nothing about the new work, so the agent tells you that done line is wrong
+rather than building it. Checks scale with the change: a colour change runs the
+checks a colour change needs, and the full check on the pull request runs the
+rest.
+
+The agent changes an existing test only when the piece names it and says why. A
+small script lists any other test that changed, and any check that changed after
+it was first saved, and each one is put back before the piece is saved. A test
+in the way, or a done line that cannot be met, is reported to you and never
+worked round.
+
+Once the piece is built, the agent walks through the tool itself with sample
+data, the way you would, and records what it saw. Where it can take screenshots
+it keeps them in `.agents/tmp/walkthrough/<issue number>/`, which never reaches
+GitHub. Founding offers to plan that sample data, or a test account, when the
+tool has sign-in or builds up history over weeks. The walk-through stands in
+for your try before saving, and a piece on a pull request still waits in to
+check until you merge it, so you can try it then. When the agent could not see
+the screen, it says what it could not check. On a pull request the piece waits
+for you in to check as usual. On the checkpoint route, which has no pull
+request, the agent gives you something to try and waits for your reply before
+saving.
+
+To try one piece yourself before it is saved, put a `Waiting on you: try it`
+line on it. To try every piece, ask for that in any command, and the agent
+writes a `check-myself|yes` line in `.ai-build-kit-maintenance`. Ask again to
+stop, and it takes the line out. You then get one address, which the agent has
+checked answers, and up to three numbered things to try there, and nothing is
+saved until you reply. When nobody is there, as in an unattended run, the piece
+goes to to check with a pull request saying it waits for your try before it is
+merged.
 
 On Build with care, /implement can offer to break the changed code on purpose
 to check whether its tests notice. /fix offers the same check for the test

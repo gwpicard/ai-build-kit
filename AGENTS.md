@@ -556,6 +556,30 @@ attribution line, not the word.
   sensitive areas and code. It holds the Build with care boundary, the optional
   local data scan, each skill that reads the map, and the shipped check that
   fails on a moved path or an unassigned source folder.
+- `.agents/tests/checks-first.sh` guards the checks written before the code and
+  the walk-through that stands in for the person's try. A check written after
+  the code can pass on today's code, and a builder working alone can weaken a
+  test until it passes. So it holds that section-builder writes each machine
+  check the Done when lines name before any code, runs it on today's code,
+  records that it fails and commits it on its own, and that a check already
+  passing means the line is wrong and is reported rather than built. An
+  existing test changes only when the piece's Under the hood names it, and a
+  committed check changes only by being reported. The check runs
+  `test-guard.sh` in a throwaway repository on a piece stacked on another. Every
+  kind of changed test the piece does not name is listed, one named only outside
+  Under the hood or inside a longer path among them, and a moved test names its
+  new copy. The parent piece's change and a new test file are not listed.
+  Nothing is listed once the piece names each one, until a check changes after
+  its own commit. The guard's base is the branch the piece was cut from, never
+  one worked out from `main` alone. It holds that a wrong test or an impossible
+  line is reported and never worked round, that the walk-through records what
+  it saw with sample data, and that the piece still goes to `to check` and
+  closes on merge. On the checkpoint route, a walk-through that could not see
+  the screen takes the opt-in path, since no pull request exists to wait in.
+  Either opt-in gives one address a request reached and up to three numbered
+  things to try, with nothing saved before the reply, and an unattended run
+  opens the pull request saying it waits for the try. It also holds founding's
+  offer of sample data and the same rules in `/fix`.
 - `.agents/tests/fix-history-first.sh` guards the repair steps that read prior
   work and existing tests before a new attempt, search saved history from a
   known-good point, remove temporary instrumentation, and refuse to call a

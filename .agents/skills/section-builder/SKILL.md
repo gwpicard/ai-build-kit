@@ -152,19 +152,54 @@ test; changing or moving records people already have takes a rehearsal on a copy
 Source evidence is required when correctness depends on an external fact;
 run change-triage's source check first.
 
+Run the checks the change needs: the ones its Done when lines name, and the
+existing tests the reach check in step 7 finds. The whole suite is not the
+default. A colour change runs the checks a colour change needs, and the project
+check on the pull request runs the rest.
+
 On Build with care, where a runner exists for the project's language, offer
 the optional check in `references/test-strength.md`: break only the changed
 code on purpose to see whether its tests notice. Run it after the ordinary
 tests pass, if the person wants it. Use that reference's one-line report and
 sort the misses on the piece. This offer adds no gate to saving the work.
 
-## 4. Establish the baseline
+## 4. Write the checks first
 
-For automated behaviour: write or identify the check, and show it fails
-before the behaviour exists or before the bug is fixed. For adopted
-behaviour or a refactor: establish the current passing baseline before
-changing it. For visual work: capture or describe the current state and say
-what visible difference to expect. Do not write a meaningless automated test
+Before any code, write each check a machine can run that the Done when lines
+name, under both `### Works` and `### When it is not the normal case`. Then run
+each one on today's code and record that it fails: the Done when line, the
+check, and the failure it showed. Commit the checks on their own, before the
+code, in a commit that holds nothing else, so the saved history shows each check
+failing before the change that makes it pass. Where the project's pre-commit
+hook refuses a commit whose checks fail, commit the checks together with the
+first code commit instead, and put the failing run's output in the hand-over. A
+committed check changes only by being reported: the guard in step 8 lists it if
+it changes. Checks only a person can make are exempt, such as whether a layout
+reads well: name them, and leave them to the walk-through in step 6.
+
+A check that passes on today's code proves nothing about this piece. Where it
+passes because the check is wrong, fix the check. Where it passes because the
+behaviour already exists, the Done when line is wrong: say so in the hand-over
+and do not build that line.
+
+Write each new check in a new test file where the project's layout allows, so
+that writing checks changes no existing test. Where the layout allows no new
+file, such as a single test file or tests kept inside the code, add the check to
+the existing file and name that file in the hand-over as one the piece's `Under
+the hood` must name. Never put a new check back to get past the guard. An
+existing test may change only when the piece's `Under the hood` names it and
+gives the reason. Step 8 runs the guard that holds this before anything is
+saved.
+
+A test that has to change for the piece to pass, when the piece does not name
+it, means the test or the piece is wrong. So does a Done when line that cannot
+be met as written. Report a wrong test or an impossible Done when line in the
+hand-over, and never work round it: never weaken, skip or delete a test to get
+past it, and never meet a different line in its place.
+
+For adopted behaviour or a refactor, establish the current passing baseline
+before changing it. For visual work, capture or describe the current state and
+say what visible difference to expect. Do not write a meaningless automated test
 merely to have one.
 
 Load `references/reach-check.md` and use its current engine to take a small
@@ -246,15 +281,60 @@ records none for the language, there is nothing to run.
 Once those pass, on Build and run it and Build with care, load
 `references/trim.md` and run its single pass. It takes out what this change
 added that the behaviour does not need, and it only removes or folds, so the
-person tries the piece as it will be saved. Give its one line at hand-over, or
+walk-through, or the person's try when they opt in, sees the piece as it will be
+saved. Give its one line at hand-over, or
 nothing when it found nothing.
 
-Stop. Give the exact action, the expected result, any known limitation, and
-whether the evidence behind it is automated, manual, source-backed, or
-operational. The user confirms the behaviour wherever human judgement is
-required; for a piece with no face (a scheduled job, an email), trigger it
-against a made-up case and show what it produced. Describe any gap as
-expected versus actual, and fix it at the root.
+Then walk through the piece. Drive the tool yourself with the project's sample
+data, the way the person would use it, and record what you saw: each action,
+what the screen or output showed, and whether it matches the Done when line. The
+masterplan's "How it stays running" says what sample data the project keeps.
+Where it keeps none, make up the smallest case the piece needs and say so. Take
+a screenshot at each step where the coding agent can take one, and keep them in
+`.agents/tmp/walkthrough/<issue number>/`, which git ignores. For a piece with
+no face, such as a scheduled job or an email, trigger it against a made-up case
+and record what it produced.
+
+The walk-through stands in for the person's try before saving. It does not close
+the piece: on the pull-request route the piece still moves to `to check` and
+closes when its pull request merges, so the person can still try it before they
+merge. Its report never calls a screen accessible, compliant or good;
+`screen-check` says what it may claim.
+
+Where the coding agent cannot drive a browser or take screenshots, record what
+it could check, such as the text a request to the page returned, and name what
+it could not see. On the pull-request route, a piece that changes what somebody
+sees then goes to `to check` for the person rather than closing, and the pull
+request says what the walk-through could not see. On the checkpoint route, where
+the walk-through could not see what somebody would see, there is no pull request
+to wait in, so take the opt-in path below: give the person an address and things
+to try, and save nothing until they reply.
+
+Hand over what the walk-through found: the actions, what they showed, any known
+limitation, where the screenshots are, and whether the evidence behind it is
+automated, manual, source-backed, or operational. Describe any gap as expected
+versus actual, and fix it at the root.
+
+### When the person tries it themselves
+
+A person can ask to try a piece before it is saved. A `Waiting on you: try it`
+line on the piece asks for that piece alone. A `check-myself|yes` line in
+`.ai-build-kit-maintenance` asks for every piece. Any command writes that line
+when the person asks for it, and takes it out when they ask to stop. With
+either, walk through the piece first, then give one address to open and up to
+three numbered things to try there, each with what they should see. The address
+is the preview, or a local server started from the piece's branch. Before giving
+it, send a request to it and give the address that answered. Where the usual
+port was taken or the server stopped, that is the address you actually used.
+Where none answers, say so and give no address. Then stop, and save nothing
+until the person replies.
+
+In an unattended run nobody is there to try it. On the pull-request route, save
+the piece as step 8 says, open its pull request and move it to `to check`, and
+write in the pull request that it waits for the person's try before it is
+merged. Then take the next piece. On the checkpoint route, commit it on its own
+branch without closing the piece, note on the piece that it waits for the
+person's try, and take the next piece.
 
 ## 7. Run required review
 
@@ -289,16 +369,31 @@ proves the behaviour, and the review exists for what the check cannot see.
 
 ## 8. Save
 
+Before anything is saved, on any route, run this skill's `scripts/test-guard.sh
+<base> <piece file> <checks commit>` from the project's folder. The base is the
+commit the piece's branch was cut from: `main`, or the branch of the piece it
+stacks on. The checks commit is the one step 4 made. The piece file holds the
+piece's text, saved with `gh issue view <number> --json body --jq .body` into
+`.agents/tmp/`. The guard lists each existing test file changed since the base
+that the piece's `Under the hood` does not name, and any check changed since its
+own commit. Put each listed file back as it was, `git checkout <base> --
+<file>`, or `git checkout <checks commit> -- <file>` for a check. Where the
+guard says a listed file was moved, remove the moved copy too. Then run the
+checks again. Where the piece cannot pass without that change, step 4 says what
+to report.
+
 Before saving on any route, apply the piece's `## Masterplan change` and update
 the trued-against mark as
 the `setup-ai-build-kit` skill's `references/masterplan-changes.md` describes.
 The record changes in step 9 are part of this save, not a later /sync task.
 
 Checkpoint route: update the records, commit, and state the saved checkpoint.
-There is no pull request to wait on, and the person confirmed the behaviour in
-step 6, so close the issue and take `building` off it in the same step. This is
-the one route where a piece closes when it is saved rather than when a pull
-request merges, and it never passes through `to check`.
+There is no pull request to wait on, and the walk-through in step 6, or the
+person's own try where they asked for one, stood in for their check, so close
+the issue and take `building` off it in the same step. This is the one route
+where a piece closes when it is saved rather than when a pull request merges,
+and it never passes through `to check`. Where the walk-through could not see
+what somebody would see, the person's try in step 6 comes before this save.
 
 Pull-request route: update the records, commit, push, open a pull request
 titled after the piece with a plain-language summary, and run the project
@@ -375,7 +470,9 @@ project six months later.
 One of two outcomes, both complete passes:
 
 - Complete: the agreed behaviour has credible evidence, with any available
-  machine check run and green, the user-facing result is confirmed where needed,
+  machine check run and green, the checks were written first and seen to fail,
+  no test changed that the piece does not name, the walk-through is recorded or
+  the person tried it where they asked to,
   required review is satisfied, the records match reality, and the selected save
   route is complete.
 - Safely parked: the piece stopped at its recorded condition, moved from
