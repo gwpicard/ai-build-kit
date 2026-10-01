@@ -41,8 +41,10 @@ draw a redesign. The real page wins wherever one exists: put the alternatives
 there with their actual surroundings and data.
 
 Where no design tool is recorded, keep using the coded throwaway described
-above. Where the harness has a browser tool, use it to look at your own
-throwaway before showing it. Say when you could not inspect it yourself.
+above. To look at your own throwaway before showing it, follow "How the
+walk-through looks" in the `section-builder` skill, including its browser
+identity, ownership and local fallback rules. Say when you could not inspect
+it yourself.
 
 ## What to bring back
 
