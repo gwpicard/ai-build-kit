@@ -9,6 +9,11 @@
 # removed after its pull request closes only when nothing in it is unsaved.
 # Removing the wrong worktree loses somebody's work, and nothing would say so.
 #
+# It also runs the worktree-links line, which links ignored build files such
+# as fonts into each worktree and refuses confidential, env, tracked, outside
+# and missing paths by name, and a sibling worktree standing for another
+# tool's, which the script must never list, change or remove.
+#
 # A stand-in for the GitHub command line tool answers the pull request lookup
 # from a small file, and a wrapper around git records every call, so a forced
 # removal is caught even if it happened to succeed. No network, no account.
@@ -481,6 +486,206 @@ PY
 else
   echo "  note: this computer has no IPv6 loopback, so the ::1 case was not run"
 fi
+
+echo "== Ignored build files the worktree-links line names =="
+
+# L's build needs files git ignores and that hold no secret: a folder of
+# fonts, a sample input inside an ignored folder, and a folder whose name has
+# a space. Its confidential folder, its env files, a tracked file, a path
+# outside the project and a deleted one are on the line too, and each must be
+# refused by name.
+L="$WORK/links-project"
+project "$L" "$IGNORE"
+printf 'fonts/\nsamples/\nbrand assets/\nprivate/\ndata/\ngone.bin\n.env.production\n*.woff\n' >> "$L/.gitignore"
+mkdir -p "$L/assets" "$L/lib/sub"
+echo "kept" > "$L/assets/readme.txt"
+echo "kept" > "$L/lib/sub/readme.txt"
+git -C "$L" add .gitignore assets lib
+git -C "$L" commit -q -m "Ignore the build files"
+git -C "$L" push -q origin main 2>/dev/null
+mkdir -p "$L/fonts" "$L/samples" "$L/brand assets" "$L/private" "$L/data/secret"
+echo "font" > "$L/assets/logo.woff"
+echo "font" > "$L/lib/sub/deep.woff"
+mkdir -p "$L/node_modules/pkg" "$L/.agents/tmp"
+echo "dep" > "$L/node_modules/pkg/index.js"
+echo "note" > "$L/.agents/tmp/note.md"
+echo "font" > "$L/fonts/Brand.ttf"
+echo "a,b" > "$L/samples/big input.csv"
+echo "logo" > "$L/brand assets/logo.svg"
+echo "report" > "$L/private/report.pdf"
+echo "secret" > "$L/data/secret/list.csv"
+echo "PROD_KEY=not-a-real-secret" > "$L/.env.production"
+echo "far" > "$WORK/elsewhere.txt"
+cat >> "$L/.ai-build-kit-maintenance" <<'REC'
+founded|2026-09-01
+confidential|private
+confidential|data/secret
+worktree-links|fonts ; samples/big input.csv ; brand assets ; private/report.pdf ; data ; .env.production ; tool.txt ; ../elsewhere.txt ; /etc/hosts ; gone.bin ; loose.txt ; extra ; kept ; far.txt ; hidden
+REC
+# A folder whose files are ignored while a placeholder in it is tracked.
+mkdir -p "$L/kept"
+printf 'kept/*\n!kept/.gitkeep\nfar.txt\nhidden\n' >> "$L/.gitignore"
+: > "$L/kept/.gitkeep"
+echo "icon" > "$L/kept/icon.otf"
+"$REAL_GIT" -C "$L" add .gitignore kept/.gitkeep
+"$REAL_GIT" -C "$L" commit -q -m "Keep the kept folder"
+"$REAL_GIT" -C "$L" push -q origin main 2>/dev/null
+# Links in the main folder that lead outside the project and into the
+# confidential folder.
+ln -s "$WORK/elsewhere.txt" "$L/far.txt"
+ln -s private "$L/hidden"
+echo "loose" > "$L/loose.txt"
+# An ignore line the main folder has and has not saved yet, so a worktree cut
+# from origin/main does not have it.
+echo "extra/" >> "$L/.gitignore"
+mkdir -p "$L/extra"
+echo "extra" > "$L/extra/x.bin"
+
+out=$(run "$L" candidates)
+case $out in *fonts*) r=yes ;; *) r=no ;; esac
+check "candidates lists an ignored folder at the top level" "$r"
+case $out in *"brand assets"*) r=yes ;; *) r=no ;; esac
+check "candidates lists a folder whose name has a space" "$r"
+case $out in *"assets/logo.woff"*) r=yes ;; *) r=no ;; esac
+check "candidates lists an ignored file at the second level" "$r"
+case $out in *private* | *"data/secret"* | *.env* | *node_modules* | *.agents* | *"lib/sub"*) r=no ;; *) r=yes ;; esac
+check "candidates leaves out the confidential folder, env files, dependency folders, the kit's folder and anything deeper than two levels" "$r"
+printf '%s\n' "$out" | grep -qx data && r=no || r=yes
+check "candidates leaves out a folder that holds a confidential folder" "$r"
+
+out=$(run "$L" open 50-report 50-report origin/main) && code=0 || code=$?
+LW="$L/.agents/worktrees/50-report"
+[ "$code" -eq 0 ] && r=yes || r=no
+check "a piece whose line names refused paths still opens" "$r"
+[ -d "$LW/fonts" ] && [ ! -L "$LW/fonts" ] && [ -L "$LW/fonts/Brand.ttf" ] && \
+  [ "$(readlink "$LW/fonts/Brand.ttf")" = "../../../../fonts/Brand.ttf" ] && \
+  cmp -s "$LW/fonts/Brand.ttf" "$L/fonts/Brand.ttf" && r=yes || r=no
+check "a listed folder is made in the worktree, each thing in it a relative link to the main folder's own" "$r"
+[ -d "$LW/samples" ] && [ ! -L "$LW/samples" ] && [ -L "$LW/samples/big input.csv" ] && \
+  [ "$(readlink "$LW/samples/big input.csv")" = "../../../../samples/big input.csv" ] && \
+  cmp -s "$LW/samples/big input.csv" "$L/samples/big input.csv" && r=yes || r=no
+check "a file inside an ignored folder the worktree lacks gets the folder made and the file linked, spaces and all" "$r"
+[ -L "$LW/brand assets/logo.svg" ] && [ -f "$LW/brand assets/logo.svg" ] && r=yes || r=no
+check "a folder whose name has a space is linked" "$r"
+[ ! -e "$LW/private/report.pdf" ] && case $out in *"private/report.pdf"*"confidential"*) true ;; *) false ;; esac && r=yes || r=no
+check "a path inside a confidential folder is refused by name" "$r"
+[ ! -e "$LW/data" ] && case $out in *"Not linked data:"*"confidential"*) true ;; *) false ;; esac && r=yes || r=no
+check "a path holding a confidential folder is refused by name" "$r"
+[ ! -e "$LW/.env.production" ] || [ -L "$LW/.env.production" ] && case $out in *"Not linked .env.production:"*".env"*) true ;; *) false ;; esac && r=yes || r=no
+check "an env file on the line is refused, and left to the .env rule" "$r"
+[ ! -L "$LW/tool.txt" ] && case $out in *"Not linked tool.txt:"*"git tracks it"*) true ;; *) false ;; esac && r=yes || r=no
+check "a tracked file is refused, since the worktree already has it" "$r"
+case $out in *"Not linked ../elsewhere.txt:"*"outside the project"*) r=yes ;; *) r=no ;; esac
+check "a path outside the project is refused" "$r"
+case $out in *"Not linked /etc/hosts:"*"outside the project"*) r=yes ;; *) r=no ;; esac
+check "an absolute path is refused as outside the project" "$r"
+[ ! -e "$LW/gone.bin" ] && case $out in *"gone.bin"*"not in the main folder"*"built without gone.bin"*) true ;; *) false ;; esac && r=yes || r=no
+check "a listed path deleted from the main folder is named, not linked, and the piece flagged" "$r"
+[ ! -e "$LW/loose.txt" ] && case $out in *"Not linked loose.txt:"*"does not ignore it"*) true ;; *) false ;; esac && r=yes || r=no
+check "a path git does not ignore is refused, so no link shows as a new file to save" "$r"
+[ ! -e "$LW/extra/x.bin" ] && case $out in *"Not linked extra/x.bin:"*"worktree does not ignore the link"*"built without extra/x.bin"*) true ;; *) false ;; esac && r=yes || r=no
+check "a link the worktree's own ignore rules do not cover is taken away and named" "$r"
+[ -L "$LW/kept/icon.otf" ] && [ -f "$LW/kept/.gitkeep" ] && [ ! -L "$LW/kept/.gitkeep" ] && r=yes || r=no
+check "a folder keeping one tracked placeholder links its ignored files and leaves the placeholder" "$r"
+[ ! -e "$LW/far.txt" ] && case $out in *"Not linked far.txt:"*"leads outside the project"*) true ;; *) false ;; esac && r=yes || r=no
+check "a main-folder link leading outside the project is refused" "$r"
+[ ! -e "$LW/hidden" ] && case $out in *"Not linked hidden:"*"confidential"*) true ;; *) false ;; esac && r=yes || r=no
+check "a main-folder link leading into the confidential folder is refused" "$r"
+copies=$(find "$L/.agents/worktrees" -name 'Brand.ttf' -type f 2>/dev/null || true)
+[ -z "$copies" ] && r=yes || r=no
+check "no copy of a listed file exists in the worktree" "$r"
+run "$L" unsaved "$LW" >/dev/null && r=yes || r=no
+check "linked build files are not unsaved work" "$r"
+[ -z "$(git -C "$LW" status --porcelain)" ] && r=yes || r=no
+check "the links show as no change in the worktree" "$r"
+
+echo "== A copy where a listed link would go, and a link that cannot be made =="
+
+rm -f "$LW/samples/big input.csv"
+cp "$L/samples/big input.csv" "$LW/samples/big input.csv"
+out=$(run "$L" open --resume 50-report 50-report origin/main) && code=0 || code=$?
+case $out in *"A copy of samples/big input.csv already sits in this worktree"*"Flag the piece"*) r=yes ;; *) r=no ;; esac
+check "a real copy at a listed path is named as a copy and the piece flagged" "$r"
+[ -f "$LW/samples/big input.csv" ] && [ ! -L "$LW/samples/big input.csv" ] && r=yes || r=no
+check "the copy is left as it is" "$r"
+rm -f "$LW/samples/big input.csv"
+
+out=$(PATH="$WORK/noln:$PATH"; export PATH; run "$L" open 51-no-link 51-no-link origin/main) && code=0 || code=$?
+[ "$code" -eq 0 ] && [ ! -e "$L/.agents/worktrees/51-no-link/fonts/Brand.ttf" ] && r=yes || r=no
+check "where a listed link cannot be made, the piece goes on and nothing is copied" "$r"
+case $out in *"built without fonts"*) r=yes ;; *) r=no ;; esac
+check "and it says the piece is built without that path" "$r"
+out=$(run "$L/.agents/worktrees/51-no-link" open 53-from-kit 53-from-kit origin/main)
+case $out in *"another worktree"*) r=no ;; *) r=yes ;; esac
+check "opened from one of the kit's own worktrees, it is not called another tool's" "$r"
+
+pr "50-report MERGED $(git -C "$LW" rev-parse HEAD)"
+out=$(run "$L" tidy)
+[ ! -d "$LW" ] && r=yes || r=no
+check "a worktree holding only links is removed once its pull request merged" "$r"
+[ -f "$L/fonts/Brand.ttf" ] && [ -f "$L/samples/big input.csv" ] && [ -f "$L/brand assets/logo.svg" ] && r=yes || r=no
+check "removing it leaves the main folder's files in place" "$r"
+
+echo "== No worktree-links line =="
+
+M="$WORK/no-line-project"
+project "$M" "$IGNORE"
+printf 'fonts/\n' >> "$M/.gitignore"
+git -C "$M" add .gitignore
+git -C "$M" commit -q -m "Ignore fonts"
+mkdir -p "$M/fonts"
+echo "font" > "$M/fonts/Brand.ttf"
+out=$(run "$M" open 52-plain 52-plain origin/main)
+[ ! -e "$M/.agents/worktrees/52-plain/fonts" ] && [ -L "$M/.agents/worktrees/52-plain/.env" ] && r=yes || r=no
+check "with no worktree-links line only the .env files are linked" "$r"
+
+echo "== Beside another tool's worktrees =="
+
+# O's main folder is on another branch, and a sibling folder made by
+# `git worktree add` stands for another tool's worktree, with main checked
+# out in it. A second sibling stands for one on a merged branch.
+O="$WORK/orca-project"
+project "$O" "$IGNORE"
+"$REAL_GIT" -C "$O" checkout -q -b dev
+"$REAL_GIT" -C "$O" worktree add -q "$WORK/orca-main" main
+"$REAL_GIT" -C "$O" branch -q --no-track orca-feature origin/main
+"$REAL_GIT" -C "$O" worktree add -q "$WORK/orca-feature" orca-feature
+pr "orca-feature MERGED $(git -C "$O" rev-parse orca-feature)"
+pr "orca-main MERGED $(git -C "$O" rev-parse main)"
+
+out=$(run "$WORK/orca-main" open 60-from-orca 60-from-orca origin/main) && code=0 || code=$?
+[ "$code" -eq 0 ] && [ -d "$O/.agents/worktrees/60-from-orca" ] && [ ! -e "$WORK/orca-main/.agents/worktrees/60-from-orca" ] && r=yes || r=no
+check "started inside another tool's worktree, open makes the piece's worktree in the main folder" "$r"
+case $out in *"live in the main folder"*) r=yes ;; *) r=no ;; esac
+check "and it says in one line where they are" "$r"
+[ "$(branch_of "$WORK/orca-main")" = main ] && [ "$(branch_of "$O")" = dev ] && r=yes || r=no
+check "the other tool's worktree stays on main and the main folder on its branch" "$r"
+[ "$(git -C "$O/.agents/worktrees/60-from-orca" rev-parse HEAD)" = "$(git -C "$O" rev-parse origin/main)" ] && r=yes || r=no
+check "the piece is cut from origin/main while main is checked out elsewhere" "$r"
+
+mkdir -p "$O/.agents/runs/2026-09-30-230000"
+run "$WORK/orca-main" open 61-in-orca-run 61-in-orca-run origin/main >/dev/null
+pr "61-in-orca-run CLOSED"
+cat > "$O/.agents/runs/2026-09-30-230000/state.json" <<'JSON'
+{"run": "2026-09-30-230000", "merge_preapproved": false, "pieces": [
+ {"number": 61, "state": "building", "branch": "61-in-orca-run", "base": "main",
+  "worktree": ".agents/worktrees/61-in-orca-run", "port": null, "pull_request": null,
+  "attempts": 0, "flags": [], "reason": ""}]}
+JSON
+out=$(run "$WORK/orca-main" tidy)
+[ -d "$O/.agents/worktrees/61-in-orca-run" ] && r=yes || r=no
+check "a run started elsewhere is read from the main folder's run state" "$r"
+[ -d "$WORK/orca-feature" ] && [ -d "$WORK/orca-main" ] && case $out in *orca-*) false ;; *) true ;; esac && r=yes || r=no
+check "tidy never changes or names another tool's worktree" "$r"
+out=$(run "$WORK/orca-main" leftovers)
+case $out in *orca-feature* | *orca-main*) r=no ;; *) r=yes ;; esac
+check "leftovers never lists another tool's worktree" "$r"
+out=$(run "$WORK/orca-main" remove "$WORK/orca-feature") && code=0 || code=$?
+[ "$code" -eq 1 ] && [ -d "$WORK/orca-feature" ] && r=yes || r=no
+check "remove refuses another tool's worktree" "$r"
+out=$(run "$O" remove "$WORK/orca-main") && code=0 || code=$?
+[ "$code" -eq 1 ] && [ -d "$WORK/orca-main" ] && [ "$(branch_of "$WORK/orca-main")" = main ] && r=yes || r=no
+check "remove refuses it from the main folder too, and leaves it on main" "$r"
 
 echo "== What git was asked to do =="
 

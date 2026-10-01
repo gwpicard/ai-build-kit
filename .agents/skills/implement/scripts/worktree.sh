@@ -11,7 +11,8 @@
 #   open [--resume] <name> <branch> <base>
 #       Make .agents/worktrees/<name> on <branch>, cut from <base> when the
 #       branch does not exist yet. Link the main folder's .env into it, never
-#       copy it. Reuse a worktree already at that path only when it is on the
+#       copy it, and each path on the worktree-links line of
+#       .ai-build-kit-maintenance, refusing the ones below. Reuse a worktree already at that path only when it is on the
 #       same branch and holds no unsaved work; with --resume, only when it
 #       holds no uncommitted change. A branch this call created is deleted
 #       again if the worktree cannot be made. Exit 1 to skip the piece, 3 when
@@ -32,6 +33,23 @@
 #       and nothing in it is unsaved.
 #   port <issue number>
 #       Print a port nothing listens on, on 127.0.0.1 or ::1.
+#   candidates
+#       List the files and folders at the main folder's top two levels that
+#       git ignores and a build might need, for founding and /maintain to ask
+#       about. Dependency and build folders, env files, .agents/, .claude/
+#       and every confidential folder are left out.
+#
+# The worktree-links line names ignored files a build needs that hold no
+# secret, such as a licensed font: `worktree-links|<path> ; <path>`, each path
+# relative to the project root. Each is linked, never copied. A path is
+# refused, and the reason named, when it sits in or holds a folder on a
+# `confidential|<folder>` line, is an env file, is tracked by git, lies outside
+# the project, is not in the main folder, or is not ignored by git.
+#
+# The kit touches only the worktrees under the main folder's
+# .agents/worktrees/. A worktree another tool made is never listed, changed or
+# removed, wherever it sits, and a run started inside one works from the main
+# folder all the same.
 #
 # Unsaved work is an uncommitted change, counting a new file git does not
 # ignore; a file git ignores that is a real file rather than a link and sits
@@ -52,8 +70,11 @@ die() { printf 'worktree.sh: %s\n' "$*" >&2; exit 2; }
 # that same listing, so a folder reached through a symbolic link still matches.
 MAIN=$(git worktree list --porcelain 2>/dev/null | sed -n '1s/^worktree //p')
 [ -n "$MAIN" ] || die "run this from inside a git project"
+# The folder this was run from, which may be another tool's worktree.
+STARTED=$(git rev-parse --show-toplevel 2>/dev/null || true)
 cd "$MAIN"
 WT_DIR="$MAIN/.agents/worktrees"
+RECORD="$MAIN/.ai-build-kit-maintenance"
 
 # git_error <output>: the line git gave its reason on, rather than a hint.
 git_error() {
@@ -99,22 +120,214 @@ find_listed() {
 # count: the number of lines on stdin, with no padding.
 count() { awk 'END { print NR }'; }
 
+# rebuilt <path>: true for a path in a dependency or build folder, which an
+# install or a build makes again.
+rebuilt() {
+  case "/$1/" in
+    */node_modules/* | */.next/* | */dist/* | */build/* | */out/* | \
+    */.venv/* | */venv/* | */__pycache__/* | */target/* | \
+    */coverage/* | */.turbo/* | */.cache/*) return 0 ;;
+  esac
+  return 1
+}
+
+# ignored_paths [dir]: each path git ignores, as git status names it, one per
+# line. The -z form keeps a name with a space in it unquoted.
+ignored_paths() {
+  git -C "${1:-.}" status --porcelain -z --ignored 2>/dev/null | tr '\000' '\n' \
+    | sed -n 's/^!! //p'
+}
+
 # ignored_work <worktree>: each file git ignores that can still be work: a
-# note, a screenshot, a key typed into a copy. Links, such as the .env links,
-# and dependency or build folders, which an install or a build makes again,
-# are left out.
+# note, a screenshot, a key typed into a copy. Links, such as the .env links
+# and the worktree-links links, and dependency or build folders are left out.
+# An ignored folder counts only for the real files in it, since the folder a
+# listed link needed may hold nothing but that link.
 ignored_work() {
-  git -C "$1" status --porcelain --ignored 2>/dev/null | sed -n 's/^!! //p' \
-    | while IFS= read -r f; do
-        f=${f%/}
-        [ -L "$1/$f" ] && continue
-        case "/$f/" in
-          */node_modules/* | */.next/* | */dist/* | */build/* | */out/* | \
-          */.venv/* | */venv/* | */__pycache__/* | */target/* | \
-          */coverage/* | */.turbo/* | */.cache/*) continue ;;
-        esac
-        printf '%s\n' "$f"
+  ignored_paths "$1" | while IFS= read -r f; do
+    f=${f%/}
+    [ -L "$1/$f" ] && continue
+    rebuilt "$f" && continue
+    if [ -d "$1/$f" ]; then
+      (cd "$1" && find "./$f" -type f -print 2>/dev/null) | sed 's|^\./||' \
+        | while IFS= read -r g; do
+            rebuilt "$g" || printf '%s\n' "$g"
+          done
+    else
+      printf '%s\n' "$f"
+    fi
+  done
+}
+
+# clean_path <path>: the path without spaces around it, a leading ./ or a
+# trailing /.
+clean_path() {
+  p=$(printf '%s' "$1" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+  while :; do
+    case $p in ./*) p=${p#./} ;; */) p=${p%/} ;; *) break ;; esac
+  done
+  printf '%s' "$p"
+}
+
+# confidential_folders: each folder on a confidential line, one per line.
+confidential_folders() {
+  [ -f "$RECORD" ] || return 0
+  sed -n 's/^confidential|//p' "$RECORD" | while IFS= read -r c; do
+    c=$(clean_path "$c")
+    [ -z "$c" ] || printf '%s\n' "$c"
+  done
+}
+
+# confidential_reason <path>: why a path touches a confidential folder, or
+# nothing.
+confidential_reason() {
+  confidential_folders | while IFS= read -r c; do
+    case $1 in
+      "$c" | "$c"/*) printf 'it sits in the confidential folder %s' "$c"; break ;;
+    esac
+    case $c in
+      "$1"/*) printf 'it holds the confidential folder %s' "$c"; break ;;
+    esac
+  done
+}
+
+# link_paths: each path on the last worktree-links line, one per line.
+link_paths() {
+  [ -f "$RECORD" ] || return 0
+  line=$(grep '^worktree-links|' "$RECORD" | tail -n 1)
+  [ -n "$line" ] || return 0
+  printf '%s\n' "${line#worktree-links|}" \
+    | awk '{ n = split($0, part, / ; /); for (i = 1; i <= n; i++) print part[i] }' \
+    | while IFS= read -r p; do
+        p=$(clean_path "$p")
+        [ -z "$p" ] || printf '%s\n' "$p"
       done
+}
+
+# refusal <path>: why a listed path is not linked, or nothing.
+refusal() {
+  case $1 in
+    /* | .. | ../* | */../* | */..)
+      printf 'it lies outside the project'; return ;;
+  esac
+  case ${1##*/} in
+    .env | .env.*)
+      printf 'it is an env file, and the .env rule covers those'; return ;;
+  esac
+  why=$(confidential_reason "$1")
+  if [ -n "$why" ]; then
+    printf "%s, which never reaches a run's worktree" "$why"
+    return
+  fi
+  # A folder is checked entry by entry, so only a tracked file itself is
+  # refused here, and a folder keeping one tracked placeholder still links.
+  if [ "$(git ls-files -- ":(literal)$1" 2>/dev/null | sed -n '1p')" = "$1" ]; then
+    printf 'git tracks it, so the worktree already has it'; return
+  fi
+  if [ ! -e "$MAIN/$1" ] && [ ! -L "$MAIN/$1" ]; then
+    printf 'it is not in the main folder. Flag the piece: built without %s' "$1"; return
+  fi
+  # A path that is itself a link, or sits under one, is judged by where it
+  # leads.
+  real=$(python3 -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "$MAIN/$1" 2>/dev/null || true)
+  top=$(pwd -P)
+  if [ -n "$real" ]; then
+    case $real in
+      "$top" | "$top"/*) ;;
+      *) printf 'it leads outside the project'; return ;;
+    esac
+    inner=${real#"$top"}
+    inner=${inner#/}
+    if [ -n "$inner" ] && [ "$inner" != "$1" ]; then
+      why=$(confidential_reason "$inner")
+      if [ -n "$why" ]; then
+        printf "it leads to %s: %s, which never reaches a run's worktree" "$inner" "$why"
+        return
+      fi
+    fi
+  fi
+  # A folder's own entries are each checked, since `fonts/*` beside a kept
+  # `!fonts/.gitkeep` ignores the files and not the folder.
+  if { [ ! -d "$MAIN/$1" ] || [ -L "$MAIN/$1" ]; } && ! git check-ignore -q -- "$1" 2>/dev/null; then
+    printf 'git does not ignore it, so its link would show as a new file to save'
+  fi
+}
+
+# link_one <worktree> <path>: link one path, adding it to $linked or saying
+# why not. The link is relative, so it still leads to the main folder's file
+# however the project folder is reached.
+link_one() {
+  if [ -L "$1/$2" ]; then
+    linked="$linked${linked:+, }$2"
+    return
+  fi
+  if [ -e "$1/$2" ]; then
+    say "A copy of $2 already sits in this worktree: it was not linked, and it is a copy outside the main folder. Flag the piece."
+    return
+  fi
+  slashes=$(printf '%s' "$2" | tr -cd /)
+  up="../../../"
+  i=0
+  while [ "$i" -lt "${#slashes}" ]; do
+    up="../$up"
+    i=$((i + 1))
+  done
+  if mkdir -p "$1/$(dirname "$2")" 2>/dev/null && ln -s "$up$2" "$1/$2" 2>/dev/null && [ -L "$1/$2" ]; then
+    # A link git does not ignore would be a new file for the piece to save.
+    if git -C "$1" check-ignore -q -- "$2" 2>/dev/null; then
+      linked="$linked${linked:+, }$2"
+      return
+    fi
+    rm -f "$1/$2"
+    say "Not linked $2: git in the worktree does not ignore the link, so it would show as a new file to save. Flag the piece: built without $2."
+    return
+  fi
+  say "The link to $2 could not be made here. Flag the piece: built without $2. Never copy it instead."
+}
+
+# link_listed <worktree>: link each path on the worktree-links line. A folder
+# is made as a real folder in the worktree and each thing in it linked, since
+# git reads a link as a file and a rule that ignores a folder, such as
+# `fonts/`, does not cover a link of that name.
+link_listed() {
+  linked=""
+  paths=$(link_paths)
+  [ -n "$paths" ] || return 0
+  while IFS= read -r p; do
+    [ -n "$p" ] || continue
+    why=$(refusal "$p")
+    if [ -n "$why" ]; then
+      say "Not linked $p: $why."
+      continue
+    fi
+    if [ ! -d "$MAIN/$p" ] || [ -L "$MAIN/$p" ]; then
+      link_one "$1" "$p"
+      continue
+    fi
+    if [ -L "$1/$p" ]; then
+      linked="$linked${linked:+, }$p"
+      continue
+    fi
+    if [ -e "$1/$p" ] && [ ! -d "$1/$p" ]; then
+      say "A copy of $p already sits in this worktree: it was not linked, and it is a copy outside the main folder. Flag the piece."
+      continue
+    fi
+    for entry in "$MAIN/$p"/* "$MAIN/$p"/.[!.]* "$MAIN/$p"/..?*; do
+      [ -e "$entry" ] || [ -L "$entry" ] || continue
+      e="$p/${entry##*/}"
+      why=$(refusal "$e")
+      if [ -n "$why" ]; then
+        say "Not linked $e: $why."
+        continue
+      fi
+      link_one "$1" "$e"
+    done
+  done <<EOF
+$paths
+EOF
+  if [ -n "$linked" ]; then
+    say "Linked $linked to the main folder's own, as the worktree-links line lists, so each stays one file."
+  fi
 }
 
 # unsaved_reason <worktree> [commit]: what is unsaved, or nothing. A commit
@@ -255,6 +468,14 @@ cmd_open() {
   wt="$WT_DIR/$name"
   rel=".agents/worktrees/$name"
   ignore_folder "$name"
+  started_at=""
+  [ -z "$STARTED" ] || started_at=$(cd "$STARTED" 2>/dev/null && pwd -P || true)
+  # The kit's own worktree folder may not exist yet.
+  kit_worktrees="$(pwd -P)/.agents/worktrees"
+  if [ -n "$started_at" ] && [ "$started_at" != "$(pwd -P)" ] && \
+    case "$started_at/" in "$kit_worktrees"/*) false ;; *) true ;; esac; then
+    say "This session is in $STARTED, another worktree. The run's state and its pieces' worktrees live in the main folder, $MAIN."
+  fi
 
   if [ -e "$wt" ]; then
     found=$(find_listed "$wt" || true)
@@ -280,6 +501,7 @@ cmd_open() {
     fi
     say "Reused $rel: it is already on branch $branch."
     link_env "$wt"
+    link_listed "$wt"
     exit 0
   fi
 
@@ -315,6 +537,7 @@ cmd_open() {
   fi
   say "Opened $rel on branch $branch, from $base."
   link_env "$wt"
+  link_listed "$wt"
 }
 
 cmd_unsaved() {
@@ -445,6 +668,18 @@ cmd_remove() {
   fi
 }
 
+cmd_candidates() {
+  ignored_paths | while IFS= read -r f; do
+    f=${f%/}
+    case $f in */*/*) continue ;; esac
+    rebuilt "$f" && continue
+    case $f in .agents | .agents/* | .claude | .claude/*) continue ;; esac
+    case ${f##*/} in .env | .env.* | .DS_Store | Thumbs.db) continue ;; esac
+    [ -z "$(confidential_reason "$f")" ] || continue
+    printf '%s\n' "$f"
+  done
+}
+
 cmd_port() {
   [ $# -eq 1 ] || die "usage: worktree.sh port <issue number>"
   case $1 in '' | *[!0-9]*) die "the issue number must be a number" ;; esac
@@ -503,5 +738,6 @@ case $sub in
   leftovers) cmd_leftovers ;;
   remove) cmd_remove "$@" ;;
   port) cmd_port "$@" ;;
-  *) die "usage: worktree.sh open|unsaved|tidy|leftovers|remove|port ..." ;;
+  candidates) cmd_candidates ;;
+  *) die "usage: worktree.sh open|unsaved|tidy|leftovers|remove|port|candidates ..." ;;
 esac

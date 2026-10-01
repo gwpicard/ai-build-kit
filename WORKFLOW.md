@@ -442,7 +442,7 @@ Each piece goes through the same steps as a single build: claimed, checks writte
 
 In Claude Code, each piece in a run is built in its own copy of the project, a worktree in `.agents/worktrees/` named after the piece, so your own folder stays on its branch and one piece's half-built work never sits under another's. Other coding agents build a run's pieces one after another in your one folder.
 
-Each copy links to your `.env` rather than copying it, and installs its own dependencies. Its dev server runs on a free port the run records, and the hand-over names that port. The server stops once the pull request opens, and the run's report says how to start it again. The kit clears a copy away once its pull request has merged or closed and nothing in it is unsaved, at the next run or the next /sync. A copy holding unsaved work is kept and named.
+Each copy links to your `.env` rather than copying it, and installs its own dependencies. A file your build needs that git ignores and that holds no secret, such as a licensed font, is linked into each copy too, once founding has asked you which ones. Your confidential folder never is. Its dev server runs on a free port the run records, and the hand-over names that port. The server stops once the pull request opens, and the run's report says how to start it again. The kit clears a copy away once its pull request has merged or closed and nothing in it is unsaved, at the next run or the next /sync. A copy holding unsaved work is kept and named.
 
 If the run meets a choice nobody made, a hard one, about stored data, syncing or what leaves the tool, sends that piece back to shaping with the question on it. An easy one takes the option simplest to undo and is flagged in the pull request. A piece that fails three attempts is parked with a note on what it revealed. Either way the run moves on.
 
@@ -569,6 +569,10 @@ closed, such as one from a session that died before it could clear up. It
 removes each one you say yes to, never by force, and keeps one that holds
 unsaved work, saying what is unsaved. Removing a worktree leaves its branch,
 which the list of old branches picks up at the next visit.
+
+If you use another tool that makes worktrees of its own, the kit never touches a worktree another tool made. A run started inside one keeps its record and its copies in your main project folder, and says so.
+
+A project founded before the kit could link ignored build files gets one question: which ignored files a build needs. A no is recorded, and the question comes back only when a new ignored file appears.
 
 A project founded before the six states gets one offer to move onto them. Pieces waiting on a question gain shaping, open pieces with no state gain idea, and a piece labelled blocked becomes parked with its reason. Ideas you closed as parked stay as they are. Nothing changes without your yes, and a no is recorded, so the offer comes back only when a release changes the states again.
 

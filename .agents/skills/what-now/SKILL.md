@@ -11,7 +11,7 @@ You are the safety net under the other six commands. Someone who forgets everyth
 
 masterplan.md (build-path section first), the project's pieces, the recent
 changelog and `changes/`, the capability profile in AGENTS.md, git status, the recent commits
-and merged pull requests, any open pull requests, and a run's state file in `.agents/runs/`.
+and merged pull requests, any open pull requests, and a run's state file in `.agents/runs/` of the main folder, the first worktree git lists.
 
 Refresh the printout with `sh .agents/tools/plan-refresh.sh` and read
 `plan.local.md`. Where the project has no copy of the helper,

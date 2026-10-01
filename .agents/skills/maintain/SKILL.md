@@ -181,7 +181,10 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
     move before.
 19. Run "Removing leftover worktrees" below. It says nothing when the project
     has none.
-20. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
+20. Run "Linking ignored build files into run worktrees" below. It says
+    nothing when the project already has the links, has nothing to link, or
+    said no to the same files before.
+21. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
     today's date on the `last-light-pass` line, written as YYYY-MM-DD. If that
     file is missing, create it with a `founded` line holding the date
     masterplan.md was first saved, then the two pass lines. If the project has
@@ -373,7 +376,8 @@ list in step 15, since git will not remove a branch that is checked out.
    project root. It lists each worktree under `.agents/worktrees/` whose pull
    request has merged or closed, or that never had one, or that is on no
    branch, and that no unfinished run is still building. It changes nothing.
-   When it lists none, say nothing.
+   It leaves alone every worktree another tool made, wherever it sits, and
+   never lists one. When it lists none, say nothing.
 2. Name each one in plain words: the piece, what happened to its pull request,
    and whether it holds unsaved work. Offer to remove the ones that hold none,
    each by name, in one reply.
@@ -390,6 +394,39 @@ list in step 15, since git will not remove a branch that is checked out.
 6. Never remove a branch here. Removing a worktree leaves its branch, and
    step 15 lists that branch at the next visit once its work is in the default
    branch.
+
+## Linking ignored build files into run worktrees
+
+A run builds each piece in a worktree, which has only what git tracks plus the
+links the kit makes. A project whose build needs a file git ignores, such as a
+licensed font, has every piece in a run fail for want of it. Founding now asks
+which such files a build needs and writes a `worktree-links` line. A project
+founded before that has no line, so the visit offers it, once.
+
+1. Where `.ai-build-kit-maintenance` already has a `worktree-links` line, say
+   nothing, and this step ends.
+2. From the project root, run `sh <installed implement skill>/scripts/worktree.sh candidates`.
+   It lists the ignored files and folders at the top two levels, leaving out
+   dependency and build folders, every `.env` file, `.agents/`, `.claude/`,
+   system files such as `.DS_Store`, and any folder on a `confidential` line. Leave out the folder AGENTS.md records as
+   confidential as well. Where nothing is left, say nothing, and this step
+   ends.
+3. Where every path it lists is already on a `worktree-links-declined` line,
+   the earlier no stands: say nothing, and this step ends.
+4. In one reply, name the paths and ask once which of them a build or a
+   walk-through needs, with your best guess attached: a font, a sample input,
+   or an asset folder the build reads. Say that each is linked into a run's
+   worktrees and never copied.
+5. On a yes, write the paths the person confirms as
+   `worktree-links|<path> ; <path>`. Where AGENTS.md records a confidential
+   folder and the file has no `confidential` line for it, write the
+   `confidential|<folder>` line too. Save with the visit's other changes and
+   add a dated changelog line.
+6. Where the person says no, link nothing. Record the no as one line,
+   replacing any earlier one:
+   `worktree-links-declined|<YYYY-MM-DD>|<the paths offered, separated by " ; ">`.
+   A later visit offers again only when a new ignored path appears that the
+   line does not list.
 
 ## Migrating a project founded before /shape and /implement
 

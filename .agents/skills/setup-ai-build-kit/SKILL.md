@@ -497,11 +497,27 @@ prototype could use a design tool and none is recorded, ask once then and
 update the stack section. That later question must never stop founding.
 
 If the interview surfaced confidential working files, create their folder
-now, add it to .gitignore, and record the handling rules in AGENTS.md. If the
-tool keeps a list of files to carry into a working copy, add the folder there
-too; in Claude Code that list is .worktreeinclude. The worktrees the kit opens
-for a run do not carry that folder, so a piece that needs those files is built
-with the person present, never in a run.
+now, add it to .gitignore, and record the handling rules in AGENTS.md. Write
+`confidential|<folder>` to `.ai-build-kit-maintenance` as well, so the worktree
+script can refuse that folder without reading prose. If the tool keeps a list
+of files to carry into a working copy, add the folder there too; in Claude
+Code that list is .worktreeinclude. That list is for Claude Code's own
+worktrees. The kit's run worktrees read the `worktree-links` line instead. The
+worktrees the kit opens for a run do not carry that folder, so a piece that
+needs those files is built with the person present, never in a run.
+
+A build can need files git ignores that hold no secret, such as licensed fonts
+or large sample inputs, and a run's worktree has only what it links. From the
+project root, run the `implement` skill's `scripts/worktree.sh` with `candidates`. It
+lists the ignored files and folders at the top two levels, leaving out
+dependency and build folders, every `.env` file, `.agents/`, `.claude/`,
+system files such as `.DS_Store`, and the confidential folder. Where it lists nothing, write no line and ask nothing.
+Otherwise ask once which of them a build or a walk-through needs, with your
+best guess attached: a font, a sample input, or an asset folder the build
+reads. Ask it beside other work, so the question never ends the turn on its
+own. Write the paths the person confirms to a `worktree-links|<path> ; <path>`
+line in `.ai-build-kit-maintenance`. Where founding ends with no answer, write
+no line: `/maintain` offers the question again.
 
 Wire the project check according to the build path. If
 `.github/workflows/checks.yml` is missing, copy it from
