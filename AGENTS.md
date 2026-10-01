@@ -590,6 +590,17 @@ attribution line, not the word.
   be uploaded. And it guards the masterplan review, which the build path decides
   and which records a missing reviewer as a gap rather than waiting for one,
   because the wait had no exit and cost two measured runs their whole founding.
+- `.agents/tests/founding-branch.sh` guards the read of which branch founding
+  is on. A real founding saved its checkpoint onto a feature branch the person
+  had checked out, `main` never received the records, and the commits were
+  moved across by hand. So the read comes before the bootstrap script writes
+  anything, and finds the default branch from the remote, else a local `main`,
+  else a local `master`. On another branch with nothing unsaved, founding
+  switches and says so in one line. It never switches a branch holding unsaved
+  work, and a switch that fails never stops founding. The person may keep their
+  own branch, and a founding saved off the default branch names that branch in
+  its changelog line and its completion report. `adopting.md` and WORKFLOW.md
+  carry the same story.
 - `.agents/tests/founding-menu.sh` guards the recipe menu founding offers. The
   menu is the files directly in the `recipes/` folder of the installed ship
   skill, found beside the founding skill and never at a project path, since the
