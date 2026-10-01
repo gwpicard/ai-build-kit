@@ -1514,6 +1514,14 @@ attribution line, not the word.
   a local tag where there is no GitHub repository. It writes no hosting
   request, address or rollback line, on Build with care as well. It also holds the template, founding
   writing the line from answers it already has, and WORKFLOW.md.
+- `.agents/tests/failure-recovery.sh` runs recovery in disposable Git projects
+  and reads retained files, commits, archives and issue state. It preserves
+  committed, staged, unstaged and ignored failed work, refuses an unchecked or
+  changed baseline, leaves direct and transitive dependants untouched, and
+  completes independent work on checked code. Earlier successful parent parts
+  survive isolation. A failing shared base stops affected work. Interrupted
+  preservation or checking resumes without declaring completion. Retention
+  records protect failed copies after their run folder is gone.
 - `.agents/tests/the-runner.sh` guards how `/implement` runs a plan of ready
   pieces with nobody watching, given several numbers or `queue`. In a real
   project the agent built its own loop four times, with its rules and state in
