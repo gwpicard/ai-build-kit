@@ -70,5 +70,6 @@ tool's clothes, under the same rules: the condition comes from a done line or
 a plan area's done lines, read aloud; sensitive areas stay
 stop conditions the goal may not cross; the three-attempt parking rule still
 applies per piece; and the result still lands through the save route the
-build path requires, because merging belongs to a human however long the
-machine ran.
+build path requires. Any merge follows the `section-builder` skill's
+`references/merge.md`, however long the machine ran: on a yes that names it,
+or on the person's pre-approval given before the run.

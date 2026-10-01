@@ -1149,9 +1149,10 @@ attribution line, not the word.
   service answered in public.
 - `.agents/tests/ship-merges-and-deploys-once.sh` guards how `/ship` merges
   and deploys. In one real run the person said only "put it live" and `/ship`
-  merged two pull requests nobody had named to them. So it holds that `/ship`
-  names each pull request and what it changes, asks for a yes that names the
-  merge, and asks again when an earlier yes did not. In another run `/ship`
+  merged two pull requests nobody had named to them. The rule that answered
+  that, a yes naming each merge, now lives in the one merge step every route
+  uses, and `one-merge-step.sh` holds it; this check holds that `/ship` points
+  there. In another run `/ship`
   cut a deploy's output short, deployed the same version again, and so lost
   the earlier build a rollback would reach. So it holds that the whole output
   or the host's list of deployments is read first, that no second deploy runs
@@ -1159,14 +1160,32 @@ attribution line, not the word.
   replacing the rollback target. It also holds that a warning said once is not
   repeated in the same `/ship`, and that WORKFLOW.md says all of it. A later
   run merged properly and then pushed its changelog entries straight to
-  `main`. So it holds that a merge is made on the pull request, never by a
-  merge on this computer and a push of `main`, and that it waits when GitHub
-  cannot be reached. The launch records take the save route a piece takes,
+  `main`. So the launch records take the save route a piece takes,
   on one pull request for each `/ship`, opened once the launch is checked,
   whose merge needs its own yes. Where the host builds every change to
   `main`, that ask says the merge is one more build that moves the rollback
   target. The person's uncommitted work is neither swept into that commit nor
   discarded.
+- `.agents/tests/one-merge-step.sh` guards the one merge step every route
+  uses, section-builder's `references/merge.md`. The rule that a merge waits
+  for a yes naming it lived in `/ship`, while in a real project most merges
+  happened inside `/implement` and hand-built runs, and three went ahead on a
+  yes that named nothing. The host put every merge live, so the first launch
+  happened as a merge and `/ship`'s checks never ran. It holds the named yes,
+  a reply naming several counting for each one it names, the merge made on
+  the pull request, a stacked pull request never merged before its base, and
+  nothing merged while GitHub cannot be reached. It holds the six conditions
+  under which an agent merges on the person's pre-approval of a run, each
+  proved load-bearing, the last being that the merge would not go live, so
+  pre-approval never puts code live. A piece failing one stays in `to check`
+  with the reason. It holds the masterplan's `Goes live:` line, written once
+  when it is missing, the ask that says "this goes live now" where every merge
+  goes live, and the first such merge running `/ship`'s first-launch checks
+  before it. It fails on section-builder,
+  `/implement`, `/fix`, `/ship` or `/sync` restating the rule rather than
+  pointing at it, and holds `/ship`'s promote from a preview to live on a yes
+  that names it. It replaces the validator's string that held section-builder
+  short of a merge.
 - `.agents/tests/first-upload-asks.sh` guards the yes the project's first
   upload waits for. Founding tells the person nothing will be uploaded, and in
   a real run the first piece then pushed the whole project to GitHub with no

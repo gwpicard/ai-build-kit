@@ -33,21 +33,12 @@ rs_exists "$SHIP" "$WORKFLOW"
 rs_rule "go-live points at the merge and deploy rules" 'any merge or deploy on the way follows "merging and deploying" below'
 rs_rule "the rules hold on every path that goes live" 'these rules hold at every go-live, on a recipe or off one, and on build with care as well'
 
-# The merge is the person's.
-rs_rule "a person decides the merge, as with /implement" 'a person decides whether to merge, as with /implement'
-rs_rule "each pull request is named with what it changes" 'before a merge, name each pull request in one plain line that says what it changes'
-rs_rule "the yes asked for names the merge" 'ask for a yes that names the merge'
-rs_rule "merge only on a reply that covers it" 'merge only when the person.s reply plainly covers that merge'
-rs_rule "a go-live yes given before the merge was named does not cover it" 'a yes to going live, to a hosting step, or to any question asked before the merge was named does not cover it: ask again, and merge nothing until they answer'
-rs_rule "a no leaves the pull request open" 'a no leaves the pull request open'
-# The person may name the merge first. Asking again then is the opposite fault:
-# a question they already answered.
-rs_rule "a merge the person already named is the yes" 'where their own words already named the merge, as in "merge both and put it live", that is the yes: do not ask again'
-
-# How the merge is made.
-rs_rule "an approved merge is made on the pull request" 'make an approved merge on the pull request itself, such as with `gh pr merge`'
-rs_rule "never a local merge and a push of main" 'never merge the branch on this computer and push `main`'
-rs_rule "an unreachable github makes the merge wait, said in one line" 'where github cannot be reached, the merge waits: say in one line that the person can merge it on github themselves'
+# The merge itself. The rule that a merge waits for a yes naming it, is made on
+# the pull request, and waits when GitHub cannot be reached lived here until
+# every route needed it. It moved to section-builder's references/merge.md,
+# and one-merge-step.sh guards it there. /ship keeps the pointer, so a launch
+# that merges still reaches the rule.
+rs_rule "every merge follows the one merge step" 'any merge follows the `section-builder` skill.s `references/merge\.md`, as it does on every route'
 
 # How the launch records are saved.
 rs_rule "the records take the build path's save route" 'take the save route the build path already requires: the three routes section-builder names, with no fourth for records'
@@ -60,7 +51,7 @@ rs_rule "its yes is asked in the reply that reports the launch" 'ask for its yes
 rs_rule "an unreachable github keeps the records on their branch" 'where github cannot be reached, save the records on that branch, note in one plain line the step that did not happen, and open the pull request once github is reachable'
 rs_rule "records are never pushed straight to main" 'never push records straight to `main`'
 rs_rule "a later confirmation joins the open records branch, or a new one" 'a later confirmation joins that branch while its pull request is open, or a new branch and pull request once it has merged'
-rs_rule "the records merge is named and asked for" 'the records pull request is a merge like any other: name it and ask for a yes that names it'
+rs_rule "the records merge follows the merge step" 'the records pull request is a merge like any other, so `merge\.md` applies to it'
 rs_rule "the earlier merge yes does not cover it" 'the yes to the earlier merge does not cover it'
 # A host that builds every change to main builds the records merge too, and
 # that build becomes what a rollback returns to.
@@ -92,13 +83,10 @@ rs_guard "$SHIP" "ship's merge and deploy rules"
 
 rs_require_order "the rules sit after the recipe checks and before Build with care" "$SHIP" '^#### Merging and deploying$' '^### Build with care$'
 
-rs_require_load_bearing "WORKFLOW says ship never merges unasked" "$WORKFLOW" '/ship never merges a pull request you have not agreed to'
-rs_require_load_bearing "WORKFLOW says put it live is not that yes" "$WORKFLOW" 'saying "put it live" before any merge was named is not that yes'
+# The WORKFLOW lines on the merge itself moved to one-merge-step.sh with the rule.
 rs_require_load_bearing "WORKFLOW says ship checks before deploying again" "$WORKFLOW" '/ship checks whether it went live before it tries again'
 rs_require_load_bearing "WORKFLOW says a second deploy spends the rollback" "$WORKFLOW" 'a second deploy of the same version leaves nothing older to roll back to'
 rs_require_load_bearing "WORKFLOW says a warning is not repeated" "$WORKFLOW" 'a warning you have already heard is not repeated in the same /ship'
-rs_require_load_bearing "WORKFLOW says the merge is made on the pull request" "$WORKFLOW" '/ship makes each merge on the pull request itself, never by merging on your computer and pushing `main`'
-rs_require_load_bearing "WORKFLOW says an unreachable github makes the merge wait" "$WORKFLOW" 'if github cannot be reached, the merge waits, and you can merge it on github yourself'
 rs_require_load_bearing "WORKFLOW says records are saved the way a piece is" "$WORKFLOW" 'the records /ship writes during a launch, such as its changelog entries and a colleague later saying the new version is live, take the same save route as a piece'
 rs_require_load_bearing "WORKFLOW says a records merge is one more build" "$WORKFLOW" 'merging it starts one more build and moves the rollback target, and offers to leave it for the next change'
 rs_require_load_bearing "WORKFLOW says records get their own pull request, never main" "$WORKFLOW" 'one pull request for each /ship, never straight to `main`'

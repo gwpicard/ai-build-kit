@@ -104,7 +104,8 @@ it, then stop.
    section's turn comes in the checks below. Any merge or deploy on the way
    follows "Merging and deploying" below.
    If hosting uses a preview address, this is the moment work moves to the
-   team's address. That move is what /ship means.
+   team's address. That move is what /ship means, and "Promoting to live"
+   below says how it is asked for.
 
    Where the tool will run on a server this session cannot reach, such as one
    the team or a hosting companion runs, the address comes from whoever runs
@@ -259,25 +260,40 @@ the secret is kept. Never write that the secret is absent, missing or not on
 this computer: the kit only knows that it did not find it. Give no reason
 for a skipped check that the kit did not itself confirm.
 
+#### Promoting to live
+
+It applies whether or not the project is on a recipe. Read the `Goes live:`
+line in the masterplan's "How it stays running" section, as described in the
+`section-builder` skill's `references/merge.md`. On `through /ship`, merged
+work waits on a preview, and going live is a promote. On `on every merge`,
+there is nothing to promote: each merge was a launch, and `merge.md` ran the
+first-launch checks before the first of them.
+
+To promote, name what will go live: each change merged since the last launch,
+one plain line each, read from the files in `changes/` and the pull requests
+merged since then. Run the checks this path requires before the promote: the
+steps above, or on a recipe its checks up to going live. Then ask, for example:
+"Say yes to put these three changes live." Promote only on a yes that names the
+promote. A yes to a merge does not cover it, and neither does a yes given before
+the changes were named. A no leaves the live tool as it was.
+
+The promote is the recipe's going-live section, and its yes covers the commands
+that section names. Off a recipe, promote the way "How it stays running"
+records. Where it records nothing, ask the person how the preview is put live,
+and write their answer there.
+
+At any launch, first or later, where "How it stays running" has no `Goes live:`
+line, write one, from the recipe's going-live section or from what the person
+says. An older project gets the line this way, at its next launch.
+
 #### Merging and deploying
 
 These rules hold at every go-live, on a recipe or off one, and on Build with
 care as well.
 
-A person decides whether to merge, as with /implement. Before a merge, name
-each pull request in one plain line that says what it changes. Then ask for a
-yes that names the merge, for example: "Say yes to put it live, which merges
-the two record changes." Merge only when the person's reply plainly covers
-that merge. Where their own words already named the merge, as in "merge both
-and put it live", that is the yes: do not ask again. A yes to going live, to a
-hosting step, or to any question asked before the merge was named does not
-cover it: ask again, and merge nothing until they answer. A no leaves the pull
-request open and the live tool as it was.
-
-Make an approved merge on the pull request itself, such as with `gh pr merge`.
-Never merge the branch on this computer and push `main`. Where GitHub cannot be
-reached, the merge waits: say in one line that the person can merge it on
-GitHub themselves.
+Any merge follows the `section-builder` skill's `references/merge.md`, as it
+does on every route: the yes that names it, where it is made, and what the ask
+says when a merge goes live.
 
 The records /ship writes during a launch, such as its CHANGELOG.md entries and
 a confirmation the person gives later, such as a colleague saying the new
@@ -300,8 +316,8 @@ yes section-builder's "The first upload" describes. Never push records
 straight to `main`. A later confirmation joins that branch while its pull
 request is open, or a new branch and pull request once it has merged.
 
-The records pull request is a merge like any other: name it and ask for a yes
-that names it. The yes to the earlier merge does not cover it, because that
+The records pull request is a merge like any other, so `merge.md` applies to
+it. The yes to the earlier merge does not cover it, because that
 pull request did not exist when the person gave it. Where the host builds every
 change to `main`, merging it starts one more build of the same code and moves
 the rollback target. Say so in the line that asks for its yes, and offer to
