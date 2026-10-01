@@ -21,9 +21,10 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 PIECES="$ROOT/.agents/skills/setup-ai-build-kit/references/pieces.md"
 SETUP="$ROOT/.agents/skills/setup-ai-build-kit/SKILL.md"
 WORKFLOW="$ROOT/WORKFLOW.md"
+WHATNOW="$ROOT/.agents/skills/what-now/SKILL.md"
 
 rs_init "Piece-state checks"
-rs_exists "$PIECES" "$SETUP" "$WORKFLOW"
+rs_exists "$PIECES" "$SETUP" "$WORKFLOW" "$WHATNOW"
 
 # The model itself.
 rs_rule "exactly one state sits on an open piece" \
@@ -62,6 +63,21 @@ rs_rule "the held-up group has its own heading" \
 rs_rule "a closed issue never prints" 'a closed issue never prints'
 rs_rule "an unreachable GitHub still gives the printout's age" \
   'says when that one was written'
+# A piece can reach building or to check without being shaped or checked, and
+# then it looks exactly like one that was. The printout names it, and these
+# say so where the model is written down.
+rs_rule "a building or to check piece that skipped a step needs attention" \
+  'it also lists a `building` or `to check` piece that skipped a step'
+rs_rule "with no Done when it was never shaped" \
+  'with no `## done when` it says the piece was never shaped'
+rs_rule "with no Readiness it had no readiness check" \
+  'no `## readiness` section it says the piece had no readiness check'
+rs_rule "only the first note shows when both are missing" \
+  'where both are missing, only the first is said'
+rs_rule "such a piece stays in its own column too" \
+  'such a piece stays in its own column as well'
+rs_rule "a parent and a broken piece get neither note" \
+  'a parent and a `broken` piece get neither note'
 rs_guard "$PIECES" "pieces.md"
 
 # The sentences this model replaced. Put back, either would sit beside the new
@@ -99,5 +115,14 @@ rs_require_load_bearing "WORKFLOW.md says the printout draws them as a board" \
   "$WORKFLOW" 'the columns of a board'
 rs_require_absent "WORKFLOW.md no longer offers blocked as a label" \
   "$WORKFLOW" '`blocked` when something outside the project holds it up'
+rs_require_load_bearing "WORKFLOW.md says a piece built without shaping shows under needs attention" \
+  "$WORKFLOW" 'a piece being built or checked that was never shaped'
+
+# /what-now names such a piece where it names a failing check, before the
+# counts, so the person hears it before the work is merged.
+rs_require_load_bearing "/what-now names a piece built or checked that was never shaped or checked" \
+  "$WHATNOW" 'a piece being built or waiting for the person.s check that was never shaped, or never had its readiness check, is named in the same place'
+rs_require_load_bearing "/what-now says it once, with what is missing" \
+  "$WHATNOW" 'once, with what it is missing'
 
 rs_done
