@@ -752,6 +752,90 @@ case "$said" in
   *) fail "a failed first refresh does not say there is no printout: $said" ;;
 esac
 
+echo "== GitHub failures explain how to recover =="
+
+mkdir -p "$WORK/access/bin" "$WORK/access/project"
+cat >"$WORK/access/bin/gh" <<'SH'
+#!/usr/bin/env sh
+case "$1 $2" in
+  "repo view") stage=repo ;;
+  *) case "$2" in
+    *"/dependencies/blocked_by") stage=blockers ;;
+    *) stage=listing ;;
+  esac ;;
+esac
+if [ "$stage" = "$FAIL_STAGE" ]; then
+  cat "$ERROR_FILE" >&2
+  exit 1
+fi
+case "$stage" in
+  repo) echo '{"nameWithOwner":"someone/project"}' ;;
+  listing) cat "$FIXTURE" ;;
+  blockers) echo '[]' ;;
+esac
+SH
+chmod +x "$WORK/access/bin/gh"
+
+# Each of the three GitHub calls can fail. None may replace the last list,
+# particularly when the missing answer names a blocker.
+for stage in repo listing blockers; do
+  cp "$OUT" "$WORK/access/project/plan.local.md"
+  before=$(cksum < "$WORK/access/project/plan.local.md")
+  printf '%s\n' 'error connecting to api.github.com' > "$WORK/access/error"
+  said=$(cd "$WORK/access/project" && PATH="$WORK/access/bin:$PATH" \
+    FAIL_STAGE="$stage" ERROR_FILE="$WORK/access/error" FIXTURE="$WORK/issues.json" \
+    "$REFRESH" 2>&1) && fail "$stage failure reported success"
+  case "$said" in
+    *"error connecting to api.github.com"*"network"*) pass "$stage failure keeps the GitHub error and names network access" ;;
+    *) fail "$stage failure hides the cause or the recovery: $said" ;;
+  esac
+  [ "$(cksum < "$WORK/access/project/plan.local.md")" = "$before" ] \
+    && pass "$stage failure preserves the earlier printout" \
+    || fail "$stage failure replaced the earlier printout"
+done
+
+access_error() {
+  printf '%s\n' "$1" > "$WORK/access/error"
+  (cd "$WORK/access/project" && PATH="$WORK/access/bin:$PATH" \
+    FAIL_STAGE=repo ERROR_FILE="$WORK/access/error" FIXTURE="$WORK/issues.json" \
+    GH_TOKEN=synthetic-private-value "$REFRESH" 2>&1)
+}
+said=$(access_error 'To get started with GitHub CLI, please run: gh auth login') \
+  && fail "signed-out gh reported success"
+case "$said" in
+  *"not signed in"*"gh auth login"*) pass "signed-out gh names sign-in and the login command" ;;
+  *) fail "signed-out gh has no sign-in recovery: $said" ;;
+esac
+said=$(access_error 'none of the git remotes configured for this repository point to a known GitHub host') \
+  && fail "a project with no GitHub remote reported success"
+case "$said" in
+  *"no GitHub remote"*) pass "a missing GitHub remote is named" ;;
+  *) fail "a missing GitHub remote is called an access failure: $said" ;;
+esac
+said=$(access_error 'HTTP 403: Resource not accessible by integration') \
+  && fail "refused access reported success"
+case "$said" in
+  *"HTTP 403"*"permission"*) pass "refused access names permission rather than network" ;;
+  *) fail "refused access has no permission recovery: $said" ;;
+esac
+
+# Fake credentials cover environment values, GitHub tokens, request headers,
+# URL credentials and query parameters. None is a real account's credential.
+said=$(access_error 'error connecting to api.github.com
+synthetic-private-value ghp_FakeTokenForPrintoutOnly github_pat_FakeTokenForPrintoutOnly
+Authorization: Bearer synthetic-header-value
+https://user:synthetic-url-password@example.test/?access_token=synthetic-query-value
+password=synthetic-password-value') && fail "a failure containing credentials reported success"
+printf '%s\n' "$said" | grep -q 'error connecting to api.github.com' \
+  && pass "redaction keeps the useful error" || fail "redaction lost the useful error"
+for secret in synthetic-private-value ghp_FakeTokenForPrintoutOnly github_pat_FakeTokenForPrintoutOnly \
+    synthetic-header-value synthetic-url-password synthetic-query-value synthetic-password-value; do
+  case "$said" in
+    *"$secret"*) fail "a diagnostic disclosed a fake credential" ;;
+    *) pass "a fake credential is masked" ;;
+  esac
+done
+
 if [ "$FAIL" -eq 0 ]; then
   echo
   echo "plan-printout.sh: all checks passed"
