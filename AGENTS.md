@@ -1007,6 +1007,21 @@ attribution line, not the word.
   the person as a command, and the temporary folders the trim and the
   quarterly reads write are made with `mktemp -d` and left for the computer to
   clear.
+- `.agents/tests/speaks-for-the-person.sh` guards the yes the kit waits for
+  before it speaks for the person to anyone else. In a project where
+  colleagues file issues, the agent posted a comment under the person's
+  account to a colleague, and changed the title and scope of that colleague's
+  issue, before the person had said to go ahead. So `pieces.md` says that a
+  comment, a reply, a review, a mention or a message in another channel waits
+  for a yes on the words, shown first, and so does a change to the title or
+  scope of an issue or pull request another account opened. It holds how the
+  author is read, and that an author nobody can read counts as another
+  person's. It holds the bookkeeping that needs no yes, so a run with nobody
+  watching still claims, labels and sends a piece back to shaping, and that
+  "tell them" is the yes for the person's own words while a no gives them the
+  words to post. `/shape` keeps another author's words under "Original report"
+  and names the author. The founded `blocked-commands.md` carries the
+  restriction, and WORKFLOW.md's Team use section tells it.
 - `.agents/tests/merge-ask-rule.sh` guards the confirmation box Claude Code
   shows before a merge on a project whose every merge goes live. The rule that
   a person decides what merges holds only while an agent follows it, and two
