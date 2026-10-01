@@ -426,7 +426,10 @@ works in.
 A piece that depends on one built earlier in this run and not yet merged stacks
 on it. Its branch is cut from that piece's branch, its pull request aims at
 that branch, and the pull request says which to merge first, so the stack
-merges cleanly in order. When the base merges by squash, the stacked branch
+merges cleanly in order. It names the base by its number and title with no
+closing word before the number, as in "Merge #<number>, the date filter, first;
+this builds on it", since a closing word there would close the base, as the
+`section-builder` skill's save step says. When the base merges by squash, the stacked branch
 takes in `main` at its own merge, as the `section-builder` skill's
 `references/merge.md` describes, never by a rebase, since that needs a force
 push. The same step re-aims its pull request, and the base's entry is not
@@ -560,7 +563,8 @@ which of the two happened. A conflict still gets its one comment on the pull
 request, as the merge step says. The sweep goes on with the pieces that do not stack
 on it, and skips each one that does, with that reason. Each merge waits for one
 more run of the check, so a sweep over five pieces on a ten-minute check takes
-about fifty minutes.
+about fifty minutes. Wait for each check as the `section-builder` skill's
+`references/merge.md` says under "Waiting for the check".
 
 The report, in plain words, is one list and a merge order:
 

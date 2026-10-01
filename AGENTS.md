@@ -1445,7 +1445,24 @@ attribution line, not the word.
   `/implement`, `/fix`, `/ship` or `/sync` restating the rule rather than
   pointing at it, and holds `/ship`'s promote from a preview to live on a yes
   that names it. It replaces the validator's string that held section-builder
-  short of a merge.
+  short of a merge. It also holds how the kit waits for a project check, with
+  one `gh pr checks --watch --fail-fast` run in the background or by the
+  agent's own watch tool, never a `sleep` loop. Sessions with no written way
+  to wait made nine calls and eight watches and loops for one pull request,
+  and a watch using an option the installed `gh` lacked ended early and looked
+  finished. So an exit code of 8, or an unknown option, reads as not finished.
+  No checks at all, a check that never ends and an unreachable GitHub are each
+  said plainly and never called green, and only `merge.md` carries the wait.
+- `.agents/tests/closing-words.sh` guards the rule that only a pull request's
+  `Closes` line closes a piece. GitHub closes an issue on a closing word
+  straight before its number, even in a sentence saying it does not, and an
+  outside project had a piece closed twice that way, the second time by the
+  sentence warning about the first. It holds the nine words, the negated case,
+  the reach into titles, commits and changelog files, and naming another piece
+  by number and title instead, in section-builder, the run's stack example and
+  WORKFLOW.md. It also reads every number in those files and the merge step,
+  fails on a closing word before one outside the `Closes #<number>` line, and
+  proves that reader catches a bad sentence planted in a copy.
 - `.agents/tests/not-hosted.sh` guards the third value of the `Goes live:`
   line, `not hosted`, for a tool no server runs for people to reach. Two
   projects had no live address at all, a skill library installed from the

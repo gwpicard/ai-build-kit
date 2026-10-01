@@ -475,11 +475,29 @@ Pull-request route: update the records, commit, push, open a pull request
 titled after the piece with a plain-language summary, aimed at the branch the
 piece was cut from, and run the project checks. The project's first upload waits for the yes in step 1. Where the
 piece is an issue, write `Closes #<number>` in the pull request body, so
-merging it closes the piece rather than leaving somebody to remember. Once it
+merging it closes the piece rather than leaving somebody to remember.
+
+A closing word appears only on a `Closes #<number>` line, one line for each
+piece the pull request finishes. GitHub closes an issue when a merged pull
+request or commit puts one of nine closing words straight before its number:
+close, closes, closed, fix, fixes, fixed, resolve, resolves or resolved. It
+reads only the word and the number, so a sentence saying the pull request does
+not close a piece still closes it when the closing word stands straight before
+the number. So in the pull request's title and body, in commit messages and in
+changelog files, no number that names another piece has a closing word before
+it. Name another piece by its number and its title, with no closing word before
+the number, and say "after", "builds on" or "merge first", as in "Merge
+#<number>, the date filter, first." A pull request that finishes one piece and
+mentions another carries one `Closes` line, for the piece it finishes, and
+names the other that way.
+
+Once it
 is open, write the piece's changelog file, as step 9 describes, and push it.
 When the pull request opens, move the piece from `building` to `to check` in the same
 step, `gh issue edit <number> --add-label "to check" --remove-label building`,
-since it now waits for the person to try it or merge it. Never present it as ready until the check is green; if it goes red,
+since it now waits for the person to try it or merge it. Wait for the check as
+`references/merge.md` says under "Waiting for the check", and never present the
+pull request as ready until the check is green; if it goes red,
 say so plainly, pull the failing output yourself, fix through the normal
 steps, and push again.
 
