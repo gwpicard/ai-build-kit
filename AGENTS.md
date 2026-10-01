@@ -533,7 +533,13 @@ attribution line, not the word.
   kit's, are left alone. The report matches with the shell alone, since the
   check's own PATH once had no `tr` and a lower-casing step failed without a
   word. Every other case runs from a folder with no `origin`, so the suite
-  gives the same answer wherever it is run from.
+  gives the same answer wherever it is run from. Last, it drives the part of
+  the report that says what the walk-through can look with, using stand-ins
+  for `pdftoppm`, `soffice`, `magick` and `npx`. Each is reported ready or
+  missing, `libreoffice` and an older ImageMagick's `convert` count, and
+  `npx` without Playwright counts as missing. A missing one prints the install
+  command for the machine the check runs on and never stops founding, and
+  none of them excuses a missing founding tool.
 - `.agents/tests/completion-report-shape.sh` guards the source of the /setup
   completion report, which is watched by hand rather than replayed: it proves
   completion-report.md still leads with what is ready, keeps technical state out
@@ -1450,7 +1456,28 @@ attribution line, not the word.
   both README places, PHILOSOPHY.md and section-builder, and proves each
   sentence load-bearing. It also searches every shipped document and skill,
   the foundation templates included, for the old wording, and finds it on a
-  copy with the old sentence put back.
+  copy with the old sentence put back. Two later sentences timed a step by
+  the person's try as if one always came, the trim in WORKFLOW.md and the
+  screen rules, so it holds that both are timed by the walk-through instead.
+- `.agents/tests/walk-through-eyes.sh` guards what the walk-through can look
+  at, and where its pictures go. Step 6 once said to take a screenshot where
+  the coding agent could, and nothing more, so on a tool whose output was a
+  PDF the agent either read the file's bytes and called it checked, or saw
+  nothing. So it holds the means in the order step 6 tries them: the coding
+  agent's own browser tool, then Playwright only where it is already there, a
+  PDF rendered one picture a page for the first 30 pages with the rest named
+  as not seen, `pdfinfo` giving the page count, an office file made into a PDF
+  first, and an SVG made into a picture in the pictures folder rather than
+  beside the SVG, where it would land in the worktree. The kit never installs a browser. Each picture is opened with the
+  file reader, and the report says what it was compared against. Every
+  picture goes to the main folder's walk-through folder, one for each piece,
+  never inside a worktree, where it would count as unsaved work and keep the
+  worktree after its pull request closed. The old wording that put it
+  wherever the build ran is refused. A renderer failing is a finding about
+  the piece, and an agent that cannot read images says it could not look, so
+  the piece goes to `to check`. It also holds the `Walk-through eyes:` line
+  founding records in place of browser availability, and WORKFLOW.md telling
+  how to give the walk-through more eyes.
 - `.agents/tests/first-upload-asks.sh` guards the yes the project's first
   upload waits for. Founding tells the person nothing will be uploaded, and in
   a real run the first piece then pushed the whole project to GitHub with no
