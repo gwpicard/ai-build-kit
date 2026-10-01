@@ -90,7 +90,9 @@ because a step nobody names is a step nobody does.
 Say piece names, never issue numbers. Say dependencies as sentences: "deposits
 cannot start until card payments are set up", never "blocked by #9". Name at
 most three things; if more apply, say how many and name the nearest. More than
-three stops being orientation and becomes a report. Match where the project is in its life. Still building toward the first launch: the answer is usually /implement for the next ready piece, /shape to shape a new one, or /ship when the plan has run dry. Live and running: the answer is usually "say what you want to /shape", /fix for the thing that broke, or the /maintain that the recorded check-up dates show is overdue.
+three stops being orientation and becomes a report. When the person asks what
+else can be worked on, still name at most three, and offer /queue for the rest:
+it prints the plan a run would follow and ends on the command that runs it. Match where the project is in its life. Still building toward the first launch: the answer is usually /implement for the next ready piece, /shape to shape a new one, or /ship when the plan has run dry. Live and running: the answer is usually "say what you want to /shape", /fix for the thing that broke, or the /maintain that the recorded check-up dates show is overdue.
 
 End with a short recap of where the tool has got to, in the words a person would
 use. Say what the last stretch of work was about, and whether anything is on the

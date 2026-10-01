@@ -342,7 +342,10 @@ next, but which of them can be taken on at the same time. A piece can be shaped
 and still be held up, so `ready` alone does not mean startable. What `/queue`
 offers is the ready pieces the printout has already put under `To build`, and a
 piece with an open blocker is never there. That is what makes the group safe to
-take on at once: no two pieces in it are waiting on each other. Shape still
+take on at once: no two pieces in it are waiting on each other. The printout
+also compares their `Touches:` lines and prints the pieces in groups, two
+pieces naming the same area never in one, and `/queue` reads the groups rather
+than working them out again. Shape still
 decides too, so a piece somebody labelled `ready` without giving it a
 `## Done when` is a note, and `/queue` does not offer it either.
 
@@ -483,12 +486,20 @@ build.
 The printout reads the states as the columns of a board. It prints, in this
 order: Needs attention, Broken, then the states in the order idea, shaping,
 ready, building, to check and parked, and last Made of parts. Within ready, the
-pieces free to start are headed `To build`, and the ones waiting on another
-piece are headed `Held up`, each naming the piece holding it. Needs attention
-lists a piece carrying two states, a `needs-` label without `shaping`, and a
-`ready` piece with no `## Done when`, each once, with the labels named. A parent
-with parts carries no state of its own and prints under Made of parts. A closed
-issue never prints.
+pieces free to start are headed `To build`, followed by `Go together`, and the
+ones waiting on another piece are headed `Held up`, each naming the piece
+holding it. Needs attention lists a piece carrying two states, a `needs-` label
+without `shaping`, and a `ready` piece with no `## Done when`, each once, with
+the labels named. A parent with parts carries no state of its own and prints
+under Made of parts. A closed issue never prints.
+
+`Go together` puts the pieces under `To build` in groups by their `Touches:`
+lines. A held-up piece is marked `(in the plan)` when every open blocker in its
+chain is ready to build too. A ready piece carries the marks a run's verdict
+needs, read from its body: `(needs you)` for a `## Waiting on you` step other
+than `try it`, `(not ready)` and `(not yet checked)` from its `## Readiness`
+section, `(try it)` for a `Waiting on you: try it` line, and on a held-up piece
+`(waits for ...)` when it stacks on one a run cannot take.
 
 When a command names what can be built next, it names a piece under `To build`
 marked `(ready)` in a printout it has just refreshed, and nothing else. Where

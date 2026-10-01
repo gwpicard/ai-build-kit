@@ -164,10 +164,11 @@ echo "== The printout reads as a board =="
 # The headings in the order they print. Needs attention and Broken come first
 # because somebody opening the file wants to know what is wrong before what is
 # next. Then the states, in the order a piece moves through them, with ready
-# split into the pieces free to start and the ones held up by another. Parents
-# last, because a parent has no state of its own.
+# split into the pieces free to start and the ones held up by another. The
+# groups of free pieces that can be built together follow the pieces they
+# group. Parents last, because a parent has no state of its own.
 headings=$(awk 'NR > 3 && /^[^ ]/ && !/^Plan / && !/^Last refreshed/ && !/entr(y|ies) (is|are) still/' "$OUT" | tr '\n' '|')
-expected="Needs attention|Broken|Idea|Shaping|To build|Held up|Building|To check|Parked|Made of parts|"
+expected="Needs attention|Broken|Idea|Shaping|To build|Go together|Held up|Building|To check|Parked|Made of parts|"
 [ "$headings" = "$expected" ] \
   && pass "the groups print in board order" \
   || fail "the groups print as '$headings', expected '$expected'"
@@ -399,6 +400,235 @@ if [ -f "$OLDER" ]; then
     && ! section "Needs attention" "$OLDER" | grep -q "Deposits" \
     && pass "an older project's blocked beside ready prints as parked, not as a mistake" \
     || fail "an older project's blocked beside ready is not read as parked"
+fi
+
+echo "== Which ready pieces go together =="
+
+# /queue prints the groups and never works them out, so the printout is where a
+# clash has to be caught. Each ready piece names the areas it changes on a
+# Touches line. Two pieces that name the same area, in any mix of capitals,
+# never share a group, since building them in one run could change the same
+# thing twice. A piece whose Touches line is missing goes alone, because
+# nothing says what it changes. A piece opened with the GitHub form carries the
+# line under a Touches heading of its own, and it counts the same.
+#
+# Guest list export and Export to spreadsheet both name exports. Booking
+# reminders names the guest list under a form heading. Seat map has no Touches
+# line and Gift wrap left the form's field empty. Refund receipts clashes with
+# every group before Seat map's, so it is the piece that would join Seat map if
+# a piece going alone could be joined. Deposits is ready but held up
+# by an open piece, so it is in no group to build now. Guest list export and
+# Refund button share nothing, so they must end up together, or a printout that
+# put every piece alone would pass the rest of this.
+cat >"$WORK/groups.json" <<'JSON'
+[
+  {"number": 1, "title": "Guest list export", "html_url": "http://x/1",
+   "body": "## Done when\nThe list downloads.\n\nTouches: guest list, exports\n",
+   "assignees": [], "labels": [{"name": "ready"}]},
+  {"number": 2, "title": "Refund button", "html_url": "http://x/2",
+   "body": "## Done when\nA refund is sent.\n\nTouches: Refunds\n",
+   "assignees": [], "labels": [{"name": "ready"}]},
+  {"number": 3, "title": "Export to spreadsheet", "html_url": "http://x/3",
+   "body": "## Done when\nA sheet downloads.\n\nTouches: Exports, settings\n",
+   "assignees": [], "labels": [{"name": "ready"}]},
+  {"number": 4, "title": "Seat map", "html_url": "http://x/4",
+   "body": "## Done when\nSeats show.", "assignees": [],
+   "labels": [{"name": "ready"}]},
+  {"number": 5, "title": "Booking reminders", "html_url": "http://x/5",
+   "body": "### Done when\n\nA reminder goes out.\n\n### Touches\n\nGuest List\n",
+   "assignees": [], "labels": [{"name": "ready"}]},
+  {"number": 6, "title": "Deposits", "html_url": "http://x/6",
+   "body": "## Done when\nA deposit is held.\n\nTouches: payments\n",
+   "assignees": [], "labels": [{"name": "ready"}],
+   "issue_dependencies_summary": {"blocked_by": 1, "total": 1}},
+  {"number": 7, "title": "Card checkout", "html_url": "http://x/7",
+   "body": "## Done when\nA card is charged.\n\nTouches: payments\n",
+   "assignees": [], "labels": [{"name": "idea"}]},
+  {"number": 8, "title": "Gift wrap", "html_url": "http://x/8",
+   "body": "## Done when\nA gift is wrapped.\n\n### Touches\n\n_No response_\n",
+   "assignees": [], "labels": [{"name": "ready"}]},
+  {"number": 9, "title": "Refund receipts", "html_url": "http://x/9",
+   "body": "## Done when\nA receipt is sent.\n\nTouches: refunds, settings\n",
+   "assignees": [], "labels": [{"name": "ready"}]},
+  {"number": 10, "title": "Deposit refunds", "html_url": "http://x/10",
+   "body": "## Done when\nA deposit comes back.\n\nTouches: deposits\n",
+   "assignees": [], "labels": [{"name": "ready"}],
+   "issue_dependencies_summary": {"blocked_by": 1, "total": 1}},
+  {"number": 11, "title": "Calendar invites", "html_url": "http://x/11",
+   "body": "## Done when\nAn invite goes out.\n\nTouches: invites\n\n## Readiness\n2026-09-30, checked by a session that did not shape it: Ready\n",
+   "assignees": [], "labels": [{"name": "ready"}],
+   "issue_dependencies_summary": {"blocked_by": 1, "total": 1}},
+  {"number": 12, "title": "Calendar sync", "html_url": "http://x/12",
+   "body": "## Done when\nThe calendar syncs.\n\nTouches: `calendar`.\n\n## Readiness\n2026-09-30, checked by a session that did not shape it: Not ready\n- BLOCKING Data: nobody said which calendar wins.\n",
+   "assignees": [], "labels": [{"name": "ready"}]},
+  {"number": 13, "title": "Calendar colours", "html_url": "http://x/13",
+   "body": "## Done when\nDays are coloured.\n\n~~~\nTouches: menu\n~~~\n\n## Touches\nCalendar\n\n## Readiness\n2026-09-30, checked by a session that did not shape it: Ready\n",
+   "assignees": [], "labels": [{"name": "ready"}]},
+  {"number": 14, "title": "Invite reminders", "html_url": "http://x/14",
+   "body": "## Done when\nA reminder follows the invite.\n\nTouches: reminders\n",
+   "assignees": [], "labels": [{"name": "ready"}],
+   "issue_dependencies_summary": {"blocked_by": 1, "total": 1}},
+  {"number": 15, "title": "Stock sync", "html_url": "http://x/15",
+   "body": "## Done when\nStock matches.\n\nTouches: stock\n",
+   "assignees": [], "labels": [{"name": "ready"}],
+   "issue_dependencies_summary": {"blocked_by": 1, "total": 1}},
+  {"number": 16, "title": "Supplier account", "html_url": "http://x/16",
+   "body": "## Done when\nOrders reach the supplier.\n\n## Waiting on you\nOpen the supplier account and put its key in .env.\n\nTouches: suppliers\n",
+   "assignees": [], "labels": [{"name": "ready"}]},
+  {"number": 17, "title": "Menu photos", "html_url": "http://x/17",
+   "body": "## Done when\nEach dish has a photo.\n\nWaiting on you: try it\n\nTouches: menu\n\n## Readiness\n2026-09-30, checked by a session that did not shape it: Ready\n",
+   "assignees": [], "labels": [{"name": "ready"}]}
+]
+JSON
+cat >"$WORK/bin-groups-gh" <<'SH'
+#!/usr/bin/env sh
+case "$1 $2" in
+  "repo view") echo '{"nameWithOwner":"someone/project"}' ;;
+  *) case "$2" in
+       *"/issues?"*) cat "$FIXTURE" ;;
+       *"/issues/6/dependencies/blocked_by")
+         echo '[{"number":7,"title":"Card checkout","state":"open"}]' ;;
+       *"/issues/10/dependencies/blocked_by")
+         echo '[{"number":6,"title":"Deposits","state":"open"}]' ;;
+       *"/issues/11/dependencies/blocked_by")
+         echo '[{"number":12,"title":"Calendar sync","state":"open"}]' ;;
+       *"/issues/14/dependencies/blocked_by")
+         echo '[{"number":11,"title":"Calendar invites","state":"open"}]' ;;
+       *"/issues/15/dependencies/blocked_by")
+         echo '[{"number":1,"title":"Guest list export","state":"open"}]' ;;
+       *) echo '[]' ;;
+     esac ;;
+esac
+SH
+mkdir -p "$WORK/groups/bin"
+mv "$WORK/bin-groups-gh" "$WORK/groups/bin/gh"
+chmod +x "$WORK/groups/bin/gh"
+(cd "$WORK/groups" && PATH="$WORK/groups/bin:$PATH" FIXTURE="$WORK/groups.json" \
+  "$REFRESH" >/dev/null 2>&1) \
+  || fail "the printout could not be written for the groups fixture"
+TOGETHER="$WORK/groups/plan.local.md"
+
+# Each piece line under Go together, prefixed with the group it sits in.
+grouped() {
+  section "Go together" "$TOGETHER" \
+    | awk '/^  Group [0-9]/ { g = $2; next } /^    / { print g "\t" $0 }'
+}
+group_of() {
+  grouped | grep "$1" | cut -f1
+}
+
+if [ -f "$TOGETHER" ]; then
+  [ -n "$(section "Go together" "$TOGETHER")" ] \
+    && pass "the printout prints the groups of ready pieces" \
+    || fail "the printout has no Go together groups"
+
+  missing=""
+  for piece in "Guest list export" "Refund button" "Export to spreadsheet" \
+      "Seat map" "Booking reminders" "Gift wrap" "Refund receipts"; do
+    [ "$(grouped | grep -c "$piece")" -eq 1 ] || missing="$missing, $piece"
+  done
+  [ -z "$missing" ] \
+    && pass "every piece free to build sits in exactly one group" \
+    || fail "not in exactly one group: ${missing#, }"
+
+  a=$(group_of "Guest list export"); b=$(group_of "Export to spreadsheet")
+  [ -n "$a" ] && [ -n "$b" ] && [ "$a" != "$b" ] \
+    && pass "two pieces naming the same area, in different capitals, never share a group" \
+    || fail "Guest list export and Export to spreadsheet both touch exports but are not in separate groups"
+
+  a=$(group_of "Guest list export"); b=$(group_of "Booking reminders")
+  [ -n "$a" ] && [ -n "$b" ] && [ "$a" != "$b" ] \
+    && grouped | grep "Booking reminders" | grep -q "touches guest list" \
+    && pass "a Touches line under a form heading is read and compared the same way" \
+    || fail "Booking reminders' Touches under the form heading was not read, or it shares a group with Guest list export"
+
+  a=$(group_of "Guest list export"); b=$(group_of "Refund button")
+  [ -n "$a" ] && [ "$a" = "$b" ] \
+    && pass "two pieces that share no area go together" \
+    || fail "Guest list export and Refund button share nothing but are not grouped together"
+
+  alone=yes
+  for piece in "Seat map" "Gift wrap"; do
+    g=$(group_of "$piece")
+    [ -n "$g" ] && [ "$(grouped | awk -F '\t' -v g="$g" '$1 == g' | wc -l | tr -d ' ')" -eq 1 ] \
+      || { alone=no; fail "$piece has no Touches line but does not go alone"; }
+    grouped | grep "$piece" | grep -q "Touches unknown" \
+      || { alone=no; fail "$piece does not say its Touches is unknown"; }
+  done
+  [ "$alone" = no ] \
+    || pass "a piece with no Touches line goes alone and says its Touches is unknown"
+
+  # The blocker invariant reaches the groups: a piece with an open blocker is
+  # never in a group to build now.
+  section "Go together" "$TOGETHER" | grep -q "Deposits" \
+    && fail "a piece with an open blocker was put in a group to build now" \
+    || pass "a piece with an open blocker is in no group"
+  section "Held up" "$TOGETHER" | grep "Deposits" | grep -q "needs Card checkout" \
+    && pass "and it still names the piece holding it up" \
+    || fail "Deposits does not name Card checkout under Held up"
+
+  # Backticks and a closing full stop come off in either order, a `## Touches`
+  # heading counts like the form's, and a line inside a ~~~ block is an
+  # example rather than the piece's own.
+  a=$(group_of "Calendar sync"); b=$(group_of "Calendar colours")
+  [ -n "$a" ] && [ -n "$b" ] && [ "$a" != "$b" ] \
+    && grouped | grep "Calendar sync" | grep -q "(touches calendar)" \
+    && grouped | grep "Calendar colours" | grep -q "(touches calendar)" \
+    && pass "an area written in backticks with a full stop clashes with the bare name" \
+    || fail "Calendar sync and Calendar colours both touch the calendar but are not in separate groups"
+
+  echo "== What a run can do with each ready piece =="
+
+  # The marks the printout can read on the piece itself. /queue reads them here
+  # and never opens the pieces, so the printout stays its only source.
+  mark_on() {
+    section "$1" "$TOGETHER" | grep "$2" | grep -q "$3"
+  }
+  mark_on "To build" "Guest list export" "(not yet checked)" \
+    && pass "a piece with no Readiness section is marked not yet checked" \
+    || fail "Guest list export has no Readiness section but is not marked not yet checked"
+  mark_on "To build" "Calendar sync" "(not ready)" \
+    && pass "a piece whose Readiness says Not ready is marked not ready" \
+    || fail "Calendar sync is not marked not ready"
+  mark_on "To build" "Supplier account" "(needs you)" \
+    && pass "a piece with a step of the person's is marked needs you" \
+    || fail "Supplier account is not marked needs you"
+  mark_on "To build" "Menu photos" "(try it)" \
+    && ! mark_on "To build" "Menu photos" "(needs you)" \
+    && pass "a try it line is marked try it, never needs you" \
+    || fail "Menu photos is not marked try it alone"
+  section "To build" "$TOGETHER" | grep "Calendar colours" | grep -qE "\\((not |needs you|try it)" \
+    && fail "Calendar colours is checked Ready but carries a mark" \
+    || pass "a piece checked Ready with nothing of the person's carries no mark"
+
+  echo "== Which held-up pieces are in the plan =="
+
+  # A held-up piece joins the plan only when every open blocker in its chain
+  # is in the plan. Deposits waits on an idea, so it waits its turn, and so does
+  # Deposit refunds, which waits on Deposits.
+  mark_on "Held up" "Deposits" "(in the plan)" \
+    && fail "Deposits waits on an idea but was put in the plan" \
+    || pass "a piece whose blocker is outside the plan waits its turn"
+  mark_on "Held up" "Deposit refunds" "(in the plan)" \
+    && fail "Deposit refunds waits on Deposits, which is outside the plan, but was put in it" \
+    || pass "a piece further down a chain that leaves the plan waits its turn too"
+  mark_on "Held up" "Stock sync" "(in the plan)" \
+    && ! mark_on "Held up" "Stock sync" "(waits for" \
+    && pass "a piece whose blocker is ready joins the plan and stacks on it" \
+    || fail "Stock sync is not in the plan, or says it waits"
+
+  # A piece stacked on one a run cannot take waits for it, with the reason,
+  # and so does the piece stacked on that one.
+  mark_on "Held up" "Calendar invites" "(in the plan)" \
+    && mark_on "Held up" "Calendar invites" "(waits for Calendar sync, which is not ready)" \
+    && pass "a piece stacked on one that is not ready waits for it and says why" \
+    || fail "Calendar invites does not say it waits for Calendar sync, which is not ready"
+  mark_on "Held up" "Invite reminders" "(in the plan)" \
+    && mark_on "Held up" "Invite reminders" "(waits for Calendar invites, which waits for Calendar sync, which is not ready)" \
+    && pass "the wait passes down the chain with each reason" \
+    || fail "Invite reminders does not say it waits for Calendar invites and why"
+else
+  fail "no printout was written for the groups fixture"
 fi
 
 echo "== When GitHub cannot be reached =="
