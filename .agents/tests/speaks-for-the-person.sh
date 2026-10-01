@@ -55,6 +55,16 @@ rs_rule "bookkeeping says nothing in the person's voice" \
   'say nothing in the person.s voice, so they need no yes'
 rs_rule "exempt: state and needs- labels" 'state labels and `needs-` labels'
 rs_rule "exempt: the claim comment" 'the claim comment a run writes'
+rs_rule "exempt: the one conflict comment a merge leaves" \
+  'the one comment naming the conflicting files when a merge from `main`'
+rs_rule "exempt: the kit's own pull request text" \
+  'the title and body of a pull request the kit opens for a piece'
+rs_rule "adding shaped sections over the kept original is not a change" \
+  'adding the shaped sections above the original, kept whole, is not such'
+rs_rule "capture on a colleague's matching issue stays exempt" \
+  'such as capture adding them to a matching issue, whoever opened it'
+rs_rule "the kept original has a name /shape can point to" \
+  'underneath, under "original report"'
 rs_rule "exempt: a Closes line" 'a `closes #<number>` line'
 rs_rule "exempt: the send-back question" \
   'the question a run or `/shape` writes on a piece it sends back to shaping'
@@ -119,9 +129,8 @@ rs_require_order "WORKFLOW.md says it in Team use" "$WORKFLOW" \
 rs_require_order "and before the section after it" "$WORKFLOW" \
   'in your name until you have seen' '^## 12\. '
 
-# The founded AGENTS.md is not changed, since it sits at its line budget; it
-# already says the blocked-commands file always applies.
-rs_require "the founded AGENTS.md still says blocked-commands.md always applies" \
-  "$FOUNDED" 'blocked-commands'
+# The founded AGENTS.md sits at its line budget and is not changed for this;
+# the restriction reaches every session through blocked-commands.md, which it
+# already says always applies. standing-instructions.sh holds the budget.
 
 rs_done
