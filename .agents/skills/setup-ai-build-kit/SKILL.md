@@ -65,7 +65,49 @@ answer can still be changed afterwards and an unfounded project cannot.
 
 ## 0. Resume safely
 
-First, run `scripts/bootstrap-project.sh` from this installed skill folder in
+Before anything is written, read which branch the folder is on. A founding once
+saved its checkpoint onto a feature branch the person had checked out, so the
+main branch never received the records and the commits were moved across by
+hand. Read the current branch with `git branch --show-current`, or with
+`git rev-parse --abbrev-ref HEAD` where an older Git refuses that. Then read the
+default branch: the remote's, from
+`git symbolic-ref --short refs/remotes/origin/HEAD` with `origin/` taken off,
+else a local `main`, else a local `master`. With no remote and neither of those,
+the current branch is the default.
+
+A folder with no commits yet, or one already on the default branch, gets nothing
+said. A detached checkout counts as another branch.
+
+On another branch, look for unsaved work with `git status --porcelain`. Where it
+prints nothing, switch with `git switch <default>`, or with
+`git checkout <default>` where an older Git refuses that. Either one creates the
+default branch from the remote's copy when it exists only there. Then say once,
+in one line, close to: "This folder was on `<branch>`, so I moved it to
+`<default>` before writing anything. That way the records land where every later
+piece starts. Say if you want it founded on `<branch>` instead." This is not a
+question, and founding does not wait for an answer.
+
+Where it prints anything, never switch, because switching would carry or disturb
+the person's work. Say once instead that founding stays on this branch because
+it holds unsaved work, and that the records reach `<default>` only when this
+branch merges.
+
+Where the switch fails, stay on the current branch, say so and why in that same
+one line, and carry on founding; never stop for it. The usual cause is a
+worktree made by another tool, where the default branch is already checked out
+in another folder.
+
+Where the person says to found on their own branch, in the interview or in
+answer to that line, switch back to it before the founding save with
+`git switch <branch>`. Their work is not in the way: the folder held none
+unsaved, and founding's own files move across with the switch. The founding
+save below says what is then written down.
+
+This read runs again whenever founding resumes, from the setup notes or from
+anywhere else, so a founding picked up on another branch meets the same rules.
+In the kit's own source, which the read below recognises, switch nothing.
+
+Then run `scripts/bootstrap-project.sh` from this installed skill folder in
 the project root. It creates only missing project foundation files and leaves
 anything already there untouched. If the harness cannot run the script, copy
 the missing files from `templates/foundation/` to the paths named by the
@@ -603,6 +645,12 @@ person "Nothing will be uploaded", and that has to stay true. Where the online
 repository holds none of the code yet, the code stays on this computer until
 the first piece that pushes asks the person first, as section-builder's "The
 first upload" describes.
+
+Where founding saves anywhere but the default branch, because the person chose
+their own branch, the branch held unsaved work, or the switch failed, say so
+where it lasts. Write a line in CHANGELOG.md under today's date naming the
+branch and the reason, and saying the records reach the default branch when it
+merges. The completion report says the same.
 
 section-builder chooses between the checkpoint, pull-request and flagged routes
 for each piece built afterwards, on what that piece touches. That choice is

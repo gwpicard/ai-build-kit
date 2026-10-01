@@ -13,6 +13,7 @@ Internal facts recorded for later agents, and what the user hears instead:
 - `npm start` serves a local address -> "The private preview opened successfully."
 - the working tree is clean -> "All setup work has been saved."
 - the current branch is ahead of its remote -> "The saved work has not been uploaded."
+- founding saved on a branch other than the default -> "The setup is saved on the branch [name], and reaches [the default branch] when that branch is merged."
 - the commit identifier -> only in the checkpoint reference at the very end, never leading the report.
 - no push occurred -> "No code was uploaded or published."
 - the online repository holds none of the project's code yet, so the first push waits for a yes -> "The code stays on this computer until your first build asks you before putting it online."
@@ -72,6 +73,9 @@ The initial setup is complete.
 ## Where it is saved
 
 A checkpoint has been saved inside the project on this computer.
+[Only where founding saved on a branch other than the default:] The setup is
+saved on the branch `[branch]`, and reaches `[default branch]` only when that
+branch is merged.
 
 No code was uploaded or published. The build steps are listed as issues in the
 project's online repository, which is where the kit keeps the work still to do.
