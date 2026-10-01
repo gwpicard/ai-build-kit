@@ -538,8 +538,14 @@ pieces free to start are headed `To build`, followed by `Go together`, and the
 ones waiting on another piece are headed `Held up`, each naming the piece
 holding it. Needs attention lists a piece carrying two states, a `needs-` label
 without `shaping`, and a `ready` piece with no `## Done when`, each once, with
-the labels named. A parent with parts carries no state of its own and prints
-under Made of parts. A closed issue never prints.
+the labels named. It also lists a `building` or `to check` piece that skipped a
+step. With no `## Done when` it says the piece was never shaped. With a Done
+when but no `## Readiness` section it says the piece had no Readiness check.
+Where both are missing, only the first is said. Such a piece stays in its own
+column as well, because somebody really is building or checking it, and on an
+older project the Readiness note goes once those pieces close. A parent and a
+`broken` piece get neither note. A parent with parts carries no state of its
+own and prints under Made of parts. A closed issue never prints.
 
 `Go together` puts the pieces under `To build` in groups by their `Touches:`
 lines. A held-up piece is marked `(in the plan)` when every open blocker in its

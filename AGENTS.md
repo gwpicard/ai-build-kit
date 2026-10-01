@@ -302,7 +302,13 @@ attribution line, not the word.
   rather than its number. An open issue with no state is an idea. A piece with
   two states, or a `needs-` label without `shaping`, prints once, under Needs
   attention, and a `ready` piece with no Done when prints as an idea and is
-  named there too. A closed issue never prints. An older project's labels still
+  named there too. A piece under `building` or `to check` that was never
+  shaped, or never passed the readiness check, looks exactly like one that
+  was, so it is named there with what it is missing and still prints in its
+  own column. Where both are missing, only the missing Done when is named. A
+  parent and a repair are never named that way, and a Readiness heading in
+  another case counts while one with extra words does not. A closed issue
+  never prints. An older project's labels still
   group, with `blocked` read as parked, even beside `ready`. When GitHub cannot
   be reached, the last printout is left alone and the refresh says when it was
   written. It also holds the invariant `/queue` rests on, that a piece with an
@@ -327,7 +333,9 @@ attribution line, not the word.
   that allows two states, not only on one with the rule gone, because loosening
   is the edit that slips through. It also holds that founding names the six
   labels when it makes the label set, and that WORKFLOW.md explains the states
-  in one place.
+  in one place. It holds the two notes for a piece built or checked without
+  being shaped or checked where `pieces.md` and WORKFLOW.md describe them, and
+  that `/what-now` names such a piece once, beside a failing check.
 - `.agents/tests/state-moves.sh` guards the commands that keep the board true.
   Each move takes the old state off in the same step as it puts the new one
   on, and the check reads every label command in `/shape`, `/implement`,

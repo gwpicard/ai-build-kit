@@ -65,6 +65,12 @@ themselves. An open review finding still waiting, and a setup step left
 half-done, are named in the same place. None of the three is left sitting under a
 "nothing is blocked"; each has its own recovery route below.
 
+A piece being built or waiting for the person's check that was never shaped, or
+never had its readiness check, is named in the same place, once, with what it is
+missing. The printout lists it under Needs attention. Say it in the piece's own
+words: "the late fees piece is being built, but nobody ever wrote down what done
+looks like for it". Name it before it is merged rather than after.
+
 Say how many entries are still notes rather than pieces, when any are, in the
 words a person would use: "two things on the list are still just notes, so I
 will ask you about them before building them". The printout marks them. Knowing
