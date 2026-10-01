@@ -21,6 +21,14 @@ with tempfile.TemporaryDirectory() as temp:
     assert records.field(p,'Path')=='Build and run it'
     assert records.field(p,'Goes live')=='on every merge'
     assert records.field(p,'Secret location')=='external/file'
+    settings=p/'settings.json'; settings.write_text('{}')
+    merge=root/'.agents/skills/setup-ai-build-kit/scripts/merge-ask-rules.py'
+    subprocess.run(['python3',str(merge),'sync',str(settings),str(p)],check=True,stdout=subprocess.DEVNULL)
+    assert 'Bash(gh pr merge' in settings.read_text()
+    (p/'docs/operations.md').write_text('Goes live: not hosted\nSecret location: external/file\n')
+    subprocess.run(['python3',str(merge),'sync',str(settings),str(p)],check=True,stdout=subprocess.DEVNULL)
+    assert 'Bash(gh pr merge' not in settings.read_text()
+    settings.unlink()
     assert 'Staff borrow equipment' in (p/'masterplan.md').read_text()
     assert 'custodian' in (p/'docs/permissions.md').read_text()
     assert records.word_count('# Title\n[Permission rule](docs/permission-rule.md)')==3

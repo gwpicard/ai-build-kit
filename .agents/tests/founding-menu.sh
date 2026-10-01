@@ -29,7 +29,7 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 SETUP="$ROOT/.agents/skills/setup-ai-build-kit/SKILL.md"
 REPORT="$ROOT/.agents/skills/setup-ai-build-kit/references/completion-report.md"
 FOUNDATION="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md"
-MASTERPLAN="$ROOT/.agents/skills/setup-ai-build-kit/templates/masterplan.md"
+MASTERPLAN="$ROOT/.agents/skills/setup-ai-build-kit/templates/operations.md"
 WORKFLOW="$ROOT/WORKFLOW.md"
 FORMAT="$ROOT/.agents/skills/ship/references/recipe-format.md"
 MENU="$ROOT/.agents/skills/ship/recipes"

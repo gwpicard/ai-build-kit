@@ -5,6 +5,12 @@ description: The everyday command for building a piece that has already been sha
 
 # Implement
 
+For project record reads and writes, load the `setup-ai-build-kit` skill's
+`references/project-records.md`. Its marker selects authoritative concept,
+working-rule and operations records for the new format; legacy projects keep
+their existing route. This changes record ownership, not safety or merge authority.
+
+
 Use the current session for related, well-bounded work while the context
 remains clear. Start fresh after a long, confused, interrupted, or unrelated
 session, and whenever an independent review is required. The documents are

@@ -15,7 +15,9 @@
 # setup-ai-build-kit writes a kit line, as `kit|<version>|<commit>`, naming
 # the AI Build Kit release the project holds and the commit its tag points at,
 # or `unknown` when that lookup failed. maintain rewrites the kit line after an
-# update and adds it where it is missing. Nothing else edits this file.
+# update and adds it where it is missing. Only completed /sync review writes
+# records-review|<saved commit>|complete on the new project record format.
+# Founding, builds and merges never advance that checkpoint.
 founded|
 last-light-pass|
 last-full-pass|

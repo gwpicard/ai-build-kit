@@ -107,7 +107,12 @@ be answered yes or no by trying the tool, it belongs in `## So that`.
 section and what it gains, changes or loses when this piece lands. Most pieces
 say "nothing", because the masterplan already describes the promised result.
 Test that before writing it. Read each line of `## Done when` against the
-masterplan alone, and write "nothing" only when the masterplan already says it.
+masterplan and its authoritative concept documents, and write "nothing" only
+when those records already say it. On the new format name the concept documents
+this piece updates, with their owned rule; name the masterplan only when its
+overview, useful summaries or pointers change. Working/review rules go to
+working rules, and operational fields to operations. [project-records.md](project-records.md)
+selects the homes. A mechanical or unrelated change leaves the overview alone.
 A rule the person could check the tool against, such as an order, a limit, a
 default or a message, is a change even when it narrows a promise the masterplan
 already makes. A piece that puts an existing list in alphabetical order gains

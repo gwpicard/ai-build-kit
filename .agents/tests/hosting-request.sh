@@ -18,7 +18,7 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 SHIP="$ROOT/.agents/skills/ship/SKILL.md"
 HOSTING="$ROOT/.agents/skills/ship/references/hosting-request.md"
 SETUP="$ROOT/.agents/skills/setup-ai-build-kit/SKILL.md"
-MASTERPLAN="$ROOT/.agents/skills/setup-ai-build-kit/templates/masterplan.md"
+MASTERPLAN="$ROOT/.agents/skills/setup-ai-build-kit/templates/operations.md"
 WORKFLOW="$ROOT/WORKFLOW.md"
 README="$ROOT/README.md"
 SOURCES="$ROOT/docs/SOURCES.md"

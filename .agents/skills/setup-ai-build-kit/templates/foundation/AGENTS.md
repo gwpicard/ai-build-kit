@@ -4,10 +4,12 @@
 
 Standing instructions for this project, read every session. This file is an
 index: the standing rules in short form, then a pointer for each topic to the
-file that owns it. Before any work, read the build-path section of
-`masterplan.md`, right after its short header. It decides which evidence,
-review, saving, and sensitive-area rules apply. Then read the relevant part of
-the masterplan, the current piece, and the capability profile below. Never rely
+file that owns it. Before build, review or path decisions, read
+`docs/working-rules.md`; before launch or secret handling, read
+`docs/operations.md`. For legacy records, use the masterplan's corresponding
+sections. The `setup-ai-build-kit` skill's `references/project-records.md`
+owns format detection. Read relevant product rules through `docs/README.md`,
+the current piece, and the capability profile below. Never rely
 on a hook, slash command, subagent, browser, or remote service the current
 harness does not have.
 
@@ -76,13 +78,13 @@ applies. Save a checkpoint before sweeping work. Stop and ask when:
   if it can be undone;
 - a sensitive area's caution is a person who has not yet looked, or a risk
   notice is waiting on the person's answer;
-- the masterplan is silent on a consequential decision, or the harness lacks a
+- the authoritative product records are silent on a consequential decision, or the harness lacks a
   required capability;
 - the expected result cannot be reproduced or verified.
 
 ### Sensitive areas
 
-The build-path section may name sensitive areas, each with a caution: a backup
+The working-rules build-path section may name sensitive areas, each with a caution: a backup
 restored once, a managed service, or a person who looks before the work goes
 live. On Build with care, each area also lists where it lives and may name one
 boundary. Update that map in the same save as a code move; the sensitive-area
@@ -108,7 +110,7 @@ method exists for a different job from the one a named reviewer was named for.
 
 Keys, passwords, and tokens live in `.env`. Never print, commit, or copy one
 into a document, check, or changelog, or write one to `/tmp`. Record where any
-other secret lives, never its value, in the masterplan's "How it stays running",
+other secret lives, never its value, in the operational record's "How it stays running",
 and read it there. If none is recorded, ask once. Rotate a secret that appears
 where it should not, even one given as a reply: record it nowhere, say it is now
 in this chat, and ask for its location. A secret with no known location is never
@@ -121,18 +123,16 @@ contents into code, checks, documents, or the changelog.
 
 ## The records
 
-If it is not written down, it does not exist. `masterplan.md` holds the product
-in the present tense, in roughly one or two pages; its build-path section
-changes only by rerunning the fit check. Each piece is one issue, shaped as the
-`setup-ai-build-kit` skill's `references/pieces.md` says, with a subject label
-set once by change-triage; a merged pull request saying `Closes #<number>`
-closes it. `plan.local.md` is a printout from `.agents/tools/plan-refresh.sh`;
-change the issue, not the file. A piece writes its entry to its own file in
-`changes/`; its merge folds it into `CHANGELOG.md`, or later /sync or /ship.
-When one document says another will do a job, write it into that one too.
+`masterplan.md` gives the current overview in at most 500 words; `docs/README.md`
+indexes authoritative product rules. `docs/working-rules.md` owns the path and
+build/review rules; only the fit check changes the path. `docs/operations.md`
+owns operational facts. Pieces follow the `setup-ai-build-kit` skill's
+`references/pieces.md`. `plan.local.md` prints issues through
+`.agents/tools/plan-refresh.sh`; change the issue. Each piece writes
+its own file in `changes/`; its merge folds it into `CHANGELOG.md`, or later /sync or /ship. If it is not written
+down, it does not exist. Write a promised job into its owning document too.
 
 ## Technical design
-
 Lasting technical design lives in `docs/<concept>.md`, one concept to a file,
 under the headings What it is, How it works, Rules, and Where it lives. A fact
 that fits no file yet starts a new concept file, never a general notes file.

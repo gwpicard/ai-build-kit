@@ -5,6 +5,12 @@ description: The command for turning an idea into a ready piece before anything 
 
 # Shape
 
+For project record reads and writes, load the `setup-ai-build-kit` skill's
+`references/project-records.md`. Its marker selects authoritative concept,
+working-rule and operations records for the new format; legacy projects keep
+their existing route. This changes record ownership, not safety or merge authority.
+
+
 This command shapes work; it does not build it. It takes an idea in plain
 language, works out what kind of work it is, writes it into a piece somebody
 could build, and settles anything the piece is still waiting on. When a piece
@@ -30,7 +36,8 @@ section below says.
 
 Otherwise run change-triage on the request and follow its route: shape it into a ready
 piece now, run clarify first, run a decision prototype, run a source check,
-update the masterplan first, or stop and rerun the fit check. Say which route
+record the intended product-rule change on the piece first, or stop and rerun
+the fit check. Planning never applies it to current records. Say which route
 you chose and why, in one line.
 
 Clear, piece-sized work becomes a ready piece straight away: write it into the

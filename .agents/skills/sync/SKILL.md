@@ -5,6 +5,12 @@ description: True the documents up against what actually happened. Use for an in
 
 # Sync
 
+For project record reads and writes, load the `setup-ai-build-kit` skill's
+`references/project-records.md`. Its marker selects authoritative concept,
+working-rule and operations records for the new format; legacy projects keep
+their existing route. This changes record ownership, not safety or merge authority.
+
+
 The documents are supposed to describe reality. Make that true again by reading what actually happened, and correct the records instead of trusting what they claim. Propose the document changes before making anything large or ambiguous. You change documents only, never code; the single piece of machinery you keep in step is the check's own file, in step 6.
 
 ## When to run this
@@ -44,7 +50,15 @@ else, or recovering after an optional automation failed to run.
 
    Never remove `parked` from a closed issue. That is an idea somebody left out on purpose, and the label is what keeps it out. Say what you changed, piece by piece, then refresh the printout.
 
-3. Correct masterplan.md where reality moved. Load the `setup-ai-build-kit` skill's `references/masterplan-changes.md`, merge each landed piece's `## Masterplan change` that has not yet been applied, and move the trued-against mark to the saved state you checked. Read from the older of that mark and the last changelog entry, so an up-to-date history cannot hide a stale page. Never rewrite the build-path section directly; if the project's character has changed, rerun the fit check instead and let it produce the new section.
+3. Correct the authoritative records where reality moved. On the new format,
+   capture the saved shared HEAD, read every indexed concept plus working rules
+   and operations, and reconcile landed changes against those homes. Never
+   advance the review checkpoint until steps 3 and 4 finish without unresolved
+   record gaps; interruption leaves it unchanged. Save the checkpoint using the
+   project-records helper's `save-review <captured commit> --complete` before the
+   records save in step 8. An unsafe or incomplete review is a plain gap, not
+   freshness. The following mark instructions apply only to legacy records.
+   Correct masterplan.md where reality moved. Load the `setup-ai-build-kit` skill's `references/masterplan-changes.md`, merge each landed piece's `## Masterplan change` that has not yet been applied, and move the trued-against mark to the saved state you checked. Read from the older of that mark and the last changelog entry, so an up-to-date history cannot hide a stale page. Never rewrite the build-path section directly; if the project's character has changed, rerun the fit check instead and let it produce the new section.
 
    Re-read every "rests on" clause in the masterplan against what it names,
    following the decision rules in the `setup-ai-build-kit` skill's
@@ -55,6 +69,18 @@ else, or recovering after an optional automation failed to run.
 
 4. Check the plan still covers the page. Load the `setup-ai-build-kit` skill's `references/coverage-read.md` and compare the masterplan's promises against the pieces. Reconciling after an interruption or an outside contribution is exactly when a promise quietly loses its piece.
 
+   On the new format run `python3 .agents/tools/project-records.py validate`.
+   All sections, headings and link text count towards 500 words. Move excess
+   detail to its authoritative concept document, preserving every current rule,
+   useful summaries and valid links. Technical internals go to their named
+   concept document, indexed by ownership in `docs/README.md`. A mechanical or unrelated update leaves masterplan content
+   unchanged. Repeated reconciliation applies only missing current rules, never
+   resurrecting superseded ones. Legacy projects keep their existing format and
+   the legacy length offer; no migration happens in this read.
+
+   The following length offer applies only to legacy records, without rewriting
+   them to the new format:
+
    On every build path, count the words in the masterplan's core sections.
    Leave out `Build path`, the optional `Key terms` and `How it stays running`
    sections, headings, comments and diagram source. More than 1,000 words is the
@@ -64,7 +90,7 @@ else, or recovering after an optional automation failed to run.
    keeping every present promise and decision on the masterplan. Otherwise,
    leave it intact and carry on. On a yes, detail about a piece goes onto that
    piece, and lasting technical design goes to its `docs/<concept>.md`, one
-   concept to a file, listed in AGENTS.md, never into a new catch-all document.
+   concept to a file, listed in `docs/README.md`, never into a new catch-all document.
    At or below the measure, say nothing.
 
    Then read the project's own documents against it. Load

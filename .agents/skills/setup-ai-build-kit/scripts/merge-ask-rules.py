@@ -11,6 +11,7 @@ Usage:
 
     merge-ask-rules.py add <settings file>
     merge-ask-rules.py remove <settings file>
+    merge-ask-rules.py sync <settings file> <project root>
 
 `add` puts each rule the file lacks at the end of `permissions.ask`, and
 creates that list when there is none. `remove` takes out exactly the
@@ -26,6 +27,7 @@ Nothing is written.
 Exit 64: the command was not given as above. Nothing is read or written.
 """
 
+import importlib.util
 import json
 import os
 import sys
@@ -36,6 +38,19 @@ TEMPLATE = os.path.join(HERE, "..", "templates", "merge-ask-rules.json")
 
 
 def main(argv):
+    if len(argv) == 4 and argv[1] == "sync":
+        # Resolve the operational owner before deciding whether a merge asks.
+        spec = importlib.util.spec_from_file_location("project_records", os.path.join(HERE, "..", "templates", "foundation", "project-records.py"))
+        records = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(records)
+        try:
+            goes_live = records.field(argv[3], "Goes live")
+            if goes_live not in ("on every merge", "through /ship", "not hosted"):
+                raise ValueError("Unknown Goes live mode")
+        except ValueError as error:
+            sys.stderr.write(str(error) + "\n")
+            return 1
+        argv = [argv[0], "add" if goes_live == "on every merge" else "remove", argv[2]]
     if len(argv) != 3 or argv[1] not in ("add", "remove"):
         sys.stderr.write("usage: merge-ask-rules.py add|remove <settings file>\n")
         return 64

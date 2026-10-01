@@ -118,6 +118,34 @@ founds_with_helper() {
     return
   fi
   prints_the_plan "$project" "$route" "$TARGET"
+  # Fill a real record fixture and read every moved scripted field using the
+  # helper founding copied, not a helper imported from the maintainer checkout.
+  python3 - "$project" <<'PYRECORD'
+import pathlib, subprocess, sys
+p=pathlib.Path(sys.argv[1]); (p/'docs').mkdir(exist_ok=True)
+(p/'masterplan.md').write_text('<!-- ai-build-kit:records:v1 -->\n# Team lending\nStaff borrow equipment; the custodian retires items.\n[Permissions](docs/permissions.md) owns who may retire an item.\n[Operations](docs/operations.md) owns secret locations.\n')
+(p/'docs/README.md').write_text('[Permissions](permissions.md): retirement access.\n')
+(p/'docs/permissions.md').write_text('Only the custodian may retire an item. A borrower sees their own loans.\n')
+(p/'docs/working-rules.md').write_text('Path: Build and run it\nSensitive areas: none\nReview: the maintainer reviews a new colleague before merge.\n')
+(p/'docs/operations.md').write_text('Goes live: on every merge\nSecret location: external/password-file\nSample data: made-up loans\n')
+helper=p/'.agents/tools/project-records.py'
+def call(*args): return subprocess.check_output(['python3',str(helper),*args,'--root',str(p)],text=True).strip()
+assert call('field','Path')=='Build and run it'
+assert call('field','Goes live')=='on every merge'
+assert call('field','Secret location')=='external/password-file'
+assert call('field','Sample data')=='made-up loans'
+assert 'Masterplan:' in call('validate')
+assert 'custodian' in (p/'docs/permissions.md').read_text()
+assert '[Permissions](docs/permissions.md)' in (p/'masterplan.md').read_text()
+# Legacy remains readable, and reading does not rewrite it.
+legacy='Path: Explore privately\nGoes live: not hosted\nSecret location: external/legacy-file\n'
+(p/'masterplan.md').write_text(legacy)
+assert call('field','Path')=='Explore privately'
+assert call('field','Goes live')=='not hosted'
+assert call('field','Secret location')=='external/legacy-file'
+assert (p/'masterplan.md').read_text()==legacy
+PYRECORD
+  pass "$route: useful orientation, permission pointer and new/legacy operational reads hold"
 }
 
 echo "== Founding places the helper, on every route =="

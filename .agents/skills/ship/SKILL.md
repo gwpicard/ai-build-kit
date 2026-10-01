@@ -5,6 +5,12 @@ description: Take checked work to the copy of the tool the team actually uses. T
 
 # Ship
 
+For project record reads and writes, load the `setup-ai-build-kit` skill's
+`references/project-records.md`. Its marker selects authoritative concept,
+working-rule and operations records for the new format; legacy projects keep
+their existing route. This changes record ownership, not safety or merge authority.
+
+
 Everything build and fix make lives on the draft copy until this command moves it over. Read masterplan.md, build-path section first.
 
 ## 0. Confirm the build path

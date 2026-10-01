@@ -45,6 +45,10 @@ rs_rule "never adds a piece without a yes" 'without a yes'
 rs_rule "never edits or closes a piece by itself" 'never edits, closes'
 rs_rule "offers once rather than repeatedly" 'one offer'
 rs_rule "reports and stops on explore privately" 'explore privately'
+rs_rule "new format compares authoritative concepts as well as overview" 'compare the overview and every authoritative concept document indexed by `docs/readme\.md` against the pieces'
+rs_rule "current product rules cannot exist only on closed pieces" 'not a short summary or a closed piece, is the current product description'
+rs_rule "moving detail preserves coverage" 'moving detail never removes it from this read'
+rs_rule "future promises remain distinct" 'keep current intent distinct from future promises'
 rs_guard "$READFILE" "the shipped coverage-read.md"
 
 rs_require "/setup runs the coverage read once the pieces are cut" \

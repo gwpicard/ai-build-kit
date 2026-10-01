@@ -25,7 +25,7 @@ BUILDER="$ROOT/.agents/skills/section-builder/SKILL.md"
 GUARD="$ROOT/.agents/skills/section-builder/scripts/test-guard.sh"
 FIX="$ROOT/.agents/skills/fix/SKILL.md"
 SETUP="$ROOT/.agents/skills/setup-ai-build-kit/SKILL.md"
-MASTERPLAN="$ROOT/.agents/skills/setup-ai-build-kit/templates/masterplan.md"
+MASTERPLAN="$ROOT/.agents/skills/setup-ai-build-kit/templates/operations.md"
 RECORD="$ROOT/.agents/skills/setup-ai-build-kit/templates/maintenance-record"
 PIECES="$ROOT/.agents/skills/setup-ai-build-kit/references/pieces.md"
 IMPLEMENT="$ROOT/.agents/skills/implement/SKILL.md"
@@ -155,7 +155,7 @@ rs_require_load_bearing "founding offers sample data or test accounts" \
 rs_require_load_bearing "for a tool with sign-in or a long-lived history" \
   "$SETUP" 'where the tool has sign-in, or keeps a history that grows'
 rs_require_load_bearing "and records the answer in How it stays running" \
-  "$SETUP" 'a `sample data:` line in the masterplan.s "how it stays running"'
+  "$SETUP" 'a `sample data:` line in the operational record.s "how it stays running"'
 rs_require "the masterplan template names the line" "$MASTERPLAN" 'sample data:'
 
 # --- the opt-in lines where they are read ----------------------------------

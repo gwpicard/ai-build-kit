@@ -30,7 +30,7 @@ LONGER="$SKILLS/implement/references/running-longer.md"
 FIX="$SKILLS/fix/SKILL.md"
 SHIP="$SKILLS/ship/SKILL.md"
 SYNC="$SKILLS/sync/SKILL.md"
-MASTERPLAN="$SKILLS/setup-ai-build-kit/templates/masterplan.md"
+MASTERPLAN="$SKILLS/setup-ai-build-kit/templates/operations.md"
 FOUNDED="$SKILLS/setup-ai-build-kit/templates/foundation/AGENTS.md"
 WORKFLOW="$ROOT/WORKFLOW.md"
 
