@@ -58,5 +58,8 @@ Record:
 - rejected alternative and why, when useful;
 - what the production build must preserve.
 
-Delete the prototype or isolate it clearly. Keep it only when it remains useful
-evidence, and never let it silently become the production implementation.
+Delete the prototype or isolate it clearly. Where it is saved, remove it with
+`git rm -r`. Where it is an unsaved folder, give the person the command that
+removes it, with its path, since a recursive delete is refused. Keep it only
+when it remains useful evidence, and never let it silently become the
+production implementation.

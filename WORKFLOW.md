@@ -330,7 +330,7 @@ The monthly visit offers it once to a project that recorded the line before the 
 
 After a merge, everyone pulls main. Flagged areas also get the review the build path names before the pull request is offered as ready. A direct push to `main` is forbidden, and in Claude Code the project settings refuse the usual ways of writing one, so every change reaches it through a pull request. Each piece starts from an up-to-date `main`.
 
-The settings also refuse deleting a folder with everything in it, in any common spelling, and the two Git commands that clear the history Git uses to recover lost work. When a command is refused, the agent stops and tells you in one line which command it was and what it was for. It never tries another way round, such as another spelling, another tool or the same work in small steps. The decision is yours, and a command you want run anyway is one the agent gives you to run yourself. On a coding agent with no such settings, the same rule holds in writing.
+The settings also refuse deleting a folder with everything in it, in the common spellings, and the two Git commands that clear the history Git uses to recover lost work. When a command is refused, the agent stops and tells you in one line which command it was and what it was for. It never tries another way round, such as another spelling, another tool or the same work in small steps. The decision is yours, and a command you want run anyway is one the agent gives you to run yourself. On a coding agent with no such settings, the same rule holds in writing.
 
 ## 8. Sensitive areas, and the risk notice
 

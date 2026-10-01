@@ -70,10 +70,27 @@ rs_rule "a tracked plan folder goes with git rm" 'remove a tracked `plan` folder
 rs_rule "an untracked plan folder goes to the person" 'where the `plan` folder is untracked, give the person the command to run, with the folder.s path'
 rs_rule "a tracked leftover goes with git rm" 'remove a tracked leftover with `git rm -r'
 rs_rule "an untracked leftover folder goes to the person" 'an untracked leftover folder goes to the person as the command to run, with its path'
+rs_rule "a folder untracked files keep in place goes to the person" 'so does a tracked folder that untracked files keep in place after `git rm -r`'
 rs_guard "$MAINTAIN" "maintain's removal steps"
 
+# Other steps that cleared a folder now say how, since the usual way is refused.
+S="$ROOT/.agents/skills"
+rs_require_load_bearing "/sync hands a finished run's folder to the person" "$S/sync/SKILL.md" \
+  'a recursive delete is refused, so that line gives the person the command that removes the folder, with its path'
+for f in section-builder/references/trim.md maintain/references/waste-read.md \
+         maintain/references/document-bloat.md maintain/references/structure-read.md; do
+  rs_require_load_bearing "$f makes its temporary folder with mktemp" "$S/$f" 'made with `mktemp -d`'
+  rs_require_load_bearing "$f leaves it for the computer to clear" "$S/$f" \
+    'leave (it|the folder) (there )?for the computer to clear, since a recursive delete is refused'
+  rs_require_absent "$f no longer deletes its folder" "$S/$f" 'delete (it|the folder) afterwards|then delete the folder'
+done
+rs_require_load_bearing "a saved prototype goes with git rm" "$S/clarify/references/decision-prototype.md" \
+  'where it is saved, remove it with `git rm -r`'
+rs_require_load_bearing "an unsaved prototype folder goes to the person" "$S/clarify/references/decision-prototype.md" \
+  'where it is an unsaved folder, give the person the command that removes it, with its path'
+
 rs_require "WORKFLOW.md says the settings refuse the new commands" "$WORKFLOW" \
-  'the settings also refuse deleting a folder with everything in it, in any common spelling'
+  'the settings also refuse deleting a folder with everything in it, in the common spellings'
 rs_require "WORKFLOW.md says a refused command comes to the person" "$WORKFLOW" \
   'when a command is refused, the agent stops and tells you in one line which command it was and what it was for'
 rs_require "WORKFLOW.md says it never goes round" "$WORKFLOW" \

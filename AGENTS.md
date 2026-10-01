@@ -1002,7 +1002,11 @@ attribution line, not the word.
   person who asks for a refused command is given it to run. Both files name the
   new commands. It also holds `/maintain`'s three removals, which remove a
   tracked folder with `git rm -r` and give an untracked one to the person, since
-  a recursive delete is now refused.
+  a recursive delete is now refused. The other steps that cleared a folder say
+  how too: a finished run's folder in `/sync` and an unsaved prototype go to
+  the person as a command, and the temporary folders the trim and the
+  quarterly reads write are made with `mktemp -d` and left for the computer to
+  clear.
 - `.agents/tests/merge-ask-rule.sh` guards the confirmation box Claude Code
   shows before a merge on a project whose every merge goes live. The rule that
   a person decides what merges holds only while an agent follows it, and two
