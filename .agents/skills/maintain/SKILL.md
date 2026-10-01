@@ -205,7 +205,14 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
     setup-ai-build-kit skill's `templates/foundation/session-start.sh`, unless
     the person asked during this visit to leave kit updates alone. That script
     comes from the kit, and it changes what the project does later. Read what
-    they asked, not a fixed phrase. Then say one sentence: "I have recorded
+    they asked, not a fixed phrase. Where the project has the script and it
+    differs from that template, the project kept an older copy, since an update
+    never reaches it. Say in one line: "A newer reminder script counts the work
+    landed since the last visit as well as the days. Shall I replace yours?"
+    Add that replacing it also drops any change made to the project's copy by
+    hand. Replace it only on a yes, and make no offer when the person asked for
+    no kit updates. A no changes nothing, and the next visit makes the same
+    one-line offer again. Then say one sentence: "I have recorded
     today's visit, so a session will not remind you again until the next one is
     due." Where you skipped the script, say instead: "I have recorded today's
     visit. I left out the script that reminds a session when a visit is due,
