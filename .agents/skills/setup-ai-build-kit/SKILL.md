@@ -76,7 +76,8 @@ else a local `main`, else a local `master`. With no remote and neither of those,
 the current branch is the default.
 
 A folder with no commits yet, or one already on the default branch, gets nothing
-said. A detached checkout counts as another branch.
+said. A detached checkout counts as another branch: name it by its short commit,
+and go back to it with `git switch --detach <commit>`.
 
 On another branch, look for unsaved work with `git status --porcelain`. Where it
 prints nothing, switch with `git switch <default>`, or with
@@ -99,13 +100,19 @@ in another folder.
 
 Where the person says to found on their own branch, in the interview or in
 answer to that line, switch back to it before the founding save with
-`git switch <branch>`. Their work is not in the way: the folder held none
-unsaved, and founding's own files move across with the switch. The founding
-save below says what is then written down.
+`git switch <branch>`, and write that choice into the setup notes so a resumed
+founding keeps it. The folder held nothing of theirs unsaved, and founding's own
+files usually move across with the switch. Where Git refuses the switch back,
+because a file founding wrote would overwrite one on their branch, stay, say so
+once, and carry on as for any failed switch. The founding save below says what
+is then written down.
 
 This read runs again whenever founding resumes, from the setup notes or from
 anywhere else, so a founding picked up on another branch meets the same rules.
-In the kit's own source, which the read below recognises, switch nothing.
+Files founding wrote itself in an earlier session are not the person's unsaved
+work: stay on the branch that session left, and say nothing more about it. In
+the kit's own source, where `release-manifest.txt` and `docs/MAINTAINING.md` sit
+at the root, switch nothing.
 
 Then run `scripts/bootstrap-project.sh` from this installed skill folder in
 the project root. It creates only missing project foundation files and leaves
