@@ -433,7 +433,8 @@ Inside a named area, take each area in turn:
    reply, without a further question about that area. A lock whose only
    purpose is to wait for this caution opens with the acceptance, unless the
    person asks to keep it. Silence, a question, or a request for other work
-   is not carrying on: leave that area where it is and ship everything
+   is not carrying on, and nor is a form answer with nothing chosen: leave
+   that area where it is and ship everything
    outside it;
 5. only after the caution is done or accepted does that area get its own
    operational readiness check (including the request record and monitoring
