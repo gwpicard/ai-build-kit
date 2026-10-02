@@ -479,7 +479,7 @@ After the first launch, shipping gets lighter: it re-checks what changed since t
 
 Give /implement several piece numbers, or type "/implement queue" for every ready piece and every piece waiting only on those, and it builds them without you between them. "/implement auto" is the same thing. It says the plan once: each piece in order, whether the run can take it and why not, and which pieces build on another. You approve it once, and say whether pieces that pass may be merged while you are away. A merge that would put the tool live still waits for you. Then it runs.
 
-The run performs the next eligible step in the same turn. If a question parks one piece, it checks the saved work and shared base before continuing with independent eligible work. It stops at the limits already described above; saying what it will do next does not complete that step.
+The run performs the next eligible step in the same turn. If a question parks one piece, it checks the saved work and shared base before continuing with independent eligible work. It stops at the limits described below in this section; saying what it will do next does not complete that step.
 
 A run decides piece by piece what it can take. A piece needs to be ready, checked by a session that did not shape it, and complete enough to build with nobody to ask. A piece in a sensitive area is taken only once your acceptance is on the record, and a run never gives one for you. A piece you asked to try yourself is built and then waits for you in to check, whatever you said about merging.
 
