@@ -820,8 +820,7 @@ attribution line, not the word.
 - `.agents/tests/document-read.sh` guards the read in `/sync` that checks a
   project's own documents against the project: that it reads only the README
   and what AGENTS.md points at, that a document saying less than the project
-  does is never a finding, that it says it cannot tell whether a described step
-  still happens, that a name already on an open piece is not raised again, and
+  does is never a finding, that it leaves instructions outside its supported grammar unverified, that a name already on an open piece is not raised again, and
   that a correction changes the stale name and never the prose around it.
   `.agents/tests/document-read-rehearsal.sh` runs the shipped
   `document-claims.py` against a throwaway project. It proves each of the four
@@ -837,6 +836,14 @@ attribution line, not the word.
   nothing, and the document changed longest ago comes first. A piece's file
   in `changes/` is part of the changelog, so it is never read as a document,
   and neither the folder nor a file the last fold took away is called missing.
+  It also checks explicit required package commands and check routes, with
+  root AGENTS.md read for those declarations only. Its fixtures change a route
+  while the required check still exists, distinguish inactive and broken rules
+  from unknown conditions, and prove that removing detection defeats the
+  broken case. Indirect shell and lifecycle wiring remain unverified. Script
+  and hook sentinels stay untouched, outside-project files are not opened, and
+  the helper works from the supported installed layouts. This is bounded
+  fixture evidence; an authorised real-project audit remains later work.
 - `.agents/tests/document-bloat.sh` guards the quarterly read for documents
   that repeat each other or are no longer needed: that it reads every
   document rather than only the ones AGENTS.md points at, never offers the
