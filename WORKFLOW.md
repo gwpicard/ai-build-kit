@@ -577,10 +577,10 @@ names two numbers, the version your project holds and the latest published AI
 Build Kit, and says plainly when they differ. An update gives you that
 published release and never work nobody has released yet. When a newer
 kit is available, the agent shows the version and what changed, then waits for
-approval. An update refreshes only the fourteen AI Build Kit skills and leaves
+approval. An update refreshes only the fifteen AI Build Kit skills and leaves
 your tool, its records, and its own checks alone. It also adds any skill the
 kit has renamed or added since, and says if the installation is short of the
-fourteen. When the kit has renamed a command, the update also rewrites the
+fifteen. When the kit has renamed a command, the update also rewrites the
 command list in your AGENTS.md, with your approval, so you are not left to
 edit it by hand. A project founded from a whole copy of the kit also carries
 the kit's own command files, which make each command show twice; the visit
@@ -722,3 +722,22 @@ switch off the services.
 Three things no skill ever takes: saying clearly what you want going in (a real example, the output you expect, what done means), deciding what merges and what goes live, and accepting a risk after its notice.
 
 Trying every piece is not on that list. The agent's walk-through checks each piece before it is saved, and records what it saw. When it could not see the screen, it says so and gives you something to try. Trying a piece yourself is always open to you: put a `Waiting on you: try it` line on one piece, or ask to check every piece. The system automates the routine and never the judgement.
+
+## Reading the rules for a change
+
+Before shaping, building or repairing behaviour, data, permissions, integrations
+or architecture, the kit reads the project rules relevant to the change. This
+also applies to refactors that preserve behaviour but cross those areas. It
+uses the current document index, the task and what the code reaches, then reads
+the authoritative sections and their necessary cross-references. Pure
+mechanical formatting may skip product lookup; uncertain reach gets a small
+lookup. Working rules required for the action are still read independently.
+
+A shaped piece names its relevant documents and intended updates. A build
+refreshes them when it reaches another area and when it resumes. The masterplan
+changes only for its overview, useful summaries or links; detailed rules stay
+in their owned documents. A missing document, broken reference or conflicting
+rule is named before dependent work proceeds. `/shape` settles a product
+ambiguity and `/sync` reconciles stale records. The kit invents neither a rule
+nor permission to proceed. Full coverage and reconciliation reviews still read
+the records their purpose requires.

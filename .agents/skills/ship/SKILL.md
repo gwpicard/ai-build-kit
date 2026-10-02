@@ -5,13 +5,19 @@ description: Take checked work to the copy of the tool the team actually uses. T
 
 # Ship
 
+When establishing product or architecture context for the launch, load and
+follow the `project-context` skill. Retain every explicit whole-build, coverage
+and operational review this command requires. Narrow task lookup must never
+stand in for launch evidence or required working rules.
+
 For project record reads and writes, load the `setup-ai-build-kit` skill's
 `references/project-records.md`. Its marker selects authoritative concept,
 working-rule and operations records for the new format; legacy projects keep
 their existing route. This changes record ownership, not safety or merge authority.
 
 
-Everything build and fix make lives on the draft copy until this command moves it over. Read masterplan.md, build-path section first.
+Everything build and fix make lives on the draft copy until this command moves it over. Read the required working rules first, then the relevant overview and
+authoritative sections needed for the launch.
 
 ## 0. Confirm the build path
 

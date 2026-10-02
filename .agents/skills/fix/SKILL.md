@@ -5,6 +5,12 @@ description: Bring the tool back to doing what it already should. Use when the u
 
 # Fix
 
+Before deciding whether the symptom violates a promised rule, load and follow
+the `project-context` skill. Read the authoritative rule and its dependencies
+for the affected behaviour, data, permissions, integrations or architecture.
+Refresh the selection when diagnosis reaches another area and on resumption;
+a missing or contradictory rule follows the existing shaping or blocking route.
+
 For project record reads and writes, load the `setup-ai-build-kit` skill's
 `references/project-records.md`. Its marker selects authoritative concept,
 working-rule and operations records for the new format; legacy projects keep
@@ -26,8 +32,8 @@ to run instead. If none is labelled `broken`,
 ask for the symptom, as step 1 sets out. If exactly one is, name it and use it as
 the report. If more than one is, list them and ask which to take.
 
-Read masterplan.md, build-path section first. If the behaviour being asked
-for was never promised there, say so kindly and hand the request to `/shape`,
+Read the required working rules first and the selected authoritative promise.
+If the behaviour being asked for was never promised in its current owner, say so kindly and hand the request to `/shape`,
 which shapes new work; a new wish treated as a repair ends up in the wrong
 procedure. Nobody
 can misfile work by picking the wrong command; catching that is this step's

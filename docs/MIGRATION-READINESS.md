@@ -49,7 +49,7 @@ were never collisions, `CONTRIBUTING.md`, `SECURITY.md`, `.github/ISSUE_TEMPLATE
 than renames.
 
 Everything else in the allowlist passes through unchanged and already means the
-same thing in both places: the fourteen skills, the generated adapters, the guard
+same thing in both places: the fifteen skills, the generated adapters, the guard
 and hook folders, `CLAUDE.md`, `GEMINI.md`, `WORKFLOW.md`, `LICENSE`,
 `.gitignore`, `.env.example` and the three shipped documents under `docs/`.
 

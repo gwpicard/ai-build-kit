@@ -16,7 +16,7 @@ here by design. They are created inside a user's project by `/setup-ai-build-kit
 ## Before any work
 
 Read `docs/MAINTAINING.md`. Read `docs/PHILOSOPHY.md` before changing what one
-of the fourteen canonical skills does, or adding a capability. Check the current
+of the fifteen canonical skills does, or adding a capability. Check the current
 branch and unsaved work
 before editing. Never run the project-founding `/setup-ai-build-kit` process in this
 repository.
@@ -24,13 +24,13 @@ repository.
 ## Source and starter boundary
 
 - `.agents/skills/` is the single source of truth for the nine commands and
-  five internal background skills. Nothing else belongs in it.
+  six internal background skills. Nothing else belongs in it.
 - `.agents/maintainer-skills/` holds the skills only the kit's own maintainers
   use. There are three: the Humanizer writing skill; `review-issues`, which
   reads the open issues, groups them by theme and names the next piece worth
   picking up; and `stack-research`, which reads what changed upstream for the
   products the recipes name and writes a dated note proposing changes, or
-  none. They sit there rather than beside the fourteen because a shared
+  none. They sit there rather than beside the fifteen because a shared
   skills installer reads `.agents/skills/` and `.claude/skills/` and offers
   whatever it finds in either, so a folder in one of those is a skill somebody
   installs. Being outside both is the whole boundary, and a maintainer skill
@@ -49,7 +49,7 @@ repository.
   before running any of them.
 - `.claude/`, `.cursor/`, and `.gemini/` are generated adapters. Change the
   canonical skill, then run `.agents/tools/build-adapters.sh`. The Claude
-  plugin exposes the nine generated command files and five hidden background
+  plugin exposes the nine generated command files and six hidden background
   skills. Shared installations use the adapters their coding agents need.
 - `.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md` creates a project's
   root instructions.
@@ -61,7 +61,7 @@ repository.
 - `.claude-plugin/` is the Claude plugin and marketplace metadata. It selects
   generated adapters rather than duplicating a skill.
 - `agent-plugin/plugin.json` is the Agent Plugins manifest. The release
-  allowlist rebases the fourteen canonical skills under `agent-plugin/skills/`,
+  allowlist rebases the fifteen canonical skills under `agent-plugin/skills/`,
   so the plugin folder is assembled at release time and this repository keeps
   one copy of each skill.
 - `release-manifest.txt` is the full allowlist for the public kit. A file absent
@@ -89,7 +89,7 @@ thing, trust the check. It tests the real work, and an instruction can fall out
 of date. Follow the check, and say plainly that the two disagree rather than
 following the stale instruction in silence.
 
-When one of the fourteen canonical skills changes, answer the five questions in
+When one of the fifteen canonical skills changes, answer the five questions in
 `docs/PHILOSOPHY.md`, record any borrowed idea in `docs/SOURCES.md`, update the
 owned explanation where needed, regenerate adapters, and run the kit validator.
 Generated files are committed with their canonical change.
@@ -155,6 +155,13 @@ and Gemini and writes about them in most of its commits. What goes is the
 attribution line, not the word.
 
 ## Maintainer checks
+
+- `.agents/tests/project-context.sh` executes the section reader shipped in the
+  sixth background skill. It holds selected permission rules, necessary
+  cross-references, unread unrelated concepts, current-file resumption,
+  architecture reach, legacy sections and named broken-reference failures.
+  Its guided fixture covers mechanical skip and semantic contradiction routing;
+  retrieval and static checks cannot prove universal model reading.
 
 - `.agents/tools/validate-kit.sh` checks the source and generated adapters.
 - `.agents/tests/run-all.sh` runs every rehearsal in `.agents/tests/` and
@@ -979,7 +986,7 @@ attribution line, not the word.
   other name in silence. The version file said the project was up to date,
   since the same update rewrote it. So the check holds that the route is the
   installer's `add` command, that the monthly pass counts the lockfile against
-  fourteen, and that each rename migration fires on what is on disk and has a
+  fifteen, and that each rename migration fires on what is on disk and has a
   branch for the state where the old skill is gone and the new one never
   came. It also holds that a rename rewrites the command list in the project's
   own AGENTS.md with approval, because a person left to do that by hand after
@@ -1023,7 +1030,7 @@ attribution line, not the word.
   only on a run of the same mark at least as long as its opener.
   A project founded from today's templates gets no offer. A placeholder, a
   mention of the folder, and a project's own skill in the same folder are
-  never found. The script's list of skills is the kit's fourteen, so a rename
+  never found. The script's list of skills is the kit's fifteen, so a rename
   cannot slip past it. A visit asked to leave kit updates alone does not
   copy in the reminder script, still says the visit was recorded, and says the
   reminder was left out. Last, a project founded before the piece states is

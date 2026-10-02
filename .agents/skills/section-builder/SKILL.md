@@ -6,6 +6,13 @@ user-invocable: false
 
 # Section builder
 
+Before changing behaviour, data, permissions, integrations or architecture,
+load and follow the `project-context` skill, including for refactors crossing
+those areas. Refresh the shaped selection from current records at the start
+and on resumption, and before changing newly reached areas. Pure mechanical
+formatting may skip product lookup; uncertain reach takes a small lookup.
+Required working rules remain mandatory independently.
+
 For project record reads and writes, load the `setup-ai-build-kit` skill's
 `references/project-records.md`. Its marker selects authoritative concept,
 working-rule and operations records for the new format; legacy projects keep
@@ -22,11 +29,12 @@ Outside that handoff, follow the ordinary single-piece route below.
 
 ## 1. Safe start
 
-Read the piece in full, including its `Under the hood` notes, the masterplan's
-build-path section, and any whole-product decision in the masterplan or
+Read the piece in full, including its `Under the hood` notes, the required
+working rules, and any relevant whole-product decision in the masterplan or
 whole-codebase convention in AGENTS.md's stack section that the piece points to.
-Read too each concept file the piece touches, from the list in
-`docs/README.md`, since that is where the design it builds on is written.
+Read the relevant authoritative sections of each concept the piece touches,
+selected from `docs/README.md` through project-context, with their necessary
+cross-references, since that is where the design it builds on is written.
 The under-the-hood notes carry the build context so this does not have to be
 worked out from nothing. Check git status; if uncommitted
 work is lying around, stop and say so: it gets finished or cleared first

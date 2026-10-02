@@ -28,8 +28,9 @@ A mention of the masterplan's build path or How it stays running in another
 instruction means the corresponding owner above on this format. It never means
 copying a field into the overview. Before build/review/path decisions read working
 rules; before launch, secret or operational decisions read operations. Product
-work reads its named concept documents. This routing adds no context-selection
-skill and removes no existing safety control.
+work selects the relevant authoritative sections through the `project-context`
+skill. Required working-rule reads remain independent of that selection, and
+this routing removes no existing safety control.
 
 Without the marker, keep the legacy masterplan route, fields and stamp. Reading
 never migrates or rewrites an old project. Unknown/repeated markers, missing

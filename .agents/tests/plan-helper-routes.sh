@@ -148,6 +148,9 @@ PYRECORD
   ABK_RECORD_HELPER="$project/.agents/tools/project-records.py" \
     ABK_SENSITIVE_HELPER="$project/.agents/hooks/check-sensitive-areas.sh" PYTHONDONTWRITEBYTECODE=1 \
     python3 "$ROOT/.agents/tests/project-record-boundaries.py" || fail "$route: copied record helper boundary checks failed"
+  context_reader="${bootstrap%/*}/../../project-context/scripts/read-context.py"
+  ABK_CONTEXT_READER="$context_reader" PYTHONDONTWRITEBYTECODE=1 \
+    python3 "$ROOT/.agents/tests/project-context-reader.py" || fail "$route: installed context reader failed"
   pass "$route: useful orientation, permission pointer and new/legacy operational reads hold"
 }
 

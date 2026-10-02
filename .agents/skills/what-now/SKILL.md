@@ -5,6 +5,10 @@ description: Orientation for a lost or returning user. Trigger when someone asks
 
 # What now
 
+When orientation needs a product or architecture rule, load and follow the
+`project-context` skill for the affected area. Ordinary board reporting needs
+no product lookup. Keep the three-things cap and required working-rule reads.
+
 For project record reads and writes, load the `setup-ai-build-kit` skill's
 `references/project-records.md`. Its marker selects authoritative concept,
 working-rule and operations records for the new format; legacy projects keep
@@ -15,8 +19,8 @@ You are the safety net under the other six commands. Someone who forgets everyth
 
 ## Read
 
-masterplan.md (build-path section first), the project's pieces, the recent
-changelog and `changes/`, the capability profile in AGENTS.md, git status, the recent commits
+The required working rules and relevant masterplan orientation, the project's
+pieces, the recent changelog and `changes/`, the capability profile in AGENTS.md, git status, the recent commits
 and merged pull requests, any open pull requests, and a run's state file in `.agents/runs/` of the main folder, the first worktree git lists.
 
 Refresh the printout with `sh .agents/tools/plan-refresh.sh` and read
