@@ -487,6 +487,14 @@ In Claude Code, each piece in a run is built in its own copy of the project, a w
 
 In Claude Code, when the plan has a group of pieces that can go together, the run also asks whether to build a group's pieces at the same time. Each one runs its own install and its own copy of the tool, so this uses more memory, and on a machine with little memory it can crash it. One at a time is the default, and you say a number if you want more. Each piece built alongside others still gets every step of a single build, its own review and its own pull request. The session you started the run in claims each piece, reviews it and opens its pull request, and the pieces merge one at a time, each checked again first. If the session dies, resuming keeps your number and offers to lower it.
 
+Each piece starts fresh where your coding agent supports it, and saved
+records carry the work forward. The run keeps the plan, progress and ownership
+of the browser and servers; later builders read earlier work from saved
+records. If the coding agent cannot start the next piece fresh by itself,
+the run pauses with its progress saved and tells you to open a new session
+and type `/implement` to resume. Reviews and merge decisions keep their
+existing rules. Compaction does not count as a fresh start.
+
 Each copy links to your `.env` rather than copying it, and installs its own dependencies. A file your build needs that git ignores and that holds no secret, such as a licensed font, is linked into each copy too, once founding has asked you which ones. Your confidential folder never is. Its dev server runs on a free port the run records, and the hand-over names that port. The server stops once the pull request opens, and the run's report says how to start it again. The kit clears a copy away once its pull request has merged or closed and nothing in it is unsaved, at the next run or the next /sync. A copy holding unsaved work is kept and named.
 
 If the run meets a choice nobody made, a hard one, about stored data, syncing or what leaves the tool, sends that piece back to shaping with the question on it. A hard choice the run can already see in a piece sends it back the same way before any branch is cut, and the plan names it as going back, so it does not come back to every run. An easy one takes the option simplest to undo and is flagged in the pull request. A piece that fails three attempts is parked with a note on what it revealed. Before another piece starts after a failure or a pause for input, the run preserves the unsuccessful work and its check results for review and checks an identified base without the failed edits. Earlier successful parts stay on that base.

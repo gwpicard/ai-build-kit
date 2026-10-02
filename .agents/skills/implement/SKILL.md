@@ -179,6 +179,12 @@ it is unsaved. Outside a run, a single piece is built in the main
 folder, as always, unless the person asks for a worktree: then open one the
 way `references/running-longer.md` says.
 
+Each task uses a fresh builder where the current exposed tools support it.
+Otherwise the run uses only an evidenced reset/resume route, or pauses with
+saved progress and an instruction to resume in a new session. The coordinator
+keeps resource ownership and bounded results, as `references/running-longer.md`
+says; an instruction to forget never erases a conversation.
+
 Whether the run may take a piece is decided for each piece. A piece is taken
 only when it is ready, carries a Ready readiness result, is
 self-sufficient enough to build without a person present, waits on no step of

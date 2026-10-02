@@ -109,7 +109,9 @@ rs_rule "only the coordinating session moves to to check and merges" \
 rs_rule "two pieces finishing during a merge merge one after the other" \
   'where two pieces finish while a merge is under way, it merges them one after the other, each checked again'
 rs_rule "an agent that never reports is a failed attempt" \
-  'a background agent that ends without reporting back counts as a failed attempt at its piece'
+  'a background agent that is known to have ended without reporting back counts as a failed attempt at its piece'
+rs_rule "lost contact retains ownership" \
+  'contact loss alone does not release its checkout or resources'
 rs_rule "the same file despite different Touches goes to /fix by the merge rule" \
   'the second merge.s check against the latest `main` then finds the conflict, and the `section-builder` skill.s `references/merge\.md` takes it to `/fix`'
 rs_rule "a walk-through that cannot get the browser could not look" \
