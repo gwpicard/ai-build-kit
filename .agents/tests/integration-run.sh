@@ -11,7 +11,7 @@ import sys
 import tempfile
 
 root = Path(sys.argv[1])
-helper = root / '.agents/skills/implement/scripts/integration.py'
+helper = Path(os.environ.get('INTEGRATION_HELPER', root / '.agents/skills/implement/scripts/integration.py'))
 fixture = Path(tempfile.mkdtemp(prefix='kit-integration-'))
 project = fixture / 'project'
 remote = fixture / 'remote.git'
@@ -109,6 +109,32 @@ def feature(number, name):
 
 call('init', '--source', integration, '--check', 'python3 check.py && mkdir -p build && printf generated > build/output')
 mode = os.environ.get('INTEGRATION_CASE')
+if mode == 'shared-flags':
+    path = feature(1,'a')
+    (path/'b').write_text('second part')
+    git('add','.',cwd=path); git('commit','-qm','Second part',cwd=path)
+    git('push','-q','origin','HEAD',cwd=path)
+    saved = read(state)
+    saved['pieces'][1]['start_commit'] = start
+    saved['pieces'][1]['flags'] = ['Sibling review remains owed']
+    saved['pieces'][0]['integration_members'] = [1,2]
+    write(state,saved)
+    for n in (1,2):
+        call('check','--piece',n,'--source',path,'--check','python3 check.py')
+    call('merge-feature','--piece',1,'--source',path,'--pr',1)
+    call('reconcile','--source',integration,'--check','python3 check.py')
+    pr(10,'integration/test','main'); call('final','--pr',10)
+    record = state.parent/'human.json'
+    write(record,{'pr':10,'head':git('rev-parse','HEAD',cwd=integration),'base':start,
+                  'reviewed':True,'review_words':'Reviewed all carried work and flags',
+                  'merge_approved':True,'yes_words':'Yes, merge the reviewed result'})
+    call('review','--record',record)
+    saved = read(state); saved['pieces'][1]['flags'].append('Changed after final review'); write(state,saved)
+    call('merge-final','--pr',10,'--record',record,code=2)
+    assert git('--git-dir',remote,'rev-parse','main') == start
+    print('Shared sibling flag independently invalidates final consent.')
+    print('Fixture retained at',fixture)
+    sys.exit(0)
 if mode == 'shared':
     path = feature(1, 'a')
     saved = read(state)
@@ -151,6 +177,7 @@ if mode == 'shared':
              'reviewed':True,'review_words':'Reviewed both parts and flags',
              'merge_approved':True,'yes_words':'Yes, merge this result'}
     write(record, human); call('review', '--record', record)
+    saved = read(state)
     saved['pieces'][1]['flags'].append('New sibling observation'); write(state,saved)
     call('merge-final', '--pr', 10, '--record', record, code=2)
     assert git('--git-dir',remote,'rev-parse','main') == start
@@ -320,6 +347,7 @@ print('Fixture retained at',fixture)
 PY
 
 if [ -z "${INTEGRATION_CASE:-}" ]; then
+  INTEGRATION_CASE=shared-flags sh "$0"
   INTEGRATION_CASE=shared sh "$0"
   INTEGRATION_CASE=moving sh "$0"
 fi
