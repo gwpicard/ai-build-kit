@@ -41,8 +41,9 @@ last_written() {
   fi
 }
 
-# Keep diagnostics private until credentials have been masked. All GitHub calls
-# use this wrapper, so a missing blocker answer cannot look like an empty list.
+# Keep required-read diagnostics private until credentials have been masked.
+# Repository and blocker calls use this wrapper, so a missing blocker answer
+# cannot look like an empty list. Optional history reads print no diagnostics.
 umask 077
 scratch=$(mktemp -d)
 trap 'rm -rf "$scratch"' EXIT
