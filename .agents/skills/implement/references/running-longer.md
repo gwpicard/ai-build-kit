@@ -222,6 +222,14 @@ folder ignores itself and nothing tracked changes.
 - `start_commit` is the exact commit checked before this task's first edit.
   Record it after the start ritual, including earlier successful parent parts.
   A branch name alone does not identify that boundary once work continues.
+- `start_evidence` is the private result.json location of the passing check that
+  established that exact start, with head, passed, stage and commands. For a
+  feature cut from checked integration, use the integration verification evidence
+  when its head is that start, otherwise its baseline_evidence, whose checked head
+  has the same tree and is an ancestor of the start. Keep that original pointer
+  when integration advances. For a later parent part, keep the earlier successful
+  part’s checked_commit and passing evidence before that part’s next edit. The
+  original start is never replaced with the updated integration head.
 - `checked_commit` identifies the commit that passed the finished task's
   checks. Record it for a built part waiting for its parent's pull request,
   or for a task in `to check` or `merged`, before another task uses its work.
@@ -504,7 +512,20 @@ once no later part of that parent is left to build in the run. A part that
 finished earlier waits in `building` with the reason `waiting for the parent's
 pull request`. The pull request closes each part it carries with its own
 `Closes #<number>` line, and each part's changelog file is written once it
-opens. Where no part finishes, nothing opens. Where the run ends before the
+opens. Before integration, record the parent’s PR number and branch on every
+successfully completed part it actually carries, and on no unsuccessful or
+isolated part. Mark those carried parts `to check` when the PR opens. Do not
+infer membership from other open siblings. An optional `integration_members`
+list on the selected part must name exactly those recorded PR members. At the
+final parent candidate head, run `scripts/integration.py check --state <state.json>
+--piece <each carried part> --source <parent copy> --check <due commands>` for
+each part’s due acceptance and combined commands, repeating only the checks due
+under the existing verification route. Keep individual evidence and unresolved
+flags. Call `merge-feature` once for that PR; its pending record includes the
+whole membership. Reconcile an interrupted write before another write and do not
+call `merge-feature` again for a sibling merely to record it. The included list
+and final review cover every carried part. A failed part remains preserved and
+outside that PR. Where no part finishes, nothing opens. Where the run ends before the
 pull request can open, the finished parts stay on the pushed branch, are
 parked with the reason, and the report names them as built but in no pull
 request.
@@ -575,6 +596,11 @@ is preserved. A background builder never runs recovery or changes run state.
    not run, in a private local file. Run the installed implement skill's
    `scripts/recovery.py` with `preserve --state <state.json> --piece <number>
    --source <failed checkout> --base <start_commit> --evidence <check results>`.
+   The `start_commit` route remains the default. Only a saved failed
+   `integration_candidate` may use its separately checked base instead, with the
+   helper’s actual `verification.evidence` file; recovery retains the original
+   start and evidence as well as that candidate boundary. A refusal leaves the
+   failed checkout intact and stops affected continuation.
    Add `--final-state shaping` for a pause on a decision. It pins the failed
    commit, snapshots the working files including ignored files without following
    links, and retains the staged patch and check evidence. It verifies their
@@ -738,8 +764,20 @@ onto the recorded target, bases first, through the `section-builder` skill's
 `references/merge.md`, which tests all six integration conditions. Finish each update, due check and feature integration
 before the next write. Human flags travel with the work and remain owed.
 Failed automated checks never use that exception. Preserve the failed candidate
-and evidence through "Recovery before continuation", using the last checked
-integration commit as the pre-candidate boundary. Recheck that baseline and
+and evidence through "Recovery before continuation". Before candidate verification,
+keep the original checked start and its evidence, bring the feature up to the
+current checked integration target, and call `scripts/integration.py check` for
+the due commands. The helper writes `integration_candidate` before those commands
+run, tying that exact candidate to the original checked start and checked
+integration base. If combined verification fails after the target advanced,
+preserve with `--base <integration_candidate.base>` and
+`--evidence <verification.evidence>`, never a newly read remote head or copied
+summary. The existing recovery helper accepts that boundary only when its saved
+checks, candidate and ancestry match, and keeps `start_commit` unchanged. If a
+parent’s successful earlier checkpoint is not an ancestor of that integration
+boundary, use the existing parent-preservation route with its original checked
+start. An unknown boundary stops that parent and permits only separately
+established checked independent work. Recheck the accepted baseline and
 refresh blockers and code impact before independent continuation. Exclude every
 dependent; a shared verification failure stops all affected work. Never fall
 back to direct-main merges. A conflict still gets its one comment on the pull
