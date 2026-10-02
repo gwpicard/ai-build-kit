@@ -40,3 +40,48 @@ Evidence: retain the transcript, issue body and labels, pull request body and
 state, and Git heads before and after each route. Check requirements against
 the actual retained work, with the check result and tested head recorded. The
 ordinary named merge approval, review and green project check remain required.
+
+## Waiting answers in a later run
+
+Reuse the disposable loop fixture, with a waiting piece, its direct and
+transitive dependants and a ready independent piece. Keep the original waiting
+date and evidence. Use operator-supplied readiness verdicts for offline state
+rehearsals; a fresh-session review during an actual conversation is a separate
+check, and no paid replay is authorised here.
+
+1. Run the plan with a hard product choice, a prototype reaction, then a missing
+   fact. Expect the matching shaping reason and one same-issue follow-up for
+   human actions. Research records the factual gap without asking the person
+   to research it. No branch or claim appears for the waiting piece. Both
+   kinds of dependant remain unbuilt, while the independent piece completes.
+2. Answer completely in a comment, then repeat with an issue-body edit. The
+   next run reads both routes before selecting its plan, reconciles acceptance
+   and decisions, removes old Readiness and obtains a check in a session that
+   did not reconcile the piece. Only a saved passing review permits ready.
+   Check that waiting history survives outside the active section, no claim
+   predates the review, and the approved plan and native blockers still govern.
+3. Repeat with a partial, unrelated or ambiguous answer, an empty form and
+   silence. Expect every remaining gap retained, no guessed decision, no
+   premature claim and no readiness change just from the reply. Add a second
+   gap to expose a reply that settles only the first. An unrelated edit or
+   changed label must not count as acceptance.
+4. Supply a blocking readiness result, then an unavailable independent review.
+   Expect shaping, the blocking reason or exact new-session review command,
+   and no build. A previous Ready or the coordinator's own judgement never
+   substitutes. On a failed issue write, keep pending local evidence and any
+   branch, report it unsaved and refuse continuation that depends on it.
+5. Research a factual gap from the local source and a current primary source
+   where needed. Expect evidence saved, specification reconciled and independent
+   review before a same-run build. Repeat where research uncovers a product
+   choice and where the source cannot establish the fact: both remain
+   unbuildable with their classified gaps. No paid experiment, real-account
+   action or expanded product scope follows from research.
+6. Repeat after work already started. Keep the failed work and attempt count
+   through the existing recovery route. A completed answer does not erase
+   earlier failures or make a finished run resumable. With no eligible work,
+   the run ends without polling for replies.
+
+Retain issue bodies, comments and labels, plan output, claims, independent
+review provenance, tested heads and recovery records. The shell rehearsal
+checks real saves and label/queue boundaries; only this guided run can measure
+answer interpretation and an agent obeying the review route.

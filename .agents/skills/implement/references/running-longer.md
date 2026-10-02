@@ -79,17 +79,82 @@ An easy open choice seen at the plan leaves the piece eligible. It is built,
 and the builder picks the option easiest to undo and flags it, as "An open
 choice met while building" below says.
 
-The self-sufficiency test keeps its other job. A piece whose `Under the hood`
-notes lack what the build needs, with no open choice in it, is skipped with the
-reason and stays `ready`. Where a piece has both a hard open choice and a
-missing fact, the hard choice wins, and it goes back to shaping.
+The self-sufficiency test keeps its other job. A missing technical fact goes
+back to shaping with `needs-research`, using "Leaving a follow-up" below.
+Where a piece has both a hard open choice and a missing fact, the hard choice
+wins, and it goes back to shaping. Research must still record each remaining gap.
 
-Apart from a hard open choice, a piece that is not eligible stays where it is.
+Apart from a specification gap, a piece that is not eligible stays where it is.
 The report says why.
+
+## Leaving a follow-up
+
+When a piece cannot continue because an answer or action is missing, keep the
+follow-up on that piece. Write one authoritative `## Waiting on you` section
+on the original issue for a step that needs the person. Follow the
+`setup-ai-build-kit` skill's `references/pieces.md`, "Waiting on the person",
+for the question, evidence, concrete action and result needed. Say once:
+"The question stays on this piece. Answer there, and the next run checks it
+before building." A separate finding reuses its own owning issue and does
+not widen this piece. Checks owed after a closed implementation have their
+own route; this section concerns work still open.
+
+Classify what is missing. A decision or answer uses `needs-clarification`;
+reaction to a mock or prototype uses `needs-prototype`; a technical fact uses
+`needs-research`. Research records the question and evidence without a
+`## Waiting on you` section unless a human action is also needed. A failed
+implementation stays parked after the existing attempt bound, with evidence
+and the next review action in its follow-up. A missing tool or unaccepted
+sensitive-area condition stays parked, with the action required to clear it.
+These conditions are never answered or accepted by the run.
+
+A specification gap moves to shaping in one step, using its actual old state:
+`gh issue edit <number> --add-label shaping --add-label <its needs- label> --remove-label <old state> --remove-assignee @me`.
+Use that classification also for a hard choice found before or during the
+build, rather than always treating it as an interview. Remove any old Ready
+verdict when saving the gap; it no longer describes this specification.
+No `needs-` label sits beside parked. Cut no branch or claim before a
+plan-time gap is closed. Keep built work through "Recovery before continuation".
+The piece and its direct and transitive dependants remain unbuildable. Where
+code work stopped, eligible independent work continues through the existing
+recovery gate. A gap found before any build started needs no failed-work
+archive: refresh the plan and blockers, and give each next piece its normal
+start checks on its identified base.
+
+Save the follow-up on the issue and read it back before reporting it saved or
+changing eligibility. A failed write or read-back is not a saved follow-up or
+answer. Keep the pending body and action privately in the ignored run folder,
+preserve any branch through recovery and report the unsaved record. An
+unreachable issue service still stops claiming work under the existing rule.
+
+## Answers before the next plan
+
+Reconcile waiting pieces before selecting the plan. Given numbers, read only
+those open pieces; given `queue`, read open, already-shaped pieces with waiting
+records or a `needs-` reason, including pieces outside the printout's To build
+group. This is reconciliation, not permission to build an idea or expand the
+run. Follow the `shape` skill's "Answers already on the piece" route. It reads
+comments and body edits, incorporates complete answers or verified research
+into the specification, and obtains the existing independent readiness check.
+The printout remains read-only and grants no readiness.
+
+Refresh the printout after the saved review. A complete answer, complete
+specification and passing independent review may put the piece into this
+run's plan, subject to native blockers, the person's approval of the plan and
+every existing eligibility and acceptance rule. A comment alone grants none
+of these. An unanswered piece, a remaining gap or unavailable review stays
+unbuildable with the next action recorded. Eligible independent work proceeds.
+Re-read a planned piece's answers before its claim if its record changed;
+reconcile and review again before building a changed specification.
+
+Do not wait or poll for answers. Once no eligible work remains, the run ends.
+The next run reads the retained record again. This does not resume a finished
+run, reset its attempts or discard preserved work.
 
 ## Before the run starts
 
-Check that Git is clean, as section-builder's step 1 does. On Claude Code,
+Check that Git is clean, as section-builder's step 1 does. Reconcile answers
+as above before refreshing the plan. On Claude Code,
 clear away the worktrees whose pull requests have closed, as "Clearing a
 worktree away" below says. Refresh the printout. The plan is the pieces the
 person named, or with `queue` every piece under `To build` marked `(ready)`. Either way, the plan also takes each piece
@@ -378,6 +443,10 @@ below are shared out as "Building a group at the same time" says. For each one:
    is being built somewhere else: the claim refuses it, so skip it. A piece
    whose text shows a hard open choice goes back to shaping unclaimed, as
    "Which pieces a run may take" says, and the run takes the next. Otherwise
+   confirm that its current answer, reconciled specification and independent
+   verdict still agree, and refresh its blockers. Any changed or remaining gap
+   takes "Answers before the next plan" before a claim; a stale Ready does not
+   permit starting it. Then
    make section-builder's one-step claim, and add a comment naming this run,
    `Claimed by run <run name>`. Then read the claim back with
    `gh issue view <number> --json labels,assignees,comments`. The earliest
@@ -543,6 +612,8 @@ and keep it, and send it back to shaping,
 `gh issue edit <number> --add-label shaping --add-label needs-clarification --remove-label building --remove-assignee @me`.
 Mark its intended final state as `shaping`; preserve and isolate its work as
 "Recovery before continuation" below says before another piece starts.
+Write and classify its same-issue follow-up as "Leaving a follow-up" says;
+where it needs a prototype or research, use that matching reason instead.
 
 An easy choice, one a later change can undo without touching stored data, takes
 the most reversible option. Record it in `flags` and in the pull request's
@@ -566,10 +637,13 @@ Never let one piece consume the run. Route the parked piece further when the
 failure points somewhere specific: send it back to `/shape`, which settles a
 missing decision, chases a missing external fact, or reassesses a shape the
 team could not safely own, rather than a fourth attempt.
+Leave the same-issue follow-up and matching reason as "Leaving a follow-up"
+says. Returning for shaping does not reset the build's attempt count.
 
 A piece whose build needs software installed outside the project folder is
 parked with that reason, such as a tool missing from this computer or one too
-old. The reason names the tool, where it would go and how to undo it. The run
+old. The reason names the tool, where it would go and how to undo it. Write the
+concrete action and result needed on the same issue. The run
 never installs it, since nobody is there to say yes, and takes the next piece. Where the same missing
 tool would stop every piece left, it is a blocking failure every later piece
 relies on, and the run ends with that reason, as below.

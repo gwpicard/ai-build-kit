@@ -345,6 +345,12 @@ attribution line, not the word.
   guided fixture under `.agents/tests/fixtures/shaping-recovery.md` separately
   covers conversational routing and the merge gate; a shell pass does not
   measure an agent obeying those instructions.
+  The same disposable issue service and printout also exercise classified waits,
+  later comment and body-edit answers, failed or unavailable review and factual
+  research that discovers a human choice. They read the saved body, labels,
+  claims and queue, including direct and transitive blockers. Answer
+  classifications and review verdicts are supplied by the operator; interpreting
+  arbitrary answers and obtaining an independent session remain guided checks.
 - `.agents/tests/state-moves.sh` guards the commands that keep the board true.
   Each move takes the old state off in the same step as it puts the new one
   on, and the check reads every label command in `/shape`, `/implement`,
@@ -1581,7 +1587,9 @@ attribution line, not the word.
   plans or claims a piece sends it back too, with its question, no branch and
   no claim. Skipped and left `ready`, such a piece came back to every run with
   nothing telling the person a question waited. An easy choice seen then
-  leaves the piece eligible, and a missing fact alone still skips it. The
+  leaves the piece eligible, and a missing fact returns it to shaping for
+  research. Same-issue follow-ups retain the question and evidence; complete
+  answers return through specification reconciliation and independent readiness. The
   state file's fields, the live page, and a new session resuming from the
   state file are held too, as is a run that ends
   at once when nothing is left. So is what review of the first draft found:

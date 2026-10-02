@@ -113,7 +113,11 @@ rs_rule "the plan-time send-back takes ready off" 'with no claim to undo: `gh is
 rs_rule "no branch and no claim for a piece sent back at the plan" 'cut no branch and write no claim, since nothing was built'
 rs_rule "the plan names it as going back, with its question" 'the plan names it as going back, with its question'
 rs_rule "an easy choice at the plan leaves the piece eligible" 'an easy open choice seen at the plan leaves the piece eligible'
-rs_rule "a missing fact alone is still skipped and stays ready" 'with no open choice in it, is skipped with the reason and stays `ready`'
+rs_rule "a missing fact leaves ready for research" 'a missing technical fact goes back to shaping with `needs-research`'
+rs_rule "follow-up stays on its original issue" 'one authoritative `## waiting on you` section on the original issue'
+rs_rule "answers re-enter before planning" 'reconcile waiting pieces before selecting the plan'
+rs_rule "the loop delegates answer reconciliation to shape" 'follow the `shape` skill.s "answers already on the piece" route'
+rs_rule "write failure does not save a follow-up" 'a failed write or read-back is not a saved follow-up or answer'
 rs_rule "a hard choice wins over a missing fact" 'the hard choice wins, and it goes back to shaping'
 rs_rule "the claim step sends a visible hard choice back" 'a piece whose text shows a hard open choice goes back to shaping unclaimed'
 
@@ -198,6 +202,17 @@ rs_rule "integration failure never falls back to main" 'never fall back to direc
 rs_rule "shared verification failure stops affected work" 'a shared verification failure stops all affected work'
 rs_rule "combined review keeps the run record" 'keep the run record while its combined pull request or human review is still owed'
 rs_guard "$LONGER" "running-longer.md"
+
+rs_require_load_bearing "shape reads full answers rather than labels" "$ROOT/.agents/skills/shape/SKILL.md" \
+  'read the full current body and comments'
+rs_require_load_bearing "shape retains incomplete answers" "$ROOT/.agents/skills/shape/SKILL.md" \
+  'incomplete, unrelated, ambiguous and empty-form answers leave every remaining gap open'
+rs_require_load_bearing "shape invalidates old review before reconciliation" "$ROOT/.agents/skills/shape/SKILL.md" \
+  'remove the stale readiness verdict before saving the reconciled specification'
+rs_require_load_bearing "shape keeps unavailable review unbuildable" "$ROOT/.agents/skills/shape/SKILL.md" \
+  'unavailable independent review keeps the piece unbuildable'
+rs_require_load_bearing "shape retains waiting history" "$ROOT/.agents/skills/shape/SKILL.md" \
+  'preserve the original waiting-start history'
 
 rs_require_order "the claim comes before the branch" "$LONGER" '^1\. \*\*Claim it' '^2\. \*\*Branch it'
 rs_require_order "the branch comes before the start ritual" "$LONGER" '^2\. \*\*Branch it' '^3\. \*\*Run the start ritual'

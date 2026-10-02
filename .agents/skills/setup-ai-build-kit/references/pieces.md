@@ -192,7 +192,29 @@ file, as it always does.
 
 This is not `parked`. On an open piece that label already covers a piece stopped at a recorded condition
 and a piece parked after three failed attempts, and a third meaning would make
-all three unreadable. A piece waiting on the person keeps whatever state it had.
+all three unreadable. A piece waiting on the person keeps whatever state it had
+when the specification is complete and only that action remains. A newly
+uncovered specification gap instead returns to `shaping` with its matching
+`needs-` reason; missing facts never remain `ready` merely because a run skipped
+them. A failed implementation or a recorded stop condition keeps `parked`
+without a `needs-` label until its existing recovery route is taken.
+
+An unattended run leaves one authoritative section on the original issue,
+with the question and evidence, where to act and what result to bring back.
+Decision and prototype reactions need the person. Factual research records
+its gap and sources without asking the person to do the agent's work. The
+`implement` skill's `references/running-longer.md`, "Leaving a follow-up",
+classifies the gap and keeps its dependants unbuildable while independent work
+continues from checked code.
+
+Comments and issue-body edits can answer the section. The `shape` skill's
+"Answers already on the piece" route reads the whole record, incorporates
+complete answers or verified facts into the specification and obtains the
+existing independent readiness check. A reply alone never grants readiness.
+Keep remaining questions in the active section, and retain settled questions,
+their answers and original waiting-start history outside it. The printout
+stays read-only. No answer, incomplete evidence or unavailable review leaves
+the piece unbuildable with the next action recorded.
 
 One line looks alike and means something else. A piece carrying a
 `Waiting on you: try it` line is built as usual. The line sits on its own rather
