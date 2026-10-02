@@ -119,6 +119,13 @@ rs_rule "the claim step sends a visible hard choice back" 'a piece whose text sh
 
 # Failure, and a blocking failure.
 rs_rule "three failed attempts park the piece" 'after the third, park it'
+rs_rule "attempts have one authoritative issue section" 'the original issue.s `## attempt history` section is the authoritative record'
+rs_rule "each failed approach points to kept work" 'one plain line per attempt says what was tried, what happened and the preserved branch/work location'
+rs_rule "history is read before another approach" 'read the live attempt history and any pending local summary before choosing another approach'
+rs_rule "pending publication survives locally" 'a failed or unverified issue write stays pending locally alongside the preserved work'
+rs_rule "state holds pointers rather than another history" 'state stores the issue pointer and pending file paths, never a second attempt narrative'
+rs_rule "retry keeps observed concurrent records" 'reuse stable attempt identities, retain every observed approach and verify the issue read-back'
+rs_rule "pending summaries are reported honestly" 'report its issue link and each pending local file; never call an unverified issue write saved'
 # A piece whose build needs software installed on this computer, outside the
 # project folder, waits for a yes nobody is there to give in a run. Installing
 # it anyway is how a person's machine got changed without a word.
