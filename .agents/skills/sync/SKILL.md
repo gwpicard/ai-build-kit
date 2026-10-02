@@ -70,7 +70,12 @@ else, or recovering after an optional automation failed to run.
    Then read the project's own documents against it. Load
    `references/document-read.md` and check the README and every document
    AGENTS.md points at for a file, link, command or setting that no longer
-   exists. Offer to correct only the stale name, or to file it as a piece.
+   exists, and explicit required checks missing from their declared routes.
+   Report unsupported or indeterminate rules as unverified; an inactive rule
+   is not broken. Say once with a finding or limit: "This checks names and
+   explicit check routes. Other instructions remain unverified." Offer to
+   correct only a stale name or file it as a piece; route a missing connection
+   to `/fix` or an unsettled rule to `/shape`. This read edits no mechanisms.
 5. Identify anything left open: an unresolved recheck trigger from the build-path section, flagged work still waiting, or interrupted manual setup. Say what's open rather than closing it quietly. Where flagged work was built during the period being reconciled, check the build-path section carries an `Accepted:` line for it; if the work happened and the line is missing, say so rather than writing one now, because an acceptance recorded after the fact is a record of nothing.
 
    Before deciding a run is finished or offering to remove its folder, compare each piece with its durable `recovery.json`, including records missing from run state, as the `implement` skill's `references/running-longer.md` describes. A differing generation or stage, or a pending write, means unfinished recovery; offer `/implement queue` to reconcile and check it again, without resuming it here.

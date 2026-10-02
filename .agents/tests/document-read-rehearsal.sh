@@ -215,6 +215,12 @@ assert "npm run check" in broken and "npm run guard" in broken, broken
 assert "package.json scripts.check" in broken and "npm run unit" in broken, broken
 assert (project / "AGENTS.md").read_bytes() == unchanged
 print("  ok: changed route with unchanged document names the missing check and inspected evidence")
+package.write_text(json.dumps({"scripts": {"check": "pnpm run bridge", "bridge": "yarn run guard", "guard": "node --test"}}))
+assert run() == "", "transitive intact route produced findings"
+package.write_text(json.dumps({"scripts": {"check": "pnpm run bridge", "bridge": "true", "guard": "node --test"}}))
+assert "wiring mismatch" in run() and "scripts.bridge" in run()
+scripts("npm run unit")
+print("  ok: transitive package edges are inspected and a removed middle edge is named")
 
 # Removing the production detector must remove the broken finding.
 source = script.read_text()
@@ -247,7 +253,11 @@ for route in ('sh scripts/check.sh', 'npm run "$CHECK"', 'npm run guard || true'
     scripts(route)
     out = run()
     assert "unverified rule" in out and "wiring mismatch" not in out, (route, out)
-print("  ok: shell indirection, quoted mentions, conditional shell and cycles remain unverified")
+package.write_text(json.dumps({"scripts": {"check": "npm run unit", "unit": "node --test", "guard": "node --test", "precheck": "npm run guard"}}))
+assert "unverified rule" in run() and "wiring mismatch" not in run()
+package.write_text(json.dumps({"scripts": {"check": "npm run guard", "guard": None}}))
+assert "unverified rule" in run() and "wiring mismatch" not in run()
+print("  ok: shell indirection, lifecycle hooks, malformed check entries and cycles remain unverified")
 
 (project / "AGENTS.md").write_text("Required check: run all important checks through the normal route.\n")
 assert "unverified rule" in run()
@@ -274,5 +284,45 @@ for relative in (".agents/skills/sync", ".claude/skills/sync", "plugin cache/ski
     installed.write_text(source)
     assert run(installed) == broken, relative
 print("  ok: detector works from shared, Claude-only and external plugin layouts")
+# Project scripts and a configured Git hook would leave a marker if executed.
+subprocess.run(["git", "init", "-q"], cwd=project, check=True)
+subprocess.run(["git", "add", "AGENTS.md", "README.md", "package.json"], cwd=project, check=True)
+(project / "README.md").write_text("The entry point is `missing.js`.\n")
+hooks = project / ".git/hooks"
+hook = hooks / "watch"
+hook.write_text("#!/bin/sh\ntouch hook-ran\n")
+hook.chmod(0o755)
+subprocess.run(["git", "config", "core.fsmonitor", str(hook)], cwd=project, check=True)
+subprocess.run(["git", "config", "core.hooksPath", str(hooks)], cwd=project, check=True)
+(project / "danger.sh").write_text("touch script-ran\n")
+scripts("sh danger.sh")
+sentinel_out = run()
+assert "unverified rule" in sentinel_out and "missing.js" in sentinel_out
+assert not (project / "hook-ran").exists() and not (project / "script-ran").exists()
+print("  ok: project scripts and configured Git hooks leave no execution marker")
+
+# The selected documentation boundary also applies to relationship declarations.
+(project / "AGENTS.md").write_text("See `docs/selected.md`.\n")
+(project / "docs").mkdir()
+claim = "Required check: `npm run guard` via `npm run check`.\n"
+(project / "docs/selected.md").write_text(claim)
+(project / "docs/unselected.md").write_text(claim)
+scripts("npm run unit")
+assert "docs/selected.md:1\twiring mismatch" in run()
+assert "unselected" not in run()
+(project / "README.md").write_text("```text\n" + claim + "```\n")
+assert "README.md" not in run()
+external = work / "external.md"
+external.write_text(claim)
+(project / "docs/selected.md").unlink()
+(project / "docs/selected.md").symlink_to(external)
+assert run() == "", "external document was inspected"
+package.unlink()
+external_package = work / "external-package.json"
+external_package.write_text(json.dumps({"scripts": {"check": "npm run guard", "guard": "true"}}))
+package.symlink_to(external_package)
+(project / "AGENTS.md").write_text(claim)
+assert "unverified rule" in run()
+print("  ok: selected documents are read, fenced examples and outside documents are left alone")
 print("  ok: every fixture kept its files unchanged; no project scripts or hooks were executed")
 PY
