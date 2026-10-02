@@ -167,6 +167,12 @@ rs_require_load_bearing "COMPATIBILITY says only Claude Code offers it" "$COMPAT
 rs_require_load_bearing "COMPATIBILITY says the older Git is not asked" "$COMPAT" \
   'on claude code with git older than 2\.17, the run does not ask'
 
+# This rule guard must not embed another implementation of the run. Published
+# helper behaviour belongs in failure-recovery.sh; conversation belongs in the
+# guided shaping recovery fixture.
+rs_require_absent "parallel run evidence contains no inline Python runner" \
+  "$0" 'python3[[:space:]]+-'
+
 # Deterministic offline runner fixture. It checks the bounded policy cases and
 # does not claim to measure whether a model follows the instruction.
 python3 - "$LONGER" <<'PY'
