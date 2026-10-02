@@ -505,6 +505,11 @@ When nothing is left that the run can take, it stops at once with one report: ea
 
 Some harnesses provide goal or long-run modes, such as Claude Code's `/goal`: "keep going until this condition holds". Same run, same rules: take the condition from a done line, a named sensitive area stops the piece that touches it, never the run, and each piece still lands through the save route the build path requires.
 
+An exposed native goal or an explicit request to continue unattended takes this
+route even for one piece. The run shows eligible pieces and their order and
+waits for your approval before building. A parent supplies its current parts
+and blockers; casual use of the word goal changes nothing.
+
 ## 11. Team use
 
 GitHub collaborators identify who has access. Invite someone under the repository's Settings, then Collaborators. They accept the email, open the repo in their own tool, and make their own .env from .env.example.

@@ -1568,7 +1568,11 @@ attribution line, not the word.
   boundaries prove that divergent generations stay unfinished and a stale
   checked record never overwrites checking.
 - `.agents/tests/the-runner.sh` guards how `/implement` runs a plan of ready
-  pieces with nobody watching, given several numbers or `queue`. In a real
+  pieces with nobody watching, given several numbers or `queue`.
+  Its goal routing checks also hold exposed native context or explicit unattended
+  instructions entering the run before ordinary dispatch, with plan approval
+  before any claim or builder. The guided goal-routing fixture separates desk
+  evidence from live harness behaviour. In a real
   project the agent built its own loop four times, with its rules and state in
   temporary files and memory notes. The gate on which pieces a run may take
   was skipped twice, once on a piece that touched personal data overnight,
