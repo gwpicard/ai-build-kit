@@ -147,7 +147,7 @@ condition, not in the shared default.
 
 ## Changing a skill
 
-This section governs the fourteen canonical skills in `.agents/skills/`. A
+This section governs the fifteen canonical skills in `.agents/skills/`. A
 maintainer skill sits outside it, and `AGENTS.md` says what it does and does not
 owe.
 
@@ -161,7 +161,7 @@ the regenerated compatibility fixtures. Never hand-edit anything under
 `.claude/`, `.cursor/`, or `.gemini/`. New projects use the shared skills
 installer, the optional Claude Code plugin, or the Agent Plugins folder. The
 Claude plugin metadata lives under `.claude-plugin/`. It explicitly
-selects the nine generated command files and five generated background skills.
+selects the nine generated command files and six generated background skills.
 Those thin adapters load the canonical instructions from the plugin cache. The
 Agent Plugins manifest lives under `agent-plugin/`, and its `skills`
 folder is assembled by the release allowlist rather than by
@@ -172,7 +172,7 @@ protect.
 One setting says how a skill is triggered. A background skill another skill
 calls carries `user-invocable: false` in its own file. A skill without it is a
 command. The adapter builder reads that setting and nothing else, so a dropped
-or misspelt line shows up as ten commands and three background skills, and the
+or misspelt line shows up as ten commands and five background skills, and the
 count check stops the build there.
 
 The commands used to carry a second setting that stopped the agent starting one
@@ -189,10 +189,10 @@ directly, so the setting has to be right in the skill itself, whatever the
 generated adapters look like.
 
 `user-invocable` is not in the written Agent Skills standard, so its reference
-checker reports the five background skills as invalid. Keep it anyway, with the
+checker reports the six background skills as invalid. Keep it anyway, with the
 cost on the record: the plugin standard tells a client to skip any skill that
 fails the skill standard, so a strict Agent Plugins client would load the nine
-commands and skip the five. Claude Code accepts the setting, which is why that
+commands and skip the six. Claude Code accepts the setting, which is why that
 route works today. If the standard adopts a setting of its own, follow it and
 update the short person-facing version in `docs/COMPATIBILITY.md`.
 
@@ -209,10 +209,10 @@ part or date itself. A proposal worth keeping becomes an issue.
 
 The reason is what a shared skills installer reads. It looks in
 `.agents/skills/` and `.claude/skills/` and offers whatever it finds in either,
-merging the two by the `name` in each file's frontmatter. The fourteen adapters
-carry the names of the fourteen skills they point at, so they merge away and an
-installer finds fourteen. No maintainer skill shares a name with one of the
-fourteen, so a copy of any of them in those folders would be a fifteenth skill
+merging the two by the `name` in each file's frontmatter. The fifteen adapters
+carry the names of the fifteen skills they point at, so they merge away and an
+installer finds fifteen. No maintainer skill shares a name with one of the
+fifteen, so a copy of any of them in those folders would be a sixteenth skill
 offered to every project.
 
 Sitting outside both folders is what prevents that. It is also why the skill
@@ -253,7 +253,7 @@ COMPATIBILITY.md, beside this file, holds the full per-tool map.
 Every change to `.agents/skills/` or the kit's own machinery runs
 `.agents/tools/validate-kit.sh`, which checks:
 
-- the canonical skill inventory (exactly nine commands and five background
+- the canonical skill inventory (exactly nine commands and six background
   skills, named exactly, with nothing else in the folder);
 - the maintainer skill boundary: every folder under `.agents/maintainer-skills/`
   is read off the disk rather than from a list, the vendored writing skill
@@ -302,7 +302,7 @@ Every change to `.agents/skills/` or the kit's own machinery runs
   "four project documents", `team.md`, a mandatory fresh session for every
   build, a universal pull-request or test-first requirement, an automatic
   rebuild treated as the fourth `/fix` attempt, an absolute claim that the
-  five background skills never appear in any harness, incorrect Claude invocation
+  six background skills never appear in any harness, incorrect Claude invocation
   semantics, `.codex/` described as a generated adapter, or a claim that
   everything in the kit is markdown.
 
@@ -462,7 +462,7 @@ maintainer's real Claude configuration.
 
 Run `.agents/tests/agent-plugin.sh` too. It builds a release and checks the
 assembled `agent-plugin` folder against the open standard: the manifest's
-permitted fields, the fourteen skills as immediate children of `skills`, no
+permitted fields, the fifteen skills as immediate children of `skills`, no
 skill hidden deeper, no maintainer-only writing skill, and a project
 stand-up from that folder alone.
 
@@ -688,7 +688,7 @@ wherever `N` appears.
    npx skills add /private/tmp/abk-preview-N -a claude-code -a codex -s '*' -y
    ```
 
-   The first puts the fourteen skills in `.claude/skills/`, the second in
+   The first puts the fifteen skills in `.claude/skills/`, the second in
    `.agents/skills/` with links in `.claude/skills/`. In both, `ship/recipes/`
    holds the same recipes as `ls <kit checkout>/.agents/skills/ship/recipes/`.
 
@@ -880,7 +880,7 @@ name a person reads is the one that matters, and an internal name is left alone
 where changing it would churn output nobody reads for no reader benefit.
 
 A person reads "background skills"; the code identifiers and check messages say
-"disciplines". They are the same five skills.
+"disciplines". They are the same six skills.
 
 A person reads that the agent chooses the method; `.agents/tests/scenarios.md`
 and `.agents/tests/replay/grader-prompt.md` call that field "hidden technique".
@@ -901,3 +901,15 @@ identifier.
 
 Before adding an explanation, check whether its owner already carries it. If it
 does, link. If two documents disagree, the owner wins and the other is edited.
+
+## Selective project context
+
+`project-context` is the sixth background skill. Existing commands call it for
+behaviour, data, permissions, integrations, architecture and refactors crossing
+those areas. Facts stay in the project records; the skill selects authoritative
+sections from the current index and code reach, follows necessary references
+and names gaps through existing routes. It adds no command or consent rule.
+Its optional section reader is shipped inside the skill on every installation
+route. The retrieval rehearsal executes that reader; the guided fixture records
+the separate limit that static checks cannot prove arbitrary model selection
+or interpretation of rules.

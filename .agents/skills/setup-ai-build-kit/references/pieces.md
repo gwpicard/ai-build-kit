@@ -109,7 +109,11 @@ say "nothing", because the masterplan already describes the promised result.
 Test that before writing it. Read each line of `## Done when` against the
 masterplan and its authoritative concept documents, and write "nothing" only
 when those records already say it. On the new format name the concept documents
-this piece updates, with their owned rule; name the masterplan only when its
+this piece updates, with their owned rule. Keep the selected authoritative
+documents and relevant sections in `Under the hood`, including why no update
+is needed for a relevant owner left unchanged. Refresh that selection when
+current code reach or a changed requirement expands scope, and on resumption.
+Name the masterplan only when its
 overview, useful summaries or pointers change. Working/review rules go to
 working rules, and operational fields to operations. [project-records.md](project-records.md)
 selects the homes. A mechanical or unrelated change leaves the overview alone.

@@ -130,7 +130,7 @@ rs_require_load_bearing "/fix claims the repair before it starts" \
 rs_require_load_bearing "/fix claims only once the repair is confirmed as promised" \
   "$FIX" 'only once the repair is confirmed as promised behaviour'
 rs_require_order "/fix claims after the promise check" "$FIX" \
-  'never promised there' 'the repair is confirmed as promised'
+  'never promised in its current owner' 'the repair is confirmed as promised'
 rs_require_load_bearing "/fix moves a claim back when the request goes to /shape" \
   "$FIX" 'move it back to the state it had in one step'
 rs_require_load_bearing "/fix adds building alone to an issue with no state" \

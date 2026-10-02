@@ -5,6 +5,12 @@ description: The service visit for AI Build Kit updates, project upkeep, handove
 
 # Maintain
 
+When the visit assesses product or architecture work, load and follow the
+`project-context` skill for the affected rules and dependencies. Routine kit
+updates need no product lookup. Full visits and handovers retain their broader
+explicit reconciliation and coverage reads; required working rules stay
+mandatory and a context gap takes the existing reconciliation route.
+
 For project record reads and writes, load the `setup-ai-build-kit` skill's
 `references/project-records.md`. Its marker selects authoritative concept,
 working-rule and operations records for the new format; legacy projects keep
@@ -44,7 +50,7 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    rule there. Wait for approval rather than replacing an edit silently.
 3. Identify how this project receives AI Build Kit. Check whether
    `skills-lock.json` records skills from `gwpicard/ai-build-kit`. Where it
-   does, count its entries against the fourteen names and say which are
+   does, count its entries against the fifteen names and say which are
    missing. A short installation means a skill the kit renamed or added never
    arrived. The version file cannot show this, because the same update that
    drops a skill rewrites the version, so the count is the only sign.
@@ -81,7 +87,7 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    Do not update unrelated plugins, project skills, or global skills.
 5. For the shared route, confirm that this skill's `VERSION` now matches the
    version step 1 read from `releases/latest`, and that the count from step 3
-   is now fourteen. When the shared installation did not have `screen-check`
+   is now fifteen. When the shared installation did not have `screen-check`
    before this visit, confirm that the same `npx skills add` command added it,
    and carry on only once it is there. A matching version
    alone is not proof the installation is whole. For the Claude route, confirm
@@ -129,7 +135,7 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    then update the map only after the person answers.
 8. If the normal route is unavailable, use the latest published Release, the
    one step 1 read, as the fallback source. A shared installation may replace
-   only the fourteen AI Build Kit skill folders after the same approval and
+   only the fifteen AI Build Kit skill folders after the same approval and
    clean checkpoint. A Claude
    plugin installation keeps its current enabled version when the marketplace
    cannot be reached. Confirm that version with `claude plugin list --json`,
@@ -767,7 +773,7 @@ updating. So the kit does it for them, with approval:
    `- Commands:` and names all nine. Where it names `start`, replace it with
    `setup-ai-build-kit`. Where it names `plan`, replace it with `shape`. Where
    `queue` is missing, add it after `implement`. Where the sentences nearby
-   give an older count of commands or skills, make them nine and fourteen.
+   give an older count of commands or skills, make them nine and fifteen.
 2. Show the change and apply it on approval. Say what changed in one sentence.
 3. Where the file lists the commands in its own words and the line cannot be
    recognised, leave the file alone and say which name needs changing, so the

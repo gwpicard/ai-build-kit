@@ -48,12 +48,28 @@ rs_rule "a concept file has fixed headings" 'under the headings what it is, how 
 rs_rule "a new fact starts a concept file, never a notes file" 'a fact that fits no concept file yet starts a new one, named for its concept, never a general notes file'
 rs_rule "a concept file is one the list names" 'a concept file is one listed in `docs/readme\.md`'
 rs_rule "a new concept file is listed there, not in AGENTS.md" 'gets a line in `docs/readme\.md`, never in agents\.md'
-rs_rule "a build reads the concept files it touches" 'read too each concept file the piece touches'
+rs_rule "a build reads relevant authoritative concept sections" 'read the relevant authoritative sections of each concept the piece touches'
+rs_rule "the selection preserves necessary cross-references" 'with their necessary cross-references'
 rs_rule "AGENTS.md takes rules and pointers only" 'agents\.md holds rules and pointers only'
 rs_rule "no date, issue number or code name in AGENTS.md" 'never write a date, an issue number or a code name into it'
 rs_rule "a code name is defined" 'a code name is a function, variable or file name from the project.s code'
 rs_rule "the ceiling is held by the project check" 'the project check goes red when agents\.md passes 200 lines'
 rs_guard "$BUILDER" "section-builder's records step"
+
+# Selection and gap handling are written rules; executable retrieval and the
+# guided fixture establish their separate, narrower evidence.
+rs_reset
+rs_rule "unknown reach gets a lookup" 'when the reach is uncertain, start with a small lookup'
+rs_rule "mechanical edits can skip product lookup" 'a purely mechanical formatting edit may skip product lookup'
+rs_rule "working rules remain independently mandatory" 'working rules required for the action remain mandatory independently'
+rs_rule "task lookup never requires every record" 'invoking this skill never requires the whole masterplan, every concept or every completed issue'
+rs_rule "selected rules include exceptions and dependencies" 'definitions, exceptions, origins and dependencies'
+rs_rule "resumption uses current records" 'before building and on resumption, re-read the current index'
+rs_rule "expanded reach refreshes the affected-document list" 'refresh the lookup and the affected-document list before changing that area'
+rs_rule "a gap supplies no invented authority" 'never treat it as no constraint, invent a rule, or manufacture permission'
+rs_rule "dependent work stays untouched at a gap" 'leave dependent work untouched'
+rs_rule "explicit broader reviews retain their purpose" 'selective lookup must not narrow those reviews'
+rs_guard "$SKILLS/project-context/SKILL.md" "selective project context"
 
 # --- the template says what it is -------------------------------------------
 

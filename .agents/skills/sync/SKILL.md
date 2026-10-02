@@ -5,6 +5,13 @@ description: True the documents up against what actually happened. Use for an in
 
 # Sync
 
+When selecting the product context for affected work, load and follow the
+`project-context` skill. Its narrow lookup does not replace this command's
+explicit coverage and reconciliation reads, including a full current-state
+review when the review checkpoint is missing. Refresh from current records
+after an interruption and name context gaps through this command's existing
+reconciliation route.
+
 For project record reads and writes, load the `setup-ai-build-kit` skill's
 `references/project-records.md`. Its marker selects authoritative concept,
 working-rule and operations records for the new format; legacy projects keep

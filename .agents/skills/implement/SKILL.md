@@ -5,6 +5,12 @@ description: The everyday command for building a piece that has already been sha
 
 # Implement
 
+Before handing a piece to its builder, load and follow the `project-context`
+skill for behaviour, data, permissions, integrations or architecture, including
+refactors crossing those areas. The builder refreshes the current selection;
+pure mechanical formatting may skip product lookup, and uncertain reach takes
+a small lookup. Required working rules remain mandatory.
+
 For project record reads and writes, load the `setup-ai-build-kit` skill's
 `references/project-records.md`. Its marker selects authoritative concept,
 working-rule and operations records for the new format; legacy projects keep
@@ -31,8 +37,9 @@ and `references/running-longer.md`.
 Use the current session for related, well-bounded work while the context
 remains clear. Start fresh after a long, confused, interrupted, or unrelated
 session, and whenever an independent review is required. The documents are
-the source of truth either way. Read masterplan.md first, build-path section
-first, then the project's pieces.
+the source of truth either way. Read the required working rules first, then
+the relevant overview and authoritative sections selected through
+project-context, and the project's pieces.
 
 This command builds; it does not shape. It takes a piece that `/shape` has
 already shaped and marked ready, and carries it to a confirmed, saved change.

@@ -5,6 +5,12 @@ description: The command for turning an idea into a ready piece before anything 
 
 # Shape
 
+Before shaping or refining behaviour, data, permissions, integrations or
+architecture, load and follow the `project-context` skill. It includes refactors
+crossing those areas; uncertain reach takes a small lookup and pure mechanical
+formatting may skip product lookup. Capture the selected authoritative sections
+and intended updates on the piece before its readiness check.
+
 For project record reads and writes, load the `setup-ai-build-kit` skill's
 `references/project-records.md`. Its marker selects authoritative concept,
 working-rule and operations records for the new format; legacy projects keep
@@ -17,8 +23,9 @@ could build, and settles anything the piece is still waiting on. When a piece
 is ready it offers to hand it to `/implement`, but building is always a
 separate, deliberate step.
 
-Read masterplan.md first, build-path section first, then the project's pieces,
-the same way `/implement` does. Refresh the printout and read that.
+Read the required working rules first, then the relevant overview and
+authoritative sections selected through project-context, and the project's
+pieces, the same way `/implement` does. Refresh the printout and read that.
 The `setup-ai-build-kit` skill's `references/pieces.md` describes how the pieces are kept.
 
 Whenever shaping touches a decision, re-read any "rests on" clause in the

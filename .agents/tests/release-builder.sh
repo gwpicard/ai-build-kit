@@ -52,6 +52,8 @@ for required in \
   .agents/skills/setup-ai-build-kit/templates/foundation/plan-refresh.sh \
   .agents/skills/setup-ai-build-kit/scripts/place-plan-helper.sh \
   .agents/skills/setup-ai-build-kit/templates/maintenance-record \
+  .agents/skills/project-context/SKILL.md \
+  .agents/skills/project-context/scripts/read-context.py \
   .agents/skills/screen-check/SKILL.md \
   .agents/skills/ship/references/recipe-format.md \
   .agents/skills/ship/templates/recipe.md \
@@ -59,6 +61,8 @@ for required in \
   .claude-plugin/plugin.json \
   .claude-plugin/marketplace.json \
   agent-plugin/plugin.json \
+  agent-plugin/skills/project-context/SKILL.md \
+  agent-plugin/skills/project-context/scripts/read-context.py \
   agent-plugin/skills/screen-check/SKILL.md \
   agent-plugin/skills/setup-ai-build-kit/SKILL.md \
   agent-plugin/skills/setup-ai-build-kit/scripts/bootstrap-project.sh \
@@ -144,14 +148,14 @@ grep -qF 'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json' \
   fail "agent plugin does not declare the open plugin standard"
 agent_plugin_skill_count=$(find "$FIRST/agent-plugin/skills" -mindepth 2 -maxdepth 2 \
   -name SKILL.md | wc -l | tr -d ' ')
-[ "$agent_plugin_skill_count" -eq 14 ] || \
-  fail "agent plugin does not expose exactly fourteen installable skills"
+[ "$agent_plugin_skill_count" -eq 15 ] || \
+  fail "agent plugin does not expose exactly fifteen installable skills"
 [ "$(cat "$FIRST/agent-plugin/skills/maintain/VERSION")" = "v0.1.0" ] || \
   fail "agent plugin maintain skill version is wrong"
 released_skill_count=$(find "$FIRST/.agents/skills" -mindepth 2 -maxdepth 2 \
   -name SKILL.md | wc -l | tr -d ' ')
-[ "$released_skill_count" -eq 14 ] || \
-  fail "release does not expose exactly fourteen installable skills"
+[ "$released_skill_count" -eq 15 ] || \
+  fail "release does not expose exactly fifteen installable skills"
 cmp -s "$FIRST/AGENTS.md" \
   "$FIRST/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md" || \
   fail "released root instructions differ from start's foundation template"

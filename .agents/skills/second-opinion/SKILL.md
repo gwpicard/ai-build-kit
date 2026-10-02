@@ -6,6 +6,12 @@ user-invocable: false
 
 # Second opinion
 
+For a change review, load and follow the `project-context` skill to read the
+current authoritative sections and necessary cross-references behind the
+agreed result. Re-select when the actual diff reaches another area. Whole-plan
+and launch reviews retain their explicit broader purpose; this lookup does
+not narrow their required coverage or working-rule reads.
+
 For project record reads and writes, load the `setup-ai-build-kit` skill's
 `references/project-records.md`. Its marker selects authoritative concept,
 working-rule and operations records for the new format; legacy projects keep

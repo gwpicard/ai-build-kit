@@ -6,13 +6,21 @@ user-invocable: false
 
 # Change triage
 
+Before comparing product or architecture intent, load and follow the
+`project-context` skill for the request's relevant authoritative sections and
+necessary cross-references. Include behaviour, data, permissions, integrations
+and refactors crossing them. Uncertain reach takes a small lookup; a purely
+mechanical edit may skip product lookup. Capture alone settles no product rule.
+
 For project record reads and writes, load the `setup-ai-build-kit` skill's
 `references/project-records.md`. Its marker selects authoritative concept,
 working-rule and operations records for the new format; legacy projects keep
 their existing route. This changes record ownership, not safety or merge authority.
 
 
-The user never sorts their own request; you do, and the masterplan is the referee. Read it first, build-path section first.
+The user never sorts their own request; you do, and the current authoritative
+project rules are the referee. Read the required working rules first, then the
+relevant product sections selected through project-context.
 
 ## Step 1: Understand the request
 
