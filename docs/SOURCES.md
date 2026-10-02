@@ -83,6 +83,7 @@ Nobody named here was asked first, and nobody named here has endorsed the kit.
 | [Semantic Versioning](https://semver.org/) | The `vX.Y.Z` tag form `/ship` reads for a tool that is not hosted, and proposing the next minor version for a release the person can rename |
 | [W3C's WCAG 2.2 quick reference](https://www.w3.org/WAI/WCAG22/quickref/) | The criteria behind keyboard operation, visible and unobscured focus, contrast, reflow, target size, consistent identification, labels, and errors |
 | [Claude Code subagents](https://code.claude.com/docs/en/sub-agents), [Codex subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents), [Cursor subagents](https://cursor.com/docs/subagents) and [Gemini CLI subagents](https://geminicli.com/docs/core/subagents/) | Fresh task contexts and bounded results where the current exposed tools permit a writable builder, with durable re-entry and an honest limit elsewhere; checked on 2 October 2026, with no universal reset claimed |
+| [CommonMark fenced code blocks](https://spec.commonmark.org/0.31.2/#fenced-code-blocks) | Matching the opening delimiter and length before treating a later fence as the end of an example in the bounded wiring detector |
 
 Copyright © 2023 W3C®. This software or document includes material copied from
 or derived from [How to Meet WCAG (Web Content Accessibility Guidelines), Quick
