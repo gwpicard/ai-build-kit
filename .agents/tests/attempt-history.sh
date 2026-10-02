@@ -13,6 +13,7 @@ import tempfile
 root = Path(sys.argv[1])
 helper = root / '.agents/skills/implement/scripts/attempt-history.py'
 fixture = Path(tempfile.mkdtemp(prefix='kit-attempt-history-'))
+print('Retained fixture: ' + str(fixture), flush=True)
 project = fixture / 'project'
 project.mkdir()
 subprocess.run(['git','init','-q',str(project)],check=True)
@@ -42,8 +43,13 @@ if a[1] == 'view':
     d['reads'] += 1
     if d.get('addition') and d['reads'] == d.get('add_on_read'):
         d['body'] = d['body'].replace('<!-- /attempt-history -->', d['addition'] + '\\n<!-- /attempt-history -->')
+    if d.get('remove_on_read') == d['reads']:
+        d['body'] = '\\n'.join(line for line in d['body'].splitlines()
+                                if d['remove_identity'] not in line)
+    if d.get('change_on_read') == d['reads']:
+        d['body'] = d['body'].replace('Unchanged words.', 'Changed words.')
     p.write_text(json.dumps(d))
-    if d.get('read_fail'): sys.exit(1)
+    if d.get('read_fail') or d.get('fail_on_read') == d['reads']: sys.exit(1)
     print(json.dumps({'body':d['body'],'url':d['url']}))
 elif a[1] == 'edit':
     assert a[3:] == ['--body-file','-'], a
@@ -120,12 +126,37 @@ for consumer in ('later run','fix'):
     assert all(approach in history for approach in ['Try cache','Try polling','Try ordered updates']), consumer
     assert not load(state)['pieces'][0]['attempt_history'].get('approaches')
 assert load(state)['pieces'][0]['attempt_history']['issue'] == url + '#attempt-history'
-# An observed concurrent addition before writing survives the fresh-read merge.
+# An approach seen only on the second read survives its absence on the next read.
 stage(4,'Try isolated writes')
 other = '- Other run tried a queue; still failed; kept elsewhere. <!-- attempt:other-1 -->'
-change(addition=other,add_on_read=load()['reads'] + 2)
+change(addition=other,add_on_read=load()['reads'] + 2,
+       remove_on_read=load()['reads'] + 3,remove_identity='attempt:other-1')
 call('publish')
-assert other in load()['body'] and 'Try isolated writes' in load()['body']
+assert other in load()['body'] and 'Try isolated writes' in load()['body'], 'Lost second-read observation'
+# An interrupted retry keeps the second-read observation durably pending.
+stage(7,'Try sequential writes')
+interrupted = '- Other run tried serial updates; still failed; kept elsewhere. <!-- attempt:other-2 -->'
+change(addition=interrupted,add_on_read=load()['reads'] + 2,
+       remove_on_read=load()['reads'] + 3,remove_identity='attempt:other-2',
+       fail_on_read=load()['reads'] + 3)
+call('publish',code=2)
+paths = load(state)['pieces'][0]['attempt_history']['pending']
+assert paths and all(interrupted in load(Path(path))['observed'] for path in paths)
+assert interrupted not in load()['body']
+call('publish')
+assert interrupted in load()['body']
+# Read-back observations survive a mismatch and a later body without that line.
+stage(8,'Try explicit ordering')
+read_back = '- Other run tried a lock; still failed; kept elsewhere. <!-- attempt:other-3 -->'
+change(addition=read_back,add_on_read=load()['reads'] + 3,
+       change_on_read=load()['reads'] + 3,remove_on_read=load()['reads'] + 4,
+       remove_identity='attempt:other-3')
+call('publish',code=2)
+paths = load(state)['pieces'][0]['attempt_history']['pending']
+assert paths and all(read_back in load(Path(path))['observed'] for path in paths), 'Lost read-back observation'
+call('publish')
+assert read_back in load()['body']
+assert not load(state)['pieces'][0]['attempt_history']['pending']
 # A write that succeeded but returned failure is uncertain until a retry reads it.
 stage(5,'Try bounded waits')
 change(ambiguous=True)
