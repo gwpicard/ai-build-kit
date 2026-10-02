@@ -239,6 +239,7 @@ rs_require_load_bearing "/implement reconciles before calling a run finished" "$
 
 # Observable goal requests enter the run before ordinary single-piece dispatch.
 rs_require_order "goal routing precedes typed-alone selection" "$IMPLEMENT" '^## Under a goal or an unattended outcome request' '^## Typed alone'
+rs_require_order "goal routing precedes default startup" "$IMPLEMENT" '^## Under a goal or an unattended outcome request' '^Use the current session'
 rs_require_load_bearing "observable native context activates a run" "$IMPLEMENT" \
   'when the harness exposes an active native goal mode'
 rs_require_load_bearing "explicit unattended instruction activates a run" "$IMPLEMENT" \

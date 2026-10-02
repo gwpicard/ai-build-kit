@@ -2,8 +2,10 @@
 
 Loaded when `/implement` is given several issue numbers, or `queue`, which is
 the command for a plan of ready pieces built with nobody watching. `auto` is
-another name for `queue`. The discipline of a single build is unchanged: each
-piece goes through section-builder, step by step. What changes is that nobody
+another name for `queue`. An observable goal request also loads this reference
+before planning or starting work, as the implement entry says. The discipline
+of a single build is unchanged: each piece goes through section-builder, step
+by step. What changes is that nobody
 is present between the pieces, so the rules below carry the quality, the state
 file carries the memory, and everything gets a cap.
 
@@ -156,7 +158,8 @@ Check that Git is clean, as section-builder's step 1 does. Reconcile answers
 as above before refreshing the plan. On Claude Code,
 clear away the worktrees whose pull requests have closed, as "Clearing a
 worktree away" below says. Refresh the printout. The plan is the pieces the
-person named, or with `queue` every piece under `To build` marked `(ready)`. Either way, the plan also takes each piece
+person named, or with `queue` every piece under `To build` marked `(ready)`.
+For a goal, use the candidates selected in Goal modes below. The plan also takes each piece
 under `Held up` whose open blockers are all in the same plan, and orders it
 after them, so it stacks on them rather than waiting for a later run. Order the
 plan by the blocked-by links, so a piece comes after every piece it depends on,
@@ -804,13 +807,32 @@ readable project into a mystery.
 
 ## Goal modes
 
-Some tools ship a /goal feature: state a condition and the agent keeps going
-until a separate model judges it met. Treat it as a run wearing the tool's
-clothes, under the same rules: the condition comes from a done line or a plan
-area's done lines, read aloud; a named sensitive area without a recorded
-acceptance stops the piece that touches it, never the run; the three-attempt
-parking rule still applies per piece; the state file is kept the same way; and
-each piece still lands through the save route the build path requires. Any
-merge follows the `section-builder` skill's `references/merge.md`, however long
-the machine ran: on a yes that names it, or on the person's pre-approval given
-before the run.
+A native goal mode exposed by the harness, or an explicit request to continue
+unattended toward an outcome, follows this run route. Use the condition the
+harness or person supplied; read the relevant Done when lines aloud. Where
+native context is unavailable, the explicit request suffices. Ordinary talk
+about a goal leaves ordinary single-piece dispatch unchanged.
+
+When the goal names a parent, read its current native children and dependencies
+before selecting the plan. Take its open parts as candidates, not the parent
+as a slice; apply Which pieces a run may take and Before the run starts to
+each candidate. Blocked children enter only when every open blocker is also
+eligible and earlier in the same plan; otherwise name what they wait for and
+leave them unbuilt. Keep the existing shared-parent branch and pull request
+route. This does not add nested-part or integration-branch behaviour.
+
+One eligible piece is still a run of one. Show each piece's eligibility and
+order before the first claim or builder, using Before the run starts above.
+Without recorded approval of this plan, wait and build nothing, including
+when nobody is present to approve it. A goal instruction alone is not plan
+approval. Record the approved scope and the person's answer in `progress.md`
+before the first claim. On resume, use the existing approved run and its
+recorded scope; an absent approval never becomes consent through memory or continued running.
+
+A named sensitive area without a recorded acceptance stops the piece that
+touches it, never the run. The three-attempt parking rule still applies per
+piece; keep the same state file and the build path's save route. Parallel work
+still needs the opt-in for an eligible Go together group. Any merge follows
+the `section-builder` skill's `references/merge.md`, however long the machine
+ran. Goal or plan approval grants no additional merge permission and cannot
+replace the review and yes required for the final merge to main.
