@@ -336,6 +336,15 @@ attribution line, not the word.
   in one place. It holds the two notes for a piece built or checked without
   being shaped or checked where `pieces.md` and WORKFLOW.md describe them, and
   that `/what-now` names such a piece once, beside a failing check.
+- `.agents/tests/shaping-recovery.sh` guards the recovery offered when work
+  started before shaping or readiness, proving each instruction load-bearing
+  by deleting it. `.agents/tests/shaping-recovery-rehearsal.sh` runs the
+  published paired state commands against disposable Git and fake pull
+  requests, keeps the preserved branch and open pull request, and shows new
+  agreed acceptance failing work that passed an earlier incomplete check. Its
+  guided fixture under `.agents/tests/fixtures/shaping-recovery.md` separately
+  covers conversational routing and the merge gate; a shell pass does not
+  measure an agent obeying those instructions.
 - `.agents/tests/state-moves.sh` guards the commands that keep the board true.
   Each move takes the old state off in the same step as it puts the new one
   on, and the check reads every label command in `/shape`, `/implement`,

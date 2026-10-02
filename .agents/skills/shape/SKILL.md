@@ -26,7 +26,8 @@ words, then settle any question this opens through the usual shaping route.
 
 Typed as `/shape <number> check readiness`, this is not a request. Skip
 change-triage and run the readiness check on that piece, as the readiness check
-section below says.
+section below says. For work already under way, first read "Recovering work
+started too soon" below; missing requirements take that recovery route.
 
 Otherwise run change-triage on the request and follow its route: shape it into a ready
 piece now, run clarify first, run a decision prototype, run a source check,
@@ -149,18 +150,49 @@ number and that file. A fork of this session does not count.
 Where the coding agent cannot start a subagent, say in one line that the check
 needs a new session, and give the exact line to paste there:
 "This piece needs a check by a session that did not shape it. In a new session,
-paste: /shape <number> check readiness". Leave the piece `shaping` meanwhile.
+paste: /shape <number> check readiness". Leave the piece `shaping` meanwhile,
+except a readiness-only recovery keeps its current state while waiting, as below.
 Typed that way, in a session that did not shape the piece, run the check
 yourself.
 
 The check writes a `## Readiness` section on the piece: the date, "checked by a
 session that did not shape it", Ready or Not ready, and its notes. Read that
 section back and let it decide the move. With no blocking gap, move the piece to
-`ready`. A blocking gap keeps the piece in `shaping`, with the gap written on it
+`ready`, except readiness-only recovery follows the state rule below. A blocking
+gap keeps the piece in `shaping`, with the gap written on it
 and the `needs-` label that says who can close it. Notes stay on the piece
 for the builder. Say the result in one line, such as "A session that did not
 shape this piece checked it: ready, with two notes for the builder." After a gap
 is closed, run the check again in a new subagent.
+
+## Recovering work started too soon
+
+Given a piece already in `building` or `to check`, read its body and comments
+before routing it. Follow the `setup-ai-build-kit` skill's
+`references/pieces.md`, "Recovering work started too soon", for the recovery
+record, preservation and the check before merge. Identify the existing branch
+and pull request as preserved work before making a state move.
+
+With no Done when, or incomplete requirements, move the piece to `shaping`
+with `needs-clarification`, removing its actual old state in the same command:
+`gh issue edit <number> --add-label shaping --add-label needs-clarification --remove-label <old state>`.
+Shape the missing requirements through the usual route, keeping already agreed
+decisions and the original report. Then run the independent readiness check.
+
+With complete requirements and only Readiness missing, run the existing
+independent readiness review alone, without repeating the interview. Keep
+`building` or `to check` while the review is missing or waiting. A Ready verdict
+keeps that state; a blocking gap returns the piece to `shaping` in one step,
+with the matching `needs-` label and the gap written on it:
+`gh issue edit <number> --add-label shaping --add-label <its needs- label> --remove-label <old state>`.
+After closing a gap, use the ordinary readiness route to reach `ready`.
+
+Read the stored verdict back before reporting recovery complete. Say: "The
+requirements are ready. The preserved work still needs checking against them
+before its pull request can merge." Point to `/implement <number>` to resume
+and check that work through section-builder's existing verification route;
+`to check` work takes that verification on its preserved branch without a new
+claim or a second pull request. Shape itself changes no implementation code.
 
 ## When a piece is waiting on a question
 
@@ -254,7 +286,9 @@ Given an issue number, settle that piece rather than the lowest-numbered one, so
 somebody with one piece in mind is not made to work through the list. Given it
 as `/shape <number> check readiness`, run the readiness check on that piece and
 nothing else. Where that
-piece is already ready, say so and make the build offer instead.
+piece is already ready, say so and make the build offer instead. Route a piece
+already being built or checked through "Recovering work started too soon"
+before the ordinary idea or ready handling.
 
 Where the person says they are not staying, take the pieces the agent can settle
 alone, which is every piece labelled `needs-research`. Then name the ones that
@@ -292,4 +326,6 @@ note it, each move took the old state off in the
 same step, a routed question was
 started unless the person asked to file it, the person's original words are kept
 underneath a refinement, and nothing was built except
-through an accepted build offer.
+through an accepted build offer. For recovery of work already under way, the
+recovery record identifies preserved work and the unresolved check before merge;
+a readiness-only Ready result retains its existing `building` or `to check` state.
