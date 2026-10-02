@@ -71,3 +71,5 @@ with tempfile.TemporaryDirectory() as temp:
     else: raise AssertionError('missing owner silently fell back')
 print('Project record and checkpoint rehearsals passed')
 PY
+
+PYTHONDONTWRITEBYTECODE=1 python3 "$ROOT/.agents/tests/project-record-boundaries.py"
