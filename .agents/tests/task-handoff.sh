@@ -17,6 +17,7 @@ rs_rule "one writer" 'only the coordinator writes authoritative run state, progr
 rs_rule "bounded authority" 'builders never claim, push, review, open pull requests or merge'
 rs_rule "saved lookup" 'later builders read earlier artifacts from those saved sources'
 rs_rule "bounded return" 'return a bounded result with commit ids, check commands and exits, flags, unseen cases and evidence or failure paths'
+rs_rule "stale result rejected" 'the result echoes it and the coordinator rejects a result from another handoff'
 rs_rule "resource ownership" 'record the browser identity, serving computer, owner, server working directory and port'
 rs_rule "explicit transfer" 'a transfer requires the previous owner.s release and the new owner.s acknowledgement'
 rs_rule "locality still applies" 'ownership never proves browser locality'
@@ -25,5 +26,13 @@ rs_rule "resume recovery" 'resume through the existing checked-baseline recovery
 rs_guard "$HANDOFF" "task-handoff.md"
 rs_require_load_bearing "section-builder loads handoff" "$ROOT/.agents/skills/section-builder/SKILL.md" 'load `references/task-handoff\.md`'
 rs_require_load_bearing "compatibility owns evidence" "$ROOT/docs/COMPATIBILITY.md" '## task context capabilities'
+COMPAT="$ROOT/docs/COMPATIBILITY.md"
+rs_require_load_bearing "Claude non-fork route" "$COMPAT" 'non-fork general-purpose subagents'
+rs_require_load_bearing "Codex fresh-input condition" "$COMPAT" 'separate threads alone do not prove fresh input'
+rs_require_load_bearing "Cursor clean input" "$COMPAT" 'start without prior conversation history'
+rs_require_load_bearing "Gemini writable generalist" "$COMPAT" 'the generalist.*runs action-oriented work in an isolated conversation'
+rs_require_load_bearing "unknown clients unavailable" "$COMPAT" 'no fresh-builder or autonomous reset route is established here'
+rs_require_load_bearing "no universal reset" "$COMPAT" 'no universal reset operation is established by the sources above'
+rs_require_load_bearing "grades unchanged by docs" "$COMPAT" 'not a measured kit run or a higher grade'
 rs_done
 python3 "$ROOT/.agents/tests/fixtures/task-handoff-stubs.py" "$HANDOFF"

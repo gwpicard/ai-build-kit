@@ -19,6 +19,8 @@ shaped, built, checked and saved at a time, with the same records and the same
 rules. A run there builds its pieces one after another in one folder, where
 Claude Code gives each piece its own worktree. Only Claude Code offers to build
 a group's pieces at the same time, each with its own background agent.
+Autonomous continuation between pieces depends on the task-context capability
+below; without it the run pauses for a new session.
 Elsewhere, and on Claude Code with Git older than 2.17, the run does not ask
 and builds one piece at a time. Only Claude Code shows a confirmation box
 before a merge that goes live, on a project whose host puts every merge live.
@@ -164,6 +166,37 @@ and leaves the previous printout intact.
   deny settings, you add the kit's blocked commands there yourself.
 - Nobody has checked whether these agents keep the five background skills out
   of your hands.
+
+## Task context capabilities
+
+For multi-piece runs, select the route from the current client's exposed tools,
+permissions and version. These primary sources were checked on 2 October 2026;
+they establish documented capability, not a measured kit run or a higher grade.
+Installation through either plugin or shared skills does not provide a missing
+harness tool.
+
+| Harness route | Documented capability and runtime selection |
+|---|---|
+| Claude Code, shared skills or Claude plugin | [Non-fork general-purpose subagents](https://code.claude.com/docs/en/sub-agents) start with a fresh prompt. Select fresh-builder when the exposed tool permits build work; forks and resumed prior-task agents retain history. |
+| Codex app, CLI or IDE, including an Agent Plugins client | [Subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents) delegate through separate threads. Select fresh-builder only when the exposed tool explicitly allows no inherited conversation and permits edits and commands. Separate threads alone do not prove fresh input. |
+| Cursor editor, CLI or cloud | [Subagents](https://cursor.com/docs/subagents) start without prior conversation history. Select fresh-builder when a writable task agent is exposed and permitted; a browser or search helper alone is insufficient. |
+| Gemini CLI | [The generalist](https://geminicli.com/docs/core/subagents/) runs action-oriented work in an isolated conversation. Select fresh-builder when that tool is exposed with build permissions. A read-only investigator alone is insufficient. |
+| GitHub Copilot and other clients | No fresh-builder or autonomous reset route is established here. Select unavailable unless the actual exposed contract supplies that evidence. |
+
+On any route lacking fresh builders, select supported reset/resume only with
+evidence that the client can autonomously re-enter from durable records in a
+fresh context. No universal reset operation is established by the sources above.
+Otherwise select unavailable and pause the run with saved progress and a
+new-session `/implement` instruction. Compaction does not prove context eviction.
+Existing unfinished runs can re-enter from their saved records; no automatic
+migration or larger parallel group is required.
+
+The [task handoff](../.agents/skills/section-builder/references/task-handoff.md)
+holds the brief, return and resource rules. One piece at a time remains the
+default. Only the existing Claude Code policy offers parallel groups, and
+independent review remains required where the build path calls for it. Offline
+handoff stubs check written routing and durable records; they do not prove model
+context eviction, client permissions or live browser continuity.
 
 ## Choose one installation route
 
@@ -325,7 +358,7 @@ after a clean checkpoint and explicit approval.
 | Sync | Run `sync` when needed | Session-end reminder |
 | Check-up due | `what-now` says when a visit is overdue | Said automatically when a session opens |
 | Safety | Standing restrictions and approval gates | Mechanical command deny list |
-| Long runs | Normal sequential work | Native goal or orchestration mode |
+| Long runs | A resumable task boundary when fresh continuation is unavailable | Fresh builders through exposed delegation, or an evidenced reset/resume route |
 
 During `setup-ai-build-kit`, the capability check records which enhancements the current
 harness provides and selects a fallback for anything absent. Missing optional
