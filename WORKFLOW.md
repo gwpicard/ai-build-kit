@@ -33,6 +33,11 @@ You run /setup-ai-build-kit once. After that, start wherever you actually are. Y
 
 You never choose the method either. The agent decides whether the request needs an interview, a prototype, research, a test, a review, or a person to look at one area.
 
+During an interview, you get one short question with a clearly labelled guess
+through the coding agent's supported question box, or in plain text when the box
+cannot take that answer; a background worker passes the question to its
+coordinator and leaves an unanswered piece parked.
+
 ## 2. The three records
 
 The records are the project's memory. The agent forgets everything between sessions; these don't, and every piece of work starts by reading them.

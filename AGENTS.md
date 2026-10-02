@@ -429,6 +429,12 @@ attribution line, not the word.
   only builds one piece in its own worktree and never pushes, and that an
   agent which never reports counts as a failed attempt. A pushing agent would
   make a first upload nobody was asked about.
+- `.agents/tests/question-box.sh` guards clarify's interview routing: one short
+  question with a labelled guess, actual tool schema and free-text answers,
+  the plain-text fallback, worker relay and parking when the relay is unavailable.
+  It removes each written rule in turn. The guided fixtures in `scenarios.md`
+  cover live question tools and relays; the shell check proves the rules remain
+  written, rather than that every model follows them.
 - `.agents/tests/gated-turns.sh` checks the rule that decides when a scripted
   replay turn is due: that a turn with no precondition still fires by position,
   that one with a precondition waits until the kit has said the thing it
