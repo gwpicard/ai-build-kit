@@ -334,13 +334,26 @@ reported, and it is not what decides whether the case held.
 
 ## 26. Interview question shape
 
-- Expected path: unaffected; the rule applies wherever the kit asks the person something.
-- Visible explanation: "What's the idea for this project? Give me a rough sense of what it should do." arrives as a plain question, with room to answer in the person's own words.
-- Hidden technique: clarify's "How to ask" takes the shape from the answer rather than from the interface; a short and complete set of answers may be offered as choices, and anything the person would describe, name, explain, or narrate is asked plainly. /setup-ai-build-kit applies the same rule to the questions it asks before the interview.
-- Evidence: a guided interview review confirms that open questions arrive as plain questions, that a closed question such as "does code already exist, or are we starting fresh?" may still be offered as choices, and that no harness text about a question not suiting a choice interface appears. Repeat in any supported harness; the rule names no harness feature, so a harness without a choice interface simply asks everything plainly.
+- Expected path: unaffected; interview routing applies on every build path.
+- Visible explanation: one short question with a labelled best guess and at most two short sentences of background. When choices are offered, the guess comes first and the person can write their own answer.
+- Hidden technique: clarify's "How to ask" reads the supplied role and actual exposed tool schema. A present person gets the supported question tool. A schema that cannot express an open answer gets the same question in plain text. A worker sends the exact question and guess through its supported coordinator channel, never a local human UI. A headless replay has a scripted plain-text interlocutor.
+- Evidence: the guided fixtures below cover the routes. `question-box.sh` checks the written rules and removes each in turn; it does not drive a vendor UI. `replay-provider.sh` uses stubs to prove both providers receive the headless context on first and resumed turns, and `gated-turns.sh` drives the scripted gate against the question text. Live tool delivery and model adherence still need a guided transcript review; no offline check establishes universal harness reliability.
 - Save route: unaffected.
-- Review: unaffected; this is a question-shape rule, and it neither runs a review nor forbids one.
-- Escalation: if a harness still shows its own fallback text after the question was asked plainly, that text is outside the kit's control; the interview continues and the transcript goes to the kit's maintainers.
+- Review: unaffected; routing neither runs a review nor forbids one.
+- Escalation: an unanswered question stays unanswered. An unavailable worker relay leaves the exact question and guess on the owning piece, parks that piece with its reason and continues independent eligible work. A worker unable to save reports what remains to its coordinator without claiming it was recorded. Founding non-gates and earned acceptance remain unchanged.
+
+Use "Who uses it?" with "My guess: the team." in each fixture. For the closed-choice fixture use "Does code already exist?" with "My guess: starting fresh." Try these in a supported harness when a person can review the transcript:
+
+| Fixture | Supplied evidence and action | Expected observation |
+|---|---|---|
+| Supported question tool | Person present; exposed schema allows choices and free text; answer with a different choice or your own words. | One question in the tool, guess first and labelled, answer preserved. |
+| Tool unavailable | Person present; no exposed question tool. | Same question and labelled guess in concise plain text. |
+| Schema limit | Person present; open question; tool requires an option count the real answers cannot meet. | Plain-text fallback with the same question and guess, no invented choices. |
+| Free text only | Person present; exposed tool supports free text without options. | Open question in that tool, guess labelled, no fabricated option array. |
+| Empty submission | Submit nothing, cancel, or leave the preselection unsubmitted. | No answer or consent recorded; the owning route handles the unanswered question. |
+| Background relay succeeds | Supplied worker role, local question UI exposed, supported coordinator channel; coordinator returns the answer. | Exact question and guess relayed, no local human UI, only the returned answer settles it. |
+| Background relay unavailable | Supplied worker role, missing or failing relay; independent work remains. | Exact question and guess retained on the parked owning piece, reason recorded, independent work continues. |
+| Headless scripted gate | Scripted interlocutor and plain-text provider context; gate waits for "Who uses it". | Guess alone leaves the gate waiting; the question in reply text releases the scripted turn. |
 
 ## 27. Session opens on a project past its check-up cadence
 

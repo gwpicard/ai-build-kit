@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-"""List the names a project's documents mention that no longer exist.
+"""Find stale document names and bounded explicit package-script mismatches.
 
 Reads README.md and every document AGENTS.md points at. Where AGENTS.md points
 at `docs/README.md`, the list of the project's concept files, each document
 that list names is read too, since the list is how AGENTS.md points at them.
 Nothing else under `docs/` is read. For each line it looks
-for five kinds of name and checks that each still exists: a file or folder, a
+for four kinds of name and checks that each still exists: a file or folder, a
 link to another file, an `npm run`, `pnpm run`, `yarn run` or `make` command,
 and an environment variable. It prints one line per name that does not exist,
-as `document:line<TAB>kind<TAB>name`, and prints nothing when every name it
-found still exists.
+as `document:line<TAB>kind<TAB>name`. Wiring results use the same columns,
+with plain evidence as the final field. When there are no findings or verification limits, it prints nothing.
 
 A file name is one that ends in a file ending, and a folder name one that ends
 in a slash. So `/shape`, `owner/name` and `example.com/page` are not taken for
@@ -21,8 +21,14 @@ a finished piece's file leaves it at the next one, so a name inside it is
 never reported.
 
 A document may describe less than the code does, and that is never flagged.
-Only a name that points at nothing is. It never says a document is right,
-because a described flow can change shape without any name going missing.
+A missing name or a supported explicit route mismatch is flagged.
+It never says a document is right,
+because arbitrary prose and indirect shell wiring remain unverified.
+
+Explicit Required command and Required check declarations are described in
+references/document-read.md. They read only package.json script entries and
+optional local file conditions, without running scripts or hooks. Root
+AGENTS.md is read for these declarations only, not for stale names.
 
 Documents changed longest ago, counted in commits since, come first. That order
 says where to look first and is never printed.
@@ -37,6 +43,7 @@ import json
 import os
 import re
 import subprocess
+from pathlib import Path
 import sys
 
 KIT_OWNED = {"WORKFLOW.md", "AGENTS.md", "masterplan.md", "CHANGELOG.md", "plan.local.md"}
@@ -54,14 +61,28 @@ ENV_NAME = re.compile(r"^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+$")
 
 
 def git(*args):
-    result = subprocess.run(["git", *args], capture_output=True, text=True)
+    result = subprocess.run(
+        ["git", "-c", "core.fsmonitor=false", "-c", "core.hooksPath=/dev/null", *args],
+        capture_output=True, text=True
+    )
     return result.stdout if result.returncode == 0 else ""
 
 
 def ignored(path):
     return subprocess.run(
-        ["git", "check-ignore", "-q", path], capture_output=True
+        ["git", "-c", "core.fsmonitor=false", "-c", "core.hooksPath=/dev/null",
+         "check-ignore", "-q", path], capture_output=True
     ).returncode == 0
+
+
+def local_file(name):
+    """Do not open a document or mechanism outside the project."""
+    try:
+        root = Path.cwd().resolve()
+        path = Path(name).resolve()
+        return (path == root or root in path.parents) and path.is_file()
+    except (OSError, RuntimeError, ValueError):
+        return False
 
 
 def named_documents(source, found):
@@ -80,7 +101,7 @@ def named_documents(source, found):
         for name in candidates:
             if os.path.basename(name) in KIT_OWNED or name.startswith((".agents", CHANGES + "/")):
                 break
-            if os.path.isfile(name):
+            if local_file(name):
                 if name not in found:
                     found.append(name)
                 break
@@ -88,9 +109,9 @@ def named_documents(source, found):
 
 def documents():
     found = []
-    if os.path.isfile("README.md"):
+    if local_file("README.md"):
         found.append("README.md")
-    if os.path.isfile("AGENTS.md"):
+    if local_file("AGENTS.md"):
         named_documents("AGENTS.md", found)
     if CONCEPTS in found:
         named_documents(CONCEPTS, found)
@@ -98,14 +119,19 @@ def documents():
 
 
 def package_scripts():
+    if not local_file("package.json"):
+        return None
     try:
         with open("package.json", encoding="utf-8") as handle:
-            return set(json.load(handle).get("scripts", {}))
-    except (OSError, ValueError):
+            scripts = json.load(handle).get("scripts", {})
+            return scripts if isinstance(scripts, dict) else None
+    except (OSError, ValueError, AttributeError):
         return None
 
 
 def make_targets():
+    if not local_file("Makefile"):
+        return None
     try:
         with open("Makefile", encoding="utf-8") as handle:
             return {m.group(1) for m in re.finditer(r"^([\w.-]+)\s*:", handle.read(), re.M)}
@@ -168,6 +194,9 @@ def claims(document, documents_read, scripts, targets):
         if line.lstrip().startswith("```"):
             fenced = not fenced
             continue
+        # Explicit declarations have their own conditional and syntax handling.
+        if not fenced and re.match(r"^(?:[-*]\s+)?Required (?:command|check):", line.strip()):
+            continue
         for target in LINK.findall(line):
             if target.startswith(("http:", "https:", "mailto:", "#")):
                 continue
@@ -190,6 +219,140 @@ def claims(document, documents_read, scripts, targets):
     return missing
 
 
+# Declarations are whole lines, with an optional Markdown bullet and full stop.
+RUN_LITERAL = r"(?:npm|pnpm|yarn) run [\w:.][\w:.-]*"
+REQUIRED = re.compile(
+    rf"^Required (command|check): `({RUN_LITERAL})`"
+    rf"(?: via `({RUN_LITERAL})`)?(?: when (.+?))?\.?$"
+)
+EDGE = re.compile(rf"^({RUN_LITERAL})$")
+# These exact terminal commands carry no package-script edges. Other command
+# bodies are opaque, even if they happen to mention the required check.
+TERMINALS = {"node --test", "tsc --noEmit", "true"}
+
+
+def local_condition(condition):
+    """Return active, inactive or unknown without reading the file's contents."""
+    match = re.fullmatch(r"file `([^`]+)` exists", condition)
+    if not match:
+        return None, "condition is outside the supported file-exists syntax"
+    name = match.group(1)
+    path = Path(name)
+    if path.is_absolute() or ".." in path.parts or not path.parts:
+        return None, "condition must name a file inside the project"
+    root = Path.cwd().resolve()
+    try:
+        resolved = path.resolve()
+        if resolved != root and root not in resolved.parents:
+            return None, "condition leads outside the project"
+        # A broken link is not evidence that the condition is inactive.
+        for parent in (path, *path.parents):
+            if parent.is_symlink() and not parent.exists():
+                return None, "condition contains a broken file link"
+        if path.exists() and not path.is_file():
+            return None, "condition names something other than a file"
+        return path.is_file(), f"file {name!r} {'exists' if path.is_file() else 'is absent'}"
+    except (OSError, RuntimeError, ValueError):
+        return None, "condition file cannot be inspected safely"
+
+
+def route_evidence(route, check, scripts):
+    """Inspect literal run edges only; return reached, unknown, evidence."""
+    evidence, visiting, visited = [], set(), set()
+    reached = False
+    unknown = False
+
+    def visit(name):
+        nonlocal reached, unknown
+        if name in visiting:
+            unknown = True
+            evidence.append(f"scripts.{name}: cycle")
+            return
+        if name in visited:
+            return
+        if len(visited) >= 100:
+            unknown = True
+            evidence.append("route exceeds the 100-entry inspection limit")
+            return
+        visited.add(name)
+        visiting.add(name)
+        hooks = [prefix + name for prefix in ("pre", "post") if prefix + name in scripts]
+        if hooks:
+            unknown = True
+            evidence.append(f"scripts.{name}: lifecycle entries {json.dumps(hooks)}")
+        body = scripts.get(name)
+        evidence.append(f"scripts.{name} = {json.dumps(body, ensure_ascii=True)}")
+        if name == check:
+            reached = True
+            visiting.remove(name)
+            return
+        if not isinstance(body, str):
+            unknown = True
+        else:
+            for part in body.split("&&"):
+                part = part.strip()
+                edge = EDGE.fullmatch(part)
+                if edge:
+                    visit(part.split()[-1])
+                elif part not in TERMINALS:
+                    unknown = True
+        visiting.remove(name)
+
+    visit(route)
+    return reached, unknown, "package.json " + "; ".join(evidence)
+
+
+def wiring_claims(document, scripts):
+    findings = []
+    fenced = None
+    with open(document, encoding="utf-8") as handle:
+        for number, line in enumerate(handle, start=1):
+            if fenced:
+                mark, length = fenced
+                if re.fullmatch(r" {0,3}" + re.escape(mark) + "{" + str(length) + r",}[ \t]*", line.rstrip("\r\n")):
+                    fenced = None
+                continue
+            fence = re.match(r"^ {0,3}(`{3,}|~{3,})([^\r\n]*)$", line.rstrip("\r\n"))
+            if fence and (fence.group(1)[0] != "`" or "`" not in fence.group(2)):
+                fenced = (fence.group(1)[0], len(fence.group(1)))
+                continue
+            line = line.strip()
+            line = re.sub(r"^[-*]\s+", "", line)
+            if not line.startswith(("Required command:", "Required check:")):
+                continue
+            match = REQUIRED.fullmatch(line)
+            if not match or (match.group(1) == "check") != bool(match.group(3)):
+                findings.append((number, "unverified rule", "Declaration is outside the supported command/check syntax."))
+                continue
+            _, command, route, condition = match.groups()
+            label = f"{route} must run {command}" if route else f"{command} must exist"
+            if condition:
+                active, reason = local_condition(condition)
+                if active is not True:
+                    kind = "inactive rule" if active is False else "unverified rule"
+                    findings.append((number, kind, f"{label}: {reason}; wiring was not judged."))
+                    continue
+            if scripts is None:
+                findings.append((number, "unverified rule", f"{label}: package.json scripts cannot be read."))
+                continue
+            check = command.split()[-1]
+            route_name = route.split()[-1] if route else None
+            missing = [name for name in (check, route_name) if name is not None and name not in scripts]
+            if missing:
+                findings.append((number, "wiring mismatch", f"{label}: package.json has no script {', '.join(missing)}; inspected scripts keys {json.dumps(sorted(scripts))}."))
+                continue
+            if not isinstance(scripts[check], str) or not scripts[check].strip():
+                findings.append((number, "unverified rule", f"{label}: package.json scripts.{check} is not a non-empty command string."))
+                continue
+            if route:
+                reached, unknown, evidence = route_evidence(route_name, check, scripts)
+                if unknown:
+                    findings.append((number, "unverified rule", f"{label}: shell indirection, an unreadable script or a cycle prevents verification; inspected {evidence}."))
+                elif not reached:
+                    findings.append((number, "wiring mismatch", f"{route} does not call required check {command}; inspected {evidence}."))
+    return findings
+
+
 def commits_since(document):
     last = git("log", "-1", "--format=%H", "--", document).strip()
     if not last:
@@ -204,6 +367,9 @@ def main():
     found = []
     for document in read:
         for number, kind, name in claims(document, read, scripts, targets):
+            found.append((commits_since(document), document, number, kind, name))
+    for document in read + (["AGENTS.md"] if local_file("AGENTS.md") else []):
+        for number, kind, name in wiring_claims(document, scripts):
             found.append((commits_since(document), document, number, kind, name))
     found.sort(key=lambda f: (-f[0], f[1], f[2]))
     for _, document, number, kind, name in found:

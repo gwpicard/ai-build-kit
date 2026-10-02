@@ -1,6 +1,6 @@
 ---
 name: implement
-description: The everyday command for building a piece that has already been shaped and marked ready. Typed alone it takes the next ready piece from the plan. Given an issue number, or a request that matches a ready piece, it builds that one. A request that is not yet a ready piece goes to shape first; implement builds, it does not shape. Given several issue numbers, or "queue", it runs them as a plan with nobody watching. Do not use for repairs of promised behaviour; that is fix.
+description: The everyday command for building a piece that has already been shaped and marked ready. Typed alone it takes the next ready piece from the plan. Given an issue number, or a request that matches a ready piece, it builds that one. A request that is not yet a ready piece goes to shape first; implement builds, it does not shape. Given several issue numbers, or "queue", it runs them as a plan with nobody watching. An exposed native goal mode or an explicit unattended outcome request takes the same run route, including for one piece. Do not use for repairs of promised behaviour; that is fix.
 ---
 
 # Implement
@@ -10,6 +10,23 @@ For project record reads and writes, load the `setup-ai-build-kit` skill's
 working-rule and operations records for the new format; legacy projects keep
 their existing route. This changes record ownership, not safety or merge authority.
 
+## Under a goal or an unattended outcome request
+
+When the harness exposes an active native goal mode, or the person explicitly
+asks to continue unattended toward an outcome, take the run route even if they
+name a parent or one piece. Before planning, claiming, building or dispatching
+a worker, load `references/running-longer.md` and follow its Goal modes and
+Before the run starts sections. This route takes precedence over Typed alone
+and Given a specific piece below. Start no claim, builder or subagent until the
+person has approved that plan. Say: "I will show which pieces this run can take
+and wait for your approval before building."
+
+The word goal alone does not activate this route. Use only native goal context
+the harness actually supplies or the person's explicit unattended instruction;
+invent no goal metadata or API when the harness exposes none. An explicit
+unattended request needs no native goal API. `/goal` is a built-in command of
+the coding agent, where it provides one; the kit's rules come from this command
+and `references/running-longer.md`.
 
 Use the current session for related, well-bounded work while the context
 remains clear. Start fresh after a long, confused, interrupted, or unrelated
@@ -108,6 +125,17 @@ Given an issue number, build that piece if it is ready, and send it to `/shape`
 if it is not, saying in one line why it is not ready. Given several, run them
 as a plan, as the section below says.
 
+For a single piece with an explicit preserved-work recovery record, first follow
+the `setup-ai-build-kit` skill's `references/pieces.md`, "Recovering work
+started too soon". With shaping and readiness complete, resume verification on
+the identified branch and pull request through section-builder's existing
+Done when checks and walk-through. Reuse the preserved work; open no second
+pull request. An already `building` or `to check` piece needs no new claim;
+respect its existing owner and check no work another session is changing.
+A `ready` piece takes the ordinary claim before resuming on its preserved branch.
+Missing shaping or a blocking readiness gap still goes to `/shape`. This route
+does not change ordinary non-ready dispatch or permission to merge.
+
 Given a request in plain words, check whether it already matches a ready piece.
 Where it does, build that piece. Where it does not, this is new or unshaped
 work: point the person at `/shape`, which shapes a request into a piece. This
@@ -174,6 +202,12 @@ it is unsaved. Outside a run, a single piece is built in the main
 folder, as always, unless the person asks for a worktree: then open one the
 way `references/running-longer.md` says.
 
+Each task uses a fresh builder where the current exposed tools support it.
+Otherwise the run uses only an evidenced reset/resume route, or pauses with
+saved progress and an instruction to resume in a new session. The coordinator
+keeps resource ownership and bounded results, as `references/running-longer.md`
+says; an instruction to forget never erases a conversation.
+
 Whether the run may take a piece is decided for each piece. A piece is taken
 only when it is ready, carries a Ready readiness result, is
 self-sufficient enough to build without a person present, waits on no step of
@@ -189,7 +223,17 @@ worktree git lists, even when this session sits in another tool's worktree,
 so a session that dies loses nothing. Where an unfinished run's state file is in `.agents/runs/`, offer to
 resume it before taking anything new, whether this command was typed alone or
 with `queue`.
+Before deciding whether a saved run is finished, reconcile each piece's durable
+recovery record through `scripts/recovery.py reconcile`, as
+`references/running-longer.md` describes. Do this even when its run-state field
+is missing or says checked. A disagreement is unfinished recovery; complete
+its baseline checks before resuming or taking another piece.
 
 ## Done when
 
-The route was followed, the records are true, the piece moved from `ready` to `building` before any work and on to its next state when the pass ended, and the piece is confirmed and saved through the required route, safely parked at a recorded condition, or the user knows exactly where things stopped and why.
+The route was followed, the records are true, a new build moved from `ready` to
+`building` before any work and on to its next state when the pass ended, and the
+piece is confirmed and saved through the required route, safely parked at a
+recorded condition, or the user knows exactly where things stopped and why.
+Preserved-work recovery records its verification against agreed requirements
+without a duplicate claim or pull request for work already under way.

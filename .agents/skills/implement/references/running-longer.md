@@ -2,8 +2,10 @@
 
 Loaded when `/implement` is given several issue numbers, or `queue`, which is
 the command for a plan of ready pieces built with nobody watching. `auto` is
-another name for `queue`. The discipline of a single build is unchanged: each
-piece goes through section-builder, step by step. What changes is that nobody
+another name for `queue`. An observable goal request also loads this reference
+before planning or starting work, as the implement entry says. The discipline
+of a single build is unchanged: each piece goes through section-builder, step
+by step. What changes is that nobody
 is present between the pieces, so the rules below carry the quality, the state
 file carries the memory, and everything gets a cap.
 
@@ -21,11 +23,28 @@ worktree" below says. The main folder, the project folder the run started in,
 stays on the branch it was on: a run never switches the main folder to a
 piece's branch. On any other coding agent, or where Git is older than 2.17,
 the first with `git worktree remove`, a run works in one checkout, one piece after another, in the
-way a person would run them by hand.
+way a person would run them by hand. Recovery before continuation may open a
+separate checked copy on any coding agent. If Git cannot do that safely, stop
+continuation and keep the failed checkout.
 
 Where the coding agent can start a session that did not build the piece, use
 it for the readiness check and the independent review, as those steps already
 say.
+
+Before dispatching a task, select fresh-builder, supported reset/resume or
+unavailable from the current exposed capabilities, as the `section-builder` skill's
+`references/task-handoff.md` says. Use a new builder for every task
+where supported, including sequential work and later parts of one parent.
+Keep only the agreed plan, bounded results and ownership in the coordinator;
+longer build evidence stays in saved task files. Later builders read those
+files and checked branches. A fork carrying this conversation or a resumed
+prior-task agent does not provide a fresh task context.
+
+If no supported autonomous fresh route exists, finish the current task and
+any owed recovery, leave unstarted pieces waiting and pause this unfinished
+run. Give the new-session `/implement` instruction and run folder. This is a
+resumable limit, not the ordinary end-of-run sweep that skips waiting pieces.
+No compaction or instruction to forget is called a reset.
 
 ## Which pieces a run may take
 
@@ -76,20 +95,99 @@ An easy open choice seen at the plan leaves the piece eligible. It is built,
 and the builder picks the option easiest to undo and flags it, as "An open
 choice met while building" below says.
 
-The self-sufficiency test keeps its other job. A piece whose `Under the hood`
-notes lack what the build needs, with no open choice in it, is skipped with the
-reason and stays `ready`. Where a piece has both a hard open choice and a
-missing fact, the hard choice wins, and it goes back to shaping.
+The self-sufficiency test keeps its other job. A missing technical fact goes
+back to shaping with `needs-research`, using "Leaving a follow-up" below.
+Where a piece has both a hard open choice and a missing fact, the hard choice
+wins, and it goes back to shaping. Research must still record each remaining gap.
 
-Apart from a hard open choice, a piece that is not eligible stays where it is.
+Apart from a specification gap, a piece that is not eligible stays where it is.
 The report says why.
+
+## Continue in the same turn
+
+While an authorised run has an eligible operation left, perform the next one
+in this turn. Do not end the turn by saying what you will do next: an intention
+is not a completed operation. A question parks only the piece that needs the
+person; after the existing recovery and checked-baseline steps, continue with
+the next independent eligible piece. A supported wait on an active tool or
+worker is an operation, and the run resumes when it returns. Stop only under
+the limits in "Which pieces a run may take", "Recovery before continuation",
+"When a piece fails" and "When the run ends": when no eligible work remains,
+the existing bound is reached, required consent or capability is unavailable,
+or a shared verification failure means the baseline cannot be trusted.
+
+## Leaving a follow-up
+
+When a piece cannot continue because an answer or action is missing, keep the
+follow-up on that piece. Write one authoritative `## Waiting on you` section
+on the original issue for a step that needs the person. Follow the
+`setup-ai-build-kit` skill's `references/pieces.md`, "Waiting on the person",
+for the question, evidence, concrete action and result needed. Say once:
+"The question stays on this piece. Answer there, and the next run checks it
+before building." A separate finding reuses its own owning issue and does
+not widen this piece. Checks owed after a closed implementation have their
+own route; this section concerns work still open.
+
+Classify what is missing. A decision or answer uses `needs-clarification`;
+reaction to a mock or prototype uses `needs-prototype`; a technical fact uses
+`needs-research`. Research records the question and evidence without a
+`## Waiting on you` section unless a human action is also needed. A failed
+implementation stays parked after the existing attempt bound, with evidence
+and the next review action in its follow-up. A missing tool or unaccepted
+sensitive-area condition stays parked, with the action required to clear it.
+These conditions are never answered or accepted by the run.
+
+A specification gap moves to shaping in one step, using its actual old state:
+`gh issue edit <number> --add-label shaping --add-label <its needs- label> --remove-label <old state> --remove-assignee @me`.
+Use that classification also for a hard choice found before or during the
+build, rather than always treating it as an interview. Remove any old Ready
+verdict when saving the gap; it no longer describes this specification.
+No `needs-` label sits beside parked. Cut no branch or claim before a
+plan-time gap is closed. Keep built work through "Recovery before continuation".
+The piece and its direct and transitive dependants remain unbuildable. Where
+code work stopped, eligible independent work continues through the existing
+recovery gate. A gap found before any build started needs no failed-work
+archive: refresh the plan and blockers, and give each next piece its normal
+start checks on its identified base.
+
+Save the follow-up on the issue and read it back before reporting it saved or
+changing eligibility. A failed write or read-back is not a saved follow-up or
+answer. Keep the pending body and action privately in the ignored run folder,
+preserve any branch through recovery and report the unsaved record. An
+unreachable issue service still stops claiming work under the existing rule.
+
+## Answers before the next plan
+
+Reconcile waiting pieces before selecting the plan. Given numbers, read only
+those open pieces; given `queue`, read open, already-shaped pieces with waiting
+records or a `needs-` reason, including pieces outside the printout's To build
+group. This is reconciliation, not permission to build an idea or expand the
+run. Follow the `shape` skill's "Answers already on the piece" route. It reads
+comments and body edits, incorporates complete answers or verified research
+into the specification, and obtains the existing independent readiness check.
+The printout remains read-only and grants no readiness.
+
+Refresh the printout after the saved review. A complete answer, complete
+specification and passing independent review may put the piece into this
+run's plan, subject to native blockers, the person's approval of the plan and
+every existing eligibility and acceptance rule. A comment alone grants none
+of these. An unanswered piece, a remaining gap or unavailable review stays
+unbuildable with the next action recorded. Eligible independent work proceeds.
+Re-read a planned piece's answers before its claim if its record changed;
+reconcile and review again before building a changed specification.
+
+Do not wait or poll for answers. Once no eligible work remains, the run ends.
+The next run reads the retained record again. This does not resume a finished
+run, reset its attempts or discard preserved work.
 
 ## Before the run starts
 
-Check that Git is clean, as section-builder's step 1 does. On Claude Code,
+Check that Git is clean, as section-builder's step 1 does. Reconcile answers
+as above before refreshing the plan. On Claude Code,
 clear away the worktrees whose pull requests have closed, as "Clearing a
 worktree away" below says. Refresh the printout. The plan is the pieces the
-person named, or with `queue` every piece under `To build` marked `(ready)`. Either way, the plan also takes each piece
+person named, or with `queue` every piece under `To build` marked `(ready)`.
+For a goal, use the candidates selected in Goal modes below. The plan also takes each piece
 under `Held up` whose open blockers are all in the same plan, and orders it
 after them, so it stacks on them rather than waiting for a later run. Order the
 plan by the blocked-by links, so a piece comes after every piece it depends on,
@@ -174,6 +272,15 @@ folder ignores itself and nothing tracked changes.
 - `port` is the port the piece's dev server listens on, or `null` where no
   dev server was started for it.
 - `pull_request` is the number of its pull request, or `null` before one opens.
+- `start_commit` is the exact commit checked before this task's first edit.
+  Record it after the start ritual, including earlier successful parent parts.
+  A branch name alone does not identify that boundary once work continues.
+- `checked_commit` identifies the commit that passed the finished task's
+  checks. Record it for a built part waiting for its parent's pull request,
+  or for a task in `to check` or `merged`, before another task uses its work.
+- `recovery`, when present, records the failed task's retained work, its stage,
+  the baseline commit and worktree, each check command and exit code, and any
+  verification gap. The helper below writes it after each recovery step.
 - `attempts` counts the failed attempts at its build.
 - `flags` holds each easy-to-undo choice the builder made alone, one line each.
 - `reason` says why a piece was parked, sent back, skipped, waits, or was not
@@ -185,6 +292,14 @@ Write the state file after every step that changes a piece, before the next
 step starts, so it always says where the run stands. `progress.md`, beside it,
 is a short log: one line for each step, with the time, the piece and what
 happened. Neither file ever holds a key, a password or a person's data.
+
+The coordinator alone writes `state.json`, `progress.md` and the live page
+on sequential runs too. Save the chosen context route and its exposed-tool
+or primary-source evidence in the run folder, alongside each task's bounded
+brief and result. The brief records requirements, checked baseline and
+resource ownership through the `section-builder` skill's
+`references/task-handoff.md`. Recheck capability, saved results and resources
+when resuming; an old agent id is not proof of fresh context or completion.
 
 Unless the person chose to run without it, and wherever the coding agent can
 publish a page, publish a live progress page from the state file when the run
@@ -315,6 +430,10 @@ below are shared out as "Building a group at the same time" says. For each one:
    is being built somewhere else: the claim refuses it, so skip it. A piece
    whose text shows a hard open choice goes back to shaping unclaimed, as
    "Which pieces a run may take" says, and the run takes the next. Otherwise
+   confirm that its current answer, reconciled specification and independent
+   verdict still agree, and refresh its blockers. Any changed or remaining gap
+   takes "Answers before the next plan" before a claim; a stale Ready does not
+   permit starting it. Then
    make section-builder's one-step claim, and add a comment naming this run,
    `Claimed by run <run name>`. Then read the claim back with
    `gh issue view <number> --json labels,assignees,comments`. The earliest
@@ -334,7 +453,8 @@ below are shared out as "Building a group at the same time" says. For each one:
    check: the tool starts and its first screen or command answers. On Claude
    Code, do this inside the piece's worktree, with a dev server on the piece's
    own port. Then confirm each of the piece's Relies on lines still holds, by
-   reading what it names.
+   reading what it names. Record the checked `start_commit` before the first
+   edit, for every task including each part on a shared-parent branch.
 4. **Write the checks first**, as section-builder's step 4 says, and show that
    they fail.
 5. **Build it**, as section-builder's step 5 says, and verify it with the
@@ -354,6 +474,16 @@ below are shared out as "Building a group at the same time" says. For each one:
     it waits for the person.
 11. **Update the run state** and the live page, and add the step to
     `progress.md`.
+
+Where fresh builders are supported, the coordinator owns steps 1 and 2 and
+prepares the checked baseline; it delegates only steps 3 to 6 and local
+commits to a new builder, through the `section-builder` skill's
+`references/task-handoff.md`. Read back the bounded saved result and Git
+state before steps 7 to 11. The coordinator starts each independent review
+and performs the save and integration steps itself. Builders never receive
+merge consent. Repairs also use a fresh builder with the failure evidence
+and remaining attempt count, rather than growing the coordinator's build
+transcript. One task at a time is still the default.
 
 On Explore privately, a piece on the checkpoint route has no pull request.
 Steps 8 to 10 become the checkpoint commit and closing the piece, as
@@ -391,12 +521,16 @@ works in.
   first upload waits for the person and the checkpoint route stays on this
   computer. It never reviews any piece, opens a pull request, writes the run
   state or merges.
+  Start each as a fresh builder, with the bounded brief in the `section-builder` skill's
+  `references/task-handoff.md`; never reuse a prior task's conversation.
+  Its resource owner is explicit even when the coordinator keeps the browser.
 - **After an agent reports.** The coordinating session starts that piece's
   independent review itself, as step 7 says, since the review runs from a
   session that did not build the piece. It then opens the pull request and
   writes the changelog file, as steps 8 and 9 say, one piece at a time. Step 8
-  is where the branch is first pushed. A problem the review finds is fixed by
-  the coordinating session in the piece's worktree before that. Where
+  is where the branch is first pushed. A problem the review finds is sent to a fresh builder with its saved evidence
+  and remaining attempts; the coordinating session owns that repair and reads
+  back its result before that. Where
   the trigger names a person, the review stays theirs: a background agent never
   meets a named review.
 - **One writer.** The coordinating session is the only writer of `state.json`,
@@ -406,9 +540,10 @@ works in.
   brought up to date with `main` and checked again first. Where two pieces
   finish while a merge is under way, it merges them one after the other, each
   checked again.
-- **An agent that never reports.** A background agent that ends without
-  reporting back counts as a failed attempt at its piece, under the
-  three-attempt rule in "When a piece fails", and the run goes on. A smoke
+- **An agent that never reports.** A background agent that is known to have ended without reporting back counts
+  as a failed attempt at its piece, under the three-attempt rule in "When a
+  piece fails", and the run goes on only after checked-baseline recovery.
+  Contact loss alone does not release its checkout or resources. A smoke
   check that fails on `main` ends the run as it does for one piece: start no
   new agent, wait for the ones still building to report, and leave each piece
   as "When the run ends" says.
@@ -460,29 +595,40 @@ A hard choice, about the shape of stored data, how records sync, or what leaves
 the tool, stops that piece. Write the question on the piece, push the branch
 and keep it, and send it back to shaping,
 `gh issue edit <number> --add-label shaping --add-label needs-clarification --remove-label building --remove-assignee @me`.
-Mark it `shaping` in the state file.
+Mark its intended final state as `shaping`; preserve and isolate its work as
+"Recovery before continuation" below says before another piece starts.
+Write and classify its same-issue follow-up as "Leaving a follow-up" says;
+where it needs a prototype or research, use that matching reason instead.
 
 An easy choice, one a later change can undo without touching stored data, takes
 the most reversible option. Record it in `flags` and in the pull request's
 `## Flagged for confirmation` list. A flagged piece is never merged under
 pre-approval.
 
-Either way the run moves on to the next unblocked piece.
+Either way the run moves on to the next unblocked piece, after recovery where
+work stopped unfinished. An easy flagged choice that still passes its checks
+needs no failure recovery.
 
 ## When a piece fails
 
 Retry within the piece, up to three attempts, the same number fix uses. After
 the third, park it: move it from `building` to `parked` in one step,
 `gh issue edit <number> --add-label parked --remove-label building --remove-assignee @me`,
-with one line on what kept failing, push its branch, and take the next piece.
+with one line on what kept failing. Preserve its work before a checkout changes,
+as "Recovery before continuation" below says. Keep its branch and push it only
+through the existing authorised save route; inability to upload never permits
+losing work. Take the next piece only after its baseline and eligibility checks.
 Never let one piece consume the run. Route the parked piece further when the
 failure points somewhere specific: send it back to `/shape`, which settles a
 missing decision, chases a missing external fact, or reassesses a shape the
 team could not safely own, rather than a fourth attempt.
+Leave the same-issue follow-up and matching reason as "Leaving a follow-up"
+says. Returning for shaping does not reset the build's attempt count.
 
 A piece whose build needs software installed outside the project folder is
 parked with that reason, such as a tool missing from this computer or one too
-old. The reason names the tool, where it would go and how to undo it. The run
+old. The reason names the tool, where it would go and how to undo it. Write the
+concrete action and result needed on the same issue. The run
 never installs it, since nobody is there to say yes, and takes the next piece. Where the same missing
 tool would stop every piece left, it is a blocking failure every later piece
 relies on, and the run ends with that reason, as below.
@@ -495,9 +641,122 @@ recorded acceptance, even one the plan did not expect: section-builder's
 flagged route parks it at the condition, and the run takes the next piece. The
 run goes on; only that piece stops. Never guess to keep a run going.
 
+## Recovery before continuation
+
+This applies after an unsuccessful task or a pause for input, before the run
+considers another task, and on resuming an interrupted recovery. Say once:
+"The run keeps failed work for review and carries on from checked code where
+it can." The coordinating session owns recovery and its records. Stop the
+failed task's commands and dev server first so the copy cannot change while it
+is preserved. A background builder never runs recovery or changes run state.
+
+1. **Keep the failure.** Identify the task and the exact `start_commit` checked
+   before its first edit. Keep the check results, including checks that could
+   not run, in a private local file. Run the installed implement skill's
+   `scripts/recovery.py` with `preserve --state <state.json> --piece <number>
+   --source <failed checkout> --base <start_commit> --evidence <check results>`.
+   Add `--final-state shaping` for a pause on a decision. It pins the failed
+   commit, snapshots the working files including ignored files without following
+   links, and retains the staged patch and check evidence. It verifies their
+   contents before recording `preserved` in run state. The original checkout
+   stays untouched. No next task uses it, even when an upload fails.
+2. **Identify the continuation base.** Use the recorded pre-task commit, never
+   a guessed current branch head. On a shared-parent branch it must hold every
+   earlier successful part and none of the failed part. Read the commit and
+   those parts' saved checks to confirm that boundary. When it is unknown,
+   overlapping or not saved, stop that parent. Preserve everything, and consider
+   only separately checked independent work elsewhere. Never reset, overwrite
+   or clean away work to obtain a base.
+3. **Check that base.** Run `scripts/recovery.py` with `baseline --state
+   <state.json> --piece <number> --check <existing project check command>`,
+   repeating `--check` for the project's checks appropriate to this base,
+   including its smoke check. The helper opens a separate worktree through
+   `worktree.sh`, on a recovery branch at the identified commit, and runs those
+   commands there. An install the checks need is a project-local command run
+   before the checks; it never installs outside the project. Supply `--gap
+   <reason>` for anything verification cannot establish. No checks, a failing
+   check, or an unresolved gap gives no passing baseline. A changed checkout
+   also invalidates its result. The helper compares tracked bytes with the named
+   commit even when index flags hide changes. It privately fingerprints actual
+   inputs behind established worktree links before and after checking, and again
+   before continuation. The archive still never follows links. An unknown,
+   unreadable, looping or unsafe linked target leaves verification incomplete.
+   Record the baseline's path and commit, commands,
+   exit codes and gaps. A failure of a shared base stops every task relying on
+   it; independently checked work on another base may still continue.
+4. **Refresh what can continue.** Refresh the plan printout and current issue
+   state, including every direct and transitive blocked-by link, before each
+   new claim. Re-read the failed task's current code impact with the existing
+   reach check and its direct-reading fallback. A code map never substitutes
+   for explicit issue blockers. Save the observations in the run folder in the
+   formats below and run `scripts/recovery.py` with `eligible --state
+   <state.json> --piece <failed number> --candidate <next number> --issues
+   <current issues.json> --impact <current impact.json>`. Unknown blockers,
+   stale observations, a changed baseline or unestablished independence refuse
+   continuation. Direct and transitive dependants stay unbuilt. Then apply
+   "Which pieces a run may take" and the normal claim read-back, since this
+   gate does not claim or judge the full readiness contract.
+
+The issue observation is a JSON object with `observed_at`, a current UTC time,
+and `issues`, a list of objects holding `number`, `state` (`open` or `closed`),
+`labels` (names), and `blocked_by` (numbers). Include every blocker reached,
+even outside the run. Read live issue bodies and dependency links rather than
+copying the original plan. The impact observation has `observed_at`,
+`base_commit` and `tasks`, keyed by each candidate's number as a string. Each
+value has `independent`, true only when current code and verification establish
+it, and `reason`, the evidence for that conclusion. Both observations must be
+newer than the baseline check. The helper traverses the blocker chain and
+checks the identified baseline again before permitting continuation. It changes
+no issue, label, claim or completion state for the candidate.
+
+A checked shared-parent baseline becomes that parent's continuation branch and
+worktree. Update the earlier successful parts' branch and worktree pointers to
+it; their commits remain present. Keep the failed branch separate, and include
+only successfully checked parts in the parent's pull request. An incomplete
+parent is never reported complete. Independently built pieces use their own
+identified checked bases, through the usual branch step. Record which recovery
+allowed each continuation and repeat the checks if that base changes. For a
+later successful part on that copy, pass `--base <checked_commit>` to
+`baseline`. The helper accepts an advance only when a successfully built task
+records that commit, the earlier successful base remains in its history and
+every commit exclusive to the failed task after its recorded start is absent,
+then reruns the checks. An arbitrary new branch
+head earns no checked baseline.
+
+The recovery files live in the main folder's ignored `.agents/recovery/`, with
+access limited to this computer's account. They may contain confidential work;
+publish only their recoverable locations and the plain reason, never their
+contents. `recovery.json` there and the piece's `recovery` field identify the
+pinned commit, file archive, staged patch and check evidence. They outlive the
+run folder; `worktree.sh` keeps the retained source and baseline copies. Do not
+remove their refs, folders or worktrees while a failure still needs review.
+The durable `recovery.json` owns the generation and stage. Before deciding a
+run has finished or resuming it, run `scripts/recovery.py` with `reconcile
+--state <state.json> --piece <number>` for each piece, including a piece whose
+run-state recovery field is missing. The helper finds its durable record and
+reconciles the run state. A disagreement or an interrupted write stays
+unfinished until the baseline checks run again. Eligibility and baseline
+checking also reconcile first; a stale checked generation never replaces a
+newer checking record. A record that cannot be reconciled stops continuation.
+
+An interruption after preservation leaves the piece `building` in the local
+run record with the reason `Recovery unfinished`; its issue may already be
+parked or shaping. This keeps it visible to existing resume readers and says
+nothing about a successful build. Resume recovery before the ordinary build
+steps: verify the retained record again and rerun `baseline`. A `checking`
+stage is still unchecked even when some commands already passed. Only a
+checked or explicitly blocked recovery records the intended final state. If
+preservation or baseline creation fails, keep the record and checkout, stop
+continuation and report why. Do not turn an interrupted recovery into a
+finished run merely because all issue labels look final.
+
 ## Resuming
 
-A new session resumes from the state file, never from memory. A run is
+Resolve any still-active builder and verify saved resource ownership before
+assigning a new builder; resume through the selected supported context route.
+
+First reconcile durable recovery records as above. A new session resumes from
+the state file, never from memory. A run is
 unfinished while any piece in its state file is `waiting` or `building`. A run
 whose every piece is in a final state is finished, and is never offered for
 resuming. `/implement` typed alone or with `queue`, `/what-now` and `/sync`
@@ -509,12 +768,15 @@ Resuming is the same run, so its `merge_preapproved` stands. So does its
 it in their reply. Where the session died with several pieces built at once,
 such as on a machine that ran out of memory, the state file shows each of them
 `building` with its worktree, and each continues as below. Read `state.json`
-and `progress.md`, and take the pieces from where they stand. A piece shown as
+and `progress.md`, and take the pieces from where they stand. First complete any
+`preserved` or `checking` recovery as above; never restart its failed build
+or claim another piece from an unchecked recovery base. A piece shown as
 `building` continues from its last commit: on Claude Code, open its worktree
 again with `worktree.sh open --resume`, which reuses the one already there,
 and elsewhere check out its branch. Where that worktree holds an uncommitted
 change, the script keeps it as it is: park the piece with that reason, since
-the session that made the change is gone. Read what its commits already hold,
+the session that made the change is gone. Preserve it and establish the next
+task's checked base through recovery before continuation. Read what its commits already hold,
 run its checks, and carry on from the first step not done. Read its claim back first. Where the claim is no longer this run's, back
 off it as step 1 says.
 
@@ -583,7 +845,11 @@ The report, in plain words, is one list and a merge order:
   `references/merge.md`, or that it conflicted with `main` or turned red once
   `main` was taken in. A piece held back
   because its merge would go live says so, and waits for the person or `/ship`;
-- what was not eligible, or not reached, and why.
+- what was not eligible, or not reached, and why;
+- for each unsuccessful task, what was kept for review and its recoverable local
+  location, the checked commit and checks used for continuation, which tasks
+  continued independently, and what stopped on a shared failure or verification
+  gap. Say explicitly when recovery remains unfinished.
 
 The person answers with the pull requests to merge, and each merge follows the
 `section-builder` skill's `references/merge.md`.
@@ -595,13 +861,32 @@ readable project into a mystery.
 
 ## Goal modes
 
-Some tools ship a /goal feature: state a condition and the agent keeps going
-until a separate model judges it met. Treat it as a run wearing the tool's
-clothes, under the same rules: the condition comes from a done line or a plan
-area's done lines, read aloud; a named sensitive area without a recorded
-acceptance stops the piece that touches it, never the run; the three-attempt
-parking rule still applies per piece; the state file is kept the same way; and
-each piece still lands through the save route the build path requires. Any
-merge follows the `section-builder` skill's `references/merge.md`, however long
-the machine ran: on a yes that names it, or on the person's pre-approval given
-before the run.
+A native goal mode exposed by the harness, or an explicit request to continue
+unattended toward an outcome, follows this run route. Use the condition the
+harness or person supplied; read the relevant Done when lines aloud. Where
+native context is unavailable, the explicit request suffices. Ordinary talk
+about a goal leaves ordinary single-piece dispatch unchanged.
+
+When the goal names a parent, read its current native children and dependencies
+before selecting the plan. Take its open parts as candidates, not the parent
+as a slice; apply Which pieces a run may take and Before the run starts to
+each candidate. Blocked children enter only when every open blocker is also
+eligible and earlier in the same plan; otherwise name what they wait for and
+leave them unbuilt. Keep the existing shared-parent branch and pull request
+route. This does not add nested-part or integration-branch behaviour.
+
+One eligible piece is still a run of one. Show each piece's eligibility and
+order before the first claim or builder, using Before the run starts above.
+Without recorded approval of this plan, wait and build nothing, including
+when nobody is present to approve it. A goal instruction alone is not plan
+approval. Record the approved scope and the person's answer in `progress.md`
+before the first claim. On resume, use the existing approved run and its
+recorded scope; an absent approval never becomes consent through memory or continued running.
+
+A named sensitive area without a recorded acceptance stops the piece that
+touches it, never the run. The three-attempt parking rule still applies per
+piece; keep the same state file and the build path's save route. Parallel work
+still needs the opt-in for an eligible Go together group. Any merge follows
+the `section-builder` skill's `references/merge.md`, however long the machine
+ran. Goal or plan approval grants no additional merge permission and cannot
+replace the review and yes required for the final merge to main.

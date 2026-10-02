@@ -113,7 +113,11 @@ rs_rule "the plan-time send-back takes ready off" 'with no claim to undo: `gh is
 rs_rule "no branch and no claim for a piece sent back at the plan" 'cut no branch and write no claim, since nothing was built'
 rs_rule "the plan names it as going back, with its question" 'the plan names it as going back, with its question'
 rs_rule "an easy choice at the plan leaves the piece eligible" 'an easy open choice seen at the plan leaves the piece eligible'
-rs_rule "a missing fact alone is still skipped and stays ready" 'with no open choice in it, is skipped with the reason and stays `ready`'
+rs_rule "a missing fact leaves ready for research" 'a missing technical fact goes back to shaping with `needs-research`'
+rs_rule "follow-up stays on its original issue" 'one authoritative `## waiting on you` section on the original issue'
+rs_rule "answers re-enter before planning" 'reconcile waiting pieces before selecting the plan'
+rs_rule "the loop delegates answer reconciliation to shape" 'follow the `shape` skill.s "answers already on the piece" route'
+rs_rule "write failure does not save a follow-up" 'a failed write or read-back is not a saved follow-up or answer'
 rs_rule "a hard choice wins over a missing fact" 'the hard choice wins, and it goes back to shaping'
 rs_rule "the claim step sends a visible hard choice back" 'a piece whose text shows a hard open choice goes back to shaping unclaimed'
 
@@ -126,6 +130,25 @@ rs_rule "a piece needing software outside the project is parked" 'a piece whose 
 rs_rule "and the run never installs it" 'the run never installs it, since nobody is there to say yes, and takes the next piece'
 rs_rule "one missing tool that stops every piece left ends the run" 'where the same missing tool would stop every piece left, it is a blocking failure'
 rs_rule "a blocking failure stops only what relies on it" 'a blocking failure never stops the whole run unless it touches something every later piece relies on'
+
+# Recovery preserves work before any later task can use a checked base.
+rs_rule "record the checked task boundary" 'record the checked `start_commit` before the first edit'
+rs_rule "preservation includes ignored work" 'snapshots the working files including ignored files without following links'
+rs_rule "preservation is verified before state advances" 'verifies their contents before recording `preserved` in run state'
+rs_rule "failed checkout stays untouched" 'the original checkout stays untouched'
+rs_rule "parent keeps earlier successful parts" 'it must hold every earlier successful part and none of the failed part'
+rs_rule "unknown separation stops the parent" 'when it is unknown, overlapping or not saved, stop that parent'
+rs_rule "a gap earns no passing baseline" 'a failing check, or an unresolved gap gives no passing baseline'
+rs_rule "a shared failure stops every affected task" 'a failure of a shared base stops every task relying on it'
+rs_rule "current code impact does not replace issue blockers" 'a code map never substitutes for explicit issue blockers'
+rs_rule "direct and transitive dependants remain unbuilt" 'direct and transitive dependants stay unbuilt'
+rs_rule "pending recovery remains visible to resume readers" 'an interruption after preservation leaves the piece `building` in the local run record'
+rs_rule "checking is unfinished even with partial green checks" 'a `checking` stage is still unchecked even when some commands already passed'
+rs_rule "recovery records outlive the run" 'they outlive the run folder'
+rs_rule "the durable generation owns interrupted recovery" 'the durable `recovery.json` owns the generation and stage'
+rs_rule "reconciliation cannot restore stale success" 'a stale checked generation never replaces a newer checking record'
+rs_rule "linked inputs are checked separately from preservation" 'the archive still never follows links'
+rs_rule "every exclusive failed commit stays out of later bases" 'every commit exclusive to the failed task after its recorded start is absent'
 
 # Resuming, and the end of the run.
 rs_rule "a new session resumes from the state file" 'a new session resumes from the state file, never from memory'
@@ -174,6 +197,17 @@ rs_rule "pre-approved merges are swept at the end, bases first" 'sweep the piece
 rs_rule "the sweep merges only what meets all six" 'meets all six conditions'
 rs_guard "$LONGER" "running-longer.md"
 
+rs_require_load_bearing "shape reads full answers rather than labels" "$ROOT/.agents/skills/shape/SKILL.md" \
+  'read the full current body and comments'
+rs_require_load_bearing "shape retains incomplete answers" "$ROOT/.agents/skills/shape/SKILL.md" \
+  'incomplete, unrelated, ambiguous and empty-form answers leave every remaining gap open'
+rs_require_load_bearing "shape invalidates old review before reconciliation" "$ROOT/.agents/skills/shape/SKILL.md" \
+  'remove the stale readiness verdict before saving the reconciled specification'
+rs_require_load_bearing "shape keeps unavailable review unbuildable" "$ROOT/.agents/skills/shape/SKILL.md" \
+  'unavailable independent review keeps the piece unbuildable'
+rs_require_load_bearing "shape retains waiting history" "$ROOT/.agents/skills/shape/SKILL.md" \
+  'preserve the original waiting-start history'
+
 rs_require_order "the claim comes before the branch" "$LONGER" '^1\. \*\*Claim it' '^2\. \*\*Branch it'
 rs_require_order "the branch comes before the start ritual" "$LONGER" '^2\. \*\*Branch it' '^3\. \*\*Run the start ritual'
 rs_require_order "the ritual comes before the checks" "$LONGER" '^3\. \*\*Run the start ritual' '^4\. \*\*Write the checks first'
@@ -200,6 +234,34 @@ rs_require_load_bearing "/implement loads the run's rules" "$IMPLEMENT" \
   'load `references/running-longer\.md` before the run starts and follow it'
 rs_require_load_bearing "/implement offers to resume an unfinished run" "$IMPLEMENT" \
   'where an unfinished run.s state file is in `\.agents/runs/`, offer to resume it'
+rs_require_load_bearing "/implement reconciles before calling a run finished" "$IMPLEMENT" \
+  'before deciding whether a saved run is finished, reconcile each piece.s durable recovery record'
+
+# Observable goal requests enter the run before ordinary single-piece dispatch.
+rs_require_order "goal routing precedes typed-alone selection" "$IMPLEMENT" '^## Under a goal or an unattended outcome request' '^## Typed alone'
+rs_require_order "goal routing precedes default startup" "$IMPLEMENT" '^## Under a goal or an unattended outcome request' '^Use the current session'
+rs_require_load_bearing "observable native context activates a run" "$IMPLEMENT" \
+  'when the harness exposes an active native goal mode'
+rs_require_load_bearing "explicit unattended instruction activates a run" "$IMPLEMENT" \
+  'explicitly asks to continue unattended toward an outcome'
+rs_require_load_bearing "casual goal wording is not a trigger" "$IMPLEMENT" \
+  'the word goal alone does not activate this route'
+rs_require_load_bearing "no unseen native metadata or api is invented" "$IMPLEMENT" \
+  'invent no goal metadata or api when the harness exposes none'
+rs_require_load_bearing "goal rules load before planning or dispatch" "$IMPLEMENT" \
+  'before planning, claiming, building or dispatching a worker, load `references/running-longer\.md`'
+rs_require_load_bearing "native goal is a harness command" "$IMPLEMENT" \
+  '`/goal` is a built-in command of the coding agent'
+rs_require_load_bearing "goal approval precedes any builder or claim" "$IMPLEMENT" \
+  'start no claim, builder or subagent until the person has approved that plan'
+rs_require_load_bearing "missing goal approval waits without building" "$LONGER" \
+  'without recorded approval of this plan, wait and build nothing'
+rs_require_load_bearing "goal takes native children and blockers" "$LONGER" \
+  'read its current native children and dependencies'
+rs_require_load_bearing "one goal piece is still a run" "$LONGER" \
+  'one eligible piece is still a run of one'
+rs_require_load_bearing "goal plan shows order and eligibility" "$LONGER" \
+  'show each piece.s eligibility and order before the first claim or builder'
 
 # section-builder starts a stacked piece from the branch it stacks on, and the
 # validator holds the same wording.
@@ -215,6 +277,10 @@ rs_require_load_bearing "/what-now reads the run state" "$WHATNOW" 'a run.s stat
 rs_require_load_bearing "/what-now offers to resume an unfinished run" "$WHATNOW" '### an unfinished run'
 rs_require_load_bearing "/sync offers to resume an unfinished run" "$SYNC" 'an unfinished run in `\.agents/runs/`'
 rs_require_load_bearing "/sync removes a finished run's folder" "$SYNC" 'remove the folder of a run whose every piece is merged, closed or parked'
+rs_require_load_bearing "/what-now notices durable recovery before calling a run finished" "$WHATNOW" \
+  'before deciding a run is finished, compare its pieces with their durable'
+rs_require_load_bearing "/sync keeps a run with interrupted durable recovery" "$SYNC" \
+  'before deciding a run is finished or offering to remove its folder, compare each piece with its durable'
 
 # A founded project ignores the run folder.
 rs_require "the foundation gitignore ignores the run folder" "$IGNORE" '\.agents/runs/'

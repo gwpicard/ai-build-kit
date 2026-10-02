@@ -33,6 +33,11 @@ You run /setup-ai-build-kit once. After that, start wherever you actually are. Y
 
 You never choose the method either. The agent decides whether the request needs an interview, a prototype, research, a test, a review, or a person to look at one area.
 
+During an interview, you get one short question with a clearly labelled guess
+through the coding agent's supported question box, or in plain text when the box
+cannot take that answer; a background worker passes the question to its
+coordinator and leaves an unanswered piece parked.
+
 ## 2. The three records
 
 The records are the project's memory. The agent forgets everything between sessions; these don't, and every piece of work starts by reading them.
@@ -48,9 +53,11 @@ without saving the credential. It runs from an ordinary terminal.
 
 | Record | Purpose |
 |---|---|
-| masterplan.md | What the tool is, in the present tense. Its first part, the build-path section, records how careful this project needs to be. |
+| masterplan.md | What the tool is, in the present tense: purpose, brief architecture, useful shared-rule summaries and pointers to their owners. |
 | the project's issues | What's left to build: one issue per piece, each with what done looks like, its evidence, and what it needs. `/what-now` reads them for you. |
 | CHANGELOG.md | What happened, dated, in plain language, when work actually landed. Each piece writes its entry to its own small file in `changes/`, so two pieces built at the same time never change the same lines. Merging a piece folds its file, and any still waiting, into CHANGELOG.md under the day each reached `main`; /sync and /ship catch any a merge made on GitHub by hand left behind. |
+
+New projects keep this overview within 500 visible words across every section, including headings and link text. That is a ceiling, not a target. Detailed product rules have one concept document each, indexed by what they own in `docs/README.md`. `docs/working-rules.md` holds the build path and detailed build and review requirements; `docs/operations.md` holds operational facts. The overview links to these owners rather than repeating their full rules. Existing projects remain readable in their current format; reading them does not migrate them.
 
 `AGENTS.md` sits alongside the three records as the instruction file the agent reads to know how this repository works. It is a short index: the standing rules, then a pointer for each topic to the file that owns it, such as the stack's recipe or a design note in `docs/`. The records are written for the agent first, each under a short header you can read, such as the few plain sentences that open the masterplan.
 
@@ -58,7 +65,7 @@ The dividing rule: the masterplan describes the present, the plan holds the futu
 
 You can work with the issues yourself, and nothing you do there will be undone. Open one and write it however you like, in as little as half a sentence. /shape settles what done means with you and marks the piece ready; /implement builds only ready pieces and never guesses past an open question. If a piece is not ready when you reach for /implement, it points you to /shape and takes the next ready piece instead.
 
-A piece is written in two layers. The short header you read says, in plain words, what the piece is for, what done means, including the cases that are not the normal one, such as empty or failing, and what it changes in the masterplan. Below it sits the agent layer, which is complete: every choice you would notice by trying the tool, the data it stores, anything that leaves the tool, the rules it must still meet, what it relies on and which areas it touches. A field that does not apply says why in one line, so a small piece stays short. The build detail sits in a collapsed "under the hood" section you never have to open. Anything that affects the whole product is written into the masterplan instead. Lasting technical design goes into its own file in `docs/`, one concept to a file, listed in `docs/README.md`. AGENTS.md keeps only rules and a pointer to that list, so no fact is copied into two places.
+A piece is written in two layers. The short header you read says, in plain words, what the piece is for, what done means, including the cases that are not the normal one, such as empty or failing, and what it changes in the masterplan. Below it sits the agent layer, which is complete: every choice you would notice by trying the tool, the data it stores, anything that leaves the tool, the rules it must still meet, what it relies on and which areas it touches. A field that does not apply says why in one line, so a small piece stays short. The build detail sits in a collapsed "under the hood" section you never have to open. A shared product rule goes in its owning concept document; the overview changes only when its summary or pointer changes. Lasting technical design goes into its own file in `docs/`, one concept to a file, listed in `docs/README.md`. AGENTS.md keeps only rules and a pointer to that list, so no fact is copied into two places.
 
 A decision can say what it rests on, in one short line beside it. When /shape
 uses that decision, or /sync checks the masterplan, the agent reads its support
@@ -86,6 +93,12 @@ A piece often carries two, because a checkout is finance and an outside service 
 Every open piece is in exactly one state, and a label says which: `idea` when it is only written down, `shaping` while a question about it is being settled, `ready` when it can be built, `building` while somebody is on it, `to check` when its pull request is waiting for you, and `parked` when it has stopped, with the reason written on it. An issue you open with no label counts as an idea. A closed issue is done, except an idea you decided against, which stays closed and labelled `parked`.
 
 A piece waiting on another piece keeps its state and is linked to it. `plan.local.md` prints the states as the columns of a board, after anything that needs attention, such as a piece carrying two states or a piece being built or checked that was never shaped, and anything broken. `broken` sits beside the state on a repair, and sends it to `/fix`.
+
+When /what-now finds work already being built or checked without complete shaping, it names the piece and offers /shape on it. Taking that route returns it to shaping. Its branch and pull request stay, with the preserved work identified on the piece and the pull request saying why merge waits.
+
+With complete requirements and only Readiness missing, use /shape on the piece with "check readiness" in a session that did not shape it. The interview does not repeat. A passing review keeps building or to check; a blocking gap returns it to shaping with its reason. After closing that gap, the ordinary readiness route applies.
+
+Before the existing pull request can merge, its work must be checked against the agreed requirements and the result recorded. Earlier checks against incomplete requirements do not count. /implement resumes that verification on the preserved branch and pull request; recovery itself grants no permission to merge. If no branch or pull request exists, shaping invents neither one nor evidence of completed work.
 
 Three more labels sit beside `shaping` and say what the question needs: `needs-clarification` (talking it through settles it), `needs-prototype` (a throwaway is needed first to see what it should look like), and `needs-research` (a fact from outside the project is needed). Anything you jot down starts as an idea; `/shape` settles it and marks the piece `ready`, and `/implement` builds only ready pieces. What settled it is written onto the piece before the label changes, so a month later you can see what was decided rather than only that something was.
 
@@ -210,6 +223,8 @@ Then what a run can do with each piece: take it, leave it for you because it sit
 
 Before a piece turns ready, a session that did not shape it checks it against a fixed list: the cases that are not the normal one, what gets stored, what leaves the tool, the rules it must still meet, and any choice you would notice that is still open. You see one line, such as "A session that did not shape this piece checked it: ready, with two notes for the builder." The result is written on the piece under Readiness. A gap that would change what you see or do, what is stored, or what leaves the tool keeps the piece in shaping, with the gap written on it, and /shape asks you about it. If your coding agent cannot start that second session itself, /shape gives you one line to paste into a new one. Ready says the piece is complete enough to build. It says nothing about safety, so the review and the screen rules still run.
 
+New records keep the last completed document review separately from the overview. `/sync` reads saved work since that actual checkpoint and reconciles the owners; `/maintain` reports what still needs review. A finished build or merge does not advance it. Missing or interrupted review history remains a named gap. The following stamp account applies to legacy records until their separate migration.
+
 Each piece says what it changes in the masterplan, and the masterplan says when
 it was last checked. You see a line such as "When this lands, the masterplan
 gains a weekly summary email", or "nothing" when it already covers the result.
@@ -283,8 +298,10 @@ checkpoint route, which has no pull request, the agent gives you something to
 try and waits for your reply before saving.
 
 The walk-through looks at what you would see. For a web page, it takes a
-screenshot with the coding agent's own browser tool, or with Playwright where
-the project already has it. For a PDF, a document or an image, it turns each
+screenshot only with a browser positively identified as on the computer serving
+the page, or with Playwright there where the project already has it; a browser
+on another computer is never used, and anything it could not see stays a
+verification gap in the final review. For a PDF, a document or an image, it turns each
 page into a picture and reads it, up to the first 30 pages of a long file.
 Whatever it could not look at, it names, and the piece waits in to check for
 you.
@@ -466,23 +483,44 @@ After the first launch, shipping gets lighter: it re-checks what changed since t
 
 Give /implement several piece numbers, or type "/implement queue" for every ready piece and every piece waiting only on those, and it builds them without you between them. "/implement auto" is the same thing. It says the plan once: each piece in order, whether the run can take it and why not, and which pieces build on another. You approve it once, and say whether pieces that pass may be merged while you are away. A merge that would put the tool live still waits for you. Then it runs.
 
+The run performs the next eligible step in the same turn. If a question parks one piece, it checks the saved work and shared base before continuing with independent eligible work. It stops at the limits described below in this section; saying what it will do next does not complete that step.
+
 A run decides piece by piece what it can take. A piece needs to be ready, checked by a session that did not shape it, and complete enough to build with nobody to ask. A piece in a sensitive area is taken only once your acceptance is on the record, and a run never gives one for you. A piece you asked to try yourself is built and then waits for you in to check, whatever you said about merging.
 
 Each piece goes through the same steps as a single build: claimed, checks written first and seen to fail, built, walked through, reviewed. Each piece arrives as its own pull request, and the parts of one piece share one. A piece that needs another built earlier in the run is built on top of it, and its pull request says which to merge first.
 
-In Claude Code, each piece in a run is built in its own copy of the project, a worktree in `.agents/worktrees/` named after the piece, so your own folder stays on its branch and one piece's half-built work never sits under another's. The project's checks, its tests among them, leave those copies out, so a check run from your folder reads each problem once. Other coding agents build a run's pieces one after another in your one folder.
+In Claude Code, each piece in a run is built in its own copy of the project, a worktree in `.agents/worktrees/` named after the piece, so your own folder stays on its branch and one piece's half-built work never sits under another's. The project's checks, its tests among them, leave those copies out, so a check run from your folder reads each problem once. Other coding agents build a run's pieces one after another in your one folder. Recovery may keep the failed folder and use a separate checked copy before continuing.
 
 In Claude Code, when the plan has a group of pieces that can go together, the run also asks whether to build a group's pieces at the same time. Each one runs its own install and its own copy of the tool, so this uses more memory, and on a machine with little memory it can crash it. One at a time is the default, and you say a number if you want more. Each piece built alongside others still gets every step of a single build, its own review and its own pull request. The session you started the run in claims each piece, reviews it and opens its pull request, and the pieces merge one at a time, each checked again first. If the session dies, resuming keeps your number and offers to lower it.
 
+Each piece starts fresh where your coding agent supports it, and saved
+records carry the work forward. The run keeps the plan, progress and ownership
+of the browser and servers; later builders read earlier work from saved
+records. If the coding agent cannot start the next piece fresh by itself,
+the run pauses with its progress saved and tells you to open a new session
+and type `/implement` to resume. Reviews and merge decisions keep their
+existing rules. Compaction does not count as a fresh start.
+
 Each copy links to your `.env` rather than copying it, and installs its own dependencies. A file your build needs that git ignores and that holds no secret, such as a licensed font, is linked into each copy too, once founding has asked you which ones. Your confidential folder never is. Its dev server runs on a free port the run records, and the hand-over names that port. The server stops once the pull request opens, and the run's report says how to start it again. The kit clears a copy away once its pull request has merged or closed and nothing in it is unsaved, at the next run or the next /sync. A copy holding unsaved work is kept and named.
 
-If the run meets a choice nobody made, a hard one, about stored data, syncing or what leaves the tool, sends that piece back to shaping with the question on it. A hard choice the run can already see in a piece sends it back the same way before any branch is cut, and the plan names it as going back, so it does not come back to every run. An easy one takes the option simplest to undo and is flagged in the pull request. A piece that fails three attempts is parked with a note on what it revealed. Either way the run moves on.
+If the run meets a choice nobody made, a hard one, about stored data, syncing or what leaves the tool, sends that piece back to shaping with the question on it. A hard choice the run can already see in a piece sends it back the same way before any branch is cut, and the plan names it as going back, so it does not come back to every run. An easy one takes the option simplest to undo and is flagged in the pull request. A piece that fails three attempts is parked with a note on what it revealed. Before another piece starts after a failure or a pause for input, the run preserves the unsuccessful work and its check results for review and checks an identified base without the failed edits. Earlier successful parts stay on that base.
+
+When a run needs your answer, it leaves one Waiting on you section on the same piece: the question, its evidence, where to act and what result to bring back. A missing fact goes back to shaping for research; it does not stay ready after being skipped. Work depending on that piece waits, while eligible independent work continues. Answer in a comment or edit the piece.
+
+Before the next plan, the run reads those answers, reconciles the requirements and has a session that did not shape them check readiness. Only a complete answer, complete requirements and a passing check let the piece return to the plan, subject to its blockers and your approval. Research can settle a verified fact and take that same route without you. A product choice, insufficient evidence or unavailable review stays waiting with the next action recorded. The plan printout only shows that state; a reply alone never makes work ready.
+
+The run reads current blockers and code impact before choosing what can continue. Work depending on the stopped piece waits; independent work can continue from checked code. If a shared base fails its checks, everything relying on it stops. Recovery interrupted before those checks remains unfinished on resume. A changed linked input or hidden tracked edit requires those checks again. A resumed run reconciles the durable recovery record before deciding what can continue. The report names what was kept, what could continue and why anything stopped. Copies retained for failure review stay until that review is settled. Type /fix for a failure, or /shape when a decision is missing.
 
 The run keeps a state file in your project, which git ignores, and a live progress page where your coding agent can publish one. If a session dies, a new session picks the run up from its state file, and /what-now and /sync both offer to resume it.
 
 When nothing is left that the run can take, it stops at once with one report: each piece, its pull request and where it stands, the choices flagged for you, what was parked and why, and the order to merge in. You answer with the pull requests to merge. If the run disappointed you, improve the documents rather than the code. Sharpen the done lines, add the missing rule to the masterplan, and run it again.
 
 Some harnesses provide goal or long-run modes, such as Claude Code's `/goal`: "keep going until this condition holds". Same run, same rules: take the condition from a done line, a named sensitive area stops the piece that touches it, never the run, and each piece still lands through the save route the build path requires.
+
+An exposed native goal or an explicit request to continue unattended takes this
+route even for one piece. The run shows eligible pieces and their order and
+waits for your approval before building. A parent supplies its current parts
+and blockers; casual use of the word goal changes nothing.
 
 ## 11. Team use
 
@@ -517,11 +555,17 @@ decisions on the masterplan.
 
 /sync also reads the project's README, and any document AGENTS.md points at,
 against the project itself. It names a file, link, command or setting a
-document mentions that no longer exists, at the line it sits on, and offers to
-correct just that name or to file it for later. A document that says less than
-the project does is fine. It checks names only, so it cannot tell you whether a
-described step still happens that way, and it says so. When every name still
-points at something real, you hear nothing about it.
+document mentions that no longer exists, at its line, and offers to correct
+just that name or file it for later. A document that says less than the
+project does is fine.
+
+It also checks explicit required commands and check routes, including those
+in AGENTS.md. If a named route no longer calls its required check, it names
+the missing connection and what it inspected. An inactive rule is not broken;
+unknown conditions and indirect wiring remain unverified. This checks names
+and explicit check routes. Other instructions remain unverified. These checks
+run no project scripts or hooks and change no project files. With no finding,
+you hear nothing about it.
 
 /sync names open pieces untouched for 30 days in one short list and asks once
 whether each is still wanted, should be parked, or is done. It changes nothing
@@ -627,12 +671,15 @@ A project founded before the kit could link ignored build files gets one questio
 A project founded before the six states gets one offer to move onto them. Pieces waiting on a question gain shaping, open pieces with no state gain idea, and a piece labelled blocked becomes parked with its reason. Ideas you closed as parked stay as they are. Nothing changes without your yes, and a no is recorded, so the offer comes back only when a release changes the states again.
 
 In Claude Code, the settings founding gave your project refuse a direct push
-to `main`, a recursive delete and clearing Git's recovery history. When a
-later release catches more of these, the
+to `main`, a force push in the listed spellings, a recursive delete and clearing
+Git's recovery history. When a later release catches more of these, the
 monthly visit names the new rules and offers to add them to
-`.claude/settings.json`, once. It adds nothing without your yes and leaves the
-rest of the file as it is. A no is recorded, and the offer comes back only
-when a release adds another rule.
+`.claude/settings.json`, once. Force-push upgrades are offered only while an
+older force rule remains, so a deliberate removal is kept. It adds nothing
+without your yes and leaves the rest of the file as it is. A no is recorded,
+and the offer comes back only when a release adds another rule. The installed
+`setup-ai-build-kit` skill's `references/blocked-commands.md` lists the
+spellings the rules catch and miss.
 
 /maintain writes the date of each visit into the project. When more than a month
 has gone by, or once 20 changes have landed since the last visit, whichever comes

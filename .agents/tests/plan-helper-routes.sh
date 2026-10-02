@@ -189,9 +189,14 @@ founds_with_helper "$CLAUDE_ONLY" "shared installer, Claude Code alone" \
 # The Claude Code plugin: the skills stay in the plugin's own folder, which the
 # assembled release stands in for, and the project receives none.
 CLAUDE_PLUGIN="$SCRATCH/claude-plugin-project"
-mkdir -p "$CLAUDE_PLUGIN"
+CLAUDE_CACHE="$SCRATCH/claude-plugin-cache"
+mkdir -p "$CLAUDE_PLUGIN" "$CLAUDE_CACHE/.agents"
+# Installed commands and canonical skills, without the repository's docs.
+cp -R "$PACK/.agents/skills" "$CLAUDE_CACHE/.agents/skills"
+cp -R "$PACK/.claude" "$CLAUDE_CACHE/.claude"
+cp -R "$PACK/.claude-plugin" "$CLAUDE_CACHE/.claude-plugin"
 founds_with_helper "$CLAUDE_PLUGIN" "Claude Code plugin" \
-  "$PACK/.agents/skills/setup-ai-build-kit/scripts/bootstrap-project.sh"
+  "$CLAUDE_CACHE/.agents/skills/setup-ai-build-kit/scripts/bootstrap-project.sh"
 [ ! -e "$CLAUDE_PLUGIN/.agents/skills" ] || \
   fail "the Claude Code plugin copied skills into the project"
 
@@ -241,6 +246,42 @@ pointers_resolve() {
   route=$1
   skills=$2
   project=$3
+  # Follow local Markdown links from the installed handoff, then references
+  # reached within its skill. This is a narrow reachability check.
+  if python3 - "$skills/section-builder/references/task-handoff.md" <<'PYLINK'
+from pathlib import Path
+import re
+import sys
+handoff = Path(sys.argv[1]).resolve()
+references = handoff.parent
+pending = [handoff]
+seen = set()
+failed = False
+while pending:
+    source = pending.pop()
+    if source in seen:
+        continue
+    seen.add(source)
+    if not source.is_file():
+        print(f"missing installed reference: {source}", file=sys.stderr)
+        failed = True
+        continue
+    for target in re.findall(r"\[[^\]\n]+\]\(([^)\s]+)\)", source.read_text()):
+        if target.startswith(("https://", "http://", "#")):
+            continue
+        path = (source.parent / target.split("#", 1)[0]).resolve()
+        if not path.is_file():
+            print(f"{source}: missing installed target {target}", file=sys.stderr)
+            failed = True
+        elif path.parent == references:
+            pending.append(path)
+sys.exit(1 if failed else 0)
+PYLINK
+  then
+    pass "$route: the installed handoff's local links open"
+  else
+    fail "$route: the installed handoff has an unreachable local link"
+  fi
   masterplan="$SCRATCH/masterplan-$(echo "$route" | tr -c 'a-z' '-').md"
   cp "$skills/setup-ai-build-kit/templates/masterplan.md" "$masterplan"
   docs_found=$(pointers_in "$project/AGENTS.md" "$masterplan" | wc -l | tr -d ' ')
@@ -271,7 +312,7 @@ pointers_resolve "shared installer, several coding agents, as Claude Code reads 
 pointers_resolve "shared installer, several coding agents, as the others read it" \
   "$SHARED/.agents/skills" "$SHARED"
 pointers_resolve "shared installer, Claude Code alone" "$CLAUDE_ONLY/.claude/skills" "$CLAUDE_ONLY"
-pointers_resolve "Claude Code plugin" "$PACK/.agents/skills" "$CLAUDE_PLUGIN"
+pointers_resolve "Claude Code plugin" "$CLAUDE_CACHE/.agents/skills" "$CLAUDE_PLUGIN"
 pointers_resolve "Agent Plugins folder" "$AGENT_PLUGIN/skills" "$AGENT_PROJECT"
 
 # The check has to be able to fail. A pointer to a file no skill has is reported,

@@ -31,7 +31,7 @@ split into steps.
 
 - git reset --hard (throws away unsaved work)
 - git checkout . and git restore . (the same thing wearing different clothes; allowed only inside fix's reset step, announced out loud first)
-- git push --force (rewrites shared history under teammates' feet)
+- a force push with --force, --force-with-lease, --force-if-includes, -f or a leading + refspec (rewrites shared history under teammates' feet)
 - git clean -fd (deletes files git never saved)
 - a recursive delete in any spelling, such as rm -rf, rm -r or rm --recursive (deletes anything, recursively, with no undo)
 - git reflog expire (throws away the history Git uses to recover lost work)
@@ -54,3 +54,47 @@ guard can express them:
 
 Commit before anything sweeping. If one of these ever looks necessary,
 stop, say why, and let the human decide with the reason in front of them.
+
+## A force push
+
+A force push can replace shared history. The Claude Code settings refuse
+`--force`, `-f`, `--force-with-lease` (including an `=` value) and
+`--force-if-includes` as separate words before or after the remote and branch.
+They also refuse a refspec beginning with `+`, including a tag. A refspec is
+Git's name for the branch or tag to send and, optionally, its destination.
+The rules read literal command text starting with `git push`, with spaces
+between words; they do not parse shell syntax or Git's options.
+
+These spellings are refused:
+
+- `git push --force origin feature` and `git push origin feature --force`
+- `git push -f origin feature` and `git push origin feature -f`
+- `git push --force-with-lease origin feature` and
+  `git push origin feature --force-with-lease`
+- `git push --force-with-lease=feature:abc origin feature` and
+  `git push origin feature --force-with-lease=feature:abc`
+- `git push --force-if-includes origin feature` and
+  `git push origin feature --force-if-includes`
+- `git push origin +feature` and `git push origin +HEAD:feature`
+- `git push origin +refs/heads/feature` and `git push origin +refs/tags/v1`
+
+Ordinary pushes, `-u` and `--follow-tags` still run. So do branch names with
+`f` or an internal plus, such as `fix-f` and `feature+extra`. Since the rules
+read text, they may also refuse a push where an option's value is `--force`
+or starts with `+`, such as `git push -o +note origin feature`. They do not
+distinguish those values from force options or refspecs. The person can run
+that command themselves.
+
+These spellings are not refused, and the rule above still forbids them:
+
+- `git push -uf origin feature`, with bundled options
+- `git push origin "+feature"` or `git push origin feature "--force"`, with quotes
+- `git push origin $REFSPEC`, when the variable holds a leading plus
+- `git -C . push origin feature --force`, with an option before `push`
+- `/usr/bin/git push origin feature --force`, with Git called by its full path
+- `sh -c 'git push origin feature --force'`, inside another shell
+
+Other spacing or shell expansions are outside this bounded check. The portable
+force-push prohibition and the rule against reaching a refused result another
+way still apply. The matcher rehearsal checks these written spellings; it does
+not establish enforcement for every command or harness.
