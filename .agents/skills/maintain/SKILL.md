@@ -253,7 +253,8 @@ once, and no update touches that file again. A project founded before the kit
 learned a new way to write a push to `main` keeps the older rules, and a push
 the older rules miss goes through with nothing to stop it. The same holds for
 the rules that refuse deleting a folder with everything in it and clearing
-Git's recovery history. So the visit offers the missing rules, once.
+Git's recovery history, and for new force-push spellings where an older force
+rule remains. So the visit offers the missing rules, once.
 
 1. Where the project has no `.claude/settings.json`, this step ends. Otherwise
    read its `permissions.deny` list, and the one in the installed
@@ -262,8 +263,14 @@ Git's recovery history. So the visit offers the missing rules, once.
 2. List each rule the template holds that the project's list lacks, and that
    names both `git push` and `main`, or `rm` with a recursive option, or
    `git reflog expire`, or `git gc` with `--prune`. Leave out every other
-   rule, such as the force-push ones, since the person may have removed one on
-   purpose. When there is none, say nothing.
+   rule. Also list the missing new force-push rules covering the spellings under
+   "A force push" in the `setup-ai-build-kit` skill's
+   `references/blocked-commands.md`, only where the project still holds at least one of the older prefix rules:
+   `Bash(git push --force:*)` or `Bash(git push -f:*)`. Take those new rules
+   from the template too. Keep missing older prefixes out of this offer.
+   Where neither older prefix remains, leave out all
+   force-push rules, since the person may have removed one on purpose.
+   When there is none, say nothing.
 3. Read the `push-rules-declined` line in `.ai-build-kit-maintenance`, if there
    is one. Where it already lists every missing rule, the earlier no stands,
    and you say nothing. Otherwise offer only the missing rules that line does
@@ -273,7 +280,10 @@ Git's recovery history. So the visit offers the missing rules, once.
    plain words what they stop: a push to `main` written with an option before
    the remote, such as `-q`, or as `HEAD:refs/heads/main`; deleting a folder
    with everything in it, in the common spellings; and clearing the history Git
-   uses to recover lost work. Say that it adds
+   uses to recover lost work. Where force-push rules are offered, say:
+   "These rules stop more spellings of a force push, while keeping the choices
+   you already made." Name the separate force options in other positions and
+   the leading plus before a branch or tag. Say that it adds
    lines to the deny list and changes nothing else in the file. Say too that
    the `setup-ai-build-kit` skill's `references/blocked-commands.md` lists the
    spellings the rules still cannot catch. Ask for a yes.

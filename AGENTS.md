@@ -1051,6 +1051,11 @@ attribution line, not the word.
   written list of commands that must still run, such as deleting one file or a
   plain `git gc`, keeps those rules from growing. The offer brings those rules
   too, and a no recorded before they existed does not cover them.
+  It also checks standalone force options in each agreed position and leading
+  plus branch/tag refspecs, with a lost refusal for every new rule removed.
+  The monthly offer brings those rules only while an older force prefix remains,
+  and keeps removed or declined rules out. The fixture follows literal wildcard
+  semantics and does not establish universal shell or harness enforcement.
 - `.agents/tests/refused-commands.sh` guards what happens when a command is
   refused. In a real project the deny list refused `rm -rf`, and the agent ran
   the same deletion again as `rm -r`, which went through. So both
