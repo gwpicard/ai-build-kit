@@ -139,6 +139,125 @@ assert labels(3) == ['shaping', 'needs-clarification']
 print('ok: readiness gap command removes to check and returns to shaping with its reason')
 assert json.loads(api('pr', 'view', '1', '--json', 'state'))['state'] == 'OPEN'
 assert run('git', 'rev-parse', 'notes').stdout.strip() == head
+
+# Reuse the same Git, issue service and printout for a later run's answers.
+# Classifications and review verdicts are supplied by the operator, not inferred
+# by this shell test. Execute the published transitions and inspect their saves.
+longer = (root / '.agents/skills/implement/references/running-longer.md').read_text()
+wait_move = re.search(r'`(gh issue edit <number> --add-label shaping --add-label <its needs- label> --remove-label <old state> --remove-assignee @me)`', longer)
+assert wait_move, 'runner needs a classified same-issue waiting transition'
+spec = ('## So that\nThe team sees a settled header.\n\n' + requirements +
+        '\n## Decided\nUse Shared notes.\n\nTouches: header\n')
+waiting = ('\n## Waiting on you\nQuestion: Which header?\n'
+           'Evidence: Both names were requested.\n'
+           'Action: Reply here or edit this issue.\n'
+           'Result needed: Choose the header and whether empty notes are shown.\n')
+
+def issue(number):
+    return next(i for i in state()['issues'] if i['number'] == number)
+
+def save(number, text):
+    body.write_text(text)
+    api('issue', 'edit', str(number), '--body-file', str(body))
+    assert json.loads(api('issue', 'view', str(number), '--json', 'body'))['body'] == text
+
+def printed():
+    before = state()
+    run('sh', str(refresh))
+    assert state() == before, 'printout must remain read-only'
+    return (project / 'plan.local.md').read_text()
+
+def group(text, heading):
+    return text.split('## ' + heading + '\n', 1)[1].split('\n## ', 1)[0]
+
+def waiting_move(number, reason):
+    command = wait_move.group(1).replace('<number>', str(number)).replace(
+        '<its needs- label>', reason).replace('<old state>', 'ready')
+    run(str(gh), *shlex.split(command)[1:])
+    assert labels(number) == ['shaping', reason]
+
+api('issue', 'create', '--title', 'Independent header', '--body', spec + review, '--label', 'ready')
+independent = state()['issues'][-1]['number']
+for mode in ('comment', 'body edit', 'incomplete', 'unrelated', 'ambiguous',
+             'empty form', 'review fails', 'review unavailable', 'fact', 'human choice',
+             'insufficient evidence'):
+    api('issue', 'create', '--title', 'Waiting header ' + mode,
+        '--body', spec + review, '--label', 'ready')
+    n = state()['issues'][-1]['number']
+    api('issue', 'create', '--title', 'Dependent ' + mode, '--body', spec + review, '--label', 'ready')
+    dependent = state()['issues'][-1]['number']
+    api('api', '-X', 'POST', 'repos/rehearsal/project/issues/' + str(dependent) +
+        '/dependencies/blocked_by', '-F', 'issue_id=' + str(n))
+    reason = 'needs-research' if mode in ('fact', 'human choice', 'insufficient evidence') else 'needs-clarification'
+    # No old Ready survives a newly uncovered gap. One authoritative section.
+    save(n, spec + waiting)
+    waiting_move(n, reason)
+    plan = printed()
+    assert issue(n)['title'] not in group(plan, 'To build')
+    assert issue(dependent)['title'] not in group(plan, 'To build')
+    assert issue(independent)['title'] in group(plan, 'To build')
+    assert not issue(n)['comments'], 'no claim before answers or readiness'
+    original = issue(n)['body']
+    if mode in ('incomplete', 'unrelated', 'ambiguous', 'empty form'):
+        reply = {'incomplete': 'Shared notes.', 'unrelated': 'Change the footer.',
+                 'ambiguous': 'Either one.', 'empty form': 'No option selected.'}[mode]
+        api('issue', 'comment', str(n), '--body', reply)
+        printed()
+        assert issue(n)['body'] == original and labels(n) == ['shaping', reason]
+        assert not any('Claimed by run' in str(c) for c in issue(n)['comments'])
+        continue
+    if mode == 'insufficient evidence':
+        save(n, original + '\nResearch: source could not establish empty notes behaviour.\n')
+        assert labels(n) == ['shaping', 'needs-research']
+        continue
+    if mode == 'human choice':
+        save(n, original + '\nResearch: both formats work; the team must choose.\n')
+        api('issue', 'edit', str(n), '--add-label', 'needs-clarification', '--remove-label', 'needs-research')
+        assert labels(n) == ['shaping', 'needs-clarification']
+        continue
+    answer = 'Use Shared notes and show empty notes.'
+    if mode == 'body edit':
+        save(n, original + '\nAnswer: ' + answer + '\n')
+    elif mode == 'fact':
+        answer = 'The local source and its existing check establish both behaviours.'
+        # Genuine local source evidence, not an invented external citation.
+        assert 'notes' in (project / 'header.txt').read_text().lower()
+        save(n, original + '\nResearch: ' + answer + '\n')
+    else:
+        api('issue', 'comment', str(n), '--body', answer)
+    assert labels(n) == ['shaping', reason], 'answer alone cannot grant readiness'
+    # Operator reconciles all acceptance and decisions; waiting history remains.
+    reconciled = (spec.replace('Use Shared notes.', answer) +
+                  '\n## Answer history\n' + waiting.replace('## Waiting on you\n', '') +
+                  '\nAnswer: ' + answer + '\n')
+    save(n, reconciled)
+    api('issue', 'edit', str(n), '--remove-label', reason)
+    assert labels(n) == ['shaping']
+    if mode == 'review unavailable':
+        save(n, reconciled + '\nIndependent readiness unavailable: /shape ' + str(n) + ' check readiness\n')
+        assert issue(n)['title'] not in group(printed(), 'To build')
+        assert not any('Claimed by run' in str(c) for c in issue(n)['comments'])
+        continue
+    verdict = review if mode != 'review fails' else '\n## Readiness\nNot ready\n- BLOCKING: empty notes behaviour is incomplete\n'
+    save(n, reconciled + verdict)
+    if mode == 'review fails':
+        api('issue', 'edit', str(n), '--add-label', 'needs-clarification')
+        assert labels(n) == ['shaping', 'needs-clarification']
+        assert issue(n)['title'] not in group(printed(), 'To build')
+        continue
+    run(str(gh), *shlex.split(ready.replace('<number>', str(n)).replace('<its needs- label>', reason))[1:])
+    plan = printed()
+    assert labels(n) == ['ready'] and issue(n)['title'] in group(plan, 'To build')
+    assert issue(dependent)['title'] not in group(plan, 'To build'), 'open dependency still governs'
+    assert issue(n)['body'].count('## Waiting on you') == 0
+    assert 'Question: Which header?' in issue(n)['body'], 'waiting history survives'
+    api('issue', 'edit', str(n), '--add-label', 'building', '--remove-label', 'ready')
+    api('issue', 'comment', str(n), '--body', 'Claimed by run disposable-answer-reentry')
+    assert labels(n) == ['building']
+    assert any('Claimed by run' in str(c) for c in issue(n)['comments'])
+    # Retain these fixtures without closing anything or creating more PRs.
+    api('issue', 'edit', str(n), '--add-label', 'to check', '--remove-label', 'building')
+print('ok: classified waits, later comment/body answers, failed/unavailable review and factual/human research keep real issue records and queue boundaries')
 print('All disposable Git/state checks passed; conversation and merge-gate obedience remain guided checks.')
 print('Fixture retained at ' + str(work))
 PY
