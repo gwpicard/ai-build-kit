@@ -202,6 +202,11 @@ question is the work of this command. An issue with no `## Done when` was typed
 by hand and never sized. It is an idea, so move it to `shaping` with
 `needs-clarification`, as the section above says, and shape it.
 
+First check "Answers already on the piece" below. A complete recorded answer
+needs reconciliation, not another interview or prototype reaction. Take that
+route and skip the label's interview or prototype step when it settles the
+question; run only the step required by a remaining gap.
+
 Run the step the label names, write what settled it into the piece's `## Decided`
 section, and only then take the label off, with `shaping`, and mark the piece
 `ready` once the readiness check finds no blocking gap. The record
@@ -272,6 +277,64 @@ The interview may show that the real block is a different one and swap
 label rather than shaping past it. A piece whose question is settled carries the
 `ready` label and no `needs-` label; the two never sit together.
 
+## Answers already on the piece
+
+This route applies when shaping or a run revisits an open, already-shaped
+piece with a waiting record. Read the full current body and comments, including
+the original question and every remaining gap. A comment or body edit can
+answer it; invoking `/shape` manually is not required. Identify exactly what
+the person answered and which evidence it settles. Incomplete, unrelated,
+ambiguous and empty-form answers leave every remaining gap open. Silence,
+labels or an unrelated edit never supply a decision or sensitive-area
+acceptance. Keep the unanswered question visible without repeating an
+interview when no new answer exists.
+
+For a complete answer, reconcile the piece's Done when, Decided and affected
+agent-layer fields, preserving agreed scope and the original words. Remove
+the stale Readiness verdict before saving the reconciled specification. Move
+a parked or still-ready waiting piece into shaping in one paired command:
+`gh issue edit <number> --add-label shaping --remove-label <old state>`.
+Keep its failure evidence and preserved branch. A piece already shaping stays
+there. Work in building or to check takes "Recovering work started too soon"
+first. Remove a settled `needs-` reason only after reading the saved
+specification back and confirming that no gap of that kind remains. With
+another gap, keep its matching reason and concrete next action. A piece with
+only review left stays shaping without a `needs-` reason.
+
+Preserve the original waiting-start history, question, evidence and answer
+source when updating the issue. Keep one authoritative Waiting on you section
+for the remaining actions; move settled questions and their answers into
+labelled history outside that active section. A history heading must not be
+`## Waiting on you`, which the printout reads as an active step. Do not replace
+the history with the issue's latest updated time. A partly answered section
+keeps every unanswered action, even when the specification changed elsewhere.
+
+A technical factual gap takes the existing source-check or existing-work
+route, reading the relevant source and current primary evidence. Record the
+verified fact and its source on the piece, then reconcile it by this same
+route. Research grants no paid experiments, real-account actions or expanded
+product scope. A newly uncovered product choice moves to `needs-clarification`
+with its concrete question; insufficient evidence keeps `needs-research` and
+the gap. Do not guess either answer. Nobody needs to be present for a fact
+that the evidence actually settles.
+
+After reconciliation, obtain the existing independent readiness check in a
+session that did not shape this specification, with none of the reconciliation
+conversation. Read its saved verdict back before moving to ready. An
+unavailable independent review keeps the piece unbuildable: record the missing
+route and the exact `/shape <number> check readiness` line for a new session.
+A blocking result leaves shaping and its matching `needs-` reason. An older
+Ready verdict or the reconciling session's confidence cannot substitute.
+
+Save and read back each issue record before calling it settled. If a write or
+read-back fails, retain the pending record privately in the ignored run notes
+and report the gap; it grants no readiness. In a run, return to the
+`implement` skill's `references/running-longer.md` for preservation and
+continuation. Shape changes no implementation code. A complete answer and
+passing review can return the piece to the same run's plan, but only that
+run's existing plan approval, dependency, eligibility and acceptance gates
+authorise building it.
+
 ## Typed alone, or given a piece
 
 Typed alone, take the lowest-numbered piece still waiting on a question, or the
@@ -289,6 +352,8 @@ nothing else. Where that
 piece is already ready, say so and make the build offer instead. Route a piece
 already being built or checked through "Recovering work started too soon"
 before the ordinary idea or ready handling.
+Read an existing waiting record through "Answers already on the piece"
+before that ordinary ready handling, even when its label still says ready.
 
 Where the person says they are not staying, take the pieces the agent can settle
 alone, which is every piece labelled `needs-research`. Then name the ones that
