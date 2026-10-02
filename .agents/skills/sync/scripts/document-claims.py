@@ -307,14 +307,16 @@ def wiring_claims(document, scripts):
     fenced = None
     with open(document, encoding="utf-8") as handle:
         for number, line in enumerate(handle, start=1):
-            line = line.strip()
-            fence = re.match(r"^(`{3,}|~{3,})", line)
-            if fence:
-                mark = fence.group(1)[0]
-                fenced = None if fenced == mark else mark if fenced is None else fenced
-                continue
             if fenced:
+                mark, length = fenced
+                if re.fullmatch(r" {0,3}" + re.escape(mark) + "{" + str(length) + r",}[ \t]*", line.rstrip("\r\n")):
+                    fenced = None
                 continue
+            fence = re.match(r"^ {0,3}(`{3,}|~{3,})([^\r\n]*)$", line.rstrip("\r\n"))
+            if fence and (fence.group(1)[0] != "`" or "`" not in fence.group(2)):
+                fenced = (fence.group(1)[0], len(fence.group(1)))
+                continue
+            line = line.strip()
             line = re.sub(r"^[-*]\s+", "", line)
             if not line.startswith(("Required command:", "Required check:")):
                 continue
