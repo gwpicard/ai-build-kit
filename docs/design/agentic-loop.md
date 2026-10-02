@@ -35,10 +35,10 @@ are, and who direct agents rather than write code. They never have to read code.
 
 ## The name
 
-With v1 the product becomes AI Loop Kit. The rename is its own piece of work: the
-repository, the plugin and marketplace names, the founding command and the way
-existing installations move all change, and each step that changes something
-online waits for the maintainer's approval at that step.
+With v1 the product becomes AI Loop Kit, in a repository of its own. Setting the
+new names is its own piece of work: the plugin and marketplace names, the
+founding command and the record files all change, and each step that changes
+something online waits for the maintainer's approval at that step.
 
 ## Why
 
@@ -635,21 +635,20 @@ Claude Code comes first, with the gates as hooks. Codex gets the same scripts as
 its own hooks and rules, graded expected to work until a recorded run. Other
 coding agents get the core of shaping and one piece at a time.
 
-## Moving from today
+## Projects founded with AI Build Kit
 
-Founded projects move through `/maintain`. It maps the old labels to the new
-ones (an idea becomes raw, a needs label becomes the matching sub-state, to
-check becomes in-review, parked and blocked become raw or a blocked-by link),
-moves the records to the new format, and asks only where a case is ambiguous.
+AI Loop Kit is for new projects. Moving a project founded with AI Build Kit
+onto the new labels, records and commands would be too hard to do safely, so
+there is no migration. Those projects stay on AI Build Kit, which keeps fixes
+for a stated period and is then archived. AI Loop Kit does not carry the
+migrations and upkeep the old kit kept for its older projects.
 
-The mechanisms built in the overnight batch are reused one at a time rather than
-merged as a batch: the recovery helper that keeps failed work and checks a
-baseline, fresh builder contexts, the rule for which browser a walk-through may
-use, the force-push deny rules, the question box, and continuing in the same
-turn. The parked state, the try-it opt-in and shaping inside a run do not carry
-over.
-
-The draft v0.20.0 release is not published. The next release is this model.
+AI Loop Kit lives in a repository of its own. The mechanisms built in the
+overnight batch are reused one at a time rather than merged as a batch: the
+recovery helper that keeps failed work and checks a baseline, fresh builder
+contexts, the rule for which browser a walk-through may use, the force-push
+deny rules, the question box, and continuing in the same turn. The parked
+state, the try-it opt-in and shaping inside a run do not carry over.
 
 ## 1.0
 
@@ -658,7 +657,6 @@ change underneath a person. That needs:
 
 - this model complete, with all four loop modules, runs, kickback, `/deploy` and both
   boards;
-- founded projects moved to it by `/maintain`;
 - real runs recorded, one for each loop module, and one `/deploy` for each recipe;
 - the compact masterplan, since 1.0 fixes the project's record format.
 
