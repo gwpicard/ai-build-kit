@@ -1,5 +1,12 @@
 # The hosting request
 
+Load the `setup-ai-build-kit` skill's `references/project-records.md` for record
+ownership. On the marked new format, working rules owns build-path fields,
+operations owns every How it stays running read/write, and indexed concepts
+own detailed product rules. Legacy projects keep the masterplan route. Never
+advance the separate document-review checkpoint here.
+
+
 Used by ship when the tool will run on a server this session cannot reach. The
 request lives in the masterplan's "How it stays running" section. The person
 carries it to whoever runs the server, and carries the answer back.

@@ -11,6 +11,16 @@ far more expensive to answer.
 
 ## What to compare
 
+Load [project-records.md](project-records.md). On the new format compare the
+overview AND every authoritative concept document indexed by `docs/README.md`
+against the pieces. The concept owning a rule, not a short summary or a closed
+piece, is the current product description. Include permissions, data,
+connections, failure behaviour and settled terms on parked pieces. Keep current
+intent distinct from future promises; moving detail never removes it from this
+read. Reconcile a settled term into its authoritative concept, updating an
+overview summary only if useful. On legacy records use the page sections below.
+
+
 Read the masterplan's promises: what it does and for whom, how it is used step
 by step, what correct looks like, and what happens when it fails. Include who can
 see and do what, what data it holds and where it comes from, and what it

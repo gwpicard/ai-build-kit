@@ -5,6 +5,12 @@ description: Bring the tool back to doing what it already should. Use when the u
 
 # Fix
 
+For project record reads and writes, load the `setup-ai-build-kit` skill's
+`references/project-records.md`. Its marker selects authoritative concept,
+working-rule and operations records for the new format; legacy projects keep
+their existing route. This changes record ownership, not safety or merge authority.
+
+
 You restore promised behaviour. The discipline is the order: never change
 code before the problem repeats reliably and the cause is understood and
 explained.

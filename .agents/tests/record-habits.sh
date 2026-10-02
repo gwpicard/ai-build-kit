@@ -8,7 +8,7 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 . "$ROOT/.agents/tests/lib/rule-shape.sh"
 
 PIECES="$ROOT/.agents/skills/setup-ai-build-kit/references/pieces.md"
-TEMPLATE="$ROOT/.agents/skills/setup-ai-build-kit/templates/masterplan.md"
+TEMPLATE="$ROOT/.agents/skills/setup-ai-build-kit/templates/product-concept.md"
 SHAPE="$ROOT/.agents/skills/shape/SKILL.md"
 BUILDER="$ROOT/.agents/skills/section-builder/SKILL.md"
 SYNC="$ROOT/.agents/skills/sync/SKILL.md"

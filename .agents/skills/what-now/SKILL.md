@@ -5,6 +5,12 @@ description: Orientation for a lost or returning user. Trigger when someone asks
 
 # What now
 
+For project record reads and writes, load the `setup-ai-build-kit` skill's
+`references/project-records.md`. Its marker selects authoritative concept,
+working-rule and operations records for the new format; legacy projects keep
+their existing route. This changes record ownership, not safety or merge authority.
+
+
 You are the safety net under the other six commands. Someone who forgets everything else and remembers this one is fine.
 
 ## Read

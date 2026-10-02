@@ -174,6 +174,10 @@ attribution line, not the word.
   again and reaches its own copy again, so the run hangs rather than
   fails, and a hosted job is billed for every minute of it.
 - `.agents/tests/release-builder.sh` checks the assembled public release boundary.
+- `.agents/tests/project-records.sh` rehearses the new and legacy record readers,
+  the total overview word ceiling and honest completed-review checkpoints. It
+  drives actual readers through malformed markers, behavioural Markdown,
+  indexed concept corrections, paths with spaces and repeated checkpoint saves.
 - `.agents/tests/starter-rehearsal.sh` checks that installed skills can prepare
   a clean, independently saved project with founding records. It also holds
   what founding does with the other skill folder. A link that leads nowhere

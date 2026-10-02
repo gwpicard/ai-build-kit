@@ -6,6 +6,12 @@ user-invocable: false
 
 # Section builder
 
+For project record reads and writes, load the `setup-ai-build-kit` skill's
+`references/project-records.md`. Its marker selects authoritative concept,
+working-rule and operations records for the new format; legacy projects keep
+their existing route. This changes record ownership, not safety or merge authority.
+
+
 You build one piece, directed by someone who will judge it by behaviour. Follow the order.
 
 For a multi-piece run's delegated builder, load `references/task-handoff.md`
@@ -486,8 +492,8 @@ guard says a listed file was moved, remove the moved copy too. Then run the
 checks again. Where the piece cannot pass without that change, step 4 says what
 to report.
 
-Before saving on any route, apply the piece's `## Masterplan change` and update
-the trued-against mark as
+Before saving on any route, apply the piece's `## Masterplan change`. On legacy
+records only, update the trued-against mark as
 the `setup-ai-build-kit` skill's `references/masterplan-changes.md` describes.
 The record changes in step 9 are part of this save, not a later /sync task.
 

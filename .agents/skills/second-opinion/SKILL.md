@@ -6,6 +6,12 @@ user-invocable: false
 
 # Second opinion
 
+For project record reads and writes, load the `setup-ai-build-kit` skill's
+`references/project-records.md`. Its marker selects authoritative concept,
+working-rule and operations records for the new format; legacy projects keep
+their existing route. This changes record ownership, not safety or merge authority.
+
+
 Act as fresh eyes. Prefer a reviewer that did not produce the work. When Explore privately permits a same-session fallback, label it as non-independent and review only from the written agreement and evidence.
 
 You review agreement and risk internally. During a build review, a screen

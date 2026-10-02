@@ -10,6 +10,10 @@ assessed, documented, stood up. You write no feature code in this skill. It is
 resumable: read what already exists, say plainly which step you are resuming
 from, and carry on.
 
+Load references/project-records.md before reading or writing founding records.
+Its explicit format routes apply to every masterplan field mentioned below;
+legacy founding records remain readable without migration.
+
 ## Conversation contract
 
 `/setup-ai-build-kit` guides the person through project decisions. Speak when they need to
@@ -273,13 +277,27 @@ waits for the caution they skipped. If they do
 not, founding goes on anyway and the area's caution stays `not yet done`. A no
 to an ownership question becomes a founding task rather than a path move.
 
-## 7. Write the masterplan
+## 7. Write the founding records
 
 Create masterplan.md from templates/masterplan.md, filled from the interview,
 present tense throughout. Open it with its short header for the person: two or
 three plain sentences on what the tool is, who uses it, and where it stands.
-Write everything below the header for the agent first, complete and exact. The
-build-path section comes right after the header: the fit check's result. Create `.ai-build-kit-maintenance`
+Write everything below the header for the agent first. Load
+references/project-records.md and use its new format. The masterplan is a useful
+overview of at most 500 words total, including headings and link text. Say once:
+"The masterplan gives the overview; linked documents hold the rules."
+
+Create `docs/working-rules.md` from templates/working-rules.md, putting the fit
+check's full result and every project-specific build/review rule there. Create
+`docs/operations.md` from templates/operations.md for operational facts and
+locations. Write authoritative product concept documents from
+templates/product-concept.md, one named concept per file. Create `docs/README.md`
+from templates/concept-index.md and index each document with what it owns. Preserve permissions, data and origins,
+connections, journeys, correctness, failures and settled terms from the interview,
+including declined scope and future intent explicitly distinguished from current
+behaviour. Remove placeholders and empty sections; do not fill the overview
+with detail merely to reach the ceiling. Validate it using
+`python3 .agents/tools/project-records.py validate`. Create `.ai-build-kit-maintenance`
 from `templates/maintenance-record` and put today's date on its `founded` line.
 Leave the two pass lines empty, because `/maintain` fills those in. Do not
 mention that small file to the person.
@@ -315,11 +333,15 @@ AGENTS.md instead, and carry on. Never overwrite it, and never stop to ask which
 the person would prefer. A read-me is the cheapest thing in the project to
 change later and the founding is the most expensive thing to lose.
 
-Fill the masterplan from the working notes as well as from the conversation,
-then delete `.agents/tmp/setup-notes.md` in this same step. The masterplan
-carries everything the notes held, so nothing is lost by clearing them.
+Fill all founding records from the working notes as well as the conversation.
+Before deleting `.agents/tmp/setup-notes.md`, compare every answer with its named
+authoritative home. Nothing in the notes is dropped for the word ceiling. Check
+one sentence explains the actual product and names the document owning its
+permission rule, following that link to confirm the rule itself. Delete the
+notes only after this lossless coverage read; interruption leaves them intact.
+Then delete `.agents/tmp/setup-notes.md`, never before its answers have durable homes.
 
-Draw the connections section from what the interview found, then read the
+Draw the authoritative concept document's connections section from what the interview found, then read the
 picture back in plain words and let the team confirm each outside connection
 before going on: that it should reach their email, their calendar, whatever the
 picture shows. A connection nobody meant to agree to is cheapest to catch here.
@@ -329,7 +351,7 @@ small set of sample data or test accounts once, so that each build can walk
 through the tool with something in it. Say it close to: "Each build checks its
 work by using the tool the way you would. Shall I plan a few made-up records and
 a test account for that?" Write the answer as a `Sample data:` line in the
-masterplan's "How it stays running": what the set holds and where it lives, or
+operational record's "How it stays running": what the set holds and where it lives, or
 that the person said no. A yes becomes a piece when the plan is cut in step 10.
 A test account's password goes where the Secrets rule says, never into the
 masterplan. The offer never holds founding up: with no answer, write
@@ -349,7 +371,15 @@ If the project needs a `.env`, copy `.env.example` to `.env` now, confirm
 `.env` is listed in `.gitignore`, and never print its contents back to the
 user.
 
-## 8. Review the masterplan
+## 8. Review the founding records
+
+On the new format, the review includes the overview and its authoritative
+concept documents, working rules and operations. Compare every working-note
+answer with its owned record, including review requirements, permissions,
+failure behaviour and settled terms. A short overview alone is never evidence
+of complete founding. This founding review does not advance the separate /sync
+checkpoint; the missing checkpoint honestly means no saved-state reconciliation
+yet.
 
 Who this is for decides whether it runs. On Build with care, the masterplan is
 read before flagged work continues, because somebody other than the builder is
@@ -376,13 +406,13 @@ When resuming, look for the review's note in the changelog.
 
 ## 9. Ownership check
 
-Answer from the masterplan alone, no memory allowed: can the team explain the
+Answer from the founding records and their indexed authoritative documents alone, no memory allowed: can the team explain the
 main flow? Can it explain who can see and change what? Can it identify where
 important data, secrets, and service accounts live? Can it recover or
 continue manually if the tool stops? Is somebody responsible for alerts,
 backups, bills, and access? A "no" to any of these becomes a setup task before
 build starts: a piece on the plan where there is work to do, or a line in the
-masterplan's "How it stays running" section where there is only a fact to
+operational record's "How it stays running" section where there is only a fact to
 record, following fit-check.md's ownership rule. It never moves the build path.
 The fit check owns the present facts in "How it stays running"; the changelog
 records only that this ownership check ran and when. Do not copy the answers

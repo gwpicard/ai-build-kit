@@ -5,6 +5,11 @@ description: The everyday command for building a piece that has already been sha
 
 # Implement
 
+For project record reads and writes, load the `setup-ai-build-kit` skill's
+`references/project-records.md`. Its marker selects authoritative concept,
+working-rule and operations records for the new format; legacy projects keep
+their existing route. This changes record ownership, not safety or merge authority.
+
 ## Under a goal or an unattended outcome request
 
 When the harness exposes an active native goal mode, or the person explicitly

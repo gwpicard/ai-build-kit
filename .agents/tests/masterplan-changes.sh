@@ -58,7 +58,7 @@ rs_rule "writing the change does not apply it early" 'writing it does not apply 
 # A replayed piece that sorted a list wrote "nothing", because the masterplan
 # already promised the list. The rule never reached the page, and nothing
 # downstream could notice, since save applies the field exactly as written.
-rs_rule "nothing is tested line by line against the page" 'read each line of `## done when` against the masterplan alone, and write "nothing" only when the masterplan already says it'
+rs_rule "nothing is tested line by line against the page" 'read each line of `## done when` against the masterplan and its authoritative concept documents, and write "nothing" only when those records already say it'
 rs_rule "a narrower checkable rule is still a change" 'is a change even when it narrows a promise the masterplan already makes'
 rs_guard "$PIECES" "the piece shape"
 
@@ -68,7 +68,8 @@ rs_rule "the form asks for plain words and allows nothing" 'in plain words, name
 rs_rule "the form requires the field" 'placeholder: what it does gains a weekly summary email\. validations: required: true'
 rs_guard "$FORM" "the issue form"
 
-rs_require_load_bearing "a new page starts honestly unchecked" "$TEMPLATE" 'trued against: not yet checked'
+rs_require_load_bearing "a new page declares its explicit format" "$TEMPLATE" 'ai-build-kit:records:v1'
+rs_require_absent "a new page has no per-change stamp" "$TEMPLATE" 'trued against:'
 rs_require_load_bearing "shape writes the field before ready" "$SHAPE" 'write `## masterplan change` on the surface before marking it ready'
 rs_require_load_bearing "shape reads the change back in plain words" "$SHAPE" 'when this lands, the masterplan gains a weekly summary email'
 rs_require_load_bearing "shape writes nothing only after the test" "$SHAPE" 'write "nothing" only when the masterplan already says every line of `## done when`'

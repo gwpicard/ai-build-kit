@@ -33,7 +33,7 @@ fail() {
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 PROJECT="$WORK/project"
-mkdir -p "$PROJECT/.github/workflows" "$PROJECT/.agents/hooks"
+mkdir -p "$PROJECT/.github/workflows" "$PROJECT/.agents/hooks" "$PROJECT/.agents/tools"
 
 # --- the commands, read from the shipped table ------------------------------
 
@@ -61,6 +61,8 @@ fi
 
 cp "$SENSITIVE" "$PROJECT/.agents/hooks/check-sensitive-areas.sh"
 cp "$INSTRUCTIONS" "$PROJECT/AGENTS.md"
+cp "${INSTRUCTIONS%/*}/project-records.py" "$PROJECT/.agents/tools/project-records.py"
+printf '# Legacy project\n' > "$PROJECT/masterplan.md"
 
 # The edit founding makes: the placeholder step goes, and install, type check,
 # lint and test go in its place, each as its own named step.
@@ -189,9 +191,11 @@ echo "  type check: $type_check"
 echo "  lint: $lint"
 
 PROJECT="$WORK/ts-project"
-mkdir -p "$PROJECT/.github/workflows" "$PROJECT/.agents/hooks" "$PROJECT/src"
+mkdir -p "$PROJECT/.github/workflows" "$PROJECT/.agents/hooks" "$PROJECT/.agents/tools" "$PROJECT/src"
 cp "$SENSITIVE" "$PROJECT/.agents/hooks/check-sensitive-areas.sh"
 cp "$INSTRUCTIONS" "$PROJECT/AGENTS.md"
+cp "${INSTRUCTIONS%/*}/project-records.py" "$PROJECT/.agents/tools/project-records.py"
+printf '# Legacy project\n' > "$PROJECT/masterplan.md"
 
 awk -v tc="$type_check" -v li="$lint" '
   /- name: Install and test/ { skipping = 1 }
