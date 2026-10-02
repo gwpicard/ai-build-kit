@@ -197,7 +197,10 @@ run_codex_resume() {
 # provider_turn <project> <message> <raw-output> <last-reply>
 provider_turn() {
   project=$1
-  message=$2
+  message="Replay context: headless with a scripted plain-text interlocutor.
+Ask interview questions in the reply text; do not open a human question UI.
+The following is the scripted turn:
+$2"
   raw=$3
   reply=$4
   : > "$reply"

@@ -6,14 +6,11 @@
 # each person wants and who is collecting, no money, no outside users, nothing
 # regulated, nothing automated.
 #
-# This scenario watches the SHAPE of the questions the kit asks. An open
-# question the person answers in their own words, such as what the tool should
-# do, must arrive as a plain question. A closed question with a short complete
-# set of answers, such as whether code already exists or they are starting
-# fresh, may be offered as choices. Harness text complaining that a question
-# does not suit a choice interface is outside the kit's control and is not the
-# kit's own wording. The founder never names the interview, the build path, or
-# any record.
+# This headless scenario watches plain-text interview questions: one short
+# question with a labelled guess and room for an open answer. No human is at
+# a screen; provider context names the scripted interlocutor. Live question
+# tools, schema limits and worker relays have separate guided fixtures in the
+# scenario contract. The founder never names the interview or any record.
 /setup-ai-build-kit
 ---
 I think I want something to help us sort out the team lunch order. It's a bit of a mess every day. I'm not totally sure what it should look like though.
