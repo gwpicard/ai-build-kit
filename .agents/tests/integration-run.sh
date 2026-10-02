@@ -136,7 +136,7 @@ if mode == 'shared-flags':
     print('Shared sibling flag independently invalidates final consent.')
     print('Fixture retained at',fixture)
     sys.exit(0)
-if mode == 'shared':
+if mode in ('shared', 'shared-outputs'):
     path = feature(1, 'a')
     call('check', '--piece', 1, '--source', path, '--check', 'python3 check.py')
     saved = read(state)
@@ -149,11 +149,59 @@ if mode == 'shared':
     saved['pieces'][1]['flags'] = ['Sibling needs human review']
     saved['pieces'][2]['state'] = 'parked'
     write(state, saved)
+    if mode == 'shared-outputs':
+        (path/'.gitignore').write_text((path/'.gitignore').read_text()+'.env\nignored-input\n')
+        (project/'.env').write_text('established linked input')
+        (path/'.env').symlink_to(project/'.env')
+        (path/'ignored-input').write_text('unchanged ignored source')
     (path/'b').write_text('b')
     git('add', '.', cwd=path); git('commit', '-qm', 'Second completed parent part', cwd=path)
     git('push', '-q', 'origin', 'HEAD', cwd=path)
     for number in (1,2):
-        call('check', '--piece', number, '--source', path, '--check', 'test -f '+('a' if number==1 else 'b'))
+        command = 'test -f '+('a' if number==1 else 'b')
+        if mode == 'shared-outputs':
+            command += ' && python3 check.py && mkdir -p build && printf '+str(number)+' > build/report'
+        call('check', '--piece', number, '--source', path, '--check', command)
+    if mode == 'shared-outputs':
+        print('Shared-output fixture retained at', fixture, flush=True)
+        checks = [p['verification'] for p in read(state)['pieces'][:2]]
+        assert all(c['passed'] and c['head'] == git('rev-parse','HEAD',cwd=path) for c in checks)
+        assert [c['files']['build/report']['sha256'] for c in checks][0] != checks[1]['files']['build/report']['sha256']
+        # Observe freshness without a remote write while restoring each exact input.
+        sys.path.insert(0, str(helper.parent))
+        import integration as runner
+        def fresh_both():
+            for item in read(state)['pieces'][:2]:
+                runner.fresh(item, path)
+        def stale_both():
+            for item in read(state)['pieces'][:2]:
+                try:
+                    runner.fresh(item, path)
+                except (ValueError, OSError, RuntimeError):
+                    pass
+                else:
+                    raise AssertionError('Changed actual input kept passing evidence fresh')
+        fresh_both()
+        (path/'build/report').write_text('another generated report'); fresh_both()
+        report = path/'build/report'
+        output_mode = report.stat().st_mode & 0o777
+        report.chmod(0o700); stale_both(); report.chmod(output_mode)
+        report.unlink(); report.symlink_to(path/'ignored-input'); stale_both()
+        report.unlink(); report.write_text('restored generated report'); report.chmod(output_mode)
+        (path/'check.py').write_text('changed tracked source'); stale_both()
+        git('checkout','--','check.py',cwd=path)
+        (path/'untracked-input').write_text('new source'); stale_both(); (path/'untracked-input').unlink()
+        (path/'ignored-input').write_text('changed ignored source'); stale_both()
+        (path/'ignored-input').write_text('unchanged ignored source')
+        (project/'.env').write_text('changed linked source'); stale_both()
+        (project/'.env').write_text('established linked input')
+        (path/'build/new-input').write_text('new ignored input'); stale_both(); (path/'build/new-input').unlink()
+        checked = git('rev-parse','HEAD',cwd=path)
+        git('commit','--allow-empty','-qm','Changed candidate head',cwd=path); stale_both()
+        git('reset','--soft',checked,cwd=path); fresh_both()
+        assert checks == [p['verification'] for p in read(state)['pieces'][:2]]
+        assert all(read(Path(c['evidence']))['commands'] == c['commands'] for c in checks)
+
     saved = read(state); saved['pieces'][0]['integration_members'] = [1]; write(state,saved)
     call('merge-feature', '--piece', 1, '--source', path, '--pr', 1, code=2)
     saved['pieces'][0]['integration_members'] = [1,2,3]; write(state,saved)
@@ -358,5 +406,6 @@ PY
 if [ -z "${INTEGRATION_CASE:-}" ]; then
   INTEGRATION_CASE=shared-flags sh "$0"
   INTEGRATION_CASE=shared sh "$0"
+  INTEGRATION_CASE=shared-outputs sh "$0"
   INTEGRATION_CASE=moving sh "$0"
 fi
