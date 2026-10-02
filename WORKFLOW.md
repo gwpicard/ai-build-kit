@@ -479,6 +479,8 @@ After the first launch, shipping gets lighter: it re-checks what changed since t
 
 Give /implement several piece numbers, or type "/implement queue" for every ready piece and every piece waiting only on those, and it builds them without you between them. "/implement auto" is the same thing. It says the plan once: each piece in order, whether the run can take it and why not, and which pieces build on another. You approve it once, and say whether pieces that pass may be merged while you are away. A merge that would put the tool live still waits for you. Then it runs.
 
+The run performs the next eligible step in the same turn. If a question parks one piece, it checks the saved work and shared base before continuing with independent eligible work. It stops at the limits described below in this section; saying what it will do next does not complete that step.
+
 A run decides piece by piece what it can take. A piece needs to be ready, checked by a session that did not shape it, and complete enough to build with nobody to ask. A piece in a sensitive area is taken only once your acceptance is on the record, and a run never gives one for you. A piece you asked to try yourself is built and then waits for you in to check, whatever you said about merging.
 
 Each piece goes through the same steps as a single build: claimed, checks written first and seen to fail, built, walked through, reviewed. Each piece arrives as its own pull request, and the parts of one piece share one. A piece that needs another built earlier in the run is built on top of it, and its pull request says which to merge first.
@@ -510,6 +512,11 @@ The run keeps a state file in your project, which git ignores, and a live progre
 When nothing is left that the run can take, it stops at once with one report: each piece, its pull request and where it stands, the choices flagged for you, what was parked and why, and the order to merge in. You answer with the pull requests to merge. If the run disappointed you, improve the documents rather than the code. Sharpen the done lines, add the missing rule to the masterplan, and run it again.
 
 Some harnesses provide goal or long-run modes, such as Claude Code's `/goal`: "keep going until this condition holds". Same run, same rules: take the condition from a done line, a named sensitive area stops the piece that touches it, never the run, and each piece still lands through the save route the build path requires.
+
+An exposed native goal or an explicit request to continue unattended takes this
+route even for one piece. The run shows eligible pieces and their order and
+waits for your approval before building. A parent supplies its current parts
+and blockers; casual use of the word goal changes nothing.
 
 ## 11. Team use
 

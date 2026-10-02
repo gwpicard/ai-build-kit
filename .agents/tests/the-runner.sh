@@ -237,6 +237,32 @@ rs_require_load_bearing "/implement offers to resume an unfinished run" "$IMPLEM
 rs_require_load_bearing "/implement reconciles before calling a run finished" "$IMPLEMENT" \
   'before deciding whether a saved run is finished, reconcile each piece.s durable recovery record'
 
+# Observable goal requests enter the run before ordinary single-piece dispatch.
+rs_require_order "goal routing precedes typed-alone selection" "$IMPLEMENT" '^## Under a goal or an unattended outcome request' '^## Typed alone'
+rs_require_order "goal routing precedes default startup" "$IMPLEMENT" '^## Under a goal or an unattended outcome request' '^Use the current session'
+rs_require_load_bearing "observable native context activates a run" "$IMPLEMENT" \
+  'when the harness exposes an active native goal mode'
+rs_require_load_bearing "explicit unattended instruction activates a run" "$IMPLEMENT" \
+  'explicitly asks to continue unattended toward an outcome'
+rs_require_load_bearing "casual goal wording is not a trigger" "$IMPLEMENT" \
+  'the word goal alone does not activate this route'
+rs_require_load_bearing "no unseen native metadata or api is invented" "$IMPLEMENT" \
+  'invent no goal metadata or api when the harness exposes none'
+rs_require_load_bearing "goal rules load before planning or dispatch" "$IMPLEMENT" \
+  'before planning, claiming, building or dispatching a worker, load `references/running-longer\.md`'
+rs_require_load_bearing "native goal is a harness command" "$IMPLEMENT" \
+  '`/goal` is a built-in command of the coding agent'
+rs_require_load_bearing "goal approval precedes any builder or claim" "$IMPLEMENT" \
+  'start no claim, builder or subagent until the person has approved that plan'
+rs_require_load_bearing "missing goal approval waits without building" "$LONGER" \
+  'without recorded approval of this plan, wait and build nothing'
+rs_require_load_bearing "goal takes native children and blockers" "$LONGER" \
+  'read its current native children and dependencies'
+rs_require_load_bearing "one goal piece is still a run" "$LONGER" \
+  'one eligible piece is still a run of one'
+rs_require_load_bearing "goal plan shows order and eligibility" "$LONGER" \
+  'show each piece.s eligibility and order before the first claim or builder'
+
 # section-builder starts a stacked piece from the branch it stacks on, and the
 # validator holds the same wording.
 rs_require_load_bearing "section-builder allows a stacked start in a run" "$BUILDER" \

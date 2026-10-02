@@ -1,9 +1,27 @@
 ---
 name: implement
-description: The everyday command for building a piece that has already been shaped and marked ready. Typed alone it takes the next ready piece from the plan. Given an issue number, or a request that matches a ready piece, it builds that one. A request that is not yet a ready piece goes to shape first; implement builds, it does not shape. Given several issue numbers, or "queue", it runs them as a plan with nobody watching. Do not use for repairs of promised behaviour; that is fix.
+description: The everyday command for building a piece that has already been shaped and marked ready. Typed alone it takes the next ready piece from the plan. Given an issue number, or a request that matches a ready piece, it builds that one. A request that is not yet a ready piece goes to shape first; implement builds, it does not shape. Given several issue numbers, or "queue", it runs them as a plan with nobody watching. An exposed native goal mode or an explicit unattended outcome request takes the same run route, including for one piece. Do not use for repairs of promised behaviour; that is fix.
 ---
 
 # Implement
+
+## Under a goal or an unattended outcome request
+
+When the harness exposes an active native goal mode, or the person explicitly
+asks to continue unattended toward an outcome, take the run route even if they
+name a parent or one piece. Before planning, claiming, building or dispatching
+a worker, load `references/running-longer.md` and follow its Goal modes and
+Before the run starts sections. This route takes precedence over Typed alone
+and Given a specific piece below. Start no claim, builder or subagent until the
+person has approved that plan. Say: "I will show which pieces this run can take
+and wait for your approval before building."
+
+The word goal alone does not activate this route. Use only native goal context
+the harness actually supplies or the person's explicit unattended instruction;
+invent no goal metadata or API when the harness exposes none. An explicit
+unattended request needs no native goal API. `/goal` is a built-in command of
+the coding agent, where it provides one; the kit's rules come from this command
+and `references/running-longer.md`.
 
 Use the current session for related, well-bounded work while the context
 remains clear. Start fresh after a long, confused, interrupted, or unrelated

@@ -444,6 +444,13 @@ attribution line, not the word.
   only builds one piece in its own worktree and never pushes, and that an
   agent which never reports counts as a failed attempt. A pushing agent would
   make a first upload nobody was asked about.
+  It also guards the written rules for same-turn continuation after a question,
+  recovery and a checked shared baseline, existing stop limits, supported active
+  waits and intent not counting as completion. Removing each rule is caught.
+  `.agents/tests/failure-recovery.sh` exercises the published preservation,
+  baseline and eligibility helper separately. The guided cases in
+  `.agents/tests/fixtures/shaping-recovery.md` remain unrun until observed agent
+  behaviour is recorded; a shell pass does not establish model adherence.
 - `.agents/tests/question-box.sh` guards clarify's interview routing: one short
   question with a labelled guess, actual tool schema and free-text answers,
   the plain-text fallback, worker relay and parking when the relay is unavailable.
@@ -1569,7 +1576,11 @@ attribution line, not the word.
   establish model context eviction, live ownership or baseline recovery
   correctness; the guided fixture names the remaining agent checks.
 - `.agents/tests/the-runner.sh` guards how `/implement` runs a plan of ready
-  pieces with nobody watching, given several numbers or `queue`. In a real
+  pieces with nobody watching, given several numbers or `queue`.
+  Its goal routing checks also hold exposed native context or explicit unattended
+  instructions entering the run before ordinary dispatch, with plan approval
+  before any claim or builder. The guided goal-routing fixture separates desk
+  evidence from live harness behaviour. In a real
   project the agent built its own loop four times, with its rules and state in
   temporary files and memory notes. The gate on which pieces a run may take
   was skipped twice, once on a piece that touched personal data overnight,
