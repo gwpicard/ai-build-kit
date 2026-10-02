@@ -7,10 +7,12 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd -P)
 PLAN="$ROOT/masterplan.md"
 
 [ -f "$PLAN" ] || exit 0
-if grep -q 'ai-build-kit:records:' "$PLAN"; then
-  [ "$(grep -c 'ai-build-kit:records:' "$PLAN")" -eq 1 ] &&
+[ ! -L "$PLAN" ] || { echo "Project overview is redirected; /sync can restore the record." >&2; exit 1; }
+if grep -q 'ai-build-kit:records' "$PLAN"; then
+  [ "$(grep -o 'ai-build-kit:records' "$PLAN" | wc -l | tr -d ' ')" -eq 1 ] &&
     grep -Fxq '<!-- ai-build-kit:records:v1 -->' "$PLAN" ||
     { echo "Project record format is unknown or repeated." >&2; exit 1; }
+  [ ! -L "$ROOT/docs" ] || { echo "Record folder is redirected." >&2; exit 1; }
   PLAN="$ROOT/docs/working-rules.md"
   [ -f "$PLAN" ] && [ ! -L "$PLAN" ] || { echo "Working rules are missing or redirected; /sync can restore the record." >&2; exit 1; }
   [ "$(grep -c '^Path:' "$PLAN")" -eq 1 ] || { echo "Working rules need exactly one Path field." >&2; exit 1; }

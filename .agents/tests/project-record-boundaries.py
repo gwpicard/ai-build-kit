@@ -1,6 +1,7 @@
 """Regression cases against the shipped record readers and local Git histories."""
 import importlib.util
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -9,7 +10,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
 FOUNDATION = ROOT / '.agents/skills/setup-ai-build-kit/templates/foundation'
-spec = importlib.util.spec_from_file_location('records', FOUNDATION / 'project-records.py')
+spec = importlib.util.spec_from_file_location('records', os.environ.get('ABK_RECORD_HELPER', str(FOUNDATION / 'project-records.py')))
 records = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(records)
 
@@ -28,7 +29,7 @@ class RecordBoundaries(unittest.TestCase):
         (self.p / 'docs/working-rules.md').write_text('Path: Build with care\n')
         (self.p / 'docs/operations.md').write_text('Goes live: on every merge\n')
         self.sensitive = self.p / '.agents/tools/check-sensitive-areas.sh'
-        self.sensitive.write_text((FOUNDATION / 'check-sensitive-areas.sh').read_text())
+        self.sensitive.write_text(Path(os.environ.get('ABK_SENSITIVE_HELPER', str(FOUNDATION / 'check-sensitive-areas.sh'))).read_text())
 
     def git(self, *args):
         return subprocess.check_output(['git', '-C', str(self.p), *args], text=True).strip()
@@ -80,6 +81,9 @@ class RecordBoundaries(unittest.TestCase):
                     with self.assertRaises(ValueError):
                         call()
                 self.assertNotEqual(subprocess.run(['sh', str(self.sensitive)], capture_output=True).returncode, 0)
+                result = json.loads(subprocess.check_output([str(ROOT / '.agents/tests/replay/state-check.sh'), '3', str(self.p)], text=True))
+                self.assertEqual(result['state_verdicts']['acceptance-record']['verdict'], 'miss')
+                self.assertEqual(result['state_verdicts']['accepted-not-done']['verdict'], 'miss')
         legacy = 'Path: Explore privately\nGoes live: not hosted\n'
         (self.p / 'masterplan.md').write_text(legacy)
         self.assertEqual(records.field(self.p, 'Path'), 'Explore privately')
@@ -97,6 +101,13 @@ class RecordBoundaries(unittest.TestCase):
         (self.p / 'docs/permission rules.md').write_text('A corrected named owner.\n')
         records.save_review(self.p, current, True)
         self.assertEqual(records.checkpoint(self.p), current)
+        (self.p / 'unrelated notes.md').write_text('Unrelated work.\n')
+        with self.assertRaises(ValueError):
+            records.save_review(self.p, current, True)
+        (self.p / 'unrelated notes.md').unlink()
+        self.git('mv', 'docs/permission rules.md', 'docs/access rules.md')
+        (self.p / 'docs/README.md').write_text('[Rules](<access rules.md>): access owner.\n')
+        records.save_review(self.p, current, True)
 
     def test_link_labels_count_uniformly(self):
         for label in ('[Permission rule](docs/permissions.md)', '[Permission rule][permissions]\n\n[permissions]: docs/permissions.md', '[Permission rule][]\n\n[Permission rule]: docs/permissions.md', '[Permission rule]\n\n[Permission rule]: docs/permissions.md'):

@@ -7,8 +7,7 @@ index: the standing rules in short form, then a pointer for each topic to the
 file that owns it. Before build, review or path decisions, read
 `docs/working-rules.md`; before launch or secret handling, read
 `docs/operations.md`. For legacy records, use the masterplan's corresponding
-sections. The `setup-ai-build-kit` skill's `references/project-records.md`
-owns format detection. Read relevant product rules through `docs/README.md`,
+sections. Read relevant product rules through `docs/README.md`,
 the current piece, and the capability profile below. Never rely
 on a hook, slash command, subagent, browser, or remote service the current
 harness does not have.
@@ -34,7 +33,8 @@ five run in the background when a command needs them.
 - Background skills: `clarify`, `change-triage`, `screen-check`,
   `section-builder`, `second-opinion`.
 
-When a skill says to run another skill, load that installed skill and follow it.
+The `setup-ai-build-kit` skill's `references/project-records.md` owns format
+detection. When a skill says to run another skill, load that installed skill and follow it.
 Skills sit in `.agents/skills/`, `.claude/skills/` or a plugin's folder; a
 pointer such as the `ship` skill's `templates/handover.md`, or `<name>/SKILL.md`
 without native discovery, names a file there. Keep project rules here, never in

@@ -23,16 +23,18 @@ def text(path):
 
 def new_format(root):
     content = text(Path(root) / 'masterplan.md')
-    markers = re.findall(r'<!-- ai-build-kit:records:[^>]+ -->', content)
-    if markers and markers != [MARKER]:
-        raise ValueError('Unknown or repeated project record format')
-    return bool(markers)
+    declarations = content.count('ai-build-kit:records')
+    if declarations and (declarations != 1 or MARKER not in content.splitlines()):
+        raise ValueError('Unknown, malformed or repeated project record format')
+    return bool(declarations)
 
 
 def owner(root, field_name):
     root = Path(root)
     if not new_format(root):
         return root / 'masterplan.md'
+    if (root / 'docs').is_symlink():
+        raise ValueError('Record folder is a link: ' + str(root / 'docs'))
     return root / 'docs' / ('working-rules.md' if field_name in WORKING_FIELDS else 'operations.md')
 
 
@@ -48,8 +50,59 @@ def word_count(content):
     # Count visible words, including all headings, labels and diagram source.
     content = re.sub(r'<!--.*?-->', '', content, flags=re.S)
     content = re.sub(r'!?\[([^\]]*)\]\([^)]*\)', r'\1', content)
+    content = re.sub(r'!?\[([^\]]*)\]\[[^\]]*\]', r'\1', content)
     content = re.sub(r'^\s*\[[^]]+\]:\s*\S+.*$', '', content, flags=re.M)
     return len(re.findall(r"\w+(?:['’.-]\w+)*", content, flags=re.U))
+
+
+def links(content):
+    """Local Markdown destinations, including named and collapsed references."""
+    definitions = {}
+    for match in re.finditer(r'^\s*\[([^]]+)\]:\s*(<[^>]+>|\S+)', content, re.M):
+        definitions[match[1].casefold()] = match[2].strip('<>')
+    for match in re.finditer(r'\[[^]]*\]\(\s*(<[^>]+>|[^)\s]+)\s*\)', content):
+        yield match[1].strip('<>')
+    for match in re.finditer(r'\[([^]]+)\](?:\[([^]]*)\])?(?![(:])', content):
+        key = (match[2] or match[1]).casefold()
+        if key in definitions:
+            yield definitions[key]
+
+
+def record_path(root, base, target):
+    """An owner must be a Markdown file inside docs, without redirected parents."""
+    target = target.split('#', 1)[0]
+    candidate = base / target
+    if not target or Path(target).is_absolute() or ':' in target or '..' in Path(target).parts:
+        raise ValueError('Indexed record is not a local concept: ' + target)
+    relative = candidate.relative_to(root)
+    if relative.parts[0] != 'docs' or candidate.suffix != '.md':
+        raise ValueError('Indexed record is not a concept document: ' + target)
+    for parent in (candidate, *candidate.parents):
+        if parent == root:
+            break
+        if parent.is_symlink():
+            raise ValueError('Record is a link: ' + str(parent))
+    return relative.as_posix()
+
+
+def record_names(root, index=None, check=True):
+    root = Path(root)
+    if (root / 'docs').is_symlink():
+        raise ValueError('Record folder is a link: ' + str(root / 'docs'))
+    names = {'masterplan.md', 'AGENTS.md', 'CHANGELOG.md', '.ai-build-kit-maintenance',
+             'docs/README.md', 'docs/working-rules.md', 'docs/operations.md'}
+    if index is None:
+        index = text(root / 'docs/README.md')
+    for target in links(index):
+        name = record_path(root, root / 'docs', target)
+        if check:
+            text(root / name)
+        names.add(name)
+    return names
+
+
+def is_record(name, names):
+    return name in names or (Path(name).parent == Path('changes') and name.endswith('.md'))
 
 
 def validate(root):
@@ -64,17 +117,18 @@ def validate(root):
         raise ValueError('Detailed working or operational fields belong outside the masterplan')
     for name in ('working-rules.md', 'operations.md', 'README.md'):
         text(root / 'docs' / name)
-    for target in re.findall(r'\]\(([^)#]+)(?:#[^)]*)?\)', content):
+    record_names(root)
+    for target in links(content):
         if '://' not in target and not (root / target).is_file():
             raise ValueError('Masterplan link does not open: ' + target)
     return count
 
 
-def git(root, *args):
+def git(root, *args, raw=False):
     result = subprocess.run(['git', '-C', str(root), *args], text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if result.returncode:
         raise ValueError('Saved review history cannot be established')
-    return result.stdout.strip()
+    return result.stdout if raw else result.stdout.strip()
 
 
 def checkpoint(root):
@@ -104,8 +158,12 @@ def review_gap(root):
         history(root, commit)
         changes = 0
         for landed in git(root, 'rev-list', '--first-parent', commit + '..HEAD').splitlines():
-            paths = git(root, 'diff-tree', '--no-commit-id', '--name-only', '-r', landed + '^', landed).splitlines()
-            if any(not (p.endswith('.md') or p == '.ai-build-kit-maintenance') for p in paths):
+            names = set()
+            for state in (landed + '^', landed):
+                index = git(root, 'show', state + ':docs/README.md', raw=True)
+                names.update(record_names(root, index, check=False))
+            paths = git(root, 'diff-tree', '--no-commit-id', '--name-only', '-z', '-r', landed + '^', landed, raw=True).split('\0')
+            if any(p and not is_record(p, names) for p in paths):
                 changes += 1
         return {'gap': None, 'changes': changes, 'reviewed': commit}
     except ValueError as error:
@@ -121,7 +179,9 @@ def save_review(root, commit, complete=False):
     history(root, commit)
     validate(root)
     # NUL-separated paths preserve spaces, quoting and rename source names.
-    dirty = git(root, 'status', '--porcelain', '-z', '--untracked-files=all').split('\0')
+    names_allowed = record_names(root)
+    names_allowed.update(record_names(root, git(root, 'show', 'HEAD:docs/README.md', raw=True), check=False))
+    dirty = git(root, 'status', '--porcelain', '-z', '--untracked-files=all', raw=True).split('\0')
     index = 0
     while index < len(dirty):
         entry = dirty[index]
@@ -134,7 +194,7 @@ def save_review(root, commit, complete=False):
                 raise ValueError('Uncommitted rename cannot be read')
             names.append(dirty[index])
             index += 1
-        if any(not (name.endswith('.md') or name == '.ai-build-kit-maintenance') for name in names):
+        if any(not is_record(name, names_allowed) for name in names):
             raise ValueError('Uncommitted work remains; leave the review checkpoint unchanged')
     record = root / '.ai-build-kit-maintenance'
     old = text(record) if record.exists() else ''

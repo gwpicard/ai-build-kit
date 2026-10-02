@@ -145,6 +145,9 @@ assert call('field','Goes live')=='not hosted'
 assert call('field','Secret location')=='external/legacy-file'
 assert (p/'masterplan.md').read_text()==legacy
 PYRECORD
+  ABK_RECORD_HELPER="$project/.agents/tools/project-records.py" \
+    ABK_SENSITIVE_HELPER="$project/.agents/hooks/check-sensitive-areas.sh" PYTHONDONTWRITEBYTECODE=1 \
+    python3 "$ROOT/.agents/tests/project-record-boundaries.py" || fail "$route: copied record helper boundary checks failed"
   pass "$route: useful orientation, permission pointer and new/legacy operational reads hold"
 }
 

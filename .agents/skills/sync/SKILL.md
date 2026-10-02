@@ -52,7 +52,11 @@ else, or recovering after an optional automation failed to run.
 
 3. Correct the authoritative records where reality moved. On the new format,
    capture the saved shared HEAD, read every indexed concept plus working rules
-   and operations, and reconcile landed changes against those homes. Never
+   and operations, and reconcile landed changes against those homes. Read history
+   since the last completed document-review checkpoint, even when a newer
+   changelog entry exists; a build or merge is not a completed review. If that
+   checkpoint cannot be established, review the full current state with complete
+   history and name the gap before establishing a new starting point. Never
    advance the review checkpoint until steps 3 and 4 finish without unresolved
    record gaps; interruption leaves it unchanged. Save the checkpoint using the
    project-records helper's `save-review <captured commit> --complete` before the
