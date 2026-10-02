@@ -30,8 +30,8 @@ it for the readiness check and the independent review, as those steps already
 say.
 
 Before dispatching a task, select fresh-builder, supported reset/resume or
-unavailable from the current exposed capabilities, as the `section-builder`
-skill's `references/task-handoff.md` says. Use a new builder for every task
+unavailable from the current exposed capabilities, as the `section-builder` skill's
+`references/task-handoff.md` says. Use a new builder for every task
 where supported, including sequential work and later parts of one parent.
 Keep only the agreed plan, bounded results and ownership in the coordinator;
 longer build evidence stays in saved task files. Later builders read those
@@ -505,8 +505,8 @@ works in.
   first upload waits for the person and the checkpoint route stays on this
   computer. It never reviews any piece, opens a pull request, writes the run
   state or merges.
-  Start each as a fresh builder, with the bounded brief in the `section-builder`
-  skill's `references/task-handoff.md`; never reuse a prior task's conversation.
+  Start each as a fresh builder, with the bounded brief in the `section-builder` skill's
+  `references/task-handoff.md`; never reuse a prior task's conversation.
   Its resource owner is explicit even when the coordinator keeps the browser.
 - **After an agent reports.** The coordinating session starts that piece's
   independent review itself, as step 7 says, since the review runs from a
