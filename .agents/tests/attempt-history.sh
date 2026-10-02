@@ -1,0 +1,196 @@
+#!/usr/bin/env sh
+# Exercise attempt publication and recovery reads using a local GitHub stand-in.
+set -eu
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
+python3 - "$ROOT" <<'PY'
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import tempfile
+
+root = Path(sys.argv[1])
+helper = root / '.agents/skills/implement/scripts/attempt-history.py'
+fixture = Path(tempfile.mkdtemp(prefix='kit-attempt-history-'))
+print('Retained fixture: ' + str(fixture), flush=True)
+project = fixture / 'project'
+project.mkdir()
+subprocess.run(['git','init','-q',str(project)],check=True)
+def git(*args):
+    return subprocess.run(['git','-C',str(project),*args],check=True,capture_output=True,text=True).stdout.strip()
+git('config','user.name','Fixture')
+git('config','user.email','fixture@example.invalid')
+(project / '.gitignore').write_text('.agents/runs/\n.agents/recovery/\n')
+git('add','.gitignore')
+git('commit','-qm','Initial checked fixture')
+bin_dir = fixture / 'bin'
+bin_dir.mkdir()
+remote = fixture / 'issue.json'
+url = 'https://github.com/example/project/issues/12'
+original = '## Done when\nThe promised result.\n\n<details><summary>Original report</summary>\nUnchanged words.\n</details>\n'
+remote.write_text(json.dumps({'url':url,'body':original,'reads':0,'writes':0}))
+fake = bin_dir / 'gh'
+fake.write_text('''#!/usr/bin/env python3
+import json, os, sys
+from pathlib import Path
+p = Path(os.environ['ATTEMPT_REMOTE'])
+d = json.loads(p.read_text())
+a = sys.argv[1:]
+assert a[0] == 'issue' and a[2] == d['url'], a
+if a[1] == 'view':
+    assert a[3:] == ['--json','body,url'], a
+    d['reads'] += 1
+    if d.get('addition') and d['reads'] == d.get('add_on_read'):
+        d['body'] = d['body'].replace('<!-- /attempt-history -->', d['addition'] + '\\n<!-- /attempt-history -->')
+    if d.get('remove_on_read') == d['reads']:
+        d['body'] = '\\n'.join(line for line in d['body'].splitlines()
+                                if d['remove_identity'] not in line)
+    if d.get('change_on_read') == d['reads']:
+        d['body'] = d['body'].replace('Unchanged words.', 'Changed words.')
+    p.write_text(json.dumps(d))
+    if d.get('read_fail') or d.get('fail_on_read') == d['reads']: sys.exit(1)
+    print(json.dumps({'body':d['body'],'url':d['url']}))
+elif a[1] == 'edit':
+    assert a[3:] == ['--body-file','-'], a
+    body = sys.stdin.read()
+    d['writes'] += 1
+    if not d.get('fail'):
+        d['body'] = body if not d.get('mismatch') else body.replace('Try cache', 'Different cache')
+    p.write_text(json.dumps(d))
+    if d.get('fail') or d.get('ambiguous'): sys.exit(1)
+else: raise AssertionError(a)
+''')
+fake.chmod(0o755)
+env = dict(os.environ, PATH=str(bin_dir) + os.pathsep + os.environ['PATH'], ATTEMPT_REMOTE=str(remote))
+state = project / '.agents/runs/test/state.json'
+state.parent.mkdir(parents=True)
+state.write_text(json.dumps({'run':'test','pieces':[{'number':12,'state':'building','attempts':3}]}))
+
+def load(p=remote): return json.loads(p.read_text())
+def change(**values):
+    d = load()
+    d.update(values)
+    remote.write_text(json.dumps(d))
+def call(command, *args, code=0, use_state=True):
+    argv = ['python3',str(helper),command,'--project',str(project),'--issue',url]
+    if use_state: argv += ['--state',str(state)]
+    result = subprocess.run(argv + list(args),capture_output=True,text=True,env=env)
+    assert result.returncode == code, (argv,result.returncode,result.stdout,result.stderr)
+    return result.stdout
+def stage(number, approach):
+    work = project / 'kept' / str(number)
+    work.mkdir(parents=True)
+    (work / 'failed.txt').write_text(approach)
+    git('add','kept/' + str(number) + '/failed.txt')
+    git('commit','-qm','Failed approach fixture')
+    git('branch','failed-' + str(number))
+    checked = subprocess.run(['python3','-c',
+        "from pathlib import Path; assert Path('kept/" + str(number) + "/failed.txt').read_text() == 'working'"],
+        cwd=project,capture_output=True)
+    assert checked.returncode == 1, 'The failed approach fixture must actually fail its check.'
+    record = fixture / ('record-' + str(number) + '.json')
+    record.write_text(json.dumps({'id':'test-' + str(number),'approach':approach,
+        'result':'Still fails the focused check','branch':'failed-' + str(number),'location':str(work)}))
+    call('stage','--record',str(record),'--reviewed')
+    return work
+
+assert helper.exists(), 'The shipped attempt-history helper is missing.'
+# A staged summary survives an interruption before the first issue write.
+locations = [stage(1,'Try cache')]
+assert load()['writes'] == 0
+assert load(state)['pieces'][0]['attempt_history']['pending']
+assert 'Pending' in call('read') and 'Try cache' in call('read')
+# A failed issue write remains pending; retry reuses the same attempt identity.
+change(fail=True)
+call('publish',code=2)
+assert load()['body'] == original
+assert load(state)['pieces'][0]['attempt_history']['pending']
+change(fail=False)
+call('publish')
+assert load()['body'].count('Try cache') == 1
+assert not load(state)['pieces'][0]['attempt_history']['pending']
+locations += [stage(2,'Try polling'),stage(3,'Try ordered updates')]
+call('publish')
+body = load()['body']
+assert body.startswith(original)
+for n, approach in enumerate(['Try cache','Try polling','Try ordered updates'],1):
+    assert body.count(approach) == 1
+    assert 'failed-' + str(n) in body and str(locations[n-1]) in body
+    assert git('show','failed-' + str(n) + ':kept/' + str(n) + '/failed.txt') == approach
+assert body.index('Try cache') < body.index('Try polling') < body.index('Try ordered updates')
+assert all((path / 'failed.txt').exists() for path in locations)
+# Both a later run and /fix read live history even without the old run state.
+for consumer in ('later run','fix'):
+    history = call('read',use_state=False)
+    assert all(approach in history for approach in ['Try cache','Try polling','Try ordered updates']), consumer
+    assert not load(state)['pieces'][0]['attempt_history'].get('approaches')
+assert load(state)['pieces'][0]['attempt_history']['issue'] == url + '#attempt-history'
+# An approach seen only on the second read survives its absence on the next read.
+stage(4,'Try isolated writes')
+other = '- Other run tried a queue; still failed; kept elsewhere. <!-- attempt:other-1 -->'
+change(addition=other,add_on_read=load()['reads'] + 2,
+       remove_on_read=load()['reads'] + 3,remove_identity='attempt:other-1')
+call('publish')
+assert other in load()['body'] and 'Try isolated writes' in load()['body'], 'Lost second-read observation'
+# An interrupted retry keeps the second-read observation durably pending.
+stage(7,'Try sequential writes')
+interrupted = '- Other run tried serial updates; still failed; kept elsewhere. <!-- attempt:other-2 -->'
+change(addition=interrupted,add_on_read=load()['reads'] + 2,
+       remove_on_read=load()['reads'] + 3,remove_identity='attempt:other-2',
+       fail_on_read=load()['reads'] + 3)
+call('publish',code=2)
+paths = load(state)['pieces'][0]['attempt_history']['pending']
+assert paths and all(interrupted in load(Path(path))['observed'] for path in paths)
+assert interrupted not in load()['body']
+call('publish')
+assert interrupted in load()['body']
+# Read-back observations survive a mismatch and a later body without that line.
+stage(8,'Try explicit ordering')
+read_back = '- Other run tried a lock; still failed; kept elsewhere. <!-- attempt:other-3 -->'
+change(addition=read_back,add_on_read=load()['reads'] + 3,
+       change_on_read=load()['reads'] + 3,remove_on_read=load()['reads'] + 4,
+       remove_identity='attempt:other-3')
+call('publish',code=2)
+paths = load(state)['pieces'][0]['attempt_history']['pending']
+assert paths and all(read_back in load(Path(path))['observed'] for path in paths), 'Lost read-back observation'
+call('publish')
+assert read_back in load()['body']
+assert not load(state)['pieces'][0]['attempt_history']['pending']
+# A write that succeeded but returned failure is uncertain until a retry reads it.
+stage(5,'Try bounded waits')
+change(ambiguous=True)
+call('publish',code=2)
+assert load(state)['pieces'][0]['attempt_history']['pending']
+change(ambiguous=False)
+call('publish')
+assert load()['body'].count('Try bounded waits') == 1
+# A previously verified line disappearing must be a gap, not an empty history.
+complete = load()['body']
+change(body='\n'.join(line for line in complete.splitlines() if 'Try polling' not in line))
+call('read',code=2)
+change(body=complete)
+# A process stopped while saving its local summary leaves a visible pending file.
+folder = next((project / '.agents/recovery/attempt-history').iterdir())
+orphan = folder / 'test-6.pending'
+orphan.write_text('{"issue":')
+assert 'Pending local' in call('read',code=2)
+before_write = load()['writes']
+call('publish',code=2)
+assert load()['writes'] == before_write
+# A read-back mismatch never clears pending, and the retry does not erase it.
+stage(6,'Try cache invalidation')
+assert not orphan.exists()  # Retrying the same local save completes it.
+change(mismatch=True)
+call('publish',code=2)
+assert load(state)['pieces'][0]['attempt_history']['pending']
+assert 'Pending' in call('read',code=2)
+change(mismatch=False)
+call('publish',code=2)  # The same identity now has contradictory text.
+# Pending files outlive removal of the run state and remain readable when offline.
+state.unlink()
+change(read_fail=True)
+out = call('read',code=2,use_state=False)
+assert 'Pending' in out and 'Try cache invalidation' in out
+print('Attempt history: three failed approaches, ordered reads, pending writes and retries passed.')
+PY

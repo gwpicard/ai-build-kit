@@ -186,6 +186,10 @@ folder ignores itself and nothing tracked changes.
   the baseline commit and worktree, each check command and exit code, and any
   verification gap. The helper below writes it after each recovery step.
 - `attempts` counts the failed attempts at its build.
+- `attempt_history`, when present, holds the original issue's history link and
+  any local summary files still pending publication, as "Attempt history" below
+  says. State stores the issue pointer and pending file paths, never a second
+  attempt narrative.
 - `flags` holds each easy-to-undo choice the builder made alone, one line each.
 - `reason` says why a piece was parked, sent back, skipped, waits, or was not
   merged under pre-approval, naming the condition it failed in
@@ -486,6 +490,11 @@ needs no failure recovery.
 
 ## When a piece fails
 
+Before section-builder parks a piece in a run, record its failed attempts as
+"Attempt history" below says. Complete that step after retaining the work and
+before moving the issue to `parked`. Where publication is unavailable, keep the
+pending summary visible in the state and report instead of claiming it saved.
+
 Retry within the piece, up to three attempts, the same number fix uses. After
 the third, park it: move it from `building` to `parked` in one step,
 `gh issue edit <number> --add-label parked --remove-label building --remove-assignee @me`,
@@ -512,6 +521,63 @@ path. A piece stops at any touch of a named sensitive area that carries no
 recorded acceptance, even one the plan did not expect: section-builder's
 flagged route parks it at the condition, and the run takes the next piece. The
 run goes on; only that piece stops. Never guess to keep a run going.
+
+## Attempt history
+
+The original issue's `## Attempt history` section is the authoritative record.
+One plain line per attempt says what was tried, what happened and the preserved
+branch/work location. Record each failed approach before choosing the next,
+using the locations already established by the recovery and save routes. The
+history helper preserves no work and checks no baseline. Keep technical detail
+on the retained branch or in private recovery evidence. A piece stopped before
+an attempt says so; never invent an approach to fill the record.
+
+Say once: "The piece keeps what was tried, so the next run can choose another
+approach." Read the live attempt history and any pending local summary before
+choosing another approach, including on a later run, before reassessing a
+parked piece as ready, and on resume. Run the installed `implement` skill's
+`scripts/attempt-history.py` with `read --project <project folder> --issue
+<original issue URL>`, adding `--state <state.json>` inside a run. It finds the
+main folder and summaries that outlive the old run. A failed read is missing
+evidence, not an empty history: keep the piece stopped until it can be read.
+An established failure is ruled out or explicitly named as a repeat with new
+evidence. The readiness, three-attempt and independent eligibility rules still
+apply.
+
+The coordinating session writes a private JSON input with `id`, `approach`,
+`result`, `branch` and `location`. Give `id` the run name and attempt ordinal,
+and keep it on every retry of that write. Review the words and location names
+for secrets or personal data; pass only the concise public summary. Run the
+helper with `stage --project <project folder> --issue <original issue URL>
+--state <state.json> --record <reviewed summary.json> --reviewed` before any
+publication. It saves the pending summary under the main folder's ignored
+`.agents/recovery/attempt-history/`, separate from the preserved-work record.
+It stores only supplied pointers to that work and changes no recovery stage.
+An interrupted local summary save is visibly pending; retry `stage` with the
+same reviewed input before publication.
+
+Then run `publish` with the same project, issue and state arguments, through
+the existing authorised issue bookkeeping route. Reuse stable attempt
+identities, retain every observed approach and verify the issue read-back.
+The helper reads fresh twice before editing only its marked section; the rest
+of the issue, including the original report, stays intact. It retries a changing
+body at most three times. A failed or unverified issue write stays pending
+locally alongside the preserved work. Retry `publish` with the same arguments,
+including after an interruption or an ambiguous write result, and re-read
+before another approach. Conflicting text under one identity stays pending
+for reconciliation; do not overwrite it or issue another identity for the same
+attempt.
+
+Publication has one coordinating writer. These reads retain observed concurrent
+additions; they are not an atomic compare-and-swap and cannot protect an unseen
+edit during the write. A detected mismatch remains pending and is reported.
+Where this computer holds a publication receipt, a missing or changed saved
+line also stops another approach until the issue history is reconciled.
+The helper clears each pending summary only after verified publication, leaving
+a receipt and the issue pointer. Never put this history in the masterplan.
+Report its issue link and each pending local file; never call an unverified
+issue write saved. Pending publication does not relax failure preservation,
+baseline checks or any later piece's independent eligibility.
 
 ## Recovery before continuation
 
@@ -624,7 +690,8 @@ finished run merely because all issue labels look final.
 
 ## Resuming
 
-First reconcile durable recovery records as above. A new session resumes from
+First reconcile durable recovery records as above, then read and retry pending
+attempt-history publication before choosing another approach. A new session resumes from
 the state file, never from memory. A run is
 unfinished while any piece in its state file is `waiting` or `building`. A run
 whose every piece is in a final state is finished, and is never offered for
@@ -700,7 +767,8 @@ about fifty minutes. Wait for each check as the `section-builder` skill's
 The report, in plain words, is one list and a merge order:
 
 - what was parked and why, and what went back to shaping with its question,
-  first;
+  first, with the original issue's attempt-history link and any pending summary
+  file explicitly marked as not yet saved to the issue;
 - each piece with its pull request and its state, in the merge order, bases
   before the pieces stacked on them;
 - under each piece, its flagged choices, and what the walk-through could not

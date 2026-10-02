@@ -14,6 +14,8 @@ rs_init "Fix history-first rules"
 rs_exists "$FIX" "$BUILDER" "$WORKFLOW"
 
 rs_rule "reads the changelog and closed pieces first" 'before ranking causes, read `changelog\.md` and closed pieces for the same area'
+rs_rule "reads the original issue attempt history first" 'read the original piece.s live attempt history and pending local summaries before ranking causes'
+rs_rule "repair uses the owning history helper" 'the `implement` skill.s `scripts/attempt-history\.py`'
 rs_rule "rules out a failed repair" 'repair already tried and failed is ruled out'
 rs_rule "ranks an established cause first" 'cause already established ranks first'
 rs_rule "uses the fixed history line" 'this was tried on <date> and did not hold, so it is ruled out'

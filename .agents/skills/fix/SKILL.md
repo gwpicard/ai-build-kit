@@ -59,6 +59,15 @@ the Secrets rule says, and asks once when that is unknown.
 
 Before ranking causes, read `CHANGELOG.md` and closed pieces for the same area,
 with the entries in `changes/` not yet folded into it.
+Where the repair follows a failed run, read the original piece's live attempt
+history and pending local summaries before ranking causes. Use the
+`implement` skill's `scripts/attempt-history.py`
+with `read --project <project folder> --issue <original issue URL>`, as the
+`implement` skill's `references/running-longer.md` describes under "Attempt history". If
+the repair has its own issue, follow its link to the original parked piece.
+The original issue owns the history; the run state carries its pointer. A
+missing live read is a gap to resolve before another attempt, and a pending
+summary is evidence of work tried, never proof of a saved issue record.
 A repair already tried and failed is ruled out or named as a repeat; a cause
 already established ranks first. When that history changes the ranking, say one
 line: "This was tried on <date> and did not hold, so it is ruled out." The

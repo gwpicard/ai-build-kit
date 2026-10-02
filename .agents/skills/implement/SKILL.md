@@ -59,7 +59,11 @@ until the person carries on after the risk notice and the acceptance is
 recorded; then move it from `parked` to `building` in one step,
 `gh issue edit <number> --add-label building --remove-label parked`, and build.
 One parked after repeated failure (references/running-longer.md) needs routing
-back to `/shape` first, for another look. An older project's `blocked` label
+back to `/shape` first, for another look. Read its original issue's attempt
+history and pending local summaries first, through "Attempt history" in
+references/running-longer.md, so that reassessment retains what was already
+tried. A later build reads that record before choosing a new approach.
+An older project's `blocked` label
 reads as `parked` until `/maintain` moves it.
 
 ## When a piece waits on the person
