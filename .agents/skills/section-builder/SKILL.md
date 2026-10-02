@@ -21,6 +21,9 @@ work is lying around, stop and say so: it gets finished or cleared first
 (what-now owns that conversation). Never build on top of half-done work.
 Bring the shared `main` branch up to date and start the piece from it, on every
 save route including the checkpoint route, so no piece begins from a stale copy.
+For a pull-request run, use its recorded checked integration target instead,
+as the run reference says; a stale or unchecked shared target stops affected
+work. The checkpoint route keeps its existing start.
 Two starts differ, as the `implement` skill's `references/running-longer.md`
 says. On Claude Code, a piece in a run starts in its own worktree under
 `.agents/worktrees/`, with its dependencies installed there before its start
@@ -55,7 +58,8 @@ Choose the save route before changing anything:
    of section-builder's two successful outcomes; see step 8.
 
 Pull-request and flagged routes work on a short-lived branch cut from the
-up-to-date `main`, or from the branch a piece in a run stacks on. The checkpoint route may commit on the current branch once
+up-to-date `main`, the checked integration target in a pull-request run, or the
+branch a piece in a run stacks on. The checkpoint route may commit on the current branch once
 its state is confirmed clean, but it too starts the piece from the up-to-date
 `main` rather than continuing an older branch, so each piece is independent.
 
@@ -495,7 +499,11 @@ what somebody would see, the person's try in step 6 comes before this save.
 
 Pull-request route: update the records, commit, push, open a pull request
 titled after the piece with a plain-language summary, aimed at the branch the
-piece was cut from, and run the project checks. The project's first upload waits for the yes in step 1. Where the
+piece was cut from, and run the project checks. In a pull-request run, its merge
+target is the recorded integration branch, after any stacked base integrates.
+Keep the individual pull request inspectable. Carry its closing line into the
+final combined main-facing pull request, so its issue stays in `to check` until
+that result reaches main. The project's first upload waits for the yes in step 1. Where the
 piece is an issue, write `Closes #<number>` in the pull request body, so
 merging it closes the piece rather than leaving somebody to remember.
 
@@ -575,11 +583,16 @@ reaches, update the masterplan's connections picture too, and say in one line
 what the tool now reaches, so the person can say whether it should. A
 correctly completed build does not need /sync afterward.
 
-Once the pull request merges it closes the issue, so there is no
+For an ordinary main-facing piece, once the pull request merges it closes the issue, so there is no
 status to set by hand. After that merge, take `to check` off the closed issue,
 since a closed issue is done and carries no state, and refresh
 the printout with `sh .agents/tools/plan-refresh.sh` so the person's list matches
 what just happened.
+
+For a feature integrated during a run, keep its open issue in `to check` and
+its human flags visible. Its closing line belongs on the combined main-facing
+pull request too. Remove the issue's state only after that final merge confirms
+the issue closed; integration alone reports no acceptance on main.
 
 When the report names a next piece, refresh the printout first if this pass has
 not, and name only a piece under its `To build` group marked `(ready)`. Where

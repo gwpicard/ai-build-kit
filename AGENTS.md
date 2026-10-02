@@ -1498,8 +1498,8 @@ attribution line, not the word.
   the pull request, a stacked pull request never merged before its base, and
   nothing merged while GitHub cannot be reached. It holds the six conditions
   under which an agent merges on the person's pre-approval of a run, each
-  proved load-bearing, the last being that the merge would not go live, so
-  pre-approval never puts code live, and a tool that is `not hosted` meets it.
+  proved load-bearing, the last limiting it to the recorded integration branch without putting code
+  live. Flags remain owed at final review, and final main requires a separate yes.
   A piece failing one stays in `to check`
   with the reason. It holds the masterplan's `Goes live:` line, written once
   when it is missing, the ask that says "this goes live now" where every merge
@@ -1541,6 +1541,14 @@ attribution line, not the word.
   a local tag where there is no GitHub repository. It writes no hosting
   request, address or rollback line, on Build with care as well. It also holds the template, founding
   writing the line from answers it already has, and WORKFLOW.md.
+- `.agents/tests/integration-run.sh` checks a run's integration and final review
+  boundary in real disposable Git repositories with a local fake GitHub. Passing
+  features reach only the recorded integration target. A combined failure is
+  retained through the existing recovery helper, independent work continues and
+  dependent work is refused. A shared failure invalidates old green even at the
+  same commit. Interrupted integration reconciles once, human flags survive, and
+  final main refuses missing review, advance consent and changed results. Only
+  a separate yes after fresh review permits the combined main-facing merge.
 - `.agents/tests/failure-recovery.sh` runs recovery in disposable Git projects
   and reads retained files, commits, archives and issue state. It preserves
   committed, staged, unstaged and ignored failed work, refuses an unchecked or
@@ -1564,7 +1572,7 @@ attribution line, not the word.
   piece is taken on its own merits, never after three clean pieces, and never
   when it sits in a sensitive area with no recorded acceptance. A piece with
   no readiness result is checked before it is claimed. A piece the person
-  asked to try stops at `to check`. The eleven steps each piece goes through
+  asked to try keeps its human flag owed through integration and final review. The eleven steps each piece goes through
   are held in order, from the claim, read back and refused for a piece
   already building, to the state update. A dependent piece stacks and names
   the merge order, and the parts of one parent share a pull request. A hard
@@ -1581,7 +1589,7 @@ attribution line, not the word.
   earliest claim comment wins a race and only the later run backs off, every
   way a run ends leaves each piece in a final state, a parent's pull request
   opens after its last finished part, the checkpoint route has its own steps,
-  and pre-approved merges are swept at the end, bases first. A piece whose
+  and approved feature integrations are swept onto the recorded target, bases first. Final main waits for human review and a separate yes. A piece whose
   build needs software installed outside the project folder is parked with
   that reason, never installed, and the run takes the next piece, unless the
   same tool would stop every piece left, which ends the run. It holds

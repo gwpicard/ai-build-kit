@@ -60,7 +60,8 @@ using the `needs-` label the check names, and the run moves on.
 A piece the person opted in to check, with a `Waiting on you: try it` line or a
 `check-myself|yes` line in `.ai-build-kit-maintenance`, is taken and built. It
 stops at `to check` with a line in its pull request saying it waits for the
-person's try, and it is never merged under pre-approval.
+person's try. Passing automated work may integrate under the merge route while
+that human-review flag remains owed in the final review.
 
 A hard open choice in a piece is not a reason to skip it. A hard choice is
 about the shape of stored data, how records sync, or what leaves the tool, and
@@ -98,6 +99,12 @@ plan by the blocked-by links, so a piece comes after every piece it depends on,
 and by number where the links leave a choice. The parts of one parent sit
 together in that order.
 
+For a pull-request run, name one unique integration target, `integration/<run
+name>` (at most 100 characters), and its checked starting commit on current
+`main` in the approved plan. Refuse a name already used by another run. Keep
+one coordinator as its writer. Say once: "The run combines checked pieces on
+one branch, then waits for your review and a separate yes before main."
+
 Say the plan once: each piece in order, whether it is eligible and why not
 where it is not, each piece going back to shaping with its question, and which
 pieces will stack on another. Say that the live page
@@ -124,6 +131,25 @@ line. Record the answer as `at_once`.
 The person approves the plan and answers those questions, and then the run
 goes on with nobody in between.
 
+Open an integration copy through `worktree.sh open`, without switching the main
+folder. Check the current starting baseline with the existing start ritual and
+verification route. The project's first-upload guard still applies before any
+push. Push only the new integration branch, then run `scripts/integration.py
+init --state <state.json> --source <integration copy> --check <due command>`,
+repeating `--check` for checks due on that baseline. The helper records the
+target and checked commit. It refuses an unchecked start or an existing target
+record. Keep the target throughout this run; checkpoint exploration retains
+its existing save route and creates no integration pull request.
+
+If this is the first upload, build and check the first feature on its local
+branch before asking, as section-builder requires. Keep the planned integration
+target and starting commit in the approved plan and progress log while the
+upload waits. Only after that yes creates remote main at the starting commit
+may the coordinator publish and initialise the integration target there and
+aim the feature at it. Never integrate that first feature into main instead.
+If no safe integration copy or remote baseline can be established, retain
+the checked feature and stop affected integration with the reason.
+
 ## The run state
 
 A run keeps its state in `.agents/runs/<run name>/`, where the run name is the
@@ -141,12 +167,22 @@ folder ignores itself and nothing tracked changes.
   "run": "2026-09-30-221500",
   "merge_preapproved": false,
   "at_once": 1,
+  "integration": {
+    "target": "integration/2026-09-30-221500",
+    "source": ".agents/worktrees/integration-2026-09-30-221500",
+    "checked_commit": "<checked baseline commit>",
+    "included": [],
+    "pull_request": null,
+    "pending": null,
+    "human_review": null,
+    "final_verification": null
+  },
   "pieces": [
     {
       "number": 12,
       "state": "to check",
       "branch": "12-invoice-list",
-      "base": "main",
+      "base": "integration/2026-09-30-221500",
       "worktree": ".agents/worktrees/12-invoice-list",
       "port": 4012,
       "pull_request": 31,
@@ -159,18 +195,25 @@ folder ignores itself and nothing tracked changes.
 ```
 
 - `merge_preapproved` is the person's answer before the run: `true` or
-  `false`. It holds for this run alone, and carries into the run when it is
-  resumed.
+  `false`. Keep the recorded answer on resume, but read current consent through
+  the merge route before acting; a new conversation does not inherit it.
 - `at_once` is how many pieces of one group are built at the same time: 1, the
   default, up to the size of the largest group in the plan. Like
   `merge_preapproved`, it holds for this run alone and is kept when the run is
   resumed.
+- `integration` identifies the approved target, its copy, the checked baseline,
+  included piece numbers and current combined pull request. `pending` is a
+  merge whose remote write may have landed before its local record. Reconcile
+  it before another write. The helper retains actual commands, exit codes and
+  private output locations in `verification`; a checking or failed result is
+  never green. `final_verification` and `human_review` bind the final result to
+  its exact head, current main and included work with every unresolved flag.
 - `pieces` lists every piece in the plan, in the order the run takes them.
 - `state` is one of `waiting` (not started), `building`, `to check`, `merged`,
   `parked`, `shaping` (sent back with a question) or `skipped` (not eligible,
   backed off, or not reached before the run ended). The last five are final.
 - `branch` is the piece's branch, and `base` is the branch it was cut from:
-  `main`, or the branch of the piece it stacks on.
+  the checked integration target, or the branch of the piece it stacks on.
 - `worktree` is the piece's worktree folder, relative to the main folder, or
   `null` where the piece has none.
 - `port` is the port the piece's dev server listens on, or `null` where no
@@ -218,10 +261,11 @@ each step it names.
   `.gitignore` holding `*` inside `.agents/worktrees/`, so git ignores the
   folder and nothing tracked changes. A harness's own worktree folder, such as
   `.claude/worktrees/`, is left alone.
-- **Its base.** Bring `main` up to date with `git fetch origin` and cut from
-  `origin/main`, or from the branch of the piece it stacks on. Where `origin`
-  cannot be reached, cut from the local `main`. Nothing here checks out a
-  branch in the main folder.
+- **Its base.** Fetch current refs and cut from the recorded checked integration
+  target, or from the branch of the piece it stacks on. A target that has moved
+  without due verification stops affected work. An unreachable remote never
+  supplies a guessed integration baseline. Nothing here checks out a branch in
+  the main folder.
 - **The parts of one parent** share the parent's worktree, since one branch can
   be checked out in only one place.
 - **The checkpoint route** gets no worktree. Its commit goes on `main` in the
@@ -313,7 +357,7 @@ such as a multi-agent coding environment's, wherever that sits. The main folder
 is always the first worktree git lists. A run started inside another tool's
 worktree keeps its run state in the main folder's `.agents/runs/` and its
 pieces' worktrees under the main folder's `.agents/worktrees/`, and `open`
-says so in one line when it starts. Each piece is cut from `origin/main`, and
+says so in one line when it starts. Each piece is cut from the checked integration target, and
 the run never checks `main` out, so it works where the other tool's worktree
 has `main` checked out.
 
@@ -337,7 +381,7 @@ below are shared out as "Building a group at the same time" says. For each one:
    the piece `skipped` with the reason, and take the next piece. Only the later
    claimant backs off, so a piece is never left `building` with no run behind
    it. A piece that cannot be claimed is never started.
-2. **Branch it.** Cut its branch from the up-to-date `main`, or from the
+2. **Branch it.** Cut its branch from the checked integration target, or from the
    branch of the piece it stacks on. On Claude Code, open the branch in the
    piece's own worktree and install its dependencies there, as the next
    section says. Record `branch`, `base` and `worktree`.
@@ -363,7 +407,10 @@ below are shared out as "Building a group at the same time" says. For each one:
 9. **Write its changelog file**, as section-builder's step 9 says.
 10. **Move it to `to check`.** Where `merge_preapproved` is true, merge it only
     when the `section-builder` skill's `references/merge.md` allows; otherwise
-    it waits for the person.
+    it waits for the person. In a pull-request run, all feature integrations
+    target the recorded integration branch, with any human flags still owed;
+    `merged` in this local run record means integrated, not accepted on main.
+    Keep its issue in `to check` until the final main-facing result closes it.
 11. **Update the run state** and the live page, and add the step to
     `progress.md`.
 
@@ -415,7 +462,7 @@ works in.
   `progress.md` and the live page, so two agents never write the run state at
   once. It moves each piece to `to check`, and only it merges, one pull request
   at a time, through the `section-builder` skill's `references/merge.md`, each
-  brought up to date with `main` and checked again first. Where two pieces
+  brought up to date with the integration target and checked again first. Where two pieces
   finish while a merge is under way, it merges them one after the other, each
   checked again.
 - **An agent that never reports.** A background agent that ends without
@@ -426,7 +473,7 @@ works in.
   as "When the run ends" says.
 - **Two pieces that change one file.** Two pieces of one group can change the
   same file although their `Touches:` lines differ. The second merge's check
-  against the latest `main` then finds the conflict, and the
+  against the latest integration target then finds the conflict, and the
   `section-builder` skill's `references/merge.md` takes it to `/fix`.
 - **The browser.** Where a walk-through cannot get the browser because another
   agent holds it, it records that it could not look, and the piece goes to
@@ -441,8 +488,9 @@ that branch, and the pull request says which to merge first, so the stack
 merges cleanly in order. It names the base by its number and title with no
 closing word before the number, as in "Merge #<number>, the date filter, first;
 this builds on it", since a closing word there would close the base, as the
-`section-builder` skill's save step says. When the base merges by squash, the stacked branch
-takes in `main` at its own merge, as the `section-builder` skill's
+`section-builder` skill's save step says. Preserve feature history with merge
+commits into integration. If a base was squashed elsewhere, the stacked branch
+takes in the integration target at its own merge, as the `section-builder` skill's
 `references/merge.md` describes, never by a rebase, since that needs a force
 push. The same step re-aims its pull request, and the base's entry is not
 written twice. A piece whose blocker is open and not in this run is not eligible. A
@@ -477,8 +525,8 @@ Mark its intended final state as `shaping`; preserve and isolate its work as
 
 An easy choice, one a later change can undo without touching stored data, takes
 the most reversible option. Record it in `flags` and in the pull request's
-`## Flagged for confirmation` list. A flagged piece is never merged under
-pre-approval.
+`## Flagged for confirmation` list. A flagged piece that passes due automated
+checks may integrate; its flag remains owed at final human review.
 
 Either way the run moves on to the next unblocked piece, after recovery where
 work stopped unfinished. An easy flagged choice that still passes its checks
@@ -632,8 +680,14 @@ resuming. `/implement` typed alone or with `queue`, `/what-now` and `/sync`
 each notice an unfinished run and offer to resume it. Where two runs are
 unfinished, offer the newest and name the other.
 
-Resuming is the same run, so its `merge_preapproved` stands. So does its
-`at_once`: the offer to resume names that number and says the person can lower
+Resuming reuses the recorded integration target and combined pull request.
+Run `scripts/integration.py reconcile --state <state.json> --source
+<integration copy> --check <due command>` before new integration work, repeating
+due checks. It reads current refs, reconciles a landed merge once, and checks
+the current copy; a pending or shared failure blocks affected writes. Advance
+permission is not inherited by a new conversation; the merge route owns its
+scope. Keep `merge_preapproved` as the earlier answer, never as evidence of
+current consent. Keep its `at_once`: the offer to resume names that number and says the person can lower
 it in their reply. Where the session died with several pieces built at once,
 such as on a machine that ran out of memory, the state file shows each of them
 `building` with its worktree, and each continues as below. Read `state.json`
@@ -649,7 +703,8 @@ task's checked base through recovery before continuation. Read what its commits 
 run its checks, and carry on from the first step not done. Read its claim back first. Where the claim is no longer this run's, back
 off it as step 1 says.
 
-`/sync` removes a run's folder once every piece in it is merged, closed or
+Keep the run record while its combined pull request or human review is still
+owed, even when all build states are final. `/sync` removes a run's folder once every piece in it is merged, closed or
 parked, counting a piece the run skipped or sent back to shaping as closed to
 the run, since the run holds nothing more of it.
 
@@ -678,26 +733,34 @@ every piece in a final state before the report:
   and the report names it with what is unsaved. A piece in `to check` keeps
   its worktree until its pull request closes.
 
-Where `merge_preapproved` is true, sweep the pieces in `to check` before the
-report, bases first. Merge them one at a time: each one's update, its check and
-its `gh pr merge` finish before the next piece is brought up to date, so each
-piece is checked against a `main` that holds every merge before it. Merge a
-piece only when it meets all six conditions in the `section-builder` skill's
-`references/merge.md`, the first of which is a green check on the commit
-brought up to date, and mark it `merged`. Test the other five before bringing a
-piece up to date, so a piece held back for another reason gets no new commit
-and no run of the check.
+Where current permission covers integration, sweep remaining checked pieces
+onto the recorded target, bases first, through the `section-builder` skill's
+`references/merge.md`, which tests all six integration conditions. Finish each update, due check and feature integration
+before the next write. Human flags travel with the work and remain owed.
+Failed automated checks never use that exception. Preserve the failed candidate
+and evidence through "Recovery before continuation", using the last checked
+integration commit as the pre-candidate boundary. Recheck that baseline and
+refresh blockers and code impact before independent continuation. Exclude every
+dependent; a shared verification failure stops all affected work. Never fall
+back to direct-main merges. A conflict still gets its one comment on the pull
+request. Record the time spent waiting. Wait for each check as the
+`section-builder` skill's `references/merge.md` says under "Waiting for the check".
 
-A piece whose merge from `main` conflicts, or whose check turns red only once
-`main` is taken in, is not merged. It stays in `to check`, and its `reason` says
-which of the two happened. A conflict still gets its one comment on the pull
-request, as the merge step says. The sweep goes on with the pieces that do not stack
-on it, and skips each one that does, with that reason. Each merge waits for one
-more run of the check, so a sweep over five pieces on a ten-minute check takes
-about fifty minutes. Wait for each check as the `section-builder` skill's
-`references/merge.md` says under "Waiting for the check".
+Open one combined pull request from the target to `main`, or reuse its recorded
+one with `gh pr list --head <integration target> --base main`. Record it through
+`scripts/integration.py final --state <state.json> --pr <number>`. Its body lists
+only included work, links the individual feature pull requests, and carries
+their closing lines, actual automated/browser evidence and every unresolved
+human flag. Integration into a non-default branch does not close its pieces.
+Bring this final branch up to date and fold only through the owned merge route.
+Run final combined verification through `scripts/integration.py check --state
+<state.json> --source <integration copy> --check <due command>` and wait for the
+project check. Checks come from the existing acceptance and baseline route;
+do not add a redundant universal full-suite run after every feature. A failed
+final check uses the same preserved-work recovery and blocks affected work.
 
-The report, in plain words, is one list and a merge order:
+The report, in plain words, names the combined main-facing pull request and its
+checked baseline, then one list in integration order:
 
 - what was parked and why, and what went back to shaping with its question,
   first;
@@ -711,8 +774,8 @@ The report, in plain words, is one list and a merge order:
 - where `merge_preapproved` was true, which pieces were merged, how long the
   sweep waited for checks, and for each piece that was not, the merge condition
   it failed, in the words of the `section-builder` skill's
-  `references/merge.md`, or that it conflicted with `main` or turned red once
-  `main` was taken in. A piece held back
+  `references/merge.md`, or that it conflicted with the integration target or
+  turned red once that target was taken in. A piece held back
   because its merge would go live says so, and waits for the person or `/ship`;
 - what was not eligible, or not reached, and why;
 - for each unsuccessful task, what was kept for review and its recoverable local
@@ -720,8 +783,12 @@ The report, in plain words, is one list and a merge order:
   continued independently, and what stopped on a shared failure or verification
   gap. Say explicitly when recovery remains unfinished.
 
-The person answers with the pull requests to merge, and each merge follows the
-`section-builder` skill's `references/merge.md`.
+Include the actual check commands, exit codes and browser observations against
+the result they checked. An observation not made remains an explicit human
+flag; passing unrelated checks or finishing the run never clears it. The person
+reviews this combined result, then gives the separate final-main yes through
+the `section-builder` skill's `references/merge.md`. Build approval and advance
+integration permission cover neither step.
 
 When a run disappoints, the fix is in the documents rather than in the code by
 hand: sharpen the done lines that let weak work through, add the missing rule

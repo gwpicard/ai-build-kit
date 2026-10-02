@@ -7,7 +7,7 @@
 # it prepares holds everything already merged, and the fold never conflicts
 # with another piece's.
 #
-# Usage: bring-up-to-date.sh [--no-fold] <folder>
+# Usage: bring-up-to-date.sh [--base <target>] [--no-fold] <folder>
 #   folder     a working folder on the pull request's branch, with no
 #              uncommitted change
 #   --no-fold  take in `main` but fold nothing, for when an earlier records
@@ -55,17 +55,25 @@ HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
 FOLD="$HERE/../../sync/scripts/fold-changes.py"
 
 fold=yes
-if [ "${1:-}" = "--no-fold" ]; then
-  fold=no
-  shift
-fi
-[ $# -eq 1 ] || stop 2 "usage: bring-up-to-date.sh [--no-fold] <folder>"
+base=main
+while [ $# -gt 1 ]; do
+  case "$1" in
+    --no-fold) fold=no; shift ;;
+    --base) [ $# -ge 3 ] || stop 2 "--base needs a target"; base=$2; shift 2 ;;
+    *) stop 2 "unknown option $1" ;;
+  esac
+done
+[ $# -eq 1 ] || stop 2 "usage: bring-up-to-date.sh [--base <target>] [--no-fold] <folder>"
+git check-ref-format "refs/heads/$base" >/dev/null 2>&1 || stop 2 "invalid target branch"
+# Individual features retain their document files until the final main route.
+[ "$base" = main ] || fold=no
 cd -- "$1" 2>/dev/null || stop 2 "cannot open $1; nothing changed"
 top=$(git rev-parse --show-toplevel 2>/dev/null) || stop 2 "$1 is not inside a git project; nothing changed"
 cd -- "$top" || stop 2 "cannot open $top; nothing changed"
 
 branch=$(git symbolic-ref --short -q HEAD) || stop 2 "the folder is not on a branch; nothing changed"
 [ "$branch" != main ] || stop 2 "the folder is on main, not on a pull request's branch; nothing changed"
+[ "$branch" != "$base" ] || stop 2 "the folder is on the target, not a pull request's branch; nothing changed"
 [ -z "$(git status --porcelain)" ] ||
   stop 2 "the folder holds uncommitted work, so it is not used for the merge; nothing changed"
 if [ "$fold" = yes ]; then
@@ -76,8 +84,8 @@ fi
 git fetch -q origin 2>/dev/null || stop 2 "origin could not be reached; nothing changed"
 remote=$(git rev-parse -q --verify "refs/remotes/origin/$branch^{commit}") ||
   stop 2 "origin has no branch $branch; nothing changed"
-git rev-parse -q --verify "refs/remotes/origin/main^{commit}" >/dev/null ||
-  stop 2 "origin has no main; nothing changed"
+git rev-parse -q --verify "refs/remotes/origin/$base^{commit}" >/dev/null ||
+  stop 2 "origin has no $base; nothing changed"
 local_head=$(git rev-parse HEAD)
 
 # Start from GitHub's copy, the one the pull request shows and the yes covered.
@@ -98,12 +106,14 @@ back_out() {
 git checkout -q --detach "$start" 2>/dev/null || stop 2 "could not start from $branch; nothing changed"
 
 # 2. Undo each earlier fold main does not hold, newest first.
-bodies=$(git log --format=%B "refs/remotes/origin/main..HEAD")
-stale=$(git log --format='%H %s' "refs/remotes/origin/main..HEAD" | while read -r sha subject; do
+bodies=$(git log --format=%B "refs/remotes/origin/$base..HEAD")
+stale=$(git log --format='%H %s' "refs/remotes/origin/$base..HEAD" | while read -r sha subject; do
   [ "$subject" = "Fold the changelog" ] || continue
   case $bodies in (*"This reverts commit $sha"*) continue ;; esac
   printf '%s\n' "$sha"
 done)
+# An integration merge owns no fold and must not undo the final record route.
+[ "$base" = main ] || stale=""
 for sha in $stale; do
   if ! git revert --no-edit "$sha" >/dev/null 2>&1; then
     files=$(git diff --name-only --diff-filter=U | tr '\n' ' ')
@@ -115,15 +125,15 @@ done
 
 # 3. Take in main with a merge commit.
 before=$(git rev-parse HEAD)
-if ! git merge -q --no-edit -m "Merge main into $branch" refs/remotes/origin/main >/dev/null 2>&1; then
+if ! git merge -q --no-edit -m "Merge $base into $branch" "refs/remotes/origin/$base" >/dev/null 2>&1; then
   files=$(git diff --name-only --diff-filter=U | tr '\n' ' ')
   git merge --abort >/dev/null 2>&1
-  back_out 1 "the merge from main conflicted in: ${files% }. The branch is as it was."
+  back_out 1 "the merge from $base conflicted in: ${files% }. The branch is as it was."
 fi
 if [ "$(git rev-parse HEAD)" = "$before" ]; then
-  say "The branch already holds main."
+  say "The branch already holds $base."
 else
-  say "Took in main."
+  say "Took in $base."
 fi
 
 # 4. Fold what waits in changes/.

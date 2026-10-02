@@ -37,7 +37,7 @@ rs_exists "$MERGE" "$LONGER" "$QUEUE" "$PIECES" "$HELPER" "$SYNC" "$WORKFLOW"
 # --- the merge step -------------------------------------------------------------
 
 rs_rule "every merge is brought up to date and checked again" \
-  'every merge, fold or no fold, first brings the branch up to date with `main` and checks it again'
+  'every merge, fold or no fold, first brings the branch up to date with its target and checks it again'
 rs_rule "it waits for the check on the commit the script prints" \
   'wait for the project check on the commit its last line prints'
 rs_rule "the check is the one on github, never a local run" \
@@ -66,7 +66,7 @@ rs_rule "origin out of reach merges nothing" \
 rs_rule "a stacked pull request is re-aimed, then brought up to date" \
   'then bring it up to date and check it again, as above, before you merge it'
 rs_rule "pre-approval needs green on the up-to-date commit" \
-  '1\. its project check is green on the commit brought up to date with `main`'
+  '1\. its project check is green on the commit brought up to date with the integration target'
 rs_guard "$MERGE" "the merge step"
 
 rs_require_order "the re-check sits before the merge is made" "$MERGE" \
@@ -76,14 +76,14 @@ rs_require_order "the re-check sits before the merge is made" "$MERGE" \
 
 rs_reset
 rs_rule "the sweep merges one piece at a time, each whole" \
-  'merge them one at a time: each one.s update, its check and its `gh pr merge` finish before the next piece is brought up to date'
+  'finish each update, due check and feature integration before the next write'
 rs_rule "a piece that conflicts or turns red stays in to check with its reason" \
-  'is not merged\. it stays in `to check`, and its `reason` says which of the two happened'
+  'preserve the failed candidate and evidence through'
 rs_rule "the sweep goes on, skipping what stacks on it" \
-  'the sweep goes on with the pieces that do not stack on it, and skips each one that does, with that reason'
+  'exclude every dependent; a shared verification failure stops all affected work'
 rs_rule "the report says how long the sweep waited" 'how long the sweep waited for checks'
 rs_rule "the other five conditions are tested before the update" \
-  'test the other five before bringing a piece up to date'
+  'which tests all six integration conditions'
 rs_rule "a conflict in the sweep still gets its comment" 'a conflict still gets its one comment on the pull request'
 rs_require_load_bearing "/sync says when no run was ever green" "$SYNC" 'where no run has ever been green'
 rs_guard "$LONGER" "the run's sweep"
@@ -95,11 +95,11 @@ rs_require_absent "the sweep no longer merges on a check that is merely green no
 rs_require_load_bearing "/queue says a group is built in any order" "$QUEUE" \
   'can be built at the same time in any order'
 rs_require_load_bearing "/queue says each still merges one at a time after the re-check" "$QUEUE" \
-  'each still merges one at a time, brought up to date with `main` and checked again first'
+  'each still merges one at a time, brought up to date with the run.s integration target and checked again first'
 rs_require_load_bearing "pieces.md says a group is built in any order" "$PIECES" \
   'can be built at the same time in any order'
 rs_require_load_bearing "pieces.md says each still merges one at a time after the re-check" "$PIECES" \
-  'each still merges one at a time, brought up to date with `main` and checked again first'
+  'each still merges one at a time, brought up to date with the run.s integration target and checked again first'
 rs_require_load_bearing "the helper's comment says a group is built in any order" "$HELPER" \
   'can be built at the same time in any order'
 rs_require_load_bearing "the helper's comment says each merges one at a time after the re-check" "$HELPER" \
@@ -107,7 +107,7 @@ rs_require_load_bearing "the helper's comment says each merges one at a time aft
 rs_require_load_bearing "WORKFLOW says a group is built in any order" "$WORKFLOW" \
   'can be built at the same time in any order'
 rs_require_load_bearing "WORKFLOW says each still merges one at a time after the re-check" "$WORKFLOW" \
-  'each still merges one at a time, brought up to date with `main` and checked again first'
+  'each still merges one at a time, brought up to date with the integration target and checked again first'
 
 if [ -z "${RS_LIST:-}" ]; then
   found=""
@@ -127,7 +127,7 @@ rs_require_load_bearing "WORKFLOW says every merge is brought up to date" "$WORK
 rs_require_load_bearing "WORKFLOW says a piece green alone can fail with what merged since" "$WORKFLOW" \
   'passed alone and fails with what merged since'
 rs_require_load_bearing "WORKFLOW says the sweep merges one at a time" "$WORKFLOW" \
-  'a pre-approved run merges its pieces one at a time'
+  'each feature integration is brought up to date with that target and gets its due checks before the next write'
 
 # --- /sync reads the check on main -----------------------------------------------
 
