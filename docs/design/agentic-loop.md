@@ -12,6 +12,28 @@ and [loop-first-round-2.md](loop-first-round-2.md). The piece contract, the
 readiness check and the principle of those notes carry over, changed where this
 note says so.
 
+## The principle
+
+The work is shaping the work. Looping is the consequence.
+
+A person's time goes into deciding what to build and how it will be judged.
+Once a piece is shaped well enough that nobody needs to be asked anything, the
+build is no longer a craft the person takes part in: it is a loop that runs
+until the bar is met. The kit is a loop kit. It gives the person a place to
+shape, and a set of loop modules (fix, build, goal and gauntlet) that each turn
+one kind of shaped piece into a merged change.
+
+So the quality of a project rests on the quality of its shaping. When a loop
+needs a person, that is a gap in the shaping, and the piece goes back to be
+shaped again rather than being finished by hand.
+
+## The name
+
+With v1 the product becomes AI Loop Kit. The rename is its own piece of work: the
+repository, the plugin and marketplace names, the founding command and the way
+existing installations move all change, and each step that changes something
+online waits for the maintainer's approval at that step.
+
 ## Why
 
 The loop-first redesign added unattended runs to a flow built for a person who
@@ -27,14 +49,14 @@ so the checks have to sit where the builder cannot reach them.
 
 So v1 turns the flow round. The loop is the default and a command is a manual
 override. Each state change goes through a script. Each piece carries its own
-bar, and the bar decides how the piece is built.
+bar, and the bar decides which loop module builds it.
 
 ## The model in one picture
 
 ```
 SHAPING (person + system)                          IMPLEMENTING (system alone)
 ------------------------------------------         -----------------------------------------------
-raw --triage--> decision loop ------> spec --> check --> READY --> BUILDING (mode loop) --> IN-REVIEW --> merged
+raw --triage--> decision loop ------> spec --> check --> READY --> BUILDING (loop module) --> IN-REVIEW --> merged
                 research (facts)                                    fix | build | goal | gauntlet          = live
                 clarify (decisions)
                 prototype (decisions)
@@ -69,8 +91,8 @@ carries exactly one of them. Labels are prefixed with their dimension.
 | closed | Merged (completed) or dropped (not planned) | GitHub's close reason |
 
 Three other dimensions sit beside the state. `type:` is `feature`, `bug` or
-`chore`, set at triage. `mode:` is `fix`, `build`, `goal` or `gauntlet`, set
-before the ready gate. The subject labels name the areas a piece touches.
+`chore`, set at triage. `loop:` is `fix`, `build`, `goal` or `gauntlet`, the
+loop module, set before the ready gate. The subject labels name the areas a piece touches.
 
 There is no idea, parked, queued or blocked label. Captured work is
 `shaping:raw`, which is the backlog. Work nobody will do is closed as not
@@ -88,7 +110,7 @@ can still change labels on GitHub, and the next gate run reports what it finds.
 | (new) | `shaping:raw` | Captured in the person's words |
 | `shaping:raw` | next sub-state | Triaged: a `type:` and the first open question |
 | any shaping sub-state | another | The current question is settled and recorded in the piece |
-| `shaping:check` | `state:ready` | The machine lint passes, a fresh session finds it ready, and a `mode:` is set |
+| `shaping:check` | `state:ready` | The machine lint passes, a fresh session finds it ready, and a `loop:` is set |
 | `state:ready` | `state:building` | A run claims it; its blockers are closed or earlier in the same run |
 | `state:building` | `state:in-review` | The bar is met with fresh evidence, and the automatic review passes |
 | `state:building` | `state:shaping` | Kickback, to the sub-state the problem needs |
@@ -104,11 +126,11 @@ apart.
 
 | Sub-state | Question | Who does it | Output |
 |---|---|---|---|
-| `raw` | What is this? | Person and system | A type, a first guess at the mode, any duplicate or overlap found |
+| `raw` | What is this? | Person and system | A type, a first guess at the loop module, any duplicate or overlap found |
 | `research` | What is true? | System | Findings with a source for each claim, and a recommendation |
 | `clarify` | What do we want? | Person | Decisions recorded in the piece |
 | `prototype` | What do we want, when it has to be seen? | System builds, person decides | A decision; the prototype is deleted or kept apart |
-| `spec` | No question left | System | The full contract, with the mode, its bar and the acceptance checks |
+| `spec` | No question left | System | The full contract, with the loop module, its bar and the acceptance checks |
 | `check` | Is it complete and buildable? | Fresh session and machine lint | Ready, or the gaps |
 
 Research finds facts and never decides. The system settles a fact by itself;
@@ -137,7 +159,7 @@ to do and how that will be judged. Its agent layer holds everything a builder
 needs, because the builder never sees the shaping conversation. The fields of
 the earlier contract carry over, with these additions.
 
-- The mode, and the bar that mode needs, described in the next section.
+- The loop module, and the bar that module needs, described in the next section.
 - Acceptance checks written as real tests, committed with the spec on a
   branch, and failing on `main` today.
 - The reach fields described in the next section: what the piece may change,
@@ -201,21 +223,21 @@ language servers, knowledge graphs, hotspot scores and any saved index. The
 pilot also measures how closely each recorded boundary matched what the diff
 changed, which decides how far the boundary can be trusted.
 
-## Implementation modes
+## Loop modules
 
-Shaping chooses the mode, because each mode needs a different bar.
+Shaping chooses the loop module, because each module needs a different bar.
 
-| Mode | Chosen when | Bar in the spec | Loop | Exit |
+| Loop module | Chosen when | Bar in the spec | Loop | Exit |
 |---|---|---|---|---|
 | `fix` | Something promised, or that once worked, is broken | A reproduction that fails today; what must not change | Reproduce, rank causes, fix, run the regression checks | The reproduction passes and nothing else fails |
 | `build` | Done can be stated as checks that pass or fail | The acceptance checks | Show the checks failing, then build until they pass | Every check green, and review passes |
 | `goal` | Done is a measured number with a target | The metric and the command that measures it, the target, a budget, guard checks, a held-out check | Measure, change, keep or discard | Target reached with every guard check green |
 | `gauntlet` | Done is judged against a specific example | A reference the person approved that can be fetched and compared, the comparison method, a budget, guard checks | Build, then a fresh blind critic compares with the reference | The work wins the comparison with every guard check green |
 
-One piece has one mode. The builder may switch modes during a build, and logs
-the switch, only when the new mode's bar comes from the spec with no new
-decision. Otherwise the piece is kicked back. Two needs that call for two modes
-become two pieces joined by a blocked-by link.
+One piece has one loop module. The builder may switch modules during a build,
+and logs the switch, only when the new module's bar comes from the spec with no
+new decision. Otherwise the piece is kicked back. Two needs that call for two
+modules become two pieces joined by a blocked-by link.
 
 A loop stops at a limit on attempts or at a budget of time or tokens, whichever
 comes first. An attempt is a fresh context carrying a short note of what
@@ -389,7 +411,7 @@ starts a run.
 
 The loop board follows runs. It shows each run's status, start time, running
 time, counts by piece status, preview address and budget used. Each piece shows
-its status, mode, start and end, attempts, progress in its own terms (checks
+its status, loop module, start and end, attempts, progress in its own terms (checks
 passing for a build, the current and best value for a goal, the round and last
 verdict for a gauntlet), a link to its session log and what it could not check.
 An activity log carries the times. The board can pause, continue and stop a run.
@@ -419,7 +441,7 @@ updated by each piece's change at the merge.
 |---|---|
 | `/setup-ai-build-kit` | Founds a project or adopts one: records, constraints, settings, recipe, labels |
 | `/shape` | Captures, triages and shapes, up to the ready gate |
-| `/implement` | Starts a run on the chosen pieces, in their modes |
+| `/implement` | Starts a run on the chosen pieces, each in its loop module |
 | `/deploy` | Sets up or moves the deployment pipeline |
 | `/what-now` | Opens the shaping board and the loop board |
 | `/maintain` | The health visit: updates, record upkeep, lessons, drift reads, the offer of automatic merge |
@@ -431,7 +453,7 @@ when its reproduction is clear.
 
 The background skills keep their jobs in new places. Change-triage does the
 triage in `raw`. Clarify runs the interview in `clarify` and at founding.
-Section-builder becomes the engine for the build and fix modes. Second-opinion
+Section-builder becomes the engine for the build and fix modules. Second-opinion
 becomes the automatic reviewer and the gauntlet's critic. Screen-check becomes a
 check a bar can name.
 
@@ -481,10 +503,10 @@ The draft v0.20.0 release is not published. The next release is this model.
 1.0 promises that the commands, the records and the way work is built will not
 change underneath a person. That needs:
 
-- this model complete, with all four modes, runs, kickback, `/deploy` and both
+- this model complete, with all four loop modules, runs, kickback, `/deploy` and both
   boards;
 - founded projects moved to it by `/maintain`;
-- real runs recorded, one for each mode, and one `/deploy` for each recipe;
+- real runs recorded, one for each loop module, and one `/deploy` for each recipe;
 - the compact masterplan, since 1.0 fixes the project's record format.
 
 ## What stays
