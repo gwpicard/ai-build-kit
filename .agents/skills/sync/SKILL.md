@@ -80,6 +80,12 @@ else, or recovering after an optional automation failed to run.
 
    Before deciding a run is finished or offering to remove its folder, compare each piece with its durable `recovery.json`, including records missing from run state, as the `implement` skill's `references/running-longer.md` describes. A differing generation or stage, or a pending write, means unfinished recovery; offer `/implement queue` to reconcile and check it again, without resuming it here.
 
+   Keep the run folder while its combined pull request has not merged, its
+   integration write is pending, or final human review or any human flag is
+   still owed. Individual feature integrations are not final main merges.
+   Name the combined result and what it waits for; do not delete its consent,
+   verification or recovery record because every build state is final.
+
    Read each run's state file under the main folder's `.agents/runs/`, the first worktree git lists, as the `implement` skill's `references/running-longer.md` describes. Where there is an unfinished run in `.agents/runs/`, one whose state file still shows a piece waiting or being built, name how far it got and offer to resume it with `/implement queue`; never resume it here, since sync builds nothing. Remove the folder of a run whose every piece is merged, closed or parked, counting a piece the run skipped or sent back to shaping as closed to it, and say so in one line. A recursive delete is refused, so that line gives the person the command that removes the folder, with its path. Git ignores the folder, so removing it changes nothing saved.
 
    Where the project has worktrees under `.agents/worktrees/`, clear away each one whose pull request has merged or closed, with `sh <installed implement skill>/scripts/worktree.sh tidy`, as the `implement` skill's `references/running-longer.md` says. It removes a worktree only when it holds no unsaved work, and never forces the removal. Pass on each line it prints: a worktree holding unsaved work is kept and named with what is unsaved.

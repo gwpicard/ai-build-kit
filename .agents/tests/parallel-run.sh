@@ -111,13 +111,13 @@ rs_rule "two pieces finishing during a merge merge one after the other" \
 rs_rule "an agent that never reports is a failed attempt" \
   'a background agent that ends without reporting back counts as a failed attempt at its piece'
 rs_rule "the same file despite different Touches goes to /fix by the merge rule" \
-  'the second merge.s check against the latest `main` then finds the conflict, and the `section-builder` skill.s `references/merge\.md` takes it to `/fix`'
+  'the second merge.s check against the latest integration target then finds the conflict, and the `section-builder` skill.s `references/merge\.md` takes it to `/fix`'
 rs_rule "a walk-through that cannot get the browser could not look" \
   'where a walk-through cannot get the browser because another agent holds it, it records that it could not look'
 
 # --- resuming ---------------------------------------------------------------
 
-rs_rule "resuming keeps at_once" 'so does its `at_once`'
+rs_rule "resuming keeps at_once" 'keep its `at_once`'
 rs_rule "the resume offer names the number and it can be lowered" \
   'the offer to resume names that number and says the person can lower it in their reply'
 rs_rule "a dead session leaves each piece building with its worktree" \

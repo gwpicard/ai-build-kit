@@ -369,7 +369,8 @@ also compares their `Touches:` lines and prints the pieces in groups, two
 pieces naming the same area never in one, and `/queue` reads the groups rather
 than working them out again. The pieces of one group can be built at the same
 time in any order, and each still merges one at a time, brought up to date with
-`main` and checked again first. Shape still
+the run's integration target and checked again first. The combined result
+waits for final human review and a separate yes before main. Shape still
 decides too, so a piece somebody labelled `ready` without giving it a
 `## Done when` is a note, and `/queue` does not offer it either.
 

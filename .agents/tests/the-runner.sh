@@ -51,7 +51,7 @@ rs_rule "explore privately takes only disposable work" 'on explore privately, a 
 rs_rule "a piece with no readiness section is checked before the claim" 'run the readiness check on it before claiming it'
 rs_rule "not ready sends it back to shaping" 'not ready sends it back to shaping with each blocking gap written on it'
 rs_rule "an opted-in piece stops at to check" 'stops at `to check` with a line in its pull request saying it waits for the person.s try'
-rs_rule "an opted-in piece is never merged under pre-approval" 'and it is never merged under pre-approval'
+rs_rule "an opted-in human flag travels to final review" 'that human-review flag remains owed in the final review'
 rs_rule "pre-approval is asked once, before the run" 'then ask once whether pieces that pass may be merged during the run'
 
 # The state file a new session resumes from.
@@ -101,7 +101,7 @@ rs_rule "the parts of one parent share a pull request" 'the parts of one parent 
 # An open choice, split by how hard it is to undo.
 rs_rule "a hard choice stops the piece" 'a hard choice, about the shape of stored data, how records sync, or what leaves the tool, stops that piece'
 rs_rule "an easy choice takes the most reversible option" 'takes the most reversible option'
-rs_rule "a flagged piece is never merged under pre-approval" 'a flagged piece is never merged under pre-approval'
+rs_rule "passing flagged work integrates with the flag still owed" 'a flagged piece that passes due automated checks may integrate; its flag remains owed at final human review'
 rs_rule "either way the run moves on" 'either way the run moves on to the next unblocked piece'
 
 # A hard choice the run can see before it claims a piece. Judged not
@@ -153,7 +153,7 @@ rs_rule "every exclusive failed commit stays out of later bases" 'every commit e
 # Resuming, and the end of the run.
 rs_rule "a new session resumes from the state file" 'a new session resumes from the state file, never from memory'
 rs_rule "a piece left building continues from its last commit" 'continues from its last commit'
-rs_rule "resuming keeps the run's pre-approval" 'resuming is the same run, so its `merge_preapproved` stands'
+rs_rule "a new conversation inherits no consent" 'advance permission is not inherited by a new conversation'
 rs_rule "/sync removes a finished run's folder" '`/sync` removes a run.s folder once every piece in it is merged, closed or parked'
 rs_rule "the run never idles when nothing is left" 'the run ends at once with its report, and never waits'
 rs_rule "the report leads with what was parked" 'what was parked and why'
@@ -171,12 +171,12 @@ rs_rule "the later claimant deletes its own comment" 'delete this run.s own comm
 rs_rule "only the later claimant backs off" 'only the later claimant backs off, so a piece is never left `building` with no run behind it'
 rs_rule "the run name carries seconds" '`<yyyy-mm-dd>-<hhmmss>`'
 rs_rule "the page's reach is said and can be declined" 'publishes the pieces. titles and progress to the coding agent.s page service, and offer to run without it'
-rs_rule "pre-approval carries into a resumed run" 'carries into the run when it is resumed'
+rs_rule "a recorded answer needs current consent" 'read current consent through the merge route before acting'
 rs_rule "a resumed run reuses an open pull request" 'look first for a pull request already open from its branch'
 rs_rule "the checkpoint route in a run" 'steps 8 to 10 become the checkpoint commit and closing the piece'
 rs_rule "a stacked smoke failure skips only the unbuilt pieces" 'skips only the pieces on that stack not yet built'
 rs_rule "a built base stays in to check" 'a base already built stays in `to check`'
-rs_rule "a squash-merged base is taken in at the merge, never rebased" 'takes in `main` at its own merge, as the `section-builder` skill.s `references/merge\.md` describes, never by a rebase'
+rs_rule "a squash-merged base is taken in at the merge, never rebased" 'takes in the integration target at its own merge, as the `section-builder` skill.s `references/merge\.md` describes, never by a rebase'
 rs_rule "a stacked piece whose base goes back is skipped" 'a stacked piece whose base goes back to shaping, or is parked, is skipped'
 rs_rule "a parent's pull request opens after its last finished part" 'the pull request opens after the last part that finishes its build'
 rs_rule "a finished part waits for the parent's pull request" 'waits in `building` with the reason `waiting for the parent.s pull request`'
@@ -193,8 +193,14 @@ rs_rule "an unbuilt piece in hand goes back to ready" 'where nothing was built o
 rs_rule "a built piece in hand is parked" 'where something was built, push the branch and park it with the reason'
 rs_rule "a finished run is never offered for resuming" 'a run whose every piece is in a final state is finished, and is never offered for resuming'
 rs_rule "two unfinished runs: the newest is offered" 'where two runs are unfinished, offer the newest and name the other'
-rs_rule "pre-approved merges are swept at the end, bases first" 'sweep the pieces in `to check` before the report, bases first'
-rs_rule "the sweep merges only what meets all six" 'meets all six conditions'
+rs_rule "pre-approved merges are swept at the end, bases first" 'sweep remaining checked pieces onto the recorded target, bases first'
+rs_rule "the sweep merges only what meets all six" 'tests all six integration conditions'
+rs_rule "the integration target and checked baseline are recorded" '`integration` identifies the approved target, its copy, the checked baseline'
+rs_rule "final verification is due" 'run final combined verification'
+rs_rule "flags do not disappear at completion" 'passing unrelated checks or finishing the run never clears it'
+rs_rule "integration failure never falls back to main" 'never fall back to direct-main merges'
+rs_rule "shared verification failure stops affected work" 'a shared verification failure stops all affected work'
+rs_rule "combined review keeps the run record" 'keep the run record while its combined pull request or human review is still owed'
 rs_guard "$LONGER" "running-longer.md"
 
 rs_require_load_bearing "shape reads full answers rather than labels" "$ROOT/.agents/skills/shape/SKILL.md" \
@@ -255,6 +261,8 @@ rs_require_load_bearing "/what-now notices durable recovery before calling a run
   'before deciding a run is finished, compare its pieces with their durable'
 rs_require_load_bearing "/sync keeps a run with interrupted durable recovery" "$SYNC" \
   'before deciding a run is finished or offering to remove its folder, compare each piece with its durable'
+rs_require_load_bearing "/sync keeps the final review record" "$SYNC" \
+  'keep the run folder while its combined pull request has not merged, its integration write is pending, or final human review or any human flag is still owed'
 
 # A founded project ignores the run folder.
 rs_require "the foundation gitignore ignores the run folder" "$IGNORE" '\.agents/runs/'
