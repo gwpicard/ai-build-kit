@@ -27,6 +27,8 @@ rs_rule "answers and consent never fabricated" 'never invent a human answer or c
 rs_rule "workers relay through supported channel" 'send the exact question and labelled guess to the coordinator through its supported channel'
 rs_rule "only a returned answer settles the question" 'delivery alone is not an answer'
 rs_rule "unavailable relay records and parks owning piece" 'if the relay is unavailable, leave the exact question and guess on the owning piece and park that piece'
+rs_rule "cannot-save fallback reports exact pending question and parking" 'if the worker cannot update the piece, report that exact pending question and required parking to the coordinator'
+rs_rule "unsaved question is never claimed saved" 'never claim it was saved'
 rs_rule "independent work may continue" 'continue independent eligible work'
 rs_rule "workers never open invisible UI" 'never open a human question ui in an unattended worker'
 rs_rule "headless interlocutor receives text" 'a headless replay with a scripted plain-text interlocutor uses the plain-words route'
