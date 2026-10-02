@@ -59,12 +59,46 @@ def clean(source, head):
         raise ValueError('The checked copy changed; check it again.')
 
 
+def same_inputs(check, files):
+    """Only witnessed regular ignored outputs may have different bytes."""
+    expected = check['files']
+    current = files.copy()
+    for name, shape in check.get('generated_outputs', {}).items():
+        item = current.get(name, {})
+        if ({k:v for k,v in item.items() if k != 'sha256'} != shape or
+                shape.get('kind') != 'file' or name not in expected):
+            return False
+        current[name] = expected[name]
+    return current == expected
+
+
+def generated_outputs(source, before, after):
+    """Observe check writes; unchanged ignored files remain actual inputs."""
+    outputs = {}
+    for name, item in after.items():
+        old = before.get(name)
+        if (item == old or item['kind'] != 'file' or
+                old is not None and (old['kind'] != 'file' or old['mode'] != item['mode'])):
+            continue
+        if subprocess.run(['git','-C',str(source),'check-ignore','-q','--',name],
+                          capture_output=True).returncode == 0:
+            outputs[name] = {k:v for k,v in item.items() if k != 'sha256'}
+    return outputs
+
+
 def verify(args, state, record, candidate=None):
     source = Path(args.source).resolve()
     head = recovery.commit(source, 'HEAD')
     clean(source, head)
     main = Path(recovery.git(source, 'worktree', 'list', '--porcelain').decode().splitlines()[0][9:])
     links = recovery.linked_inputs(source, main)
+    before = recovery.inventory(source)
+    previous = record.get('verification', {})
+    # A repeat of the same check may leave its established report unchanged.
+    outputs = (previous.get('generated_outputs', {}).copy()
+               if previous.get('passed') is True and previous.get('head') == head and
+               previous.get('source') == str(source) and previous.get('links') == links and
+               same_inputs(previous, before) else {})
     folder = Path(args.state).parent / 'integration-checks' / uuid.uuid4().hex
     folder.mkdir(mode=0o700, parents=True)
     # Invalidate earlier green before any command can be interrupted.
@@ -92,9 +126,11 @@ def verify(args, state, record, candidate=None):
         c['exit_code'] == 0 for c in evidence['commands']) and (
         links == recovery.linked_inputs(source, main))
     evidence['checked_at'] = recovery.now()
-    # Checks may create ignored build outputs. Capture the finished copy, as
-    # recovery does, while tracked inputs and established links stay unchanged.
+    # Keep the complete finished inventory for failure preservation. Witnessed
+    # regular ignored reports may later be rewritten by another member's check.
     evidence['files'] = recovery.inventory(source)
+    outputs.update(generated_outputs(source, before, evidence['files']))
+    evidence['generated_outputs'] = outputs
     evidence['links'] = links
     recovery.save(args.state, state)
     recovery.save(folder / 'result.json', evidence)
@@ -110,7 +146,7 @@ def fresh(record, source):
     head = check['head']
     clean(source, head)
     main = Path(recovery.git(source, 'worktree', 'list', '--porcelain').decode().splitlines()[0][9:])
-    if check['files'] != recovery.inventory(source) or check['links'] != recovery.linked_inputs(source, main):
+    if not same_inputs(check, recovery.inventory(source)) or check['links'] != recovery.linked_inputs(source, main):
         raise ValueError('Verification inputs changed; check the result again.')
     return head
 
