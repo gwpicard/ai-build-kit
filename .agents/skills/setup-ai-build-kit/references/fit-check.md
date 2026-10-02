@@ -298,11 +298,7 @@ Run the full check instead when the affected area cannot be bounded confidently.
 
 ## Write it down
 
-Whatever the outcome, it goes in the build-path section of
-`docs/working-rules.md` on new-format projects, or the legacy masterplan.
-[project-records.md](project-records.md) selects the authoritative home. All
-ownership facts in "How it stays running" belong to `docs/operations.md` on
-the new format. Never copy the fields into the overview.
+Whatever the outcome, it goes in the masterplan's build path section:
 
 ```md
 ## Build path

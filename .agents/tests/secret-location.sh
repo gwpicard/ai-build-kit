@@ -17,7 +17,7 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 
 FOUNDATION="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md"
 FIT="$ROOT/.agents/skills/setup-ai-build-kit/references/fit-check.md"
-MASTERPLAN="$ROOT/.agents/skills/setup-ai-build-kit/templates/operations.md"
+MASTERPLAN="$ROOT/.agents/skills/setup-ai-build-kit/templates/masterplan.md"
 SHIP="$ROOT/.agents/skills/ship/SKILL.md"
 FIX="$ROOT/.agents/skills/fix/SKILL.md"
 MAINTAIN="$ROOT/.agents/skills/maintain/SKILL.md"
@@ -31,7 +31,7 @@ rs_exists "$FOUNDATION" "$FIT" "$MASTERPLAN" "$SHIP" "$FIX" "$MAINTAIN" "$WORKFL
 # at its line ceiling, so it carries the short form; /ship, the fit check and
 # the masterplan section carry the detail.
 rs_rule "the project's own secrets stay in .env" 'keys, passwords, and tokens live in `\.env`\.'
-rs_rule "a secret kept elsewhere has its location written down" 'record where any other secret lives, never its value, in the operational record.s "how it stays running", and read it there'
+rs_rule "a secret kept elsewhere has its location written down" 'record where any other secret lives, never its value, in the masterplan.s "how it stays running", and read it there'
 rs_rule "an unrecorded location is asked about once" 'if none is recorded, ask once'
 rs_rule "a secret given as a reply is rotated" 'rotate a secret that appears where it should not, even one given as a reply'
 rs_rule "a secret given as a reply is recorded nowhere and its location asked for" 'record it nowhere, say it is now in this chat, and ask for its location'

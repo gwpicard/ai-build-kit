@@ -7,7 +7,7 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 . "$ROOT/.agents/tests/lib/rule-shape.sh"
 
 FIT="$ROOT/.agents/skills/setup-ai-build-kit/references/fit-check.md"
-MASTER="$ROOT/.agents/skills/setup-ai-build-kit/templates/working-rules.md"
+MASTER="$ROOT/.agents/skills/setup-ai-build-kit/templates/masterplan.md"
 SETUP="$ROOT/.agents/skills/setup-ai-build-kit/SKILL.md"
 BUILDER="$ROOT/.agents/skills/section-builder/SKILL.md"
 SHIP="$ROOT/.agents/skills/ship/SKILL.md"
@@ -95,29 +95,5 @@ else
   silent=no
 fi
 rs_report "the check is silent on another build path" "$silent"
-
-# New records select working rules, even when the overview has a conflicting
-# legacy field. The map remains a safety check on the chosen owner.
-mkdir -p "$project/docs"
-cp "$project/masterplan.md" "$project/docs/working-rules.md"
-printf '%s\n' '<!-- ai-build-kit:records:v1 -->' 'Path: Build with care' > "$project/masterplan.md"
-if sh "$project/.agents/hooks/check-sensitive-areas.sh" > "$rs_dir/out" 2>&1; then
-  rs_ok "new-format map selects working rules rather than a conflicting overview"
-else
-  rs_fail "new-format map read failed"
-fi
-sed 's/Path: Build and run it/Path: Build with care/' "$project/docs/working-rules.md" > "$rs_dir/new-map"
-cp "$rs_dir/new-map" "$project/docs/working-rules.md"
-if sh "$project/.agents/hooks/check-sensitive-areas.sh" > "$rs_dir/out" 2>&1; then
-  rs_fail "new-format map missed unassigned source"
-else
-  rs_ok "new-format map still refuses unassigned source"
-fi
-mv "$project/docs/working-rules.md" "$project/docs/working-rules-held.md"
-if sh "$project/.agents/hooks/check-sensitive-areas.sh" > "$rs_dir/out" 2>&1; then
-  rs_fail "new-format map silently fell back when its owner disappeared"
-else
-  rs_ok "missing new-format owner is a gap rather than legacy fallback"
-fi
 
 rs_done

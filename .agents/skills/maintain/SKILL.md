@@ -5,12 +5,6 @@ description: The service visit for AI Build Kit updates, project upkeep, handove
 
 # Maintain
 
-For project record reads and writes, load the `setup-ai-build-kit` skill's
-`references/project-records.md`. Its marker selects authoritative concept,
-working-rule and operations records for the new format; legacy projects keep
-their existing route. This changes record ownership, not safety or merge authority.
-
-
 Small regular maintenance is what keeps the rare big problem from arriving. Report findings before applying anything beyond routine updates.
 
 ## Monthly, light
@@ -138,12 +132,7 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    checkpoint can restore Claude's plugin cache. If the plugin is no longer
    enabled, stop and ask the person to reinstall it after the marketplace is
    reachable.
-9. On new-format records run `python3 .agents/tools/project-records.py review-gap`
-   on the shared branch. Report later landed code changes and review affected
-   data, permissions and connections before giving subject counts; offer /sync
-   in one line. Missing, invalid or incomplete-history checkpoints get a gap,
-   never a guessed count. Leave the overview and review checkpoint unchanged.
-   On legacy records read the masterplan's trued-against mark and count landed changes since it
+9. Read the masterplan's trued-against mark and count landed changes since it
    using the `setup-ai-build-kit` skill's `references/masterplan-changes.md`.
    When data, permissions or connections were touched, report the count and
    offer /sync in one line. An absent or unusable mark gets the same offer

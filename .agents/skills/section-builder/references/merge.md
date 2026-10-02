@@ -1,12 +1,5 @@
 # Merging a pull request
 
-Load the `setup-ai-build-kit` skill's `references/project-records.md` for record
-ownership. On the marked new format, working rules owns build-path fields,
-operations owns every How it stays running read/write, and indexed concepts
-own detailed product rules. Legacy projects keep the masterplan route. Never
-advance the separate document-review checkpoint here.
-
-
 The one merge step for every route. section-builder, `/implement`, `/fix`,
 `/ship` and `/sync` load it whenever a pull request is ready to merge, and none
 of them keeps its own copy of the rule. It covers the merge, and the wait for

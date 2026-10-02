@@ -131,7 +131,7 @@ build path: explore privately, build and run it, or build with care. The path
 decides which checks, reviews, saving steps, and launch conditions apply. It is
 decided by what the work touches. Build with care means some of the work sits
 in a sensitive area: personal data, money, sign-in, automatic action,
-irreplaceable live data, or a regulated decision. The working-rules record names each
+irreplaceable live data, or a regulated decision. The masterplan names each
 area in the tool's own words with the caution beside it, and everything
 outside those areas is built the ordinary way.
 
@@ -340,13 +340,9 @@ detailed and still missed whole categories: states nobody named, data and sync
 rules, things leaving the device. Its builder made 85 choices alone. A ready
 piece must carry enough to build without fresh research, which matters most
 when /implement runs a batch with nobody watching. Context that reaches past one
-piece is not duplicated onto it. A whole-product rule lives in its authoritative
-concept document, indexed by what it owns. The masterplan gives purpose, brief
-architecture, useful summaries and pointers in at most 500 words. Working rules
-owns build-path and review requirements; operations owns operational facts.
-AGENTS.md carries short activation instructions and pointers. Each concept
-keeps one home, and an actual /sync review records the saved state it reconciled
-separately from task completion. Legacy records remain readable until migration.
+piece is not duplicated onto it: a whole-product decision lives in the
+masterplan, a whole-codebase convention in AGENTS.md, so each concept keeps one
+home.
 
 Universal test-first, rejected. Every promised behaviour needs evidence, but
 the evidence may be an automated test, a manual visual check, a source-backed

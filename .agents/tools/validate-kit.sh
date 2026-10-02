@@ -500,15 +500,6 @@ while IFS= read -r mdfile; do
       && [ -e "$ROOT/$path_noanchor" ]; then
       target="$ROOT/$path_noanchor"
     fi
-    # Founding template links resolve in the project; inspect their source
-    # templates here and exercise the actual project paths in the route rehearsal.
-    if [ "$mdfile" = "$SKILLS/setup-ai-build-kit/templates/masterplan.md" ]; then
-      case "$path_noanchor" in
-        docs/README.md) target="$SKILLS/setup-ai-build-kit/templates/concept-index.md" ;;
-        docs/working-rules.md) target="$SKILLS/setup-ai-build-kit/templates/working-rules.md" ;;
-        docs/operations.md) target="$SKILLS/setup-ai-build-kit/templates/operations.md" ;;
-      esac
-    fi
     if [ ! -e "$target" ]; then
       fail "$mdfile:$lineno: broken link -> $path"
     fi
@@ -753,7 +744,7 @@ fi
 # masterplan template carries them, so a field added to one and forgotten in the
 # other would leave a project recording something the fit check never writes, or
 # writing something the template has no room for.
-mpt="$SKILLS/setup-ai-build-kit/templates/working-rules.md"
+mpt="$SKILLS/setup-ai-build-kit/templates/masterplan.md"
 if [ ! -f "$mpt" ] || [ ! -f "$fitcheck" ]; then
   fail "cannot compare the build-path block: fit-check.md or the masterplan template is missing"
 else
