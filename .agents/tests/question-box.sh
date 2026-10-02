@@ -6,7 +6,7 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 CLARIFY="$ROOT/.agents/skills/clarify/SKILL.md"
 rs_init "Question-box routing checks"
 rs_exists "$CLARIFY"
-rs_rule "one question at a time" 'one question at a time'
+rs_rule "one question at a time" 'one question at a time, in one short sentence'
 rs_rule "short question" 'one short sentence'
 rs_rule "background stays short" 'background is at most two short sentences'
 rs_rule "guess is labelled" 'label the best guess as a guess'
