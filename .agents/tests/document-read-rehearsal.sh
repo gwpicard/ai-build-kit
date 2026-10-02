@@ -308,6 +308,34 @@ for manager in ("npm", "pnpm", "yarn"):
         boundary(f"{manager} active target {prefix} hook", check[:-1] + " when file `care.flag` exists.", entries, "unverified rule")
     boundary(f"{manager} interior hyphen", f"Required check: `{manager} run test-guard` via `{manager} run check`.", {"check": f"{manager} run test-guard", "test-guard": "true"}, None)
 
+# Fenced examples are excluded by the actual helper, while requirements after
+# a valid closing fence must still be checked. Both fence characters obey the
+# same length and closing-line rules.
+claim = "Required check: `npm run guard` via `npm run check`."
+entries = {"check": "true"}
+boundary("retained longer-fence example", "````markdown\n```text\n" + claim + "\n```\n````", entries, None)
+for mark, other in (("`", "~"), ("~", "`")):
+    opener = mark * 4 + "markdown"
+    for inner in (mark * 3, mark * 3 + "text", other * 4,
+                  mark * 4 + "text", mark * 5 + "text",
+                  "    " + mark * 4):
+        boundary(f"{mark} example with non-closing {inner!r}",
+                 opener + "\n" + inner + "\n" + claim + "\n" + mark * 4,
+                 entries, None)
+    boundary(f"{mark} unclosed example", opener + "\n" + claim, entries, None)
+    for closer in (mark * 4, mark * 5, "   " + mark * 4 + " \t"):
+        declaration = "   " + opener + "\n" + claim + "\n" + closer + "\n" + claim
+        boundary(f"{mark} real requirement after {closer!r}", declaration,
+                 entries, "wiring mismatch")
+        output = run()
+        assert output.startswith("AGENTS.md:4\twiring mismatch\t"), output
+        assert "npm run check" in output and "npm run guard" in output, output
+        assert "package.json" in output, output
+boundary("backtick in opener info is not a fence", "```text `inline`\n" + claim,
+         entries, "wiring mismatch")
+boundary("four-space line is not an opening fence", "    ````text\n" + claim,
+         entries, "wiring mismatch")
+
 assert not boundary_failures, "boundary failures:\n" + "\n".join(boundary_failures)
 print(f"  ok: {boundary_count} intact, broken and conditional command boundaries")
 (project / "README.md").write_bytes(readme)
