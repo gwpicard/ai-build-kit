@@ -631,12 +631,15 @@ A project founded before the kit could link ignored build files gets one questio
 A project founded before the six states gets one offer to move onto them. Pieces waiting on a question gain shaping, open pieces with no state gain idea, and a piece labelled blocked becomes parked with its reason. Ideas you closed as parked stay as they are. Nothing changes without your yes, and a no is recorded, so the offer comes back only when a release changes the states again.
 
 In Claude Code, the settings founding gave your project refuse a direct push
-to `main`, a recursive delete and clearing Git's recovery history. When a
-later release catches more of these, the
+to `main`, a force push in the listed spellings, a recursive delete and clearing
+Git's recovery history. When a later release catches more of these, the
 monthly visit names the new rules and offers to add them to
-`.claude/settings.json`, once. It adds nothing without your yes and leaves the
-rest of the file as it is. A no is recorded, and the offer comes back only
-when a release adds another rule.
+`.claude/settings.json`, once. Force-push upgrades are offered only while an
+older force rule remains, so a deliberate removal is kept. It adds nothing
+without your yes and leaves the rest of the file as it is. A no is recorded,
+and the offer comes back only when a release adds another rule. The installed
+`setup-ai-build-kit` skill's `references/blocked-commands.md` lists the
+spellings the rules catch and miss.
 
 /maintain writes the date of each visit into the project. When more than a month
 has gone by, or once 20 changes have landed since the last visit, whichever comes

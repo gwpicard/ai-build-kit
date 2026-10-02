@@ -73,6 +73,7 @@ def push_spelling(s):
 blocked = open(blocked_path).read()
 PUSH = "A direct push to `main`"
 DELETE = "Deleting files and Git history"
+FORCE = "A force push"
 refused = matcher.read_list(blocked, "These spellings are refused", push_spelling, PUSH)
 not_refused = matcher.read_list(blocked, "These spellings are not refused", push_spelling, PUSH)
 if not refused:
@@ -95,6 +96,46 @@ if not del_refused:
 if not del_not_refused:
     print("blocked-commands.md has no section %r with a list of spellings the rules miss" % DELETE)
     sys.exit(1)
+
+# Literal-space token cases, independent of the reference's shorter examples.
+force_rules = {
+    "Bash(git push --force-with-lease:*)": "git push --force-with-lease origin feature",
+    "Bash(git push --force-with-lease=*)": "git push --force-with-lease=feature:abc origin feature",
+    "Bash(git push --force-if-includes:*)": "git push --force-if-includes origin feature",
+    "Bash(git push * --force)": "git push origin feature --force",
+    "Bash(git push * --force *)": "git push origin --force feature",
+    "Bash(git push * -f)": "git push origin feature -f",
+    "Bash(git push * -f *)": "git push origin -f feature",
+    "Bash(git push * --force-with-lease)": "git push origin feature --force-with-lease",
+    "Bash(git push * --force-with-lease *)": "git push origin --force-with-lease feature",
+    "Bash(git push * --force-with-lease=*)": "git push origin feature --force-with-lease=feature:abc",
+    "Bash(git push * --force-if-includes)": "git push origin feature --force-if-includes",
+    "Bash(git push * --force-if-includes *)": "git push origin --force-if-includes feature",
+    "Bash(git push +*)": "git push +feature",
+    "Bash(git push * +*)": "git push origin +feature",
+}
+force_required = list(force_rules.values())
+for option in ("--force", "-f", "--force-with-lease", "--force-with-lease=",
+               "--force-with-lease=feature", "--force-with-lease=feature:abc",
+               "--force-if-includes"):
+    for args in (f"{option} origin feature", f"-u {option} origin feature",
+                 f"origin {option} feature", f"origin feature {option}",
+                 f"origin feature {option} --quiet"):
+        force_required.append("git push " + args)
+for refspec in ("+feature", "+HEAD:feature", "+refs/heads/feature",
+                "+refs/tags/v1", "+refs/tags/v1:refs/tags/v2"):
+    force_required += [f"git push origin {refspec}", f"git push -u origin {refspec} --quiet"]
+force_allowed = [
+    "git push origin fix-f", "git push origin feature+extra",
+    "git push origin feature:release+extra", "git push --follow-tags origin feature",
+    "git push origin feature --follow-tags", "git push origin refs/tags/v1",
+    "git push origin feature--force", "git push origin --forceful",
+    "git push origin --force-with-lease-extra", "git push origin --force-if-includes-extra",
+    "git push origin feature-f", "git push origin --no-force-with-lease",
+    "git push origin --no-force-if-includes",
+]
+force_refused = matcher.read_list(blocked, "These spellings are refused", spelling, FORCE) or []
+force_missed = matcher.read_list(blocked, "These spellings are not refused", spelling, FORCE) or []
 
 problems = []
 
@@ -164,10 +205,10 @@ option_value = "git push -o main origin feature"
 
 def evaluate(rules):
     found = []
-    for command in refused + required_refused + [option_value] + del_refused + listed_del_refused:
+    for command in refused + required_refused + [option_value] + del_refused + listed_del_refused + force_required + force_refused:
         if not denied(rules, command):
             found.append("%r is not refused" % command)
-    for command in not_refused + must_push + del_not_refused + listed_del_missed + must_run:
+    for command in not_refused + must_push + del_not_refused + listed_del_missed + must_run + force_allowed + force_missed:
         if denied(rules, command):
             found.append("%r is refused" % command)
     return found
@@ -178,11 +219,20 @@ for command in dict.fromkeys(refused + required_refused + [option_value] + not_r
                              + del_refused + del_not_refused + must_run):
     print("  %-7s %s" % ("denied" if denied(rules, command) else "allowed", command))
 
+for rule, witness in force_rules.items():
+    if rule not in rules:
+        problems.append("the settings lack %s" % rule)
+    elif denied([r for r in rules if r != rule], witness):
+        problems.append("taking out %s still refuses %r" % (rule, witness))
+if not force_refused or not force_missed:
+    problems.append("blocked-commands.md needs both force-push spelling lists")
 problems += evaluate(rules)
 if problems:
     print("\n".join(problems))
     sys.exit(1)
 print("  ok: every refused spelling is denied, and every spelling the reference says is missed is allowed")
+
+print("  ok: each of the %d new force rules has a refusal lost on removal" % len(force_rules))
 
 # Each push rule is needed.
 push_rules = [r for r in rules if r.startswith("Bash(git push") and "main" in r]
@@ -215,7 +265,9 @@ print("  ok: taking out any one of the %d delete rules is caught" % len(delete_r
 # those. Its step 2 names four kinds; each template rule is sorted here the
 # same way, and the ones the offer leaves out must be the force-push, reset and
 # clean rules the person may have removed on purpose.
-def offered(rule):
+def offered(rule, project_rules):
+    if rule in force_rules:
+        return any(old in project_rules for old in ("Bash(git push --force:*)", "Bash(git push -f:*)"))
     body = rule[len("Bash("):-1]
     if body.startswith("git push") and "main" in body:
         return True
@@ -227,14 +279,33 @@ def offered(rule):
     return body.startswith("git reflog expire") or (body.startswith("git gc") and "--prune" in body)
 
 
-left_out = [r for r in rules if not offered(r)]
+old_prefixes = ["Bash(git push --force:*)", "Bash(git push -f:*)"]
+def pending(project_rules, declined=()):
+    return [r for r in rules if r not in project_rules and r not in declined
+            and offered(r, project_rules)]
+
+for project in (old_prefixes, old_prefixes[:1], old_prefixes[1:]):
+    if not set(force_rules).issubset(pending(project)):
+        sys.exit("an older prefix rule does not bring every force upgrade")
+if set(force_rules).intersection(pending([])):
+    sys.exit("removed force rules are brought back")
+if set(force_rules).intersection(pending(old_prefixes, force_rules)):
+    sys.exit("declined force rules are offered again")
+new_rule = next(iter(force_rules))
+previous_decline = [r for r in force_rules if r != new_rule]
+if set(force_rules).intersection(pending(old_prefixes, previous_decline)) != {new_rule}:
+    sys.exit("a previous decline does not leave only a newly added rule")
+if pending(rules):
+    sys.exit("current settings still produce an offer")
+print("  ok: either old prefix upgrades, removal/decline stays, a new rule is offered once")
+left_out = [r for r in rules if not offered(r, old_prefixes)]
 for rule in left_out:
     if not any(rule.startswith(p) for p in ("Bash(git push --force", "Bash(git push -f",
                                             "Bash(git reset", "Bash(git clean")):
         print("the monthly offer would leave out %s, which step 2 names no kind for" % rule)
         sys.exit(1)
 for rule in expected_delete:
-    if not offered(rule):
+    if not offered(rule, old_prefixes):
         print("the monthly offer would leave out %s" % rule)
         sys.exit(1)
 print("  ok: the monthly offer brings every push and delete rule, and leaves out %d others" % len(left_out))
@@ -272,6 +343,9 @@ rs_rule "a no from before the delete rules brings the offer back once" 'a line w
 rs_rule "the offer says in plain words what the delete rules stop" 'deleting a folder with everything in it, in the common spellings'
 rs_rule "and what the history rules stop" 'clearing the history git uses to recover lost work'
 rs_rule "a no keeps every rule declined before" 'every rule declined, this time and before'
+rs_rule "force upgrades need an older prefix" 'only where the project still holds at least one of the older prefix rules'
+rs_rule "the exact older prefixes are named" 'bash\(git push --force:\*\).*bash\(git push -f:\*\)'
+rs_rule "all force upgrades come from the template" 'under "a force push"'
 rs_rule "a removed force-push rule is not brought back" 'the person may have removed one on purpose'
 rs_rule "an earlier no stands" 'where it already lists every missing rule, the earlier no stands'
 rs_rule "offered once in one reply" 'offer the change once, in one reply'
