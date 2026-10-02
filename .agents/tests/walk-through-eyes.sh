@@ -29,6 +29,7 @@ TEMPLATE="$SKILLS/setup-ai-build-kit/templates/foundation/AGENTS.md"
 REQUIRED="$SKILLS/setup-ai-build-kit/references/required-tools.md"
 TOOLING="$SKILLS/setup-ai-build-kit/scripts/check-tooling.sh"
 WORKFLOW="$ROOT/WORKFLOW.md"
+PROTOTYPE="$SKILLS/clarify/references/prototype-structure.md"
 
 rs_init "Walk-through eyes checks"
 rs_exists "$BUILDER" "$CAPABILITY" "$SETUP" "$TEMPLATE" "$REQUIRED" \
@@ -42,8 +43,44 @@ rs_rule "the profile's line says what the machine can use" \
   'read the capability profile.s `walk-through eyes:` line'
 rs_rule "a project founded earlier checks at that moment and says so once" \
   'check each tool below with `command -v` now and say once what you found'
-rs_rule "a web page: the coding agent's own browser tool first" \
-  'the coding agent.s own browser tool where it has one'
+# These cases guard instructions, not a running vendor browser or a model.
+# Each deletion below must fail; weak hints cannot earn a browser action.
+rs_rule "positive identity comes from the exposed contract at use time" \
+  'read its exposed tool contract now'
+rs_rule "list connected browsers before a page action" \
+  'before opening, driving or capturing a page, list the connected browsers'
+rs_rule "positive identity means the computer serving the page" \
+  'use a browser only when that contract positively identifies it as on the computer serving the page'
+rs_rule "the positive field is conditional on the contract documenting it" \
+  '`onthiscomputer: true` qualifies only when the contract documents that meaning'
+rs_rule "different computer never qualifies" \
+  'a false or unknown identity never qualifies'
+rs_rule "same OS on another computer never qualifies" \
+  'matching operating systems and `islocal: true` alone are weak hints and never qualify'
+rs_rule "missing positive field takes the fallback" \
+  'a missing positive field takes the local fallback'
+rs_rule "failed or unavailable listing takes the fallback" \
+  'an unavailable or failed listing takes the local fallback'
+rs_rule "multiple verified choices follow documented guidance" \
+  'where several qualifying browsers remain, follow the tool.s documented choice guidance'
+rs_rule "ambiguity asks rather than guesses" \
+  'ask the person which when a choice is needed'
+rs_rule "unattended ambiguity takes the fallback" \
+  'in an unattended run with an unresolved choice, take the local fallback'
+rs_rule "identity does not override another worker's ownership" \
+  'a browser held by another worker is unavailable: never take it over'
+rs_rule "server and browser ownership are explicit" \
+  'confirm ownership of the browser and the server before use'
+rs_rule "fallback Playwright runs on the serving computer" \
+  'the local fallback is playwright on the computer serving the page'
+rs_rule "missing or failed Playwright carries the could-not-see gap" \
+  'when playwright is missing or fails, take the could-not-see path above'
+rs_rule "the report identifies its actual observation source" \
+  'record which verified browser or local fallback supplied the actual observations'
+rs_rule "the report carries unobserved screens into review" \
+  'carry anything not seen into the final review as a verification gap'
+rs_rule "browser metadata is not screen evidence" \
+  'browser metadata and a successful request are not evidence that you saw the screen'
 rs_rule "otherwise Playwright's screenshot of the whole page" \
   'npx --no-install playwright screenshot --full-page <address> <file>'
 rs_rule "only where Playwright is already there" \
@@ -96,6 +133,11 @@ rs_require_absent "an SVG's picture is never written beside the SVG" \
 rs_require_absent "section-builder no longer keeps pictures in a folder relative to the build" \
   "$BUILDER" 'keep them in `\.agents/tmp/walkthrough'
 
+rs_require_load_bearing "the prototype uses the same computer and ownership rule" \
+  "$PROTOTYPE" 'follow .how the walk-through looks. in the `section-builder` skill'
+rs_require_absent "the prototype no longer drives any available browser" \
+  "$PROTOTYPE" 'where the harness has a browser tool, use it'
+
 # --- founding records the eyes ---------------------------------------------
 
 rs_reset
@@ -137,6 +179,8 @@ rs_rule "how to give it more eyes" 'to give the walk-through more eyes'
 rs_rule "the kit never installs them" 'the kit never installs them'
 rs_rule "the pictures stay in the main folder" \
   'in the main folder.s `\.agents/tmp/walkthrough/<issue number>/`'
+rs_rule "the workflow excludes another computer and retains unseen gaps" \
+  'a browser on another computer is never used, and anything it could not see stays a verification gap in the final review'
 rs_guard "$WORKFLOW" "WORKFLOW.md"
 rs_require_absent "WORKFLOW.md no longer keeps pictures relative to the build" \
   "$WORKFLOW" 'keeps them in `\.agents/tmp/walkthrough'

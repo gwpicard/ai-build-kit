@@ -345,11 +345,33 @@ found.
 
 Try the means for the piece's output in this order:
 
-- A web page: the coding agent's own browser tool where it has one, such as
-  Claude in Chrome on Claude Code. Otherwise Playwright's command line,
+- A web page: where the coding agent has a browser tool, read its exposed
+  tool contract now. Before opening, driving or capturing a page, list the
+  connected browsers by the means that contract supplies. Use a browser only
+  when that contract positively identifies it as on the computer serving the
+  page. For example, `onThisComputer: true` qualifies only when the contract
+  documents that meaning. A false or unknown identity never qualifies.
+  Matching operating systems and `isLocal: true` alone are weak hints and
+  never qualify. A missing positive field takes the local fallback; an
+  unavailable or failed listing takes the local fallback too. The capability
+  profile names tools and cannot establish current browser identity.
+
+  Where several qualifying browsers remain, follow the tool's documented
+  choice guidance, asking only among those browsers. Ask the person which
+  when a choice is needed; never guess. In an unattended run with an
+  unresolved choice, take the local fallback. Confirm ownership of the
+  browser and the server before use. A browser held by another worker is
+  unavailable: never take it over. If no qualifying browser is available to
+  this walk-through, take the local fallback.
+
+  The local fallback is Playwright on the computer serving the page:
   `npx --no-install playwright screenshot --full-page <address> <file>`, where
   the project or the machine already has Playwright. The kit never installs a
-  browser.
+  browser. When Playwright is missing or fails, take the could-not-see path
+  above. Record which verified browser or local fallback supplied the actual
+  observations, and why any browser tool was skipped. Carry anything not seen
+  into the final review as a verification gap. Browser metadata and a
+  successful request are not evidence that you saw the screen.
 - A PDF: `pdftoppm -png -r 80 -f 1 -l 30 <file> <folder>/page`, from Poppler,
   which writes one image for each of the first 30 pages. `pdfinfo <file>`,
   from the same package, gives the page count. In a longer file, the pages

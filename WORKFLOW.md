@@ -283,8 +283,10 @@ checkpoint route, which has no pull request, the agent gives you something to
 try and waits for your reply before saving.
 
 The walk-through looks at what you would see. For a web page, it takes a
-screenshot with the coding agent's own browser tool, or with Playwright where
-the project already has it. For a PDF, a document or an image, it turns each
+screenshot only with a browser positively identified as on the computer serving
+the page, or with Playwright there where the project already has it; a browser
+on another computer is never used, and anything it could not see stays a
+verification gap in the final review. For a PDF, a document or an image, it turns each
 page into a picture and reads it, up to the first 30 pages of a long file.
 Whatever it could not look at, it names, and the piece waits in to check for
 you.
