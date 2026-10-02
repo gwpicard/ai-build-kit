@@ -61,6 +61,13 @@ expect "a turn that has waited its allowance is sent anyway" \
 expect "and one filler short of the allowance still waits" \
   wait "nobody who understands" "Which of the three should I look at first?" 1
 
+# The headless interview asks the same short question and labelled guess as
+# the plain-text fallback. The script must wait for that question, not a UI.
+expect "a scripted interview waits for its plain-text question" \
+  wait "Who uses it" "My guess: the team." 0
+expect "a scripted interview sees the question beside its labelled guess" \
+  send "Who uses it" "My guess: the team. Who uses it?" 0
+
 # A pattern nobody's reply will ever match must not swallow the run. This is
 # the false-failure guard: two fillers, then the line goes out regardless.
 printf '%s' "The kit said something else entirely." > "$reply"
