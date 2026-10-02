@@ -509,6 +509,8 @@ GitHub collaborators identify who has access. Invite someone under the repositor
 
 Nothing else changes when a second person arrives: naming a piece before starting it already stops two people building the same thing. Each of you gets your own printed list, so there is no shared file to clash over. Open pull requests show work in progress, and /what-now identifies conflicts and unfinished work rather than leaving you to read Git state yourself.
 
+Assigning a piece that is shaping and waiting for clarification or a prototype hands its question to that person; the printed list names every answer owner and when each answer became owed, or says date unknown. Unassigned questions stay unassigned. Once the answer is reconciled and an independent readiness check passes, the answering assignment comes off as the piece becomes ready. A retained name on ready work does not reserve its build; the agent names it before claiming, and protects work already being built.
+
 The agent posts under your account, so a colleague reads its comments as you. Nothing goes to a colleague in your name until you have seen the words and said yes, and an issue a colleague opened keeps its title and scope unless you agree to the change. Labels and the kit's own bookkeeping notes go on without asking.
 
 ## 12. Sync and maintenance
