@@ -158,6 +158,12 @@ walked through and reviewed, and opens its own pull request, with the parts of
 one parent sharing one. A piece that depends on another built in the run stacks
 on its branch.
 
+On the pull-request route, the approved plan names a checked integration branch.
+All checked features combine there; the final report presents one combined
+pull request to main, actual automated/browser evidence and every human flag
+still owed. Integration does not clear a flag. Final main waits for human
+review and its separate yes through the shared merge route.
+
 On Claude Code, each piece in a run is built in its own worktree under
 `.agents/worktrees/`, named after the piece, while the main folder stays on its
 branch. Where the plan holds a group of pieces that can go together, the run

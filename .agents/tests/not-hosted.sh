@@ -44,10 +44,10 @@ rs_rule "the recipe's going-live section decides then" \
   'where it says a change to `main` goes live, treat the merge as `on every merge`, and otherwise as `through /ship`'
 rs_rule "a missing line asks which of the three" \
   'ask, in the reply that asks for the merge, which of the three it is: the merge reaches a preview, the merge goes live, or nothing is hosted'
-rs_rule "condition 6 counts not hosted as not going live" \
-  '6\. its merge would not go live: the `goes live:` line says `through /ship` or `not hosted`'
-rs_rule "pre-approval covers a not-hosted merge" \
-  'a merge on a tool that is `not hosted` puts nothing live, so pre-approval covers it too'
+rs_rule "condition 6 limits integration to a branch that does not go live" \
+  '6\. its merge targets only the recorded integration branch and would not go live'
+rs_rule "pre-approval covers only checked integration" \
+  'it covers checked feature integration on the run.s recorded branch only'
 rs_guard "$MERGE" "the merge step"
 
 # --- /ship --------------------------------------------------------------------

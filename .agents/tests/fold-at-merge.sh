@@ -83,7 +83,7 @@ rs_rule "a pull request with no issue uses its own number" \
   'a pull request with no issue, such as a records pull request, uses its own number'
 rs_require_load_bearing "a squash-merged base is taken in at the merge, never rebased" \
   "$ROOT/.agents/skills/implement/references/running-longer.md" \
-  'the stacked branch takes in `main` at its own merge, as the `section-builder` skill.s `references/merge\.md` describes'
+  'the stacked branch takes in the integration target at its own merge, as the `section-builder` skill.s `references/merge\.md` describes'
 
 rs_guard "$MERGE" "the merge step's fold"
 

@@ -39,7 +39,7 @@ project.mkdir()
 git('init', '-qb', 'main')
 git('config', 'user.name', 'Fixture')
 git('config', 'user.email', 'fixture@example.invalid')
-(project / '.gitignore').write_text('.agents/\n')
+(project / '.gitignore').write_text('.agents/\nbuild/\n')
 (project / 'check.py').write_text("from pathlib import Path\nassert not (Path('a').exists() and Path('bad').exists())\nassert not Path('shared-failure').exists()\n")
 git('add', '.')
 git('commit', '-qm', 'Checked start')
@@ -50,7 +50,7 @@ git('push', '-q', 'origin', 'main')
 state = project / '.agents/runs/test/state.json'
 write(state, {'run':'test', 'merge_preapproved':True, 'pieces':[
     {'number':n, 'state':'to check', 'flags':['Phone layout still needs your review'] if n == 1 else []}
-    for n in range(1, 6)]})
+    for n in range(1, 7)]})
 integration = project / '.agents/worktrees/integration'
 git('worktree', 'add', '-qb', 'integration/test', integration, start)
 git('push', '-q', 'origin', 'integration/test', cwd=integration)
@@ -96,16 +96,27 @@ def feature(number, name):
     path=project / ('.agents/worktrees/feature-' + str(number))
     git('fetch', '-q', 'origin')
     git('worktree','add','-qb','feature-'+str(number),path,'origin/integration/test')
+    saved=read(state)
+    next(p for p in saved['pieces'] if p['number']==number)['start_commit']=git('rev-parse','HEAD',cwd=path)
+    write(state,saved)
     (path / name).write_text(name)
+    (path / 'changes').mkdir(exist_ok=True)
+    (path / ('changes/'+str(number)+'.md')).write_text('Feature '+name+'\n')
     git('add', '.', cwd=path); git('commit','-qm','Feature '+name,cwd=path)
     git('push','-q','origin','HEAD',cwd=path)
     pr(number,'feature-'+str(number))
     return path
 
-call('init', '--source', integration, '--check', 'python3 check.py')
+call('init', '--source', integration, '--check', 'python3 check.py && mkdir -p build && printf generated > build/output')
 for number, name in ((1,'a'),(2,'b')):
     path=feature(number,name)
+    update=root / '.agents/skills/section-builder/scripts/bring-up-to-date.sh'
+    run('sh',update,'--base','integration/test',path)
+    assert (path / ('changes/'+str(number)+'.md')).exists()
     call('check','--piece',number,'--source',path,'--check','python3 check.py')
+    pr(number,'feature-'+str(number),'main')
+    call('merge-feature','--piece',number,'--source',path,'--pr',number,code=2)
+    pr(number,'feature-'+str(number))
     call('merge-feature','--piece',number,'--source',path,'--pr',number)
 assert git('--git-dir',remote,'rev-parse','main') == start
 assert read(state)['integration']['included'] == [1,2]
@@ -114,6 +125,8 @@ assert (fixture / 'merges.log').read_text().splitlines() == ['integration/test']
 
 # A combined failure stays on its feature branch and goes through existing recovery.
 bad=feature(3,'bad')
+# The feature's own acceptance passes; the combined baseline check detects it.
+run('python3','-c',"from pathlib import Path; assert Path('bad').read_text() == 'bad'",cwd=bad)
 call('check','--piece',3,'--source',bad,'--check','python3 check.py',code=2)
 call('merge-feature','--piece',3,'--source',bad,'--pr',3,code=2)
 bad_head=git('rev-parse','HEAD',cwd=bad)
@@ -160,16 +173,49 @@ write(record,{'pr':10,'head':git('rev-parse','HEAD',cwd=integration),'base':star
               'yes_words':''})
 call('review','--record',record)
 call('merge-final','--pr',10,'--record',record,code=2)
-human=read(record); human['yes_words']='Yes, merge the combined pull request'; write(record,human)
+human=read(record); human['yes_words']='No, leave it open'; human['merge_approved']=False; write(record,human)
+call('merge-final','--pr',10,'--record',record,code=2)
+human['yes_words']='Yes, merge the combined pull request'; human['merge_approved']=True; write(record,human)
 
 # Shared verification failure invalidates old green and old review.
+call('check','--source',integration,'--check','false',code=2)
+next_piece=feature(6,'next')
+call('check','--piece',6,'--source',next_piece,'--check','test -f next')
+call('merge-feature','--piece',6,'--source',next_piece,'--pr',6,code=2)
+assert 6 not in read(state)['integration']['included']
 (integration/'shared-failure').write_text('failed shared base')
 git('add','.',cwd=integration); git('commit','-qm','Shared failure',cwd=integration)
 git('push','-q','origin','HEAD',cwd=integration)
 call('check','--source',integration,'--check','python3 check.py',code=2)
 assert read(state)['integration']['verification']['passed'] is False
+call('merge-feature','--piece',6,'--source',next_piece,'--pr',6,code=2)
+assert 6 not in read(state)['integration']['included']
 call('merge-final','--pr',10,'--record',record,code=2)
 assert git('--git-dir',remote,'rev-parse','main')==start
+
+# A new verified result needs new review, and then the separate yes permits it.
+git('revert','--no-edit','HEAD',cwd=integration)
+git('push','-q','origin','HEAD',cwd=integration)
+call('check','--source',integration,'--check','python3 check.py')
+call('merge-final','--pr',10,'--record',record,code=2)
+human['head']=git('rev-parse','HEAD',cwd=integration)
+human['yes_words']=''; write(record,human)
+call('review','--record',record)
+changed=read(state)
+changed['pieces'][0]['flags'].append('Another human observation remains owed')
+write(state,changed)
+human['yes_words']='Yes, merge the combined pull request'; write(record,human)
+call('merge-final','--pr',10,'--record',record,code=2)
+changed['pieces'][0]['flags'].pop(); write(state,changed)
+call('merge-final','--pr',10,'--record',record)
+assert read(state)['integration']['final_merged'] is True
+assert git('--git-dir',remote,'rev-parse','main') != start
+assert (fixture/'merges.log').read_text().splitlines()==['integration/test']*3+['main']
+assert read(state)['pieces'][0]['flags']==['Phone layout still needs your review']
+saved=read(state); saved['integration'].pop('final_merged'); write(state,saved)
+call('reconcile','--source',integration)
+assert read(state)['integration']['final_merged'] is True
+assert (fixture/'merges.log').read_text().splitlines()==['integration/test']*3+['main']
 print('Integration run: passing pieces, real targets, retained combined failure, independent continuation, dependent refusal, resume, flags and final consent held.')
 print('Fixture retained at',fixture)
 PY

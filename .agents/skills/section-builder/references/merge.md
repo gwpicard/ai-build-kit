@@ -49,13 +49,23 @@ Three cases end without a green check:
 
 ## Before any merge
 
+Resolve the pull request's actual target first. Outside a run it is `main`.
+During a pull-request run, a feature aims only at the recorded integration
+target. A stacked feature waits for its base to integrate, then is re-aimed at
+that target with `gh pr edit <number> --base <integration target>`. The combined
+pull request alone aims at `main`. Refuse a mismatched target. Every update and
+check below uses that resolved target; no run feature is re-aimed at main.
+The main-based examples below describe an ordinary or final main-facing merge;
+for feature integration, substitute the recorded target in the update and
+history commands and keep the changelog files unfolded.
+
 Merge only a pull request whose project check is green. Never merge over a red
 check: say it is red, and take it to `/fix`.
 
-A green check says the pull request passed against the `main` it was cut from.
+A green check says the pull request passed against the target it was cut from.
 Once another pull request merges, that answer is out of date, and two pieces
 that each pass alone can break `main` together. So every merge, fold or no fold,
-first brings the branch up to date with `main` and checks it again. Once the
+first brings the branch up to date with its target and checks it again. Once the
 merge is approved, run this skill's `scripts/bring-up-to-date.sh`, as "The fold
 before the merge" says, and wait for the project check on the commit its last
 line prints, as "Waiting for the check" says. Merge only on green. The
@@ -87,11 +97,22 @@ When the update stops the merge, nothing merges:
 A pull request that stacks on another piece's branch is never merged before its
 base. Where the base is still open, say which to merge first, and merge the base
 first when the person's yes names both. Once the base has merged, check that the
-stacked pull request now aims at `main`, and change it with
-`gh pr edit <number> --base main` where it does not. Then bring it up to date
+stacked pull request now aims at its resolved target, and change it with
+`gh pr edit <number> --base <target>` where it does not. Then bring it up to date
 and check it again, as above, before you merge it.
 
 ## The fold before the merge
+
+Feature integration runs `scripts/bring-up-to-date.sh --base <integration
+target> --no-fold <folder>`. This takes in the current target without folding
+or undoing document folds. Pieces keep their individual history and waiting
+record files. The final main-facing pull request follows the existing fold
+route below. Document consolidation remains owned by that route; this step
+adds no second writer or records architecture.
+For the combined run result, prepare and fold under the approved build before
+presenting final review. Its separate final yes authorises the merge of that
+reviewed result. Outside this combined route, the named yes precedes the fold
+as described below.
 
 Each piece leaves its changelog entry in its own file in `changes/`. The merge
 is what folds those files into `CHANGELOG.md`, so the history stays whole
@@ -175,6 +196,46 @@ branch yourself: the project's settings delete a merged branch. Where GitHub
 cannot be reached, nothing merges. Say in one line that the merge waits, that
 it can be asked for again once GitHub answers, and that the person can merge it
 on GitHub themselves.
+
+For a feature in a run, after due acceptance and combined-candidate checks, run
+the installed implement skill's `scripts/integration.py check --state
+<state.json> --piece <number> --source <feature copy> --check <due command>`,
+repeating `--check` for commands due on that candidate. The candidate must
+contain the current checked integration baseline. Then run `merge-feature
+--state <state.json> --piece <number> --source <feature copy> --pr <number>`.
+It checks the actual target, current refs, unchanged verification inputs and
+GitHub's finished checks, then merges on the pull request with a merge commit
+and `--match-head-commit`. It records a pending write before the remote call,
+and included work only after confirming its retained history and checked tree.
+On interruption, reconcile that write before trying another merge. A changed
+combined tree invokes the existing recovery route; no unchecked baseline is
+used to continue. The helper enforces these mechanical conditions; the skill
+still checks permission, readiness and independent review before calling it.
+
+## Final review of a run
+
+The combined main-facing pull request waits for recorded human review and a
+separate explicit yes covering that result. Neither build approval nor advance
+integration consent covers it. Present the included pieces with actual
+automated/browser evidence and every unresolved human flag. A flag may be
+acknowledged in the person's review; never mark an unperformed observation
+checked. A red automated check cannot be accepted through this exception.
+
+Prepare and verify the combined branch before presenting it: take in current
+`main`, run the owned fold, wait for the project check, and run due final
+combined verification through `integration.py check`. Record the person's
+review in a private JSON file with `pr`, exact `head`, exact `base` (current
+main), `reviewed: true`, and their actual `review_words`. Run `integration.py
+review --state <state.json> --record <file>`. After the separate yes, record
+`merge_approved: true` and their actual `yes_words`, then run `integration.py merge-final --state <state.json>
+--pr <number> --record <file>`. Never write either reply on their behalf.
+
+The helper refuses advance consent, missing review, changed included work or
+flags, changed main, stale verification and a different pull request. Any
+change after review needs due checks and review of the new result before a new
+yes. Preserve individual branches and pull request links for inspection. The
+normal live-merge checks and notice below still apply to this final merge.
+Never substitute a direct push to main or individual main-facing feature merges.
 
 ## When a merge goes live
 
@@ -261,23 +322,24 @@ the box does not catch.
 Before a run starts, the person may say that pieces which pass may be merged.
 Write that as `merge_preapproved` in the run's state file. It holds for that run
 alone and ends with it, so it never reaches a later run or a piece built outside
-one. It covers merges that reach a preview. Nothing goes live without the
-person's yes naming it, or `/ship`. A merge on a tool that is `not hosted` puts nothing
-live, so pre-approval covers it too.
+one. It covers checked feature integration on the run's recorded branch only,
+within the conversation where it was given. It can be withdrawn and ends with
+the conversation or `/clear`; a saved answer is not consent in a new session.
+The owned advance-permission route records that scope. Nothing goes live
+without the person's yes naming it, or `/ship`.
 
 With pre-approval, merge a piece only when all six hold:
 
-1. its project check is green on the commit brought up to date with `main`;
+1. its project check is green on the commit brought up to date with the integration target;
 2. its review found nothing worth stopping for;
-3. its pull request flags no choice for the person to confirm, and names nothing
-   the walk-through could not see;
+3. every choice flagged for confirmation and every observation the walk-through
+   could not make is recorded for final human review, without claiming it checked;
 4. it touches no sensitive area named in the build-path section, accepted or not;
-5. the person has not opted in to check it: the piece has no `Waiting on you:
-   try it` line, and `.ai-build-kit-maintenance` has no `check-myself|yes` line;
-6. its merge would not go live: the `Goes live:` line says `through /ship` or
-   `not hosted`. Where it says `on every merge`, where the recipe says a change
-   to `main` goes live, or where the route is not known, the merge would go
-   live.
+5. a `Waiting on you: try it` line or `check-myself|yes` opt-in stays an unresolved
+   human-review flag in the final report; due automated checks still pass;
+6. its merge targets only the recorded integration branch and would not go live.
+   Where the recipe publishes that branch too, or the route is not known, the
+   merge would go live and needs the person's named yes instead.
 
 A pre-approved run never meets the confirmation box, because condition 6 keeps
 it from making a merge that goes live.

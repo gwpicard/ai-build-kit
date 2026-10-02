@@ -477,7 +477,8 @@ def held_up_note(issue):
 # when no area on their Touches lines matches, so the pieces of one group
 # can be built at the same time in any order. Two pieces that pass alone can
 # still fail together, so each still merges one at a time, brought up to date
-# with main and checked again first. Pieces are placed in number
+# with the run's integration target and checked again first. Final main waits
+# for human review and a separate yes. Pieces are placed in number
 # order, each in the first group it clashes with nothing in. A piece with no
 # Touches line goes alone, because nothing says what it would change.
 def go_together(group):
