@@ -25,8 +25,10 @@ rs_rule "interrupted writer" 'a missing report counts as a failed attempt only a
 rs_rule "resume recovery" 'resume through the existing checked-baseline recovery rules before another builder starts'
 rs_guard "$HANDOFF" "task-handoff.md"
 rs_require_load_bearing "section-builder loads handoff" "$ROOT/.agents/skills/section-builder/SKILL.md" 'load `references/task-handoff\.md`'
-rs_require_load_bearing "compatibility owns evidence" "$ROOT/docs/COMPATIBILITY.md" '## task context capabilities'
-COMPAT="$ROOT/docs/COMPATIBILITY.md"
+rs_require_load_bearing "compatibility points to installed evidence" "$ROOT/docs/COMPATIBILITY.md" '## task context capabilities'
+rs_require_load_bearing "handoff loads installed evidence" "$HANDOFF" 'load \[task context capabilities\]\(task-context-capabilities\.md\)'
+rs_require_load_bearing "compatibility links to owning reference" "$ROOT/docs/COMPATIBILITY.md" 'section-builder/references/task-context-capabilities\.md'
+COMPAT="$ROOT/.agents/skills/section-builder/references/task-context-capabilities.md"
 rs_require_load_bearing "Claude non-fork route" "$COMPAT" 'non-fork general-purpose subagents'
 rs_require_load_bearing "Codex fresh-input condition" "$COMPAT" 'separate threads alone do not prove fresh input'
 rs_require_load_bearing "Cursor clean input" "$COMPAT" 'start without prior conversation history'

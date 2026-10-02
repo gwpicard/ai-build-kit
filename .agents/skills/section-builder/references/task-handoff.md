@@ -2,8 +2,9 @@
 
 Use this reference only when section-builder receives a piece from a multi-piece
 run's coordinator. The coordinator keeps the agreed plan and resource ownership;
-the builder carries one task's build detail. Capability evidence belongs in
-[the compatibility guide](../../../../docs/COMPATIBILITY.md#task-context-capabilities).
+the builder carries one task's build detail.
+Load [task context capabilities](task-context-capabilities.md) for the owned
+capability evidence and route conditions.
 
 ## Select the route
 
