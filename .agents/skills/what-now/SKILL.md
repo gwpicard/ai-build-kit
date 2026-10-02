@@ -100,6 +100,11 @@ An unfinished run is named next, after anything broken or failing: a run whose
 state file still shows a piece waiting or being built. Say how far it got and
 what is left, in piece names, and offer to resume it. Its recovery route is
 below.
+Before deciding a run is finished, compare its pieces with their durable
+`recovery.json` records, including records missing from run state, as the
+`implement` skill's `references/running-longer.md` describes. A differing
+generation or stage, or a pending write, means unfinished recovery. Offer
+`/implement queue` to reconcile and check it again; change no record here.
 
 A piece waiting on the person is named apart from the rest, as their own thing
 to do rather than something the agent is working through: "nothing can happen on

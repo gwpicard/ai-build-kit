@@ -21,7 +21,9 @@ worktree" below says. The main folder, the project folder the run started in,
 stays on the branch it was on: a run never switches the main folder to a
 piece's branch. On any other coding agent, or where Git is older than 2.17,
 the first with `git worktree remove`, a run works in one checkout, one piece after another, in the
-way a person would run them by hand.
+way a person would run them by hand. Recovery before continuation may open a
+separate checked copy on any coding agent. If Git cannot do that safely, stop
+continuation and keep the failed checkout.
 
 Where the coding agent can start a session that did not build the piece, use
 it for the readiness check and the independent review, as those steps already
@@ -174,6 +176,15 @@ folder ignores itself and nothing tracked changes.
 - `port` is the port the piece's dev server listens on, or `null` where no
   dev server was started for it.
 - `pull_request` is the number of its pull request, or `null` before one opens.
+- `start_commit` is the exact commit checked before this task's first edit.
+  Record it after the start ritual, including earlier successful parent parts.
+  A branch name alone does not identify that boundary once work continues.
+- `checked_commit` identifies the commit that passed the finished task's
+  checks. Record it for a built part waiting for its parent's pull request,
+  or for a task in `to check` or `merged`, before another task uses its work.
+- `recovery`, when present, records the failed task's retained work, its stage,
+  the baseline commit and worktree, each check command and exit code, and any
+  verification gap. The helper below writes it after each recovery step.
 - `attempts` counts the failed attempts at its build.
 - `flags` holds each easy-to-undo choice the builder made alone, one line each.
 - `reason` says why a piece was parked, sent back, skipped, waits, or was not
@@ -334,7 +345,8 @@ below are shared out as "Building a group at the same time" says. For each one:
    check: the tool starts and its first screen or command answers. On Claude
    Code, do this inside the piece's worktree, with a dev server on the piece's
    own port. Then confirm each of the piece's Relies on lines still holds, by
-   reading what it names.
+   reading what it names. Record the checked `start_commit` before the first
+   edit, for every task including each part on a shared-parent branch.
 4. **Write the checks first**, as section-builder's step 4 says, and show that
    they fail.
 5. **Build it**, as section-builder's step 5 says, and verify it with the
@@ -460,21 +472,27 @@ A hard choice, about the shape of stored data, how records sync, or what leaves
 the tool, stops that piece. Write the question on the piece, push the branch
 and keep it, and send it back to shaping,
 `gh issue edit <number> --add-label shaping --add-label needs-clarification --remove-label building --remove-assignee @me`.
-Mark it `shaping` in the state file.
+Mark its intended final state as `shaping`; preserve and isolate its work as
+"Recovery before continuation" below says before another piece starts.
 
 An easy choice, one a later change can undo without touching stored data, takes
 the most reversible option. Record it in `flags` and in the pull request's
 `## Flagged for confirmation` list. A flagged piece is never merged under
 pre-approval.
 
-Either way the run moves on to the next unblocked piece.
+Either way the run moves on to the next unblocked piece, after recovery where
+work stopped unfinished. An easy flagged choice that still passes its checks
+needs no failure recovery.
 
 ## When a piece fails
 
 Retry within the piece, up to three attempts, the same number fix uses. After
 the third, park it: move it from `building` to `parked` in one step,
 `gh issue edit <number> --add-label parked --remove-label building --remove-assignee @me`,
-with one line on what kept failing, push its branch, and take the next piece.
+with one line on what kept failing. Preserve its work before a checkout changes,
+as "Recovery before continuation" below says. Keep its branch and push it only
+through the existing authorised save route; inability to upload never permits
+losing work. Take the next piece only after its baseline and eligibility checks.
 Never let one piece consume the run. Route the parked piece further when the
 failure points somewhere specific: send it back to `/shape`, which settles a
 missing decision, chases a missing external fact, or reassesses a shape the
@@ -495,9 +513,119 @@ recorded acceptance, even one the plan did not expect: section-builder's
 flagged route parks it at the condition, and the run takes the next piece. The
 run goes on; only that piece stops. Never guess to keep a run going.
 
+## Recovery before continuation
+
+This applies after an unsuccessful task or a pause for input, before the run
+considers another task, and on resuming an interrupted recovery. Say once:
+"The run keeps failed work for review and carries on from checked code where
+it can." The coordinating session owns recovery and its records. Stop the
+failed task's commands and dev server first so the copy cannot change while it
+is preserved. A background builder never runs recovery or changes run state.
+
+1. **Keep the failure.** Identify the task and the exact `start_commit` checked
+   before its first edit. Keep the check results, including checks that could
+   not run, in a private local file. Run the installed implement skill's
+   `scripts/recovery.py` with `preserve --state <state.json> --piece <number>
+   --source <failed checkout> --base <start_commit> --evidence <check results>`.
+   Add `--final-state shaping` for a pause on a decision. It pins the failed
+   commit, snapshots the working files including ignored files without following
+   links, and retains the staged patch and check evidence. It verifies their
+   contents before recording `preserved` in run state. The original checkout
+   stays untouched. No next task uses it, even when an upload fails.
+2. **Identify the continuation base.** Use the recorded pre-task commit, never
+   a guessed current branch head. On a shared-parent branch it must hold every
+   earlier successful part and none of the failed part. Read the commit and
+   those parts' saved checks to confirm that boundary. When it is unknown,
+   overlapping or not saved, stop that parent. Preserve everything, and consider
+   only separately checked independent work elsewhere. Never reset, overwrite
+   or clean away work to obtain a base.
+3. **Check that base.** Run `scripts/recovery.py` with `baseline --state
+   <state.json> --piece <number> --check <existing project check command>`,
+   repeating `--check` for the project's checks appropriate to this base,
+   including its smoke check. The helper opens a separate worktree through
+   `worktree.sh`, on a recovery branch at the identified commit, and runs those
+   commands there. An install the checks need is a project-local command run
+   before the checks; it never installs outside the project. Supply `--gap
+   <reason>` for anything verification cannot establish. No checks, a failing
+   check, or an unresolved gap gives no passing baseline. A changed checkout
+   also invalidates its result. The helper compares tracked bytes with the named
+   commit even when index flags hide changes. It privately fingerprints actual
+   inputs behind established worktree links before and after checking, and again
+   before continuation. The archive still never follows links. An unknown,
+   unreadable, looping or unsafe linked target leaves verification incomplete.
+   Record the baseline's path and commit, commands,
+   exit codes and gaps. A failure of a shared base stops every task relying on
+   it; independently checked work on another base may still continue.
+4. **Refresh what can continue.** Refresh the plan printout and current issue
+   state, including every direct and transitive blocked-by link, before each
+   new claim. Re-read the failed task's current code impact with the existing
+   reach check and its direct-reading fallback. A code map never substitutes
+   for explicit issue blockers. Save the observations in the run folder in the
+   formats below and run `scripts/recovery.py` with `eligible --state
+   <state.json> --piece <failed number> --candidate <next number> --issues
+   <current issues.json> --impact <current impact.json>`. Unknown blockers,
+   stale observations, a changed baseline or unestablished independence refuse
+   continuation. Direct and transitive dependants stay unbuilt. Then apply
+   "Which pieces a run may take" and the normal claim read-back, since this
+   gate does not claim or judge the full readiness contract.
+
+The issue observation is a JSON object with `observed_at`, a current UTC time,
+and `issues`, a list of objects holding `number`, `state` (`open` or `closed`),
+`labels` (names), and `blocked_by` (numbers). Include every blocker reached,
+even outside the run. Read live issue bodies and dependency links rather than
+copying the original plan. The impact observation has `observed_at`,
+`base_commit` and `tasks`, keyed by each candidate's number as a string. Each
+value has `independent`, true only when current code and verification establish
+it, and `reason`, the evidence for that conclusion. Both observations must be
+newer than the baseline check. The helper traverses the blocker chain and
+checks the identified baseline again before permitting continuation. It changes
+no issue, label, claim or completion state for the candidate.
+
+A checked shared-parent baseline becomes that parent's continuation branch and
+worktree. Update the earlier successful parts' branch and worktree pointers to
+it; their commits remain present. Keep the failed branch separate, and include
+only successfully checked parts in the parent's pull request. An incomplete
+parent is never reported complete. Independently built pieces use their own
+identified checked bases, through the usual branch step. Record which recovery
+allowed each continuation and repeat the checks if that base changes. For a
+later successful part on that copy, pass `--base <checked_commit>` to
+`baseline`. The helper accepts an advance only when a successfully built task
+records that commit, the earlier successful base remains in its history and
+every commit exclusive to the failed task after its recorded start is absent,
+then reruns the checks. An arbitrary new branch
+head earns no checked baseline.
+
+The recovery files live in the main folder's ignored `.agents/recovery/`, with
+access limited to this computer's account. They may contain confidential work;
+publish only their recoverable locations and the plain reason, never their
+contents. `recovery.json` there and the piece's `recovery` field identify the
+pinned commit, file archive, staged patch and check evidence. They outlive the
+run folder; `worktree.sh` keeps the retained source and baseline copies. Do not
+remove their refs, folders or worktrees while a failure still needs review.
+The durable `recovery.json` owns the generation and stage. Before deciding a
+run has finished or resuming it, run `scripts/recovery.py` with `reconcile
+--state <state.json> --piece <number>` for each piece, including a piece whose
+run-state recovery field is missing. The helper finds its durable record and
+reconciles the run state. A disagreement or an interrupted write stays
+unfinished until the baseline checks run again. Eligibility and baseline
+checking also reconcile first; a stale checked generation never replaces a
+newer checking record. A record that cannot be reconciled stops continuation.
+
+An interruption after preservation leaves the piece `building` in the local
+run record with the reason `Recovery unfinished`; its issue may already be
+parked or shaping. This keeps it visible to existing resume readers and says
+nothing about a successful build. Resume recovery before the ordinary build
+steps: verify the retained record again and rerun `baseline`. A `checking`
+stage is still unchecked even when some commands already passed. Only a
+checked or explicitly blocked recovery records the intended final state. If
+preservation or baseline creation fails, keep the record and checkout, stop
+continuation and report why. Do not turn an interrupted recovery into a
+finished run merely because all issue labels look final.
+
 ## Resuming
 
-A new session resumes from the state file, never from memory. A run is
+First reconcile durable recovery records as above. A new session resumes from
+the state file, never from memory. A run is
 unfinished while any piece in its state file is `waiting` or `building`. A run
 whose every piece is in a final state is finished, and is never offered for
 resuming. `/implement` typed alone or with `queue`, `/what-now` and `/sync`
@@ -509,12 +637,15 @@ Resuming is the same run, so its `merge_preapproved` stands. So does its
 it in their reply. Where the session died with several pieces built at once,
 such as on a machine that ran out of memory, the state file shows each of them
 `building` with its worktree, and each continues as below. Read `state.json`
-and `progress.md`, and take the pieces from where they stand. A piece shown as
+and `progress.md`, and take the pieces from where they stand. First complete any
+`preserved` or `checking` recovery as above; never restart its failed build
+or claim another piece from an unchecked recovery base. A piece shown as
 `building` continues from its last commit: on Claude Code, open its worktree
 again with `worktree.sh open --resume`, which reuses the one already there,
 and elsewhere check out its branch. Where that worktree holds an uncommitted
 change, the script keeps it as it is: park the piece with that reason, since
-the session that made the change is gone. Read what its commits already hold,
+the session that made the change is gone. Preserve it and establish the next
+task's checked base through recovery before continuation. Read what its commits already hold,
 run its checks, and carry on from the first step not done. Read its claim back first. Where the claim is no longer this run's, back
 off it as step 1 says.
 
@@ -583,7 +714,11 @@ The report, in plain words, is one list and a merge order:
   `references/merge.md`, or that it conflicted with `main` or turned red once
   `main` was taken in. A piece held back
   because its merge would go live says so, and waits for the person or `/ship`;
-- what was not eligible, or not reached, and why.
+- what was not eligible, or not reached, and why;
+- for each unsuccessful task, what was kept for review and its recoverable local
+  location, the checked commit and checks used for continuation, which tasks
+  continued independently, and what stopped on a shared failure or verification
+  gap. Say explicitly when recovery remains unfinished.
 
 The person answers with the pull requests to merge, and each merge follows the
 `section-builder` skill's `references/merge.md`.
