@@ -532,11 +532,17 @@ decisions on the masterplan.
 
 /sync also reads the project's README, and any document AGENTS.md points at,
 against the project itself. It names a file, link, command or setting a
-document mentions that no longer exists, at the line it sits on, and offers to
-correct just that name or to file it for later. A document that says less than
-the project does is fine. It checks names only, so it cannot tell you whether a
-described step still happens that way, and it says so. When every name still
-points at something real, you hear nothing about it.
+document mentions that no longer exists, at its line, and offers to correct
+just that name or file it for later. A document that says less than the
+project does is fine.
+
+It also checks explicit required commands and check routes, including those
+in AGENTS.md. If a named route no longer calls its required check, it names
+the missing connection and what it inspected. An inactive rule is not broken;
+unknown conditions and indirect wiring remain unverified. This checks names
+and explicit check routes. Other instructions remain unverified. These checks
+run no project scripts or hooks and change no project files. With no finding,
+you hear nothing about it.
 
 /sync names open pieces untouched for 30 days in one short list and asks once
 whether each is still wanted, should be parked, or is done. It changes nothing

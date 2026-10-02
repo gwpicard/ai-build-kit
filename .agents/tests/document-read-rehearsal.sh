@@ -174,3 +174,208 @@ echo "  ok: a file in docs/ the list does not name is still not read"
 
 echo
 echo "document-read-rehearsal.sh: stale names found at their lines, true ones left alone"
+
+# Explicit declarations: names can remain while their route stops calling them.
+python3 - "$SCRIPT" "$WORK" <<'PY'
+import ast
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import sys
+
+script, work = map(Path, sys.argv[1:])
+project = work / "wiring"
+project.mkdir()
+(project / "AGENTS.md").write_text("Required check: `npm run guard` via `npm run check`.\n")
+(project / "README.md").write_text("Required command: `pnpm run guard`.\n")
+package = project / "package.json"
+
+def scripts(route):
+    package.write_text(json.dumps({"scripts": {"check": route, "guard": "node --test", "unit": "node --test"}}))
+
+def snapshot():
+    return {str(p.relative_to(project)): hashlib.sha256(p.read_bytes()).hexdigest()
+            for p in project.rglob("*") if p.is_file()}
+
+def run(detector=script):
+    before = snapshot()
+    result = subprocess.run([sys.executable, str(detector)], cwd=project,
+                            capture_output=True, text=True, check=True)
+    assert snapshot() == before, "detector changed project files"
+    return result.stdout
+
+scripts("npm run guard && pnpm run unit")
+assert run() == "", "intact route produced findings"
+unchanged = (project / "AGENTS.md").read_bytes()
+scripts("npm run unit")
+broken = run()
+assert "AGENTS.md:1\twiring mismatch\t" in broken, broken
+assert "npm run check" in broken and "npm run guard" in broken, broken
+assert "package.json scripts.check" in broken and "npm run unit" in broken, broken
+assert (project / "AGENTS.md").read_bytes() == unchanged
+print("  ok: changed route with unchanged document names the missing check and inspected evidence")
+package.write_text(json.dumps({"scripts": {"check": "pnpm run bridge", "bridge": "yarn run guard", "guard": "node --test"}}))
+assert run() == "", "transitive intact route produced findings"
+package.write_text(json.dumps({"scripts": {"check": "pnpm run bridge", "bridge": "true", "guard": "node --test"}}))
+assert "wiring mismatch" in run() and "scripts.bridge" in run()
+scripts("npm run unit")
+print("  ok: transitive package edges are inspected and a removed middle edge is named")
+
+# Removing the production detector must remove the broken finding.
+source = script.read_text()
+tree = ast.parse(source)
+function = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "wiring_claims")
+lines = source.splitlines(keepends=True)
+lines[function.lineno - 1:function.end_lineno] = ["def wiring_claims(document, scripts):\n    return []\n"]
+mutant = work / "without-wiring.py"
+mutant.write_text("".join(lines))
+assert "wiring mismatch" not in run(mutant), "removing detector did not defeat broken case"
+print("  ok: removing detection defeats the broken case")
+
+(project / "AGENTS.md").write_text("Required check: `yarn run guard` via `pnpm run check` when file `care.flag` exists.\n")
+inactive = run()
+assert "inactive rule" in inactive and "wiring mismatch" not in inactive, inactive
+(project / "care.flag").write_text("active")
+active = run()
+assert "wiring mismatch" in active, active
+scripts("yarn run guard")
+assert run() == "", "active intact route produced findings"
+(project / "AGENTS.md").write_text("Required check: `npm run guard` via `npm run check` when the project handles money.\n")
+unknown = run()
+assert "unverified rule" in unknown and "condition" in unknown and "wiring mismatch" not in unknown, unknown
+print("  ok: inactive, active broken, active intact and indeterminate conditions stay distinct")
+
+(project / "AGENTS.md").write_text(unchanged.decode())
+for route in ('sh scripts/check.sh', 'npm run "$CHECK"', 'npm run guard || true',
+              'echo "npm run guard"', 'npm run guard && sh scripts/extra.sh',
+              'npm run check'):
+    scripts(route)
+    out = run()
+    assert "unverified rule" in out and "wiring mismatch" not in out, (route, out)
+package.write_text(json.dumps({"scripts": {"check": "npm run unit", "unit": "node --test", "guard": "node --test", "precheck": "npm run guard"}}))
+assert "unverified rule" in run() and "wiring mismatch" not in run()
+package.write_text(json.dumps({"scripts": {"check": "npm run guard", "guard": None}}))
+assert "unverified rule" in run() and "wiring mismatch" not in run()
+print("  ok: shell indirection, lifecycle hooks, malformed check entries and cycles remain unverified")
+
+# Invalid command bodies and unsupported calls must never count as intact wiring.
+# Run every boundary case before failing, so the original defects all appear.
+boundary_failures = []
+boundary_count = 0
+readme = (project / "README.md").read_bytes()
+(project / "README.md").write_text("")
+
+def boundary(label, declaration, entries, expected):
+    global boundary_count
+    boundary_count += 1
+    (project / "AGENTS.md").write_text(declaration + "\n")
+    package.write_text(json.dumps({"scripts": entries}))
+    output = run()
+    kinds = [line.split("\t")[1] for line in output.splitlines()]
+    if kinds != ([] if expected is None else [expected]):
+        boundary_failures.append(f"{label}: expected {expected!r}, got {output!r}")
+
+for manager in ("npm", "pnpm", "yarn"):
+    command = f"Required command: `{manager} run guard`."
+    check = f"Required check: `{manager} run guard` via `{manager} run check`."
+    intact = {"check": f"{manager} run guard", "guard": "node --test"}
+    boundary(f"{manager} intact", check, intact, None)
+    boundary(f"{manager} removed edge", check, dict(intact, check="true"), "wiring mismatch")
+    for body in ("", " \t\n "):
+        entries = dict(intact, guard=body)
+        boundary(f"{manager} empty command {body!r}", command, entries, "unverified rule")
+        boundary(f"{manager} empty check {body!r}", check, entries, "unverified rule")
+        boundary(f"{manager} inactive empty {body!r}", check[:-1] + " when file `absent.flag` exists.", entries, "inactive rule")
+        boundary(f"{manager} active empty {body!r}", check[:-1] + " when file `care.flag` exists.", entries, "unverified rule")
+    for name in ("--help", "-guard"):
+        entries = dict(intact, **{name: f"{manager} run guard"})
+        boundary(f"{manager} option command {name}", f"Required command: `{manager} run {name}`.", entries, "unverified rule")
+        boundary(f"{manager} option check {name}", f"Required check: `{manager} run {name}` via `{manager} run check`.", entries, "unverified rule")
+        boundary(f"{manager} option route {name}", f"Required check: `{manager} run guard` via `{manager} run {name}`.", entries, "unverified rule")
+        entries["check"] = f"{manager} run {name}"
+        boundary(f"{manager} direct option edge {name}", check, entries, "unverified rule")
+        entries["check"] = f"{manager} run bridge && {manager} run guard"
+        entries["bridge"] = f"{manager} run {name}"
+        boundary(f"{manager} indirect option edge {name}", check, entries, "unverified rule")
+        boundary(f"{manager} inactive option edge {name}", check[:-1] + " when file `absent.flag` exists.", entries, "inactive rule")
+        boundary(f"{manager} active option edge {name}", check[:-1] + " when file `care.flag` exists.", entries, "unverified rule")
+    for prefix in ("pre", "post"):
+        entries = dict(intact, **{prefix + "guard": "sh danger.sh"})
+        boundary(f"{manager} target {prefix} hook", check, entries, "unverified rule")
+        boundary(f"{manager} self target {prefix} hook", f"Required check: `{manager} run guard` via `{manager} run guard`.", entries, "unverified rule")
+        boundary(f"{manager} inactive target {prefix} hook", check[:-1] + " when file `absent.flag` exists.", entries, "inactive rule")
+        boundary(f"{manager} active target {prefix} hook", check[:-1] + " when file `care.flag` exists.", entries, "unverified rule")
+    boundary(f"{manager} interior hyphen", f"Required check: `{manager} run test-guard` via `{manager} run check`.", {"check": f"{manager} run test-guard", "test-guard": "true"}, None)
+
+assert not boundary_failures, "boundary failures:\n" + "\n".join(boundary_failures)
+print(f"  ok: {boundary_count} intact, broken and conditional command boundaries")
+(project / "README.md").write_bytes(readme)
+
+(project / "AGENTS.md").write_text("Required check: run all important checks through the normal route.\n")
+assert "unverified rule" in run()
+(project / "AGENTS.md").write_text("Required command: `yarn run absent`.\n")
+assert "wiring mismatch" in run() and "yarn run absent" in run()
+package.write_text("not json")
+assert "unverified rule" in run() and "wiring mismatch" not in run()
+print("  ok: unsupported prose and unreadable mechanisms never become a pass")
+
+scripts("npm run guard")
+(project / "AGENTS.md").write_text("Required check: `npm run guard` via `npm run check` when file `../outside.flag` exists.\n")
+assert "unverified rule" in run()
+(project / "outside-link").symlink_to(work)
+(project / "AGENTS.md").write_text("Required check: `npm run guard` via `npm run check` when file `outside-link/flag` exists.\n")
+assert "unverified rule" in run()
+print("  ok: conditions cannot inspect outside the project")
+
+# Install layouts use the installed sync folder, including a path with spaces.
+(project / "AGENTS.md").write_bytes(unchanged)
+scripts("npm run unit")
+for relative in (".agents/skills/sync", ".claude/skills/sync", "plugin cache/skills/sync", "agent-plugin/skills/sync"):
+    installed = work / relative / "scripts/document-claims.py"
+    installed.parent.mkdir(parents=True, exist_ok=True)
+    installed.write_text(source)
+    assert run(installed) == broken, relative
+print("  ok: detector works from shared, Claude-only and external plugin layouts")
+# Project scripts and a configured Git hook would leave a marker if executed.
+subprocess.run(["git", "init", "-q"], cwd=project, check=True)
+subprocess.run(["git", "add", "AGENTS.md", "README.md", "package.json"], cwd=project, check=True)
+(project / "README.md").write_text("The entry point is `missing.js`.\n")
+hooks = project / ".git/hooks"
+hook = hooks / "watch"
+hook.write_text("#!/bin/sh\ntouch hook-ran\n")
+hook.chmod(0o755)
+subprocess.run(["git", "config", "core.fsmonitor", str(hook)], cwd=project, check=True)
+subprocess.run(["git", "config", "core.hooksPath", str(hooks)], cwd=project, check=True)
+(project / "danger.sh").write_text("touch script-ran\n")
+scripts("sh danger.sh")
+sentinel_out = run()
+assert "unverified rule" in sentinel_out and "missing.js" in sentinel_out
+assert not (project / "hook-ran").exists() and not (project / "script-ran").exists()
+print("  ok: project scripts and configured Git hooks leave no execution marker")
+
+# The selected documentation boundary also applies to relationship declarations.
+(project / "AGENTS.md").write_text("See `docs/selected.md`.\n")
+(project / "docs").mkdir()
+claim = "Required check: `npm run guard` via `npm run check`.\n"
+(project / "docs/selected.md").write_text(claim)
+(project / "docs/unselected.md").write_text(claim)
+scripts("npm run unit")
+assert "docs/selected.md:1\twiring mismatch" in run()
+assert "unselected" not in run()
+(project / "README.md").write_text("```text\n" + claim + "```\n")
+assert "README.md" not in run()
+external = work / "external.md"
+external.write_text(claim)
+(project / "docs/selected.md").unlink()
+(project / "docs/selected.md").symlink_to(external)
+assert run() == "", "external document was inspected"
+package.unlink()
+external_package = work / "external-package.json"
+external_package.write_text(json.dumps({"scripts": {"check": "npm run guard", "guard": "true"}}))
+package.symlink_to(external_package)
+(project / "AGENTS.md").write_text(claim)
+assert "unverified rule" in run()
+print("  ok: selected documents are read, fenced examples and outside documents are left alone")
+print("  ok: every fixture kept its files unchanged; no project scripts or hooks were executed")
+PY
