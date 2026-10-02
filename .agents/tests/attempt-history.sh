@@ -16,6 +16,13 @@ fixture = Path(tempfile.mkdtemp(prefix='kit-attempt-history-'))
 project = fixture / 'project'
 project.mkdir()
 subprocess.run(['git','init','-q',str(project)],check=True)
+def git(*args):
+    return subprocess.run(['git','-C',str(project),*args],check=True,capture_output=True,text=True).stdout.strip()
+git('config','user.name','Fixture')
+git('config','user.email','fixture@example.invalid')
+(project / '.gitignore').write_text('.agents/runs/\n.agents/recovery/\n')
+git('add','.gitignore')
+git('commit','-qm','Initial checked fixture')
 bin_dir = fixture / 'bin'
 bin_dir.mkdir()
 remote = fixture / 'issue.json'
@@ -69,6 +76,13 @@ def stage(number, approach):
     work = project / 'kept' / str(number)
     work.mkdir(parents=True)
     (work / 'failed.txt').write_text(approach)
+    git('add','kept/' + str(number) + '/failed.txt')
+    git('commit','-qm','Failed approach fixture')
+    git('branch','failed-' + str(number))
+    checked = subprocess.run(['python3','-c',
+        "from pathlib import Path; assert Path('kept/" + str(number) + "/failed.txt').read_text() == 'working'"],
+        cwd=project,capture_output=True)
+    assert checked.returncode == 1, 'The failed approach fixture must actually fail its check.'
     record = fixture / ('record-' + str(number) + '.json')
     record.write_text(json.dumps({'id':'test-' + str(number),'approach':approach,
         'result':'Still fails the focused check','branch':'failed-' + str(number),'location':str(work)}))
@@ -97,6 +111,7 @@ assert body.startswith(original)
 for n, approach in enumerate(['Try cache','Try polling','Try ordered updates'],1):
     assert body.count(approach) == 1
     assert 'failed-' + str(n) in body and str(locations[n-1]) in body
+    assert git('show','failed-' + str(n) + ':kept/' + str(n) + '/failed.txt') == approach
 assert body.index('Try cache') < body.index('Try polling') < body.index('Try ordered updates')
 assert all((path / 'failed.txt').exists() for path in locations)
 # Both a later run and /fix read live history even without the old run state.
@@ -119,12 +134,26 @@ assert load(state)['pieces'][0]['attempt_history']['pending']
 change(ambiguous=False)
 call('publish')
 assert load()['body'].count('Try bounded waits') == 1
+# A previously verified line disappearing must be a gap, not an empty history.
+complete = load()['body']
+change(body='\n'.join(line for line in complete.splitlines() if 'Try polling' not in line))
+call('read',code=2)
+change(body=complete)
+# A process stopped while saving its local summary leaves a visible pending file.
+folder = next((project / '.agents/recovery/attempt-history').iterdir())
+orphan = folder / 'test-6.pending'
+orphan.write_text('{"issue":')
+assert 'Pending local' in call('read',code=2)
+before_write = load()['writes']
+call('publish',code=2)
+assert load()['writes'] == before_write
 # A read-back mismatch never clears pending, and the retry does not erase it.
 stage(6,'Try cache invalidation')
+assert not orphan.exists()  # Retrying the same local save completes it.
 change(mismatch=True)
 call('publish',code=2)
 assert load(state)['pieces'][0]['attempt_history']['pending']
-assert 'Pending' in call('read')
+assert 'Pending' in call('read',code=2)
 change(mismatch=False)
 call('publish',code=2)  # The same identity now has contradictory text.
 # Pending files outlive removal of the run state and remain readable when offline.
