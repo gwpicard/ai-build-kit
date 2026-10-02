@@ -872,6 +872,9 @@ root = Path(os.environ['OWN_FIXTURE'])
 if sys.argv[1:3] == ['repo', 'view']:
     print('{"nameWithOwner":"someone/project"}')
 elif '/events?' in sys.argv[2]:
+    if os.environ.get('OWN_FAIL_EVENTS'):
+        print('synthetic API failure', file=sys.stderr)
+        sys.exit(1)
     print((root / 'events.json').read_text())
 else:
     print((root / 'issues.json').read_text())
@@ -977,6 +980,14 @@ events = valid + [event('assigned', assigned, 'sam'), dict(event='renamed', crea
 check_record('retained dates for several owners and unrelated update', 'ana since 2026-09-01, sam since 2026-09-03')
 with_record(dict(record, owners={'ana': start, 'sam': start}))
 check_record('one conflicting owner invalidates retained dates', 'ana date unknown, sam date unknown')
+issue['assignees'] = [{'login': 'ana'}]
+with_record(record)
+for events in (None, {}, [valid[:1], {}], valid + [event('assigned', '2999-01-01T00:00:00Z', 'sam')], [event('assigned', assigned, 'ana')] + valid[:2]):
+    check_record('invalid history despite retained record', 'ana date unknown')
+events = valid
+env['OWN_FAIL_EVENTS'] = '1'
+check_record('failed API despite retained record', 'ana date unknown')
+env.pop('OWN_FAIL_EVENTS')
 assert not failures, 'Retained obligation checks failed: ' + ', '.join(failures)
 
 print('ok: recorded transition, unrelated edit, missing history, reassignment, several owners, unassigned, research and claim states')

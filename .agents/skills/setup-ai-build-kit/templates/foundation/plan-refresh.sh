@@ -382,26 +382,8 @@ def obligation_dates(issue):
             changes.append((timestamp(e["created_at"]), kind, name))
         if changes != sorted(changes, key=lambda c: c[0]):
             return unknown
-        # A saved transition is evidence only for the recorded reason and owners,
-        # with no later ownership or waiting transition that could invalidate it.
-        records = []
-        for line in body_lines(issue):
-            match = re.fullmatch(r"<!-- answer-obligation: (.+) -->", line)
-            if match:
-                records.append(json.loads(match[1]))
-        if len(records) == 1:
-            record = records[0]
-            since = timestamp(record["since"])
-            recorded = record["owners"]
-            if not isinstance(recorded, dict):
-                return unknown
-            starts = {o: timestamp(t) if t is not None else None for o, t in recorded.items()}
-            if any(t is not None and t > since for t in starts.values()):
-                return unknown
-            if record["reason"] in current and set(recorded) == owners and not any(t > since for t, _, _ in changes):
-                return starts if owners else {"": since}
-        # Legacy evidence must reproduce the current waiting reason and owner
-        # set. An assignment without a waiting transition proves no obligation.
+        # Validate every supplied transition before considering a saved record.
+        # An assignment without a waiting transition proves no obligation.
         seen_labels, seen_owners, dates = set(), set(), {}
         def owed():
             if "shaping" in seen_labels and seen_labels & {"needs-clarification", "needs-prototype"}:
@@ -423,6 +405,30 @@ def obligation_dates(issue):
                 dates.pop(o, None)
             for o in after - before:
                 dates[o] = when
+        # A saved transition is evidence only for the recorded reason and owners,
+        # with no later ownership or waiting transition that could invalidate it.
+        records = []
+        for line in body_lines(issue):
+            match = re.fullmatch(r"<!-- answer-obligation: (.+) -->", line)
+            if match:
+                records.append(json.loads(match[1]))
+        if len(records) == 1:
+            record = records[0]
+            since = timestamp(record["since"])
+            recorded = record["owners"]
+            if not isinstance(recorded, dict):
+                return unknown
+            starts = {o: timestamp(t) if t is not None else None for o, t in recorded.items()}
+            if any(t is not None and t > since for t in starts.values()):
+                return unknown
+            if record["reason"] in current and set(recorded) == owners and not any(t > since for t, _, _ in changes):
+                # Established obligations must agree with retained dates. A record
+                # can still supply an onset that legacy transitions cannot prove.
+                if seen_labels == current and any(
+                        starts[o] is not None and dates.get(o) is not None
+                        and starts[o] != dates[o] for o in owners & seen_owners):
+                    return unknown
+                return starts if owners else {"": since}
         if seen_labels != current or seen_owners != owners:
             return unknown
         return {o: dates.get(o) for o in (owners or {""})}
