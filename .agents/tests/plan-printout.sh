@@ -859,6 +859,69 @@ for secret in synthetic-private-value ghp_FakeTokenForPrintoutOnly github_pat_Fa
   esac
 done
 
+# Reuse the printout fixture for answer ownership and obligation dates.
+python3 - "$REFRESH" "$WORK" <<'PYOWN' || fail "answer ownership and waiting dates"
+import json, os, pathlib, subprocess, sys
+refresh, folder = sys.argv[1], pathlib.Path(sys.argv[2])
+bin = folder / 'ownership-bin'
+bin.mkdir()
+(bin / 'gh').write_text("""#!/usr/bin/env python3
+import json, os, sys
+from pathlib import Path
+root = Path(os.environ['OWN_FIXTURE'])
+if sys.argv[1:3] == ['repo', 'view']:
+    print('{"nameWithOwner":"someone/project"}')
+elif '/events?' in sys.argv[2]:
+    print((root / 'events.json').read_text())
+else:
+    print((root / 'issues.json').read_text())
+""")
+(bin / 'gh').chmod(0o755)
+env = dict(os.environ, OWN_FIXTURE=str(folder), PATH=str(bin) + os.pathsep + os.environ['PATH'])
+def event(kind, when, name):
+    return dict(event=kind, created_at=when, **({'label': {'name': name}} if 'label' in kind else {'assignee': {'login': name}}))
+start = '2026-09-01T10:00:00Z'
+assigned = '2026-09-03T12:00:00Z'
+new = '2026-09-12T09:00:00Z'
+events = [event('assigned', '2026-08-20T10:00:00Z', 'ana'), event('labeled', start, 'shaping'), event('labeled', start, 'needs-clarification')]
+issue = dict(number=1, title='Settle the header', html_url='http://x/1', body='## Done when\nHeader agreed.', labels=[{'name': 'shaping'}, {'name': 'needs-clarification'}], assignees=[{'login': 'ana'}], updated_at='2026-10-01T00:00:00Z')
+def printed():
+    (folder / 'issues.json').write_text(json.dumps([issue]))
+    (folder / 'events.json').write_text(json.dumps(events))
+    result = subprocess.run(['sh', refresh, str(folder / 'owners.md')], env=env, text=True, capture_output=True)
+    assert result.returncode == 0, result.stderr
+    return (folder / 'owners.md').read_text()
+assert 'waiting on ana since 2026-09-01' in printed()
+issue['updated_at'] = '2026-10-02T20:00:00Z'
+issue['body'] += '\nUnrelated wording edit.'
+assert 'waiting on ana since 2026-09-01' in printed()
+events += [event('assigned', assigned, 'sam')]
+issue['assignees'].append({'login': 'sam'})
+text = printed()
+assert 'ana since 2026-09-01' in text and 'sam since 2026-09-03' in text
+events += [event('unassigned', new, 'ana'), event('assigned', new, 'lee')]
+issue['assignees'] = [{'login': 'sam'}, {'login': 'lee'}]
+text = printed()
+assert 'sam since 2026-09-03' in text and 'lee since 2026-09-12' in text
+assert 'ana since' not in text
+saved = events
+events = []
+assert 'date unknown' in printed() and '2026-10-02' not in printed()
+events = [event('assigned', new, 'lee')]
+assert 'date unknown' in printed(), 'assignment alone is not waiting evidence'
+events = saved
+issue['assignees'] = []
+assert 'waiting unassigned' in printed() and 'To build' not in printed()
+issue['labels'] = [{'name': 'shaping'}, {'name': 'needs-research'}]
+assert 'needs a fact from outside the project' in printed() and 'waiting on' not in printed()
+issue['labels'] = [{'name': 'ready'}]
+issue['assignees'] = [{'login': 'lee'}]
+assert 'To build' in printed() and '(ready)' in printed()
+issue['labels'] = [{'name': 'building'}]
+assert 'To build' not in printed() and 'Building' in printed()
+print('ok: recorded transition, unrelated edit, missing history, reassignment, several owners, unassigned, research and claim states')
+PYOWN
+
 if [ "$FAIL" -eq 0 ]; then
   echo
   echo "plan-printout.sh: all checks passed"

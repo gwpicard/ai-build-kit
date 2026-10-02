@@ -51,4 +51,10 @@ rs_require "/what-now tells the three apart for the person" \
 rs_require "WORKFLOW.md explains it in plain words" \
   "$WORKFLOW" 'two of those need you there'
 
+rs_require_load_bearing "ownership follows the waiting state" "$PIECES" 'in shaping with needs-clarification or needs-prototype'
+rs_require_load_bearing "obligation records retain their start" "$PIECES" 'answer-obligation'
+rs_require_load_bearing "ready cleanup follows passing review" "$SHAPE" 'remove every answer-owner assignment in that same state edit'
+rs_require_load_bearing "ready assignments are eligible" "$ROOT/.agents/skills/implement/SKILL.md" 'a ready piece with a leftover answer-owner assignment is eligible'
+rs_require_load_bearing "building claims stay protected" "$ROOT/.agents/skills/implement/SKILL.md" 'never steal a building claim'
+rs_require_load_bearing "orientation reads the waiting date" "$WHATNOW" 'date unknown'
 rs_done
