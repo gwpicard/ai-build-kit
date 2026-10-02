@@ -183,6 +183,11 @@ worktree git lists, even when this session sits in another tool's worktree,
 so a session that dies loses nothing. Where an unfinished run's state file is in `.agents/runs/`, offer to
 resume it before taking anything new, whether this command was typed alone or
 with `queue`.
+Before deciding whether a saved run is finished, reconcile each piece's durable
+recovery record through `scripts/recovery.py reconcile`, as
+`references/running-longer.md` describes. Do this even when its run-state field
+is missing or says checked. A disagreement is unfinished recovery; complete
+its baseline checks before resuming or taking another piece.
 
 ## Done when
 

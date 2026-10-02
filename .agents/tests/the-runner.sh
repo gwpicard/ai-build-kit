@@ -127,6 +127,25 @@ rs_rule "and the run never installs it" 'the run never installs it, since nobody
 rs_rule "one missing tool that stops every piece left ends the run" 'where the same missing tool would stop every piece left, it is a blocking failure'
 rs_rule "a blocking failure stops only what relies on it" 'a blocking failure never stops the whole run unless it touches something every later piece relies on'
 
+# Recovery preserves work before any later task can use a checked base.
+rs_rule "record the checked task boundary" 'record the checked `start_commit` before the first edit'
+rs_rule "preservation includes ignored work" 'snapshots the working files including ignored files without following links'
+rs_rule "preservation is verified before state advances" 'verifies their contents before recording `preserved` in run state'
+rs_rule "failed checkout stays untouched" 'the original checkout stays untouched'
+rs_rule "parent keeps earlier successful parts" 'it must hold every earlier successful part and none of the failed part'
+rs_rule "unknown separation stops the parent" 'when it is unknown, overlapping or not saved, stop that parent'
+rs_rule "a gap earns no passing baseline" 'a failing check, or an unresolved gap gives no passing baseline'
+rs_rule "a shared failure stops every affected task" 'a failure of a shared base stops every task relying on it'
+rs_rule "current code impact does not replace issue blockers" 'a code map never substitutes for explicit issue blockers'
+rs_rule "direct and transitive dependants remain unbuilt" 'direct and transitive dependants stay unbuilt'
+rs_rule "pending recovery remains visible to resume readers" 'an interruption after preservation leaves the piece `building` in the local run record'
+rs_rule "checking is unfinished even with partial green checks" 'a `checking` stage is still unchecked even when some commands already passed'
+rs_rule "recovery records outlive the run" 'they outlive the run folder'
+rs_rule "the durable generation owns interrupted recovery" 'the durable `recovery.json` owns the generation and stage'
+rs_rule "reconciliation cannot restore stale success" 'a stale checked generation never replaces a newer checking record'
+rs_rule "linked inputs are checked separately from preservation" 'the archive still never follows links'
+rs_rule "every exclusive failed commit stays out of later bases" 'every commit exclusive to the failed task after its recorded start is absent'
+
 # Resuming, and the end of the run.
 rs_rule "a new session resumes from the state file" 'a new session resumes from the state file, never from memory'
 rs_rule "a piece left building continues from its last commit" 'continues from its last commit'
@@ -200,6 +219,8 @@ rs_require_load_bearing "/implement loads the run's rules" "$IMPLEMENT" \
   'load `references/running-longer\.md` before the run starts and follow it'
 rs_require_load_bearing "/implement offers to resume an unfinished run" "$IMPLEMENT" \
   'where an unfinished run.s state file is in `\.agents/runs/`, offer to resume it'
+rs_require_load_bearing "/implement reconciles before calling a run finished" "$IMPLEMENT" \
+  'before deciding whether a saved run is finished, reconcile each piece.s durable recovery record'
 
 # section-builder starts a stacked piece from the branch it stacks on, and the
 # validator holds the same wording.
@@ -215,6 +236,10 @@ rs_require_load_bearing "/what-now reads the run state" "$WHATNOW" 'a run.s stat
 rs_require_load_bearing "/what-now offers to resume an unfinished run" "$WHATNOW" '### an unfinished run'
 rs_require_load_bearing "/sync offers to resume an unfinished run" "$SYNC" 'an unfinished run in `\.agents/runs/`'
 rs_require_load_bearing "/sync removes a finished run's folder" "$SYNC" 'remove the folder of a run whose every piece is merged, closed or parked'
+rs_require_load_bearing "/what-now notices durable recovery before calling a run finished" "$WHATNOW" \
+  'before deciding a run is finished, compare its pieces with their durable'
+rs_require_load_bearing "/sync keeps a run with interrupted durable recovery" "$SYNC" \
+  'before deciding a run is finished or offering to remove its folder, compare each piece with its durable'
 
 # A founded project ignores the run folder.
 rs_require "the foundation gitignore ignores the run folder" "$IGNORE" '\.agents/runs/'
