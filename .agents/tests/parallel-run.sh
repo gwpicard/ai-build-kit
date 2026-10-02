@@ -173,55 +173,13 @@ rs_require_load_bearing "COMPATIBILITY says the older Git is not asked" "$COMPAT
 rs_require_absent "parallel run evidence contains no inline Python runner" \
   "$0" 'python3[[:space:]]+-'
 
-# Deterministic offline runner fixture. It checks the bounded policy cases and
-# does not claim to measure whether a model follows the instruction.
-python3 - "$LONGER" <<'PY'
-import sys
-from pathlib import Path
-
-source = " ".join(Path(sys.argv[1]).read_text().lower().split())
-assert "an intention is not a completed operation" in source
-
-def run(plan, *, baseline_ok=True, bound=10, intent_only=False):
-    trace = []
-    for item in plan:
-        if len(trace) >= bound:
-            return trace, "bound reached"
-        if item == "human question":
-            trace.append("park human question")
-            trace.append("preserve unfinished work")
-            if not baseline_ok:
-                return trace, "shared verification failure"
-            trace.append("check shared baseline")
-            continue
-        if intent_only:
-            trace.append("announced " + item)
-            return trace, "operation incomplete"
-        trace.append("completed " + item)
-    return trace, "plan exhausted"
-
-trace, stop = run(["human question", "independent piece"])
-assert trace == [
-    "park human question",
-    "preserve unfinished work",
-    "check shared baseline",
-    "completed independent piece",
-]
-assert stop == "plan exhausted"
-
-trace, stop = run(["human question", "independent piece"], baseline_ok=False)
-assert trace == ["park human question", "preserve unfinished work"]
-assert stop == "shared verification failure"
-
-assert run([]) == ([], "plan exhausted")
-trace, stop = run(["first", "second", "third"], bound=2)
-assert trace == ["completed first", "completed second"]
-assert stop == "bound reached"
-
-trace, stop = run(["independent piece"], intent_only=True)
-assert trace == ["announced independent piece"]
-assert stop == "operation incomplete"
-print("ok: continuation after parked question, shared verification stop, exhausted plan, bound, and intent-only response")
-PY
+# Offline execution evidence for preservation, a checked baseline and current
+# eligibility lives in failure-recovery.sh. It invokes the published recovery
+# helper, rejects continuation before checks and on a failed shared base, and
+# checks direct and transitive blockers. Run that rehearsal separately; these
+# text-removal controls do not execute orchestration.
+# Same-turn operations, active waits, intent-only termination and run limits are
+# guided cases in fixtures/shaping-recovery.md. They remain unverified until an
+# observed agent run supplies a transcript and operation evidence.
 
 rs_done
