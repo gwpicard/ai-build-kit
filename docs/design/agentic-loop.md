@@ -10,7 +10,8 @@ review of the kit, its backlog and outside work on agent loops. It replaces the
 run, merge and launch parts of [loop-first-redesign.md](loop-first-redesign.md)
 and [loop-first-round-2.md](loop-first-round-2.md). The piece contract, the
 readiness check and the principle of those notes carry over, changed where this
-note says so.
+note says so. The outside work behind the decisions, and where the kit stands
+among related projects, is in [agentic-loop-research.md](agentic-loop-research.md).
 
 ## The principle
 
