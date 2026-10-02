@@ -1514,6 +1514,12 @@ attribution line, not the word.
   a local tag where there is no GitHub repository. It writes no hosting
   request, address or rollback line, on Build with care as well. It also holds the template, founding
   writing the line from answers it already has, and WORKFLOW.md.
+- `.agents/tests/attempt-history.sh` rehearses three failed approaches against a
+  disposable GitHub stand-in and inspects real retained Git branch pointers. It
+  holds ordered later-run and fix reads, interruption before publication, failed
+  and ambiguous writes, retry without duplicate history, observed concurrent
+  additions, missing verified lines and read-back mismatch. Pending summaries
+  outlive their run state.
 - `.agents/tests/failure-recovery.sh` runs recovery in disposable Git projects
   and reads retained files, commits, archives and issue state. It preserves
   committed, staged, unstaged and ignored failed work, refuses an unchecked or
