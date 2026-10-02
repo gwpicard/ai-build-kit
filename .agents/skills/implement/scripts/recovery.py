@@ -266,8 +266,41 @@ def preserve(args, state, piece):
     if not re.fullmatch(r'[A-Za-z0-9_-]+', name):
         raise ValueError('The run name is not safe for a recovery folder.')
     base = commit(source, args.base)
-    if not piece.get('start_commit') or base != commit(source,piece['start_commit']):
+    if not piece.get('start_commit'):
         raise ValueError('The base is not the recorded checked task boundary; stop recovery.')
+    original = commit(source, piece['start_commit'])
+    candidate = None
+    if base != original:
+        candidate = piece.get('integration_candidate', {})
+        check = piece.get('verification', {})
+        integration = state.get('integration', {})
+        proof_path = candidate.get('baseline_evidence')
+        if (candidate.get('base') != base or candidate.get('start_commit') != original or
+                candidate.get('source') != str(source) or candidate.get('head') != commit(source,'HEAD') or
+                candidate.get('target') != integration.get('target') or
+                check.get('head') != candidate['head'] or check.get('base') != base or
+                check.get('stage') != 'checked' or check.get('passed') is not False or
+                check.get('evidence') != candidate.get('verification_evidence') or
+                Path(args.evidence).resolve() != Path(check['evidence']).resolve() or
+                read(args.evidence) != check or not proof_path or
+                digest(Path(proof_path).read_bytes()) != candidate.get('baseline_evidence_sha256')):
+            raise ValueError('The base is not the recorded checked integration-candidate boundary; stop recovery.')
+        proof = read(proof_path)
+        if (proof.get('passed') is not True or proof.get('stage') != 'checked' or
+                not proof.get('commands') or any(c['exit_code'] != 0 for c in proof['commands']) or
+                git(source,'rev-parse',base+'^{tree}') != git(source,'rev-parse',proof['head']+'^{tree}')):
+            raise ValueError('The integration boundary has no matching passing check evidence.')
+        start_path = candidate.get('start_evidence')
+        if not start_path or digest(Path(start_path).read_bytes()) != candidate.get('start_evidence_sha256'):
+            raise ValueError('The original build-boundary evidence changed; stop recovery.')
+        start_proof = read(start_path)
+        if (start_proof.get('passed') is not True or start_proof.get('stage') != 'checked' or
+                not start_proof.get('commands') or any(c['exit_code'] != 0 for c in start_proof['commands']) or
+                git(source,'rev-parse',original+'^{tree}') != git(source,'rev-parse',start_proof['head']+'^{tree}')):
+            raise ValueError('The original build boundary has no matching passing check evidence.')
+        git(source,'merge-base','--is-ancestor',start_proof['head'],original)
+        git(source,'merge-base','--is-ancestor',original,base)
+        git(source,'merge-base','--is-ancestor',proof['head'],base)
     folder = main / '.agents/recovery' / (name + '-' + str(args.piece))
     if folder.is_symlink() or folder.parent.is_symlink():
         raise ValueError('A recovery folder must not be a link.')
@@ -317,6 +350,9 @@ def preserve(args, state, piece):
            'evidence':str(folder / 'checks-before-recovery'), 'evidence_sha256':digest(evidence),
            'final_state':args.final_state, 'failure_reason':piece.get('reason') or
            'Unsuccessful work retained for review.', 'preserved_at':now(), 'checks':[], 'gaps':[]}
+    if candidate is not None:
+        rec['original_start_commit'] = original
+        rec['integration_candidate'] = candidate.copy()
     verify(source, rec)
     if (inventory(source) != before or commit(source, 'HEAD') != head or
             git(source, 'diff', '--cached', '--binary', 'HEAD') != index):

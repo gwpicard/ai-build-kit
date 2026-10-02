@@ -48,7 +48,8 @@ def fingerprint(value):
 def result_key(state):
     """Human review is bound to the included work and every remaining flag."""
     included = state['integration']['included']
-    return fingerprint([p for p in state['pieces'] if p['number'] in included])
+    return fingerprint({'included':included, 'pieces':[
+        p for p in state['pieces'] if p['number'] in included]})
 
 
 def clean(source, head):
@@ -58,7 +59,7 @@ def clean(source, head):
         raise ValueError('The checked copy changed; check it again.')
 
 
-def verify(args, state, record):
+def verify(args, state, record, candidate=None):
     source = Path(args.source).resolve()
     head = recovery.commit(source, 'HEAD')
     clean(source, head)
@@ -70,6 +71,10 @@ def verify(args, state, record):
     record['verification'] = {'head':head, 'source':str(source), 'passed':False,
                               'stage':'checking', 'commands':[], 'checked_at':None,
                               'evidence':str(folder / 'result.json')}
+    if candidate is not None:
+        candidate['verification_evidence'] = str(folder / 'result.json')
+        record['integration_candidate'] = candidate
+        record['verification']['base'] = candidate['base']
     recovery.save(args.state, state)
     evidence = record['verification']
     recovery.save(folder / 'result.json', evidence)
@@ -155,7 +160,49 @@ def check(args, state):
     elif subprocess.run(['git','-C',str(source),'merge-base','--is-ancestor',expected,head],
                         capture_output=True).returncode:
         raise ValueError('The feature does not contain the current integration target.')
-    checked = verify(args, state, record)
+    candidate = None
+    if args.piece is not None:
+        original = recovery.commit(source, record['start_commit'])
+        run(source, 'git', 'merge-base', '--is-ancestor', original, head)
+        if subprocess.run(['git','-C',str(source),'merge-base','--is-ancestor',original,expected],
+                          capture_output=True).returncode:
+            earlier = [p for p in state['pieces'] if p['number'] != args.piece and
+                       p.get('checked_commit') == original and not p.get('recovery') and
+                       p.get('state') in ('to check','merged') and
+                       record.get('pull_request') is not None and
+                       p.get('pull_request') == record['pull_request'] and
+                       p.get('branch') == record.get('branch') == branch(source)]
+            if not earlier:
+                raise ValueError('A later parent part needs its earlier successful same-PR checkpoint.')
+        integration = state['integration']
+        proof_path = integration.get('baseline_evidence') or integration['verification']['evidence']
+        proof = recovery.read(proof_path)
+        if (expected != integration['checked_commit'] or proof.get('passed') is not True or
+                proof.get('stage') != 'checked' or not proof.get('commands') or
+                any(c['exit_code'] != 0 for c in proof['commands']) or
+                recovery.git(source,'rev-parse',expected+'^{tree}') !=
+                recovery.git(source,'rev-parse',proof['head']+'^{tree}')):
+            raise ValueError('The integration candidate has no matching checked baseline evidence.')
+        run(source, 'git', 'merge-base', '--is-ancestor', proof['head'], expected)
+        prior = record.get('integration_candidate', {})
+        start_evidence = (proof_path if original == expected else
+                          prior.get('start_evidence') or record.get('start_evidence'))
+        if not start_evidence:
+            raise ValueError('The original build boundary needs its saved passing check evidence.')
+        start_proof = recovery.read(start_evidence)
+        if (start_proof.get('passed') is not True or start_proof.get('stage') != 'checked' or
+                not start_proof.get('commands') or any(c['exit_code'] != 0 for c in start_proof['commands']) or
+                recovery.git(source,'rev-parse',original+'^{tree}') !=
+                recovery.git(source,'rev-parse',start_proof['head']+'^{tree}')):
+            raise ValueError('The original build boundary has no matching passing check evidence.')
+        run(source, 'git', 'merge-base', '--is-ancestor', start_proof['head'], original)
+        candidate = {'start_commit':original, 'start_evidence':start_evidence,
+                     'start_evidence_sha256':recovery.digest(Path(start_evidence).read_bytes()),
+                     'base':expected, 'head':head,
+                     'source':str(source), 'target':target, 'recorded_at':recovery.now(),
+                     'baseline_evidence':proof_path,
+                     'baseline_evidence_sha256':recovery.digest(Path(proof_path).read_bytes())}
+    checked = verify(args, state, record, candidate)
     record['verification']['base'] = expected
     if args.piece is None:
         record['checked_commit'] = checked
@@ -178,14 +225,24 @@ def include(state, pending, source):
     if recovery.git(source,'rev-parse',current+'^{tree}') != recovery.git(source,'rev-parse',pending['head']+'^{tree}'):
         integration['verification'] = {'passed':False, 'stage':'checking'}
         raise ValueError('The combined tree differs from the checked candidate; preserve it and run recovery.')
-    piece = next(p for p in state['pieces'] if p['number'] == pending['piece'])
-    if pending['piece'] not in integration['included']:
-        integration['included'].append(pending['piece'])
-    piece['state'] = 'merged'
-    piece['checked_commit'] = pending['head']
-    piece['integrated_commit'] = current
+    numbers = pending.get('pieces', [pending['piece']])
+    pieces = [next(p for p in state['pieces'] if p['number'] == n) for n in numbers]
+    # Confirm the whole write before changing any member's saved state.
+    for piece in pieces:
+        check = piece.get('verification', {})
+        if (piece.get('recovery') or check.get('passed') is not True or check.get('stage') != 'checked' or
+                check.get('head') != pending['head'] or check.get('base') != pending['base'] or
+                check.get('evidence') != pending.get('evidence', {}).get(
+                    str(piece['number']), check.get('evidence'))):
+            raise ValueError('The pending membership no longer has its individual checked evidence.')
+    for piece in pieces:
+        if piece['number'] not in integration['included']:
+            integration['included'].append(piece['number'])
+        piece['state'] = 'merged'
+        piece['checked_commit'] = pending['head']
+        piece['integrated_commit'] = current
     integration['checked_commit'] = current
-    integration['baseline_evidence'] = piece['verification']['evidence']
+    integration['baseline_evidence'] = pieces[0]['verification']['evidence']
     integration['pending'] = None
     integration['human_review'] = None
     integration['final_verification'] = None
@@ -208,7 +265,27 @@ def merge_feature(args, state):
     pr = green(source,args.pr,head)
     if pr['baseRefName'] != integration['target'] or pr['headRefName'] != branch(source):
         raise ValueError('Every feature integration must target the recorded integration branch.')
-    pending = {'piece':args.piece,'pr':args.pr,'head':head,'base':base}
+    # Membership comes from the coordinator's carried-part manifest, never an
+    # inference from open siblings. The ordinary one-piece route needs no list.
+    recorded = [p for p in state['pieces'] if p.get('pull_request') == args.pr]
+    if any(p.get('branch') != pr['headRefName'] for p in recorded):
+        raise ValueError('The recorded pull-request membership identifies a different branch.')
+    numbers = piece.get('integration_members', [p['number'] for p in recorded] or [args.piece])
+    if (not isinstance(numbers, list) or not numbers or args.piece not in numbers or
+            any(type(n) is not int for n in numbers) or len(set(numbers)) != len(numbers)):
+        raise ValueError('Record the exact completed parts carried by this pull request.')
+    if recorded and set(numbers) != {p['number'] for p in recorded}:
+        raise ValueError('The carried-part manifest omits or adds recorded pull-request members.')
+    evidence = {}
+    for number in numbers:
+        member = next(p for p in state['pieces'] if p['number'] == number)
+        if (member.get('recovery') or member['state'] != 'to check' or
+                fresh(member, source) != head or member['verification'].get('base') != base or
+                Path(member['verification']['source']).resolve() != source):
+            raise ValueError('Every carried part needs its own completed check on this candidate.')
+        evidence[str(number)] = member['verification']['evidence']
+    pending = {'piece':args.piece,'pieces':numbers.copy(),'evidence':evidence,
+               'pr':args.pr,'head':head,'base':base}
     integration['pending'] = pending
     recovery.save(args.state,state)
     run(source,'gh','pr','merge',str(args.pr),'--merge','--match-head-commit',head)

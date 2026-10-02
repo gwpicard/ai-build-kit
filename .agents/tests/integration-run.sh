@@ -117,7 +117,8 @@ if mode == 'shared-flags':
     saved = read(state)
     saved['pieces'][1]['start_commit'] = start
     saved['pieces'][1]['flags'] = ['Sibling review remains owed']
-    saved['pieces'][0]['integration_members'] = [1,2]
+    for item in saved['pieces'][:2]:
+        item['branch'] = 'feature-1'; item['pull_request'] = 1
     write(state,saved)
     for n in (1,2):
         call('check','--piece',n,'--source',path,'--check','python3 check.py')
@@ -137,8 +138,14 @@ if mode == 'shared-flags':
     sys.exit(0)
 if mode == 'shared':
     path = feature(1, 'a')
+    call('check', '--piece', 1, '--source', path, '--check', 'python3 check.py')
     saved = read(state)
-    saved['pieces'][1]['start_commit'] = start
+    earlier_head = git('rev-parse','HEAD',cwd=path)
+    saved['pieces'][0]['checked_commit'] = earlier_head
+    saved['pieces'][1]['start_commit'] = earlier_head
+    saved['pieces'][1]['start_evidence'] = saved['pieces'][0]['verification']['evidence']
+    for item in saved['pieces'][:2]:
+        item['branch'] = 'feature-1'; item['pull_request'] = 1
     saved['pieces'][1]['flags'] = ['Sibling needs human review']
     saved['pieces'][2]['state'] = 'parked'
     write(state, saved)
@@ -147,7 +154,9 @@ if mode == 'shared':
     git('push', '-q', 'origin', 'HEAD', cwd=path)
     for number in (1,2):
         call('check', '--piece', number, '--source', path, '--check', 'test -f '+('a' if number==1 else 'b'))
-    saved = read(state); saved['pieces'][0]['integration_members'] = [1,2,3]; write(state,saved)
+    saved = read(state); saved['pieces'][0]['integration_members'] = [1]; write(state,saved)
+    call('merge-feature', '--piece', 1, '--source', path, '--pr', 1, code=2)
+    saved['pieces'][0]['integration_members'] = [1,2,3]; write(state,saved)
     # Unsuccessful membership is refused before any remote write.
     call('merge-feature', '--piece', 1,
          '--source', path, '--pr', 1, code=2)
