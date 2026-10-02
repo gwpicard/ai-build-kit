@@ -167,6 +167,8 @@ the earlier contract carry over, with these additions.
   commit the reach was worked out on. A run plans its order from these.
 - For a fix, a line saying what must not change.
 - An out-of-scope list.
+- The crew, written only where it differs from the loop module's default, and
+  what the piece needs from the computer. Both are described below.
 
 The brief rules hold the contract to what a builder can use alone: behaviour
 rather than steps, interfaces rather than file paths or line numbers, and each
@@ -240,8 +242,9 @@ new decision. Otherwise the piece is kicked back. Two needs that call for two
 modules become two pieces joined by a blocked-by link.
 
 A loop stops at a limit on attempts or at a budget of time or tokens, whichever
-comes first. An attempt is a fresh context carrying a short note of what
-failed. Within those limits the builder may research and repair by itself,
+comes first. An attempt is a fresh context carrying a note the run script
+builds from what failed: the failing checks, their exit codes and the files
+touched. A model does not summarise it. Within those limits the builder may research and repair by itself,
 provided what it learns does not change the spec.
 
 A goal that spends its budget without reaching the target goes to review as
@@ -253,6 +256,45 @@ exists. Causes are ranked and each makes a prediction. Three failed fixes send
 the piece back to `research`, because the architecture is in question; a bug
 that cannot be reproduced goes back to `clarify`. Each fix adds the cheapest
 check that would have caught the fault.
+
+## Crews
+
+A crew is the set of agents a step uses and how they connect. Shaping fixes it,
+like the bar, and the run script starts every member. No agent starts a writer.
+
+There are four roles. The builder is the only one that writes. The critic reads
+the contract, the diff and any reference, and nothing else. A researcher or
+probe only reads. The checker is a fresh session that reads only the contract.
+Each role is an agent definition with its own list of allowed tools.
+
+| Step | Crew | Default | Cap |
+|---|---|---|---|
+| Research | Readers in parallel, then one synthesis | 1 for a fact, 2 to 4 for a comparison | 5 |
+| Prototype | Variants side by side for the person | 1 | 3 |
+| Readiness check | The lint, then one fresh checker | 1 | 1 |
+| Fix | One reading probe per ranked cause, then one builder, then a critic | 1 probe | 3 probes |
+| Build | One builder, then one critic | 1 and 1 | The review-round cap |
+| Goal | Keep or discard; optionally a race in separate worktrees, judged by the metric | 1 | 3 |
+| Gauntlet | One builder, then blind critics judging both orders | 1 critic | 3 critics, from other model families where available |
+| Run | Waves of pieces whose boundaries do not overlap, joined by the integration queue | 3 | 1 when boundaries overlap |
+
+The contract's `Crew:` field takes its default from the loop module. Shaping
+writes only a change from the default, with its reason. The lint checks that
+the crew is a known shape, that each width is within its cap and that a change
+carries a reason. One piece has one writer, and a piece that seems to need two
+is split.
+
+Helpers only read, count against the piece's budget, and start nothing of their
+own. Each member receives only its declared inputs, so a critic never sees the
+builder's transcript. Verdicts come back in a fixed format. A finding counts
+only once it is reproduced or tied to a failing check. A comparison between two
+results runs in both orders, and a split verdict is not a win.
+
+The defaults stay small because of the evidence. Most failures of systems built
+from several agents trace back to their design, agents working independently
+multiply each other's errors, parallel writers overwrite each other, debate
+does no better than a vote, and extra critics soon repeat each other. Every
+member also costs roughly a full context of its own.
 
 ## The frozen bar
 
@@ -270,6 +312,14 @@ Before a piece moves to `in-review`, the gate needs fresh evidence: each command
 run, its exit code, the commit it ran on, and for fix and build, the same check
 failing before the change and passing after it. The builder's own statement
 that it is done counts for nothing.
+
+A bar can also be weak from the start, so the ready gate tests the checks
+themselves. Each acceptance check must fail on `main` on its assertion, never
+on an error such as a failed import. The fresh checker matches each check to
+the criterion it claims to test. After the build goes green, the existing
+test-strength check breaks the changed code on purpose, and an acceptance check
+that does not notice forces `review:person`. Red before green is judged as
+evidence; the kit does not prescribe the steps a builder takes to get there.
 
 ## Review
 
@@ -290,12 +340,22 @@ The builder ends each attempt with one status, and each status has one route.
 | Done, with concerns | `review:person` |
 | Needs context | Kickback |
 | Blocked | Kickback |
+| Environment failed | Retry, then pause the run; never a kickback |
+
+A failure of the computer or the setup is not a gap in the shaping, so it never
+sends a piece back. Otherwise the kickback rate would measure the laptop.
 
 `review:auto` is the default. The system asks whether the person wants to
 review particular pieces, and warns when a piece would benefit from it. A
 sensitive area, a goal that missed its target, a change to a check or the
-project's guards, a change outside the piece's boundary, a builder's concerns,
-and the first deployment always force `review:person`. A review the person owes waits on the shaping board.
+project's guards, a change outside the piece's boundary, an acceptance check
+that missed a deliberate break, a builder's concerns, and the first deployment
+always force `review:person`. A review the person owes waits on the shaping
+board.
+
+The automatic reviewer is calibrated against the person. Where both judged a
+piece, `/maintain` compares their verdicts and proposes changes to the
+reviewer's instructions where they disagree.
 
 ## Kickback
 
@@ -354,6 +414,47 @@ A run has a budget ceiling as well as each piece's budget, and a cap on CI
 rounds. Reaching either, or a run of refused commands, pauses the run and
 tells the person.
 
+## Computer resources
+
+The coding agents' own limits do not look at memory, and a real run of ten
+builders froze a 15 GiB computer for about four hours. So the run decides how
+many builders to start from the computer itself.
+
+Before a run starts, it measures free memory and processor cores and suggests a
+number of builders: the memory left after a reserve, divided by what each
+builder needs, but never more than half the cores or more than four. The person
+may raise it, after one warning, to a hard cap of six. A piece marked heavy,
+such as one that runs a container, downloads a model or builds an index, runs
+alone.
+
+Before each new builder starts, the run checks memory pressure and swap. Under
+pressure it starts no new builder, stops dev servers nobody is using, and lowers
+the count for the rest of the run while running builders finish. Under critical
+pressure it also stops the newest builder that has no commit yet, keeps its
+work and counts no attempt. Starts resume, at the lower count, once pressure has
+been normal for ten minutes.
+
+When a usage limit is reached, the run starts nothing new and records when the
+allowance resets. Its opening line says that a run of several builders spends
+the allowance that many times faster.
+
+Worktrees share what they can: one package store, the coordinator's single
+browser, a dev server only during a walk-through, and at most two test workers
+for each builder.
+
+A builder's heartbeat is a change in its worktree. After 30 minutes with none,
+the run asks it for its state; after 45 it stops the builder, keeps the work and
+counts an attempt. Each piece also has a wall-clock cap, two hours unless its
+contract says otherwise.
+
+The numbers live in three places. Project and computer settings hold the caps,
+the reserve, the pressure thresholds, the timeouts and the model for each role.
+The piece holds `Heavy:`, whether it needs a dev server or a browser, its
+expected duration and any resource it cannot share. The run record holds the
+current count, each change and its reason, the peak memory measured and each
+builder's last heartbeat. The memory each builder needs is an estimate until
+the first real runs measure it.
+
 ## Merging and going live
 
 A merge to `main` goes live. A run's PR merges automatically when every piece is
@@ -364,7 +465,11 @@ any piece marked `review:person` can be opened on its own preview or checkout.
 
 Automatic merge is earned. Each project starts with the person merging. After a
 number of clean runs, `/maintain` offers to switch to automatic merge, and the
-rules above then apply.
+rules above then apply. A clean run had no merge reverted and no bug filed
+against its pieces within a few days, and where the person also judged a piece,
+the automatic reviewer agreed. The offer also needs a slow signal, because tests
+answer in seconds while poor structure costs months: the drift and structure
+reads must not have got worse.
 
 Automatic merge needs a `main` that GitHub protects, which means a public
 repository or a paid plan. On a free private repository GitHub offers no branch
@@ -380,9 +485,13 @@ deployment rolls back to the previous build, and the kit files a bug piece.
 production on merge, rollback, secrets and the health check. It runs the first
 time and again when the project moves to new infrastructure. Founding chooses
 the recipe, because the stack shapes the code, and `/deploy` builds the pipeline
-from it. A preview address becomes a recipe field: some hosts give one per
+from it.
+
+A preview address becomes a recipe field: some hosts give one per
 branch and per commit, others one per pull request, and a local checkout on its
-own port is the fallback.
+own port is the fallback. A recipe also says how to boot a copy of the app
+inside one worktree, on its own port, with throwaway seeded data and a log the
+builder can read, so parallel builds never share a database or a port.
 
 ## The safety boundary for runs
 
@@ -396,6 +505,12 @@ secrets. A run can push only to its own branches. Text the person did not write,
 such as other people's comments, web pages and package files, is data and never
 an instruction. A new dependency is checked to exist, with its age and licence,
 before it is added. A secret scan runs in the gate.
+
+An allowlist is not a boundary on its own: GitHub and the model's own service
+are on it, and both can carry data out. So the push token is limited to the
+repository and held by the gate script, outside the sandbox where the platform
+allows. The builder's brief says what it may do outside the code, because
+agents measurably reach further when nothing says so.
 
 ## Boards
 
@@ -423,9 +538,17 @@ a local HTML page; on Claude it is also a live artifact. Other platforms follow.
 ## Learning and code health
 
 Each piece records what it learned, limited to what the code and tests do not
-show. When a run closes, each lesson becomes an `AGENTS.md` line, a masterplan
-change or a new raw piece, and it lands through the run's PR. `/maintain` sorts
-the lessons it finds: keep, update, merge or delete.
+show. When a run closes, each lesson becomes a check wherever a machine can hold
+it, and otherwise an `AGENTS.md` line, a masterplan change or a new raw piece.
+It lands through the run's PR. Instruction files written by a model have been
+measured to lower success, so lines are rationed, and `/maintain` sorts the
+lessons it finds: keep, update, merge or delete.
+
+The kit measures itself on real projects from the run records. `/maintain`
+reports kickbacks by shaping sub-state, merges that were reverted or followed
+by a bug within a few days, and how often the automatic reviewer agreed with the
+person. The replay harness reports, for each model, whether a scenario passes on
+every one of several clean runs.
 
 The constraints in the masterplan become rules in the project check wherever a
 tool can hold them, each with a failure message that says how to fix it.
@@ -469,12 +592,22 @@ check a bar can name.
 | No push to `main`, no force push | Deny rules, and GitHub protection where the plan allows it |
 | Automatic merge conditions | The gate script and GitHub's automatic merge |
 | Run limits | The run record and the gate script |
+| The crew and its inputs | The run script, which starts every member |
+| Memory pressure and stuck builders | The run script's checks before each start and on each heartbeat |
 | The sandbox and allowlist | The coding agent's sandbox settings |
 
 Judgement stays where a machine cannot reach: research, the fresh readiness
 check, the automatic review and the gauntlet's critic. Each runs in a fresh
-session and returns a fixed verdict the gate script can read. Every gate names
-what it catches, so it can be removed once models no longer need it.
+session and returns a fixed verdict the gate script can read.
+
+Every gate names what it catches, and gates come in two kinds. A guide makes up
+for something models cannot yet do reliably; each has a test that removes it to
+show whether it still earns its place, run at each release and with each new
+model. A sensor guards against the builder's incentives, such as the frozen
+bar, fresh evidence and the boundary check, and stays whatever the model.
+
+Every script is quiet when it passes, printing one line, and on failure says
+what to do next. A refusal from the gate script names the next allowed action.
 
 ## Platforms
 
@@ -524,8 +657,12 @@ record together. Ceremony for its own sake, which is why sub-states can be
 skipped and contracts have a length limit. A permanent judge, which is why every
 gate names what it catches. Agents organised into a hierarchy, where runs and
 gates are enough. A number to game, such as coverage. Review requests so
-frequent that the person stops reading them. And an agent resolving a merge
-conflict by judgement on the automatic path.
+frequent that the person stops reading them.
+
+An agent resolving a merge
+conflict by judgement on the automatic path. Prescribing the steps inside a
+loop, where only the evidence is judged. And a flaky guard check sending pieces
+back, where it should become a chore piece of its own.
 
 ## Settled when built
 
@@ -533,4 +670,5 @@ These numbers are left to the pieces that build them, each with a default to
 test: the attempt limit (three today), the CI round cap, the run and piece
 budgets, the number of clean runs before automatic merge is offered, the number
 of merged runs between drift reads, the length limit for each type's contract,
-and the time with no progress after which a builder counts as stuck.
+the memory reserve and the memory each builder needs, the pressure thresholds,
+and the timeouts for a stuck builder.
