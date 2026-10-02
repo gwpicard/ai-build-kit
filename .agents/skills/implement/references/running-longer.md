@@ -548,7 +548,12 @@ is preserved. A background builder never runs recovery or changes run state.
    before the checks; it never installs outside the project. Supply `--gap
    <reason>` for anything verification cannot establish. No checks, a failing
    check, or an unresolved gap gives no passing baseline. A changed checkout
-   also invalidates its result. Record the baseline's path and commit, commands,
+   also invalidates its result. The helper compares tracked bytes with the named
+   commit even when index flags hide changes. It privately fingerprints actual
+   inputs behind established worktree links before and after checking, and again
+   before continuation. The archive still never follows links. An unknown,
+   unreadable, looping or unsafe linked target leaves verification incomplete.
+   Record the baseline's path and commit, commands,
    exit codes and gaps. A failure of a shared base stops every task relying on
    it; independently checked work on another base may still continue.
 4. **Refresh what can continue.** Refresh the plan printout and current issue
@@ -586,7 +591,8 @@ allowed each continuation and repeat the checks if that base changes. For a
 later successful part on that copy, pass `--base <checked_commit>` to
 `baseline`. The helper accepts an advance only when a successfully built task
 records that commit, the earlier successful base remains in its history and
-the failed commit is absent, then reruns the checks. An arbitrary new branch
+every commit exclusive to the failed task after its recorded start is absent,
+then reruns the checks. An arbitrary new branch
 head earns no checked baseline.
 
 The recovery files live in the main folder's ignored `.agents/recovery/`, with
@@ -596,6 +602,14 @@ contents. `recovery.json` there and the piece's `recovery` field identify the
 pinned commit, file archive, staged patch and check evidence. They outlive the
 run folder; `worktree.sh` keeps the retained source and baseline copies. Do not
 remove their refs, folders or worktrees while a failure still needs review.
+The durable `recovery.json` owns the generation and stage. Before deciding a
+run has finished or resuming it, run `scripts/recovery.py` with `reconcile
+--state <state.json> --piece <number>` for each piece, including a piece whose
+run-state recovery field is missing. The helper finds its durable record and
+reconciles the run state. A disagreement or an interrupted write stays
+unfinished until the baseline checks run again. Eligibility and baseline
+checking also reconcile first; a stale checked generation never replaces a
+newer checking record. A record that cannot be reconciled stops continuation.
 
 An interruption after preservation leaves the piece `building` in the local
 run record with the reason `Recovery unfinished`; its issue may already be
@@ -610,7 +624,8 @@ finished run merely because all issue labels look final.
 
 ## Resuming
 
-A new session resumes from the state file, never from memory. A run is
+First reconcile durable recovery records as above. A new session resumes from
+the state file, never from memory. A run is
 unfinished while any piece in its state file is `waiting` or `building`. A run
 whose every piece is in a final state is finished, and is never offered for
 resuming. `/implement` typed alone or with `queue`, `/what-now` and `/sync`

@@ -251,6 +251,220 @@ call(state,'baseline','--check','true','--gap','Smoke check unavailable',code=2)
 assert load(state)['pieces'][0]['recovery']['stage'] == 'blocked'
 assert load(state)['pieces'][0]['recovery']['gaps'] == ['Smoke check unavailable']
 
+def ready_fixture(name):
+    p,state,base,head,evidence = project(name)
+    call(state,'preserve','--source',p,'--base',base,'--evidence',evidence)
+    call(state,'baseline','--check','python3 check.py')
+    return p,state,base,head,evidence
+
+def linked_input():
+    p,state,base,head,evidence = project('changed-link')
+    # Harmless fixture input stands in for an ignored credential file.
+    (p/'.gitignore').write_text((p/'.gitignore').read_text() + '.env\n')
+    git(p,'add','.gitignore')
+    git(p,'commit','-qm','Ignore local input')
+    base = git(p,'rev-parse','HEAD')
+    data = load(state)
+    data['pieces'][0]['start_commit'] = base
+    write(state,data)
+    (p/'.env').write_text('fixture input')
+    call(state,'preserve','--source',p,'--base',base,'--evidence',evidence)
+    check = "python3 -c \"from pathlib import Path; assert Path('.env').read_text() == 'fixture input'\""
+    call(state,'baseline','--check',check)
+    rec = load(state)['pieces'][0]['recovery']
+    assert (Path(rec['baseline_worktree'])/'.env').is_symlink()
+    issues,impact = refresh(state,base)
+    eligible(state,3,issues,impact)
+    (p/'.env').write_text('changed fixture input')
+    eligible(state,3,issues,impact,code=2)
+    call(state,'baseline','--check',"python3 -c \"from pathlib import Path; Path('.env').write_text('input changed by check')\"",code=2)
+    rec = load(state)['pieces'][0]['recovery']
+    assert rec['stage'] == 'blocked' and rec['gaps'] == ['Linked inputs changed during the baseline checks.']
+    assert 'input changed by check' not in json.dumps(rec['baseline_links'])
+
+def failed_prefix():
+    p,state,base,head,evidence = project('failed-prefix')
+    (p/'second.txt').write_text('second failed commit')
+    git(p,'add','second.txt')
+    git(p,'commit','-qm','More unsuccessful work')
+    call(state,'preserve','--source',p,'--base',base,'--evidence',evidence)
+    candidate = fixture/'prefix-candidate'
+    git(p,'worktree','add','-qb','candidate',str(candidate),head)
+    (candidate/'successful.txt').write_text('independent success')
+    git(candidate,'add','successful.txt')
+    git(candidate,'commit','-qm','Independent success')
+    chosen = git(candidate,'rev-parse','HEAD')
+    data = load(state)
+    data['pieces'][2].update(state='to check',checked_commit=chosen)
+    write(state,data)
+    call(state,'baseline','--base',chosen,'--check','true',code=2)
+    assert (candidate/'failed.txt').exists() and not (candidate/'second.txt').exists()
+
+def split_record():
+    p,state,base,head,evidence = ready_fixture('split-record')
+    script = state.parent/'interrupt.py'
+    script.write_text("""import importlib.util, os, sys
+from pathlib import Path
+spec = importlib.util.spec_from_file_location('recovery',sys.argv[1])
+m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+original = m.os.replace
+def replace(source,target):
+    if Path(target).name == 'state.json':
+        os._exit(79)
+    return original(source,target)
+m.os.replace = replace
+sys.argv = [sys.argv[1], 'baseline', '--state',sys.argv[2], '--piece','1','--check','false']
+m.main()
+""")
+    run('python3',script,helper,state,code=79)
+    rec = load(state)['pieces'][0]['recovery']
+    record = Path(rec['archive']).parent/'recovery.json'
+    assert rec['stage'] == 'checked' and load(record)['stage'] == 'checking'
+    issues,impact = refresh(state,base)
+    eligible(state,3,issues,impact,code=2)
+    assert load(record)['stage'] == 'checking'
+    call(state,'baseline','--check','false',code=2)
+    assert load(state)['pieces'][0]['recovery']['stage'] == 'blocked'
+    assert load(state)['pieces'][0]['recovery']['checks'][0]['exit_code'] != 0
+    assert (p/'failed.txt').exists()
+
+def hidden_tracked():
+    for flag in ('--assume-unchanged','--skip-worktree'):
+        p,state,base,head,evidence = ready_fixture('hidden-' + flag[2:])
+        check = "git update-index " + flag + " shared.txt && printf 'hidden edit' > shared.txt"
+        call(state,'baseline','--check','python3 check.py','--check',check,code=2)
+        rec = load(state)['pieces'][0]['recovery']
+        baseline = Path(rec['baseline_worktree'])
+        assert git(baseline,'status','--porcelain') == ''
+        assert (baseline/'shared.txt').read_text() == 'hidden edit'
+        assert git(baseline,'show',base+':shared.txt') == 'works'
+        issues,impact = refresh(state,base)
+        eligible(state,3,issues,impact,code=2)
+
+    for point in ('before','after'):
+        p,state,base,head,evidence = ready_fixture('suppressed-' + point)
+        rec = load(state)['pieces'][0]['recovery']
+        baseline = Path(rec['baseline_worktree'])
+        git(baseline,'update-index','--skip-worktree','shared.txt')
+        (baseline/'shared.txt').write_text('hidden after success')
+        assert git(baseline,'status','--porcelain') == ''
+        if point == 'before':
+            call(state,'baseline','--check','true',code=2)
+        issues,impact = refresh(state,base)
+        eligible(state,3,issues,impact,code=2)
+        assert (baseline/'shared.txt').read_text() == 'hidden after success'
+
+def linked_directory():
+    p,state,base,head,evidence = project('linked-directory')
+    (p/'.ai-build-kit-maintenance').write_text('worktree-links|private/assets\nconfidential|private/confidential\n')
+    (p/'private/assets').mkdir()
+    (p/'private/assets/font').write_text('fixture font')
+    git(p,'add','.ai-build-kit-maintenance')
+    git(p,'commit','-qm','Record linked build inputs')
+    base = git(p,'rev-parse','HEAD')
+    data = load(state)
+    data['pieces'][0]['start_commit'] = base
+    write(state,data)
+    call(state,'preserve','--source',p,'--base',base,'--evidence',evidence)
+    check = "python3 -c \"from pathlib import Path; assert Path('private/assets/font').read_text() == 'fixture font'\""
+    call(state,'baseline','--check',check)
+    rec = load(state)['pieces'][0]['recovery']
+    baseline = Path(rec['baseline_worktree'])
+    # A whole authorised folder link must include nested contents too.
+    os.symlink(p/'private/assets',baseline/'private/folder')
+    data = (p/'.ai-build-kit-maintenance').read_text()
+    (p/'.ai-build-kit-maintenance').write_text(data.replace('private/assets','private/assets ; private/folder'))
+    os.symlink('assets',p/'private/folder')
+    call(state,'baseline','--check',check)
+    issues,impact = refresh(state,base)
+    eligible(state,3,issues,impact)
+    (p/'private/assets/font').write_text('changed fixture font')
+    eligible(state,3,issues,impact,code=2)
+    call(state,'baseline','--check','true')
+    rec = load(state)['pieces'][0]['recovery']
+    assert 'private/folder' in rec['baseline_links']
+    # Contents never enter command output or the private hash record.
+    record = Path(rec['archive']).parent/'recovery.json'
+    assert 'changed fixture font' not in record.read_text()
+    assert record.stat().st_mode & 0o077 == 0
+    outside = fixture/'outside-input'
+    outside.write_text('outside fixture')
+    os.symlink(outside,baseline/'private/unknown')
+    call(state,'baseline','--check','true',code=2)
+    rec = load(state)['pieces'][0]['recovery']
+    assert rec['stage'] == 'blocked'
+    assert rec['gaps'] == ['Linked baseline inputs could not be safely verified.']
+    assert (baseline/'private/unknown').is_symlink()
+
+def write_boundaries():
+    for boundary in ('record-before','record-after','state-before','state-after','checked-before-state'):
+        p,state,base,head,evidence = ready_fixture('interruption-' + boundary)
+        old = load(state)['pieces'][0]['recovery']
+        script = state.parent/'interrupt.py'
+        script.write_text("""import importlib.util, json, os, sys
+from pathlib import Path
+spec = importlib.util.spec_from_file_location('recovery',sys.argv[1])
+m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+original = m.os.replace
+boundary = sys.argv[3]
+def replace(source,target):
+    name = Path(target).name
+    stage = json.loads(Path(source).read_text())
+    if name == 'state.json': stage = stage['pieces'][0]['recovery']
+    final = stage.get('stage') == 'checked'
+    if (boundary == 'record-before' and name == 'recovery.json') or (
+            boundary == 'state-before' and name == 'state.json') or (
+            boundary == 'checked-before-state' and name == 'state.json' and final):
+        os._exit(79)
+    original(source,target)
+    if (boundary == 'record-after' and name == 'recovery.json') or (
+            boundary == 'state-after' and name == 'state.json'):
+        os._exit(79)
+m.os.replace = replace
+sys.argv = [sys.argv[1], 'baseline', '--state',sys.argv[2], '--piece','1','--check','true']
+m.main()
+""")
+        run('python3',script,helper,state,boundary,code=79)
+        issues,impact = refresh(state,base)
+        eligible(state,3,issues,impact,code=2)
+        # The resume route uses the same reconciliation, without claiming work.
+        call(state,'reconcile')
+        rec = load(state)['pieces'][0]['recovery']
+        assert rec['stage'] == 'checking'
+        assert load(Path(rec['archive']).parent/'recovery.json') == rec
+        assert load(state)['pieces'][0]['state'] == 'building'
+        assert rec['generation'] > old['generation']
+        call(state,'baseline','--check','python3 check.py')
+        issues,impact = refresh(state,base)
+        eligible(state,3,issues,impact)
+        assert (p/'failed.txt').exists()
+
+        # A stale writer cannot put an earlier checked generation back.
+        stale_script = state.parent/'stale.py'
+        write(state.parent/'old.json',old)
+        stale_script.write_text("""import importlib.util, json, sys
+from pathlib import Path
+spec = importlib.util.spec_from_file_location('recovery',sys.argv[1])
+m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+state = m.read(sys.argv[2]); old = m.read(Path(sys.argv[2]).parent/'old.json')
+try: m.attach(sys.argv[2],state,state['pieces'][0],old)
+except ValueError: sys.exit(2)
+""")
+        before = load(state)
+        run('python3',stale_script,helper,state,code=2)
+        assert load(state) == before
+
+# Independent projects let all four regressions report before the test stops.
+failures=[]
+for probe in (linked_input,failed_prefix,split_record,hidden_tracked,linked_directory,write_boundaries):
+    try:
+        probe()
+        print('Passed:',probe.__name__)
+    except AssertionError as error:
+        failures.append(probe.__name__)
+        print('Failed:',probe.__name__,error)
+assert not failures, failures
+
 print('Failure recovery passed: retained files and commits, checked independent work, blocked dependants, successful parent parts, shared failure and interrupted recovery.')
 print('Disposable artifacts:', fixture)
 PY

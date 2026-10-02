@@ -7,11 +7,13 @@ labels, merges or changes the failed checkout. See running-longer.md.
 
 import argparse
 import datetime as dt
+import fcntl
 import hashlib
 import json
 import os
 from pathlib import Path
 import re
+import stat
 import subprocess
 import sys
 import tarfile
@@ -77,6 +79,111 @@ def inventory(source):
     return result
 
 
+def regular_bytes(path):
+    """Read a regular file without opening a final link or waiting on a pipe."""
+    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    with os.fdopen(fd, 'rb') as stream:
+        before = os.fstat(stream.fileno())
+        if not stat.S_ISREG(before.st_mode):
+            raise ValueError('A baseline input is not a regular file; verification is incomplete.')
+        data = stream.read()
+        after = os.fstat(stream.fileno())
+        if (before.st_size, before.st_mtime_ns, before.st_ctime_ns) != (
+                after.st_size, after.st_mtime_ns, after.st_ctime_ns):
+            raise ValueError('A baseline input changed while it was read; check it again.')
+    return data
+
+
+def tracked_matches(path, chosen):
+    """Compare actual bytes and kinds with the tree, regardless of index flags."""
+    for entry in git(path, 'ls-tree', '-rz', chosen).split(b'\0'):
+        if not entry:
+            continue
+        header, name = entry.split(b'\t', 1)
+        mode, kind, oid = header.split()
+        relative = Path(os.fsdecode(name))
+        working = path / relative
+        if any((path / parent).is_symlink() for parent in relative.parents):
+            return False
+        expected = git(path, 'cat-file', 'blob', oid.decode()) if kind == b'blob' else None
+        if mode == b'120000':
+            if not working.is_symlink() or os.fsencode(os.readlink(working)) != expected:
+                return False
+        elif mode in (b'100644', b'100755'):
+            if working.is_symlink() or not working.is_file():
+                return False
+            if regular_bytes(working) != expected:
+                return False
+            if bool(working.stat().st_mode & 0o111) != (mode == b'100755'):
+                return False
+        else:
+            raise ValueError('A tracked input cannot be compared with its commit; verification is incomplete.')
+    return True
+
+
+def linked_inputs(path, main):
+    """Fingerprint established inputs separately from the no-dereference archive."""
+    record = main / '.ai-build-kit-maintenance'
+    lines = record.read_text().splitlines() if record.exists() else []
+    listed = []
+    confidential = []
+    for line in lines:
+        if line.startswith('worktree-links|'):
+            listed = [Path(p.strip().removeprefix('./').rstrip('/'))
+                      for p in line.split('|', 1)[1].split(' ; ') if p.strip()]
+        if line.startswith('confidential|'):
+            confidential.append(Path(line.split('|', 1)[1].strip().removeprefix('./').rstrip('/')))
+    result = {}
+
+    def fingerprint(target, allowed, seen):
+        real = target.resolve(strict=True)
+        if not real.is_relative_to(allowed) or any(
+                real.is_relative_to((main / c).resolve()) for c in confidential):
+            raise ValueError('A linked input has no safe established target; verification is incomplete.')
+        if real in seen:
+            raise ValueError('A linked input loops; verification is incomplete.')
+        if real.is_dir():
+            value = {p.name:fingerprint(p, allowed, seen | {real})
+                     for p in sorted(real.iterdir())}
+        else:
+            value = {'sha256':digest(regular_bytes(real)), 'mode':real.stat().st_mode & 0o777}
+        if target.resolve(strict=True) != real:
+            raise ValueError('A linked input changed while it was read; check it again.')
+        return {'target':str(real), 'input':value}
+
+    for name, item in inventory(path).items():
+        if item['kind'] != 'link':
+            continue
+        link = path / name
+        real = link.resolve(strict=True)
+        if real.is_relative_to(path):
+            allowed = path
+        else:
+            relative = Path(name)
+            env = len(relative.parts) == 1 and (name == '.env' or name.startswith('.env.'))
+            authorised = env or any(relative == p or relative.is_relative_to(p) for p in listed
+                                   if not p.is_absolute() and '..' not in p.parts)
+            ignored = subprocess.run(['git','-C',str(path),'check-ignore','-q','--',name],
+                                     capture_output=True).returncode == 0
+            if (not authorised or not ignored or not real.is_relative_to(main) or
+                    real != (main / name).resolve(strict=True)):
+                raise ValueError('A linked input has no safe established target; verification is incomplete.')
+            allowed = real if real.is_dir() else main
+        result[name] = fingerprint(link, allowed, set())
+    return result
+
+
+def baseline_inputs(args, state, piece, rec, path, main):
+    try:
+        return linked_inputs(path, main)
+    except (OSError, ValueError, RuntimeError):
+        message = 'Linked baseline inputs could not be safely verified.'
+        rec['gaps'].append(message)
+        rec['stage'] = 'blocked'
+        attach(args.state, state, piece, rec)
+        raise ValueError(message) from None
+
+
 def verify(source, rec):
     if commit(source, rec['retained_ref']) != rec['failed_commit']:
         raise ValueError('The retained commit does not match; stop recovery.')
@@ -100,7 +207,12 @@ def verify(source, rec):
 
 
 def attach(state_path, state, piece, rec):
-    save(Path(rec['archive']).parent / 'recovery.json', rec)
+    record = Path(rec['archive']).parent / 'recovery.json'
+    generation = rec.get('generation', 0)
+    if record.exists() and read(record).get('generation', 0) != generation:
+        raise ValueError('Recovery advanced since it was read; reconcile before continuing.')
+    rec['generation'] = generation + 1
+    save(record, rec)
     piece['recovery'] = rec
     # Pending recovery must still be found by older waiting/building readers.
     piece['state'] = 'building' if rec['stage'] in ('preserved', 'checking') else rec['final_state']
@@ -111,6 +223,37 @@ def attach(state_path, state, piece, rec):
         if rec['stage'] == 'blocked':
             piece['reason'] += ' The shared baseline has not passed all checks.'
     save(state_path, state)
+
+
+def reconcile(args, state, piece):
+    """The durable record owns the generation; disagreement is unfinished work."""
+    state_path = Path(args.state).resolve()
+    main = state_path.parents[3]
+    name = state.get('run', '')
+    if not re.fullmatch(r'[A-Za-z0-9_-]+', name) or not state_path.is_relative_to(main / '.agents/runs'):
+        raise ValueError('Run state has no safe recovery location.')
+    folder = main / '.agents/recovery' / (name + '-' + str(piece['number']))
+    record = folder / 'recovery.json'
+    if folder.is_symlink() or folder.parent.is_symlink() or record.is_symlink():
+        raise ValueError('A recovery record must not be a link.')
+    saved = piece.get('recovery')
+    if not record.exists():
+        if saved or record.with_name('recovery.json.pending').exists():
+            raise ValueError('Recovery has no complete durable record; keep its files and stop.')
+        return
+    rec = read(record)
+    if rec['piece'] != piece['number'] or Path(rec['archive']).parent != folder:
+        raise ValueError('The durable recovery record identifies other work; stop.')
+    pending = (record.with_name('recovery.json.pending').exists() or
+               state_path.with_name(state_path.name + '.pending').exists())
+    if rec != saved or pending:
+        # Even a checked write interrupted before run state is saved must recheck.
+        if rec['stage'] == 'checked' or pending:
+            rec['stage'] = 'checking'
+            rec.setdefault('gaps', []).append('Recovery records were interrupted; rerun baseline checks.')
+            rec.pop('eligibility', None)
+        verify(Path(rec['source']), rec)
+        attach(args.state, state, piece, rec)
 
 
 def preserve(args, state, piece):
@@ -134,7 +277,8 @@ def preserve(args, state, piece):
         raise ValueError('Recovery storage is not ignored by Git.')
     record = folder / 'recovery.json'
     if record.exists():
-        rec = read(record)
+        reconcile(args, state, piece)
+        rec = piece['recovery']
         if rec['source'] != str(source) or rec['requested_base'] != base:
             raise ValueError('This recovery already identifies different work; stop.')
         verify(source, rec)
@@ -181,6 +325,7 @@ def preserve(args, state, piece):
 
 
 def baseline(args, state, piece):
+    reconcile(args, state, piece)
     rec = piece.get('recovery')
     if not rec:
         raise ValueError('Preserve work before checking a baseline.')
@@ -196,9 +341,12 @@ def baseline(args, state, piece):
         if not successful:
             raise ValueError('A later baseline has no successfully checked task checkpoint.')
         git(source,'merge-base','--is-ancestor',rec['requested_base'],chosen)
-        if rec['failed_commit'] != rec['requested_base']:
+        failed_commits = git(source, 'rev-list', rec['requested_base'] + '..' +
+                            rec['failed_commit']).decode().splitlines()
+        for failed_commit in failed_commits:
             contains_failure = subprocess.run(['git','-C',str(source),'merge-base',
-                                                '--is-ancestor',rec['failed_commit'],chosen])
+                                                '--is-ancestor',failed_commit,chosen],
+                                               capture_output=True)
             if contains_failure.returncode != 1:
                 raise ValueError('A later baseline may contain the failed task; stop recovery.')
     if not args.check:
@@ -220,14 +368,19 @@ def baseline(args, state, piece):
     if opened.returncode:
         raise ValueError('The baseline worktree could not be opened; the failed work is kept.')
     if (commit(path,'HEAD') != chosen or
-            git(path,'status','--porcelain').strip()):
+            git(path,'status','--porcelain').strip() or not tracked_matches(path, chosen)):
         raise ValueError('The baseline differs from its identified commit; stop recovery.')
+    before_links = baseline_inputs(args, state, piece, rec, path, main)
     for command in args.check:
         result = subprocess.run(command, shell=True, cwd=path,
                                 stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         rec['checks'].append({'command':command,'exit_code':result.returncode})
         attach(args.state,state,piece,rec)
-    clean = commit(path,'HEAD') == chosen and not git(path,'status','--porcelain').strip()
+    clean = (commit(path,'HEAD') == chosen and not git(path,'status','--porcelain').strip()
+             and tracked_matches(path, chosen))
+    after_links = baseline_inputs(args, state, piece, rec, path, main)
+    if before_links != after_links:
+        rec['gaps'].append('Linked inputs changed during the baseline checks.')
     if not clean:
         rec['gaps'].append('The checks changed the baseline checkout.')
     rec['stage'] = 'checked' if clean and not rec['gaps'] and all(
@@ -235,6 +388,7 @@ def baseline(args, state, piece):
     rec['checked_at'] = now()
     # Keep the file inventory with the commit the checks actually saw.
     rec['baseline_files'] = inventory(path)
+    rec['baseline_links'] = after_links
     attach(args.state,state,piece,rec)
     if rec['stage'] != 'checked':
         raise ValueError('The shared baseline is not verified; stop work that relies on it.')
@@ -248,13 +402,17 @@ def timestamp(value):
 
 
 def eligible(args, state, piece):
+    reconcile(args, state, piece)
     rec = piece.get('recovery', {})
     if rec.get('stage') != 'checked':
         raise ValueError('Recovery has no checked baseline; do not claim the next task.')
     verify(Path(rec['source']),rec)
     path = Path(rec['baseline_worktree'])
+    main = Path(git(path,'worktree','list','--porcelain').decode().splitlines()[0][9:])
     if (commit(path,'HEAD') != rec['baseline_commit'] or
-            git(path,'status','--porcelain').strip() or inventory(path) != rec['baseline_files']):
+            git(path,'status','--porcelain').strip() or not tracked_matches(path,rec['baseline_commit']) or
+            inventory(path) != rec['baseline_files'] or
+            linked_inputs(path,main) != rec.get('baseline_links')):
         raise ValueError('The baseline changed after its checks; check it again before continuation.')
     issues, impact = read(args.issues), read(args.impact)
     for evidence in (issues, impact):
@@ -302,7 +460,7 @@ def eligible(args, state, piece):
 def main():
     os.umask(0o077)
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command', choices=['preserve','baseline','eligible'])
+    parser.add_argument('command', choices=['preserve','baseline','eligible','reconcile'])
     parser.add_argument('--state',required=True)
     parser.add_argument('--piece',required=True,type=int)
     parser.add_argument('--source')
@@ -316,17 +474,20 @@ def main():
     parser.add_argument('--impact')
     args = parser.parse_args()
     required = {'preserve':['source','base','evidence'], 'baseline':[],
-                'eligible':['candidate','issues','impact']}[args.command]
+                'eligible':['candidate','issues','impact'], 'reconcile':[]}[args.command]
     if any(getattr(args,key) is None for key in required):
         parser.error('Missing inputs for ' + args.command)
     try:
-        state = read(args.state)
-        piece = next(item for item in state['pieces'] if item['number'] == args.piece)
-        globals()[args.command](args,state,piece)
+        # A single coordinator owns recovery, but a stale concurrent call still fails closed.
+        with Path(args.state).with_name('recovery.lock').open('a') as lock:
+            fcntl.flock(lock, fcntl.LOCK_EX)
+            state = read(args.state)
+            piece = next(item for item in state['pieces'] if item['number'] == args.piece)
+            globals()[args.command](args,state,piece)
     except ValueError as error:
         print(str(error), file=sys.stderr)
         return 2
-    except (OSError, KeyError, StopIteration, tarfile.TarError):
+    except (OSError, KeyError, StopIteration, RuntimeError, tarfile.TarError):
         # Paths and project command output can contain confidential material.
         print('Recovery could not establish safe continuation; keep its files and inspect the local record.',file=sys.stderr)
         return 2
