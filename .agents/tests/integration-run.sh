@@ -108,6 +108,104 @@ def feature(number, name):
     return path
 
 call('init', '--source', integration, '--check', 'python3 check.py && mkdir -p build && printf generated > build/output')
+mode = os.environ.get('INTEGRATION_CASE')
+if mode == 'shared':
+    path = feature(1, 'a')
+    saved = read(state)
+    saved['pieces'][1]['start_commit'] = start
+    saved['pieces'][1]['flags'] = ['Sibling needs human review']
+    saved['pieces'][2]['state'] = 'parked'
+    write(state, saved)
+    (path/'b').write_text('b')
+    git('add', '.', cwd=path); git('commit', '-qm', 'Second completed parent part', cwd=path)
+    git('push', '-q', 'origin', 'HEAD', cwd=path)
+    for number in (1,2):
+        call('check', '--piece', number, '--source', path, '--check', 'test -f '+('a' if number==1 else 'b'))
+    # Unsuccessful membership is refused before any remote write.
+    call('merge-feature', '--piece', 1, '--include-piece', 2, '--include-piece', 3,
+         '--source', path, '--pr', 1, code=2)
+    assert not (fixture/'merges.log').exists()
+    # Interrupt immediately after the remote write; pending must contain both parts.
+    gh_path = bin_dir/'gh'
+    gh_path.write_text(gh_path.read_text().replace("pr['state']='MERGED'", "pr['state']='MERGED'"))
+    original = gh_path.read_text()
+    gh_path.write_text(original.replace("else: sys.exit(9)",
+        " if (f/'interrupt').exists(): sys.exit(7)\nelse: sys.exit(9)"))
+    (fixture/'interrupt').touch()
+    call('merge-feature', '--piece', 1, '--include-piece', 2, '--source', path, '--pr', 1, code=2)
+    pending = read(state)['integration']['pending']
+    assert pending['pieces'] == [1,2]
+    assert read(state)['integration']['included'] == []
+    (fixture/'interrupt').unlink()
+    call('reconcile', '--source', integration, '--check', 'python3 check.py')
+    call('reconcile', '--source', integration, '--check', 'python3 check.py')
+    saved = read(state)
+    assert saved['integration']['included'] == [1,2]
+    assert [p['state'] for p in saved['pieces'][:3]] == ['merged','merged','parked']
+    assert all(p['verification']['passed'] for p in saved['pieces'][:2])
+    assert (fixture/'merges.log').read_text().splitlines() == ['integration/test']
+    pr(10, 'integration/test', 'main'); call('final', '--pr', 10)
+    record = state.parent/'human.json'
+    human = {'pr':10,'head':git('rev-parse','HEAD',cwd=integration),'base':start,
+             'reviewed':True,'review_words':'Reviewed both parts and flags',
+             'merge_approved':True,'yes_words':'Yes, merge this result'}
+    write(record, human); call('review', '--record', record)
+    saved['pieces'][1]['flags'].append('New sibling observation'); write(state,saved)
+    call('merge-final', '--pr', 10, '--record', record, code=2)
+    assert git('--git-dir',remote,'rev-parse','main') == start
+    call('check', '--source', integration, '--check', 'python3 check.py')
+    call('review', '--record', record); call('merge-final', '--pr', 10, '--record', record)
+    assert read(state)['integration']['included'] == [1,2]
+    print('Shared parent: atomic membership, individual evidence, interruption, failed exclusion and sibling flags held.')
+    print('Fixture retained at',fixture)
+    sys.exit(0)
+if mode == 'moving':
+    bad = feature(3,'bad')
+    call('check','--piece',3,'--source',bad,'--check','python3 check.py')
+    original_start = read(state)['pieces'][2]['start_commit']
+    path = feature(1,'a')
+    call('check','--piece',1,'--source',path,'--check','python3 check.py')
+    call('merge-feature','--piece',1,'--source',path,'--pr',1)
+    baseline = read(state)['integration']['checked_commit']
+    assert baseline != original_start
+    update = root/'.agents/skills/section-builder/scripts/bring-up-to-date.sh'
+    run('sh',update,'--base','integration/test',bad)
+    head = git('rev-parse','HEAD',cwd=bad)
+    before = {p.relative_to(bad).as_posix():p.read_bytes() for p in bad.rglob('*') if p.is_file() and p.name!='.git'}
+    call('check','--piece',3,'--source',bad,'--check','python3 check.py',code=2)
+    saved = read(state); piece = saved['pieces'][2]
+    assert piece['start_commit'] == original_start
+    assert piece['integration_candidate']['base'] == baseline
+    evidence = Path(piece['verification']['evidence'])
+    recovery = root/'.agents/skills/implement/scripts/recovery.py'
+    def recover(command,*args,code=0):
+        return run('python3',recovery,command,'--state',state,'--piece',3,*args,code=code)
+    # An arbitrary ancestor cannot replace the recorded candidate boundary.
+    recover('preserve','--source',bad,'--base',head,'--evidence',evidence,code=2)
+    recover('preserve','--source',bad,'--base',baseline,'--evidence',evidence)
+    recover('baseline','--check','python3 check.py')
+    rec = read(state)['pieces'][2]['recovery']
+    assert rec['requested_base'] == baseline
+    assert rec['original_start_commit'] == original_start
+    assert git('rev-parse',rec['retained_ref'],cwd=bad) == head
+    assert before == {p.relative_to(bad).as_posix():p.read_bytes() for p in bad.rglob('*') if p.is_file() and p.name!='.git'}
+    assert git('rev-parse','HEAD',cwd=bad) == head
+    import datetime
+    observed = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    issues = state.parent/'issues.json'; impact = state.parent/'impact.json'
+    write(issues, {'observed_at':observed,'issues':[
+        {'number':n,'state':'open','labels':['ready'],'blocked_by':[3] if n==4 else []} for n in range(1,6)]})
+    write(impact, {'observed_at':observed,'base_commit':baseline,'tasks':{
+        '4':{'independent':True,'reason':'separate files'},'5':{'independent':True,'reason':'separate files'}}})
+    recover('eligible','--candidate',4,'--issues',issues,'--impact',impact,code=2)
+    recover('eligible','--candidate',5,'--issues',issues,'--impact',impact)
+    independent = feature(5,'independent')
+    call('check','--piece',5,'--source',independent,'--check','python3 check.py')
+    call('merge-feature','--piece',5,'--source',independent,'--pr',5)
+    assert read(state)['integration']['included'] == [1,5]
+    print('Moving target: earlier start, combined failure, original boundary, retained bytes/history and checked independent continuation held.')
+    print('Fixture retained at',fixture)
+    sys.exit(0)
 for number, name in ((1,'a'),(2,'b')):
     path=feature(number,name)
     update=root / '.agents/skills/section-builder/scripts/bring-up-to-date.sh'
@@ -219,3 +317,8 @@ assert (fixture/'merges.log').read_text().splitlines()==['integration/test']*3+[
 print('Integration run: passing pieces, real targets, retained combined failure, independent continuation, dependent refusal, resume, flags and final consent held.')
 print('Fixture retained at',fixture)
 PY
+
+if [ -z "${INTEGRATION_CASE:-}" ]; then
+  INTEGRATION_CASE=shared sh "$0"
+  INTEGRATION_CASE=moving sh "$0"
+fi
