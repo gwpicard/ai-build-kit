@@ -174,3 +174,105 @@ echo "  ok: a file in docs/ the list does not name is still not read"
 
 echo
 echo "document-read-rehearsal.sh: stale names found at their lines, true ones left alone"
+
+# Explicit declarations: names can remain while their route stops calling them.
+python3 - "$SCRIPT" "$WORK" <<'PY'
+import ast
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import sys
+
+script, work = map(Path, sys.argv[1:])
+project = work / "wiring"
+project.mkdir()
+(project / "AGENTS.md").write_text("Required check: `npm run guard` via `npm run check`.\n")
+(project / "README.md").write_text("Required command: `pnpm run guard`.\n")
+package = project / "package.json"
+
+def scripts(route):
+    package.write_text(json.dumps({"scripts": {"check": route, "guard": "node --test", "unit": "node --test"}}))
+
+def snapshot():
+    return {str(p.relative_to(project)): hashlib.sha256(p.read_bytes()).hexdigest()
+            for p in project.rglob("*") if p.is_file()}
+
+def run(detector=script):
+    before = snapshot()
+    result = subprocess.run([sys.executable, str(detector)], cwd=project,
+                            capture_output=True, text=True, check=True)
+    assert snapshot() == before, "detector changed project files"
+    return result.stdout
+
+scripts("npm run guard && pnpm run unit")
+assert run() == "", "intact route produced findings"
+unchanged = (project / "AGENTS.md").read_bytes()
+scripts("npm run unit")
+broken = run()
+assert "AGENTS.md:1\twiring mismatch\t" in broken, broken
+assert "npm run check" in broken and "npm run guard" in broken, broken
+assert "package.json scripts.check" in broken and "npm run unit" in broken, broken
+assert (project / "AGENTS.md").read_bytes() == unchanged
+print("  ok: changed route with unchanged document names the missing check and inspected evidence")
+
+# Removing the production detector must remove the broken finding.
+source = script.read_text()
+tree = ast.parse(source)
+function = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "wiring_claims")
+lines = source.splitlines(keepends=True)
+lines[function.lineno - 1:function.end_lineno] = ["def wiring_claims(document, scripts):\n    return []\n"]
+mutant = work / "without-wiring.py"
+mutant.write_text("".join(lines))
+assert "wiring mismatch" not in run(mutant), "removing detector did not defeat broken case"
+print("  ok: removing detection defeats the broken case")
+
+(project / "AGENTS.md").write_text("Required check: `yarn run guard` via `pnpm run check` when file `care.flag` exists.\n")
+inactive = run()
+assert "inactive rule" in inactive and "wiring mismatch" not in inactive, inactive
+(project / "care.flag").write_text("active")
+active = run()
+assert "wiring mismatch" in active, active
+scripts("yarn run guard")
+assert run() == "", "active intact route produced findings"
+(project / "AGENTS.md").write_text("Required check: `npm run guard` via `npm run check` when the project handles money.\n")
+unknown = run()
+assert "unverified rule" in unknown and "condition" in unknown and "wiring mismatch" not in unknown, unknown
+print("  ok: inactive, active broken, active intact and indeterminate conditions stay distinct")
+
+(project / "AGENTS.md").write_text(unchanged.decode())
+for route in ('sh scripts/check.sh', 'npm run "$CHECK"', 'npm run guard || true',
+              'echo "npm run guard"', 'npm run guard && sh scripts/extra.sh',
+              'npm run check'):
+    scripts(route)
+    out = run()
+    assert "unverified rule" in out and "wiring mismatch" not in out, (route, out)
+print("  ok: shell indirection, quoted mentions, conditional shell and cycles remain unverified")
+
+(project / "AGENTS.md").write_text("Required check: run all important checks through the normal route.\n")
+assert "unverified rule" in run()
+(project / "AGENTS.md").write_text("Required command: `yarn run absent`.\n")
+assert "wiring mismatch" in run() and "yarn run absent" in run()
+package.write_text("not json")
+assert "unverified rule" in run() and "wiring mismatch" not in run()
+print("  ok: unsupported prose and unreadable mechanisms never become a pass")
+
+scripts("npm run guard")
+(project / "AGENTS.md").write_text("Required check: `npm run guard` via `npm run check` when file `../outside.flag` exists.\n")
+assert "unverified rule" in run()
+(project / "outside-link").symlink_to(work)
+(project / "AGENTS.md").write_text("Required check: `npm run guard` via `npm run check` when file `outside-link/flag` exists.\n")
+assert "unverified rule" in run()
+print("  ok: conditions cannot inspect outside the project")
+
+# Install layouts use the installed sync folder, including a path with spaces.
+(project / "AGENTS.md").write_bytes(unchanged)
+scripts("npm run unit")
+for relative in (".agents/skills/sync", ".claude/skills/sync", "plugin cache/skills/sync", "agent-plugin/skills/sync"):
+    installed = work / relative / "scripts/document-claims.py"
+    installed.parent.mkdir(parents=True, exist_ok=True)
+    installed.write_text(source)
+    assert run(installed) == broken, relative
+print("  ok: detector works from shared, Claude-only and external plugin layouts")
+print("  ok: every fixture kept its files unchanged; no project scripts or hooks were executed")
+PY
