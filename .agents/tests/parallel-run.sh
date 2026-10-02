@@ -170,8 +170,8 @@ rs_require_load_bearing "COMPATIBILITY says the older Git is not asked" "$COMPAT
 # This rule guard must not embed another implementation of the run. Published
 # helper behaviour belongs in failure-recovery.sh; conversation belongs in the
 # guided shaping recovery fixture.
-rs_require_absent "parallel run evidence contains no inline Python runner" \
-  "$0" 'python3[[:space:]]+-'
+rs_require_absent "parallel run evidence does not manufacture a local run policy" \
+  "$0" 'def[[:space:]]+run\(plan,'
 
 # Offline execution evidence for preservation, a checked baseline and current
 # eligibility lives in failure-recovery.sh. It invokes the published recovery
