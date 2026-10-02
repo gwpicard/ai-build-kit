@@ -140,14 +140,66 @@ the earlier contract carry over, with these additions.
 - The mode, and the bar that mode needs, described in the next section.
 - Acceptance checks written as real tests, committed with the spec on a
   branch, and failing on `main` today.
-- A boundary field naming the areas the piece may change, and a dependency
-  field naming the pieces it needs. A run plans its order from these.
+- The reach fields described in the next section: what the piece may change,
+  what else it reaches, what happens if it breaks, what it depends on, and the
+  commit the reach was worked out on. A run plans its order from these.
 - For a fix, a line saying what must not change.
 - An out-of-scope list.
 
 The brief rules hold the contract to what a builder can use alone: behaviour
 rather than steps, interfaces rather than file paths or line numbers, and each
 acceptance criterion checkable on its own. The lint checks them.
+
+## Reach and risk
+
+Shaping works out what a piece touches and what happens if it breaks, from the
+code as it is today, and records the result in words. It stores no graph. The
+evidence behind this is that strong models find code well without a graph, a
+stored index goes stale, and the largest measured cut in regressions came from
+giving the builder the tests that guard the code it changes.
+
+In `research`, the system runs the reach check on `main`, adds one query of the
+saved history for files that tend to change together, and maps every hit to a
+named area of the project. In `clarify`, when the reach touches a sensitive
+area, stored data or anything that leaves the tool, the person answers one
+question: "Say this went live and went wrong. Who noticed, and what did they
+see?"
+
+The contract records five fields.
+
+| Field | Contents |
+|---|---|
+| `Boundary:` | The areas the piece may change |
+| `Reaches:` | The areas it affects without changing them, each with the existing tests that guard it by name, or "no test covers it" |
+| `If it breaks:` | Who notices what, and how it is undone: a rollback, or not reversible because of data |
+| `Depends on:` | The pieces it needs, as blocked-by links |
+| `Reach derived at:` | The commit the reach was worked out on |
+
+The tests named under `Reaches:` become guard checks in the frozen bar. A
+reached area with no test needs a guard check among the acceptance checks.
+
+The person sees one sentence, such as "This changes sign-in. It also reaches
+billing and email, which 14 checks guard. If it breaks, people cannot sign in,
+and a rollback undoes it." A diagram appears only when a piece adds or changes
+a connection outside the tool, and it is the masterplan's connections picture
+with the change marked. A code graph is never shown.
+
+The area map covers the whole project, not only the sensitive areas, so that a
+boundary always names real paths. Founding writes it, and the project check
+turns red on a folder no area claims.
+
+The ready gate checks that every area exists in the map, that every reached
+area names a test or says none covers it, that every sensitive area in the
+boundary or the reach has an acceptance, that the dependencies form no cycle,
+and that the reach worked out again on today's `main` still matches. At the
+start of a run the reach is worked out again and the waves are planned from
+overlapping boundaries. A diff that changes files outside its boundary forces
+`review:person`.
+
+Richer engines wait for the pilot that measures whether they help: call graphs,
+language servers, knowledge graphs, hotspot scores and any saved index. The
+pilot also measures how closely each recorded boundary matched what the diff
+changed, which decides how far the boundary can be trusted.
 
 ## Implementation modes
 
@@ -220,8 +272,8 @@ The builder ends each attempt with one status, and each status has one route.
 `review:auto` is the default. The system asks whether the person wants to
 review particular pieces, and warns when a piece would benefit from it. A
 sensitive area, a goal that missed its target, a change to a check or the
-project's guards, a builder's concerns, and the first deployment always force
-`review:person`. A review the person owes waits on the shaping board.
+project's guards, a change outside the piece's boundary, a builder's concerns,
+and the first deployment always force `review:person`. A review the person owes waits on the shaping board.
 
 ## Kickback
 
@@ -243,7 +295,7 @@ nothing. How many pieces build at once, the budget and the merge policy come
 from project settings. No run starts while `main` is red; the kit files a bug
 piece instead.
 
-The run plans waves from the dependency and boundary fields. Pieces that depend
+The run plans waves from the `Depends on:` and `Boundary:` fields. Pieces that depend
 on each other, or that change the same area, build one after another, and the
 parallel count drops to one when every piece shares an area.
 
