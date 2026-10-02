@@ -86,6 +86,19 @@ wins, and it goes back to shaping. Research must still record each remaining gap
 Apart from a specification gap, a piece that is not eligible stays where it is.
 The report says why.
 
+## Continue in the same turn
+
+While an authorised run has an eligible operation left, perform the next one
+in this turn. Do not end the turn by saying what you will do next: an intention
+is not a completed operation. A question parks only the piece that needs the
+person; after the existing recovery and checked-baseline steps, continue with
+the next independent eligible piece. A supported wait on an active tool or
+worker is an operation, and the run resumes when it returns. Stop only under
+the limits in "Which pieces a run may take", "Recovery before continuation",
+"When a piece fails" and "When the run ends": when no eligible work remains,
+the existing bound is reached, required consent or capability is unavailable,
+or a shared verification failure means the baseline cannot be trusted.
+
 ## Leaving a follow-up
 
 When a piece cannot continue because an answer or action is missing, keep the

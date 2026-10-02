@@ -115,6 +115,23 @@ rs_rule "the same file despite different Touches goes to /fix by the merge rule"
 rs_rule "a walk-through that cannot get the browser could not look" \
   'where a walk-through cannot get the browser because another agent holds it, it records that it could not look'
 
+# --- same-turn continuation -------------------------------------------------
+
+rs_rule "the run performs its next eligible operation in this turn" \
+  'while an authorised run has an eligible operation left, perform the next one in this turn'
+rs_rule "announcing intent is not completing the operation" \
+  'do not end the turn by saying what you will do next: an intention is not a completed operation'
+rs_rule "a question parks only its piece" \
+  'a question parks only the piece that needs the person'
+rs_rule "independent work follows recovery and a checked baseline" \
+  'after the existing recovery and checked-baseline steps, continue with the next independent eligible piece'
+rs_rule "a supported active wait counts as an operation" \
+  'a supported wait on an active tool or worker is an operation'
+rs_rule "continuation points to existing stop rules" \
+  'stop only under the limits in "which pieces a run may take", "recovery before continuation", "when a piece fails" and "when the run ends"'
+rs_rule "a shared verification failure stops continuation" \
+  'a shared verification failure means the baseline cannot be trusted'
+
 # --- resuming ---------------------------------------------------------------
 
 rs_rule "resuming keeps at_once" 'so does its `at_once`'
@@ -149,5 +166,56 @@ rs_require_load_bearing "COMPATIBILITY says only Claude Code offers it" "$COMPAT
   'only claude code offers to build a group.s pieces at the same time'
 rs_require_load_bearing "COMPATIBILITY says the older Git is not asked" "$COMPAT" \
   'on claude code with git older than 2\.17, the run does not ask'
+
+# Deterministic offline runner fixture. It checks the bounded policy cases and
+# does not claim to measure whether a model follows the instruction.
+python3 - "$LONGER" <<'PY'
+import sys
+from pathlib import Path
+
+source = " ".join(Path(sys.argv[1]).read_text().lower().split())
+assert "an intention is not a completed operation" in source
+
+def run(plan, *, baseline_ok=True, bound=10, intent_only=False):
+    trace = []
+    for item in plan:
+        if len(trace) >= bound:
+            return trace, "bound reached"
+        if item == "human question":
+            trace.append("park human question")
+            trace.append("preserve unfinished work")
+            if not baseline_ok:
+                return trace, "shared verification failure"
+            trace.append("check shared baseline")
+            continue
+        if intent_only:
+            trace.append("announced " + item)
+            return trace, "operation incomplete"
+        trace.append("completed " + item)
+    return trace, "plan exhausted"
+
+trace, stop = run(["human question", "independent piece"])
+assert trace == [
+    "park human question",
+    "preserve unfinished work",
+    "check shared baseline",
+    "completed independent piece",
+]
+assert stop == "plan exhausted"
+
+trace, stop = run(["human question", "independent piece"], baseline_ok=False)
+assert trace == ["park human question", "preserve unfinished work"]
+assert stop == "shared verification failure"
+
+assert run([]) == ([], "plan exhausted")
+trace, stop = run(["first", "second", "third"], bound=2)
+assert trace == ["completed first", "completed second"]
+assert stop == "bound reached"
+
+trace, stop = run(["independent piece"], intent_only=True)
+assert trace == ["announced independent piece"]
+assert stop == "operation incomplete"
+print("ok: continuation after parked question, shared verification stop, exhausted plan, bound, and intent-only response")
+PY
 
 rs_done
