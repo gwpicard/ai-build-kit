@@ -121,18 +121,19 @@ if mode == 'shared':
     git('push', '-q', 'origin', 'HEAD', cwd=path)
     for number in (1,2):
         call('check', '--piece', number, '--source', path, '--check', 'test -f '+('a' if number==1 else 'b'))
+    saved = read(state); saved['pieces'][0]['integration_members'] = [1,2,3]; write(state,saved)
     # Unsuccessful membership is refused before any remote write.
-    call('merge-feature', '--piece', 1, '--include-piece', 2, '--include-piece', 3,
+    call('merge-feature', '--piece', 1,
          '--source', path, '--pr', 1, code=2)
     assert not (fixture/'merges.log').exists()
+    saved['pieces'][0]['integration_members'] = [1,2]; write(state,saved)
     # Interrupt immediately after the remote write; pending must contain both parts.
     gh_path = bin_dir/'gh'
-    gh_path.write_text(gh_path.read_text().replace("pr['state']='MERGED'", "pr['state']='MERGED'"))
     original = gh_path.read_text()
     gh_path.write_text(original.replace("else: sys.exit(9)",
         " if (f/'interrupt').exists(): sys.exit(7)\nelse: sys.exit(9)"))
     (fixture/'interrupt').touch()
-    call('merge-feature', '--piece', 1, '--include-piece', 2, '--source', path, '--pr', 1, code=2)
+    call('merge-feature', '--piece', 1, '--source', path, '--pr', 1, code=2)
     pending = read(state)['integration']['pending']
     assert pending['pieces'] == [1,2]
     assert read(state)['integration']['included'] == []
@@ -175,7 +176,6 @@ if mode == 'moving':
     call('check','--piece',3,'--source',bad,'--check','python3 check.py',code=2)
     saved = read(state); piece = saved['pieces'][2]
     assert piece['start_commit'] == original_start
-    assert piece['integration_candidate']['base'] == baseline
     evidence = Path(piece['verification']['evidence'])
     recovery = root/'.agents/skills/implement/scripts/recovery.py'
     def recover(command,*args,code=0):
@@ -185,6 +185,7 @@ if mode == 'moving':
     recover('preserve','--source',bad,'--base',baseline,'--evidence',evidence)
     recover('baseline','--check','python3 check.py')
     rec = read(state)['pieces'][2]['recovery']
+    assert piece['integration_candidate']['base'] == baseline
     assert rec['requested_base'] == baseline
     assert rec['original_start_commit'] == original_start
     assert git('rev-parse',rec['retained_ref'],cwd=bad) == head
