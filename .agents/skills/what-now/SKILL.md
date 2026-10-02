@@ -78,6 +78,12 @@ words a person would use: "two things on the list are still just notes, so I
 will ask you about them before building them". The printout marks them. Knowing
 that before a build session is worth more than meeting it during one.
 
+When naming a human question in shaping, read the printout's waiting owner and
+start date for each assignee, including date unknown. Pass those words on;
+never substitute last activity or infer how long a new owner has owed an old
+answer. Keep unassigned work honestly unassigned. Offer /shape here when an
+answer owner is no longer available. Research remains the agent's own work.
+
 Where a waiting piece says why it is waiting, pass the reason on rather than the
 label: one needs a few questions, one needs a throwaway build before anybody can
 decide, one needs a fact the agent can go and confirm on its own. Say which of

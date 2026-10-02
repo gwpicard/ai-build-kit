@@ -859,6 +859,140 @@ for secret in synthetic-private-value ghp_FakeTokenForPrintoutOnly github_pat_Fa
   esac
 done
 
+# Reuse the printout fixture for answer ownership and obligation dates.
+python3 - "$REFRESH" "$WORK" <<'PYOWN' || fail "answer ownership and waiting dates"
+import json, os, pathlib, subprocess, sys
+refresh, folder = sys.argv[1], pathlib.Path(sys.argv[2])
+bin = folder / 'ownership-bin'
+bin.mkdir()
+(bin / 'gh').write_text("""#!/usr/bin/env python3
+import json, os, sys
+from pathlib import Path
+root = Path(os.environ['OWN_FIXTURE'])
+if sys.argv[1:3] == ['repo', 'view']:
+    print('{"nameWithOwner":"someone/project"}')
+elif '/events?' in sys.argv[2]:
+    if os.environ.get('OWN_FAIL_EVENTS'):
+        print('synthetic API failure', file=sys.stderr)
+        sys.exit(1)
+    print((root / 'events.json').read_text())
+else:
+    print((root / 'issues.json').read_text())
+""")
+(bin / 'gh').chmod(0o755)
+env = dict(os.environ, OWN_FIXTURE=str(folder), PATH=str(bin) + os.pathsep + os.environ['PATH'])
+def event(kind, when, name):
+    return dict(event=kind, created_at=when, **({'label': {'name': name}} if 'label' in kind else {'assignee': {'login': name}}))
+start = '2026-09-01T10:00:00Z'
+assigned = '2026-09-03T12:00:00Z'
+new = '2026-09-12T09:00:00Z'
+events = [event('assigned', '2026-08-20T10:00:00Z', 'ana'), event('labeled', start, 'shaping'), event('labeled', start, 'needs-clarification')]
+issue = dict(number=1, title='Settle the header', html_url='http://x/1', body='## Done when\nHeader agreed.', labels=[{'name': 'shaping'}, {'name': 'needs-clarification'}], assignees=[{'login': 'ana'}], updated_at='2026-10-01T00:00:00Z')
+def printed():
+    (folder / 'issues.json').write_text(json.dumps([issue]))
+    (folder / 'events.json').write_text(json.dumps(events))
+    result = subprocess.run(['sh', refresh, str(folder / 'owners.md')], env=env, text=True, capture_output=True)
+    assert result.returncode == 0, result.stderr
+    return (folder / 'owners.md').read_text()
+assert 'waiting on ana since 2026-09-01' in printed()
+issue['updated_at'] = '2026-10-02T20:00:00Z'
+issue['body'] += '\nUnrelated wording edit.'
+assert 'waiting on ana since 2026-09-01' in printed()
+events += [event('assigned', assigned, 'sam')]
+issue['assignees'].append({'login': 'sam'})
+text = printed()
+assert 'ana since 2026-09-01' in text and 'sam since 2026-09-03' in text
+events += [event('unassigned', new, 'ana'), event('assigned', new, 'lee')]
+issue['assignees'] = [{'login': 'sam'}, {'login': 'lee'}]
+text = printed()
+assert 'sam since 2026-09-03' in text and 'lee since 2026-09-12' in text
+assert 'ana since' not in text
+saved = events
+events = []
+assert 'date unknown' in printed() and '2026-10-02' not in printed()
+events = [event('assigned', new, 'lee')]
+assert 'date unknown' in printed(), 'assignment alone is not waiting evidence'
+# An authoritative recorded snapshot supplies dates even before event history
+# was retained, but it cannot transfer an old obligation to another owner.
+events = []
+record = dict(since=new, reason='needs-clarification', owners={'sam': assigned, 'lee': new})
+base_body = issue['body']
+issue['body'] += '\n<!-- answer-obligation: ' + json.dumps(record) + ' -->'
+text = printed()
+assert 'sam since 2026-09-03' in text and 'lee since 2026-09-12' in text
+issue['assignees'] = [{'login': 'new-owner'}]
+assert 'date unknown' in printed() and 'sam since' not in printed()
+issue['assignees'] = [{'login': 'sam'}, {'login': 'lee'}]
+# Removing and returning the same owner invalidates an older snapshot.
+events = [event('unassigned', '2026-09-20T08:00:00Z', 'lee'), event('assigned', '2026-09-21T08:00:00Z', 'lee')]
+assert 'date unknown' in printed()
+issue['body'] = base_body
+for bad in (None, {}, [dict(event='assigned', created_at='not a date', assignee={'login': 'lee'})], [dict(event='assigned', created_at='2999-01-01T00:00:00Z', assignee={'login': 'lee'})]):
+    events = bad
+    assert 'date unknown' in printed(), 'unreliable history must not invent a date'
+events = [saved[:2], saved[2:]]
+assert 'sam since 2026-09-03' in printed() and 'lee since 2026-09-12' in printed(), 'all history pages are read'
+
+events = saved
+issue['assignees'] = []
+assert 'waiting unassigned' in printed() and 'To build' not in printed()
+issue['labels'] = [{'name': 'shaping'}, {'name': 'needs-research'}]
+assert 'needs a fact from outside the project' in printed() and 'waiting on' not in printed()
+issue['labels'] = [{'name': 'ready'}]
+issue['assignees'] = [{'login': 'lee'}]
+assert 'To build' in printed() and '(ready)' in printed()
+issue['labels'] = [{'name': 'building'}]
+assert 'To build' not in printed() and 'Building' in printed()
+# Check retained records against transitions before their snapshot.
+issue['labels'] = [{'name': 'shaping'}, {'name': 'needs-clarification'}]
+issue['assignees'] = [{'login': 'ana'}]
+record = dict(since=new, reason='needs-clarification', owners={'ana': start})
+def with_record(value):
+    issue['body'] = base_body + '\n<!-- answer-obligation: ' + json.dumps(value) + ' -->'
+with_record(record)
+valid = [event('labeled', start, 'shaping'), event('labeled', start, 'needs-clarification'), event('assigned', start, 'ana')]
+failures = []
+def check_record(name, expected):
+    text = printed()
+    if expected not in text:
+        failures.append(name)
+        print('FAIL:', name, next(line for line in text.splitlines() if 'Settle the header' in line))
+events = [event('labeled', '2026-09-10T10:00:00Z', 'shaping'), event('labeled', '2026-09-10T10:00:00Z', 'needs-clarification'), event('assigned', '2026-09-11T10:00:00Z', 'ana')]
+check_record('contradictory onset before snapshot', 'ana date unknown')
+events = valid + [event('assigned', assigned, 'ana')]
+check_record('duplicate assignment before snapshot', 'ana date unknown')
+events = valid + [event('labeled', assigned, 'needs-clarification')]
+check_record('duplicate waiting transition before snapshot', 'ana date unknown')
+events = valid + [event('unassigned', assigned, 'ana'), event('assigned', '2026-09-10T10:00:00Z', 'ana')]
+check_record('owner returns before snapshot with stale retained date', 'ana date unknown')
+with_record(dict(record, owners={'ana': '2026-09-10T10:00:00Z'}))
+check_record('owner returns before snapshot with evidenced retained date', 'ana since 2026-09-10')
+with_record(record)
+events = [event('assigned', assigned, 'ana')]
+check_record('retained date with no legacy waiting onset', 'ana since 2026-09-01')
+events = [event('labeled', start, 'shaping')]
+check_record('retained date with partial legacy labels', 'ana since 2026-09-01')
+events = valid + [event('unassigned', '2026-09-20T10:00:00Z', 'ana'), event('assigned', '2026-09-21T10:00:00Z', 'ana')]
+check_record('owner returns after snapshot', 'ana since 2026-09-21')
+issue['assignees'].append({'login': 'sam'})
+with_record(dict(record, owners={'ana': start, 'sam': assigned}))
+events = valid + [event('assigned', assigned, 'sam'), dict(event='renamed', created_at='2026-09-15T10:00:00Z')]
+check_record('retained dates for several owners and unrelated update', 'ana since 2026-09-01, sam since 2026-09-03')
+with_record(dict(record, owners={'ana': start, 'sam': start}))
+check_record('one conflicting owner invalidates retained dates', 'ana date unknown, sam date unknown')
+issue['assignees'] = [{'login': 'ana'}]
+with_record(record)
+for events in (None, {}, [valid[:1], {}], valid + [event('assigned', '2999-01-01T00:00:00Z', 'sam')], [event('assigned', assigned, 'ana')] + valid[:2]):
+    check_record('invalid history despite retained record', 'ana date unknown')
+events = valid
+env['OWN_FAIL_EVENTS'] = '1'
+check_record('failed API despite retained record', 'ana date unknown')
+env.pop('OWN_FAIL_EVENTS')
+assert not failures, 'Retained obligation checks failed: ' + ', '.join(failures)
+
+print('ok: recorded transition, unrelated edit, missing history, reassignment, several owners, unassigned, research and claim states')
+PYOWN
+
 if [ "$FAIL" -eq 0 ]; then
   echo
   echo "plan-printout.sh: all checks passed"

@@ -41,8 +41,9 @@ last_written() {
   fi
 }
 
-# Keep diagnostics private until credentials have been masked. All GitHub calls
-# use this wrapper, so a missing blocker answer cannot look like an empty list.
+# Keep required-read diagnostics private until credentials have been masked.
+# Repository and blocker calls use this wrapper, so a missing blocker answer
+# cannot look like an empty list. Optional history reads print no diagnostics.
 umask 077
 scratch=$(mktemp -d)
 trap 'rm -rf "$scratch"' EXIT
@@ -150,6 +151,21 @@ for n in $blocked_numbers; do
 "
 done
 
+# Complete event history is optional evidence for human answer obligations.
+# Failed reads yield unknown dates; they never prevent the rest of the board.
+waiting_numbers=$(printf '%s' "$listing" | python3 -c '
+import json, sys
+for i in json.load(sys.stdin):
+    names = {l["name"] for l in i.get("labels", [])}
+    if not i.get("pull_request") and i.get("state", "open") == "open" and "shaping" in names and names & {"needs-clarification", "needs-prototype"}:
+        print(i["number"])
+')
+for n in $waiting_numbers; do
+  if ! gh api "repos/$repo/issues/$n/events?per_page=100" --paginate --slurp >"$scratch/events-$n.json" 2>"$scratch/events-error"; then
+    printf 'null' >"$scratch/events-$n.json"
+  fi
+done
+
 # The listing goes via a file rather than a pipe. This script reaches python on
 # stdin, so anything piped in as well would be read as part of the script and
 # leave sys.stdin empty by the time the program runs.
@@ -158,6 +174,8 @@ printf '%s' "$listing" > "$listing_file"
 
 python3 - "$OUT" "$listing_file" "$blocker_map" <<'PY'
 import json, sys, subprocess
+from pathlib import Path
+from datetime import datetime, timezone
 
 out, listing_file, blocker_raw = sys.argv[1], sys.argv[2], sys.argv[3]
 # A closed issue is done. The listing asks for open issues only, but the check
@@ -330,7 +348,108 @@ lines = ["Plan (local view, refreshed from GitHub, do not edit)",
 #
 # `(ready)` marks only a ready piece that has been sized. The commands that read
 # this file name a piece to build only when it carries that mark.
+def obligation_dates(issue):
+    owners = {a["login"] for a in issue.get("assignees", [])}
+    unknown = {o: None for o in (owners or {""})}
+    relevant = {"shaping", "needs-clarification", "needs-prototype"}
+    current = labels(issue) & relevant
+    try:
+        events = json.loads((Path(listing_file).parent / ("events-%s.json" % issue["number"])).read_text())
+        if not isinstance(events, list):
+            return unknown
+        if events and all(isinstance(page, list) for page in events):
+            events = [e for page in events for e in page]
+        if not all(isinstance(e, dict) for e in events):
+            return unknown
+        def timestamp(value):
+            parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+            if parsed.tzinfo is None or parsed > datetime.now(timezone.utc):
+                raise ValueError("unreliable time")
+            return parsed
+        changes = []
+        for e in events:
+            kind = e.get("event")
+            if kind in ("labeled", "unlabeled"):
+                name = e.get("label", {}).get("name")
+                if name not in relevant:
+                    continue
+            elif kind in ("assigned", "unassigned"):
+                name = e.get("assignee", {}).get("login")
+                if not isinstance(name, str) or not name:
+                    return unknown
+            else:
+                continue
+            changes.append((timestamp(e["created_at"]), kind, name))
+        if changes != sorted(changes, key=lambda c: c[0]):
+            return unknown
+        # Validate every supplied transition before considering a saved record.
+        # An assignment without a waiting transition proves no obligation.
+        seen_labels, seen_owners, dates = set(), set(), {}
+        def owed():
+            if "shaping" in seen_labels and seen_labels & {"needs-clarification", "needs-prototype"}:
+                return seen_owners or {""}
+            return set()
+        for when, kind, name in changes:
+            before = set(owed())
+            target = seen_labels if kind in ("labeled", "unlabeled") else seen_owners
+            if kind in ("labeled", "assigned"):
+                if name in target:
+                    return unknown
+                target.add(name)
+            else:
+                if name not in target:
+                    return unknown
+                target.remove(name)
+            after = set(owed())
+            for o in before - after:
+                dates.pop(o, None)
+            for o in after - before:
+                dates[o] = when
+        # A saved transition is evidence only for the recorded reason and owners,
+        # with no later ownership or waiting transition that could invalidate it.
+        records = []
+        for line in body_lines(issue):
+            match = re.fullmatch(r"<!-- answer-obligation: (.+) -->", line)
+            if match:
+                records.append(json.loads(match[1]))
+        if len(records) == 1:
+            record = records[0]
+            since = timestamp(record["since"])
+            recorded = record["owners"]
+            if not isinstance(recorded, dict):
+                return unknown
+            starts = {o: timestamp(t) if t is not None else None for o, t in recorded.items()}
+            if any(t is not None and t > since for t in starts.values()):
+                return unknown
+            if record["reason"] in current and set(recorded) == owners and not any(t > since for t, _, _ in changes):
+                # Established obligations must agree with retained dates. A record
+                # can still supply an onset that legacy transitions cannot prove.
+                if seen_labels == current and any(
+                        starts[o] is not None and dates.get(o) is not None
+                        and starts[o] != dates[o] for o in owners & seen_owners):
+                    return unknown
+                return starts if owners else {"": since}
+        if seen_labels != current or seen_owners != owners:
+            return unknown
+        return {o: dates.get(o) for o in (owners or {""})}
+    except (OSError, ValueError, TypeError, KeyError, AttributeError):
+        return unknown
+
+def answer_note(issue):
+    if state_labels(issue) != ["shaping"] or not labels(issue) & {"needs-clarification", "needs-prototype"}:
+        return ""
+    dates = obligation_dates(issue)
+    parts = []
+    for owner, since in sorted(dates.items()):
+        date = ("since " + since.astimezone(timezone.utc).date().isoformat()
+                if since else "date unknown")
+        parts.append((owner or "unassigned") + " " + date)
+    return "waiting " + ("on " if "" not in dates else "") + ", ".join(parts)
+
 def state_note(issue):
+    text = answer_note(issue)
+    if text:
+        return "(%s) (%s)" % (text, waiting_on(issue))
     text = waiting_on(issue)
     if text:
         return "(%s)" % text
@@ -354,7 +473,7 @@ def render(heading, group, note, marked=True):
         mark = state_note(issue) if marked else ""
         suffix = " ".join(p for p in (note(issue), mark) if p)
         head = "  #%-4s %s" % (issue["number"], issue["title"])
-        if who:
+        if who and not answer_note(issue):
             head += "   (%s)" % who
         if suffix:
             head += "   %s" % suffix

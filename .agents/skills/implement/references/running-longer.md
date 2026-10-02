@@ -107,6 +107,8 @@ and the next review action in its follow-up. A missing tool or unaccepted
 sensitive-area condition stays parked, with the action required to clear it.
 These conditions are never answered or accepted by the run.
 
+For a human question in shaping, follow pieces.md's "Status, owner, and order" rule for answer ownership and its authoritative answer-obligation record. After the waiting state and owner transition succeeds, record each owner's evidenced UTC start, or unknown, and read it back. Preserve retained owners' dates and the question's history; an unrelated edit never starts the wait again. A removed build claim does not choose an answer owner.
+
 A specification gap moves to shaping in one step, using its actual old state:
 `gh issue edit <number> --add-label shaping --add-label <its needs- label> --remove-label <old state> --remove-assignee @me`.
 Use that classification also for a hard choice found before or during the
@@ -394,8 +396,10 @@ below are shared out as "Building a group at the same time" says. For each one:
    confirm that its current answer, reconciled specification and independent
    verdict still agree, and refresh its blockers. Any changed or remaining gap
    takes "Answers before the next plan" before a claim; a stale Ready does not
-   permit starting it. Then
-   make section-builder's one-step claim, and add a comment naming this run,
+   permit starting it. Then apply the implement skill's ready-assignment rule:
+   retained answer-owner names do not reserve ready work, and are named before
+   the claim and removed in its same edit, keeping the builder's assignment.
+   Then make section-builder's one-step claim, and add a comment naming this run,
    `Claimed by run <run name>`. Then read the claim back with
    `gh issue view <number> --json labels,assignees,comments`. The earliest
    `Claimed by run` comment on the piece wins. Where it names another run, this

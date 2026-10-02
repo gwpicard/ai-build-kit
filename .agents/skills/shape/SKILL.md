@@ -39,8 +39,8 @@ shape the `setup-ai-build-kit` skill's `references/pieces.md` describes, take it
 from change-triage rather than choosing them yourself, and label it `ready`
 once the readiness check below finds no blocking gap. That is a new issue,
 opened as `shaping` so the check has a piece to read, and it starts unassigned:
-a person is assigned only when `/implement` picks the piece up to build it,
-never when `/shape` creates it. Then make the build offer below.
+assignment in shaping can hand a human question to its answer owner, as
+pieces.md describes. Do not invent an owner. Then make the build offer below.
 
 Shape the piece in its two layers, as pieces.md describes. The header stays
 short and plain, so it never reads as simpler than the work is. The agent layer
@@ -128,6 +128,14 @@ lacks it.
   Ready, and the piece is read back as the sections below say. Then, in one
   step:
   `gh issue edit <number> --add-label ready --remove-label shaping --remove-label <its needs- label>`.
+  For a piece with answer owners, remove every answer-owner assignment in that same state edit:
+  append `--remove-assignee <login>` for each owner read back from the issue.
+  For two answer owners the whole edit is:
+  `gh issue edit <number> --add-label ready --remove-label <its needs- label> --remove-label shaping --remove-assignee <first owner> --remove-assignee <second owner>`.
+  Only do this after specification reconciliation and a passing independent
+  readiness verdict; keep assignments while any answer or review is missing.
+  Read the resulting labels and assignees back. Building and to check ownership
+  stays protected by the recovery route; missing review alone removes no claim.
 - A piece this command cannot finish stays `shaping` with the `needs-` label that
   says why, and the question written on it. A blocking gap the check found is
   such a question: it stays written on the piece, and the piece stays `shaping`.
@@ -300,6 +308,12 @@ first. Remove a settled `needs-` reason only after reading the saved
 specification back and confirming that no gap of that kind remains. With
 another gap, keep its matching reason and concrete next action. A piece with
 only review left stays shaping without a `needs-` reason.
+
+Establish and retain the answer-obligation record described in pieces.md when
+leaving or reassigning a human question. Preserve each existing owner's evidenced
+start while adding a new owner; if history cannot establish it, leave its date
+unknown. Before moving to ready, identify the answer owners from the waiting
+record and current assignees, so the state edit removes them only after review.
 
 Preserve the original waiting-start history, question, evidence and answer
 source when updating the issue. Keep one authoritative Waiting on you section

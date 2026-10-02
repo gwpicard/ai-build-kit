@@ -323,6 +323,7 @@ attribution line, not the word.
   piece joins the plan only when every open blocker in its chain is in it. A
   piece stacked on one a run cannot take says it waits for it, and why, down
   the chain.
+  It also runs waiting human questions against complete transition history and authoritative obligation records. Unrelated edits keep their dates, reassigned owners receive only their own evidenced date, every owner is named, and missing or unreliable history says date unknown. Research keeps its existing meaning, unassigned work stays unassigned, and a ready leftover assignment does not make a building claim.
 - `.agents/tests/piece-states.sh` guards the model the printout draws: every
   open piece carries exactly one of six states, `idea`, `shaping`, `ready`,
   `building`, `to check` and `parked`, written in that order in `pieces.md`. A
@@ -351,6 +352,7 @@ attribution line, not the word.
   claims and queue, including direct and transitive blockers. Answer
   classifications and review verdicts are supplied by the operator; interpreting
   arbitrary answers and obtaining an independent session remain guided checks.
+  It also runs the published ready edit with two answer owners, retaining them before reconciliation and review, removing both in the ready edit, and keeping active building work out of the buildable printout.
 - `.agents/tests/state-moves.sh` guards the commands that keep the board true.
   Each move takes the old state off in the same step as it puts the new one
   on, and the check reads every label command in `/shape`, `/implement`,
