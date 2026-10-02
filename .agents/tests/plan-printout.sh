@@ -909,6 +909,27 @@ events = []
 assert 'date unknown' in printed() and '2026-10-02' not in printed()
 events = [event('assigned', new, 'lee')]
 assert 'date unknown' in printed(), 'assignment alone is not waiting evidence'
+# An authoritative recorded snapshot supplies dates even before event history
+# was retained, but it cannot transfer an old obligation to another owner.
+events = []
+record = dict(since=new, reason='needs-clarification', owners={'sam': assigned, 'lee': new})
+base_body = issue['body']
+issue['body'] += '\n<!-- answer-obligation: ' + json.dumps(record) + ' -->'
+text = printed()
+assert 'sam since 2026-09-03' in text and 'lee since 2026-09-12' in text
+issue['assignees'] = [{'login': 'new-owner'}]
+assert 'date unknown' in printed() and 'sam since' not in printed()
+issue['assignees'] = [{'login': 'sam'}, {'login': 'lee'}]
+# Removing and returning the same owner invalidates an older snapshot.
+events = [event('unassigned', '2026-09-20T08:00:00Z', 'lee'), event('assigned', '2026-09-21T08:00:00Z', 'lee')]
+assert 'date unknown' in printed()
+issue['body'] = base_body
+for bad in (None, {}, [dict(event='assigned', created_at='not a date', assignee={'login': 'lee'})], [dict(event='assigned', created_at='2999-01-01T00:00:00Z', assignee={'login': 'lee'})]):
+    events = bad
+    assert 'date unknown' in printed(), 'unreliable history must not invent a date'
+events = [saved[:2], saved[2:]]
+assert 'sam since 2026-09-03' in printed() and 'lee since 2026-09-12' in printed(), 'all history pages are read'
+
 events = saved
 issue['assignees'] = []
 assert 'waiting unassigned' in printed() and 'To build' not in printed()

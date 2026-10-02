@@ -134,9 +134,19 @@ waiting on what. Standing there with nothing to say is the one unhelpful answer.
 Two pieces blocking each other is a planning mistake rather than a state to wait
 out, so offer to break it in `/shape`.
 
-A piece assigned to somebody else is theirs. Skip it and say who has it. Where
-that person is no longer around, offer to take it over and let the person
-decide, because reassigning somebody's work is their call.
+Never steal a building claim. A building piece assigned to somebody else is
+theirs: skip it and name every builder. Where that person is no longer around,
+offer to take it over and let the person decide.
+
+A ready piece with a leftover answer-owner assignment is eligible under the
+existing readiness and claim rules. Before claiming it, say whose name was
+retained from answering, then make the ordinary one-step building claim and
+remove those retained assignments in that same edit, keeping the builder's own
+assignment. Read back labels and assignees before starting. A shaping piece
+with needs-clarification or needs-prototype is waiting for its assigned answer
+owners, not being built; name them all, or say unassigned, using the printout's
+waiting dates. If an answer owner is unavailable, offer to shape it here. Do not
+answer a person-present question alone.
 
 Two people building the same piece is what claiming a piece exists to prevent,
 so say it the moment you see it rather than at the end.

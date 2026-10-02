@@ -401,8 +401,32 @@ it onto them. Until then, a command that needs one creates it with
 Closed already means done, so no label repeats it. An open piece carries one of
 the six states above, and nothing else says where it stands.
 
-The assignee is who is building it. This works the same whether one person or
-five are on the project, so nothing changes on the day a second person arrives.
+In building an assignee owns the build; in shaping with needs-clarification or needs-prototype
+an assignee owes the answer. Name every assignee; a waiting piece with none is
+unassigned. Research remains the agent's work and gains no answer-owner meaning.
+Say: "Assigning a waiting piece hands its question to that person."
+
+When the kit establishes a human question or changes its answer owners, save
+one active record on the authoritative issue body, then read it back:
+`<!-- answer-obligation: {"since":"<UTC timestamp>","reason":"needs-clarification","owners":{"<login>":"<UTC timestamp>"}} -->`.
+Use an ISO timestamp such as `2026-09-01T10:00:00Z` from the successful
+waiting transition, never issue creation or last activity. Record the current
+reason and each owner's evidenced start, or an empty object for unassigned
+work. A missing owner date is `null`. The record's since is when this snapshot
+was established; retained owners keep their original dates. Preserve the old
+record in labelled answer history, renaming its marker to
+`previous-answer-obligation`, before replacing it. Unrelated edits leave
+the active record alone. If the transition was not observed reliably, record
+no guessed timestamp. A reassignment starts the new owner's obligation when
+that owner actually becomes responsible; it does not inherit the old owner's
+date. The printout uses matching recorded evidence or reliable complete event
+history, and says date unknown when neither establishes the transition.
+
+After reconciling the answer and passing independent readiness, remove all
+answer-owner assignments in the same state edit that makes the piece ready.
+Until then keep ownership and unanswered obligations. A ready piece with a
+leftover answer-owner assignment remains eligible under ordinary claims;
+name whose assignment was retained. Never take an active building claim.
 
 Dependencies use GitHub's own blocked-by relationship, not a line of prose. A
 piece that needs another names it there, and the agent reads it rather than

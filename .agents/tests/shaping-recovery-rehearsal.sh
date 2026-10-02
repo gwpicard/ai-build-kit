@@ -285,6 +285,29 @@ api('issue', 'comment', str(independent), '--body', 'Claimed by run disposable-i
 api('issue', 'edit', str(independent), '--add-label', 'to check', '--remove-label', 'building')
 assert labels(independent) == ['to check']
 print('ok: classified waits, later comment/body answers, failed/unavailable review and factual/human research keep real issue records and queue boundaries')
+# The published ready state edit removes answer owners only after the saved
+# reconciled specification and supplied independent verdict have passed.
+api('issue', 'create', '--title', 'Answer owned by two people', '--body', spec + waiting,
+    '--label', 'shaping', '--label', 'needs-clarification')
+n = state()['issues'][-1]['number']
+api('issue', 'edit', str(n), '--add-assignee', 'ana', '--add-assignee', 'sam')
+def owners(number):
+    return {a['login'] if isinstance(a, dict) else a for a in issue(number).get('assignees', [])}
+assert owners(n) == {'ana', 'sam'}
+api('issue', 'comment', str(n), '--body', 'Use Shared notes and show empty notes.')
+assert owners(n) == {'ana', 'sam'} and 'shaping' in labels(n)
+save(n, spec + '\n## Answer history\n' + waiting.replace('## Waiting on you\n', '') + review)
+command = re.search(r'`(gh issue edit <number> --add-label ready --remove-label <its needs- label> --remove-label shaping --remove-assignee <first owner> --remove-assignee <second owner>)`', shape).group(1)
+command = command.replace('<number>', str(n)).replace('<its needs- label>', 'needs-clarification').replace('<first owner>', 'ana').replace('<second owner>', 'sam')
+run(str(gh), *shlex.split(command)[1:])
+assert labels(n) == ['ready'] and owners(n) == set()
+assert issue(n)['title'] in group(printed(), 'To build')
+# A retained answering assignment on ready does not remove build eligibility.
+api('issue', 'edit', str(n), '--add-assignee', 'ana')
+assert issue(n)['title'] in group(printed(), 'To build')
+api('issue', 'edit', str(n), '--add-label', 'building', '--remove-label', 'ready')
+assert issue(n)['title'] not in group(printed(), 'To build') and owners(n) == {'ana'}
+print('ok: answers retain both owners before review; published ready edit removes both, ready leftover remains eligible and building stays protected')
 print('All disposable Git/state checks passed; conversation and merge-gate obedience remain guided checks.')
 print('Fixture retained at ' + str(work))
 PY
