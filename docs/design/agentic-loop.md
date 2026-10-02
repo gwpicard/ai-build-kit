@@ -28,6 +28,11 @@ So the quality of a project rests on the quality of its shaping. When a loop
 needs a person, that is a gap in the shaping, and the piece goes back to be
 shaped again rather than being finished by hand.
 
+## Who it is for
+
+Builders who direct agents: people who know what Git, branches and pull requests
+are, and who direct agents rather than write code. They never have to read code.
+
 ## The name
 
 With v1 the product becomes AI Loop Kit. The rename is its own piece of work: the
@@ -350,8 +355,8 @@ sends a piece back. Otherwise the kickback rate would measure the laptop.
 review particular pieces, and warns when a piece would benefit from it. A
 sensitive area, a goal that missed its target, a change to a check or the
 project's guards, a change outside the piece's boundary, an acceptance check
-that missed a deliberate break, a builder's concerns, and the first deployment
-always force `review:person`. A review the person owes waits on the shaping
+that missed a deliberate break, a data change that cannot be undone, a
+builder's concerns, and the first deployment always force `review:person`. A review the person owes waits on the shaping
 board.
 
 The automatic reviewer is calibrated against the person. Where both judged a
@@ -460,8 +465,9 @@ the first real runs measure it.
 
 A merge to `main` goes live. A run's PR merges automatically when every piece is
 `review:auto`, every gate is green, no sensitive area is touched, a smoke test
-of the acceptance paths passes on the run's preview, and the project has earned
-automatic merge. Otherwise the person merges after looking at the preview, and
+of the acceptance paths passes on the run's preview, the project's recipe has
+proven in a real run that previews keep to their own data, and the project has
+earned automatic merge. Otherwise the person merges after looking at the preview, and
 any piece marked `review:person` can be opened on its own preview or checkout.
 
 Automatic merge is earned. Each project starts with the person merging. After a
@@ -476,6 +482,10 @@ Automatic merge needs a `main` that GitHub protects, which means a public
 repository or a paid plan. On a free private repository GitHub offers no branch
 protection, rulesets or automatic merge, so the kit relies on its own guards and
 the person merges. Setup says so in plain words.
+
+A data change that cannot be undone, such as a migration that drops or rewrites
+data, is marked in shaping under `If it breaks:`. Its piece always goes to the
+person, and the merge waits for a backup taken just before it.
 
 After each merge a health check runs against production. If it fails, the
 deployment rolls back to the previous build, and the kit files a bug piece.
@@ -493,6 +503,15 @@ branch and per commit, others one per pull request, and a local checkout on its
 own port is the fallback. A recipe also says how to boot a copy of the app
 inside one worktree, on its own port, with throwaway seeded data and a log the
 builder can read, so parallel builds never share a database or a port.
+
+A preview never touches real data. Each one uses its own throwaway database,
+seeded with the project's sample data, or the host's own database branching
+where the recipe supports it. Until a real run has proven this for a recipe,
+automatic merge stays off for the projects on it.
+
+A tool that is not hosted, such as a library or a command-line tool, has no
+live copy. A merge there means the piece is done. When the person asks,
+`/deploy` makes a GitHub release with the next version.
 
 ## The safety boundary for runs
 
