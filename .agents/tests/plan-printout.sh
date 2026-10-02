@@ -940,6 +940,45 @@ issue['assignees'] = [{'login': 'lee'}]
 assert 'To build' in printed() and '(ready)' in printed()
 issue['labels'] = [{'name': 'building'}]
 assert 'To build' not in printed() and 'Building' in printed()
+# Check retained records against transitions before their snapshot.
+issue['labels'] = [{'name': 'shaping'}, {'name': 'needs-clarification'}]
+issue['assignees'] = [{'login': 'ana'}]
+record = dict(since=new, reason='needs-clarification', owners={'ana': start})
+def with_record(value):
+    issue['body'] = base_body + '\n<!-- answer-obligation: ' + json.dumps(value) + ' -->'
+with_record(record)
+valid = [event('labeled', start, 'shaping'), event('labeled', start, 'needs-clarification'), event('assigned', start, 'ana')]
+failures = []
+def check_record(name, expected):
+    text = printed()
+    if expected not in text:
+        failures.append(name)
+        print('FAIL:', name, next(line for line in text.splitlines() if 'Settle the header' in line))
+events = [event('labeled', '2026-09-10T10:00:00Z', 'shaping'), event('labeled', '2026-09-10T10:00:00Z', 'needs-clarification'), event('assigned', '2026-09-11T10:00:00Z', 'ana')]
+check_record('contradictory onset before snapshot', 'ana date unknown')
+events = valid + [event('assigned', assigned, 'ana')]
+check_record('duplicate assignment before snapshot', 'ana date unknown')
+events = valid + [event('labeled', assigned, 'needs-clarification')]
+check_record('duplicate waiting transition before snapshot', 'ana date unknown')
+events = valid + [event('unassigned', assigned, 'ana'), event('assigned', '2026-09-10T10:00:00Z', 'ana')]
+check_record('owner returns before snapshot with stale retained date', 'ana date unknown')
+with_record(dict(record, owners={'ana': '2026-09-10T10:00:00Z'}))
+check_record('owner returns before snapshot with evidenced retained date', 'ana since 2026-09-10')
+with_record(record)
+events = [event('assigned', assigned, 'ana')]
+check_record('retained date with no legacy waiting onset', 'ana since 2026-09-01')
+events = [event('labeled', start, 'shaping')]
+check_record('retained date with partial legacy labels', 'ana since 2026-09-01')
+events = valid + [event('unassigned', '2026-09-20T10:00:00Z', 'ana'), event('assigned', '2026-09-21T10:00:00Z', 'ana')]
+check_record('owner returns after snapshot', 'ana since 2026-09-21')
+issue['assignees'].append({'login': 'sam'})
+with_record(dict(record, owners={'ana': start, 'sam': assigned}))
+events = valid + [event('assigned', assigned, 'sam'), dict(event='renamed', created_at='2026-09-15T10:00:00Z')]
+check_record('retained dates for several owners and unrelated update', 'ana since 2026-09-01, sam since 2026-09-03')
+with_record(dict(record, owners={'ana': start, 'sam': start}))
+check_record('one conflicting owner invalidates retained dates', 'ana date unknown, sam date unknown')
+assert not failures, 'Retained obligation checks failed: ' + ', '.join(failures)
+
 print('ok: recorded transition, unrelated edit, missing history, reassignment, several owners, unassigned, research and claim states')
 PYOWN
 
