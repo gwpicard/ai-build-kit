@@ -158,17 +158,23 @@ def publish(args, folder):
     observed = []
     for path,rec in todo:
         observed = combine(observed,rec.get('observed',[]))
-    for attempt in range(3):
-        body = remote(args.issue,args.project)
-        check_receipts(records,section(body))
-        observed = combine(observed,section(body))
-        # Persist observed concurrent approaches before a write can fail.
+    def observe(body):
+        nonlocal observed
+        lines = section(body)
+        observed = combine(observed,lines)
+        # Save every readable observation before retrying or reporting a mismatch.
         for path,rec in todo:
             rec['observed'] = observed
             save(path,rec)
+        return lines
+
+    for attempt in range(3):
+        body = remote(args.issue,args.project)
+        check_receipts(records,observe(body))
         lines = combine(observed,[rec['line'] for path,rec in todo])
         updated = render(body,lines)
         fresh = remote(args.issue,args.project)
+        check_receipts(records,observe(fresh))
         if fresh != body:
             continue
         if updated != body:
@@ -177,7 +183,7 @@ def publish(args, folder):
             if result.returncode:
                 raise ValueError('The issue write is unverified; retry the same pending record.')
         verified = remote(args.issue,args.project)
-        verified_lines = section(verified)
+        verified_lines = observe(verified)
         check_receipts(records,verified_lines)
         # Unrelated body changes are uncertain too, rather than quietly overwritten.
         if (any(line not in verified_lines for line in lines) or
