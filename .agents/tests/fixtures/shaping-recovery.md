@@ -85,3 +85,51 @@ Retain issue bodies, comments and labels, plan output, claims, independent
 review provenance, tested heads and recovery records. The shell rehearsal
 checks real saves and label/queue boundaries; only this guided run can measure
 answer interpretation and an agent obeying the review route.
+
+## Same-turn continuation in an authorised run
+
+Status: not run. Human or model verification remains owed. This bounded guide
+checks agent behaviour where orchestration is published as prose. A passing
+rule guard or helper rehearsal does not establish that behaviour, or universal
+harness reliability. No paid replay or real-account trial is required here.
+
+First run `.agents/tests/failure-recovery.sh`. It calls the published recovery
+helper in disposable local projects: eligibility is refused before baseline
+checks, direct and transitive dependants are refused, independent work is
+allowed after passing checks, and a failed shared base refuses its candidates.
+It also retains unsuccessful work and earlier successful parts. Its explicit
+fixture writes are operator actions, not evidence that an agent continues.
+
+Use the local waiting-answer fixture above with one piece needing a human
+choice, its dependants and one approved independent piece. Keep consent,
+capability, review, claim, attempt and merge gates unchanged. Use only the
+existing run bounds. Retain the transcript, tool calls and results, saved run
+state, preserved artifacts and tested baseline head for each case.
+
+1. After the human choice parks its piece, give no "go on" reply. Observe
+   preservation, passing baseline checks and fresh eligibility observations,
+   followed by the next authorised independent operation in the same turn.
+   The dependant pieces remain unclaimed. A sentence announcing that operation
+   without a call or result fails this case.
+2. Repeat with shared verification failing. Expect no next claim relying on
+   that base, retained failure evidence and a report naming the stop. With no
+   independently checked eligible work, the run ends. A declared intention to
+   check the base does not satisfy the prerequisite.
+3. With a tool or worker already active, observe a supported wait call and its
+   receipt in that turn. Record whether the harness supports such a wait; if
+   unavailable, mark this case unverified and record the capability boundary.
+   A promise to wait, an inactive target or an unsupported wait is no evidence
+   of an operation. A completed wait does not bypass any subsequent gate.
+4. Observe the end of a plan with no eligible work, then a separate run at its
+   agreed bound. Expect the existing ending route and one report, without
+   another claim or polling for a human answer. Record the selected bound and
+   observed stop; do not introduce a new limit to make the fixture pass.
+5. As a negative control, score a transcript ending only with "I will build
+   the independent piece next" after eligibility passes. Mark continuation
+   failed and the announced operation incomplete. Do not update state to say
+   it completed. Contrast it with the tool evidence from case 1, rather than
+   running a second policy implementation to manufacture an outcome.
+
+Record each case as passed, failed or unverified with its evidence. A case
+left unrun stays unverified. A single observed pass applies to that run and
+harness only; the offline checks cannot establish model adherence.

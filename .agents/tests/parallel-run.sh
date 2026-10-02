@@ -115,6 +115,23 @@ rs_rule "the same file despite different Touches goes to /fix by the merge rule"
 rs_rule "a walk-through that cannot get the browser could not look" \
   'where a walk-through cannot get the browser because another agent holds it, it records that it could not look'
 
+# --- same-turn continuation -------------------------------------------------
+
+rs_rule "the run performs its next eligible operation in this turn" \
+  'while an authorised run has an eligible operation left, perform the next one in this turn'
+rs_rule "announcing intent is not completing the operation" \
+  'do not end the turn by saying what you will do next: an intention is not a completed operation'
+rs_rule "a question parks only its piece" \
+  'a question parks only the piece that needs the person'
+rs_rule "independent work follows recovery and a checked baseline" \
+  'after the existing recovery and checked-baseline steps, continue with the next independent eligible piece'
+rs_rule "a supported active wait counts as an operation" \
+  'a supported wait on an active tool or worker is an operation'
+rs_rule "continuation points to existing stop rules" \
+  'stop only under the limits in "which pieces a run may take", "recovery before continuation", "when a piece fails" and "when the run ends"'
+rs_rule "a shared verification failure stops continuation" \
+  'a shared verification failure means the baseline cannot be trusted'
+
 # --- resuming ---------------------------------------------------------------
 
 rs_rule "resuming keeps at_once" 'so does its `at_once`'
@@ -149,5 +166,20 @@ rs_require_load_bearing "COMPATIBILITY says only Claude Code offers it" "$COMPAT
   'only claude code offers to build a group.s pieces at the same time'
 rs_require_load_bearing "COMPATIBILITY says the older Git is not asked" "$COMPAT" \
   'on claude code with git older than 2\.17, the run does not ask'
+
+# This rule guard must not embed another implementation of the run. Published
+# helper behaviour belongs in failure-recovery.sh; conversation belongs in the
+# guided shaping recovery fixture.
+rs_require_absent "parallel run evidence does not manufacture a local run policy" \
+  "$0" 'def[[:space:]]+run\(plan,'
+
+# Offline execution evidence for preservation, a checked baseline and current
+# eligibility lives in failure-recovery.sh. It invokes the published recovery
+# helper, rejects continuation before checks and on a failed shared base, and
+# checks direct and transitive blockers. Run that rehearsal separately; these
+# text-removal controls do not execute orchestration.
+# Same-turn operations, active waits, intent-only termination and run limits are
+# guided cases in fixtures/shaping-recovery.md. They remain unverified until an
+# observed agent run supplies a transcript and operation evidence.
 
 rs_done
