@@ -8,6 +8,12 @@ user-invocable: false
 
 You build one piece, directed by someone who will judge it by behaviour. Follow the order.
 
+For a multi-piece run's delegated builder, load `references/task-handoff.md`
+first. Its bounded authority applies throughout this skill: the coordinator
+owns claims, run-state writes, independent review and saving through a pull
+request. The builder performs only its assigned build steps and local commits.
+Outside that handoff, follow the ordinary single-piece route below.
+
 ## 1. Safe start
 
 Read the piece in full, including its `Under the hood` notes, the masterplan's

@@ -19,6 +19,8 @@ shaped, built, checked and saved at a time, with the same records and the same
 rules. A run there builds its pieces one after another in one folder, where
 Claude Code gives each piece its own worktree. Only Claude Code offers to build
 a group's pieces at the same time, each with its own background agent.
+Autonomous continuation between pieces depends on the task-context capability
+below; without it the run pauses for a new session.
 Elsewhere, and on Claude Code with Git older than 2.17, the run does not ask
 and builds one piece at a time. Only Claude Code shows a confirmation box
 before a merge that goes live, on a project whose host puts every merge live.
@@ -164,6 +166,21 @@ and leaves the previous printout intact.
   deny settings, you add the kit's blocked commands there yourself.
 - Nobody has checked whether these agents keep the five background skills out
   of your hands.
+
+## Task context capabilities
+
+Multi-piece runs select fresh builders only from the current client's exposed
+clean-input tools and build permissions. An autonomous reset/resume route needs
+its own evidence; otherwise the run pauses with saved progress and a new-session
+`/implement` instruction. One piece at a time remains the default, and independent
+review still follows the build path.
+
+The installed section-builder skill's
+[task context capability reference](../.agents/skills/section-builder/references/task-context-capabilities.md)
+owns the per-harness primary sources, route conditions and limits. Plugin and
+shared-skills installations carry that reference with the handoff. Documented
+capabilities and offline stubs do not promote the grades above or prove live
+model context eviction, client permissions or browser continuity.
 
 ## Choose one installation route
 
@@ -325,7 +342,7 @@ after a clean checkpoint and explicit approval.
 | Sync | Run `sync` when needed | Session-end reminder |
 | Check-up due | `what-now` says when a visit is overdue | Said automatically when a session opens |
 | Safety | Standing restrictions and approval gates | Mechanical command deny list |
-| Long runs | Normal sequential work | Native goal or orchestration mode |
+| Long runs | A resumable task boundary when fresh continuation is unavailable | Fresh builders through exposed delegation, or an evidenced reset/resume route |
 
 During `setup-ai-build-kit`, the capability check records which enhancements the current
 harness provides and selects a fallback for anything absent. Missing optional

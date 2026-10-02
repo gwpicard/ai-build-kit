@@ -31,6 +31,21 @@ Where the coding agent can start a session that did not build the piece, use
 it for the readiness check and the independent review, as those steps already
 say.
 
+Before dispatching a task, select fresh-builder, supported reset/resume or
+unavailable from the current exposed capabilities, as the `section-builder` skill's
+`references/task-handoff.md` says. Use a new builder for every task
+where supported, including sequential work and later parts of one parent.
+Keep only the agreed plan, bounded results and ownership in the coordinator;
+longer build evidence stays in saved task files. Later builders read those
+files and checked branches. A fork carrying this conversation or a resumed
+prior-task agent does not provide a fresh task context.
+
+If no supported autonomous fresh route exists, finish the current task and
+any owed recovery, leave unstarted pieces waiting and pause this unfinished
+run. Give the new-session `/implement` instruction and run folder. This is a
+resumable limit, not the ordinary end-of-run sweep that skips waiting pieces.
+No compaction or instruction to forget is called a reset.
+
 ## Which pieces a run may take
 
 Eligibility is decided piece by piece, never earned by the project. A piece is
@@ -278,6 +293,14 @@ step starts, so it always says where the run stands. `progress.md`, beside it,
 is a short log: one line for each step, with the time, the piece and what
 happened. Neither file ever holds a key, a password or a person's data.
 
+The coordinator alone writes `state.json`, `progress.md` and the live page
+on sequential runs too. Save the chosen context route and its exposed-tool
+or primary-source evidence in the run folder, alongside each task's bounded
+brief and result. The brief records requirements, checked baseline and
+resource ownership through the `section-builder` skill's
+`references/task-handoff.md`. Recheck capability, saved results and resources
+when resuming; an old agent id is not proof of fresh context or completion.
+
 Unless the person chose to run without it, and wherever the coding agent can
 publish a page, publish a live progress page from the state file when the run
 starts, and update it each time the state file changes. It shows each piece's
@@ -452,6 +475,16 @@ below are shared out as "Building a group at the same time" says. For each one:
 11. **Update the run state** and the live page, and add the step to
     `progress.md`.
 
+Where fresh builders are supported, the coordinator owns steps 1 and 2 and
+prepares the checked baseline; it delegates only steps 3 to 6 and local
+commits to a new builder, through the `section-builder` skill's
+`references/task-handoff.md`. Read back the bounded saved result and Git
+state before steps 7 to 11. The coordinator starts each independent review
+and performs the save and integration steps itself. Builders never receive
+merge consent. Repairs also use a fresh builder with the failure evidence
+and remaining attempt count, rather than growing the coordinator's build
+transcript. One task at a time is still the default.
+
 On Explore privately, a piece on the checkpoint route has no pull request.
 Steps 8 to 10 become the checkpoint commit and closing the piece, as
 section-builder's step 8 says for that route, and its state is `merged`.
@@ -488,12 +521,16 @@ works in.
   first upload waits for the person and the checkpoint route stays on this
   computer. It never reviews any piece, opens a pull request, writes the run
   state or merges.
+  Start each as a fresh builder, with the bounded brief in the `section-builder` skill's
+  `references/task-handoff.md`; never reuse a prior task's conversation.
+  Its resource owner is explicit even when the coordinator keeps the browser.
 - **After an agent reports.** The coordinating session starts that piece's
   independent review itself, as step 7 says, since the review runs from a
   session that did not build the piece. It then opens the pull request and
   writes the changelog file, as steps 8 and 9 say, one piece at a time. Step 8
-  is where the branch is first pushed. A problem the review finds is fixed by
-  the coordinating session in the piece's worktree before that. Where
+  is where the branch is first pushed. A problem the review finds is sent to a fresh builder with its saved evidence
+  and remaining attempts; the coordinating session owns that repair and reads
+  back its result before that. Where
   the trigger names a person, the review stays theirs: a background agent never
   meets a named review.
 - **One writer.** The coordinating session is the only writer of `state.json`,
@@ -503,9 +540,10 @@ works in.
   brought up to date with `main` and checked again first. Where two pieces
   finish while a merge is under way, it merges them one after the other, each
   checked again.
-- **An agent that never reports.** A background agent that ends without
-  reporting back counts as a failed attempt at its piece, under the
-  three-attempt rule in "When a piece fails", and the run goes on. A smoke
+- **An agent that never reports.** A background agent that is known to have ended without reporting back counts
+  as a failed attempt at its piece, under the three-attempt rule in "When a
+  piece fails", and the run goes on only after checked-baseline recovery.
+  Contact loss alone does not release its checkout or resources. A smoke
   check that fails on `main` ends the run as it does for one piece: start no
   new agent, wait for the ones still building to report, and leave each piece
   as "When the run ends" says.
@@ -713,6 +751,9 @@ continuation and report why. Do not turn an interrupted recovery into a
 finished run merely because all issue labels look final.
 
 ## Resuming
+
+Resolve any still-active builder and verify saved resource ownership before
+assigning a new builder; resume through the selected supported context route.
 
 First reconcile durable recovery records as above. A new session resumes from
 the state file, never from memory. A run is

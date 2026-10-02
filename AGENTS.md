@@ -1567,6 +1567,14 @@ attribution line, not the word.
   tracked bytes despite index suppression flags. Real exits at record replacement
   boundaries prove that divergent generations stay unfinished and a stale
   checked record never overwrites checking.
+- `.agents/tests/task-handoff.sh` guards the bounded fresh-builder brief and
+  resource/return rules, removing each guarded instruction in turn. Its
+  subprocess stubs consume the published example, read earlier saved artifacts,
+  retain coordinator-only state writes and resources, require both sides of a
+  modelled transfer, and resume an interrupted invocation from saved inputs.
+  Unsupported capabilities stop with a resumable limit. These stubs do not
+  establish model context eviction, live ownership or baseline recovery
+  correctness; the guided fixture names the remaining agent checks.
 - `.agents/tests/the-runner.sh` guards how `/implement` runs a plan of ready
   pieces with nobody watching, given several numbers or `queue`.
   Its goal routing checks also hold exposed native context or explicit unattended
