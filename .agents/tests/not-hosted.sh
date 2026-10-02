@@ -25,7 +25,7 @@ SKILLS="$ROOT/.agents/skills"
 MERGE="$SKILLS/section-builder/references/merge.md"
 SHIP="$SKILLS/ship/SKILL.md"
 SETUP="$SKILLS/setup-ai-build-kit/SKILL.md"
-MASTERPLAN="$SKILLS/setup-ai-build-kit/templates/operations.md"
+MASTERPLAN="$SKILLS/setup-ai-build-kit/templates/masterplan.md"
 WORKFLOW="$ROOT/WORKFLOW.md"
 
 rs_init "Not hosted checks"

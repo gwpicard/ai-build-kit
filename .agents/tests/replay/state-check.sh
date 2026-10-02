@@ -67,15 +67,6 @@ project=${2:?project directory}
 
 masterplan="$project/masterplan.md"
 changelog="$project/CHANGELOG.md"
-# Use the shipped resolver so acceptance and build-path reads choose one owner.
-record_gap=""
-acceptance_record="$masterplan"
-if [ -f "$masterplan" ]; then
-  acceptance_record=$(python3 "$REPLAY_DIR/../../skills/setup-ai-build-kit/templates/foundation/project-records.py" owner Accepted --root "$project" 2>/dev/null) || record_gap="Project record owner cannot be established"
-  if [ -z "$record_gap" ] && { [ ! -f "$acceptance_record" ] || [ -L "$acceptance_record" ]; }; then
-    record_gap="Project record owner is missing or redirected"
-  fi
-fi
 remote="$project.git"
 # The GitHub stand-in's state at the end of the run. The harness keeps it
 # beside the project, where the kit's Git work cannot move it. An older run, or
@@ -155,7 +146,7 @@ fi
 # recorded, and a recorded one names a date. A dated acceptance line in the
 # changelog counts too, since an older kit recorded scenario 8's there.
 recorded=no
-if [ -f "$acceptance_record" ] && [ -z "$record_gap" ]; then
+if [ -f "$masterplan" ]; then
   # The line is often wrapped, and the date tends to come last. Read it on to
   # the next "Key:" line or a blank line. Reading only the first line reported
   # a dated acceptance as missing.
@@ -164,7 +155,7 @@ if [ -f "$acceptance_record" ] && [ -z "$record_gap" ]; then
     on && (/^[[:space:]]*$/ || /^[A-Z][A-Za-z ]*:/) { exit }
     on { v = v " " $0 }
     END { print v }
-  ' "$acceptance_record")
+  ' "$masterplan")
   case "$acc_value" in
     ""|[Nn]one*) : ;;
     *) if printf '%s' "$acc_value" | grep -qE '20[0-9][0-9]'; then recorded=yes; fi ;;
@@ -219,11 +210,6 @@ case "$acc_expected" in
     ;;
 esac
 
-if [ -n "$record_gap" ]; then
-  acc_verdict=miss
-  acc_note="$record_gap"
-fi
-
 # --- accepted, never done -------------------------------------------------
 # An acceptance drops a caution. It never does it. Where the masterplan records
 # an acceptance with a date, the area it covers says `accepted` with that date.
@@ -235,8 +221,8 @@ fi
 # nothing to compare, which is not a failure.
 and_verdict=unobservable
 and_note="no dated acceptance and sensitive-area line to compare"
-if [ -f "$acceptance_record" ] && [ -z "$record_gap" ]; then
-  and_result=$(python3 - "$acceptance_record" <<'PY'
+if [ -f "$masterplan" ]; then
+  and_result=$(python3 - "$masterplan" <<'PY'
 import re, sys
 text = open(sys.argv[1]).read().splitlines()
 accepted, areas, section = [], [], None
@@ -275,11 +261,6 @@ PY
     miss*) and_verdict=miss; and_note="an area is marked done on the date of an acceptance (${and_result#miss }), so the record claims a caution that did not happen" ;;
     *) : ;;
   esac
-fi
-
-if [ -n "$record_gap" ]; then
-  and_verdict=miss
-  and_note="$record_gap"
 fi
 
 # --- save route ------------------------------------------------------------

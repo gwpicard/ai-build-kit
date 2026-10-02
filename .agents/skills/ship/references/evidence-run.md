@@ -1,12 +1,5 @@
 # The evidence run
 
-Load the `setup-ai-build-kit` skill's `references/project-records.md` for record
-ownership. On the marked new format, working rules owns build-path fields,
-operations owns every How it stays running read/write, and indexed concepts
-own detailed product rules. Legacy projects keep the masterplan route. Never
-advance the separate document-review checkpoint here.
-
-
 Used by ship before anything goes live. Findings come with fresh output; no claims from memory. Skip a section
 below only when it genuinely doesn't apply to this tool, and say so rather
 than leaving it silently blank.

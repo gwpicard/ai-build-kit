@@ -1,13 +1,8 @@
 # Keeping the masterplan current
 
 These rules apply on every build path. Each piece carries its change to the
-masterplan as [pieces.md](pieces.md) describes. Load [project-records.md](project-records.md) first. New-format records follow
-its ownership, cap and checkpoint rules: apply detail to its authoritative
-concept, working rules or operations, never duplicate it into the overview.
-Only /sync advances the separate review checkpoint after actual reconciliation.
-No build or merge writes a per-change review stamp. The legacy instructions
-below apply only without the explicit new-format marker; the legacy masterplan
-keeps its existing sections and stays a description of the present.
+masterplan as [pieces.md](pieces.md) describes. The masterplan keeps its existing
+sections and stays a description of the present.
 
 ## Apply a piece's change
 

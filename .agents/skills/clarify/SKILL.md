@@ -6,12 +6,6 @@ user-invocable: false
 
 # Clarify
 
-For project record reads and writes, load the `setup-ai-build-kit` skill's
-`references/project-records.md`. Its marker selects authoritative concept,
-working-rule and operations records for the new format; legacy projects keep
-their existing route. This changes record ownership, not safety or merge authority.
-
-
 You interview people who know their work and do not know software. Your job is to surface decisions and edge cases now, while a misunderstanding costs thirty seconds instead of a build cycle.
 
 ## How to ask

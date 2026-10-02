@@ -64,7 +64,7 @@ rs_rule "the file names the check on its ceiling" 'the project check fails above
 rs_rule "concept files are one concept to a file" 'lasting technical design lives in `docs/<concept>\.md`, one concept to a file'
 rs_rule "a fact with no concept file starts one" 'a fact that fits no file yet starts a new concept file, never a general notes file'
 rs_rule "the concept files are listed in docs/README.md, not here" '`docs/readme\.md` lists the concept files, and only those'
-rs_rule "the build path is read right after the masterplan's header" 'before build, review or path decisions, read `docs/working-rules\.md`'
+rs_rule "the build path is read right after the masterplan's header" 'read the build-path section of `masterplan\.md`, right after its short header'
 rs_guard "$FOUNDATION" "the founded AGENTS.md"
 
 # --- the masterplan: a short header, the rest for the agent ------------------
@@ -89,7 +89,7 @@ rs_require_load_bearing "WORKFLOW says design has one file per concept" "$WORKFL
 rs_require_load_bearing "WORKFLOW says the check goes red past the ceiling" "$WORKFLOW" 'the project check goes red when agents\.md passes 200 lines, and names both numbers'
 rs_require_absent "WORKFLOW no longer sends whole-project detail to AGENTS.md" "$WORKFLOW" 'anything technical that affects the whole project goes into agents\.md'
 rs_require "the project check carries the ceiling step" "$CHECKS" 'name: check the agents\.md ceiling'
-rs_require_load_bearing "founding puts the build path right after the header" "$SETUP" 'putting the fit check.s full result and every project-specific build/review rule there'
+rs_require_load_bearing "founding puts the build path right after the header" "$SETUP" 'the build-path section comes right after the header'
 rs_require_load_bearing "change-triage routes design to its concept file" "$SKILLS/change-triage/SKILL.md" 'lasting technical design into its concept file, listed in `docs/readme\.md`'
 rs_require_load_bearing "shape routes design to its concept file" "$SKILLS/shape/SKILL.md" 'lasting technical design to its concept file listed in `docs/readme\.md`'
 rs_require_load_bearing "an adopted file past the ceiling is named in the founding report" \
@@ -182,8 +182,6 @@ record_resolves() {
     masterplan.md) [ -f "$TEMPLATES/masterplan.md" ] ;;
     CHANGELOG.md) [ -f "$TEMPLATES/CHANGELOG.md" ] ;;
     changes/) grep -qF 'changes/<issue number>-<short name>.md' "$BUILDER" ;;
-    docs/working-rules.md) [ -f "$TEMPLATES/working-rules.md" ] ;;
-    docs/operations.md) [ -f "$TEMPLATES/operations.md" ] ;;
     'docs/<concept>.md') grep -qF '`docs/<concept>.md`' "$BUILDER" ;;
     docs/README.md) tr '\n' ' ' < "$BUILDER" | tr -s ' ' | grep -qF 'one listed in `docs/README.md`' ;;
     .agents/tools/plan-refresh.sh) [ -f "$TEMPLATES/foundation/plan-refresh.sh" ] ;;

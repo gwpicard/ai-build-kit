@@ -6,12 +6,6 @@ user-invocable: false
 
 # Change triage
 
-For project record reads and writes, load the `setup-ai-build-kit` skill's
-`references/project-records.md`. Its marker selects authoritative concept,
-working-rule and operations records for the new format; legacy projects keep
-their existing route. This changes record ownership, not safety or merge authority.
-
-
 The user never sorts their own request; you do, and the masterplan is the referee. Read it first, build-path section first.
 
 ## Step 1: Understand the request
@@ -144,8 +138,7 @@ A repair takes `broken` as well as its subjects, which is what points `/what-now
 and `/fix` at it.
 
 The request touches what data is stored, who can see or do what, or money:
-record the intended product-rule change on the piece first and say what it
-changes before routing further. Planning never applies it to current records. If
+update the masterplan first and say what changed before routing further. If
 it changes the shape of data the tool already holds, and that data is real
 rather than made-up, treat it as flagged territory: a backup first, the
 change rehearsed on a copy, and only then done for real.

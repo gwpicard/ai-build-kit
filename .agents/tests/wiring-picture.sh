@@ -12,7 +12,7 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 . "$ROOT/.agents/tests/lib/rule-shape.sh"
 
-TEMPLATE="$ROOT/.agents/skills/setup-ai-build-kit/templates/product-concept.md"
+TEMPLATE="$ROOT/.agents/skills/setup-ai-build-kit/templates/masterplan.md"
 SETUP="$ROOT/.agents/skills/setup-ai-build-kit/SKILL.md"
 BUILDER="$ROOT/.agents/skills/section-builder/SKILL.md"
 WORKFLOW="$ROOT/WORKFLOW.md"
