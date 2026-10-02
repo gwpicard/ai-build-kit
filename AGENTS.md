@@ -1522,6 +1522,11 @@ attribution line, not the word.
   survive isolation. A failing shared base stops affected work. Interrupted
   preservation or checking resumes without declaring completion. Retention
   records protect failed copies after their run folder is gone.
+  It also holds freshness of safely established linked inputs separately from
+  the archive, excludes every failed commit from an advancing base, and compares
+  tracked bytes despite index suppression flags. Real exits at record replacement
+  boundaries prove that divergent generations stay unfinished and a stale
+  checked record never overwrites checking.
 - `.agents/tests/the-runner.sh` guards how `/implement` runs a plan of ready
   pieces with nobody watching, given several numbers or `queue`. In a real
   project the agent built its own loop four times, with its rules and state in
