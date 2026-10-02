@@ -259,6 +259,59 @@ package.write_text(json.dumps({"scripts": {"check": "npm run guard", "guard": No
 assert "unverified rule" in run() and "wiring mismatch" not in run()
 print("  ok: shell indirection, lifecycle hooks, malformed check entries and cycles remain unverified")
 
+# Invalid command bodies and unsupported calls must never count as intact wiring.
+# Run every boundary case before failing, so the original defects all appear.
+boundary_failures = []
+boundary_count = 0
+readme = (project / "README.md").read_bytes()
+(project / "README.md").write_text("")
+
+def boundary(label, declaration, entries, expected):
+    global boundary_count
+    boundary_count += 1
+    (project / "AGENTS.md").write_text(declaration + "\n")
+    package.write_text(json.dumps({"scripts": entries}))
+    output = run()
+    kinds = [line.split("\t")[1] for line in output.splitlines()]
+    if kinds != ([] if expected is None else [expected]):
+        boundary_failures.append(f"{label}: expected {expected!r}, got {output!r}")
+
+for manager in ("npm", "pnpm", "yarn"):
+    command = f"Required command: `{manager} run guard`."
+    check = f"Required check: `{manager} run guard` via `{manager} run check`."
+    intact = {"check": f"{manager} run guard", "guard": "node --test"}
+    boundary(f"{manager} intact", check, intact, None)
+    boundary(f"{manager} removed edge", check, dict(intact, check="true"), "wiring mismatch")
+    for body in ("", " \t\n "):
+        entries = dict(intact, guard=body)
+        boundary(f"{manager} empty command {body!r}", command, entries, "unverified rule")
+        boundary(f"{manager} empty check {body!r}", check, entries, "unverified rule")
+        boundary(f"{manager} inactive empty {body!r}", check[:-1] + " when file `absent.flag` exists.", entries, "inactive rule")
+        boundary(f"{manager} active empty {body!r}", check[:-1] + " when file `care.flag` exists.", entries, "unverified rule")
+    for name in ("--help", "-guard"):
+        entries = dict(intact, **{name: f"{manager} run guard"})
+        boundary(f"{manager} option command {name}", f"Required command: `{manager} run {name}`.", entries, "unverified rule")
+        boundary(f"{manager} option check {name}", f"Required check: `{manager} run {name}` via `{manager} run check`.", entries, "unverified rule")
+        boundary(f"{manager} option route {name}", f"Required check: `{manager} run guard` via `{manager} run {name}`.", entries, "unverified rule")
+        entries["check"] = f"{manager} run {name}"
+        boundary(f"{manager} direct option edge {name}", check, entries, "unverified rule")
+        entries["check"] = f"{manager} run bridge && {manager} run guard"
+        entries["bridge"] = f"{manager} run {name}"
+        boundary(f"{manager} indirect option edge {name}", check, entries, "unverified rule")
+        boundary(f"{manager} inactive option edge {name}", check[:-1] + " when file `absent.flag` exists.", entries, "inactive rule")
+        boundary(f"{manager} active option edge {name}", check[:-1] + " when file `care.flag` exists.", entries, "unverified rule")
+    for prefix in ("pre", "post"):
+        entries = dict(intact, **{prefix + "guard": "sh danger.sh"})
+        boundary(f"{manager} target {prefix} hook", check, entries, "unverified rule")
+        boundary(f"{manager} self target {prefix} hook", f"Required check: `{manager} run guard` via `{manager} run guard`.", entries, "unverified rule")
+        boundary(f"{manager} inactive target {prefix} hook", check[:-1] + " when file `absent.flag` exists.", entries, "inactive rule")
+        boundary(f"{manager} active target {prefix} hook", check[:-1] + " when file `care.flag` exists.", entries, "unverified rule")
+    boundary(f"{manager} interior hyphen", f"Required check: `{manager} run test-guard` via `{manager} run check`.", {"check": f"{manager} run test-guard", "test-guard": "true"}, None)
+
+assert not boundary_failures, "boundary failures:\n" + "\n".join(boundary_failures)
+print(f"  ok: {boundary_count} intact, broken and conditional command boundaries")
+(project / "README.md").write_bytes(readme)
+
 (project / "AGENTS.md").write_text("Required check: run all important checks through the normal route.\n")
 assert "unverified rule" in run()
 (project / "AGENTS.md").write_text("Required command: `yarn run absent`.\n")
