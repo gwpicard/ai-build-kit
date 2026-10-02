@@ -49,6 +49,12 @@ Three cases end without a green check:
 
 ## Before any merge
 
+For a piece recovering missing shaping or readiness, read the recovery record
+before treating its pull request as eligible. Follow the `setup-ai-build-kit` skill's
+`references/pieces.md`, "Recovering work started too soon", for the
+gate and verification of preserved work. An unresolved recovery is ineligible
+even with a green project check or a yes naming the merge.
+
 Resolve the pull request's actual target first. Outside a run it is `main`.
 During a pull-request run, a feature aims only at the recorded integration
 target. A stacked feature waits for its base to integrate, then is re-aimed at

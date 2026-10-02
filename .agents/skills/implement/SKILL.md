@@ -102,6 +102,17 @@ Given an issue number, build that piece if it is ready, and send it to `/shape`
 if it is not, saying in one line why it is not ready. Given several, run them
 as a plan, as the section below says.
 
+For a single piece with an explicit preserved-work recovery record, first follow
+the `setup-ai-build-kit` skill's `references/pieces.md`, "Recovering work
+started too soon". With shaping and readiness complete, resume verification on
+the identified branch and pull request through section-builder's existing
+Done when checks and walk-through. Reuse the preserved work; open no second
+pull request. An already `building` or `to check` piece needs no new claim;
+respect its existing owner and check no work another session is changing.
+A `ready` piece takes the ordinary claim before resuming on its preserved branch.
+Missing shaping or a blocking readiness gap still goes to `/shape`. This route
+does not change ordinary non-ready dispatch or permission to merge.
+
 Given a request in plain words, check whether it already matches a ready piece.
 Where it does, build that piece. Where it does not, this is new or unshaped
 work: point the person at `/shape`, which shapes a request into a piece. This
@@ -197,4 +208,9 @@ its baseline checks before resuming or taking another piece.
 
 ## Done when
 
-The route was followed, the records are true, the piece moved from `ready` to `building` before any work and on to its next state when the pass ended, and the piece is confirmed and saved through the required route, safely parked at a recorded condition, or the user knows exactly where things stopped and why.
+The route was followed, the records are true, a new build moved from `ready` to
+`building` before any work and on to its next state when the pass ended, and the
+piece is confirmed and saved through the required route, safely parked at a
+recorded condition, or the user knows exactly where things stopped and why.
+Preserved-work recovery records its verification against agreed requirements
+without a duplicate claim or pull request for work already under way.

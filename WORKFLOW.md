@@ -92,6 +92,12 @@ Every open piece is in exactly one state, and a label says which: `idea` when it
 
 A piece waiting on another piece keeps its state and is linked to it. `plan.local.md` prints the states as the columns of a board, after anything that needs attention, such as a piece carrying two states or a piece being built or checked that was never shaped, and anything broken. `broken` sits beside the state on a repair, and sends it to `/fix`.
 
+When /what-now finds work already being built or checked without complete shaping, it names the piece and offers /shape on it. Taking that route returns it to shaping. Its branch and pull request stay, with the preserved work identified on the piece and the pull request saying why merge waits.
+
+With complete requirements and only Readiness missing, use /shape on the piece with "check readiness" in a session that did not shape it. The interview does not repeat. A passing review keeps building or to check; a blocking gap returns it to shaping with its reason. After closing that gap, the ordinary readiness route applies.
+
+Before the existing pull request can merge, its work must be checked against the agreed requirements and the result recorded. Earlier checks against incomplete requirements do not count. /implement resumes that verification on the preserved branch and pull request; recovery itself grants no permission to merge. If no branch or pull request exists, shaping invents neither one nor evidence of completed work.
+
 Three more labels sit beside `shaping` and say what the question needs: `needs-clarification` (talking it through settles it), `needs-prototype` (a throwaway is needed first to see what it should look like), and `needs-research` (a fact from outside the project is needed). Anything you jot down starts as an idea; `/shape` settles it and marks the piece `ready`, and `/implement` builds only ready pieces. What settled it is written onto the piece before the label changes, so a month later you can see what was decided rather than only that something was.
 
 ## 3. The build path
@@ -528,11 +534,17 @@ decisions on the masterplan.
 
 /sync also reads the project's README, and any document AGENTS.md points at,
 against the project itself. It names a file, link, command or setting a
-document mentions that no longer exists, at the line it sits on, and offers to
-correct just that name or to file it for later. A document that says less than
-the project does is fine. It checks names only, so it cannot tell you whether a
-described step still happens that way, and it says so. When every name still
-points at something real, you hear nothing about it.
+document mentions that no longer exists, at its line, and offers to correct
+just that name or file it for later. A document that says less than the
+project does is fine.
+
+It also checks explicit required commands and check routes, including those
+in AGENTS.md. If a named route no longer calls its required check, it names
+the missing connection and what it inspected. An inactive rule is not broken;
+unknown conditions and indirect wiring remain unverified. This checks names
+and explicit check routes. Other instructions remain unverified. These checks
+run no project scripts or hooks and change no project files. With no finding,
+you hear nothing about it.
 
 /sync names open pieces untouched for 30 days in one short list and asks once
 whether each is still wanted, should be parked, or is done. It changes nothing

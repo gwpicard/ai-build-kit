@@ -434,6 +434,50 @@ Refining one produces the shape above. Keep what the person originally typed
 underneath, under "Original report", rather than replacing it, because their words are what a refinement
 can be checked against and what to return to when it reads wrong.
 
+## Recovering work started too soon
+
+This applies to a piece already in `building` or `to check` whose shaping or
+readiness is incomplete. `/what-now` reports the gap and offers `/shape`;
+it moves nothing. `/shape` reads the whole piece and its comments. Missing
+Done when means full shaping is needed. With complete requirements and only
+`## Readiness` missing, the existing independent readiness review alone is
+enough; a heading by itself does not prove the requirements complete.
+
+Keep the existing branch and pull request. Never delete the branch, close the
+pull request or discard its work during recovery. Under `## Shaping recovery`
+on the piece, identify the preserved branch and link the pull request, with its
+current head commit. Write what is unresolved and that merge waits for recovery
+and verification against
+the agreed requirements. Make that wait visible on the preserved pull request
+too, under the existing rules for speaking for the person. Where either
+artifact does not exist, say so; invent neither an artifact nor evidence of work.
+
+Full shaping recovery moves the piece to `shaping` with its `needs-` reason,
+taking off the old state in the same step. Keep decisions already agreed and
+settle the missing requirements through `/shape`, then the independent readiness
+check. A readiness-only recovery keeps `building` or `to check` while waiting
+for the review and after a Ready verdict. A blocking gap moves it to `shaping`
+with the gap and its matching `needs-` reason. The ordinary readiness route
+governs reaching `ready` after shaping or closing a gap.
+
+An existing pull request is ineligible to merge until shaping and readiness
+are complete and its preserved work has been checked against the now agreed
+requirements, with the result recorded. Earlier checks against an incomplete
+specification do not count. Use section-builder's existing verification route,
+including the Done when checks and walk-through, on the preserved branch.
+Record which agreed requirements were checked, the branch head tested, what
+passed or failed and what could not be checked on the piece and pull request.
+A failed or missing check keeps the merge waiting. A later change to the
+requirements or work needs current verification again.
+
+`/shape` settles the specification and never repairs implementation code.
+Resume existing work through `/implement`; reuse its branch and pull request.
+If verification finds code changes needed, they are subsequent implementation
+work under the existing build rules. A verified piece whose pull request already
+exists returns to `to check`, removing its actual old state in the same step.
+Recovery grants no permission to merge: the one merge step in the
+`section-builder` skill's `references/merge.md` still governs every merge.
+
 ## When somebody acts on GitHub
 
 The issues are shared, so people assign, close, label and edit them by hand.

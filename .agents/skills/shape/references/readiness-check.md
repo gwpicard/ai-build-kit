@@ -16,7 +16,9 @@ shaping session carries its blind spots, so it does not count.
 Where the coding agent cannot start a subagent, `/shape` says in one line that
 the check needs a new session, and gives the exact line to paste there:
 `/shape <number> check readiness`. The piece stays `shaping` until that session
-has written its result.
+has written its result. For a piece already being built or checked, follow the
+recovery state rules in the `setup-ai-build-kit` skill's `references/pieces.md`,
+"Recovering work started too soon"; missing review alone does not restart shaping.
 
 ## How far it goes
 
@@ -96,7 +98,9 @@ BLOCKING line cannot carry the verdict Ready. Notes stay on the piece for the
 builder, and never hold the piece back. With no gaps and no notes, the
 first line stands alone.
 
-`/shape` reads the section back and moves the piece by what it says. Ready
+`/shape` reads the section back and moves the piece by what it says. A
+readiness-only recovery follows pieces.md's recovery state rules; the ordinary
+shaping route below applies after full shaping or closing a blocking gap. Ready
 moves the piece to `ready`. Not ready keeps it `shaping`, with each blocking gap
 written on the piece. The `needs-` label beside `shaping` says who can close
 the gap:

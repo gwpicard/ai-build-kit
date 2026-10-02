@@ -336,6 +336,15 @@ attribution line, not the word.
   in one place. It holds the two notes for a piece built or checked without
   being shaped or checked where `pieces.md` and WORKFLOW.md describe them, and
   that `/what-now` names such a piece once, beside a failing check.
+- `.agents/tests/shaping-recovery.sh` guards the recovery offered when work
+  started before shaping or readiness, proving each instruction load-bearing
+  by deleting it. `.agents/tests/shaping-recovery-rehearsal.sh` runs the
+  published paired state commands against disposable Git and fake pull
+  requests, keeps the preserved branch and open pull request, and shows new
+  agreed acceptance failing work that passed an earlier incomplete check. Its
+  guided fixture under `.agents/tests/fixtures/shaping-recovery.md` separately
+  covers conversational routing and the merge gate; a shell pass does not
+  measure an agent obeying those instructions.
 - `.agents/tests/state-moves.sh` guards the commands that keep the board true.
   Each move takes the old state off in the same step as it puts the new one
   on, and the check reads every label command in `/shape`, `/implement`,
@@ -826,8 +835,7 @@ attribution line, not the word.
 - `.agents/tests/document-read.sh` guards the read in `/sync` that checks a
   project's own documents against the project: that it reads only the README
   and what AGENTS.md points at, that a document saying less than the project
-  does is never a finding, that it says it cannot tell whether a described step
-  still happens, that a name already on an open piece is not raised again, and
+  does is never a finding, that it leaves instructions outside its supported grammar unverified, that a name already on an open piece is not raised again, and
   that a correction changes the stale name and never the prose around it.
   `.agents/tests/document-read-rehearsal.sh` runs the shipped
   `document-claims.py` against a throwaway project. It proves each of the four
@@ -843,6 +851,14 @@ attribution line, not the word.
   nothing, and the document changed longest ago comes first. A piece's file
   in `changes/` is part of the changelog, so it is never read as a document,
   and neither the folder nor a file the last fold took away is called missing.
+  It also checks explicit required package commands and check routes, with
+  root AGENTS.md read for those declarations only. Its fixtures change a route
+  while the required check still exists, distinguish inactive and broken rules
+  from unknown conditions, and prove that removing detection defeats the
+  broken case. Indirect shell and lifecycle wiring remain unverified. Script
+  and hook sentinels stay untouched, outside-project files are not opened, and
+  the helper works from the supported installed layouts. This is bounded
+  fixture evidence; an authorised real-project audit remains later work.
 - `.agents/tests/document-bloat.sh` guards the quarterly read for documents
   that repeat each other or are no longer needed: that it reads every
   document rather than only the ones AGENTS.md points at, never offers the
