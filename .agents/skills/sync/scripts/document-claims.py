@@ -220,7 +220,7 @@ def claims(document, documents_read, scripts, targets):
 
 
 # Declarations are whole lines, with an optional Markdown bullet and full stop.
-RUN_LITERAL = r"(?:npm|pnpm|yarn) run [\w:.-]+"
+RUN_LITERAL = r"(?:npm|pnpm|yarn) run [\w:.][\w:.-]*"
 REQUIRED = re.compile(
     rf"^Required (command|check): `({RUN_LITERAL})`"
     rf"(?: via `({RUN_LITERAL})`)?(?: when (.+?))?\.?$"
@@ -264,9 +264,6 @@ def route_evidence(route, check, scripts):
 
     def visit(name):
         nonlocal reached, unknown
-        if name == check:
-            reached = True
-            return
         if name in visiting:
             unknown = True
             evidence.append(f"scripts.{name}: cycle")
@@ -285,6 +282,10 @@ def route_evidence(route, check, scripts):
             evidence.append(f"scripts.{name}: lifecycle entries {json.dumps(hooks)}")
         body = scripts.get(name)
         evidence.append(f"scripts.{name} = {json.dumps(body, ensure_ascii=True)}")
+        if name == check:
+            reached = True
+            visiting.remove(name)
+            return
         if not isinstance(body, str):
             unknown = True
         else:
@@ -338,8 +339,8 @@ def wiring_claims(document, scripts):
             if missing:
                 findings.append((number, "wiring mismatch", f"{label}: package.json has no script {', '.join(missing)}; inspected scripts keys {json.dumps(sorted(scripts))}."))
                 continue
-            if not isinstance(scripts[check], str):
-                findings.append((number, "unverified rule", f"{label}: package.json scripts.{check} is not a command string."))
+            if not isinstance(scripts[check], str) or not scripts[check].strip():
+                findings.append((number, "unverified rule", f"{label}: package.json scripts.{check} is not a non-empty command string."))
                 continue
             if route:
                 reached, unknown, evidence = route_evidence(route_name, check, scripts)

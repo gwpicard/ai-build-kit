@@ -43,7 +43,8 @@ remain unverified, including prose that does not use the declaration syntax.
 The following are whole, case-sensitive lines outside fenced code blocks.
 A Markdown `- ` or `* ` bullet and a final full stop are optional. Each command
 has exactly the form `npm run <name>`, `pnpm run <name>` or `yarn run <name>`.
-Names contain letters, digits, underscores, colons, dots or hyphens.
+Names contain letters, digits, underscores, colons, dots or hyphens, and cannot
+start with a hyphen. A leading hyphen leaves a declaration or call unverified.
 
 ```text
 Required command: `npm run test`.
@@ -52,7 +53,8 @@ Required check: `yarn run guard` via `pnpm run check` when file `care.flag` exis
 ```
 
 A required command must name an entry in the root `package.json` scripts
-object. This establishes availability, not that anybody invokes the command.
+object with a non-empty command string after surrounding whitespace is removed.
+This establishes availability, not that anybody invokes the command.
 A required check must be reachable from its route through literal package-script
 calls. A route naming the check itself counts as reachable. Package-manager
 names select the same script object; workspaces and other package files are
@@ -60,7 +62,8 @@ unsupported. No executable's behaviour or success is inferred.
 
 The route recogniser accepts only whole `npm run <name>`, `pnpm run <name>` or
 `yarn run <name>` calls, optionally joined by `&&`. It follows their script
-entries until the required check is reached. The exact terminal commands
+entries until the required check is reached, inspecting lifecycle entries on
+the required check before accepting reachability. The exact terminal commands
 `node --test`, `tsc --noEmit` and `true` have no further package-script calls.
 Other bodies, arguments, shell wrappers, variables, quoting, pipes, semicolons,
 `||`, lifecycle hooks and cycles leave the relationship unverified. A route
