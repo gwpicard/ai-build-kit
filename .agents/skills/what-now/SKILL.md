@@ -69,7 +69,9 @@ A piece being built or waiting for the person's check that was never shaped, or
 never had its readiness check, is named in the same place, once, with what it is
 missing. The printout lists it under Needs attention. Say it in the piece's own
 words: "the late fees piece is being built, but nobody ever wrote down what done
-looks like for it". Name it before it is merged rather than after.
+looks like for it". Name it before it is merged rather than after, and give the
+matching recovery route below. Such a piece is waiting for recovery, so do not
+also describe it as ready for the person's merge click.
 
 Say how many entries are still notes rather than pieces, when any are, in the
 words a person would use: "two things on the list are still just notes, so I
@@ -136,6 +138,23 @@ list. Where nothing has happened lately, say nothing here and the answer ends
 where it did before.
 
 ## Recovery routes
+
+### Work started before shaping or readiness
+
+For missing shaping, offer `/shape <number>` on the named piece: "Shape the late
+fees piece before it goes any further. Its branch and pull request stay, and
+the work must be checked against what we agree before it can merge."
+
+Where the requirements are complete and only `## Readiness` is missing, offer
+`/shape <number> check readiness` in a session that did not shape it: "The late
+fees requirements are written; they need an independent readiness check, without
+repeating the interview." A Done when heading alone does not establish complete
+requirements; `/shape` reads the piece before choosing between these routes.
+
+The `setup-ai-build-kit` skill's `references/pieces.md`, under "Recovering work
+started too soon", owns preservation and the check before merge. Say that the
+pull request waits for recovery and that check. Report and offer only here:
+change no state, branch or pull request during `/what-now`.
 
 ### Uncommitted work
 
