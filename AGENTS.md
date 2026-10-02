@@ -336,6 +336,21 @@ attribution line, not the word.
   in one place. It holds the two notes for a piece built or checked without
   being shaped or checked where `pieces.md` and WORKFLOW.md describe them, and
   that `/what-now` names such a piece once, beside a failing check.
+- `.agents/tests/shaping-recovery.sh` guards the recovery offered when work
+  started before shaping or readiness, proving each instruction load-bearing
+  by deleting it. `.agents/tests/shaping-recovery-rehearsal.sh` runs the
+  published paired state commands against disposable Git and fake pull
+  requests, keeps the preserved branch and open pull request, and shows new
+  agreed acceptance failing work that passed an earlier incomplete check. Its
+  guided fixture under `.agents/tests/fixtures/shaping-recovery.md` separately
+  covers conversational routing and the merge gate; a shell pass does not
+  measure an agent obeying those instructions.
+  The same disposable issue service and printout also exercise classified waits,
+  later comment and body-edit answers, failed or unavailable review and factual
+  research that discovers a human choice. They read the saved body, labels,
+  claims and queue, including direct and transitive blockers. Answer
+  classifications and review verdicts are supplied by the operator; interpreting
+  arbitrary answers and obtaining an independent session remain guided checks.
 - `.agents/tests/state-moves.sh` guards the commands that keep the board true.
   Each move takes the old state off in the same step as it puts the new one
   on, and the check reads every label command in `/shape`, `/implement`,
@@ -429,6 +444,19 @@ attribution line, not the word.
   only builds one piece in its own worktree and never pushes, and that an
   agent which never reports counts as a failed attempt. A pushing agent would
   make a first upload nobody was asked about.
+  It also guards the written rules for same-turn continuation after a question,
+  recovery and a checked shared baseline, existing stop limits, supported active
+  waits and intent not counting as completion. Removing each rule is caught.
+  `.agents/tests/failure-recovery.sh` exercises the published preservation,
+  baseline and eligibility helper separately. The guided cases in
+  `.agents/tests/fixtures/shaping-recovery.md` remain unrun until observed agent
+  behaviour is recorded; a shell pass does not establish model adherence.
+- `.agents/tests/question-box.sh` guards clarify's interview routing: one short
+  question with a labelled guess, actual tool schema and free-text answers,
+  the plain-text fallback, worker relay and parking when the relay is unavailable.
+  It removes each written rule in turn. The guided fixtures in `scenarios.md`
+  cover live question tools and relays; the shell check proves the rules remain
+  written, rather than that every model follows them.
 - `.agents/tests/gated-turns.sh` checks the rule that decides when a scripted
   replay turn is due: that a turn with no precondition still fires by position,
   that one with a precondition waits until the kit has said the thing it
@@ -820,8 +848,7 @@ attribution line, not the word.
 - `.agents/tests/document-read.sh` guards the read in `/sync` that checks a
   project's own documents against the project: that it reads only the README
   and what AGENTS.md points at, that a document saying less than the project
-  does is never a finding, that it says it cannot tell whether a described step
-  still happens, that a name already on an open piece is not raised again, and
+  does is never a finding, that it leaves instructions outside its supported grammar unverified, that a name already on an open piece is not raised again, and
   that a correction changes the stale name and never the prose around it.
   `.agents/tests/document-read-rehearsal.sh` runs the shipped
   `document-claims.py` against a throwaway project. It proves each of the four
@@ -837,6 +864,14 @@ attribution line, not the word.
   nothing, and the document changed longest ago comes first. A piece's file
   in `changes/` is part of the changelog, so it is never read as a document,
   and neither the folder nor a file the last fold took away is called missing.
+  It also checks explicit required package commands and check routes, with
+  root AGENTS.md read for those declarations only. Its fixtures change a route
+  while the required check still exists, distinguish inactive and broken rules
+  from unknown conditions, and prove that removing detection defeats the
+  broken case. Indirect shell and lifecycle wiring remain unverified. Script
+  and hook sentinels stay untouched, outside-project files are not opened, and
+  the helper works from the supported installed layouts. This is bounded
+  fixture evidence; an authorised real-project audit remains later work.
 - `.agents/tests/document-bloat.sh` guards the quarterly read for documents
   that repeat each other or are no longer needed: that it reads every
   document rather than only the ones AGENTS.md points at, never offers the
@@ -1051,6 +1086,11 @@ attribution line, not the word.
   written list of commands that must still run, such as deleting one file or a
   plain `git gc`, keeps those rules from growing. The offer brings those rules
   too, and a no recorded before they existed does not cover them.
+  It also checks standalone force options in each agreed position and leading
+  plus branch/tag refspecs, with a lost refusal for every new rule removed.
+  The monthly offer brings those rules only while an older force prefix remains,
+  and keeps removed or declined rules out. The fixture follows literal wildcard
+  semantics and does not establish universal shell or harness enforcement.
 - `.agents/tests/refused-commands.sh` guards what happens when a command is
   refused. In a real project the deny list refused `rm -rf`, and the agent ran
   the same deletion again as `rm -r`, which went through. So both
@@ -1514,8 +1554,33 @@ attribution line, not the word.
   a local tag where there is no GitHub repository. It writes no hosting
   request, address or rollback line, on Build with care as well. It also holds the template, founding
   writing the line from answers it already has, and WORKFLOW.md.
+- `.agents/tests/failure-recovery.sh` runs recovery in disposable Git projects
+  and reads retained files, commits, archives and issue state. It preserves
+  committed, staged, unstaged and ignored failed work, refuses an unchecked or
+  changed baseline, leaves direct and transitive dependants untouched, and
+  completes independent work on checked code. Earlier successful parent parts
+  survive isolation. A failing shared base stops affected work. Interrupted
+  preservation or checking resumes without declaring completion. Retention
+  records protect failed copies after their run folder is gone.
+  It also holds freshness of safely established linked inputs separately from
+  the archive, excludes every failed commit from an advancing base, and compares
+  tracked bytes despite index suppression flags. Real exits at record replacement
+  boundaries prove that divergent generations stay unfinished and a stale
+  checked record never overwrites checking.
+- `.agents/tests/task-handoff.sh` guards the bounded fresh-builder brief and
+  resource/return rules, removing each guarded instruction in turn. Its
+  subprocess stubs consume the published example, read earlier saved artifacts,
+  retain coordinator-only state writes and resources, require both sides of a
+  modelled transfer, and resume an interrupted invocation from saved inputs.
+  Unsupported capabilities stop with a resumable limit. These stubs do not
+  establish model context eviction, live ownership or baseline recovery
+  correctness; the guided fixture names the remaining agent checks.
 - `.agents/tests/the-runner.sh` guards how `/implement` runs a plan of ready
-  pieces with nobody watching, given several numbers or `queue`. In a real
+  pieces with nobody watching, given several numbers or `queue`.
+  Its goal routing checks also hold exposed native context or explicit unattended
+  instructions entering the run before ordinary dispatch, with plan approval
+  before any claim or builder. The guided goal-routing fixture separates desk
+  evidence from live harness behaviour. In a real
   project the agent built its own loop four times, with its rules and state in
   temporary files and memory notes. The gate on which pieces a run may take
   was skipped twice, once on a piece that touched personal data overnight,
@@ -1533,7 +1598,9 @@ attribution line, not the word.
   plans or claims a piece sends it back too, with its question, no branch and
   no claim. Skipped and left `ready`, such a piece came back to every run with
   nothing telling the person a question waited. An easy choice seen then
-  leaves the piece eligible, and a missing fact alone still skips it. The
+  leaves the piece eligible, and a missing fact returns it to shaping for
+  research. Same-issue follow-ups retain the question and evidence; complete
+  answers return through specification reconciliation and independent readiness. The
   state file's fields, the live page, and a new session resuming from the
   state file are held too, as is a run that ends
   at once when nothing is left. So is what review of the first draft found:
@@ -1668,7 +1735,9 @@ attribution line, not the word.
   the coding agent could, and nothing more, so on a tool whose output was a
   PDF the agent either read the file's bytes and called it checked, or saw
   nothing. So it holds the means in the order step 6 tries them: the coding
-  agent's own browser tool, then Playwright only where it is already there, a
+  agent's own browser tool only after its exposed contract positively identifies
+  a browser on the serving computer and ownership is confirmed, then local
+  Playwright only where it is already there, a
   PDF rendered one picture a page for the first 30 pages with the rest named
   as not seen, `pdfinfo` giving the page count, an office file made into a PDF
   first, and an SVG made into a picture in the pictures folder rather than
@@ -1682,6 +1751,10 @@ attribution line, not the word.
   the piece goes to `to check`. It also holds the `Walk-through eyes:` line
   founding records in place of browser availability, and WORKFLOW.md telling
   how to give the walk-through more eyes.
+  The browser rules reject operating-system hints, unknown identity and failed
+  listings, preserve the tool's choice guidance and resource ownership, and
+  carry missing observations into review. These are load-bearing written-rule
+  checks, not a live browser trial or a measure of model reliability.
 - `.agents/tests/first-upload-asks.sh` guards the yes the project's first
   upload waits for. Founding tells the person nothing will be uploaded, and in
   a real run the first piece then pushed the whole project to GitHub with no

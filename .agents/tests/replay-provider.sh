@@ -213,6 +213,18 @@ provider_turn "$TEST_WORK/project" "second turn" "$TEST_WORK/claude-second.json"
 [ "$(cat "$claude_reply")" = "claude resumed" ] \
   && pass "Claude Code keeps its resume route" \
   || fail_provider "Claude Code resume changed"
+# Every first and resumed turn identifies the scripted interlocutor. These
+# stubs prove what reaches the provider, without spending a model call.
+[ "$(grep -cF 'Replay context: headless with a scripted plain-text interlocutor.' "$PROVIDER_LOG" || true)" = "6" ] \
+  && pass "both providers receive headless context on first and resumed turns" \
+  || fail_provider "a replay turn lacked its scripted interlocutor context"
+grep -qF 'Ask interview questions in the reply text; do not open a human question UI.' "$PROVIDER_LOG" \
+  && pass "the headless context requests visible plain-text questions" \
+  || fail_provider "the replay context did not route interview questions to text"
+grep -q '^first turn$' "$PROVIDER_LOG" && grep -q '^second turn$' "$PROVIDER_LOG" \
+  && pass "the original scripted turn follows the context unchanged" \
+  || fail_provider "the context replaced or rewrote a scripted turn"
+
 grep -q -- "--session-id claude-session" "$PROVIDER_LOG" \
   && pass "Claude Code still starts with the harness session id" \
   || fail_provider "Claude Code lost its chosen session id"
