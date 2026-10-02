@@ -79,8 +79,8 @@ rs_rule "the canvas is for work before a page or a drawn redesign" \
   'before a real page exists or.*draw a redesign'
 rs_rule "no recorded tool leaves the coded throwaway unchanged" \
   'no design tool is recorded.*coded throwaway'
-rs_rule "an available browser tool is used to inspect the throwaway" \
-  'browser tool.*look at your own throwaway'
+rs_rule "the throwaway uses the walk-through's browser rule" \
+  'follow .how the walk-through looks. in the `section-builder` skill'
 rs_rule "the agent says when it could not inspect the throwaway" \
   'say when you could not'
 rs_guard "$STRUCTURE" "prototype-structure.md"

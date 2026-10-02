@@ -1681,7 +1681,9 @@ attribution line, not the word.
   the coding agent could, and nothing more, so on a tool whose output was a
   PDF the agent either read the file's bytes and called it checked, or saw
   nothing. So it holds the means in the order step 6 tries them: the coding
-  agent's own browser tool, then Playwright only where it is already there, a
+  agent's own browser tool only after its exposed contract positively identifies
+  a browser on the serving computer and ownership is confirmed, then local
+  Playwright only where it is already there, a
   PDF rendered one picture a page for the first 30 pages with the rest named
   as not seen, `pdfinfo` giving the page count, an office file made into a PDF
   first, and an SVG made into a picture in the pictures folder rather than
@@ -1695,6 +1697,10 @@ attribution line, not the word.
   the piece goes to `to check`. It also holds the `Walk-through eyes:` line
   founding records in place of browser availability, and WORKFLOW.md telling
   how to give the walk-through more eyes.
+  The browser rules reject operating-system hints, unknown identity and failed
+  listings, preserve the tool's choice guidance and resource ownership, and
+  carry missing observations into review. These are load-bearing written-rule
+  checks, not a live browser trial or a measure of model reliability.
 - `.agents/tests/first-upload-asks.sh` guards the yes the project's first
   upload waits for. Founding tells the person nothing will be uploaded, and in
   a real run the first piece then pushed the whole project to GitHub with no
