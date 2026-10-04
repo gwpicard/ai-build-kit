@@ -310,9 +310,7 @@ CI runs the same script in this repository's own pull requests, alongside every
 rehearsal in `.agents/tests/`. The released starter receives its deliberately
 failing project check from
 `.agents/skills/setup-ai-build-kit/templates/foundation/checks.yml`; `setup-ai-build-kit` replaces that
-placeholder with the project's real commands during stand-up. A project that
-already runs its tests on pull requests in a workflow of its own gets no
-placeholder, and founding records that workflow as its project check.
+placeholder with the project's real commands during stand-up.
 
 ## Scenario review
 

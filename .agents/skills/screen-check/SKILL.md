@@ -7,9 +7,9 @@ user-invocable: false
 # Screen check
 
 Apply these rules while a screen is being built, and when that change gets its
-build-time review. They shape the first result before the walk-through looks at
-it, or the person tries it. They do not run at founding, shaping, or `/ship`.
-A fix uses them only when the fault is on a screen.
+build-time review. They shape the first result before the person tries it. They
+do not run at founding, shaping, or `/ship`. A fix uses them only when the fault
+is on a screen.
 
 ## When it applies
 

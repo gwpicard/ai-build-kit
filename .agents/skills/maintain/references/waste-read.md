@@ -38,8 +38,7 @@ Three settings are there on purpose:
   function or import at that setting. Imports are already the linter's job in
   the project check.
 - `jscpd` writes a report folder. Point it at a temporary folder outside the
-  project, made with `mktemp -d`, so nothing is saved. Leave it there for
-  the computer to clear, since a recursive delete is refused.
+  project and delete it afterwards, so nothing is saved.
 
 ## Checking a finding
 

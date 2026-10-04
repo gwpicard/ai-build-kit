@@ -2,8 +2,7 @@
 """List the project's documents that repeat each other or are no longer needed.
 
 Reads every Markdown document git tracks, apart from the kit's own files, the
-project records, the changelog files waiting in `changes/`, and anything in a
-folder whose name starts with a dot. It
+project records and anything in a folder whose name starts with a dot. It
 prints one line for each of two findings, and nothing when there are none:
 
     repeated<TAB>document:line<TAB>other-document:line
@@ -49,7 +48,7 @@ def documents(files):
             continue
         if any(part.startswith(".") for part in name.split("/")[:-1]):
             continue
-        if name.startswith(("node_modules/", "changes/")) or not os.path.isfile(name):
+        if name.startswith("node_modules/") or not os.path.isfile(name):
             continue
         found.append(name)
     return found

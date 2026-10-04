@@ -22,8 +22,6 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 FLOOR="$ROOT/.agents/skills/setup-ai-build-kit/references/check-floor.md"
 TEMPLATE="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/checks.yml"
 SENSITIVE="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/check-sensitive-areas.sh"
-# Founding writes AGENTS.md from this, and the check counts its lines.
-INSTRUCTIONS="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md"
 
 fail() {
   echo "FAIL: $1" >&2
@@ -60,7 +58,6 @@ fi
 # --- founding: the project and its wired check ------------------------------
 
 cp "$SENSITIVE" "$PROJECT/.agents/hooks/check-sensitive-areas.sh"
-cp "$INSTRUCTIONS" "$PROJECT/AGENTS.md"
 
 # The edit founding makes: the placeholder step goes, and install, type check,
 # lint and test go in its place, each as its own named step.
@@ -191,7 +188,6 @@ echo "  lint: $lint"
 PROJECT="$WORK/ts-project"
 mkdir -p "$PROJECT/.github/workflows" "$PROJECT/.agents/hooks" "$PROJECT/src"
 cp "$SENSITIVE" "$PROJECT/.agents/hooks/check-sensitive-areas.sh"
-cp "$INSTRUCTIONS" "$PROJECT/AGENTS.md"
 
 awk -v tc="$type_check" -v li="$lint" '
   /- name: Install and test/ { skipping = 1 }

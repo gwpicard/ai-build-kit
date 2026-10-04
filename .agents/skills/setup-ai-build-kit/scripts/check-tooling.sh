@@ -17,8 +17,7 @@
 #
 # Run from anywhere inside the project. With --recipe <recipe file>, it also
 # reports the command-line tools that recipe's launch checks run. Those never
-# stop founding. Nor do the tools the walk-through looks with, which it always
-# reports, with the install command for each one missing.
+# stop founding.
 
 set -eu
 
@@ -33,24 +32,6 @@ blocked=0
 # 1. The tools the kit's own scripts run.
 if command -v git >/dev/null 2>&1; then
   echo "Git is ready: the kit saves each project version with it."
-  # A run on Claude Code builds each piece in its own worktree, and clears it
-  # away with `git worktree remove`, which Git has offered since 2.17. An
-  # older Git still founds and builds one piece at a time, so this says so and
-  # blocks nothing. The version is read with the
-  # shell alone, since the report may run with nothing else on its PATH.
-  git_version=$(git --version 2>/dev/null || true)
-  git_version=${git_version#git version }
-  git_major=${git_version%%.*}
-  git_rest=${git_version#*.}
-  git_minor=${git_rest%%[!0-9]*}
-  case "$git_major$git_minor" in
-    '' | *[!0-9]*) ;;
-    *)
-      if [ "$git_major" -lt 2 ] || { [ "$git_major" -eq 2 ] && [ "$git_minor" -lt 17 ]; }; then
-        echo "Git is version $git_version, older than 2.17: a run cannot give each piece its own worktree, so it builds them one after another in this folder. Updating Git lifts that."
-      fi
-      ;;
-  esac
 else
   echo "Git is missing: install it so the kit can save project versions. See manual-setup.md."
   blocked=1
@@ -65,22 +46,11 @@ fi
 
 gh_ready=no
 if command -v gh >/dev/null 2>&1; then
-  if gh_status=$(gh auth status 2>&1); then
+  if gh auth status >/dev/null 2>&1; then
     echo "The GitHub command line tool is ready: your pieces are kept as issues, and you are signed in."
     gh_ready=yes
   else
-    # Do not print auth status: it may include credential diagnostics. A failed
-    # network check is not evidence that the account has signed out.
-    case "$gh_status" in
-      *"error connecting"* | *"Could not resolve host"* | *"dial tcp"* | *"timed out"*)
-        echo "The GitHub command line tool cannot reach GitHub: network access may be blocked or unavailable. Request GitHub access for this session, then run this report again." ;;
-      *"HTTP 403"* | *"Resource not accessible"* | *"permission denied"*)
-        echo "The GitHub command line tool was refused permission: check this session's GitHub access and the signed-in account's permissions, then run this report again." ;;
-      *"HTTP 401"* | *"Bad credentials"* | *"Failed to log in"*)
-        echo "The GitHub command line tool could not authenticate: compare GH_TOKEN and GITHUB_TOKEN presence and gh auth status in this session and your terminal before signing in again. A sandbox may not read your stored login." ;;
-      *)
-        echo "The GitHub command line tool is installed but nobody is signed in, or the sign-in could not be verified: run gh auth login if signed out. Check this session's GitHub access otherwise. See manual-setup.md." ;;
-    esac
+    echo "The GitHub command line tool is installed but nobody is signed in: sign in before the pieces are founded. See manual-setup.md."
     blocked=1
   fi
 else
@@ -184,57 +154,6 @@ if [ -n "$recipe" ]; then
   else
     echo "The recipe file $recipe was not found, so the tools its checks run were not looked for."
   fi
-fi
-
-# 5. What the walk-through can look with. Before a piece is saved the agent
-# walks through it and looks at what the person would see: a web page through a
-# browser, and a PDF, a document or a drawing turned into pictures it reads.
-# These tools make that possible. A missing one never sets blocked, since the
-# walk-through then names what it could not see and the piece waits for the
-# person. For each missing one the report prints the install command for this
-# platform. The kit never runs it: installing is the person's choice.
-if [ -f /System/Library/CoreServices/SystemVersion.plist ]; then
-  platform=mac
-elif [ -f /etc/debian_version ]; then
-  platform=debian
-else
-  platform=other
-fi
-install_line() {
-  # install_line <Homebrew formula> <apt package>
-  case "$platform" in
-    mac) printf 'brew install %s' "$1" ;;
-    debian) printf 'sudo apt install %s' "$2" ;;
-    *) printf 'install %s with your system%ss package manager' "$2" "'" ;;
-  esac
-}
-eyes_missing() {
-  # eyes_missing <tool> <what it is for> <install command>
-  echo "$1 is missing: $2. To add it, run: $3. It does not stop founding."
-}
-
-if command -v pdftoppm >/dev/null 2>&1; then
-  echo "pdftoppm is ready: the walk-through turns each page of a PDF into a picture with it."
-else
-  eyes_missing pdftoppm "without it the walk-through cannot look at a PDF" "$(install_line poppler poppler-utils)"
-fi
-if command -v soffice >/dev/null 2>&1 || command -v libreoffice >/dev/null 2>&1; then
-  echo "soffice is ready: the walk-through turns a Word, PowerPoint, Excel or OpenDocument file into a PDF with it."
-else
-  eyes_missing soffice "without it the walk-through cannot look at a Word, PowerPoint, Excel or OpenDocument file" "$(install_line '--cask libreoffice' libreoffice)"
-fi
-# An older ImageMagick, which some Linux releases still ship, names the same
-# command convert.
-if command -v magick >/dev/null 2>&1 || command -v convert >/dev/null 2>&1; then
-  echo "magick is ready: the walk-through turns an SVG drawing into a picture with it."
-else
-  eyes_missing magick "without it the walk-through cannot look at an SVG drawing" "$(install_line imagemagick imagemagick)"
-fi
-# --no-install asks only what is already here, so the report downloads nothing.
-if command -v npx >/dev/null 2>&1 && npx --no-install playwright --version >/dev/null 2>&1; then
-  echo "Playwright is ready: the walk-through takes a screenshot of a web page with it where the coding agent has no browser tool of its own."
-else
-  eyes_missing Playwright "without it, and without a browser tool in the coding agent, the walk-through cannot take a screenshot of a web page" "npm install --save-dev playwright && npx playwright install --with-deps chromium"
 fi
 
 if [ "$blocked" -ne 0 ]; then

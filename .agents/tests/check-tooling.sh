@@ -102,39 +102,6 @@ printf '%s\n' "$out" | grep -q "nobody is signed in" \
   && pass "it says nobody is signed in" \
   || fail "the signed-out line is missing"
 
-echo "== Access failures are not called signed out =="
-
-for reason in network permission; do
-  case "$reason" in
-    network) message='error connecting to api.github.com' ;;
-    permission) message='HTTP 403: Resource not accessible by integration' ;;
-  esac
-  cat >"$WORK/bin/gh" <<SH
-#!/usr/bin/env sh
-echo '$message' >&2
-exit 1
-SH
-  chmod +x "$WORK/bin/gh"
-  out=$(run_check) && code=0 || code=$?
-  [ "$code" -ne 0 ] && printf '%s\n' "$out" | grep -q "$reason" \
-    && ! printf '%s\n' "$out" | grep -q 'nobody is signed in' \
-    && pass "$reason failure blocks founding with the correct recovery" \
-    || fail "$reason failure was called signed out or did not block founding: $out"
-done
-
-echo "== Authentication cannot be verified inside the session =="
-cat >"$WORK/bin/gh" <<'SH'
-#!/usr/bin/env sh
-echo 'HTTP 401: Requires authentication' >&2
-exit 1
-SH
-chmod +x "$WORK/bin/gh"
-out=$(run_check) && code=0 || code=$?
-[ "$code" -ne 0 ] && printf '%s\n' "$out" | grep -q 'GH_TOKEN' \
-  && ! printf '%s\n' "$out" | grep -q 'nobody is signed in' \
-  && pass "authentication refusal asks about credential sources without claiming sign-out" \
-  || fail "authentication refusal skipped credential diagnosis: $out"
-
 echo "== Signed in, but a soft repository state =="
 
 # Issues off and a read-only account do not block founding: the report says so
@@ -150,35 +117,6 @@ printf '%s\n' "$out" | grep -q "Issues are switched off" \
 printf '%s\n' "$out" | grep -q "cannot create or delete labels" \
   && pass "it reports the account cannot manage labels" \
   || fail "the no-labels line is missing"
-
-echo "== A Git older than worktrees =="
-
-# A run on Claude Code gives each piece its own worktree and removes it with
-# `git worktree remove`, which Git has had since 2.17. An older Git still
-# founds and builds, one piece after another in one folder, so the report
-# names the version and blocks nothing.
-write_gh 0 '{"nameWithOwner":"someone/project","hasIssuesEnabled":true,"viewerPermission":"ADMIN"}'
-out=$(run_check) && code=0 || code=$?
-printf '%s\n' "$out" | grep -q "older than 2.17" \
-  && fail "a current Git was reported as older than 2.17" \
-  || pass "a current Git gets no version line"
-real_git=$(command -v git)
-rm -f "$WORK/bin/git"
-cat >"$WORK/bin/git" <<SH
-#!/usr/bin/env sh
-[ "\$1" = "--version" ] && { echo "git version 2.16.4"; exit 0; }
-exec "$real_git" "\$@"
-SH
-chmod +x "$WORK/bin/git"
-out=$(run_check) && code=0 || code=$?
-[ "$code" -eq 0 ] \
-  && pass "an older Git does not stop founding" \
-  || fail "an older Git returned $code"
-printf '%s\n' "$out" | grep -q "Git is version 2.16.4, older than 2.17" \
-  && pass "it names the older Git's version" \
-  || fail "the older-Git line is missing"
-rm -f "$WORK/bin/git"
-ln -s "$real_git" "$WORK/bin/git"
 
 echo "== Signed in, no repository yet =="
 
@@ -294,106 +232,6 @@ for name in nextjs-supabase-on-vercel nextjs-supabase-on-coolify; do
   done
   pass "$name's tools are each reported, and none stops founding"
 done
-
-echo "== What the walk-through can look with =="
-
-# The walk-through turns a PDF, a document or an SVG into pictures, and takes a
-# screenshot with Playwright where the coding agent has no browser tool. Each
-# renderer is reported as ready or missing, a missing one prints the install
-# line for this platform, and none of them ever stops founding. The kit prints
-# the line and never runs it. The platform is read from files, as the report
-# reads it, so the case holds on a Mac and on the hosted Ubuntu machine.
-if [ -f /System/Library/CoreServices/SystemVersion.plist ]; then
-  want_pdf="brew install poppler"
-  want_office="brew install --cask libreoffice"
-  want_svg="brew install imagemagick"
-elif [ -f /etc/debian_version ]; then
-  want_pdf="sudo apt install poppler-utils"
-  want_office="sudo apt install libreoffice"
-  want_svg="sudo apt install imagemagick"
-else
-  want_pdf="package manager"
-  want_office="package manager"
-  want_svg="package manager"
-fi
-want_playwright="npm install --save-dev playwright && npx playwright install --with-deps chromium"
-
-stub() {
-  # stub <name> <exit code>: a command that answers with that code.
-  printf '#!/bin/sh\nexit %s\n' "$2" > "$WORK/bin/$1"
-  chmod +x "$WORK/bin/$1"
-}
-eyes_line() {
-  printf '%s\n' "$out" | grep -F -- "$1" >/dev/null
-}
-
-write_gh 0 '{"nameWithOwner":"someone/project","hasIssuesEnabled":true,"viewerPermission":"ADMIN"}'
-out=$(run_check) && code=0 || code=$?
-[ "$code" -eq 0 ] \
-  && pass "with no renderer at all, founding is not stopped" \
-  || fail "missing renderers returned $code"
-eyes_line "pdftoppm is missing" && eyes_line "$want_pdf" \
-  && pass "a missing pdftoppm is named with its install line" \
-  || fail "the missing pdftoppm line or its install line is missing"
-eyes_line "soffice is missing" && eyes_line "$want_office" \
-  && pass "a missing soffice is named with its install line" \
-  || fail "the missing soffice line or its install line is missing"
-eyes_line "magick is missing" && eyes_line "$want_svg" \
-  && pass "a missing magick is named with its install line" \
-  || fail "the missing magick line or its install line is missing"
-eyes_line "Playwright is missing" && eyes_line "$want_playwright" \
-  && pass "a missing Playwright is named with its install line" \
-  || fail "the missing Playwright line or its install line is missing"
-eyes_line "It does not stop founding" \
-  && pass "each missing renderer says it does not stop founding" \
-  || fail "the missing renderers do not say founding goes on"
-
-# npx here, but Playwright not: npx --no-install fails, as it does in a project
-# without Playwright.
-stub npx 1
-out=$(run_check) && code=0 || code=$?
-eyes_line "Playwright is missing" \
-  && pass "npx that cannot find Playwright counts as Playwright missing" \
-  || fail "npx without Playwright was taken for Playwright"
-
-stub pdftoppm 0
-stub soffice 0
-stub magick 0
-stub npx 0
-out=$(run_check) && code=0 || code=$?
-[ "$code" -eq 0 ] \
-  && pass "with every renderer ready, the report still returns cleanly" \
-  || fail "every renderer ready returned $code"
-for tool in pdftoppm soffice magick Playwright; do
-  eyes_line "$tool is ready" \
-    && pass "$tool is reported as ready" \
-    || fail "$tool is not reported as ready"
-done
-printf '%s\n' "$out" | grep -q "brew install\|apt install\|package manager" \
-  && fail "an install line was printed with nothing missing" \
-  || pass "no install command appears when every renderer is ready"
-
-# The other names the same tools go by: libreoffice for soffice, and the older
-# ImageMagick's convert for magick.
-rm -f "$WORK/bin/soffice" "$WORK/bin/magick"
-stub libreoffice 0
-stub convert 0
-out=$(run_check) && code=0 || code=$?
-eyes_line "soffice is ready" \
-  && pass "libreoffice counts as soffice" \
-  || fail "libreoffice was not taken for soffice"
-eyes_line "magick is ready" \
-  && pass "an older ImageMagick's convert counts as magick" \
-  || fail "convert was not taken for magick"
-
-# A missing founding tool still stops founding with every renderer ready.
-rm -f "$WORK/bin/gh"
-out=$(run_check) && code=0 || code=$?
-[ "$code" -ne 0 ] \
-  && pass "renderers being ready do not excuse a missing founding tool" \
-  || fail "ready renderers hid the missing GitHub command line tool"
-rm -f "$WORK/bin/pdftoppm" "$WORK/bin/libreoffice" "$WORK/bin/convert" "$WORK/bin/npx"
-write_gh 0 '{"nameWithOwner":"someone/project","hasIssuesEnabled":true,"viewerPermission":"ADMIN"}'
 
 echo
 if [ "$FAIL" -eq 0 ]; then

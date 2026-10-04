@@ -9,9 +9,8 @@ behaviour nobody ever wrote down.
 
 ## The route, step by step
 
-1. Read before anything. Step 0 of this skill has already settled which
-   branch it is on. Go through the existing code, and say back in plain
-   language what the tool appears to do, who appears to use it, and
+1. Read before anything. Go through the existing code, and say back in
+   plain language what the tool appears to do, who appears to use it, and
    what data it appears to hold. Guesses attached, like the interview:
    correcting a wrong guess brings the real picture out.
 

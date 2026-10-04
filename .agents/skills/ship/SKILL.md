@@ -53,10 +53,6 @@ it, then stop.
 
 ### Build and run it
 
-Where the `Goes live:` line says `not hosted` and no recipe is named, going
-live is a release. Follow "Releasing a tool that is not hosted" below, which
-says when steps 1 and 2 run, in place of steps 3 and 4.
-
 1. Run the full evidence run.
 2. Run second-opinion using the best independent method recorded in
    AGENTS.md. Before the review asks the person to look up a setting, it
@@ -108,8 +104,7 @@ says when steps 1 and 2 run, in place of steps 3 and 4.
    section's turn comes in the checks below. Any merge or deploy on the way
    follows "Merging and deploying" below.
    If hosting uses a preview address, this is the moment work moves to the
-   team's address. That move is what /ship means, and "Promoting to live"
-   below says how it is asked for.
+   team's address. That move is what /ship means.
 
    Where the tool will run on a server this session cannot reach, such as one
    the team or a hosting companion runs, the address comes from whoever runs
@@ -264,90 +259,25 @@ the secret is kept. Never write that the secret is absent, missing or not on
 this computer: the kit only knows that it did not find it. Give no reason
 for a skipped check that the kit did not itself confirm.
 
-#### Promoting to live
-
-It applies whether or not the project is on a recipe. Read the `Goes live:`
-line in the masterplan's "How it stays running" section, as described in the
-`section-builder` skill's `references/merge.md`. On `through /ship`, merged
-work waits on a preview, and going live is a promote. On `on every merge`,
-there is nothing to promote: each merge was a launch, and `merge.md` ran the
-first-launch checks before the first of them. On `not hosted`, there is nothing
-to promote either: going live is a release, as the next section says.
-
-To promote, name what will go live: each change merged since the last launch,
-one plain line each, read from the files in `changes/` and the pull requests
-merged since then. Run the checks this path requires before the promote: the
-steps above, or on a recipe its checks up to going live. Then ask, for example:
-"Say yes to put these three changes live." Promote only on a yes that names the
-promote. A yes to a merge does not cover it, and neither does a yes given before
-the changes were named. A no leaves the live tool as it was.
-
-The promote is the recipe's going-live section, and its yes covers the commands
-that section names. Off a recipe, promote the way "How it stays running"
-records. Where it records nothing, ask the person how the preview is put live,
-and write their answer there.
-
-At any launch, first or later, where "How it stays running" has no `Goes live:`
-line, write one, from the recipe's going-live section or from what the person
-says: `through /ship`, `on every merge` or `not hosted`. An older project gets
-the line this way, at its next launch.
-In the same save, set the confirmation box as the `section-builder` skill's
-`references/merge.md` says under "The confirmation box on a merge that goes
-live": `add` for `on every merge`, `remove` for any other value.
-
-#### Releasing a tool that is not hosted
-
-This applies where the `Goes live:` line says `not hosted` and no recipe is
-named. No server runs such a tool, so going live means cutting a release: a Git
-tag with a GitHub release. Where a recipe is named as well, the two disagree.
-Say so once, follow the recipe, since a recipe is a place the tool runs, and
-leave this section out.
-
-Name what the release holds: each change since the last release tag, one plain
-line each, read from the files in `changes/` and the lines of CHANGELOG.md
-above its newest `Released` line, or every line when there is none. Where
-nothing changed since the last release, say so and make no release.
-
-Run the checks this path requires before the release: the evidence run and the
-review, steps 1 and 2 above. Leave out the request record check and the
-monitoring caution, since nothing serves requests. Write no hosting request,
-wait for no address, and write no rollback line.
-
-Then read the tags GitHub holds with `git fetch --tags`, where there is a
-remote, and this computer's with `git tag --list`. Propose the next minor
-version after the newest tag of the form `vX.Y.Z`: `v1.4.2` gives `v1.5.0`.
-Where no tag has that form, propose `v0.1.0`. Where the newest tag has another
-form, name the tag you found in one line, and still count from the newest one
-of the form `vX.Y.Z`. The person may name another tag in their reply. Where the
-tag already exists, because somebody made it by hand, name it and ask for
-another, and create nothing until the person names one.
-
-Ask for a yes that names the release, for example: "Say yes to release v1.5.0
-with these three changes." Release only on that yes. A yes to a merge does not
-cover the release, and neither does a yes given before the changes were named.
-A no leaves everything as it was.
-
-On that yes, write the lines you named to a notes file in `.agents/tmp/`, which
-git ignores, and run
-`gh release create <tag> --target main --title <tag> --notes-file <file>`.
-Where GitHub cannot be reached, no release is made: say in one line that the
-release waits and can be asked for again once GitHub answers. Where the project
-has no GitHub repository, or saves on the checkpoint route, the release is a
-local annotated tag instead, made on the same named yes with
-`git tag -a <tag> -m "<tag>" main`. Say that the tag stays on this computer and
-nothing was published.
-
-The launch record in CHANGELOG.md reads `Released <tag>`, saved the way
-"Merging and deploying" below says for every record a launch writes.
-
 #### Merging and deploying
 
 These rules hold at every go-live, on a recipe or off one, and on Build with
 care as well.
 
-Any merge follows the `section-builder` skill's `references/merge.md`, as it
-does on every route: the yes that names it, where it is made, and what the ask
-says when a merge goes live.
+A person decides whether to merge, as with /implement. Before a merge, name
+each pull request in one plain line that says what it changes. Then ask for a
+yes that names the merge, for example: "Say yes to put it live, which merges
+the two record changes." Merge only when the person's reply plainly covers
+that merge. Where their own words already named the merge, as in "merge both
+and put it live", that is the yes: do not ask again. A yes to going live, to a
+hosting step, or to any question asked before the merge was named does not
+cover it: ask again, and merge nothing until they answer. A no leaves the pull
+request open and the live tool as it was.
+
+Make an approved merge on the pull request itself, such as with `gh pr merge`.
+Never merge the branch on this computer and push `main`. Where GitHub cannot be
+reached, the merge waits: say in one line that the person can merge it on
+GitHub themselves.
 
 The records /ship writes during a launch, such as its CHANGELOG.md entries and
 a confirmation the person gives later, such as a colleague saying the new
@@ -355,16 +285,8 @@ version is live, take the save route the build path already requires: the
 three routes section-builder names, with no fourth for records. On the
 checkpoint route, a checkpoint commit is enough. Otherwise put them on one
 branch for this /ship, cut from the up-to-date `main`, and stage only the files
-/ship itself changed. On that branch, or in the checkpoint commit, fold any
-files still waiting in `changes/` into CHANGELOG.md with the `sync` skill's
-`scripts/fold-changes.py`, as /sync does. Each merge folds its own piece's
-file, so these are the ones a merge made on GitHub by hand left behind, and
-folding them here means the pieces this launch carries reach the history with
-it. Fold first and write the launch lines after, so
-the launch sits above the pieces it launched under the same date. Where an
-earlier records pull request that folded files is still open, say so in one
-line and do not fold again until it merges. Open one pull request for them, once, after the
-launch is checked and its records are written, and ask for its yes in the reply that
+/ship itself changed. Open one pull request for them, once, after the launch is
+checked and its records are written, and ask for its yes in the reply that
 reports the launch. Where GitHub cannot be reached, save the records on that
 branch, note in one plain line the step that did not happen, and open the pull
 request once GitHub is reachable. The project's first upload waits for the
@@ -372,8 +294,8 @@ yes section-builder's "The first upload" describes. Never push records
 straight to `main`. A later confirmation joins that branch while its pull
 request is open, or a new branch and pull request once it has merged.
 
-The records pull request is a merge like any other, so `merge.md` applies to
-it. The yes to the earlier merge does not cover it, because that
+The records pull request is a merge like any other: name it and ask for a yes
+that names it. The yes to the earlier merge does not cover it, because that
 pull request did not exist when the person gave it. Where the host builds every
 change to `main`, merging it starts one more build of the same code and moves
 the rollback target. Say so in the line that asks for its yes, and offer to
@@ -408,12 +330,6 @@ above: evidence run, second-opinion, operational readiness, then go live one
 connection at a time. On a recipe, readiness and going live are the recipe's
 checks, as "On a recipe" says.
 
-On a tool that is `not hosted`, with no recipe named, readiness and going live
-give way to the release, inside the named areas as well as outside them. Give
-each area's caution or risk notice as below, then make one release as
-"Releasing a tool that is not hosted" says, with no readiness check and no
-go-live step of its own for any area.
-
 Inside a named area, take each area in turn:
 
 1. read its line in the build-path section: what touches it, its caution, and
@@ -433,8 +349,7 @@ Inside a named area, take each area in turn:
    reply, without a further question about that area. A lock whose only
    purpose is to wait for this caution opens with the acceptance, unless the
    person asks to keep it. Silence, a question, or a request for other work
-   is not carrying on, and nor is a form answer with nothing chosen: leave
-   that area where it is and ship everything
+   is not carrying on: leave that area where it is and ship everything
    outside it;
 5. only after the caution is done or accepted does that area get its own
    operational readiness check (including the request record and monitoring
@@ -471,9 +386,7 @@ then on: re-run the evidence for what changed since the last ship, and move
 that over. On a recipe, run its eight checks again, as above. "On a recipe"
 says how a warning the changelog already holds is given: as a one-line
 pointer, never again in full.
-On a tool that is not hosted, each later /ship is another release, made as
-"Releasing a tool that is not hosted" says. The hosting request recorded at the
-first launch still holds, and
+The hosting request recorded at the first launch still holds, and
 `references/hosting-request.md` says how to read it back. If reliance, data sensitivity, or consequence has
 grown since the build path was last checked, rerun the fit check before
 shipping further.
@@ -485,7 +398,5 @@ to a live address. Build and run it, and Build with care outside its named
 areas or in an area whose caution is done or accepted: the team can rely on
 the copy they use, each readiness item is in place or recorded as a warning,
 on a recipe each of the eight checks has its line, and the changelog
-says what went live, when, and under which build path. On a tool that is not
-hosted, the release was made on a yes naming it, or the reply says why it
-waits, and the changelog reads `Released <tag>`. Where a handover was
+says what went live, when, and under which build path. Where a handover was
 asked for, it is complete and says what it does not cover.

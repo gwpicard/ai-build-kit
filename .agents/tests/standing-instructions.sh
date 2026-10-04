@@ -108,7 +108,7 @@ PROJECT
   project user" (open question in masterplan.md).
 - Online repository: none yet; the pieces need one, set up with the founder's
   approval. GitHub command line tool: installed and signed in. Project check:
-  .github/workflows/checks.yml, job project-check.
+  `project-check` in `.github/workflows/checks.yml`.
 - Independent review: a subagent, or a clean separate session. Reach-check
   engine: none; the agent reads imports and callers directly.
 - Hooks: yes. SessionStart runs `.agents/hooks/session-start.sh`; command blocks

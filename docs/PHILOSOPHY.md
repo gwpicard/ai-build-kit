@@ -16,18 +16,13 @@ follow them.
 
 ## Who it is for
 
-The kit is for technical builders who direct agents. They build with an AI
-coding agent, want what it builds to still work six weeks later, and spend
-their time directing the work rather than typing it. Some are developers new to
-agent-led work, who find their usual discipline either too heavy for it or
-quietly skipped. Others came to software from another job: they run a team, a
-product, an operation or a dataset, and have learnt to get a working tool out
-of an agent. Both want the reliability of a real process without carrying it by
-hand.
-
-What they share is practice with the tools around the code. The kit assumes
-Git, branches and pull requests are familiar, so it uses those words without
-defining them. It assumes nothing about reading the code itself.
+Someone who already builds with an AI coding agent and wants what it builds to
+still work six weeks later. Two kinds of person reach for that. One is a
+developer new to agent-led work, who finds their usual discipline either too
+heavy for it or quietly skipped. The other came to software from another job.
+They run a team, a product, an operation or a dataset, and they now have some
+practice at directing an agent and getting a working tool out of it. Both want
+the reliability of a real process. Neither wants to carry the process by hand.
 
 The kit rests on one rule: the workflow never requires reading code. None of the
 nine commands asks anyone to open a file of code, and every check is something a
@@ -109,20 +104,6 @@ each part of the work that touches something sensitive, with the one caution
 that goes with it. Being told at the start what you would otherwise discover at
 launch is the most valuable thing here.
 
-## Records are written for agents first
-
-An agent reads a project's records far more often than a person does, and it
-builds from them with nobody watching. So each record, and each piece on the
-board, is written for the agent first: complete, exact, and laid out so a
-machine can build against it without guessing. A short header at the top says in
-plain words what the record holds, for the person who opens it.
-
-Public documents meant for people, such as the README, stay human-first. Their
-reader is deciding whether to use the kit, and no agent builds from them.
-
-The rule about code holds here too. The person reads the header and what the
-agent tells them, and never has to read the rest to know where things stand.
-
 ## Rigour follows the project
 
 The same workflow must not treat a private experiment and a business-critical
@@ -168,14 +149,11 @@ with it is not a control at all.
 
 Controls fall into three groups. Some are always required because they are cheap
 and prevent common harm: secrets stay out of code, destructive actions stop for
-approval, and promised behaviour is confirmed, by the agent's walk-through or by
-the person when they opt in to try it. The person's standing duty is the
-decision to merge and to go live, not a try of every piece.
-
-The second group is triggered by the path or the change: automated tests, pull
-requests, independent review, restored backups. The rest are the cautions a
-sensitive area carries, done before the area goes live or accepted on the
-record, and where a caution is a person, no session stands in for them.
+approval, and the user confirms promised behaviour. Some are triggered by the
+path or the change: automated tests, pull requests, independent review, restored
+backups. The rest are the cautions a sensitive area carries, done before the
+area goes live or accepted on the record, and where a caution is a person, no
+session stands in for them.
 
 ## What the person still has to learn
 
@@ -279,14 +257,12 @@ first list empty?
 `/queue`, the whole ready list at once, added as a ninth command. It failed
 question 1 under every existing command, which is the answer that mattered:
 `/what-now` was doing orientation and overview at once, and the cap that keeps
-orientation usable is what squeezed the overview out. The person sees the plan
-when they type it: the ready pieces in order, which can be built together
-because they share no area, what is waiting on what, and the command that runs
-the plan. The sentence is "it shows everything ready to build, in order, and
-how to run it". When the plan looks wrong they type it again, since it is
-printed from the issues and never edited. They never need to learn that a piece
-can depend on another piece. The loop example below says what running the plan
-does.
+orientation usable is what squeezed the overview out. The person sees two lists
+when they type it, what can be built together now and what is waiting on what.
+The sentence is "it shows everything ready to build at once, and what is waiting
+on what". When the list looks wrong they type it again, since it is printed from
+the issues and never edited. They never need to learn that a piece can depend on
+another piece.
 
 Specialised agent role systems, rejected. Fails question 1, because each role is
 a new thing to know, and question 3, because there is no one-sentence version.
@@ -295,20 +271,9 @@ Architecture decision records, rejected repeatedly. Fails question 2: the person
 never reads them, and even the repositories that ship them admit their agents
 barely use them.
 
-Separate worktrees for parallel pieces, added. It was once turned down because
-recovery meant git states the person should never have to untangle. A real
-project then ran parallel worktrees for weeks anyway, set up by hand each time,
-and they collided because nobody owned them. So the kit owns each worktree from
-start to finish.
-
-It fits under /implement, which opens one worktree for each piece in a run,
-named after the piece, and clears it away once its pull request has closed and
-nothing in it is unsaved. A single /implement outside a run works in the main
-folder as before. The person sees the piece's name on its branch and its pull
-request. The sentence is "each piece in a run is built in its own copy of the
-project, and the kit clears it away". When something goes wrong with a copy,
-such as one left behind, they type /maintain, which offers to remove it. They
-never need to track which copy holds which piece.
+Parallel agents on separate worktrees, rejected. Fails question 4, because when
+something goes wrong the recovery involves git states the person should never
+have to untangle.
 
 Tight bug reproduction before a fix, added. It fits under /fix; the user sees
 the exact failing case and the evidence that it stopped failing; they never
@@ -323,50 +288,23 @@ wrong thing, they say so and the question gets split. They never need to
 understand prototype branches or throwaway architecture.
 
 A piece written in two layers, added. It fits under /shape and /implement. The
-person sees a short header in plain words: what the piece is for, what done
-means, including the cases that are not the normal one, and what it changes in
-the masterplan. Below it the agent layer is complete: every choice they would
-notice by trying the tool, the data it stores, what leaves the tool, the rules
-it must still meet, what it relies on and what it touches. A field that does
-not apply says why in one line. The sentence is "you read the header; the agent
-reads the rest, and nothing you would notice is left for the build to decide".
-When it goes wrong, a session that did not shape the piece usually finds the
-gap before the piece turns ready, and /shape asks them about it; a gap found
-later goes back through /shape with the piece's number. They never need to read
-the agent layer, and nothing that affects their product is missing from it.
-
-A real project showed why the agent layer has to be complete. Its pieces were
-detailed and still missed whole categories: states nobody named, data and sync
-rules, things leaving the device. Its builder made 85 choices alone. A ready
-piece must carry enough to build without fresh research, which matters most
-when /implement runs a batch with nobody watching. Context that reaches past one
-piece is not duplicated onto it: a whole-product decision lives in the
-masterplan, a whole-codebase convention in AGENTS.md, so each concept keeps one
-home.
+person sees a plain surface that stays comprehensive about anything affecting the
+product, so a simple read is never a false one; the build detail sits in a
+collapsed "under the hood" section they never have to open. The sentence is "you
+read the plain part; the agent reads the rest". When it goes wrong, the surface
+missed something that changed a product decision, and /shape puts it back on the
+surface. They never need to read the build notes, but nothing that affects their
+product is hidden from them. This answers the question a workshop raised: a ready
+piece must carry enough to build without fresh research, which matters most when
+/implement runs a batch with nobody watching. Context that reaches past one piece
+is not duplicated onto it: a whole-product decision lives in the masterplan, a
+whole-codebase convention in AGENTS.md, so each concept keeps one home.
 
 Universal test-first, rejected. Every promised behaviour needs evidence, but
 the evidence may be an automated test, a manual visual check, a source-backed
-fact, or a rehearsed recovery depending on the claim. The other three are for
-the claims a machine cannot judge, not a way around one it could.
-
-Where a machine can judge the claim, a narrower rule applies: each machine check
-exists and fails on today's code before the code is written, in its own commit,
-and passes once the piece is built. A check that fails first proves it can see
-the change. Checks only a person can make are exempt, which is why the universal
-practice stays rejected.
-
-The loop, added: `/queue` plans and `/implement` runs. It fits under those two
-commands, so the count stays at nine. The person types /queue and sees the plan:
-the ready pieces in order, which can be built together because they share no
-area, and the command that runs them. They run that command, leave, and come
-back to one report: each piece, its pull request, its state, the choices
-flagged for them to confirm, and the order to merge.
-
-The sentence is "/queue shows what a run would do, and /implement does it".
-When a piece goes wrong three times, it is parked with the reason and the run
-moves on, and the person takes that piece to /fix or /shape. They never need to
-write down the rules of a run themselves, which is what the real project did
-four times before the kit held them.
+fact, or a rehearsed recovery depending on the claim. Where a machine can check
+the claim, that check comes first and must pass; the other three are for the
+claims a machine cannot judge, not a way around one it could.
 
 A wiki, rejected. Each file under `docs/` owns one concept and sits beside the
 source it describes. A wiki would carry the record away from the work it must
@@ -411,13 +349,5 @@ that now fails a question it used to pass has drifted, usually by accumulating
 explanation rather than by gaining features. That is the maintenance list, and
 MAINTAINING.md carries the same instruction so it has a place to actually happen.
 
-Growth has to replace work that was already happening without the kit; anything
-else should make the kit smaller. When a change does neither, something went
-in that should have been shaped differently or left out.
-
-The loop-first changes are growth of the first kind. A real project ran batch
-runs, parallel worktrees and merges for six weeks, and the agent improvised each
-one with the kit's rules left behind. The gate that decides which pieces a run
-may take was skipped twice. The kit's growth replaces improvisation that already
-happened, with its safety built in, so the rules travel with the work instead
-of depending on an agent remembering them.
+The kit should get smaller as often as it gets bigger. When it does not,
+something went in that should have been shaped differently or left out.

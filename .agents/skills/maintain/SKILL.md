@@ -85,11 +85,7 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    confirm the version in the
    installed `agent-plugin/plugin.json` and in that folder's
    `skills/maintain/VERSION`. Run the project's own check and record the kit
-   version in the changelog with the saved change. Once the update is
-   confirmed, rewrite the `kit` line in `.ai-build-kit-maintenance` with the new
-   version and the commit its tag points at, as `kit|<version>|<commit>`. Read
-   the commit the way the `setup-ai-build-kit` skill's step 7 does, and write
-   `unknown` where that lookup fails. The foundation created by
+   version in the changelog with the saved change. The foundation created by
    start, including AGENTS.md, README.md, project records, environment files,
    application code, and the project's check, stays project-owned. When this
    update is the one that first brings in `/shape` and `/implement`, run the
@@ -156,16 +152,7 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
     Where length alone triggers the offer, name that alone; never invent
     removable content to fill the example. Cut nothing without the person's
     yes. A no leaves the file intact and the visit carries on. If the file is
-    short and carries none of that content, say nothing. Where step 18 will
-    offer the move onto the index this visit, make that offer instead of the
-    trim, since the move does the trim's work.
-
-    On a project already on the index, the trim is a move, never a cut: on a
-    yes, each fact goes to its home as step 18's move sends it. Lasting
-    technical design goes to its `docs/<concept>.md`, history to a file in
-    `changes/`, product facts to the masterplan, and dates, issue numbers and
-    code names leave AGENTS.md. That is the fix the project check's red
-    message names.
+    short and carries none of that content, say nothing.
 14. Unless the project explores privately, run "Offering a move onto a
     recipe" below. When no recipe on the menu is close to the project's stack,
     it says nothing.
@@ -176,43 +163,16 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
     Never remove a branch. When no branch qualifies, say nothing.
 16. Run "Adding the rules that stop a push to `main`" below. It says nothing
     when the project already has them, or when the person said no to the same
-    rules before. Then run "Adding the confirmation box on merges that go
-    live" below. It says nothing unless every merge goes live and the rules
-    are missing, and nothing when the person said no to the same rules before.
-17. Run "Moving the pieces onto the states" below. It says nothing when the
-    project is already on them, or when the person said no to the same states
-    before.
-18. Run "Moving the instructions onto the index" below. It says nothing when
-    the project is already on the index, or when the person said no to the
-    move before.
-19. Run "Removing leftover worktrees" below. It says nothing when the project
-    has none.
-20. Run "Linking ignored build files into run worktrees" below. It says
-    nothing when the project already has the links, has nothing to link, or
-    said no to the same files before.
-21. Run "Recording the project's own check" below. It says nothing when no
-    placeholder sits beside CI of the project's own, or when the person said
-    no before and the workflow files have not changed since.
-22. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
+    rules before.
+17. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
     today's date on the `last-light-pass` line, written as YYYY-MM-DD. If that
     file is missing, create it with a `founded` line holding the date
-    masterplan.md was first saved, then the two pass lines. Where the file
-    has no `kit` line, or its version differs from this skill's `VERSION`
-    because the kit was updated some other way, write the line from this
-    skill's `VERSION` and its tag's commit, the same way step 5 does. A project
-    founded before the line existed gets it here. If the project has
+    masterplan.md was first saved, then the two pass lines. If the project has
     no `.agents/hooks/session-start.sh`, copy it from the installed
     setup-ai-build-kit skill's `templates/foundation/session-start.sh`, unless
     the person asked during this visit to leave kit updates alone. That script
     comes from the kit, and it changes what the project does later. Read what
-    they asked, not a fixed phrase. Where the project has the script and it
-    differs from that template, the project kept an older copy, since an update
-    never reaches it. Say in one line: "A newer reminder script counts the work
-    landed since the last visit as well as the days. Shall I replace yours?"
-    Add that replacing it also drops any change made to the project's copy by
-    hand. Replace it only on a yes, and make no offer when the person asked for
-    no kit updates. A no changes nothing, and the next visit makes the same
-    one-line offer again. Then say one sentence: "I have recorded
+    they asked, not a fixed phrase. Then say one sentence: "I have recorded
     today's visit, so a session will not remind you again until the next one is
     due." Where you skipped the script, say instead: "I have recorded today's
     visit. I left out the script that reminds a session when a visit is due,
@@ -251,29 +211,22 @@ helper, copy the installed skill's `templates/foundation/plan-refresh.sh` to
 Founding copies the kit's Claude Code settings into `.claude/settings.json`
 once, and no update touches that file again. A project founded before the kit
 learned a new way to write a push to `main` keeps the older rules, and a push
-the older rules miss goes through with nothing to stop it. The same holds for
-the rules that refuse deleting a folder with everything in it and clearing
-Git's recovery history. So the visit offers the missing rules, once.
+the older rules miss goes through with nothing to stop it. So the visit offers
+the missing rules, once.
 
 1. Where the project has no `.claude/settings.json`, this step ends. Otherwise
    read its `permissions.deny` list, and the one in the installed
    setup-ai-build-kit skill's `templates/foundation/claude-settings.json`.
    Take the rules from that file, never from memory.
-2. List each rule the template holds that the project's list lacks, and that
-   names both `git push` and `main`, or `rm` with a recursive option, or
-   `git reflog expire`, or `git gc` with `--prune`. Leave out every other
-   rule, such as the force-push ones, since the person may have removed one on
-   purpose. When there is none, say nothing.
+2. List each rule the template holds that names both `git push` and `main`,
+   and the project's list lacks. Leave out every other rule, such as the
+   force-push ones, since the person may have removed one on purpose. When there is none, say nothing.
 3. Read the `push-rules-declined` line in `.ai-build-kit-maintenance`, if there
    is one. Where it already lists every missing rule, the earlier no stands,
-   and you say nothing. Otherwise offer only the missing rules that line does
-   not list. A line written before the delete rules lists none of them, so the
-   offer comes back once for those.
+   and you say nothing.
 4. Offer the change once, in one reply. Name the rules it adds, and say in
    plain words what they stop: a push to `main` written with an option before
-   the remote, such as `-q`, or as `HEAD:refs/heads/main`; deleting a folder
-   with everything in it, in the common spellings; and clearing the history Git
-   uses to recover lost work. Say that it adds
+   the remote, such as `-q`, or as `HEAD:refs/heads/main`. Say that it adds
    lines to the deny list and changes nothing else in the file. Say too that
    the `setup-ai-build-kit` skill's `references/blocked-commands.md` lists the
    spellings the rules still cannot catch. Ask for a yes.
@@ -283,249 +236,9 @@ Git's recovery history. So the visit offers the missing rules, once.
    visit's other changes and add a dated changelog line.
 6. On a no, change nothing. Record the no as one line in
    `.ai-build-kit-maintenance`, replacing any earlier one:
-   `push-rules-declined|<YYYY-MM-DD>|<every rule declined, this time and before, separated by " ; ">`.
+   `push-rules-declined|<YYYY-MM-DD>|<the rules offered, separated by " ; ">`.
    A later visit offers again only when a new release adds a rule that line
    does not list.
-
-## Adding the confirmation box on merges that go live
-
-Founding, the merge step and `/ship` set Claude Code's confirmation box when
-they record that every merge goes live. A project that recorded that line
-before the kit did so has the line and not the box, and a merge there goes
-live with nothing mechanical in the way. So the visit offers the rules, once.
-
-1. Where the project has no `.claude/settings.json`, or the masterplan's
-   `Goes live:` line does not say `on every merge`, this step ends.
-2. Read the rules in the installed setup-ai-build-kit skill's
-   `templates/merge-ask-rules.json`, never from memory, and list each one the
-   project's `permissions.ask` list lacks. Where it lacks none, say nothing.
-3. Read the `merge-ask-declined` line in `.ai-build-kit-maintenance`, if there
-   is one. Where that line names every missing rule, the person's no stands,
-   and you say nothing.
-4. Offer them once, in one reply. Name the rules, and say in plain words what
-   they do: Claude Code shows a confirmation box before each merge, because
-   every merge puts the tool live. Say that it adds lines to the ask list,
-   leaves the rest of the file as it was, and works on Claude Code only. Wait
-   for a yes.
-5. On a yes, run
-   `python3 <installed setup-ai-build-kit skill>/scripts/merge-ask-rules.py add .claude/settings.json`
-   from the project root. Where it exits 1, the file is not valid JSON: say
-   so, name the file, and change nothing. Save the change with the visit's
-   other changes and add a dated changelog line.
-6. On a no, leave the file as it is. Record the no as one line in
-   `.ai-build-kit-maintenance`, replacing any earlier one:
-   `merge-ask-declined|<YYYY-MM-DD>|<the rules offered, separated by " ; ">`.
-   A later visit offers again only when the template holds a rule that line
-   does not list.
-
-## Moving the pieces onto the states
-
-A project founded before the six states in the `setup-ai-build-kit` skill's
-`references/pieces.md` keeps its pieces labelled the old way: `ready`,
-`building`, a `needs-` label, `blocked`, or nothing. No board can be drawn from
-that, and an update refreshes the skills and never the issues. So the visit
-offers the move, once. It changes labels, so do it only after the clean
-checkpoint from step 2.
-
-1. Read the repository's labels with `gh label list`, and the open issues with
-   their labels. Where all six state labels exist, no open issue carries
-   `blocked`, and no open piece carries a `needs-` label without `shaping`, the
-   project is already on the states: say nothing, and this step ends. The
-   labels alone do not settle it, because a command creates a missing state
-   label the first time it needs one, so an older project soon has all six
-   while its pieces still carry the old form. That is also what a second visit
-   finds after a yes, so it changes nothing.
-2. Read the `states-declined` line in `.ai-build-kit-maintenance`, if there is
-   one. Where it lists the same six states pieces.md lists today, the earlier
-   no stands. Say nothing, and this step ends.
-3. Work out the move before saying anything. It reaches open issues only:
-   - an open piece with a `needs-` label and no `shaping` gains `shaping`;
-   - an open piece with no state label gains `idea`, except a piece made of
-     parts, which carries no state of its own;
-   - a `blocked` piece with a blocked-by link and no written reason was using
-     the old label as a hint that another piece comes first. That is a link,
-     never a state, so it loses `blocked` and keeps `ready`, or gains it where
-     it has a `## Done when` and no question, and `idea` otherwise;
-   - any other `blocked` piece becomes `parked`, losing `blocked` and any
-     `ready` or `building` beside it, with its reason kept. Where no reason is
-     written, add one line: "Labelled blocked before the piece states; reason
-     not recorded.";
-   - each of the six state labels that does not exist yet is created.
-
-   Closed issues are left alone, and a closed `parked` idea above all, since
-   that label is what keeps it out.
-4. Offer it once, in one reply. Say how many pieces each change reaches and
-   which labels it creates. Say that it changes labels, and adds nothing to a
-   piece except that one missing reason. Then wait for the answer.
-5. On a yes, create the missing labels with `gh label create`, then make each
-   change with one command that takes the old label off as it puts the new one
-   on. Refresh the printout and check that Needs attention names none of the
-   pieces moved. Save with the visit's other changes and add a dated changelog
-   line.
-6. Where the person says no, leave every label as it is. Record the no as one
-   line in `.ai-build-kit-maintenance`, replacing any earlier one:
-   `states-declined|<YYYY-MM-DD>|idea,shaping,ready,building,to check,parked`.
-   A later visit offers again only when a release changes the states, so that
-   the list in pieces.md no longer matches the line.
-
-Where GitHub cannot be reached, say that this step did not run.
-
-## Moving the instructions onto the index
-
-A project founded before its AGENTS.md became an index keeps one long file,
-often with architecture, history, dates and issue numbers in it, and its copied
-project check has no step that counts the file. An update refreshes the skills
-and never those two files. So the visit offers the move, once. It rewrites
-records, so do it only after the clean checkpoint from step 2.
-
-1. Where the project's AGENTS.md has a `## Standing rules` section and the job
-   the capability profile's `Project check:` line records
-   (`.github/workflows/checks.yml`, job `project-check`, where that line names
-   no file) has the `Check the AGENTS.md ceiling` step, the project is already
-   on the index: say nothing, and this step ends. A second visit after a yes
-   finds both and says nothing. Where that line ends `; kit steps not added`,
-   the person turned the kit's steps down: the section alone puts the project
-   on the index, and the move adds no step.
-2. Read `.ai-build-kit-maintenance`. Where there is an `index-declined` line,
-   and the section headings it lists are the ones the installed template has
-   today, the earlier no stands: say nothing, and this step ends.
-3. Work out the move before saying anything, from the installed
-   `setup-ai-build-kit` skill's `templates/foundation/AGENTS.md`:
-   - under `## Standing rules`, the kit's rules take the template's wording,
-     and the project's own rules follow them word for word;
-   - each other section takes the template's shape, short, and names the file
-     that owns its topic;
-   - lasting technical design moves into `docs/<concept>.md`, one concept to a
-     file, under the headings What it is, How it works, Rules, and Where it
-     lives, each file listed with what it owns in `docs/README.md`, and the
-     technical design section pointing at that list;
-   - history moves into the changelog, and product facts into the masterplan;
-   - dates, issue numbers and code names leave AGENTS.md;
-   - the ceiling step comes with the move: copy the step named
-     `Check the AGENTS.md ceiling` from the installed skill's
-     `templates/foundation/checks.yml` into the recorded job, beside its own
-     steps.
-
-   Every fact that leaves AGENTS.md lands in its home. Nothing is deleted, and
-   nothing goes into a new catch-all document.
-4. Offer the move onto the index once, in one reply. Say how many lines
-   AGENTS.md has now and would have, which concept files it creates, and that
-   the check gains a step that goes red above 200 lines. Where AGENTS.md is
-   already above 200 lines, say that the step alone would turn the check red,
-   which is why the two come together. Then wait for the answer.
-5. On a yes, make the move and add the ceiling step, then count AGENTS.md
-   again and check that it is at or under 200 lines and that every file it
-   points at exists. Where it is still above 200 lines, name the sections that
-   remain large and offer the trim from step 13 for them, in one line. Save
-   with the visit's other changes and add a dated changelog line.
-6. Where the person says no, change nothing. Record the no as one line in
-   `.ai-build-kit-maintenance`, replacing any earlier one:
-   `index-declined|<YYYY-MM-DD>|<the template's section headings, separated by " ; ">`.
-   The offer does not come back until a release changes those headings, and
-   then it comes back once. The trim offer in step 13 still runs on every
-   visit.
-
-## Removing leftover worktrees
-
-A run on Claude Code builds each piece in a worktree under
-`.agents/worktrees/`, and clears it away once its pull request has closed, as
-the `implement` skill's `references/running-longer.md` says. A worktree can
-still be left over, such as when a session died before the next run or
-`/sync`. A leftover worktree also keeps its branch out of the old-branches
-list in step 15, since git will not remove a branch that is checked out.
-
-1. Run `sh <installed implement skill>/scripts/worktree.sh leftovers` from the
-   project root. It lists each worktree under `.agents/worktrees/` whose pull
-   request has merged or closed, or that never had one, or that is on no
-   branch, and that no unfinished run is still building. It changes nothing.
-   It leaves alone every worktree another tool made, wherever it sits, and
-   never lists one. When it lists none, say nothing.
-2. Name each one in plain words: the piece, what happened to its pull request,
-   and whether it holds unsaved work. Offer to remove the ones that hold none,
-   each by name, in one reply.
-3. On a yes to a worktree, remove it with `worktree.sh remove <path>`. It uses
-   `git worktree remove` and never forces it, and it checks again that nothing
-   in the worktree is unsaved and no pull request from it is open. It removes
-   the worktree's link to `.env`, never the main `.env`.
-4. Never remove a worktree that holds unsaved work. Keep it, and say what is
-   unsaved: the uncommitted changes, or the commits only this computer
-   holds.
-5. Where it names a worktree whose folder is already gone while git still
-   lists it, offer to run `git worktree prune`, which clears only that record.
-   Run it on a yes.
-6. Never remove a branch here. Removing a worktree leaves its branch, and
-   step 15 lists that branch at the next visit once its work is in the default
-   branch.
-
-## Linking ignored build files into run worktrees
-
-A run builds each piece in a worktree, which has only what git tracks plus the
-links the kit makes. A project whose build needs a file git ignores, such as a
-licensed font, has every piece in a run fail for want of it. Founding now asks
-which such files a build needs and writes a `worktree-links` line. A project
-founded before that has no line, so the visit offers it, once.
-
-1. Where `.ai-build-kit-maintenance` already has a `worktree-links` line, say
-   nothing, and this step ends.
-2. From the project root, run `sh <installed implement skill>/scripts/worktree.sh candidates`.
-   It lists the ignored files and folders at the top two levels, leaving out
-   dependency and build folders, every `.env` file, `.agents/`, `.claude/`,
-   system files such as `.DS_Store`, and any folder on a `confidential` line. Leave out the folder AGENTS.md records as
-   confidential as well. Where nothing is left, say nothing, and this step
-   ends.
-3. Where every path it lists is already on a `worktree-links-declined` line,
-   the earlier no stands: say nothing, and this step ends.
-4. In one reply, name the paths and ask once which of them a build or a
-   walk-through needs, with your best guess attached: a font, a sample input,
-   or an asset folder the build reads. Say that each is linked into a run's
-   worktrees and never copied.
-5. On a yes, write the paths the person confirms as
-   `worktree-links|<path> ; <path>`. Where AGENTS.md records a confidential
-   folder and the file has no `confidential` line for it, write the
-   `confidential|<folder>` line too. Save with the visit's other changes and
-   add a dated changelog line.
-6. Where the person says no, link nothing. Record the no as one line,
-   replacing any earlier one:
-   `worktree-links-declined|<YYYY-MM-DD>|<the paths offered, separated by " ; ">`.
-   A later visit offers again only when a new ignored path appears that the
-   line does not list.
-
-## Recording the project's own check
-
-A project founded before founding recorded the project check may have been
-given the kit's placeholder `checks.yml` beside CI of its own that already
-runs its tests. Every pull request then shows a red check beside a working
-one. The visit offers to put that right, once.
-
-1. Where `.github/workflows/checks.yml` no longer holds the kit's placeholder
-   `Install and test` step, say nothing, and this step ends. Do the same
-   where no other workflow in `.github/workflows/` runs on `pull_request` with
-   a `run:` line containing `test`. A `Project check:` line that names
-   `checks.yml`, or no file, is no reason to stop: an older founding wrote
-   that form beside CI of the project's own. Where the line already names
-   that other workflow, the record is done, and the offer below is only the
-   removal of the placeholder.
-2. Read the `project-check-declined` line in `.ai-build-kit-maintenance`, if
-   there is one. Where no commit dated after that line's date has changed
-   `.github/workflows/`, the earlier no stands: say nothing, and this step
-   ends.
-3. Choose the job as the installed `setup-ai-build-kit` skill's
-   `references/project-check.md` says. In one reply, offer three changes,
-   each taken only on its own yes: record that workflow and job as the
-   project check; remove the placeholder `checks.yml`, which turns red on
-   every pull request and checks nothing; and add the kit's steps to that
-   job, saying that this changes the project's own automation and what each
-   step turns red on. Leave the third out on a Windows runner, as that file
-   says. The other two are asked only alongside the record, and happen only
-   after a yes to it.
-4. On a yes to the record, write the `Project check:` line, ending
-   `; kit steps not added` where the steps were not added. Add the steps to
-   the end of the job's steps and change nothing else in the file. Save with
-   the visit's other changes and add a dated changelog line.
-5. Where the person says no to the record, change nothing. Record the no as
-   one line in `.ai-build-kit-maintenance`, replacing any earlier one:
-   `project-check-declined|<YYYY-MM-DD>|<file>`. A later visit offers again
-   only when the workflow files change.
 
 ## Migrating a project founded before /shape and /implement
 
@@ -566,7 +279,7 @@ GitHub setup first if it is not ready (the `setup-ai-build-kit` skill's
 `references/manual-setup.md`), open one issue per row in the shape the
 `setup-ai-build-kit` skill's `references/pieces.md` describes, carry each
 row's subjects across as labels, label a shaped row `ready`, and label an
-unshaped one `shaping` with the question it still waits on. Do this on the clean
+unshaped one with the question it still waits on. Do this on the clean
 checkpoint, name what moved, and only then remove `plan.md`. Record the move
 in the changelog as a dated line.
 
@@ -634,11 +347,7 @@ person saved is affected. Two housekeeping steps keep the installation tidy:
    neither exists, the update removed the old skill without adding the new
    one: run the add command from the monthly step, then read the skill folder
    back and carry on only once `setup-ai-build-kit` is there. Where only
-   `setup-ai-build-kit` exists, there is nothing to do. On a yes, remove a
-   tracked `start` folder with `git rm -r <folder>`, which the saved history
-   can undo and no deny rule refuses. Where the `start` folder is untracked,
-   give the person the command to run, with the folder's path, since a
-   recursive delete is refused.
+   `setup-ai-build-kit` exists, there is nothing to do.
 
 2. Point the founding command forward. Rewrite the command list in the
    project's AGENTS.md as "Bringing the project's instructions up to the
@@ -668,9 +377,7 @@ the new name is said out loud rather than only tidied away in the files:
    the update removed the old skill without adding the new one: run the add
    command from the monthly step, then read the skill folder back and carry on
    only once `shape` is there. Where only `shape` exists, there is nothing to
-   do. On a yes, remove a tracked `plan` folder with `git rm -r <folder>`, as
-   for `start` above. Where the `plan` folder is untracked, give the person the
-   command to run, with the folder's path.
+   do.
 
 2. Point the command forward. Rewrite the command list in the project's
    AGENTS.md as "Bringing the project's instructions up to the current names"
@@ -783,11 +490,8 @@ is a step here rather than advice:
    own and is left alone.
 3. Show the list and say what removing it does: each command appears once,
    and the renamed command goes. Remove on approval, and remove the empty
-   folders too. Remove a tracked leftover with `git rm -r <path>`, and the
-   removal is part of the visit's saved change. An untracked file goes with a
-   plain `rm`. An untracked leftover folder goes to the person as the command
-   to run, with its path, since a recursive delete is refused. So does a
-   tracked folder that untracked files keep in place after `git rm -r`.
+   folders too. Where the files are tracked, the removal is part of the
+   visit's saved change.
 4. Record a changelog line saying what was removed and why.
 
 ## Offering a move onto a recipe

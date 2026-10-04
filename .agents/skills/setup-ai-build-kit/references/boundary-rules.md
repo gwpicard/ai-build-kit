@@ -66,11 +66,9 @@ stop in a file name is written `[.]`.
 
 ## Wiring
 
-Put the check command in its own step named `Boundary rules`, in the job the
-capability profile's `Project check:` line records
-(`.github/workflows/checks.yml`, job `project-check`, where that line names no
-file), after the type check and lint steps from `check-floor.md`, so a red tick
-says which one failed. Name the same command in AGENTS.md's stack section. Before saving, run
+Put the check command in its own step named `Boundary rules`, after the type
+check and lint steps from `check-floor.md`, so a red tick says which one
+failed. Name the same command in AGENTS.md's stack section. Before saving, run
 it once on the project as it stands. It has to pass. A rule that is red on the
 day it is added is a rule about work nobody asked for, so say what already
 crosses the boundary and let the person decide whether to fix that first or

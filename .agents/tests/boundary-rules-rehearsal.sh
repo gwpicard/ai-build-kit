@@ -117,7 +117,6 @@ const workflow = fs.readFileSync(path.join(foundation, 'checks.yml'), 'utf8')
   ].join('\n'));
 put('.github/workflows/checks.yml', workflow);
 put('.agents/hooks/check-sensitive-areas.sh', fs.readFileSync(path.join(foundation, 'check-sensitive-areas.sh'), 'utf8'));
-put('AGENTS.md', fs.readFileSync(path.join(foundation, 'AGENTS.md'), 'utf8'));
 
 // --- running the check the way the hosted runner would ----------------------
 

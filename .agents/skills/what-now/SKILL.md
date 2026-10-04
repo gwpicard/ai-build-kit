@@ -10,8 +10,8 @@ You are the safety net under the other six commands. Someone who forgets everyth
 ## Read
 
 masterplan.md (build-path section first), the project's pieces, the recent
-changelog and `changes/`, the capability profile in AGENTS.md, git status, the recent commits
-and merged pull requests, any open pull requests, and a run's state file in `.agents/runs/` of the main folder, the first worktree git lists.
+changelog, the capability profile in AGENTS.md, git status, the recent commits
+and merged pull requests, and any open pull requests.
 
 Refresh the printout with `sh .agents/tools/plan-refresh.sh` and read
 `plan.local.md`. Where the project has no copy of the helper,
@@ -24,24 +24,10 @@ merge click (an open pull request says), whether any check is failing,
 whether an earlier review left an unresolved finding, whether flagged work is
 still waiting, what the build-path section's `Accepted:` lines say the project
 has knowingly given up, whether a manual setup step was left mid-way, whether Git
-shows a merge or rebase conflict, whether a check-up is overdue, and whether
-anything on the build path's recheck-when list has happened.
-
-For the check-up, run `.agents/hooks/session-start.sh` with no options, its plain
-mode, and take its answer, so what you say and what a session heard when it
-opened always agree. It counts both the days and the changes landed since the
-last visit, and prints nothing when neither is due. Only where the project has no
-such script, take it from `.ai-build-kit-maintenance` when that file exists and
-from the changelog dates when it does not.
-
-Read which AI Build Kit release the project holds from the installed `maintain`
-skill's `VERSION` file, or from `.ai-build-kit-version` at the project root where
-that file is missing. Those are what the project's files are, so read them even
-where the `kit` line in `.ai-build-kit-maintenance` names another version. Then
-ask for the latest published release with
-`gh api repos/gwpicard/ai-build-kit/releases/latest --jq .tag_name`. Ask that
-endpoint and no other, the one `/maintain` asks, because it never answers with a
-draft or a prerelease.
+shows a merge or rebase conflict, whether a check-up is overdue, taken from
+`.ai-build-kit-maintenance` when that file exists and from the changelog dates
+when it does not, and whether anything on the build path's recheck-when list has
+happened.
 
 ## Say
 
@@ -65,12 +51,6 @@ themselves. An open review finding still waiting, and a setup step left
 half-done, are named in the same place. None of the three is left sitting under a
 "nothing is blocked"; each has its own recovery route below.
 
-A piece being built or waiting for the person's check that was never shaped, or
-never had its readiness check, is named in the same place, once, with what it is
-missing. The printout lists it under Needs attention. Say it in the piece's own
-words: "the late fees piece is being built, but nobody ever wrote down what done
-looks like for it". Name it before it is merged rather than after.
-
 Say how many entries are still notes rather than pieces, when any are, in the
 words a person would use: "two things on the list are still just notes, so I
 will ask you about them before building them". The printout marks them. Knowing
@@ -90,36 +70,16 @@ building, and give the reason in the counts themselves: one piece ready and four
 nobody can build yet. Where the ready pieces outnumber the waiting ones, say
 nothing about it and let the usual advice stand.
 
-A piece under `To check` is the person's own: it is built, and its pull request
-is waiting for them to try it or merge it. Name it apart from the agent's work,
-in the piece's own words: "the overdue list is built and waiting for you to try
-it and merge it". Nothing moves it on except the person, so a piece left there
-unnamed waits for good.
-
-An unfinished run is named next, after anything broken or failing: a run whose
-state file still shows a piece waiting or being built. Say how far it got and
-what is left, in piece names, and offer to resume it. Its recovery route is
-below.
-
 A piece waiting on the person is named apart from the rest, as their own thing
 to do rather than something the agent is working through: "nothing can happen on
 the payment piece until somebody opens the card account, and it takes about ten
 minutes". Say what the step is and where it happens, in the piece's own words,
 because a step nobody names is a step nobody does.
 
-Where the release the project holds and the published one differ, say so in one
-line, close to: "This project holds v0.20.0, and v0.21.0 is published. /maintain
-updates it." Where they match, or the call fails, say nothing about the version.
-A version that matches is not news, and a failed call is no reason to say
-anything either way. The version line is not one of the three things named
-below.
-
 Say piece names, never issue numbers. Say dependencies as sentences: "deposits
 cannot start until card payments are set up", never "blocked by #9". Name at
 most three things; if more apply, say how many and name the nearest. More than
-three stops being orientation and becomes a report. When the person asks what
-else can be worked on, still name at most three, and offer /queue for the rest:
-it prints the plan a run would follow and ends on the command that runs it. Match where the project is in its life. Still building toward the first launch: the answer is usually /implement for the next ready piece, /shape to shape a new one, or /ship when the plan has run dry. Live and running: the answer is usually "say what you want to /shape", /fix for the thing that broke, or the /maintain that the check-up reminder shows is due.
+three stops being orientation and becomes a report. Match where the project is in its life. Still building toward the first launch: the answer is usually /implement for the next ready piece, /shape to shape a new one, or /ship when the plan has run dry. Live and running: the answer is usually "say what you want to /shape", /fix for the thing that broke, or the /maintain that the recorded check-up dates show is overdue.
 
 End with a short recap of where the tool has got to, in the words a person would
 use. Say what the last stretch of work was about, and whether anything is on the
@@ -138,15 +98,6 @@ Explain what it appears to belong to, then offer a choice: continue it, save
 it as a checkpoint, or clear it after showing exactly what would be lost.
 Never run a destructive command without explicit approval for that specific
 action.
-
-### An unfinished run
-
-A run of several pieces stopped part-way, usually because its session ended.
-Name the pieces it finished, the one it was building and the ones still
-waiting, read from the state file rather than remembered. Offer to resume it
-with `/implement queue`, which carries on from where the state file says it
-stopped, the piece it was building from its last commit. Change nothing
-yourself.
 
 ### Merge or rebase conflict
 

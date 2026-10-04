@@ -27,18 +27,6 @@ procedure. Nobody
 can misfile work by picking the wrong command; catching that is this step's
 whole job.
 
-Only once the repair is confirmed as promised behaviour, and where it has an
-issue, claim it before step 1, the way section-builder's step 1 claims a piece:
-add `building` and take off whatever state it carried, in one step,
-`gh issue edit <number> --add-label building --remove-label <its state>`,
-creating the label first if the project lacks it. Where the issue carries no
-state label, add `building` alone. Where GitHub cannot be reached, say so and do
-not start on it, since a repair nobody could claim may be claimed by somebody
-else. Where a claim was made and the request then turns out to belong to
-`/shape`, move it back to the state it had in one step, so nothing is left in
-`building` that nobody is building. The save then moves it on as
-section-builder's step 8 says.
-
 ## 1. Define the symptom
 
 Record the exact steps that trigger it, the expected result, the actual
@@ -57,8 +45,7 @@ Secrets and Confidential files rules still apply to anything read or reported.
 A step that needs a secret reads where it lives from the masterplan first, as
 the Secrets rule says, and asks once when that is unknown.
 
-Before ranking causes, read `CHANGELOG.md` and closed pieces for the same area,
-with the entries in `changes/` not yet folded into it.
+Before ranking causes, read `CHANGELOG.md` and closed pieces for the same area.
 A repair already tried and failed is ruled out or named as a repeat; a cause
 already established ranks first. When that history changes the ranking, say one
 line: "This was tried on <date> and did not hold, so it is ruled out." The
@@ -114,15 +101,6 @@ it pass, then rerun the original, unminimised case. When no credible
 automated boundary exists, record that as a maintainability finding and use
 the strongest manual or operational evidence available instead.
 
-The checks-first and test rules in section-builder's step 4 apply to a repair
-too. Commit the failing regression check on its own before the fix, so the saved
-history shows it catching the fault first. An existing test changes only where
-the repair's issue names it under `Under the hood`, with the reason. Any other
-test that stands in the way is reported as wrong, never weakened, skipped or
-deleted, and section-builder's test guard runs before the repair is saved, with
-the repair's issue as the piece. A repair with no issue yet gives the guard the
-repair's report saved as the piece text, which names no test.
-
 On Build with care, where a runner exists for the project's language, offer
 to check the regression test by breaking the repaired code on purpose. Follow
 the `section-builder` skill's `references/test-strength.md` for this optional
@@ -136,12 +114,11 @@ Name every temporary log and harness added during the repair, remove each one,
 then run the regression evidence without them. On Build and run it and Build
 with care, run the trim in the `section-builder` skill's `references/trim.md`
 on the repair, so the repair keeps only what the fix needed. Confirm the
-original symptom is gone, write the cause in plain language into the repair's
-file in `changes/`, as section-builder's step 9 describes, update the other
-records, and use section-builder's save and review route for the change itself.
-The repair's pull request merges only as the `section-builder` skill's
-`references/merge.md` says, like any other. The report says which temporary
-items were removed and that the evidence still passed.
+original symptom is gone, record the cause in the changelog in plain language,
+update the other records, and use section-builder's save and review route for
+the change itself.
+The report says which temporary items were removed and that the evidence still
+passed.
 
 Where the repair had an issue, take the `broken` label off once the symptom is
 gone. A repair that stays labelled broken keeps reporting a fault that no longer
@@ -219,12 +196,6 @@ none of them is a reason the fault is now understood. Asking for one more go
 after hearing the notice is the person carrying on, which is theirs to choose:
 record the acceptance as below, then make the attempt.
 
-Where the person does not carry on, move the repair's piece from `building` to
-`parked` in one step,
-`gh issue edit <number> --add-label parked --remove-label building`, with one
-line on what the three attempts revealed and the route you chose. `broken` stays
-on it, because the fault is still there.
-
 ### Before the next attempt
 
 Another patch after three, or rebuilding the failing area yourself, is the same
@@ -242,17 +213,11 @@ four in order. Do not start the work until all four are behind you.
 3. **Take carrying on as the acceptance.** Any instruction to go on with the
    work after the notice counts: "just rebuild it", "try it anyway", "patch it
    again". Silence does not, and neither does a question or an instruction
-   given before the notice, or a form or menu answer with no option selected.
-   Somebody who described the risk before you named it has still not been told
-   by you, so name it yourself.
+   given before the notice. Somebody who described the risk before you named it
+   has still not been told by you, so name it yourself.
 4. **Record the acceptance, then build.** The `Accepted:` line goes into the
    masterplan's build-path section before the replacement starts, with the date
-   and the person's own words. Those are quoted exactly as typed, in quotation
-   marks, and the line names only people the person named and says so when the
-   answer was a selected option. Correct every masterplan sentence the
-   acceptance makes untrue in the same save, such as one saying the area is
-   still waiting for the caution, and name those sentences in one line.
-   fit-check.md has the rest of these rules.
+   and the person's own words.
 
 The order carries this. An acceptance collected once the replacement exists is
 not an acceptance, it is a note about something that already happened.

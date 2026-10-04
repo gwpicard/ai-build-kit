@@ -1,15 +1,13 @@
 #!/usr/bin/env sh
 # older-project-upkeep.sh: guard what the monthly visit brings to an older project.
 #
-# Four things an update never reaches, because it refreshes skills and nothing
+# Three things an update never reaches, because it refreshes skills and nothing
 # else. A plan.md left from before pieces became issues, which used to be
 # offered only on the one visit that first brought in /shape and /implement,
 # so a project that missed it kept the file for good. Pointers in AGENTS.md and
 # the masterplan that name a skill's file by a folder a Claude-Code-only or
 # plugin install does not have. And the reminder script, which a visit copied
-# in even after the person asked for no kit updates. And the labels on the
-# project's issues, which a project founded before the piece states still
-# carries in the old form.
+# in even after the person asked for no kit updates.
 #
 # The pointer rewrite runs a shipped script, so its half of this check runs it:
 # an old project is offered the rewrite and a current one gets nothing, and a
@@ -57,70 +55,10 @@ rs_rule "the request is read, not matched" 'read what they asked, not a fixed ph
 rs_rule "a skipped hook is said in one sentence" 'i left out the script that reminds a session when a visit is due, since you asked for no kit updates'
 rs_rule "the visit is still said to be recorded" 'where you skipped the script, say instead: "i have recorded today.s visit\.'
 
-# The move onto the piece states. An update refreshes skills and never the
-# issues, so a project founded before the states keeps labels no board can be
-# drawn from until a visit moves them. The offer is made once, applied only on
-# a yes, and a second visit finds nothing to move, so it says nothing.
-rs_rule "the monthly step runs the move" 'run "moving the pieces onto the states" below'
-rs_rule "a project already on the states hears nothing" \
-  'the project is already on the states: say nothing'
-rs_rule "a second visit after a yes changes nothing" \
-  'that is also what a second visit finds after a yes, so it changes nothing'
-rs_rule "an earlier no to the same states stands" \
-  'where it lists the same six states pieces\.md lists today, the earlier no stands'
-rs_rule "a waiting piece gains shaping" \
-  'an open piece with a `needs-` label and no `shaping` gains `shaping`'
-rs_rule "a piece with no state gains idea" 'an open piece with no state label gains `idea`'
-rs_rule "the check also looks at the pieces, not only the labels" \
-  'no open piece carries a `needs-` label without `shaping`, the project is already on the states'
-rs_rule "because the labels alone do not settle it" 'the labels alone do not settle it'
-rs_rule "a piece made of parts gains no state" \
-  'except a piece made of parts, which carries no state of its own'
-rs_rule "blocked used as a dependency hint loses the label and stays buildable" \
-  'a `blocked` piece with a blocked-by link and no written reason was using the old label as a hint'
-rs_rule "that piece keeps or gains ready" 'so it loses `blocked` and keeps `ready`, or gains it'
-rs_rule "any other blocked becomes parked with its reason" \
-  'any other `blocked` piece becomes `parked`, losing `blocked` and any `ready` or `building` beside it, with its reason kept'
-rs_rule "a missing reason is written as not recorded" \
-  'labelled blocked before the piece states; reason not recorded'
-rs_rule "closed issues, a parked idea above all, are left alone" \
-  'closed issues are left alone, and a closed `parked` idea above all'
-rs_rule "the offer says what it reaches" 'say how many pieces each change reaches'
-rs_rule "nothing changes without a yes" 'on a yes, create the missing labels with `gh label create`'
-rs_rule "a no is recorded with the states offered" \
-  'states-declined\|<yyyy-mm-dd>\|idea,shaping,ready,building,to check,parked'
-rs_rule "the offer returns only when the states change" \
-  'offers again only when a release changes the states'
-
-# The move onto the index. An update refreshes skills and never the project's
-# AGENTS.md or its copied check, so a project founded before the index keeps a
-# long file and a check with no ceiling. The move is offered once, comes with
-# the ceiling step, loses no fact, and a second visit finds nothing to do.
-rs_rule "the monthly step runs the index move" 'run "moving the instructions onto the index" below'
-rs_rule "a project on the index hears nothing" 'the project is already on the index: say nothing'
-rs_rule "a second visit after a yes finds the move done" 'a second visit after a yes finds both and says nothing'
-rs_rule "the move reads the installed template" 'from the installed `setup-ai-build-kit` skill.s `templates/foundation/agents\.md`'
-rs_rule "no fact is lost in the move" 'every fact that leaves agents\.md lands in its home'
-rs_rule "design moves to concept files" 'lasting technical design moves into `docs/<concept>\.md`, one concept to a file'
-rs_rule "dates, issue numbers and code names leave AGENTS.md" 'dates, issue numbers and code names leave agents\.md'
-rs_rule "the ceiling step comes with the move" 'the ceiling step comes with the move'
-rs_rule "a file already past the ceiling hears why they come together" 'where agents\.md is already above 200 lines, say that the step alone would turn the check red'
-rs_rule "the move is offered once" 'offer the move onto the index once, in one reply'
-rs_rule "nothing moves without a yes" 'on a yes, make the move and add the ceiling step'
-rs_rule "a no is recorded with the template's headings" 'index-declined\|<yyyy-mm-dd>\|<the template.s section headings'
-rs_rule "a no is not asked again until the template changes" 'the offer does not come back until a release changes those headings, and then it comes back once'
-rs_rule "the no stands only while the headings match" 'the section headings it lists are the ones the installed template has today, the earlier no stands'
-rs_rule "a file still past the ceiling hears which sections remain" 'where it is still above 200 lines, name the sections that remain large and offer the trim'
-rs_rule "concept files are listed in docs/README.md" 'each file listed with what it owns in `docs/readme\.md`'
-rs_rule "on the index, the trim moves facts to their homes" 'on a project already on the index, the trim is a move, never a cut'
-rs_rule "the trim takes dates, issue numbers and code names out" 'history to a file in `changes/`, product facts to the masterplan, and dates, issue numbers and code names leave agents\.md'
-
 rs_guard "$MAINTAIN" "the maintain skill"
 
 rs_require_load_bearing "WORKFLOW says plan.md is offered until moved" "$WORKFLOW" 'any visit that finds an older `plan\.md` list offers to move it into your project.s issues, and keeps offering until it is moved'
 rs_require_load_bearing "WORKFLOW says the pointers are rewritten on a yes" "$WORKFLOW" 'offers to name the skill instead, changing only those lines, and only on your yes'
-rs_require_load_bearing "WORKFLOW says an older project gets one offer to move onto the states" "$WORKFLOW" 'gets one offer to move onto them'
-rs_require_load_bearing "WORKFLOW says an older project gets one offer to move onto the index" "$WORKFLOW" 'offers once to move it onto the index'
 rs_require_load_bearing "WORKFLOW says the reminder is skipped after a no" "$WORKFLOW" 'if you ask a visit to leave kit updates alone, it does not add that reminder either, and says so'
 
 # --- the script, run --------------------------------------------------------

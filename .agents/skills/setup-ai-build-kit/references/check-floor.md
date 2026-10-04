@@ -2,9 +2,7 @@
 
 Every founded project gets its language's own mechanical checks on the first
 day: a type check and a linter, wherever the language has them. They sit in
-the job the capability profile's `Project check:` line records
-(`.github/workflows/checks.yml`, job `project-check`, where that line names no
-file), beside install and test, so they turn the same tick red.
+`jobs.project-check` beside install and test, so they turn the same tick red.
 The person meets no new idea. Green still means the checks that exist really
 passed, and red still means don't merge and tell /fix.
 
@@ -49,33 +47,10 @@ ignore red, and that is worse than having no check. So:
   checks that pass, write the other as `Lint: not yet, <count> existing
   problems` in the stack section, and file one piece to clear them.
 
-Leave `.agents/worktrees/` out of the type check and the lint. A run on Claude
-Code builds each piece in a worktree there, a whole second copy of the
-project, and a check run from the main folder would otherwise read every copy
-as well and report the same problem several times. Use the tool's own setting
-for folders it skips, such as ESLint's `ignores`, ruff's `extend-exclude`,
-mypy's `exclude` or the `exclude` list in `tsconfig.json`. This only keeps the
-copies out. It changes no rule.
-
-Leave it out of the test run too, wherever the project's test runner would find
-tests there, or every piece's tests run again from the main folder. Use the
-runner's own setting, and keep the folders it already skips on the list:
-Vitest's `exclude`, added to `configDefaults.exclude`; Jest's
-`testPathIgnorePatterns`, beside `/node_modules/`, and the same entry in
-`modulePathIgnorePatterns`, so the copies' `package.json` files raise no
-warning; and for Node's own test runner, a test path that does not reach
-`.agents/`, naming the project's own test folder.
-pytest and `go test ./...` already skip folders whose name starts with a dot, so
-they need nothing. Where a runner has no setting to skip a folder, write
-`Tests: the runner reads .agents/worktrees/` in AGENTS.md's stack section and
-carry on, as for a missing tool.
-
 ## Wiring
 
 Put each command in its own named step, `Type check` and `Lint`, after install
-and before test, so a red tick says which one failed. In a job of the
-project's own, they come with the kit's steps `project-check.md` offers, go in
-only on a yes, and sit at the end of its steps. Write the same commands
+and before test, so a red tick says which one failed. Write the same commands
 in AGENTS.md's stack section, so the agent can run them locally before it hands
 work over.
 
