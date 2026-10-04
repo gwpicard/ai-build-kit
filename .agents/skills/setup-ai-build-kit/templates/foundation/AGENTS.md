@@ -37,7 +37,7 @@ When a skill says to run another skill, load that installed skill and follow
 it. The skills sit in `.agents/skills/`, `.claude/skills/` or a plugin's folder,
 by install route. A pointer such as the `ship` skill's `templates/handover.md`
 names a file there, as does `<name>/SKILL.md` without native discovery. Put
-project-specific rules in this file instead of editing an installed skill.
+project-specific rules in this file instead of editing an installed skill. For GitHub failures, follow the `setup-ai-build-kit` skill's `references/required-tools.md`.
 
 ## The workflow
 

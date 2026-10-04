@@ -131,6 +131,10 @@ repeating this when a resumed session already covered it in step 0.
 
 ## 2. Capability check
 
+Load references/required-tools.md before the tooling check. Its "When GitHub
+access fails" route applies to a network failure or a client refusing a command;
+request the needed access before treating the person as signed out.
+
 First run `scripts/check-tooling.sh` from this installed skill folder. It reports
 whether Git, the GitHub command line tool, and python3 are ready and signed in,
 so a missing one is caught here rather than at the later step that creates the

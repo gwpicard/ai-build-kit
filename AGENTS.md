@@ -393,6 +393,13 @@ attribution line, not the word.
   request. A log with no turn markers is unobservable, not a pass. It also
   holds that the stand-in's state is read from beside the project, since the
   copy inside it is a tracked file the kit's own Git work can move.
+- `.agents/tests/codex-github-auth.sh` rehearses the portable Codex session
+  launcher with stand-ins for both command-line tools. It holds that a stored
+  login reaches only the new process's environment, existing token variables
+  need no stored-login read, forwarded arguments survive, and a failed or
+  malformed credential read starts no session and prints no credential. It
+  also holds that shell snapshots are disabled and the permission profile is
+  preserved. The installation-route rehearsal checks that the launcher ships.
 - `.agents/tests/check-tooling.sh` runs the setup tooling report against a set of
   throwaway PATHs and reads when it stops: a missing tool or a signed-out account
   blocks founding, while issues switched off or a read-only account do not.

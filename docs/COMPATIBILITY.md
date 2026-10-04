@@ -96,6 +96,43 @@ skills installed into the project, which is the shared installer's route.
   job, and you set them yourself.
 - Nobody has checked whether Codex keeps the five background skills out of
   your hands.
+- GitHub access depends on the session's network permissions and the CLI's
+  sign-in. See [GitHub access in Codex](#github-access-in-codex).
+
+### GitHub access in Codex
+
+The kit needs a signed-in `gh` with permission to read and change the project's
+repository. Check `gh auth status` and `gh repo view` from the agent's command
+tool. A working terminal or GitHub connector does not prove that tool has the
+same access. A connector can read issues while refusing writes.
+
+Codex can use either the standard sandbox settings or named permission profiles.
+Use the system active in your configuration, keep filesystem sandboxing and
+allow networking for the workspace. Do not combine the two systems. Start a new
+session after changing settings, and check what the client actually selected.
+The installed setup skill's
+[Codex recovery guide](../.agents/skills/setup-ai-build-kit/references/codex-github.md)
+holds the settings and the checks, including managed restrictions.
+
+An HTTP 401 after networking works can mean Codex cannot retrieve the current
+login. Compare token environment presence and the account, executable and
+configuration directory before signing in again. On macOS a terminal can read
+the Keychain while sandboxed Codex cannot. The kit includes a
+[session launcher](../.agents/skills/setup-ai-build-kit/scripts/codex-with-github.py)
+for that case. Run it with python3 from your project's ordinary terminal; the
+agent gives the installed path. It supplies the current login to that Codex
+process in memory and disables shell snapshots. It needs no editor integration
+and does not change your permission settings or credential storage.
+
+The network and credential route was tried on 1 October 2026 with Codex CLI
+0.159.3 on macOS. Both account and repository reads succeeded in the new command
+tool with a restricted filesystem and networking enabled. Automated checks
+cover launch failure, existing token precedence, credential masking and the
+installation routes. This is evidence for GitHub access, not a replayed founding
+or build, so Codex keeps its grade above.
+
+A failed plan refresh shows a credential-masked GitHub error and a recovery step,
+and leaves the previous printout intact.
 
 ### Known limits of Cursor, Gemini CLI and GitHub Copilot
 
