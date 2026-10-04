@@ -793,9 +793,7 @@ else
   # Matched against the definition list rather than the whole file. A state
   # label is also mentioned in the prose that explains it, so a loose search
   # keeps passing after the definition itself has been renamed.
-  # The six states, then the label that sits beside a state, then the reasons
-  # that sit beside `shaping`. `blocked` retired when the states arrived.
-  for label in idea shaping ready building "to check" parked broken \
+  for label in building blocked parked broken \
                needs-clarification needs-prototype needs-research; do
     grep -qF -- "- \`$label\`," "$pieces" || \
       { fail "$pieces: the state label list does not define '$label'"; pc_ok=0; }
@@ -1009,10 +1007,6 @@ if [ -f "$sbfile" ] && [ -f "$blocked" ] && [ -f "$settings" ] && [ -f "$startfi
   mech_ok=1
   grep -qF "save route including the checkpoint route" "$sbfile" || \
     { fail "$sbfile: does not start every piece from up-to-date main"; mech_ok=0; }
-  # The one exception: a piece in a run that stacks on a piece built earlier in
-  # that run starts from that piece's branch, so the stack merges in order.
-  grep -qF "A piece in a run that stacks on another piece built in that run" "$sbfile" || \
-    { fail "$sbfile: does not start a stacked piece in a run from the branch it stacks on"; mech_ok=0; }
   grep -qF "starts unassigned" "$shapefile" || \
     { fail "$shapefile: does not say a new issue starts unassigned"; mech_ok=0; }
   grep -qF 'never push a change directly to `main`' "$blocked" || \
@@ -1021,10 +1015,10 @@ if [ -f "$sbfile" ] && [ -f "$blocked" ] && [ -f "$settings" ] && [ -f "$startfi
     { fail "$settings: deny list does not block a direct push to main"; mech_ok=0; }
   grep -qF "delete_branch_on_merge" "$startfile" || \
     { fail "$startfile: does not enable auto-deletion of merged branches"; mech_ok=0; }
-  # Whether the pull-request route may merge is the one merge step's rule, in
-  # section-builder's references/merge.md, and one-merge-step.sh guards it.
+  grep -qF "Do not merge the pull request, and do not delete the branch" "$sbfile" || \
+    { fail "$sbfile: pull-request route does not stop before merge and leave it to a person"; mech_ok=0; }
   [ "$mech_ok" -eq 1 ] && \
-    pass "pieces start from fresh main or the branch they stack on in a run, new issues are unassigned, main is push-guarded, and merged branches auto-delete"
+    pass "pieces start from fresh main, new issues are unassigned, main is push-guarded, merged branches auto-delete, and the agent leaves the merge to a person"
 fi
 
 # Machine-check-first evidence: where a machine can check a piece, that
@@ -1182,10 +1176,7 @@ done
 [ "$quiet_ok" -eq 1 ] && pass "start keeps routine technical activity behind the scenes across harnesses"
 
 syncfile="$SKILLS/sync/SKILL.md"
-# The project check is the job the capability profile records, which is an
-# adopted project's own CI where it has one, so sync names that record rather
-# than a fixed job.
-if ! grep -qF 'update the job the capability profile'"'"'s `Project check:` line records' "$syncfile"; then
+if ! grep -qF 'jobs.project-check' "$syncfile"; then
   fail "$syncfile: does not identify the standalone project check"
 elif grep -qF 'both `if:` conditions' "$syncfile"; then
   fail "$syncfile: still treats private source conditions as part of every project"
@@ -2076,18 +2067,7 @@ Bash(rm -rf:*)"
 # A project the kit founds also blocks a direct push to main, which keeps
 # changes flowing through a pull request. This maintainer repository's own
 # settings deliberately do not carry that entry, so the two sets differ here.
-# A founded project also refuses a recursive delete in every spelling the deny
-# list can see, and the two Git commands that clear its recovery history. The
-# maintainer's own settings are left as they are.
 expected_deny_project="$expected_deny
-Bash(rm -r:*)
-Bash(rm -R:*)
-Bash(rm -fr:*)
-Bash(rm -Rf:*)
-Bash(rm -fR:*)
-Bash(rm --recursive:*)
-Bash(git reflog expire:*)
-Bash(git gc*--prune*)
 Bash(git push * main)
 Bash(git push * main *)
 Bash(git push * +main)

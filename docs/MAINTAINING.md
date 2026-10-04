@@ -310,9 +310,7 @@ CI runs the same script in this repository's own pull requests, alongside every
 rehearsal in `.agents/tests/`. The released starter receives its deliberately
 failing project check from
 `.agents/skills/setup-ai-build-kit/templates/foundation/checks.yml`; `setup-ai-build-kit` replaces that
-placeholder with the project's real commands during stand-up. A project that
-already runs its tests on pull requests in a workflow of its own gets no
-placeholder, and founding records that workflow as its project check.
+placeholder with the project's real commands during stand-up.
 
 ## Scenario review
 
@@ -454,8 +452,10 @@ person's guided `setup-ai-build-kit` check of the interview itself.
 
 The release builder also writes the version without its leading `v` into the
 Claude plugin manifest. Validate the assembled folder with
-`claude plugin validate <folder> --strict`, then rehearse the plugin from an
-isolated `CLAUDE_CONFIG_DIR`. The rehearsal must cover marketplace discovery,
+`claude plugin validate <folder> --strict`. One warning is expected: Claude
+Code says a root `CLAUDE.md` is not loaded by a plugin. The kit keeps that file
+for a project that copies the whole kit, so the rehearsal accepts that warning
+and fails on any other. Then rehearse the plugin from an isolated `CLAUDE_CONFIG_DIR`. The rehearsal must cover marketplace discovery,
 the manual command boundary, local project installation, bootstrap, a failed
 marketplace refresh, a successful update, and removal. It must not change the
 maintainer's real Claude configuration.

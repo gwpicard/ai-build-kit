@@ -13,7 +13,6 @@ Internal facts recorded for later agents, and what the user hears instead:
 - `npm start` serves a local address -> "The private preview opened successfully."
 - the working tree is clean -> "All setup work has been saved."
 - the current branch is ahead of its remote -> "The saved work has not been uploaded."
-- founding saved on a branch other than the default -> "The setup is saved on the branch [name], and reaches [the default branch] when that branch is merged."
 - the commit identifier -> only in the checkpoint reference at the very end, never leading the report.
 - no push occurred -> "No code was uploaded or published."
 - the online repository holds none of the project's code yet, so the first push waits for a yes -> "The code stays on this computer until your first build asks you before putting it online."
@@ -21,9 +20,6 @@ Internal facts recorded for later agents, and what the user hears instead:
 - `Recipe: <file name>.md` in AGENTS.md -> "The tool will run on [the recipe's name, from its file], and the kit can check its launch steps."
 - the recipe's tool report, on the same line -> "This computer has the tools those checks use." or "Before the first launch this computer needs [each missing tool, in plain words]; that is on the plan as a setup task."
 - `Recipe: none` in AGENTS.md -> "The tool runs on a stack the kit has no recipe for, so it cannot check the launch steps a recipe would."
-- `Project check:` names a workflow of the project's own -> "Your project's own automatic check stays the one that runs on every change, and the kit added no check beside it."
-- that line ends `; kit steps not added` -> "Your own check does not count the length of the project's instructions or check the sensitive-area map, so /maintain measures both each month instead."
-- an adopted project keeps its own AGENTS.md, and it is above 200 lines -> "Your project's instructions are [the count] lines, above the 200 its automatic check allows, so that check will show red until you type /maintain, which moves the detail to where it belongs."
 
 These commands and states stay wherever agents already keep them (AGENTS.md,
 the changelog); the report never leads with them.
@@ -73,9 +69,6 @@ The initial setup is complete.
 ## Where it is saved
 
 A checkpoint has been saved inside the project on this computer.
-[Only where founding saved on a branch other than the default:] The setup is
-saved on the branch `[branch]`, and reaches `[default branch]` only when that
-branch is merged.
 
 No code was uploaded or published. The build steps are listed as issues in the
 project's online repository, which is where the kit keeps the work still to do.

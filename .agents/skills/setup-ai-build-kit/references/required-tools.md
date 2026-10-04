@@ -20,16 +20,6 @@ line. `check-tooling.sh --recipe <recipe file>` adds one line for each: ready,
 or missing and needed before the first `/ship`. A missing one never stops
 founding, because a project that uses no recipe needs none of them.
 
-The report also says what the walk-through can look with, since the agent
-looks at each piece before it is saved. Poppler's `pdftoppm` turns a PDF into
-pictures, LibreOffice's `soffice` turns a Word, PowerPoint, Excel or
-OpenDocument file into a PDF, and ImageMagick's `magick` turns an SVG into a
-picture. Playwright takes a screenshot of a web page where the coding agent
-has no browser tool of its own. Each gets one line: ready, or missing with the
-install command for this computer. A missing one never stops founding either,
-and the kit never installs it. The walk-through then names what it could not
-see, and the piece waits for the person.
-
 The report also says when the project still points at the kit's own
 repository, which a whole copy of the kit can keep as its `origin`. It then
 asks GitHub nothing more about that repository, and founding opens no piece

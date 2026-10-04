@@ -41,12 +41,6 @@ rs_rule "the person can say later mid-step" 'can say "later" at any point in a s
 rs_rule "what the step agreed goes onto the filed piece" 'anything the step has already agreed written onto it'
 rs_rule "filing can be asked for outright" 'note this for later'
 rs_rule "a note starts no step" 'file it without starting any step'
-# The one rule the piece states changed. A note asked for outright used to be
-# routed and, when it was clear, written as a ready piece. Now it is captured as
-# an idea in the person's words with nothing settled, because the person asked
-# to write it down, not to have it shaped.
-rs_rule "a note asked for outright is filed as an idea" \
-  'as an issue labelled `idea`, in their own words, with nothing settled'
 rs_rule "filing is not a new command" 'it is not a separate command'
 rs_rule "the filed piece keeps the person's own words" "the person's own words"
 rs_rule "it carries the question in plain language" 'the question it still waits on in plain language'
@@ -62,9 +56,6 @@ rs_require_absent "/shape no longer makes the offer every time" \
   "$SHAPE" 'every time a request routes to a question'
 rs_require_absent "nor offers the choice before the step starts" \
   "$SHAPE" 'offer the choice before'
-
-rs_require_absent "a note asked for outright is no longer written as a ready piece" \
-  "$SHAPE" 'simply a ready piece'
 
 # Without these the two files disagree about whether a routed question starts
 # now, which is the contradiction this check exists to hold shut, and a request

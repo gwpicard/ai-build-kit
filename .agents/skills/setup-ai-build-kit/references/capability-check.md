@@ -15,13 +15,8 @@ Check:
 8. Online authentication works, when uploads, pull requests, or online checks
    are required.
 9. The project can be started or its runtime can be installed.
-10. The test or smoke-check command can be discovered or created. Record the
-    project check as the capability profile's `Project check:` line, as
-    `project-check.md` says.
-11. What the walk-through can look with. Record a `Walk-through eyes:` line in
-    the capability profile: the browser tool the coding agent offers, or
-    `none`; Playwright present or not; and each of `pdftoppm`, `soffice` and
-    `magick` present or not. Section-builder's step 6 says how each is used.
+10. The test or smoke-check command can be discovered or created.
+11. A browser or preview can be reached, when behaviour needs visual checking.
 12. An independent-review route exists: subagent, separate session, or a
     user-opened clean chat.
 13. A reach-check engine is recorded. Prefer the harness's language server or
@@ -39,11 +34,9 @@ Check:
 16. The label set can be put in order: the signed-in account can create and
     delete labels on the repository.
 
-`scripts/check-tooling.sh` is the machine check behind items 3, 11, 15, and 16.
-It reports whether Git, the GitHub command line tool, and python3 are present,
-whether the account is signed in with issues switched on and labels it can
-order, and which of Playwright and the three renderers are here. The browser
-tool is the coding agent's own, so confirm that one by hand.
+`scripts/check-tooling.sh` is the machine check behind items 3, 15, and 16. It
+reports whether Git, the GitHub command line tool, and python3 are present, and
+whether the account is signed in with issues switched on and labels it can order.
 `required-tools.md` lists what it checks and why. Run it first, then confirm the
 rest of this list by hand.
 

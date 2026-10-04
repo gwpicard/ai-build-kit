@@ -11,20 +11,6 @@ The fourteen skills use the open Agent Skills folder format. Each skill keeps it
 own instructions and supporting files together. A command that needs a
 background skill loads it by name.
 
-Claude Code comes first. The kit is designed and measured on it, and a feature
-that needs more than the portable core, such as a run that builds several
-pieces in a chain with nobody watching, is built for Claude Code before
-anything else. Other coding agents get the one-at-a-time core: one piece
-shaped, built, checked and saved at a time, with the same records and the same
-rules. A run there builds its pieces one after another in one folder, where
-Claude Code gives each piece its own worktree. Only Claude Code offers to build
-a group's pieces at the same time, each with its own background agent.
-Elsewhere, and on Claude Code with Git older than 2.17, the run does not ask
-and builds one piece at a time. Only Claude Code shows a confirmation box
-before a merge that goes live, on a project whose host puts every merge live.
-Elsewhere the written rule, a yes that names the merge, is the only guard. The
-grades below say how much of that has been proved on each agent.
-
 ## How much has been proved on each agent
 
 Meeting the portable core means the kit should work on an agent. It does not
@@ -321,7 +307,6 @@ after a clean checkpoint and explicit approval.
 | Command invocation | Ask for a skill by name | Native skill picker or slash command |
 | Background skills | Command loads the named skill | Automatic skill triggering |
 | Independent review | A clean separate chat with a prepared instruction | Subagent or separate automated session |
-| Readiness check | Paste `/shape <number> check readiness` into a new session | Subagent that carries none of the shaping conversation |
 | Sync | Run `sync` when needed | Session-end reminder |
 | Check-up due | `what-now` says when a visit is overdue | Said automatically when a session opens |
 | Safety | Standing restrictions and approval gates | Mechanical command deny list |

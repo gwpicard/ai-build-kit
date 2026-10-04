@@ -80,7 +80,7 @@ rs_guard "$BUILDER" "section-builder's trim step"
 rs_require_order "the trim runs after the type check and linter" "$BUILDER" \
   'run the type check and linter that AGENTS' 'references/trim\.md'
 rs_require_order "the trim runs before the hand-over" "$BUILDER" \
-  'references/trim\.md' '^Then walk through the piece\.'
+  'references/trim\.md' '^Stop\. Give the exact action'
 
 rs_require_load_bearing "/fix runs the trim on a repair" "$FIX" \
   'run the trim in the `section-builder` skill.s `references/trim\.md`'

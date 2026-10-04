@@ -8,8 +8,6 @@ jobs:
       - uses: actions/checkout@v6
       - name: Check sensitive-area map
         run: sh .agents/hooks/check-sensitive-areas.sh
-      - name: Check the AGENTS.md ceiling
-        run: lines=$(awk 'END { print NR }' AGENTS.md) && if [ "$lines" -gt 200 ]; then echo "AGENTS.md has $lines lines, above its ceiling of 200. Type /maintain to move the detail to the file that owns it, then push again."; exit 1; fi && echo "AGENTS.md has $lines lines, within its ceiling of 200."
       - name: Install and test
         run: |
           echo "This check is still the placeholder the kit creates, so no tests have run and nothing has been verified."

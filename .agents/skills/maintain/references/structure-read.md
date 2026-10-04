@@ -35,12 +35,10 @@ as it was at the last full visit:
    is none, this is the first full visit, so use the project's first commit.
 2. Find the last commit on or before that date with
    `git rev-list -1 --before="<date> 23:59:59" HEAD`.
-3. Copy the project as it was at that commit into a new temporary folder
-   outside the project, made with `mktemp -d`, with
-   `git archive <commit> | tar -x -C <temporary folder>`. This only reads the
-   saved history. It changes nothing in the project.
-4. Run the same engine on that copy. Leave the folder for the computer to
-   clear, since a recursive delete is refused.
+3. Copy the project as it was at that commit into a temporary folder outside
+   the project with `git archive <commit> | tar -x -C <temporary folder>`. This
+   only reads the saved history. It changes nothing in the project.
+4. Run the same engine on that copy, then delete the folder.
 
 If the engine cannot read the earlier copy, say one line: "The structure
 comparison did not happen, because the project as it was at the last visit

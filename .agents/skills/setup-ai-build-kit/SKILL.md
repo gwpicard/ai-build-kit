@@ -65,56 +65,7 @@ answer can still be changed afterwards and an unfounded project cannot.
 
 ## 0. Resume safely
 
-Before anything is written, read which branch the folder is on. A founding once
-saved its checkpoint onto a feature branch the person had checked out, so the
-main branch never received the records and the commits were moved across by
-hand. Read the current branch with `git branch --show-current`, or with
-`git rev-parse --abbrev-ref HEAD` where an older Git refuses that. Then read the
-default branch: the remote's, from
-`git symbolic-ref --short refs/remotes/origin/HEAD` with `origin/` taken off,
-else a local `main`, else a local `master`. With no remote and neither of those,
-the current branch is the default.
-
-A folder with no commits yet, or one already on the default branch, gets nothing
-said. A detached checkout counts as another branch: name it by its short commit,
-and go back to it with `git switch --detach <commit>`.
-
-On another branch, look for unsaved work with `git status --porcelain`. Where it
-prints nothing, switch with `git switch <default>`, or with
-`git checkout <default>` where an older Git refuses that. Either one creates the
-default branch from the remote's copy when it exists only there. Then say once,
-in one line, close to: "This folder was on `<branch>`, so I moved it to
-`<default>` before writing anything. That way the records land where every later
-piece starts. Say if you want it founded on `<branch>` instead." This is not a
-question, and founding does not wait for an answer.
-
-Where it prints anything, never switch, because switching would carry or disturb
-the person's work. Say once instead that founding stays on this branch because
-it holds unsaved work, and that the records reach `<default>` only when this
-branch merges.
-
-Where the switch fails, stay on the current branch, say so and why in that same
-one line, and carry on founding; never stop for it. The usual cause is a
-worktree made by another tool, where the default branch is already checked out
-in another folder.
-
-Where the person says to found on their own branch, in the interview or in
-answer to that line, switch back to it before the founding save with
-`git switch <branch>`, and write that choice into the setup notes so a resumed
-founding keeps it. The folder held nothing of theirs unsaved, and founding's own
-files usually move across with the switch. Where Git refuses the switch back,
-because a file founding wrote would overwrite one on their branch, stay, say so
-once, and carry on as for any failed switch. The founding save below says what
-is then written down.
-
-This read runs again whenever founding resumes, from the setup notes or from
-anywhere else, so a founding picked up on another branch meets the same rules.
-Files founding wrote itself in an earlier session are not the person's unsaved
-work: stay on the branch that session left, and say nothing more about it. In
-the kit's own source, where `release-manifest.txt` and `docs/MAINTAINING.md` sit
-at the root, switch nothing.
-
-Then run `scripts/bootstrap-project.sh` from this installed skill folder in
+First, run `scripts/bootstrap-project.sh` from this installed skill folder in
 the project root. It creates only missing project foundation files and leaves
 anything already there untouched. If the harness cannot run the script, copy
 the missing files from `templates/foundation/` to the paths named by the
@@ -154,11 +105,9 @@ there.
 Read the repository's current state before doing anything else. Check whether
 masterplan.md and CHANGELOG.md already exist, whether the project's pieces
 exist as issues, and whether any of them look complete or
-half-written. Check for unfinished setup: an uncommitted change, an open
-question left in the changelog, or a placeholder still in the file the
-capability profile's `Project check:` line records, which is
-`.github/workflows/checks.yml` only where that is the file recorded or no line
-is written yet. Say plainly where the process is resuming from. Never
+half-written. Check for unfinished setup: a placeholder still in
+`.github/workflows/checks.yml`, an uncommitted change, an open question left
+in the changelog. Say plainly where the process is resuming from. Never
 overwrite an existing record without saying so and getting agreement first.
 
 Look for `.agents/tmp/setup-notes.md` in that read. It holds the answers agreed
@@ -189,17 +138,15 @@ request the needed access before treating the person as signed out.
 First run `scripts/check-tooling.sh` from this installed skill folder. It reports
 whether Git, the GitHub command line tool, and python3 are ready and signed in,
 so a missing one is caught here rather than at the later step that creates the
-issues. It also says what the walk-through can look with. A missing one of
-those never stops founding: pass on the install command it prints, and leave
-installing to the person. If the harness cannot run the script, work through
+issues. If the harness cannot run the script, work through
 references/required-tools.md by hand. When a tool is missing, guide the install
 following references/manual-setup.md before going on.
 
 Load references/capability-check.md and work through it. Record the result in
 AGENTS.md under Capability profile: harness name when known, file read/write,
 shell, Git, local save identity, online repository, online account access,
-online authentication, available test/runtime commands, the walk-through's
-eyes, independent-review options, the reach-check engine, hook support, and
+online authentication, available test/runtime commands, browser or preview
+access, independent-review options, the reach-check engine, hook support, and
 subagent support. Choose a
 fallback for anything missing. Do not make the user configure an optional
 feature before the interview; a missing capability becomes a setup task or a
@@ -276,35 +223,14 @@ to an ownership question becomes a founding task rather than a path move.
 ## 7. Write the masterplan
 
 Create masterplan.md from templates/masterplan.md, filled from the interview,
-present tense throughout. Open it with its short header for the person: two or
-three plain sentences on what the tool is, who uses it, and where it stands.
-Write everything below the header for the agent first, complete and exact. The
-build-path section comes right after the header: the fit check's result. Create `.ai-build-kit-maintenance`
+present tense throughout. The build-path section goes first: the fit check's
+result. Create CHANGELOG.md from its template, empty; it has to exist before
+the next step writes its first line to it. Create `.ai-build-kit-maintenance`
 from `templates/maintenance-record` and put today's date on its `founded` line.
 Leave the two pass lines empty, because `/maintain` fills those in. Do not
-mention that small file to the person.
-
-Add a line to that file, written as `kit|<version>|<commit>`, so the project
-records which AI Build Kit release it holds. Take the version from the installed
-`maintain` skill's `VERSION` file. A whole copy of the kit can lack that file,
-and then `.ai-build-kit-version` at the project root gives the version. Take the
-commit from the release's tag with
-`gh api repos/gwpicard/ai-build-kit/git/ref/tags/<version> --jq '.object.type, .object.sha'`.
-Where the type it prints is `tag` rather than `commit`, the tag is annotated:
-read `.object.url` once with `gh api` and take the commit from its
-`.object.sha`. Where the lookup fails, because GitHub is signed out or out of
-reach, write the commit as `unknown` and carry on founding. A missing commit
-never stops a founding. A resumed founding that finds a `kit` line already
-there keeps it.
-
-Create CHANGELOG.md from its template, and write its first entry under today's
-date, naming the same version and commit, close to: "Founded with AI Build Kit
-v0.19.2, commit fd0780a." The first seven characters of the commit are enough
-there. A resumed founding whose CHANGELOG.md already holds that entry writes it
-no second time. It has to exist before the next step writes to it.
-
-Do not create team.md; it no longer exists. Fill in AGENTS.md's project line
-and the capability profile from step 2. Replace README.md's project-name and purpose placeholders with a
+mention that small file to the person. Do not create team.md; it no
+longer exists. Fill in AGENTS.md's project line and the capability profile
+from step 2. Replace README.md's project-name and purpose placeholders with a
 short description taken from the masterplan.
 
 Where README.md holds no such placeholders, it is somebody's real file: an
@@ -323,18 +249,6 @@ Draw the connections section from what the interview found, then read the
 picture back in plain words and let the team confirm each outside connection
 before going on: that it should reach their email, their calendar, whatever the
 picture shows. A connection nobody meant to agree to is cheapest to catch here.
-
-Where the tool has sign-in, or keeps a history that grows over weeks, offer a
-small set of sample data or test accounts once, so that each build can walk
-through the tool with something in it. Say it close to: "Each build checks its
-work by using the tool the way you would. Shall I plan a few made-up records and
-a test account for that?" Write the answer as a `Sample data:` line in the
-masterplan's "How it stays running": what the set holds and where it lives, or
-that the person said no. A yes becomes a piece when the plan is cut in step 10.
-A test account's password goes where the Secrets rule says, never into the
-masterplan. The offer never holds founding up: with no answer, write
-`Sample data: not agreed yet` and carry on. A tool with neither sign-in nor a growing
-history needs no offer, since a build makes up the small case it needs.
 
 On Build with care, write the sensitive-area paths and any one-line boundaries
 from `references/fit-check.md`, read each area and its home back in plain words,
@@ -414,18 +328,11 @@ is not yet in place, guide the person through it now, following
 references/manual-setup.md, because the pieces live as issues and there is no
 file-based substitute. A private repository keeps issues just as well as a
 public one, so a project that wants to stay private still uses one. Do this without narrating it: create the
-label set in references/pieces.md, the six states `idea`, `shaping`, `ready`,
-`building`, `to check` and `parked` among them,
-delete the labels GitHub made by itself, copy templates/foundation/piece-issue.yml
-to `.github/ISSUE_TEMPLATE/piece.yml`, open one issue per piece, each
-`shaping` with the matching `needs-` label where it still holds an open
-question for `/shape` to settle and `shaping` alone otherwise, and link the
-ones that genuinely block each other using GitHub's blocked-by relationship. Founding runs the readiness check in the
-`shape` skill's `references/readiness-check.md` on each shaped piece through a
-session that did not shape it, and labels a piece `ready` only when its
-`## Readiness` section names no blocking gap. Where the coding agent cannot
-start one, founding labels each shaped piece `ready` without a `## Readiness`
-section, and the piece is checked before any run claims it.
+label set, delete the labels GitHub made by itself, copy
+templates/foundation/piece-issue.yml to `.github/ISSUE_TEMPLATE/piece.yml`, open
+one issue per piece, label each shaped piece `ready` (or the matching `needs-`
+label where it still holds an open question for `/shape` to settle), and link the
+ones that genuinely block each other using GitHub's blocked-by relationship.
 Then run `sh .agents/tools/plan-refresh.sh` once, so the person has their list
 before they need it. The bootstrap placed that helper in the project, whichever
 route installed the kit.
@@ -537,18 +444,6 @@ That report never stops founding.
 Without a recipe, set up accordingly: one established, conventional stack,
 because the agent is strongest where the conventions run deepest.
 
-Write the masterplan's `Goes live:` line in "How it stays running" before the
-first checkpoint, from answers founding already has, and ask nothing new for
-it. On a recipe, write what its going-live section says, read as the
-`section-builder` skill's `references/merge.md` reads it: `on every merge`
-where a change to `main` goes live, and `through /ship` otherwise. Off a
-recipe, write `Goes live: not hosted` where the interview or the two questions
-above say nothing is hosted, because people install the tool, copy it, or run
-it on their own computer. Otherwise write no line, and the first merge asks.
-In the same save, set the confirmation box as the `section-builder` skill's
-`references/merge.md` says under "The confirmation box on a merge that goes
-live": `add` for `on every merge`, `remove` for any other value.
-
 On any stack, recipe or not, use managed services for anything storing
 sign-ins, payments, or files; those never get hand-built, however capable you
 feel, unless a person who does that work for a living owns a different design
@@ -561,9 +456,7 @@ launch, and the person takes it there.
 
 Choose routine technical parts quietly. Record run and check commands and any
 non-standard conventions under AGENTS.md's stack section, keeping its content
-rule and line ceiling. Name the install command among them, since a run
-installs each worktree's dependencies with it. Leave dependency lists in the
-code. In the conversation,
+rule and line ceiling. Leave dependency lists in the code. In the conversation,
 describe what the setup lets the person do. Name
 a product or service only when it creates a choice, cost, account, access step,
 ownership duty, or product limit that the person needs to understand.
@@ -575,56 +468,33 @@ prototype could use a design tool and none is recorded, ask once then and
 update the stack section. That later question must never stop founding.
 
 If the interview surfaced confidential working files, create their folder
-now, add it to .gitignore, and record the handling rules in AGENTS.md. Write
-`confidential|<folder>` to `.ai-build-kit-maintenance` as well, so the worktree
-script can refuse that folder without reading prose. If the tool keeps a list
-of files to carry into a working copy, add the folder there too; in Claude
-Code that list is .worktreeinclude. That list is for Claude Code's own
-worktrees. The kit's run worktrees read the `worktree-links` line instead. The
-worktrees the kit opens for a run do not carry that folder, so a piece that
-needs those files is built with the person present, never in a run.
+now, add it to .gitignore, and record the handling rules in AGENTS.md. If the
+tool keeps a list of files to carry into a working copy, add the folder there
+too; in Claude Code that list is .worktreeinclude.
 
-A build can need files git ignores that hold no secret, such as licensed fonts
-or large sample inputs, and a run's worktree has only what it links. From the
-project root, run the `implement` skill's `scripts/worktree.sh` with `candidates`. It
-lists the ignored files and folders at the top two levels, leaving out
-dependency and build folders, every `.env` file, `.agents/`, `.claude/`,
-system files such as `.DS_Store`, and the confidential folder. Where it lists nothing, write no line and ask nothing.
-Otherwise ask once which of them a build or a walk-through needs, with your
-best guess attached: a font, a sample input, or an asset folder the build
-reads. Ask it beside other work, so the question never ends the turn on its
-own. Write the paths the person confirms to a `worktree-links|<path> ; <path>`
-line in `.ai-build-kit-maintenance`. Where founding ends with no answer, write
-no line: `/maintain` offers the question again.
+Wire the project check according to the build path. If
+`.github/workflows/checks.yml` is missing, copy it from
+`templates/foundation/checks.yml`. Explore privately needs a
+local test or smoke command, and the remote pull-request check stays
+optional; Build and run it, and Build with care, both need the remote check
+working before any shared or live behavioural work.
 
-Wire the project check according to the build path. Where the bootstrap
-script named a workflow of the project's own that already runs its tests on
-pull requests, or `.github/workflows/` holds one, load
-`references/project-check.md`: it chooses the job, records it, and offers the
-kit's steps once. Otherwise, if `.github/workflows/checks.yml` is missing, copy
-it from `templates/foundation/checks.yml`, and record `Project check:
-.github/workflows/checks.yml, job project-check` in the capability profile.
-Explore privately needs a local test or smoke command, and the remote
-pull-request check stays optional; Build and run it, and Build with care, both
-need the remote check working before any shared or live behavioural work.
+Configure only `jobs.project-check`.
 
-Configure only the job the `Project check:` line records.
-
-In the kit's own `checks.yml`, replace the placeholder `Install and test`
-commands with the project's real install and check commands. A job of the
-project's own already runs its real commands, so leave them as they are.
-Load `references/check-floor.md`: those commands include a type check and a linter wherever the project's
+Inside that job, replace the placeholder `Install and test` commands with the
+project's real install and check commands. Load `references/check-floor.md`:
+those commands include a type check and a linter wherever the project's
 language has them, and a language without one is recorded as having none.
 On Build with care, where an area in the map names a boundary, load
 `references/boundary-rules.md` and offer once to have the check hold it.
 
 An older project may still carry the legacy `source-kit-validation` job and
 its repository conditions. Leave that job and its conditions unchanged. Edit
-only the recorded job in either layout.
+only `jobs.project-check` in either layout.
 
 Do not replace the entire workflow file from memory. Edit only the
-placeholder step, or add the steps `references/project-check.md` offers, unless
-the project genuinely requires a broader workflow change.
+placeholder step unless the project genuinely requires a broader workflow
+change.
 
 Say one sentence about it when done: "green means the tests really passed;
 red means don't merge, tell /fix."
@@ -675,12 +545,6 @@ repository holds none of the code yet, the code stays on this computer until
 the first piece that pushes asks the person first, as section-builder's "The
 first upload" describes.
 
-Where founding saves anywhere but the default branch, because the person chose
-their own branch, the branch held unsaved work, or the switch failed, say so
-where it lasts. Write a line in CHANGELOG.md under today's date naming the
-branch and the reason, and saying the records reach the default branch when it
-merges. The completion report says the same.
-
 section-builder chooses between the checkpoint, pull-request and flagged routes
 for each piece built afterwards, on what that piece touches. That choice is
 about the work, not about this. A tool the whole team will share still founds
@@ -692,7 +556,7 @@ The build path is recorded, the records exist (masterplan.md, CHANGELOG.md, and
 the pieces as issues), AGENTS.md contains the capability profile and project
 commands, the masterplan has had whatever review its build path called for or a
 changelog line saying why none ran, the initial state is saved as a local
-checkpoint, the plan is made of visible pieces each carrying one state, `ready` or
-`shaping` with its open question, one check passes, and the user has received the plain-language
+checkpoint, the plan is made of visible pieces each labelled `ready` or with its
+open question, one check passes, and the user has received the plain-language
 completion report, which ends on a clean cut naming `/implement` and `/shape`
 rather than an offer to build in this session.

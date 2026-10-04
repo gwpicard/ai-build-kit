@@ -8,17 +8,16 @@ A compact, reliable way to build software with an AI coding agent: the
 discipline of a real process, without the ceremony, and without having to read
 the code.
 
-None of the nine commands asks you to open a file of code. You say what should
-happen, decide what merges and what goes live, and make the product and risk
-decisions the agent cannot make for you. The agent walks through each piece
-before it is saved, and you try anything you want to see for yourself.
+None of the nine commands asks you to open a file of code. You do need to
+explain what should happen, try the results, and make the product and risk
+decisions the agent cannot make for you.
 
 ## At a glance
 
 | | |
 |---|---|
 | What it is | Nine commands you type into your coding agent, the process behind them, and three records that hold your project's memory. |
-| Who it is for | Technical builders who direct agents and want what they build to keep working, whether they came to software from engineering or from another job. You should be at home with Git, branches and pull requests. You never need to read the code. |
+| Who it is for | Anyone directing an AI coding agent who wants what it builds to keep working. People who came to software from another job, and developers trying agent-led work for the first time. |
 | Works with | Claude Code, which is tested. Codex is expected to work. Cursor, Gemini CLI, and any other agent that can read and edit project files, run shell commands, and use Git are experimental. [How much is proved on each](docs/COMPATIBILITY.md#how-much-has-been-proved-on-each-agent). |
 | You need | A coding agent, Git, and Node for the `npx` route. |
 | Install, Claude Code only | `claude plugin marketplace add gwpicard/ai-build-kit`, then `claude plugin install ai-build-kit@ai-build-kit --scope local` |
@@ -91,7 +90,7 @@ Command names say when to use them.
 | I'm starting something | `/setup-ai-build-kit` | Interview, fit check, founding documents. |
 | I want it to... (a new idea) | `/shape` | Turns your idea into a ready piece. |
 | Build the next ready piece | `/implement` | Builds a ready piece to confirmed and saved. |
-| I'm taking on several things | `/queue` | Everything ready to build, what is waiting on what, and the command that runs it. |
+| I'm taking on several things | `/queue` | Everything ready to build, and what is waiting on what. |
 | It's broken | `/fix` | Cause before code, and evidence that keeps it fixed. |
 | I think it's ready | `/ship` | Checks everything, then takes it live, one path at a time. |
 | I'm done for today | `/sync` | Documents caught up with reality. |
@@ -115,7 +114,7 @@ The first `/ship` is the heaviest, because it takes the tool live. Later ones on
 
 `/maintain` is not in the picture because it runs on its own clock rather than in this order: about monthly from the day the project is founded, whether or not it has gone live. The project tells you when one is due.
 
-Every piece runs the same cycle: agree the behaviour in one plain sentence, choose the evidence it needs, build the smallest complete slice, have the agent walk through it with sample data (or try it yourself if you opt in), then save it through the route the build path requires.
+Every piece runs the same cycle: agree the behaviour in one plain sentence, choose the evidence it needs, build the smallest complete slice, try it by hand, then save it through the route the build path requires.
 
 ## Examples
 
@@ -183,7 +182,7 @@ Two simpler protections sit underneath. Destructive commands are on a blocked li
 | Bare agent tools (Claude Code, Cursor, Codex) | An agent's full power, with no process around it. | Anyone. | Nothing up front, everything by experience. | Nothing. You choose when to plan, test, review and save, every time. |
 | Developer skill packs (GitHub Spec Kit, Superpowers, agent-skills, Waza) | A discipline the agent applies, written by engineers for engineers. | People who read code and already have the habits. | A dozen or more skills and the order they run in. | The order of work, once you have learned it. |
 | Books and guides on agentic engineering | A way of thinking about working with agents. No tooling. | Developers and tech leads. | A book. | Nothing on your machine. |
-| AI Build Kit | Nine commands, three records, one build path. The least process that keeps agent-built software reliable. | Technical builders who direct agents, from engineering or from another job. | Nine command names, each named after the moment you need it. | Which route a request takes, what evidence it needs, how it is saved, and when a piece touches something sensitive enough to stop and tell you. |
+| AI Build Kit | Nine commands, three records, one build path. The least process that keeps agent-built software reliable. | People who came to software from another job, and developers trying agent-led work for the first time. | Nine command names, each named after the moment you need it. | Which route a request takes, what evidence it needs, how it is saved, and when a piece touches something sensitive enough to stop and tell you. |
 
 Each is good at something. The builders are the fastest start. The bare agent is the most powerful. The skill packs are the strongest guarantee that an engineer's agent behaves. The kit is the shortest path from an idea to a tool that still works in six weeks, for somebody who does not want to run a process by hand.
 
@@ -194,9 +193,8 @@ Much of what the kit does was borrowed from people working in the open. [docs/SO
 **Do I need to know how to code?**
 No. The nine commands are the whole interface, and the kit is built so that
 none of them needs you to read the code or the logs. If you can, nothing
-stops you. You do have to say what should happen, decide what merges and what
-goes live, and make the product and risk decisions. The agent walks through each
-piece itself, and you can try any of them whenever you want to see one working.
+stops you. You do have to say what should happen, try the result, and make the
+product and risk decisions.
 
 **Can a non-developer build software with an AI coding agent safely?**
 Safely enough depends on what the software does. The kit opens with a fit check

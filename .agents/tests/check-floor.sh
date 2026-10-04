@@ -40,20 +40,6 @@ rs_rule "an adopted project is not turned red" 'do not turn the tick red for wor
 rs_rule "each command is its own named step" 'put each command in its own named step'
 rs_rule "the same commands go in the stack section" "write the same commands in agents\.md's stack section"
 rs_rule "it follows the shared rules" 'the rules in `whole-project-reads\.md` apply'
-# A run's worktrees are whole copies of the project inside it. A lint from the
-# main folder would read each one again, so the floor keeps them out, and only
-# them: the rules above stay as they are.
-rs_rule "the checks leave the run's worktrees out" 'leave `\.agents/worktrees/` out of the type check and the lint'
-rs_rule "keeping the copies out changes no rule" 'this only keeps the copies out\. it changes no rule'
-# The test run reads the same copies. A runner that finds tests under
-# .agents/worktrees/ runs every piece's tests again from the main folder, so
-# the floor names each common runner's own setting and the two that need none.
-rs_rule "the test run leaves the run's worktrees out too" 'leave it out of the test run too, wherever the project.s test runner would find tests there'
-rs_rule "Vitest uses its exclude setting" "vitest's \`exclude\`"
-rs_rule "Jest uses testPathIgnorePatterns" "jest's \`testpathignorepatterns\`"
-rs_rule "Node's runner gets a test path that does not reach .agents/" "for node's own test runner, a test path that does not reach \`\\.agents/\`"
-rs_rule "pytest and Go need nothing" 'pytest and `go test \./\.\.\.` already skip folders whose name starts with a dot, so they need nothing'
-rs_rule "a runner with no setting is recorded and founding carries on" '`tests: the runner reads \.agents/worktrees/` in agents\.md.s stack section and carry on'
 rs_guard "$FLOOR" "the shipped check-floor.md"
 
 rs_reset
@@ -79,7 +65,5 @@ rs_require_load_bearing "the builder runs them before hand-over" "$BUILDER" 'bef
 rs_require "the builder reports a failure as expected versus actual" "$BUILDER" 'a failure is a gap like any other: describe it as expected versus actual'
 rs_require "the stack section asks for the commands" "$AGENTS_TEMPLATE" 'run, test, type check and lint commands'
 rs_require "WORKFLOW says the check includes them" "$WORKFLOW" 'a type check and a linter wherever it has them'
-rs_require_load_bearing "WORKFLOW says the checks leave a run's copies out" "$WORKFLOW" \
-  'the project.s checks, its tests among them, leave those copies out'
 
 rs_done

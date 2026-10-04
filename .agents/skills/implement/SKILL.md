@@ -1,6 +1,6 @@
 ---
 name: implement
-description: The everyday command for building a piece that has already been shaped and marked ready. Typed alone it takes the next ready piece from the plan. Given an issue number, or a request that matches a ready piece, it builds that one. A request that is not yet a ready piece goes to shape first; implement builds, it does not shape. Given several issue numbers, or "queue", it runs them as a plan with nobody watching. Do not use for repairs of promised behaviour; that is fix.
+description: The everyday command for building a piece that has already been shaped and marked ready. Typed alone it takes the next ready piece from the plan. Given an issue number, or a request that matches a ready piece, it builds that one. A request that is not yet a ready piece goes to shape first; implement builds, it does not shape. "/implement auto" builds several ready pieces in a row. Do not use for repairs of promised behaviour; that is fix.
 ---
 
 # Implement
@@ -25,8 +25,7 @@ pieces are kept, and what to run in a project that has no copy of the helper.
 When GitHub cannot be reached, say so, say when the printout was last written,
 and work from it. The piece already in hand carries on. Anything that would
 change what is on the plan waits, because an issue that cannot be updated is
-not a record of anything, and that includes starting a new piece, since
-starting one moves its state.
+not a record of anything.
 
 ## Typed alone
 
@@ -46,31 +45,18 @@ evidence and save route from the piece and the build path. Read the piece's
 subject labels rather than reclassifying it; the classification was settled in
 `/shape` and section-builder reads it rather than re-deriving it.
 
-Claim the piece before any work: move it from `ready` to `building` and assign
-it, in one step,
-`gh issue edit <number> --add-label building --remove-label ready --add-assignee @me`,
-creating the label first if the project lacks it. section-builder's step 1 makes that move, so two sessions never start the same
-piece. Where GitHub cannot be reached the claim cannot be made, so say so and do
-not start the piece: a piece nobody could claim may be claimed by somebody else.
-
-A piece labelled `parked` is not buildable as it stands. One safely prepared and
-stopped at a recorded condition stays skipped until that condition is met, or
-until the person carries on after the risk notice and the acceptance is
-recorded; then move it from `parked` to `building` in one step,
-`gh issue edit <number> --add-label building --remove-label parked`, and build.
-One parked after repeated failure (references/running-longer.md) needs routing
-back to `/shape` first, for another look. An older project's `blocked` label
-reads as `parked` until `/maintain` moves it.
+A piece labelled `blocked` needs attention before it counts as buildable again:
+one safely prepared and stopped at a recorded condition stays skipped until that
+condition is met, or until the person carries on after the risk notice and the
+acceptance is recorded; one parked
+after repeated failure (references/running-longer.md) needs routing back to
+`/shape` first, for another look.
 
 ## When a piece waits on the person
 
 A piece carrying a `## Waiting on you` section cannot be built until that step is
 done. Do not attempt it, and do not pass it over in silence. Say what the step
 is, in the words the piece uses, and that building carries on once it is done.
-
-The `Waiting on you: try it` line is different: it asks for the person's own try
-once the piece is built, so build the piece, and section-builder waits for them
-before saving.
 
 In an unattended run, name the step, leave the piece where it is, and take the
 next ready piece, so the run keeps working and the step is waiting when the
@@ -84,9 +70,8 @@ could have gone and done.
 
 A piece that still carries `needs-clarification`, `needs-prototype`, or
 `needs-research` has a question to settle before its code is written. An issue
-with no `## Done when` was typed by hand and never sized. An open issue with no
-state label counts as an idea, however full its body, because nobody moved it to
-`ready`. None of them is ready, and building one only guesses the answer.
+with no `## Done when` was typed by hand and never sized. Neither is ready, and
+building either one only guesses the answer.
 
 This command does not settle the question. Settling it is planning, and planning
 is what `/shape` is for. Say in one sentence what the piece is waiting on, and
@@ -99,8 +84,7 @@ ready, say so plainly rather than shaping the waiting piece here.
 Typed alone, take the next ready piece as above.
 
 Given an issue number, build that piece if it is ready, and send it to `/shape`
-if it is not, saying in one line why it is not ready. Given several, run them
-as a plan, as the section below says.
+if it is not, saying in one line why it is not ready.
 
 Given a request in plain words, check whether it already matches a ready piece.
 Where it does, build that piece. Where it does not, this is new or unshaped
@@ -110,12 +94,9 @@ question.
 
 ## When the pieces contradict each other
 
-The blocked-by link is the truth, so read the link. A ready piece whose blockers
-have all closed is buildable. `parked` is not about another piece: it names a
-stop written on the piece, so it never lifts because a blocker closed.
-
-A piece carrying two states is not built. The printout lists it under Needs
-attention; say so, and leave the repair to `/sync`.
+The blocked-by link is the truth and the `blocked` label is only a hint, so read
+the link. A piece whose blockers have all closed is buildable even with the
+label still on it. Say the label looks stale, and leave taking it off to `/sync`.
 
 When nothing is ready, because everything open is held up, still waiting on a
 question, or two pieces hold each other up, say so plainly and name what is
@@ -140,50 +121,29 @@ are waiting on, and name no piece as next. Never work the next piece out from
 the issue list or its blocked-by links by hand: the printout already keeps a
 piece with an open blocker out of `To build`, and a hand reading does not.
 
-## Merging
+## Typed with auto, or handed to a goal mode
 
-A built piece's pull request merges only as the `section-builder` skill's
-`references/merge.md` says: on a yes that names it, or under the person's
-pre-approval of a run, for a piece that meets all six of its conditions.
+Auto is not an ordinary peer to normal building; it is earned, not default.
+Before enabling it, require: at least three normal pieces completed cleanly,
+no unresolved review or flagged work waiting, clean Git state, evidence a machine can
+check for every selected piece, no piece still waiting on a question
+(`needs-clarification`, `needs-prototype`, or `needs-research`), every selected
+piece self-sufficient enough to build without a person present, meaning its
+`Under the hood` notes carry what the build needs, nothing needing
+human judgement in the batch,
+no pending build-path transition, and the user's explicit approval of the
+batch. A project has earned auto mode when its records and checks have
+repeatedly predicted successful ordinary builds; the presence of an agent
+feature called "goal" or "auto" does not itself make the project eligible.
 
-## Given several pieces, or queue
-
-Given several issue numbers, or `queue`, this command runs them as a plan with
-nobody watching. `auto` is another name for `queue`. Load
-`references/running-longer.md` before the run starts and follow it. The shape,
-so the person knows what they are agreeing to: the plan is said once, with each
-piece and whether the run may take it, and the person approves it once and says
-whether pieces that pass may be merged. Each piece is then claimed, built,
-walked through and reviewed, and opens its own pull request, with the parts of
-one parent sharing one. A piece that depends on another built in the run stacks
-on its branch.
-
-On Claude Code, each piece in a run is built in its own worktree under
-`.agents/worktrees/`, named after the piece, while the main folder stays on its
-branch. Where the plan holds a group of pieces that can go together, the run
-asks once whether to build a group's pieces at the same time, warns that this
-uses more memory, and builds one at a time unless the person gives a number.
-The kit clears a worktree away once its pull request has closed and nothing in
-it is unsaved. Outside a run, a single piece is built in the main
-folder, as always, unless the person asks for a worktree: then open one the
-way `references/running-longer.md` says.
-
-Whether the run may take a piece is decided for each piece. A piece is taken
-only when it is ready, carries a Ready readiness result, is
-self-sufficient enough to build without a person present, waits on no step of
-the person's other than their try, and lies outside every sensitive area that has no recorded
-acceptance. A piece that fails three attempts is parked, a hard open choice,
-seen at the plan or met while building, sends a piece back to shaping, and the
-run moves on. It ends with one report:
-each piece, its pull request and its state, the choices flagged for the person,
-what was parked and why, and the merge order.
-
-The run keeps its state in the main folder's `.agents/runs/`, the first
-worktree git lists, even when this session sits in another tool's worktree,
-so a session that dies loses nothing. Where an unfinished run's state file is in `.agents/runs/`, offer to
-resume it before taking anything new, whether this command was typed alone or
-with `queue`.
+Once eligible, load references/running-longer.md before starting and follow
+it. The shape, so the person knows what they are agreeing to: the plan is
+approved once, only ready pieces a machine can prove get taken, a failing piece is
+retried three times and then parked, a named sensitive area stops the run,
+and it ends through the route required by the build path: normally one pull
+request carrying a checklist of things to try before merging, or a confirmed
+checkpoint for eligible private exploration.
 
 ## Done when
 
-The route was followed, the records are true, the piece moved from `ready` to `building` before any work and on to its next state when the pass ended, and the piece is confirmed and saved through the required route, safely parked at a recorded condition, or the user knows exactly where things stopped and why.
+The route was followed, the records are true, and the piece is confirmed and saved through the required route, safely blocked at a recorded condition, or the user knows exactly where things stopped and why.

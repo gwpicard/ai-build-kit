@@ -1,17 +1,13 @@
 # Masterplan
 
-(A short header for the person, written by the setup-ai-build-kit skill: two or
-three plain sentences on what the tool is, who uses it, and where it stands.)
-
 Trued against: not yet checked
 
 <!-- The saved code state last compared with this page. The agent follows
 the `setup-ai-build-kit` skill's `references/masterplan-changes.md`; the person
 never has to read a hash. -->
 
-<!-- What the tool is now. Present tense. Everything below the header is
-written for the agent first: complete and exact, so a build never has to guess.
-Keep the core readable in roughly one to two pages. Optional sections appear only when they carry real decisions.
+<!-- What the tool is now. Present tense. Keep the core readable in roughly
+one to two pages. Optional sections appear only when they carry real decisions.
 On every build path, key terms and decided lines may carry an optional one-line
 "rests on" clause in plain words, naming the evidence behind the decision.
 Follow the decision rules in
@@ -85,17 +81,6 @@ manager entry's name, or an environment variable's name. Never a value.
 Where AGENTS.md names a recipe, that recipe file says how the tool previews,
 goes live, rolls back, and is backed up and restored. Link it rather than
 copying it, and write here only what it cannot know, such as who owns billing.
-
-A `Goes live:` line says how the tool goes live: `through /ship`, the kit's
-default, where a merge reaches a preview and /ship promotes it, `on every
-merge`, where the host puts each merge to `main` live, or `not hosted`, where no
-server runs the tool for people to reach, because people install it, copy it,
-or run it on their own computer. On `not hosted`, a merge is never a launch, and
-/ship makes a release instead. The merge step in the `section-builder` skill's
-`references/merge.md` reads it before every merge.
-
-A `Sample data:` line says what made-up records or test accounts each build
-walks through the tool with, and where they live, or that there are none.
 
 Where the tool runs on a server somebody else runs, /ship writes a hosting
 request here on the first launch: repo and branch, lane, port, env var names,

@@ -10,9 +10,6 @@
 # than the project does. A document AGENTS.md never points at is not read at
 # all. A clean project produces no output, and the script writes nothing.
 #
-# A piece's changelog file in `changes/` is part of the changelog: never read
-# as a document, and never stale once the last fold has taken it away.
-#
 # The false-positive half is the one that matters most. A read that flags true
 # things gets ignored, and then the stale name it also found is ignored with it.
 
@@ -55,7 +52,7 @@ EOF
 cat > README.md <<'EOF'
 # Shop
 
-It sells things. Each finished piece's entry waits in `changes/` until it is folded into the changelog.
+It sells things.
 EOF
 git add -A
 commit "A project whose documents are true"
@@ -85,15 +82,7 @@ npm run test
 ```
 
 Type `/implement` to build. The code is at `owner/shop` and `github.com/owner/shop`, the entry file is `index.js`, and releases use `release.sh`.
-
-The last fold took in `changes/12-old-login.md`.
 EOF
-# A piece's changelog file is part of the changelog. It is never read as a
-# document, even when AGENTS.md names it, and a name in `changes/` that the last
-# fold took away is not stale.
-mkdir -p changes
-printf '%s\n' 'Signing in now remembers you, as `src/remember.js` does.' > changes/7-sign-in.md
-printf '%s\n' '' 'The newest entry is `changes/7-sign-in.md`.' >> AGENTS.md
 git add -A
 commit "The README drifts"
 
@@ -120,8 +109,6 @@ echo "  ok: a bare file name kept in a folder is found there"
 
 printf '%s\n' "$out" | grep -q 'unlisted' && fail "a document AGENTS.md never points at was read"
 printf '%s\n' "$out" | grep -q 'gone/by/design' && fail "the kit's own WORKFLOW.md was read"
-printf '%s\n' "$out" | grep -q 'changes' && fail "a changelog file in changes/ was read or reported"
-echo "  ok: the changes/ folder and the files in it are part of the changelog, never reported"
 echo "  ok: only the README and the documents AGENTS.md points at are read"
 
 printf '%s\n' "$out" | grep -qE '[0-9]+ *%|score|grade' && fail "a score reached the output"
@@ -153,24 +140,6 @@ esac
 python3 "$SCRIPT" | grep -qF "$(printf 'docs/setup.md:4\tcommand\tmake release')" ||
   fail "a make target the Makefile does not have was not named"
 echo "  ok: a make target the Makefile does not have is named"
-
-# --- the concept list: AGENTS.md points at docs/README.md, which lists them ---
-
-# A founded project lists its concept files in docs/README.md and points at
-# that list from AGENTS.md, so a concept file is read through the list. A file
-# in docs/ the list does not name, such as a whole copy's own documents, is not.
-printf '%s\n' '# Concept files' '' '- `sign-in.md`: how signing in works.' > docs/README.md
-printf '%s\n' '# Sign-in' '' '## Where it lives' '' 'In `src/sign-in.js`.' > docs/sign-in.md
-printf '%s\n' '' 'Concept files are listed in `docs/README.md`.' >> AGENTS.md
-git add -A
-commit "A concept list and one concept file"
-out=$(python3 "$SCRIPT")
-printf '%s\n' "$out" | grep -qF "$(printf 'docs/sign-in.md:5\tfile\tsrc/sign-in.js')" ||
-  fail "a concept file listed in docs/README.md was not read: $out"
-echo "  ok: a concept file listed in docs/README.md is read through the list"
-printf '%s\n' "$out" | grep -q 'unlisted' && fail "a docs file the list does not name was read"
-echo "  ok: a file in docs/ the list does not name is still not read"
-[ -z "$(git status --porcelain)" ] || fail "the script wrote into the project"
 
 echo
 echo "document-read-rehearsal.sh: stale names found at their lines, true ones left alone"

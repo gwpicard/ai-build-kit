@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 """List the names a project's documents mention that no longer exist.
 
-Reads README.md and every document AGENTS.md points at. Where AGENTS.md points
-at `docs/README.md`, the list of the project's concept files, each document
-that list names is read too, since the list is how AGENTS.md points at them.
-Nothing else under `docs/` is read. For each line it looks
+Reads README.md and every document AGENTS.md points at. For each line it looks
 for five kinds of name and checks that each still exists: a file or folder, a
 link to another file, an `npm run`, `pnpm run`, `yarn run` or `make` command,
 and an environment variable. It prints one line per name that does not exist,
@@ -15,10 +12,6 @@ A file name is one that ends in a file ending, and a folder name one that ends
 in a slash. So `/shape`, `owner/name` and `example.com/page` are not taken for
 files. A name written from some other folder is found wherever the project
 keeps a path that ends with it.
-
-The `changes/` folder is part of the changelog. It is empty between folds and
-a finished piece's file leaves it at the next one, so a name inside it is
-never reported.
 
 A document may describe less than the code does, and that is never flagged.
 Only a name that points at nothing is. It never says a document is right,
@@ -40,8 +33,6 @@ import subprocess
 import sys
 
 KIT_OWNED = {"WORKFLOW.md", "AGENTS.md", "masterplan.md", "CHANGELOG.md", "plan.local.md"}
-CHANGES = "changes"
-CONCEPTS = os.path.join("docs", "README.md")
 EXTENSIONS = (
     ".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs", ".py", ".rb", ".go", ".rs",
     ".java", ".kt", ".cs", ".php", ".md", ".json", ".yml", ".yaml", ".toml",
@@ -64,36 +55,23 @@ def ignored(path):
     ).returncode == 0
 
 
-def named_documents(source, found):
-    """Add each Markdown document `source` names that exists, in order."""
-    with open(source, encoding="utf-8") as handle:
-        text = handle.read()
-    named = LINK.findall(text) + CODE_SPAN.findall(text)
-    for name in named:
-        name = name.split("#")[0].strip()
-        if not name.endswith(".md") or name.startswith(("http:", "https:")):
-            continue
-        # A name in the concept list may be written from the docs/ folder.
-        candidates = [os.path.normpath(name)]
-        if source != "AGENTS.md":
-            candidates.append(os.path.normpath(os.path.join(os.path.dirname(source), name)))
-        for name in candidates:
-            if os.path.basename(name) in KIT_OWNED or name.startswith((".agents", CHANGES + "/")):
-                break
-            if os.path.isfile(name):
-                if name not in found:
-                    found.append(name)
-                break
-
-
 def documents():
     found = []
     if os.path.isfile("README.md"):
         found.append("README.md")
     if os.path.isfile("AGENTS.md"):
-        named_documents("AGENTS.md", found)
-    if CONCEPTS in found:
-        named_documents(CONCEPTS, found)
+        with open("AGENTS.md", encoding="utf-8") as handle:
+            text = handle.read()
+        named = LINK.findall(text) + CODE_SPAN.findall(text)
+        for name in named:
+            name = name.split("#")[0].strip()
+            if not name.endswith(".md") or name.startswith(("http:", "https:")):
+                continue
+            name = os.path.normpath(name)
+            if os.path.basename(name) in KIT_OWNED or name.startswith(".agents"):
+                continue
+            if os.path.isfile(name) and name not in found:
+                found.append(name)
     return found
 
 
@@ -141,8 +119,6 @@ def saved_paths():
 def path_exists(name, document):
     bare = name.split("#")[0].split(":")[0].rstrip("/")
     if not bare:
-        return True
-    if os.path.normpath(bare).split(os.sep)[0] == CHANGES:
         return True
     beside = os.path.join(os.path.dirname(document), bare)
     for candidate in (os.path.normpath(bare), os.path.normpath(beside)):
