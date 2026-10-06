@@ -17,9 +17,10 @@ then `claude plugin install ai-build-kit@ai-build-kit --scope local`
 First command to type: `/setup-ai-build-kit`
 
 The nine commands: `/setup-ai-build-kit` founds the project, `/shape` shapes an
-idea into a ready piece, `/implement` builds one ready piece, `/queue` shows
-everything ready to build, `/fix` repairs a fault cause-first, `/ship` takes the
-tool live, `/sync` catches the documents up, `/maintain` is the monthly service
+idea into a ready piece, `/implement` builds one ready piece and merges it on
+the person's yes, `/queue` shows everything ready to build, `/fix` repairs a
+fault cause-first, `/setup-hosting` sets up how the tool runs live, `/sync`
+catches the documents up, `/maintain` is the monthly service
 visit, `/what-now` says where the project stands.
 
 How it differs from the alternatives: all-in-one builders such as Lovable, Bolt

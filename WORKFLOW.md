@@ -18,7 +18,7 @@ Command names say when to use them.
 | Build the next ready piece | /implement |
 | I'm taking on several things | /queue |
 | It's broken | /fix |
-| I think it's ready | /ship |
+| I want people to use it | /setup-hosting |
 | I'm done for today | /sync |
 | It's been a while | /maintain |
 | I'm lost | /what-now |
@@ -256,7 +256,9 @@ On either route, the first time anything pushes your project's code online, the 
 
 Next to the merge button sits that check. It re-runs the project's real commands on a clean machine, so the pull request's claims get verified rather than trusted. Those commands include the mechanical checks your project's language offers, a type check and a linter wherever it has them, which catch a whole class of mistakes before anyone tries the tool. They use each tool's own default rules, so a red tick points at a real mistake rather than a matter of taste. The agent runs the same checks before it hands any work over. Green means the checks that exist really passed, which is a smaller promise than nothing being wrong: it covers the behaviour somebody thought to check and nothing else. Red means don't merge; say it to /fix, and the agent reads what failed itself. You never read the machine's logs, and you never merge over a red check.
 
-A human decides whether to merge, always; after a merge, everyone pulls main. Flagged areas also get the review the build path names before the pull request is offered as ready. A direct push to `main` is forbidden, and in Claude Code the project settings refuse the usual ways of writing one, so every change reaches it through a pull request. Each piece starts from an up-to-date `main`.
+A human decides whether to merge, always. Once the check is green, /implement tells you what to try and where, such as the preview address, then names the pull request in one plain line and asks for a yes that names the merge. Saying "put it live" or "save it" before any merge was named is not that yes, so it asks again; saying "merge it" is, and it does not ask twice. It makes the merge on the pull request itself, never by merging on your computer and pushing `main`, and in Claude Code a box asks you to allow it first. If GitHub cannot be reached, the merge waits, and you can merge it on GitHub yourself. With nobody there to answer, nothing is merged and the pull request waits for you. After a merge, everyone pulls main. Flagged areas also get the review the build path names before the pull request is offered as ready.
+
+Once the tool is live, a merge is a deploy: the host builds `main` and the team's copy follows. So before asking, /implement checks the live side. A change that adds to the database waits until /setup-hosting has applied that addition, which only adds, so the version live now keeps working. A piece whose `Live side needs:` line names a new secret or service waits until /setup-hosting reports it present. A piece in a sensitive area waits until its caution is done or your acceptance is recorded. After the merge, /implement reads one line from the live copy: "The live copy now runs this change", or "The live copy did not update" with the next step. It changes nothing live, so if you ask it to put the change out again, it checks first and leaves any further deploy to /setup-hosting. A direct push to `main` is forbidden, and in Claude Code the project settings refuse the usual ways of writing one, so every change reaches it through a pull request. Each piece starts from an up-to-date `main`.
 
 ## 8. Sensitive areas, and the risk notice
 
@@ -270,17 +272,19 @@ When you carry on, an acceptance is written into the build-path section before t
 
 What the agent may not do is take the notice back. Pushing back on the cost, the wait, or the fuss changes what you decide and changes nothing about who is exposed, so the notice stays put however many times it comes up. A named check cannot be quietly turned into something the agent does itself either: where the build path asks for another person's eyes, the agent reading its own work does not count, and neither does a passing test.
 
-## 9. Shipping
+## 9. Going live
 
-/ship reads the build path first, and each path gets only the process it needs, not a shared ceremony trimmed after the fact.
+/setup-hosting is for the moment you want people to use the tool. Its first run takes what is already on `main` live and sets the host up so that each later merge to `main` reaches the team's copy. From then on a merge is a deploy, and /implement makes each merge on your yes, so /setup-hosting never merges your code. Run it again whenever you want the live copy checked against `main`, or moved to another host or recipe.
 
-**Explore privately.** /ship runs no production evidence or launch procedure; it only confirms the prototype stays disposable and private, and records what would have to change to graduate.
+/setup-hosting reads the build path first, and each path gets only the process it needs, not a shared ceremony trimmed after the fact.
 
-**Build and run it.** /ship runs the full evidence run, independent review, operational readiness, and the live transition. Off a recipe, readiness is a general list: a backup, a restored-backup rehearsal, a manual fallback, rollback, and a single caution if nobody receives alerts. Anything missing from it is a warning you hear once and find in the changelog, and the launch goes ahead.
+**Explore privately.** /setup-hosting runs no production evidence or launch procedure; it only confirms the prototype stays disposable and private, and records what would have to change to graduate.
 
-**Build with care.** /ship ships everywhere outside a named sensitive area, does the caution it can do itself (a backup restored once, a rehearsal on a copy), and at a caution that is a person who has not looked, gives you the risk notice once. If you carry on, your acceptance is written down and that area goes live too. Where somebody outside the team is going to look, ask for the handover and /ship prepares it.
+**Build and run it.** /setup-hosting runs the full evidence run, independent review, operational readiness, and the live transition. Off a recipe, readiness is a general list: a backup, a restored-backup rehearsal, a manual fallback, rollback, and a single caution if nobody receives alerts. Anything missing from it is a warning you hear once and find in the changelog, and the launch goes ahead.
 
-On a recipe, the recipe's own checks take the place of that list. /ship reads
+**Build with care.** /setup-hosting takes live everything outside a named sensitive area, does the caution it can do itself (a backup restored once, a rehearsal on a copy), and at a caution that is a person who has not looked, gives you the risk notice once. If you carry on, your acceptance is written down and that area goes live too. Where somebody outside the team is going to look, ask for the handover and /maintain prepares it.
+
+On a recipe, the recipe's own checks take the place of that list. /setup-hosting reads
 the recipe your project's AGENTS.md names and works through its eight sections
 in order, and each one gives you a plain line: preview up, live address updated,
 rollback possible, backup present, restore works, no secret in the repo, logs
@@ -307,41 +311,38 @@ not then read it some other way. It asks you, and names the page where the
 setting lives.
 
 A command that changes a live service's settings or data, other than saving
-code through the save route, waits for your yes, in /implement and in /ship
+code through the save route, waits for your yes, in /implement and in /setup-hosting
 alike. The kit first names everything the command will change, not only the
 setting it meant to change, and says whether it can be undone. A real build
 once pushed a whole settings file to change one thing, and switched off a live
 setting it then could not switch back on. The commands your project's recipe
 names are the launch you asked for, and need no second yes.
 
-/ship never merges a pull request you have not agreed to. It names each one and
-what it changes, then asks for a yes that names the merge. Saying "put it live"
-before any merge was named is not that yes, so it asks again. When a deploy's
-result is unclear, /ship checks whether it went live before it tries again. A
-second deploy of the same version leaves nothing older to roll back to, and
-/ship says so before running one. A warning you have already heard is not
-repeated in the same /ship.
+/setup-hosting never merges your code. A finished piece waiting in a pull
+request is merged by /implement, on a yes that names the merge. When a deploy's
+result is unclear, /setup-hosting checks whether it went live before it tries
+again. A second deploy of the same version leaves nothing older to roll back
+to, and /setup-hosting says so before running one. A warning you have already
+heard is not repeated in the same run.
 
-/ship makes each merge on the pull request itself, never by merging on your
-computer and pushing `main`. If GitHub cannot be reached, the merge waits, and
-you can merge it on GitHub yourself. The records /ship writes during a launch,
-such as its changelog entries and a colleague later saying the new version is
-live, take the same save route as a piece. On a shared project they go on one
-branch and one pull request for each /ship, never straight to `main`, and
-merging that pull request needs its own yes. Where your host builds every
-change to `main`, /ship tells you that merging it starts one more build and
-moves the rollback target, and offers to leave it for the next change. Work
-of yours that is not saved yet is left where it is, kept out of the records
-and never thrown away.
+The records /setup-hosting writes, such as its changelog entries and a
+colleague later saying the new version is live, take the same save route as a
+piece. On a shared project they go on one branch and one pull request for each
+run, never straight to `main`, and merging that pull request needs its own yes,
+made on the pull request itself. Where your host builds every change to
+`main`, /setup-hosting tells you that merging it starts one more build and
+moves the rollback target, and offers to leave it for the next change. Work of
+yours that is not saved yet is left where it is, kept out of the records and
+never thrown away.
 
 Some checks need a secret, such as a database password kept in a file on your
 computer. When you tell the kit where one lives, in any session, it writes down
 where, never the secret itself, in the masterplan's "How it stays running"
-section. A later /ship reads that line before the backup, restore or database
+section. A later /setup-hosting reads that line before the backup, restore or database
 check. If nothing is recorded, it asks you once. If you cannot say, the warning
 says the kit does not know where the secret is kept, and never that it is gone.
 
-On both live paths, /ship checks that the tool keeps a plain record of what each
+On both live paths, /setup-hosting checks that the tool keeps a plain record of what each
 request did, without personal data, secrets or confidential file contents. If
 it does not, you hear once: "The tool keeps no record of what each request did,
 so a fault reported after launch cannot be traced. I have noted that in the
@@ -356,7 +357,7 @@ not set one up." If the fit check already names who receives alerts, it does
 not repeat this caution. Explore privately gets neither check nor caution.
 
 When the tool will run on a server somebody else runs, the first launch needs
-an address, and the kit never contacts that server. So /ship writes a hosting
+an address, and the kit never contacts that server. So /setup-hosting writes a hosting
 request into the masterplan's "How it stays running" section and prints it for
 you. It names the repository and branch, the lane (private network or
 internet), the port, the names of the settings the tool needs, the folders that
@@ -364,10 +365,10 @@ must survive a restart, and the path that shows the tool is healthy. It also
 says how the tool builds and which address it listens on, read from the code,
 because the server builds and checks it from those two facts. It holds
 names only, never a password or key. You take it to whoever runs the server,
-and paste back what they send. On a later launch /ship reads the request back
+and paste back what they send. On a later launch /setup-hosting reads the request back
 rather than asking again.
 
-After the first launch, shipping gets lighter: it re-checks what changed since the last ship and moves that over, rechecking the build path first if reliance or consequence has grown. A warning the changelog already holds comes back as one line pointing to it, so anything given in full is new.
+After the first launch, a later /setup-hosting compares the live copy with `main` and tells you each gap in one plain line: whether the live copy runs the latest merge, whether a database change has not been applied, whether a secret or setting is missing on the host, whether health answers, and whether the backup works. It repairs each gap only after a yes that names it. It rechecks the build path first if reliance or consequence has grown. A warning the changelog already holds comes back as one line pointing to it, so anything given in full is new. Moving to another host or recipe is a later run too: the old live copy keeps serving until the new one answers.
 
 ## 10. Autonomy: /implement auto and goal modes
 
@@ -464,7 +465,7 @@ A project with no recipe may still be built much like one on the menu, with
 the same framework and the same data service, even if it runs somewhere else or
 lacks the recipe's Dockerfile and health route. That covers a project founded
 before recipes existed and one founded on its own stack. The monthly visit then
-offers the move once, and says what it gains: the launch checks /ship would run
+offers the move once, and says what it gains: the launch checks /setup-hosting would run
 on that recipe. It also says what the move would change. Nothing changes without
 your yes. A yes becomes a piece, shaped and built like any other, and the
 offer does not come back while that piece is open. A no is recorded, and the

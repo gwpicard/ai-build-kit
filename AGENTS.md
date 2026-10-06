@@ -191,14 +191,14 @@ attribution line, not the word.
   ones that worked in a real run. The password line is the mixed-case one
   Supabase's create form accepted, since the form marked a hex password as
   not secure enough. The teardown removes the Vercel project, the repository
-  and every local folder, including the backups `/ship` writes, with no
+  and every local folder, including the backups `/setup-hosting` writes, with no
   recursive forced delete. It shows the token's scopes first, takes the
   delete scope off again, and checks that each item is gone, the backups
   included. The kit's temporary files are the ones newer than a marker left
   at the start of the run, since a listing cut to a fixed length can pass
   while they remain, and the marker goes last. It also holds the rules that keep the
   run safe, read from the section itself so a copy elsewhere cannot hide a
-  removal: the names given at founding and in `/ship`, the lockfile caveat, a
+  removal: the names given at founding and in `/setup-hosting`, the lockfile caveat, a
   failure filed rather than fixed in the throwaway project, a password that
   never enters the chat, and a release that waits for a decision on what the
   run found. It holds what the real run needed besides: the person, not an
@@ -307,7 +307,7 @@ attribution line, not the word.
   `# prepare:` line, which has the harness build a starting state no
   conversation should, such as scenario 49's instructions past their ceiling.
   It runs the preparation that leaves scenario 51 one recipe in both copies of
-  the ship skill a whole copy carries, and proves that preparation refuses a
+  the setup-hosting skill a whole copy carries, and proves that preparation refuses a
   folder inside a git work tree, so it can never delete a recipe here. It holds
   that scenario's gate open on a menu, and shut on a reply that only names the
   host or on an interview guess the person may change. It runs both halves of
@@ -452,8 +452,8 @@ attribution line, not the word.
   and which records a missing reviewer as a gap rather than waiting for one,
   because the wait had no exit and cost two measured runs their whole founding.
 - `.agents/tests/founding-menu.sh` guards the recipe menu founding offers. The
-  menu is the files directly in the `recipes/` folder of the installed ship
-  skill, found beside the founding skill and never at a project path, since the
+  menu is the files directly in the `recipes/` folder of the installed
+  setup-hosting skill, found beside the founding skill and never at a project path, since the
   two plugin routes install the skills elsewhere and a project path there finds
   an empty menu. A shared part or a recipe still waiting for its real run is
   never offered. Exactly one recipe is recommended, with a tie going to the
@@ -621,7 +621,7 @@ attribution line, not the word.
 - `.agents/tests/request-record.sh` guards the request record checked before
   live use, its data exclusions, and the monitoring caution given once unless
   someone already receives alerts. A missing record is a warning said once and
-  written in the changelog, and the launch goes on, so it holds that `/ship`
+  written in the changelog, and the launch goes on, so it holds that `/setup-hosting`
   neither waits for the record nor asks the person to choose to go without it.
   It also holds the repair step that reads the tool's record after launch,
   alongside the person's report.
@@ -632,7 +632,7 @@ attribution line, not the word.
   location. A real launch once skipped the backup, the restore and the
   database guard, and wrote in the changelog that the database password was
   not on this computer, when the person had named its file in an earlier
-  session. So `/ship` asks once, and a check that still cannot run says the
+  session. So `/setup-hosting` asks once, and a check that still cannot run says the
   location is unknown, never that the secret is absent. A secret is passed by
   its location and never read or shown, and one given as an answer is recorded
   nowhere and the person is asked to rotate it. The project's own
@@ -654,7 +654,7 @@ attribution line, not the word.
   change, and says whether it can be undone. The commands the project's recipe
   names need no second yes, and a secret key goes straight into the file that
   uses it. The check holds the
-  rules in `/ship`, second-opinion, section-builder, WORKFLOW.md and the
+  rules in `/setup-hosting`, second-opinion, section-builder, WORKFLOW.md and the
   project's own AGENTS.md, and proves each one load-bearing in each file.
 - `.agents/tests/standing-instructions.sh` guards the project's instruction
   ceiling and the monthly offer to trim repeated code information. It removes
@@ -737,8 +737,10 @@ attribution line, not the word.
   today's templates use, and a second run finds nothing. So are the pointers
   of the earliest releases, which name the founding skill by its first name,
   `start`, since the rename removed that folder and those open nothing on any
-  route. A review found the first version missed them. The same review found
-  it rewrote a pointer inside a command or a link and broke the line. So only
+  route. A pointer into the launch skill under its old name, `ship`, is
+  rewritten to `setup-hosting` the same way. A review found the first version
+  missed the `start` ones. The same review found it rewrote a pointer inside a
+  command or a link and broke the line. So only
   a pointer that stands alone, as a whole code span or a bare path, is
   rewritten. One inside a command, a link, a longer path, or naming a file the
   skill no longer has is listed with its reason and left exactly as it was.
@@ -772,7 +774,7 @@ attribution line, not the word.
   a new one. A copy of the data service run on the project's own server is not
   close. The offer names the launch checks the move gains, and nothing is said
   when no recipe is close. It also
-  holds that the menu is read from the ship skill's recipes folder at run
+  holds that the menu is read from the setup-hosting skill's recipes folder at run
   time. It reads the product list from `hosting-request.sh` and proves the
   maintain skill names none of them, so the skill names no product even
   though its offer is about one.
@@ -844,7 +846,7 @@ attribution line, not the word.
   flagged work is built. The kit gives the risk notice once, in full, and a
   person who carries on after it has accepted: the kit writes the `Accepted:`
   line with their words and the date, and the work goes ahead. It guards that
-  definition in `/fix`, fit-check.md, `/ship`, founding, section-builder,
+  definition in `/fix`, fit-check.md, `/setup-hosting`, founding, section-builder,
   `/implement` and the project's own AGENTS.md, and that none of them drifts
   back to a stop. An unattended run still stops at a sensitive area, because
   nobody is there to carry on, and it never accepts on the person's behalf. It also guards what
@@ -986,7 +988,7 @@ attribution line, not the word.
   nothing would say so until the history was unreadable. The rehearsal builds
   its samples from pieces, so the validator reads it like any other file and
   would catch a real line pasted into it.
-- `.agents/tests/hosting-request.sh` guards the hosting request `/ship`
+- `.agents/tests/hosting-request.sh` guards the hosting request `/setup-hosting`
   writes on a first launch, for a tool that runs on a server somebody else
   runs. The person carries it there by hand, because the kit never contacts
   that server. It holds the eight fields, including how the tool builds and
@@ -994,57 +996,78 @@ attribution line, not the word.
   without. It holds the rule that the request carries names and never a value,
   and that a later launch reads it back rather than asking again, printing it
   anew only when the project changed a field. It also reads every skill file
-  outside `.agents/skills/ship/recipes/` and refuses a hosting, data or deploy
+  outside `.agents/skills/setup-hosting/recipes/` and refuses a hosting, data or deploy
   product named in one, since a skill that needs to know how one behaves reads
   the project's recipe. The screen rules' link to Vercel's interface
   guidelines is set aside, and the check proves the exemption hides nothing
   else in that file. The README may name a product, as one option.
-- `.agents/tests/ship-runs-recipe.sh` guards how `/ship` runs a project's
-  recipe. It holds that `/ship` reads the `Recipe:` line and the file it
-  names, runs all eight sections in the recipe's order, and reports each in
-  one plain line. `Who runs it:` decides whether the kit runs a check, reads
-  back a pasted result, or records what the person saw. The rules it guards
-  hardest are the ones that would turn a warning back into a stop: a check not
-  done is said once, written in the changelog, and the launch goes ahead, and
-  off a recipe the general list is warnings too. The one wait left is the
-  address, since a tool with no recorded address is not live. A deploy the
-  kit runs itself writes no hosting request, since nobody runs a server to
-  carry one to, and its own address meets the wait. The rollback line says
-  "possible, not tried", because the kit only saw an earlier build listed.
-  On a later launch the changelog is read first, and a warning it already
-  holds for the same section is one line pointing to it, while a new or
-  changed one is still said in full. That rule sits beside the reporting
-  steps, since a real second launch repeated every old warning when it sat
-  only in the later-launch section.
-  Build with care reaches the same checks, and a settled area goes live on
-  their next run rather than through a deploy of its own. It also takes
-  the deploy target from each recipe's title and refuses one named in `/ship`
-  or its evidence run, because a skill that learned one recipe's commands
-  would read wrongly on every other. And it holds that the launch review
-  reads a setting itself before it asks the person to look one up, with
-  only a key the tool already sends to the browser, and asks only for what
-  it cannot read, saying why. A real run stopped to ask for a setting the
-  service answered in public.
-- `.agents/tests/ship-merges-and-deploys-once.sh` guards how `/ship` merges
-  and deploys. In one real run the person said only "put it live" and `/ship`
-  merged two pull requests nobody had named to them. So it holds that `/ship`
-  names each pull request and what it changes, asks for a yes that names the
-  merge, and asks again when an earlier yes did not. In another run `/ship`
-  cut a deploy's output short, deployed the same version again, and so lost
-  the earlier build a rollback would reach. So it holds that the whole output
-  or the host's list of deployments is read first, that no second deploy runs
-  before the first is checked, and that a second deploy is announced as
-  replacing the rollback target. It also holds that a warning said once is not
-  repeated in the same `/ship`, and that WORKFLOW.md says all of it. A later
-  run merged properly and then pushed its changelog entries straight to
-  `main`. So it holds that a merge is made on the pull request, never by a
-  merge on this computer and a push of `main`, and that it waits when GitHub
-  cannot be reached. The launch records take the save route a piece takes,
-  on one pull request for each `/ship`, opened once the launch is checked,
-  whose merge needs its own yes. Where the host builds every change to
-  `main`, that ask says the merge is one more build that moves the rollback
-  target. The person's uncommitted work is neither swept into that commit nor
-  discarded.
+- `.agents/tests/setup-hosting-runs-recipe.sh` guards how `/setup-hosting`
+  runs a project's recipe. It holds that `/setup-hosting` reads the `Recipe:`
+  line and the file it names, runs all eight sections in the recipe's order,
+  and reports each in one plain line. `Who runs it:` decides whether the kit
+  runs a check, reads back a pasted result, or records what the person saw.
+  The rules it guards hardest are the ones that would turn a warning back into
+  a stop: a check not done is said once, written in the changelog, and the
+  launch goes ahead, and off a recipe the general list is warnings too. The
+  one wait left is the address, since a tool with no recorded address is not
+  live. A deploy the kit runs itself writes no hosting request, since nobody
+  runs a server to carry one to, and its own address meets the wait. The
+  rollback line says "possible, not tried", because the kit only saw an
+  earlier build listed. On a later run the changelog is read first, and a
+  warning it already holds for the same section is one line pointing to it,
+  while a new or changed one is still said in full. That rule sits beside the
+  reporting steps, since a real second launch repeated every old warning when
+  it sat only in the later-launch section. Build with care reaches the same
+  checks, and a settled area goes live with the merge that carries it, which
+  the next run of the checks reports, rather than through a deploy of its
+  own. It also takes the deploy target from each recipe's title and refuses
+  one named in `/setup-hosting` or its evidence run, because a skill that
+  learned one recipe's commands would read wrongly on every other. And it
+  holds that the launch review reads a setting itself before it asks the
+  person to look one up, with only a key the tool already sends to the
+  browser, and asks only for what it cannot read, saying why. A real run
+  stopped to ask for a setting the service answered in public.
+- `.agents/tests/setup-hosting-deploys-once.sh` guards how `/setup-hosting`
+  deploys, saves its records and compares the live copy with `main`. It holds
+  first that the command merges no code: a piece waiting in a pull request is
+  left open and named as /implement's to merge. In one real run of the
+  command, then called /ship, the person said only "put it live" and it
+  merged two pull requests nobody had named. In another it cut a deploy's
+  output short, deployed the same version again, and so lost the earlier
+  build a rollback would reach. So it holds that the whole output or the
+  host's list of deployments is read first, that no second deploy runs before
+  the first is checked, and that a second deploy is announced as replacing
+  the rollback target. A warning said once is not repeated in the same run. A
+  later run of that command merged properly and then pushed its changelog
+  entries straight to `main`. So the records take the save route a piece
+  takes, on one pull request for each run, opened once the launch is checked,
+  whose merge needs its own yes and is made on the pull request itself. Where
+  the host builds every change to `main`, that ask says the merge is one more
+  build that moves the rollback target. The person's uncommitted work is
+  neither swept into that commit nor discarded. It also holds the later run:
+  it compares before it changes anything, says each gap in one plain line,
+  and repairs a gap only on a yes that names it, a recipe's own command
+  included, since nobody asked for a launch. A move to another host keeps the
+  old live copy serving until the new one answers. WORKFLOW.md says all of it.
+- `.agents/tests/implement-merges-on-a-yes.sh` guards how `/implement` merges
+  a finished piece, in section-builder's last step. Both recipes' hosts build
+  every change to `main`, so once a tool is live the merge is the deploy, and
+  the merge rules moved here from the launch command with their wording. The
+  person decides, always: the pull request is named in one plain line, the
+  yes must name the merge, and a yes to building, saving, uploading or going
+  live does not cover it, while "merge it" in the person's own words does.
+  The merge is made on the pull request, never on this computer with a push of
+  `main`, waits when GitHub cannot be reached, is announced before Claude
+  Code's confirmation box, and never happens in a run with nobody there. Moving
+  the merge opened three gaps, and the check holds each shut: a change that
+  adds to the live database waits until `/setup-hosting` has applied the
+  addition, a piece whose `Live side needs:` line names a new secret or
+  service waits until it is present on the host, and a piece in a sensitive
+  area waits until its caution is done or accepted. After the merge the kit
+  reads one health line from the live copy and changes nothing live: asked to
+  put the change out again it reads first and leaves any deploy to
+  `/setup-hosting`. It also holds the `Live side needs:` line in pieces.md
+  and `/shape`, and WORKFLOW.md telling it.
 - `.agents/tests/first-upload-asks.sh` guards the yes the project's first
   upload waits for. Founding tells the person nothing will be uploaded, and in
   a real run the first piece then pushed the whole project to GitHub with no
@@ -1059,7 +1082,7 @@ attribution line, not the word.
   note. A yes creates `main` through the GitHub API at the commit the piece's
   branch was cut from, the one time it is written other than by a merge,
   since the settings refuse a push to it. It holds the pointers from `/sync`,
-  `/ship`, founding and the push-to-main rule, and WORKFLOW.md telling it.
+  `/setup-hosting`, founding and the push-to-main rule, and WORKFLOW.md telling it.
   Founding opens issues before any piece pushes, so it holds the same guard
   there: before the first issue, founding checks which repository the project
   points at and changes nothing on the kit's own: no issue, label, setting or

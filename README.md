@@ -92,7 +92,7 @@ Command names say when to use them.
 | Build the next ready piece | `/implement` | Builds a ready piece to confirmed and saved. |
 | I'm taking on several things | `/queue` | Everything ready to build, and what is waiting on what. |
 | It's broken | `/fix` | Cause before code, and evidence that keeps it fixed. |
-| I think it's ready | `/ship` | Checks everything, then takes it live, one path at a time. |
+| I want people to use it | `/setup-hosting` | Sets up how the tool runs live; after that, each merge goes live. Run it again to check or change that. |
 | I'm done for today | `/sync` | Documents caught up with reality. |
 | It's been a while | `/maintain` | The service visit. |
 | I'm lost | `/what-now` | Where the project stands and what to do next. |
@@ -104,13 +104,13 @@ You never choose the method and never sort your own request: each command checks
 ```mermaid
 flowchart LR
   S["/setup-ai-build-kit<br/>once"] --> L["/shape · /implement · /fix<br/>day to day"]
-  L --> P["/ship<br/>whenever a batch is ready"]
+  L --> P["/setup-hosting<br/>once, then to check or change hosting"]
   P --> L
 ```
 
 You run `/setup-ai-build-kit` once. After that you go in wherever you actually are, and none of the day-to-day commands needs another to have run first.
 
-The first `/ship` is the heaviest, because it takes the tool live. Later ones only re-check what changed since the last one.
+The first `/setup-hosting` is the heaviest, because it takes the tool live. After that, each merge `/implement` makes on your yes is a deploy, and a later `/setup-hosting` checks the live copy against your project and fixes what differs.
 
 `/maintain` is not in the picture because it runs on its own clock rather than in this order: about monthly from the day the project is founded, whether or not it has gone live. The project tells you when one is due.
 
@@ -256,7 +256,7 @@ approval.
 
 **Where does the tool run once it is built?**
 Wherever you host it. The kit builds and checks the tool, and it does not host
-it. On the first launch, `/ship` writes a short hosting request into the
+it. On the first launch, `/setup-hosting` writes a short hosting request into the
 masterplan: where the code lives, which port it uses, the names of the settings
 it needs, and what must survive a restart. You take that request to whoever runs
 your server. A team that runs its own server on [Coolify](https://coolify.io)
