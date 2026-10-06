@@ -55,7 +55,9 @@ The Claude Code settings the kit installs refuse a push that names `main` as
 the branch, with any options before or after it, in any order. A deny rule
 there reads the words of the command as written. So it catches the spellings
 below, and it misses a push where `main` is not written out, or where git is
-not called as `git push`.
+not called as `git push`. It can also read a chained line as one command, so
+a push of another branch with anything naming `main` later in the same line
+is refused too. Run such a push on its own.
 
 These spellings are refused:
 

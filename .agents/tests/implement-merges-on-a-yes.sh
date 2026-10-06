@@ -65,6 +65,13 @@ rs_rule "the evidence run covers what the piece changed" 'run the evidence run i
 rs_rule "a settled area gets its readiness check" 'run that area.s operational readiness as the `setup-hosting` skill.s build with care step 5 says'
 rs_rule "no notice is repeated" 'do not repeat a notice already given'
 rs_rule "a readiness gap is a warning said once" 'a gap there is a warning, as it is in /setup-hosting: say it once, record it in changelog\.md with the date in this piece.s pull request, and carry on'
+# The recipe's own check before the merge, such as the local container check,
+# is a warning when it cannot run, as in /setup-hosting. Three of five replays
+# of scenario 54 held the merge for it and asked for a set phrase instead.
+rs_rule "a pre-merge check that cannot run is a warning" 'where it cannot run here, for example because no container engine is running, it is a warning, as a check not done is in /setup-hosting'
+rs_rule "it is said once and recorded in the piece's pull request" 'say it once, record it in changelog\.md with the date in this piece.s pull request, and carry on'
+rs_rule "it never holds the merge or asks for a choice" 'do not hold the merge for it, and do not ask the person to choose to merge without it'
+rs_rule "a warning the changelog holds is a pointer" 'where the changelog already holds that warning, one line pointing to it is enough'
 rs_rule "a piece stopped at its condition is never offered" 'a piece stopped at its condition is never offered for a merge'
 rs_rule "until then the pull request waits, and says why" 'until then, the pull request stays open and ready for review, and the report says what it waits for'
 

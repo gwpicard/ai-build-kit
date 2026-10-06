@@ -97,6 +97,11 @@ online. It goes to owner/name, which is private. Shall I upload it?"
 On a yes, push the piece's branch, then create `main` on GitHub at the commit
 the branch was cut from, `git merge-base main <piece branch>`, with
 `gh api repos/<owner>/<name>/git/refs -f ref=refs/heads/main -f sha=<commit>`.
+Run the push as a command of its own, with nothing chained to it. In Claude
+Code, the project's settings refuse a push that names `main`, and they can read a
+chained command as one, so a `main` later in the same line refuses the push.
+Where a command is refused that way, run its parts one at a time. The
+person's yes still stands, so do not ask for it again.
 Make it the default branch with `gh repo edit --default-branch main`, open
 the pull request, and tell the person in one clause that GitHub now starts
 from their project's main copy. This is the one time `main` is written other
@@ -388,6 +393,12 @@ live, so check these first, read-only, and change nothing live:
 - Where the recipe's going-live section runs a check on this computer before
   the merge, such as building the app the way the host will and reading its
   health, run it now, so the build that goes live has already answered here.
+  Where it cannot run here, for example because no container engine is
+  running, it is a warning, as a check not done is in /setup-hosting. Say it
+  once, record it in CHANGELOG.md with the date in this piece's pull request,
+  and carry on. Do not hold the merge for it, and do not ask
+  the person to choose to merge without it. Where the changelog already holds
+  that warning, one line pointing to it is enough.
 - Where the piece carries a `Live side needs:` line, ask for the merge only
   once /setup-hosting reports each name on it present on the host. Say so in
   one line, naming what is missing.

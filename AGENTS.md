@@ -355,7 +355,13 @@ attribution line, not the word.
   bypass mode, with nobody there to click it. So for each case that may reach
   a merge, the harness takes out the `ask` list before the first commit, and
   only that list. The deny rules and hooks stay. A real session proved the
-  box, and the stand-in still logs every merge.
+  box, and the stand-in still logs every merge. It runs both halves of the
+  `code-online` preparation that scenarios 8 and 45 name, which puts `main`
+  on the empty remote after the first commit, so a piece saved as a pull
+  request does not meet the first-upload question its contract does not
+  judge. It holds that 55 keeps its empty remote, and that the second half
+  refuses a remote that is not empty or a folder that is not a fresh replay
+  project.
 - `.agents/tests/grader-recovery.sh` checks that the replay grader recovers a
   grading missing only its final brace or carrying one stray brace after it,
   and still refuses one that was cut off partway or followed by other text.
@@ -1228,7 +1234,10 @@ attribution line, not the word.
   reads whether GitHub can merge the pull request. On a conflict it says so in
   one line and offers to merge `main` into the branch and push it, never with a
   force push or a rebase, only on a yes, and runs the check again before
-  asking. That reading comes before the ask.
+  asking. That reading comes before the ask. A check the recipe runs on this
+  computer before the merge, such as the local container check, is a warning
+  when it cannot run: said once, recorded in the changelog in the piece's
+  pull request, and never a hold on the merge or a choice put to the person.
 - `.agents/tests/first-upload-asks.sh` guards the yes the project's first
   upload waits for. Founding tells the person nothing will be uploaded, and in
   a real run the first piece then pushed the whole project to GitHub with no
@@ -1242,7 +1251,10 @@ attribution line, not the word.
   with nobody there, keeps the piece on its own branch here with a one-line
   note. A yes creates `main` through the GitHub API at the commit the piece's
   branch was cut from, the one time it is written other than by a merge,
-  since the settings refuse a push to it. It holds the pointers from the
+  since the settings refuse a push to it. After the yes, the push runs as a
+  command of its own. The deny rules can read a chained command as one, so a
+  `main` later in the line refuses the push. A refused chain is run in parts,
+  and the yes is not asked for again. It holds the pointers from the
   maintain skill's truing,
   `/setup-hosting`, founding and the push-to-main rule, and WORKFLOW.md telling it.
   Founding opens issues before any piece pushes, so it holds the same guard

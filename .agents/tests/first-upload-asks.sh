@@ -61,6 +61,13 @@ rs_rule "an unreadable visibility is said, not guessed" 'where you cannot read t
 rs_rule "a yes creates main at the commit the branch was cut from" 'create `main` on github at the commit the branch was cut from, `git merge-base main <piece branch>`'
 rs_rule "and makes it the default branch" 'make it the default branch'
 rs_rule "the default-branch change is told" 'tell the person in one clause that github now starts from their project.s main copy'
+# The deny rules can read a chained command as one, so a push chained to the
+# call that creates main was refused in two of five replays of scenario 55,
+# and the kit then asked for the yes again.
+rs_rule "the push runs on its own" 'run the push as a command of its own, with nothing chained to it'
+rs_rule "a chained main refuses the push" 'they can read a chained command as one, so a `main` later in the same line refuses the push'
+rs_rule "a refused chain is run in parts" 'where a command is refused that way, run its parts one at a time'
+rs_rule "the yes still stands" 'the person.s yes still stands, so do not ask for it again'
 rs_rule "the one time main is written other than by a merge" 'this is the one time `main` is written other than by a merge'
 
 # A no, and nobody there.

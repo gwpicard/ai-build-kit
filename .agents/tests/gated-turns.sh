@@ -659,6 +659,53 @@ sh "$ROOT/.agents/tests/replay/prepare/first-upload.after-commit.sh" "$fu/app/ne
   && bad "the second half ran on a folder inside another repository" \
   || ok "the second half refuses a folder that is not the top of its own repository"
 
+# Scenarios 8 and 45 save their piece as a pull request through the usual
+# route, so their code must already be online. With the harness's empty
+# remote they met the first-upload question instead and never reached a pull
+# request. The preparation puts main on the remote after the first commit.
+for n in 08 45; do
+  grep -q '^# prepare: code-online$' "$ROOT/.agents/tests/replay/cases/$n.txt" \
+    && ok "case $n starts with its code already online" \
+    || bad "case $n no longer names code-online, so it meets the first upload instead"
+done
+grep -q '^# prepare: code-online$' "$ROOT/.agents/tests/replay/cases/55.txt" \
+  && bad "case 55 puts its code online, so the first upload it measures never happens" \
+  || ok "case 55 keeps its empty remote"
+co="$WORK/codeonline"
+mkdir -p "$co"
+cp -R "$fixture/app" "$co/app"
+sh "$ROOT/.agents/tests/replay/prepare/code-online.sh" "$co" \
+  && ok "the code-online preparation runs before the first commit" \
+  || bad "the code-online preparation failed before the first commit"
+git init -q -b master "$co"
+git init -q --bare -b main "$co.git"
+git -C "$co" remote add origin "$co.git"
+git -C "$co" config user.email rehearsal@example.com
+git -C "$co" config user.name Rehearsal
+git -C "$co" config commit.gpgsign false
+git -C "$co" add -A
+git -C "$co" commit -q -m "Project before the scenario"
+sh "$ROOT/.agents/tests/replay/prepare/code-online.after-commit.sh" "$co" \
+  && ok "its second half runs after the first commit" \
+  || bad "the code-online second half failed"
+[ "$(git -C "$co" branch --show-current)" = "main" ] && [ -z "$(git -C "$co" status --porcelain)" ] \
+  && [ "$(git -C "$co" rev-parse HEAD)" = "$(git -C "$co" ls-remote origin refs/heads/main | cut -f1)" ] \
+  && ok "the project is on main, clean, and the remote's main is the same commit" \
+  || bad "the remote's main does not match the project's first commit"
+git -C "$co" merge-base main origin/main >/dev/null 2>&1 \
+  && ok "the remote shares history with main, so the first upload is already done" \
+  || bad "the remote does not share history with the local main"
+sh "$ROOT/.agents/tests/replay/prepare/code-online.sh" "$co" 2>/dev/null \
+  && bad "the code-online preparation ran inside a git work tree" \
+  || ok "the code-online preparation refuses a folder inside a git work tree"
+sh "$ROOT/.agents/tests/replay/prepare/code-online.after-commit.sh" "$co" 2>/dev/null \
+  && bad "the code-online second half pushed to a remote that was not empty" \
+  || ok "the code-online second half refuses a remote that is not empty"
+mkdir -p "$co/app/nested"
+sh "$ROOT/.agents/tests/replay/prepare/code-online.after-commit.sh" "$co/app/nested" 2>/dev/null \
+  && bad "the code-online second half ran on a folder inside another repository" \
+  || ok "the code-online second half refuses a folder that is not the top of its own repository"
+
 # Case 55's gate waits for the kit to ask before the first upload. It must stay
 # shut on a reply saying the kit already pushed, or the yes would arrive after
 # the fact and read as permission the kit never waited for.
