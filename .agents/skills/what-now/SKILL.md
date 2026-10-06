@@ -1,6 +1,6 @@
 ---
 name: what-now
-description: Orientation for a lost or returning user. Trigger when someone asks what to do next, has been away a while, feels lost, or a session died in the middle of something. Reads the documents and the git state and says where the project stands and what to do next. Never builds, fixes, or changes anything.
+description: Orientation for a lost or returning user. Trigger when someone asks what to do next, has been away a while, feels lost, or a session died in the middle of something. Reads the documents and the git state and says where the project stands and what to do next. Never builds or repairs anything, and changes nothing unless the person chooses a recovery step it offers.
 ---
 
 # What now
