@@ -115,7 +115,7 @@ Type /setup-ai-build-kit. It checks what the current tool can actually do, then 
 
 From those answers it writes the masterplan and cuts the work into pieces. Each piece becomes an issue in your GitHub repository, which can be private.
 
-Before it opens the first one, it says in one line what it is about to do there: open the pieces as issues, replace GitHub's default labels with its own, and switch on removing a branch once it merges. It names the repository and says whether it is public. On a public repository it says the plan will be public to anyone, and offers once to stop so you can choose a private one; anything but stop carries on.
+Before it opens the first one, it says in one line what it is about to do there: open the pieces as issues, replace GitHub's default labels with its own, and switch on removing a branch once it merges. It names the repository and says whether it is public. On a public repository it warns that the plan will be public to anyone and carries on. You can ask it to stop at any point; issues it already opened stay readable to anyone who saw them.
 
 It then stands the project up with one passing check, saved on your own computer. Founding uploads no code. If none of your code is online yet, it stays there until your first build asks you before putting it online. Interrupt it anywhere; typing /setup-ai-build-kit again resumes where it stopped.
 

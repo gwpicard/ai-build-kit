@@ -461,8 +461,9 @@ prototype remains the default.
 **Does anything leave my computer?**
 Some things do. Founding opens your project's
 pieces of work as issues in a GitHub repository you own, which can be private.
-Before it does, it names the repository and says whether it is public; on a
-public one it offers to stop so you can choose a private one.
+Before it does, it names the repository and says whether it is public. On a
+public one it warns you that the plan will be public, and carries on unless
+you ask it to stop.
 
 It also replaces
 GitHub's default labels and switches on removing a branch once it merges.

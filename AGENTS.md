@@ -1251,7 +1251,10 @@ attribution line, not the word.
   first upload asks. It refuses the old answer. Before the first issue,
   founding says in one line what it will do on GitHub and names the
   repository and whether it is public. A private one carries on in the same
-  reply. A public one gets one offer to stop, and any answer but stop is a go.
+  reply. A public one is warned in that line, that the plan will be public,
+  and founding carries on too, as the maintainer chose, since founding
+  carries on rather than stalls. A stop opens no further issue and says the
+  ones already opened stay readable.
 - `.agents/tests/recipes.sh` guards the recipe format. A recipe pairs a build
   stack with a place to run it, and it is the only place outside the README
   allowed to name a service a tool runs on, so the rules around that permission

@@ -329,13 +329,13 @@ the repository as `owner/name` and say whether it is public or private, read
 with `gh repo view --json visibility`. Where you cannot read that, say so
 rather than guess.
 
-On a private repository, carry on in the same reply. On a public one, say that
-the plan will be public to anyone, and offer once to stop so the person can
-choose a private repository instead. That one offer ends the reply, because
-the issues cannot be taken back once anybody has read them. Any answer that
-does not ask to stop, a request to get on with it included, is a go. Where
-they stop it, save everything else and treat it the way the last paragraph of
-this step treats a GitHub setup that cannot be finished.
+On a private repository, carry on in the same reply. On a public one, say in
+that same line that the plan will be public to anyone, and that the person can
+ask for a private repository at any point. Then carry on in the same reply, as
+on a private one. Where they ask to stop, open no further issue, say that the
+issues already opened stay readable to anyone who saw them, save everything
+else, and treat it the way the last paragraph of this step treats a GitHub
+setup that cannot be finished.
 
 Each piece becomes an issue, written to the shape in references/pieces.md. This
 needs a GitHub repository and the GitHub command line tool signed in; where that
