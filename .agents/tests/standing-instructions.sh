@@ -33,7 +33,10 @@ rs_reset
 rs_rule "every path gets a complete count" 'on every build path, count every line in the project.s agents\.md, including blank lines'
 rs_rule "the read checks all four kinds of content" 'read it for a directory layout, dependency list, architecture overview or style rule an automatic check could enforce'
 rs_rule "maintain holds the ceiling and content rule" 'it stays under 200 lines and holds only what the code cannot show: the save and review routes, conventions that differ from the default, and pointers to the records'
-rs_rule "length or content triggers one measured offer" 'at 200 lines or more, or with any of the named content even below that count, offer a trim in one line, using the measured count and what can go'
+rs_rule "length or content triggers one measured offer" 'at 200 lines or more, or with any of the named content or such a line even below that count, offer a trim in one line, using the measured count and what can go'
+# A short file can still carry a line that stopped paying its way, and the
+# truing no longer trims, so the monthly offer has to catch it.
+rs_rule "a line that no longer pays its way is read for too" 'and for lines that no longer pay their way, such as a rule about a tool or a step the project has dropped'
 rs_rule "the visible line asks for the trim" 'the standing instructions have reached 240 lines, and 30 of them describe the folder layout the code already shows\. shall i trim them\?'
 rs_rule "length alone needs no invented content" 'where length alone triggers the offer, name that alone; never invent removable content to fill the example'
 rs_rule "the monthly offer waits for the person's yes" 'cut nothing without the person.s yes'

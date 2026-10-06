@@ -45,7 +45,8 @@ rs_rule "the corrections use the build path's route" \
 rs_rule "the routes are section-builder's three" 'the three routes section-builder names'
 rs_rule "the branch is cut from the current main" \
   'short-lived branch from the up-to-date `main`'
-rs_rule "only the visit's own files are staged" 'stage only the files the visit itself changed'
+rs_rule "only the truing's own files are staged" 'stage only the files the truing itself changed'
+rs_rule "the person's work stays out of that commit" 'the person.s own uncommitted work stays out of that commit'
 rs_rule "a pull request is opened" 'open a pull request titled after the reconciliation'
 rs_rule "the project check runs" 'run the project check'
 rs_rule "the summary paragraph is the pull request body" \
@@ -56,8 +57,12 @@ rs_rule "and it says why a direct commit is drift" 'a second kind of drift'
 rs_rule "an unreachable github is a missing step, not a hazard" \
   'a missing step is not a hazard'
 rs_rule "what-now is named for the found work" 'say once that /what-now offers the ways to continue it, save it or clear it'
-rs_rule "the save comes at the end of the visit, with the rest" \
-  'at the end of the visit, together with anything else the visit changed'
+# The save comes first. A monthly part needs a clean checkpoint before the kit
+# update, and a tree still holding the corrections could never give it one.
+rs_rule "the save comes before the rest of the visit changes a file" \
+  'as soon as the truing is done and before the rest of the visit changes a file'
+rs_rule "the monthly checkpoint starts from that save" \
+  'starts its clean checkpoint from this save, and saves its own changes the same way on top of it'
 rs_guard "$SYNC" "the maintain skill's truing"
 
 # WORKFLOW.md is where the person reads it.
@@ -77,5 +82,13 @@ rs_require_load_bearing "what-now is the one home for recovering left-behind wor
   "$WHATNOW" 'this is the one home for recovering work an interrupted session left behind'
 rs_require_load_bearing "what-now says the truing only reports it" \
   "$WHATNOW" 'truing reports such work and leaves it alone'
+rs_require_load_bearing "maintain keeps the person's work out of every commit" \
+  "$MAINTAIN" 'the person.s own uncommitted work stays out of every commit the visit makes'
+rs_require_load_bearing "the kit update waits on a tree that is not clean" \
+  "$MAINTAIN" 'the kit update and every other step that needs the clean checkpoint waits, as it always has'
+rs_require_load_bearing "the truing's save comes before the monthly part" \
+  "$MAINTAIN" 'the monthly part.s clean checkpoint starts from that save'
+rs_require_load_bearing "WORKFLOW says the update waits for that work" \
+  "$WORKFLOW" 'that work stays out of every save the visit makes, and the kit update waits until it is dealt with'
 
 rs_done

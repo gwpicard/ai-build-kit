@@ -54,11 +54,21 @@ rs_rule "the visit can run at any time" \
   'this command can run at any time\. every visit makes the project true again'
 rs_rule "the upkeep runs only when due" \
   'the monthly and quarterly parts run only when they are due'
-rs_rule "the comparison is the later run's, read-only" \
-  'run the comparison in the `setup-hosting` skill.s "a later run" read-only'
-rs_rule "each gap is one line and nothing changes" \
-  'compare, report each gap in one plain line, and change nothing'
-rs_rule "a gap is sent to setup-hosting" 'offer /setup-hosting in one line to repair it'
+rs_rule "the comparison makes only the listed reads" \
+  'compare the live copy with `main`, read-only\. where the masterplan.s "how it stays running" section records a live address, make only these reads'
+rs_rule "the live commit against main" \
+  'whether the live copy runs the latest merge on `main`, from its health route or the host.s list of deployments'
+rs_rule "a hold left by a rollback" 'whether the live copy is still held on an earlier version since a rollback'
+rs_rule "migrations not applied, secret by location" \
+  'read with the recipe.s own dry run where it has one, its secret passed by its location'
+rs_rule "secret names on the host" 'whether each secret name the tool needs is present on the host, by name only'
+rs_rule "health" 'whether health answers\.'
+rs_rule "each gap is one line and nothing changes" 'report each gap in one plain line, and change nothing'
+rs_rule "no changelog line and no fit check from the comparison" \
+  'write nothing to the changelog here, and do not rerun the fit check from this step'
+rs_rule "backup, restore, preview and the full checks stay in setup-hosting" \
+  'the backup, the restore, the preview and the rest of the recipe.s checks stay in /setup-hosting.s later run'
+rs_rule "a gap is sent to setup-hosting" 'offer that later run in one line, with any gap found'
 rs_rule "the visit never changes the live service" \
   'never apply a migration, deploy, promote or roll back from this visit'
 rs_rule "no live address, no comparison and no word" \
@@ -68,8 +78,11 @@ rs_rule "monthly is due thirty days on" \
 rs_rule "quarterly is due ninety days on" \
   'the quarterly part is due 90 days after its `last-full-pass` date'
 rs_rule "a handover makes the quarterly part due" 'and whenever the person asks for a handover'
-rs_rule "a records-only request runs only the truing" \
-  'where they ask only for the records to be checked, run only the steps in this section'
+rs_rule "a records-only visit runs only the every-visit steps" \
+  'a records-only visit, where the person asks only for the records to be checked, runs only the every-visit steps'
+rs_rule "the fit check reruns before the rest of the monthly part" \
+  'run it before the rest of the monthly part'
+rs_rule "the monthly part's steps say monthly" 'on every route and every monthly visit, run "adding the plan printout helper"'
 rs_rule "a part not due is named with its date" \
   'where a part is not due, say so in one line with the date it falls due'
 rs_rule "the monthly heading says when due" '## monthly, when due'
@@ -86,7 +99,9 @@ rs_rule "the AGENTS.md trim has one home" \
 rs_guard "$TRUING" "the maintain skill's truing"
 
 rs_require_load_bearing "setup-hosting says maintain runs its comparison and stops" \
-  "$HOSTING" '/maintain runs this same comparison on every visit, stops there, and sends any gap here for its repair'
+  "$HOSTING" '/maintain makes the reads in this list, except the backup, on every visit, stops there, and sends any gap here for its repair'
+rs_require_load_bearing "setup-hosting keeps the heavy checks to its later run" \
+  "$HOSTING" 'the backup, the restore, the preview and the rest of the recipe.s checks run only in this later run'
 
 # Told in three places: the skill, WORKFLOW.md, and the README's table row.
 rs_require_load_bearing "WORKFLOW says maintain runs at any time" \
@@ -102,5 +117,11 @@ rs_require "README's row says what a visit does" \
 # leftover work, rather than to a command that no longer exists.
 rs_require_load_bearing "the session-end reminder names what-now" \
   "$HOOK" 'next session, /what-now says what they belong to'
+rs_require_load_bearing "the session-end reminder says what the changes are" \
+  "$HOOK" 'they are edits to its files since the last saved checkpoint'
+rs_require_load_bearing "the session-end reminder names maintain for the records" \
+  "$HOOK" '/maintain then makes the records true'
+rs_require_load_bearing "WORKFLOW says the heavy checks stay in setup-hosting" \
+  "$WORKFLOW" 'the backup, restore and preview checks stay in /setup-hosting'
 
 rs_done

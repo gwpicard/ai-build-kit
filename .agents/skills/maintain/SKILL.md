@@ -13,26 +13,53 @@ The monthly and quarterly parts run only when they are due.
 ## Every visit
 
 1. Make the records true. Load `references/truing.md` and follow it. Its
-   save step comes last, at the end of the visit, and saves everything the
-   visit changed in one go.
-2. Compare the live copy with `main`. Where the masterplan's "How it stays
-   running" section records a live address, run the comparison in the
-   `setup-hosting` skill's "A later run" read-only: compare, report each gap
-   in one plain line, and change nothing. Say nothing more about a part that
-   matches. Where there is a gap, offer /setup-hosting in one line to repair
-   it, since each repair there waits for its own yes. Never apply a migration,
-   deploy, promote or roll back from this visit. Without a recorded live
-   address, skip this step and say nothing.
+   save step saves the corrections through the save route as soon as the
+   truing is done, before the rest of the visit changes a file. The monthly
+   part's clean checkpoint starts from that save.
+
+   The person's own uncommitted work stays out of every commit the visit
+   makes. Report it in one line and name /what-now, which offers to continue
+   it, save it or clear it. While it is there, the tree is not clean, so the
+   kit update and every other step that needs the clean checkpoint waits, as
+   it always has: say so in one line. Steps that only read carry on.
+2. Compare the live copy with `main`, read-only. Where the masterplan's "How
+   it stays running" section records a live address, make only these reads,
+   each as the `setup-hosting` skill's "A later run" describes it:
+
+   - whether the live copy runs the latest merge on `main`, from its health
+     route or the host's list of deployments;
+   - whether the live copy is still held on an earlier version since a
+     rollback;
+   - whether `main` holds a database migration the live database does not
+     have, read with the recipe's own dry run where it has one, its secret
+     passed by its location as "A secret a check needs" in that skill says;
+   - whether each secret name the tool needs is present on the host, by name
+     only;
+   - whether health answers.
+
+   Report each gap in one plain line, and change nothing. Say nothing more
+   about a part that matches, and say in one line when a read could not be
+   made. Write nothing to the changelog here, and do not rerun the fit check
+   from this step.
+
+   The backup, the restore, the preview and the rest of the recipe's checks
+   stay in /setup-hosting's later run. They can stop the local database, copy
+   the live one, or need the person, so a visit nobody asked to touch the
+   live side never runs them. Offer that later run in one line, with any gap
+   found, since each repair there waits for its own yes. Never apply a
+   migration, deploy, promote or roll back from this visit. Without a
+   recorded live address, skip this step and say nothing.
 3. Decide what else is due. Read `.ai-build-kit-maintenance`. The monthly part
    is due 30 days after its `last-light-pass` date, or 30 days after founding
    when no visit is recorded. The quarterly part is due 90 days after its
    `last-full-pass` date, or 90 days after founding when no full visit is
    recorded, and whenever the person asks for a handover. The person may ask
-   for either part at any time, and then it is due. Where they ask only for
-   the records to be checked, run only the steps in this section. Run what is
-   due. Where a
-   part is not due, say so in one line with the date it falls due. When
-   nothing more is due, the visit ends with the truing's save and summary.
+   for either part at any time, and then it is due. A records-only visit,
+   where the person asks only for the records to be checked, runs only the
+   every-visit steps. Run what is due. Where a part is not due, say so in one
+   line with the date it falls due. When nothing more is due, the visit ends
+   with the truing's summary. A monthly or quarterly part that runs saves its
+   own changes the same way at its end, on top of the truing's save.
 
 ## Monthly, when due
 
@@ -44,7 +71,7 @@ The monthly and quarterly parts run only when they are due.
    its first row for anybody who can see the repository, which would offer an
    update that does not exist yet.
 
-   Say both numbers, every visit, whichever way they compare: "This project
+   Say both numbers, every monthly visit, whichever way they compare: "This project
    holds v0.15.0, and the latest published AI Build Kit is v0.16.0." Where they
    differ, say so plainly rather than leaving the person to compare two numbers,
    read the newer version's notes, and add: "A newer AI Build Kit is available.
@@ -130,9 +157,9 @@ The monthly and quarterly parts run only when they are due.
    masterplan says rather than by which update this is. On the shared route,
    also run "Tidying a project founded from a whole copy of the kit" below
    whenever the leftovers it names are present. On every route and every
-   visit, run "Adding the plan printout helper" below; it does nothing when
-   the project's copy is already current. On every visit, run "Pointing the
-   records at a skill by name" below, and whenever a `plan.md` is at the
+   monthly visit, run "Adding the plan printout helper" below; it does nothing
+   when the project's copy is already current. On every monthly visit, run
+   "Pointing the records at a skill by name" below, and whenever a `plan.md` is at the
    project root, run "Moving a plan.md into issues" below. Both are decided by
    what is on disk, so a project that missed the update which first needed
    them still gets them.
@@ -160,16 +187,18 @@ The monthly and quarterly parts run only when they are due.
    trued-against mark was already read in the truing, on every visit.
 10. Once live: read the error alerts and the bills. Anything real becomes a piece, for implement to take: open an issue in the shape the `setup-ai-build-kit` skill's `references/pieces.md` describes. A finding nobody wrote down is a finding nobody acts on.
 11. Verify backups still run where the tool has any. A check that needs a secret reads where it lives from the masterplan first, asks once when that is unknown, and never calls the secret absent. Confirm the named operational owner from the masterplan still holds that role, and that no critical service or credential is tied to someone who has left.
-12. Check whether use or reliance has grown enough that the fit check should run again; if it has, run it before anything else this visit.
+12. Check whether use or reliance has grown enough that the fit check should run again; if it has, run it before the rest of the monthly part.
 13. On every build path, count every line in the project's AGENTS.md, including
     blank lines, and read it for a directory layout, dependency list,
-    architecture overview or style rule an automatic check could enforce. It
+    architecture overview or style rule an automatic check could enforce, and
+    for lines that no longer pay their way, such as a rule about a tool or a
+    step the project has dropped. It
     stays under 200 lines and holds only what the code cannot show: the save
     and review routes, conventions that differ from the default, and pointers
     to the records.
 
-    At 200 lines or more, or with any of the named content even below that
-    count, offer a trim in one line, using the measured count and what can
+    At 200 lines or more, or with any of the named content or such a line
+    even below that count, offer a trim in one line, using the measured count and what can
     go: "The standing instructions have reached 240 lines, and 30 of them
     describe the folder layout the code already shows. Shall I trim them?"
 
@@ -217,7 +246,7 @@ On the clean checkpoint from step 2, and after the update where the person
 approved one, run `sh <installed setup-ai-build-kit skill>/scripts/place-plan-helper.sh`
 from the project root. It adds the helper when it is missing, replaces a copy
 that differs from the installed one, and changes nothing when the copy is
-current, so it is safe on every visit.
+current, so it is safe on every monthly visit.
 
 Where it added the helper, say one sentence: "I have added the helper that
 prints your list of pieces, so /what-now and /implement read what is
@@ -300,7 +329,7 @@ Record the migration in the changelog as a dated line.
 
 ## Moving a plan.md into issues
 
-Run this on any visit that finds a `plan.md` at the project root, for as long
+Run this on any monthly visit that finds a `plan.md` at the project root, for as long
 as it is there. It used to run only on the visit that first brought in
 `/shape` and `/implement`, and a project that missed that visit kept its
 `plan.md` for good, with nothing to say its pieces were never picked up.
@@ -323,7 +352,7 @@ on the next visit that still finds the file. Say that too, in the same reply.
 
 ## Pointing the records at a skill by name
 
-Run this on every visit. A project founded before the kit named its pointers
+Run this on every monthly visit. A project founded before the kit named its pointers
 by skill carries lines in AGENTS.md and masterplan.md that name a skill's file
 by its place in the project's `.agents/skills/` folder. A project installed
 for Claude Code alone, or through a plugin, has no such folder, so the line
@@ -350,7 +379,7 @@ visit changes them.
    before and after. Name each line left as written, with its reason, as one
    the person may want to change by hand. Wait for the person's yes. Where the
    script finds only lines left as written, offer nothing: say in one line how
-   many there are and in which file, since they come back on every visit
+   many there are and in which file, since they come back on every monthly visit
    until the person changes them.
 4. On a yes, run the same command with `--apply`, then run it again without,
    and carry on only once no line it prints ends in a new form. Save the
@@ -365,7 +394,7 @@ line.
 
 ## Migrating a project founded before the setup-ai-build-kit rename
 
-Run this on any visit that finds a `start` skill installed, or no
+Run this on any monthly visit that finds a `start` skill installed, or no
 `setup-ai-build-kit` skill. It is idempotent: a visit that finds only
 `setup-ai-build-kit` does nothing here.
 
@@ -394,7 +423,7 @@ Record the tidy-up in the changelog as a dated line.
 
 ## Migrating a project founded before the shape rename
 
-Run this on any visit that finds a `plan` skill installed, or no `shape`
+Run this on any monthly visit that finds a `plan` skill installed, or no `shape`
 skill. It is idempotent: a visit that finds only `shape` does nothing here.
 
 The command that turns an idea into a ready piece was renamed from `/plan` to
@@ -425,7 +454,7 @@ Record the tidy-up in the changelog as a dated line.
 
 ## Migrating a masterplan written with four build paths
 
-Run this on any visit that finds, in the build-path section of
+Run this on any monthly visit that finds, in the build-path section of
 `masterplan.md`, a `Required controls:` line, an `Outside help:` line, or a
 `Path:` of `Build with expert help` or `Professional-led`. It is idempotent: a
 section whose fields are Path, Why, Sensitive areas, Accepted, Recheck when
@@ -497,7 +526,7 @@ Record it in the changelog with the tidy-up that called it.
 
 ## Tidying a project founded from a whole copy of the kit
 
-Run this on any visit on the shared route that finds the leftovers below. It
+Run this on any monthly visit on the shared route that finds the leftovers below. It
 is idempotent: a project that has none of them gets nothing here.
 
 A project founded from a whole copy of the kit brought the kit's own generated

@@ -28,9 +28,11 @@ if git diff --quiet && git diff --cached --quiet && [ -z "$(git status --porcela
   exit 0
 fi
 
-echo "Session ended with repository changes present."
-echo "The records (CHANGELOG.md, masterplan.md) may not describe what just happened."
-echo "Next session, /what-now says what they belong to and offers what to do with them; this hook does not edit anything itself."
+echo "Session ended with changes in this project that are not saved yet."
+echo "They are edits to its files since the last saved checkpoint, listed in .agents/tmp/session-end-drift.txt."
+echo "The records (CHANGELOG.md, masterplan.md) may not describe them yet."
+echo "Next session, /what-now says what they belong to and offers to continue, save or clear them."
+echo "/maintain then makes the records true. This hook does not edit anything itself."
 
 mkdir -p "$ROOT/.agents/tmp"
 {

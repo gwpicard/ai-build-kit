@@ -266,8 +266,8 @@ rs_rule "because it is the only one that cannot answer with a draft" \
   'cannot answer with a draft or a prerelease'
 rs_rule "while the release list puts an unpublished draft first" \
   'puts an unpublished draft in its first row'
-rs_rule "both numbers are said every visit, whichever way they compare" \
-  'say both numbers, every visit, whichever way they compare'
+rs_rule "both numbers are said every monthly visit, whichever way they compare" \
+  'say both numbers, every monthly visit, whichever way they compare'
 rs_rule "a difference is said plainly rather than left to the person" \
   'where they differ, say so plainly'
 rs_rule "a match is said too" \

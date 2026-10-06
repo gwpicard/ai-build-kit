@@ -446,10 +446,12 @@ move work over. It compares the live copy with `main` and repairs what
 differs. If reliance, data sensitivity, or consequence has grown since the
 build path was last checked, rerun the fit check first.
 
-Compare first, and change nothing while comparing. /maintain runs this same
-comparison on every visit, stops there, and sends any gap here for its
-repair. Report each gap in one plain line, and say nothing more about a part
-that matches:
+Compare first, and change nothing while comparing. /maintain makes the reads
+in this list, except the backup, on every visit, stops there, and sends any
+gap here for its repair. The backup, the restore, the preview and the rest of
+the recipe's checks run only in this later run, since they can stop the local
+database, copy the live one, or need the person. Report each gap in one plain
+line, and say nothing more about a part that matches:
 
 - whether the live copy runs the latest merge on `main`, read from its health
   route or the host's list of deployments, as the recipe's going-live check

@@ -27,15 +27,15 @@ rs_init "Older-project upkeep rules"
 rs_exists "$MAINTAIN" "$SCRIPT" "$WORKFLOW" "$TEMPLATES/foundation/AGENTS.md" "$TEMPLATES/masterplan.md"
 
 # Both are decided by what is on disk, every visit.
-rs_rule "the monthly step runs both on what is on disk" 'on every visit, run "pointing the records at a skill by name" below, and whenever a `plan\.md` is at the project root, run "moving a plan\.md into issues" below'
-rs_rule "plan.md is offered for as long as it is there" 'run this on any visit that finds a `plan\.md` at the project root, for as long as it is there'
+rs_rule "the monthly step runs both on what is on disk" 'on every monthly visit, run "pointing the records at a skill by name" below, and whenever a `plan\.md` is at the project root, run "moving a plan\.md into issues" below'
+rs_rule "plan.md is offered for as long as it is there" 'run this on any monthly visit that finds a `plan\.md` at the project root, for as long as it is there'
 rs_rule "the shape migration points to it" 'move a `plan\.md` into issues, as "moving a plan\.md into issues" below says'
 rs_rule "a plan.md of the person's own is left alone" 'where the file is plainly something else of the person.s, such as their own notes, leave it and say nothing'
 rs_rule "plan.md is removed only after the move" 'name what moved, and only then remove `plan\.md`'
 rs_rule "a no to the move comes back next visit" 'nothing records the no, so the offer comes back on the next visit that still finds the file'
 
 # The pointer rewrite.
-rs_rule "the pointer step runs every visit" 'pointing the records at a skill by name run this on every visit'
+rs_rule "the pointer step runs every monthly visit" 'pointing the records at a skill by name run this on every monthly visit'
 rs_rule "it runs the shipped script" 'scripts/old-skill-pointers\.py'
 rs_rule "nothing to change says nothing" 'when it prints nothing, say nothing'
 rs_rule "the rewrite waits for a yes" 'as one the person may want to change by hand\. wait for the person.s yes'
