@@ -84,6 +84,9 @@ rs_rule "the rollback line is corrected after it" 'correct the rollback line to 
 
 # A warning once.
 rs_rule "a warning said once is not said again in the same run" 'a warning said once in a run of /setup-hosting is not said again in that run, even when a step runs twice'
+# Two of six replays of scenario 54 gave the backup warning again in full when
+# the person asked what was left.
+rs_rule "asked what is left, a held warning is a one-line pointer" 'that holds when the person asks what is left: name the warning in one line that points to the changelog, without its reason or its risk'
 rs_rule "a later mention is a pointer to the changelog" 'one line saying the changelog already holds it is enough'
 rs_rule "the area risk notice is not caught by it" 'the risk notice for a named area is not a warning'
 

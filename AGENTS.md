@@ -226,7 +226,10 @@ attribution line, not the word.
   whether it is public or private. It creates `main` through the API only at
   a commit the repository holds, and only once, and makes `main` the default
   branch only once it exists. Moving or deleting a branch through the API
-  stays refused.
+  stays refused. An issue, a comment or a pull request reads its body from
+  `--body-file`, standard input included, and a file it cannot read is
+  refused. The stand-in once read only `--body`, so a replayed piece written
+  from a file had no body, and the state check called it unsized.
 - `.agents/tests/fake-host.sh` checks the replay harness's stand-ins for a
   host's tools, which scenario 54 launches through on the Vercel recipe. The
   stand-in host keeps a list of deployments beside the project and builds each
@@ -1188,7 +1191,9 @@ attribution line, not the word.
   build a rollback would reach. So it holds that the whole output or the
   host's list of deployments is read first, that no second deploy runs before
   the first is checked, and that a second deploy is announced as replacing
-  the rollback target. A warning said once is not repeated in the same run. A
+  the rollback target. A warning said once is not repeated in the same run,
+  even when the person asks what is left, where one line points to the
+  changelog. A
   later run of that command merged properly and then pushed its changelog
   entries straight to `main`. So the records take the save route a piece
   takes, on one pull request for each run, opened once the launch is checked,

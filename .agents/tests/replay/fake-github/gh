@@ -265,6 +265,31 @@ def flag(argv, name):
     return None
 
 
+def body_flag(argv):
+    """The body given with --body or -b, or read from --body-file or -F.
+
+    The kit writes a long body to a file and passes it with --body-file. The
+    stand-in once read only --body, so an issue created that way had no body,
+    and the state check called a ready piece unsized when its done line was in
+    the file. "-" reads standard input, as the real command does.
+    """
+    for name in ("--body", "-b"):
+        value = flag(argv, name)
+        if value is not None:
+            return value
+    for name in ("--body-file", "-F"):
+        path = flag(argv, name)
+        if path is not None:
+            if path == "-":
+                return sys.stdin.read()
+            try:
+                with open(path) as handle:
+                    return handle.read()
+            except OSError:
+                unsupported(argv, "cannot read the body file")
+    return None
+
+
 def flags_all(argv, name):
     out, i = [], 0
     while i < len(argv):
@@ -590,7 +615,7 @@ def main():
             issue = {
                 "number": state["next"],
                 "title": flag(argv, "--title") or "",
-                "body": flag(argv, "--body") or "",
+                "body": body_flag(argv) or "",
                 "state": "open",
                 "labels": [l for value in flags_all(argv, "--label")
                            for l in value.split(",")],
@@ -630,7 +655,7 @@ def main():
                     for name in value.split(","):
                         if name not in issue["assignees"]:
                             issue["assignees"].append(name)
-                body = flag(argv, "--body")
+                body = body_flag(argv)
                 if body is not None:
                     issue["body"] = body
             save(state)
@@ -641,7 +666,7 @@ def main():
             issue = find(state, re.sub(r"\D", "", argv[2]) or "0")
             if issue is None:
                 unsupported(argv, "no such issue")
-            issue.setdefault("comments", []).append(flag(argv, "--body") or "")
+            issue.setdefault("comments", []).append(body_flag(argv) or "")
             save(state)
             print("https://github.com/%s/issues/%s#issuecomment-%s"
                   % (state["repo"], issue["number"], len(issue["comments"])))
@@ -655,7 +680,7 @@ def main():
             # "Closes #N" does nothing yet. GitHub closes the issue when the
             # pull request merges, and closing it here told the kit a piece was
             # done while its fix sat unmerged.
-            body = flag(argv, "--body") or ""
+            body = body_flag(argv) or ""
             pr = {
                 "number": len(pulls(state)) + 1,
                 "title": flag(argv, "--title") or "",
@@ -714,10 +739,12 @@ def main():
             pr = find_pr(state, argv[2])
             if pr is None:
                 unsupported(argv, "no such pull request")
-            for name, key in (("--title", "title"), ("--body", "body")):
-                value = flag(argv, name)
-                if value is not None:
-                    pr[key] = value
+            title = flag(argv, "--title")
+            if title is not None:
+                pr["title"] = title
+            body = body_flag(argv)
+            if body is not None:
+                pr["body"] = body
             save(state)
             print(pr_url(state, pr))
             return

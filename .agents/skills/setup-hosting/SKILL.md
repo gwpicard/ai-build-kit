@@ -329,7 +329,9 @@ line before you run it, and correct the rollback line to match.
 
 A warning said once in a run of /setup-hosting is not said again in that run,
 even when a step runs twice. Where it matters again, one line saying the changelog already
-holds it is enough. The risk notice for a named area is not a warning, and
+holds it is enough. That holds when the person asks what is left: name the
+warning in one line that points to the changelog, without its reason or its
+risk. The risk notice for a named area is not a warning, and
 Build with care still gives it at the moment that area goes live.
 
 #### Rolling back

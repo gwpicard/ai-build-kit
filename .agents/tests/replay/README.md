@@ -283,7 +283,7 @@ branch and to write the stand-in host's state beside the project. The second
 half refuses any folder that is not a fresh replay project, so it can never cut
 a branch in this repository.
 
-Most remotes start empty, and the first upload of a project's code waits for
+The harness starts every remote empty, and the first upload of a project's code waits for
 the person's yes. Scenarios 8 and 45 save their piece as a pull request
 through the usual route, so they name `# prepare: code-online`, whose second
 half puts `main` on the remote as an established project has it. Without it

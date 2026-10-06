@@ -366,6 +366,29 @@ if grep -q "UNSUPPORTED" "$FAKE_GH_LOG"; then
   fi
 fi
 
+# The kit writes a long body to a file. The stand-in once read only --body, so
+# an issue made with --body-file had no body, and the state check called a
+# ready piece unsized when its done line was in the file.
+printf '## Done when\n- a deposit is kept for a week\n' > "$WORK/body.md"
+bodyfile=$("$GH" issue create --title "Hold a deposit" --body-file "$WORK/body.md" --label behaviour)
+bodynum=${bodyfile##*/}
+"$GH" issue view "$bodynum" | grep -q 'kept for a week' \
+  && pass "issue create reads its body from --body-file" \
+  || fail "issue create dropped the body given with --body-file"
+printf '## Done when\n- a deposit is kept for two weeks\n' > "$WORK/body.md"
+"$GH" issue edit "$bodynum" --body-file "$WORK/body.md" > /dev/null
+"$GH" issue view "$bodynum" | grep -q 'two weeks' \
+  && pass "issue edit reads its body from --body-file" \
+  || fail "issue edit dropped the body given with --body-file"
+printf 'Read from standard input.\n' | "$GH" issue comment "$bodynum" --body-file - > /dev/null
+grep -q 'Read from standard input' "$FAKE_GH_STATE" \
+  && pass "a comment reads its body from standard input with --body-file -" \
+  || fail "a comment dropped the body given on standard input"
+"$GH" issue create --title "No such file" --body-file "$WORK/missing.md" > /dev/null 2>&1 \
+  && fail "a body file that cannot be read was taken as an empty body" \
+  || pass "a body file that cannot be read is refused rather than read as empty"
+"$GH" issue close "$bodynum" > /dev/null
+
 echo
 if [ "$FAIL" -eq 0 ]; then
   echo "fake-github.sh: all checks passed"
