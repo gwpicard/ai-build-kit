@@ -21,7 +21,10 @@ root are read. Each finding prints as one line, in one of two forms:
     file:line<TAB>old pointer<TAB>left as written: <why>
 
 Nothing prints when there is nothing to find. Only a pointer into one of the
-kit's skills, under today's name or a name it had before, is found. A project's
+kit's skills, under today's name or a name it had before, is found. A pointer
+already in the named form, the `ship` skill's `templates/handover.md`, is found
+only where it names a skill the kit has retired, since that skill is no longer
+installed and the pointer opens nothing. A project's
 own skill under the same folder, a placeholder such as `<name>`, and a mention
 of the folder itself are never found, since those are the person's words or
 still true.
@@ -56,15 +59,17 @@ FORMER_NAMES = {
     "queue": "implement", "sync": "maintain",
 }
 
-# A former skill whose rules moved into a file of another skill. The fix skill
-# had only its SKILL.md, and its rules now sit in section-builder's repair
-# reference, so a pointer to that file follows them there. The routine of
-# `sync` became the maintain skill's truing reference. Its document read and
-# script kept their paths, and the rules of `queue` joined implement's own
-# SKILL.md, so those need no entry here.
+# A former skill's file that moved somewhere other than the same path in the
+# skill that took its name. The fix skill had only its SKILL.md, and its rules
+# now sit in section-builder's repair reference, so a pointer to that file
+# follows them there. The routine of `sync` became the maintain skill's truing
+# reference. The handover template left `ship` for the maintain skill, which
+# now owns handovers. Sync's document read and script kept their paths, and the
+# rules of `queue` joined implement's own SKILL.md, so those need no entry here.
 FORMER_FILES = {
-    ("fix", "SKILL.md"): "references/repair.md",
-    ("sync", "SKILL.md"): "references/truing.md",
+    ("fix", "SKILL.md"): ("section-builder", "references/repair.md"),
+    ("sync", "SKILL.md"): ("maintain", "references/truing.md"),
+    ("ship", "templates/handover.md"): ("maintain", "templates/handover.md"),
 }
 
 FILES = ("AGENTS.md", "masterplan.md")
@@ -73,6 +78,11 @@ NAMES = sorted(KIT_SKILLS + tuple(FORMER_NAMES), key=len, reverse=True)
 POINTER = re.compile(
     r"\.agents/skills/(" + "|".join(re.escape(s) for s in NAMES) + r")/"
     r"([A-Za-z0-9_./-]*[A-Za-z0-9_-])"
+)
+# A pointer that already names its skill, under a name the kit has retired.
+NAMED = re.compile(
+    r"`(" + "|".join(re.escape(s) for s in sorted(FORMER_NAMES, key=len, reverse=True)) + r")`"
+    r" skill['\u2019]s `([A-Za-z0-9_./-]*[A-Za-z0-9_-])`"
 )
 # A code span opens and closes with the same run of backticks.
 CODE_SPAN = re.compile(r"(`+)(.+?)(?<!`)\1(?!`)")
@@ -114,11 +124,27 @@ def placement(line, start, end):
     return None, "it runs on into more of a path or an address"
 
 
+def new_home(name, path):
+    """The skill and path a pointer into `name` at `path` should name now."""
+    if (name, path) in FORMER_FILES:
+        return FORMER_FILES[(name, path)]
+    return FORMER_NAMES.get(name, name), path
+
+
 def findings(line, in_block):
     """Yield (start, end, old, new-or-None, reason) for each pointer on the line."""
+    for match in NAMED.finditer(line):
+        skill, path = new_home(match.group(1), match.group(2))
+        if in_block:
+            yield match.start(), match.end(), match.group(0), None, "it sits inside a code block"
+            continue
+        problem = target_problem(skill, path)
+        if problem:
+            yield match.start(), match.end(), match.group(0), None, problem
+            continue
+        yield match.start(), match.end(), match.group(0), "`%s` skill's `%s`" % (skill, path), ""
     for match in POINTER.finditer(line):
-        skill = FORMER_NAMES.get(match.group(1), match.group(1))
-        path = FORMER_FILES.get((match.group(1), match.group(2)), match.group(2))
+        skill, path = new_home(match.group(1), match.group(2))
         if in_block:
             yield match.start(), match.end(), match.group(0), None, "it sits inside a code block"
             continue
