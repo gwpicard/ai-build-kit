@@ -4,18 +4,17 @@ or folds a command.
 
 An update refreshes the kit's skills and nothing else. When the kit renames a
 command or folds one into another, the old skill can stay installed, a whole
-copy of the kit keeps its old command files, and the project's AGENTS.md keeps
-listing the old commands. This script finds each of those and prints one line
-for it. It prints nothing when there is nothing to find, so a second visit
-after the tidy says nothing.
+copy of the kit keeps its old generated files, and the project's AGENTS.md
+keeps listing the old commands. This script finds each of those and prints one
+line for it. It prints nothing when there is nothing to find.
 
 Usage:
 
     kit-leftovers.py [PROJECT]                     list what it finds
-    kit-leftovers.py --remove [PROJECT]            remove the folders and files
-                                                   listed as `folder` or `adapter`
-    kit-leftovers.py --rewrite-commands [PROJECT]  rewrite the lines listed as
-                                                   `commands`
+    kit-leftovers.py --remove [PROJECT]            remove what is listed as
+                                                   `folder` or `adapter`
+    kit-leftovers.py --rewrite-commands [PROJECT]  rewrite the `commands` lines
+                                                   that show a new form
 
 PROJECT defaults to the current folder. Each finding is one line of fields
 separated by tabs. The first field says what it is:
@@ -23,19 +22,27 @@ separated by tabs. The first field says what it is:
     installer  NAME    a skill under a former name that skills-lock.json lists
                        as the kit's; the installer removes it with
                        `npx skills remove NAME`, never this script
-    folder     PATH    a skill folder under a former name that the lockfile
-                       does not list as the kit's
-    adapter    PATH    a command file the kit generated, known by its marker
+    folder     PATH    a skill folder under a former name, not in the
+                       lockfile, whose SKILL.md is the kit's own
+    adapter    PATH    a command file or skill folder the kit generated,
+                       known by its marker
+    left       PATH    WHY
+                       something that looks like a leftover but is never
+                       removed, with the reason
     missing    NAME    one of the kit's skills is not installed
     commands   FILE:LINE  OLD  NEW
                        a line of the command list or its counts in AGENTS.md
     commands   FILE:LINE  OLD  left as written: WHY
-                       a list the script cannot rewrite safely
+                       a line the script will not rewrite, with the reason
     hook       PATH    the kit's session-end hook still names a retired command
 
-The script never runs the installer and never touches a file the lockfile
-lists. It removes nothing and rewrites nothing unless asked, and then only what
-it listed. A rewrite of AGENTS.md changes the listed lines and nothing else,
+What it will not touch. A name the lockfile lists under any other source is
+the person's. A folder not in the lockfile counts as the kit's only when its
+SKILL.md carries the former name and a description one of the kit's releases
+gave it, kept in kit-retired-skills.json beside this script. Nothing whose
+real location is outside the project is ever listed for removal, and a link is
+never followed: at most the link itself goes. A rewrite of AGENTS.md changes
+only a list that holds the kit's names and nothing else, and only those lines,
 line endings included.
 """
 
@@ -54,18 +61,22 @@ KIT_SKILLS = (
 
 # Every name a kit skill had before. `build` split into `shape` and
 # `implement`, `start` became `setup-ai-build-kit`, `plan` became `shape`,
+# `grilling` became `clarify`,
 # `ship` became `setup-hosting`, and `fix`, `queue` and `sync` folded into
 # `shape`, `implement` and `maintain`.
-FORMER_NAMES = ("build", "start", "plan", "fix", "queue", "sync", "ship")
+FORMER_NAMES = ("build", "start", "plan", "grilling", "fix", "queue", "sync", "ship")
 
 KIT_SOURCE = "gwpicard/ai-build-kit"
 SKILL_FOLDERS = (".agents/skills", ".claude/skills")
 ADAPTER_FOLDERS = (".claude/commands", ".cursor/commands", ".gemini/commands")
+SKILL_ADAPTER_FOLDERS = (".claude/skills", ".cursor/skills", ".gemini/skills")
 
+HERE = os.path.dirname(os.path.abspath(__file__))
 # The installed skills sit beside this one, so the founding template the
 # command list is rewritten to is the one this release ships.
-INSTALLED = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+INSTALLED = os.path.dirname(os.path.dirname(HERE))
 TEMPLATE = os.path.join(INSTALLED, "setup-ai-build-kit", "templates", "foundation", "AGENTS.md")
+KNOWN = os.path.join(HERE, "kit-retired-skills.json")
 
 NUMBERS = ("one two three four five six seven eight nine ten eleven twelve "
            "thirteen fourteen fifteen sixteen").split()
@@ -81,8 +92,30 @@ BULLETS = ("- Commands:", "- Background skills:")
 TICKED = re.compile(r"`([^`]+)`")
 
 
-def kit_lockfile(project):
-    """The names skills-lock.json lists as the kit's, or None without one."""
+# --- where things are ---------------------------------------------------------
+
+def real_inside(project, path):
+    """True when the real location of path is inside the project."""
+    root = os.path.realpath(project)
+    real = os.path.realpath(path)
+    return real == root or real.startswith(root + os.sep)
+
+
+def normal_source(source):
+    """A lockfile source with any address prefix and suffix taken off."""
+    text = str(source).strip().lower()
+    for prefix in ("https://github.com/", "http://github.com/", "git@github.com:",
+                   "github.com/", "github:"):
+        if text.startswith(prefix):
+            text = text[len(prefix):]
+    text = text.rstrip("/")
+    if text.endswith(".git"):
+        text = text[:-4]
+    return text
+
+
+def lockfile(project):
+    """(names listed as the kit's, every name listed), or None without one."""
     try:
         with open(os.path.join(project, "skills-lock.json"), encoding="utf-8") as handle:
             data = json.load(handle)
@@ -91,17 +124,52 @@ def kit_lockfile(project):
     skills = data.get("skills") if isinstance(data, dict) else None
     if not isinstance(skills, dict):
         return None
-    names = set()
+    kit = set()
     for name, entry in skills.items():
         source = entry.get("source", "") if isinstance(entry, dict) else ""
-        if KIT_SOURCE in str(source).lower():
-            names.add(name)
-    return names
+        if normal_source(source) == KIT_SOURCE:
+            kit.add(name)
+    return kit, set(skills)
 
 
-def installed(project, name):
-    return any(os.path.isfile(os.path.join(project, folder, name, "SKILL.md"))
-               for folder in SKILL_FOLDERS)
+def frontmatter(path):
+    """(name, description) from a SKILL.md, or (None, None)."""
+    try:
+        with open(path, encoding="utf-8", errors="replace") as handle:
+            lines = handle.read().splitlines()
+    except OSError:
+        return None, None
+    if not lines or lines[0].strip() != "---":
+        return None, None
+    block = []
+    for line in lines[1:]:
+        if line.strip() == "---":
+            break
+        block.append(line)
+    name = description = None
+    for index, line in enumerate(block):
+        if line.startswith("name:"):
+            name = line[5:].strip().strip('"')
+        elif line.startswith("description:"):
+            value = line[12:].strip()
+            if value in ("|", ">"):
+                parts = []
+                for more in block[index + 1:]:
+                    if more.startswith((" ", "\t")) and more.strip():
+                        parts.append(more.strip())
+                    else:
+                        break
+                value = " ".join(parts)
+            description = value.strip('"')
+    return name, description
+
+
+def known_descriptions():
+    try:
+        with open(KNOWN, encoding="utf-8") as handle:
+            return json.load(handle).get("skills", {})
+    except (OSError, ValueError):
+        return {}
 
 
 def generated(path):
@@ -114,31 +182,94 @@ def generated(path):
     return "GENERATED from .agents/skills/" in head and "build-adapters.sh" in head
 
 
+def installed(project, name):
+    return any(os.path.isfile(os.path.join(project, folder, name, "SKILL.md"))
+               for folder in SKILL_FOLDERS)
+
+
+# --- finding ----------------------------------------------------------------
+
 def skill_findings(project):
-    lock = kit_lockfile(project)
-    listed = lock or set()
-    shared = bool(lock)
+    lock = lockfile(project)
+    kit_listed, any_listed = lock if lock else (set(), set())
+    shared = bool(kit_listed)
+    known = known_descriptions()
     found = []
+    seen = set()
+
+    def once(full):
+        real = os.path.realpath(full)
+        if real in seen:
+            return False
+        seen.add(real)
+        return True
+
     for name in FORMER_NAMES:
-        if name in listed:
+        if name in kit_listed:
             found.append(("installer", name))
+            continue
+        if name in any_listed:
+            # Listed under another source: the person's own skill.
             continue
         for folder in SKILL_FOLDERS:
             path = os.path.join(folder, name)
-            if os.path.islink(os.path.join(project, path)) or os.path.isdir(os.path.join(project, path)):
+            full = os.path.join(project, path)
+            if not (os.path.islink(full) or os.path.isdir(full)):
+                continue
+            if not real_inside(project, os.path.dirname(full)):
+                found.append(("left", path, "it sits in a folder whose real place is outside the project"))
+                continue
+            if os.path.islink(full) and not real_inside(project, full):
+                found.append(("left", path, "it links to a folder outside the project"))
+                continue
+            skill = os.path.join(full, "SKILL.md")
+            if generated(skill):
+                # A generated copy, not a skill. The adapter scan lists it.
+                continue
+            if not os.path.islink(full) and not once(full):
+                continue
+            got_name, description = frontmatter(skill)
+            if got_name == name and description in known.get(name, []):
                 found.append(("folder", path))
+            else:
+                found.append(("left", path, "not recognised as the kit's"))
+
+    def adapter_wanted(stem):
+        # A generated copy for a retired command opens nothing on any route.
+        # One for a current name is only a second copy where the installer
+        # already reaches it, which is the shared route.
+        return shared or stem in FORMER_NAMES
+
     for folder in ADAPTER_FOLDERS:
         where = os.path.join(project, folder)
-        if not os.path.isdir(where):
+        if not os.path.isdir(where) or not real_inside(project, where):
             continue
         for entry in sorted(os.listdir(where)):
             path = os.path.join(folder, entry)
-            stem = os.path.splitext(entry)[0]
-            # A generated file for a retired command opens nothing on any
-            # route. One for a current command is only a second copy where the
-            # installer already reaches it, which is the shared route.
-            if os.path.isfile(os.path.join(project, path)) and generated(os.path.join(project, path)) \
-                    and (shared or stem in FORMER_NAMES):
+            full = os.path.join(project, path)
+            if os.path.islink(full) or not os.path.isfile(full):
+                continue
+            if generated(full) and adapter_wanted(os.path.splitext(entry)[0]):
+                found.append(("adapter", path))
+    for folder in SKILL_ADAPTER_FOLDERS:
+        where = os.path.join(project, folder)
+        if not os.path.isdir(where) or not real_inside(project, where):
+            continue
+        for entry in sorted(os.listdir(where)):
+            path = os.path.join(folder, entry)
+            full = os.path.join(project, path)
+            if os.path.islink(full) or not os.path.isdir(full):
+                continue
+            # A generated skill folder under a current name is how Claude Code
+            # reaches that background skill until the installer puts its own
+            # link there, so only one under a name the kit dropped is stale.
+            if not generated(os.path.join(full, "SKILL.md")) or entry in KIT_SKILLS:
+                continue
+            if not once(full):
+                continue
+            if os.listdir(full) != ["SKILL.md"]:
+                found.append(("left", path, "it holds files besides the generated one"))
+            else:
                 found.append(("adapter", path))
     if shared:
         for name in KIT_SKILLS:
@@ -165,13 +296,7 @@ def template_lines():
     for prefix in BULLETS:
         for index, line in enumerate(lines):
             if line.startswith(prefix):
-                block = [line]
-                for more in lines[index + 1:]:
-                    if more.startswith("  ") and more.strip():
-                        block.append(more)
-                    else:
-                        break
-                bullets[prefix] = block
+                bullets[prefix] = lines[index:bullet_end(lines, index)]
     text = "\n".join(lines)
     counts = {}
     for key, pattern in COUNTS:
@@ -183,8 +308,8 @@ def template_lines():
     return bullets, counts
 
 
-def bullet_at(lines, index):
-    """The lines of the bullet that starts at index, continuation included."""
+def bullet_end(lines, index):
+    """The index after the bullet that starts at index, continuation included."""
     end = index + 1
     while end < len(lines) and lines[end].startswith("  ") and lines[end].strip():
         end += 1
@@ -196,15 +321,30 @@ def plain(line):
 
 
 def ending(line):
-    return line[len(plain(line)):] or "\n"
+    return line[len(plain(line)):]
 
 
 def same_case(old, new):
     return new.capitalize() if old[:1].isupper() else new
 
 
+def kit_shaped(prefix, block, known):
+    """None when the bullet holds the kit's names and nothing else, or the reason."""
+    text = " ".join(plain(line).strip() for line in block)
+    names = TICKED.findall(text)
+    unknown = [n for n in names if n not in known]
+    if unknown:
+        return "it names `%s`, which is not one of the kit's" % unknown[0]
+    shape = re.escape(prefix) + r" `[a-z-]+`(, `[a-z-]+`)*\.$"
+    if not re.match(shape, text):
+        return "it holds words of its own besides the kit's names"
+    return None
+
+
 def commands_findings(project, shipped):
-    """Yield (line number, old text, new lines or None, reason) for AGENTS.md."""
+    """Return (findings, lines) for AGENTS.md. Each finding is
+    (line number, old, new or None, kind) where kind is a reason, "block"
+    with a (begin, end) old, or ("count", column)."""
     path = os.path.join(project, "AGENTS.md")
     try:
         with open(path, encoding="utf-8", newline="") as handle:
@@ -215,14 +355,20 @@ def commands_findings(project, shipped):
     found = []
     start = next((i for i, line in enumerate(lines) if line.startswith(BULLETS[0])), None)
     if start is None:
-        # A list in the person's own words. Only say so where it still names a
-        # retired command, so the person knows which word to change.
+        # A list in the person's own words: a line naming three or more of the
+        # kit's commands, old or new. Only say so where it still names a
+        # retired one, so the person knows which word to change. A sentence
+        # that mentions an old command in passing is not a list.
+        commands = set(KIT_SKILLS[:6]) | set(FORMER_NAMES)
         for number, line in enumerate(lines, 1):
-            for name in TICKED.findall(line) + re.findall(r"(?<![\w/.-])/([a-z-]+)\b", line):
-                if name in FORMER_NAMES[3:]:
-                    found.append((number, plain(line), None,
-                                  "the command list was not recognised; `%s` needs changing by hand" % name))
-                    break
+            names = TICKED.findall(line) + re.findall(r"(?<![\w/.-])/([a-z-]+)\b", line)
+            named = [n.lstrip("/") for n in names if n.lstrip("/") in commands]
+            if len(set(named)) < 3:
+                continue
+            retired = [n for n in named if n in ("fix", "queue", "sync", "ship")]
+            if retired:
+                found.append((number, plain(line), None,
+                              "the command list was not recognised; `%s` needs changing by hand" % retired[0]))
         return found, lines
     if shipped is None:
         found.append((start + 1, plain(lines[start]), None,
@@ -233,16 +379,20 @@ def commands_findings(project, shipped):
     for prefix in BULLETS:
         if index >= len(lines) or not lines[index].startswith(prefix):
             break
-        end = bullet_at(lines, index)
+        end = bullet_end(lines, index)
         old = [plain(line) for line in lines[index:end]]
-        names = TICKED.findall(" ".join(old))
         if old != bullets[prefix]:
-            unknown = [n for n in names if n not in known]
-            if unknown:
+            why = kit_shaped(prefix, old, known)
+            if why:
+                suggested = " ".join(s.strip() for s in bullets[prefix])
                 found.append((index + 1, " ".join(s.strip() for s in old), None,
-                              "it names `%s`, which is not one of the kit's commands" % unknown[0]))
+                              "%s; suggested: %s" % (why, suggested)))
+                if prefix == BULLETS[0]:
+                    # The person wrote into the list, so the counts above it
+                    # are theirs to settle too.
+                    return found, lines
             else:
-                found.append((index + 1, (index, end), bullets[prefix], ""))
+                found.append((index + 1, (index, end), bullets[prefix], "block"))
         index = end
     # The counts sit in the paragraph between the heading above the list and
     # the list itself.
@@ -261,38 +411,53 @@ def commands_findings(project, shipped):
 
 
 def rewrite(project, found, lines):
-    """Apply the rewritable findings, right to left so positions stay true."""
+    """Apply the rewritable findings, from the bottom up so positions stay true."""
     out = list(lines)
-    # Counts right to left within a line, so an earlier column stays true.
     counts = sorted((f for f in found if isinstance(f[3], tuple)),
                     key=lambda f: (f[0], f[3][1]), reverse=True)
     for number, old, new, (_, column) in counts:
         line = out[number - 1]
         out[number - 1] = line[:column] + new + line[column + len(old):]
-    blocks = sorted((f for f in found if f[3] == "" and isinstance(f[1], tuple)),
-                    key=lambda f: f[1][0], reverse=True)
+    blocks = sorted((f for f in found if f[3] == "block"), key=lambda f: f[1][0], reverse=True)
     for _, (begin, end), new, _ in blocks:
-        tail = ending(out[end - 1])
-        out[begin:end] = [line + tail for line in new]
+        inner = ending(out[begin]) or "\n"
+        last = ending(out[end - 1])
+        out[begin:end] = [line + inner for line in new[:-1]] + [new[-1] + last]
     if out != lines:
         with open(os.path.join(project, "AGENTS.md"), "w", encoding="utf-8", newline="") as handle:
             handle.writelines(out)
 
 
+# --- removing ---------------------------------------------------------------
+
 def remove(project, findings):
-    for kind, path in findings:
+    root = os.path.realpath(project)
+    for finding in findings:
+        kind, path = finding[0], finding[1]
         if kind not in ("folder", "adapter"):
             continue
         where = os.path.join(project, path)
-        if os.path.islink(where) or os.path.isfile(where):
+        # Checked again here, so nothing reaches outside the project and no
+        # link is followed, whatever the listing said.
+        if not real_inside(project, os.path.dirname(where)):
+            continue
+        if os.path.islink(where):
+            os.unlink(where)
+        elif os.path.isfile(where):
             os.remove(where)
-        elif os.path.isdir(where):
+        elif os.path.isdir(where) and real_inside(project, where):
             shutil.rmtree(where)
-        parent = os.path.dirname(where)
-        # An adapter folder left empty goes too, and so does its tool folder
+        else:
+            continue
+        if kind != "adapter":
+            continue
+        # A generated folder left empty goes too, and so does its tool folder
         # when nothing else is in it.
+        parent = os.path.dirname(where)
         for _ in range(2):
-            if kind == "adapter" and os.path.isdir(parent) and not os.listdir(parent):
+            real = os.path.realpath(parent)
+            if (real != root and real.startswith(root + os.sep) and not os.path.islink(parent)
+                    and os.path.isdir(parent) and not os.listdir(parent)):
                 os.rmdir(parent)
                 parent = os.path.dirname(parent)
 
@@ -300,8 +465,7 @@ def remove(project, findings):
 def main(argv):
     flags = {a for a in argv if a.startswith("--")}
     rest = [a for a in argv if not a.startswith("--")]
-    unknown = flags - {"--remove", "--rewrite-commands"}
-    if unknown:
+    if flags - {"--remove", "--rewrite-commands"}:
         print("usage: kit-leftovers.py [--remove | --rewrite-commands] [PROJECT]", file=sys.stderr)
         return 2
     project = rest[0] if rest else "."
@@ -314,17 +478,20 @@ def main(argv):
         if lines is not None:
             rewrite(project, commands, lines)
         return 0
-    for kind, value in skills:
+    for finding in skills:
+        kind, value = finding[0], finding[1]
         if kind == "installer":
             print("installer\t%s\tnpx skills remove %s" % (value, value))
+        elif kind == "left":
+            print("left\t%s\t%s" % (value, finding[2]))
         else:
             print("%s\t%s" % (kind, value))
-    for number, old, new, why in commands:
+    for number, old, new, kind in commands:
         if isinstance(old, tuple):
             begin, end = old
             old = " ".join(plain(line).strip() for line in lines[begin:end])
         if new is None:
-            print("commands\tAGENTS.md:%d\t%s\tleft as written: %s" % (number, old, why))
+            print("commands\tAGENTS.md:%d\t%s\tleft as written: %s" % (number, old, kind))
         elif isinstance(new, list):
             print("commands\tAGENTS.md:%d\t%s\t%s" % (number, old, " ".join(s.strip() for s in new)))
         else:

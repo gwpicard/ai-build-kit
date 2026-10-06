@@ -1,0 +1,40 @@
+{
+  "comment": "Descriptions the kit's retired skills, `grilling` among them, carried in every release up to v0.19.3. A folder under a former name counts as the kit's only when its SKILL.md carries that name and one of these descriptions word for word.",
+  "skills": {
+    "build": [
+      "The everyday word for making the tool do something new or different. Typed alone it takes the next piece from the plan. Typed with words after it, it takes the request in plain language and works out what kind of work it is. \"/build auto\" builds several pieces in a row. Do not use for repairs of promised behaviour; that is fix.",
+      "The everyday word for making the tool do something new or different. Typed alone it takes the next piece from the plan. Typed with words after it, it takes the request in plain language and works out what kind of work it is. \"/build auto\" builds several pieces in a row. Do not use for repairs of promised behaviour; that is fix. Type this command when you want it; it never starts on its own.",
+      "The everyday command for making the tool do something new or different. Typed alone it takes the next piece from the plan. Typed with words after it, it takes the request in plain language and works out what kind of work it is. \"/build auto\" builds several pieces in a row. Do not use for repairs of promised behaviour; that is fix. Type this command when you want it; it never starts on its own."
+    ],
+    "start": [
+      "Begin a new project, or resume a beginning that was interrupted. Use when the user types /start or asks to start, plan, or set up a new tool. Runs once per project; if the founding documents already exist and are complete, say so and point at /build. Do not use for new features on an existing project (that is build) or for repairs (that is fix).",
+      "Begin a new project, or resume a beginning that was interrupted. Use when the user types /start or asks to start, plan, or set up a new tool. Runs once per project; if the founding documents already exist and are complete, say so and point at /build. Do not use for new features on an existing project (that is build) or for repairs (that is fix). Type this command when you want it; it never starts on its own.",
+      "Begin a new project, or resume a beginning that was interrupted. Use when the user types /start or asks to start or set up a new tool. Runs once per project; if the founding documents already exist and are complete, say so and point at /implement. Do not use for new features on an existing project (that is plan) or for repairs (that is fix). Type this command when you want it; it never starts on its own."
+    ],
+    "fix": [
+      "Bring the tool back to doing what it already should. Use when the user says something is broken, failing, wrong, regressed, or not behaving as intended. Input is evidence, an error, a wrong output, a screenshot. Do not use for behaviour the masterplan never promised; that is build.",
+      "Bring the tool back to doing what it already should. Use when the user says something is broken, failing, wrong, regressed, or not behaving as intended. Input is evidence, an error, a wrong output, a screenshot. Do not use for behaviour the masterplan never promised; that is build. Type this command when you want it; it never starts on its own."
+    ],
+    "sync": [
+      "True the documents up against what actually happened. Use for an interrupted session, work done outside the skills, an imported branch or contribution, a long session whose context went foggy, or reconciliation before a handover. Normal completion of /build, /fix, /ship, and /maintain already updates the records; sync is the recovery and reconciliation route, not a routine step after every piece.",
+      "True the documents up against what actually happened. Use for an interrupted session, work done outside the skills, an imported branch or contribution, a long session whose context went foggy, or reconciliation before a handover. Normal completion of /build, /fix, /ship, and /maintain already updates the records; sync is the recovery and reconciliation route, not a routine step after every piece. Type this command when you want it; it never starts on its own.",
+      "True the documents up against what actually happened. Use for an interrupted session, work done outside the skills, an imported branch or contribution, a long session whose context went foggy, or reconciliation before a handover. Normal completion of /plan, /implement, /fix, /ship, and /maintain already updates the records; sync is the recovery and reconciliation route, not a routine step after every piece. Type this command when you want it; it never starts on its own.",
+      "True the documents up against what actually happened. Use for an interrupted session, work done outside the skills, an imported branch or contribution, a long session whose context went foggy, or reconciliation before a handover. Normal completion of /shape, /implement, /fix, /ship, and /maintain already updates the records; sync is the recovery and reconciliation route, not a routine step after every piece. Type this command when you want it; it never starts on its own.",
+      "True the documents up against what actually happened. Use for an interrupted session, work done outside the skills, an imported branch or contribution, a long session whose context went foggy, or reconciliation before a handover. Normal completion of /shape, /implement, /fix, /ship, and /maintain already updates the records; sync is the recovery and reconciliation route, not a routine step after every piece."
+    ],
+    "ship": [
+      "Take checked work to the copy of the tool the team actually uses. The only skill that touches that copy. Use when the user thinks the tool, or a batch of work on it, is ready for people to rely on. Follows the project's current build path and applies only the evidence, review, handover, or launch steps that path requires.",
+      "Take checked work to the copy of the tool the team actually uses. The only skill that touches that copy. Use when the user thinks the tool, or a batch of work on it, is ready for people to rely on. Follows the project's current build path and applies only the evidence, review, handover, or launch steps that path requires. Type this command when you want it; it never starts on its own."
+    ],
+    "plan": [
+      "The command for turning an idea into a ready piece before anything is built. Typed with words after it, it takes the request in plain language, works out what kind of work it is, shapes it into a piece, and settles any open question. Typed alone it shapes the next piece still waiting on one. It records and stops; it never builds, though it offers to hand a ready piece to implement. Type this command when you want it; it never starts on its own."
+    ],
+    "queue": [
+      "The whole list of ready work at once, for somebody taking on more than one piece. Trigger when someone asks what can be built in parallel, what order the rest comes in, or wants to see everything that is ready rather than the next thing. Reads the plan and reports two groups. Never builds, shapes, or changes anything. Type this command when you want it; it never starts on its own.",
+      "The whole list of ready work at once, for somebody taking on more than one piece. Trigger when someone asks what can be built in parallel, what order the rest comes in, or wants to see everything that is ready rather than the next thing. Reads the plan and reports two groups. Never builds, shapes, or changes anything."
+    ],
+    "grilling": [
+      "Interview the team before work is specified, one question at a time, each with a best guess attached. Used by start for the founding interview and by build when a request is too vague to size. Do not use for small clear changes or for repairs, and never write code during it."
+    ]
+  }
+}

@@ -240,22 +240,34 @@ rs_done() {
 
 rs_retired_mentions() {
   # rs_retired_mentions <pattern> <path>...: print each file that still sends
-  # the person to a retired command. Two passages exist to name the retired
+  # the person to a retired command. A few sentences exist to name the retired
   # commands, because an older project still offers them until /maintain takes
-  # them out: the maintain skill's migration section and WORKFLOW.md's
-  # paragraph about it. A mention there is the migration doing its job, so it
-  # is read past. Anywhere else it is a stale pointer.
+  # them out. They sit in two files, the maintain skill and WORKFLOW.md, and
+  # only those exact sentences are read past. Anything else naming a retired
+  # command, in those files or any other, is a stale pointer, a stale
+  # "run /sync" added inside the migration section included.
   rs_pat=$1
   shift
   grep -rlE "$rs_pat" "$@" 2>/dev/null | while IFS= read -r rs_file; do
-    if awk '
-      /^## Migrating a project installed before the six commands/ { skip = 1; next }
-      skip && /^## / { skip = 0 }
-      /^A project installed before the kit had six commands/ { para = 1 }
-      para && /^[[:space:]]*$/ { para = 0; next }
-      !skip && !para
-    ' "$rs_file" | grep -qE "$rs_pat"; then
-      printf '%s\n' "$rs_file"
-    fi
-  done
+    case "$rs_file" in
+      # The record of what the retired skills said in old releases, which is
+      # how a leftover folder is recognised as the kit's. It is data, never
+      # read as advice.
+      */.agents/skills/maintain/scripts/kit-retired-skills.json) continue ;;
+      */.agents/skills/maintain/SKILL.md|*/WORKFLOW.md) ;;
+      *) printf '%s\n' "$rs_file"; continue ;;
+    esac
+    rs_fold "$rs_file" | python3 -c '
+import sys
+text = sys.stdin.read()
+for sentence in (
+    "`/fix` folded into `/shape` and `/implement`, `/queue` into `/implement`, and `/sync` into `/maintain`. `/ship` was renamed `/setup-hosting`.",
+    "a mention of `/fix`, `/queue`, `/sync` or `/ship` in `masterplan.md` or `changelog.md` is history.",
+    "/fix and /queue are part of /shape and /implement, /sync is part of /maintain, and /ship is now /setup-hosting.",
+    "/fix and /queue are now part of /shape and /implement, /sync is part of /maintain, and /ship is now /setup-hosting.",
+):
+    text = text.replace(sentence, "", 1)
+sys.stdout.write(text)
+' | grep -qE "$rs_pat" && printf '%s\n' "$rs_file"
+  done || :
 }

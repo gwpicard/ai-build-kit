@@ -110,8 +110,12 @@ rs_rule "the installer removes what the lockfile lists, in one command" \
   'offer to remove it with the installer, naming each one in a single command such as .npx skills remove fix queue sync ship.'
 rs_rule "never by hand" \
   'never delete one of these folders by hand, since the lockfile would still list it'
-rs_rule "the removal is read back to eleven" \
-  'carry on only once no .installer. line is left and the lockfile count is eleven'
+rs_rule "the removal is read back by name, not by count" \
+  'carry on only once no .installer. line is left and the lockfile lists the eleven kit skills and none of the former ones'
+rs_rule "a lockfile's length proves nothing" \
+  'a lockfile may list other people.s skills too, so its length proves nothing'
+rs_rule "a left line is never removed" \
+  'a line starting .left. names something that looks like a leftover but is never removed'
 rs_rule "a missing new skill is added again and read back" \
   'carry on only once no .missing. line is left'
 rs_rule "the plugin update replaces the commands itself" \
@@ -136,6 +140,10 @@ rs_rule "a folded command's name is taken out" \
   'where it names .fix., .queue. or .sync., take the name out'
 rs_rule "the background skills line is brought to five" \
   'bring the .- background skills:. line to the five the template names'
+rs_rule "only a list of the kit's names in the template's shape is rewritten" \
+  'it rewrites a list only when it holds the kit.s names and nothing else, in the template.s shape'
+rs_rule "a list left as written leaves its counts too" \
+  'when the commands line is left as written, the counts above it are left too'
 rs_rule "the rewrite changes those lines only" \
   'it changes those lines and nothing else in the file, line endings included'
 rs_rule "the rewrite is read back" \
@@ -157,6 +165,8 @@ rs_require_load_bearing "WORKFLOW.md gives the one line about the six commands" 
   "$WORKFLOW" '/fix and /queue are now part of /shape and /implement, /sync is part of /maintain, and /ship is now /setup-hosting\. nothing you built changes'
 rs_require_load_bearing "WORKFLOW.md says nothing is removed without a yes" \
   "$WORKFLOW" 'offers to remove the old skills and to rewrite the command list in your agents\.md, and does neither without your yes'
+rs_require_load_bearing "WORKFLOW.md says a declined offer and an own-words list come back" \
+  "$WORKFLOW" 'an offer you declined comes back on the next visit, and a command list written in your own words is named again until you change it'
 rs_require_load_bearing "WORKFLOW.md says the records keep their old mentions" \
   "$WORKFLOW" 'your masterplan and changelog keep their old mentions'
 rs_require_load_bearing "COMPATIBILITY.md says the installer removes a retired skill on a yes" \
@@ -182,11 +192,13 @@ old="fix queue sync ship"
   done
   printf '    "my-notes": { "source": "someone/notes", "sourceType": "github", "computedHash": "0" }\n  }\n}\n'
 } > "$P/skills-lock.json"
-for name in $eleven $old my-notes; do
+for name in $eleven $old my-notes build; do
   mkdir -p "$P/.agents/skills/$name"
   printf -- '---\nname: %s\n---\n' "$name" > "$P/.agents/skills/$name/SKILL.md"
   ln -s "../../.agents/skills/$name" "$P/.claude/skills/$name"
 done
+printf -- '---\nname: build\ndescription: my own build notes\n---\n' > "$P/.agents/skills/build/SKILL.md"
+cp -R "$P/.agents/skills/build" "$rs_dir/own-build"
 printf '%s\n' 'My own deploy notes.' > "$P/.claude/commands/deploy.md"
 cat > "$P/AGENTS.md" <<'AGENTS'
 # Standing instructions
@@ -228,6 +240,9 @@ rs_report "a list already current offers no change to its background line" \
 python3 "$LEFTOVERS" --remove "$P"
 rs_report "the script never removes a folder the lockfile lists" \
   "$(for n in $old; do [ -d "$P/.agents/skills/$n" ] || echo gone; done | grep -q gone && echo no || echo yes)"
+rs_report "the person's own build skill, listed nowhere, is named as left and kept" \
+  "$(printf '%s\n' "$listed" | grep -qF 'left	.agents/skills/build	not recognised as the kit' \
+     && diff -r "$P/.agents/skills/build" "$rs_dir/own-build" >/dev/null && [ -L "$P/.claude/skills/build" ] && echo yes || echo no)"
 
 python3 "$LEFTOVERS" --rewrite-commands "$P"
 diff "$rs_dir/before-agents" "$P/AGENTS.md" > "$rs_dir/agents.diff" || true
@@ -241,26 +256,31 @@ rs_report "and changes nothing else in the file, the person's own line included"
      && grep -qF 'Our team types /ship on Fridays, and nine is our lucky number.' "$P/AGENTS.md" && echo yes || echo no)"
 
 # The installer's remove, as the rehearsal saw it: the folders, their links
-# and their lockfile entries go.
-for n in $old; do
+# and their lockfile entries go. Then the person installs a `ship` skill of
+# their own from another source, and takes their `build` skill out.
+for n in $old build; do
   rm -R "$P/.agents/skills/$n"
   rm "$P/.claude/skills/$n"
 done
+mkdir -p "$P/.agents/skills/ship"
+printf -- '---\nname: ship\ndescription: my own release notes\n---\n' > "$P/.agents/skills/ship/SKILL.md"
+cp -R "$P/.agents/skills/ship" "$rs_dir/own-ship"
 python3 - "$P/skills-lock.json" <<'PY'
 import json, sys
 path = sys.argv[1]
 data = json.load(open(path))
-for name in ("fix", "queue", "sync", "ship"):
+for name in ("fix", "queue", "sync"):
     data["skills"].pop(name)
+data["skills"]["ship"] = {"source": "someone/my-skills", "sourceType": "github"}
 json.dump(data, open(path, "w"), indent=2)
 PY
-rs_report "once the installer has removed them, a second run finds nothing" \
+rs_report "once the installer has removed them, a second run finds nothing, the person's ship skill included" \
   "$([ -z "$(python3 "$LEFTOVERS" "$P")" ] && echo yes || echo no)"
 cp "$P/AGENTS.md" "$rs_dir/after-agents"
 python3 "$LEFTOVERS" --rewrite-commands "$P"
 python3 "$LEFTOVERS" --remove "$P"
-rs_report "and a second rewrite and removal change nothing" \
-  "$(cmp -s "$P/AGENTS.md" "$rs_dir/after-agents" && echo yes || echo no)"
+rs_report "and a second rewrite and removal change nothing, the person's ship skill included" \
+  "$(cmp -s "$P/AGENTS.md" "$rs_dir/after-agents" && diff -r "$P/.agents/skills/ship" "$rs_dir/own-ship" >/dev/null && echo yes || echo no)"
 rs_report "the six commands and five background skills are all still installed" \
   "$(for n in $eleven; do [ -f "$P/.agents/skills/$n/SKILL.md" ] && [ -e "$P/.claude/skills/$n" ] || echo gone; done | grep -q gone && echo no || echo yes)"
 rs_report "the person's records, their skill and their command file are untouched" \
@@ -275,6 +295,16 @@ printf -- '---\nname: maintain\n---\n' > "$rs_dir/short/.agents/skills/maintain/
 rs_report "a missing new skill is named" \
   "$(python3 "$LEFTOVERS" "$rs_dir/short" | grep -qx 'missing	setup-hosting' && echo yes || echo no)"
 
+# The lockfile's source names the kit only when it is the kit's repository.
+mkdir -p "$rs_dir/src/.agents/skills/fix"
+printf -- '---\nname: fix\ndescription: mine\n---\n' > "$rs_dir/src/.agents/skills/fix/SKILL.md"
+printf '{"version": 1, "skills": {"fix": {"source": "gwpicard/ai-build-kit-extras"}}}\n' > "$rs_dir/src/skills-lock.json"
+rs_report "a source that only starts like the kit's is not the kit" \
+  "$(python3 "$LEFTOVERS" "$rs_dir/src" | grep -q '^installer' && echo no || echo yes)"
+printf '{"version": 1, "skills": {"fix": {"source": "https://github.com/GWPicard/ai-build-kit.git"}}}\n' > "$rs_dir/src/skills-lock.json"
+rs_report "the kit's address in another form is still the kit" \
+  "$(python3 "$LEFTOVERS" "$rs_dir/src" | grep -qx 'installer	fix	npx skills remove fix' && echo yes || echo no)"
+
 # A list in the person's own words, or one naming a command of their own, is
 # named and left alone.
 mkdir -p "$rs_dir/own"
@@ -287,6 +317,42 @@ rs_report "a list naming a command of the person's own is listed with its reason
 printf '%s\n' 'We use /shape, /implement and /sync every week.' > "$rs_dir/own/AGENTS.md"
 rs_report "a list in the person's own words names the word to change" \
   "$(python3 "$LEFTOVERS" "$rs_dir/own" | grep -q 'not recognised; `sync` needs changing by hand' && echo yes || echo no)"
+
+# Words of the person's own inside the bullet: the line is left, with the
+# suggested one, and so are the counts above it.
+nine_list() {
+  printf '%s\n' '## The skills' '' \
+    'The work lives in fourteen installed AI Build Kit skills. Nine are commands:' \
+    'the other five run in the background.' '' \
+    '- Commands: `setup-ai-build-kit`, `shape`, `implement`, `queue`, `fix`, `ship`,' \
+    '  `sync`, `maintain`, `what-now`.'
+}
+mkdir -p "$rs_dir/extra"
+{ nine_list; printf '%s\n' '  We run `implement` only after the Monday stand-up.'; } > "$rs_dir/extra/AGENTS.md"
+cp "$rs_dir/extra/AGENTS.md" "$rs_dir/extra-before"
+extra=$(python3 "$LEFTOVERS" "$rs_dir/extra")
+python3 "$LEFTOVERS" --rewrite-commands "$rs_dir/extra"
+rs_report "a bullet holding the person's own sentence is left as written, with the suggested line" \
+  "$(printf '%s\n' "$extra" | grep -q 'left as written: it holds words of its own besides the kit.s names; suggested: - Commands: `setup-ai-build-kit`, `shape`, `implement`, `setup-hosting`, `maintain`, `what-now`.' \
+     && cmp -s "$rs_dir/extra/AGENTS.md" "$rs_dir/extra-before" && echo yes || echo no)"
+rs_report "and the counts above a list left as written are not offered" \
+  "$(printf '%s\n' "$extra" | grep -qE '	(fourteen|Nine)	' && echo no || echo yes)"
+
+# Windows line endings, and a file with one such line and no final newline,
+# come back with only the listed lines changed.
+mkdir -p "$rs_dir/crlf" "$rs_dir/mixed"
+nine_list | sed 's/$/\r/' > "$rs_dir/crlf/AGENTS.md"
+python3 "$LEFTOVERS" --rewrite-commands "$rs_dir/crlf"
+rs_report "a file with Windows line endings keeps them on every line" \
+  "$([ "$(grep -c "$(printf '\r')\$" "$rs_dir/crlf/AGENTS.md")" = "$(wc -l < "$rs_dir/crlf/AGENTS.md" | tr -d ' ')" ] \
+     && grep -q 'setup-hosting' "$rs_dir/crlf/AGENTS.md" && echo yes || echo no)"
+nine_list | sed '1s/$/\r/' | python3 -c 'import sys; sys.stdout.write(sys.stdin.read().rstrip("\n"))' > "$rs_dir/mixed/AGENTS.md"
+python3 "$LEFTOVERS" --rewrite-commands "$rs_dir/mixed"
+rs_report "a file with one Windows ending and no final newline keeps both" \
+  "$(head -1 "$rs_dir/mixed/AGENTS.md" | grep -q "$(printf '\r')\$" && [ -n "$(tail -c 1 "$rs_dir/mixed/AGENTS.md")" ] \
+     && tail -1 "$rs_dir/mixed/AGENTS.md" | grep -qF '  `maintain`, `what-now`.' && echo yes || echo no)"
+rs_report "and a second run on either finds nothing" \
+  "$([ -z "$(python3 "$LEFTOVERS" "$rs_dir/crlf")$(python3 "$LEFTOVERS" "$rs_dir/mixed")" ] && echo yes || echo no)"
 
 # A project founded from today's templates gets nothing.
 mkdir -p "$rs_dir/today"
@@ -306,15 +372,27 @@ PY
 rs_report "the script names exactly the kit's eleven skills" \
   "$([ "$names" = "$(ls "$ROOT/.agents/skills" | sort)" ] && echo yes || echo no)"
 
-# The stale-name refusals in other checks read past the migration's own
-# passages, and only those. A stray mention outside them is still caught.
-printf '%s\n' '## Migrating a project installed before the six commands' 'Type /sync no more.' '' \
-  '## Next' 'Fine here.' > "$rs_dir/inside.md"
-cp "$rs_dir/inside.md" "$rs_dir/outside.md"
-printf '%s\n' 'Then type /sync.' >> "$rs_dir/outside.md"
-rs_report "a retired name inside the migration section is read past" \
-  "$([ -z "$(rs_retired_mentions '/sync([^a-z-]|$)' "$rs_dir/inside.md")" ] && echo yes || echo no)"
-rs_report "and one outside it is still caught" \
-  "$([ -n "$(rs_retired_mentions '/sync([^a-z-]|$)' "$rs_dir/outside.md")" ] && echo yes || echo no)"
+# The stale-name refusals in other checks read past the exact sentences that
+# name the retired commands, in the maintain skill and WORKFLOW.md only. A
+# stale "run /sync" added inside the migration section is still caught, and so
+# is the same allowed sentence in any other file.
+R="$rs_dir/refusal/.agents/skills/maintain"
+mkdir -p "$R"
+cp "$MAINTAIN" "$R/SKILL.md"
+rs_report "the maintain skill as shipped passes" \
+  "$([ -z "$(rs_retired_mentions '/sync([^a-z-]|$)' "$R/SKILL.md")" ] && echo yes || echo no)"
+python3 - "$R/SKILL.md" <<'PY'
+import sys
+path = sys.argv[1]
+text = open(path).read()
+marker = "## Migrating a project installed before the six commands\n"
+text = text.replace(marker, marker + "\nWhen in doubt, run /sync first.\n", 1)
+open(path, "w").write(text)
+PY
+rs_report "a stale run /sync added inside the migration section is caught" \
+  "$([ -n "$(rs_retired_mentions '/sync([^a-z-]|$)' "$R/SKILL.md")" ] && echo yes || echo no)"
+printf '%s\n' 'The kit now has six commands. /fix and /queue are part of /shape and /implement, /sync is part of /maintain, and /ship is now /setup-hosting.' > "$rs_dir/elsewhere.md"
+rs_report "an allowed sentence in another file is still caught" \
+  "$([ -n "$(rs_retired_mentions '/sync([^a-z-]|$)' "$rs_dir/elsewhere.md")" ] && echo yes || echo no)"
 
 rs_done

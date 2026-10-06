@@ -514,8 +514,10 @@ and /queue are now part of /shape and /implement, /sync is part of
 /maintain, and /ship is now /setup-hosting. Nothing you built changes. It
 offers to remove the old skills and to rewrite the command list in your
 AGENTS.md, and does neither without your yes. Your masterplan and changelog
-keep their old mentions, since those record what happened. A second visit
-finds nothing left and says nothing.
+keep their old mentions, since those record what happened. Once everything
+is removed and rewritten, a later visit finds nothing and says nothing. An
+offer you declined comes back on the next visit, and a command list written
+in your own words is named again until you change it.
 
 The standing instructions in AGENTS.md stay under 200 lines and hold what the
 code cannot show, such as how work is saved and reviewed and which conventions

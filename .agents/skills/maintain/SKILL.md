@@ -491,7 +491,9 @@ AGENTS.md. So the old commands stay on offer until this step runs.
    command such as `npx skills remove fix queue sync ship`. The installer
    removes the folder, every link to it, and its lockfile entry. On a yes, run
    it, then run the script again and carry on only once no `installer` line
-   is left and the lockfile count is eleven. Never delete one of these folders
+   is left and the lockfile lists the eleven kit skills and none of the former
+   ones. A lockfile may list other people's skills too, so its length proves
+   nothing. Never delete one of these folders
    by hand, since the lockfile would still list it.
 3. Recover a missing new skill. A line starting `missing` names one of the
    eleven that is not installed, such as `setup-hosting` after an update that
@@ -500,7 +502,11 @@ AGENTS.md. So the old commands stay on offer until this step runs.
    `missing` line is left.
 4. Lines starting `folder` or `adapter` are leftovers the lockfile does not
    list. "Tidying a project founded from a whole copy of the kit" below
-   removes them, after its own approval.
+   removes them, after its own approval. A line starting `left` names
+   something that looks like a leftover but is never removed: a folder not
+   recognised as the kit's, or one whose real place is outside the project.
+   Name it once, beside a removal the visit offers, as the person's to keep or
+   remove.
 5. Rewrite the command list in the project's AGENTS.md as "Bringing the
    project's instructions up to the current names" below says. Lines starting
    `commands` show the change.
@@ -597,9 +603,13 @@ updating. So the kit does it for them, with approval:
    skills, make them six and eleven.
 2. The script `<installed maintain skill>/scripts/kit-leftovers.py` does this
    from the template that came with the update. Its `commands` lines show each
-   change, old and new. A line ending in `left as written:` is one it will not
-   change, with the reason, such as a name in the list that is not one of the
-   kit's.
+   change, old and new. It rewrites a list only when it holds the kit's names
+   and nothing else, in the template's shape. A line ending in `left as
+   written:` is one it will not change, with the reason and the suggested
+   line: a name in the list that is not one of the kit's, or words of the
+   person's own inside it. Show that suggestion for the person to apply by
+   hand. When the commands line is left as written, the counts above it are
+   left too.
 3. Show the change and apply it on approval, by running the script with
    `--rewrite-commands`. It changes those lines and nothing else in the file,
    line endings included. Run it again without, and carry on only once no
@@ -632,18 +642,26 @@ is a step here rather than advice:
    `build-adapters.sh`. Never by its name: a command file the person wrote
    themselves has no marker and is never touched. List every file under
    `.claude/commands/`, `.cursor/commands/` and `.gemini/commands/` that
-   carries the marker.
+   carries the marker, and every generated skill folder for a name the kit
+   no longer has, such as `.claude/skills/grilling/`.
 2. Find retired skill folders. Look in both `.agents/skills/` and
    `.claude/skills/`, since an installation for Claude Code alone keeps its
    skills only in the second. A folder there counts only
    when it carries one of the kit's former names, `build`, `start`, `plan`,
-   `fix`, `queue`, `sync` or `ship`, and the lockfile does not list it. Any
-   other folder there is the person's own and is left alone. A former name
-   the lockfile does list is the installer's to remove, in "Migrating a
-   project installed before the six commands" above.
+   `grilling`, `fix`, `queue`, `sync` or `ship`, and the lockfile does not
+   list it under any source, and its `SKILL.md` carries that name and a
+   description one of the kit's releases gave it. Any other folder there is
+   the person's own and is left alone, a skill of theirs under one of those
+   names included. A former name the lockfile lists as the kit's is the
+   installer's to remove, in "Migrating a project installed before the six
+   commands" above.
 3. Run `python3 <installed maintain skill>/scripts/kit-leftovers.py` from the
    project root. Its `adapter` and `folder` lines are the two lists above,
-   found by these rules. A generated command file for a retired command is
+   found by these rules. A generated skill folder under `.claude/skills/`,
+   `.cursor/skills/` or `.gemini/skills/` is an adapter too, when its
+   `SKILL.md` carries the marker and its name is one the kit no longer has.
+   Nothing whose real place is outside the project is listed for removal, and
+   a link is never followed: at most the link itself goes. A generated command file for a retired command is
    listed on every route, since it opens nothing. One for a current command
    is listed only on the shared route, where the installer already reaches
    that command.
