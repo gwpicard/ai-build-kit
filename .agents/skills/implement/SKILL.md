@@ -1,6 +1,6 @@
 ---
 name: implement
-description: The everyday command for building a piece that has already been shaped and marked ready. Typed alone it takes the next ready piece from the plan. Given an issue number, or a request that matches a ready piece, it builds that one. It shows the result, merges it after the person's yes, and on a live project reads one line of health from the live copy. A request that is not yet a ready piece goes to shape first; implement builds, it does not shape. "/implement auto" builds several ready pieces in a row. Do not use for repairs of promised behaviour; that is fix.
+description: The everyday command for building a piece that has already been shaped and marked ready. Typed alone it takes the next ready piece from the plan. Given an issue number, or a request that matches a ready piece, it builds that one. It shows the result, merges it after the person's yes, and on a live project reads one line of health from the live copy. A request that is not yet a ready piece goes to shape first; implement builds, it does not shape. "/implement auto" builds several ready pieces in a row. A repair is built here too, once shape has reproduced it.
 ---
 
 # Implement
@@ -33,7 +33,11 @@ not a record of anything.
 
 ## Typed alone
 
-Take the lowest-numbered ready piece that nothing open is holding up and whose
+A ready repair comes first: a piece under the printout's `Broken` group that
+carries `ready`, is not being built, and that nothing open is holding up.
+Something that used to work and no longer does outranks anything new.
+section-builder builds it with the repair rules. Otherwise, take the
+lowest-numbered ready piece that nothing open is holding up and whose
 class the current build path allows. A ready piece is one `/shape` has finished
 shaping: it carries the `ready` label, has a `## Done when` line, and waits on no
 open question. The issue list says which are held up, so this needs no digging.
@@ -100,6 +104,10 @@ Typed alone, take the next ready piece as above.
 
 Given an issue number, build that piece if it is ready, and send it to `/shape`
 if it is not, saying in one line why it is not ready.
+
+Given a report that the live tool broke, wherever it was typed, run the
+`change-triage` skill's "A live break after a recent merge" first, so the
+earlier version can come back before anything is built.
 
 Given a request in plain words, check whether it already matches a ready piece.
 Where it does, build that piece. Where it does not, this is new or unshaped

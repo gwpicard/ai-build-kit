@@ -42,8 +42,11 @@ project's list never empties.
 
 Anything labelled `broken` comes first, before the counts. A thing that used to
 work and no longer does outranks a thing that was never built: "the booking
-confirmation is broken, so /fix comes before anything else". Name what is broken
-rather than saying a piece is labelled.
+confirmation is broken, so repairing it comes before anything else". Name what
+is broken rather than saying a piece is labelled. A repair already reproduced
+and marked ready goes to /implement; one not yet reproduced goes to /shape.
+Where the person says the live tool broke after a recent merge, run the
+`change-triage` skill's "A live break after a recent merge" first.
 
 A failing check is named next, after anything broken and before the counts. Say
 it plainly as failing, because a red check is a fact the person cannot see for
@@ -79,7 +82,7 @@ because a step nobody names is a step nobody does.
 Say piece names, never issue numbers. Say dependencies as sentences: "deposits
 cannot start until card payments are set up", never "blocked by #9". Name at
 most three things; if more apply, say how many and name the nearest. More than
-three stops being orientation and becomes a report. Match where the project is in its life. Still building toward the first launch: the answer is usually /implement for the next ready piece, /shape to shape a new one, or /setup-hosting once the person wants people to use it. Live and running: the answer is usually "say what you want to /shape", /fix for the thing that broke, or the /maintain that the recorded check-up dates show is overdue.
+three stops being orientation and becomes a report. Match where the project is in its life. Still building toward the first launch: the answer is usually /implement for the next ready piece, /shape to shape a new one, or /setup-hosting once the person wants people to use it. Live and running: the answer is usually "say what you want to /shape", /shape for the thing that broke, or the /maintain that the recorded check-up dates show is overdue.
 
 End with a short recap of where the tool has got to, in the words a person would
 use. Say what the last stretch of work was about, and whether anything is on the
@@ -131,8 +134,8 @@ be pasted into a message.
 
 Name the check that is failing and what it is there to catch, in plain words,
 for example the test that stops a booking being taken twice. Say that a red check
-means the tool is not doing something it is meant to, and that /fix is where that
-goes. Do not show the check's output or its logs.
+means the tool is not doing something it is meant to, and that /shape is where
+that goes, to turn it into a repair. Do not show the check's output or its logs.
 
 ### Open review finding
 

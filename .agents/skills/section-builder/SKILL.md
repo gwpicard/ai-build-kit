@@ -1,6 +1,6 @@
 ---
 name: section-builder
-description: Build one piece from the plan to a confirmed, saved change. Used by implement for every piece and by fix once the cause is known. Refuses to start on top of uncommitted work. One piece per pass, always.
+description: Build one piece from the plan to a confirmed, saved change. Used by implement for every piece, a repair included. Refuses to start on top of uncommitted work. One piece per pass, always.
 user-invocable: false
 ---
 
@@ -155,6 +155,11 @@ sort the misses on the piece. This offer adds no gate to saving the work.
 
 ## 4. Establish the baseline
 
+A piece labelled `broken` is a repair. Load `references/repair.md` and follow
+its "Building a repair" part from here: the check the piece records is the
+baseline, the cause comes before any code, and its escalation holds after
+three failed attempts.
+
 For automated behaviour: write or identify the check, and show it fails
 before the behaviour exists or before the bug is fixed. For adopted
 behaviour or a refactor: establish the current passing baseline before
@@ -206,7 +211,7 @@ When the piece carries `visual`, or the change touches a screen file whatever
 subject the piece carries, load and follow `screen-check`. A screen file is one
 that renders a page, view, component, template, style, or native interface.
 Apply it before the screen's guided manual check, so the person judges the first
-result rather than describing a redo. When this build came from `/fix`, use the
+result rather than describing a redo. When this build is a repair, use the
 same boundary: a fault on a screen gets the rules and any other fault does not.
 
 When filing a new piece for work this build uncovers, follow the rule for work
@@ -384,6 +389,10 @@ live, so check these first, read-only, and change nothing live:
 - Where the piece carries a `Live side needs:` line, ask for the merge only
   once /setup-hosting reports each name on it present on the host. Say so in
   one line, naming what is missing.
+- Where "How it stays running" records that the live copy is held on an
+  earlier version since a rollback, the merge alone does not put this change
+  live. Say so in the line that asks for the merge, and that /setup-hosting
+  then moves the live copy on to it after a yes, as its "Rolling back" says.
 
 Until then, the pull request stays open and ready for review, and the report
 says what it waits for.
@@ -441,7 +450,9 @@ the person asks to put the change out again, read the health line again first
 and say what it shows. A further deploy belongs to /setup-hosting and its
 rules, never to this step. Where they ask whether they can go back to the
 earlier version, say what the recipe's rollback section offers, that a
-rollback has not been tried, and run none.
+rollback has not been tried, and run none. Where they report that the live
+tool broke after this merge, that is a live break, and the `change-triage`
+skill's "A live break after a recent merge" says what to offer.
 
 ## Excuses that don't hold
 

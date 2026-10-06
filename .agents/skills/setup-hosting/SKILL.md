@@ -332,6 +332,48 @@ even when a step runs twice. Where it matters again, one line saying the changel
 holds it is enough. The risk notice for a named area is not a warning, and
 Build with care still gives it at the moment that area goes live.
 
+#### Rolling back
+
+This holds whenever the live copy is brought back to an earlier version, on a
+recipe or off one. The `change-triage` skill's "A live break after a recent
+merge" offers it first when the live tool broke after a recent merge. Where a
+run of this skill starts with such a report, run that check first. The person
+may also ask for a rollback outright.
+
+A rollback changes the live service, so it waits for a yes that names it, as
+"A change to a live service" says, even where the recipe names the command.
+Nobody asked for a launch. Before asking, read the host's list of deployments
+the way the recipe's rollback section says, and name the version the rollback
+brings back, by the change it carried and its date. Say that a rollback does
+not undo a database addition, which is why migrations only add.
+
+On a yes, run the recipe's rollback once, read its whole output, and check it
+as the recipe's `How it is checked:` says: the health answer names the earlier
+version. Never run it a second time before you have checked the first. Where
+`Who runs it:` is a companion or the person, say in one sentence what they do
+and where, and read back what they paste.
+
+Write the rollback onto the repair's piece, with the date, the version brought
+back and why, so the repair's own save carries it into CHANGELOG.md. Where no
+piece is in hand, save it as "Deploying, and the records" says.
+
+Some hosts stop putting new merges live after a rollback, until a newer build
+is promoted, and the recipe's rollback section says so where its host does.
+On such a host, say it plainly in the same reply: "The live copy now stays on
+this earlier version. New merges will not go live until the repair is put
+live."
+
+Write the hold onto the repair's piece too, as its masterplan change: "How it
+stays running" gains a line saying the live copy is held on an earlier
+version, with the date. The repair's merge then needs that promote. It is a
+change to the live service, so it waits for its own named yes, and it runs
+only once the repair has merged and its build is listed. Remove the line once
+the live copy runs the newest merge again.
+
+Off a recipe, say what a rollback would need: an earlier build the host still
+keeps, and a way to point the live address back at it. Say that the kit cannot
+do it here, and that whoever runs the host can.
+
 ### Build with care
 
 Separate the work into what is outside every named area and what is inside
@@ -408,6 +450,10 @@ plain line, and say nothing more about a part that matches:
 - whether the live copy runs the latest merge on `main`, read from its health
   route or the host's list of deployments, as the recipe's going-live check
   says;
+- whether the live copy is still held on an earlier version since a rollback,
+  as "Rolling back" describes. "How it stays running" may record it, and the
+  host's list of deployments shows it whether or not it was recorded. The
+  repair is the promote, after its own named yes;
 - whether `main` holds a database migration the live database does not have,
   read with the recipe's own dry run where it has one;
 - whether a secret or setting the tool needs is missing on the host, by name

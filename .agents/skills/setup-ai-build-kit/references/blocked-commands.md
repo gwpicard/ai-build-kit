@@ -18,8 +18,9 @@ deny list, mirror these entries there as mechanical enforcement:
 The following restrictions do not reduce to one reliable command pattern and
 still apply:
 
-- `git checkout .` and `git restore .` are allowed only inside the fix skill's
-  announced reset step;
+- `git checkout .` and `git restore .` are allowed only inside the repair's
+  announced reset step, in the `section-builder` skill's
+  `references/repair.md`;
 - never drop or empty a database table;
 - never migrate a production database without a backup and a rehearsal on a
   copy;

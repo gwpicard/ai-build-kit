@@ -39,10 +39,10 @@ import os
 import re
 import sys
 
-# The kit's fourteen skills. A name outside this list may be the project's own
+# The kit's thirteen skills. A name outside this list may be the project's own
 # skill, and its pointer is the person's to keep.
 KIT_SKILLS = (
-    "setup-ai-build-kit", "shape", "implement", "queue", "fix", "setup-hosting", "sync",
+    "setup-ai-build-kit", "shape", "implement", "queue", "setup-hosting", "sync",
     "maintain", "what-now", "clarify", "change-triage", "screen-check",
     "section-builder", "second-opinion",
 )
@@ -51,7 +51,12 @@ KIT_SKILLS = (
 # earliest releases pointed into the founding skill under its first name, and
 # the rename migration removes that folder, so those pointers open nothing on
 # any install route.
-FORMER_NAMES = {"start": "setup-ai-build-kit", "ship": "setup-hosting"}
+FORMER_NAMES = {"start": "setup-ai-build-kit", "ship": "setup-hosting", "fix": "section-builder"}
+
+# A former skill whose rules moved into a file of another skill. The fix skill
+# had only its SKILL.md, and its rules now sit in section-builder's repair
+# reference, so a pointer to that file follows them there.
+FORMER_FILES = {("fix", "SKILL.md"): "references/repair.md"}
 
 FILES = ("AGENTS.md", "masterplan.md")
 
@@ -104,7 +109,7 @@ def findings(line, in_block):
     """Yield (start, end, old, new-or-None, reason) for each pointer on the line."""
     for match in POINTER.finditer(line):
         skill = FORMER_NAMES.get(match.group(1), match.group(1))
-        path = match.group(2)
+        path = FORMER_FILES.get((match.group(1), match.group(2)), match.group(2))
         if in_block:
             yield match.start(), match.end(), match.group(0), None, "it sits inside a code block"
             continue

@@ -1,40 +1,32 @@
----
-name: fix
-description: Bring the tool back to doing what it already should. Use when the user says something is broken, failing, wrong, regressed, or not behaving as intended. Input is evidence, an error, a wrong output, a screenshot. Do not use for behaviour the masterplan never promised; that is build.
----
+# Repair
 
-# Fix
+A repair brings the tool back to doing what it already should. A bug is a
+piece like any other. `/shape` reproduces it and writes the failing case into
+the piece, and `/implement` builds the repair through section-builder. This
+file holds the rules for both halves. The discipline is the order: never
+change code before the problem repeats reliably and the cause is understood
+and explained.
 
-You restore promised behaviour. The discipline is the order: never change
-code before the problem repeats reliably and the cause is understood and
-explained.
+change-triage decides first whether the report is a repair at all, and whether
+a live break needs the earlier version back before anything else.
 
-## 0. Check the report
+## Shaping a repair
 
-When `/fix` arrives with no bug described, look for the repair already on the
-board before asking the person to describe one. Refresh the printout with
-`sh .agents/tools/plan-refresh.sh` and read its Broken group, the same open issues
-labelled `broken` that `/what-now` surfaces first. Where the project has no copy
-of the helper, the `setup-ai-build-kit` skill's `references/pieces.md` says what
-to run instead. If none is labelled `broken`,
-ask for the symptom, as step 1 sets out. If exactly one is, name it and use it as
-the report. If more than one is, list them and ask which to take.
+`/shape` follows this part when change-triage routes a report as a repair.
+Shaping changes no file the project saves. Reproduce with what runs as it is:
+the project's own tests, a command or request run from the shell, the app in a
+browser on this computer, or replayed input. A throwaway harness goes in
+`.agents/tmp/`, which git ignores, so `/implement` later starts on a clean
+tree. Temporary logging inside the code waits for the build.
 
-Read masterplan.md, build-path section first. If the behaviour being asked
-for was never promised there, say so kindly and hand the request to `/shape`,
-which shapes new work; a new wish treated as a repair ends up in the wrong
-procedure. Nobody
-can misfile work by picking the wrong command; catching that is this step's
-whole job.
-
-## 1. Define the symptom
+### Define the symptom
 
 Record the exact steps that trigger it, the expected result, the actual
 result, the error text or artifact verbatim if there is one, the environment
 it happened in, and whether it's intermittent. A bug you can't describe this
 precisely is a bug you can't verify as fixed.
 
-## 2. Build the tightest feedback loop available
+### Build the tightest feedback loop available
 
 After launch on Build and run it or Build with care, read the tool's own
 request record alongside the person's report as a source for the reproduction.
@@ -45,36 +37,68 @@ Secrets and Confidential files rules still apply to anything read or reported.
 A step that needs a secret reads where it lives from the masterplan first, as
 the Secrets rule says, and asks once when that is unknown.
 
+Load the `section-builder` skill's `references/reach-check.md` and run its
+reach check now. Run the existing tests it finds before writing a new focused
+test. Prefer the existing test when it catches the exact symptom; the build
+adds the new regression test once the cause is known.
+
+Find one repeatable check that catches the exact symptom. Prefer, in order:
+an existing failing test; a new focused automated test, written in
+`.agents/tmp/` while shaping; a request or command script;
+browser automation; replayed input; a small throwaway harness; structured
+human-in-the-loop steps, when nothing else can reach the bug.
+
+The user never needs to know which technique this was. The piece states how
+the bug is triggered, what result marks failure, how long the check takes,
+and whether it's reliable.
+
+When no loop can be built, ask for the missing artifact, access, or
+permission. Where the person cannot give it now, file the piece with `broken`,
+the symptom as far as it is known, and a `## Waiting on you` section naming
+what is missing. Do not label it `ready`, and never begin speculative patching
+without a loop.
+
+### Reproduce and minimise
+
+Run the check, confirm it actually catches the user's bug, then remove
+irrelevant steps or inputs one at a time until only the smallest case that
+still fails remains.
+
+### Write the piece
+
+A repair is ready once it is reproduced. Write it in the shape
+the `setup-ai-build-kit` skill's `references/pieces.md` describes, with
+`broken` beside its subjects. Its `## Done when` is the failing case: the
+smallest steps, what they give now, and what they give once repaired, for
+example "Booking the tripod once shows one loan on the calendar, not two."
+Put the check itself, how it is run and how reliable it is, in `Under the
+hood`, so the build starts from the same loop. Then label it `ready`.
+
+A small, clear repair needs none of the ceremony above. Where change-triage
+marks one ready at once, the look that showed the fault is the reproduction,
+and the piece says what that look was.
+
+## Building a repair
+
+section-builder follows this part for a piece labelled `broken`, from step 4
+onwards. Its other steps still apply: the safe start, the save route, the
+evidence, the hand-over, the review and the merge.
+
+### Run the recorded check first
+
+Run the check the piece records before anything else. Where it no longer
+fails, say so in one line and ask whether the fault still happens, before
+changing any code. Where it fails, it is the baseline step 4 asks for.
+
+### Read the history
+
 Before ranking causes, read `CHANGELOG.md` and closed pieces for the same area.
 A repair already tried and failed is ruled out or named as a repeat; a cause
 already established ranks first. When that history changes the ranking, say one
 line: "This was tried on <date> and did not hold, so it is ruled out." The
 history is evidence to check against the present, not a verdict to copy.
 
-Load the `section-builder` skill's `references/reach-check.md` and run its
-reach check now. Run the existing tests it finds before writing a new focused
-test. Prefer the existing test when it catches the exact symptom; add the new
-regression test after the cause is known.
-
-Find one repeatable check that catches the exact symptom. Prefer, in order:
-an existing failing test; a new focused automated test; a request or command
-script; browser automation; replayed input; a small throwaway harness;
-structured human-in-the-loop steps, when nothing else can reach the bug.
-
-The user never needs to know which technique this was. The report states how
-the bug is triggered, what result marks failure, how long the check takes,
-and whether it's reliable.
-
-When no loop can be built, stop and ask for the missing artifact, access, or
-permission. Do not begin speculative patching without one.
-
-## 3. Reproduce and minimise
-
-Run the check, confirm it actually catches the user's bug, then remove
-irrelevant steps or inputs one at a time until only the smallest case that
-still fails remains.
-
-## 4. Rank causes
+### Rank causes
 
 List two to five plausible causes internally, each with a falsifiable
 prediction. Show the list to the user only when their domain knowledge could
@@ -85,15 +109,21 @@ tight reproduction to bisect the saved history before testing the ranked
 causes. Report the result as: "It broke in the change called <piece title> on
 <date>." Do not bisect when there is no known-good point.
 
-## 5. Test one cause at a time
+### Test one cause at a time
 
 Change one variable, and keep any temporary instrumentation targeted and clearly
 labelled: name the file you write a temporary log to and read it back while
 testing the cause, so the evidence sits somewhere you can point at rather than
-scroll past. Reset to the last saved state after any failed attempt before trying
-differently. Failed fixes never stack; stacked fixes are how clean projects rot.
+scroll past. Failed fixes never stack; stacked fixes are how clean projects rot.
 
-## 6. Fix and lock it down
+**The reset step.** Reset to the last saved state after any failed attempt
+before trying differently. Commit what is worth keeping, such as a test that
+reproduces the fault, before an attempt starts, so the reset cannot take it.
+Say in one line, before you run it, that the reset throws away the failed
+attempt and nothing else, then run `git restore .` or `git checkout .`. This
+announced step is the only place either command is allowed.
+
+### Fix and lock it down
 
 Create the regression evidence at the highest credible user-facing boundary,
 watch it fail, apply the smallest fix that addresses the actual cause, watch
@@ -108,21 +138,21 @@ check, its one-line report, and the misses listed on the repair's piece. Keep
 the run to the repaired code and the regression test; do not offer it again
 when section-builder saves the repair.
 
-## 7. Cleanup
+### Cleanup
 
 Name every temporary log and harness added during the repair, remove each one,
-then run the regression evidence without them. On Build and run it and Build
-with care, run the trim in the `section-builder` skill's `references/trim.md`
-on the repair, so the repair keeps only what the fix needed. Confirm the
-original symptom is gone, record the cause in the changelog in plain language,
-update the other records, and use section-builder's save and review route for
-the change itself.
+then run the regression evidence without them. Clear what shaping left in
+`.agents/tmp/` for this piece too. On Build and run it and Build with care, run
+the trim in the `section-builder` skill's `references/trim.md` on the repair, so
+the repair keeps only what the fix needed. Confirm the original symptom is gone,
+record the cause in the changelog in plain language, update the other records,
+and use section-builder's save and review route for the change itself.
 The report says which temporary items were removed and that the evidence still
 passed.
 
-Where the repair had an issue, take the `broken` label off once the symptom is
-gone. A repair that stays labelled broken keeps reporting a fault that no longer
-exists, which is worse than never labelling it.
+Take the `broken` label off once the symptom is gone. A repair that stays
+labelled broken keeps reporting a fault that no longer exists, which is worse
+than never labelling it.
 
 ## Escalation
 

@@ -76,8 +76,8 @@ leave the rule out.
 
 ## When it goes red
 
-The check names the importing file and the person's sentence. `/fix` reads it
-like any other failure. Describe it to the person with their own sentence:
+The check names the importing file and the person's sentence. A repair reads
+it like any other failure. Describe it to the person with their own sentence:
 "This change broke your rule: nothing outside billing touches the ledger except
 through the charge step. `src/reports/sum.ts` reaches the ledger directly."
 

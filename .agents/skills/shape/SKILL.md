@@ -1,14 +1,14 @@
 ---
 name: shape
-description: The command for turning an idea into a ready piece before anything is built. Typed with words after it, it takes the request in plain language, works out what kind of work it is, shapes it into a piece, and settles any open question. Asked only to note an idea, it files the piece and stops. Typed alone it shapes the next piece still waiting on one. It records and stops; it never builds, though it offers to hand a ready piece to implement.
+description: The command for turning any request into a ready piece before anything is built, a new idea or something that is broken. Typed with words after it, it takes the request in plain language, works out what kind of work it is, shapes it into a piece, and settles any open question. Asked only to note an idea, it files the piece and stops. Typed alone it shapes the next piece still waiting on one. It records and stops; it never builds, though it offers to hand a ready piece to implement.
 ---
 
 # Shape
 
-This command shapes work; it does not build it. It takes an idea in plain
-language, works out what kind of work it is, writes it into a piece somebody
-could build, and settles anything the piece is still waiting on. When a piece
-is ready it offers to hand it to `/implement`, but building is always a
+This command shapes work; it does not build it. It takes an idea or a fault in
+plain language, works out what kind of work it is, writes it into a piece
+somebody could build, and settles anything the piece is still waiting on. When
+a piece is ready it offers to hand it to `/implement`, but building is always a
 separate, deliberate step.
 
 Read masterplan.md first, build-path section first, then the project's pieces,
@@ -28,6 +28,14 @@ Run change-triage on the request and follow its route: shape it into a ready
 piece now, run clarify first, run a decision prototype, run a source check,
 update the masterplan first, or stop and rerun the fit check. Say which route
 you chose and why, in one line.
+
+A fault is shaped by reproducing it. Where change-triage routes the request as
+a repair, follow "Shaping a repair" in the `section-builder` skill's
+`references/repair.md`: record the symptom, build the tightest repeatable
+check, reproduce it and cut it down to the smallest failing case. That case is
+the piece's `## Done when`, and the piece is ready once it is reproduced.
+Shaping changes no file the project saves. Where change-triage marks a small,
+clear repair ready at once, make the build offer for this same session.
 
 Clear, piece-sized work becomes a ready piece straight away: write it into the
 shape the `setup-ai-build-kit` skill's `references/pieces.md` describes, take its subjects
@@ -165,11 +173,13 @@ label rather than shaping past it. A piece whose question is settled carries the
 
 ## Typed alone, or given a piece
 
-Typed alone, take the lowest-numbered piece still waiting on a question, or the
-next unsized note, and shape it as above. When nothing is waiting and every
-piece is already ready, say so and point the person at `/implement` to build the
-next one. The command does not run out of things to do quietly; it says the
-plan is shaped.
+Typed alone, take a repair not yet reproduced first: a piece under the
+printout's `Broken` group without `ready`. Something that used to work and no
+longer does outranks anything new. Where there is none, take the
+lowest-numbered piece still waiting on a question, or the next unsized note,
+and shape it as above. When nothing is waiting and every piece is already
+ready, say so and point the person at `/implement` to build the next one. The
+command does not run out of things to do quietly; it says the plan is shaped.
 
 Given an issue number, settle that piece rather than the lowest-numbered one, so
 somebody with one piece in mind is not made to work through the list. Where that
@@ -186,7 +196,9 @@ When a piece is ready, offer to build it: name the piece, and point at
 `/implement` in a fresh session as the way to build it, or "not now" to leave it
 as a ready piece for later. A fresh session is the offer for every piece, not
 only when a founding or long session ends, so a heavy planning context does not
-carry into the build. The offer is genuinely optional, and declining leaves a
+carry into the build. A small, clear repair is the one exception: the session
+is still light, so offer to build it here and now, which is `/implement`
+running on it. The offer is genuinely optional, and declining leaves a
 shaped, recorded piece that any `/implement` session picks up.
 
 Shape itself never builds. Where the person asks to build here and now anyway,

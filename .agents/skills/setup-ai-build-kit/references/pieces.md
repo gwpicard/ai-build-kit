@@ -161,9 +161,10 @@ Four more labels carry state that open and closed cannot:
 - `parked`, on a closed issue, for an idea deliberately left out;
 - `broken`, when the piece is repairing something that used to work.
 
-`broken` sends the work to `/fix` rather than to `/implement`, and it sits
-alongside the subjects rather than replacing them, because a broken thing is
-still about something.
+`broken` marks a repair. `/shape` reproduces it, and the failing case becomes
+its `## Done when`; `/implement` takes a ready repair before anything new and
+builds it with the repair rules. It sits alongside the subjects rather than
+replacing them, because a broken thing is still about something.
 
 Three more say the piece is waiting on a question, and each says who can answer
 it:

@@ -499,7 +499,7 @@ placeholder step unless the project genuinely requires a broader workflow
 change.
 
 Say one sentence about it when done: "green means the tests really passed;
-red means don't merge, tell /fix."
+red means don't merge, tell /shape."
 
 Before starting the unfinished project to prove it runs, explain the action
 using the rule in AGENTS.md, close to: "I'm going to start the unfinished

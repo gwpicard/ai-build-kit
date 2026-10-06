@@ -16,7 +16,7 @@ mechanical enforcement:
 
 When you change this file, update `.claude/settings.json` to match. Two
 entries below are left out of the mechanical deny on purpose: `git checkout .`
-/ `git restore .` are allowed inside fix's announced reset step, and database
+/ `git restore .` are allowed inside the repair's announced reset step, and database
 drops are too varied to pattern-match, so they remain instruction-only along
 with the standing-restriction entries below, none of which reduce to a single
 shell pattern.
@@ -24,7 +24,7 @@ shell pattern.
 ## Commands
 
 - git reset --hard (throws away unsaved work)
-- git checkout . and git restore . (the same thing wearing different clothes; allowed only inside fix's reset step, announced out loud first)
+- git checkout . and git restore . (the same thing wearing different clothes; allowed only inside the repair's reset step, announced out loud first)
 - git push --force, or -f, or --force-with-lease, wherever the option sits (rewrites shared history under teammates' feet)
 - git clean -fd (deletes files git never saved)
 - rm -rf, and the same delete spelled -fr, -Rf, -r -f or --recursive --force (deletes anything, recursively, with no undo)
