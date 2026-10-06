@@ -210,14 +210,14 @@ picks the piece up, and the merged pull request closes it.
 A piece never carries `ready` and a `needs-` label at the same time; settling
 the question is what moves it from one to the other.
 
-`/queue` reads this label to answer a different question: not which piece is
-next, but which of them can be taken on at the same time. A piece can be shaped
-and still be held up, so `ready` alone does not mean startable. What `/queue`
-offers is the ready pieces the printout has already put under `To build`, and a
+`/implement` reads this label to answer a second question when more than one
+piece is ready: not which piece is next, but which of them can be taken on at
+the same time. A piece can be shaped and still be held up, so `ready` alone
+does not mean startable. What `/implement` offers then is the ready pieces the printout has already put under `To build`, and a
 piece with an open blocker is never there. That is what makes the group safe to
 take on at once: no two pieces in it are waiting on each other. Shape still
 decides too, so a piece somebody labelled `ready` without giving it a
-`## Done when` is a note, and `/queue` does not offer it either.
+`## Done when` is a note, and `/implement` does not offer it either.
 
 Those fifteen are the only labels the kit owns. Any other label on an issue
 belongs to somebody else, so the kit reads past it and never removes it.
@@ -312,14 +312,14 @@ the form it expected.
 | Assigns themselves | Treats the piece as theirs, and `/implement` will not hand it to anyone else. Assignment says whose it is; `building` says work is under way now |
 | Assigns somebody else | `/implement` skips it and says who has it, rather than quietly taking it |
 | Adds `building` | Treats the piece as under way and leaves it alone |
-| Closes an issue by hand | It stays closed. `/sync` may say that no changelog line matches it, and ask whether it was done or dropped |
+| Closes an issue by hand | It stays closed. `/maintain` may say that no changelog line matches it, and ask whether it was done or dropped |
 | Reopens a closed issue | Treats it as work again, and takes off a `parked` label, because reopening is the decision to unpark it |
 | Edits the body so `## Done when` is gone | Treats it as a request rather than a piece, and refines it before building |
 | Adds labels of their own | Leaves them alone |
 | Puts two subject labels on one piece | Takes both, and satisfies what each one demands |
 | Leaves the subject off | change-triage classifies it when the piece is refined |
 | Uses milestones or a project board | Ignores both, and neither reads nor writes them |
-| Deletes an issue | Lets it go. If a branch still refers to it, `/sync` says so |
+| Deletes an issue | Lets it go. If a branch still refers to it, `/maintain` says so |
 | Fills the issue form in properly | Nothing special. It is a piece, and it gets built |
 
 ## The local printout

@@ -1,6 +1,6 @@
 ---
 name: implement
-description: The everyday command for building a piece that has already been shaped and marked ready. Typed alone it takes the next ready piece from the plan. Given an issue number, or a request that matches a ready piece, it builds that one. It shows the result, merges it after the person's yes, and on a live project reads one line of health from the live copy. A request that is not yet a ready piece goes to shape first; implement builds, it does not shape. "/implement auto" builds several ready pieces in a row. A repair is built here too, once shape has reproduced it.
+description: The everyday command for building a piece that has already been shaped and marked ready. Typed alone it takes the next ready piece from the plan, or, when several are ready, shows what can be built together and what waits on what, and asks which to take. Given an issue number, or a request that matches a ready piece, it builds that one. It shows the result, merges it after the person's yes, and on a live project reads one line of health from the live copy. A request that is not yet a ready piece goes to shape first; implement builds, it does not shape. "/implement auto" builds several ready pieces in a row. A repair is built here too, once shape has reproduced it.
 ---
 
 # Implement
@@ -37,9 +37,12 @@ A ready repair comes first: a piece under the printout's `Broken` group marked
 `(ready)`, which the printout gives only to a repair nobody is building and
 nothing open holds up.
 Something that used to work and no longer does outranks anything new.
-section-builder builds it with the repair rules. Otherwise, take the
-lowest-numbered ready piece that nothing open is holding up and whose
-class the current build path allows. A ready piece is one `/shape` has finished
+section-builder builds it with the repair rules. Otherwise, where only one
+ready piece is free to start, take it: the one nothing open is holding up and
+whose class the current build path allows. Where more than one is, show them
+as "Taking on several pieces" below says, and let the person choose. In an
+unattended run nobody is there to choose, so take the lowest-numbered one.
+A ready piece is one `/shape` has finished
 shaping: it carries the `ready` label, has a `## Done when` line, and waits on no
 open question. The issue list says which are held up, so this needs no digging.
 
@@ -60,6 +63,63 @@ condition is met, or until the person carries on after the risk notice and the
 acceptance is recorded; one parked
 after repeated failure (references/running-longer.md) needs routing back to
 `/shape` first, for another look.
+
+## Taking on several pieces
+
+Somebody taking on several pieces at once needs to see the whole set before
+choosing. So when the printout holds more than one piece under `To build`
+marked `(ready)`, show what can be built together and what waits on what, and
+ask which to take. The same holds when the person asks for the whole list in
+plain words, such as "what can I build in parallel?", and wants no build:
+show it and stop there.
+
+`/what-now` names one next step and at most three things, because somebody lost
+cannot use more. That cap stays. The whole list lives here, at the moment of
+building, and never goes back into `/what-now`.
+
+The printout is the only source. Where the project has no copy of the helper,
+the `setup-ai-build-kit` skill's `references/pieces.md` says what to run
+instead. If GitHub cannot be reached, show the printout as it stands and say
+when it was written, because an old list a person can see beats no list at
+all.
+
+The printout has already done the sorting. A piece under `Blocked` names the
+piece holding it up, and a piece with an open blocker is never under
+`To build`, so a ready piece cannot be waiting on another ready piece. Never
+work that out again from the issues. Read the masterplan's build-path section
+too: a piece the path will not allow is not ready work however the label reads.
+
+Two groups, in this order.
+
+**Build these together now.** Every ready piece. They have no dependency between
+them, which is what makes them safe to take on at once. Say the count first, in
+one line, then the pieces.
+
+**These wait their turn.** The blocked pieces, one line each, saying which piece
+releases it: "deposits cannot start until card payments is built". Where a chain
+runs deeper than one, put the piece that unlocks the most first and let the
+rest follow it.
+
+Piece names, never issue numbers. The person cannot follow a number, and the
+printout carries the name of the blocking piece already.
+
+A piece waiting on a question rather than on another piece is not ready and
+not blocked by work. Say which of the three questions it needs and leave it out
+of both groups. A piece with a `Waiting on you` step is named as the person's own
+to do, and you never ask for a key, a password, or a token in a message.
+
+A piece under `To build` carrying no marker at all has been sized but never
+marked ready. Name it with those, and say `/shape` is what marks it ready. This
+is the one case where a piece looks buildable in the printout and is not, and it
+matters most when that piece is the one holding another up.
+
+Where nothing is blocked, say nothing about it rather than printing an empty
+group. Where the ready group is long, say once how many pieces a sitting can
+realistically hold, since taking on eight at once is the mess this list exists
+to prevent. Do not rank the pieces and do not choose for the person.
+
+Showing the list builds nothing. Wait for the person to name what to take, then
+build those pieces one at a time, each as section-builder says.
 
 ## A piece already built
 
@@ -120,7 +180,7 @@ question.
 
 The blocked-by link is the truth and the `blocked` label is only a hint, so read
 the link. A piece whose blockers have all closed is buildable even with the
-label still on it. Say the label looks stale, and leave taking it off to `/sync`.
+label still on it. Say the label looks stale, and leave taking it off to `/maintain`.
 
 When nothing is ready, because everything open is held up, still waiting on a
 question, or two pieces hold each other up, say so plainly and name what is
