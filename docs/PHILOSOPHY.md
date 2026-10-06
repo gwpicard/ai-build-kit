@@ -25,7 +25,7 @@ practice at directing an agent and getting a working tool out of it. Both want
 the reliability of a real process. Neither wants to carry the process by hand.
 
 The kit rests on one rule: the workflow never requires reading code. None of the
-eight commands asks anyone to open a file of code, and every check is something a
+six commands asks anyone to open a file of code, and every check is something a
 person sees or tries. The rule describes the process and leaves the person
 alone. A developer can read every diff if they like. The kit never depends on
 it, because a process that only works while somebody reads the code stops
@@ -62,7 +62,7 @@ rather than patched a fourth time, often ending in a rebuild from the
 documents, and why a disappointing autonomous run is answered by sharpening
 the plan instead of hand-editing whatever it produced.
 
-The vocabulary stays small and grows only by deliberate redesign. Eight commands,
+The vocabulary stays small and grows only by deliberate redesign. Six commands,
 each named after a moment a person actually reaches for, and every new
 capability arrives as behaviour of an existing command wherever it can. A
 capability that genuinely needs its own command is a sign a command was carrying
@@ -74,10 +74,14 @@ was found to be both orientation and overview: it names at most three things
 because somebody lost cannot use more, and somebody taking on several pieces at
 once needs the whole list, so that half became `/queue`.
 
-The count has also come down once. A separate repair command made the person
-sort their own request before typing, which is the kit's job. So nine became
-eight when `/fix` folded into `/shape` and `/implement`: a bug is a piece like
-any other, shaped by reproducing it and built with the repair rules.
+The count has also come down, from nine to six, because three commands were
+second doors to the same work. A separate repair command made the person sort
+their own request before typing, which is the kit's job, so `/fix` folded into
+`/shape` and `/implement`: a bug is a piece like any other. Taking on several
+pieces is a moment of building, so the whole ready list moved into
+`/implement`, while `/what-now` kept its cap of three. Catching the records up
+is what a service visit does, so `/sync` folded into `/maintain`, which now
+makes the project true on every visit.
 
 A name can also be forced from outside. Where the coding agent the kit runs inside takes a command
 name for itself, the person either cannot reach the kit's command or loses the
@@ -259,15 +263,15 @@ Review reports split into "worth stopping for" and "worth knowing", added. The
 same findings as before, sorted, so the decision becomes one question: is the
 first list empty?
 
-`/queue`, the whole ready list at once, added as a ninth command. It failed
-question 1 under every existing command, which is the answer that mattered:
-`/what-now` was doing orientation and overview at once, and the cap that keeps
-orientation usable is what squeezed the overview out. The person sees two lists
-when they type it, what can be built together now and what is waiting on what.
-The sentence is "it shows everything ready to build at once, and what is waiting
-on what". When the list looks wrong they type it again, since it is printed from
-the issues and never edited. They never need to learn that a piece can depend on
-another piece.
+The whole ready list at once, added inside `/implement`. It once had a command
+of its own, on the view that it failed question 1 under every existing
+command. That view was wrong: somebody taking on several pieces is about to
+build, so the list fits where the building starts. The person sees two lists
+when more than one piece is ready, what can be built together now and what is
+waiting on what, and nothing is built until they choose. The sentence is "with
+several ready, it shows what can go together and what waits". When the list
+looks wrong they type the command again. They never need to learn that a piece
+can depend on another piece.
 
 Specialised agent role systems, rejected. Fails question 1, because each role is
 a new thing to know, and question 3, because there is no one-sentence version.

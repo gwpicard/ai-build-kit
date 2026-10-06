@@ -16,21 +16,21 @@ here by design. They are created inside a user's project by `/setup-ai-build-kit
 ## Before any work
 
 Read `docs/MAINTAINING.md`. Read `docs/PHILOSOPHY.md` before changing what one
-of the thirteen canonical skills does, or adding a capability. Check the current
+of the eleven canonical skills does, or adding a capability. Check the current
 branch and unsaved work
 before editing. Never run the project-founding `/setup-ai-build-kit` process in this
 repository.
 
 ## Source and starter boundary
 
-- `.agents/skills/` is the single source of truth for the eight commands and
+- `.agents/skills/` is the single source of truth for the six commands and
   five internal background skills. Nothing else belongs in it.
 - `.agents/maintainer-skills/` holds the skills only the kit's own maintainers
   use. There are three: the Humanizer writing skill; `review-issues`, which
   reads the open issues, groups them by theme and names the next piece worth
   picking up; and `stack-research`, which reads what changed upstream for the
   products the recipes name and writes a dated note proposing changes, or
-  none. They sit there rather than beside the thirteen because a shared
+  none. They sit there rather than beside the eleven because a shared
   skills installer reads `.agents/skills/` and `.claude/skills/` and offers
   whatever it finds in either, so a folder in one of those is a skill somebody
   installs. Being outside both is the whole boundary, and a maintainer skill
@@ -49,7 +49,7 @@ repository.
   before running any of them.
 - `.claude/`, `.cursor/`, and `.gemini/` are generated adapters. Change the
   canonical skill, then run `.agents/tools/build-adapters.sh`. The Claude
-  plugin exposes the eight generated command files and five hidden background
+  plugin exposes the six generated command files and five hidden background
   skills. Shared installations use the adapters their coding agents need.
 - `.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md` creates a project's
   root instructions.
@@ -61,7 +61,7 @@ repository.
 - `.claude-plugin/` is the Claude plugin and marketplace metadata. It selects
   generated adapters rather than duplicating a skill.
 - `agent-plugin/plugin.json` is the Agent Plugins manifest. The release
-  allowlist rebases the thirteen canonical skills under `agent-plugin/skills/`,
+  allowlist rebases the eleven canonical skills under `agent-plugin/skills/`,
   so the plugin folder is assembled at release time and this repository keeps
   one copy of each skill.
 - `release-manifest.txt` is the full allowlist for the public kit. A file absent
@@ -89,7 +89,7 @@ thing, trust the check. It tests the real work, and an instruction can fall out
 of date. Follow the check, and say plainly that the two disagree rather than
 following the stale instruction in silence.
 
-When one of the thirteen canonical skills changes, answer the five questions in
+When one of the eleven canonical skills changes, answer the five questions in
 `docs/PHILOSOPHY.md`, record any borrowed idea in `docs/SOURCES.md`, update the
 owned explanation where needed, regenerate adapters, and run the kit validator.
 Generated files are committed with their canonical change.
@@ -266,7 +266,7 @@ attribution line, not the word.
   issues and reads what it wrote: which group each piece lands in, whether a
   waiting piece says why, whether a shaped piece says it is ready, and whether a
   held-up piece names the piece holding it rather than its number. It also holds
-  the invariant `/queue` rests on, that a piece with an open blocker never
+  the invariant `/implement`'s ready groups rest on, that a piece with an open blocker never
   reaches the buildable group while a piece whose blocker has closed does.
   A repair stays under `Broken` whatever holds it, so there `(ready)` is
   printed only for one nobody is building and no open piece holds up, and a
@@ -289,14 +289,18 @@ attribution line, not the word.
   alone has no `.agents/skills/` and a plugin keeps its skills outside the
   project. The check fails on a pointer to a file no skill has, and on the old
   fixed form.
-- `.agents/tests/queue-groups.sh` guards what `/queue` may call safe to build
-  together. The rule that matters is that it reads the printout's grouping rather
-  than working safety out again, since the printout is where the guarantee comes
-  from. It also guards the blocker being named rather than numbered, a waiting
-  question keeping a piece out of both groups, the command reporting and never
-  building, and `/what-now` keeping its cap of three things, because a
-  `/what-now` that grew the whole list would undo the split that earned the ninth
-  command. The same rule reaches the end of a build: `/implement` and
+- `.agents/tests/ready-groups.sh` guards what `/implement` may call safe to
+  build together when more than one piece is ready. It was `queue-groups.sh`
+  until `/queue` folded into `/implement`, since taking on several pieces is a
+  moment of building. The rule that matters is that it reads the printout's
+  grouping rather than working safety out again, since the printout is where
+  the guarantee comes from. It also guards the blocker being named rather than
+  numbered, a waiting question keeping a piece out of both groups, the list
+  shown and nothing built until the person chooses, a request for the list
+  alone shown and stopped, and `/what-now` keeping its cap of three things,
+  because a `/what-now` that grew the whole list would turn orientation back
+  into a report. It refuses a `queue` folder, or a shipped file that still
+  points at `/queue`. The same rule reaches the end of a build: `/implement` and
   section-builder name a next piece only from the printout's `(ready)` marks,
   and never from a hand reading of the issues. A repair under `Broken` marked
   `(ready)` is named first, since the printout marks one ready only when it is
@@ -485,14 +489,16 @@ attribution line, not the word.
   `agent-plugin.sh` and `claude-plugin.sh` each check that every menu recipe
   arrives in their installed layout.
 - `.agents/tests/coverage-read.sh` guards the read that compares the masterplan
-  against the pieces: the rules that keep it honest, that /setup and /sync both
-  still run it, and that WORKFLOW.md explains it for founding and for sync. It
+  against the pieces: the rules that keep it honest, that /setup and the
+  truing every `/maintain` visit runs both still run it, and that WORKFLOW.md
+  explains it for founding and for maintenance. It
   includes permissions, data, connections and settled terms left on parked
   pieces, and fails on a copy with any one of those rules removed.
 - `.agents/tests/masterplan-edges.sh` guards where ownership facts are written,
   the settled term a piece keeps through parking or reshaping, and the single
-  offer to shorten an overlong masterplan. It also holds the parked-term
-  rehearsal's setup and expected result.
+  offer to shorten an overlong masterplan, which the maintain skill's truing
+  now carries. It also holds the parked-term rehearsal's setup and expected
+  result, whose records check is now typed as `/maintain`.
 - `.agents/tests/shape-research.sh` guards the two research steps that share the
   `needs-research` label: the rules that keep an existing-work search honest
   about maintenance, licence, cost, data, and removal, that /shape offers both
@@ -544,12 +550,15 @@ attribution line, not the word.
   still points at `/fix`.
 - `.agents/tests/masterplan-changes.sh` guards the change each piece carries
   for the masterplan, its application during save and recovery, the saved state
-  the page was checked against, and the monthly count that offers /sync when
-  later work touched data, permissions or connections.
+  the page was checked against, and the count every `/maintain` visit gives
+  before its truing moves the mark, when later work touched data, permissions
+  or connections. Only the truing moves the mark.
 - `.agents/tests/record-habits.sh` guards a decision's optional evidence line,
   the read that spots when its support has gone, the link back to the build
   that found a new piece, and the single question about work untouched for a
   month. Each rule is removed in turn to prove the check catches its absence.
+  The stale-work question and the masterplan reread now sit in the maintain
+  skill's truing, where they moved from `/sync`.
 - `.agents/tests/structure-change.sh` guards the small structure comparison
   around a build: its live engine and import fallback, silence when nothing got
   worse, fixed lines without a score, and the quarterly count of change spread
@@ -629,12 +638,15 @@ attribution line, not the word.
   line the masterplan records, and watches the check go red at the `Boundary
   rules` step on a crossing import, carrying the person's sentence word for
   word, and green once the import is gone.
-- `.agents/tests/document-read.sh` guards the read in `/sync` that checks a
+- `.agents/tests/document-read.sh` guards the read every `/maintain` visit runs
+  in its truing, once `/sync`'s, that checks a
   project's own documents against the project: that it reads only the README
   and what AGENTS.md points at, that a document saying less than the project
   does is never a finding, that it says it cannot tell whether a described step
   still happens, that a name already on an open piece is not raised again, and
-  that a correction changes the stale name and never the prose around it.
+  that a correction changes the stale name and never the prose around it. It
+  holds that this read is the one home for stale names, and that the quarterly
+  bloat read leaves them to it.
   `.agents/tests/document-read-rehearsal.sh` runs the shipped
   `document-claims.py` against a throwaway project. It proves each of the four
   kinds of stale name is found at its line and that nothing true is flagged,
@@ -656,7 +668,7 @@ attribution line, not the word.
   paragraph and a note nothing names. It proves both are found, and that a
   README nobody links to, the records, a short shared sentence and a page
   naming files the project no longer has are left alone, since the document
-  read in `/sync` reports those one name at a time. A clean project produces
+  read in every `/maintain` visit reports those one name at a time. A clean project produces
   nothing, and the script writes nothing.
 - `.agents/tests/request-record.sh` guards the request record checked before
   live use, its data exclusions, and the monitoring caution given once unless
@@ -750,7 +762,7 @@ attribution line, not the word.
   other name in silence. The version file said the project was up to date,
   since the same update rewrote it. So the check holds that the route is the
   installer's `add` command, that the monthly pass counts the lockfile against
-  thirteen, and that each rename migration fires on what is on disk and has a
+  eleven, and that each rename migration fires on what is on disk and has a
   branch for the state where the old skill is gone and the new one never
   came. It also holds that a rename rewrites the command list in the project's
   own AGENTS.md with approval, because a person left to do that by hand after
@@ -798,8 +810,10 @@ attribution line, not the word.
   only on a run of the same mark at least as long as its opener.
   A project founded from today's templates gets no offer. A placeholder, a
   mention of the folder, and a project's own skill in the same folder are
-  never found. The script's list of skills is the kit's thirteen, so a rename
-  cannot slip past it. Last, a visit asked to leave kit updates alone does not
+  never found. The script's list of skills is the kit's eleven, so a rename
+  cannot slip past it. A pointer to the folded `queue` or `sync` skill
+  follows its rules into `implement` and into the maintain skill's
+  `references/truing.md`. Last, a visit asked to leave kit updates alone does not
   copy in the reminder script, still says the visit was recorded, and says the
   reminder was left out.
 - `.agents/tests/offer-recipe-move.sh` guards the monthly offer to move a
@@ -862,17 +876,32 @@ attribution line, not the word.
   every browser signed in to the account, and in a real project the agent
   opened a page in a colleague's browser on another machine. The rule lives
   in the capability check, and the prototype steps point to it.
-- `.agents/tests/sync-saves-like-a-piece.sh` guards how /sync saves what it
-  corrects. Every skill that changes the records said how it saves them, and
-  sync did not: it corrected the pieces, the changelog and the masterplan and
-  stopped, which on a project that blocks a direct push to `main` left the
-  corrections uncommitted or on whatever branch was checked out. So the
-  corrections take the save route the build path already requires, and on the
-  shared route arrive as a pull request a person decides to merge. The rule it
-  guards hardest is the one about uncommitted work: sync is run after an
+- `.agents/tests/truing-saves-like-a-piece.sh` guards how `/maintain` saves
+  what its truing corrects. It was `sync-saves-like-a-piece.sh` until `/sync`
+  folded into `/maintain`. Every skill that changes the records said how it
+  saves them, and sync did not: it corrected the pieces, the changelog and the
+  masterplan and stopped, which on a project that blocks a direct push to
+  `main` left the corrections uncommitted or on whatever branch was checked
+  out. So the corrections take the save route the build path already
+  requires, at the end of the visit with its other changes, and on the shared
+  route arrive as a pull request a person decides to merge. The rule it guards
+  hardest is the one about uncommitted work: the truing often runs after an
   interruption, so a dirty tree is the ordinary case, and the two easy ways to
-  get a clean branch are to sweep that work into sync's own commit or to
-  discard it. Both destroy the thing sync was called to reconcile.
+  get a clean branch are to sweep that work into the visit's own commit or to
+  discard it. Both destroy the thing the truing was meant to reconcile. It
+  also holds that `/what-now` is the one home for recovering that work, and
+  the truing only reports it.
+- `.agents/tests/maintain-trues-every-visit.sh` guards what every `/maintain`
+  visit does now that `/sync` has folded into it. Every visit trues the
+  records first, whenever it runs, and the monthly and quarterly parts run
+  only when due: 30 and 90 days on, or when the person asks. A request for the
+  records alone runs only the truing. Once live, the visit runs
+  `/setup-hosting`'s later-run comparison read-only, says each gap in one
+  line, offers `/setup-hosting` to repair it, and never applies a migration,
+  deploys, promotes or rolls back. It holds that the AGENTS.md trim has one
+  home, the monthly offer, and that the session-end reminder names
+  `/what-now`. It refuses a `sync` folder, a quarterly part that runs the
+  truing again, and a shipped file that still points at `/sync`.
 - `.agents/tests/settled-is-recorded.sh` guards the record a settled question
   has to leave: that what settled it is written into the piece before the label
   comes off, and that the piece is read back to decide whether the label goes
@@ -1139,7 +1168,8 @@ attribution line, not the word.
   with nobody there, keeps the piece on its own branch here with a one-line
   note. A yes creates `main` through the GitHub API at the commit the piece's
   branch was cut from, the one time it is written other than by a merge,
-  since the settings refuse a push to it. It holds the pointers from `/sync`,
+  since the settings refuse a push to it. It holds the pointers from the
+  maintain skill's truing,
   `/setup-hosting`, founding and the push-to-main rule, and WORKFLOW.md telling it.
   Founding opens issues before any piece pushes, so it holds the same guard
   there: before the first issue, founding checks which repository the project

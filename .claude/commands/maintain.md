@@ -1,5 +1,5 @@
 ---
-description: The service visit for AI Build Kit updates, project upkeep, handovers, and retirement.
+description: Make the project true and healthy, at any time.
 ---
 <!-- GENERATED from .agents/skills/maintain/. Do not edit here; regenerate with .agents/tools/build-adapters.sh -->
 

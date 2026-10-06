@@ -2,7 +2,7 @@
 # agent-plugin.sh: rehearse the Agent Plugins distribution route. It builds a
 # real release, checks the assembled folder against the standard's rules,
 # checks that the one trigger setting marks the five background skills and
-# none of the eight commands, and proves that folder can stand a project up on
+# none of the six commands, and proves that folder can stand a project up on
 # its own.
 
 set -eu
@@ -40,10 +40,8 @@ SKILLS_DIR="$PLUGIN/skills"
 expected_commands="implement
 maintain
 shape
-queue
 setup-ai-build-kit
 setup-hosting
-sync
 what-now"
 
 expected_disciplines="change-triage
@@ -172,7 +170,7 @@ done
 expected_skills=$(printf '%s\n%s\n' "$expected_commands" "$expected_disciplines" | sort)
 found_skills=$(find "$SKILLS_DIR" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sort)
 if [ "$found_skills" != "$expected_skills" ]; then
-  fail "the agent plugin does not expose exactly the thirteen installable skills"
+  fail "the agent plugin does not expose exactly the eleven installable skills"
 fi
 
 while IFS= read -r skill; do
@@ -256,7 +254,7 @@ cmp -s "$SKILLS_DIR/setup-ai-build-kit/SKILL.md" "$PACK/.agents/skills/setup-ai-
 
 # --- the Claude route is untouched and still complete -------------------
 grep -qF '"./.claude/commands/setup-ai-build-kit.md"' "$PACK/.claude-plugin/plugin.json" || \
-  fail "the Claude plugin manifest stopped selecting the eight manual commands"
+  fail "the Claude plugin manifest stopped selecting the six manual commands"
 grep -qF '"./.claude/skills/section-builder"' "$PACK/.claude-plugin/plugin.json" || \
   fail "the Claude plugin manifest stopped selecting the internal disciplines"
 grep -qF '"version": "0.3.0"' "$PACK/.claude-plugin/plugin.json" || \

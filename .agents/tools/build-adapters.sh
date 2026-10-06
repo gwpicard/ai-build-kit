@@ -6,10 +6,10 @@
 #
 # Single source of truth: .agents/skills/<name>/SKILL.md
 # Generated (thin) adapters, all pointing back at canonical:
-#   .claude/commands/<name>.md       the eight commands as Claude Code slash commands
+#   .claude/commands/<name>.md       the six commands as Claude Code slash commands
 #   .claude/skills/<discipline>/      the five disciplines as auto-triggering skills
-#   .cursor/commands/<name>.md        the eight commands as Cursor slash commands
-#   .gemini/commands/<name>.toml      the eight commands as Gemini CLI slash commands
+#   .cursor/commands/<name>.md        the six commands as Cursor slash commands
+#   .gemini/commands/<name>.toml      the six commands as Gemini CLI slash commands
 #
 # A skill only the kit's own maintainers use lives under
 # .agents/maintainer-skills/ and gets no adapter at all. A shared skills
@@ -180,8 +180,8 @@ generate_all() {
     fi
   done
 
-  if [ "$commands" -ne 8 ] || [ "$disciplines" -ne 5 ]; then
-    echo "error: expected 8 commands and 5 disciplines; found $commands and $disciplines" >&2
+  if [ "$commands" -ne 6 ] || [ "$disciplines" -ne 5 ]; then
+    echo "error: expected 6 commands and 5 disciplines; found $commands and $disciplines" >&2
     exit 1
   fi
 

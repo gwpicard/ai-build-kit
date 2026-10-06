@@ -72,14 +72,14 @@ INSTALL_PATH=$(sed -n 's/^[[:space:]]*"installPath": "\([^"]*\)",$/\1/p' "$LISTI
 BOOTSTRAP="$INSTALL_PATH/.agents/skills/setup-ai-build-kit/scripts/bootstrap-project.sh"
 [ -x "$BOOTSTRAP" ] || fail "installed Claude plugin has no start bootstrap"
 
-# The eight commands are checked where Claude reads them. Its details listing
+# The six commands are checked where Claude reads them. Its details listing
 # counts skills, agents, hooks and servers and says nothing about commands, so
 # the installed manifest and the command files in the plugin cache are the only
-# evidence that Claude offers all eight. A command carries no trigger setting,
+# evidence that Claude offers all six. A command carries no trigger setting,
 # because the agent may start one when the person asks for it, so a command
 # file still carrying the retired manual-only setting would put that command
 # back out of reach in silence.
-for word in implement maintain queue setup-ai-build-kit setup-hosting shape sync what-now; do
+for word in implement maintain setup-ai-build-kit setup-hosting shape what-now; do
   grep -qF "\"./.claude/commands/$word.md\"" "$INSTALL_PATH/.claude-plugin/plugin.json" || \
     fail "installed Claude plugin manifest does not offer the command: $word"
   [ -f "$INSTALL_PATH/.claude/commands/$word.md" ] || \

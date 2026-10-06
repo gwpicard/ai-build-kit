@@ -23,13 +23,13 @@ content, even below the ceiling. Cut nothing without the person's yes.
 
 ## The skills
 
-The work lives in thirteen installed AI Build Kit skills. Eight are commands:
+The work lives in eleven installed AI Build Kit skills. Six are commands:
 start the one the user types, names, or asks for in plain words, and say which
 one you are running. Never start a command the user did not ask for. The other
 five run in the background when a command needs them.
 
-- Commands: `setup-ai-build-kit`, `shape`, `implement`, `queue`,
-  `setup-hosting`, `sync`, `maintain`, `what-now`.
+- Commands: `setup-ai-build-kit`, `shape`, `implement`, `setup-hosting`,
+  `maintain`, `what-now`.
 - Background skills: `clarify`, `change-triage`, `screen-check`,
   `section-builder`, `second-opinion`.
 

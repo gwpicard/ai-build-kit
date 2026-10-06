@@ -33,18 +33,16 @@ pass() {
 
 SKILLS="$ROOT/.agents/skills"
 # A skill only the kit's own maintainers use lives here rather than beside the
-# thirteen. A shared skills installer reads .agents/skills/ and .claude/skills/
+# eleven. A shared skills installer reads .agents/skills/ and .claude/skills/
 # and merges what it finds by the name in its frontmatter, so a folder in
 # either one is a skill somebody installs. This folder is in neither.
 MAINTAINER_SKILLS="$ROOT/.agents/maintainer-skills"
 
 expected_commands="implement
 maintain
-queue
 setup-ai-build-kit
 setup-hosting
 shape
-sync
 what-now"
 
 expected_disciplines="change-triage
@@ -185,16 +183,16 @@ actual=$(find "$SKILLS" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | s
 expected=$(printf '%s\n%s\n' "$expected_commands" "$expected_disciplines" | sort)
 
 if [ "$actual" != "$expected" ]; then
-  fail "skill inventory does not match the canonical eight commands and five disciplines"
+  fail "skill inventory does not match the canonical six commands and five disciplines"
   echo "  expected:" >&2
   echo "$expected" | sed 's/^/    /' >&2
   echo "  found:" >&2
   echo "$actual" | sed 's/^/    /' >&2
 else
-  pass "exactly eight commands and five disciplines, named exactly"
+  pass "exactly six commands and five disciplines, named exactly"
 fi
 
-# Each of the thirteen has a SKILL.md. Which of them are commands and which
+# Each of the eleven has a SKILL.md. Which of them are commands and which
 # are background skills is settled by one setting, and the trigger contract
 # further down checks that. Here the question is only that the file exists.
 while IFS= read -r name; do
@@ -268,7 +266,7 @@ else
 fi
 
 # Claude Code: the five generated background skills are hidden from the user
-# command menu. The eight generated commands carry neither setting. A command
+# command menu. The six generated commands carry neither setting. A command
 # used to carry disable-model-invocation, and a regenerate from a stale builder
 # would put it back, so its absence is checked rather than assumed.
 while IFS= read -r name; do
@@ -372,7 +370,7 @@ else
   expected_command_files=$(printf '%s\n' "$expected_commands" | sed 's/$/.md/' | sort)
   actual_command_files=$(find "$ROOT/.claude/commands" -mindepth 1 -maxdepth 1 -exec basename {} \; | sort)
   if [ "$actual_command_files" != "$expected_command_files" ]; then
-    fail ".claude/commands/ must hold exactly the eight generated command files"
+    fail ".claude/commands/ must hold exactly the six generated command files"
     echo "  expected:" >&2
     echo "$expected_command_files" | sed 's/^/    /' >&2
     echo "  found:" >&2
@@ -397,7 +395,7 @@ else
   fi
 fi
 
-# The Cursor and Gemini trees carry the same eight commands and were covered
+# The Cursor and Gemini trees carry the same six commands and were covered
 # only by the drift comparison, which asks whether the committed adapters match
 # what the source generates. A source mistake that generates a wrong but
 # self-consistent tree satisfies that and reaches a project. These anchor both
@@ -415,7 +413,7 @@ for adapter in ".cursor/commands:.md:Cursor" ".gemini/commands:.toml:Gemini CLI"
   expected_files=$(printf '%s\n' "$expected_commands" | sed "s/\$/$ext/" | sort)
   actual_files=$(find "$ROOT/$dir" -mindepth 1 -maxdepth 1 -exec basename {} \; | sort)
   if [ "$actual_files" != "$expected_files" ]; then
-    fail "$dir/ must hold exactly the eight generated $tool command files"
+    fail "$dir/ must hold exactly the six generated $tool command files"
     echo "  expected:" >&2
     echo "$expected_files" | sed 's/^/    /' >&2
     echo "  found:" >&2
@@ -1040,12 +1038,12 @@ fi
 
 # The plan migration is deleted and stays deleted. No project needs it, and a
 # route nobody exercises would ship untested while reading as supported.
-syncfile="$SKILLS/sync/SKILL.md"
+syncfile="$SKILLS/maintain/references/truing.md"
 if [ -f "$syncfile" ]; then
   if grep -qF "Moving an existing plan into issues" "$syncfile"; then
     fail "$syncfile: the plan migration route is back; it ships untested"
   else
-    pass "sync carries no plan migration route"
+    pass "the truing carries no plan migration route"
   fi
 fi
 
@@ -1179,13 +1177,13 @@ for item in \
 done
 [ "$quiet_ok" -eq 1 ] && pass "start keeps routine technical activity behind the scenes across harnesses"
 
-syncfile="$SKILLS/sync/SKILL.md"
+syncfile="$SKILLS/maintain/references/truing.md"
 if ! grep -qF 'jobs.project-check' "$syncfile"; then
   fail "$syncfile: does not identify the standalone project check"
 elif grep -qF 'both `if:` conditions' "$syncfile"; then
   fail "$syncfile: still treats private source conditions as part of every project"
 else
-  pass "sync updates the standalone project check while preserving older layouts"
+  pass "the truing updates the standalone project check while preserving older layouts"
 fi
 
 # ---------------------------------------------------------------------------
@@ -1631,7 +1629,7 @@ if [ ! -x "$claude_plugin_check" ]; then
   fail ".agents/tests/claude-plugin.sh is missing or not executable"
 elif command -v claude >/dev/null 2>&1; then
   if "$claude_plugin_check"; then
-    pass "Claude plugin exposes the eight commands, prepares a project, recovers, updates, and uninstalls in isolation"
+    pass "Claude plugin exposes the six commands, prepares a project, recovers, updates, and uninstalls in isolation"
   else
     fail "Claude plugin rehearsal failed"
   fi
@@ -1699,7 +1697,6 @@ for literal in \
   '"./.claude/commands/shape.md"' \
   '"./.claude/commands/setup-hosting.md"' \
   '"./.claude/commands/setup-ai-build-kit.md"' \
-  '"./.claude/commands/sync.md"' \
   '"./.claude/commands/what-now.md"' \
   '"./.claude/skills/change-triage"' \
   '"./.claude/skills/clarify"' \
@@ -2258,6 +2255,19 @@ check_claim "seven skills" "seven skills"
 # document could keep the old number after the count moved and no check would
 # say so.
 check_claim "nine commands" "nine commands"
+check_claim "eight commands" "eight commands"
+check_claim "eight are commands" "eight are commands"
+# The skill count moved with it, from thirteen to eleven. The word alone also
+# counts other things, such as pull request descriptions, so these name the
+# phrases that counted skills.
+check_claim "thirteen skills" "thirteen skills"
+check_claim "thirteen canonical skills" "thirteen canonical"
+check_claim "thirteen kit skills" "thirteen AI Build Kit"
+check_claim "thirteen installed skills" "thirteen installed"
+check_claim "thirteen installable skills" "thirteen installable"
+check_claim "thirteen skill names" "the thirteen names"
+check_claim "beside the thirteen" "beside the thirteen"
+check_claim "the same thirteen" "the same thirteen"
 check_claim "four project documents" "four project documents"
 check_claim "four project records" "four project records"
 check_claim "four documents" "four documents hold"

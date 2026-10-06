@@ -70,7 +70,7 @@ done
 
 skill_count=$(find "$PROJECT/.agents/skills" -mindepth 2 -maxdepth 2 \
   -name SKILL.md | wc -l | tr -d ' ')
-[ "$skill_count" -eq 13 ] || fail "installed project does not contain thirteen skills"
+[ "$skill_count" -eq 11 ] || fail "installed project does not contain eleven skills"
 
 grep -qF '(Project name, written by start)' "$PROJECT/README.md" || \
   fail "project foundation README is not ready for start"

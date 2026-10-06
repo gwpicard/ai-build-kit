@@ -16,13 +16,11 @@ Command names say when to use them.
 | I'm starting something | /setup-ai-build-kit |
 | I want it to... (a new idea, or it's broken) | /shape |
 | Build the next ready piece | /implement |
-| I'm taking on several things | /queue |
 | I want people to use it | /setup-hosting |
-| I'm done for today | /sync |
 | It's been a while | /maintain |
 | I'm lost | /what-now |
 
-One of them changes the tool. /implement builds a ready piece, whether it makes the tool do something new or brings it back to doing what it already should. /shape decides what to change next, a new idea or something broken, and turns it into a ready piece, without touching the tool yet. The other six are housekeeping around those.
+One of them changes the tool. /implement builds a ready piece, whether it makes the tool do something new or brings it back to doing what it already should. /shape decides what to change next, a new idea or something broken, and turns it into a ready piece, without touching the tool yet. The other four are housekeeping around those.
 
 You run /setup-ai-build-kit once. After that, start wherever you actually are. You can open a session with /shape as readily as with /implement, and neither needs the other to have run first. If you pick the wrong one it costs you nothing, because each checks what you typed against the masterplan and sends it down the right route.
 
@@ -56,7 +54,7 @@ You can work with the issues yourself, and nothing you do there will be undone. 
 A piece is written in two layers. The part you read stays in plain words, and it stays complete about anything that affects your product, so it never looks simpler than the work really is. The build detail the agent needs sits in a collapsed "under the hood" section you never have to open. Anything that affects the whole product is written into the masterplan instead, and anything technical that affects the whole project goes into AGENTS.md, so no fact is copied into two places.
 
 A decision can say what it rests on, in one short line beside it. When /shape
-uses that decision, or /sync checks the masterplan, the agent reads its support
+uses that decision, or /maintain checks the masterplan, the agent reads its support
 again. If it has gone, you hear which decision has lost its ground and answer
 in plain words. You never have to read a test or find a saved change yourself.
 
@@ -189,7 +187,7 @@ is wrong, describe what happened and type /shape.
 
 If the change touched an area the build path flags, the best independent method available reviews it first. It reports in plain language, sorted into what's worth stopping for and what's worth knowing.
 
-/queue shows everything ready to build at once, and what is waiting on what. Type it when you are taking on several pieces rather than one, which is the only time you need it. It comes back with two lists. The first is everything ready, and those are safe to take on together, because a piece waiting on another piece is never in it. The second is what is waiting, each line saying which piece has to land first: "deposits cannot start until card payments is built". It changes nothing and builds nothing, so /implement is still what does the work. If the list looks out of date, type /queue again, since it is printed fresh from your project's issues every time.
+When more than one piece is ready, /implement shows you the whole set before it builds anything, and asks which to take. It comes back with two lists. The first is everything ready, and those are safe to take on together, because a piece waiting on another piece is never in it. The second is what is waiting, each line saying which piece has to land first: "deposits cannot start until card payments is built". Nothing is built until you choose. To see the lists without building, ask for them in your own words, such as "what can I build in parallel?". If the list looks out of date, type /implement again, since it is printed fresh from your project's issues every time. /what-now still names at most three things, so the whole list lives here.
 
 /shape is how you bring anything new: "/shape add a filter to the board". You never sort your own request; the agent works out what kind of work it is. Clear and piece-sized becomes a ready piece, and /shape offers to build it now or leave it for /implement later. Vague gets a short interview.
 
@@ -198,7 +196,7 @@ it was last checked. You see a line such as "When this lands, the masterplan
 gains a weekly summary email", or "nothing" when it already covers the result.
 A new rule you could check, such as a list now sorted by name, counts as a
 change even when the masterplan already describes that list. /implement applies that change as it saves the work, so the page keeps up
-without a separate /sync visit.
+without waiting for a /maintain visit.
 
 A question a conversation can't settle gets a disposable prototype, a source check, or a search for something that already does the job. Two of those need you there; the research does not, so you can tell /shape you're leaving and it settles what it can alone, then tells you which pieces are waiting on you. Type /shape with a piece's number to settle that one rather than the next in line.
 
@@ -418,16 +416,37 @@ GitHub collaborators identify who has access. Invite someone under the repositor
 
 Nothing else changes when a second person arrives: naming a piece before starting it already stops two people building the same thing. Each of you gets your own printed list, so there is no shared file to clash over. Open pull requests show work in progress, and /what-now identifies conflicts and unfinished work rather than leaving you to read Git state yourself.
 
-## 12. Sync and maintenance
+## 12. Maintenance
 
-Normal /implement completion updates the records directly; you don't need /sync after a piece that finished cleanly. /sync exists for interrupted work, work done outside the workflow, long sessions whose context went foggy, and handovers. A report-only reminder can optionally run at session end, where the tool supports it, but nothing writes to the records without a skill deciding to. /sync also re-reads the masterplan against your pieces, and says if a promise has lost the piece that builds it. Its corrections are saved the way a piece is saved, through the route your build path requires, so on a shared project they arrive as a pull request you decide to merge, and uncommitted work it finds on arrival is reported and left alone.
+/maintain makes the project true and healthy, and you can type it at any time.
+Every visit starts by checking the records against what really happened.
+Normal /implement completion already updates them, so after a piece that
+finished cleanly there is little to correct. The check catches the rest: work
+done outside the workflow, a long session whose context went foggy, an
+imported branch, or a handover coming up. A report-only reminder can
+optionally run at session end, where the tool supports it, but nothing writes
+to the records without a skill deciding to.
 
-/sync also picks up changes a finished piece was meant to make to the
-masterplan but never did. It checks what actually landed, applies what is still
-missing and records where it checked up to. The monthly visit uses that point
-to say how much work has since touched the tool's data, permissions or
-connections. When there is any, it gives the count and offers /sync in one
-line. That is a reason to check the page, not a claim that it is wrong.
+If a session stopped part-way, start with /what-now. It says what the leftover
+work belongs to and offers to continue it, save it or clear it. /maintain's
+corrections are saved the way a piece is saved, through the route your build
+path requires, so on a shared project they arrive as a pull request you decide
+to merge, and uncommitted work it finds on arrival is reported and left alone.
+
+Once your tool is live, every visit also compares the live copy with your
+project, and changes nothing while it does. It names each difference in one
+line, such as the live copy running an older version or missing a setting, and
+offers /setup-hosting to put it right. The monthly and quarterly upkeep further
+down runs only when it is due. A visit in between does the checks in this
+part and tells you when the next upkeep falls due.
+
+Each visit re-reads the masterplan against your pieces, and says if a promise
+has lost the piece that builds it. It also picks up changes a finished piece
+was meant to make to the masterplan but never did. It checks what actually
+landed, applies what is still missing and records where it checked up to.
+Before that, each visit uses the last such point to say how much work has
+since touched the tool's data, permissions or connections, when there is any.
+That is a reason to check the page, not a claim that it is wrong.
 
 The coverage read includes permissions, data and outside connections here too.
 It also compares settled terms on every piece with the masterplan, even if a
@@ -436,12 +455,12 @@ list of gaps, with one offer to put the records right. Planning leaves the
 term on its piece until it is carried across, so parking the work cannot lose
 what you agreed.
 
-When the core masterplan grows beyond roughly two pages, /sync says so once
+When the core masterplan grows beyond roughly two pages, /maintain says so once
 and offers to move detail about individual pieces onto those pieces. It leaves
 the page alone without your yes, and keeps the tool's present promises and
 decisions on the masterplan.
 
-/sync also reads the project's README, and any document AGENTS.md points at,
+Each visit also reads the project's README, and any document AGENTS.md points at,
 against the project itself. It names a file, link, command or setting a
 document mentions that no longer exists, at the line it sits on, and offers to
 correct just that name or to file it for later. A document that says less than
@@ -449,25 +468,25 @@ the project does is fine. It checks names only, so it cannot tell you whether a
 described step still happens that way, and it says so. When every name still
 points at something real, you hear nothing about it.
 
-/sync names open pieces untouched for 30 days in one short list and asks once
+/maintain names open pieces untouched for 30 days in one short list and asks once
 whether each is still wanted, should be parked, or is done. It changes nothing
 on that list without your yes. You can leave them as they are and carry on.
 
-/maintain is the service visit: monthly and light for AI Build Kit updates,
-project dependency updates, and anything the error alerts caught. Every visit
-names two numbers, the version your project holds and the latest published AI
+The monthly upkeep is light: AI Build Kit updates, project dependency
+updates, and anything the error alerts caught. Each monthly visit names two
+numbers, the version your project holds and the latest published AI
 Build Kit, and says plainly when they differ. An update gives you that
 published release and never work nobody has released yet. When a newer
 kit is available, the agent shows the version and what changed, then waits for
-approval. An update refreshes only the thirteen AI Build Kit skills and leaves
+approval. An update refreshes only the eleven AI Build Kit skills and leaves
 your tool, its records, and its own checks alone. It also adds any skill the
 kit has renamed or added since, and says if the installation is short of the
-thirteen. When the kit has renamed a command, the update also rewrites the
+eleven. When the kit has renamed a command, the update also rewrites the
 command list in your AGENTS.md, with your approval, so you are not left to
 edit it by hand. A project founded from a whole copy of the kit also carries
 the kit's own command files, which make each command show twice; the visit
-offers to remove those and leaves anything you wrote yourself alone. Every
-visit also checks the small helper that prints your list of pieces to
+offers to remove those and leaves anything you wrote yourself alone. Each
+monthly visit also checks the small helper that prints your list of pieces to
 `plan.local.md`. A project founded before every installation carried it gets it
 then, so the kit reads what is ready from that list rather than working it out
 by hand. A clean checkpoint comes first, so an interrupted update can
@@ -475,7 +494,7 @@ be recovered. The one update that split the
 old `/build` into what are now `/shape` and `/implement` runs a one-time step that labels your
 existing pieces so they can still be built; it says what it changed. Any
 visit that finds an older `plan.md` list offers to move it into your project's
-issues, and keeps offering until it is moved. Any visit that finds a line in
+issues, and keeps offering until it is moved. Any monthly visit that finds a line in
 AGENTS.md or the masterplan pointing at a skill's file by a folder your
 installation may not have offers to name the skill instead, changing only
 those lines, and only on your yes. The first
