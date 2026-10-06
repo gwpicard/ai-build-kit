@@ -325,7 +325,7 @@ Recipes, added. A recipe pairs a build stack with a place to run it, and for
 each part of a launch it says how that part is checked and who runs the check:
 the kit, a companion or the person with the result read back, or a person
 looking. It fits under /setup-ai-build-kit, which offers a short menu with one
-recommended, and under /ship, which works through the recipe's checks. The person sees the menu once, at
+recommended, and under /setup-hosting, which works through the recipe's checks. The person sees the menu once, at
 founding, and after that a launch that says what it checked. The sentence is
 "this is a stack the kit has run for real, so it can check your launch as well
 as warn about it". When a check fails they type /fix. A person who wants their
@@ -335,10 +335,10 @@ They never need to learn how the place they run on does a rollback or where its
 backups live, because the recipe carries that. It applies only to a project
 that chose a recipe. On its own stack a project gets the general checks, and
 those are warnings too: a check not done is said once and written in the
-changelog, and the launch goes ahead. The one launch check /ship waits for is
+changelog, and the launch goes ahead. The one launch check /setup-hosting waits for is
 the address, since a tool with no recorded address is not live. Recipes make the
 kit bigger, and that should be said plainly. What they take away is the
-question /ship used to put to every project, how a backup, a rollback and a
+question /setup-hosting used to put to every project, how a backup, a rollback and a
 restore would work, which a person on a recipe no longer has to invent. The menu
 stays short because a pair joins it only after a real run.
 

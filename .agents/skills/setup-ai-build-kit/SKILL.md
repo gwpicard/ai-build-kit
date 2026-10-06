@@ -378,10 +378,11 @@ team signs in to, with saved data".
 
 Then offer the recipe menu. A recipe is one build stack paired with one place
 to run it, which the kit knows well enough to check at launch. The installed
-ship skill sits beside this skill's folder, however the kit was installed, and
-its `ship/references/recipe-format.md` says what a recipe holds. The menu is
-the files directly in the `recipes/` folder of the installed ship skill, beside
-this skill's folder, read now rather than remembered. Nothing else is on it:
+setup-hosting skill sits beside this skill's folder, however the kit was
+installed, and its `setup-hosting/references/recipe-format.md` says what a
+recipe holds. The menu is the files directly in the `recipes/` folder of the
+installed setup-hosting skill, beside this skill's folder, read now rather
+than remembered. Nothing else is on it:
 not the `parts/` folder, and not a recipe kept anywhere else while it waits for
 its real run. Read each file's `Fits:` line and keep the ones that fit the
 shape.
@@ -432,12 +433,12 @@ the first checkpoint, so the save holds it. Do not mention it to the person.
 
 Once a recipe is chosen, build on its `Build stack:` line. Record it in
 AGENTS.md's stack section as `Recipe: <file name>.md`, the file name exactly
-as it sits in the folder with `.md` included, so /ship can open it. Run
+as it sits in the folder with `.md` included, so /setup-hosting can open it. Run
 `scripts/check-tooling.sh --recipe <recipe file>` from this installed skill
-folder, passing the chosen file's path inside the ship skill's `recipes/`
+folder, passing the chosen file's path inside the setup-hosting skill's `recipes/`
 folder beside it. Run it for every chosen recipe, a menu of one included,
 before the first checkpoint, and let the completion report's recipe line say
-what it found. A tool it reports missing is needed before the first /ship,
+what it found. A tool it reports missing is needed before the first /setup-hosting,
 not now: name it once, add it to the masterplan as a setup task, and carry on.
 That report never stops founding.
 
@@ -449,10 +450,11 @@ sign-ins, payments, or files; those never get hand-built, however capable you
 feel, unless a person who does that work for a living owns a different design
 and has said so on the record. Use references/manual-setup.md for any step only
 a human can complete. If hosting is needed, arrange it so day-to-day pushes
-land at a preview address and only /ship changes the address the team uses; on
-a recipe, its preview section says how. Where a hosting companion or whoever
-runs the server will host it, /ship writes the hosting request on the first
-launch, and the person takes it there.
+land at a preview address; on a recipe, its preview section says how. The
+team's address comes later: /setup-hosting sets it up, and from then on each
+merge /implement makes on the person's yes puts that change live. Where a
+hosting companion or whoever runs the server will host it, /setup-hosting
+writes the hosting request on the first launch, and the person takes it there.
 
 Choose routine technical parts quietly. Record run and check commands and any
 non-standard conventions under AGENTS.md's stack section, keeping its content

@@ -159,7 +159,7 @@ if [ -n "$recipe" ]; then
       if command -v "$tool" >/dev/null 2>&1; then
         echo "$tool is ready: the recipe's launch checks run it."
       else
-        echo "$tool is missing: the recipe's launch checks run it, so install it before the first /ship. It does not stop founding."
+        echo "$tool is missing: the recipe's launch checks run it, so install it before the first /setup-hosting. It does not stop founding."
       fi
     done
   else

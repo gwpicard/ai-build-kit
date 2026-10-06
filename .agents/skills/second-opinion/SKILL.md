@@ -1,6 +1,6 @@
 ---
 name: second-opinion
-description: Review work using the best independent method available to the current harness and build path. Used on a drafted masterplan during start, on the diff of any change the build path or the change's consequence flags for review during a build, and on the whole build during ship when the current build path calls for a launch review. Report first, in plain behavioural language, sorted into worth-stopping-for and worth-knowing; change nothing without approval.
+description: Review work using the best independent method available to the current harness and build path. Used on a drafted masterplan during start, on the diff of any change the build path or the change's consequence flags for review during a build, and on the whole build during setup-hosting when the current build path calls for a launch review. Report first, in plain behavioural language, sorted into worth-stopping-for and worth-knowing; change nothing without approval.
 user-invocable: false
 ---
 
@@ -59,7 +59,7 @@ what a person still has to try. Put each finding under `Worth stopping for` or
 `Worth knowing`, never under a new heading.
 
 This axis does not run on a masterplan review or the whole-build review during
-`/ship`. A build with no screen does not load it.
+`/setup-hosting`. A build with no screen does not load it.
 
 ## On a masterplan
 
@@ -74,7 +74,7 @@ changelog that the review ran.
 Read the work against the masterplan's build-path section. For a change,
 review the diff against main and only the diff: a bounded change
 concentrates the review, and wandering the whole repository dilutes it. On
-the paths where ship runs a launch review, the whole tool gets read exactly
+the paths where setup-hosting runs a launch review, the whole tool gets read exactly
 once, at that point.
 
 ## Report format

@@ -5,7 +5,7 @@ what nothing builds, and change nothing by yourself.
 
 It runs on every build path at the end of founding, once the pieces are cut,
 and inside /sync.
-Both are moments where the plan can still be changed for free. /ship asks the
+Both are moments where the plan can still be changed for free. /setup-hosting asks the
 same question at launch, by walking the main journeys, which is months later and
 far more expensive to answer.
 

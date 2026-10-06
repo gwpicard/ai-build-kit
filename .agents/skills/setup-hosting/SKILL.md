@@ -1,11 +1,16 @@
 ---
-name: ship
-description: Take checked work to the copy of the tool the team actually uses. The only skill that touches that copy. Use when the user thinks the tool, or a batch of work on it, is ready for people to rely on. Follows the project's current build path and applies only the evidence, review, handover, or launch steps that path requires.
+name: setup-hosting
+description: Set up how the tool runs live, and run it again to check or change that. Use when the person wants people to use the tool, wants to check the live copy against main, or wants to move it to another host or recipe. The first run sets the host up so that each merge to main deploys; after that a merge is a deploy, and /implement makes each merge on the person's yes. This skill never merges code. Follows the project's current build path and applies only the evidence, review, or launch steps that path requires.
 ---
 
-# Ship
+# Setup hosting
 
-Everything build and fix make lives on the draft copy until this command moves it over. Read masterplan.md, build-path section first.
+The live copy is the one the team uses. The first run takes the code already on
+`main` live and sets the host up so that each later merge to `main` reaches it.
+After that, a merge is a deploy, and /implement makes each merge after the
+person's yes. A later run compares the live copy with `main` and repairs what
+differs. This skill never merges a pull request that changes the tool's code.
+Read masterplan.md, build-path section first.
 
 ## 0. Confirm the build path
 
@@ -27,6 +32,15 @@ recipe: read that file in this skill's `recipes/`
 folder, and each part it links with `Shared part:`. `Recipe: none`, or no line
 at all, means the project is off a recipe. If the named file is not there, say
 so once and treat the project as off a recipe.
+
+Read the masterplan's "How it stays running" section. Where it records a live
+address, the tool has gone live before, and this is a later run: follow "A
+later run" below. Otherwise this is the first run, and section 1 sets it up.
+
+Where an open pull request holds a piece, leave it open. Say in one line that
+/implement merges it after the person's yes, and that the merge then puts it
+live. A request to put such work live is a request to /implement, never a
+merge here.
 
 ## 1. Follow the current path
 
@@ -95,16 +109,19 @@ it, then stop.
    when it breaks, that is a service somebody runs and pays for, and the kit
    does not set one up." Record that the caution was given in CHANGELOG.md;
    do not repeat it in a later reply of the same visit, for another area, or on
-   a later /ship visit. A named alert recipient satisfies this caution. Having
-   nobody to receive alerts is the person's choice, which the caution covers;
+   a later run of /setup-hosting. A named alert recipient satisfies this
+   caution. Having nobody to receive alerts is the person's choice, which the caution covers;
    it is never a piece on the readiness list. Do not set up a hosted service,
    dashboard or alerting as part of this check.
 4. Go live, one connection at a time: take the harmless parts live first.
-   On a recipe, go live the way its going-live section says, when that
-   section's turn comes in the checks below. Any merge or deploy on the way
-   follows "Merging and deploying" below.
-   If hosting uses a preview address, this is the moment work moves to the
-   team's address. That move is what /ship means.
+   Take the code already on `main` live, and set the host up so that each
+   later merge to `main` reaches it. Pieces reach `main` through /implement,
+   so the first run merges no code. On a recipe, go live the way its
+   going-live section says, when that section's turn comes in the checks
+   below. Any deploy on the way follows "Deploying, and the records" below.
+   If hosting uses a preview address, this is the moment the team's address
+   is set up. From then on, tell the person once, in one plain line, that
+   each merge /implement makes puts that change live.
 
    Where the tool will run on a server this session cannot reach, such as one
    the team or a hosting companion runs, the address comes from whoever runs
@@ -119,18 +136,21 @@ it, then stop.
    When it holds no hosting request, write one there, as
    `references/hosting-request.md` says. That file gives its fields, where
    each comes from, the one line the person hears, how to record the answer,
-   and how a later /ship reads the request back.
+   and how a later /setup-hosting reads the request back.
 
    The first launch is not finished until an address is recorded under the
-   request, or by the kit's own going-live on a recipe. Until then, tell the person plainly that the tool is not live yet
-   and is waiting on the server's answer. Do not write it into CHANGELOG.md as
+   request, or by the kit's own going-live on a recipe. Until then, tell the
+   person plainly that the tool is not live yet and is waiting on the
+   server's answer. Do not write it into CHANGELOG.md as
    live.
 
 #### On a recipe
 
 Here the recipe file says what to run and what a pass looks like. Every
 command, service and address comes from it at run time. This skill names none
-of them, so it reads the same whichever recipe the project is on.
+of them, so it reads the same whichever recipe the project is on. Where a
+recipe's going-live section speaks of a branch merging into `main`, that
+merge is /implement's. This skill takes live what `main` already holds.
 
 Take the recipe's eight sections in its order: preview, going live, rollback,
 backup, restore, secrets, logs and health. For each one, read `How it works:`
@@ -226,9 +246,11 @@ applying migrations to the live project, or changing its sign-in settings.
 Where the kit does not know whether the change can be undone, it says that.
 
 The commands the project's recipe names, in any section, are the launch the
-person asked for, and need no further yes. Anything the recipe does not name,
-and any push of a settings file, waits for the named yes. A no leaves the
-service as it was, and the step is a warning like any other.
+person asked for, and need no further yes. A later run is the exception:
+nobody asked for a launch, so each repair waits for the yes "A later run"
+describes. Anything the recipe does not name, and any push of a settings file,
+waits for the named yes. A no leaves the service as it was, and the step is a
+warning like any other.
 
 A token in the person's environment that reaches the whole account is used
 only for the reads the recipe names. A change made with it waits for the yes
@@ -259,50 +281,40 @@ the secret is kept. Never write that the secret is absent, missing or not on
 this computer: the kit only knows that it did not find it. Give no reason
 for a skipped check that the kit did not itself confirm.
 
-#### Merging and deploying
+#### Deploying, and the records
 
 These rules hold at every go-live, on a recipe or off one, and on Build with
 care as well.
 
-A person decides whether to merge, as with /implement. Before a merge, name
-each pull request in one plain line that says what it changes. Then ask for a
-yes that names the merge, for example: "Say yes to put it live, which merges
-the two record changes." Merge only when the person's reply plainly covers
-that merge. Where their own words already named the merge, as in "merge both
-and put it live", that is the yes: do not ask again. A yes to going live, to a
-hosting step, or to any question asked before the merge was named does not
-cover it: ask again, and merge nothing until they answer. A no leaves the pull
-request open and the live tool as it was.
+This skill merges no code. The one pull request it may merge is its own
+records pull request, below, and only on a yes that names it.
 
-Make an approved merge on the pull request itself, such as with `gh pr merge`.
-Never merge the branch on this computer and push `main`. Where GitHub cannot be
-reached, the merge waits: say in one line that the person can merge it on
-GitHub themselves.
-
-The records /ship writes during a launch, such as its CHANGELOG.md entries and
-a confirmation the person gives later, such as a colleague saying the new
-version is live, take the save route the build path already requires: the
-three routes section-builder names, with no fourth for records. On the
+The records /setup-hosting writes during a run, such as its CHANGELOG.md
+entries and a confirmation the person gives later, such as a colleague saying
+the new version is live, take the save route the build path already requires:
+the three routes section-builder names, with no fourth for records. On the
 checkpoint route, a checkpoint commit is enough. Otherwise put them on one
-branch for this /ship, cut from the up-to-date `main`, and stage only the files
-/ship itself changed. Open one pull request for them, once, after the launch is
-checked and its records are written, and ask for its yes in the reply that
-reports the launch. Where GitHub cannot be reached, save the records on that
-branch, note in one plain line the step that did not happen, and open the pull
-request once GitHub is reachable. The project's first upload waits for the
-yes section-builder's "The first upload" describes. Never push records
-straight to `main`. A later confirmation joins that branch while its pull
-request is open, or a new branch and pull request once it has merged.
+branch for this run, cut from the up-to-date `main`, and stage only the files
+this run itself changed. Open one pull request for them, once, after the
+launch is checked and its records are written, and ask for its yes in the
+reply that reports the launch. Where GitHub cannot be reached, save the
+records on that branch, note in one plain line the step that did not happen,
+and open the pull request once GitHub is reachable. The project's first upload
+waits for the yes section-builder's "The first upload" describes. Never push
+records straight to `main`. A later confirmation joins that branch while its
+pull request is open, or a new branch and pull request once it has merged.
 
-The records pull request is a merge like any other: name it and ask for a yes
-that names it. The yes to the earlier merge does not cover it, because that
-pull request did not exist when the person gave it. Where the host builds every
-change to `main`, merging it starts one more build of the same code and moves
-the rollback target. Say so in the line that asks for its yes, and offer to
-leave it open so it goes out with the next change. If they say yes, correct the
-rollback line on that branch before the merge. Merging it writes no record of
-its own. Uncommitted work of the person's stays exactly where it is: never
-sweep it into the records commit, and never discard it to get a clean tree.
+The records pull request is a merge like any other: name it in one plain line
+and ask for a yes that names it. No yes given earlier covers it, because that
+pull request did not exist when the person gave it. Make the merge as
+section-builder's "Merging" says: on the pull request itself, never on this
+computer with a push of `main`. Where the host builds every change to `main`,
+merging it starts one more build of the same code and moves the rollback
+target. Say so in the line that asks for its yes, and offer to leave it open
+so it goes out with the next change. If they say yes, correct the rollback
+line on that branch before the merge. Merging it writes no record of its own.
+Uncommitted work of the person's stays exactly where it is: never sweep it
+into the records commit, and never discard it to get a clean tree.
 
 Before you decide a deploy failed, read its whole output, or read the host's
 own list of deployments or have it read. Where the kit cannot reach the host,
@@ -315,8 +327,8 @@ replaces the earlier build as the rollback target, so a rollback would bring
 back the same version. When a second deploy is still needed, say that in one
 line before you run it, and correct the rollback line to match.
 
-A warning said once in a /ship is not said again in that /ship, even when a
-step runs twice. Where it matters again, one line saying the changelog already
+A warning said once in a run of /setup-hosting is not said again in that run,
+even when a step runs twice. Where it matters again, one line saying the changelog already
 holds it is enough. The risk notice for a named area is not a warning, and
 Build with care still gives it at the moment that area goes live.
 
@@ -349,27 +361,31 @@ Inside a named area, take each area in turn:
    reply, without a further question about that area. A lock whose only
    purpose is to wait for this caution opens with the acceptance, unless the
    person asks to keep it. Silence, a question, or a request for other work
-   is not carrying on: leave that area where it is and ship everything
-   outside it;
+   is not carrying on: leave that area where it is and take everything
+   outside it live;
 5. only after the caution is done or accepted does that area get its own
    operational readiness check (including the request record and monitoring
    rules above, without repeating their notices) and its own go-live
    step, one connection at a time, with the result recorded on its line. On a
    recipe, the recipe deploys the whole tool at once, so an area whose caution
-   is done or accepted goes live through the next run of the eight checks,
-   not through a separate deploy.
+   is done or accepted goes live with the merge that carries it, and the next
+   run of the eight checks reports it, not through a separate deploy.
+
+After the first launch, a piece inside a named area goes live when /implement
+merges it. section-builder asks for that merge only once the area's caution is
+done or accepted on the record, so this skill does not hold each later
+go-live.
 
 Where a caution is a person and the team has nobody to ask, offer the
-handover once: `templates/handover.md`, filled in for that area, is what the
-team gives somebody outside it to look at that area or to take the build on.
-Offer it, prepare it if they say yes, and carry on with everything outside
-the area either way. A handover is a document the person asks for, not a
-stop.
+handover once. A handover is what the team gives somebody outside it to look
+at that area or to take the build on, and the `maintain` skill's "A handover"
+section prepares it. Offer it, prepare it there if they say yes, and carry on
+with everything outside the area either way. A handover is a document the
+person asks for, not a stop.
 
 ## 2. Graduation
 
-When shipping or preparing a handover changes the build path or names a new
-sensitive area, record:
+When going live changes the build path or names a new sensitive area, record:
 
 - what changed;
 - why the previous path no longer fits;
@@ -377,26 +393,66 @@ sensitive area, record:
 - which work may continue;
 - which work waits.
 
-## After the first launch
+## A later run
 
-Applies only once Build and run it, or Build with care outside its named
-areas or in an area whose caution is done or accepted, has actually gone live
-at least once. Lighter from
-then on: re-run the evidence for what changed since the last ship, and move
-that over. On a recipe, run its eight checks again, as above. "On a recipe"
-says how a warning the changelog already holds is given: as a one-line
-pointer, never again in full.
+Applies once Build and run it, or Build with care outside its named areas or
+in an area whose caution is done or accepted, has gone live at least once.
+After that, each merge /implement makes is a deploy, so a later run does not
+move work over. It compares the live copy with `main` and repairs what
+differs. If reliance, data sensitivity, or consequence has grown since the
+build path was last checked, rerun the fit check first.
+
+Compare first, and change nothing while comparing. Report each gap in one
+plain line, and say nothing more about a part that matches:
+
+- whether the live copy runs the latest merge on `main`, read from its health
+  route or the host's list of deployments, as the recipe's going-live check
+  says;
+- whether `main` holds a database migration the live database does not have,
+  read with the recipe's own dry run where it has one;
+- whether a secret or setting the tool needs is missing on the host, by name
+  only: the names in `.env.example`, and each name an open piece's `Live side
+  needs:` line gives;
+- whether health answers;
+- whether the backup works.
+
+On a recipe, those lines come from its eight checks, run again as "On a recipe"
+says, and "On a recipe" says how a warning the changelog already holds is
+given: as a one-line pointer, never again in full. Off a recipe, check what
+the general list in Build and run it names, and ask the person for what the
+kit cannot reach.
+
+Then repair each gap after a yes that names it. Nobody asked for a launch in a
+later run, so a recipe's command waits for that yes too. Name what the repair
+changes and whether it can be undone, as "A change to a live service" says. A
+migration is applied before the merge that needs it, since migrations only
+add and the version live now keeps working. On a recipe, apply it the way the
+going-live section does, with the checks that section runs on the live
+database afterwards. A redeploy follows "Deploying, and
+the records". A no leaves that part as it is, and its line is a warning like
+any other.
+
+/implement sends the person here when a piece needs something on the live side
+before its merge: a migration applied, or a name on its `Live side needs:` line
+present on the host. Report that part first. Once it is applied or present,
+say in one line that /implement can now ask for the merge.
+
+Moving to a different host or recipe is a later run too. Read the new recipe,
+and run its sections as a first launch does on the new host, while the old
+live copy keeps serving. Record the new `Recipe:` line in AGENTS.md, and the new
+address in the masterplan, only once the new live copy answers its health
+check, and say in one line how to switch the old one off.
+
 The hosting request recorded at the first launch still holds, and
-`references/hosting-request.md` says how to read it back. If reliance, data sensitivity, or consequence has
-grown since the build path was last checked, rerun the fit check before
-shipping further.
+`references/hosting-request.md` says how to read it back.
 
 ## Done when
 
 Explore privately: the private-preview checks are recorded and nothing moved
 to a live address. Build and run it, and Build with care outside its named
 areas or in an area whose caution is done or accepted: the team can rely on
-the copy they use, each readiness item is in place or recorded as a warning,
-on a recipe each of the eight checks has its line, and the changelog
-says what went live, when, and under which build path. Where a handover was
-asked for, it is complete and says what it does not cover.
+the copy they use, each merge to `main` reaches it, each readiness item is in
+place or recorded as a warning, on a recipe each of the eight checks has its
+line, and the changelog says what went live, when, and under which build path.
+A later run: each gap between the live copy and `main` has its line, and each
+is repaired or recorded as a warning. No code was merged.

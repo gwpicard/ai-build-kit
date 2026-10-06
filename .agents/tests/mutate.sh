@@ -193,7 +193,7 @@ open(p, "w").write("\n".join(lines))
       ;;
     skill-duplicate)
       rm -R "$tree/.agents/skills/sync"
-      cp -R "$tree/.agents/skills/ship" "$tree/.agents/skills/sync"
+      cp -R "$tree/.agents/skills/setup-hosting" "$tree/.agents/skills/sync"
       ;;
     publish-writes-a-tree)
       # The removed starter publisher made an assembled tree the exact contents

@@ -281,7 +281,7 @@ Every change to `.agents/skills/` or the kit's own machinery runs
   referenced nowhere;
 - that clarify says which questions may be offered as choices and which are
   asked in plain words, with the matching maintainer scenario present;
-- that `/ship` keeps its go-live and operational-readiness steps inside the
+- that `/setup-hosting` keeps its go-live and operational-readiness steps inside the
   path branches that use them, never as a shared section reachable from all
   three;
 - that the generated adapters match what `.agents/skills/` produces, with no
@@ -403,12 +403,12 @@ workflows ships.
 
 A service a tool runs on, meaning its hosting, its data or its deploy, is
 named nowhere either, except inside a recipe file under
-`.agents/skills/ship/recipes/` and in the README. A recipe pairs a build stack
+`.agents/skills/setup-hosting/recipes/` and in the README. A recipe pairs a build stack
 with a place to run it, so naming those services is its whole job. A skill that
 needs to know how one behaves reads the project's recipe, which keeps
 every skill the same whichever recipe a project runs on. `hosting-request.sh`
 refuses a hosting, data or deploy product's name in every skill file outside
-`.agents/skills/ship/recipes/`, which holds the recipes and their shared parts.
+`.agents/skills/setup-hosting/recipes/`, which holds the recipes and their shared parts.
 The screen rules' link to Vercel's interface guidelines is the one exception,
 because it names a design guide rather than a place a tool runs. The
 `stack-research` maintainer skill names those products too, because reading
@@ -416,7 +416,7 @@ their changelogs is its job, and it never ships.
 
 A recipe waiting for its real run sits in `.agents/tests/recipes-awaiting-run/`,
 which ships nowhere, and its rehearsal reads it there. Once the run is recorded
-in its proven section, move the file into `.agents/skills/ship/recipes/` with
+in its proven section, move the file into `.agents/skills/setup-hosting/recipes/` with
 `git mv`. The rehearsal finds it on the menu from then on, and fails if a copy
 is left in both places.
 
@@ -653,7 +653,7 @@ stays on this computer, and the next section says how to try one.
 
 ## Trying unreleased work as a person would
 
-Do this before any release that touches founding or `/ship`. It checks what a
+Do this before any release that touches founding or `/setup-hosting`. It checks what a
 person sees, which no rehearsal reaches. It asks the person for one GitHub click
 and one Supabase project. The Supabase Free plan allows two active projects, so
 one of those two slots must be unused. Pick a number for the run and put it
@@ -669,7 +669,7 @@ wherever `N` appears.
    git status --short
    git pull --ff-only
    git rev-parse --short HEAD
-   .agents/skills/setup-ai-build-kit/scripts/check-tooling.sh --recipe .agents/skills/ship/recipes/nextjs-supabase-on-vercel.md
+   .agents/skills/setup-ai-build-kit/scripts/check-tooling.sh --recipe .agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel.md
    .agents/tools/build-release.sh v0.0.0-preview.N /private/tmp/abk-preview-N
    ```
 
@@ -689,8 +689,8 @@ wherever `N` appears.
    ```
 
    The first puts the fourteen skills in `.claude/skills/`, the second in
-   `.agents/skills/` with links in `.claude/skills/`. In both, `ship/recipes/`
-   holds the same recipes as `ls <kit checkout>/.agents/skills/ship/recipes/`.
+   `.agents/skills/` with links in `.claude/skills/`. In both, `setup-hosting/recipes/`
+   holds the same recipes as `ls <kit checkout>/.agents/skills/setup-hosting/recipes/`.
 
    Each `skills-lock.json` now records `"sourceType": "local"`, with a path into
    `/private/tmp/abk-preview-N`. A project installed this way cannot update
@@ -711,9 +711,10 @@ wherever `N` appears.
    A failed check is a finding. File it as an issue, and do not fix it in the
    throwaway project.
 
-4. In the first folder only, run `/implement` on one ready piece, then `/ship`
-   once, asking for a Vercel project named `abk-try-N`. Without that name,
-   `/ship` names the project after the tool. The person does two things:
+4. In the first folder only, run `/implement` on one ready piece and say yes
+   to its merge, then run `/setup-hosting` once, asking for a Vercel project
+   named `abk-try-N`. Without that name, `/setup-hosting` names the project
+   after the tool. The person does two things:
 
    - On GitHub, Settings, Applications, Installed GitHub Apps, Configure beside
      Vercel. GitHub asks for a passkey or password before it shows that page.
@@ -764,7 +765,7 @@ wherever `N` appears.
    Vercel's GitHub app, so leave the app installed. Only if it was installed
    for this run, uninstall it under Installed GitHub Apps.
 
-   `/ship` leaves two things on this computer. `~/Backups/abk-try-N` holds the
+   `/setup-hosting` leaves two things on this computer. `~/Backups/abk-try-N` holds the
    database's roles, structure and data, and the `trash` line above takes it.
    The kit also writes temporary files in `/private/tmp`, such as restore-test
    folders and logs, whose names this section cannot know. List everything
@@ -869,9 +870,9 @@ home and every other mention is a link.
 - `docs/SOURCES.md`: the outside work the kit took ideas from, and what each
   source contributed. It names a borrowed idea in the kit's own vocabulary and
   links to that idea's owner rather than explaining it again.
-- `.agents/skills/ship/recipes/`: one file for each recipe, and the only place
+- `.agents/skills/setup-hosting/recipes/`: one file for each recipe, and the only place
   outside the README that names a service a tool runs on. What a recipe must hold, and what
-  proves it, belongs to `.agents/skills/ship/references/recipe-format.md`. A
+  proves it, belongs to `.agents/skills/setup-hosting/references/recipe-format.md`. A
   project records which recipe it runs on in its own AGENTS.md, in the stack
   section.
 

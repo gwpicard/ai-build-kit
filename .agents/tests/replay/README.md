@@ -284,7 +284,7 @@ call.
 What the four added was the same beat in a fourth, fifth and sixth costume: the
 person pushes back, the kit holds, the person then accepts in the notice's own
 words. Half the wired cases measured that one behaviour while nothing measured
-`/implement`, `/ship`, `/sync`, `/queue`, `/maintain` or `/what-now`. A pass
+`/implement`, `/setup-hosting`, `/sync`, `/queue`, `/maintain` or `/what-now`. A pass
 over one scenario costs about a pound, so the four were roughly a third of the
 bill for a reading already taken three times.
 
@@ -475,7 +475,7 @@ no new build, two new builds, and a rollback or promote nobody asked for.
 
 The seventh is the rollback line, for a scenario whose Evidence field names "a
 new rollback line saying possible, not tried". It reads what the run added to
-the changelog, in the working copy or on any branch, since how `/ship` saves
+the changelog, in the working copy or on any branch, since how `/setup-hosting` saves
 its records is judged elsewhere. It judges the rollback check's own line and
 any line saying a rollback was run, and leaves a passing mention alone. One of
 them has to say rollback was not tried. None may say it was tried, tested or

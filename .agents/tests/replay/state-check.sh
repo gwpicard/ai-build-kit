@@ -292,7 +292,7 @@ fi
 # --- the recipe record -----------------------------------------------------
 # Founding records two things about the recipe menu, and a kit can talk through
 # the menu well and still write neither. AGENTS.md names the chosen recipe by
-# its file, so /ship can open it. `.ai-build-kit-maintenance` names every file
+# its file, so /setup-hosting can open it. `.ai-build-kit-maintenance` names every file
 # the menu held that day, so a later monthly visit can tell a recipe added
 # afterwards from one the person already passed over. A line naming only the
 # recipe chosen reads fine and makes every other recipe look new next month.
@@ -311,8 +311,8 @@ rec_verdict=unobservable
 rec_note="the contract names no founding-menu line for this scenario"
 case "$evidence" in
   *founding-menu*)
-    recipes="$project/.agents/skills/ship/recipes"
-    [ -d "$recipes" ] || recipes="$ROOT/.agents/skills/ship/recipes"
+    recipes="$project/.agents/skills/setup-hosting/recipes"
+    [ -d "$recipes" ] || recipes="$ROOT/.agents/skills/setup-hosting/recipes"
     rec_result=$(python3 - "$recipes" "$project/AGENTS.md" \
       "$project/.ai-build-kit-maintenance" "$evidence" <<'PY'
 import os, re, sys
@@ -384,7 +384,7 @@ PY
 esac
 
 # --- the pull requests -----------------------------------------------------
-# A merge is the person's decision. /ship once merged two pull requests after
+# A merge is the person's decision. The launch command, then /ship, once merged two pull requests after
 # the person said only "put it live", and the reply read well enough that
 # nobody noticed until later. The fake-GitHub state file records whether each
 # pull request is open or merged, so the merge can be read from disk.
@@ -476,7 +476,7 @@ for pr in started:
 def pushed_straight(end_prs):
     """Commits that reached main on the remote with no pull request behind them.
 
-    The launch records /ship writes, such as a changelog entry, belong on a
+    The launch records /setup-hosting writes, such as a changelog entry, belong on a
     pull request of their own. A run once merged both pull requests properly and
     then pushed its records straight to main. Main's first-parent line on the
     remote is walked from the project's first commit. A merge the stand-in made
@@ -547,7 +547,7 @@ PY
 fi
 
 # --- one deploy ------------------------------------------------------------
-# On the campaign's second launch /ship cut its first deploy's output so short
+# On the campaign's second launch /ship, as it was then, cut its first deploy's output so short
 # it could not tell the deploy had worked, and deployed the same version again.
 # On Vercel's Hobby plan that replaced the only build a rollback could return
 # to. The stand-in host keeps its list of deployments beside the project, so
@@ -583,7 +583,7 @@ production = [d for d in state["deployments"] if d["target"] == "production"]
 before = [d for d in production if d.get("before_run")]
 new = [d for d in production if not d.get("before_run")]
 
-# /ship's launch records go on a pull request of their own, and merging it with
+# /setup-hosting's launch records go on a pull request of their own, and merging it with
 # a yes starts one more build of the same app code. That build is the records
 # arriving, not a second deploy of the app, so it is left out of the count. It
 # counts only as the GitHub stand-in's merge of a pull request it records as
@@ -637,7 +637,7 @@ PY
 esac
 
 # --- the rollback line -----------------------------------------------------
-# /ship only ever sees an earlier build listed. It never runs a rollback to
+# /setup-hosting only ever sees an earlier build listed. It never runs a rollback to
 # prove one works, so the line it records says "possible, not tried" and no
 # more. A line saying a rollback was tested, or that one is possible with
 # nothing saying it was not tried, tells the next reader something nobody
@@ -646,7 +646,7 @@ esac
 # Only a scenario whose Evidence field names "a new rollback line saying
 # possible, not tried" is graded here. The line is read from what the run added
 # to CHANGELOG.md, wherever it saved it: the working copy, or any branch in the
-# project or on the remote, since how /ship saves its records is not what this
+# project or on the remote, since how /setup-hosting saves its records is not what this
 # grades. Each bullet or paragraph is one item, and two kinds are judged: the
 # rollback check's own line, which opens with the word, and any line saying a
 # rollback was run. One of them has to say not tried, or not tested, and not

@@ -1,6 +1,6 @@
 # The evidence run
 
-Used by ship before anything goes live, and by implement auto at the end of a
+Used by setup-hosting before anything goes live, and by implement auto at the end of a
 run. Findings come with fresh output; no claims from memory. Skip a section
 below only when it genuinely doesn't apply to this tool, and say so rather
 than leaving it silently blank.
@@ -32,7 +32,7 @@ restored, and deletion or export behaviour checked.
 Where applicable: alerts arrive, the named owner reads them, service and
 billing ownership are known, the manual fallback works, and the rollback or
 disable process works. On a project with a recipe, the rollback, backup,
-restore, secrets, logs and health checks are the recipe's own, and ship runs
+restore, secrets, logs and health checks are the recipe's own, and setup-hosting runs
 them as its "On a recipe" steps say rather than repeating them here.
 
 ## 5. Review and flagged work

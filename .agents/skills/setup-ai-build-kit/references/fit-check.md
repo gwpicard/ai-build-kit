@@ -5,7 +5,7 @@ sensitive area the work touches, with the caution that goes with it. It runs:
 
 - during /setup-ai-build-kit;
 - when a request changes users, data, money, autonomy, promises, or reliance;
-- before the first /ship;
+- before the first /setup-hosting;
 - during quarterly /maintain;
 - before a handover.
 
@@ -79,7 +79,7 @@ record.
 People rely on the tool, no sensitive area is touched, consequences are
 limited and recoverable, and the manual fallback is real. A yes to question 3
 or 8 lands here rather than above: it says the tool is relied on, not what it
-touches, and what it asks for is the operational readiness /ship requires
+touches, and what it asks for is the operational readiness /setup-hosting requires
 before first live use. This is the kit's primary target path.
 
 ### 3. Explore privately

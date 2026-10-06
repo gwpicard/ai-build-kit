@@ -79,7 +79,7 @@ BOOTSTRAP="$INSTALL_PATH/.agents/skills/setup-ai-build-kit/scripts/bootstrap-pro
 # because the agent may start one when the person asks for it, so a command
 # file still carrying the retired manual-only setting would put that command
 # back out of reach in silence.
-for word in fix implement maintain queue setup-ai-build-kit shape ship sync what-now; do
+for word in fix implement maintain queue setup-ai-build-kit setup-hosting shape sync what-now; do
   grep -qF "\"./.claude/commands/$word.md\"" "$INSTALL_PATH/.claude-plugin/plugin.json" || \
     fail "installed Claude plugin manifest does not offer the command: $word"
   [ -f "$INSTALL_PATH/.claude/commands/$word.md" ] || \
@@ -91,11 +91,11 @@ done
 grep -qF '${CLAUDE_PLUGIN_ROOT}/.agents/skills/setup-ai-build-kit/SKILL.md' \
   "$INSTALL_PATH/.claude/commands/setup-ai-build-kit.md" || \
   fail "installed start command does not load the plugin's canonical skill"
-# Founding reads the recipe menu from the ship skill beside its own folder,
+# Founding reads the recipe menu from the setup-hosting skill beside its own folder,
 # which on this route is inside the plugin cache.
-for recipe in "$ROOT"/.agents/skills/ship/recipes/*.md; do
+for recipe in "$ROOT"/.agents/skills/setup-hosting/recipes/*.md; do
   [ -f "$recipe" ] || continue
-  [ -f "$INSTALL_PATH/.agents/skills/ship/recipes/$(basename -- "$recipe")" ] || \
+  [ -f "$INSTALL_PATH/.agents/skills/setup-hosting/recipes/$(basename -- "$recipe")" ] || \
     fail "installed Claude plugin lost a recipe founding offers: $(basename -- "$recipe")"
 done
 grep -qF 'user-invocable: false' \

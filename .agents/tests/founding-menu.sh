@@ -31,8 +31,8 @@ REPORT="$ROOT/.agents/skills/setup-ai-build-kit/references/completion-report.md"
 FOUNDATION="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md"
 MASTERPLAN="$ROOT/.agents/skills/setup-ai-build-kit/templates/masterplan.md"
 WORKFLOW="$ROOT/WORKFLOW.md"
-FORMAT="$ROOT/.agents/skills/ship/references/recipe-format.md"
-MENU="$ROOT/.agents/skills/ship/recipes"
+FORMAT="$ROOT/.agents/skills/setup-hosting/references/recipe-format.md"
+MENU="$ROOT/.agents/skills/setup-hosting/recipes"
 
 rs_init "Founding menu checks"
 rs_exists "$SETUP" "$REPORT" "$FOUNDATION" "$MASTERPLAN" "$WORKFLOW" "$FORMAT"
@@ -40,7 +40,7 @@ rs_exists "$SETUP" "$REPORT" "$FOUNDATION" "$MASTERPLAN" "$WORKFLOW" "$FORMAT"
 # --- the menu is the folder ----------------------------------------------
 rs_rule "the shape is named first" 'name the app.s shape in one plain sentence'
 rs_rule "the menu is read from the folder" \
-  'the menu is the files directly in the .recipes/. folder of the installed ship skill, beside this skill.s folder, read now rather than remembered'
+  'the menu is the files directly in the .recipes/. folder of the installed setup-hosting skill, beside this skill.s folder, read now rather than remembered'
 rs_rule "the parts folder is not on the menu" 'not the .parts/. folder'
 rs_rule "a recipe waiting for its real run is not on the menu" \
   'not a recipe kept anywhere else while it waits for its real run'
@@ -106,7 +106,7 @@ rs_rule "by its file name with .md included" 'the file name exactly as it sits i
 rs_rule "the recipe's tools are checked" \
   'run .scripts/check-tooling\.sh --recipe <recipe file>.'
 rs_rule "with the path found beside this skill" \
-  'passing the chosen file.s path inside the ship skill.s .recipes/. folder beside it'
+  'passing the chosen file.s path inside the setup-hosting skill.s .recipes/. folder beside it'
 rs_rule "the report runs whatever the menu held" \
   'run it for every chosen recipe, a menu of one included, before the first checkpoint'
 rs_rule "and what it found reaches the completion report" \
@@ -148,7 +148,7 @@ rs_require_load_bearing "the manual-step rule applies on any stack" "$SETUP" \
 
 # The menu is never read from a project path. Proved on a copy with one planted.
 rs_require_absent "the skill does not name the project path to the recipes" \
-  "$SETUP" '\.agents/skills/ship/(recipes|references)'
+  "$SETUP" '\.agents/skills/setup-hosting/(recipes|references)'
 
 # --- where the choice shows ----------------------------------------------
 rs_require_load_bearing "the project's AGENTS.md has a place for the recipe" \
@@ -196,8 +196,8 @@ if [ -z "${RS_LIST:-}" ]; then
 
   # The project-path refusal has to notice a planted path, or it proves nothing.
   cp "$SETUP" "$rs_dir/setup-copy"
-  printf '%s\n' 'The menu is the files in .agents/skills/ship/recipes/.' >> "$rs_dir/setup-copy"
-  rs_fold "$rs_dir/setup-copy" | grep -qE '\.agents/skills/ship/(recipes|references)' ||
+  printf '%s\n' 'The menu is the files in .agents/skills/setup-hosting/recipes/.' >> "$rs_dir/setup-copy"
+  rs_fold "$rs_dir/setup-copy" | grep -qE '\.agents/skills/setup-hosting/(recipes|references)' ||
     rs_fail "a project path planted in a copy of the skill was not noticed"
   rs_ok "a project path planted in a copy of the skill is noticed"
 fi

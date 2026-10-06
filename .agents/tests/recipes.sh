@@ -19,8 +19,8 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 . "$ROOT/.agents/tests/lib/rule-shape.sh"
 
-FORMAT="$ROOT/.agents/skills/ship/references/recipe-format.md"
-BLANK="$ROOT/.agents/skills/ship/templates/recipe.md"
+FORMAT="$ROOT/.agents/skills/setup-hosting/references/recipe-format.md"
+BLANK="$ROOT/.agents/skills/setup-hosting/templates/recipe.md"
 CHECKER="$ROOT/.agents/tools/check-recipes.sh"
 VALIDATOR="$ROOT/.agents/tools/validate-kit.sh"
 PHILOSOPHY="$ROOT/docs/PHILOSOPHY.md"
@@ -33,7 +33,7 @@ rs_exists "$FORMAT" "$BLANK" "$CHECKER" "$VALIDATOR" "$PHILOSOPHY" "$MAINTAINING
 # --- what a recipe is ----------------------------------------------------
 rs_rule "a recipe is one stack paired with one place" 'one build stack paired with one place to run it'
 rs_rule "two places are two recipes" 'a stack that runs in two places is two recipes'
-rs_rule "recipes live in ship/recipes" 'recipes live in .ship/recipes/.'
+rs_rule "recipes live in setup-hosting/recipes" 'recipes live in .setup-hosting/recipes/.'
 rs_rule "the folder is the menu" 'the folder is the menu'
 rs_rule "a recipe says when it is the one to recommend" 'when founding should recommend this recipe over another that fits the same shape'
 
@@ -49,7 +49,7 @@ rs_rule "a person looks" '.a person looking. when no machine can judge it'
 rs_rule "a section with no check is unfinished" 'a section with no check is not finished'
 
 # --- shared parts ----------------------------------------------------------
-rs_rule "a shared section is written once, as a part" 'is written once, as a part in .ship/recipes/parts/.'
+rs_rule "a shared section is written once, as a part" 'is written once, as a part in .setup-hosting/recipes/parts/.'
 rs_rule "a part holds the lines a section would" 'a part holds the same three lines a section would'
 rs_rule "the parts folder is not on the menu" 'the parts folder is not a menu entry'
 
@@ -91,9 +91,9 @@ rs_require_absent "PHILOSOPHY does not promise every check runs by machine" "$PH
 rs_require_absent "the format does not promise every check runs by machine" "$FORMAT" \
   'eight sections by machine'
 rs_require "MAINTAINING allows those names inside recipes and the README only" "$MAINTAINING" \
-  'named nowhere either, except inside a recipe file under .\.agents/skills/ship/recipes/. and in the readme'
+  'named nowhere either, except inside a recipe file under .\.agents/skills/setup-hosting/recipes/. and in the readme'
 rs_require "MAINTAINING names the recipe home" "$MAINTAINING" \
-  '.\.agents/skills/ship/recipes/.: one file for each recipe'
+  '.\.agents/skills/setup-hosting/recipes/.: one file for each recipe'
 rs_require "SOURCES credits the stack you can prove" "$SOURCES" 'boringstack\.org'
 rs_require_absent "SOURCES keeps the word recipe for one thing" "$SOURCES" 'their own recipe'
 
@@ -278,7 +278,7 @@ if "$CHECKER" --rehearsal "$RECIPE" "$rs_dir/unnamed.sh" >/dev/null; then
 fi
 rs_ok "a rehearsal that never names its recipe is refused"
 
-printf '%s\n' '#!/usr/bin/env sh' 'RECIPE=ship/recipes/example-pair.md' > "$rs_dir/unhelped.sh"
+printf '%s\n' '#!/usr/bin/env sh' 'RECIPE=setup-hosting/recipes/example-pair.md' > "$rs_dir/unhelped.sh"
 if "$CHECKER" --rehearsal "$RECIPE" "$rs_dir/unhelped.sh" >/dev/null; then
   rs_fail "a rehearsal that does not source the rule-shape helper counted"
 fi
@@ -290,7 +290,7 @@ fi
 rs_ok "a recipe with no rehearsal at all is refused"
 
 printf '%s\n' '#!/usr/bin/env sh' '. "$ROOT/.agents/tests/lib/rule-shape.sh"' \
-  'RECIPE=ship/recipes/example-pair.md' > "$rs_dir/real.sh"
+  'RECIPE=setup-hosting/recipes/example-pair.md' > "$rs_dir/real.sh"
 "$CHECKER" --rehearsal "$RECIPE" "$rs_dir/real.sh" >/dev/null
 rs_ok "a rehearsal that sources the helper and names its recipe counts"
 

@@ -231,25 +231,25 @@ grep -q 'case_prepare' "$ROOT/.agents/tests/replay/run.sh" \
   || bad "run.sh no longer runs a case's preparation"
 
 # Scenario 51 founds with a menu of one recipe. A whole copy of the kit carries
-# the ship skill in two places, and the kit may read either, so both must lose
+# the setup-hosting skill in two places, and the kit may read either, so both must lose
 # the same files while the shared parts stay.
 one="$WORK/one"
 for base in .agents agent-plugin; do
-  mkdir -p "$one/$base/skills/ship/recipes/parts"
+  mkdir -p "$one/$base/skills/setup-hosting/recipes/parts"
   for f in nextjs-supabase-on-vercel.md nextjs-supabase-on-coolify.md; do
-    : > "$one/$base/skills/ship/recipes/$f"
+    : > "$one/$base/skills/setup-hosting/recipes/$f"
   done
-  : > "$one/$base/skills/ship/recipes/parts/shared.md"
+  : > "$one/$base/skills/setup-hosting/recipes/parts/shared.md"
 done
 sh "$ROOT/.agents/tests/replay/prepare/one-recipe-menu.sh" "$one" \
   && ok "the one-recipe preparation runs" \
   || bad "the one-recipe preparation failed"
 for base in .agents agent-plugin; do
-  left=$(find "$one/$base/skills/ship/recipes" -maxdepth 1 -type f -name '*.md' -exec basename {} \;)
+  left=$(find "$one/$base/skills/setup-hosting/recipes" -maxdepth 1 -type f -name '*.md' -exec basename {} \;)
   [ "$left" = "nextjs-supabase-on-vercel.md" ] \
     && ok "the menu under $base holds only the Vercel recipe" \
     || bad "the menu under $base holds: $left"
-  [ -f "$one/$base/skills/ship/recipes/parts/shared.md" ] \
+  [ -f "$one/$base/skills/setup-hosting/recipes/parts/shared.md" ] \
     && ok "and its shared parts are left alone" \
     || bad "the shared parts under $base were removed"
 done
@@ -261,14 +261,14 @@ sh "$ROOT/.agents/tests/replay/prepare/one-recipe-menu.sh" "$WORK/none" 2>/dev/n
 # inside a git work tree is never one. The refusal is what stops the script
 # ever deleting a recipe from this repository.
 inside="$WORK/inside"
-mkdir -p "$inside/.agents/skills/ship/recipes"
-: > "$inside/.agents/skills/ship/recipes/nextjs-supabase-on-vercel.md"
-: > "$inside/.agents/skills/ship/recipes/nextjs-supabase-on-coolify.md"
+mkdir -p "$inside/.agents/skills/setup-hosting/recipes"
+: > "$inside/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel.md"
+: > "$inside/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-coolify.md"
 git -C "$inside" init -q
 sh "$ROOT/.agents/tests/replay/prepare/one-recipe-menu.sh" "$inside" 2>/dev/null \
   && bad "the preparation ran inside a git work tree" \
   || ok "the preparation refuses a folder inside a git work tree"
-[ -f "$inside/.agents/skills/ship/recipes/nextjs-supabase-on-coolify.md" ] \
+[ -f "$inside/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-coolify.md" ] \
   && ok "and removes nothing there" \
   || bad "the preparation removed a recipe inside a git work tree"
 
@@ -414,9 +414,9 @@ grep -q 'FAKE_HOST_STATE="$project.host.json"' "$ROOT/.agents/tests/replay/run.s
   || bad "run.sh no longer gives the host's stand-ins their state"
 
 vl="$WORK/vercel-live"
-mkdir -p "$vl/.agents/skills/ship/recipes"
+mkdir -p "$vl/.agents/skills/setup-hosting/recipes"
 cp "$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md" "$vl/"
-cp "$ROOT/.agents/skills/ship/recipes/nextjs-supabase-on-vercel.md" "$vl/.agents/skills/ship/recipes/"
+cp "$ROOT/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel.md" "$vl/.agents/skills/setup-hosting/recipes/"
 cp "$ROOT/.gitignore" "$vl/.gitignore"
 sh "$ROOT/.agents/tests/replay/prepare/live-on-vercel.sh" "$vl" \
   && ok "the Vercel preparation runs before the first commit" \

@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
-# ship-runs-recipe.sh: guard how /ship runs a project's recipe.
+# setup-hosting-runs-recipe.sh: guard how /setup-hosting runs a project's recipe.
 #
-# On a recipe, /ship reads the recipe the project named and runs its eight
+# On a recipe, /setup-hosting reads the recipe the project named and runs its eight
 # checks in order, one plain line each. Off a recipe, it keeps the general
 # readiness list. Either way a check not done is a warning, said once and
 # written in the changelog, and the launch goes ahead. The one wait left is
@@ -17,15 +17,15 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 . "$ROOT/.agents/tests/lib/rule-shape.sh"
 
-SHIP="$ROOT/.agents/skills/ship/SKILL.md"
-EVIDENCE="$ROOT/.agents/skills/ship/references/evidence-run.md"
+HOSTING="$ROOT/.agents/skills/setup-hosting/SKILL.md"
+EVIDENCE="$ROOT/.agents/skills/setup-hosting/references/evidence-run.md"
 WORKFLOW="$ROOT/WORKFLOW.md"
 SCENARIOS="$ROOT/.agents/tests/scenarios.md"
 SECOND="$ROOT/.agents/skills/second-opinion/SKILL.md"
-FORMAT="$ROOT/.agents/skills/ship/references/recipe-format.md"
+FORMAT="$ROOT/.agents/skills/setup-hosting/references/recipe-format.md"
 
-rs_init "Ship-runs-recipe rules"
-rs_exists "$SHIP" "$EVIDENCE" "$WORKFLOW" "$SCENARIOS" "$SECOND" "$FORMAT"
+rs_init "Setup-hosting-runs-recipe rules"
+rs_exists "$HOSTING" "$EVIDENCE" "$WORKFLOW" "$SCENARIOS" "$SECOND" "$FORMAT"
 
 # Which recipe, if any.
 rs_rule "reads the project's Recipe line" 'read the `recipe:` line in the stack section of the project.s agents\.md'
@@ -60,7 +60,7 @@ rs_rule "the wait is met by the kit's own going-live" 'recorded under the reques
 # Build with care reaches the recipe for its ordinary work and for an area
 # once its caution is settled.
 rs_rule "care work outside areas uses the recipe's checks" 'on a recipe, readiness and going live are the recipe.s checks, as "on a recipe" says'
-rs_rule "a settled area goes live on the next run of the checks" 'an area whose caution is done or accepted goes live through the next run of the eight checks, not through a separate deploy'
+rs_rule "a settled area goes live with its merge, reported by the next run of the checks" 'an area whose caution is done or accepted goes live with the merge that carries it, and the next run of the eight checks reports it, not through a separate deploy'
 rs_rule "one plain line per section, in order" 'report each section in one plain line, in this order: preview up, live address updated, rollback possible, backup present, restore works, no secret in the repo, logs readable, health answers'
 rs_rule "a line leaves the command out" 'leaves the command out'
 
@@ -71,7 +71,7 @@ rs_rule "the launch is not held for a check" 'do not hold the launch for it, and
 rs_rule "the address is the one wait" 'the one wait that remains is the address'
 rs_rule "a kit-run launch records its address" 'where the kit ran the going-live section itself, record the live address it produced'
 rs_rule "no recorded address, not called live" 'a tool with no recorded address is not called live, on a recipe or off one'
-rs_rule "a later ship runs the checks again" 'on a recipe, run its eight checks again'
+rs_rule "a later run runs the checks again" 'on a recipe, those lines come from its eight checks, run again as "on a recipe" says'
 
 # A later launch. The pointer rule once sat only under "After the first
 # launch", a hundred lines below the steps that write the lines, and a real
@@ -103,8 +103,8 @@ rs_rule "the recipe says which settings and how" 'its `settings the kit can read
 rs_rule "only a key the browser already has" 'such a read uses only a key the project already sends to the browser'
 rs_rule "never a secret for a read" 'never use a secret key, a service key or a password to read a setting, and never sign in to anything new for it'
 rs_rule "it asks only for what it cannot read, and says why" 'ask the person only for a setting the kit cannot read that way, and say in the same sentence why it cannot'
-rs_guard "$SHIP" "ship's recipe rules"
-rs_require_order "the setting rule sits beside the other go-live rules" "$SHIP" '^#### A setting the kit can read$' '^#### A secret a check needs$'
+rs_guard "$HOSTING" "setup-hosting's recipe rules"
+rs_require_order "the setting rule sits beside the other go-live rules" "$HOSTING" '^#### A setting the kit can read$' '^#### A secret a check needs$'
 
 # The review may run in a session that reads only second-opinion, so the rule
 # has to be there as well.
@@ -116,17 +116,17 @@ rs_require_load_bearing "second-opinion asks only for what it cannot read" "$SEC
 # The format lets a recipe say which settings the kit reads.
 rs_require_load_bearing "the format has the optional settings section" "$FORMAT" 'a recipe may carry one more section, `## settings the kit can read`, between health and the proven section'
 rs_require_load_bearing "the format keeps secrets out of the section" "$FORMAT" 'a setting that needs a secret key to read does not belong here'
-rs_require_load_bearing "the section is not one of the eight" "$FORMAT" 'it is not one of the eight, and /ship gives it no line of its own'
+rs_require_load_bearing "the section is not one of the eight" "$FORMAT" 'it is not one of the eight, and /setup-hosting gives it no line of its own'
 
-rs_require_absent "the general list is no longer a requirement" "$SHIP" 'require whatever of this actually applies'
-rs_require_order "the Recipe line is read before any path runs" "$SHIP" 'Read the `Recipe:` line' '^## 1\. Follow the current path'
-rs_require_order "the recipe's checks come after the hosting request" "$SHIP" 'references/hosting-request\.md' '^#### On a recipe$'
+rs_require_absent "the general list is no longer a requirement" "$HOSTING" 'require whatever of this actually applies'
+rs_require_order "the Recipe line is read before any path runs" "$HOSTING" 'Read the `Recipe:` line' '^## 1\. Follow the current path'
+rs_require_order "the recipe's checks come after the hosting request" "$HOSTING" 'references/hosting-request\.md' '^#### On a recipe$'
 
 # No product name in the skill. The names come from the recipes themselves, the
 # word after " on " in each recipe title, so a new recipe's target is covered
 # the day its file arrives, together with a fixed list of the obvious others.
 if [ -z "${RS_LIST:-}" ]; then
-  targets=$(for rf in "$ROOT"/.agents/skills/ship/recipes/*.md "$ROOT"/.agents/tests/recipes-awaiting-run/*.md; do
+  targets=$(for rf in "$ROOT"/.agents/skills/setup-hosting/recipes/*.md "$ROOT"/.agents/tests/recipes-awaiting-run/*.md; do
     [ -f "$rf" ] || continue
     sed -n 's/^# Recipe: .* on \(.*\)$/\1/p' "$rf" | head -1
   done | tr '[:upper:]' '[:lower:]' | sort -u | paste -sd'|' -)
@@ -135,23 +135,23 @@ if [ -z "${RS_LIST:-}" ]; then
   names_in() {
     tr '[:upper:]' '[:lower:]' < "$1" | grep -nE "$PRODUCTS" || true
   }
-  for sf in "$SHIP" "$EVIDENCE"; do
+  for sf in "$HOSTING" "$EVIDENCE"; do
     found=$(names_in "$sf")
     if [ -n "$found" ]; then
       printf '%s\n' "$found" >&2
       rs_fail "$sf names a product that belongs in a recipe"
     fi
   done
-  rs_ok "ship and the evidence run name no product from any recipe"
-  cp "$SHIP" "$rs_dir/ship-named"
+  rs_ok "setup-hosting and the evidence run name no product from any recipe"
+  cp "$HOSTING" "$rs_dir/hosting-named"
   first_target=$(printf '%s' "$targets" | cut -d'|' -f1)
-  printf '%s\n' "Deploy it with $first_target." >> "$rs_dir/ship-named"
-  [ -n "$(names_in "$rs_dir/ship-named")" ] ||
+  printf '%s\n' "Deploy it with $first_target." >> "$rs_dir/hosting-named"
+  [ -n "$(names_in "$rs_dir/hosting-named")" ] ||
     rs_fail "a product named in the skill was not noticed"
   rs_ok "a product named in the skill is noticed"
 fi
 
-rs_require "the evidence run points at ship's recipe steps" "$EVIDENCE" 'on a project with a recipe, the rollback, backup, restore, secrets, logs and health checks are the recipe.s own'
+rs_require "the evidence run points at setup-hosting's recipe steps" "$EVIDENCE" 'on a project with a recipe, the rollback, backup, restore, secrets, logs and health checks are the recipe.s own'
 
 rs_require_load_bearing "WORKFLOW says the recipe's checks replace the list" "$WORKFLOW" 'on a recipe, the recipe.s own checks take the place of that list'
 rs_require_load_bearing "WORKFLOW gives the eight lines" "$WORKFLOW" 'preview up, live address updated, rollback possible, backup present, restore works, no secret in the repo, logs readable, health answers'

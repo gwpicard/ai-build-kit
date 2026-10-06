@@ -2,7 +2,7 @@
 # offer-recipe-move.sh: guard the monthly offer to move a project onto a recipe.
 #
 # A project founded before recipes existed, or on a stack of its own, can be
-# built much like a recipe on the menu. On a recipe /ship checks the launch
+# built much like a recipe on the menu. On a recipe /setup-hosting checks the launch
 # steps, and off one it can only name what it could not check. So the monthly
 # visit offers the move. The rules worth holding are the ones whose loss would
 # be quiet: the move is offered and never required, nothing changes without a
@@ -13,7 +13,7 @@
 # nothing is said when no recipe is close. A visit that nagged, or moved a project without
 # asking, would read perfectly well in a transcript.
 #
-# The menu is read from the ship skill's recipes folder at run time, so the
+# The menu is read from the setup-hosting skill's recipes folder at run time, so the
 # skill names no hosting, data or deploy product. The product list is read from
 # hosting-request.sh, which owns it, rather than kept here as a second copy.
 
@@ -43,7 +43,7 @@ rs_rule "none, no line or a missing file is off a recipe" \
 
 # The menu is read from the recipes folder, and names come from it.
 rs_rule "the menu is read from the installed recipes folder" \
-  'each file directly in the installed ship skill.s .recipes/. folder, not the .parts/. folder'
+  'each file directly in the installed setup-hosting skill.s .recipes/. folder, not the .parts/. folder'
 rs_rule "product names come from the recipe files" \
   'take every product name from those files, and never write one into this skill'
 
@@ -100,7 +100,7 @@ rs_rule "nothing is said when no recipe is close" 'when no recipe is close, or a
 # The offer: once, with the gain and the change named.
 rs_rule "the move is offered once" 'offer the move once, in one reply'
 rs_rule "the gain is named" \
-  'say what it gains in plain words: the launch checks /ship would then run'
+  'say what it gains in plain words: the launch checks /setup-hosting would then run'
 rs_rule "the change is named" 'say what it would change, from the differences'
 rs_rule "a dashboard-only schema moves into migrations" \
   'move those tables into migrations'

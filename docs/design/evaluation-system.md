@@ -69,14 +69,14 @@ Four things are thin, and all four were confirmed by reading the code.
 
    The imbalance is dealt with. The gap it pointed at is not. Twenty-eight of
    the forty-two contracts in `scenarios.md` are still never driven through the
-   grader, and no case drives `/implement`, `/ship`, `/sync`, `/queue`,
+   grader, and no case drives `/implement`, `/setup-hosting`, `/sync`, `/queue`,
    `/maintain` or `/what-now` at all.
 
 The functions with no working replay coverage include the ones the philosophy
 calls most valuable: talking a person out of building, choosing the right form
 of evidence and refusing a fake test, shaping a vague request into a sound
 ready piece, the ready gate between `/shape` and `/implement`, path-adaptive
-`/ship` with a backup and a restore rehearsal, and `/sync` keeping the records
+`/setup-hosting` with a backup and a restore rehearsal, and `/sync` keeping the records
 true after messy work.
 
 ## Level 1: does a skill behave as written

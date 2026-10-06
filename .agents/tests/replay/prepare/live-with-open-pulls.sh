@@ -3,7 +3,7 @@
 #
 # Scenarios 52 and 53 start where a real second launch started on 25 September
 # 2026: the tool is already live, and finished work sits in open pull requests
-# waiting for /ship. The fixture has never gone live and has no pull requests,
+# waiting for /setup-hosting. The fixture has never gone live and has no pull requests,
 # so this writes the rest before the project's first commit:
 #
 # - a "How it stays running" section saying Bramble is live on an office server

@@ -50,7 +50,7 @@ ambiguous; never guess to keep a run going.
 The whole run happens on one branch and ends as one pull request, where the
 build path requires a pull request at all; a run confined to the checkpoint
 route may end in a single confirmed checkpoint instead. Skip the per-piece
-hand-over; end the run with the evidence run (ship/references/evidence-run.md),
+hand-over; end the run with the evidence run (setup-hosting/references/evidence-run.md),
 and write the report as: what was parked and why first, then what was built
 and what passed, what was skipped as eyes-only, and a checklist of things to
 try before merging, riskiest first, anything near a sensitive area on

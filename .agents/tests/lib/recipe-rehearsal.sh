@@ -3,7 +3,7 @@
 #
 # Source it after rule-shape.sh. It gives a recipe rehearsal three things.
 #
-# 1. Where the recipe is. A recipe joins the menu, ship/recipes/, only after
+# 1. Where the recipe is. A recipe joins the menu, setup-hosting/recipes/, only after
 #    its real run is recorded, and there is no draft state. Until then it waits
 #    in .agents/tests/recipes-awaiting-run/, which ships nowhere. rr_locate
 #    finds it in one place or the other and refuses it in both.
@@ -26,9 +26,9 @@
 # review reads with the public key before it asks the person about them.
 
 RR_CHECKER="$ROOT/.agents/tools/check-recipes.sh"
-RR_MENU="$ROOT/.agents/skills/ship/recipes"
+RR_MENU="$ROOT/.agents/skills/setup-hosting/recipes"
 RR_WAITING="$ROOT/.agents/tests/recipes-awaiting-run"
-RR_PARTS="$ROOT/.agents/skills/ship/recipes/parts"
+RR_PARTS="$ROOT/.agents/skills/setup-hosting/recipes/parts"
 
 rr_locate() {
   # rr_locate <menu path of the recipe>: sets RR_RECIPE and RR_ON_MENU.

@@ -6,9 +6,9 @@ sign-in and saved data wants a different one from a static site. The place to
 run it is where the tool lives once people use it. Each pair is its own recipe,
 so a stack that runs in two places is two recipes.
 
-Recipes live in `ship/recipes/`, one file each, named for the pair in lower case
+Recipes live in `setup-hosting/recipes/`, one file each, named for the pair in lower case
 with hyphens. The folder is the menu: a recipe is offered once its file is there,
-and not before. `ship/templates/recipe.md` is the blank to copy.
+and not before. `setup-hosting/templates/recipe.md` is the blank to copy.
 
 ## What a recipe holds
 
@@ -69,7 +69,7 @@ answer wherever no machine can judge the result.
 
 Two recipes often share a half. A stack deployed in two places keeps the same
 data service, so its backup and restore read the same in both. Such a section
-is written once, as a part in `ship/recipes/parts/`, and a recipe links it in
+is written once, as a part in `setup-hosting/recipes/parts/`, and a recipe links it in
 place of writing the section out, with one line: `Shared part:` followed by a
 Markdown link to the part's file. A part holds the same three lines a
 section would. The parts folder is not a menu entry, and nothing that reads the
@@ -84,7 +84,7 @@ rather than asking the person to look them up. Such a read uses only a key the
 project already sends to the browser. A setting that needs a secret key to read
 does not belong here, and the section says what the kit cannot read and why.
 The section carries the same three lines as the others, or a `Shared part:`
-link. It is not one of the eight, and /ship gives it no line of its own. A
+link. It is not one of the eight, and /setup-hosting gives it no line of its own. A
 recipe that carries it gives it an outcome line in its proven section, starting
 `Settings the kit can read:`, like each of the eight. A shared part proven in
 another recipe's real run may say so there instead.

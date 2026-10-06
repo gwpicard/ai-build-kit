@@ -10,7 +10,7 @@ FIT="$ROOT/.agents/skills/setup-ai-build-kit/references/fit-check.md"
 MASTER="$ROOT/.agents/skills/setup-ai-build-kit/templates/masterplan.md"
 SETUP="$ROOT/.agents/skills/setup-ai-build-kit/SKILL.md"
 BUILDER="$ROOT/.agents/skills/section-builder/SKILL.md"
-SHIP="$ROOT/.agents/skills/ship/SKILL.md"
+HOSTING="$ROOT/.agents/skills/setup-hosting/SKILL.md"
 MAINTAIN="$ROOT/.agents/skills/maintain/SKILL.md"
 CHECK="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/check-sensitive-areas.sh"
 BOOTSTRAP="$ROOT/.agents/skills/setup-ai-build-kit/scripts/bootstrap-project.sh"
@@ -18,7 +18,7 @@ CHECKS="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/checks.yml"
 WORKFLOW="$ROOT/WORKFLOW.md"
 
 rs_init "Sensitive-area map rules"
-rs_exists "$FIT" "$MASTER" "$SETUP" "$BUILDER" "$SHIP" "$MAINTAIN" "$CHECK" "$BOOTSTRAP" "$CHECKS" "$WORKFLOW"
+rs_exists "$FIT" "$MASTER" "$SETUP" "$BUILDER" "$HOSTING" "$MAINTAIN" "$CHECK" "$BOOTSTRAP" "$CHECKS" "$WORKFLOW"
 
 rs_rule "the map exists only on Build with care" 'keep this map absent on the other two build paths'
 rs_rule "each area lists paths" 'the next line lists the paths where that area lives'
@@ -37,7 +37,7 @@ rs_require "setup writes and checks the map" "$SETUP" 'sensitive-area check inst
 rs_require "the builder compares reach with the map" "$BUILDER" 'compare the reached paths and crossed boundaries'
 rs_require "the builder uses the fixed review line" "$BUILDER" 'this change reaches <area>, so a review is running'
 rs_require "the builder checks the boundary with the available reader" "$BUILDER" 'sentrux or dependency-cruiser'
-rs_require "ship walks the map" "$SHIP" 'walk its `paths`'
+rs_require "setup-hosting walks the map" "$HOSTING" 'walk its `paths`'
 rs_require "maintain runs the check monthly" "$MAINTAIN" 'sensitive-area check installed during founding'
 rs_require "bootstrap installs the check" "$BOOTSTRAP" 'check-sensitive-areas\.sh\|\.agents/hooks/check-sensitive-areas\.sh'
 rs_require "the project check runs the map check" "$CHECKS" 'sh \.agents/hooks/check-sensitive-areas\.sh'

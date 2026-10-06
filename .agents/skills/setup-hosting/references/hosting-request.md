@@ -1,6 +1,6 @@
 # The hosting request
 
-Used by ship when the tool will run on a server this session cannot reach. The
+Used by setup-hosting when the tool will run on a server this session cannot reach. The
 request lives in the masterplan's "How it stays running" section. The person
 carries it to whoever runs the server, and carries the answer back.
 
@@ -34,7 +34,7 @@ on a recipe always has a health route, because the recipe's health section
 names one, so there Healthcheck is that path and never `none`. Print the
 same block in the reply, so the person can paste it, and say once: "This
 tool needs a home. Take this request to whoever runs the server. Paste what
-they send back here, and I will record it for the next /ship."
+they send back here, and I will record it for the next /setup-hosting."
 
 ## Recording the answer
 
@@ -42,9 +42,9 @@ Whenever the person pastes an answer, in this session or a later one,
 record its address and names under the request, and leave out any secret
 value it carries.
 
-## A later /ship
+## A later /setup-hosting
 
-On a later /ship, read the recorded hosting request back instead of asking
+On a later /setup-hosting, read the recorded hosting request back instead of asking
 again. Where no address is recorded under it, the request went out and no
 answer came back. Say so plainly, print the request again for the person to
 carry, and ask them to paste the answer here when it arrives. Where the

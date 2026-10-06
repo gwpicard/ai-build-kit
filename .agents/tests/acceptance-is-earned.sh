@@ -127,15 +127,15 @@ rs_rule "no further yes is asked to open it" \
   'do not keep the lock and ask for a further yes to open it'
 rs_guard "$FIT" "the shipped fit-check.md"
 
-# /ship and founding are the other two places the kit used to stop. Each now
+# /setup-hosting and founding are the other two places the kit used to stop. Each now
 # gives the notice and carries on when the person does, and neither may drift
 # back to a stop.
-SHIP="$ROOT/.agents/skills/ship/SKILL.md"
+HOSTING="$ROOT/.agents/skills/setup-hosting/SKILL.md"
 SETUP="$ROOT/.agents/skills/setup-ai-build-kit/SKILL.md"
 FOUNDATION="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md"
 
 rs_reset
-rs_rule "ship gives the notice once at a person caution" \
+rs_rule "setup-hosting gives the notice once at a person caution" \
   'give the risk notice here, once and in full'
 rs_rule "an area already accepted gets no second notice" \
   'where an acceptance is already recorded for the area, give no notice'
@@ -145,13 +145,13 @@ rs_rule "the area reads accepted, never done" \
   'line .accepted., never .done.'
 rs_rule "silence or other work leaves only that area behind" \
   'silence, a question, or a request for other work is not carrying on'
-rs_rule "ship goes on in the same reply with no further question" \
+rs_rule "setup-hosting goes on in the same reply with no further question" \
   'go on in the same reply, without a further question about that area'
-rs_rule "ship opens a lock that only waits for this caution" \
+rs_rule "setup-hosting opens a lock that only waits for this caution" \
   'a lock whose only purpose is to wait for this caution opens with the acceptance, unless the person asks to keep it'
-rs_guard "$SHIP" "ship's Build with care steps"
-rs_require_absent "ship no longer stops at a person caution" "$SHIP" 'stop at it'
-rs_require_absent "ship no longer halts on an area without a status" "$SHIP" 'do not carry on past one'
+rs_guard "$HOSTING" "setup-hosting's Build with care steps"
+rs_require_absent "setup-hosting no longer stops at a person caution" "$HOSTING" 'stop at it'
+rs_require_absent "setup-hosting no longer halts on an area without a status" "$HOSTING" 'do not carry on past one'
 
 rs_reset
 rs_rule "founding gives the notice once" \

@@ -53,8 +53,8 @@ for required in \
   .agents/skills/setup-ai-build-kit/scripts/place-plan-helper.sh \
   .agents/skills/setup-ai-build-kit/templates/maintenance-record \
   .agents/skills/screen-check/SKILL.md \
-  .agents/skills/ship/references/recipe-format.md \
-  .agents/skills/ship/templates/recipe.md \
+  .agents/skills/setup-hosting/references/recipe-format.md \
+  .agents/skills/setup-hosting/templates/recipe.md \
   .agents/skills/maintain/VERSION \
   .claude-plugin/plugin.json \
   .claude-plugin/marketplace.json \

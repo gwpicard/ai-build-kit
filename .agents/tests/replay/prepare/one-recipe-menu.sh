@@ -5,7 +5,7 @@
 # 25 September 2026 when it skipped the menu and the recipe's tool report. The
 # kit now ships more than one recipe, so the harness takes the others out of
 # the installed kit before the project's first commit. A whole copy of the kit
-# carries the ship skill twice, once under `.agents/skills/` and once under
+# carries the setup-hosting skill twice, once under `.agents/skills/` and once under
 # `agent-plugin/skills/`, and both lose the same files, so whichever copy the
 # kit reads, it finds the same menu.
 #
@@ -27,7 +27,7 @@ if git -C "$project" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   exit 1
 fi
 
-folders=$(find "$project" -path "$project/.git" -prune -o -type d -path '*/skills/ship/recipes' -print)
+folders=$(find "$project" -path "$project/.git" -prune -o -type d -path '*/skills/setup-hosting/recipes' -print)
 [ -n "$folders" ] || { echo "one-recipe-menu.sh: no ship recipes folder in $project" >&2; exit 1; }
 
 printf '%s\n' "$folders" | while IFS= read -r folder; do

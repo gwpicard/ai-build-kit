@@ -131,7 +131,7 @@ Recipe: nextjs-supabase-on-vercel.md
   them before writing Next.js code.
 - Hosting: Vercel, linked to the GitHub repository, so a merge to `main`
   deploys. The database runs on hosted Supabase.
-- Launch checks: `/ship` runs the recipe's eight sections and records the
+- Launch checks: `/setup-hosting` runs the recipe's eight sections and records the
   address in the changelog.
 - Design tool: none recorded.
 STACK

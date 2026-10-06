@@ -28,14 +28,14 @@ start the one the user types, names, or asks for in plain words, and say which
 one you are running. Never start a command the user did not ask for. The other
 five run in the background when a command needs them.
 
-- Commands: `setup-ai-build-kit`, `shape`, `implement`, `queue`, `fix`, `ship`,
-  `sync`, `maintain`, `what-now`.
+- Commands: `setup-ai-build-kit`, `shape`, `implement`, `queue`, `fix`,
+  `setup-hosting`, `sync`, `maintain`, `what-now`.
 - Background skills: `clarify`, `change-triage`, `screen-check`,
   `section-builder`, `second-opinion`.
 
 When a skill says to run another skill, load that installed skill and follow
 it. The skills sit in `.agents/skills/`, `.claude/skills/` or a plugin's folder,
-by install route. A pointer such as the `ship` skill's `templates/handover.md`
+by install route. A pointer such as the `maintain` skill's `templates/handover.md`
 names a file there, as does `<name>/SKILL.md` without native discovery. Put
 project-specific rules in this file instead of editing an installed skill. For GitHub failures, follow the `setup-ai-build-kit` skill's `references/required-tools.md`.
 
