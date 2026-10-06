@@ -113,7 +113,7 @@ rs_require "section-builder also fires from a screen file" \
   "$SECTION" 'change touches a screen file'
 rs_require_order "screen rules run before the guided manual check" \
   "$SECTION" 'load and follow .screen-check.' 'screen.s guided manual check'
-rs_require "a screen fault in fix gets the rules and another fault does not" \
+rs_require "a screen fault in a repair gets the rules and another fault does not" \
   "$SECTION" 'a fault on a screen gets the rules and any other fault does not'
 
 rs_require "second-opinion checks screens during a build review" \

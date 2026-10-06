@@ -9,14 +9,14 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 REACH="$ROOT/.agents/skills/section-builder/references/reach-check.md"
 BUILDER="$ROOT/.agents/skills/section-builder/SKILL.md"
 SHAPE="$ROOT/.agents/skills/shape/SKILL.md"
-FIX="$ROOT/.agents/skills/fix/SKILL.md"
+REPAIR="$ROOT/.agents/skills/section-builder/references/repair.md"
 CAPABILITY="$ROOT/.agents/skills/setup-ai-build-kit/references/capability-check.md"
 SETUP="$ROOT/.agents/skills/setup-ai-build-kit/SKILL.md"
 MAINTAIN="$ROOT/.agents/skills/maintain/SKILL.md"
 WORKFLOW="$ROOT/WORKFLOW.md"
 
 rs_init "Reach-check rules"
-rs_exists "$REACH" "$BUILDER" "$SHAPE" "$FIX" "$CAPABILITY" "$SETUP" "$MAINTAIN" "$WORKFLOW"
+rs_exists "$REACH" "$BUILDER" "$SHAPE" "$REPAIR" "$CAPABILITY" "$SETUP" "$MAINTAIN" "$WORKFLOW"
 
 rs_rule "asks what else the change reaches" 'what else does the change reach'
 rs_rule "asks which existing tests cover it" 'which existing tests cover it'
@@ -35,8 +35,8 @@ rs_guard "$REACH" "the shared reach-check reference"
 rs_require "section-builder runs it before save" "$BUILDER" 'references/reach-check\.md'
 rs_require "section-builder runs covered tests first" "$BUILDER" 'run those tests first'
 rs_require "shape uses it for under-the-hood notes" "$SHAPE" 'references/reach-check\.md'
-rs_require_order "fix uses it before ranking causes" "$FIX" \
-  'references/reach-check\.md' '^## 4\. Rank causes$'
+rs_require_order "a repair uses it before ranking causes" "$REPAIR" \
+  'references/reach-check\.md' '^### Rank causes$'
 rs_require "the capability check records the engine" "$CAPABILITY" 'a reach-check engine is recorded'
 rs_require "setup writes the engine to the profile" "$SETUP" 'the reach-check engine'
 rs_require "maintain re-reads the engine monthly" "$MAINTAIN" "re-read the capability profile's reach-check engine"

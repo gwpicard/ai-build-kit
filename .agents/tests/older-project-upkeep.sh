@@ -119,6 +119,14 @@ rs_report "a pointer under the founding skill's first name is rewritten to today
   "$(grep -qF "The restrictions in the \`setup-ai-build-kit\` skill's \`references/blocked-commands.md\` always apply." "$WORK/first/AGENTS.md" \
      && grep -qF "the \`setup-ai-build-kit\` skill's \`references/fit-check.md\`. The agent reads this section" "$WORK/first/masterplan.md" && echo yes || echo no)"
 
+# The fix skill was folded into shape and implement, and its rules now sit in
+# section-builder's repair reference. A pointer to its one file follows them.
+mkdir -p "$WORK/repair"
+printf '%s\n' 'Repairs follow `.agents/skills/fix/SKILL.md`.' > "$WORK/repair/AGENTS.md"
+python3 "$SCRIPT" --apply "$WORK/repair" >/dev/null
+rs_report "a pointer to the old fix skill is rewritten to the repair reference" \
+  "$(grep -qF "Repairs follow the \`section-builder\` skill's \`references/repair.md\`." "$WORK/repair/AGENTS.md" && echo yes || echo no)"
+
 # Lines where a rewrite would break what the person wrote. Each is listed with
 # its reason and left exactly as it was, and a line with two standalone
 # pointers has both rewritten.
@@ -228,7 +236,7 @@ print("\n".join(sorted(module.KIT_SKILLS)))
 PY
 )
 shipped=$(ls "$ROOT/.agents/skills" | sort)
-rs_report "the script names exactly the kit's fourteen skills" \
-  "$([ "$listed" = "$shipped" ] && [ "$(printf '%s\n' "$listed" | grep -c .)" = 14 ] && echo yes || echo no)"
+rs_report "the script names exactly the kit's thirteen skills" \
+  "$([ "$listed" = "$shipped" ] && [ "$(printf '%s\n' "$listed" | grep -c .)" = 13 ] && echo yes || echo no)"
 
 rs_done

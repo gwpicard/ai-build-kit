@@ -7,12 +7,12 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 . "$ROOT/.agents/tests/lib/rule-shape.sh"
 
 HOSTING="$ROOT/.agents/skills/setup-hosting/SKILL.md"
-FIX="$ROOT/.agents/skills/fix/SKILL.md"
+REPAIR="$ROOT/.agents/skills/section-builder/references/repair.md"
 FOUNDATION="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md"
 WORKFLOW="$ROOT/WORKFLOW.md"
 
 rs_init "Request-record rules"
-rs_exists "$HOSTING" "$FIX" "$FOUNDATION" "$WORKFLOW"
+rs_exists "$HOSTING" "$REPAIR" "$FOUNDATION" "$WORKFLOW"
 
 rs_rule "checks the record before live use" 'before any first live use.*check that the tool records what each request did'
 rs_rule "keeps one line per event" 'one line per event'
@@ -56,7 +56,7 @@ rs_rule "uses the record to find a repeatable case" 'use it to find the failed s
 rs_rule "reports missing evidence and uses other sources" 'if the record is absent or cannot be reached, say what evidence is missing and continue with the other sources below'
 rs_rule "never asks the person to read logs" 'never ask the person to read logs'
 rs_rule "keeps data rules during repairs" 'the project.s secrets and confidential files rules still apply to anything read or reported'
-rs_guard "$FIX" "fix's request-record read"
+rs_guard "$REPAIR" "the repair reference's request-record read"
 
 rs_require "foundation excludes keys passwords and tokens" "$FOUNDATION" 'keys, passwords, and tokens.*never print, commit, or copy'
 rs_require "foundation excludes confidential contents" "$FOUNDATION" 'never stage, commit, print, or copy their contents'
@@ -64,7 +64,7 @@ rs_require_load_bearing "WORKFLOW names both live paths" "$WORKFLOW" 'on both li
 rs_require_load_bearing "WORKFLOW says the launch does not wait for the record" "$WORKFLOW" 'the launch does not wait for it'
 rs_require_absent "setup-hosting no longer waits for the record" "$HOSTING" 'leave launch waiting'
 rs_require_load_bearing "WORKFLOW leaves exploration alone" "$WORKFLOW" 'explore privately gets neither check nor caution'
-rs_require_load_bearing "WORKFLOW explains the repair read" "$WORKFLOW" '/fix also reads the tool.s own record of what each request did alongside your report'
+rs_require_load_bearing "WORKFLOW explains the repair read" "$WORKFLOW" 'after launch, /shape also reads the tool.s own record of what each request did alongside your report'
 rs_require_order "record check starts inside the live path" "$HOSTING" '^### Build and run it$' 'Check that the tool records'
 rs_require_order "monitoring caution stays inside the live path" "$HOSTING" 'Give the monitoring caution once' '^### Build with care$'
 

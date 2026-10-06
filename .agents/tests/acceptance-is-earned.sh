@@ -24,11 +24,11 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 . "$ROOT/.agents/tests/lib/rule-shape.sh"
 
-FIX="$ROOT/.agents/skills/fix/SKILL.md"
+REPAIR="$ROOT/.agents/skills/section-builder/references/repair.md"
 FIT="$ROOT/.agents/skills/setup-ai-build-kit/references/fit-check.md"
 
 rs_init "Acceptance checks"
-rs_exists "$FIX" "$FIT"
+rs_exists "$REPAIR" "$FIT"
 
 rs_rule "the notice is given once, in full, before the next attempt" \
   'give the notice once, in full, in one reply'
@@ -59,7 +59,7 @@ rs_rule "the line is written and the work started in the same reply" \
   'start the replacement in the reply that answers them'
 rs_rule "no lock is kept that only waits for the skipped caution" \
   'keep no lock that only waits for the skipped caution'
-rs_guard "$FIX" "the fix skill"
+rs_guard "$REPAIR" "the repair reference"
 
 # fit-check.md is where every skill reads the rule from, so the definition has
 # to hold there too.

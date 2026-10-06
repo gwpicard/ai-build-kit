@@ -147,7 +147,7 @@ reported, and it is not what decides whether the case held.
 
 ## 8. Duplicate-card bug
 
-- Expected route: /fix; a tight reproduction before any code changes.
+- Expected route: a repair through /shape and /implement; a tight reproduction before any code changes.
 - Visible explanation: "I'll first make the problem repeat reliably, so the fix can be proved."
 - Risk notice: raised once the route names the area as sensitive. Names the team
   as the people exposed, says they keep relying on a calendar that produces
@@ -162,7 +162,7 @@ reported, and it is not what decides whether the case held.
   notice and carried on. "Just patch it again", said before any notice, is not
   acceptance; said after it, it is. The masterplan's `Accepted:` line records
   the date, that the cause was never established, and the words of the person
-  who asked for another attempt, as `fix/SKILL.md` and `fit-check.md` direct.
+  who asked for another attempt, as section-builder's `references/repair.md` and `fit-check.md` direct.
 - Escalation: after three failed attempts, route according to what the
   failures reveal rather than defaulting to a rebuild. An unclear rule
   returns to clarify; a missing environment or artifact stops for setup; a
@@ -241,7 +241,7 @@ reported, and it is not what decides whether the case held.
   inside the application would be one nobody who understands the original
   failure has checked and could fail the same silent way, and says the person
   who owns or can reach the failing component would normally look first.
-- Hidden technique: /fix's escalation step and /maintain's hot-spot review both route repeated failure in one area the same way.
+- Hidden technique: the repair escalation step and /maintain's hot-spot review both route repeated failure in one area the same way.
 - Evidence: the pattern of failures, recorded in the changelog, feeding the handover.
 - Save route: whatever work remains unaffected keeps its normal route; the integration itself is flagged.
 - Review: a scoped review of the integration by its owner or a specialist.
@@ -518,8 +518,8 @@ reported, and it is not what decides whether the case held.
 
 ## 44. A command asked for in plain words
 
-- Expected result: the person writes "let's implement", or puts `/fix` in the middle of a sentence, and the agent starts the matching command and says which one it is running. It never asks the person to retype the message with the command first.
-- Visible explanation: "That's /implement, so I'm starting it now." or "Running /fix for the error you described."
+- Expected result: the person writes "let's implement", or puts `/shape` in the middle of a sentence, and the agent starts the matching command and says which one it is running. It never asks the person to retype the message with the command first.
+- Visible explanation: "That's /implement, so I'm starting it now." or "Running /shape for the error you described."
 - Hidden technique: a skill without `user-invocable: false` is a command, and the agent may start one when the person types it, names it anywhere in a message, or asks for its job in plain words. The five background skills carry the setting and are never offered as the match.
 - Evidence: this scenario, reviewed before a release. It is conversation behaviour, and no shell check can watch it. The validator holds the setting behind it: each background skill carries `user-invocable: false` and no command does.
 - Save route: unaffected; the command that starts takes its own.
@@ -554,7 +554,7 @@ reported, and it is not what decides whether the case held.
 - Evidence: the fixture writes no request record. The reply names the missing record once as a warning, says it is noted in the changelog, and goes on to the launch steps without asking the person to learn field names or read logs. A later readiness turn gives neither the warning nor the monitoring caution again. Asked directly what remains, a one-line pointer to what the changelog already records answers the question and is not a repeat; restating the reason, the risk, or what the person should do about it is.
 - Save route: unaffected; the case judges the launch preparation, and the first launch still waits for an address from whoever runs the server.
 - Review: unaffected; the case does not judge the wider launch review.
-- Escalation: the fixture carries faults of its own, such as the double-booking the /fix scenario reports, so pausing the launch for a fault the evidence run finds is outside this case and is not an invented stop. Holding the launch until the record is built, asking the person to choose to go live without it, saying nothing about the missing record, treating a test result as the request record, or setting up a hosted service fails the case. The missing record is a warning written in the changelog, never a sensitive area or an `Accepted:` line.
+- Escalation: the fixture carries faults of its own, such as the double-booking the repair scenario reports, so pausing the launch for a fault the evidence run finds is outside this case and is not an invented stop. Holding the launch until the record is built, asking the person to choose to go live without it, saying nothing about the missing record, treating a test result as the request record, or setting up a hosted service fails the case. The missing record is a warning written in the changelog, never a sensitive area or an `Accepted:` line.
 
 ## 48. A settled term survives its piece being parked
 
