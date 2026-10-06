@@ -172,7 +172,7 @@ protect.
 One setting says how a skill is triggered. A background skill another skill
 calls carries `user-invocable: false` in its own file. A skill without it is a
 command. The adapter builder reads that setting and nothing else, so a dropped
-or misspelt line shows up as ten commands and three background skills, and the
+or misspelt line shows up as seven commands and four background skills, and the
 count check stops the build there.
 
 The commands used to carry a second setting that stopped the agent starting one

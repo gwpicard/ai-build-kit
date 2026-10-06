@@ -187,7 +187,9 @@ is wrong, describe what happened and type /shape.
 
 If the change touched an area the build path flags, the best independent method available reviews it first. It reports in plain language, sorted into what's worth stopping for and what's worth knowing.
 
-When more than one piece is ready, /implement shows you the whole set before it builds anything, and asks which to take. It comes back with two lists. The first is everything ready, and those are safe to take on together, because a piece waiting on another piece is never in it. The second is what is waiting, each line saying which piece has to land first: "deposits cannot start until card payments is built". Nothing is built until you choose. To see the lists without building, ask for them in your own words, such as "what can I build in parallel?". If the list looks out of date, type /implement again, since it is printed fresh from your project's issues every time. /what-now still names at most three things, so the whole list lives here.
+When more than one piece is ready, /implement shows you the whole set before it builds anything, and asks which to take. It comes back with two lists. The first is everything ready, and those are safe to take on together, because a piece waiting on another piece is never in it. The second is what is waiting, each line saying which piece has to land first: "deposits cannot start until card payments is built". Nothing is built until you choose.
+
+A repair that is ready comes first, above both lists, since something that used to work outranks anything new. To see the lists without building, ask for them in your own words, such as "what can I build in parallel?". If the list looks out of date, type /implement again, since it is printed fresh from your project's issues every time. /what-now still names at most three things, so the whole list lives here.
 
 /shape is how you bring anything new: "/shape add a filter to the board". You never sort your own request; the agent works out what kind of work it is. Clear and piece-sized becomes a ready piece, and /shape offers to build it now or leave it for /implement later. Vague gets a short interview.
 
@@ -432,11 +434,14 @@ work belongs to and offers to continue it, save it or clear it. /maintain's
 corrections are saved the way a piece is saved, through the route your build
 path requires, so on a shared project they arrive as a pull request you decide
 to merge, and uncommitted work it finds on arrival is reported and left alone.
+That work stays out of every save the visit makes, and the kit update waits
+until it is dealt with.
 
 Once your tool is live, every visit also compares the live copy with your
 project, and changes nothing while it does. It names each difference in one
 line, such as the live copy running an older version or missing a setting, and
-offers /setup-hosting to put it right. The monthly and quarterly upkeep further
+offers /setup-hosting to put it right. The backup, restore and preview checks
+stay in /setup-hosting, since they can touch the live side or need you. The monthly and quarterly upkeep further
 down runs only when it is due. A visit in between does the checks in this
 part and tells you when the next upkeep falls due.
 

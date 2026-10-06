@@ -297,7 +297,8 @@ attribution line, not the word.
   the guarantee comes from. It also guards the blocker being named rather than
   numbered, a waiting question keeping a piece out of both groups, the list
   shown and nothing built until the person chooses, a request for the list
-  alone shown and stopped, and `/what-now` keeping its cap of three things,
+  alone shown and stopped, a ready repair named before the list in both
+  cases, and `/what-now` keeping its cap of three things,
   because a `/what-now` that grew the whole list would turn orientation back
   into a report. It refuses a `queue` folder, or a shipped file that still
   points at `/queue`. The same rule reaches the end of a build: `/implement` and
@@ -711,7 +712,8 @@ attribution line, not the word.
   rules in `/setup-hosting`, second-opinion, section-builder, WORKFLOW.md and the
   project's own AGENTS.md, and proves each one load-bearing in each file.
 - `.agents/tests/standing-instructions.sh` guards the project's instruction
-  ceiling and the monthly offer to trim repeated code information. It removes
+  ceiling and the monthly offer to trim repeated code information, or a line
+  that no longer pays its way, since the truing no longer trims. It removes
   each written rule in turn and drives the validator's own count at the limit.
   The ceiling is for the founded file, so the count adds a fixed budget for the
   lines founding writes to the template's own, and a margin of 5: with the
@@ -781,7 +783,7 @@ attribution line, not the word.
   approval, and that WORKFLOW.md says so.
 - `.agents/tests/older-project-upkeep.sh` guards three things an update never
   reaches, because it refreshes skills and nothing else. A leftover `plan.md`
-  is offered for a move into issues on every visit that finds it, since it was
+  is offered for a move into issues on every monthly visit that finds it, since it was
   once offered only on the one visit that first brought in `/shape`, and a
   project that missed that visit kept it for good. The offer comes back after
   a no, and a `plan.md` that is plainly the person's own notes is left alone.
@@ -884,7 +886,12 @@ attribution line, not the word.
   `main` left the corrections uncommitted or on whatever branch was checked
   out. So the corrections take the save route the build path already
   requires, at the end of the visit with its other changes, and on the shared
-  route arrive as a pull request a person decides to merge. The rule it guards
+  route arrive as a pull request a person decides to merge. The truing saves
+  first, before the rest of the visit changes a file, so the monthly part's
+  clean checkpoint starts from that save. A review found the first version
+  saved at the end of the visit, which left the kit update no clean
+  checkpoint. The person's own uncommitted work stays out of every commit,
+  and while it is there the kit update waits, as it always did. The rule it guards
   hardest is the one about uncommitted work: the truing often runs after an
   interruption, so a dirty tree is the ordinary case, and the two easy ways to
   get a clean branch are to sweep that work into the visit's own commit or to
@@ -894,13 +901,20 @@ attribution line, not the word.
 - `.agents/tests/maintain-trues-every-visit.sh` guards what every `/maintain`
   visit does now that `/sync` has folded into it. Every visit trues the
   records first, whenever it runs, and the monthly and quarterly parts run
-  only when due: 30 and 90 days on, or when the person asks. A request for the
-  records alone runs only the truing. Once live, the visit runs
-  `/setup-hosting`'s later-run comparison read-only, says each gap in one
-  line, offers `/setup-hosting` to repair it, and never applies a migration,
-  deploys, promotes or rolls back. It holds that the AGENTS.md trim has one
-  home, the monthly offer, and that the session-end reminder names
-  `/what-now`. It refuses a `sync` folder, a quarterly part that runs the
+  only when due: 30 and 90 days on, or when the person asks. A records-only
+  visit runs only the every-visit steps. Once live, the visit makes only five
+  reads from `/setup-hosting`'s later run: the live commit against `main`, a
+  hold left by a rollback, a migration not applied, secret names on the host,
+  and health. It says each gap in one line, writes nothing to the changelog,
+  offers `/setup-hosting` to repair it, and never applies a migration,
+  deploys, promotes or rolls back. The backup, restore, preview and full
+  recipe checks stay in that later run, which says the same split, because
+  they can stop the local database, copy the live one, or need the person. It
+  holds that the AGENTS.md trim has one home, the monthly offer, that a fit
+  check rerun comes before the rest of the monthly part, that steps inside
+  the monthly part say monthly, and that the session-end reminder says what
+  the changes are, names `/what-now` for them and `/maintain` for the
+  records. It refuses a `sync` folder, a quarterly part that runs the
   truing again, and a shipped file that still points at `/sync`.
 - `.agents/tests/settled-is-recorded.sh` guards the record a settled question
   has to leave: that what settled it is written into the piece before the label
