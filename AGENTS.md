@@ -1234,6 +1234,11 @@ attribution line, not the word.
   points at and changes nothing on the kit's own: no issue, label, setting or
   push. It asks for the person's, runs the report again once `origin` points
   there, and with none says the pieces wait for a repository of their own.
+  The README once answered "Does anything leave my computer?" with "Not
+  during setup", beside a founding that opens every piece as a GitHub issue.
+  So the check holds the README's answer: founding opens the pieces as issues
+  in the person's repository, and the code stays on this computer until the
+  first upload asks. It refuses the old answer.
 - `.agents/tests/recipes.sh` guards the recipe format. A recipe pairs a build
   stack with a place to run it, and it is the only place outside the README
   allowed to name a service a tool runs on, so the rules around that permission
