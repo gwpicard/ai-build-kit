@@ -173,3 +173,39 @@ merge_open_pulls() {
 case_prepare() {
   awk -F': *' '/^# prepare:/ { sub(/^# prepare: */, ""); print; exit }' "$1"
 }
+
+# case_answers_merge_box <file>   true when the case names `# merge-box: answered`
+# A founded project's Claude Code settings list every way of merging under
+# permissions.ask, so Claude Code shows the person a box before a merge. That
+# box stops the call even in --permission-mode bypassPermissions, which the
+# harness runs with, and a replay has nobody to click it. A case where the kit
+# may merge after the scripted person's yes names this line, and the harness
+# stands in for the click.
+case_answers_merge_box() {
+  grep -q '^# merge-box: answered$' "$1"
+}
+
+# answer_merge_box <project>
+# Take the permissions.ask list, and nothing else, out of the project's
+# .claude/settings.json before the first commit. The box itself is proved by a
+# real Claude Code session, not here. What a replay measures is whether the kit
+# merges only on a yes, and the yes is a scripted line. The stand-in GitHub
+# logs every merge, so the grader and the state check still see a merge made
+# without one. The deny rules and the hooks stay as founding wrote them.
+answer_merge_box() {
+  [ -f "$1/.claude/settings.json" ] || return 0
+  python3 - "$1/.claude/settings.json" <<'PY'
+import json
+import sys
+
+path = sys.argv[1]
+with open(path) as handle:
+    settings = json.load(handle)
+permissions = settings.get("permissions")
+if isinstance(permissions, dict) and "ask" in permissions:
+    del permissions["ask"]
+    with open(path, "w") as handle:
+        json.dump(settings, handle, indent=2)
+        handle.write("\n")
+PY
+}

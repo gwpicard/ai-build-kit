@@ -713,6 +713,65 @@ grep -q 'sent unheld' "$runsh" \
   && ok "a turn sent without its precondition says so in the transcript" \
   || bad "a forced turn is not marked in the transcript"
 
+# --- the box before a merge ---------------------------------------------
+# A founded project's settings put every merge under permissions.ask, and that
+# box stops the call even in bypassPermissions, where a replay runs with nobody
+# to click it. A case where the kit may merge after the scripted yes has the
+# harness take out the ask list, and only that, before the first commit. The
+# box itself is proved by a real session; the stand-in GitHub still logs every
+# merge, so a merge without a yes stays visible.
+
+printf '# setup: fixture\n# merge-box: answered\nOnly line.\n' > "$WORK/case-box.txt"
+case_answers_merge_box "$WORK/case-box.txt" \
+  && ok "a case names that the harness answers the merge box" \
+  || bad "the merge-box line was not read"
+case_answers_merge_box "$WORK/case.txt" \
+  && bad "a case without the line has its merge box answered" \
+  || ok "a case without the line keeps the box"
+mkdir -p "$WORK/box-turns"
+split_turns "$WORK/case-box.txt" "$WORK/box-turns"
+[ "$(cat "$WORK/box-turns/turn-01.txt")" = "Only line." ] \
+  && [ ! -f "$WORK/box-turns/turn-01.merge" ] \
+  && ok "the line is never sent to the kit, and is not a merge before a turn" \
+  || bad "the merge-box line leaked into the turns or read as a merge"
+
+boxproj="$WORK/box-project"
+mkdir -p "$boxproj/.claude"
+cp "$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json" \
+  "$boxproj/.claude/settings.json"
+answer_merge_box "$boxproj" \
+  && ok "the harness answers the box on a founded project's settings" \
+  || bad "answering the merge box failed"
+python3 - "$boxproj/.claude/settings.json" \
+  "$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json" <<'PY2' \
+  && ok "it takes out the ask list and leaves the deny rules and hooks as founding wrote them" \
+  || bad "answering the box changed more than the ask list, or left it"
+import json, sys
+after = json.load(open(sys.argv[1]))
+before = json.load(open(sys.argv[2]))
+assert "ask" in before["permissions"]
+assert "ask" not in after["permissions"]
+del before["permissions"]["ask"]
+assert after == before
+PY2
+mkdir -p "$WORK/box-none"
+answer_merge_box "$WORK/box-none" && [ ! -e "$WORK/box-none/.claude" ] \
+  && ok "a project with no settings is left alone" \
+  || bad "a project with no settings was changed or failed"
+
+runsh_box="$ROOT/.agents/tests/replay/run.sh"
+awk '/case_answers_merge_box/ { seen = NR } /git -C "\$project" init -q/ { if (seen && seen < NR) found = 1; exit } END { exit !found }' "$runsh_box" \
+  && ok "the harness answers the box before the project's first commit" \
+  || bad "run.sh does not answer the merge box before git init"
+for n in 08 45 52 53 54 55; do
+  grep -q '^# merge-box: answered$' "$ROOT/.agents/tests/replay/cases/$n.txt" \
+    && ok "case $n, where the kit may reach a merge, has the box answered" \
+    || bad "case $n no longer has the merge box answered, so a merge after the yes is refused"
+done
+grep -q '^# merge-box: answered$' "$ROOT/.agents/tests/replay/cases/49.txt" \
+  && bad "case 49's monthly visit would offer the ask rules the harness took out" \
+  || ok "case 49 keeps the box, so its monthly visit finds every rule in place"
+
 # --- what the grader is told ----------------------------------------------
 
 grader="$ROOT/.agents/tests/replay/grader-prompt.md"

@@ -1,5 +1,6 @@
 # setup: blank
 # prepare: live-on-vercel
+# merge-box: answered
 # Noticeboard went live once on the Vercel recipe on 19 September, and one
 # finished change waits in an open pull request: the sign-in button says it
 # emails a link. The person's first words name the merge, so the merge rule is

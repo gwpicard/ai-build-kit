@@ -349,7 +349,13 @@ attribution line, not the word.
   exits 2. Neither half runs on a folder that is not a fresh replay project,
   and the second refuses a remote that is not empty. It holds 55's gate open
   on the ways of asking before the upload it lists, and shut on a reply saying
-  the kit already pushed or uploaded, or only reporting a pull request.
+  the kit already pushed or uploaded, or only reporting a pull request. Last,
+  it holds the `# merge-box: answered` line. A founded project's settings ask
+  before every merge, and that box stops the call even in the harness's
+  bypass mode, with nobody there to click it. So for each case that may reach
+  a merge, the harness takes out the `ask` list before the first commit, and
+  only that list. The deny rules and hooks stay. A real session proved the
+  box, and the stand-in still logs every merge.
 - `.agents/tests/grader-recovery.sh` checks that the replay grader recovers a
   grading missing only its final brace or carrying one stray brace after it,
   and still refuses one that was cut off partway or followed by other text.

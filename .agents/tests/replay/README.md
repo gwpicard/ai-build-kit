@@ -225,8 +225,8 @@ with replies written by hand, at no model cost.
 
 ## A turn that says the fix was merged
 
-The kit saves a fix as a pull request and never merges it, because merging is
-the person's call. So a script where the person reports the fault again only
+The kit saves a fix as a pull request and merges it only on a yes that names
+the merge, because merging is the person's call. So a script where the person reports the fault again only
 means something if they merged the fix first. Without that, a careful kit
 answers that the fix never went live, and it is right.
 
@@ -246,6 +246,23 @@ GitHub log, marked `grants`, `filler` or `scripted`, and a hook in the remote
 next door writes each push it receives into the same log. The log then says
 whether a push came before the yes or after it. A filler is never marked as
 granting. `../gated-turns.sh` checks both halves.
+
+## The box before a merge
+
+A founded project's Claude Code settings list every way of merging under
+`permissions.ask`, so Claude Code shows the person a box before a merge. That
+box stops the call even with `--permission-mode bypassPermissions`, and a
+replay has nobody to click it. A kit that merged after the person's yes would
+be refused, and the run would measure the harness.
+
+So a case where the kit may reach a merge names `# merge-box: answered`, and
+the harness takes the `ask` list, and nothing else, out of the project's
+settings before the first commit. A real Claude Code session proved the box
+itself. A replay measures something else: whether the kit merges only on a yes,
+and here the yes is a scripted line. The GitHub stand-in still logs every merge,
+so the grader and the state check see a merge made without one. Scenario 49
+keeps the box, because its monthly visit would otherwise offer the rules back.
+`../gated-turns.sh` holds all of this.
 
 ## A starting state the harness prepares
 

@@ -1,5 +1,6 @@
 # setup: fixture
 # prepare: live-with-open-pulls
+# merge-box: answered
 # The same start as scenario 52: Bramble is live on an office server that runs
 # whatever reaches main on its own, and two finished pieces wait in open pull
 # requests. This time the person's first words already name the merge, as the
