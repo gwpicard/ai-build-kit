@@ -17,16 +17,17 @@ decisions the agent cannot make for you.
 | | |
 |---|---|
 | What it is | Six commands you type into your coding agent, the process behind them, and three records that hold your project's memory. |
-| Who it is for | Anyone directing an AI coding agent who wants what it builds to keep working. People who came to software from another job, and developers trying agent-led work for the first time. |
+| Who it is for | Anyone directing an AI coding agent who wants what it builds to keep working. People who came to software from another job, and developers trying agent-led work for the first time. One person or a small team. |
 | Works with | Claude Code, which is tested. Codex is expected to work. Cursor, Gemini CLI, and any other agent that can read and edit project files, run shell commands, and use Git are experimental. [How much is proved on each](docs/COMPATIBILITY.md#how-much-has-been-proved-on-each-agent). |
-| You need | A coding agent, Git, and Node for the `npx` route. |
+| You need | A coding agent, Git, a GitHub account, and Node for the `npx` route. |
 | Install, Claude Code only | `claude plugin marketplace add gwpicard/ai-build-kit`, then `claude plugin install ai-build-kit@ai-build-kit --scope local` |
 | Install, any supported agent | `npx skills add gwpicard/ai-build-kit` |
 | Then type | `/ai-build-kit:setup-ai-build-kit` on the Claude plugin route, `/setup-ai-build-kit` on every other route |
 | How long setup takes | One interview, answered one question at a time. You can stop and resume it. |
-| Where your code lives | Your own project folder, on your own computer. |
+| Where your work lives | Your code in your own project folder, and in a GitHub repository you own once you say yes. The list of work still to do lives in that repository's issues. |
+| Going live | Two recipes the kit has run for real: Next.js with hosted Supabase on Vercel, or on your own server with Coolify. Any other stack still works, with fewer checks. |
 | Licence | MIT |
-| Cost | Free. You pay for the coding agent subscription. |
+| Cost | Free. You pay for the coding agent subscription, and for any hosting you choose. |
 
 ## Install
 
@@ -75,11 +76,25 @@ and fallback.
 
 ## What this is
 
-Coding agents can write working software. They will not stop you skipping the steps that make it trustworthy: agreeing what a thing should do before building it, proving it works before saving it, checking the risky parts before anyone relies on them, and keeping records so next month you can still tell what happened.
+Coding agents can write working software. They will not stop you skipping the
+steps that make it trustworthy. Those steps are: agree what a thing should do
+before building it, prove it works before saving it, check the risky parts
+before anyone relies on them, and keep records so next month you can still
+tell what happened.
 
-This kit is those steps, packaged as skills the agent follows and commands you type. Six commands, and no more: a new ability arrives inside a command that already exists, so the vocabulary you learn on day one is the vocabulary you use in month six. Three records hold the project's memory, because the agent forgets everything between sessions and the records don't. A build path, set at the start and rechecked as the project changes, decides how much of the process applies right now.
+This kit is those steps, packaged as skills the agent follows and commands you
+type. There are six commands, and no more. A new ability arrives inside a
+command that already exists, so the vocabulary you learn on day one is the
+vocabulary you use in month six. Three records hold the project's memory,
+because the agent forgets everything between sessions and the records don't.
+A build path, set at the start and rechecked as the project changes, decides
+how much of the process applies right now.
 
-The workflow is opinionated so that you do not have to be. Whether you are an engineer makes no difference to it. What makes a difference is that the behaviour is agreed before the code, the evidence is shown before the save, and what happened gets written down. A developer can read every diff if they like. The kit never asks.
+The workflow is opinionated so that you do not have to be. Whether you are an
+engineer makes no difference to it. What makes a difference is that the
+behaviour is agreed before the code, the evidence is shown before the save,
+and what happened gets written down. A developer can read every diff if they
+like. The kit never asks.
 
 ## Commands
 
@@ -87,45 +102,162 @@ Command names say when to use them.
 
 | When | Type | What it does |
 |---|---|---|
-| I'm starting something | `/setup-ai-build-kit` | Interview, fit check, founding documents. |
-| I want it to... (a new idea, or it's broken) | `/shape` | Turns your idea or the fault into a ready piece. A fault is reproduced first. |
-| Build the next ready piece | `/implement` | Builds a ready piece to confirmed and saved. With several ready, shows what can be built together and asks which to take. |
-| I want people to use it | `/setup-hosting` | Sets up how the tool runs live; after that, each merge goes live. Run it again to check or change that. |
-| It's been a while | `/maintain` | Makes the records and the live copy true again, plus any upkeep that is due. |
-| I'm lost | `/what-now` | Where the project stands and what to do next. |
+| I'm starting something | `/setup-ai-build-kit` | Interview, fit check, founding records, and the project stood up on your computer. Runs once. |
+| I want something changed, new or broken | `/shape` | Turns your idea or the fault into a ready piece. A fault is reproduced first. |
+| Build what's ready | `/implement` | Builds a ready piece, shows you the result, and merges it on your yes. With several ready, shows what can be built together and asks which to take. |
+| I want people to use it | `/setup-hosting` | Sets up how the tool runs live, so that each merge after that goes live. Run it again to check or change that. |
+| It's been a while | `/maintain` | Makes the records and the live copy true again, plus any upkeep that is due. Also handovers and switching a tool off. |
+| I'm lost | `/what-now` | Where the project stands and what to do next, including work a session left half done. |
 
-You never choose the method and never sort your own request: each command checks what you typed against the masterplan and sends it down the right route, so picking the wrong one costs you nothing. [WORKFLOW.md](WORKFLOW.md) is the day-to-day manual for all six.
+You never choose the method and never sort your own request. Each command
+checks what you typed against the masterplan and sends it down the right
+route, so picking the wrong one costs you nothing. [WORKFLOW.md](WORKFLOW.md)
+is the day-to-day manual for all six.
 
 ## How a project flows
 
 ```mermaid
 flowchart LR
-  S["/setup-ai-build-kit<br/>once"] --> L["/shape · /implement<br/>day to day"]
-  L --> P["/setup-hosting<br/>once, then to check or change hosting"]
-  P --> L
+  S["/setup-ai-build-kit<br/>once"] --> SH["/shape<br/>agree the piece"]
+  SH --> I["/implement<br/>build, try, merge"]
+  I --> SH
+  I -.-> H["/setup-hosting<br/>once to go live,<br/>again to check"]
+  H -.-> I
 ```
 
-You run `/setup-ai-build-kit` once. After that you go in wherever you actually are, and none of the day-to-day commands needs another to have run first.
+You run `/setup-ai-build-kit` once. After that you go in wherever you actually
+are, and none of the day-to-day commands needs another to have run first.
 
-The first `/setup-hosting` is the heaviest, because it takes the tool live. After that, each merge `/implement` makes on your yes is a deploy, and a later `/setup-hosting` checks the live copy against your project and fixes what differs.
+Day to day there are two steps. You shape a piece with `/shape`: say what you
+want in your own words, and it becomes a piece with one plain line saying what
+done looks like. You build it with `/implement`: it builds that one piece,
+shows you the evidence, and stops so you can try it. Once the project's check
+passes, it names the pull request and asks whether to merge.
 
-`/maintain` is not in the picture because it fits anywhere. Each visit checks the records and the live copy against what really happened, and the upkeep inside it runs on its own clock: about monthly from the day the project is founded, whether or not it has gone live. The project tells you when that is due.
+Merging is the release. Once the tool is live, each merge you say yes to is
+what puts that change in front of your users, and `/implement` reads one line
+from the live copy afterwards to say whether it arrived. `/setup-hosting` is
+for setting that up, and for checking it later.
 
-Every piece runs the same cycle: agree the behaviour in one plain sentence, choose the evidence it needs, build the smallest complete slice, try it by hand, then save it through the route the build path requires.
+`/maintain` is not in the picture because it fits anywhere. Each visit checks
+the records and the live copy against what really happened. The upkeep inside
+it runs on its own clock: about monthly from the day the project is founded,
+whether or not it has gone live. The project tells you when that is due.
+
+## Going live
+
+When you found the project, the kit asks whether the team will use it in a
+browser and whether it must work when your computer is off. It then names the
+kind of tool you are building and shows the recipes that fit, with one
+recommended. A recipe is one build stack paired with one place to run it,
+which the kit has run for real and knows how to check at launch. You can
+bring your own stack instead. The kit then says once what it cannot check, and
+carries on.
+
+There are two recipes today, both for a web app with sign-in and saved data.
+Both build with Next.js and TypeScript, and keep the database and sign-in in a
+hosted [Supabase](https://supabase.com) project.
+
+The first runs on [Vercel](https://vercel.com). It suits a team with no
+server of its own that wants the host to handle previews, going live and
+rollback, and the kit runs most of its launch checks itself. Vercel's free
+plan is for personal, non-commercial use, so a work team needs the paid plan.
+Founding says so when the tool is for work.
+
+The second runs on your own server with [Coolify](https://coolify.io). It
+suits a team that already runs Coolify, or wants the app on a server it rents.
+The kit never contacts that server. On the first launch it writes a short
+hosting request: the repository, the port, the names of the settings the tool
+needs, what must survive a restart, and the path that shows the tool is
+healthy. You take it to whoever runs the server, and paste their answers
+back. The checks that need the server run there, and the kit reads the
+results you paste.
+
+A companion such as
+[coolify-devops](https://github.com/KasperHonore/coolify-devops) can turn that
+request into a running address, on the team's private network or on the
+internet. It is an agent skill that runs in a coding session in the team's
+deployment repository and talks to Coolify through its API. It is a separate
+install, made by somebody else, and not part of this kit.
+
+Type `/setup-hosting` when you want people to use the tool. On a recipe it
+works through the recipe's checks in order and gives you one plain line for
+each: preview up, live address updated, rollback possible, backup present,
+restore works, no secret in the repo, logs readable, health answers. A check
+that fails or cannot run is a warning. You hear it once, it goes in the
+changelog, and the launch goes ahead. The one thing a first launch waits for is
+the live address.
+
+After that, each merge deploys. The host builds your main copy every time a
+change merges into it, so `/implement` checks the live side before it asks.
+A change that adds to the database waits until `/setup-hosting` has applied
+that addition, which only ever adds, so the version live now keeps working. A
+change that needs a new secret waits until the host has it. Run
+`/setup-hosting` again whenever you want the live copy compared with your
+project, or moved to another host or recipe.
+
+Rollback is checked, not tried. The launch confirms that an earlier build is
+still there to go back to, and says "rollback possible, not tried". If the
+live tool breaks just after a change goes live, the kit offers the earlier
+version back first, names it, and rolls back only on your yes. On Vercel the
+kit runs the rollback itself. On Coolify you, or the companion, click it on
+Coolify's own page, and the kit reads the result back. A rollback does not
+undo a database change, which is why database changes only add.
+
+Both recipes were run for real on a throwaway app before the kit offered
+them. On each one the preview, launch, rollback, secrets, logs and health
+steps worked on a live deployment. The backup and restore steps are shared by
+both recipes and were run for real once. Coolify was run on a private network
+and on the public internet.
+
+Two limits came out of those runs. On Coolify, a preview for an app with no
+domain runs on the server but has no address you can open, and the kit says
+so. And no run has yet proved that previews stay off the live database, since
+each run shared one database between previews and the live copy.
+
+Any other stack or host still works. `/setup-hosting` then checks a general
+list instead, such as a backup, a restore rehearsal, a manual fallback and a
+way to roll back. Anything missing is a warning, said once. Where somebody else runs the
+server, the kit writes the same hosting request. It cannot roll back for you
+off a recipe, and says what a rollback there would need.
+
+## Working as a team
+
+Several people can work on one project. Each of you is a collaborator on the
+GitHub repository and keeps your own keys in your own `.env`. The list of work
+lives in the repository's issues, so there is no shared file to clash over.
+Taking a piece puts your name on it, and `/implement` skips a piece somebody
+else has taken. If another open piece would be built in the same place, `/shape`
+tells you before the work starts.
+
+Each piece is built on its own branch, from an up-to-date copy of the main
+branch, and arrives as a pull request. A person decides each merge. When two
+changes collide, you resolve the merge conflict the ordinary GitHub way: the
+newest main copy is merged into the branch and pushed again, with no force
+push. `/what-now` explains which two changes collided. It resolves the
+conflict itself only when the records make the right outcome clear, and
+otherwise keeps both sides and asks you. A conflict that touches data or
+deployment is never guessed through.
+
+The kit works for one person or a small team. It is not optimised for large
+teams, or for many agents building in parallel. Each agent session builds one
+piece at a time.
 
 ## Examples
 
-A first session. You type `/setup-ai-build-kit`, and the agent interviews you one
-question at a time, each question carrying its own best guess so you can correct
-it rather than start from a blank page. It sets the build path, writes
-`masterplan.md` and `CHANGELOG.md`, opens one issue per piece of remaining work,
-and saves a checkpoint on your computer. Nothing is uploaded.
+A first session. You type `/setup-ai-build-kit`, and the agent interviews you
+one question at a time, each question carrying its own best guess so you can
+correct it rather than start from a blank page. It sets the build path, writes
+`masterplan.md` and `CHANGELOG.md`, and opens one GitHub issue for each piece
+of work still to do. It saves a checkpoint on your computer. None of your code
+is uploaded: the first piece that needs to put it online asks you first.
 
-A day's work. You type `/shape` and describe what you want in your own words: "I
-want people to be able to reset their own password." The kit decides whether
-that is new work, a repair, or too vague to size, asks what it still needs to
-know, and leaves a piece marked ready. You type `/implement`, and it builds that
-one piece, shows you the evidence, and saves it.
+A day's work. You type `/shape` and describe what you want in your own words:
+"I want people to be able to reset their own password." The kit decides
+whether that is new work, a repair, or too vague to size, asks what it still
+needs to know, and leaves a piece marked ready. You type `/implement`, and it
+builds that one piece, shows you the evidence, and saves it. Once the check is
+green it names the pull request and asks whether to merge.
 
 A piece that carries a risk. The kit gives you a risk notice once: who is
 exposed, what happens to them, and what would normally prevent it. You decide.
@@ -133,7 +265,8 @@ If you carry on, your acceptance is written into the masterplan with your words
 and the date, and the work goes ahead.
 
 A month later. `/maintain` tells you it is due, reads the public Release notes,
-asks before updating the kit, and watches the running costs.
+and asks before updating the kit. Once the tool is live it compares the live
+copy with your project and reads the bills and the error alerts.
 
 ## Configuration
 
@@ -142,6 +275,7 @@ asks before updating the kit, and watches the running costs.
 | Rules for your project that the agent must follow | `AGENTS.md` in your project |
 | Keys, passwords, and tokens | `.env`, which is ignored by Git and never leaves your computer. Copy `.env.example` to start. |
 | The build path, and any accepted risk | The build-path section of your `masterplan.md` |
+| The recipe your project runs on | The `Recipe:` line in the stack section of your `AGENTS.md` |
 | The commands the agent may never run | [.agents/guard/blocked-commands.md](.agents/guard/blocked-commands.md) |
 
 Treat installed skill folders as managed packages, and update them with
@@ -149,7 +283,11 @@ Treat installed skill folders as managed packages, and update them with
 
 ## The three records
 
-Three project records hold the product's memory: `masterplan.md` is the present, your project's issues are what's left, `CHANGELOG.md` is the past. `AGENTS.md` sits alongside them, holding the standing instructions for the repository itself. The agent reads all of them so you don't have to; [WORKFLOW.md](WORKFLOW.md) explains what goes where.
+Three project records hold the product's memory: `masterplan.md` is the
+present, your project's issues are what's left, `CHANGELOG.md` is the past.
+`AGENTS.md` sits alongside them, holding the standing instructions for the
+repository itself. The agent reads all of them so you don't have to;
+[WORKFLOW.md](WORKFLOW.md) explains what goes where.
 
 ## Which path will I be on?
 
@@ -159,17 +297,49 @@ Three project records hold the product's memory: `masterplan.md` is the present,
 | Internal tool with a manual fallback | Build and run it |
 | Personal data, money, sign-in by outsiders, automatic action, irreplaceable live data, or a regulated decision, in some part of it | Build with care |
 
-The path is not a permanent label. The kit rechecks it whenever the project changes character, and none of the three is it refusing to build. On Build with care the kit builds everything outside the sensitive part the ordinary way, and in that part it names one caution before it goes live. You have it done, or you carry on and your acceptance is recorded.
+The path is not a permanent label. The kit rechecks it whenever the project
+changes character, and none of the three is it refusing to build. On Build
+with care the kit builds everything outside the sensitive part the ordinary
+way, and in that part it names one caution before it goes live. You have it
+done, or you carry on and your acceptance is recorded.
 
 ## What the kit does to reduce risk
 
-The kit is built so that nothing depends on a code review by you, so every protection is behavioural or mechanical. It opens with a fit check, which sets the build path and names each sensitive area with its caution; the three paths are explained in [fit-check.md](.agents/skills/setup-ai-build-kit/references/fit-check.md). Read [what it does not promise](#what-it-does-not-promise) alongside this section.
+The kit is built so that nothing depends on a code review by you, so every
+protection is behavioural or mechanical. It opens with a fit check, which sets
+the build path and names each sensitive area with its caution; the three paths
+are explained in [fit-check.md](.agents/skills/setup-ai-build-kit/references/fit-check.md).
+Read [what it does not promise](#what-it-does-not-promise) alongside this
+section.
 
-Every promised behaviour gets evidence. Stable rules and bugs usually get automated tests, shown failing first. Visual and exploratory work may be checked by trying it. Shared, live, or risky changes get stronger checkpoints: a pull request with a clean-machine check next to the merge button, and an independent review. The build path decides how much of this applies to a given piece of work.
+Every promised behaviour gets evidence. Stable rules and bugs usually get
+automated tests, shown failing first. Visual and exploratory work may be
+checked by trying it. Shared, live, or risky changes get stronger checkpoints:
+a pull request with a clean-machine check next to the merge button, and an
+independent review. The build path decides how much of this applies to a given
+piece of work.
 
-Where a risk survives that, you get a risk notice: who is exposed, what happens to them, and what would normally prevent it. Then it is your call. You can have it done first, carry on and have the work built, or take the flagged thing out of scope. It does not stop to ask twice. When you carry on, your acceptance is written into the build-path section with the date and your words, so making the project less careful is a decision you record rather than something the agent does on its own.
+Where a risk survives that, you get a risk notice: who is exposed, what
+happens to them, and what would normally prevent it. Then it is your call. You
+can have it done first, carry on and have the work built, or take the flagged
+thing out of scope. It does not stop to ask twice. When you carry on, your
+acceptance is written into the build-path section with the date and your
+words. Making the project less careful is a decision you record, and the agent
+never makes it on its own.
 
-Two simpler protections sit underneath. Destructive commands are on a blocked list, alongside standing restrictions like never disabling authentication to make a test pass. Secrets live in `.env` and nowhere else.
+Some actions always wait for you. Your code goes online for the first time
+only after you say yes, with the repository named and whether it is public or
+private. A merge happens only on a yes that names it, and in Claude Code a
+confirmation box asks you to allow it. A command that changes a live service's
+settings or data names everything it will change and waits for your yes. The
+kit never uses a login another tool keeps for itself, such as one stored in
+your computer's keychain.
+
+Some commands are switched off. In Claude Code, the settings founding gives
+your project refuse a direct push to the main branch, a force push and a
+forced delete. Other agents get the same rules in writing, in a blocked list
+that also holds standing restrictions like never disabling authentication to
+make a test pass. Secrets live in `.env` and nowhere else.
 
 ## How it compares
 
@@ -181,9 +351,15 @@ Two simpler protections sit underneath. Destructive commands are on a blocked li
 | Books and guides on agentic engineering | A way of thinking about working with agents. No tooling. | Developers and tech leads. | A book. | Nothing on your machine. |
 | AI Build Kit | Six commands, three records, one build path. The least process that keeps agent-built software reliable. | People who came to software from another job, and developers trying agent-led work for the first time. | Six command names, each named after the moment you need it. | Which route a request takes, what evidence it needs, how it is saved, and when a piece touches something sensitive enough to stop and tell you. |
 
-Each is good at something. The builders are the fastest start. The bare agent is the most powerful. The skill packs are the strongest guarantee that an engineer's agent behaves. The kit is the shortest path from an idea to a tool that still works in six weeks, for somebody who does not want to run a process by hand.
+Each is good at something. The builders are the fastest start. The bare agent
+is the most powerful. The skill packs are the strongest guarantee that an
+engineer's agent behaves. The kit is the shortest path from an idea to a tool
+that still works in six weeks, for somebody who does not want to run a process
+by hand.
 
-Much of what the kit does was borrowed from people working in the open. [docs/SOURCES.md](docs/SOURCES.md) names them and says what each one contributed.
+Much of what the kit does was borrowed from people working in the open.
+[docs/SOURCES.md](docs/SOURCES.md) names them and says what each one
+contributed.
 
 ## FAQ
 
@@ -204,10 +380,17 @@ A coding agent working in your own project folder. That is what this kit is
 built around. The code, the records, and the history stay in your project, and
 you can hand the whole thing to a developer later.
 
+**Can several people work on the same project?**
+Yes. Each piece goes through its own pull request, and a merge conflict is
+resolved the ordinary GitHub way. The kit is built for one person or a small
+team, and is not optimised for large teams.
+[Working as a team](#working-as-a-team) says how it works.
+
 **Who maintains an AI-built app after launch?**
 You do, with `/maintain`. It runs about monthly from the day the project is
 founded, whether or not the project has gone live. It reads the kit's public
-Release notes, asks before updating anything, and watches the running costs.
+Release notes, asks before updating anything, and once the tool is live it
+reads the bills and the error alerts.
 
 **How do I stop vibe coding turning into a mess I cannot change?**
 By agreeing the behaviour before the code, keeping evidence that each promise
@@ -246,38 +429,24 @@ on a Mac. The skills do not depend on any of them, so the ordinary browser
 prototype remains the default.
 
 **Does anything leave my computer?**
-Not during setup. The founding save is always a local checkpoint, never a push
-and never a pull request. Keys and passwords live in `.env`, which Git ignores.
-Anything that would publish or share your work is explained first and needs your
-approval.
+Some things do, and each one is said first. Founding opens your project's
+pieces of work as issues in a GitHub repository you own, which can be private.
+Your code stays on your computer until the first piece that needs to upload it
+asks you, naming the repository and whether it is public or private. Founding
+itself saves only a local checkpoint. Keys and passwords live in `.env`, which
+Git ignores. A merge, and any change to a live service, waits for your yes.
 
 **Where does the tool run once it is built?**
 Wherever you host it. The kit builds and checks the tool, and it does not host
-it. On the first launch, `/setup-hosting` writes a short hosting request into the
-masterplan: where the code lives, which port it uses, the names of the settings
-it needs, and what must survive a restart. You take that request to whoever runs
-your server. A team that runs its own server on [Coolify](https://coolify.io)
-can use a companion, such as
-[coolify-devops](https://github.com/KasperHonore/coolify-devops), which turns
-that request into a running address on the team's private network or on the
-internet. It is an agent skill that runs in a coding session in the team's
-deployment repository and talks to Coolify through its API. It is a separate
-install, made by somebody else, and not part of this kit.
-
-One stack comes with launch checks the kit knows how to run: Next.js with a
-hosted [Supabase](https://supabase.com) database. There are two recipes for it,
-one deployed on [Vercel](https://vercel.com) and one on your own server with
-Coolify. For each recipe, the preview, launch, rollback, secrets, logs and
-health steps were run for real on a live deployment before the kit offered it.
-The backup and restore steps are shared by both recipes and were run for real
-once. On Coolify, a preview for an app with no domain runs on the server but
-has no address you can open, and the kit says so when you launch. Any other
-stack or host still works, with fewer checks.
+it. On one of the two recipes it knows how to check the launch, the rollback
+and the backup there; on any other stack it gives you a general list.
+[Going live](#going-live) says what each recipe covers.
 
 **What does it cost?**
-The kit is free. Building with it needs an agent subscription, which is the real
-running cost, and accounts with services that mostly start free. `/maintain`
-watches the bills once you're live.
+The kit is free. Building with it needs an agent subscription, which is the
+real running cost, and accounts with services that mostly start free. A free
+plan may not cover a work team, and founding says so when a recipe's terms
+apply. `/maintain` reads the bills once you're live.
 
 **Is this right for my project?**
 The kit is strongest for internal tools: something for your own team, holding
@@ -290,8 +459,8 @@ The fit check names the area and the one caution that goes with it: a backup
 restored once, a managed service, or a person who looks before that part goes
 live. The kit does the cautions it can do itself and keeps the rest of the
 project moving while a person looks. Where somebody outside the team is going
-to look, ask for the handover and the kit prepares it. [WORKFLOW.md](WORKFLOW.md)
-lists the six areas and their cautions.
+to look, ask `/maintain` for the handover and the kit prepares it.
+[WORKFLOW.md](WORKFLOW.md) lists the six areas and their cautions.
 
 **How is this different from Spec Kit, Superpowers, or agent-skills?**
 Those carry a similar discipline and are written for people who read code and
@@ -301,17 +470,33 @@ sensitive and what has to happen there.
 
 ## What it does not promise
 
-The kit is free software, provided as is, under the [MIT licence](LICENSE). There is no warranty, and the licence's own terms are the ones that apply.
+The kit is free software, provided as is, under the [MIT licence](LICENSE).
+There is no warranty, and the licence's own terms are the ones that apply.
 
-The fit check and its risk notices flag what the kit can recognise. They will miss things. A risk it never named is not a risk it ruled out, and no notice should be read as a survey of everything that could go wrong with your project.
+The fit check and its risk notices flag what the kit can recognise. They will
+miss things. A risk it never named is not a risk it ruled out, and no notice
+should be read as a survey of everything that could go wrong with your
+project.
 
-The checks verify what somebody thought to check. A green tick beside the merge button means those checks really passed, which is a smaller claim than the software being correct, safe, legal, or fit for what you plan to do with it.
+The checks verify what somebody thought to check. A green tick beside the
+merge button means those checks really passed, which is a smaller claim than
+the software being correct, safe, legal, or fit for what you plan to do with
+it. A recipe's launch lines say what was checked on the day, and a rollback
+that is possible was not tried.
 
-The kit never refuses, and where you are there to decide it does not stop you: hear the notice, carry on, and it builds the thing, with your acceptance on the record. A run left going on its own stops at a sensitive area and hands it back to you, because nobody is there to carry on. Pressure changes what you decide, not who is exposed.
+The kit never refuses, and where you are there to decide it does not stop you:
+hear the notice, carry on, and it builds the thing, with your acceptance on
+the record. A run left going on its own stops at a sensitive area and hands it
+back to you, because nobody is there to carry on. It never merges or uploads
+on its own either. Pressure changes what you decide, not who is exposed.
 
-You own the product and risk decisions. The kit can tell you that a second pair of eyes normally goes over who can see what; it cannot decide for you whether to go ahead, and it does not carry the consequences when you do.
+You own the product and risk decisions. The kit can tell you that a second
+pair of eyes normally goes over who can see what; it cannot decide for you
+whether to go ahead, and it does not carry the consequences when you do.
 
-It is not a substitute for a professional developer, and it is not legal, medical, financial, or security advice. Where your project touches those, the notice will say so, and acting on it is still your judgement.
+It is not a substitute for a professional developer, and it is not legal,
+medical, financial, or security advice. Where your project touches those, the
+notice will say so, and acting on it is still your judgement.
 
 ## Contributing
 
@@ -333,19 +518,27 @@ carries the same skills. The shared installer records the source in
 where the six commands use the `ai-build-kit:` prefix and the five background
 skills stay out of the menu until a command needs them.
 
-Agent Plugins is the newest route, for a client that reads that open format. The
-`agent-plugin` folder holds the manifest in this repository and gains its
-`skills` folder only when a numbered version is packaged, so the route is served
-by the release archive rather than by cloning. Keeping that packaged copy out of
-the repository is deliberate: committing it would hold the same eleven skills
-twice, and one of the two would drift. Such a client is also free to skip a skill
-it judges non-standard, so the shared installer is the safer choice.
+Agent Plugins is the newest route, for a client that reads that open format.
+The `agent-plugin` folder holds the manifest in this repository and gains its
+`skills` folder only when a numbered version is packaged, so the route is
+served by the release archive rather than by cloning. Keeping that packaged
+copy out of the repository is deliberate: committing it would hold the same
+eleven skills twice, and one of the two would drift. Such a client is also
+free to skip a skill it judges non-standard, so the shared installer is the
+safer choice.
 
-The setup-ai-build-kit skill carries the project foundation. On its first run it creates
-missing project instructions, harness pointers, environment examples, the
-small helper that prints the list of pieces, and the placeholder project check. Existing files are preserved. It then creates
-`masterplan.md` and `CHANGELOG.md` from the founding interview, and opens one
-issue per piece of remaining work.
+The setup-ai-build-kit skill carries the project foundation. On its first run
+it creates missing project instructions, harness pointers, environment
+examples, the small helper that prints the list of pieces, the Claude Code
+settings that hold the push and merge rules, and the placeholder project
+check. Existing files are preserved. It then creates `masterplan.md` and
+`CHANGELOG.md` from the founding interview, and opens one issue per piece of
+remaining work.
+
+The recipes live in the setup-hosting skill's `recipes/` folder, one file for
+each stack and host. Each one says, for every launch step, what happens, what
+a pass looks like and who runs the check, and ends with the record of the real
+run that proved it. A recipe joins the menu only after that run.
 
 Put project-specific rules in `AGENTS.md`. Treat installed skill folders as
 managed packages. `maintain` reads the public Release notes, asks before an
@@ -353,6 +546,6 @@ update, and uses the same route that installed the kit. Application code,
 records, project instructions, environment files, and the project's own check
 remain under the project's control.
 
-This repository is where the kit is built as well as where it is published. Each
-numbered version has a matching tag and reviewed Release notes, and `/maintain`
-reads the latest of those notes before it offers an update.
+This repository is where the kit is built as well as where it is published.
+Each numbered version has a matching tag and reviewed Release notes, and
+`/maintain` reads the latest of those notes before it offers an update.
