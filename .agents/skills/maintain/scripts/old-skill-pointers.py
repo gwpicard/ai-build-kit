@@ -22,8 +22,8 @@ root are read. Each finding prints as one line, in one of two forms:
 
 Nothing prints when there is nothing to find. Only a pointer into one of the
 kit's skills, under today's name or a name it had before, is found. A pointer
-already in the named form, the `ship` skill's `templates/handover.md`, is found
-only where it names a skill the kit has retired, since that skill is no longer
+already in the named form, naming the skill and then the path inside it, is
+found only where it names a skill the kit has retired, since that skill is no longer
 installed and the pointer opens nothing. A project's
 own skill under the same folder, a placeholder such as `<name>`, and a mention
 of the folder itself are never found, since those are the person's words or
