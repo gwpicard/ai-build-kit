@@ -78,7 +78,30 @@ rs_rule "an unpromised wish is new work" 'route it as new behaviour'
 rs_rule "a small clear repair is ready at once" 'mark the piece ready at once, with the failing case as its `## done when`'
 rs_rule "and offered for the same session" 'offer to build it in this same session rather than a fresh one'
 rs_rule "anything else is reproduced" 'anything less certain is shaped by reproducing it'
+# A review found the fast path could mark a fault ready from the report alone,
+# which the old repair command never allowed: no patching without a loop.
+rs_rule "the fast path needs a look on this computer" 'where one look on this computer shows the fault'
+rs_rule "a report alone is not a reproduction" 'a report alone is not enough: you must have seen the fault yourself'
+rs_rule "the fast path still defines the symptom" 'still define the symptom as "shaping a repair" says'
+# The same review found a fresh session reporting a fault for the fourth time
+# went straight to shaping, and the three-attempt notice never came.
+rs_rule "the history is read before shaping" 'read the history for the same area before shaping anything'
+rs_rule "merged pull requests count as history" 'closed pieces and merged pull requests'
+rs_rule "three surviving attempts escalate in the same reply" 'follow that file.s "escalation" in this same reply, notice included, before marking anything ready'
+rs_rule "a fresh session does not reset the count" 'a fresh session is no reason to start the count again'
+# And a rollback offered for a project with nothing live, or for a fault that
+# was already there, brings back nothing worth having.
+rs_rule "a rollback needs a recorded live address" 'records a live address'
+rs_rule "and a recipe that says how to roll back" 'whose rollback section names how to roll back'
+rs_rule "the earlier version must have worked" 'check first that the version before that merge did not have the fault'
+rs_rule "a fault already there gets no offer" 'a fault that was already there is not brought back by a rollback, so offer none'
 rs_guard "$TRIAGE" "change-triage's broken-report checks"
+rs_require_order "the promise check comes before the live break" "$TRIAGE" \
+  '^### Was this ever promised\?$' '^### A live break after a recent merge$'
+rs_require_order "the live break comes before the three-attempt read" "$TRIAGE" \
+  '^### A live break after a recent merge$' '^### A fault that has survived three attempts$'
+rs_require_order "the three-attempt read comes before the fast path" "$TRIAGE" \
+  '^### A fault that has survived three attempts$' '^### A small, clear repair$'
 rs_require_order "the live break comes before the usual steps" "$TRIAGE" \
   'A live break after a recent merge' '^## Step 2: Classify intent$'
 
@@ -93,12 +116,24 @@ rs_reset
 rs_rule "section-builder loads the repair reference for a broken piece" 'a piece labelled `broken` is a repair\. load `references/repair\.md`'
 rs_rule "its escalation holds" 'its escalation holds after three failed attempts'
 rs_rule "a held live copy is said before the merge" 'the merge alone does not put this change live'
+rs_rule "a held live copy is said after the merge" 'the merge does not go live until /setup-hosting promotes it'
+rs_rule "and is not read as did not update" 'do not read the health line as "did not update"'
+rs_rule "the merge step rolls nothing back itself" 'run none in this step\. nothing here changes the live copy unasked'
+rs_rule "a live break after the merge goes to triage" 'a rollback runs only on the yes it asks for'
+rs_rule "a ready repair is named next first" 'a ready repair comes first: name a piece under its `broken` group marked `\(ready\)`'
 rs_guard "$BUILDER" "section-builder's repair hand-off"
 
 rs_reset
 rs_rule "a ready repair comes first" 'a ready repair comes first'
 rs_rule "a live break goes to triage first" 'given a report that the live tool broke, wherever it was typed'
+rs_rule "a ready repair is named next first" 'a repair under `broken` marked `\(ready\)` comes first'
+rs_rule "an auto run takes no repair" 'no repair labelled `broken`'
 rs_guard "$IMPLEMENT" "implement's repair rules"
+
+rs_reset
+rs_rule "an auto run never takes a repair" 'a repair, a piece labelled `broken`, is never taken'
+rs_rule "because its notice needs a person" 'three failed attempts owe the risk notice in the same reply'
+rs_guard "$SKILLS/implement/references/running-longer.md" "the auto run's repair rule"
 
 # The rollback procedure lives with the other live-copy rules.
 rs_reset
@@ -106,9 +141,11 @@ rs_rule "a rollback waits for a named yes even on a recipe" 'so it waits for a y
 rs_rule "the version brought back is named" 'name the version the rollback brings back'
 rs_rule "the rollback output is read whole" 'run the recipe.s rollback once, read its whole output'
 rs_rule "never twice" 'never run it a second time before you have checked the first'
-rs_rule "the rollback is written onto the repair's piece" 'write the rollback onto the repair.s piece'
+rs_rule "the rollback is recorded when it happens" 'record the rollback when it happens, not when the repair lands'
+rs_rule "the repair's piece names the rollback" 'name the rollback on the repair.s piece too'
 rs_rule "the pin is said plainly in the same reply" 'on such a host, say it plainly in the same reply'
-rs_rule "the pin is recorded" 'gains a line saying the live copy is held on an earlier version'
+rs_rule "the pin is recorded on main at once" 'write the hold into the masterplan.s "how it stays running" in the same records save'
+rs_rule "the pin line goes on the promote" 'once the promote has gone live, remove the hold line'
 rs_rule "the repair's merge needs the promote" 'the repair.s merge then needs that promote'
 rs_rule "the promote waits for its own yes" 'it is a change to the live service, so it waits for its own named yes'
 rs_rule "a later run notices the pin" 'whether the live copy is still held on an earlier version since a rollback'
@@ -130,5 +167,11 @@ rs_require "WORKFLOW says a bug goes to shape" "$WORKFLOW" 'a bug is a piece lik
 rs_require "WORKFLOW tells the rollback-first story" "$WORKFLOW" 'you are offered the earlier version back first, whatever you typed'
 rs_require "WORKFLOW tells the pin" "$WORKFLOW" 'some hosts stop putting new changes live after a rollback'
 rs_require "WORKFLOW tells the fast path" "$WORKFLOW" 'offers to build it in the same session'
+rs_require_load_bearing "what-now sends a red pull request back to its own build" "$WHATNOW" \
+  'a red check on an open pull request belongs to that piece.s own build'
+rs_require_load_bearing "WORKFLOW sends a red check to the piece's build" "$WORKFLOW" \
+  'say it to /implement, which takes that piece.s build back up'
+rs_require "the repair reference keeps the fast path's look" "$REPAIR" \
+  'one look on this computer that shows the fault is the reproduction\. a report alone is never enough'
 
 rs_done

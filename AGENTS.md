@@ -268,6 +268,9 @@ attribution line, not the word.
   held-up piece names the piece holding it rather than its number. It also holds
   the invariant `/queue` rests on, that a piece with an open blocker never
   reaches the buildable group while a piece whose blocker has closed does.
+  A repair stays under `Broken` whatever holds it, so there `(ready)` is
+  printed only for one nobody is building and no open piece holds up, and a
+  held-up repair names what holds it instead.
 - `.agents/tests/plan-helper-routes.sh` proves the helper that writes the
   printout reaches every project. It ships inside the setup-ai-build-kit skill,
   because the shared installer and both plugins carry skills and nothing else,
@@ -294,8 +297,10 @@ attribution line, not the word.
   building, and `/what-now` keeping its cap of three things, because a
   `/what-now` that grew the whole list would undo the split that earned the ninth
   command. The same rule reaches the end of a build: `/implement` and
-  section-builder name a next piece only from the printout's `To build` group,
-  and never from a hand reading of the issues.
+  section-builder name a next piece only from the printout's `(ready)` marks,
+  and never from a hand reading of the issues. A repair under `Broken` marked
+  `(ready)` is named first, since the printout marks one ready only when it is
+  free to build.
 - `.agents/tests/gated-turns.sh` checks the rule that decides when a scripted
   replay turn is due: that a turn with no precondition still fires by position,
   that one with a precondition waits until the kit has said the thing it
@@ -524,7 +529,17 @@ attribution line, not the word.
   the output read whole, never run twice. It also holds the hold some hosts
   put on the live copy after a rollback, which the Vercel recipe names: said
   plainly in the same reply, recorded, promoted only on its own yes, and
-  noticed by a later run whether or not it was recorded. It fails if the old
+  noticed by a later run whether or not it was recorded. A review found four
+  rules firing at the wrong moment, and the check holds each fix. change-triage
+  checks the promise first, offers a rollback only where a live address and a
+  recipe rollback are recorded and the version before the merge worked, and
+  reads the history for the same area, so a fault surviving its third attempt
+  gets the notice in that reply even in a fresh session. The fast path needs
+  one look on this computer, never the report alone. The hold reaches `main`
+  through the records route at rollback time and leaves on the promote, and
+  the merge step says a held copy stays put rather than "did not update". An
+  auto run takes no repair, a red check on a pull request goes back to that
+  piece's build, and a ready repair is named next first. It fails if the old
   skill folder is back, or any shipped skill, WORKFLOW, README or `llms.txt`
   still points at `/fix`.
 - `.agents/tests/masterplan-changes.sh` guards the change each piece carries
@@ -571,8 +586,8 @@ attribution line, not the word.
   first, and the later reads point at them, so a rule that went from the file
   would loosen every read at once. It also holds that the green-tick sentence
   is unchanged, since the floor is meant to add nothing for the person to learn.
-  Its one change since is the command it names, now `/shape`, as the repair
-  command was folded in.
+  Its one change since is the command it names, now `/implement`, since a red
+  check on a pull request goes back to that piece's own build.
   `.agents/tests/check-floor-rehearsal.sh` is the half that runs. It founds a
   throwaway Python project from the shipped workflow template, takes its
   commands from the shipped table, and watches the check go red at the type
