@@ -643,7 +643,7 @@ is a step here rather than advice:
    themselves has no marker and is never touched. List every file under
    `.claude/commands/`, `.cursor/commands/` and `.gemini/commands/` that
    carries the marker, and every generated skill folder for a name the kit
-   no longer has, such as `.claude/skills/grilling/`.
+   no longer has, such as a `grilling` folder in Claude's skills folder.
 2. Find retired skill folders. Look in both `.agents/skills/` and
    `.claude/skills/`, since an installation for Claude Code alone keeps its
    skills only in the second. A folder there counts only
