@@ -68,7 +68,14 @@ rs_rule "it never asks for a secret in a message" \
 # chooses, and showing them builds nothing. A list that started building the
 # moment it was shown would take the choice the list exists to give.
 rs_rule "several ready pieces bring up the groups and a question" \
-  'when the printout holds more than one piece under `to build` marked `\(ready\)`, show what can be built together and what waits on what, and ask which to take'
+  'one piece under `to build` marked `\(ready\)` that the current build path allows, show what can be built together and what waits on what, and ask which to take'
+# A repair outranks anything new, so the list never pushes it aside.
+rs_rule "the list waits while a ready repair is waiting" \
+  'so when no ready repair is waiting, and the printout holds more than'
+rs_rule "a ready repair comes first in both cases" \
+  'a ready repair comes before the list, in both cases'
+rs_rule "a list-only request names the repair and builds nothing" \
+  'name the repair above the two groups and still build nothing'
 rs_rule "asking for the list alone shows it and stops" 'show it and stop there'
 rs_rule "the grouping is never worked out again by hand" \
   'never work that out again from the issues'

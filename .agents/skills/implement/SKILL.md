@@ -67,11 +67,17 @@ after repeated failure (references/running-longer.md) needs routing back to
 ## Taking on several pieces
 
 Somebody taking on several pieces at once needs to see the whole set before
-choosing. So when the printout holds more than one piece under `To build`
-marked `(ready)`, show what can be built together and what waits on what, and
-ask which to take. The same holds when the person asks for the whole list in
-plain words, such as "what can I build in parallel?", and wants no build:
-show it and stop there.
+choosing. So when no ready repair is waiting, and the printout holds more than
+one piece under `To build` marked `(ready)` that the current build path
+allows, show what can be built together and what waits on what, and ask which
+to take. The same holds when the person asks for the whole list in plain
+words, such as "what can I build in parallel?", and wants no build: show it
+and stop there.
+
+A ready repair comes before the list, in both cases. Where one is waiting,
+name it first, as "Typed alone" says, since something that used to work
+outranks anything new. Typed alone, build it. Asked for the list alone, name
+the repair above the two groups and still build nothing.
 
 `/what-now` names one next step and at most three things, because somebody lost
 cannot use more. That cap stays. The whole list lives here, at the moment of
