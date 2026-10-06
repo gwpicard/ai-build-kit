@@ -657,7 +657,9 @@ is a step here rather than advice:
 5. A whole copy also brought `.agents/hooks/session-end-sync.sh`. A `hook`
    line means its message still names a retired command. Say in one line that
    `/what-now` and `/maintain` do that job now, and that the file can be
-   replaced with the one in the latest Release. Leave the file as it is.
+   replaced with the one in the latest Release. Leave the file as it is. Say
+   this only in a visit that also offers a removal, so a later visit that
+   finds only the hook says nothing.
 6. Record a changelog line saying what was removed and why.
 
 ## Offering a move onto a recipe

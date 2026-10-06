@@ -801,7 +801,8 @@ attribution line, not the word.
   a throwaway whole copy of the last nine-command release: every generated
   command file for the three tools and the four retired folders are listed
   and removed, the person's own command file and skill stay, the old
-  session-end hook is named and left, and a second run lists only that hook.
+  session-end hook is named and left, and a second run lists only that hook,
+  which a visit names only beside a removal it offers.
   Without a lockfile, only a retired command's generated file is listed.
 - `.agents/tests/older-project-upkeep.sh` guards three things an update never
   reaches, because it refreshes skills and nothing else. A leftover `plan.md`

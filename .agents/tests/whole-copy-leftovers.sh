@@ -72,6 +72,8 @@ rs_rule "and removed on approval, only what was listed" \
 rs_rule "the removal is read back" 'carry on only once it lists neither kind'
 rs_rule "the old session-end hook is named and left" \
   'a .hook. line means its message still names a retired command'
+rs_rule "the hook alone is never said again" \
+  'say this only in a visit that also offers a removal, so a later visit that finds only the hook says nothing'
 rs_rule "a manual update runs the tidy too" \
   'on the shared route, or after a manual update, that finds the leftovers below'
 rs_rule "and recorded" 'a changelog line saying what was removed and why'
@@ -142,7 +144,7 @@ rs_report "every generated command file is gone, and the emptied tool folders wi
 rs_report "the person's command file, skill and hook are untouched" \
   "$(cmp -s "$P/.claude/commands/deploy.md" "$rs_dir/deploy-before" && cmp -s "$P/.agents/hooks/session-end-sync.sh" "$rs_dir/hook-before" \
      && [ -f "$P/.agents/skills/my-notes/SKILL.md" ] && echo yes || echo no)"
-rs_report "a second run lists only the hook, which is the person's to replace" \
+rs_report "a second run lists only the hook, which the visit then keeps quiet about" \
   "$([ "$(python3 "$LEFTOVERS" "$P")" = "hook	.agents/hooks/session-end-sync.sh" ] && echo yes || echo no)"
 
 # Off the shared route, a generated file for a current command may be how the
