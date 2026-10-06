@@ -353,9 +353,10 @@ version. Never run it a second time before you have checked the first. Where
 `Who runs it:` is a companion or the person, say in one sentence what they do
 and where, and read back what they paste.
 
-Write the rollback onto the repair's piece, with the date, the version brought
-back and why, so the repair's own save carries it into CHANGELOG.md. Where no
-piece is in hand, save it as "Deploying, and the records" says.
+Record the rollback when it happens, not when the repair lands: a CHANGELOG.md
+line with the date, the version brought back and why, saved through
+"Deploying, and the records". Name the rollback on the repair's piece too, so
+whoever builds the repair knows the live copy is on the earlier version.
 
 Some hosts stop putting new merges live after a rollback, until a newer build
 is promoted, and the recipe's rollback section says so where its host does.
@@ -363,12 +364,13 @@ On such a host, say it plainly in the same reply: "The live copy now stays on
 this earlier version. New merges will not go live until the repair is put
 live."
 
-Write the hold onto the repair's piece too, as its masterplan change: "How it
-stays running" gains a line saying the live copy is held on an earlier
-version, with the date. The repair's merge then needs that promote. It is a
-change to the live service, so it waits for its own named yes, and it runs
-only once the repair has merged and its build is listed. Remove the line once
-the live copy runs the newest merge again.
+Write the hold into the masterplan's "How it stays running" in the same
+records save: a line saying the live copy is held on an earlier version, with
+the date. Every later merge reads it from `main` that way, before the repair
+lands. The repair's merge then needs that promote. It is a change to the live
+service, so it waits for its own named yes, and it runs only once the repair
+has merged and its build is listed. Once the promote has gone live, remove the
+hold line and add a dated changelog line, through the same records route.
 
 Off a recipe, say what a rollback would need: an earlier build the host still
 keeps, and a way to point the live address back at it. Say that the kit cannot

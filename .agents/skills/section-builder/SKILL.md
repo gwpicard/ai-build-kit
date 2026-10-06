@@ -332,9 +332,11 @@ say in one line what the tool now reaches, so the person can say whether it
 should. A correctly completed build does not need /sync afterward.
 
 When the report names a next piece, refresh the printout first if this pass has
-not, and name only a piece under its `To build` group marked `(ready)`. Where
-there is none, say nothing is ready to build now and name no piece. Never work
-the next piece out from the issue list by hand.
+not. A ready repair comes first: name a piece under its `Broken` group marked
+`(ready)`, which the printout marks only when nobody is on it and nothing open
+holds it up. Otherwise, name only a piece under its `To build` group marked
+`(ready)`. Where there is neither, say nothing is ready to build now and name
+no piece. Never work the next piece out from the issue list by hand.
 
 Write the changelog line from the piece's own `So that` and `Done when`, in
 plain language, dated. Not from its title, and not from the pull request. A
@@ -429,6 +431,14 @@ merge, whoever made it, remove the `building` label and refresh the printout
 with `sh .agents/tools/plan-refresh.sh` so the person's list matches what just
 happened.
 
+**After the merge, on a project held after a rollback.** Where "How it stays
+running" records that the live copy is held on an earlier version since a
+rollback, the merge does not go live until /setup-hosting promotes it, after
+its own named yes. Say so in one line, close to: "This is merged. The live
+copy stays on the earlier version until /setup-hosting puts this change
+live." Do not read the health line as "did not update", and suggest no
+redeploy.
+
 **After the merge, on a project live on a recipe.** Once the host has had
 time to build, read one line of health from the live copy, read-only, as the
 recipe's going-live check and Health section say. Where the check is the kit's
@@ -450,9 +460,11 @@ the person asks to put the change out again, read the health line again first
 and say what it shows. A further deploy belongs to /setup-hosting and its
 rules, never to this step. Where they ask whether they can go back to the
 earlier version, say what the recipe's rollback section offers, that a
-rollback has not been tried, and run none. Where they report that the live
-tool broke after this merge, that is a live break, and the `change-triage`
-skill's "A live break after a recent merge" says what to offer.
+rollback has not been tried, and run none in this step. Nothing here changes
+the live copy unasked. Where they report that the live tool broke after this
+merge, that is a live break: the `change-triage` skill's "A live break after a
+recent merge" makes the offer, and a rollback runs only on the yes it asks
+for, by the `setup-hosting` skill's "Rolling back".
 
 ## Excuses that don't hold
 
