@@ -96,6 +96,9 @@ The monthly and quarterly parts run only when they are due.
    missing. A short installation means a skill the kit renamed or added never
    arrived. The version file cannot show this, because the same update that
    drops a skill rewrites the version, so the count is the only sign.
+   An entry under one of the kit's former names, such as `fix`, `queue`,
+   `sync` or `ship`, is an old skill the installer kept. "Migrating a project
+   installed before the six commands" below removes it.
    In Claude Code, also use `claude plugin list --json` to check for the enabled
    `ai-build-kit@ai-build-kit` plugin and note its installation scope. Also
    check for an Agent Plugins installation: a `plugin.json` naming
@@ -112,7 +115,11 @@ The monthly and quarterly parts run only when they are due.
    - For an Agent Plugins installation, use the coding agent's own plugin
      update command. When the agent has none, download the latest public
      Release and replace the installed `agent-plugin` folder after the same
-     approval and clean checkpoint.
+     approval and clean checkpoint. Afterwards, read the installed folder's
+     `skills` folder back. It holds the eleven and no folder under a former
+     name such as `fix`, `queue`, `sync` or `ship`. Where an old folder is
+     still there, the agent's command did not replace the folder whole. Say
+     so, and offer the replacement from the Release after the same approval.
    - For a shared skills installation, run
      `npx skills add gwpicard/ai-build-kit` and let the person choose the same
      coding agents the project already uses. Choosing `universal` is what puts
@@ -147,7 +154,10 @@ The monthly and quarterly parts run only when they are due.
    /implement" below. When the visit finds a `start` skill, or no
    `setup-ai-build-kit` skill, also run "Migrating a project founded before the
    setup-ai-build-kit rename". When it finds a `plan` skill, or no `shape`
-   skill, also run "Migrating a project founded before the shape rename". Both
+   skill, also run "Migrating a project founded before the shape rename". When
+   it finds a `fix`, `queue`, `sync` or `ship` skill, no `setup-hosting`
+   skill, or an AGENTS.md command list that names one of the four, also run
+   "Migrating a project installed before the six commands". All three
    are decided by what is on disk rather than by which update this is, because
    an update that removed the old skill without adding the new one leaves
    nothing else to say it happened. Whenever the build-path section of
@@ -174,7 +184,9 @@ The monthly and quarterly parts run only when they are due.
 8. If the normal route is unavailable, use the latest published Release, the
    one step 1 read, as the fallback source. A shared installation may replace
    only the eleven AI Build Kit skill folders after the same approval and
-   clean checkpoint. A Claude
+   clean checkpoint. That leaves the folder of a skill the kit has since
+   retired, so run "Tidying a project founded from a whole copy of the kit"
+   afterwards too. A Claude
    plugin installation keeps its current enabled version when the marketplace
    cannot be reached. Confirm that version with `claude plugin list --json`,
    tell the person the update did not happen, and retry when the marketplace is
@@ -365,7 +377,10 @@ visit changes them.
    skill>/scripts/old-skill-pointers.py`. It reads only those two files and
    prints one line for each old pointer it finds, and nothing when there is
    none. It finds a pointer into one of the kit's skills under today's name
-   or one it had before, such as `start` for `setup-ai-build-kit`. A project's
+   or one it had before, such as `start` for `setup-ai-build-kit`. It also
+   finds a pointer that already names its skill, where that skill is one the
+   kit has retired. A pointer to the handover template in `ship` now names
+   the `maintain` skill, since handovers moved there. A project's
    own skill, a placeholder such as `<name>`, and a mention of the folder
    itself are never found. When it prints nothing, say nothing.
 2. A line ending in the new form is one the script can rewrite: the pointer
@@ -452,6 +467,66 @@ the new name is said out loud rather than only tidied away in the files:
 
 Record the tidy-up in the changelog as a dated line.
 
+## Migrating a project installed before the six commands
+
+Run this on any monthly visit that finds a `fix`, `queue`, `sync` or `ship`
+skill installed, no `setup-hosting` skill, or a command list in AGENTS.md that
+names one of the four. It is idempotent: a visit that finds the six commands
+and the list already current does nothing here and says nothing.
+
+The kit cut its commands from nine to six. `/fix` folded into `/shape` and
+`/implement`, `/queue` into `/implement`, and `/sync` into `/maintain`. `/ship`
+was renamed `/setup-hosting`. Every rule moved with its job, so nothing the
+person built or saved changes. An update brings the new skills, but the shared
+installer keeps an old skill it still lists, and nothing updates the project's
+AGENTS.md. So the old commands stay on offer until this step runs.
+
+1. Read what is left. From the project root, run `python3 <installed maintain
+   skill>/scripts/kit-leftovers.py`. It prints one line for each thing left
+   behind, and nothing when nothing is.
+2. Remove the old skills the installer still lists. A line starting
+   `installer` names a skill under a former name that `skills-lock.json` lists
+   as the kit's. It is a managed package the kit retired, not the person's own
+   work, so offer to remove it with the installer, naming each one in a single
+   command such as `npx skills remove fix queue sync ship`. The installer
+   removes the folder, every link to it, and its lockfile entry. On a yes, run
+   it, then run the script again and carry on only once no `installer` line
+   is left and the lockfile count is eleven. Never delete one of these folders
+   by hand, since the lockfile would still list it.
+3. Recover a missing new skill. A line starting `missing` names one of the
+   eleven that is not installed, such as `setup-hosting` after an update that
+   removed `ship` without adding its new name. Run the add command from the
+   monthly step, then run the script again and carry on only once no
+   `missing` line is left.
+4. Lines starting `folder` or `adapter` are leftovers the lockfile does not
+   list. "Tidying a project founded from a whole copy of the kit" below
+   removes them, after its own approval.
+5. Rewrite the command list in the project's AGENTS.md as "Bringing the
+   project's instructions up to the current names" below says. Lines starting
+   `commands` show the change.
+6. On the Claude Code plugin route, the plugin update itself replaces the
+   commands: the new release offers the six and nothing else, and no old skill
+   is left in the project. Steps 2 to 4 find nothing there. The AGENTS.md list
+   still needs step 5.
+7. A mention of `/fix`, `/queue`, `/sync` or `/ship` in `masterplan.md` or
+   `CHANGELOG.md` is history. It says what happened at the time, so leave it.
+   The changelog is never rewritten. A pointer to a retired skill's file is a
+   different thing, because it opens nothing now. "Pointing the records at a
+   skill by name" below finds those and follows each rule to its new home.
+8. Say once, in the reply that offers the first of these steps: "The kit now
+   has six commands. /fix and /queue are part of /shape and /implement, /sync
+   is part of /maintain, and /ship is now /setup-hosting. Nothing you built
+   has changed." Add that a saved note or shortcut typing an old command still
+   needs changing by hand.
+
+Where the person says no to a removal, leave it. Say that the old command
+stays on offer beside the new one until it is removed, and that the offer
+comes back on the next visit. Where the harness cannot run the script, read
+the lockfile and the two skill folders by hand for the four names, and leave
+the AGENTS.md list for the person, naming each word to change.
+
+Record what changed in the changelog as one dated line.
+
 ## Migrating a masterplan written with four build paths
 
 Run this on any monthly visit that finds, in the build-path section of
@@ -507,7 +582,7 @@ has.
 
 ## Bringing the project's instructions up to the current names
 
-Run this from either rename migration. A project's AGENTS.md is project-owned
+Run this from any rename migration. A project's AGENTS.md is project-owned
 and no update touches it. But the line that lists the commands is the kit's own
 template text, and a person made to fix it by hand after every rename will stop
 updating. So the kit does it for them, with approval:
@@ -515,19 +590,32 @@ updating. So the kit does it for them, with approval:
 1. Find the line that lists the commands. In the foundation template it begins
    `- Commands:` and names all six. Where it names `start`, replace it with
    `setup-ai-build-kit`. Where it names `plan`, replace it with `shape`. Where
-   the sentences nearby give an older count of commands or skills, make them
-   six and eleven.
-2. Show the change and apply it on approval. Say what changed in one sentence.
-3. Where the file lists the commands in its own words and the line cannot be
+   it names `ship`, replace it with `setup-hosting`. Where it names `fix`,
+   `queue` or `sync`, take the name out, since its command folded into
+   another. Bring the `- Background skills:` line to the five the template
+   names. Where the sentences nearby give an older count of commands or
+   skills, make them six and eleven.
+2. The script `<installed maintain skill>/scripts/kit-leftovers.py` does this
+   from the template that came with the update. Its `commands` lines show each
+   change, old and new. A line ending in `left as written:` is one it will not
+   change, with the reason, such as a name in the list that is not one of the
+   kit's.
+3. Show the change and apply it on approval, by running the script with
+   `--rewrite-commands`. It changes those lines and nothing else in the file,
+   line endings included. Run it again without, and carry on only once no
+   `commands` line offers a change. Say what changed in one sentence.
+4. Where the file lists the commands in its own words and the line cannot be
    recognised, leave the file alone and say which name needs changing, so the
-   person edits one line rather than reads a diff.
+   person edits one line rather than reads a diff. Where the harness cannot
+   run the script, make the same change by hand, to those lines only.
 
 Record it in the changelog with the tidy-up that called it.
 
 ## Tidying a project founded from a whole copy of the kit
 
-Run this on any monthly visit on the shared route that finds the leftovers below. It
-is idempotent: a project that has none of them gets nothing here.
+Run this on any monthly visit on the shared route, or after a manual update,
+that finds the leftovers below. It is idempotent: a project that has none of
+them gets nothing here.
 
 A project founded from a whole copy of the kit brought the kit's own generated
 adapters with it: `.claude/commands/<name>.md`, `.cursor/commands/<name>.md`
@@ -548,14 +636,29 @@ is a step here rather than advice:
 2. Find retired skill folders. Look in both `.agents/skills/` and
    `.claude/skills/`, since an installation for Claude Code alone keeps its
    skills only in the second. A folder there counts only
-   when it carries one of the kit's former names, `build`, `start` or `plan`,
-   and the lockfile does not list it. Any other folder there is the person's
-   own and is left alone.
-3. Show the list and say what removing it does: each command appears once,
-   and the renamed command goes. Remove on approval, and remove the empty
-   folders too. Where the files are tracked, the removal is part of the
-   visit's saved change.
-4. Record a changelog line saying what was removed and why.
+   when it carries one of the kit's former names, `build`, `start`, `plan`,
+   `fix`, `queue`, `sync` or `ship`, and the lockfile does not list it. Any
+   other folder there is the person's own and is left alone. A former name
+   the lockfile does list is the installer's to remove, in "Migrating a
+   project installed before the six commands" above.
+3. Run `python3 <installed maintain skill>/scripts/kit-leftovers.py` from the
+   project root. Its `adapter` and `folder` lines are the two lists above,
+   found by these rules. A generated command file for a retired command is
+   listed on every route, since it opens nothing. One for a current command
+   is listed only on the shared route, where the installer already reaches
+   that command.
+4. Show the list and say what removing it does: each command appears once,
+   and the renamed or folded command goes. Remove on approval, by running the
+   script with `--remove`, which removes only what it listed and any folder
+   that leaves empty. Run it again without, and carry on only once it lists
+   neither kind. Where the files are tracked, the removal is part of the
+   visit's saved change. Where the harness cannot run the script, apply the
+   same two rules by hand.
+5. A whole copy also brought `.agents/hooks/session-end-sync.sh`. A `hook`
+   line means its message still names a retired command. Say in one line that
+   `/what-now` and `/maintain` do that job now, and that the file can be
+   replaced with the one in the latest Release. Leave the file as it is.
+6. Record a changelog line saying what was removed and why.
 
 ## Offering a move onto a recipe
 

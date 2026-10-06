@@ -508,6 +508,15 @@ the build-path section of your masterplan to the new shape, shows the old text
 above the new, keeps every accepted risk word for word, and changes nothing
 without your approval.
 
+A project installed before the kit had six commands still offers the old
+ones after its update. The visit that finds them says so in one line: /fix
+and /queue are now part of /shape and /implement, /sync is part of
+/maintain, and /ship is now /setup-hosting. Nothing you built changes. It
+offers to remove the old skills and to rewrite the command list in your
+AGENTS.md, and does neither without your yes. Your masterplan and changelog
+keep their old mentions, since those record what happened. A second visit
+finds nothing left and says nothing.
+
 The standing instructions in AGENTS.md stay under 200 lines and hold what the
 code cannot show, such as how work is saved and reviewed and which conventions
 differ from the default. /maintain counts the lines every month and offers a

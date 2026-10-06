@@ -221,7 +221,9 @@ claude plugin marketplace update ai-build-kit
 claude plugin update ai-build-kit@ai-build-kit --scope local
 ```
 
-Claude loads the new plugin after `/reload-plugins` or the next session.
+Claude loads the new plugin after `/reload-plugins` or the next session. The
+update replaces the plugin's commands whole, so a command the kit has retired
+is gone after that reload.
 If the marketplace cannot be reached, the installed version remains enabled.
 `maintain` reports that no update happened and tries again later.
 
@@ -237,6 +239,12 @@ is what carries a project across a rename. The installer's `update` command
 is not the route: it refreshes only what the lockfile already lists and drops
 any other name without a word, so a project that updated across the rename of
 `plan` to `shape` lost one skill and never received the other.
+
+The `add` command keeps a skill the kit has retired, such as `fix`, `queue`,
+`sync` and `ship` after the move to six commands, and the lockfile still lists
+it. `maintain` offers to remove each one with `npx skills remove`, which
+takes out the folder, its links and its lockfile entry. It runs that only on
+the person's yes.
 
 That command replaces the installed skill files outright. Anyone who has edited
 one of the eleven skills in their own project loses that edit, without being
