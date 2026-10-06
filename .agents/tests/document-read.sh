@@ -45,7 +45,7 @@ rs_rule "finding nothing is silent" 'when the read finds nothing, say nothing ab
 rs_rule "it runs on every maintain visit" 'every `/maintain` visit, on every build path, as part of the truing'
 rs_guard "$READ" "the shipped document-read.md"
 
-rs_require_load_bearing "the truing loads the read" "$SYNC" 'load `references/document-read\.md`'
+rs_require_load_bearing "the truing loads the read" "$SYNC" 'load the `maintain` skill.s `references/document-read\.md`'
 # The lifecycle study found two commands both reading documents. Stale names
 # now have one home, this read, and the quarterly bloat read leaves them to it.
 rs_require_load_bearing "the truing calls it the one read for stale names" "$SYNC" 'this is the visit.s one read for stale names'

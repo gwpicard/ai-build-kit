@@ -11,7 +11,7 @@ the `setup-ai-build-kit` skill's `references/whole-project-reads.md` apply.
 ## Where it applies
 
 Every `/maintain` visit, on every build path, as part of the truing in
-`references/truing.md`. It is the visit's one read for stale names.
+the `maintain` skill's `references/truing.md`. It is the visit's one read for stale names.
 
 ## Which documents
 

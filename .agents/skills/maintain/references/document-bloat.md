@@ -7,7 +7,8 @@ person who does not read code cannot tell which is current. Every extra page is
 also read by the agent as context. This read finds those documents so the
 quarterly visit can offer to tidy them.
 
-The document read in `references/document-read.md` is a different check. It looks for a single name
+The document read in the `maintain` skill's `references/document-read.md` is a
+different check. It looks for a single name
 that no longer exists, in the documents that matter most. This read looks for
 whole documents, or whole paragraphs, that are not needed.
 
