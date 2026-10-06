@@ -784,9 +784,18 @@ attribution line, not the word.
   script, the command list and its counts are rewritten to the template's
   with nothing else in the file changed, and once the installer has removed
   them a second run finds nothing. The person's own skill, command file and
-  records, which mention the old commands, are untouched. It also holds that
-  the stale-name refusals elsewhere read past the migration's own passages
-  and nothing else.
+  records, which mention the old commands, are untouched. A review then
+  found the script deleting the person's work, and each reproduction is a
+  case here. The person's own `build` skill, listed nowhere, is named as left
+  and kept, and their own `ship` skill, listed under another source, is never
+  named. A source that only starts like the kit's is not the kit's. A command
+  list holding a sentence of the person's own is left as written with the
+  suggested line, and so are the counts above it. Windows line endings, and a
+  file with one such line and no final newline, come back with only the
+  listed lines changed. It also holds that the stale-name refusals elsewhere
+  read past only the exact sentences that name the retired commands, in the
+  maintain skill and WORKFLOW.md, so a stale "run /sync" added inside the
+  migration section is still caught.
 - `.agents/tests/whole-copy-leftovers.sh` guards the tidy step for a project
   founded from a whole copy of the kit. Such a project carries the kit's own
   generated adapters, which the shared installer never refreshes, so every
@@ -804,6 +813,15 @@ attribution line, not the word.
   session-end hook is named and left, and a second run lists only that hook,
   which a visit names only beside a removal it offers.
   Without a lockfile, only a retired command's generated file is listed.
+  A review found the removal deleting the person's work, and each
+  reproduction is a case here. A retired folder counts only when its
+  `SKILL.md` carries a description a kit release gave it, read from the
+  record beside the script, so the person's own `build` skill is named as
+  left and kept. A skill in a linked folder outside the project is never
+  removed, and a link inside the project goes on its own while its target
+  stays. A folder reached two ways is listed once. A generated skill folder
+  for a name the kit dropped, such as `grilling`, is listed, and one holding
+  a file of the person's is left.
 - `.agents/tests/older-project-upkeep.sh` guards three things an update never
   reaches, because it refreshes skills and nothing else. A leftover `plan.md`
   is offered for a move into issues on every monthly visit that finds it, since it was
