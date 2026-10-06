@@ -16,21 +16,21 @@ here by design. They are created inside a user's project by `/setup-ai-build-kit
 ## Before any work
 
 Read `docs/MAINTAINING.md`. Read `docs/PHILOSOPHY.md` before changing what one
-of the fourteen canonical skills does, or adding a capability. Check the current
+of the thirteen canonical skills does, or adding a capability. Check the current
 branch and unsaved work
 before editing. Never run the project-founding `/setup-ai-build-kit` process in this
 repository.
 
 ## Source and starter boundary
 
-- `.agents/skills/` is the single source of truth for the nine commands and
+- `.agents/skills/` is the single source of truth for the eight commands and
   five internal background skills. Nothing else belongs in it.
 - `.agents/maintainer-skills/` holds the skills only the kit's own maintainers
   use. There are three: the Humanizer writing skill; `review-issues`, which
   reads the open issues, groups them by theme and names the next piece worth
   picking up; and `stack-research`, which reads what changed upstream for the
   products the recipes name and writes a dated note proposing changes, or
-  none. They sit there rather than beside the fourteen because a shared
+  none. They sit there rather than beside the thirteen because a shared
   skills installer reads `.agents/skills/` and `.claude/skills/` and offers
   whatever it finds in either, so a folder in one of those is a skill somebody
   installs. Being outside both is the whole boundary, and a maintainer skill
@@ -49,7 +49,7 @@ repository.
   before running any of them.
 - `.claude/`, `.cursor/`, and `.gemini/` are generated adapters. Change the
   canonical skill, then run `.agents/tools/build-adapters.sh`. The Claude
-  plugin exposes the nine generated command files and five hidden background
+  plugin exposes the eight generated command files and five hidden background
   skills. Shared installations use the adapters their coding agents need.
 - `.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md` creates a project's
   root instructions.
@@ -61,7 +61,7 @@ repository.
 - `.claude-plugin/` is the Claude plugin and marketplace metadata. It selects
   generated adapters rather than duplicating a skill.
 - `agent-plugin/plugin.json` is the Agent Plugins manifest. The release
-  allowlist rebases the fourteen canonical skills under `agent-plugin/skills/`,
+  allowlist rebases the thirteen canonical skills under `agent-plugin/skills/`,
   so the plugin folder is assembled at release time and this repository keeps
   one copy of each skill.
 - `release-manifest.txt` is the full allowlist for the public kit. A file absent
@@ -89,7 +89,7 @@ thing, trust the check. It tests the real work, and an instruction can fall out
 of date. Follow the check, and say plainly that the two disagree rather than
 following the stale instruction in silence.
 
-When one of the fourteen canonical skills changes, answer the five questions in
+When one of the thirteen canonical skills changes, answer the five questions in
 `docs/PHILOSOPHY.md`, record any borrowed idea in `docs/SOURCES.md`, update the
 owned explanation where needed, regenerate adapters, and run the kit validator.
 Generated files are committed with their canonical change.
@@ -496,8 +496,8 @@ attribution line, not the word.
 - `.agents/tests/reach-check.sh` guards the check that asks what else a change
   reaches and which existing tests cover it. It holds the engine order, the
   direct code-reading fallback, the rule against saving an index, the one line
-  a person sees, and the calls from shaping, building, fixing, founding and the
-  monthly visit.
+  a person sees, and the calls from shaping, building, a repair, founding and
+  the monthly visit.
 - `.agents/tests/sensitive-area-map.sh` guards the readable map between named
   sensitive areas and code. It holds the Build with care boundary, the optional
   local data scan, each skill that reads the map, and the shipped check that
@@ -505,7 +505,28 @@ attribution line, not the word.
 - `.agents/tests/fix-history-first.sh` guards the repair steps that read prior
   work and existing tests before a new attempt, search saved history from a
   known-good point, remove temporary instrumentation, and refuse to call a
-  retry-only test green.
+  retry-only test green. It reads them from section-builder's
+  `references/repair.md`, where they moved when the repair command was folded
+  into `/shape` and `/implement`.
+- `.agents/tests/repair-is-a-piece.sh` guards how a fault becomes a piece now
+  that it has no command of its own. A separate repair command made the person
+  sort their own request before typing. So `/shape` reproduces a bug, writes
+  the smallest failing case as its done line, and marks it ready only once it
+  is reproduced, changing no saved file while it does. change-triage routes a
+  request for behaviour nobody promised as new work, and marks a small, clear
+  repair ready at once with an offer to build it in the same session.
+  `/implement` takes a ready repair before anything new, and section-builder
+  loads the repair reference for a piece labelled `broken`, with its announced
+  reset step, the only place `git restore .` is allowed. When the live tool
+  broke after a recent merge, change-triage offers the earlier version back
+  first, whatever was typed, and runs it only on a yes that names it. The
+  procedure lives in `/setup-hosting`'s "Rolling back": the version named,
+  the output read whole, never run twice. It also holds the hold some hosts
+  put on the live copy after a rollback, which the Vercel recipe names: said
+  plainly in the same reply, recorded, promoted only on its own yes, and
+  noticed by a later run whether or not it was recorded. It fails if the old
+  skill folder is back, or any shipped skill, WORKFLOW, README or `llms.txt`
+  still points at `/fix`.
 - `.agents/tests/masterplan-changes.sh` guards the change each piece carries
   for the masterplan, its application during save and recovery, the saved state
   the page was checked against, and the monthly count that offers /sync when
@@ -520,8 +541,9 @@ attribution line, not the word.
   from saved history.
 - `.agents/tests/test-strength.sh` guards the optional check that breaks changed
   code to see whether tests notice. It holds the Build with care boundary,
-  local scope, plain report, sorting of misses, the offer during repair, and
-  the rule against adding tests just to raise a count.
+  local scope, plain report, sorting of misses, the offer during repair, read
+  from section-builder's `references/repair.md`, and the rule against adding
+  tests just to raise a count.
 - `.agents/tests/test-strength-rehearsal.sh` runs weak tests in a throwaway
   JavaScript project. They catch one deliberate breakage and miss a boundary
   error; the report takes its counts from those runs and its words from the
@@ -533,7 +555,8 @@ attribution line, not the word.
   code until the tests stop passing learns to delete what the tests miss, and
   every step still looks green. It also holds that the trim runs once, stays
   off Explore privately, judges a function against a published limit rather
-  than the project's own average, and says nothing when it finds nothing.
+  than the project's own average, says nothing when it finds nothing, and runs
+  on a repair, as section-builder's `references/repair.md` says.
   `.agents/tests/trim-rehearsal.sh` runs the pass on a throwaway piece built
   on a saved commit. It reads back that a tested one-user wrapper is folded,
   that an unused export and an unused dependency are taken out, that a file
@@ -548,6 +571,8 @@ attribution line, not the word.
   first, and the later reads point at them, so a rule that went from the file
   would loosen every read at once. It also holds that the green-tick sentence
   is unchanged, since the floor is meant to add nothing for the person to learn.
+  Its one change since is the command it names, now `/shape`, as the repair
+  command was folded in.
   `.agents/tests/check-floor-rehearsal.sh` is the half that runs. It founds a
   throwaway Python project from the shipped workflow template, takes its
   commands from the shipped table, and watches the check go red at the type
@@ -624,7 +649,8 @@ attribution line, not the word.
   written in the changelog, and the launch goes on, so it holds that `/setup-hosting`
   neither waits for the record nor asks the person to choose to go without it.
   It also holds the repair step that reads the tool's record after launch,
-  alongside the person's report.
+  alongside the person's report, now part of shaping a repair in
+  section-builder's `references/repair.md`.
 - `.agents/tests/secret-location.sh` guards where a secret the project keeps
   outside `.env` is written down: its location, never its value, in the
   masterplan's "How it stays running" section, read back before any step
@@ -637,7 +663,8 @@ attribution line, not the word.
   its location and never read or shown, and one given as an answer is recorded
   nowhere and the person is asked to rotate it. The project's own
   AGENTS.md sits at its line ceiling, so it carries the short form of the rule
-  and the check guards both.
+  and the check guards both. A repair reads the location the same way, in
+  section-builder's `references/repair.md`.
 - `.agents/tests/no-stored-logins.sh` guards what the kit may use to reach a
   service, and what waits for the person before a live service changes. A real
   launch told the person it could not read a sign-in setting, then read the
@@ -686,7 +713,8 @@ attribution line, not the word.
 - `.agents/tests/screen-rules.sh` guards the screen rules, their two build-time
   entry points, and the limit on what their report may claim. It proves the
   refusal to call a screen accessible, compliant or good is load-bearing, since
-  a partial rule check cannot earn that conclusion.
+  a partial rule check cannot earn that conclusion. A repair gets the rules
+  only when its fault is on a screen.
 - `.agents/tests/notice-is-owed-by-the-refusal.sh` guards what triggers the risk
   notice after three failed repairs, and it holds two rules. The refusal owes
   the notice whichever route follows it, in the same reply, because hanging it
@@ -696,7 +724,8 @@ attribution line, not the word.
   count, because being right about the count is no reason to withhold the
   notice. It also holds that stopping there is a pause for the person rather
   than a refusal: if they carry on after the notice, the next attempt goes
-  ahead on the record. Both are written rules rather than rates, since the
+  ahead on the record. It reads them from section-builder's
+  `references/repair.md`. Both are written rules rather than rates, since the
   same scenario comes out differently on `sonnet` and on `opus`. The runs
   behind them are recorded in `.agents/tests/replay/baseline.md`.
 - `.agents/tests/shared-route-adds.sh` guards the shared installer route. The
@@ -706,7 +735,7 @@ attribution line, not the word.
   other name in silence. The version file said the project was up to date,
   since the same update rewrote it. So the check holds that the route is the
   installer's `add` command, that the monthly pass counts the lockfile against
-  fourteen, and that each rename migration fires on what is on disk and has a
+  thirteen, and that each rename migration fires on what is on disk and has a
   branch for the state where the old skill is gone and the new one never
   came. It also holds that a rename rewrites the command list in the project's
   own AGENTS.md with approval, because a person left to do that by hand after
@@ -738,7 +767,9 @@ attribution line, not the word.
   of the earliest releases, which name the founding skill by its first name,
   `start`, since the rename removed that folder and those open nothing on any
   route. A pointer into the launch skill under its old name, `ship`, is
-  rewritten to `setup-hosting` the same way. A review found the first version
+  rewritten to `setup-hosting` the same way, and a pointer to the old `fix`
+  skill's `SKILL.md` to section-builder's `references/repair.md`, where its
+  rules now sit. A review found the first version
   missed the `start` ones. The same review found it rewrote a pointer inside a
   command or a link and broke the line. So only
   a pointer that stands alone, as a whole code span or a bare path, is
@@ -752,7 +783,7 @@ attribution line, not the word.
   only on a run of the same mark at least as long as its opener.
   A project founded from today's templates gets no offer. A placeholder, a
   mention of the folder, and a project's own skill in the same folder are
-  never found. The script's list of skills is the kit's fourteen, so a rename
+  never found. The script's list of skills is the kit's thirteen, so a rename
   cannot slip past it. Last, a visit asked to leave kit updates alone does not
   copy in the reminder script, still says the visit was recorded, and says the
   reminder was left out.
@@ -846,7 +877,7 @@ attribution line, not the word.
   flagged work is built. The kit gives the risk notice once, in full, and a
   person who carries on after it has accepted: the kit writes the `Accepted:`
   line with their words and the date, and the work goes ahead. It guards that
-  definition in `/fix`, fit-check.md, `/setup-hosting`, founding, section-builder,
+  definition in the repair reference, fit-check.md, `/setup-hosting`, founding, section-builder,
   `/implement` and the project's own AGENTS.md, and that none of them drifts
   back to a stop. An unattended run still stops at a sensitive area, because
   nobody is there to carry on, and it never accepts on the person's behalf. It also guards what

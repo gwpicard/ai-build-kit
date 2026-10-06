@@ -14,18 +14,17 @@ Command names say when to use them.
 | When | Type |
 |---|---|
 | I'm starting something | /setup-ai-build-kit |
-| I want it to... (a new idea) | /shape |
+| I want it to... (a new idea, or it's broken) | /shape |
 | Build the next ready piece | /implement |
 | I'm taking on several things | /queue |
-| It's broken | /fix |
 | I want people to use it | /setup-hosting |
 | I'm done for today | /sync |
 | It's been a while | /maintain |
 | I'm lost | /what-now |
 
-Two of them change the tool. /implement makes it do something new or different, and /fix brings it back to doing what it already should. /shape decides what to change next and turns it into a ready piece, without touching the tool yet. The other six are housekeeping around those.
+One of them changes the tool. /implement builds a ready piece, whether it makes the tool do something new or brings it back to doing what it already should. /shape decides what to change next, a new idea or something broken, and turns it into a ready piece, without touching the tool yet. The other six are housekeeping around those.
 
-You run /setup-ai-build-kit once. After that, start wherever you actually are. You can open a session with /fix as readily as with /implement, and neither needs the other to have run first. If you pick the wrong one it costs you nothing, because each checks what you typed against the masterplan and sends it down the right route.
+You run /setup-ai-build-kit once. After that, start wherever you actually are. You can open a session with /shape as readily as with /implement, and neither needs the other to have run first. If you pick the wrong one it costs you nothing, because each checks what you typed against the masterplan and sends it down the right route.
 
 You never choose the method either. The agent decides whether the request needs an interview, a prototype, research, a test, a review, or a person to look at one area.
 
@@ -79,7 +78,7 @@ Each piece is labelled with what it is about. The labels are not decoration: the
 
 A piece often carries two, because a checkout is finance and an outside service at once. More labels means more proof and a more careful save.
 
-Four labels say where a piece stands instead: `building` when somebody is on it, `blocked` when something outside the project holds it up, `parked` on something you decided against, and `broken` for a repair, which sends it to `/fix`.
+Four labels say where a piece stands instead: `building` when somebody is on it, `blocked` when something outside the project holds it up, `parked` on something you decided against, and `broken` for a repair, which /implement builds before anything new.
 
 Three more say it is waiting on a question rather than on a person: `needs-clarification` (talking it through settles it), `needs-prototype` (a throwaway is needed first to see what it should look like), and `needs-research` (a fact from outside the project is needed). Anything you jot down starts at `needs-clarification`; `/shape` settles it and marks the piece `ready`, and `/implement` builds only ready pieces. What settled it is written onto the piece before the label changes, so a month later you can see what was decided rather than only that something was.
 
@@ -171,7 +170,7 @@ for you to decide instead.
 You hear one line, such as "I took out two things this change did not need.
 They are listed on the piece.", or nothing when there was nothing to take out.
 The removals are saved as their own step, so asking for one back undoes only
-that step. /fix does the same for a repair.
+that step. A repair gets the same.
 
 If a build uncovers another piece of work, that new piece says "Found while
 building the invoice list", using the title of the piece that surfaced it.
@@ -186,7 +185,7 @@ tables, states, actions, words, keyboard use, contrast, and the familiar visual
 defaults that coding agents reach for. The report says which rules were applied
 and what still needs your eyes. It never claims the screen is accessible,
 compliant, or good, and a piece with no screen sees none of this. If the result
-is wrong, describe what happened and type /fix.
+is wrong, describe what happened and type /shape.
 
 If the change touched an area the build path flags, the best independent method available reviews it first. It reports in plain language, sorted into what's worth stopping for and what's worth knowing.
 
@@ -211,18 +210,37 @@ Anything touching data, access, or money gets written into the masterplan first.
 
 If the request would change what kind of project this is, by bringing in outside users or real money or a promise to someone, the agent re-runs the fit check with you before building. A different build path needs different care before people rely on it.
 
-/fix is for when something that should work doesn't: "/fix the board duplicates cards when I drag them". Paste the whole error if there is one. It builds the tightest repeatable check it can find for the exact symptom and works out the cause before touching code, driving the app in a browser or adding temporary logging when it needs to see what is actually going wrong. It resets failed attempts rather than stacking them, and finishes with evidence that keeps the bug from coming back.
+When something that should work doesn't, tell /shape: "/shape the board duplicates cards when I drag them". Paste the whole error if there is one. A bug is a piece like any other. /shape first checks that the behaviour was promised, since a new wish is new work rather than a repair. Then it makes the problem repeat reliably, cuts it down to the smallest case that still fails, and writes that case into the piece as its done line.
+
+The piece is ready once the fault is reproduced, and /implement builds a ready
+repair before anything new.
+
+A small, clear fault, such as a typo or a wrong label, needs no long sitting.
+/shape marks it ready at once and offers to build it in the same session.
+
+If the live tool broke just after a change went live, you are offered the
+earlier version back first, whatever you typed. The kit names the version it
+would bring back and runs the rollback only after your yes. Then it shapes the
+repair as usual. Some hosts stop putting new changes live after a rollback
+until a newer version is put live by hand. The kit says so at the time, and
+/setup-hosting puts the repair live after your yes. Off a recipe it says what
+a rollback would need, since it cannot do one there.
+
+After launch, /shape also reads the tool's own record of what each request did
+alongside your report, so it can trace the failed step. You do not need to read
+that record yourself.
+
+Building the repair, /implement works out the cause before touching code,
+driving the app in a browser or adding temporary logging when it needs to see
+what is actually going wrong. It resets failed attempts rather than stacking
+them, and finishes with evidence that keeps the bug from coming back.
 
 Before repairing, it reads the changelog and finished pieces for the same part
 of the tool. That keeps a failed repair from being tried as if it were new, and
 lets an earlier cause lead the search. Existing covering tests run before a new
-one is written. When there is a known time the behaviour worked, /fix searches
+one is written. When there is a known time the behaviour worked, it searches
 the saved changes for where it broke, then removes every temporary log before
 the repair is saved.
-
-After launch, /fix also reads the tool's own record of what each request did
-alongside your report, so it can trace the failed step. You do not need to read
-that record yourself.
 
 If the same piece fails three rounds in a row, it stops patching and routes by what the failures revealed. That may mean another interview, a rebuild from the masterplan, a stop for missing access, or naming the area as sensitive so somebody who does that work for a living looks at it.
 
@@ -238,7 +256,7 @@ Every promised behaviour gets evidence, in one of four forms:
 The agent chooses the form the change actually needs; the report says what was proved and what remains a judgement call.
 
 On Build with care, /implement can offer to break the changed code on purpose
-to check whether its tests notice. /fix offers the same check for the test
+to check whether its tests notice. A repair gets the same offer for the test
 that keeps a repaired fault from returning. It runs locally when the language
 has a suitable tool, covers only the changed code, and is optional.
 
@@ -254,7 +272,7 @@ Every piece saves through one of three routes. The checkpoint route commits, and
 
 On either route, the first time anything pushes your project's code online, the agent asks you first, naming the repository and whether it is public or private. It asks once for each project: once the code is on GitHub, it does not ask again. If you say no, or nobody is there to answer, the piece is still built and checked, and it waits on its own branch on your computer until you say yes. If the repository already holds something that is not your project, or still points at the kit's own repository, nothing is pushed and the agent asks you what to do.
 
-Next to the merge button sits that check. It re-runs the project's real commands on a clean machine, so the pull request's claims get verified rather than trusted. Those commands include the mechanical checks your project's language offers, a type check and a linter wherever it has them, which catch a whole class of mistakes before anyone tries the tool. They use each tool's own default rules, so a red tick points at a real mistake rather than a matter of taste. The agent runs the same checks before it hands any work over. Green means the checks that exist really passed, which is a smaller promise than nothing being wrong: it covers the behaviour somebody thought to check and nothing else. Red means don't merge; say it to /fix, and the agent reads what failed itself. You never read the machine's logs, and you never merge over a red check.
+Next to the merge button sits that check. It re-runs the project's real commands on a clean machine, so the pull request's claims get verified rather than trusted. Those commands include the mechanical checks your project's language offers, a type check and a linter wherever it has them, which catch a whole class of mistakes before anyone tries the tool. They use each tool's own default rules, so a red tick points at a real mistake rather than a matter of taste. The agent runs the same checks before it hands any work over. Green means the checks that exist really passed, which is a smaller promise than nothing being wrong: it covers the behaviour somebody thought to check and nothing else. Red means don't merge; say it to /shape, and the agent reads what failed itself. You never read the machine's logs, and you never merge over a red check.
 
 A human decides whether to merge, always. Once the check is green, /implement tells you what to try and where, such as the preview address, then names the pull request in one plain line and asks for a yes that names the merge. Saying "put it live" or "save it" before any merge was named is not that yes, so it asks again; saying "merge it" is, and it does not ask twice.
 
@@ -402,7 +420,7 @@ Nothing else changes when a second person arrives: naming a piece before startin
 
 ## 12. Sync and maintenance
 
-Normal /implement and /fix completion updates the records directly; you don't need /sync after a piece that finished cleanly. /sync exists for interrupted work, work done outside the workflow, long sessions whose context went foggy, and handovers. A report-only reminder can optionally run at session end, where the tool supports it, but nothing writes to the records without a skill deciding to. /sync also re-reads the masterplan against your pieces, and says if a promise has lost the piece that builds it. Its corrections are saved the way a piece is saved, through the route your build path requires, so on a shared project they arrive as a pull request you decide to merge, and uncommitted work it finds on arrival is reported and left alone.
+Normal /implement completion updates the records directly; you don't need /sync after a piece that finished cleanly. /sync exists for interrupted work, work done outside the workflow, long sessions whose context went foggy, and handovers. A report-only reminder can optionally run at session end, where the tool supports it, but nothing writes to the records without a skill deciding to. /sync also re-reads the masterplan against your pieces, and says if a promise has lost the piece that builds it. Its corrections are saved the way a piece is saved, through the route your build path requires, so on a shared project they arrive as a pull request you decide to merge, and uncommitted work it finds on arrival is reported and left alone.
 
 /sync also picks up changes a finished piece was meant to make to the
 masterplan but never did. It checks what actually landed, applies what is still
@@ -441,10 +459,10 @@ names two numbers, the version your project holds and the latest published AI
 Build Kit, and says plainly when they differ. An update gives you that
 published release and never work nobody has released yet. When a newer
 kit is available, the agent shows the version and what changed, then waits for
-approval. An update refreshes only the fourteen AI Build Kit skills and leaves
+approval. An update refreshes only the thirteen AI Build Kit skills and leaves
 your tool, its records, and its own checks alone. It also adds any skill the
 kit has renamed or added since, and says if the installation is short of the
-fourteen. When the kit has renamed a command, the update also rewrites the
+thirteen. When the kit has renamed a command, the update also rewrites the
 command list in your AGENTS.md, with your approval, so you are not left to
 edit it by hand. A project founded from a whole copy of the kit also carries
 the kit's own command files, which make each command show twice; the visit
