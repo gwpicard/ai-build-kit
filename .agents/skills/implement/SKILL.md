@@ -1,6 +1,6 @@
 ---
 name: implement
-description: The everyday command for building a piece that has already been shaped and marked ready. Typed alone it takes the next ready piece from the plan. Given an issue number, or a request that matches a ready piece, it builds that one. A request that is not yet a ready piece goes to shape first; implement builds, it does not shape. "/implement auto" builds several ready pieces in a row. Do not use for repairs of promised behaviour; that is fix.
+description: The everyday command for building a piece that has already been shaped and marked ready. Typed alone it takes the next ready piece from the plan. Given an issue number, or a request that matches a ready piece, it builds that one. It shows the result, merges it after the person's yes, and on a live project reads one line of health from the live copy. A request that is not yet a ready piece goes to shape first; implement builds, it does not shape. "/implement auto" builds several ready pieces in a row. Do not use for repairs of promised behaviour; that is fix.
 ---
 
 # Implement
@@ -13,6 +13,10 @@ first, then the project's pieces.
 
 This command builds; it does not shape. It takes a piece that `/shape` has
 already shaped and marked ready, and carries it to a confirmed, saved change.
+On the pull-request route it then asks the person whether to merge, and merges
+only on a yes that names the merge. On a live project that merge is a deploy,
+so this is also how a change goes live. section-builder's "Merge" step holds
+the rules, and the checks that come before the merge on a live project.
 Shaping, sizing, and settling a question all happen in `/shape`, so this command
 never has to guess what a piece means. A request that is not yet a ready piece
 belongs to `/shape` first.
@@ -51,6 +55,17 @@ condition is met, or until the person carries on after the risk notice and the
 acceptance is recorded; one parked
 after repeated failure (references/running-longer.md) needs routing back to
 `/shape` first, for another look.
+
+## A piece already built
+
+A piece whose pull request is open with a green check waits only for its
+merge. When the person types this command alone, or asks to put such work
+live, name each such pull request in one plain line that says what it changes,
+and ask for the yes as section-builder's "Merge" step says, after the checks
+that step makes on a live project. Their own words count only where they
+already named the merge, as in "merge both and put it live". "Put it live"
+names no merge, so ask. Never merge a pull request the person has not named
+or plainly covered.
 
 ## When a piece waits on the person
 
@@ -146,4 +161,4 @@ checkpoint for eligible private exploration.
 
 ## Done when
 
-The route was followed, the records are true, and the piece is confirmed and saved through the required route, safely blocked at a recorded condition, or the user knows exactly where things stopped and why.
+The route was followed, the records are true, and the piece is confirmed and saved through the required route, merged on the person's yes or left ready for review with what it waits for, safely blocked at a recorded condition, or the user knows exactly where things stopped and why.

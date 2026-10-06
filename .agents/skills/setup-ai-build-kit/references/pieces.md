@@ -44,6 +44,9 @@ operational rehearsal>
 <only when the work cannot go further until the person does something the agent
 cannot: where to go, what to do there, and what to bring back>
 
+Live side needs: <only when the live copy must gain a new secret, setting or
+outside service before this can go live: each by name, never a value>
+
 <details><summary>Under the hood</summary>
 
 <the build approach, the seams, code-level dependencies, any groundwork: the
@@ -99,6 +102,13 @@ This is not `blocked`. That label already means two things, a piece safely
 stopped at a recorded condition and a piece parked after repeated failure, and a
 third meaning would make all three unreadable. A piece waiting on the person
 keeps whatever labels it had.
+
+`Live side needs:` is left out too, unless the change needs something new on
+the live copy: a secret, a setting, or an outside service the host must reach.
+Name each one, never its value. On a live project the merge is a deploy, so
+`/implement` asks for the merge only once `/setup-hosting` reports each name
+present. A database migration needs no line, since `/implement` finds it in the
+change itself.
 
 ## The two layers of a piece
 

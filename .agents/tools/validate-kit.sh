@@ -43,8 +43,8 @@ implement
 maintain
 queue
 setup-ai-build-kit
+setup-hosting
 shape
-ship
 sync
 what-now"
 
@@ -594,7 +594,7 @@ RELHITS
 pass "bare relative skill references (references/*.md, templates/*.md, recipes/*.md, sibling-skill form) resolve"
 
 # Recipes. A recipe is one build stack paired with one place to run it, and
-# ship/references/recipe-format.md says what one must hold. The folder is the
+# setup-hosting/references/recipe-format.md says what one must hold. The folder is the
 # menu, so a file in it is offered to somebody founding a project. Each one
 # must have the shape the format asks for and carry real dates. Each must also
 # have its own rehearsal that sources the rule-shape helper and names the
@@ -606,7 +606,7 @@ pass "bare relative skill references (references/*.md, templates/*.md, recipes/*
 # only the files directly in recipes/. The folder may be empty, since the
 # format came before the first recipe.
 recipe_checker="$ROOT/.agents/tools/check-recipes.sh"
-recipe_blank="$SKILLS/ship/templates/recipe.md"
+recipe_blank="$SKILLS/setup-hosting/templates/recipe.md"
 recipe_ok=1
 if [ ! -x "$recipe_checker" ]; then
   fail ".agents/tools/check-recipes.sh is missing or not executable"
@@ -616,14 +616,14 @@ else
     fail "$recipe_blank: the recipe blank does not have the shape the format asks for"
     recipe_ok=0
   fi
-  for recipe_part in "$SKILLS"/ship/recipes/parts/*.md; do
+  for recipe_part in "$SKILLS"/setup-hosting/recipes/parts/*.md; do
     [ -f "$recipe_part" ] || continue
     if ! "$recipe_checker" --part "$recipe_part" >&2; then
       fail "$recipe_part: the shared part does not carry the lines a section needs"
       recipe_ok=0
     fi
   done
-  for recipe in "$SKILLS"/ship/recipes/*.md; do
+  for recipe in "$SKILLS"/setup-hosting/recipes/*.md; do
     [ -f "$recipe" ] || continue
     recipe_name=$(basename "$recipe" .md)
     if ! "$recipe_checker" "$recipe" >&2; then
@@ -997,7 +997,8 @@ fi
 # Build mechanics and pull-request hygiene: a piece starts from up-to-date main
 #; a new issue is unassigned until pickup; a direct push to main is
 # blocked and merged branches auto-delete; the agent opens the pull
-# request and stops, leaving the merge to a person.
+# request and merges it only on a yes that names the merge, made on the pull
+# request itself, and never in a run with nobody there to say it.
 sbfile="$SKILLS/section-builder/SKILL.md"
 blocked="$SKILLS/setup-ai-build-kit/references/blocked-commands.md"
 settings="$SKILLS/setup-ai-build-kit/templates/foundation/claude-settings.json"
@@ -1015,10 +1016,14 @@ if [ -f "$sbfile" ] && [ -f "$blocked" ] && [ -f "$settings" ] && [ -f "$startfi
     { fail "$settings: deny list does not block a direct push to main"; mech_ok=0; }
   grep -qF "delete_branch_on_merge" "$startfile" || \
     { fail "$startfile: does not enable auto-deletion of merged branches"; mech_ok=0; }
-  grep -qF "Do not merge the pull request, and do not delete the branch" "$sbfile" || \
-    { fail "$sbfile: pull-request route does not stop before merge and leave it to a person"; mech_ok=0; }
+  grep -qF "Merge only on a yes" "$sbfile" || \
+    { fail "$sbfile: the merge step does not wait for a yes that names the merge"; mech_ok=0; }
+  grep -qF "Make an approved merge on the pull request itself" "$sbfile" || \
+    { fail "$sbfile: the merge step does not make the merge on the pull request itself"; mech_ok=0; }
+  grep -qF "In an unattended run nobody is there to say yes, so never merge" "$sbfile" || \
+    { fail "$sbfile: an unattended run could merge with nobody there to say yes"; mech_ok=0; }
   [ "$mech_ok" -eq 1 ] && \
-    pass "pieces start from fresh main, new issues are unassigned, main is push-guarded, merged branches auto-delete, and the agent leaves the merge to a person"
+    pass "pieces start from fresh main, new issues are unassigned, main is push-guarded, merged branches auto-delete, and the agent merges only on a yes that names the merge"
 fi
 
 # Machine-check-first evidence: where a machine can check a piece, that
@@ -1230,7 +1235,7 @@ done
 [ "$fu_ok" -eq 1 ] && pass "a named tool is explained in one sentence, and a throwaway prototype is not labelled as one"
 
 # ---------------------------------------------------------------------------
-echo "== Ship control-flow contract =="
+echo "== Setup-hosting control-flow contract =="
 
 # Operational readiness and go-live belong inside the path branches that use
 # them (Build and run it, Build with care), never as a shared section after
@@ -1238,9 +1243,9 @@ echo "== Ship control-flow contract =="
 # reaching launch instructions despite its own branch saying to stop. The
 # anchor is the last branch heading, so a rename of that heading without a
 # matching change here would let the check pass on nothing.
-shipfile="$SKILLS/ship/SKILL.md"
-if [ ! -f "$shipfile" ]; then
-  fail "$shipfile: missing"
+hostingfile="$SKILLS/setup-hosting/SKILL.md"
+if [ ! -f "$hostingfile" ]; then
+  fail "$hostingfile: missing"
 else
   leaked=$(awk '
     /^### Build with care/ { seen=1; next }
@@ -1248,11 +1253,11 @@ else
       low = tolower($0)
       if (low ~ /go live/ || low ~ /operational readiness/) print NR ": " $0
     }
-  ' "$shipfile")
+  ' "$hostingfile")
   if [ -n "$leaked" ]; then
-    fail "$shipfile: a go-live or operational-readiness heading appears after all three path branches, so every path reaches it: $leaked"
+    fail "$hostingfile: a go-live or operational-readiness heading appears after all three path branches, so every path reaches it: $leaked"
   else
-    pass "ship/SKILL.md keeps go-live and operational-readiness steps inside their path branches"
+    pass "setup-hosting/SKILL.md keeps go-live and operational-readiness steps inside their path branches"
   fi
 
   # The recipe's checks move work to a live address, so they sit inside Build
@@ -1263,11 +1268,11 @@ else
     /^### Build and run it/ { inrun=1; next }
     /^### / { inrun=0 }
     /^#+ On a recipe/ { print (inrun ? "inside" : "outside"); exit }
-  ' "$shipfile")
+  ' "$hostingfile")
   if [ "$recipe_at" = inside ]; then
-    pass "ship/SKILL.md keeps the recipe's checks inside Build and run it"
+    pass "setup-hosting/SKILL.md keeps the recipe's checks inside Build and run it"
   else
-    fail "$shipfile: the 'On a recipe' checks are ${recipe_at:-missing}, not inside Build and run it"
+    fail "$hostingfile: the 'On a recipe' checks are ${recipe_at:-missing}, not inside Build and run it"
   fi
 fi
 
@@ -1694,7 +1699,7 @@ for literal in \
   '"./.claude/commands/implement.md"' \
   '"./.claude/commands/maintain.md"' \
   '"./.claude/commands/shape.md"' \
-  '"./.claude/commands/ship.md"' \
+  '"./.claude/commands/setup-hosting.md"' \
   '"./.claude/commands/setup-ai-build-kit.md"' \
   '"./.claude/commands/sync.md"' \
   '"./.claude/commands/what-now.md"' \

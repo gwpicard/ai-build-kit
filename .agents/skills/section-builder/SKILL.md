@@ -199,6 +199,9 @@ piece. A secret key is never written to a shared temporary folder such as
 uses it. A secret key read through a tool's own commands is piped straight
 into that file and never shown.
 
+On a live project, /setup-hosting applies a migration to the live database
+before the merge, as step 10 says, so a build never applies one itself.
+
 When the piece carries `visual`, or the change touches a screen file whatever
 subject the piece carries, load and follow `screen-check`. A screen file is one
 that renders a page, view, component, template, style, or native interface.
@@ -294,17 +297,16 @@ merging it closes the piece rather than leaving somebody to remember. Never pres
 say so plainly, pull the failing output yourself, fix through the normal
 steps, and push again.
 
-Once the check is green the piece is ready for review, and the run stops
-there. Do not merge the pull request, and do not delete the branch. A person
-decides whether to merge, always. Report the piece as ready for review, not as
-done, and leave the merge to them.
+Once the check is green the piece is ready for review, and step 10 asks the
+person whether to merge it. Never merge before that step, and never on a red
+check.
 
 Flagged route: where the person carried on and the acceptance is recorded,
 this is the pull-request route and nothing below applies. Otherwise do the
 pull-request route for everything up to the condition, then:
 
-- record the exact condition that must be met, and say that /ship prepares a
-  handover for the area on request;
+- record the exact condition that must be met, and say that /maintain
+  prepares a handover for the area on request;
 - label the piece `blocked`;
 - name what unblocked work may still continue;
 - state plainly that the flagged capability is not ready or live, with no
@@ -324,11 +326,6 @@ the tool that it reaches, update the masterplan's connections picture too, and
 say in one line what the tool now reaches, so the person can say whether it
 should. A correctly completed build does not need /sync afterward.
 
-Once a person merges the pull request it closes the issue, so there is no
-status to set by hand. After that merge, remove the `building` label and refresh
-the printout with `sh .agents/tools/plan-refresh.sh` so the person's list matches
-what just happened.
-
 When the report names a next piece, refresh the printout first if this pass has
 not, and name only a piece under its `To build` group marked `(ready)`. Where
 there is none, say nothing is ready to build now and name no piece. Never work
@@ -339,6 +336,89 @@ plain language, dated. Not from its title, and not from the pull request. A
 changelog assembled out of titles reads like a list of tasks, and this record
 exists so somebody who has not read the code understands what happened to their
 project six months later.
+
+## 10. Merge
+
+On the pull-request route, once the check is green and the records are in the
+pull request, the person decides whether to merge, always. Merge only on a yes
+that names it. On a project that is live, the merge is a deploy, so this step
+is also how the change goes live.
+
+First, say what the person can try and where: the preview address, on a recipe
+whose preview section gives one, or how to try it on this computer.
+
+**Before asking, on a live project.** Read the masterplan's "How it stays
+running" section. Where it records a live address, the merge puts this change
+live, so check these first, read-only, and change nothing live:
+
+- Where the change adds a database migration, check whether the live database
+  already has it, with the recipe's own dry run where it has one. Off a recipe,
+  ask the person. If it does not, say in one line: "This change adds to the
+  database, so /setup-hosting applies that first. Migrations only add, so the
+  version live now keeps working." Ask for the merge only once /setup-hosting
+  reports it applied.
+- Where the recipe's going-live section runs a check on this computer before
+  the merge, such as building the app the way the host will and reading its
+  health, run it now, so the build that goes live has already answered here.
+- Where the piece carries a `Live side needs:` line, ask for the merge only
+  once /setup-hosting reports each name on it present on the host. Say so in
+  one line, naming what is missing.
+- Where the piece touches a named sensitive area, the merge puts that area
+  live. Ask for it only when the area's caution is done or accepted on the
+  record, as the flagged route already requires. A piece stopped at its
+  condition is never offered for a merge.
+
+Until then, the pull request stays open and ready for review, and the report
+says what it waits for.
+
+**Asking.** Name the pull request in one plain line that says what it changes.
+Then ask for a yes that names the merge, for example: "Say yes to merge it,
+which puts it live." Say the second half only on a live project. Merge only
+when the person's reply plainly covers that merge. Where their own words
+already named the merge, as in "merge it", that is the yes: do not ask again.
+A yes to building, saving, uploading or going live, or to any question asked
+before the merge was named, does not cover it: ask again, and merge nothing
+until they answer. A no leaves the pull request open, ready for review, and the
+live tool as it was.
+
+Where more than one piece waits on its merge, name each pull request in its
+own line. A yes covers only the pull requests it names, or all of them where
+it plainly says so, as in "merge both".
+
+**Merging.** Make an approved merge on the pull request itself, such as with
+`gh pr merge`. Never merge the branch on this computer and push `main`. Where
+GitHub cannot be reached, the merge waits: say in one line that the person can
+merge it on GitHub themselves. Claude Code shows a confirmation box before the
+merge runs, so say in one line just before it that the box will ask them to
+allow the merge. Leave the branch to GitHub, which removes it once merged.
+
+In an unattended run nobody is there to say yes, so never merge. Report the
+piece as ready for review, not as done, and leave the merge to a person.
+
+The merge closes the issue, so there is no status to set by hand. After the
+merge, whoever made it, remove the `building` label and refresh the printout
+with `sh .agents/tools/plan-refresh.sh` so the person's list matches what just
+happened.
+
+**After the merge, on a project live on a recipe.** Once the host has had
+time to build, read one line of health from the live copy, read-only, as the
+recipe's going-live check and Health section say. Where the check is the kit's
+own, run it. Where a companion or the person runs it, ask in one sentence for
+the live address's health answer and read what they paste. Where it reports the
+merge, say: "The live copy now runs this change." Where it does not, read the
+host's own list of deployments where the recipe names a command for it, then
+say: "The live copy did not update," with the next step, which is
+/setup-hosting to compare the live copy with `main`. Off a recipe, say in one
+line that the merged change reaches the live copy the way the project's hosting
+works, and claim no more than you saw.
+
+Change nothing live after the merge: no deploy, no rollback, and no second
+push to `main`, since a host that builds `main` would build it again. Where
+the person asks to put the change out again, read the health line again first
+and say what it shows. A further deploy belongs to /setup-hosting and its
+rules, never to this step. Where they ask whether they can go back to the
+earlier version, say what the recipe's rollback section offers, that a
+rollback has not been tried, and run none.
 
 ## Excuses that don't hold
 
@@ -358,7 +438,8 @@ One of two outcomes, both complete passes:
 - Complete: the agreed behaviour has credible evidence, with any available
   machine check run and green, the user-facing result is confirmed where needed,
   required review is satisfied, the records match reality, and the selected save
-  route is complete.
+  route is complete. On the pull-request route, the pull request is merged on
+  the person's yes, or left open and ready for review with what it waits for.
 - Safely blocked: the piece stopped at its recorded condition, marked
   `blocked`, with the caution recorded on it, unblocked work
   identified, and no claim that the flagged capability is ready or live.

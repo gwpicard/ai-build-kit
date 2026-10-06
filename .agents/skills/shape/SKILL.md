@@ -57,6 +57,10 @@ promise. Read it back in the reply that reports the piece: "When this lands, the
 masterplan gains a weekly summary email." Use the actual change in that line;
 for "nothing", say the masterplan already covers it. Do not apply a future change while shaping.
 
+Where the piece needs a new secret, setting or outside service on the live copy,
+write its `Live side needs:` line on the surface, following pieces.md: each by
+name, never a value. Leave the line out otherwise.
+
 When writing the `Under the hood` notes for a project with code, load
 the `section-builder` skill's `references/reach-check.md` and run its reach
 check. Use the live result to name the code seams and existing covering tests,
