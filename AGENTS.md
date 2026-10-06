@@ -1047,8 +1047,13 @@ attribution line, not the word.
   neither swept into that commit nor discarded. It also holds the later run:
   it compares before it changes anything, says each gap in one plain line,
   and repairs a gap only on a yes that names it, a recipe's own command
-  included, since nobody asked for a launch. A move to another host keeps the
-  old live copy serving until the new one answers. WORKFLOW.md says all of it.
+  included, since nobody asked for a launch. A piece's migration waits on its
+  own branch until the merge, so a later run reads it from that pull request
+  and applies it from a separate temporary checkout after a named yes, leaving
+  the person's uncommitted work untouched. A move to another host keeps the
+  old live copy serving until the new one answers. WORKFLOW.md says all of it,
+  including that a later run's repairs wait for a yes even where the recipe
+  names the command.
 - `.agents/tests/implement-merges-on-a-yes.sh` guards how `/implement` merges
   a finished piece, in section-builder's last step. Both recipes' hosts build
   every change to `main`, so once a tool is live the merge is the deploy, and
@@ -1058,15 +1063,22 @@ attribution line, not the word.
   live does not cover it, while "merge it" in the person's own words does.
   The merge is made on the pull request, never on this computer with a push of
   `main`, waits when GitHub cannot be reached, is announced before Claude
-  Code's confirmation box, and never happens in a run with nobody there. Moving
-  the merge opened three gaps, and the check holds each shut: a change that
-  adds to the live database waits until `/setup-hosting` has applied the
-  addition, a piece whose `Live side needs:` line names a new secret or
-  service waits until it is present on the host, and a piece in a sensitive
-  area waits until its caution is done or accepted. After the merge the kit
-  reads one health line from the live copy and changes nothing live: asked to
-  put the change out again it reads first and leaves any deploy to
-  `/setup-hosting`. It also holds the `Live side needs:` line in pieces.md
+  Code's confirmation box only where Claude Code runs, and never happens in a
+  run with nobody there. A yes to a hosting step does not cover it, and "which
+  puts it live" is said only where the merge does deploy. Moving the merge
+  opened gaps, and the check holds each shut. A piece in a sensitive area is
+  checked first, on any project, and waits until its caution is done or
+  accepted, so nothing reaches the live side for a piece that may not merge.
+  On a live project the evidence run covers what the piece changed, and a
+  settled area gets the readiness check `/setup-hosting` gives it, with a gap
+  said once as a warning. A change that adds to the live database waits until
+  `/setup-hosting` has applied the addition; the dry run's password follows
+  the rule for a secret a check needs, and a database it cannot read counts as
+  not applied. A piece whose `Live side needs:` line names a new secret or
+  service waits until it is present on the host. After the merge the kit
+  reads one health line from the live copy and changes nothing live. A build
+  still running is read again after a short wait, never deployed twice, and
+  "did not update" is said only for a build that failed or is missing. It also holds the `Live side needs:` line in pieces.md
   and `/shape`, and WORKFLOW.md telling it.
 - `.agents/tests/first-upload-asks.sh` guards the yes the project's first
   upload waits for. Founding tells the person nothing will be uploaded, and in

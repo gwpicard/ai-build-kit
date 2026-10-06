@@ -256,9 +256,15 @@ On either route, the first time anything pushes your project's code online, the 
 
 Next to the merge button sits that check. It re-runs the project's real commands on a clean machine, so the pull request's claims get verified rather than trusted. Those commands include the mechanical checks your project's language offers, a type check and a linter wherever it has them, which catch a whole class of mistakes before anyone tries the tool. They use each tool's own default rules, so a red tick points at a real mistake rather than a matter of taste. The agent runs the same checks before it hands any work over. Green means the checks that exist really passed, which is a smaller promise than nothing being wrong: it covers the behaviour somebody thought to check and nothing else. Red means don't merge; say it to /fix, and the agent reads what failed itself. You never read the machine's logs, and you never merge over a red check.
 
-A human decides whether to merge, always. Once the check is green, /implement tells you what to try and where, such as the preview address, then names the pull request in one plain line and asks for a yes that names the merge. Saying "put it live" or "save it" before any merge was named is not that yes, so it asks again; saying "merge it" is, and it does not ask twice. It makes the merge on the pull request itself, never by merging on your computer and pushing `main`, and in Claude Code a box asks you to allow it first. If GitHub cannot be reached, the merge waits, and you can merge it on GitHub yourself. With nobody there to answer, nothing is merged and the pull request waits for you. After a merge, everyone pulls main. Flagged areas also get the review the build path names before the pull request is offered as ready.
+A human decides whether to merge, always. Once the check is green, /implement tells you what to try and where, such as the preview address, then names the pull request in one plain line and asks for a yes that names the merge. Saying "put it live" or "save it" before any merge was named is not that yes, so it asks again; saying "merge it" is, and it does not ask twice.
 
-Once the tool is live, a merge is a deploy: the host builds `main` and the team's copy follows. So before asking, /implement checks the live side. A change that adds to the database waits until /setup-hosting has applied that addition, which only adds, so the version live now keeps working. A piece whose `Live side needs:` line names a new secret or service waits until /setup-hosting reports it present. A piece in a sensitive area waits until its caution is done or your acceptance is recorded. After the merge, /implement reads one line from the live copy: "The live copy now runs this change", or "The live copy did not update" with the next step. It changes nothing live, so if you ask it to put the change out again, it checks first and leaves any further deploy to /setup-hosting. A direct push to `main` is forbidden, and in Claude Code the project settings refuse the usual ways of writing one, so every change reaches it through a pull request. Each piece starts from an up-to-date `main`.
+It makes the merge on the pull request itself, never by merging on your computer and pushing `main`, and in Claude Code a box asks you to allow it first. If GitHub cannot be reached, the merge waits, and you can merge it on GitHub yourself. With nobody there to answer, nothing is merged and the pull request waits for you. After a merge, everyone pulls main. Flagged areas also get the review the build path names before the pull request is offered as ready.
+
+Once the tool is live, a merge is a deploy: the host builds `main` and the team's copy follows.
+
+So before asking, /implement checks the live side. A change that adds to the database waits until /setup-hosting has applied that addition, which only adds, so the version live now keeps working. A piece whose `Live side needs:` line names a new secret or service waits until /setup-hosting reports it present. A piece in a sensitive area waits until its caution is done or your acceptance is recorded.
+
+After the merge, /implement reads one line from the live copy: "The live copy now runs this change", or "The live copy did not update" with the next step. It changes nothing live, so if you ask it to put the change out again, it checks first and leaves any further deploy to /setup-hosting. A direct push to `main` is forbidden, and in Claude Code the project settings refuse the usual ways of writing one, so every change reaches it through a pull request. Each piece starts from an up-to-date `main`.
 
 ## 8. Sensitive areas, and the risk notice
 
@@ -318,6 +324,10 @@ once pushed a whole settings file to change one thing, and switched off a live
 setting it then could not switch back on. The commands your project's recipe
 names are the launch you asked for, and need no second yes.
 
+A later run is
+different: nobody asked for a launch, so each repair it makes waits for a yes
+that names it.
+
 /setup-hosting never merges your code. A finished piece waiting in a pull
 request is merged by /implement, on a yes that names the merge. When a deploy's
 result is unclear, /setup-hosting checks whether it went live before it tries
@@ -327,7 +337,9 @@ heard is not repeated in the same run.
 
 The records /setup-hosting writes, such as its changelog entries and a
 colleague later saying the new version is live, take the same save route as a
-piece. On a shared project they go on one branch and one pull request for each
+piece.
+
+On a shared project they go on one branch and one pull request for each
 run, never straight to `main`, and merging that pull request needs its own yes,
 made on the pull request itself. Where your host builds every change to
 `main`, /setup-hosting tells you that merging it starts one more build and
@@ -368,7 +380,9 @@ names only, never a password or key. You take it to whoever runs the server,
 and paste back what they send. On a later launch /setup-hosting reads the request back
 rather than asking again.
 
-After the first launch, a later /setup-hosting compares the live copy with `main` and tells you each gap in one plain line: whether the live copy runs the latest merge, whether a database change has not been applied, whether a secret or setting is missing on the host, whether health answers, and whether the backup works. It repairs each gap only after a yes that names it. It rechecks the build path first if reliance or consequence has grown. A warning the changelog already holds comes back as one line pointing to it, so anything given in full is new. Moving to another host or recipe is a later run too: the old live copy keeps serving until the new one answers.
+After the first launch, a later /setup-hosting compares the live copy with `main` and tells you each gap in one plain line: whether the live copy runs the latest merge, whether a database change has not been applied, whether a secret or setting is missing on the host, whether health answers, and whether the backup works.
+
+It repairs each gap only after a yes that names it. It rechecks the build path first if reliance or consequence has grown. A warning the changelog already holds comes back as one line pointing to it, so anything given in full is new. Moving to another host or recipe is a later run too: the old live copy keeps serving until the new one answers.
 
 ## 10. Autonomy: /implement auto and goal modes
 
