@@ -126,4 +126,13 @@ rs_require_load_bearing "WORKFLOW says a merge is a deploy once live" "$WORKFLOW
 rs_require_load_bearing "WORKFLOW says the database addition goes first" "$WORKFLOW" 'a change that adds to the database waits until /setup-hosting has applied that addition'
 rs_require_load_bearing "WORKFLOW gives the health line" "$WORKFLOW" 'after the merge, /implement reads one line from the live copy'
 
+# A pull request another change has collided with cannot merge, and asking
+# for a yes it cannot honour leaves the person holding a merge that fails.
+rs_require_load_bearing "mergeability is read before asking" "$BUILDER" 'before asking, read whether github can merge the pull request, with `gh pr view <number> --json mergeable`'
+rs_require_load_bearing "a conflict is said in one line" "$BUILDER" 'where it answers `conflicting`, another change has landed in the same place since this piece began\. say so in one line'
+rs_require_load_bearing "the offer is to merge main into the branch and push" "$BUILDER" 'offer to bring the newest `main` into the piece.s branch: merge `main` into it on this computer and push the branch'
+rs_require_load_bearing "never a force push or a rebase" "$BUILDER" 'never force a push and never rebase\. do it only on a yes'
+rs_require_load_bearing "the check runs again before the ask" "$BUILDER" 'run the project check again, and ask for the merge only once it is green'
+rs_require_order "mergeability comes before the ask" "$BUILDER" '^\*\*Whether it can merge\.' '^\*\*Asking\.\*\* Name the pull request'
+
 rs_done

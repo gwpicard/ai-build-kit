@@ -399,6 +399,18 @@ live, so check these first, read-only, and change nothing live:
 Until then, the pull request stays open and ready for review, and the report
 says what it waits for.
 
+**Whether it can merge.** Before asking, read whether GitHub can merge the
+pull request, with `gh pr view <number> --json mergeable`. Where it answers
+`CONFLICTING`, another change has landed in the same place since this piece
+began. Say so in one line, and offer to bring the newest `main` into the
+piece's branch: merge `main` into it on this computer and push the branch.
+Never force a push and never rebase. Do it only on a yes. Settle the conflict
+as the `what-now` skill's "Merge or rebase conflict" says, keeping both sides
+and asking where the records do not make the outcome plain. Then run the
+project check again, and ask for the merge only once it is green. Where GitHub
+answers `UNKNOWN`, it is still working the answer out: read it again after a
+short wait.
+
 **Asking.** Name the pull request in one plain line that says what it changes.
 Then ask for a yes that names the merge, for example: "Say yes to merge it,
 which puts it live." Say the second half only where the project is live and

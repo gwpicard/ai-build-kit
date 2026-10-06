@@ -322,6 +322,21 @@ finds. With none, save everything else and say plainly that the pieces are
 created once the project has a repository of its own, the way the last
 paragraph of this step handles a GitHub setup that cannot be finished.
 
+Before the first issue, say in one line what founding is about to do on
+GitHub: open the pieces as issues, replace the labels GitHub made with the
+kit's own, and switch on removing a pull request's branch once it merges. Name
+the repository as `owner/name` and say whether it is public or private, read
+with `gh repo view --json visibility`. Where you cannot read that, say so
+rather than guess.
+
+On a private repository, carry on in the same reply. On a public one, say that
+the plan will be public to anyone, and offer once to stop so the person can
+choose a private repository instead. That one offer ends the reply, because
+the issues cannot be taken back once anybody has read them. Any answer that
+does not ask to stop, a request to get on with it included, is a go. Where
+they stop it, save everything else and treat it the way the last paragraph of
+this step treats a GitHub setup that cannot be finished.
+
 Each piece becomes an issue, written to the shape in references/pieces.md. This
 needs a GitHub repository and the GitHub command line tool signed in; where that
 is not yet in place, guide the person through it now, following

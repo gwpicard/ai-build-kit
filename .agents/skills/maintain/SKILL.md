@@ -839,6 +839,14 @@ nothing keeps billing quietly, confirm billing has actually stopped, and
 archive the repo. An abandoned tool with real data in it is a liability; a
 retired one is finished.
 
+Export first, and read the export back before anything is switched off. Each
+step that revokes access, deletes a credential, removes a scheduled job or
+webhook, switches a service off or archives the repository waits for a yes
+that names that step. Before asking, say what it changes and whether it can
+be undone: a deleted credential or database cannot be brought back, while an
+archived repository can be unarchived. A yes to one step covers only that
+step. A no leaves that part running, and the ending lists it as still open.
+
 ## Done when
 
 The records match what happened, any gap between the live copy and `main` is reported, the findings are reported, the approved changes are applied and saved through the build path's route, a monthly or quarterly part that ran is written into `.ai-build-kit-maintenance`, and the person knows when the next one is due.

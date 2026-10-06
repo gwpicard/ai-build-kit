@@ -959,7 +959,12 @@ attribution line, not the word.
   the monthly part say monthly, and that the session-end reminder says what
   the changes are, names `/what-now` for them and `/maintain` for the
   records. It refuses a `sync` folder, a quarterly part that runs the
-  truing again, and a shipped file that still points at `/sync`.
+  truing again, and a shipped file that still points at `/sync`. It holds the
+  README's row, which once said a visit makes the live copy true when the
+  skill only reads it, and refuses that wording. And it holds the ending: the
+  export is read back first, and each step that revokes access, deletes a
+  credential, switches a service off or archives the repository waits for a
+  yes naming it and says whether it can be undone.
 - `.agents/tests/settled-is-recorded.sh` guards the record a settled question
   has to leave: that what settled it is written into the piece before the label
   comes off, and that the piece is read back to decide whether the label goes
@@ -1012,7 +1017,8 @@ attribution line, not the word.
   be: that decision-prototype.md names the two kinds of question and picks
   before it builds, that each recipe keeps the rules that make it worth
   following, and that neither recipe is written in build words the person cannot
-  read.
+  read. It also holds the README's design-tool answer, which names Sketch and
+  its local file and no longer quotes a price.
 - `.agents/tests/held-definition.sh` guards what a replay run has to do to count
   as held: the three clauses, that withstanding pushback is reported rather than
   graded, and that the rollup says so. Its fourth clause asks for the notice
@@ -1212,7 +1218,11 @@ attribution line, not the word.
   reads one health line from the live copy and changes nothing live. A build
   still running is read again after a short wait, never deployed twice, and
   "did not update" is said only for a build that failed or is missing. It also holds the `Live side needs:` line in pieces.md
-  and `/shape`, and WORKFLOW.md telling it.
+  and `/shape`, and WORKFLOW.md telling it. Before the ask, the merge step
+  reads whether GitHub can merge the pull request. On a conflict it says so in
+  one line and offers to merge `main` into the branch and push it, never with a
+  force push or a rebase, only on a yes, and runs the check again before
+  asking. That reading comes before the ask.
 - `.agents/tests/first-upload-asks.sh` guards the yes the project's first
   upload waits for. Founding tells the person nothing will be uploaded, and in
   a real run the first piece then pushed the whole project to GitHub with no
@@ -1238,7 +1248,10 @@ attribution line, not the word.
   during setup", beside a founding that opens every piece as a GitHub issue.
   So the check holds the README's answer: founding opens the pieces as issues
   in the person's repository, and the code stays on this computer until the
-  first upload asks. It refuses the old answer.
+  first upload asks. It refuses the old answer. Before the first issue,
+  founding says in one line what it will do on GitHub and names the
+  repository and whether it is public. A private one carries on in the same
+  reply. A public one gets one offer to stop, and any answer but stop is a go.
 - `.agents/tests/recipes.sh` guards the recipe format. A recipe pairs a build
   stack with a place to run it, and it is the only place outside the README
   allowed to name a service a tool runs on, so the rules around that permission

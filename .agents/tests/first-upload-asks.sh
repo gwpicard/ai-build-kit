@@ -106,4 +106,13 @@ rs_require_load_bearing "the README says founding opens the pieces as issues" "$
 rs_require_load_bearing "the README says the code waits for the first upload's yes" "$README" 'your code stays on your computer until the first piece that needs to upload it asks you'
 rs_require_absent "the README no longer says nothing leaves during setup" "$README" 'does anything leave my computer\?\*\* not during setup'
 
+# Founding's own acts on GitHub are said first, and a public repository gets
+# one offer to stop, since a plan nobody meant to publish cannot be unread.
+rs_require_load_bearing "founding says what it will do on GitHub first" "$SETUP" 'before the first issue, say in one line what founding is about to do on github: open the pieces as issues, replace the labels github made with the kit.s own, and switch on removing'
+rs_require_load_bearing "founding names the repository and its visibility" "$SETUP" 'name the repository as `owner/name` and say whether it is public or private'
+rs_require_load_bearing "a private repository carries on" "$SETUP" 'on a private repository, carry on in the same reply'
+rs_require_load_bearing "a public repository gets one offer to stop" "$SETUP" 'on a public one, say that the plan will be public to anyone, and offer once to stop'
+rs_require_load_bearing "any answer but stop is a go" "$SETUP" 'any answer that does not ask to stop, a request to get on with it included, is a go'
+rs_require_order "the notice comes before the first issue" "$SETUP" 'Before the first issue, say in one line' 'Each piece becomes an issue, written to the shape'
+
 rs_done
