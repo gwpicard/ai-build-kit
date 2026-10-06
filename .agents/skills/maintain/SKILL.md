@@ -509,7 +509,7 @@ is a step here rather than advice:
 A project founded before the kit had recipes has no `Recipe:` line in its
 AGENTS.md. A project whose person chose their own stack has `Recipe: none`.
 Either one can be built much like a recipe on the menu without anybody
-noticing. On a recipe, /ship checks the launch steps. Off one, it can only
+noticing. On a recipe, /setup-hosting checks the launch steps. Off one, it can only
 name what it could not check. So the monthly visit makes the offer, and the
 person decides. The move is never required.
 
@@ -517,13 +517,13 @@ Skip this on Explore privately. Nothing there goes live, so the launch checks
 would gain nothing.
 
 1. Read the `Recipe:` line in the stack section of the project's AGENTS.md.
-   Where it names a file that is in the installed ship skill's `recipes/`
+   Where it names a file that is in the installed setup-hosting skill's `recipes/`
    folder, the project is on a recipe, and this step ends. `Recipe: none`, no
    line at all, or a file that is no longer there counts as off a recipe.
 2. Look at the project's open pieces. Where an open piece already proposes a
    move onto a recipe, the person said yes on an earlier visit and the move is
    waiting to be built, so this step ends. Filing it again would make a copy.
-3. Read the menu at this moment: each file directly in the installed ship
+3. Read the menu at this moment: each file directly in the installed setup-hosting
    skill's `recipes/` folder, not the `parts/` folder inside it. Read each
    file's `Build stack:` and `Deploy target:` lines. Take every product name
    from those files, and never write one into this skill.
@@ -564,7 +564,7 @@ would gain nothing.
    left, take the one whose `Build stack:` line matches the most, or the
    first by file name.
 8. Offer the move once, in one reply. Name the recipe from its file. Say what
-   it gains in plain words: the launch checks /ship would then run, one for
+   it gains in plain words: the launch checks /setup-hosting would then run, one for
    each section the recipe checks, such as preview, rollback, backup and
    restore. Say what it would change, from the differences step 4 found: for
    example, add the recipe's shared Dockerfile and health route, move the tool
@@ -572,7 +572,7 @@ would gain nothing.
    migrations and the project's tables are made only in the data service's
    dashboard, move those tables into migrations. Never quote a price. Say that
    the project keeps working as it is if they say no. For example: "This
-   project is built much like the [recipe name] recipe. On that recipe, /ship
+   project is built much like the [recipe name] recipe. On that recipe, /setup-hosting
    would check the preview, rollback, backup and restore for you. The move
    would add a Dockerfile and a health route, and move the tool to [deploy
    target]. Shall I file it as a piece? Nothing changes if you say no."
@@ -615,7 +615,9 @@ Everything above, plus:
 3. Review project skills for instructions that no longer pay their way and
    offer to remove them. AGENTS.md was already checked in the monthly pass;
    do not repeat its trim offer or cut anything without the person's yes.
-4. Run ship's evidence run, scoped by the build path and its sensitive areas.
+4. Run the evidence run in the `setup-hosting` skill's
+   `references/evidence-run.md`, scoped by the build path and its sensitive
+   areas.
 5. The ownership and graduation check: can the team still explain the main
    flows? Can it verify important changes without reading code? Can it
    identify where data, secrets, service owners, and bills live? Can it
@@ -628,10 +630,29 @@ Everything above, plus:
    only when a genuine redesign has removed what put it there; an acceptance
    drops its caution and leaves the area named. Where the person asks for a
    handover, or a caution names a person the team has to find, prepare
-   the `ship` skill's `templates/handover.md` for the area or the whole
-   build.
+   one for the area or the whole build, as "A handover" below says.
 6. Put today's date on the `last-full-pass` line as well as the
    `last-light-pass` line in `.ai-build-kit-maintenance`.
+
+## A handover
+
+A handover is what the team gives somebody outside it to look at one
+sensitive area, or to take the whole build on. This section is its one home.
+/setup-hosting offers one on Build with care where a caution is a person the
+team has nobody to ask, and a flagged piece that stops at its condition names
+it too.
+
+A handover is a document the person asks for, not a stop. Prepare it only on
+a yes, from this skill's `templates/handover.md`, filled in for that area or
+for the whole build, in plain words for the reader outside the project. Never
+put a secret in it: say where access is granted. Carry on with everything
+outside the area either way.
+
+Where preparing it changes the build path or names a new sensitive area,
+record what changed, why the previous path no longer fits, each new area and
+its caution, which work may continue, and which work waits.
+
+It is done when it is complete and says what it does not cover.
 
 ## When a tool's time is over
 

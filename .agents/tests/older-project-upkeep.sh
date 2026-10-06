@@ -126,11 +126,11 @@ mkdir -p "$WORK/awkward"
 cat > "$WORK/awkward/AGENTS.md" <<'EOF'
 Run `python3 .agents/skills/maintain/scripts/old-skill-pointers.py` monthly.
 See [pieces](.agents/skills/setup-ai-build-kit/references/pieces.md) for more.
-Folder `.agents/skills/ship/recipes/` holds recipes.
+Folder `.agents/skills/setup-hosting/recipes/` holds recipes.
 Anchor .agents/skills/setup-ai-build-kit/references/pieces.md#shape here.
 Prefixed ./.agents/skills/setup-ai-build-kit/references/pieces.md here.
 Gone `.agents/skills/setup-ai-build-kit/references/no-such-file.md` here.
-Two: `.agents/skills/ship/templates/handover.md` and `.agents/skills/start/references/pieces.md`.
+Two: `.agents/skills/ship/templates/recipe.md` and `.agents/skills/start/references/pieces.md`.
 EOF
 head -6 "$WORK/awkward/AGENTS.md" > "$WORK/awkward/untouched"
 listed_awkward=$(python3 "$SCRIPT" "$WORK/awkward")
@@ -140,7 +140,7 @@ rs_report "a pointer inside a command, a link, a longer path, or to a missing fi
 rs_report "and each of those lines is left exactly as it was" \
   "$(head -6 "$WORK/awkward/AGENTS.md" | cmp -s - "$WORK/awkward/untouched" && echo yes || echo no)"
 rs_report "two standalone pointers on one line are both rewritten" \
-  "$(grep -qF "Two: the \`ship\` skill's \`templates/handover.md\` and the \`setup-ai-build-kit\` skill's \`references/pieces.md\`." "$WORK/awkward/AGENTS.md" && echo yes || echo no)"
+  "$(grep -qF "Two: the \`setup-hosting\` skill's \`templates/recipe.md\` and the \`setup-ai-build-kit\` skill's \`references/pieces.md\`." "$WORK/awkward/AGENTS.md" && echo yes || echo no)"
 rs_report "after the rewrite, nothing is left to rewrite" \
   "$([ -z "$(python3 "$SCRIPT" "$WORK/awkward" | grep -v 'left as written: ')" ] && echo yes || echo no)"
 
@@ -154,9 +154,9 @@ cat > "$WORK/blocks/AGENTS.md" <<'EOF'
 ```sh
 cat .agents/skills/setup-ai-build-kit/references/pieces.md
 ```
-    cat .agents/skills/ship/templates/handover.md
+    cat .agents/skills/maintain/templates/handover.md
 Double `` .agents/skills/setup-ai-build-kit/references/pieces.md `` here.
-Folder .agents/skills/ship/recipes here.
+Folder .agents/skills/setup-hosting/recipes here.
 Read the `.agents/skills/setup-ai-build-kit/references/fit-check.md` file.
 EOF
 head -6 "$WORK/blocks/AGENTS.md" > "$WORK/blocks/untouched"

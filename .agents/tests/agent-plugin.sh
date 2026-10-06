@@ -43,7 +43,7 @@ maintain
 shape
 queue
 setup-ai-build-kit
-ship
+setup-hosting
 sync
 what-now"
 
@@ -225,25 +225,25 @@ for supporting in \
   setup-ai-build-kit/scripts/bootstrap-project.sh \
   setup-ai-build-kit/templates/foundation/AGENTS.md \
   setup-ai-build-kit/references/fit-check.md \
-  ship/templates/handover.md \
-  ship/templates/recipe.md \
-  ship/references/recipe-format.md \
+  maintain/templates/handover.md \
+  setup-hosting/templates/recipe.md \
+  setup-hosting/references/recipe-format.md \
   implement/references/running-longer.md \
   change-triage/references/source-check.md; do
   [ -f "$SKILLS_DIR/$supporting" ] || \
     fail "the agent plugin lost a file one of its skills needs: $supporting"
 done
-# Founding reads the recipe menu from the ship skill beside its own folder, so
+# Founding reads the recipe menu from the setup-hosting skill beside its own folder, so
 # every recipe on the menu has to arrive there, and no shared part may be
 # mistaken for a menu entry by arriving loose beside them.
-for recipe in "$ROOT"/.agents/skills/ship/recipes/*.md; do
+for recipe in "$ROOT"/.agents/skills/setup-hosting/recipes/*.md; do
   [ -f "$recipe" ] || continue
-  [ -f "$SKILLS_DIR/ship/recipes/$(basename -- "$recipe")" ] || \
+  [ -f "$SKILLS_DIR/setup-hosting/recipes/$(basename -- "$recipe")" ] || \
     fail "the agent plugin lost a recipe founding offers: $(basename -- "$recipe")"
 done
-for part in "$ROOT"/.agents/skills/ship/recipes/parts/*.md; do
+for part in "$ROOT"/.agents/skills/setup-hosting/recipes/parts/*.md; do
   [ -f "$part" ] || continue
-  [ -f "$SKILLS_DIR/ship/recipes/parts/$(basename -- "$part")" ] || \
+  [ -f "$SKILLS_DIR/setup-hosting/recipes/parts/$(basename -- "$part")" ] || \
     fail "the agent plugin lost a shared recipe part: $(basename -- "$part")"
 done
 cmp -s "$SKILLS_DIR/setup-ai-build-kit/SKILL.md" "$PACK/.agents/skills/setup-ai-build-kit/SKILL.md" || \
