@@ -58,9 +58,9 @@ work and leaves it alone.
    keeping every present promise and decision on the masterplan. Otherwise,
    leave it intact and carry on. At or below the measure, say nothing.
 
-   Then read the project's own documents against it. Load the `maintain`
-   skill's `references/document-read.md` and check the README and every document
-   AGENTS.md points at for a file, link, command or setting that no longer
+   Then read the project's own documents against it. Load
+   the `maintain` skill's `references/document-read.md` and check the README
+   and every document AGENTS.md points at for a file, link, command or setting that no longer
    exists. Offer to correct only the stale name, or to file it as a piece.
    This is the visit's one read for stale names. The quarterly read for
    documents that repeat each other leaves those names to it.
