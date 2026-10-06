@@ -33,8 +33,9 @@ not a record of anything.
 
 ## Typed alone
 
-A ready repair comes first: a piece under the printout's `Broken` group that
-carries `ready`, is not being built, and that nothing open is holding up.
+A ready repair comes first: a piece under the printout's `Broken` group marked
+`(ready)`, which the printout gives only to a repair nobody is building and
+nothing open holds up.
 Something that used to work and no longer does outranks anything new.
 section-builder builds it with the repair rules. Otherwise, take the
 lowest-numbered ready piece that nothing open is holding up and whose
@@ -137,9 +138,11 @@ so say it the moment you see it rather than at the end.
 ## Naming the next piece
 
 When the report at the end of a build names what can be built next, read it off
-the printout section-builder has just refreshed. Name only a piece under
-`To build` marked `(ready)`, and never the piece just built. Where that group
-holds no such piece, say that nothing is ready to build now, say what the rest
+the printout section-builder has just refreshed. A repair under `Broken` marked
+`(ready)` comes first, since the printout marks one ready only when nobody is
+on it and nothing open holds it up. Otherwise, name only a piece under
+`To build` marked `(ready)`, and never the piece just built. Where neither
+group holds such a piece, say that nothing is ready to build now, say what the rest
 are waiting on, and name no piece as next. Never work the next piece out from
 the issue list or its blocked-by links by hand: the printout already keeps a
 piece with an open blocker out of `To build`, and a hand reading does not.
@@ -150,7 +153,8 @@ Auto is not an ordinary peer to normal building; it is earned, not default.
 Before enabling it, require: at least three normal pieces completed cleanly,
 no unresolved review or flagged work waiting, clean Git state, evidence a machine can
 check for every selected piece, no piece still waiting on a question
-(`needs-clarification`, `needs-prototype`, or `needs-research`), every selected
+(`needs-clarification`, `needs-prototype`, or `needs-research`), no repair
+labelled `broken`, every selected
 piece self-sufficient enough to build without a person present, meaning its
 `Under the hood` notes carry what the build needs, nothing needing
 human judgement in the batch,

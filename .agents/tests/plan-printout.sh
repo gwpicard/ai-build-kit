@@ -71,6 +71,13 @@ cat >"$WORK/issues.json" <<'JSON'
   {"number": 12, "title": "Refund button", "html_url": "http://x/12",
    "body": "## Done when\nA refund is sent.", "assignees": [],
    "labels": [{"name": "finance"}, {"name": "ready"}],
+   "issue_dependencies_summary": {"blocked_by": 1, "total": 1}},
+  {"number": 13, "title": "Wrong total on receipts", "html_url": "http://x/13",
+   "body": "## Done when\nThe receipt total matches the basket.", "assignees": [],
+   "labels": [{"name": "finance"}, {"name": "broken"}, {"name": "ready"}]},
+  {"number": 14, "title": "Lost reminder emails", "html_url": "http://x/14",
+   "body": "## Done when\nEach reminder is sent once.", "assignees": [],
+   "labels": [{"name": "background automation"}, {"name": "broken"}, {"name": "ready"}],
    "issue_dependencies_summary": {"blocked_by": 1, "total": 1}}
 ]
 JSON
@@ -87,6 +94,8 @@ case "$1 $2" in
        # closed, so it is free to build. Both go through the same call, and only
        # the state in the answer tells them apart.
        *"/issues/11/dependencies/blocked_by")
+         echo '[{"number":1,"title":"Card checkout","state":"open"}]' ;;
+       *"/issues/14/dependencies/blocked_by")
          echo '[{"number":1,"title":"Card checkout","state":"open"}]' ;;
        *"/issues/12/dependencies/blocked_by")
          echo '[{"number":2,"title":"Rename the header","state":"closed"}]' ;;
@@ -123,6 +132,21 @@ grep -q "^Broken$" "$OUT" && grep -A1 "^Broken$" "$OUT" | grep -q "#7" \
 grep -A1 "^Broken$" "$OUT" | grep -q "being fixed" \
   && pass "a repair somebody has started says so" \
   || fail "#7 does not say it is being fixed"
+
+# Under Broken, "(ready)" is what /implement and section-builder read as a
+# repair free to build now. A ready repair nothing holds says so. One held up
+# by an open piece names it and does not say ready, and neither does the
+# repair somebody is already on.
+grep "Wrong total on receipts" "$OUT" | grep -q "(ready)" \
+  && pass "a ready repair nothing holds is marked ready under Broken" \
+  || fail "the ready repair is not marked ready under Broken"
+grep "Lost reminder emails" "$OUT" | grep -q "(needs " \
+  && ! grep "Lost reminder emails" "$OUT" | grep -q "(ready)" \
+  && pass "a repair held up by an open piece names it and is not marked ready" \
+  || fail "the held-up repair is marked ready or does not say what holds it"
+grep "Duplicate bookings" "$OUT" | grep -q "(ready)" \
+  && fail "a repair somebody is on is marked ready" \
+  || pass "a repair somebody is on is not marked ready"
 
 grep -A1 "^Building$" "$OUT" | grep -q "#2" \
   && pass "an ordinary piece under way is under Building" \

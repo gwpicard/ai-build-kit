@@ -35,9 +35,14 @@ by hand") gets skipped and left marked to-build; say so in the report. The
 plan sorts itself: the how-to-check phrase on each done line is the
 eligibility rule.
 
+A repair, a piece labelled `broken`, is never taken. Its rules ask for a
+person: three failed attempts owe the risk notice in the same reply, and a run
+with nobody there would retry and park it instead. Skip it, and name it in the
+report as waiting for an ordinary `/implement`.
+
 When a piece fails: retry within the piece, up to three attempts, the same
-number a repair uses. After the third, park it, mark it `blocked` with one line on
-what kept failing, and move to the next piece; never let one piece consume the
+number a repair uses. After the third, park it, mark it `blocked` with one
+line on what kept failing, and move to the next piece; never let one piece consume the
 run. Route the parked piece further when the failure points somewhere specific:
 send it back to `/shape`, which settles a missing decision, chases a missing
 external fact, or reassesses a shape the team could not safely own, rather than
