@@ -10,7 +10,7 @@ deny list reduces automation, it does not remove the rule. Where a tool
 supports a command deny list, this list is also mirrored there as stronger,
 mechanical enforcement:
 
-- Claude Code: `.claude/settings.json` → `permissions.deny` (shipped, mirrors this list).
+- Claude Code: `.claude/settings.json` → `permissions.deny` (shipped, mirrors this list), and `permissions.ask`, which asks the person before every merge.
 - Codex: set `approval_policy`/sandbox in `~/.codex/config.toml` so shell writes need approval.
 - Cursor: add the same patterns under Cursor's command allow/deny settings.
 
@@ -25,9 +25,9 @@ shell pattern.
 
 - git reset --hard (throws away unsaved work)
 - git checkout . and git restore . (the same thing wearing different clothes; allowed only inside fix's reset step, announced out loud first)
-- git push --force (rewrites shared history under teammates' feet)
+- git push --force, or -f, or --force-with-lease, wherever the option sits (rewrites shared history under teammates' feet)
 - git clean -fd (deletes files git never saved)
-- rm -rf (deletes anything, recursively, with no undo)
+- rm -rf, and the same delete spelled -fr, -Rf, -r -f or --recursive --force (deletes anything, recursively, with no undo)
 - any command that drops or empties a database table
 
 ## Standing restrictions
@@ -40,7 +40,7 @@ guard can express them:
 - no printing, committing, or otherwise outputting a secret, anywhere;
 - no disabling authentication or an access control to make a test or a check pass;
 - no bypassing a red project check to ship or merge anyway;
-- no force-merging or auto-merging over a review the build path requires;
+- no force-merging or auto-merging over a review the build path requires, and no merge the person has not said yes to;
 - no activating a flagged capability before its recorded condition is met or the person has accepted the risk on the record;
 - no withdrawing, softening, or redefining a risk notice already given, and no treating your own work as the independent review a build path names.
 

@@ -800,6 +800,20 @@ attribution line, not the word.
   rules to a project founded before them: offered once, named, added only on
   a yes, with nothing else in the file touched, and a no recorded so the offer
   returns only when a release adds another rule.
+  It holds two more rule sets the same way. A force push and a forced delete
+  are refused wherever the option sits, since a real project pushed with
+  `--force-with-lease` at the end and it went through. Ordinary pushes and
+  `rm -f` on one file still run. And every way an agent merges, `gh pr merge`
+  and the same merge through `gh api`, sits in an ask list, so Claude Code
+  shows the person a box first. In three outside projects agents merged with
+  no click from anybody. Reading a pull request asks nothing. The monthly
+  offer brings a force-push rule only while the project still holds the
+  original one, since a person may have removed it on purpose.
+- `.agents/tests/browser-on-this-computer.sh` guards the rule that the agent
+  looks at a page only in a browser on this computer. A browser tool lists
+  every browser signed in to the account, and in a real project the agent
+  opened a page in a colleague's browser on another machine. The rule lives
+  in the capability check, and the prototype steps point to it.
 - `.agents/tests/sync-saves-like-a-piece.sh` guards how /sync saves what it
   corrects. Every skill that changes the records said how it saves them, and
   sync did not: it corrected the pieces, the changelog and the masterplan and

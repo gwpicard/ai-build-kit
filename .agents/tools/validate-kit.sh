@@ -2075,7 +2075,29 @@ Bash(git push * +main *)
 Bash(git push *:main)
 Bash(git push *:main *)
 Bash(git push *refs/heads/main)
-Bash(git push *refs/heads/main *)"
+Bash(git push *refs/heads/main *)
+Bash(git push --force*)
+Bash(git push -f*)
+Bash(git push * --force*)
+Bash(git push * -f)
+Bash(git push * -f *)
+Bash(git push * +*)
+Bash(rm -fr:*)
+Bash(rm -Rf:*)
+Bash(rm -fR:*)
+Bash(rm -r -f:*)
+Bash(rm -f -r:*)
+Bash(rm -R -f:*)
+Bash(rm -f -R:*)
+Bash(rm --recursive --force:*)
+Bash(rm --force --recursive:*)"
+# A project also asks before any merge, so a merge never happens without a
+# person's click in the box Claude Code shows. This repository's own settings
+# carry no ask list.
+expected_ask_project="Bash(gh pr merge:*)
+Bash(gh api *pulls/*/merge*)
+Bash(gh api *merges*)
+Bash(gh api graphql *mergePullRequest*)"
 deny_ok=1
 if command -v python3 >/dev/null 2>&1; then
   py_script=/tmp/validate-kit-deny.$$
@@ -2108,9 +2130,23 @@ PYEOF
   done <<DENYFILES
 $deny_jsonfiles
 DENYFILES
+  ask_file="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json"
+  if ! python3 - "$ask_file" "$expected_ask_project" 2>/tmp/validate-kit-ask-out.$$ <<'PYEOF'
+import json, sys
+expected = set(sys.argv[2].splitlines())
+actual = set(json.load(open(sys.argv[1])).get("permissions", {}).get("ask", []))
+if actual != expected:
+    sys.stderr.write("missing: %s; unexpected extra: %s\n" % (sorted(expected - actual), sorted(actual - expected)))
+    sys.exit(1)
+PYEOF
+  then
+    fail "$ask_file permissions.ask does not exactly match the merge rules: $(cat /tmp/validate-kit-ask-out.$$)"
+    deny_ok=0
+  fi
+  rm -f /tmp/validate-kit-ask-out.$$
   rm -f "$py_script"
   [ "$deny_ok" -eq 0 ] || \
-    pass "both Claude deny lists are exactly the mechanically enforceable blocked commands"
+    pass "both Claude deny lists are exactly the mechanically enforceable blocked commands, and a project asks before every merge"
 else
   note "python3 not available; falling back to a substring check on permissions.deny"
   while IFS= read -r deny_json; do

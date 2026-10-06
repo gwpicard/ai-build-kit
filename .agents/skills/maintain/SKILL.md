@@ -161,7 +161,7 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
     command that removes it. List this computer and GitHub separately. Keep
     the ones Git confirms apart from the ones only GitHub records as merged.
     Never remove a branch. When no branch qualifies, say nothing.
-16. Run "Adding the rules that stop a push to `main`" below. It says nothing
+16. Run "Adding the kit's newer safety rules" below. It says nothing
     when the project already has them, or when the person said no to the same
     rules before.
 17. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
@@ -206,34 +206,44 @@ nothing. Where the harness cannot run the script and the project has no
 helper, copy the installed skill's `templates/foundation/plan-refresh.sh` to
 `.agents/tools/plan-refresh.sh` by hand.
 
-## Adding the rules that stop a push to `main`
+## Adding the kit's newer safety rules
 
 Founding copies the kit's Claude Code settings into `.claude/settings.json`
 once, and no update touches that file again. A project founded before the kit
-learned a new way to write a push to `main` keeps the older rules, and a push
-the older rules miss goes through with nothing to stop it. So the visit offers
+learned a new way to write a dangerous command keeps the older rules, and a
+command the older rules miss goes through with nothing to stop it. The same
+holds for the question Claude Code asks before a merge. So the visit offers
 the missing rules, once.
 
 1. Where the project has no `.claude/settings.json`, this step ends. Otherwise
-   read its `permissions.deny` list, and the one in the installed
-   setup-ai-build-kit skill's `templates/foundation/claude-settings.json`.
-   Take the rules from that file, never from memory.
-2. List each rule the template holds that names both `git push` and `main`,
-   and the project's list lacks. Leave out every other rule, such as the
-   force-push ones, since the person may have removed one on purpose. When there is none, say nothing.
+   read its `permissions.deny` and `permissions.ask` lists, and the ones in the
+   installed setup-ai-build-kit skill's
+   `templates/foundation/claude-settings.json`. Take the rules from that file,
+   never from memory.
+2. List each rule the template holds and the project lacks, in three groups.
+   Leave out a group when its condition does not hold, since the person may
+   have removed a rule on purpose. When no rule is left, say nothing.
+   - A rule in `deny` that names both `git push` and `main`. Always offered.
+   - A rule in `deny` that stops a force push or a forced delete. Offered only
+     while the project still holds `Bash(git push --force:*)` for a force
+     push, or `Bash(rm -rf:*)` for a forced delete.
+   - A rule in `ask`, which makes Claude Code ask before a merge. Always
+     offered.
 3. Read the `push-rules-declined` line in `.ai-build-kit-maintenance`, if there
    is one. Where it already lists every missing rule, the earlier no stands,
    and you say nothing.
 4. Offer the change once, in one reply. Name the rules it adds, and say in
    plain words what they stop: a push to `main` written with an option before
-   the remote, such as `-q`, or as `HEAD:refs/heads/main`. Say that it adds
-   lines to the deny list and changes nothing else in the file. Say too that
-   the `setup-ai-build-kit` skill's `references/blocked-commands.md` lists the
-   spellings the rules still cannot catch. Ask for a yes.
-5. On a yes, add only the missing rules to the end of `permissions.deny`. Keep
-   every other entry and setting as it is, even an older push rule the new
-   ones cover. Check that the file still reads as valid JSON. Save it with the
-   visit's other changes and add a dated changelog line.
+   the remote, such as `-q`, or as `HEAD:refs/heads/main`; a force push with
+   the option at the end; a forced delete written as `rm -fr`; a merge with no
+   click from the person. Say that it adds lines to those lists and changes
+   nothing else in the file. Say too that the `setup-ai-build-kit` skill's
+   `references/blocked-commands.md` lists the spellings the rules still cannot
+   catch. Ask for a yes.
+5. On a yes, add only the missing rules to the end of the list each came
+   from. Keep every other entry and setting as it is, even an older rule the
+   new ones cover. Check that the file still reads as valid JSON. Save it with
+   the visit's other changes and add a dated changelog line.
 6. On a no, change nothing. Record the no as one line in
    `.ai-build-kit-maintenance`, replacing any earlier one:
    `push-rules-declined|<YYYY-MM-DD>|<the rules offered, separated by " ; ">`.

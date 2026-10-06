@@ -42,7 +42,9 @@ there with their actual surroundings and data.
 
 Where no design tool is recorded, keep using the coded throwaway described
 above. Where the harness has a browser tool, use it to look at your own
-throwaway before showing it. Say when you could not inspect it yourself.
+throwaway before showing it, in a browser on this computer as the
+`setup-ai-build-kit` skill's `references/capability-check.md` says. Say when
+you could not inspect it yourself.
 
 ## What to bring back
 

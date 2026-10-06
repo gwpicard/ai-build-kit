@@ -5,6 +5,12 @@
       "Bash(git reset --hard:*)",
       "Bash(git push --force:*)",
       "Bash(git push -f:*)",
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(git push * --force*)",
+      "Bash(git push * -f)",
+      "Bash(git push * -f *)",
+      "Bash(git push * +*)",
       "Bash(git push * main)",
       "Bash(git push * main *)",
       "Bash(git push * +main)",
@@ -15,7 +21,22 @@
       "Bash(git push *refs/heads/main *)",
       "Bash(git clean -f:*)",
       "Bash(git clean -fd:*)",
-      "Bash(rm -rf:*)"
+      "Bash(rm -rf:*)",
+      "Bash(rm -fr:*)",
+      "Bash(rm -Rf:*)",
+      "Bash(rm -fR:*)",
+      "Bash(rm -r -f:*)",
+      "Bash(rm -f -r:*)",
+      "Bash(rm -R -f:*)",
+      "Bash(rm -f -R:*)",
+      "Bash(rm --recursive --force:*)",
+      "Bash(rm --force --recursive:*)"
+    ],
+    "ask": [
+      "Bash(gh pr merge:*)",
+      "Bash(gh api *pulls/*/merge*)",
+      "Bash(gh api *merges*)",
+      "Bash(gh api graphql *mergePullRequest*)"
     ]
   },
   "hooks": {

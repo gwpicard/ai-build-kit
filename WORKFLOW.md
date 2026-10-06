@@ -485,7 +485,8 @@ and it cannot tell whether somebody still plans to use one. When there are
 none, you hear nothing.
 
 In Claude Code, the settings founding gave your project refuse a direct push
-to `main`. When a later release catches more ways of writing that push, the
+to `main`, a force push and a forced delete, and ask you before any merge.
+When a later release catches more ways of writing one of those, the
 monthly visit names the new rules and offers to add them to
 `.claude/settings.json`, once. It adds nothing without your yes and leaves the
 rest of the file as it is. A no is recorded, and the offer comes back only

@@ -222,11 +222,131 @@ if len(push_rules) < 2:
     print("the settings hold fewer than two rules naming a push to main")
     sys.exit(1)
 for rule in push_rules:
-    if not evaluate([r for r in rules if r != rule]):
+    if not evaluate([r for r in push_rules if r != rule]):
         print("taking out %s changes nothing, so the check does not need it" % rule)
         sys.exit(1)
 print("  ok: taking out any one of the %d push rules is caught" % len(push_rules))
 
+# A force push and a forced delete. The lists come from their own section of
+# blocked-commands.md, so the written gap and the patterns cannot disagree.
+section_start = blocked.find("## A force push and a forced delete")
+if section_start < 0:
+    print("blocked-commands.md has no section on a force push and a forced delete")
+    sys.exit(1)
+section = blocked[section_start:]
+next_heading = section.find("\n## ", 4)
+if next_heading > 0:
+    section = section[:next_heading]
+
+
+def read_spans(text, marker):
+    start = text.find(marker)
+    if start < 0:
+        return None
+    body = text[start:].split("\n\n", 2)
+    items = body[1] if len(body) > 1 else ""
+    return [span for span in re.findall(r"`([^`]+)`", items)
+            if span.startswith("git push") or span.startswith("rm ") or span.startswith("sh -c")]
+
+
+force_refused = read_spans(section, "These force pushes and deletes are refused")
+force_missed = read_spans(section, "These are not refused")
+if not force_refused or not force_missed:
+    print("the force-push section lacks its refused or its missed list")
+    sys.exit(1)
+for command in ["git push origin feature --force", "git push origin feature --force-with-lease",
+                "git push origin +feature", "rm -fr build", "rm --recursive --force build"]:
+    if command not in force_refused:
+        problems.append("blocked-commands.md does not list %r as refused" % command)
+force_allowed = force_missed + [
+    "git push origin feature",
+    "git push -u origin feature",
+    "git push --follow-tags origin feature",
+    "git push origin fix-f",
+    "rm -f notes.txt",
+    "rm notes.txt",
+]
+
+
+def force_problems(deny):
+    found = []
+    for command in force_refused:
+        if not denied(deny, command):
+            found.append("%r is not refused" % command)
+    for command in force_allowed:
+        if denied(deny, command):
+            found.append("%r is refused" % command)
+    return found
+
+
+for command in force_refused + force_allowed:
+    print("  %-7s %s" % ("denied" if denied(rules, command) else "allowed", command))
+problems += force_problems(rules)
+if problems:
+    print("\n".join(problems))
+    sys.exit(1)
+print("  ok: every force-push and forced-delete spelling listed as refused is denied, and the listed gaps and ordinary commands are not")
+
+kept_for_parity = {"Bash(git push --force:*)", "Bash(git push -f:*)", "Bash(rm -rf:*)"}
+force_rules = [r for r in rules if r not in push_rules and r not in kept_for_parity
+               and (r.startswith("Bash(git push") or r.startswith("Bash(rm "))]
+if len(force_rules) < 5:
+    print("the settings hold fewer than five newer force-push or forced-delete rules")
+    sys.exit(1)
+for rule in force_rules:
+    if not force_problems([r for r in rules if r != rule]):
+        print("taking out %s changes nothing, so the check does not need it" % rule)
+        sys.exit(1)
+print("  ok: taking out any one of the %d newer force-push and forced-delete rules is caught" % len(force_rules))
+if not force_problems(rules + ["Bash(rm -*f*)"]):
+    print("an over-broad rule that refuses rm -f notes.txt went unnoticed")
+    sys.exit(1)
+print("  ok: an over-broad rule that refuses an ordinary delete is caught")
+
+# The question before a merge.
+ask = json.load(open(settings_path)).get("permissions", {}).get("ask", [])
+must_ask = [
+    "gh pr merge",
+    "gh pr merge 12 --squash",
+    "gh pr merge 12 --merge --delete-branch",
+    "gh pr merge --auto 12",
+    "gh api -X PUT repos/team/tool/pulls/12/merge",
+    "gh api --method PUT repos/team/tool/pulls/12/merge -f merge_method=squash",
+    "gh api repos/team/tool/merges -f base=main -f head=feature",
+    "gh api graphql -f query='mutation { mergePullRequest(input: {pullRequestId: \"x\"}) { clientMutationId } }'",
+]
+must_not_ask = [
+    "gh pr view 12",
+    "gh pr list --state merged",
+    "gh pr create --base main --fill",
+    "gh pr checks 12",
+    "gh api repos/team/tool/pulls/12",
+    "gh api repos/team/tool/branches",
+]
+
+
+def ask_problems(rules_ask):
+    found = []
+    for command in must_ask:
+        if not denied(rules_ask, command):
+            found.append("%r does not ask" % command)
+    for command in must_not_ask:
+        if denied(rules_ask, command):
+            found.append("%r asks" % command)
+    return found
+
+
+for command in must_ask + must_not_ask:
+    print("  %-7s %s" % ("asks" if denied(ask, command) else "runs", command))
+if ask_problems(ask):
+    print("\n".join(ask_problems(ask)))
+    sys.exit(1)
+print("  ok: every way of merging asks first, and reading a pull request does not")
+for rule in ask:
+    if not ask_problems([r for r in ask if r != rule]):
+        print("taking out the ask rule %s changes nothing, so the check does not need it" % rule)
+        sys.exit(1)
+print("  ok: taking out any one of the %d ask rules is caught" % len(ask))
 # The first rules miss the spelling from the real run.
 first_rules = ["Bash(git push origin main:*)", "Bash(git push -u origin main:*)",
                "Bash(git push origin HEAD:main:*)"]
@@ -250,23 +370,25 @@ fi
 # The monthly offer in /maintain.
 rs_rule "no settings file ends the step" 'where the project has no `\.claude/settings\.json`, this step ends'
 rs_rule "the rules come from the installed template" 'take the rules from that file, never from memory'
-rs_rule "nothing missing means nothing said" 'when there is none, say nothing'
+rs_rule "nothing missing means nothing said" 'when no rule is left, say nothing'
 rs_rule "only rules naming a push to main are offered" 'names both `git push` and `main`'
-rs_rule "a removed force-push rule is not brought back" 'the person may have removed one on purpose'
+rs_rule "a removed rule is not brought back" 'the person may have removed a rule on purpose'
+rs_rule "force rules only while the old one stays" 'offered only while the project still holds `bash\(git push --force:\*\)` for a force push, or `bash\(rm -rf:\*\)` for a forced delete'
+rs_rule "the merge question is offered" 'a rule in `ask`, which makes claude code ask before a merge'
+rs_rule "each rule goes back to its own list" 'add only the missing rules to the end of the list each came from'
 rs_rule "an earlier no stands" 'where it already lists every missing rule, the earlier no stands'
 rs_rule "offered once in one reply" 'offer the change once, in one reply'
 rs_rule "it names the rules" 'name the rules it adds'
 rs_rule "it changes nothing else" 'changes nothing else in the file'
 rs_rule "it points to the written gap" 'lists the spellings the rules still cannot catch'
 rs_rule "it waits for a yes" 'ask for a yes'
-rs_rule "a yes adds only the missing rules" 'on a yes, add only the missing rules'
 rs_rule "every other entry stays" 'keep every other entry and setting as it is'
 rs_rule "the file stays valid" 'still reads as valid json'
 rs_rule "a no changes nothing" 'on a no, change nothing'
 rs_rule "the no is recorded" 'push-rules-declined\|<yyyy-mm-dd>\|'
 rs_rule "the offer returns only for a new rule" 'offers again only when a new release adds a rule that line does not list'
 rs_guard "$MAINTAIN" "maintain's push-rule offer"
-rs_require "the monthly pass runs the offer" "$MAINTAIN" '16\. run "adding the rules that stop a push to `main`"'
+rs_require "the monthly pass runs the offer" "$MAINTAIN" '16\. run "adding the kit.s newer safety rules"'
 
 # The written gap.
 rs_reset
@@ -276,9 +398,15 @@ rs_rule "why some are missed" 'reads the words of the command as written'
 rs_rule "a branch that only starts with main still pushes" 'only starts with `main`, such as `main-fix`, still pushes'
 rs_rule "an option value may be refused too" 'may also refuse a push where `main` is the value of an option'
 rs_rule "the rule itself holds for every spelling" 'never push a change directly to `main`'
+rs_rule "a force push is refused wherever the option sits" 'refuse both wherever the option sits in the command'
+rs_rule "a conflict needs no force" 'merge `main` into the branch and push it. that needs no force'
+rs_rule "a merge asks first" 'ask before every merge the agent runs'
+rs_rule "the merge is named before the box" 'say in one line what the merge does just before the box appears'
+rs_rule "other agents keep only the written rule" 'other coding agents have no such box, so there the written rule is the only guard'
 rs_guard "$BLOCKED" "blocked-commands.md"
 
 rs_require "WORKFLOW.md explains the offer" "$WORKFLOW" 'offers to add them to `\.claude/settings\.json`, once'
+rs_require "WORKFLOW.md names the merge question" "$WORKFLOW" 'ask you before any merge'
 rs_require "WORKFLOW.md says a no is kept" "$WORKFLOW" 'a no is recorded, and the offer comes back only when a release adds another rule'
 
 rs_done
