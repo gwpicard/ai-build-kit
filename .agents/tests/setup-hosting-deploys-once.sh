@@ -101,6 +101,11 @@ rs_rule "each repair waits for a yes that names it" 'then repair each gap after 
 rs_rule "a recipe command waits for that yes too in a later run" 'nobody asked for a launch in a later run, so a recipe.s command waits for that yes too'
 rs_rule "the live-change rule makes the same exception" 'a later run is the exception: nobody asked for a launch, so each repair waits for the yes "a later run" describes'
 rs_rule "a migration goes before the merge that needs it" 'a migration is applied before the merge that needs it, since migrations only add'
+# The piece's migration is on its own branch until the merge, so a later run
+# that read only main would find nothing to apply, and /implement would wait.
+rs_rule "a piece's migration is read from its pull request branch" 'a piece.s migration is not on `main` yet, so read it from that piece.s pull request branch'
+rs_rule "it is applied from a separate checkout after a named yes" 'apply it only after a yes that names it, and from a separate temporary checkout of that branch'
+rs_rule "uncommitted work is never touched" 'so the person.s own uncommitted work is never touched'
 rs_rule "it tells /implement when the merge can go ahead" 'once it is applied or present, say in one line that /implement can now ask for the merge'
 rs_rule "moving host keeps the old copy serving" 'moving to a different host or recipe is a later run too'
 rs_rule "the new recipe is recorded only once the new copy answers" 'only once the new live copy answers its health check'
@@ -120,6 +125,7 @@ rs_require_load_bearing "WORKFLOW says records get their own pull request, never
 rs_require_load_bearing "WORKFLOW says the records merge needs its own yes" "$WORKFLOW" 'merging that pull request needs its own yes'
 rs_require_load_bearing "WORKFLOW says unsaved work is left alone" "$WORKFLOW" 'kept out of the records and never thrown away'
 rs_require_load_bearing "WORKFLOW says a later run compares the live copy" "$WORKFLOW" 'a later /setup-hosting compares the live copy with `main` and tells you each gap in one plain line'
+rs_require_load_bearing "WORKFLOW gives the later-run exception to the recipe's commands" "$WORKFLOW" 'a later run is different: nobody asked for a launch, so each repair it makes waits for a yes that names it'
 rs_require_load_bearing "WORKFLOW says a gap is repaired only on a yes" "$WORKFLOW" 'it repairs each gap only after a yes that names it'
 
 rs_done

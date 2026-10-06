@@ -46,10 +46,25 @@ rs_rule "the report says what to try and where" 'say what the person can try and
 # What has to be true on the live side before the merge is asked for.
 rs_rule "the live side is checked read-only first" 'where it records a live address, the merge puts this change live, so check these first, read-only, and change nothing live'
 rs_rule "a new migration is checked against the live database" 'where the change adds a database migration, check whether the live database already has it'
-rs_rule "the migration goes first through /setup-hosting" 'this change adds to the database, so /setup-hosting applies that first\. migrations only add, so the version live now keeps working'
+rs_rule "the migration goes first through /setup-hosting, from the pull request" 'this change adds to the database, so /setup-hosting applies that first, from this pull request\. migrations only add, so the version live now keeps working'
+# The dry run reads the live database, which needs its password. A real launch
+# once called a password absent when the person had named its file.
+rs_rule "the dry run's password follows the secret rule" 'where the dry run needs the database password, follow the `setup-hosting` skill.s "a secret a check needs"'
+rs_rule "the password is never called absent" 'ask once when nobody recorded it, and never say it is absent'
+rs_rule "an unreadable live database means not applied" 'where the live database cannot be read, treat the migration as not applied, and say why in one line'
 rs_rule "the merge waits until the migration is applied" 'ask for the merge only once /setup-hosting reports it applied'
 rs_rule "a Live side needs line holds the merge" 'where the piece carries a `live side needs:` line, ask for the merge only once /setup-hosting reports each name on it present on the host'
-rs_rule "a sensitive area holds the merge until its caution is settled" 'ask for it only when the area.s caution is done or accepted on the record'
+# The area comes first, on any project, so nothing reaches the live side for
+# a piece that may never merge.
+rs_rule "a sensitive area is checked first, live or not" 'check it before anything else, live or not'
+rs_rule "a sensitive area holds the merge until its caution is settled" 'ask for the merge only when the area.s caution is done or accepted on the record'
+rs_rule "nothing is applied for a piece that may not merge" 'nothing is applied to the live side for a piece that may not merge'
+# A merge on a live project is a go-live, and the readiness /setup-hosting gave
+# each area and each launch has to happen somewhere.
+rs_rule "the evidence run covers what the piece changed" 'run the evidence run in the `setup-hosting` skill.s `references/evidence-run\.md`, scoped to what this piece changed'
+rs_rule "a settled area gets its readiness check" 'run that area.s operational readiness as the `setup-hosting` skill.s build with care step 5 says'
+rs_rule "no notice is repeated" 'do not repeat a notice already given'
+rs_rule "a readiness gap is a warning said once" 'a gap there is a warning, as it is in /setup-hosting: say it once, record it in changelog\.md with the date in this piece.s pull request, and carry on'
 rs_rule "a piece stopped at its condition is never offered" 'a piece stopped at its condition is never offered for a merge'
 rs_rule "until then the pull request waits, and says why" 'until then, the pull request stays open and ready for review, and the report says what it waits for'
 
@@ -58,7 +73,8 @@ rs_rule "the pull request is named in one plain line" 'name the pull request in 
 rs_rule "the yes asked for names the merge" 'then ask for a yes that names the merge'
 rs_rule "merge only on a reply that covers it" 'merge only when the person.s reply plainly covers that merge'
 rs_rule "a merge the person already named is the yes" 'where their own words already named the merge, as in "merge it", that is the yes: do not ask again'
-rs_rule "an earlier yes to something else does not cover it" 'a yes to building, saving, uploading or going live, or to any question asked before the merge was named, does not cover it: ask again, and merge nothing until they answer'
+rs_rule "an earlier yes to something else does not cover it" 'a yes to building, saving, uploading, going live or a hosting step, or to any question asked before the merge was named, does not cover it: ask again, and merge nothing until they answer'
+rs_rule "puts it live is said only where the merge deploys" 'say the second half only where the project is live and the merge does deploy: on a recipe, or where the masterplan records that the host builds every change to `main`'
 rs_rule "a no leaves the pull request open" 'a no leaves the pull request open, ready for review'
 rs_rule "several waiting pieces are named one by one" 'where more than one piece waits on its merge, name each pull request in its own line'
 rs_rule "a yes covers only what it names" 'a yes covers only the pull requests it names, or all of them where it plainly says so'
@@ -67,19 +83,24 @@ rs_rule "a yes covers only what it names" 'a yes covers only the pull requests i
 rs_rule "an approved merge is made on the pull request" 'make an approved merge on the pull request itself, such as with `gh pr merge`'
 rs_rule "never a local merge and a push of main" 'never merge the branch on this computer and push `main`'
 rs_rule "an unreachable github makes the merge wait" 'where github cannot be reached, the merge waits: say in one line that the person can merge it on github themselves'
+rs_rule "the box is announced only in claude code" 'where the session runs in claude code, the project.s settings show a confirmation box before the merge runs'
 rs_rule "the confirmation box is announced" 'say in one line just before it that the box will ask them to allow the merge'
+rs_rule "no box is promised elsewhere" 'under another coding agent, say nothing about a box'
 rs_rule "an unattended run never merges" 'in an unattended run nobody is there to say yes, so never merge'
 
 # After the merge: one read, and nothing changed.
 rs_rule "one health line after the merge on a recipe" 'read one line of health from the live copy, read-only'
 rs_rule "the line when the merge is live" 'the live copy now runs this change'
-rs_rule "the line when it is not, with a next step" 'the live copy did not update," with the next step, which is /setup-hosting'
+rs_rule "a build still running is read again" 'where the list shows the build still running, say so, wait a short while, and read the health line again'
+rs_rule "no second deploy for a build in progress" 'never suggest a second deploy for a build in progress'
+rs_rule "the line when it is not, with a next step" 'only where the build failed or is missing, say: "the live copy did not update," with the next step, which is /setup-hosting'
 rs_rule "off a recipe, claim no more than was seen" 'claim no more than you saw'
 rs_rule "nothing live changes after the merge" 'change nothing live after the merge: no deploy, no rollback, and no second push to `main`'
 rs_rule "putting it out again is a read, then /setup-hosting" 'a further deploy belongs to /setup-hosting and its rules, never to this step'
 rs_rule "a rollback question gets an answer and no rollback" 'that a rollback has not been tried, and run none'
 rs_guard "$BUILDER" "section-builder's merge step"
 
+rs_require_order "the area check comes before the live-side checks" "$BUILDER" 'A sensitive area first, on any project' 'Before asking, on a live project'
 rs_require_order "the merge step follows the records step" "$BUILDER" '^## 9\. Sync the records$' '^## 10\. Merge$'
 rs_require_absent "the old stop-before-merge rule is gone" "$BUILDER" 'do not merge the pull request, and do not delete the branch'
 

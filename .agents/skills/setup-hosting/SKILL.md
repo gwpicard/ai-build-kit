@@ -434,8 +434,13 @@ any other.
 
 /implement sends the person here when a piece needs something on the live side
 before its merge: a migration applied, or a name on its `Live side needs:` line
-present on the host. Report that part first. Once it is applied or present,
-say in one line that /implement can now ask for the merge.
+present on the host. Report that part first. A piece's migration is not on
+`main` yet, so read it from that piece's pull request branch. Apply it only
+after a yes that names it, and from a separate temporary checkout of that
+branch, such as a git worktree, so the person's own uncommitted work is never
+touched. Remove that checkout afterwards. Migrations only add, so applying one
+before the merge leaves the version live now working. Once it is applied or
+present, say in one line that /implement can now ask for the merge.
 
 Moving to a different host or recipe is a later run too. Read the new recipe,
 and run its sections as a first launch does on the new host, while the old

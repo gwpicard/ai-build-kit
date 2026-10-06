@@ -347,37 +347,56 @@ is also how the change goes live.
 First, say what the person can try and where: the preview address, on a recipe
 whose preview section gives one, or how to try it on this computer.
 
+**A sensitive area first, on any project.** Where the piece touches a named
+sensitive area, the merge takes that area a step nearer live, so check it
+before anything else, live or not. Ask for the merge only when the area's
+caution is done or accepted on the record, as the flagged route already
+requires. A piece stopped at its condition is never offered for a merge. This
+comes first so that nothing is applied to the live side for a piece that may
+not merge.
+
 **Before asking, on a live project.** Read the masterplan's "How it stays
 running" section. Where it records a live address, the merge puts this change
 live, so check these first, read-only, and change nothing live:
 
+- On Build and run it and Build with care, run the evidence run in the
+  `setup-hosting` skill's `references/evidence-run.md`, scoped to what this
+  piece changed.
+- Where the piece touches a named area whose caution is done or accepted,
+  run that area's operational readiness as the `setup-hosting` skill's Build
+  with care step 5 says, with the request record and monitoring rules of its
+  Build and run it step 3. Do not repeat a notice already given. A gap there
+  is a warning, as it is in /setup-hosting: say it once, record it in
+  CHANGELOG.md with the date in this piece's pull request, and carry on.
 - Where the change adds a database migration, check whether the live database
   already has it, with the recipe's own dry run where it has one. Off a recipe,
-  ask the person. If it does not, say in one line: "This change adds to the
-  database, so /setup-hosting applies that first. Migrations only add, so the
-  version live now keeps working." Ask for the merge only once /setup-hosting
-  reports it applied.
+  ask the person. Where the dry run needs the database password, follow the
+  `setup-hosting` skill's "A secret a check needs": read where it is kept from
+  the masterplan, ask once when nobody recorded it, and never say it is
+  absent. Where the live database cannot be read, treat the migration as not
+  applied, and say why in one line. If it is not applied, say in one line:
+  "This change adds to the database, so /setup-hosting applies that first,
+  from this pull request. Migrations only add, so the version live now keeps
+  working." Ask for the merge only once /setup-hosting reports it applied.
 - Where the recipe's going-live section runs a check on this computer before
   the merge, such as building the app the way the host will and reading its
   health, run it now, so the build that goes live has already answered here.
 - Where the piece carries a `Live side needs:` line, ask for the merge only
   once /setup-hosting reports each name on it present on the host. Say so in
   one line, naming what is missing.
-- Where the piece touches a named sensitive area, the merge puts that area
-  live. Ask for it only when the area's caution is done or accepted on the
-  record, as the flagged route already requires. A piece stopped at its
-  condition is never offered for a merge.
 
 Until then, the pull request stays open and ready for review, and the report
 says what it waits for.
 
 **Asking.** Name the pull request in one plain line that says what it changes.
 Then ask for a yes that names the merge, for example: "Say yes to merge it,
-which puts it live." Say the second half only on a live project. Merge only
+which puts it live." Say the second half only where the project is live and
+the merge does deploy: on a recipe, or where the masterplan records that the
+host builds every change to `main`. Merge only
 when the person's reply plainly covers that merge. Where their own words
 already named the merge, as in "merge it", that is the yes: do not ask again.
-A yes to building, saving, uploading or going live, or to any question asked
-before the merge was named, does not cover it: ask again, and merge nothing
+A yes to building, saving, uploading, going live or a hosting step, or to any
+question asked before the merge was named, does not cover it: ask again, and merge nothing
 until they answer. A no leaves the pull request open, ready for review, and the
 live tool as it was.
 
@@ -388,9 +407,10 @@ it plainly says so, as in "merge both".
 **Merging.** Make an approved merge on the pull request itself, such as with
 `gh pr merge`. Never merge the branch on this computer and push `main`. Where
 GitHub cannot be reached, the merge waits: say in one line that the person can
-merge it on GitHub themselves. Claude Code shows a confirmation box before the
-merge runs, so say in one line just before it that the box will ask them to
-allow the merge. Leave the branch to GitHub, which removes it once merged.
+merge it on GitHub themselves. Where the session runs in Claude Code, the
+project's settings show a confirmation box before the merge runs, so say in
+one line just before it that the box will ask them to allow the merge. Under
+another coding agent, say nothing about a box. Leave the branch to GitHub, which removes it once merged.
 
 In an unattended run nobody is there to say yes, so never merge. Report the
 piece as ready for review, not as done, and leave the merge to a person.
@@ -406,7 +426,10 @@ recipe's going-live check and Health section say. Where the check is the kit's
 own, run it. Where a companion or the person runs it, ask in one sentence for
 the live address's health answer and read what they paste. Where it reports the
 merge, say: "The live copy now runs this change." Where it does not, read the
-host's own list of deployments where the recipe names a command for it, then
+host's own list of deployments where the recipe names a command for it, or
+ask for it to be read. Where the list shows the build still running, say so,
+wait a short while, and read the health line again. Never suggest a second
+deploy for a build in progress. Only where the build failed or is missing,
 say: "The live copy did not update," with the next step, which is
 /setup-hosting to compare the live copy with `main`. Off a recipe, say in one
 line that the merged change reaches the live copy the way the project's hosting
