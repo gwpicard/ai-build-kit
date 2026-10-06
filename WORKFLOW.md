@@ -22,7 +22,7 @@ Command names say when to use them.
 
 Two of them carry the day-to-day work. /shape decides what to change next, a new idea or something broken, and turns it into a ready piece, without touching the tool yet. /implement builds a ready piece, whether it makes the tool do something new or brings it back to doing what it already should. It shows you the result and merges it on your yes, and once the tool is live that merge is the release.
 
-The other four sit around those two. /setup-ai-build-kit founds the project once. /setup-hosting sets up how the tool runs live, and checks it later. /maintain keeps the records and the live copy true, runs the upkeep when it is due, prepares a handover, and switches a tool off at the end. /what-now tells you where things stand when you are lost.
+The other four sit around those two. /setup-ai-build-kit founds the project once. /setup-hosting sets up how the tool runs live, and checks it later. /maintain makes the records true again and checks the live copy against your project, runs the upkeep when it is due, prepares a handover, and switches a tool off at the end. /what-now tells you where things stand when you are lost.
 
 You run /setup-ai-build-kit once. After that, start wherever you actually are. You can open a session with /shape as readily as with /implement, and neither needs the other to have run first. If you pick the wrong one it costs you nothing, because each checks what you typed against the masterplan and sends it down the right route.
 
@@ -113,7 +113,11 @@ None of these paths is the kit refusing to build. Build with care is where it sa
 
 Type /setup-ai-build-kit. It checks what the current tool can actually do, then tries to talk you out of building if something simpler would do the job. It makes that case once. If you still want the tool, that is your call, and it records the cheaper option and gets on with founding rather than asking again. It interviews you, one question at a time with its best guess attached, and runs the fit check to set the project's build path.
 
-From those answers it writes the masterplan and cuts the work into pieces. Each piece becomes an issue in your GitHub repository, which can be private. It then stands the project up with one passing check, saved on your own computer. Founding uploads no code. If none of your code is online yet, it stays there until your first build asks you before putting it online. Interrupt it anywhere; typing /setup-ai-build-kit again resumes where it stopped.
+From those answers it writes the masterplan and cuts the work into pieces. Each piece becomes an issue in your GitHub repository, which can be private.
+
+Before it opens the first one, it says in one line what it is about to do there: open the pieces as issues, replace GitHub's default labels with its own, and switch on removing a branch once it merges. It names the repository and says whether it is public. On a public repository it says the plan will be public to anyone, and offers once to stop so you can choose a private one; anything but stop carries on.
+
+It then stands the project up with one passing check, saved on your own computer. Founding uploads no code. If none of your code is online yet, it stays there until your first build asks you before putting it online. Interrupt it anywhere; typing /setup-ai-build-kit again resumes where it stopped.
 
 Where the work carries real exposure, it also has an independent method read the masterplan looking for holes before any of that flagged work goes ahead; for an ordinary internal tool it says it skipped that and why, rather than making you wait for it. Before it stands anything up it checks that every promise on the masterplan has a piece that builds it, and names the ones that do not, so you can add them while the plan is minutes old.
 
@@ -431,11 +435,25 @@ and paste back what they send. On a later launch /setup-hosting reads the reques
 rather than asking again. The README names a hosting companion that can turn the
 request into a running address.
 
+Some launch checks reach your data. On a recipe, the restore check copies the
+live database onto this computer and stops the local database while it runs.
+Where the database plan keeps no backups of its own, the kit takes one after
+each launch into a dated folder outside the repository. Each pull request's
+preview uses a separate database kept for previews. Where the plan has no room
+for a second one, a recipe may point previews at the live data instead, and
+the kit says so once.
+
+Keys and passwords never go in a file Git tracks. On this computer they live
+in files Git ignores, such as `.env`, and the live values sit in the host's own
+settings, entered by name.
+
 After the first launch, a later /setup-hosting compares the live copy with `main` and tells you each gap in one plain line: whether the live copy runs the latest merge, whether a database change has not been applied, whether a secret or setting is missing on the host, whether health answers, and whether the backup works.
 
 It repairs each gap only after a yes that names it. It rechecks the build path first if reliance or consequence has grown. A warning the changelog already holds comes back as one line pointing to it, so anything given in full is new. Moving to another host or recipe is a later run too: the old live copy keeps serving until the new one answers.
 
-You can also ask /setup-hosting for a rollback outright. It reads the host's list of builds, names the version it would bring back by the change it carried and its date, and waits for a yes that names it. It runs the rollback once, or says where you or a companion make it when the host allows nothing else, and checks that the live copy now reports the earlier version. A rollback does not undo a database addition, which is why database changes only add. Off a recipe the kit cannot roll back, and says what a rollback there would need.
+You can also ask /setup-hosting for a rollback outright. It reads the host's list of builds, names the version it would bring back by the change it carried and its date, and waits for a yes that names it. It runs the rollback once, or tells you where to click when the host offers nothing the kit can run, and checks that the live copy now reports the earlier version.
+
+A rollback does not undo a database addition, which is why database changes only add. Off a recipe the kit cannot roll back, and says what a rollback there would need.
 
 ## 10. Autonomy: /implement auto and goal modes
 
@@ -455,9 +473,11 @@ Nothing else changes when a second person arrives: naming a piece before startin
 
 When you shape a request, /shape names any other open piece that would be built in the same place, before the work starts. You can carry on, wait, or fold the two together. Open pull requests show work in progress.
 
-On a shared project, each piece starts from an up-to-date `main` and arrives as its own pull request, and a person decides each merge. When two pieces change the same lines, GitHub shows a merge conflict on the pull request that came second. It is resolved the ordinary way: the newest `main` is merged into that piece's branch, the conflict is settled, and the branch is pushed again, with no force push.
+On a shared project, each piece starts from an up-to-date `main` and arrives as its own pull request, and a person decides each merge. When two pieces change the same lines, GitHub shows a merge conflict on the pull request that came second.
 
-/what-now names a conflict when it finds one, and says which two intentions collided. It settles the conflict itself only when the records make the right outcome plain. Otherwise it keeps both sides and asks you. A conflict that touches data or how the tool goes live is never guessed through. You never have to read Git's own state to follow any of this.
+Before /implement asks for that merge, it reads whether GitHub can make it. On a conflict it says so in one line, and offers to resolve it the ordinary way: merge the newest `main` into that piece's branch, settle the conflict, and push the branch again, never with a force push. It does that only on your yes, then runs the check again before asking for the merge.
+
+Once a merge is under way on your computer, /what-now explains a conflict it finds and says which two intentions collided. It settles the conflict itself only when the records make the right outcome plain. Otherwise it keeps both sides and asks you. A conflict that touches data or how the tool goes live is never guessed through. You never have to read Git's own state to follow any of this.
 
 The kit is built for one person or a small team. It is not optimised for large teams, or for many agents building the same project in parallel: each session builds one piece at a time, and the person merging is the one place the work comes together.
 
@@ -609,6 +629,10 @@ none, you hear nothing.
 
 In Claude Code, the settings founding gave your project refuse a direct push
 to `main`, a force push and a forced delete, and ask you before any merge.
+A project that already had its own Claude Code settings when it was founded
+keeps them, and the first monthly visit offers the missing push and merge
+rules.
+
 When a later release catches more ways of writing one of those, the
 monthly visit names the new rules and offers to add them to
 `.claude/settings.json`, once. It adds nothing without your yes and leaves the
@@ -652,7 +676,10 @@ whole build on. It holds no secrets, says where access is granted, and says
 what it does not cover. Everything outside that area carries on either way.
 
 /maintain also owns the ending, when a tool's time is over: export the data,
-tell the team, revoke access, and switch off the services.
+tell the team, revoke access, and switch off the services. The export is read
+back first. Each step that revokes access, deletes a credential, switches a
+service off or archives the repository waits for your yes, and says first
+whether it can be undone.
 
 ## What stays yours
 

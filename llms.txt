@@ -21,8 +21,8 @@ The six commands: `/setup-ai-build-kit` founds the project, `/shape` shapes an
 idea or a fault into a ready piece, `/implement` builds a ready piece and
 merges it on the person's yes, and shows what can be built together when
 several are ready, `/setup-hosting` sets up how the tool runs live,
-`/maintain` makes the records and the live copy true again and runs the
-upkeep when it is due, `/what-now` says where the project stands.
+`/maintain` makes the records true again, checks the live copy against the
+project, and runs the upkeep when it is due, `/what-now` says where the project stands.
 
 Going live: once a tool is live, each merge the person says yes to is the
 release. Two recipes, a web app stack on a hosting platform and the same stack

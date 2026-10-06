@@ -110,8 +110,12 @@ rs_require_load_bearing "WORKFLOW says the live copy is compared without change"
   "$WORKFLOW" 'once your tool is live, every visit also compares the live copy with your project, and changes nothing while it does'
 rs_require_load_bearing "WORKFLOW says the upkeep waits until due" \
   "$WORKFLOW" 'the monthly and quarterly upkeep further down runs only when it is due'
+# The row once said a visit makes the live copy true. The skill only reads
+# the live copy and sends a gap to /setup-hosting, so the row says that.
 rs_require "README's row says what a visit does" \
-  "$README" 'makes the records and the live copy true again, plus any upkeep that is due'
+  "$README" 'makes the records true again and checks the live copy against your project, plus any upkeep that is due'
+rs_require_absent "README's row no longer says a visit makes the live copy true" \
+  "$README" 'makes the records and the live copy true again'
 
 # The session-end reminder sends the person to what-now, the one home for
 # leftover work, rather than to a command that no longer exists.
@@ -123,5 +127,12 @@ rs_require_load_bearing "the session-end reminder names maintain for the records
   "$HOOK" '/maintain then makes the records true'
 rs_require_load_bearing "WORKFLOW says the heavy checks stay in setup-hosting" \
   "$WORKFLOW" 'the backup, restore and preview checks stay in /setup-hosting'
+
+# Retirement switches off things nobody can switch back on. Each step waits
+# for its own named yes, and says first whether it can be undone.
+rs_require_load_bearing "the export is read back before anything is switched off" "$MAINTAIN" 'export first, and read the export back before anything is switched off'
+rs_require_load_bearing "each irreversible ending step waits for a named yes" "$MAINTAIN" 'switches a service off or archives the repository waits for a yes that names that step'
+rs_require_load_bearing "it says whether the step can be undone" "$MAINTAIN" 'before asking, say what it changes and whether it can be undone'
+rs_require_load_bearing "a yes covers one step" "$MAINTAIN" 'a yes to one step covers only that step'
 
 rs_done

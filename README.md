@@ -19,7 +19,7 @@ decisions the agent cannot make for you.
 | What it is | Six commands you type into your coding agent, the process behind them, and three records that hold your project's memory. |
 | Who it is for | Anyone directing an AI coding agent who wants what it builds to keep working. People who came to software from another job, and developers trying agent-led work for the first time. One person or a small team. |
 | Works with | Claude Code, which is tested. Codex is expected to work. Cursor, Gemini CLI, and any other agent that can read and edit project files, run shell commands, and use Git are experimental. [How much is proved on each](docs/COMPATIBILITY.md#how-much-has-been-proved-on-each-agent). |
-| You need | A coding agent, Git, a GitHub account, and Node for the `npx` route. |
+| You need | A coding agent, Git, the GitHub command-line tool installed and signed in to your GitHub account, python3, and Node for the `npx` route. A recipe needs its own command-line tools before its first launch: docker, supabase, psql and curl, plus vercel on the Vercel recipe. |
 | Install, Claude Code only | `claude plugin marketplace add gwpicard/ai-build-kit`, then `claude plugin install ai-build-kit@ai-build-kit --scope local` |
 | Install, any supported agent | `npx skills add gwpicard/ai-build-kit` |
 | Then type | `/ai-build-kit:setup-ai-build-kit` on the Claude plugin route, `/setup-ai-build-kit` on every other route |
@@ -106,7 +106,7 @@ Command names say when to use them.
 | I want something changed, new or broken | `/shape` | Turns your idea or the fault into a ready piece. A fault is reproduced first. |
 | Build what's ready | `/implement` | Builds a ready piece, shows you the result, and merges it on your yes. With several ready, shows what can be built together and asks which to take. |
 | I want people to use it | `/setup-hosting` | Sets up how the tool runs live, so that each merge after that goes live. Run it again to check or change that. |
-| It's been a while | `/maintain` | Makes the records and the live copy true again, plus any upkeep that is due. Also handovers and switching a tool off. |
+| It's been a while | `/maintain` | Makes the records true again and checks the live copy against your project, plus any upkeep that is due. Also handovers and switching a tool off. |
 | I'm lost | `/what-now` | Where the project stands and what to do next, including work a session left half done. |
 
 You never choose the method and never sort your own request. Each command
@@ -132,15 +132,18 @@ Day to day there are two steps. You shape a piece with `/shape`: say what you
 want in your own words, and it becomes a piece with one plain line saying what
 done looks like. You build it with `/implement`: it builds that one piece,
 shows you the evidence, and stops so you can try it. Once the project's check
-passes, it names the pull request and asks whether to merge.
+passes, it names the pull request and asks whether to merge. Not every piece
+gets a pull request: on Explore privately, work is saved as a checkpoint on
+your computer, and `/setup-hosting` takes nothing live.
 
 Merging is the release. Once the tool is live, each merge you say yes to is
 what puts that change in front of your users, and `/implement` reads one line
 from the live copy afterwards to say whether it arrived. `/setup-hosting` is
 for setting that up, and for checking it later.
 
-`/maintain` is not in the picture because it fits anywhere. Each visit checks
-the records and the live copy against what really happened. The upkeep inside
+`/maintain` is not in the picture because it fits anywhere. Each visit makes
+the records true again and checks the live copy against your project, without
+changing it. The upkeep inside
 it runs on its own clock: about monthly from the day the project is founded,
 whether or not it has gone live. The project tells you when that is due.
 
@@ -188,6 +191,19 @@ that fails or cannot run is a warning. You hear it once, it goes in the
 changelog, and the launch goes ahead. The one thing a first launch waits for is
 the live address.
 
+During a launch you asked for, the commands the recipe names
+run without a second yes.
+
+Some of those checks reach your data. The restore check copies the live
+database onto this computer, and stops the local database while it runs. On a
+free database plan, which keeps no backups of its own, the kit takes a backup
+after each launch into a dated folder outside the repository.
+
+Each pull request gets its own preview. Previews use a second database project
+kept for them, never the live one. Where the plan has no room for a second
+project, the Coolify recipe points previews at the live data instead, and says
+so once.
+
 After that, each merge deploys. The host builds your main copy every time a
 change merges into it, so `/implement` checks the live side before it asks.
 A change that adds to the database waits until `/setup-hosting` has applied
@@ -199,10 +215,15 @@ project, or moved to another host or recipe.
 Rollback is checked, not tried. The launch confirms that an earlier build is
 still there to go back to, and says "rollback possible, not tried". If the
 live tool breaks just after a change goes live, the kit offers the earlier
-version back first, names it, and rolls back only on your yes. On Vercel the
-kit runs the rollback itself. On Coolify you, or the companion, click it on
-Coolify's own page, and the kit reads the result back. A rollback does not
-undo a database change, which is why database changes only add.
+version back first, names it, and rolls back only on your yes. A rollback does
+not undo a database change, which is why database changes only add.
+
+On Vercel the kit runs the rollback itself. After it, new merges stay off the
+live copy until the repair is promoted, on your yes, and the kit says so at
+the time. On Vercel's free plan only the build just before can be brought
+back. On Coolify you click the rollback on Coolify's own page, since neither
+the kit nor the companion's tools can make it, and the kit reads the result
+back.
 
 Both recipes were run for real on a throwaway app before the kit offered
 them. On each one the preview, launch, rollback, secrets, logs and health
@@ -230,14 +251,18 @@ Taking a piece puts your name on it, and `/implement` skips a piece somebody
 else has taken. If another open piece would be built in the same place, `/shape`
 tells you before the work starts.
 
-Each piece is built on its own branch, from an up-to-date copy of the main
-branch, and arrives as a pull request. A person decides each merge. When two
-changes collide, you resolve the merge conflict the ordinary GitHub way: the
-newest main copy is merged into the branch and pushed again, with no force
-push. `/what-now` explains which two changes collided. It resolves the
-conflict itself only when the records make the right outcome clear, and
-otherwise keeps both sides and asks you. A conflict that touches data or
-deployment is never guessed through.
+On a shared project, each piece is built on its own branch, from an
+up-to-date copy of the main branch, and arrives as a pull request. A person
+decides each merge. Before asking for yours, `/implement` checks whether GitHub
+can merge the pull request. When another change has landed in the same place,
+it says so and offers to settle the merge conflict the ordinary GitHub way:
+merge the newest main copy into the branch and push it again, never with a
+force push. It runs the check again before it asks.
+
+Once a merge is under way on your computer, `/what-now` explains which two
+changes collided. A conflict is settled by the kit only when the records make
+the right outcome clear. Otherwise both sides are kept and you are asked. A
+conflict that touches data or deployment is never guessed through.
 
 The kit works for one person or a small team. It is not optimised for large
 teams, or for many agents building in parallel. Each agent session builds one
@@ -248,8 +273,9 @@ piece at a time.
 A first session. You type `/setup-ai-build-kit`, and the agent interviews you
 one question at a time, each question carrying its own best guess so you can
 correct it rather than start from a blank page. It sets the build path, writes
-`masterplan.md` and `CHANGELOG.md`, and opens one GitHub issue for each piece
-of work still to do. It saves a checkpoint on your computer. None of your code
+`masterplan.md` and `CHANGELOG.md`, says which GitHub repository it will use
+and whether that is public, and opens one issue there for each piece of work
+still to do. It saves a checkpoint on your computer. None of your code
 is uploaded: the first piece that needs to put it online asks you first.
 
 A day's work. You type `/shape` and describe what you want in your own words:
@@ -273,7 +299,7 @@ copy with your project and reads the bills and the error alerts.
 | What you can change | Where |
 |---|---|
 | Rules for your project that the agent must follow | `AGENTS.md` in your project |
-| Keys, passwords, and tokens | `.env`, which is ignored by Git and never leaves your computer. Copy `.env.example` to start. |
+| Keys, passwords, and tokens | Never in a file Git tracks. On this computer they live in files Git ignores, such as `.env`; copy `.env.example` to start. The live values sit in your host's own settings. |
 | The build path, and any accepted risk | The build-path section of your `masterplan.md` |
 | The recipe your project runs on | The `Recipe:` line in the stack section of your `AGENTS.md` |
 | The commands the agent may never run | [.agents/guard/blocked-commands.md](.agents/guard/blocked-commands.md) |
@@ -331,15 +357,20 @@ Some actions always wait for you. Your code goes online for the first time
 only after you say yes, with the repository named and whether it is public or
 private. A merge happens only on a yes that names it, and in Claude Code a
 confirmation box asks you to allow it. A command that changes a live service's
-settings or data names everything it will change and waits for your yes. The
+settings or data names everything it will change and waits for your yes.
+
+During a launch you asked for, the commands the recipe names are that launch,
+and need no second yes. The
 kit never uses a login another tool keeps for itself, such as one stored in
 your computer's keychain.
 
 Some commands are switched off. In Claude Code, the settings founding gives
 your project refuse a direct push to the main branch, a force push and a
-forced delete. Other agents get the same rules in writing, in a blocked list
-that also holds standing restrictions like never disabling authentication to
-make a test pass. Secrets live in `.env` and nowhere else.
+forced delete. A project that already had its own Claude Code settings keeps
+them, and the first monthly visit offers the missing push and merge rules.
+Other agents get the same rules in writing, in a blocked list that also holds
+standing restrictions like never disabling authentication to make a test pass.
+Secrets never go in a file Git tracks.
 
 ## How it compares
 
@@ -423,16 +454,22 @@ change](https://docs.pencil.dev/for-developers/the-pen-format).
 
 [Penpot](https://penpot.app/pricing/self-host) has a free cloud plan and a free
 self-hosted edition; the design lives on the Penpot server you choose, not in
-the project. [Sketch](https://www.sketch.com/pricing) starts at $12 per editor
-per month when billed yearly, and can keep the design in a local `.sketch` file
-on a Mac. The skills do not depend on any of them, so the ordinary browser
+the project. [Sketch](https://www.sketch.com/pricing) can keep the design in a
+local `.sketch` file on a Mac. The skills do not depend on any of them, so the ordinary browser
 prototype remains the default.
 
 **Does anything leave my computer?**
-Some things do, and each one is said first. Founding opens your project's
+Some things do. Founding opens your project's
 pieces of work as issues in a GitHub repository you own, which can be private.
+Before it does, it names the repository and says whether it is public; on a
+public one it offers to stop so you can choose a private one.
+
+It also replaces
+GitHub's default labels and switches on removing a branch once it merges.
 Your code stays on your computer until the first piece that needs to upload it
-asks you, naming the repository and whether it is public or private. Founding
+asks you, naming the repository and whether it is public or private.
+
+Founding
 itself saves only a local checkpoint. Keys and passwords live in `.env`, which
 Git ignores. A merge, and any change to a live service, waits for your yes.
 
