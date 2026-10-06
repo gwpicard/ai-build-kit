@@ -253,7 +253,7 @@ cannot use.
 Automatic tests on every pull request, added. It fits under /implement. The person
 sees a green tick or a red cross beside the merge button. The sentence is "green
 means the tests really passed; red means don't merge". When it is red they tell
-/shape. They never need to know GitHub Actions exists.
+/implement. They never need to know GitHub Actions exists.
 
 Review reports split into "worth stopping for" and "worth knowing", added. The
 same findings as before, sorted, so the decision becomes one question: is the

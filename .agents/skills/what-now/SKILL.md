@@ -134,8 +134,11 @@ be pasted into a message.
 
 Name the check that is failing and what it is there to catch, in plain words,
 for example the test that stops a booking being taken twice. Say that a red check
-means the tool is not doing something it is meant to, and that /shape is where
-that goes, to turn it into a repair. Do not show the check's output or its logs.
+means the tool is not doing something it is meant to. A red check on an open
+pull request belongs to that piece's own build, so /implement is where it goes:
+the piece is not finished until its check is green. A red check on `main`,
+where no piece is being built, is a fault, so /shape is where that goes, to
+turn it into a repair. Do not show the check's output or its logs.
 
 ### Open review finding
 
