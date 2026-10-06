@@ -8,8 +8,9 @@ trying agent-led work for the first time. None of the six commands asks you to
 open a file of code. The kit is strongest for internal tools, held by your own
 team, holding your own data, with nobody outside relying on them.
 
-Works with: Claude Code, Codex, Cursor, and Gemini CLI, or any coding agent that
-can read and edit project files, run shell commands, and use Git.
+Works with: Claude Code, which is tested. Codex is expected to work. Cursor,
+Gemini CLI and any other coding agent that can read and edit project files, run
+shell commands, and use Git are experimental.
 
 Install (any supported agent): `npx skills add gwpicard/ai-build-kit`
 Install (Claude Code only): `claude plugin marketplace add gwpicard/ai-build-kit`
@@ -22,6 +23,16 @@ merges it on the person's yes, and shows what can be built together when
 several are ready, `/setup-hosting` sets up how the tool runs live,
 `/maintain` makes the records and the live copy true again and runs the
 upkeep when it is due, `/what-now` says where the project stands.
+
+Going live: once a tool is live, each merge the person says yes to is the
+release. Two recipes, a web app stack on a hosting platform and the same stack
+on your own server, have been run for real and come with launch checks. The
+README names them. Any other stack still works, with a general list of
+warnings instead.
+
+Teams: one person or a small team. Several people work through pull requests
+and settle merge conflicts the ordinary GitHub way. The kit is not optimised
+for large teams or for many agents building in parallel.
 
 How it differs from the alternatives: all-in-one builders such as Lovable, Bolt
 and Replit host the app and own the shape of the project. Developer skill packs
