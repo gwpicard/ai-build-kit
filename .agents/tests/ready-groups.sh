@@ -37,8 +37,8 @@ SKILLS="$ROOT/.agents/skills"
 if [ -z "${RS_LIST:-}" ]; then
   [ ! -e "$SKILLS/queue" ] || rs_fail "the queue skill folder is still there"
   rs_ok "the queue skill folder is gone"
-  stale=$(grep -rlE '/queue([^a-z-]|$)|the queue skill' "$SKILLS" "$WORKFLOW" "$README" \
-    "$ROOT/llms.txt" "$ROOT/docs/COMPATIBILITY.md" "$ROOT/.agents/hooks" || true)
+  stale=$(rs_retired_mentions '/queue([^a-z-]|$)|the queue skill' "$SKILLS" "$WORKFLOW" "$README" \
+    "$ROOT/llms.txt" "$ROOT/docs/COMPATIBILITY.md" "$ROOT/.agents/hooks")
   [ -z "$stale" ] || rs_fail "a shipped file still points at /queue: $stale"
   rs_ok "no shipped skill, WORKFLOW, README, llms.txt, COMPATIBILITY or hook points at /queue"
 fi

@@ -208,7 +208,10 @@ attribution line, not the word.
   the tools would otherwise surface on release day.
 - `.agents/tests/claude-plugin.sh` rehearses the Claude command boundary, an
   isolated install, project bootstrap, failed and successful updates, and
-  removal.
+  removal. Its first release also offers `fix`, `queue`, `sync` and `ship`,
+  standing in for the last nine-command release. The update must leave the
+  six and none of the four, with nothing left in the project, since on this
+  route the plugin update is the whole migration of the commands.
 - `.agents/tests/agent-plugin.sh` checks the assembled Agent Plugins folder
   against the standard and rehearses a project stand-up from it.
 - `.agents/tests/session-start.sh` rehearses the check-up cadence and proves
@@ -770,7 +773,20 @@ attribution line, not the word.
   own AGENTS.md with approval, because a person left to do that by hand after
   every rename stops updating. It reads the rules back from the maintain skill
   because the installer is somebody else's tool and nothing here can watch it
-  run.
+  run. The move to six commands showed the opposite fault in a
+  rehearsal with the real installer: `add` brings `setup-hosting` but keeps
+  `fix`, `queue`, `sync` and `ship` installed and listed. So it holds the
+  migration that offers `npx skills remove` for those, only where the
+  lockfile lists them as the kit's and only on a yes, never a deletion by
+  hand, and the one line the person hears. It runs the shipped
+  `kit-leftovers.py` in a throwaway shared install of that release after the
+  update. The four are named for the installer and never removed by the
+  script, the command list and its counts are rewritten to the template's
+  with nothing else in the file changed, and once the installer has removed
+  them a second run finds nothing. The person's own skill, command file and
+  records, which mention the old commands, are untouched. It also holds that
+  the stale-name refusals elsewhere read past the migration's own passages
+  and nothing else.
 - `.agents/tests/whole-copy-leftovers.sh` guards the tidy step for a project
   founded from a whole copy of the kit. Such a project carries the kit's own
   generated adapters, which the shared installer never refreshes, so every
@@ -780,7 +796,13 @@ attribution line, not the word.
   adapter is recognised by its generated marker and never by name, and a
   retired skill folder only by the kit's former names and absence from the
   lockfile. It holds that the step is run from the monthly pass, removes on
-  approval, and that WORKFLOW.md says so.
+  approval, and that WORKFLOW.md says so. The former names now include
+  `fix`, `queue`, `sync` and `ship`. It runs the shipped `kit-leftovers.py` in
+  a throwaway whole copy of the last nine-command release: every generated
+  command file for the three tools and the four retired folders are listed
+  and removed, the person's own command file and skill stay, the old
+  session-end hook is named and left, and a second run lists only that hook.
+  Without a lockfile, only a retired command's generated file is listed.
 - `.agents/tests/older-project-upkeep.sh` guards three things an update never
   reaches, because it refreshes skills and nothing else. A leftover `plan.md`
   is offered for a move into issues on every monthly visit that finds it, since it was
@@ -815,7 +837,10 @@ attribution line, not the word.
   never found. The script's list of skills is the kit's eleven, so a rename
   cannot slip past it. A pointer to the folded `queue` or `sync` skill
   follows its rules into `implement` and into the maintain skill's
-  `references/truing.md`. Last, a visit asked to leave kit updates alone does not
+  `references/truing.md`. A pointer that already names a retired skill, as
+  the last nine-command release's AGENTS.md names the `ship` skill's handover
+  template, is found and follows the template to `maintain`, and so does the
+  same file by its old folder. Last, a visit asked to leave kit updates alone does not
   copy in the reminder script, still says the visit was recorded, and says the
   reminder was left out.
 - `.agents/tests/offer-recipe-move.sh` guards the monthly offer to move a

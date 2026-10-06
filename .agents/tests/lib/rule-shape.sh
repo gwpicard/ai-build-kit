@@ -235,3 +235,27 @@ rs_done() {
   echo
   echo "$(basename -- "$0"): all $rs_pass checks passed"
 }
+
+# --- retired commands -----------------------------------------------------
+
+rs_retired_mentions() {
+  # rs_retired_mentions <pattern> <path>...: print each file that still sends
+  # the person to a retired command. Two passages exist to name the retired
+  # commands, because an older project still offers them until /maintain takes
+  # them out: the maintain skill's migration section and WORKFLOW.md's
+  # paragraph about it. A mention there is the migration doing its job, so it
+  # is read past. Anywhere else it is a stale pointer.
+  rs_pat=$1
+  shift
+  grep -rlE "$rs_pat" "$@" 2>/dev/null | while IFS= read -r rs_file; do
+    if awk '
+      /^## Migrating a project installed before the six commands/ { skip = 1; next }
+      skip && /^## / { skip = 0 }
+      /^A project installed before the kit had six commands/ { para = 1 }
+      para && /^[[:space:]]*$/ { para = 0; next }
+      !skip && !para
+    ' "$rs_file" | grep -qE "$rs_pat"; then
+      printf '%s\n' "$rs_file"
+    fi
+  done
+}

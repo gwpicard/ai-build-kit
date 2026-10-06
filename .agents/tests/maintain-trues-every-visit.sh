@@ -39,8 +39,8 @@ rs_exists "$MAINTAIN" "$TRUING" "$HOSTING" "$WORKFLOW" "$README" "$HOOK"
 if [ -z "${RS_LIST:-}" ]; then
   [ ! -e "$SKILLS/sync" ] || rs_fail "the sync skill folder is still there"
   rs_ok "the sync skill folder is gone"
-  stale=$(grep -rlE '/sync([^a-z-]|$)|the sync skill' "$SKILLS" "$WORKFLOW" "$README" \
-    "$ROOT/llms.txt" "$ROOT/docs/COMPATIBILITY.md" "$ROOT/.agents/hooks" || true)
+  stale=$(rs_retired_mentions '/sync([^a-z-]|$)|the sync skill' "$SKILLS" "$WORKFLOW" "$README" \
+    "$ROOT/llms.txt" "$ROOT/docs/COMPATIBILITY.md" "$ROOT/.agents/hooks")
   [ -z "$stale" ] || rs_fail "a shipped file still points at /sync: $stale"
   rs_ok "no shipped skill, WORKFLOW, README, llms.txt, COMPATIBILITY or hook points at /sync"
   if rs_fold "$MAINTAIN" | grep -qE 'run sync'; then

@@ -45,7 +45,7 @@ rs_exists "$REPAIR" "$TRIAGE" "$SHAPE" "$BUILDER" "$IMPLEMENT" "$HOSTING" \
 if [ -z "${RS_LIST:-}" ]; then
   [ ! -e "$SKILLS/fix" ] || rs_fail "the fix skill folder is still there"
   rs_ok "the fix skill folder is gone"
-  stale=$(grep -rlE '/fix([^a-z-]|$)|the fix skill' "$SKILLS" "$WORKFLOW" "$ROOT/README.md" "$ROOT/llms.txt" || true)
+  stale=$(rs_retired_mentions '/fix([^a-z-]|$)|the fix skill' "$SKILLS" "$WORKFLOW" "$ROOT/README.md" "$ROOT/llms.txt")
   [ -z "$stale" ] || rs_fail "a shipped file still points at /fix: $stale"
   rs_ok "no shipped skill, WORKFLOW, README or llms.txt points at /fix"
 fi

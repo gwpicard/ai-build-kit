@@ -41,6 +41,7 @@ rs_rule "nothing to change says nothing" 'when it prints nothing, say nothing'
 rs_rule "the rewrite waits for a yes" 'as one the person may want to change by hand\. wait for the person.s yes'
 rs_rule "the rewrite is read back" 'run it again without, and carry on only once no line it prints ends in a new form'
 rs_rule "a former skill name is found" 'under today.s name or one it had before, such as `start` for `setup-ai-build-kit`'
+rs_rule "a named pointer to a retired skill is found" 'it also finds a pointer that already names its skill, where that skill is one the kit has retired'
 rs_rule "only a pointer that stands alone is rewritten" 'the pointer stands alone, as a whole code span or a bare path, and the skill still has the file'
 rs_rule "a line left as written is never rewritten" 'a line ending in `left as written:` gives the reason it cannot, such as a pointer inside a code block, a command or a link, where a rewrite would break the line\. those are never rewritten'
 rs_rule "a rewrite changes nothing else" 'a rewrite changes the pointers and nothing else in the file, line endings included'
@@ -140,6 +141,38 @@ rs_report "a pointer to the old sync skill is rewritten to the truing reference"
   "$(grep -qF "Records follow the \`maintain\` skill's \`references/truing.md\`." "$WORK/folded/AGENTS.md" && echo yes || echo no)"
 rs_report "a pointer to the old document read follows it into maintain" \
   "$(grep -qF "Stale names follow the \`maintain\` skill's \`references/document-read.md\`." "$WORK/folded/AGENTS.md" && echo yes || echo no)"
+
+# The last nine-command release founded projects whose AGENTS.md names the
+# handover template by skill, as the `ship` skill's. That skill is gone and
+# handovers moved to maintain, so the named pointer opens nothing until it
+# follows them. The same file by its old folder goes to the same place. A named
+# pointer under a current name, one in a code block, and one to a file no skill
+# has are left alone.
+mkdir -p "$WORK/six"
+cat > "$WORK/six/AGENTS.md" <<'EOF'
+by install route. A pointer such as the `ship` skill's `templates/handover.md`
+names a file there. Recipes follow the `ship` skill's `templates/recipe.md`.
+Hand over with `.agents/skills/ship/templates/handover.md` when you leave.
+Already current: the `maintain` skill's `templates/handover.md`.
+```
+the `sync` skill's `SKILL.md`
+```
+Gone: the `queue` skill's `references/no-such-file.md` here.
+EOF
+sed -n '4,8p' "$WORK/six/AGENTS.md" > "$WORK/six/tail-before"
+six=$(python3 "$SCRIPT" "$WORK/six")
+python3 "$SCRIPT" --apply "$WORK/six" >/dev/null
+rs_report "a named pointer to the ship handover template follows it to maintain" \
+  "$(grep -qF "A pointer such as the \`maintain\` skill's \`templates/handover.md\`" "$WORK/six/AGENTS.md" && echo yes || echo no)"
+rs_report "a named pointer to another ship file goes to setup-hosting" \
+  "$(grep -qF "Recipes follow the \`setup-hosting\` skill's \`templates/recipe.md\`." "$WORK/six/AGENTS.md" && echo yes || echo no)"
+rs_report "the handover template by its old folder goes to maintain too" \
+  "$(grep -qF "Hand over with the \`maintain\` skill's \`templates/handover.md\` when you leave." "$WORK/six/AGENTS.md" && echo yes || echo no)"
+rs_report "a current named pointer, one in a code block, and one to a missing file are left as they were" \
+  "$(sed -n '4,8p' "$WORK/six/AGENTS.md" | cmp -s - "$WORK/six/tail-before" \
+     && [ "$(printf '%s\n' "$six" | grep -c 'left as written: ')" = 2 ] && echo yes || echo no)"
+rs_report "a second run on that project finds nothing more to rewrite" \
+  "$([ -z "$(python3 "$SCRIPT" "$WORK/six" | grep -v 'left as written: ')" ] && echo yes || echo no)"
 
 # Lines where a rewrite would break what the person wrote. Each is listed with
 # its reason and left exactly as it was, and a line with two standalone

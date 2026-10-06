@@ -47,6 +47,21 @@ if ! CLAUDE_CONFIG_DIR="$CONFIG" claude plugin validate "$MARKET" --strict \
     fail "strict validation found a warning other than the root CLAUDE.md"
   fi
 fi
+# The first release stands in for the last nine-command release: it also
+# offers fix, queue, sync and ship. The update to the second release must take
+# them away by itself, since nothing in the project holds them on this route.
+RETIRED="fix queue sync ship"
+for word in $RETIRED; do
+  printf -- '---\ndescription: A retired command, %s.\n---\nRetired.\n' "$word" \
+    > "$MARKET/.claude/commands/$word.md"
+done
+python3 - "$MARKET/.claude-plugin/plugin.json" $RETIRED <<'PY'
+import json, sys
+path = sys.argv[1]
+data = json.load(open(path))
+data["commands"] += ["./.claude/commands/%s.md" % word for word in sys.argv[2:]]
+json.dump(data, open(path, "w"), indent=2)
+PY
 CLAUDE_CONFIG_DIR="$CONFIG" claude plugin marketplace add "$MARKET" >/dev/null
 
 (
@@ -87,6 +102,10 @@ for word in implement maintain setup-ai-build-kit setup-hosting shape what-now; 
   if grep -qF 'disable-model-invocation' "$INSTALL_PATH/.claude/commands/$word.md"; then
     fail "installed Claude command still carries the retired manual-only setting: $word"
   fi
+done
+for word in $RETIRED; do
+  [ -f "$INSTALL_PATH/.claude/commands/$word.md" ] || \
+    fail "the stand-in for the nine-command release did not install: $word"
 done
 grep -qF '${CLAUDE_PLUGIN_ROOT}/.agents/skills/setup-ai-build-kit/SKILL.md' \
   "$INSTALL_PATH/.claude/commands/setup-ai-build-kit.md" || \
@@ -143,6 +162,20 @@ CLAUDE_CONFIG_DIR="$CONFIG" claude plugin marketplace update ai-build-kit >/dev/
 )
 grep -qF '"version": "0.2.1"' "$LISTING" || \
   fail "Claude plugin update did not install the later release"
+NEW_PATH=$(sed -n 's/^[[:space:]]*"installPath": "\([^"]*\)",$/\1/p' "$LISTING")
+[ -n "$NEW_PATH" ] || fail "Claude did not report the updated plugin's cache path"
+for word in $RETIRED; do
+  if grep -qF "\"./.claude/commands/$word.md\"" "$NEW_PATH/.claude-plugin/plugin.json" \
+      || [ -e "$NEW_PATH/.claude/commands/$word.md" ]; then
+    fail "the plugin update kept a retired command: $word"
+  fi
+done
+for word in implement maintain setup-ai-build-kit setup-hosting shape what-now; do
+  [ -f "$NEW_PATH/.claude/commands/$word.md" ] || \
+    fail "the plugin update lost a command: $word"
+done
+[ ! -e "$PROJECT/.agents/skills" ] && [ ! -e "$PROJECT/.claude/commands" ] || \
+  fail "the plugin update left skills or commands in the project"
 
 (
   cd "$PROJECT"
