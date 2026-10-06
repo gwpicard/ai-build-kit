@@ -24,41 +24,61 @@ an existing rule in the masterplan?
 ## A report that something is broken
 
 A bug is a piece like any other, so a report of a fault comes here too, in
-whatever words it arrives. These three checks come before the usual steps.
-
-### A live break after a recent merge
-
-Where the report is that the live tool
-broke, and a merge in the last few days is the likely cause, offer the earlier
-version back first, before shaping the repair. Read the masterplan's "How it
-stays running" section and the project's recipe. On a recipe, say in one line
-what the rollback brings back and that it puts nothing else right, close to:
-"The live tool broke after Tuesday's change. I can put the version from before
-it back while we find the cause. Shall I roll back?"
-
-Run it only after a yes
-that names it, following the `setup-hosting` skill's "Rolling back". Off a
-recipe, say what a rollback would need and that the kit cannot do it here, as
-that section says. Either way, then shape the repair. A no leaves the live tool
-as it is, and the repair is shaped the same way.
+whatever words it arrives. These four checks come first, in this order, before
+the usual steps.
 
 ### Was this ever promised?
 
-Read the masterplan, build-path section first. A
-report is a repair only where the behaviour it asks for was promised. Where it
-was never promised, say so kindly and route it as new behaviour: a new wish
-treated as a repair ends up in the wrong procedure. Nobody can misfile work by
-typing the wrong words; catching that is this check's whole job.
+Read the masterplan, build-path section first. A report is a repair only where
+the behaviour it asks for was promised. Where it was never promised, say so
+kindly and route it as new behaviour: a new wish treated as a repair ends up in
+the wrong procedure. Nobody can misfile work by typing the wrong words;
+catching that is this check's whole job.
+
+### A live break after a recent merge
+
+This applies only where the masterplan's "How it stays running" records a live
+address, the project is on a recipe whose rollback section names how to roll
+back, the report is that the live tool broke, and a merge in the last few days
+is the likely cause.
+
+Check first that the version before that merge did not
+have the fault: the changelog or closed pieces show it working then, or the
+person says it did. A fault that was already there is not brought back by a
+rollback, so offer none.
+
+Where all of that holds, offer the earlier version back first, before shaping
+the repair. Say in one line what the rollback brings back and that it puts
+nothing else right, close to: "The live tool broke after Tuesday's change. I
+can put the version from before it back while we find the cause. Shall I roll
+back?"
+
+Run it only after a yes that names it, following the `setup-hosting` skill's
+"Rolling back". Off a recipe, say what a rollback would need and that the kit
+cannot do it here, as that section says. Either way, then shape the repair. A
+no leaves the live tool as it is, and the repair is shaped the same way.
+
+### A fault that has survived three attempts
+
+Read the history for the same area before shaping anything: `CHANGELOG.md`,
+closed pieces and merged pull requests. Count the attempts the way the
+`section-builder` skill's `references/repair.md` counts them under "What counts
+as three": by the fault surviving, not by your own tally. Where this report
+means the fault has survived three attempts, follow that file's "Escalation"
+in this same reply, notice included, before marking anything ready. A fresh
+session is no reason to start the count again.
 
 ### A small, clear repair
 
-Where the fault is plain from the report or one look
-at the screen or the code, and the change is a few lines, such as a typo or a
-wrong label, that look is the reproduction. Mark the piece ready at once, with
-the failing case as its `## Done when`, and offer to build it in this same
-session rather than a fresh one. Anything less certain is shaped by reproducing
-it, as the `section-builder` skill's `references/repair.md` describes under
-"Shaping a repair".
+Where one look on this computer shows the fault, on the screen, in a command's
+output or in the code, and the change is a few lines, such as a typo or a wrong
+label, that look is the reproduction. A report alone is not enough: you must
+have seen the fault yourself. Still define the symptom as "Shaping a repair"
+says, and write what the look was onto the piece. Mark the piece ready at once,
+with the failing case as its `## Done when`, and offer to build it in this
+same session rather than a fresh one. Anything less certain is shaped by
+reproducing it, as the `section-builder` skill's `references/repair.md`
+describes under "Shaping a repair".
 
 ## Step 2: Classify intent
 

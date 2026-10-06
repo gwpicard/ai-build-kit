@@ -74,9 +74,10 @@ example "Booking the tripod once shows one loan on the calendar, not two."
 Put the check itself, how it is run and how reliable it is, in `Under the
 hood`, so the build starts from the same loop. Then label it `ready`.
 
-A small, clear repair needs none of the ceremony above. Where change-triage
-marks one ready at once, the look that showed the fault is the reproduction,
-and the piece says what that look was.
+A small, clear repair takes a short form of the above. The symptom is still
+defined, and one look on this computer that shows the fault is the
+reproduction. A report alone is never enough. Where change-triage marks one
+ready at once, the piece says what that look was.
 
 ## Building a repair
 
