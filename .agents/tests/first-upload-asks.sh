@@ -23,7 +23,7 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 
 BUILDER="$ROOT/.agents/skills/section-builder/SKILL.md"
 SETUP="$ROOT/.agents/skills/setup-ai-build-kit/SKILL.md"
-SYNC="$ROOT/.agents/skills/sync/SKILL.md"
+SYNC="$ROOT/.agents/skills/maintain/references/truing.md"
 HOSTING="$ROOT/.agents/skills/setup-hosting/SKILL.md"
 BLOCKED="$ROOT/.agents/skills/setup-ai-build-kit/references/blocked-commands.md"
 WORKFLOW="$ROOT/WORKFLOW.md"
@@ -73,7 +73,7 @@ rs_require_order "the rules sit in the safe start, before the piece is labelled"
 rs_require_load_bearing "the save step points back at the ask" "$BUILDER" 'the project.s first upload waits for the yes in step 1'
 
 # The other commands that push follow the same rule.
-rs_require_load_bearing "sync's save follows the first upload rule" "$SYNC" 'the project.s first upload waits for the yes section-builder.s "the first upload" describes'
+rs_require_load_bearing "the truing's save follows the first upload rule" "$SYNC" 'the project.s first upload waits for the yes section-builder.s "the first upload" describes'
 rs_require_load_bearing "setup-hosting's records follow the first upload rule" "$HOSTING" 'the project.s first upload waits for the yes section-builder.s "the first upload" describes'
 rs_require_load_bearing "the push-to-main rule names its one narrow exception" "$BLOCKED" 'the one exception is the project.s first upload: after the person.s yes, and only when the remote lists no branch, `main` is created through the github api at the commit the piece.s branch was cut from'
 rs_require_load_bearing "and main is never written by a git push" "$BLOCKED" 'it is never written by a `git push`'

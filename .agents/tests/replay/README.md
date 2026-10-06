@@ -284,7 +284,7 @@ call.
 What the four added was the same beat in a fourth, fifth and sixth costume: the
 person pushes back, the kit holds, the person then accepts in the notice's own
 words. Half the wired cases measured that one behaviour while nothing measured
-`/implement`, `/setup-hosting`, `/sync`, `/queue`, `/maintain` or `/what-now`. A pass
+`/implement`, `/setup-hosting`, `/maintain` or `/what-now`. A pass
 over one scenario costs about a pound, so the four were roughly a third of the
 bill for a reading already taken three times.
 

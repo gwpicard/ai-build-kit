@@ -42,8 +42,8 @@ rs_rule "a short file without redundant content stays quiet" 'if the file is sho
 rs_rule "the full visit cannot repeat or override the choice" 'agents\.md was already checked in the monthly pass; do not repeat its trim offer or cut anything without the person.s yes'
 rs_guard "$MAINTAIN" "the maintenance trim offer"
 
-rs_require_order "the check sits in the monthly pass" "$MAINTAIN" '^## Monthly, light$' 'count every line'
-rs_require_order "the check precedes the full-visit section" "$MAINTAIN" 'count every line' '^## Quarterly, or before a handover$'
+rs_require_order "the check sits in the monthly pass" "$MAINTAIN" '^## Monthly, when due$' 'count every line'
+rs_require_order "the check precedes the full-visit section" "$MAINTAIN" 'count every line' '^## Quarterly, when due$'
 rs_require_load_bearing "setup writes commands and exceptions within the rule" "$SETUP" 'record run and check commands and any non-standard conventions under agents\.md.s stack section, keeping its content rule and line ceiling'
 rs_require_load_bearing "WORKFLOW explains the offer and the person's choice" "$WORKFLOW" 'one line saying how long it is and what can go\. nothing is cut without your yes'
 rs_require_load_bearing "the validator counts the foundation template" "$VALIDATOR" 'foundation_agents="\$skills/setup-ai-build-kit/templates/foundation/agents\.md"'

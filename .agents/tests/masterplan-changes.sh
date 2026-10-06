@@ -14,7 +14,7 @@ FORM="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/piece-issue.y
 TEMPLATE="$ROOT/.agents/skills/setup-ai-build-kit/templates/masterplan.md"
 SHAPE="$ROOT/.agents/skills/shape/SKILL.md"
 BUILDER="$ROOT/.agents/skills/section-builder/SKILL.md"
-SYNC="$ROOT/.agents/skills/sync/SKILL.md"
+SYNC="$ROOT/.agents/skills/maintain/references/truing.md"
 MAINTAIN="$ROOT/.agents/skills/maintain/SKILL.md"
 COVERAGE="$ROOT/.agents/skills/setup-ai-build-kit/references/coverage-read.md"
 
@@ -27,16 +27,17 @@ rs_rule "a blocked capability is never described as live" 'a safely blocked capa
 rs_rule "recovery reads landed pieces including closed ones" 'pieces whose work landed, including closed pieces'
 rs_rule "recovery applies only the missing change" 'apply only what is still missing'
 rs_rule "later changes take precedence" 'follow landing order and the current tool'
-rs_rule "repeating recovery cannot duplicate or restore removed behaviour" 'repeating /sync must not add the same line twice or restore something deliberately removed'
+rs_rule "repeating recovery cannot duplicate or restore removed behaviour" 'repeating the truing must not add the same line twice or restore something deliberately removed'
 rs_rule "a missing old field is not nothing" 'recover its change from that work rather than treating absence as "nothing"'
 rs_rule "the mark records the checked code state" 'one `trued against: <full commit hash>` line beside the masterplan'
 rs_rule "the person never maintains the mark" 'never ask the person to understand or maintain it'
 rs_rule "the mark never skips unread changes" 'never move it past work that has not been checked'
-rs_rule "dirty work cannot advance the mark" 'or past uncommitted work that /sync must leave alone'
+rs_rule "dirty work cannot advance the mark" 'or past uncommitted work that the truing must leave alone'
 rs_rule "building saves the checked code before its mark" 'saves the checked code, then writes that saved commit into the mark'
 rs_rule "record save stays on the piece's route" 'both commits belong to the same piece and pull request'
-rs_rule "sync marks the saved state it reconciled" 'sync uses the current saved commit it has just reconciled'
+rs_rule "the truing marks the saved state it reconciled" 'the truing uses the current saved commit it has just reconciled'
 rs_rule "the mark cannot contain its own future hash" 'neither tries to write the hash of the commit that will contain the mark'
+rs_rule "every visit reads the gap before the mark moves" 'every /maintain visit reads this first, in its truing, before anything moves the mark'
 rs_rule "drift reads the shared branch" 'read the mark on the current shared branch'
 rs_rule "merged work counts once" 'count each change once along the first-parent history'
 rs_rule "saving the mark cannot create drift" 'leave records-only commits out'
@@ -44,10 +45,12 @@ rs_rule "unmerged work does not count as landed" 'do not include unmerged work'
 rs_rule "the count follows code subjects, including moved paths" 'data, permissions or connections sections\. follow renamed paths'
 rs_rule "the map is optional on other paths" 'do not require one on the other build paths'
 rs_rule "several files do not multiply one subject change" 'count a change once for each subject it touched'
-rs_rule "non-zero subject counts earn one line and sync" 'when any subject count is non-zero, give one line with the total and the affected subjects, then offer /sync in that same line'
+rs_rule "non-zero subject counts earn one line and the check" 'when any subject count is non-zero, give one line with the total and the affected subjects, then say in that same line that the truing now checks the page'
 rs_rule "zero subject counts stay quiet" 'stay quiet when all three counts are zero'
 rs_rule "missing history cannot become a guessed count" 'available history is incomplete, do not invent a count or reset the mark'
-rs_rule "maintenance never marks work as checked" 'maintenance reports the gap; it never moves the mark itself'
+rs_rule "an unusable mark means checking the whole page" 'compare the whole page with the code instead'
+rs_rule "the count never marks work as checked" 'the count reports the gap; it never moves the mark itself'
+rs_rule "only the truing moves the mark" 'only the truing moves it, once it has checked the page'
 rs_guard "$RECORD" "the masterplan change rules"
 
 rs_reset
@@ -77,13 +80,13 @@ rs_require_load_bearing "the issue form says a new rule is a change" "$FORM" 'a 
 rs_require_load_bearing "WORKFLOW says a checkable rule is a change" "$ROOT/WORKFLOW.md" 'a new rule you could check, such as a list now sorted by name, counts as a change'
 rs_require_load_bearing "building applies it before saving on every route" "$BUILDER" 'before saving on any route, apply the piece'
 rs_require_load_bearing "building updates the mark using its owner" "$BUILDER" 'update the trued-against mark as the `setup-ai-build-kit` skill.s `references/masterplan-changes\.md` describes'
-rs_require_load_bearing "sync recovers unapplied changes and moves the mark" "$SYNC" 'merge each landed piece.*that has not yet been applied, and move the trued-against mark'
+rs_require_load_bearing "the truing recovers unapplied changes and moves the mark" "$SYNC" 'merge each landed piece.*that has not yet been applied, and move the trued-against mark'
 rs_require_load_bearing "a current changelog cannot hide an older mark" "$SYNC" 'read from the older of that mark and the last changelog entry'
-rs_require_load_bearing "monthly maintenance reads the count rules" "$MAINTAIN" 'count landed changes since it using the `setup-ai-build-kit` skill.s `references/masterplan-changes\.md`'
-rs_require_load_bearing "monthly maintenance offers sync in one line" "$MAINTAIN" 'report the count and offer /sync in one line'
+rs_require_load_bearing "the truing reads the count rules before the mark moves" "$SYNC" 'read the gap first, as its "read the gap at each visit" says, before anything moves the mark'
+rs_require_load_bearing "the monthly part does not read the gap a second time" "$MAINTAIN" 'the masterplan.s gap since its trued-against mark was already read in the truing, on every visit'
 rs_require_load_bearing "coverage reads the recorded change" "$COVERAGE" 'read each piece.*masterplan change.*alongside its promised result'
 rs_require_load_bearing "coverage does not turn unapplied work into a new piece" "$COVERAGE" 'it must not be offered as a new piece'
 rs_require_load_bearing "WORKFLOW explains what the person sees" "$ROOT/WORKFLOW.md" 'each piece says what it changes in the masterplan'
-rs_require_load_bearing "WORKFLOW explains the monthly count" "$ROOT/WORKFLOW.md" 'the monthly visit uses that point to say how much work has since touched'
+rs_require_load_bearing "WORKFLOW explains the count each visit gives" "$ROOT/WORKFLOW.md" 'each visit uses the last such point to say how much work has since touched'
 
 rs_done

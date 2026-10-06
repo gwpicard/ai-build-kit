@@ -10,14 +10,14 @@ the `setup-ai-build-kit` skill's `references/whole-project-reads.md` apply.
 
 ## Where it applies
 
-Every `/sync`, on every build path, which includes the quarterly visit, since
-that runs sync first.
+Every `/maintain` visit, on every build path, as part of the truing in
+`references/truing.md`. It is the visit's one read for stale names.
 
 ## Which documents
 
 `README.md`, and every document AGENTS.md points at. Nothing else. A project
 that points at a document from its standing instructions has said that document
-matters. The records sync already trues (the masterplan, the changelog,
+matters. The records the truing already checks (the masterplan, the changelog,
 AGENTS.md itself) are not read again here, and nor are the kit's own files or
 comments in the code.
 
@@ -36,7 +36,7 @@ reach. No read can check it, and this one does not try.
 ## Engines, best first
 
 1. `python3 <skill folder>/scripts/document-claims.py`, where `<skill folder>` is
-   this installed sync skill's folder, run from the project root. It reads the documents above, checks every file, link,
+   this installed maintain skill's folder, run from the project root. It reads the documents above, checks every file, link,
    `npm run`, `pnpm run`, `yarn run` and `make` command, and environment
    variable they name, and prints one line for each that no longer exists. It
    prints nothing when every name still exists. It lists documents changed
@@ -72,8 +72,8 @@ whether a described step still happens that way."
 
 For each finding, offer two things. Correct the name on the spot, changing that
 name and nothing else in the sentence around it, or file it as a piece to come
-back to. Never rewrite the person's prose. A correction is saved with sync's
-other corrections, in step 8.
+back to. Never rewrite the person's prose. A correction is saved with the truing's
+other corrections, in its step 8.
 
 When the read finds nothing, say nothing about it. Every name still pointing at
 something real is the ordinary result.

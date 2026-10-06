@@ -1,13 +1,40 @@
 ---
 name: maintain
-description: The service visit for AI Build Kit updates, project upkeep, handovers, and retirement. Trigger monthly for the light pass, quarterly or before any handover for the full one, and when a tool is being retired. Composes sync and the evidence run instead of repeating them. Do not use for building, fixing, or planning.
+description: Make the project true and healthy, at any time. Every visit trues the records against what actually happened and compares the live copy with main without changing it. The monthly and quarterly upkeep run only when due, and the visit also holds handovers and retirement. Trigger when it has been a while, after work done outside the skills, before a handover, and when a tool is being retired. A session that died part-way goes to what-now first. Do not use for building, repairing, or planning.
 ---
 
 # Maintain
 
 Small regular maintenance is what keeps the rare big problem from arriving. Report findings before applying anything beyond routine updates.
 
-## Monthly, light
+This command can run at any time. Every visit makes the project true again.
+The monthly and quarterly parts run only when they are due.
+
+## Every visit
+
+1. Make the records true. Load `references/truing.md` and follow it. Its
+   save step comes last, at the end of the visit, and saves everything the
+   visit changed in one go.
+2. Compare the live copy with `main`. Where the masterplan's "How it stays
+   running" section records a live address, run the comparison in the
+   `setup-hosting` skill's "A later run" read-only: compare, report each gap
+   in one plain line, and change nothing. Say nothing more about a part that
+   matches. Where there is a gap, offer /setup-hosting in one line to repair
+   it, since each repair there waits for its own yes. Never apply a migration,
+   deploy, promote or roll back from this visit. Without a recorded live
+   address, skip this step and say nothing.
+3. Decide what else is due. Read `.ai-build-kit-maintenance`. The monthly part
+   is due 30 days after its `last-light-pass` date, or 30 days after founding
+   when no visit is recorded. The quarterly part is due 90 days after its
+   `last-full-pass` date, or 90 days after founding when no full visit is
+   recorded, and whenever the person asks for a handover. The person may ask
+   for either part at any time, and then it is due. Where they ask only for
+   the records to be checked, run only the steps in this section. Run what is
+   due. Where a
+   part is not due, say so in one line with the date it falls due. When
+   nothing more is due, the visit ends with the truing's save and summary.
+
+## Monthly, when due
 
 1. Read this skill's `VERSION` file, which is the version this project holds.
    Then ask for the latest published one with
@@ -38,7 +65,7 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    rule there. Wait for approval rather than replacing an edit silently.
 3. Identify how this project receives AI Build Kit. Check whether
    `skills-lock.json` records skills from `gwpicard/ai-build-kit`. Where it
-   does, count its entries against the thirteen names and say which are
+   does, count its entries against the eleven names and say which are
    missing. A short installation means a skill the kit renamed or added never
    arrived. The version file cannot show this, because the same update that
    drops a skill rewrites the version, so the count is the only sign.
@@ -75,7 +102,7 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    Do not update unrelated plugins, project skills, or global skills.
 5. For the shared route, confirm that this skill's `VERSION` now matches the
    version step 1 read from `releases/latest`, and that the count from step 3
-   is now thirteen. When the shared installation did not have `screen-check`
+   is now eleven. When the shared installation did not have `screen-check`
    before this visit, confirm that the same `npx skills add` command added it,
    and carry on only once it is there. A matching version
    alone is not proof the installation is whole. For the Claude route, confirm
@@ -119,7 +146,7 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    then update the map only after the person answers.
 8. If the normal route is unavailable, use the latest published Release, the
    one step 1 read, as the fallback source. A shared installation may replace
-   only the thirteen AI Build Kit skill folders after the same approval and
+   only the eleven AI Build Kit skill folders after the same approval and
    clean checkpoint. A Claude
    plugin installation keeps its current enabled version when the marketplace
    cannot be reached. Confirm that version with `claude plugin list --json`,
@@ -128,12 +155,9 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    checkpoint can restore Claude's plugin cache. If the plugin is no longer
    enabled, stop and ask the person to reinstall it after the marketplace is
    reachable.
-9. Read the masterplan's trued-against mark and count landed changes since it
-   using the `setup-ai-build-kit` skill's `references/masterplan-changes.md`.
-   When data, permissions or connections were touched, report the count and
-   offer /sync in one line. An absent or unusable mark gets the same offer
-   without a guessed count. Then update project dependencies and check for known
-   vulnerabilities. Report what changed; apply on approval.
+9. Update project dependencies and check for known vulnerabilities. Report
+   what changed; apply on approval. The masterplan's gap since its
+   trued-against mark was already read in the truing, on every visit.
 10. Once live: read the error alerts and the bills. Anything real becomes a piece, for implement to take: open an issue in the shape the `setup-ai-build-kit` skill's `references/pieces.md` describes. A finding nobody wrote down is a finding nobody acts on.
 11. Verify backups still run where the tool has any. A check that needs a secret reads where it lives from the masterplan first, asks once when that is unknown, and never calls the secret absent. Confirm the named operational owner from the masterplan still holds that role, and that no critical service or credential is tied to someone who has left.
 12. Check whether use or reliance has grown enough that the fit check should run again; if it has, run it before anything else this visit.
@@ -196,7 +220,7 @@ that differs from the installed one, and changes nothing when the copy is
 current, so it is safe on every visit.
 
 Where it added the helper, say one sentence: "I have added the helper that
-prints your list of pieces, so /what-now, /queue and /implement read what is
+prints your list of pieces, so /what-now and /implement read what is
 ready from it rather than from the issues by hand." Where it replaced one, say
 that the helper was brought up to date, and that any change made to the old
 copy by hand was replaced too and is kept in the checkpoint saved first. Where
@@ -460,10 +484,10 @@ template text, and a person made to fix it by hand after every rename will stop
 updating. So the kit does it for them, with approval:
 
 1. Find the line that lists the commands. In the foundation template it begins
-   `- Commands:` and names all eight. Where it names `start`, replace it with
+   `- Commands:` and names all six. Where it names `start`, replace it with
    `setup-ai-build-kit`. Where it names `plan`, replace it with `shape`. Where
-   `queue` is missing, add it after `implement`. Where the sentences nearby
-   give an older count of commands or skills, make them eight and thirteen.
+   the sentences nearby give an older count of commands or skills, make them
+   six and eleven.
 2. Show the change and apply it on approval. Say what changed in one sentence.
 3. Where the file lists the commands in its own words and the line cannot be
    recognised, leave the file alone and say which name needs changing, so the
@@ -587,12 +611,11 @@ would gain nothing.
     one: `recipe-move-declined|<YYYY-MM-DD>|<recipe file>|<menu files, comma
     separated>`. Step 6 reads it on later visits.
 
-## Quarterly, or before a handover
+## Quarterly, when due
 
-Everything above, plus:
+The monthly part as well, plus:
 
-1. Run sync.
-2. A hot-spot review, not a general architecture pass. Look first at: areas
+1. A hot-spot review, not a general architecture pass. Look first at: areas
    changed repeatedly, areas behind repeated bugs, areas whose evidence is
    slow or unreliable, areas where one change spreads across many files,
    integrations that fail often, and records that no longer explain reality.
@@ -612,13 +635,13 @@ Everything above, plus:
    Apply on approval.
    Do not run a broad architecture programme merely because the quarter
    changed.
-3. Review project skills for instructions that no longer pay their way and
+2. Review project skills for instructions that no longer pay their way and
    offer to remove them. AGENTS.md was already checked in the monthly pass;
    do not repeat its trim offer or cut anything without the person's yes.
-4. Run the evidence run in the `setup-hosting` skill's
+3. Run the evidence run in the `setup-hosting` skill's
    `references/evidence-run.md`, scoped by the build path and its sensitive
    areas.
-5. The ownership and graduation check: can the team still explain the main
+4. The ownership and graduation check: can the team still explain the main
    flows? Can it verify important changes without reading code? Can it
    identify where data, secrets, service owners, and bills live? Can it
    recover, or use the manual fallback? Has reliability, complexity, or
@@ -631,7 +654,7 @@ Everything above, plus:
    drops its caution and leaves the area named. Where the person asks for a
    handover, or a caution names a person the team has to find, prepare
    one for the area or the whole build, as "A handover" below says.
-6. Put today's date on the `last-full-pass` line as well as the
+5. Put today's date on the `last-full-pass` line as well as the
    `last-light-pass` line in `.ai-build-kit-maintenance`.
 
 ## A handover
@@ -666,4 +689,4 @@ retired one is finished.
 
 ## Done when
 
-The findings are reported, the approved changes are applied and recorded, today's visit is written into `.ai-build-kit-maintenance`, and the calendar says when the next visit is due.
+The records match what happened, any gap between the live copy and `main` is reported, the findings are reported, the approved changes are applied and saved through the build path's route, a monthly or quarterly part that ran is written into `.ai-build-kit-maintenance`, and the person knows when the next one is due.

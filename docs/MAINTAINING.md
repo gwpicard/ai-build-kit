@@ -24,7 +24,7 @@ produced the same mistake more than once.
   inherit it and nothing warns you that it is missing. Root `AGENTS.md` says why
   the rule exists and what else holds it shut.
 
-The eight user-facing commands are product under test here, not the source
+The six user-facing commands are product under test here, not the source
 repository's own operating workflow. Maintainer changes follow root `AGENTS.md`
 and this guide.
 
@@ -147,7 +147,7 @@ condition, not in the shared default.
 
 ## Changing a skill
 
-This section governs the thirteen canonical skills in `.agents/skills/`. A
+This section governs the eleven canonical skills in `.agents/skills/`. A
 maintainer skill sits outside it, and `AGENTS.md` says what it does and does not
 owe.
 
@@ -161,7 +161,7 @@ the regenerated compatibility fixtures. Never hand-edit anything under
 `.claude/`, `.cursor/`, or `.gemini/`. New projects use the shared skills
 installer, the optional Claude Code plugin, or the Agent Plugins folder. The
 Claude plugin metadata lives under `.claude-plugin/`. It explicitly
-selects the eight generated command files and five generated background skills.
+selects the six generated command files and five generated background skills.
 Those thin adapters load the canonical instructions from the plugin cache. The
 Agent Plugins manifest lives under `agent-plugin/`, and its `skills`
 folder is assembled by the release allowlist rather than by
@@ -191,7 +191,7 @@ generated adapters look like.
 `user-invocable` is not in the written Agent Skills standard, so its reference
 checker reports the five background skills as invalid. Keep it anyway, with the
 cost on the record: the plugin standard tells a client to skip any skill that
-fails the skill standard, so a strict Agent Plugins client would load the eight
+fails the skill standard, so a strict Agent Plugins client would load the six
 commands and skip the five. Claude Code accepts the setting, which is why that
 route works today. If the standard adopts a setting of its own, follow it and
 update the short person-facing version in `docs/COMPATIBILITY.md`.
@@ -209,10 +209,10 @@ part or date itself. A proposal worth keeping becomes an issue.
 
 The reason is what a shared skills installer reads. It looks in
 `.agents/skills/` and `.claude/skills/` and offers whatever it finds in either,
-merging the two by the `name` in each file's frontmatter. The thirteen adapters
-carry the names of the thirteen skills they point at, so they merge away and an
-installer finds thirteen. No maintainer skill shares a name with one of the
-thirteen, so a copy of any of them in those folders would be a fourteenth skill
+merging the two by the `name` in each file's frontmatter. The eleven adapters
+carry the names of the eleven skills they point at, so they merge away and an
+installer finds eleven. No maintainer skill shares a name with one of the
+eleven, so a copy of any of them in those folders would be a twelfth skill
 offered to every project.
 
 Sitting outside both folders is what prevents that. It is also why the skill
@@ -240,9 +240,10 @@ session-start script into a project.
 
 The session-end hook, `.agents/hooks/session-end-sync.sh`, ships alongside it
 but is opt-in by design rather than by oversight: a check-up cadence should not
-be missed, while reconciling records at session end is a lighter prompt. Its own
-header gives the per-tool wiring, and typing `/sync` by hand does the same job on
-any tool.
+be missed, while a reminder about unsaved work at session end is a lighter
+prompt. Its own header gives the per-tool wiring, and typing `/what-now` at the
+start of the next session does the same job on any tool. The file keeps its
+old name, since a project that wired it points at that name.
 
 Editing a skill's body usually produces no adapter diff, because the adapters are
 pointers carrying only the frontmatter description; changing a description does.
@@ -253,7 +254,7 @@ COMPATIBILITY.md, beside this file, holds the full per-tool map.
 Every change to `.agents/skills/` or the kit's own machinery runs
 `.agents/tools/validate-kit.sh`, which checks:
 
-- the canonical skill inventory (exactly eight commands and five background
+- the canonical skill inventory (exactly six commands and five background
   skills, named exactly, with nothing else in the folder);
 - the maintainer skill boundary: every folder under `.agents/maintainer-skills/`
   is read off the disk rather than from a list, the vendored writing skill
@@ -462,7 +463,7 @@ maintainer's real Claude configuration.
 
 Run `.agents/tests/agent-plugin.sh` too. It builds a release and checks the
 assembled `agent-plugin` folder against the open standard: the manifest's
-permitted fields, the thirteen skills as immediate children of `skills`, no
+permitted fields, the eleven skills as immediate children of `skills`, no
 skill hidden deeper, no maintainer-only writing skill, and a project
 stand-up from that folder alone.
 
@@ -688,7 +689,7 @@ wherever `N` appears.
    npx skills add /private/tmp/abk-preview-N -a claude-code -a codex -s '*' -y
    ```
 
-   The first puts the thirteen skills in `.claude/skills/`, the second in
+   The first puts the eleven skills in `.claude/skills/`, the second in
    `.agents/skills/` with links in `.claude/skills/`. In both, `setup-hosting/recipes/`
    holds the same recipes as `ls <kit checkout>/.agents/skills/setup-hosting/recipes/`.
 
@@ -853,7 +854,7 @@ home and every other mention is a link.
 
 - Root `README.md`: what the kit is, installation, and positioning for someone
   deciding whether to use it. It ships as the public README unchanged, so it is
-  written for that reader rather than for a maintainer. The eight-command table
+  written for that reader rather than for a maintainer. The six-command table
   there is a summary; what each command actually does belongs to WORKFLOW.
   Orientation for someone working on the source belongs in root `AGENTS.md`.
 - `WORKFLOW.md`: everything operational. How work runs, day to day, for someone

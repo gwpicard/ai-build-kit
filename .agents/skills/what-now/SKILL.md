@@ -5,7 +5,7 @@ description: Orientation for a lost or returning user. Trigger when someone asks
 
 # What now
 
-You are the safety net under the other six commands. Someone who forgets everything else and remembers this one is fine.
+You are the safety net under the other five commands. Someone who forgets everything else and remembers this one is fine.
 
 ## Read
 
@@ -82,7 +82,8 @@ because a step nobody names is a step nobody does.
 Say piece names, never issue numbers. Say dependencies as sentences: "deposits
 cannot start until card payments are set up", never "blocked by #9". Name at
 most three things; if more apply, say how many and name the nearest. More than
-three stops being orientation and becomes a report. Match where the project is in its life. Still building toward the first launch: the answer is usually /implement for the next ready piece, /shape to shape a new one, or /setup-hosting once the person wants people to use it. Live and running: the answer is usually "say what you want to /shape", /shape for the thing that broke, or the /maintain that the recorded check-up dates show is overdue.
+three stops being orientation and becomes a report. Where the person wants
+every ready piece at once, /implement shows the whole list. Match where the project is in its life. Still building toward the first launch: the answer is usually /implement for the next ready piece, /shape to shape a new one, or /setup-hosting once the person wants people to use it. Live and running: the answer is usually "say what you want to /shape", /shape for the thing that broke, or the /maintain that the recorded check-up dates show is overdue.
 
 End with a short recap of where the tool has got to, in the words a person would
 use. Say what the last stretch of work was about, and whether anything is on the
@@ -97,7 +98,9 @@ where it did before.
 
 ### Uncommitted work
 
-Explain what it appears to belong to, then offer a choice: continue it, save
+This is the one home for recovering work an interrupted session left behind.
+/maintain's truing reports such work and leaves it alone; the choice of what
+to do with it is made here. Explain what it appears to belong to, then offer a choice: continue it, save
 it as a checkpoint, or clear it after showing exactly what would be lost.
 Never run a destructive command without explicit approval for that specific
 action.

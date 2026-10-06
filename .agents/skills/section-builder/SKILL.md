@@ -290,7 +290,7 @@ proves the behaviour, and the review exists for what the check cannot see.
 Before saving on any route, apply the piece's `## Masterplan change` and update
 the trued-against mark as
 the `setup-ai-build-kit` skill's `references/masterplan-changes.md` describes.
-The record changes in step 9 are part of this save, not a later /sync task.
+The record changes in step 9 are part of this save, not a later /maintain task.
 
 Checkpoint route: update the records, commit, and state the saved checkpoint.
 
@@ -322,14 +322,14 @@ blocked. Report it as a completed pass, and leave it alone until the
 condition is met or the person carries on after the notice and the acceptance
 is recorded.
 
-## 9. Sync the records
+## 9. Update the records
 
 Normal completion updates: the piece, a changelog line, the masterplan through
 the piece's recorded change, and AGENTS.md only when a durable operating
 convention changed. Where the piece added, removed, or changed something outside
 the tool that it reaches, update the masterplan's connections picture too, and
 say in one line what the tool now reaches, so the person can say whether it
-should. A correctly completed build does not need /sync afterward.
+should. A correctly completed build leaves nothing for /maintain to correct.
 
 When the report names a next piece, refresh the printout first if this pass has
 not. A ready repair comes first: name a piece under its `Broken` group marked

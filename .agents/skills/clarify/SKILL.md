@@ -50,7 +50,7 @@ carry this. The settled term ends up in the masterplan, in plain language, where
 the rest of the product description already lives: written there when founding,
 or when `/implement` next builds the piece that carries it. The coverage read
 in setup-ai-build-kit/references/coverage-read.md catches a settled term left
-behind on a piece and offers to reconcile it through /sync.
+behind on a piece and offers to reconcile it through /maintain.
 
 ## Pressure-testing a rule
 

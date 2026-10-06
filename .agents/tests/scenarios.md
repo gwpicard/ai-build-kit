@@ -255,7 +255,7 @@ reported, and it is not what decides whether the case held.
 
 ## 16. Claude command visibility
 
-- The eight commands appear in the user command surface, and the agent may start one when asked.
+- The six commands appear in the user command surface, and the agent may start one when asked.
 - Four disciplines do not appear there.
 - A command can still compose a discipline.
 - AGENTS.md is loaded through CLAUDE.md.
@@ -358,8 +358,8 @@ reported, and it is not what decides whether the case held.
 
 - Expected path: unaffected; the route decides how the skills arrive, not how the project is built.
 - Visible explanation: the person points their own coding agent's plugin installer at the `agent-plugin` folder of the public repository, then types `setup-ai-build-kit`.
-- Hidden technique: the folder is assembled at release time by the allowlist, which rebases the thirteen canonical skills under `agent-plugin/skills/`. This repository keeps one copy of each skill and no second plugin tree.
-- Evidence: `.agents/tests/agent-plugin.sh` checks the manifest's permitted fields, the 1.0.0 schema, the thirteen skills as immediate children of `skills`, that no skill hides deeper, that the maintainer writing skill is absent, that each background skill carries `user-invocable: false` and no command does, and that a project stands up from the folder alone.
+- Hidden technique: the folder is assembled at release time by the allowlist, which rebases the eleven canonical skills under `agent-plugin/skills/`. This repository keeps one copy of each skill and no second plugin tree.
+- Evidence: `.agents/tests/agent-plugin.sh` checks the manifest's permitted fields, the 1.0.0 schema, the eleven skills as immediate children of `skills`, that no skill hides deeper, that the maintainer writing skill is absent, that each background skill carries `user-invocable: false` and no command does, and that a project stands up from the folder alone.
 - Save route: unaffected.
 - Review: unaffected.
 - Escalation: a client that judges a skill non-standard may skip it, because the one setting keeping a background skill out of the person's hands is not yet in the written standard. `docs/COMPATIBILITY.md` says to prefer the shared installer where a project has a choice.
@@ -372,7 +372,7 @@ reported, and it is not what decides whether the case held.
 - Evidence: `.agents/tests/release-builder.sh` checks that the released README carries the installation command this route uses. The installer itself is somebody else's tool, which the kit never runs, so what it does with the files afterwards is confirmed by installing into a throwaway project and reading the result.
 - Save route: unaffected.
 - Review: unaffected.
-- Escalation: `npx skills add gwpicard/ai-build-kit` replaces installed skill files outright, so a local edit to one of the thirteen is lost without warning. `maintain` looks for local edits before updating and proposes moving the durable rule into AGENTS.md, which no update touches; only a rename migration edits its command list, with approval. The installer's `update` command is not the route, because it refreshes only what the lockfile lists and cannot add a skill the kit renamed.
+- Escalation: `npx skills add gwpicard/ai-build-kit` replaces installed skill files outright, so a local edit to one of the eleven is lost without warning. `maintain` looks for local edits before updating and proposes moving the durable rule into AGENTS.md, which no update touches; only a rename migration edits its command list, with approval. The installer's `update` command is not the route, because it refreshes only what the lockfile lists and cannot add a skill the kit renamed.
 
 ## 30. GitHub setup is required to found the pieces
 
@@ -398,7 +398,7 @@ reported, and it is not what decides whether the case held.
 
 ## 32. A masterplan promise that no piece builds
 
-- Expected result: at the end of founding, and again inside /sync, the coverage read names the promises nothing would build and offers once to add them; nothing is created, edited, or closed before the person answers.
+- Expected result: at the end of founding, and again in a /maintain visit, the coverage read names the promises nothing would build and offers once to add them; nothing is created, edited, or closed before the person answers.
 - Visible explanation: "Everything the masterplan promises has a piece that builds it, except two. Nothing builds the weekly summary email, and nothing builds the rule that a job cannot be closed twice. Shall I add those to the plan?"
 - Hidden technique: `setup-ai-build-kit/references/coverage-read.md` compares the masterplan's promises against every piece, open and closed, matching by plain description because the records carry no reference numbers; a promise whose only piece is parked counts as a gap.
 - Evidence: a guided review of the reported list confirms every promise named is on the masterplan, that a promise already built by a closed piece is not reported, that a promise whose only piece is parked is reported, and that no piece changed before the person answered.
@@ -411,7 +411,7 @@ reported, and it is not what decides whether the case held.
 - Expected result: the coverage read finds every promise has a piece behind it, says so in one line, and carries on.
 - Visible explanation: "Everything the masterplan promises has a piece that builds it."
 - Hidden technique: the same coverage read, reporting the covered case in one line rather than a list; no offer is made and no piece is touched.
-- Evidence: a guided review confirms one line appears at the end of founding and inside /sync, with no list, no offer, and no change to any piece.
+- Evidence: a guided review confirms one line appears at the end of founding and in a /maintain visit, with no list, no offer, and no change to any piece.
 - Save route: unaffected.
 - Review: none is due.
 - Escalation: none is due; a covered plan needs no further action, and a list printed where nothing is missing is the failure this scenario catches.
@@ -526,15 +526,15 @@ reported, and it is not what decides whether the case held.
 - Review: unaffected; the command that starts brings its own.
 - Escalation: a request that fits no command gets one question with a best guess attached, such as "That sounds like /shape, is that right?". Starting a command the person did not ask for, or sending them back to retype the message with the command first, are the failures this scenario catches.
 
-## 45. A finished piece updates the masterplan without a sync visit
+## 45. A finished piece updates the masterplan without a maintenance visit
 
 - Expected path: Build and run it.
 - Visible explanation: when shaping, one line says the masterplan will gain the rule that available items appear in alphabetical order; after building, the person sees the passing example and the updated masterplan paragraph.
-- Hidden technique: shape writes the change on the piece's surface. Section-builder applies it while saving the checked behaviour and records the saved code state the page was trued against. No /sync invocation is needed.
+- Hidden technique: shape writes the change on the piece's surface. Section-builder applies it while saving the checked behaviour and records the saved code state the page was trued against. No /maintain visit is needed.
 - Evidence: a test shows an unsorted item list returned in alphabetical order, the saved masterplan's correct-behaviour section carries that rule, and the page's trued-against mark resolves to the saved code that passed the test. A claim in the reply without a saved record is a failure.
 - Save route: pull request, left open for the person to merge. Its saved masterplan already carries the change, so merging the work brings the updated page with it.
 - Review: none is due for alphabetical ordering in this ordinary internal tool.
-- Escalation: a page that still lacks the rule, or a piece saved with only a promise to run /sync later, is the failure this case catches. The existing bookings and permissions are outside the piece.
+- Escalation: a page that still lacks the rule, or a piece saved with only a promise to run /maintain later, is the failure this case catches. The existing bookings and permissions are outside the piece.
 
 ## 46. A decision loses the test it rests on
 
@@ -559,7 +559,7 @@ reported, and it is not what decides whether the case held.
 ## 48. A settled term survives its piece being parked
 
 - Expected path: Build and run it.
-- Visible explanation: /sync says the parked piece settled who a borrower and a booking steward are, but the masterplan has no definitions, and offers once to carry those meanings across.
+- Visible explanation: /maintain says the parked piece settled who a borrower and a booking steward are, but the masterplan has no definitions, and offers once to carry those meanings across.
 - Hidden technique: clarify records the settled terms on the shaped piece and keeps them when it is parked. The coverage read compares the masterplan's key terms with decisions on all pieces, including parked ones, without treating the parked capability as a present promise.
 - Evidence: the shaped piece records that a borrower uses the item and a booking steward entered the loan. The piece is then parked. The coverage read names the missing borrower definition even though its piece is parked. After the person's yes, the masterplan carries both meanings, the piece stays parked and the tool's behaviour is unchanged.
 - Save route: unaffected; this case judges the term's survival and reconciliation rather than how the document correction is saved.

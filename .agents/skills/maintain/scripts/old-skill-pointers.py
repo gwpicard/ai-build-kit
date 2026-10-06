@@ -39,10 +39,10 @@ import os
 import re
 import sys
 
-# The kit's thirteen skills. A name outside this list may be the project's own
+# The kit's eleven skills. A name outside this list may be the project's own
 # skill, and its pointer is the person's to keep.
 KIT_SKILLS = (
-    "setup-ai-build-kit", "shape", "implement", "queue", "setup-hosting", "sync",
+    "setup-ai-build-kit", "shape", "implement", "setup-hosting",
     "maintain", "what-now", "clarify", "change-triage", "screen-check",
     "section-builder", "second-opinion",
 )
@@ -51,12 +51,21 @@ KIT_SKILLS = (
 # earliest releases pointed into the founding skill under its first name, and
 # the rename migration removes that folder, so those pointers open nothing on
 # any install route.
-FORMER_NAMES = {"start": "setup-ai-build-kit", "ship": "setup-hosting", "fix": "section-builder"}
+FORMER_NAMES = {
+    "start": "setup-ai-build-kit", "ship": "setup-hosting", "fix": "section-builder",
+    "queue": "implement", "sync": "maintain",
+}
 
 # A former skill whose rules moved into a file of another skill. The fix skill
 # had only its SKILL.md, and its rules now sit in section-builder's repair
-# reference, so a pointer to that file follows them there.
-FORMER_FILES = {("fix", "SKILL.md"): "references/repair.md"}
+# reference, so a pointer to that file follows them there. The routine of
+# `sync` became the maintain skill's truing reference. Its document read and
+# script kept their paths, and the rules of `queue` joined implement's own
+# SKILL.md, so those need no entry here.
+FORMER_FILES = {
+    ("fix", "SKILL.md"): "references/repair.md",
+    ("sync", "SKILL.md"): "references/truing.md",
+}
 
 FILES = ("AGENTS.md", "masterplan.md")
 

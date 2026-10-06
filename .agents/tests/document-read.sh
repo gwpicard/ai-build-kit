@@ -1,5 +1,6 @@
 #!/usr/bin/env sh
-# document-read.sh: guard the rules of the document read in /sync.
+# document-read.sh: guard the rules of the document read that every /maintain
+# visit runs in its truing. It once lived in /sync.
 #
 # document-read-rehearsal.sh runs the script. This half reads back what keeps
 # the read honest about its own reach: which documents it reads and why, that a
@@ -17,13 +18,14 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 . "$ROOT/.agents/tests/lib/rule-shape.sh"
 
-READ="$ROOT/.agents/skills/sync/references/document-read.md"
-SCRIPT="$ROOT/.agents/skills/sync/scripts/document-claims.py"
-SYNC="$ROOT/.agents/skills/sync/SKILL.md"
+READ="$ROOT/.agents/skills/maintain/references/document-read.md"
+SCRIPT="$ROOT/.agents/skills/maintain/scripts/document-claims.py"
+SYNC="$ROOT/.agents/skills/maintain/references/truing.md"
+BLOAT="$ROOT/.agents/skills/maintain/references/document-bloat.md"
 WORKFLOW="$ROOT/WORKFLOW.md"
 
 rs_init "Document read rules"
-rs_exists "$READ" "$SCRIPT" "$SYNC" "$WORKFLOW"
+rs_exists "$READ" "$SCRIPT" "$SYNC" "$BLOAT" "$WORKFLOW"
 
 rs_rule "it follows the shared rules" 'whole-project-reads\.md` apply'
 rs_rule "only the README and what AGENTS.md points at" '`readme\.md`, and every document agents\.md points at\. nothing else\.'
@@ -31,7 +33,7 @@ rs_rule "the records are not read twice" 'are not read again here'
 rs_rule "saying less is never a finding" 'a document may say less than the project does\. that is never a finding'
 rs_rule "only a name that does not exist is wrong" 'a document is wrong only where it names something that does not exist'
 rs_rule "a described flow is out of reach" 'whether a described flow still happens the way the document says is out of reach'
-rs_rule "the shipped script comes first" '1\. `python3 <skill folder>/scripts/document-claims\.py`, where `<skill folder>` is this installed sync skill.s folder'
+rs_rule "the shipped script comes first" '1\. `python3 <skill folder>/scripts/document-claims\.py`, where `<skill folder>` is this installed maintain skill.s folder'
 rs_rule "the fallback is reading directly" 'read the documents directly and check the same four kinds of name by hand'
 rs_rule "each finding is confirmed at its line" 'open the document at the line the script names'
 rs_rule "a raised name is not raised again" 'a name already on an open piece has been raised and decided'
@@ -40,9 +42,14 @@ rs_rule "it says what it cannot check" 'it cannot tell whether a described step 
 rs_rule "the correction changes only the name" 'changing that name and nothing else in the sentence around it'
 rs_rule "prose is never rewritten" "never rewrite the person's prose"
 rs_rule "finding nothing is silent" 'when the read finds nothing, say nothing about it'
+rs_rule "it runs on every maintain visit" 'every `/maintain` visit, on every build path, as part of the truing'
 rs_guard "$READ" "the shipped document-read.md"
 
-rs_require_load_bearing "sync loads the read" "$SYNC" 'load `references/document-read\.md`'
+rs_require_load_bearing "the truing loads the read" "$SYNC" 'load `references/document-read\.md`'
+# The lifecycle study found two commands both reading documents. Stale names
+# now have one home, this read, and the quarterly bloat read leaves them to it.
+rs_require_load_bearing "the truing calls it the one read for stale names" "$SYNC" 'this is the visit.s one read for stale names'
+rs_require_load_bearing "the bloat read leaves stale names to it" "$BLOAT" 'it is the one home for stale names'
 rs_require "the script flags only what does not exist" "$SCRIPT" 'only a name that points at nothing is'
 rs_require "the script never says a document is right" "$SCRIPT" 'it never says a document is right'
 rs_require "WORKFLOW explains it" "$WORKFLOW" 'a document that says less than the project does is fine'

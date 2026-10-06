@@ -22,7 +22,7 @@ says where to look first and is never printed.
 
 It reads the project and writes nothing. Run it from the project root:
 
-    python3 <sync skill folder>/scripts/document-claims.py
+    python3 <maintain skill folder>/scripts/document-claims.py
 """
 
 import functools

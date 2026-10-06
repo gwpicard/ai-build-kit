@@ -10,7 +10,7 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 FIT="$ROOT/.agents/skills/setup-ai-build-kit/references/fit-check.md"
 SETUP="$ROOT/.agents/skills/setup-ai-build-kit/SKILL.md"
 CLARIFY="$ROOT/.agents/skills/clarify/SKILL.md"
-SYNC="$ROOT/.agents/skills/sync/SKILL.md"
+SYNC="$ROOT/.agents/skills/maintain/references/truing.md"
 WORKFLOW="$ROOT/WORKFLOW.md"
 
 rs_init "Masterplan edge checks"
@@ -43,14 +43,14 @@ rs_rule "an overlong page earns one line once" 'above that, give one line once i
 rs_rule "the line offers to move piece detail" 'the masterplan is longer than roughly two pages\. shall i move the detail about individual pieces onto those pieces\?'
 rs_rule "moving detail needs agreement" 'move detail only with a yes'
 rs_rule "the present plan keeps its promises and decisions" 'keeping every present promise and decision on the masterplan'
-rs_rule "no agreement leaves the page intact and sync continues" 'otherwise, leave it intact and carry on'
+rs_rule "no agreement leaves the page intact and the truing continues" 'otherwise, leave it intact and carry on'
 rs_rule "a short page stays quiet" 'at or below the measure, say nothing'
 rs_guard "$SYNC" "the masterplan length offer"
 
-rs_require_load_bearing "WORKFLOW explains the length offer" "$WORKFLOW" 'when the core masterplan grows beyond roughly two pages, /sync says so once and offers to move detail'
+rs_require_load_bearing "WORKFLOW explains the length offer" "$WORKFLOW" 'when the core masterplan grows beyond roughly two pages, /maintain says so once and offers to move detail'
 rs_require_load_bearing "the parked-term rehearsal asks for the shaping decision" "$ROOT/.agents/tests/replay/cases/48.txt" 'a borrower is the person using an item'
-rs_require_load_bearing "the rehearsal parks that piece before sync" "$ROOT/.agents/tests/replay/cases/48.txt" 'park the piece we just shaped'
-rs_require_order "the rehearsal parks the term's piece before reconciliation" "$ROOT/.agents/tests/replay/cases/48.txt" 'Park the piece' '^/sync'
+rs_require_load_bearing "the rehearsal parks that piece before the visit" "$ROOT/.agents/tests/replay/cases/48.txt" 'park the piece we just shaped'
+rs_require_order "the rehearsal parks the term's piece before reconciliation" "$ROOT/.agents/tests/replay/cases/48.txt" 'Park the piece' '^/maintain'
 rs_require_load_bearing "the rehearsal judges the missing term rather than a new feature" "$ROOT/.agents/tests/scenarios.md" 'the coverage read names the missing borrower definition even though its piece is parked'
 
 rs_done

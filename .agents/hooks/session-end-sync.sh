@@ -2,16 +2,18 @@
 # Runs when a working session ends. This hook never edits project records and
 # never launches another agent: it only checks whether tracked files changed
 # since the last commit and, if so, reminds whoever is watching that the
-# records may need reconciling with /sync. Recovery is a human or agent
-# choice, made with /sync, never something this hook decides on its own.
+# work is not saved yet. Recovery is a human or agent choice, made with
+# /what-now, never something this hook decides on its own. The file keeps its
+# old name because a project that wired it points at that name.
 #
 # This is opt-in, not wired by default. Wiring, per tool:
 #   Claude Code: add a SessionEnd hook block to .claude/settings.json pointing
 #                at this script, if wanted.
 #   Cursor:      add this script as a session/stop hook in Cursor's hooks, if
 #                wanted.
-#   Others:      if your tool has no hooks, typing /sync by hand at the end of
-#                a session does the same job, and is the portable default.
+#   Others:      if your tool has no hooks, typing /what-now at the start of
+#                the next session does the same job, and is the portable
+#                default.
 
 set -eu
 
@@ -28,7 +30,7 @@ fi
 
 echo "Session ended with repository changes present."
 echo "The records (CHANGELOG.md, masterplan.md) may not describe what just happened."
-echo "Run /sync to check and reconcile them; this hook does not edit anything itself."
+echo "Next session, /what-now says what they belong to and offers what to do with them; this hook does not edit anything itself."
 
 mkdir -p "$ROOT/.agents/tmp"
 {

@@ -127,6 +127,20 @@ python3 "$SCRIPT" --apply "$WORK/repair" >/dev/null
 rs_report "a pointer to the old fix skill is rewritten to the repair reference" \
   "$(grep -qF "Repairs follow the \`section-builder\` skill's \`references/repair.md\`." "$WORK/repair/AGENTS.md" && echo yes || echo no)"
 
+# The queue skill folded into implement, and the sync skill's routine became
+# the maintain skill's truing reference. Pointers to either follow the rules.
+mkdir -p "$WORK/folded"
+printf '%s\n' 'Several pieces follow `.agents/skills/queue/SKILL.md`.' \
+  'Records follow `.agents/skills/sync/SKILL.md`.' \
+  'Stale names follow `.agents/skills/sync/references/document-read.md`.' > "$WORK/folded/AGENTS.md"
+python3 "$SCRIPT" --apply "$WORK/folded" >/dev/null
+rs_report "a pointer to the old queue skill is rewritten to implement" \
+  "$(grep -qF "Several pieces follow the \`implement\` skill's \`SKILL.md\`." "$WORK/folded/AGENTS.md" && echo yes || echo no)"
+rs_report "a pointer to the old sync skill is rewritten to the truing reference" \
+  "$(grep -qF "Records follow the \`maintain\` skill's \`references/truing.md\`." "$WORK/folded/AGENTS.md" && echo yes || echo no)"
+rs_report "a pointer to the old document read follows it into maintain" \
+  "$(grep -qF "Stale names follow the \`maintain\` skill's \`references/document-read.md\`." "$WORK/folded/AGENTS.md" && echo yes || echo no)"
+
 # Lines where a rewrite would break what the person wrote. Each is listed with
 # its reason and left exactly as it was, and a line with two standalone
 # pointers has both rewritten.
@@ -236,7 +250,7 @@ print("\n".join(sorted(module.KIT_SKILLS)))
 PY
 )
 shipped=$(ls "$ROOT/.agents/skills" | sort)
-rs_report "the script names exactly the kit's thirteen skills" \
-  "$([ "$listed" = "$shipped" ] && [ "$(printf '%s\n' "$listed" | grep -c .)" = 13 ] && echo yes || echo no)"
+rs_report "the script names exactly the kit's eleven skills" \
+  "$([ "$listed" = "$shipped" ] && [ "$(printf '%s\n' "$listed" | grep -c .)" = 11 ] && echo yes || echo no)"
 
 rs_done

@@ -2,7 +2,7 @@
 
 Some checks look at the whole project rather than one change: the type check and
 linter in the project check, the quarterly reads that feed `/maintain`, and the
-documentation read in `/sync`. Every one of them follows the rules below. Each
+documentation read in every `/maintain` visit. Every one of them follows the rules below. Each
 read points here rather than stating them again.
 
 One idea sits under all of them. A tool finds, and the agent reports what the

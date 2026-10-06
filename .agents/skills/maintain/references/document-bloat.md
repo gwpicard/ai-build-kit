@@ -7,7 +7,7 @@ person who does not read code cannot tell which is current. Every extra page is
 also read by the agent as context. This read finds those documents so the
 quarterly visit can offer to tidy them.
 
-The document read in `/sync` is a different check. It looks for a single name
+The document read in `references/document-read.md` is a different check. It looks for a single name
 that no longer exists, in the documents that matter most. This read looks for
 whole documents, or whole paragraphs, that are not needed.
 
@@ -34,8 +34,8 @@ folder whose name starts with a dot are left out.
   these, because it is where a reader starts.
 
 A document that names things the project no longer has is not counted here.
-The document read in `/sync`, which the quarterly visit runs first, already
-names each of those at its line.
+The document read, which every visit runs in its truing, already names each of
+those at its line. It is the one home for stale names.
 
 Two documents that say the same thing in different words are out of reach. No
 read here can find them.

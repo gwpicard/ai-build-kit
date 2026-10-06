@@ -101,7 +101,7 @@ rs_rule "a rollback question gets an answer and no rollback" 'that a rollback ha
 rs_guard "$BUILDER" "section-builder's merge step"
 
 rs_require_order "the area check comes before the live-side checks" "$BUILDER" 'A sensitive area first, on any project' 'Before asking, on a live project'
-rs_require_order "the merge step follows the records step" "$BUILDER" '^## 9\. Sync the records$' '^## 10\. Merge$'
+rs_require_order "the merge step follows the records step" "$BUILDER" '^## 9\. Update the records$' '^## 10\. Merge$'
 rs_require_absent "the old stop-before-merge rule is gone" "$BUILDER" 'do not merge the pull request, and do not delete the branch'
 
 # /implement points at the step, and takes a piece that only waits on its merge.
