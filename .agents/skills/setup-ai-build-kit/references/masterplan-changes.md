@@ -30,16 +30,26 @@ masterplan starts with `Trued against: not yet checked` until that comparison
 has happened.
 
 Before moving the mark, reconcile all changes since the old mark as well as the
-piece in hand. Where the mark is absent or unusable, compare the current page
-against the code before setting a starting point. Never move it past work that
-has not been checked, or past uncommitted work that the truing must leave alone.
+piece in hand. Never move it past work that has not been checked, or past
+uncommitted work that the truing must leave alone.
 
-Section-builder applies the change before saving, saves the checked code, then
-writes that saved commit into the mark and saves the mark in a records-only
-commit on the same route. Both commits belong to the same piece and pull
-request. The truing uses the current saved commit it has just reconciled and
-saves the updated page through its normal route. Neither tries to write the hash of
-the commit that will contain the mark, since that hash does not exist yet.
+Whether the mark can be used is a fact, and the `setup-ai-build-kit` skill's
+`scripts/trued-mark.sh` reads it: exit 0 prints the commit the mark names, and
+any other exit says why it cannot be used. Where the mark is absent or
+unusable, only the truing compares the whole page against the code and sets a
+starting point. A build leaves the mark as it is, says in one line that
+/maintain checks the whole masterplan against the code, and carries on with its
+save.
+
+Section-builder applies the change before saving, saves the checked code, then,
+where the mark could be used, writes that saved commit into the mark and saves
+the mark in a records-only commit on the same route. Both commits belong to the
+same piece and pull request. The merge keeps them, as section-builder's
+Merging says: a squash merge would leave the marked commit outside `main`'s
+history, and every later build would find the mark unusable. The truing uses the current saved commit it has
+just reconciled and saves the updated page through its normal route. Neither
+tries to write the hash of the commit that will contain the mark, since that
+hash does not exist yet.
 
 ## Read the gap at each visit
 
@@ -65,9 +75,10 @@ touched what data it holds; I will check whether the page still matches."
 Include permissions or connections when they were touched too. Stay quiet when
 all three counts are zero.
 
-If the mark is missing, does not resolve, is outside the current branch's
-history, or the available history is incomplete, do not invent a count or reset
-the mark. Say in one line that the last check cannot be established, and
+Read the mark with `scripts/trued-mark.sh`, as a build does, so the two agree.
+If it exits other than 0, because the mark is missing, does not resolve, is
+outside the current branch's history, or the available history is incomplete,
+do not invent a count or reset the mark. Say in one line that the last check cannot be established, and
 compare the whole page with the code instead. The count reports the gap; it
 never moves the mark itself. Only the truing moves it, once it has checked the
 page.

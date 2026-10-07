@@ -359,12 +359,20 @@ attribution line, not the word.
   a merge, the harness takes out the `ask` list before the first commit, and
   only that list. The deny rules and hooks stay. A real session proved the
   box, and the stand-in still logs every merge. It runs both halves of the
-  `code-online` preparation that scenarios 8 and 45 name, which puts `main`
-  on the empty remote after the first commit, so a piece saved as a pull
-  request does not meet the first-upload question its contract does not
-  judge. It holds that 55 keeps its empty remote, and that the second half
-  refuses a remote that is not empty or a folder that is not a fresh replay
-  project.
+  `code-online` preparation, which puts `main` on the empty remote after the
+  first commit, so a piece saved as a pull request does not meet the
+  first-upload question its contract does not judge. It holds that 55 keeps
+  its empty remote, and that the second half refuses a remote that is not
+  empty or a folder that is not a fresh replay project. Scenarios 8 and 45
+  each name a preparation that runs that second half. Scenario 8's,
+  `calendar-feed`, adds the code that publishes loans to the shared calendar,
+  since the fault its person reports lived in code the fixture did not hold
+  and could not be reproduced. The check proves the project's checks still
+  pass and that one booking shows twice in its week both after a reconnection
+  and after an early return. Scenario 45's, `masterplan-trued`, marks the
+  masterplan as checked against the first commit in a records-only commit on
+  `main`, and the script a build reads the mark with finds it usable. Both
+  refuse a folder that is not a fresh replay project.
 - `.agents/tests/grader-recovery.sh` checks that the replay grader recovers a
   grading missing only its final brace or carrying one stray brace after it,
   and still refuses one that was cut off partway or followed by other text.
@@ -506,7 +514,18 @@ attribution line, not the word.
   the account free. Product names are left to
   `hosting-request.sh`.
   `agent-plugin.sh` and `claude-plugin.sh` each check that every menu recipe
-  arrives in their installed layout.
+  arrives in their installed layout. The menu of one was still skipped in
+  four replays of five after all of that was written, so founding now shows
+  the menu with the shipped `recipe-menu.sh`, which prints the lines to say,
+  the default sentence among them, and writes the `founding-menu` line. Its
+  exit code decides the next step: 3 when several fit and none was chosen,
+  4 for a file name not on the menu, which is corrected rather than sent to
+  the hand-run rules.
+  The check runs it against made-up menus of one, two and none, in a whole
+  copy's two skill folders, the shared installer for several coding agents
+  and for Claude Code alone, and a plugin whose skills sit outside the
+  project. Each gives its exact lines, the record keeps its other lines, and
+  nothing else in the project changes.
 - `.agents/tests/coverage-read.sh` guards the read that compares the masterplan
   against the pieces: the rules that keep it honest, that /setup and the
   truing every `/maintain` visit runs both still run it, and that WORKFLOW.md
@@ -571,7 +590,16 @@ attribution line, not the word.
   for the masterplan, its application during save and recovery, the saved state
   the page was checked against, and the count every `/maintain` visit gives
   before its truing moves the mark, when later work touched data, permissions
-  or connections. Only the truing moves the mark.
+  or connections. Only the truing moves the mark. A build that found no usable
+  mark once wrote "not yet checked" while the rules told it to compare the
+  whole page first. The whole page is the truing's, so a build leaves the mark,
+  says in one line that `/maintain` checks the page, and carries on. Whether a
+  mark can be used is read by the shipped `trued-mark.sh`, which the check runs
+  in throwaway repositories: a commit in the branch is usable, and a missing,
+  unchecked, short, unknown, doubled or off-branch mark, or one in incomplete
+  history, is not. The truing reads the mark with the same script, and the
+  merge keeps the piece's commits, since a squash merge would leave the marked
+  commit outside `main`.
 - `.agents/tests/record-habits.sh` guards a decision's optional evidence line,
   the read that spots when its support has gone, the link back to the build
   that found a new piece, and the single question about work untouched for a
@@ -1207,7 +1235,10 @@ attribution line, not the word.
   own branch until the merge, so a later run reads it from that pull request
   and applies it from a separate temporary checkout after a named yes, leaving
   the person's uncommitted work untouched. A move to another host keeps the
-  old live copy serving until the new one answers. WORKFLOW.md says all of it,
+  old live copy serving until the new one answers. Every later run writes one
+  dated changelog line, gap or no gap, with its rollback line, through the
+  records route, since two of four replays that found no gap wrote nothing.
+  WORKFLOW.md says all of it,
   including that a later run's repairs wait for a yes even where the recipe
   names the command.
 - `.agents/tests/implement-merges-on-a-yes.sh` guards how `/implement` merges
@@ -1243,6 +1274,12 @@ attribution line, not the word.
   computer before the merge, such as the local container check, is a warning
   when it cannot run: said once, recorded in the changelog in the piece's
   pull request, and never a hold on the merge or a choice put to the person.
+  One that runs and fails holds the merge as a red check does, and the piece
+  goes back to its build. The shipped `check-before-merge.sh` decides which by
+  its exit code, and the check runs it against stand-in commands: 0 for a
+  pass, 1 for a check that ran and failed, 2 for a missing tool anywhere on a
+  line, a ready command that failed or a wrong use of the script, with the
+  cleanup run after a pass or a failure.
 - `.agents/tests/first-upload-asks.sh` guards the yes the project's first
   upload waits for. Founding tells the person nothing will be uploaded, and in
   a real run the first piece then pushed the whole project to GitHub with no

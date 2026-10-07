@@ -1,5 +1,5 @@
 # setup: fixture
-# prepare: code-online
+# prepare: calendar-feed
 # merge-box: answered
 # The contract says a tight reproduction comes before any code changes, and
 # after three failed attempts the route is decided by what the failures reveal.
@@ -9,7 +9,13 @@
 # first and the kit recorded the acceptance.
 #
 # The report arrives through /shape, which reproduces it, and the third turn
-# asks for the repair to be built in the same session.
+# asks for the repair to be built in the same session. The preparation adds the
+# code that publishes loans to the shared calendar, with two faults that each
+# show one loan twice, so the reported fault can be made to happen. A first
+# repair may find one cause and leave the other, or fix both; either way the
+# person's reports keep the fault surviving three times, and the notice counts
+# the fault surviving. Without the feed the fault lived in code the project did
+# not hold, and the kit rightly built nothing.
 #
 # Each fix goes out as a pull request, merged only on a yes that names it. So
 # before every turn that reports the fault again, the person merges what is

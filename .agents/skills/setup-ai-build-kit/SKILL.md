@@ -402,6 +402,21 @@ not the `parts/` folder, and not a recipe kept anywhere else while it waits for
 its real run. Read each file's `Fits:` line and keep the ones that fit the
 shape.
 
+Show the menu with `scripts/recipe-menu.sh` from this installed skill folder.
+It finds the recipes folder beside this skill, so it reads the same menu on
+every installation route.
+
+Pass `--record .ai-build-kit-maintenance`, which writes the menu line
+described below, then the files that fit, or `--none` where none does. Its
+exit code decides the next step. 3 means several fit: it prints what each
+recipe says, so choose one by the rule below and run it again with
+`--recommend <file>`. 4 means a file name it was given is not on the menu:
+correct it and run it again. 0 means it printed the lines to say: put
+them in your reply exactly as printed, before the stand-up begins. The plain
+words below go after the numbered list and before its last sentence, and the
+printed lines stay word for word. Any other exit means it could not read the
+menu, so follow the rules below by hand.
+
 If one recipe fits, recommend it and still show it as a menu. A menu of one
 follows every rule below, as a longer menu does, including the sentence naming
 it the default, and it is shown in a reply before the stand-up begins, never

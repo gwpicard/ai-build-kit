@@ -19,7 +19,9 @@
 # the merge the kit reads one line from the live copy and changes nothing.
 #
 # Each rule is prose an agent reads, and its absence would not show on screen
-# until a run merged something nobody had agreed to.
+# until a run merged something nobody had agreed to. The one decision a
+# machine can make, whether a recipe's check before the merge passed, failed
+# or could not run, is made by a shipped script, run here against stand-ins.
 
 set -eu
 
@@ -68,7 +70,19 @@ rs_rule "a readiness gap is a warning said once" 'a gap there is a warning, as i
 # The recipe's own check before the merge, such as the local container check,
 # is a warning when it cannot run, as in /setup-hosting. Three of five replays
 # of scenario 54 held the merge for it and asked for a set phrase instead.
-rs_rule "a pre-merge check that cannot run is a warning" 'where it cannot run here, for example because no container engine is running, it is a warning, as a check not done is in /setup-hosting'
+# A check that runs and fails is the opposite case, and holds the merge as a
+# red project check does. The two were told apart by reading the output, so a
+# shipped script now decides, and its exit code is what the kit acts on.
+rs_rule "the check runs through the shipped script" 'run it through `scripts/check-before-merge\.sh` from this skill.s folder'
+rs_rule "with its ready and cleanup commands" 'the command that shows the check.s tool is running as `--ready`, the one that removes what the check started as `--cleanup`'
+rs_rule "a read of a background start waits with its own retry" 'a command that reads something the check started in the background waits for it with its own retry option and carries its own time limit'
+rs_rule "the exit code decides, not a reading" 'the exit code decides, never a reading of the output'
+rs_rule "exit 0 is a pass" 'exit 0 means it passed'
+rs_rule "a pre-merge check that cannot run is a warning" 'exit 2 means it could not run here, for example because no container engine is running\. then it is a warning, as a check not done is in /setup-hosting'
+rs_rule "a check that runs and fails holds the merge" 'exit 1 means the check ran and failed, and that holds the merge as a red project check does'
+rs_rule "the failure is said in one line" 'say so in one line, naming what failed in plain words'
+rs_rule "the piece goes back to its build" 'the piece goes back to its build, from step 5, to fix the cause'
+rs_rule "and the merge waits until the check passes" 'the merge is not asked for until the check passes'
 rs_rule "it is said once and recorded in the piece's pull request" 'say it once, record it in changelog\.md with the date in this piece.s pull request, and carry on'
 rs_rule "it never holds the merge or asks for a choice" 'do not hold the merge for it, and do not ask the person to choose to merge without it'
 rs_rule "a warning the changelog holds is a pointer" 'where the changelog already holds that warning, one line pointing to it is enough'
@@ -87,7 +101,7 @@ rs_rule "several waiting pieces are named one by one" 'where more than one piece
 rs_rule "a yes covers only what it names" 'a yes covers only the pull requests it names, or all of them where it plainly says so'
 
 # How the merge is made.
-rs_rule "an approved merge is made on the pull request" 'make an approved merge on the pull request itself, such as with `gh pr merge`'
+rs_rule "an approved merge is made on the pull request" 'make an approved merge on the pull request itself, such as with `gh pr merge --merge`'
 rs_rule "never a local merge and a push of main" 'never merge the branch on this computer and push `main`'
 rs_rule "an unreachable github makes the merge wait" 'where github cannot be reached, the merge waits: say in one line that the person can merge it on github themselves'
 rs_rule "the box is announced only in claude code" 'where the session runs in claude code, the project.s settings show a confirmation box before the merge runs'
@@ -132,6 +146,8 @@ rs_require_load_bearing "WORKFLOW says an unreachable github makes the merge wai
 rs_require_load_bearing "WORKFLOW says a merge is a deploy once live" "$WORKFLOW" 'once the tool is live, a merge is a deploy'
 rs_require_load_bearing "WORKFLOW says the database addition goes first" "$WORKFLOW" 'a change that adds to the database waits until /setup-hosting has applied that addition'
 rs_require_load_bearing "WORKFLOW gives the health line" "$WORKFLOW" 'after the merge, /implement reads one line from the live copy'
+rs_require_load_bearing "WORKFLOW says a failing pre-merge check holds the merge" "$WORKFLOW" 'a check that runs and fails holds the merge as a red check does, and the piece goes back to its build until it passes'
+rs_require_load_bearing "WORKFLOW says one that cannot run is a warning" "$WORKFLOW" 'a check that cannot run here is a warning you hear once, and the merge goes ahead'
 
 # A pull request another change has collided with cannot merge, and asking
 # for a yes it cannot honour leaves the person holding a merge that fails.
@@ -141,5 +157,56 @@ rs_require_load_bearing "the offer is to merge main into the branch and push" "$
 rs_require_load_bearing "never a force push or a rebase" "$BUILDER" 'never force a push and never rebase\. do it only on a yes'
 rs_require_load_bearing "the check runs again before the ask" "$BUILDER" 'run the project check again, and ask for the merge only once it is green'
 rs_require_order "mergeability comes before the ask" "$BUILDER" '^\*\*Whether it can merge\.' '^\*\*Asking\.\*\* Name the pull request'
+
+# --- the script that decides ----------------------------------------------
+# Run against stand-in commands, so no container engine is needed. Each case
+# is one of the three answers the skill acts on.
+if [ -z "${RS_LIST:-}" ]; then
+  CHECK="$ROOT/.agents/skills/section-builder/scripts/check-before-merge.sh"
+  rs_exists "$CHECK"
+  log="$rs_dir/cleanup.log"
+  run_check() {
+    # run_check <expected exit> <description> <args>...
+    want=$1; what=$2; shift 2
+    : > "$log"
+    set +e
+    last=$(sh "$CHECK" "$@" 2>/dev/null)
+    got=$?
+    set -e
+    [ "$got" -eq "$want" ] || rs_fail "$what: exited $got, not $want ($last)"
+    rs_ok "$what"
+  }
+  run_check 0 "every command passing exits 0" --ready true true 'echo built'
+  run_check 0 "a cleanup that fails does not turn a pass into anything else" --cleanup false true
+  run_check 1 "a command that runs and fails exits 1" --ready true true false
+  run_check 1 "a failing read of a health route exits 1, not 2" 'sh -c "exit 22"'
+  run_check 2 "a ready command that fails exits 2" --ready false true
+  run_check 2 "a tool that is not installed exits 2" 'no-such-tool-for-this-check build'
+  run_check 2 "a ready command whose tool is missing exits 2" --ready 'no-such-tool-for-this-check info' true
+  run_check 2 "a tool past a leading ! or a setting is still looked for" 'FOO=1 ! no-such-tool-for-this-check'
+  run_check 2 "no command at all exits 2" --ready true
+  run_check 2 "a missing tool later in a line exits 2, not 1" 'true && no-such-tool-for-this-check'
+  run_check 2 "a ready option with no command exits 2, not 1" true --ready
+  run_check 2 "an option it does not have exits 2" --retries 3 true
+  run_check 0 "a program in quotes is found" '"sh" -c true'
+  run_check 0 "a program after a bracket is found" '(sh -c true)'
+  run_check 1 "a quoted program whose check fails still exits 1" '"sh" -c false'
+  set +e
+  sh "$CHECK" --cleanup "echo cleaned >> '$log'" true false 'echo never >> '"'$log'" >/dev/null 2>&1
+  set -e
+  [ "$(cat "$log")" = cleaned ] ||
+    rs_fail "after a failure the cleanup must run and no later command may"
+  rs_ok "after a failure the cleanup runs, and no later command does"
+  : > "$log"
+  sh "$CHECK" --cleanup "echo cleaned >> '$log'" true >/dev/null 2>&1
+  [ "$(cat "$log")" = cleaned ] || rs_fail "after a pass the cleanup must run"
+  rs_ok "after a pass the cleanup runs too"
+  out=$(sh "$CHECK" --ready false true 2>/dev/null || true)
+  case $out in "could not run:"*) rs_ok "a check that could not run says so on its last line" ;;
+    *) rs_fail "a check that could not run printed: $out" ;; esac
+  out=$(sh "$CHECK" true false 2>/dev/null || true)
+  case $out in "failed: false exited 1") rs_ok "a failed check names the command that failed" ;;
+    *) rs_fail "a failed check printed: $out" ;; esac
+fi
 
 rs_done

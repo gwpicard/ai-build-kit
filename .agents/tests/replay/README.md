@@ -284,12 +284,20 @@ half refuses any folder that is not a fresh replay project, so it can never cut
 a branch in this repository.
 
 The harness starts every remote empty, and the first upload of a project's
-code waits for the person's yes. Scenarios 8 and 45 save their piece as a pull request
-through the usual route, so they name `# prepare: code-online`, whose second
-half puts `main` on the remote as an established project has it. Without it
-both met the first-upload question and never reached the pull request their
-contracts judge. Scenario 55 measures that question, and keeps its empty
-remote.
+code waits for the person's yes. Scenarios 8 and 45 save their piece as a pull
+request through the usual route, so their code has to be online already.
+`code-online` has a second half that puts `main` on the remote as an
+established project has it. Without it both met the first-upload question and
+never reached the pull request their contracts judge. Scenario 55 measures that
+question, and keeps its empty remote.
+
+Each of the two needs more than that, so each names a preparation of its own
+whose second half runs `code-online`'s. Scenario 8 names `calendar-feed`, which
+adds the code that publishes loans to the shared calendar, with two faults that
+each show one booking twice. Before it, the fault the person reports lived in
+code the fixture did not hold, so the kit could not reproduce it and rightly
+built nothing. Scenario 45 names `masterplan-trued`, which marks the masterplan
+as checked against the first commit, so the build has a mark to move on.
 
 ## The replayed scenarios
 

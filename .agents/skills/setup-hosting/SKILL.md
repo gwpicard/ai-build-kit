@@ -487,6 +487,16 @@ database afterwards. A redeploy follows "Deploying, and
 the records". A no leaves that part as it is, and its line is a warning like
 any other.
 
+Every later run writes one dated line in CHANGELOG.md once the comparison is
+done, and any repairs it led to, even when it finds no gap: what it compared,
+each gap or "no gap" and whether it was repaired, and
+the rollback line as the check found it, such as "rollback possible, not
+tried". A warning the changelog already holds is named there by a pointer,
+not given again. Save the line through "Deploying, and the records", as a
+first launch saves its records. The comparison still changes nothing; this
+line is the run's record of it. A run /implement sent for one live-side part
+records that part the same way, in one line.
+
 /implement sends the person here when a piece needs something on the live side
 before its merge: a migration applied, or a name on its `Live side needs:` line
 present on the host. Report that part first. A piece's migration is not on
@@ -515,4 +525,5 @@ the copy they use, each merge to `main` reaches it, each readiness item is in
 place or recorded as a warning, on a recipe each of the eight checks has its
 line, and the changelog says what went live, when, and under which build path.
 A later run: each gap between the live copy and `main` has its line, and each
-is repaired or recorded as a warning. No code was merged.
+is repaired or recorded as a warning. One dated changelog line records the
+run, gap or no gap. No code was merged.

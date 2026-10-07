@@ -218,7 +218,9 @@ it was last checked. You see a line such as "When this lands, the masterplan
 gains a weekly summary email", or "nothing" when it already covers the result.
 A new rule you could check, such as a list now sorted by name, counts as a
 change even when the masterplan already describes that list. /implement applies that change as it saves the work, so the page keeps up
-without waiting for a /maintain visit.
+without waiting for a /maintain visit. Where the masterplan's last check against the
+code cannot be found, /implement says in one line that /maintain does that
+check, and carries on.
 
 A question a conversation can't settle gets a disposable prototype, a source check, or a search for something that already does the job. Two of those need you there; the research does not, so you can tell /shape you're leaving and it settles what it can alone, then tells you which pieces are waiting on you. Type /shape with a piece's number to settle that one rather than the next in line.
 
@@ -309,6 +311,8 @@ It makes the merge on the pull request itself, never by merging on your computer
 Once the tool is live, a merge is a deploy: the host builds `main` and the team's copy follows.
 
 So before asking, /implement checks the live side. A change that adds to the database waits until /setup-hosting has applied that addition, which only adds, so the version live now keeps working. A piece whose `Live side needs:` line names a new secret or service waits until /setup-hosting reports it present. A piece in a sensitive area waits until its caution is done or your acceptance is recorded.
+
+Where your recipe runs a check on this computer before the merge, a check that runs and fails holds the merge as a red check does, and the piece goes back to its build until it passes; a check that cannot run here is a warning you hear once, and the merge goes ahead.
 
 After the merge, /implement reads one line from the live copy: "The live copy now runs this change", or "The live copy did not update" with the next step. It changes nothing live, so if you ask it to put the change out again, it checks first and leaves any further deploy to /setup-hosting. A direct push to `main` is forbidden, and in Claude Code the project settings refuse the usual ways of writing one, so every change reaches it through a pull request. Each piece starts from an up-to-date `main`.
 
@@ -449,7 +453,7 @@ settings, entered by name.
 
 After the first launch, a later /setup-hosting compares the live copy with `main` and tells you each gap in one plain line: whether the live copy runs the latest merge, whether a database change has not been applied, whether a secret or setting is missing on the host, whether health answers, and whether the backup works.
 
-It repairs each gap only after a yes that names it. It rechecks the build path first if reliance or consequence has grown. A warning the changelog already holds comes back as one line pointing to it, so anything given in full is new. Moving to another host or recipe is a later run too: the old live copy keeps serving until the new one answers.
+It repairs each gap only after a yes that names it. It rechecks the build path first if reliance or consequence has grown. A warning the changelog already holds comes back as one line pointing to it, so anything given in full is new. Every later run leaves one dated line in the changelog, even when it finds nothing to repair, with its rollback line, such as "rollback possible, not tried". That line arrives as a records pull request with its own merge question, and where your host builds every change, that merge is one more build. Moving to another host or recipe is a later run too: the old live copy keeps serving until the new one answers.
 
 You can also ask /setup-hosting for a rollback outright. It reads the host's list of builds, names the version it would bring back by the change it carried and its date, and waits for a yes that names it. It runs the rollback once, or tells you where to click when the host offers nothing the kit can run, and checks that the live copy now reports the earlier version.
 

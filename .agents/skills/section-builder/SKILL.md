@@ -296,6 +296,9 @@ Before saving on any route, apply the piece's `## Masterplan change` and update
 the trued-against mark as
 the `setup-ai-build-kit` skill's `references/masterplan-changes.md` describes.
 The record changes in step 9 are part of this save, not a later /maintain task.
+Read the mark with the `setup-ai-build-kit` skill's `scripts/trued-mark.sh`;
+where it exits other than 0, leave the mark as it is, say in one line that
+/maintain checks the whole masterplan against the code, and carry on.
 
 Checkpoint route: update the records, commit, and state the saved checkpoint.
 
@@ -393,12 +396,24 @@ live, so check these first, read-only, and change nothing live:
 - Where the recipe's going-live section runs a check on this computer before
   the merge, such as building the app the way the host will and reading its
   health, run it now, so the build that goes live has already answered here.
-  Where it cannot run here, for example because no container engine is
-  running, it is a warning, as a check not done is in /setup-hosting. Say it
-  once, record it in CHANGELOG.md with the date in this piece's pull request,
-  and carry on. Do not hold the merge for it, and do not ask
-  the person to choose to merge without it. Where the changelog already holds
-  that warning, one line pointing to it is enough.
+  Run it through `scripts/check-before-merge.sh` from this skill's folder:
+  the command that shows the check's tool is running as `--ready`, the one
+  that removes what the check started as `--cleanup`, then each command of the
+  check in the recipe's order.
+
+  A command that reads something the check started in the background waits
+  for it with its own retry option and carries its own time limit. The exit
+  code decides, never a reading of the output. Exit 0 means it passed.
+  - Exit 2 means it could not run here, for example because no container engine
+    is running. Then it is a warning, as a check not done is in /setup-hosting.
+    Say it once, record it in CHANGELOG.md with the date in this piece's pull
+    request, and carry on. Do not hold the merge for it, and do not ask the
+    person to choose to merge without it. Where the changelog already holds
+    that warning, one line pointing to it is enough.
+  - Exit 1 means the check ran and failed, and that holds the merge as a red
+    project check does. Say so in one line, naming what failed in plain words.
+    The piece goes back to its build, from step 5, to fix the cause, and the
+    merge is not asked for until the check passes.
 - Where the piece carries a `Live side needs:` line, ask for the merge only
   once /setup-hosting reports each name on it present on the host. Say so in
   one line, naming what is missing.
@@ -439,7 +454,8 @@ own line. A yes covers only the pull requests it names, or all of them where
 it plainly says so, as in "merge both".
 
 **Merging.** Make an approved merge on the pull request itself, such as with
-`gh pr merge`. Never merge the branch on this computer and push `main`. Where
+`gh pr merge --merge`, which keeps the piece's commits, so the masterplan's
+trued-against mark still names a commit on `main`. Never merge the branch on this computer and push `main`. Where
 GitHub cannot be reached, the merge waits: say in one line that the person can
 merge it on GitHub themselves. Where the session runs in Claude Code, the
 project's settings show a confirmation box before the merge runs, so say in

@@ -20,7 +20,8 @@
 # record.
 #
 # It also holds the later run, which compares the live copy with main, says
-# each gap in one line, and repairs a gap only on a yes that names it.
+# each gap in one line, repairs a gap only on a yes that names it, and always
+# leaves one dated changelog line, even when it found no gap.
 #
 # Each rule here is prose an agent reads, and its absence would not show on
 # screen until the next run did the same thing again.
@@ -112,6 +113,16 @@ rs_rule "uncommitted work is never touched" 'so the person.s own uncommitted wor
 rs_rule "it tells /implement when the merge can go ahead" 'once it is applied or present, say in one line that /implement can now ask for the merge'
 rs_rule "moving host keeps the old copy serving" 'moving to a different host or recipe is a later run too'
 rs_rule "the new recipe is recorded only once the new copy answers" 'only once the new live copy answers its health check'
+# A later run that found no gap wrote nothing in two of four replays that
+# reached it, so the next reader could not tell a check that ran from one that
+# never did, and the rollback line went unrecorded. It now always leaves one
+# dated line.
+rs_rule "every later run writes one dated changelog line, gap or not" 'every later run writes one dated line in changelog\.md once the comparison is done, and any repairs it led to, even when it finds no gap'
+rs_rule "the line carries each gap and the rollback line" 'what it compared, each gap or "no gap" and whether it was repaired, and the rollback line as the check found it, such as "rollback possible, not tried"'
+rs_rule "a run sent by /implement records its part too" 'a run /implement sent for one live-side part records that part the same way, in one line'
+rs_rule "a held warning is only pointed to there" 'a warning the changelog already holds is named there by a pointer, not given again'
+rs_rule "the line takes the records route" 'save the line through "deploying, and the records", as a first launch saves its records'
+rs_rule "the done line includes it" 'one dated changelog line records the run, gap or no gap'
 rs_guard "$HOSTING" "setup-hosting's deploy, records and later-run rules"
 
 rs_require_order "the rules sit after the recipe checks and before Build with care" "$HOSTING" '^#### Deploying, and the records$' '^### Build with care$'
@@ -130,5 +141,7 @@ rs_require_load_bearing "WORKFLOW says unsaved work is left alone" "$WORKFLOW" '
 rs_require_load_bearing "WORKFLOW says a later run compares the live copy" "$WORKFLOW" 'a later /setup-hosting compares the live copy with `main` and tells you each gap in one plain line'
 rs_require_load_bearing "WORKFLOW gives the later-run exception to the recipe's commands" "$WORKFLOW" 'a later run is different: nobody asked for a launch, so each repair it makes waits for a yes that names it'
 rs_require_load_bearing "WORKFLOW says a gap is repaired only on a yes" "$WORKFLOW" 'it repairs each gap only after a yes that names it'
+rs_require_load_bearing "WORKFLOW says every later run leaves a dated line" "$WORKFLOW" 'every later run leaves one dated line in the changelog, even when it finds nothing to repair, with its rollback line'
+rs_require_load_bearing "WORKFLOW says that line comes with a merge question" "$WORKFLOW" 'that line arrives as a records pull request with its own merge question'
 
 rs_done

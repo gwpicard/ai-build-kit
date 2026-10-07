@@ -33,7 +33,7 @@ rs_rule "the mark records the checked code state" 'one `trued against: <full com
 rs_rule "the person never maintains the mark" 'never ask the person to understand or maintain it'
 rs_rule "the mark never skips unread changes" 'never move it past work that has not been checked'
 rs_rule "dirty work cannot advance the mark" 'or past uncommitted work that the truing must leave alone'
-rs_rule "building saves the checked code before its mark" 'saves the checked code, then writes that saved commit into the mark'
+rs_rule "building saves the checked code before its mark, where it can be used" 'saves the checked code, then, where the mark could be used, writes that saved commit into the mark'
 rs_rule "record save stays on the piece's route" 'both commits belong to the same piece and pull request'
 rs_rule "the truing marks the saved state it reconciled" 'the truing uses the current saved commit it has just reconciled'
 rs_rule "the mark cannot contain its own future hash" 'neither tries to write the hash of the commit that will contain the mark'
@@ -51,6 +51,16 @@ rs_rule "missing history cannot become a guessed count" 'available history is in
 rs_rule "an unusable mark means checking the whole page" 'compare the whole page with the code instead'
 rs_rule "the count never marks work as checked" 'the count reports the gap; it never moves the mark itself'
 rs_rule "only the truing moves the mark" 'only the truing moves it, once it has checked the page'
+# A build that met a masterplan with no usable mark compared nothing and wrote
+# "not yet checked", while the rules told it to compare the whole page first.
+# The whole page is /maintain's, so a build now says so and carries on, and
+# whether the mark can be used is read by a shipped script, not judged.
+rs_rule "a shipped script says whether the mark can be used" 'whether the mark can be used is a fact, and the `setup-ai-build-kit` skill.s `scripts/trued-mark\.sh` reads it'
+rs_rule "its exit code says why not" 'exit 0 prints the commit the mark names, and any other exit says why it cannot be used'
+rs_rule "only the truing compares the whole page" 'where the mark is absent or unusable, only the truing compares the whole page against the code and sets a starting point'
+rs_rule "the truing reads the mark with the same script" 'read the mark with `scripts/trued-mark\.sh`, as a build does, so the two agree'
+rs_rule "a squash merge would strand the mark" 'a squash merge would leave the marked commit outside `main`.s history'
+rs_rule "a build leaves the mark, says so once, and carries on" 'a build leaves the mark as it is, says in one line that /maintain checks the whole masterplan against the code, and carries on with its save'
 rs_guard "$RECORD" "the masterplan change rules"
 
 rs_reset
@@ -80,6 +90,9 @@ rs_require_load_bearing "the issue form says a new rule is a change" "$FORM" 'a 
 rs_require_load_bearing "WORKFLOW says a checkable rule is a change" "$ROOT/WORKFLOW.md" 'a new rule you could check, such as a list now sorted by name, counts as a change'
 rs_require_load_bearing "building applies it before saving on every route" "$BUILDER" 'before saving on any route, apply the piece'
 rs_require_load_bearing "building updates the mark using its owner" "$BUILDER" 'update the trued-against mark as the `setup-ai-build-kit` skill.s `references/masterplan-changes\.md` describes'
+rs_require_load_bearing "building reads the mark with the script and leaves the page to /maintain" "$BUILDER" 'read the mark with the `setup-ai-build-kit` skill.s `scripts/trued-mark\.sh`; where it exits other than 0, leave the mark as it is, say in one line that /maintain checks the whole masterplan against the code, and carry on'
+rs_require_load_bearing "the merge keeps the marked commit" "$BUILDER" '`gh pr merge --merge`, which keeps the piece.s commits, so the masterplan.s trued-against mark still names a commit on `main`'
+rs_require_load_bearing "WORKFLOW says a build leaves the first check to /maintain" "$ROOT/WORKFLOW.md" 'where the masterplan.s last check against the code cannot be found, /implement says in one line that /maintain does that check, and carries on'
 rs_require_load_bearing "the truing recovers unapplied changes and moves the mark" "$SYNC" 'merge each landed piece.*that has not yet been applied, and move the trued-against mark'
 rs_require_load_bearing "a current changelog cannot hide an older mark" "$SYNC" 'read from the older of that mark and the last changelog entry'
 rs_require_load_bearing "the truing reads the count rules before the mark moves" "$SYNC" 'read the gap first, as its "read the gap at each visit" says, before anything moves the mark'
@@ -88,5 +101,66 @@ rs_require_load_bearing "coverage reads the recorded change" "$COVERAGE" 'read e
 rs_require_load_bearing "coverage does not turn unapplied work into a new piece" "$COVERAGE" 'it must not be offered as a new piece'
 rs_require_load_bearing "WORKFLOW explains what the person sees" "$ROOT/WORKFLOW.md" 'each piece says what it changes in the masterplan'
 rs_require_load_bearing "WORKFLOW explains the count each visit gives" "$ROOT/WORKFLOW.md" 'each visit uses the last such point to say how much work has since touched'
+
+# --- the script that reads the mark -----------------------------------------
+# Run in throwaway repositories, one for each answer it can give.
+if [ -z "${RS_LIST:-}" ]; then
+  MARK="$ROOT/.agents/skills/setup-ai-build-kit/scripts/trued-mark.sh"
+  rs_exists "$MARK"
+  repo="$rs_dir/repo"
+  git init -q "$repo"
+  git -C "$repo" config user.email rehearsal@example.com
+  git -C "$repo" config user.name Rehearsal
+  git -C "$repo" config commit.gpgsign false
+  printf '# Masterplan\n\nTrued against: not yet checked\n' > "$repo/masterplan.md"
+  git -C "$repo" add -A
+  git -C "$repo" commit -q -m first
+  first=$(git -C "$repo" rev-parse HEAD)
+  mark_is() {
+    # mark_is <expected exit> <description> <mark line or "none">
+    if [ "$3" = none ]; then
+      printf '# Masterplan\n' > "$repo/masterplan.md"
+    else
+      printf '# Masterplan\n\n%s\n' "$3" > "$repo/masterplan.md"
+    fi
+    set +e
+    out=$(cd "$repo" && sh "$MARK")
+    got=$?
+    set -e
+    [ "$got" -eq "$1" ] || rs_fail "$2: exited $got, not $1 ($out)"
+    rs_ok "$2"
+  }
+  mark_is 0 "a mark naming a commit in this branch is usable" "Trued against: $first"
+  [ "$out" = "usable: $first" ] || rs_fail "a usable mark does not print its commit: $out"
+  rs_ok "and the commit is printed for the build to move it on from"
+  mark_is 1 "a page never checked is not usable" "Trued against: not yet checked"
+  mark_is 1 "a page with no mark is not usable" none
+  mark_is 1 "an empty mark is not usable" "Trued against:"
+  mark_is 1 "a short hash is not usable" "Trued against: $(printf '%s' "$first" | cut -c1-12)"
+  mark_is 1 "a hash naming no commit is not usable" "Trued against: 0123456789abcdef0123456789abcdef01234567"
+  mark_is 1 "two marks are not usable" "Trued against: $first
+Trued against: $first"
+  git -C "$repo" checkout -q -b elsewhere
+  git -C "$repo" commit -q --allow-empty -m "off to one side"
+  aside=$(git -C "$repo" rev-parse HEAD)
+  git -C "$repo" checkout -q -
+  mark_is 1 "a commit outside this branch is not usable" "Trued against: $aside"
+  git -C "$repo" commit -q --allow-empty -m second
+  mark_is 0 "an older commit in this branch is still usable" "Trued against: $first"
+  shallow="$rs_dir/shallow"
+  git clone -q --depth 1 "file://$repo" "$shallow" 2>/dev/null
+  printf '# Masterplan\n\nTrued against: %s\n' "$(git -C "$shallow" rev-parse HEAD)" > "$shallow/masterplan.md"
+  set +e
+  out=$(cd "$shallow" && sh "$MARK")
+  got=$?
+  set -e
+  [ "$got" -eq 1 ] || rs_fail "a mark in incomplete history was called usable: $out"
+  rs_ok "a mark in incomplete history is not usable"
+  before=$(cd "$repo" && git status --porcelain && cat masterplan.md)
+  (cd "$repo" && sh "$MARK" >/dev/null 2>&1) || true
+  [ "$(cd "$repo" && git status --porcelain && cat masterplan.md)" = "$before" ] ||
+    rs_fail "the script changed something in the project"
+  rs_ok "the script changes nothing in the project"
+fi
 
 rs_done
