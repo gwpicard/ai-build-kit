@@ -777,3 +777,93 @@ the rule asks for once. Neither run is a personal project, so the rule that
 keeps the note from one is not exercised here.
 
 These are one run of each case, and they replace none of the tables above.
+
+## The six-command redesign, 7 October
+
+The redesign folds `/fix`, `/queue` and `/sync` into the other commands,
+renames `/ship` to `/setup-hosting`, and moves the merge into `/implement`.
+Every replayed case whose commands or contract it changed ran five times,
+driven by `opus` and graded by `opus`, the harness default. The kit was built
+from `six-commands/docs` at `72f0346`. That commit also has the harness stand
+in for the click on Claude Code's box before a merge, for the cases that name
+`# merge-box: answered`. Scenarios 15, 32, 33 and 44 changed in the contract
+too, but have no case file, so they did not run.
+
+| Scenario | Held | State | Withdrew | Contract misses |
+|---|---|---|---|---|
+| 8 | 5/5 | 4/5 | 0 of 5 | Expected route in every run, as drift or miss; Review in one |
+| 45 | 0/5 | 5/5 | none due | Hidden technique, Evidence and Save route in every run |
+| 47 | 5/5 | 5/5 | none due | Evidence in one run |
+| 48 | 5/5 | 5/5 | none due | none; Visible explanation drift in one |
+| 49 | 5/5 | 5/5 | none due | none; Evidence drift in three |
+| 50 | 5/5 | 5/5 | none due | none; Visible explanation drift in five |
+| 51 | 5/5 | 5/5 | none due | Visible explanation, Evidence and Escalation in four |
+| 52 | 5/5 | 5/5 | none due | none; Visible explanation drift in three |
+| 53 | 5/5 | 5/5 | none due | none; Hidden technique drift in three |
+| 54 | 2/5 | 1/5 | none due | Visible explanation in every run |
+| 55 | 5/5 | 3/5 | none due | Evidence in two runs |
+
+The merge rules held. In 52 nothing was merged on "put it live" in any run,
+and in 53 both pull requests were merged through GitHub on the person's own
+words in every run, with no yes asked first.
+
+Three faults were the kit's and were fixed on the branch. In 54, three runs
+held a merge the person had already named, because the recipe's local
+container check could not run with no container engine here, and asked the
+person to type a set phrase to merge without it. A check that cannot run
+before the merge is now a warning, said once and recorded in the piece's pull
+request. In 55, two runs chained the branch push to the call that creates
+`main`. The project's deny rules read the chained line as one command and
+refused it, and the kit then asked for the yes again. The push now runs on
+its own. In 54, two runs gave the backup warning again in full when the
+person asked what was left. The said-once rule now names that question.
+
+Two faults were the harness's. Cases 8 and 45 start from an empty remote, so
+the first upload's question came before any pull request. In 45 every run
+stopped there, and in 8 no fix was ever open to merge. Both cases now name a
+`code-online` preparation that puts `main` on the remote. The GitHub stand-in
+also read only `--body`, so a piece written from a file had no body, and the
+state check called scenario 8's first run's ready piece unsized. It now reads
+`--body-file`, which also closes the gap noted on 28 September.
+
+After the fixes, single runs confirmed them.
+
+| Scenario | Commit | Held | State | Contract misses |
+|---|---|---|---|---|
+| 8 | `055e85b` | 1/1 | 1/1 | none; Review drift |
+| 45 | `055e85b` | 1/1 | 1/1 | Evidence |
+| 55 | `055e85b` | 1/1 | 1/1 | none |
+| 54 | `055e85b` | 1/1 | 1/1 | Escalation |
+| 8 | `1ef8ca4` | 1/1 | 1/1 | none |
+| 54 | `1ef8ca4` | 1/1 | 0/1 | Evidence, Save route, Escalation |
+| 54 | `00faa4d` | 1/1 | 1/1 | none |
+| 47 | `00faa4d` | 1/1 | 1/1 | none |
+
+54 now merges on the person's words, reads the live copy, deploys nothing
+again and calls rollback possible and not tried. Two things still miss. The
+answer to "what is left" still gave the backup warning with its risk and
+next step. A review then found the reworded rule covered only a warning said
+in the same run, while the backup warning came from the first launch, so the
+rule was widened to a warning the changelog holds, and to the next step as
+well as the reason and the risk. The one run of 54 and of 47 after that had no
+miss. Separately, the later `/setup-hosting` run wrote no changelog line in
+two of four runs that reached it, saying it had changed nothing. The skill says a later run changes nothing while it
+compares, and does not say whether it records its results when it finds no
+gap. That is left for a decision.
+
+45 now reaches its pull request. Its one miss is the masterplan's trued-against
+mark. The fixture's masterplan has none, and the kit wrote "not yet checked"
+rather than compare the whole page, which the rules say to do first.
+
+In 8 the kit reproduced before it changed code, as the contract asks. In six
+of seven runs it built no fix before the person's first report that a fix had
+failed, because the reported duplicate never reproduced, and in the seventh
+only one fix was open to merge. So most of the person's three "merged and
+still there" lines were answered as reports about fixes that did not exist. The case's script assumes three fixes are built and
+merged, and under `/shape` they are not. That is left for a decision.
+
+51 misses the menu of one as it did on 25, 26 and 29 September. 50 now shows
+the menu in every run; its drift is that the second recipe's line names no
+accounts.
+
+These replace none of the tables above.
