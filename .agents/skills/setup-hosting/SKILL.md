@@ -97,7 +97,8 @@ it, then stop.
    on with the launch. Do not hold launch for the record, and do not ask the
    person to choose to go live without it. Say it once a visit. When the
    person later asks what remains, a line saying the changelog already notes
-   it is enough; do not give the reason or the risk again.
+   it is enough; do not give the reason, the risk or what to do about it
+   again.
 
    Do not add a sensitive area or an `Accepted:` line for this operational
    gap. A record containing forbidden data needs a repair; going live without
@@ -329,9 +330,9 @@ line before you run it, and correct the rollback line to match.
 
 A warning said once in a run of /setup-hosting is not said again in that run,
 even when a step runs twice. Where it matters again, one line saying the changelog already
-holds it is enough. That holds when the person asks what is left: name the
-warning in one line that points to the changelog, without its reason or its
-risk. The risk notice for a named area is not a warning, and
+holds it is enough. When the person asks what is left, a warning this run has
+said, or one the changelog already holds, is one line that points to the
+changelog, without its reason, its risk or what to do about it. The risk notice for a named area is not a warning, and
 Build with care still gives it at the moment that area goes live.
 
 #### Rolling back

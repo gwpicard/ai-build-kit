@@ -702,12 +702,13 @@ sh "$ROOT/.agents/tests/replay/prepare/code-online.after-commit.sh" "$co" 2>/dev
   && bad "the code-online second half pushed to a remote that was not empty" \
   || ok "the code-online second half refuses a remote that is not empty"
 git -C "$co" commit -q --allow-empty -m "later work"
-git init -q --bare -b main "$co-second.git"
-git -C "$co" remote set-url origin "$co-second.git"
+# Empty the remote again, so the history guard is the only reason left to
+# refuse.
+mv "$co.git" "$co-used.git"
+git init -q --bare -b main "$co.git"
 sh "$ROOT/.agents/tests/replay/prepare/code-online.after-commit.sh" "$co" 2>/dev/null \
   && bad "the code-online second half ran on a project with history of its own" \
   || ok "the code-online second half refuses a project with more than the harness's first commit"
-git -C "$co" remote set-url origin "$co.git"
 mkdir -p "$co/app/nested"
 sh "$ROOT/.agents/tests/replay/prepare/code-online.after-commit.sh" "$co/app/nested" 2>/dev/null \
   && bad "the code-online second half ran on a folder inside another repository" \

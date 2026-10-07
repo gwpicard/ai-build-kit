@@ -694,7 +694,8 @@ attribution line, not the word.
   someone already receives alerts. A missing record is a warning said once and
   written in the changelog, and the launch goes on, so it holds that `/setup-hosting`
   neither waits for the record nor asks the person to choose to go without it.
-  It also holds the repair step that reads the tool's record after launch,
+  Asked what remains, the missing record is one line pointing to the
+  changelog, with no reason, risk or next step. It also holds the repair step that reads the tool's record after launch,
   alongside the person's report, now part of shaping a repair in
   section-builder's `references/repair.md`.
 - `.agents/tests/secret-location.sh` guards where a secret the project keeps
@@ -1191,10 +1192,9 @@ attribution line, not the word.
   build a rollback would reach. So it holds that the whole output or the
   host's list of deployments is read first, that no second deploy runs before
   the first is checked, and that a second deploy is announced as replacing
-  the rollback target. A warning said once is not repeated in the same run,
-  even when the person asks what is left, where one line points to the
-  changelog. A
-  later run of that command merged properly and then pushed its changelog
+  the rollback target. A warning said once is not repeated in the same run.
+  Asked what is left, a warning the run said or the changelog holds is one
+  line pointing to the changelog. A later run of that command merged properly and then pushed its changelog
   entries straight to `main`. So the records take the save route a piece
   takes, on one pull request for each run, opened once the launch is checked,
   whose merge needs its own yes and is made on the pull request itself. Where

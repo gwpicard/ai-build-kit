@@ -388,6 +388,16 @@ grep -q 'Read from standard input' "$FAKE_GH_STATE" \
   && fail "a body file that cannot be read was taken as an empty body" \
   || pass "a body file that cannot be read is refused rather than read as empty"
 "$GH" issue close "$bodynum" > /dev/null
+printf 'Short form.\n' > "$WORK/short.md"
+"$GH" issue edit "$bodynum" -F "$WORK/short.md" > /dev/null
+"$GH" issue view "$bodynum" | grep -q 'Short form' \
+  && pass "issue edit reads its body from -F" \
+  || fail "issue edit dropped the body given with -F"
+printf 'Pull request body from a file.\n' > "$WORK/pr.md"
+prfile=$("$GH" pr create --title "Body file" --body-file "$WORK/pr.md" --base main --head deposits)
+grep -q 'Pull request body from a file' "$FAKE_GH_STATE" \
+  && pass "pr create reads its body from --body-file" \
+  || fail "pr create dropped the body given with --body-file ($prfile)"
 
 echo
 if [ "$FAIL" -eq 0 ]; then
