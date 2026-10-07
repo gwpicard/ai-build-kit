@@ -409,7 +409,9 @@ live, so check these first, read-only, and change nothing live:
     Say it once, record it in CHANGELOG.md with the date in this piece's pull
     request, and carry on. Do not hold the merge for it, and do not ask the
     person to choose to merge without it. Where the changelog already holds
-    that warning, one line pointing to it is enough.
+    that warning, one line pointing to it is enough. In that case say only
+    that line, in this reply and any later one: not what the check does, why
+    it could not run, or what it would have caught.
   - Exit 1 means the check ran and failed, and that holds the merge as a red
     project check does. Say so in one line, naming what failed in plain words.
     The piece goes back to its build, from step 5, to fix the cause, and the

@@ -86,6 +86,9 @@ rs_rule "and the merge waits until the check passes" 'the merge is not asked for
 rs_rule "it is said once and recorded in the piece's pull request" 'say it once, record it in changelog\.md with the date in this piece.s pull request, and carry on'
 rs_rule "it never holds the merge or asks for a choice" 'do not hold the merge for it, and do not ask the person to choose to merge without it'
 rs_rule "a warning the changelog holds is a pointer" 'where the changelog already holds that warning, one line pointing to it is enough'
+# Two replays of scenario 54 still explained the container check again in full,
+# what it does and why it could not run, beside the pointer.
+rs_rule "and only the pointer, with no reason or risk" 'in that case say only that line, in this reply and any later one: not what the check does, why it could not run, or what it would have caught'
 rs_rule "a piece stopped at its condition is never offered" 'a piece stopped at its condition is never offered for a merge'
 rs_rule "until then the pull request waits, and says why" 'until then, the pull request stays open and ready for review, and the report says what it waits for'
 

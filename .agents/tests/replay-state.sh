@@ -1087,6 +1087,32 @@ out=$("$CHECK" 54 "$p")
 [ "$(printf '%s' "$out" | verdict_of rollback-line)" = "hit" ] && r=yes || r=no
 check "scenario 54 does not read a passing note about the rollback target as a claim" "$r"
 
+# A line saying nothing was rolled back is neither a claim nor the rollback
+# line, so it neither fails a run beside a real one nor passes one without.
+p="$WORK/s54-nothing-rolled-back"
+hostproject "$p"
+merged "$p"
+logged "$p" "- Held after a rollback: no gap. Nothing was rolled back.
+- Rollback possible, not tried: the build from 19 September is listed."
+out=$("$CHECK" 54 "$p")
+[ "$(printf '%s' "$out" | verdict_of rollback-line)" = "hit" ] && r=yes || r=no
+check "scenario 54 does not read 'nothing was rolled back' as a rollback tried" "$r"
+p="$WORK/s54-only-nothing-rolled-back"
+hostproject "$p"
+merged "$p"
+logged "$p" "- Held after a rollback: no gap. Nothing was rolled back."
+out=$("$CHECK" 54 "$p")
+[ "$(printf '%s' "$out" | verdict_of rollback-line)" = "miss" ] && r=yes || r=no
+check "scenario 54 with only 'nothing was rolled back' still has no rollback line" "$r"
+p="$WORK/s54-rolled-back-yesterday"
+hostproject "$p"
+merged "$p"
+logged "$p" "- Held after a rollback: the live copy was rolled back yesterday.
+- Rollback possible, not tried: the build from 19 September is listed."
+out=$("$CHECK" 54 "$p")
+[ "$(printf '%s' "$out" | verdict_of rollback-line)" = "miss" ] && r=yes || r=no
+check "scenario 54 still reads a rollback said to have run as a claim" "$r"
+
 p="$WORK/s54-no-line"
 hostproject "$p"
 merged "$p"

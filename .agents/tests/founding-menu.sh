@@ -65,6 +65,10 @@ rs_rule "0 means the printed lines are said as printed, before the stand-up" \
   '0 means it printed the lines to say: put them in your reply exactly as printed, before the stand-up begins'
 rs_rule "4 means a wrong file name, corrected and run again" '4 means a file name it was given is not on the menu: correct it and run it again'
 rs_rule "the plain words go after the list, the printed lines unchanged" 'the plain words below go after the numbered list and before its last sentence, and the printed lines stay word for word'
+rs_rule "the menu is shown early, since a long turn hides its middle" 'the stand-up runs as one long turn, and only that turn.s last reply reaches the person, so a menu printed during it arrives after the project exists'
+rs_rule "in the reply that closes the interview" 'put its lines in the reply that closes the founding interview: the one that reads the agreed answers back, or asks a question still open'
+rs_rule "which ends on its own question" 'that reply ends on its own question, never on the menu'
+rs_rule "never first in the stand-up report" 'the reply that reports the stand-up is never the first to show it'
 rs_rule "any other exit falls back to the rules by hand" \
   'any other exit means it could not read the menu, so follow the rules below by hand'
 
@@ -153,6 +157,7 @@ rs_rule "each by its file name with .md" \
 rs_rule "written before the first checkpoint" \
   'write this line before the first checkpoint, so the save holds it'
 rs_guard "$SETUP" "founding step 11"
+rs_require_load_bearing "the interview step points to the menu" "$SETUP" 'the reply that closes it also shows the recipe menu, as step 11 says'
 
 # The menu sits inside the stand-up step, after the two questions it reads
 # and before the fallback that applies without a recipe.

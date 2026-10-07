@@ -194,7 +194,7 @@ external fact; settle a visual or behavioural question with a mock or
 sketch the person already has, or a disposable decision prototype where they
 have none; keep open questions visible
 rather than quietly guessing past them. It ends when your guesses keep being
-right.
+right. The reply that closes it also shows the recipe menu, as step 11 says.
 
 Write each answer into `.agents/tmp/setup-notes.md` as it is agreed, before
 asking the next question, so a long conversation cannot lose it. Plain
@@ -416,6 +416,14 @@ them in your reply exactly as printed, before the stand-up begins. The plain
 words below go after the numbered list and before its last sentence, and the
 printed lines stay word for word. Any other exit means it could not read the
 menu, so follow the rules below by hand.
+
+Show it early. The stand-up runs as one long turn, and only that turn's last
+reply reaches the person, so a menu printed during it arrives after the
+project exists. Run the script once the shape is known, and put its lines in
+the reply that closes the founding interview: the one that reads the agreed
+answers back, or asks a question still open. That reply ends on its own
+question, never on the menu. The reply that reports the stand-up is never the
+first to show it.
 
 If one recipe fits, recommend it and still show it as a menu. A menu of one
 follows every rule below, as a longer menu does, including the sentence naming

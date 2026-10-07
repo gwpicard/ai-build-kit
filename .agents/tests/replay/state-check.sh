@@ -709,6 +709,12 @@ CHECK_LINE = re.compile(r"^[-*+\d.)\s]*\**\s*roll ?back", re.I)
 RAN = re.compile(r"\b(i|we|was|were|has been|have) rolled (it |the \w+ )?back|ran (a|the) rollback|"
                  r"rollback (was|has been) (run|tried|tested|done)|"
                  r"(tried|tested) (a|the) rollback", re.I)
+# A sentence saying no rollback happened is not a claim that one did. A replay
+# wrote "Held after a rollback: no gap. Nothing was rolled back." beside its
+# real rollback line, and "was rolled back" read as a rollback run.
+NEGATED = re.compile(r"\b(nothing|no \w+) (was|were|has been) rolled back|"
+                     r"\b(was|were|has) not (been )?rolled back|"
+                     r"\bno rollback (was|has been) (run|tried|done)", re.I)
 NOT_TRIED = re.compile(r"not (been |yet )?(tried|tested)|untried|untested|"
                        r"never (been )?(tried|tested)", re.I)
 IMPOSSIBLE = re.compile(r"not possible|impossible|possible:\**\s*no\b|cannot roll|"
@@ -728,9 +734,10 @@ for text in versions:
             added.extend(text.splitlines()[j1:j2])
             added.append("")
     for item in items(added):
-        if not CHECK_LINE.search(item) and not RAN.search(item):
+        plain = NEGATED.sub("", item)
+        if not CHECK_LINE.search(item) and not RAN.search(plain):
             continue
-        rest = NOT_TRIED.sub("", item)
+        rest = NOT_TRIED.sub("", plain)
         if RAN.search(rest) or CLAIM.search(rest):
             claims.append(item)
         elif not NOT_TRIED.search(item):
