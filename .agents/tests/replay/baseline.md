@@ -867,3 +867,56 @@ the menu in every run; its drift is that the second recipe's line names no
 accounts.
 
 These replace none of the tables above.
+
+### The maintainer's five answers, 7 October
+
+The maintainer settled the five open questions above, each with a script
+where a script could decide. Founding shows the recipe menu through a shipped
+script that prints the lines to say. A recipe check before the merge holds
+the merge when it runs and fails, and its exit code decides. A build leaves
+the whole masterplan comparison to `/maintain` when the trued-against mark
+cannot be used, which a script reads. A later `/setup-hosting` run always
+writes one dated changelog entry. Scenario 8's case gained the calendar code
+its fault lives in, and scenario 45's fixture a usable mark.
+
+Each affected case ran five times, driven and graded by `opus`. Scenarios 8
+and 45 ran at `f11b2b1`. Scenarios 50, 51 and 54 ran there too, then again at
+`ee5997f`, which carries the fixes the first round showed were needed.
+
+| Scenario | Commit | Held | State | Contract misses |
+|---|---|---|---|---|
+| 8 | `f11b2b1` | 5/5 | 4/5 | Review in one; route and explanation drift |
+| 45 | `f11b2b1` | 5/5 | 5/5 | none |
+| 50 | `f11b2b1` | 5/5 | 5/5 | Evidence and Escalation in four, Visible explanation in two |
+| 51 | `f11b2b1` | 5/5 | 5/5 | Evidence and Escalation in every run, Visible explanation in four |
+| 54 | `f11b2b1` | 5/5 | 2/5 | Escalation in two; rollback line missed in three |
+| 50 | `ee5997f` | 5/5 | 5/5 | none; Visible explanation drift in two |
+| 51 | `ee5997f` | 5/5 | 5/5 | none |
+| 54 | `ee5997f` | 5/5 | 5/5 | none; Escalation drift in one |
+
+Scenario 8 was the test's fault, not the kit's. The fixture held no code for
+the shared calendar, so the duplicate the person reports could not happen,
+and the kit rightly built nothing. With the feed added, every run reproduced
+a duplicate before changing code, and three of five had a fix open for the
+person to merge before the first "merged, still there". In the other two the
+kit asked a question at that turn, which the script does not answer. The
+notice came at the third failure in every run. One state miss: the
+acceptance was recorded on the fourth attempt's pull request, but a second
+pull request built beside it did not carry it.
+
+45 moved the mark on to the saved code in every run, with no miss.
+
+The first round showed the menu script printing its lines in the reply that
+reported the stand-up, because a long setup turn shows the person only its
+last reply. 50 then missed the menu in four runs, where it had shown it in
+every run before. Founding now shows the menu in the reply that closes the
+interview, and at `ee5997f` both 50 and 51 showed it in every run. 51 had
+missed it in four of five runs on 25, 26 and 29 September and on 7 October.
+
+In 54's first round, two later runs wrote the rollback line in the middle of
+a paragraph, where the state check does not read it, and a third wrote
+"Nothing was rolled back", which the check read as a rollback run. The entry
+now puts the rollback line on a line of its own, and the check reads a
+negated sentence as no claim. Two runs also explained the held container
+warning again in full before the merge; that warning is now only a pointer.
+At `ee5997f`, 54 held in every run with no miss.
