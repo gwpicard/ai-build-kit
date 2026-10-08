@@ -1,0 +1,10 @@
+## The workflow
+
+Work runs through the nine commands installed as AI Build Kit skills:
+`setup-ai-build-kit`, `shape`, `implement`, `queue`, `fix`, `ship`, `sync`,
+`maintain`, `what-now`. Five more run in the background: `clarify`,
+`change-triage`, `section-builder`, `second-opinion`, `screen-check`. That is
+fourteen skills. The user describes intent in plain language; change-triage
+chooses the route. When a skill says to run another, load that one. If native
+discovery fails, open `.agents/skills/<name>/SKILL.md`. The shared skills
+installer manages those folders: put project rules here, never in a skill.

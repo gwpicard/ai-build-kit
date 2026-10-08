@@ -54,8 +54,9 @@ only a list that holds the kit's names and nothing else, and only those lines,
 line endings included. A kit file from a whole copy, or the old session-end
 hook, is removed or replaced only when every byte matches a copy a release
 shipped at the same path, kept in kit-released-copies.json beside this script.
-One that differs gets a `left` line and stays as it is. The kit's README from a
-whole copy is only ever named, never removed.
+A version marker holding only a stable version number also counts as the
+kit's own file. One that differs gets a `left` line and stays as it is.
+The kit's README from a whole copy is only ever named, never removed.
 
 In list mode it exits 0, whatever it prints. upgrade-check.py, beside it, is
 the read that exits 1 while something is left.
@@ -332,6 +333,10 @@ def file_problem(project, path, known):
         return "it is a link"
     if not os.path.isfile(full):
         return "it is not a file"
+    if path == MARKER:
+        with open(full, "rb") as handle:
+            if re.fullmatch(rb"v[0-9]+\.[0-9]+\.[0-9]+\s*", handle.read()):
+                return None
     if digest(full) not in known.get(path, ()):
         return "it differs from every copy a release shipped, so it may hold changes of yours"
     return None
@@ -500,6 +505,32 @@ def kit_shaped(prefix, block, known):
     return None
 
 
+def command_blocks(lines):
+    """Command-list blocks, including wrapped lists written as sentences."""
+    commands = set(KIT_SKILLS[:6]) | set(FORMER_NAMES)
+    blocks = []
+    index = 0
+    while index < len(lines):
+        if lines[index].startswith(BULLETS):
+            end = bullet_end(lines, index)
+            blocks.append((index, end))
+        elif lines[index].strip() and not lines[index].startswith("#"):
+            end = index + 1
+            while end < len(lines) and lines[end].strip() and not lines[end].startswith(("#", "- ")):
+                end += 1
+            text = " ".join(plain(line).strip() for line in lines[index:end])
+            names = TICKED.findall(text) + re.findall(r"(?<![\w/.-])/([a-z-]+)\b", text)
+            named = {n.lstrip("/") for n in names} & commands
+            # Require a list introduction, so prose about using several
+            # commands is not mistaken for the installed command list.
+            if named and re.search(r"(?i)\bcommands\b[^`/]*?(?::|\bare\b)", text):
+                blocks.append((index, end))
+        else:
+            end = index + 1
+        index = end
+    return blocks
+
+
 def commands_findings(project, shipped):
     """Return (findings, lines) for AGENTS.md. Each finding is
     (line number, old, new or None, kind) where kind is a reason, "block"
@@ -514,22 +545,17 @@ def commands_findings(project, shipped):
         return [], None
     known = set(KIT_SKILLS) | set(FORMER_NAMES)
     found = []
+    blocks = command_blocks(lines)
     start = next((i for i, line in enumerate(lines) if line.startswith(BULLETS[0])), None)
+    for begin, end in blocks:
+        if lines[begin].startswith(BULLETS):
+            continue
+        text = " ".join(plain(line).strip() for line in lines[begin:end])
+        names = TICKED.findall(text) + re.findall(r"(?<![\w/.-])/([a-z-]+)\b", text)
+        if any(n.lstrip("/") in ("fix", "queue", "sync", "ship") for n in names):
+            found.append((begin + 1, text, None,
+                          "the command list was not recognised; an agent edit needs approval"))
     if start is None:
-        # A list in the person's own words: a line naming three or more of the
-        # kit's commands, old or new. Only say so where it still names a
-        # retired one, so the person knows which word to change. A sentence
-        # that mentions an old command in passing is not a list.
-        commands = set(KIT_SKILLS[:6]) | set(FORMER_NAMES)
-        for number, line in enumerate(lines, 1):
-            names = TICKED.findall(line) + re.findall(r"(?<![\w/.-])/([a-z-]+)\b", line)
-            named = [n.lstrip("/") for n in names if n.lstrip("/") in commands]
-            if len(set(named)) < 3:
-                continue
-            retired = [n for n in named if n in ("fix", "queue", "sync", "ship")]
-            if retired:
-                found.append((number, plain(line), None,
-                              "the command list was not recognised; `%s` needs changing by hand" % retired[0]))
         return found, lines
     if shipped is None:
         found.append((start + 1, plain(lines[start]), None,

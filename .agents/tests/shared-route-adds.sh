@@ -86,8 +86,8 @@ rs_rule "plan becomes shape in the command list" \
   'where it names .plan., replace it with .shape.'
 rs_rule "the change is shown and applied on approval" \
   'show the change and apply it on approval'
-rs_rule "an unrecognised list is left alone and named" \
-  'leave the file alone and say which name needs changing'
+rs_rule "an unrecognised list gets an approved agent edit" \
+  'on a yes, apply the replacement as an agent edit to those lines only'
 rs_rule "the shape migration calls it rather than asking the person" \
   'rather than asking the person to do it'
 rs_rule "the setup migration calls it too" \
@@ -167,8 +167,8 @@ rs_require_load_bearing "WORKFLOW.md gives the one line about the six commands" 
   "$WORKFLOW" '/fix and /queue are now part of /shape and /implement, /sync is part of /maintain, and /ship is now /setup-hosting\. nothing you built changes'
 rs_require_load_bearing "WORKFLOW.md says nothing is removed without a yes" \
   "$WORKFLOW" 'offers to remove the old skills, to rewrite the command list in your agents\.md, .*none of it happens without your yes'
-rs_require_load_bearing "WORKFLOW.md says a declined offer and an own-words list come back" \
-  "$WORKFLOW" 'an offer you declined is mentioned in one line on each visit and offered in full again on the monthly visit\. a command list written in your own words is named each month until you change it'
+rs_require_load_bearing "WORKFLOW.md says a declined offer comes back and an own-words list gets an agent edit" \
+  "$WORKFLOW" 'an offer you declined is mentioned in one line on each visit and offered in full again on the monthly visit\. a command list written in your own words gets the same offer: /maintain shows the old lines and a replacement, keeps your own sentences, and applies it on your yes'
 rs_require_load_bearing "WORKFLOW.md says the changelog keeps its old mentions" \
   "$WORKFLOW" 'your changelog keeps its old mentions'
 rs_require_load_bearing "WORKFLOW.md says a line of the person's own is named, never rewritten" \
@@ -319,8 +319,8 @@ python3 "$LEFTOVERS" --rewrite-commands "$rs_dir/own"
 rs_report "a list naming a command of the person's own is listed with its reason and left" \
   "$(printf '%s\n' "$own" | grep -q 'left as written: it names `deploy-now`' && cmp -s "$rs_dir/own/AGENTS.md" "$rs_dir/own-before" && echo yes || echo no)"
 printf '%s\n' 'We use /shape, /implement and /sync every week.' > "$rs_dir/own/AGENTS.md"
-rs_report "a list in the person's own words names the word to change" \
-  "$(python3 "$LEFTOVERS" "$rs_dir/own" | grep -q 'not recognised; `sync` needs changing by hand' && echo yes || echo no)"
+rs_report "ordinary prose about using commands is not a command list" \
+  "$([ -z "$(python3 "$LEFTOVERS" "$rs_dir/own")" ] && echo yes || echo no)"
 
 # Words of the person's own inside the bullet: the line is left, with the
 # suggested one, and so are the counts above it.

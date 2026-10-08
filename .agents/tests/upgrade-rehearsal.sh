@@ -17,6 +17,13 @@ rs_rule "own guidance is never changed" 'name each one once, in the reply that m
 rs_rule "approved update recovery asks no second question" 'do not ask again for that recovery'
 rs_rule "guidance is not repeated monthly" 'do not repeat a line already named, even on a monthly visit, unless its text has changed'
 rs_rule "the read runs again at the end" 'run the check once more at the end of the visit'
+rs_rule "an unrecognised list gets a proposal" 'when the script cannot rewrite a command list, show the old lines and a proposed replacement'
+rs_rule "the proposal has the current inventory" 'name the six commands and the five background skills, eleven in all, using the installed founding template'
+rs_rule "own sentences survive the proposal" 'keep the rest of the paragraph.s meaning and the person.s own sentences'
+rs_rule "the agent applies a yes" 'on a yes, apply the replacement as an agent edit to those lines only, then run the check again'
+rs_rule "the person never edits the list by hand" 'never ask the person to edit the command list by hand'
+rs_rule "a no is recorded and named once" 'on a no, record `--decline commands`.*name the declined command-list lines once'
+rs_rule "a current version does not hide the leftover" 'the update stays unfinished while a command list names a retired command, unless the person declined it, even when the installed version already matches the release'
 rs_guard "$MAINTAIN" "the upgrade visit"
 rs_reset
 rs_rule "the release brings the person back" 'after updating, start a new session \(or /reload-plugins\) and type /maintain again'
@@ -184,6 +191,109 @@ else: print(json.dumps([{"number":1,"title":"Reminder emails","html_url":"https:
     printout=(p/'plan.local.md').read_text()
     assert '(needs Card checkout)' in printout and '(ready)' not in printout,printout
     print('  ok: '+route+' preserves the person\'s work and finishes the upgrade')
+# Reproduce the wrapped list from an older founding, after all other steps
+# have finished. The installed version already matches the current release.
+p=work/'sentence-list'; p.mkdir()
+copy(source/'setup-ai-build-kit/templates/masterplan.md',p/'masterplan.md')
+copy(source/'setup-ai-build-kit/templates/foundation/plan-refresh.sh',p/'.agents/tools/plan-refresh.sh')
+copy(fixture/'sentence-AGENTS.md.txt',p/'AGENTS.md')
+copy(fixture/'version-v0.10.0.txt',p/'.ai-build-kit-version')
+put(p/'CHANGELOG.md','We once used /fix, /queue, /sync and /ship.\n')
+with (p/'AGENTS.md').open('a') as handle:
+    handle.write('\nProject rule: Keep our club notes private.\n'
+                 'Our old commands helped us use /fix, /queue and /ship.\n')
+original=(p/'AGENTS.md').read_text()
+
+def sentence_pending(skills):
+    listed=check(skills,p,1)
+    commands=[line for line in listed.splitlines() if line.startswith('commands\t')]
+    assert len(commands)==1 and 'AGENTS.md:3' in commands[0],listed
+    assert 'nine commands' in commands[0] and 'fourteen skills' in commands[0],listed
+    assert 'by hand' not in commands[0],listed
+    if (p/'.ai-build-kit-version').exists():
+        assert 'kitcopy\t.ai-build-kit-version' in listed,listed
+        assert 'left\t.ai-build-kit-version' not in listed,listed
+    assert listed.count('mention\tAGENTS.md:')==1,listed
+    assert 'Our old commands helped' in listed,listed
+    assert 'CHANGELOG.md' not in listed,listed
+    return listed
+
+sentence_pending(source)
+apply(source,p,'commands')
+assert (p/'AGENTS.md').read_text()==original
+sentence_pending(source)  # A script that cannot rewrite never finishes the step.
+
+# Each behavioural assertion must catch the copied script without its fix.
+mutations={
+    'sentence detection': ('kit-leftovers.py',
+        '    blocks = command_blocks(lines)', '    blocks = []'),
+    'unfinished status': ('upgrade-check.py',
+        '    if kind == "commands" and finding[-1].startswith("left as written:"):',
+        '    if kind == "commands":\n        return True\n    if kind == "commands" and finding[-1].startswith("left as written:"):'),
+    'plain version marker': ('kit-leftovers.py',
+        '    if path == MARKER:', '    if False:'),
+}
+for name,(script,old,new) in mutations.items():
+    skills=work/('without-'+name.replace(' ','-'))/'skills'
+    shutil.copytree(source,skills)
+    target=skills/'maintain/scripts'/script
+    text=target.read_text(); assert old in text
+    target.write_text(text.replace(old,new,1))
+    if name == 'unfinished status':
+        (p/'.ai-build-kit-version').unlink()
+        sentence_pending(source)
+    try:
+        sentence_pending(skills)
+    except AssertionError:
+        pass
+    else:
+        raise AssertionError('removing '+name+' was not caught')
+    if name == 'unfinished status':
+        copy(fixture/'version-v0.10.0.txt',p/'.ai-build-kit-version')
+    print('  ok: removing '+name+' is caught')
+
+# A no is retained, offered monthly, and never duplicated as a mention.
+run([sys.executable,source/'maintain/scripts/upgrade-check.py','--decline','commands',p])
+apply(source,p,'remove')
+declined=check(source,p,0)
+assert declined.count('declined\tcommands\tcommands\t')==1,declined
+assert declined.count('mention\tAGENTS.md:')==1,declined
+monthly=run([sys.executable,source/'maintain/scripts/upgrade-check.py','--monthly',p],code=1)
+assert 'commands\tAGENTS.md:3' in monthly and 'declined\tcommands' not in monthly,monthly
+# Stand in for the approved agent edit, keeping all the other sentences.
+replacement=original.replace('nine commands','six commands').replace(
+    '`setup-ai-build-kit`, `shape`, `implement`, `queue`, `fix`, `ship`, `sync`,',
+    '`setup-ai-build-kit`, `shape`, `implement`, `setup-hosting`,').replace(
+    'fourteen skills','eleven skills')
+put(p/'AGENTS.md',replacement)
+finished=check(source,p,0)
+assert 'commands\t' not in finished and 'declined\tcommands' not in finished,finished
+assert 'Project rule: Keep our club notes private.' in (p/'AGENTS.md').read_text()
+assert (p/'CHANGELOG.md').read_text()=='We once used /fix, /queue, /sync and /ship.\n'
+# Explicit short lists still count; prose using several commands does not.
+for wording in ('Commands: `/fix`, `/shape`.',
+                'Our commands are `ship` and `implement`.',
+                '- Commands: `shape`, `fix`. Keep our club notes private.'):
+    put(p/'AGENTS.md',wording+'\n')
+    listed=run([sys.executable,source/'maintain/scripts/upgrade-check.py','--monthly',p],code=1)
+    assert listed.count('commands\tAGENTS.md:')==1,listed
+    assert 'mention\t' not in listed,listed
+put(p/'AGENTS.md',replacement)
+# Extra text, a preview version and a link never qualify as a plain marker.
+for content in ('v0.10.0\nOur notes.\n','v0.10.0-preview.1\n'):
+    put(p/'.ai-build-kit-version',content)
+    listed=check(source,p,0)
+    assert 'left\t.ai-build-kit-version' in listed,listed
+    apply(source,p,'remove')
+    assert (p/'.ai-build-kit-version').read_text()==content
+(p/'.ai-build-kit-version').unlink()
+outside_marker=work/'outside-version'; put(outside_marker,'v0.10.0\n')
+(p/'.ai-build-kit-version').symlink_to(outside_marker)
+assert 'left\t.ai-build-kit-version\tit is a link' in check(source,p,0)
+apply(source,p,'remove')
+assert (p/'.ai-build-kit-version').is_symlink() and outside_marker.read_text()=='v0.10.0\n'
+print('  ok: sentence list stays unfinished until an agent edit or a recorded no')
+
 # The record rewrite tools must not follow linked project documents.
 p=work/'linked-records'; p.mkdir(); outside=work/'outside-records'; outside.mkdir()
 for name in ('AGENTS.md','masterplan.md'):

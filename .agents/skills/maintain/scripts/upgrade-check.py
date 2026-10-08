@@ -37,7 +37,8 @@ These are named, never changed, and do not count as left:
 
     mention    FILE:LINE  TEXT another line naming a retired command
     left       PATH  WHY       something that stays as it is
-    commands or pointer lines ending in `left as written: WHY`
+    pointer lines ending in `left as written: WHY`
+    command lists left as written that name no retired command or are links
     declined   STEP  ...       an offer the person said no to
 
 Exit codes: 1 while any line above the second list is printed, 0 when none
@@ -56,6 +57,7 @@ left, and passes a declined `settings` to `settings-rules.py --decline`.
 """
 
 import datetime
+import runpy
 import os
 import re
 import subprocess
@@ -190,8 +192,8 @@ def findings(project):
     found.extend(templates)
     # A line another step already names is not a mention as well.
     skip = {f[1] for f in found if f[0] in ("commands", "pointer", "template")}
-    # Every line of a command list the kit recognised, its continuation
-    # included, is the commands step's.
+    # Every line of a command list, its continuation included, belongs to
+    # the commands step, even when it needs an agent edit.
     found.extend(mention_findings(project, skip | command_list_lines(project)))
     return found
 
@@ -202,22 +204,20 @@ def command_list_lines(project):
             lines = handle.read().splitlines()
     except OSError:
         return set()
-    out = set()
-    for index, line in enumerate(lines):
-        if line.startswith(("- Commands:", "- Background skills:")):
-            out.add("AGENTS.md:%d" % (index + 1))
-            follow = index + 1
-            while follow < len(lines) and lines[follow].startswith("  ") and lines[follow].strip():
-                out.add("AGENTS.md:%d" % (follow + 1))
-                follow += 1
-    return out
+    leftovers = runpy.run_path(LEFTOVERS)
+    return {"AGENTS.md:%d" % (index + 1)
+            for begin, end in leftovers["command_blocks"](lines)
+            for index in range(begin, end)}
 
 
 def informational(finding):
     kind = finding[0]
     if kind in ("mention", "left", "declined"):
         return True
-    if kind in ("commands", "pointer") and finding[-1].startswith("left as written:"):
+    if kind == "commands" and finding[-1].startswith("left as written:"):
+        return finding[-1].startswith("left as written: it is a link") or not re.search(
+            r"`/?(?:fix|queue|sync|ship)`|(?<![\w/.-])/(?:fix|queue|sync|ship)(?![\w/-])", finding[2])
+    if kind == "pointer" and finding[-1].startswith("left as written:"):
         return True
     return False
 

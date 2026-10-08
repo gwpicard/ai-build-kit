@@ -626,7 +626,10 @@ a note of when you run one, is named once for you to change, and never
 rewritten. Once everything is removed and rewritten, the next visit finds
 nothing and says nothing. An offer you declined is mentioned in one line on
 each visit and offered in full again on the monthly visit. A command list
-written in your own words is named each month until you change it.
+written in your own words gets the same offer: /maintain shows the old lines
+and a replacement, keeps your own sentences, and applies it on your yes. The
+update stays unfinished until the old command names are gone or you decline.
+You never need to edit the list by hand.
 
 The standing instructions in AGENTS.md stay under 200 lines and hold what the
 code cannot show, such as how work is saved and reviewed and which conventions
