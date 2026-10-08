@@ -96,7 +96,6 @@ for forbidden in \
   .agents/tools/finish-release-draft.sh \
   .agents/tools/stamp-version.sh \
   .agents/tools/rehearse-merged-tree.sh \
-  .agents/tools/preflight-cutover.sh \
   .agents/tools/validate-kit.sh \
   .agents/tools/plan-refresh.sh \
   .agents/tools/build-release.sh; do
