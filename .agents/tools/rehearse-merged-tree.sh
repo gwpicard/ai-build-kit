@@ -92,7 +92,7 @@ git -C "$ROOT" -c core.quotePath=false ls-files > "$TREE/.tracked-files"
 while IFS= read -r tracked; do
   [ -n "$tracked" ] || continue
   mkdir -p "$TREE/$(dirname -- "$tracked")"
-  cp -p "$ROOT/$tracked" "$TREE/$tracked"
+  cp -Pp "$ROOT/$tracked" "$TREE/$tracked"
 done < "$TREE/.tracked-files"
 rm -f "$TREE/.tracked-files"
 
