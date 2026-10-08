@@ -40,13 +40,6 @@ repository.
   against their products before a release, load
   `.agents/maintainer-skills/stack-research/SKILL.md`. Its note goes to
   `.agents/tmp/stack-research/`, which git ignores, so it never ships.
-- `.agents/migration/` holds the one-off tooling for replacing the public
-  repository with one whose history carries no AI attribution. It is not part of
-  the kit, it gets no adapter, and it reaches nobody who installs the kit. It
-  lives here rather than outside the repository because `docs/MIGRATION.md` is
-  the plan and these are the scripts that plan runs, and a runbook whose tools
-  sit somewhere else is a runbook that stops working. Read `docs/MIGRATION.md`
-  before running any of them.
 - `.claude/`, `.cursor/`, and `.gemini/` are generated adapters. Change the
   canonical skill, then run `.agents/tools/build-adapters.sh`. The Claude
   plugin exposes the six generated command files and five hidden background
@@ -1377,19 +1370,11 @@ attribution line, not the word.
 - `.agents/tools/build-release.sh <version> <new-folder>` assembles a local
   public release outside this repository without changing or deleting an existing
   folder.
-- `.agents/tools/preflight-cutover.sh` asserts everything that has to be true
-  before this repository's tree is pushed into the public one, each item with an
-  expected answer rather than a list somebody reads and judges. A checklist you
-  interpret is a checklist you pass. Run it immediately before the push, not
-  once in advance, and with nothing else working in the repository: a review
-  agent or an editor saving a file makes the tree momentarily dirty, and it
-  reports that as a failure. It should. A false alarm costs a re-run, and the
-  reverse mistake costs a push nobody can take back.
 - `.agents/tools/rehearse-merged-tree.sh` copies every tracked file into a fresh
   one-commit repository outside this one and runs the adapter drift check, the
-  validator and the whole rehearsal suite against it. That is what the public
-  repository will hold after consolidation, and the push that puts it there
-  cannot be undone, so run this before it rather than finding out afterwards. It
+  validator and the whole rehearsal suite against it. That is what the branch
+  holds once committed, without the untracked files and local state of this
+  folder, so run it before a branch goes up for review. It
   is not in `.agents/tests/` because it calls `run-all.sh`, and a rehearsal that
   runs the suite from inside the suite reaches its own copy and hangs.
 
