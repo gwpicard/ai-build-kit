@@ -27,16 +27,280 @@
   "v0.19.0",
   "v0.19.1",
   "v0.19.2",
-  "v0.19.3"
+  "v0.19.3",
+  "v0.20.0"
  ],
  "files": {
   ".agents/guard/blocked-commands.md": [
    "541ba9bc952c84ec",
+   "610935e9c2e0ebb9",
    "83d7d402634bcc4a"
   ],
   ".agents/hooks/session-end-sync.sh": [
+   "8ba9cbe90dca241a",
    "ca191c9c33240dbc",
    "cdb078ecc066d9ce"
+  ],
+  ".agents/skills/change-triage/SKILL.md": [
+   "cd2bd67cf5f95e90"
+  ],
+  ".agents/skills/change-triage/references/existing-work.md": [
+   "dd1f9b9bcc73353a"
+  ],
+  ".agents/skills/change-triage/references/source-check.md": [
+   "94cbee9e763d896a"
+  ],
+  ".agents/skills/clarify/SKILL.md": [
+   "19dab88a49f293c8"
+  ],
+  ".agents/skills/clarify/references/decision-prototype.md": [
+   "0f37e6867fd53540"
+  ],
+  ".agents/skills/clarify/references/existing-artifact.md": [
+   "32484df55ef4b07c"
+  ],
+  ".agents/skills/clarify/references/prototype-behaviour.md": [
+   "62c05e9ac7a39912"
+  ],
+  ".agents/skills/clarify/references/prototype-structure.md": [
+   "33e23c06ad06643d"
+  ],
+  ".agents/skills/implement/SKILL.md": [
+   "7ff25ca0329d1fc3"
+  ],
+  ".agents/skills/implement/references/running-longer.md": [
+   "91899e3d59f75e48"
+  ],
+  ".agents/skills/maintain/SKILL.md": [
+   "31013fe4ac635e56"
+  ],
+  ".agents/skills/maintain/VERSION": [
+   "847119a517b31dac"
+  ],
+  ".agents/skills/maintain/references/document-bloat.md": [
+   "9d67d55aec3e2e66"
+  ],
+  ".agents/skills/maintain/references/document-read.md": [
+   "539871204676c4e4"
+  ],
+  ".agents/skills/maintain/references/stale-branches.md": [
+   "497348a89d0551e2"
+  ],
+  ".agents/skills/maintain/references/structure-read.md": [
+   "5964c14c3459557b"
+  ],
+  ".agents/skills/maintain/references/truing.md": [
+   "3d9053bee2416a0b"
+  ],
+  ".agents/skills/maintain/references/waste-read.md": [
+   "822596c482c52652"
+  ],
+  ".agents/skills/maintain/scripts/document-bloat.py": [
+   "45dde6cfd469c1cf"
+  ],
+  ".agents/skills/maintain/scripts/document-claims.py": [
+   "833f7bd63e8d01d9"
+  ],
+  ".agents/skills/maintain/scripts/kit-leftovers.py": [
+   "7d81a9086ac91839"
+  ],
+  ".agents/skills/maintain/scripts/kit-released-copies.json": [
+   "d2acd4aaca7babca"
+  ],
+  ".agents/skills/maintain/scripts/kit-retired-skills.json": [
+   "6ea0e7e221fbd15b"
+  ],
+  ".agents/skills/maintain/scripts/old-skill-pointers.py": [
+   "3c6a5a306de84ced"
+  ],
+  ".agents/skills/maintain/scripts/settings-rules.py": [
+   "a1828c5af45428e6"
+  ],
+  ".agents/skills/maintain/scripts/upgrade-check.py": [
+   "a0fc8df57575714a"
+  ],
+  ".agents/skills/maintain/templates/handover.md": [
+   "14fda20dfe5e0e66"
+  ],
+  ".agents/skills/screen-check/SKILL.md": [
+   "f73d58e62d8bef3e"
+  ],
+  ".agents/skills/second-opinion/SKILL.md": [
+   "62ec469b909cf3cf"
+  ],
+  ".agents/skills/section-builder/SKILL.md": [
+   "975b2871d1fb0511"
+  ],
+  ".agents/skills/section-builder/references/reach-check.md": [
+   "2d736e083b6eaab9"
+  ],
+  ".agents/skills/section-builder/references/repair.md": [
+   "3f775adc5528d2a3"
+  ],
+  ".agents/skills/section-builder/references/test-strength.md": [
+   "bbfd9c27764aa922"
+  ],
+  ".agents/skills/section-builder/references/trim.md": [
+   "ad03018f0882a6a3"
+  ],
+  ".agents/skills/section-builder/scripts/check-before-merge.sh": [
+   "e425d5e749aee862"
+  ],
+  ".agents/skills/section-builder/scripts/env-names-added.sh": [
+   "4f6a6ea128ed01dd"
+  ],
+  ".agents/skills/setup-ai-build-kit/SKILL.md": [
+   "348368f11a919f3d"
+  ],
+  ".agents/skills/setup-ai-build-kit/references/adopting.md": [
+   "ce5de980800c76d4"
+  ],
+  ".agents/skills/setup-ai-build-kit/references/blocked-commands.md": [
+   "19a11ac665bd3833"
+  ],
+  ".agents/skills/setup-ai-build-kit/references/boundary-rules.md": [
+   "ab8a8ee6dbe72977"
+  ],
+  ".agents/skills/setup-ai-build-kit/references/capability-check.md": [
+   "1b776bd458faf640"
+  ],
+  ".agents/skills/setup-ai-build-kit/references/check-floor.md": [
+   "bb2b480226817c44"
+  ],
+  ".agents/skills/setup-ai-build-kit/references/codex-github.md": [
+   "80759762cdb460bb"
+  ],
+  ".agents/skills/setup-ai-build-kit/references/completion-report.md": [
+   "4afc1e39762529e1"
+  ],
+  ".agents/skills/setup-ai-build-kit/references/coverage-read.md": [
+   "72396288c47e6bd0"
+  ],
+  ".agents/skills/setup-ai-build-kit/references/fit-check.md": [
+   "21aa0e2ba527a428"
+  ],
+  ".agents/skills/setup-ai-build-kit/references/manual-setup.md": [
+   "914125a001ed1e46"
+  ],
+  ".agents/skills/setup-ai-build-kit/references/masterplan-changes.md": [
+   "5c10b173d54fedf0"
+  ],
+  ".agents/skills/setup-ai-build-kit/references/pieces.md": [
+   "37745da0b64f79e1"
+  ],
+  ".agents/skills/setup-ai-build-kit/references/required-tools.md": [
+   "d168855b60becca3"
+  ],
+  ".agents/skills/setup-ai-build-kit/references/whole-project-reads.md": [
+   "5d795092fcb80093"
+  ],
+  ".agents/skills/setup-ai-build-kit/scripts/bootstrap-project.sh": [
+   "ace7a33621468f31"
+  ],
+  ".agents/skills/setup-ai-build-kit/scripts/check-tooling.sh": [
+   "ffde95fee80b2870"
+  ],
+  ".agents/skills/setup-ai-build-kit/scripts/codex-with-github.py": [
+   "69636c1758f761a7"
+  ],
+  ".agents/skills/setup-ai-build-kit/scripts/place-plan-helper.sh": [
+   "363c38407fb46dea"
+  ],
+  ".agents/skills/setup-ai-build-kit/scripts/recipe-menu.sh": [
+   "5e19233efd2dd12d"
+  ],
+  ".agents/skills/setup-ai-build-kit/scripts/trued-mark.sh": [
+   "c806be9d8f404dd4"
+  ],
+  ".agents/skills/setup-ai-build-kit/templates/CHANGELOG.md": [
+   "dcfca02b48fed8b4"
+  ],
+  ".agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md": [
+   "f26e78f5b003a461"
+  ],
+  ".agents/skills/setup-ai-build-kit/templates/foundation/CLAUDE.md": [
+   "336cc4fbf19beaad"
+  ],
+  ".agents/skills/setup-ai-build-kit/templates/foundation/GEMINI.md": [
+   "42fbbc9d55ee0d14"
+  ],
+  ".agents/skills/setup-ai-build-kit/templates/foundation/README.md": [
+   "af83743716d75b84"
+  ],
+  ".agents/skills/setup-ai-build-kit/templates/foundation/check-sensitive-areas.sh": [
+   "35b2ff3fcb5ee6b2"
+  ],
+  ".agents/skills/setup-ai-build-kit/templates/foundation/checks.yml": [
+   "2b5319e826d294ec"
+  ],
+  ".agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json": [
+   "6112863a5bd07d8a"
+  ],
+  ".agents/skills/setup-ai-build-kit/templates/foundation/copilot-instructions.md": [
+   "4dd33d686767e95e"
+  ],
+  ".agents/skills/setup-ai-build-kit/templates/foundation/env.example": [
+   "015483d1c2b61712"
+  ],
+  ".agents/skills/setup-ai-build-kit/templates/foundation/gitignore": [
+   "26d9cf949c73cb1f"
+  ],
+  ".agents/skills/setup-ai-build-kit/templates/foundation/piece-issue.yml": [
+   "d188c009e6fc556a"
+  ],
+  ".agents/skills/setup-ai-build-kit/templates/foundation/plan-refresh.sh": [
+   "eb782000c26af283"
+  ],
+  ".agents/skills/setup-ai-build-kit/templates/foundation/session-end-sync.sh": [
+   "8ba9cbe90dca241a"
+  ],
+  ".agents/skills/setup-ai-build-kit/templates/foundation/session-start.sh": [
+   "e38f8bd57dc13d36"
+  ],
+  ".agents/skills/setup-ai-build-kit/templates/maintenance-record": [
+   "20cfe72b345d4ad1"
+  ],
+  ".agents/skills/setup-ai-build-kit/templates/masterplan.md": [
+   "705919f5324fa5d2"
+  ],
+  ".agents/skills/setup-hosting/SKILL.md": [
+   "3a9e4607dd4a11d3"
+  ],
+  ".agents/skills/setup-hosting/recipes/nextjs-supabase-on-coolify.md": [
+   "4e74e1c7a15b9db6"
+  ],
+  ".agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel.md": [
+   "ddc6308a533a11e1"
+  ],
+  ".agents/skills/setup-hosting/recipes/parts/nextjs-container.md": [
+   "603f5ef3897bd92f"
+  ],
+  ".agents/skills/setup-hosting/recipes/parts/supabase-backup.md": [
+   "337df27c2dbe7fe2"
+  ],
+  ".agents/skills/setup-hosting/recipes/parts/supabase-restore.md": [
+   "93a2349b1fd1621a"
+  ],
+  ".agents/skills/setup-hosting/recipes/parts/supabase-settings.md": [
+   "6e7542f8f1b65717"
+  ],
+  ".agents/skills/setup-hosting/references/evidence-run.md": [
+   "56c3947e3d645bd0"
+  ],
+  ".agents/skills/setup-hosting/references/hosting-request.md": [
+   "35409a48ef0815b2"
+  ],
+  ".agents/skills/setup-hosting/references/recipe-format.md": [
+   "154ff5464f353146"
+  ],
+  ".agents/skills/setup-hosting/templates/recipe.md": [
+   "88aee9a7c4a6610d"
+  ],
+  ".agents/skills/shape/SKILL.md": [
+   "392039f9bd26899f"
+  ],
+  ".agents/skills/what-now/SKILL.md": [
+   "0850e331d09e3753"
   ],
   ".agents/tools/build-adapters.sh": [
    "04e2c210ada31617",
@@ -45,6 +309,7 @@
    "a120e4ba68e4c350",
    "a7266b4aeea4e350",
    "b01df6612b6e7f61",
+   "c9cfb4769f94ba64",
    "d822de6efcd756e5",
    "dba3f2cceeb88a12",
    "fbd8b2ce330c92ba"
@@ -58,6 +323,7 @@
    "576845201b93694d",
    "635d5dd5a4ace775",
    "6a3af52fc45d4d44",
+   "847119a517b31dac",
    "9ccb2326fed99f74",
    "a3f2c68bcd98fbd9",
    "b6d6c5a037cce47a",
@@ -83,6 +349,7 @@
    "a77e3a1dc3967b03",
    "b5c80de1e0550d27",
    "ba61d1df5330171b",
+   "c41f29cc0b612d16",
    "cb577518be240bc1",
    "e046f8ccbc4cfb4a"
   ],
@@ -104,6 +371,7 @@
    "b72cda2441619633",
    "c0f92d5ab58df5b4",
    "e3feb731ba9ee391",
+   "f36f39bd4cc9d8f3",
    "fb815867aa2151f2"
   ],
   "WORKFLOW.md": [
@@ -121,6 +389,7 @@
    "5f5b47734f1c94df",
    "61d5068eff92df1c",
    "7d7135f920179f34",
+   "82acd289e5e0fac0",
    "8aea28710c31d8a2",
    "8d6e1ee7eedd09ae",
    "9ae33ba4416b0a8f",
@@ -137,6 +406,7 @@
    "28539385fc51f921",
    "3f1d07462738ffad",
    "5a36f1db66356006",
+   "73c755d4abce9840",
    "7f60336b4b007cf3",
    "85e5b1fd37e55636",
    "95323a777cdec8d7",
@@ -154,6 +424,7 @@
    "154af050a9309e5d",
    "3c65167438b5eddf",
    "bfecb55cd372e2eb",
+   "cd2bd67cf5f95e90",
    "f9ae8545f8a081f4"
   ],
   "agent-plugin/skills/change-triage/references/existing-work.md": [
@@ -164,6 +435,7 @@
   ],
   "agent-plugin/skills/clarify/SKILL.md": [
    "19a943d8c83ec621",
+   "19dab88a49f293c8",
    "d5c3a8761d498f80",
    "e57a3a2a7a122ab9"
   ],
@@ -178,6 +450,7 @@
    "62c05e9ac7a39912"
   ],
   "agent-plugin/skills/clarify/references/prototype-structure.md": [
+   "33e23c06ad06643d",
    "954faafcd4ddcc10",
    "b4c1d66304d77478"
   ],
@@ -197,6 +470,7 @@
   "agent-plugin/skills/implement/SKILL.md": [
    "584172c72d0904ae",
    "7373bb44d91d902a",
+   "7ff25ca0329d1fc3",
    "bca8e7808a3b80e1",
    "c18efed0881c6dd1",
    "ec1463263c05a153"
@@ -207,9 +481,11 @@
   "agent-plugin/skills/implement/references/running-longer.md": [
    "038466428717e381",
    "74926124496dc26d",
+   "91899e3d59f75e48",
    "fae2f951a7f84f79"
   ],
   "agent-plugin/skills/maintain/SKILL.md": [
+   "31013fe4ac635e56",
    "397a4ff9099603ff",
    "551e0ae8a5961c5b",
    "5935a021817f3b11",
@@ -232,6 +508,7 @@
    "576845201b93694d",
    "635d5dd5a4ace775",
    "6a3af52fc45d4d44",
+   "847119a517b31dac",
    "9ccb2326fed99f74",
    "a3f2c68bcd98fbd9",
    "b6d6c5a037cce47a",
@@ -244,8 +521,12 @@
    "a1499d95abd84475"
   ],
   "agent-plugin/skills/maintain/references/document-bloat.md": [
+   "9d67d55aec3e2e66",
    "da1e58676012bc8d",
    "e1e3e61adc6b18a9"
+  ],
+  "agent-plugin/skills/maintain/references/document-read.md": [
+   "539871204676c4e4"
   ],
   "agent-plugin/skills/maintain/references/stale-branches.md": [
    "497348a89d0551e2"
@@ -254,16 +535,42 @@
    "5964c14c3459557b",
    "a46113819fdcd4f5"
   ],
+  "agent-plugin/skills/maintain/references/truing.md": [
+   "3d9053bee2416a0b"
+  ],
   "agent-plugin/skills/maintain/references/waste-read.md": [
    "822596c482c52652",
    "8dc131f6a52fc18d"
   ],
   "agent-plugin/skills/maintain/scripts/document-bloat.py": [
+   "45dde6cfd469c1cf",
    "73b6e9c84d588297",
    "b5ddc65376452857"
   ],
+  "agent-plugin/skills/maintain/scripts/document-claims.py": [
+   "833f7bd63e8d01d9"
+  ],
+  "agent-plugin/skills/maintain/scripts/kit-leftovers.py": [
+   "7d81a9086ac91839"
+  ],
+  "agent-plugin/skills/maintain/scripts/kit-released-copies.json": [
+   "d2acd4aaca7babca"
+  ],
+  "agent-plugin/skills/maintain/scripts/kit-retired-skills.json": [
+   "6ea0e7e221fbd15b"
+  ],
   "agent-plugin/skills/maintain/scripts/old-skill-pointers.py": [
+   "3c6a5a306de84ced",
    "5acccd2fd3298d84"
+  ],
+  "agent-plugin/skills/maintain/scripts/settings-rules.py": [
+   "a1828c5af45428e6"
+  ],
+  "agent-plugin/skills/maintain/scripts/upgrade-check.py": [
+   "a0fc8df57575714a"
+  ],
+  "agent-plugin/skills/maintain/templates/handover.md": [
+   "14fda20dfe5e0e66"
   ],
   "agent-plugin/skills/plan/SKILL.md": [
    "9d0475719d9fb1df"
@@ -281,9 +588,11 @@
    "a1499d95abd84475"
   ],
   "agent-plugin/skills/screen-check/SKILL.md": [
-   "9c288828035416c1"
+   "9c288828035416c1",
+   "f73d58e62d8bef3e"
   ],
   "agent-plugin/skills/second-opinion/SKILL.md": [
+   "62ec469b909cf3cf",
    "64d9cca29274aec5",
    "af8a2dc28a3d204b",
    "ccd0f108ffef1cbd",
@@ -294,6 +603,7 @@
    "547bdbc2b10f3594",
    "5dc6fce7d9a7edd5",
    "8feb35c836ef1c2b",
+   "975b2871d1fb0511",
    "9a975f0452f36e34",
    "a905ce425da225f7",
    "b88da1b239b7f026",
@@ -302,15 +612,26 @@
   "agent-plugin/skills/section-builder/references/reach-check.md": [
    "2d736e083b6eaab9"
   ],
+  "agent-plugin/skills/section-builder/references/repair.md": [
+   "3f775adc5528d2a3"
+  ],
   "agent-plugin/skills/section-builder/references/test-strength.md": [
    "bbfd9c27764aa922"
   ],
   "agent-plugin/skills/section-builder/references/trim.md": [
+   "ad03018f0882a6a3",
    "c6c3502e5742805f"
+  ],
+  "agent-plugin/skills/section-builder/scripts/check-before-merge.sh": [
+   "e425d5e749aee862"
+  ],
+  "agent-plugin/skills/section-builder/scripts/env-names-added.sh": [
+   "4f6a6ea128ed01dd"
   ],
   "agent-plugin/skills/setup-ai-build-kit/SKILL.md": [
    "15df708b9ea27b16",
    "16fed97f0ab28705",
+   "348368f11a919f3d",
    "3cd39c4045a42a47",
    "4ce87aa373279aac",
    "642e7a480d4f0bd4",
@@ -325,28 +646,34 @@
   "agent-plugin/skills/setup-ai-build-kit/references/adopting.md": [
    "10e2675bb41be1f5",
    "4aba6b08fda05609",
+   "ce5de980800c76d4",
    "ed7b3e64c0c835b7"
   ],
   "agent-plugin/skills/setup-ai-build-kit/references/blocked-commands.md": [
+   "19a11ac665bd3833",
    "c81fd7902dc19daf",
    "f872ef39afd099f1"
   ],
   "agent-plugin/skills/setup-ai-build-kit/references/boundary-rules.md": [
+   "ab8a8ee6dbe72977",
    "f1c98766ffb5e9a2"
   ],
   "agent-plugin/skills/setup-ai-build-kit/references/capability-check.md": [
+   "1b776bd458faf640",
    "32286764b82ff7ce",
    "7a278bd341fe6699",
    "dd27ba27b6f47984"
   ],
   "agent-plugin/skills/setup-ai-build-kit/references/check-floor.md": [
-   "3fa75f942a030b5a"
+   "3fa75f942a030b5a",
+   "bb2b480226817c44"
   ],
   "agent-plugin/skills/setup-ai-build-kit/references/codex-github.md": [
    "80759762cdb460bb"
   ],
   "agent-plugin/skills/setup-ai-build-kit/references/completion-report.md": [
    "3940b0138cb49b7d",
+   "4afc1e39762529e1",
    "83abe3f80857ac0a",
    "8a6da82da57865f5",
    "bceaf6235e4c53f0",
@@ -356,9 +683,11 @@
   ],
   "agent-plugin/skills/setup-ai-build-kit/references/coverage-read.md": [
    "3ea0ac96ebe3e2c2",
+   "72396288c47e6bd0",
    "90ff5efcf23030ad"
   ],
   "agent-plugin/skills/setup-ai-build-kit/references/fit-check.md": [
+   "21aa0e2ba527a428",
    "6e8c69157c1bb0fd",
    "9c8e3b261edcab69",
    "b1e2c1c32f57466e",
@@ -370,9 +699,11 @@
    "914125a001ed1e46"
   ],
   "agent-plugin/skills/setup-ai-build-kit/references/masterplan-changes.md": [
+   "5c10b173d54fedf0",
    "8f5687840ae6a53a"
   ],
   "agent-plugin/skills/setup-ai-build-kit/references/pieces.md": [
+   "37745da0b64f79e1",
    "3b87259fa31c5e7b",
    "40a387faad2cee7d",
    "413511631cbdfc21",
@@ -384,11 +715,13 @@
   ],
   "agent-plugin/skills/setup-ai-build-kit/references/required-tools.md": [
    "91f9f73da6897ecf",
+   "d168855b60becca3",
    "eedc47ee7ff57aca",
    "ff448fe0731b73df"
   ],
   "agent-plugin/skills/setup-ai-build-kit/references/whole-project-reads.md": [
-   "451c45426fafeccb"
+   "451c45426fafeccb",
+   "5d795092fcb80093"
   ],
   "agent-plugin/skills/setup-ai-build-kit/scripts/bootstrap-project.sh": [
    "8f3fa2a51e47e8b0",
@@ -399,13 +732,21 @@
   "agent-plugin/skills/setup-ai-build-kit/scripts/check-tooling.sh": [
    "2618b9484ed85b59",
    "ae0c5befa060a41c",
-   "f3915949664a1cce"
+   "f3915949664a1cce",
+   "ffde95fee80b2870"
   ],
   "agent-plugin/skills/setup-ai-build-kit/scripts/codex-with-github.py": [
    "69636c1758f761a7"
   ],
   "agent-plugin/skills/setup-ai-build-kit/scripts/place-plan-helper.sh": [
+   "363c38407fb46dea",
    "fa044d6dca021125"
+  ],
+  "agent-plugin/skills/setup-ai-build-kit/scripts/recipe-menu.sh": [
+   "5e19233efd2dd12d"
+  ],
+  "agent-plugin/skills/setup-ai-build-kit/scripts/trued-mark.sh": [
+   "c806be9d8f404dd4"
   ],
   "agent-plugin/skills/setup-ai-build-kit/templates/CHANGELOG.md": [
    "dcfca02b48fed8b4"
@@ -421,6 +762,7 @@
    "d322675302bff810",
    "e49b6af54afee63e",
    "ea355db243ba9d98",
+   "f26e78f5b003a461",
    "f9ac99dfe8b6ce69"
   ],
   "agent-plugin/skills/setup-ai-build-kit/templates/foundation/CLAUDE.md": [
@@ -441,6 +783,7 @@
   ],
   "agent-plugin/skills/setup-ai-build-kit/templates/foundation/claude-settings.json": [
    "23ee8b7497e1e741",
+   "6112863a5bd07d8a",
    "d992e1bba1e0750d"
   ],
   "agent-plugin/skills/setup-ai-build-kit/templates/foundation/copilot-instructions.md": [
@@ -459,7 +802,11 @@
   ],
   "agent-plugin/skills/setup-ai-build-kit/templates/foundation/plan-refresh.sh": [
    "0dafa678acb00455",
-   "7830fd5d0b7be6ac"
+   "7830fd5d0b7be6ac",
+   "eb782000c26af283"
+  ],
+  "agent-plugin/skills/setup-ai-build-kit/templates/foundation/session-end-sync.sh": [
+   "8ba9cbe90dca241a"
   ],
   "agent-plugin/skills/setup-ai-build-kit/templates/foundation/session-start.sh": [
    "e38f8bd57dc13d36"
@@ -471,14 +818,49 @@
   "agent-plugin/skills/setup-ai-build-kit/templates/masterplan.md": [
    "6864e2f063a4eca9",
    "6c6bbed7ed2b2384",
+   "705919f5324fa5d2",
    "793ea7c740c0b383",
    "9fd567012f1c7a09",
    "daac52436d1f387c",
    "ebd5ab7ac003a153"
   ],
+  "agent-plugin/skills/setup-hosting/SKILL.md": [
+   "3a9e4607dd4a11d3"
+  ],
+  "agent-plugin/skills/setup-hosting/recipes/nextjs-supabase-on-coolify.md": [
+   "4e74e1c7a15b9db6"
+  ],
+  "agent-plugin/skills/setup-hosting/recipes/nextjs-supabase-on-vercel.md": [
+   "ddc6308a533a11e1"
+  ],
+  "agent-plugin/skills/setup-hosting/recipes/parts/nextjs-container.md": [
+   "603f5ef3897bd92f"
+  ],
+  "agent-plugin/skills/setup-hosting/recipes/parts/supabase-backup.md": [
+   "337df27c2dbe7fe2"
+  ],
+  "agent-plugin/skills/setup-hosting/recipes/parts/supabase-restore.md": [
+   "93a2349b1fd1621a"
+  ],
+  "agent-plugin/skills/setup-hosting/recipes/parts/supabase-settings.md": [
+   "6e7542f8f1b65717"
+  ],
+  "agent-plugin/skills/setup-hosting/references/evidence-run.md": [
+   "56c3947e3d645bd0"
+  ],
+  "agent-plugin/skills/setup-hosting/references/hosting-request.md": [
+   "35409a48ef0815b2"
+  ],
+  "agent-plugin/skills/setup-hosting/references/recipe-format.md": [
+   "154ff5464f353146"
+  ],
+  "agent-plugin/skills/setup-hosting/templates/recipe.md": [
+   "88aee9a7c4a6610d"
+  ],
   "agent-plugin/skills/shape/SKILL.md": [
    "254b1a78e53d9dfc",
    "2aa51fd37db5e702",
+   "392039f9bd26899f",
    "534a073348731597",
    "8eee7126bd333a83",
    "9ed08466a5280bb3",
@@ -566,6 +948,7 @@
    "b555252fa226f84f"
   ],
   "agent-plugin/skills/what-now/SKILL.md": [
+   "0850e331d09e3753",
    "307ad52cc01a8a52",
    "9247d3efce114a17",
    "c7cda86403b5fcad",
