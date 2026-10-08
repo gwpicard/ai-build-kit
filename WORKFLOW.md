@@ -306,11 +306,11 @@ Green means the checks that exist really passed, which is a smaller promise than
 
 A human decides whether to merge, always. Once the check is green, /implement tells you what to try and where, such as the preview address, then names the pull request in one plain line and asks for a yes that names the merge. Saying "put it live" or "save it" before any merge was named is not that yes, so it asks again; saying "merge it" is, and it does not ask twice.
 
-It makes the merge on the pull request itself, never by merging on your computer and pushing `main`, and in Claude Code a box asks you to allow it first. If GitHub cannot be reached, the merge waits, and you can merge it on GitHub yourself. With nobody there to answer, nothing is merged and the pull request waits for you. After a merge, everyone pulls main. Flagged areas also get the review the build path names before the pull request is offered as ready.
+It makes the merge on the pull request itself, never by merging on your computer and pushing `main`, and in Claude Code a box asks you to allow it first, where your project's settings carry that question. A project founded before the kit added it gets no box until /maintain adds it, and /implement says so rather than promising one. If GitHub cannot be reached, the merge waits, and you can merge it on GitHub yourself. With nobody there to answer, nothing is merged and the pull request waits for you. After a merge, everyone pulls main. Flagged areas also get the review the build path names before the pull request is offered as ready.
 
 Once the tool is live, a merge is a deploy: the host builds `main` and the team's copy follows.
 
-So before asking, /implement checks the live side. A change that adds to the database waits until /setup-hosting has applied that addition, which only adds, so the version live now keeps working. A piece whose `Live side needs:` line names a new secret or service waits until /setup-hosting reports it present. A piece in a sensitive area waits until its caution is done or your acceptance is recorded.
+So before asking, /implement checks the live side. A change that adds to the database waits until /setup-hosting has applied that addition, which only adds, so the version live now keeps working. A piece whose `Live side needs:` line names a new secret or service waits until /setup-hosting reports it present. So does a piece whose branch adds a setting to `.env.example`, even with no such line, since a piece shaped before the line existed has none. A piece in a sensitive area waits until its caution is done or your acceptance is recorded.
 
 Where your recipe runs a check on this computer before the merge, a check that runs and fails holds the merge as a red check does, and the piece goes back to its build until it passes; a check that cannot run here is a warning you hear once, and the merge goes ahead.
 
@@ -562,17 +562,25 @@ A project founded from a whole copy of the kit also carries the kit's own
 command files, which make each command show twice; the visit offers to remove
 those and leaves anything you wrote yourself alone.
 
-Each monthly visit also checks the small helper that prints your list of
-pieces to `plan.local.md`. A project founded before every installation carried
-it gets it then, so the kit reads what is ready from that list rather than
-working it out by hand. A clean checkpoint comes first, so an interrupted
-update can be recovered.
+After an update, start a new session (or type /reload-plugins in Claude
+Code) and type /maintain again. The session that ran the update still follows
+the instructions of the release it replaced, so the next visit is the one that
+finishes it. Every /maintain visit, on any day, runs one check of what an
+update left behind, and that check changes nothing by itself. Until it finds
+nothing left, /what-now and /implement each say one line: the kit update is
+not finished, and /maintain finishes it.
+
+That check also looks at the small helper that prints your list of pieces to
+`plan.local.md`. A project founded before every installation carried it, or
+holding an older copy, gets the current one on that visit, so the kit reads
+what is ready from that list rather than working it out by hand. A clean
+checkpoint comes first, so an interrupted update can be recovered.
 
 The one update that split the old `/build` into what are now `/shape` and
 `/implement` runs a one-time step that labels your existing pieces so they can
 still be built; it says what it changed. Any visit that finds an older
 `plan.md` list offers to move it into your project's issues, and keeps
-offering until it is moved. Any monthly visit that finds a line in AGENTS.md
+offering until it is moved. Any visit that finds a line in AGENTS.md
 or the masterplan pointing at a skill's file by a folder your installation may
 not have offers to name the skill instead, changing only those lines, and only
 on your yes.
@@ -583,17 +591,23 @@ old text above the new, keeps every accepted risk word for word, and changes
 nothing without your approval.
 
 A project installed before the kit had six commands still offers the old
-ones after its update. The visit that finds them says so in one line: /fix
-and /queue are now part of /shape and /implement, /sync is part of
+ones after its update. The first /maintain after the update says so in one
+line: /fix and /queue are now part of /shape and /implement, /sync is part of
 /maintain, and /ship is now /setup-hosting. Nothing you built changes. It
-offers to remove the old skills and to rewrite the command list in your
-AGENTS.md, and does neither without your yes.
+offers to remove the old skills, to rewrite the command list in your
+AGENTS.md, and to correct the one sentence the kit itself wrote into your
+masterplan about the hosting request. A project founded from a whole copy of
+the kit is also offered the removal of the kit's own files it carries, such
+as its WORKFLOW.md, but only where they match a released copy exactly. None of
+it happens without your yes.
 
-Your masterplan and changelog keep their old mentions, since those record
-what happened. Once everything is removed and rewritten, a later visit finds
-nothing and says nothing. An offer you declined comes back on the next visit,
-and a command list written in your own words is named again until you change
-it.
+Your changelog keeps its old mentions, since it records what happened. A line
+of your own in AGENTS.md or the masterplan that names an old command, such as
+a note of when you run one, is named once for you to change, and never
+rewritten. Once everything is removed and rewritten, the next visit finds
+nothing and says nothing. An offer you declined is mentioned in one line on
+each visit and offered in full again on the monthly visit. A command list
+written in your own words is named each month until you change it.
 
 The standing instructions in AGENTS.md stay under 200 lines and hold what the
 code cannot show, such as how work is saved and reviewed and which conventions
@@ -634,11 +648,11 @@ none, you hear nothing.
 In Claude Code, the settings founding gave your project refuse a direct push
 to `main`, a force push and a forced delete, and ask you before any merge.
 A project that already had its own Claude Code settings when it was founded
-keeps them, and the first monthly visit offers the missing push and merge
+keeps them, and the next /maintain visit offers the missing push and merge
 rules.
 
 When a later release catches more ways of writing one of those, the
-monthly visit names the new rules and offers to add them to
+next visit names the new rules and offers to add them to
 `.claude/settings.json`, once. It adds nothing without your yes and leaves the
 rest of the file as it is. A no is recorded, and the offer comes back only
 when a release adds another rule.

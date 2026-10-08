@@ -254,6 +254,11 @@ rs_retired_mentions() {
       # how a leftover folder is recognised as the kit's. It is data, never
       # read as advice.
       */.agents/skills/maintain/scripts/kit-retired-skills.json) continue ;;
+      # The record of the files a released whole copy carried, by path. Its
+      # paths name the retired skills' folders, and it is data too.
+      */.agents/skills/maintain/scripts/kit-released-copies.json) continue ;;
+      */.agents/tests/fixtures/upgrade-v0.19.3/*) continue ;;
+      */.agents/skills/maintain/scripts/upgrade-check.py) continue ;;
       */.agents/skills/maintain/SKILL.md|*/WORKFLOW.md) ;;
       *) printf '%s\n' "$rs_file"; continue ;;
     esac
@@ -262,7 +267,7 @@ import sys
 text = sys.stdin.read()
 for sentence in (
     "`/fix` folded into `/shape` and `/implement`, `/queue` into `/implement`, and `/sync` into `/maintain`. `/ship` was renamed `/setup-hosting`.",
-    "a mention of `/fix`, `/queue`, `/sync` or `/ship` in `masterplan.md` or `changelog.md` is history.",
+    "a mention of `/fix`, `/queue`, `/sync` or `/ship` in `changelog.md` is history.",
     "/fix and /queue are part of /shape and /implement, /sync is part of /maintain, and /ship is now /setup-hosting.",
     "/fix and /queue are now part of /shape and /implement, /sync is part of /maintain, and /ship is now /setup-hosting.",
 ):

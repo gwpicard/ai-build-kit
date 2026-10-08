@@ -82,7 +82,7 @@ rs_rule "a records-only visit runs only the every-visit steps" \
   'a records-only visit, where the person asks only for the records to be checked, runs only the every-visit steps'
 rs_rule "the fit check reruns before the rest of the monthly part" \
   'run it before the rest of the monthly part'
-rs_rule "the monthly part's steps say monthly" 'on every route and every monthly visit, run "adding the plan printout helper"'
+rs_rule "the upgrade runs on every visit" 'finish a kit update, as "finishing a kit update" below says. this runs on every visit'
 rs_rule "a part not due is named with its date" \
   'where a part is not due, say so in one line with the date it falls due'
 rs_rule "the monthly heading says when due" '## monthly, when due'

@@ -29,6 +29,12 @@ shows a merge or rebase conflict, whether a check-up is overdue, taken from
 when it does not, and whether anything on the build path's recheck-when list has
 happened.
 
+Read whether a kit update is still unfinished. From the project root, run
+`python3` with the `maintain` skill's `scripts/upgrade-check.py`, and keep only
+its exit code. It reads and changes nothing. Exit 1 means an update left
+something /maintain has not yet finished, such as old commands still on
+offer. Any other exit says nothing here.
+
 ## Say
 
 Open with where the build stands, in one line, then which command comes next and
@@ -84,6 +90,10 @@ cannot start until card payments are set up", never "blocked by #9". Name at
 most three things; if more apply, say how many and name the nearest. More than
 three stops being orientation and becomes a report. Where the person wants
 every ready piece at once, /implement shows the whole list. Match where the project is in its life. Still building toward the first launch: the answer is usually /implement for the next ready piece, /shape to shape a new one, or /setup-hosting once the person wants people to use it. Live and running: the answer is usually "say what you want to /shape", /shape for the thing that broke, or the /maintain that the recorded check-up dates show is overdue.
+
+Where the update check exited 1, say one line before the recap, apart from
+the three things: "The kit update is not finished. /maintain finishes it."
+Say nothing more about it here.
 
 End with a short recap of where the tool has got to, in the words a person would
 use. Say what the last stretch of work was about, and whether anything is on the

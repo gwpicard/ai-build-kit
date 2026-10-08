@@ -518,6 +518,22 @@ summary, and state any action an existing user must take. Use
 `skip-release-notes` only when a merged pull request has no useful place in the
 project's public history.
 
+Some releases need words no pull request title carries. Where
+`docs/release-notes/` holds a file named for the version, the published notes
+open with that file's text, word for word, above the drafted changes. Paste it
+in when you edit the notes on the Release's web page. The v0.20.0 notes must
+open with this line: "After updating, start a new session (or /reload-plugins)
+and type /maintain again." The visit that runs an update still follows the old
+release's maintain text, which reads the new release's notes and nothing else
+of it. So the notes are the one place that can send the person back for the
+visit that finishes the update. The folder never ships.
+
+After a release is published, run `.agents/tools/record-released-copies.py`
+with its archive on the next branch. It adds the release's whole-copy files to
+the record `/maintain` compares against, so a later update can offer to remove
+an untouched copy of them. A release missing from the record costs nothing
+worse than its files being named rather than offered for removal.
+
 Edit the notes in the Release's web page. An edit through the API is where a
 draft loses its tag: a `PATCH /releases/{id}` that sends only `body` resets the
 draft's `tag_name` to `untagged-...`, and the tag and target then have to be set

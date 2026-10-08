@@ -26,6 +26,13 @@ Refresh first, then read that, and never sort the pieces by hand in its place.
 The `setup-ai-build-kit` skill's `references/pieces.md` describes how the
 pieces are kept, and what to run in a project that has no copy of the helper.
 
+Before taking a piece, read whether a kit update is still unfinished. From
+the project root, run `python3` with the `maintain` skill's
+`scripts/upgrade-check.py`, and keep only its exit code. It reads and changes
+nothing. Where it exits 1, say one line: "The kit update is not finished.
+/maintain finishes it." Then carry on. The build does not wait for it. Any
+other exit says nothing.
+
 When GitHub cannot be reached, say so, say when the printout was last written,
 and work from it. The piece already in hand carries on. Anything that would
 change what is on the plan waits, because an issue that cannot be updated is

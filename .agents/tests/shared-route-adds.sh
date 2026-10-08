@@ -96,16 +96,16 @@ rs_rule "the setup migration calls it too" \
 # The move to six commands. It fires on the disk and on the list, every visit.
 rs_rule "the count names an old entry the installer kept" \
   'an entry under one of the kit.s former names, such as .fix., .queue., .sync. or .ship., is an old skill the installer kept'
-rs_rule "the monthly step calls the six-command migration" \
-  'also run "migrating a project installed before the six commands"'
-rs_rule "it fires on an old skill, no setup-hosting, or an old list" \
-  'run this on any monthly visit that finds a .fix., .queue., .sync. or .ship. skill installed, no .setup-hosting. skill, or a command list in agents\.md that names one of the four'
+rs_rule "the monthly step runs the upgrade check after its update" \
+  'then run "finishing a kit update" below, with .--monthly.'
+rs_rule "it fires on an old skill, no setup-hosting, or an old list, on any visit" \
+  'runs this on any visit whose check finds a .fix., .queue., .sync. or .ship. skill installed, no .setup-hosting. skill, or a command list in agents\.md that names one of the four'
 rs_rule "a second visit does nothing and says nothing" \
   'a visit that finds the six commands and the list already current does nothing here and says nothing'
 rs_rule "why the step exists: the installer keeps a listed skill" \
   'the shared installer keeps an old skill it still lists'
 rs_rule "it reads what is left with the shipped script" \
-  'run .python3 <installed maintain skill>/scripts/kit-leftovers\.py.\. it prints one line for each thing left behind'
+  'runs .python3 <installed maintain skill>/scripts/kit-leftovers\.py. from the project root and prints its lines\. it prints one line for each thing left behind'
 rs_rule "the installer removes what the lockfile lists, in one command" \
   'offer to remove it with the installer, naming each one in a single command such as .npx skills remove fix queue sync ship.'
 rs_rule "never by hand" \
@@ -122,12 +122,14 @@ rs_rule "the plugin update replaces the commands itself" \
   'the plugin update itself replaces the commands'
 rs_rule "but the plugin route still needs the list rewritten" \
   'the agents\.md list still needs step 5'
-rs_rule "old mentions in the records are history" \
-  'is history\. it says what happened at the time, so leave it\. the changelog is never rewritten'
+rs_rule "old mentions in the changelog are history" \
+  'in .changelog\.md. is history\. it says what happened at the time, so leave it\. the changelog is never rewritten'
+rs_rule "a line in AGENTS.md or the masterplan guides, so it is not history" \
+  'a line in agents\.md or masterplan\.md is different: it guides later sessions'
 rs_rule "the one line the person hears" \
   '"the kit now has six commands\. /fix and /queue are part of /shape and /implement, /sync is part of /maintain, and /ship is now /setup-hosting\. nothing you built has changed\."'
-rs_rule "a no leaves the old command and the offer returns" \
-  'the old command stays on offer beside the new one until it is removed, and that the offer comes back on the next visit'
+rs_rule "a no leaves the old command and the offer returns monthly" \
+  'the old command stays on offer beside the new one until it is removed, and record the no as "finishing a kit update" says, so the next monthly visit offers it again'
 rs_rule "an Agent Plugins folder is read back for old skills" \
   'the agent.s command did not replace the folder whole'
 rs_rule "a manual update leaves retired folders for the tidy" \
@@ -164,11 +166,13 @@ rs_require "WORKFLOW.md says a rename rewrites the command list with approval" \
 rs_require_load_bearing "WORKFLOW.md gives the one line about the six commands" \
   "$WORKFLOW" '/fix and /queue are now part of /shape and /implement, /sync is part of /maintain, and /ship is now /setup-hosting\. nothing you built changes'
 rs_require_load_bearing "WORKFLOW.md says nothing is removed without a yes" \
-  "$WORKFLOW" 'offers to remove the old skills and to rewrite the command list in your agents\.md, and does neither without your yes'
+  "$WORKFLOW" 'offers to remove the old skills, to rewrite the command list in your agents\.md, .*none of it happens without your yes'
 rs_require_load_bearing "WORKFLOW.md says a declined offer and an own-words list come back" \
-  "$WORKFLOW" 'an offer you declined comes back on the next visit, and a command list written in your own words is named again until you change it'
-rs_require_load_bearing "WORKFLOW.md says the records keep their old mentions" \
-  "$WORKFLOW" 'your masterplan and changelog keep their old mentions'
+  "$WORKFLOW" 'an offer you declined is mentioned in one line on each visit and offered in full again on the monthly visit\. a command list written in your own words is named each month until you change it'
+rs_require_load_bearing "WORKFLOW.md says the changelog keeps its old mentions" \
+  "$WORKFLOW" 'your changelog keeps its old mentions'
+rs_require_load_bearing "WORKFLOW.md says a line of the person's own is named, never rewritten" \
+  "$WORKFLOW" 'is named once for you to change, and never rewritten'
 rs_require_load_bearing "COMPATIBILITY.md says the installer removes a retired skill on a yes" \
   "$COMPAT" 'offers to remove each one with .npx skills remove.'
 rs_require_load_bearing "COMPATIBILITY.md says the plugin update drops a retired command" \

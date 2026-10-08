@@ -76,23 +76,26 @@ rs_rule "a retired command's file goes on every route" \
 rs_rule "a current command's file only on the shared route" \
   'one for a current command is listed only on the shared route'
 rs_rule "and removed on approval, only what was listed" \
-  'remove on approval, by running the script with .--remove., which removes only what it listed'
-rs_rule "the removal is read back" 'carry on only once it lists neither kind'
+  'remove on approval, by running the check with .--apply remove., which runs the script with .--remove.'
+rs_rule "the removal is read back" 'carry on only once it lists none of these kinds'
 rs_rule "the old session-end hook is named and left" \
-  'a .hook. line means its message still names a retired command'
+  'a .hook. line means it matches an older copy a release shipped'
 rs_rule "the hook alone is never said again" \
-  'say this only in a visit that also offers a removal, so a later visit that finds only the hook says nothing'
+  'one that was changed by hand and still names a retired command gets a .left. line'
 rs_rule "a manual update runs the tidy too" \
-  'on the shared route, or after a manual update, that finds the leftovers below'
+  'on the shared route or after a manual update, whose check finds the leftovers below'
 rs_rule "and recorded" 'a changelog line saying what was removed and why'
 
 # It runs from the monthly pass and does nothing on a clean project.
 rs_rule "the monthly pass calls it on the shared route" \
-  'on the shared route, also run .tidying a project founded from a whole copy'
+  '`folder`, `adapter`, `kitcopy` and `hook` lines: `--apply remove`, as "tidying a project founded from a whole copy'
 rs_rule "the manual fallback calls it" \
   'retired, so run "tidying a project founded from a whole copy of the kit" afterwards too'
 rs_rule "a project without the leftovers gets nothing" \
   'a project that has none of them gets nothing here'
+rs_rule "kit files require a released byte match" 'only when every byte matches a copy a release shipped at the same path'
+rs_rule "a changed kit copy stays" 'a changed one gets a `left` line and stays'
+rs_rule "the hook is replaced on a match" 'the one this release ships replaces it on `--remove`'
 rs_guard "$MAINTAIN" "the maintain skill"
 
 rs_require "WORKFLOW.md says the visit offers to remove the kit's command files" \
@@ -170,7 +173,7 @@ rs_report "a generated skill folder holding a file of the person's is left" \
 rs_report "the person's own command file and skill are never listed" \
   "$(printf '%s\n' "$listed" | grep -qE 'deploy\.md|my-notes' && echo no || echo yes)"
 rs_report "the old hook is named" \
-  "$(printf '%s\n' "$listed" | grep -qx 'hook	.agents/hooks/session-end-sync.sh' && echo yes || echo no)"
+  "$(printf '%s\n' "$listed" | grep -q '^left	.agents/hooks/session-end-sync.sh	' && echo yes || echo no)"
 
 python3 "$LEFTOVERS" --remove "$P"
 r=yes
@@ -186,8 +189,8 @@ rs_report "the person's command file, skills and hook are untouched" \
 rs_report "the stale generated skill folder is gone, the current ones stay" \
   "$([ ! -e "$P/.claude/skills/grilling" ] && [ -f "$P/.claude/skills/clarify/SKILL.md" ] && echo yes || echo no)"
 rs_report "a second run lists only what is never removed, which the visit then keeps quiet about" \
-  "$([ "$(python3 "$LEFTOVERS" "$P" | grep -cv '^left	')" = 1 ] \
-     && python3 "$LEFTOVERS" "$P" | grep -qx 'hook	.agents/hooks/session-end-sync.sh' && echo yes || echo no)"
+  "$([ "$(python3 "$LEFTOVERS" "$P" | grep -cv '^left	')" = 0 ] \
+     && python3 "$LEFTOVERS" "$P" | grep -q '^left	.agents/hooks/session-end-sync.sh	' && echo yes || echo no)"
 
 # Links. A review linked the project's .claude/skills to a shared folder
 # outside it, holding the person's own `sync` skill, and the removal followed

@@ -367,6 +367,60 @@ PY
   cat "$rs_dir/matcher.out"
 fi
 
+# Apply and decline on the frozen settings, keeping the person's entries.
+if [ -z "${RS_LIST:-}" ]; then
+  python3 - "$ROOT" "$rs_dir" <<'PY'
+import json, os, pathlib, shutil, subprocess, sys
+root, work = map(pathlib.Path, sys.argv[1:])
+script=root/'.agents/skills/maintain/scripts/settings-rules.py'
+p=work/'settings-project'; (p/'.claude').mkdir(parents=True)
+settings=p/'.claude/settings.json'
+shutil.copy2(root/'.agents/tests/fixtures/upgrade-v0.19.3/claude-settings.json',settings)
+old=json.loads(settings.read_text()); old['my-setting']={'keep':True}
+settings.write_text(json.dumps(old,indent=2)+'\n')
+def run(flag=None,code=0):
+    command=[sys.executable,str(script)]+([flag] if flag else [])+[str(p)]
+    result=subprocess.run(command,capture_output=True,text=True)
+    assert result.returncode==code,(command,result.returncode,result.stdout,result.stderr)
+    return result.stdout
+assert '\nask\tBash(gh pr merge:*)' in '\n'+run(code=1)
+run('--merge-box',1)
+original=settings.read_bytes()
+run('--decline'); assert settings.read_bytes()==original
+assert 'push-rules-declined|' in (p/'.ai-build-kit-maintenance').read_text()
+assert all(l.startswith('declined\t') for l in run().splitlines())
+# An older no covering fewer rules must bring the full offer back.
+(p/'.ai-build-kit-maintenance').write_text('push-rules-declined|2026-01-01|Bash(gh pr merge:*)\n')
+run(code=1)
+run('--apply'); current=json.loads(settings.read_text())
+assert current['my-setting']==old['my-setting']
+for key,value in old['permissions'].items():
+    if key in ('ask','deny'): assert current['permissions'][key][:len(value)]==value
+    else: assert current['permissions'][key]==value
+assert not run(); run('--merge-box')
+second=settings.read_bytes(); run('--apply'); assert second==settings.read_bytes()
+# Removed broad force/delete rules stay removed; asks and main rules still offered.
+old['permissions']['deny']=[r for r in old['permissions']['deny'] if r not in ('Bash(git push --force:*)','Bash(rm -rf:*)')]
+settings.write_text(json.dumps(old))
+(p/'.ai-build-kit-maintenance').unlink()
+offer=run(code=1)
+assert not any(l.startswith('deny\tBash(rm ') or l.startswith('deny\tBash(git push') and 'main' not in l for l in offer.splitlines()),offer
+# Invalid JSON, malformed lists and linked parents must not be rewritten.
+settings.write_text('{not json'); assert 'left\t' in run('--apply'); assert settings.read_text()=='{not json'
+settings.write_text('{"permissions":{"ask":"my own value"}}'); original=settings.read_bytes()
+assert 'left\t' in run('--apply'); assert settings.read_bytes()==original
+settings.unlink(); (p/'.claude').rmdir()
+outside=work/'settings-outside'; outside.mkdir(); external=outside/'settings.json'
+external.write_text(json.dumps(old)); original=external.read_bytes()
+(p/'.claude').symlink_to(outside,target_is_directory=True)
+assert 'left\t' in run('--apply'); assert external.read_bytes()==original
+maintenance=work/'maintenance-outside'; maintenance.write_text('My own record.\n')
+(p/'.ai-build-kit-maintenance').symlink_to(maintenance)
+run('--decline'); assert maintenance.read_text()=='My own record.\n'
+print('  ok: settings apply, declines, merge-box detection and linked paths preserve the project')
+PY
+fi
+
 # The monthly offer in /maintain.
 rs_rule "no settings file ends the step" 'where the project has no `\.claude/settings\.json`, this step ends'
 rs_rule "the rules come from the installed template" 'take the rules from that file, never from memory'
@@ -375,20 +429,20 @@ rs_rule "only rules naming a push to main are offered" 'names both `git push` an
 rs_rule "a removed rule is not brought back" 'the person may have removed a rule on purpose'
 rs_rule "force rules only while the old one stays" 'offered only while the project still holds `bash\(git push --force:\*\)` for a force push, or `bash\(rm -rf:\*\)` for a forced delete'
 rs_rule "the merge question is offered" 'a rule in `ask`, which makes claude code ask before a merge'
-rs_rule "each rule goes back to its own list" 'add only the missing rules to the end of the list each came from'
+rs_rule "each rule goes back to its own list" 'adds only the missing rules to the end of the list each came from'
 rs_rule "an earlier no stands" 'where it already lists every missing rule, the earlier no stands'
 rs_rule "offered once in one reply" 'offer the change once, in one reply'
 rs_rule "it names the rules" 'name the rules it adds'
 rs_rule "it changes nothing else" 'changes nothing else in the file'
 rs_rule "it points to the written gap" 'lists the spellings the rules still cannot catch'
 rs_rule "it waits for a yes" 'ask for a yes'
-rs_rule "every other entry stays" 'keep every other entry and setting as it is'
+rs_rule "every other entry stays" 'keeps every other entry and setting as it is'
 rs_rule "the file stays valid" 'still reads as valid json'
 rs_rule "a no changes nothing" 'on a no, change nothing'
 rs_rule "the no is recorded" 'push-rules-declined\|<yyyy-mm-dd>\|'
 rs_rule "the offer returns only for a new rule" 'offers again only when a new release adds a rule that line does not list'
 rs_guard "$MAINTAIN" "maintain's push-rule offer"
-rs_require "the monthly pass runs the offer" "$MAINTAIN" '16\. run "adding the kit.s newer safety rules"'
+rs_require "every visit reads the safety rules" "$MAINTAIN" 'the check in "finishing a kit update" runs it on every visit'
 
 # The written gap.
 rs_reset

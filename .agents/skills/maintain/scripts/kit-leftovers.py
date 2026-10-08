@@ -12,7 +12,9 @@ Usage:
 
     kit-leftovers.py [PROJECT]                     list what it finds
     kit-leftovers.py --remove [PROJECT]            remove what is listed as
-                                                   `folder` or `adapter`
+                                                   `folder`, `adapter` or
+                                                   `kitcopy`, and replace the
+                                                   `hook`
     kit-leftovers.py --rewrite-commands [PROJECT]  rewrite the `commands` lines
                                                    that show a new form
 
@@ -34,7 +36,11 @@ separated by tabs. The first field says what it is:
                        a line of the command list or its counts in AGENTS.md
     commands   FILE:LINE  OLD  left as written: WHY
                        a line the script will not rewrite, with the reason
-    hook       PATH    the kit's session-end hook still names a retired command
+    hook       PATH    the kit's session-end hook is a released copy older than
+                       the one this release ships; --remove replaces it
+    kitcopy    PATH    a file or folder only the kit needs, which a whole copy
+                       brought and no update refreshes, matching a released
+                       copy byte for byte; --remove removes it
 
 What it will not touch. A name the lockfile lists under any other source is
 the person's. A folder not in the lockfile counts as the kit's only when its
@@ -43,9 +49,17 @@ gave it, kept in kit-retired-skills.json beside this script. Nothing whose
 real location is outside the project is ever listed for removal, and a link is
 never followed: at most the link itself goes. A rewrite of AGENTS.md changes
 only a list that holds the kit's names and nothing else, and only those lines,
-line endings included.
+line endings included. A kit file from a whole copy, or the old session-end
+hook, is removed or replaced only when every byte matches a copy a release
+shipped at the same path, kept in kit-released-copies.json beside this script.
+One that differs gets a `left` line and stays as it is. The kit's README from a
+whole copy is only ever named, never removed.
+
+In list mode it exits 0, whatever it prints. upgrade-check.py, beside it, is
+the read that exits 1 while something is left.
 """
 
+import hashlib
 import json
 import os
 import re
@@ -77,6 +91,17 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 INSTALLED = os.path.dirname(os.path.dirname(HERE))
 TEMPLATE = os.path.join(INSTALLED, "setup-ai-build-kit", "templates", "foundation", "AGENTS.md")
 KNOWN = os.path.join(HERE, "kit-retired-skills.json")
+RELEASED = os.path.join(HERE, "kit-released-copies.json")
+VERSION = os.path.join(os.path.dirname(HERE), "VERSION")
+HOOK = ".agents/hooks/session-end-sync.sh"
+NEW_HOOK = os.path.join(os.path.dirname(HERE), "templates", "session-end-sync.sh")
+MARKER = ".ai-build-kit-version"
+# What a whole copy carries that only the kit itself needs, in the order the
+# lines print. The version marker comes last, since once it goes the copy is no
+# longer recognised as a whole copy, and what was left stays named only once.
+KIT_COPIES = ("agent-plugin", ".claude-plugin", "WORKFLOW.md",
+              ".agents/guard/blocked-commands.md", ".agents/tools/build-adapters.sh",
+              MARKER)
 
 NUMBERS = ("one two three four five six seven eight nine ten eleven twelve "
            "thirteen fourteen fifteen sixteen").split()
@@ -275,14 +300,123 @@ def skill_findings(project):
         for name in KIT_SKILLS:
             if not installed(project, name):
                 found.append(("missing", name))
-    hook = os.path.join(".agents", "hooks", "session-end-sync.sh")
-    try:
-        with open(os.path.join(project, hook), encoding="utf-8", errors="replace") as handle:
-            if re.search(r"/(sync|fix|queue|ship)\b", handle.read()):
-                found.append(("hook", hook))
-    except OSError:
-        pass
+    found.extend(hook_findings(project))
+    found.extend(copy_findings(project))
     return found
+
+
+# --- kit files a whole copy brought ------------------------------------------
+
+def released():
+    try:
+        with open(RELEASED, encoding="utf-8") as handle:
+            return {path: set(hashes) for path, hashes in json.load(handle).get("files", {}).items()}
+    except (OSError, ValueError, AttributeError):
+        return {}
+
+
+def digest(path):
+    with open(path, "rb") as handle:
+        return hashlib.sha256(handle.read()).hexdigest()[:16]
+
+
+def file_problem(project, path, known):
+    """None when the file matches a released copy at its path, or the reason."""
+    full = os.path.join(project, path)
+    if not real_inside(project, os.path.dirname(full)):
+        return "it sits in a folder whose real place is outside the project"
+    if os.path.islink(full):
+        return "it is a link"
+    if not os.path.isfile(full):
+        return "it is not a file"
+    if digest(full) not in known.get(path, ()):
+        return "it differs from every copy a release shipped, so it may hold changes of yours"
+    return None
+
+
+def folder_problem(project, path, known):
+    """None when every file in the folder matches a released copy, or the reason."""
+    full = os.path.join(project, path)
+    if not real_inside(project, os.path.dirname(full)):
+        return "it sits in a folder whose real place is outside the project"
+    if os.path.islink(full):
+        return "it is a link"
+    changed = 0
+    for here, dirs, names in os.walk(full):
+        for name in dirs + names:
+            if os.path.islink(os.path.join(here, name)):
+                return "it holds a link"
+        for name in names:
+            item = os.path.join(here, name)
+            rel = os.path.relpath(item, project).replace(os.sep, "/")
+            if not os.path.isfile(item) or digest(item) not in known.get(rel, ()):
+                changed += 1
+    if changed:
+        return "%d file%s in it differ%s from what a release shipped, so it may hold changes of yours" % (
+            changed, "" if changed == 1 else "s", "s" if changed == 1 else "")
+    return None
+
+
+def stale_copy(project):
+    """True when the project is a whole copy and its kit files are from an
+    older release than the installed skills."""
+    try:
+        with open(os.path.join(project, MARKER), encoding="utf-8") as handle:
+            marker = handle.read().strip()
+        with open(VERSION, encoding="utf-8") as handle:
+            version = handle.read().strip()
+    except (OSError, UnicodeDecodeError):
+        return False
+    return bool(marker) and marker != version
+
+
+def copy_findings(project):
+    if not stale_copy(project):
+        return []
+    known = released()
+    found = []
+    for path in KIT_COPIES:
+        full = os.path.join(project, path)
+        if not (os.path.lexists(full)):
+            continue
+        if os.path.isdir(full) and not os.path.islink(full):
+            problem = folder_problem(project, path, known)
+        else:
+            problem = file_problem(project, path, known)
+        found.append(("left", path, problem) if problem else ("kitcopy", path))
+    if os.path.isfile(os.path.join(project, "README.md")) and \
+            file_problem(project, "README.md", known) is None:
+        found.append(("left", "README.md",
+                      "it is the kit's own read-me from a whole copy, and yours to replace with one about your tool"))
+    return found
+
+
+def hook_findings(project):
+    """The session-end hook a whole copy brought, when it is older than the
+    copy this release ships."""
+    full = os.path.join(project, HOOK)
+    if not os.path.lexists(full):
+        return []
+    try:
+        with open(NEW_HOOK, "rb") as handle:
+            current = handle.read()
+    except OSError:
+        return []
+    if os.path.isfile(full) and not os.path.islink(full):
+        with open(full, "rb") as handle:
+            if handle.read() == current:
+                return []
+    problem = file_problem(project, HOOK, released())
+    if problem is None:
+        return [("hook", HOOK)]
+    try:
+        with open(full, encoding="utf-8", errors="replace") as handle:
+            stale = re.search(r"/(sync|fix|queue|ship)\b", handle.read())
+    except OSError:
+        stale = None
+    if stale:
+        return [("left", HOOK, problem + "; it still names a retired command")]
+    return []
 
 
 def template_lines():
@@ -432,11 +566,24 @@ def rewrite(project, found, lines):
 
 def remove(project, findings):
     root = os.path.realpath(project)
+    known = None
     for finding in findings:
         kind, path = finding[0], finding[1]
-        if kind not in ("folder", "adapter"):
+        if kind not in ("folder", "adapter", "kitcopy", "hook"):
             continue
         where = os.path.join(project, path)
+        if kind in ("kitcopy", "hook"):
+            # Checked again here, byte for byte, whatever the listing said.
+            known = released() if known is None else known
+            if os.path.isdir(where) and not os.path.islink(where):
+                if folder_problem(project, path, known) is not None:
+                    continue
+            elif file_problem(project, path, known) is not None:
+                continue
+            if kind == "hook":
+                with open(NEW_HOOK, "rb") as source, open(where, "wb") as handle:
+                    handle.write(source.read())
+                continue
         # Checked again here, so nothing reaches outside the project and no
         # link is followed, whatever the listing said.
         if not real_inside(project, os.path.dirname(where)):
@@ -449,7 +596,7 @@ def remove(project, findings):
             shutil.rmtree(where)
         else:
             continue
-        if kind != "adapter":
+        if kind not in ("adapter", "kitcopy"):
             continue
         # A generated folder left empty goes too, and so does its tool folder
         # when nothing else is in it.

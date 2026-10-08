@@ -461,7 +461,7 @@ pass "frontmatter checked on $(printf '%s\n' "$skillfiles" | grep -c .) SKILL.md
 echo "== References =="
 
 # Every local Markdown link resolves.
-mdfiles=$(find "$ROOT" -name '*.md' -not -path '*/.git/*' | sort)
+mdfiles=$(find "$ROOT" -name '*.md' -not -path '*/.git/*' -not -path '*/.agents/tmp/*' | sort)
 while IFS= read -r mdfile; do
   [ -n "$mdfile" ] || continue
   # The public README lives one level down in the maintainer source, then moves
@@ -511,7 +511,7 @@ MDFILES
 # spans, not just markdown links) resolves.
 pathrefs=$(grep -rnoE --include='*.md' -- \
   '\.agents/(skills|tests|guard|hooks|tools)/[A-Za-z0-9_./-]+\.(md|sh)' \
-  "$ROOT" 2>/dev/null | sort -u || true)
+  "$ROOT" 2>/dev/null | grep -v '/\.agents/tmp/' | sort -u || true)
 while IFS=: read -r reffile lineno relpath; do
   [ -n "$relpath" ] || continue
   # .agents/hooks/session-start.sh is a project path that start creates from
@@ -1279,7 +1279,7 @@ echo "== Codex adapter claims =="
 # Codex has never had a generated adapter tree; it reads .agents/skills/
 # directly. scenarios.md and MAINTAINING.md are maintainer-only and already
 # excluded by the same convention as the team.md check below.
-codex_docs=$(find "$ROOT" -name '*.md' -not -path '*/.git/*' | sort \
+codex_docs=$(find "$ROOT" -name '*.md' -not -path '*/.git/*' -not -path '*/.agents/tmp/*' | sort \
   | grep -v '\.agents/tests/scenarios\.md$' \
   | grep -v 'docs/MAINTAINING\.md$' || true)
 
@@ -1387,6 +1387,7 @@ while IFS= read -r term; do
   hits=$(grep -rlFi --include='*.md' -- "$term" "$ROOT/.agents" "$ROOT/docs" \
     "$ROOT/README.md" "$ROOT/WORKFLOW.md" "$ROOT/AGENTS.md" "$ROOT/starter" 2>/dev/null \
     | grep -v '/\.git/' \
+    | grep -v '/\.agents/tmp/' \
     | grep -v '\.agents/tests/scenarios\.md$' \
     | grep -v 'docs/MAINTAINING\.md$' \
     | grep -v '\.agents/skills/maintain/SKILL\.md$' \

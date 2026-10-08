@@ -842,6 +842,13 @@ attribution line, not the word.
   read past only the exact sentences that name the retired commands, in the
   maintain skill and WORKFLOW.md, so a stale "run /sync" added inside the
   migration section is still caught.
+- `.agents/tests/upgrade-rehearsal.sh` runs the upgrade from the frozen last
+  nine-command foundation on four installation layouts. It holds the first
+  and monthly offer, the read on every visit, and the short warning in
+  `/implement` and `/what-now`. It proves the project keeps its own guidance,
+  hosting request and changelog, that the settings keep earlier entries, and
+  that the refreshed helper never marks a blocked repair ready. It also
+  checks the new environment names a branch adds, without printing values.
 - `.agents/tests/whole-copy-leftovers.sh` guards the tidy step for a project
   founded from a whole copy of the kit. Such a project carries the kit's own
   generated adapters, which the shared installer never refreshes, so every

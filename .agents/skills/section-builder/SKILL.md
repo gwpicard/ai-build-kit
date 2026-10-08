@@ -419,6 +419,14 @@ live, so check these first, read-only, and change nothing live:
 - Where the piece carries a `Live side needs:` line, ask for the merge only
   once /setup-hosting reports each name on it present on the host. Say so in
   one line, naming what is missing.
+- Where the piece's branch adds a setting to `.env.example`, the live copy
+  needs it too, with or without that line, since a piece shaped before the
+  line existed has none. From the project root, run `sh` with this skill's
+  `scripts/env-names-added.sh` and the piece's branch. The exit code decides.
+  Exit 1 prints each name the branch adds: treat each one as a name on a
+  `Live side needs:` line, so the merge waits until /setup-hosting reports it
+  present on the host. Exit 0 means the branch adds none. Exit 2 means it
+  could not tell: say so in one line, as a warning, and carry on.
 - Where "How it stays running" records that the live copy is held on an
   earlier version since a rollback, the merge alone does not put this change
   live. Say so in the line that asks for the merge, and that /setup-hosting
@@ -459,10 +467,15 @@ it plainly says so, as in "merge both".
 `gh pr merge --merge`, which keeps the piece's commits, so the masterplan's
 trued-against mark still names a commit on `main`. Never merge the branch on this computer and push `main`. Where
 GitHub cannot be reached, the merge waits: say in one line that the person can
-merge it on GitHub themselves. Where the session runs in Claude Code, the
-project's settings show a confirmation box before the merge runs, so say in
-one line just before it that the box will ask them to allow the merge. Under
-another coding agent, say nothing about a box. Leave the branch to GitHub, which removes it once merged.
+merge it on GitHub themselves. Where the session runs in Claude Code, read
+first whether the project's settings show a confirmation box before the merge
+runs: from the project root, run `python3` with the `maintain` skill's
+`scripts/settings-rules.py` and `--merge-box`. Exit 0 means they do, so say
+in one line just before it that the box will ask them to allow the merge. Any
+other exit means a project founded before the kit added that question has no
+box, so promise none. Say in one line that the merge runs on their yes in this
+chat, and that /maintain can add the question. Under another coding agent,
+say nothing about a box. Leave the branch to GitHub, which removes it once merged.
 
 In an unattended run nobody is there to say yes, so never merge. Report the
 piece as ready for review, not as done, and leave the merge to a person.
