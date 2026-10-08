@@ -62,7 +62,13 @@ if [ "$mode" = rehearsal ]; then
   exit "$status"
 fi
 
-today=$(date +%Y-%m-%d)
+# A local date can be one day ahead of UTC. Use the same limit everywhere.
+latest_date=$(python3 - <<'PY'
+from datetime import datetime, timedelta, timezone
+
+print((datetime.now(timezone.utc).date() + timedelta(days=1)).isoformat())
+PY
+)
 status=0
 
 for file in "$@"; do
@@ -71,7 +77,7 @@ for file in "$@"; do
     status=1
     continue
   fi
-  awk -v mode="$mode" -v today="$today" -v file="$file" -v dir="$(dirname -- "$file")" '
+  awk -v mode="$mode" -v latest_date="$latest_date" -v file="$file" -v dir="$(dirname -- "$file")" '
     function problem(msg) { print file ": " msg; bad = 1 }
     function realdate(v,   y, m, d, days) {
       if (v !~ /^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$/) return 0
@@ -85,7 +91,7 @@ for file in "$@"; do
     function datecheck(label, value) {
       if (mode == "template" && value == "YYYY-MM-DD") return
       if (!realdate(value)) problem(label " is not a real date written YYYY-MM-DD: " value)
-      else if (value > today) problem(label " is in the future: " value)
+      else if (value > latest_date) problem(label " is in the future: " value)
     }
     # An optional opening line. The terms of a plan change without notice, so the
     # line has to say when they were read and where, or nobody can tell a

@@ -1335,6 +1335,8 @@ attribution line, not the word.
   for. A copy of it with no date, no source page, a date in the future or not
   real, or no sentence before the date is refused, since terms change without
   notice and an undated restriction cannot be told from a current one.
+  All three date fields accept one day ahead of UTC and refuse two days ahead,
+  with the same result in time zones east and west of UTC.
 - `.agents/tests/recipe-nextjs-supabase-on-vercel.sh` and
   `.agents/tests/recipe-nextjs-supabase-on-coolify.sh` guard the first recipe
   pair offline. They share `.agents/tests/lib/recipe-rehearsal.sh`. Each holds

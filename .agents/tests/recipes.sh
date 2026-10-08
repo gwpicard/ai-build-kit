@@ -187,6 +187,42 @@ terms_refused "a Plan terms date in the future" 's/(read 2024-03-01/(read 2999-0
 terms_refused "a Plan terms date that is not real" 's/(read 2024-03-01/(read 2025-02-29/'
 terms_refused "a Plan terms line with no sentence" 's/^Plan terms: .* (read/Plan terms: (read/'
 
+# All three dates use the same UTC limit, even on machines east or west of UTC.
+utc_dates=$(python3 - <<'PY'
+from datetime import datetime, timedelta, timezone
+
+today = datetime.now(timezone.utc).date()
+print(today + timedelta(days=1), today + timedelta(days=2))
+PY
+)
+one_day=${utc_dates% *}
+two_days=${utc_dates#* }
+for label in 'Last checked' 'Real run' 'Plan terms'; do
+  for offset in 1 2; do
+    case "$offset" in
+      1) value=$one_day ;;
+      2) value=$two_days ;;
+    esac
+    awk -v label="$label" -v value="$value" '
+      index($0, label ": ") == 1 {
+        if (label == "Plan terms") sub(/read [0-9-]+ at/, "read " value " at")
+        else $0 = label ": " value
+      }
+      { print }
+    ' "$TERMS" > "$rs_dir/date-boundary.md"
+    for zone in UTC Pacific/Kiritimati Etc/GMT+12; do
+      if TZ="$zone" "$CHECKER" "$rs_dir/date-boundary.md" > "$rs_dir/date-result.txt"; then
+        [ "$offset" = 1 ] || rs_fail "$label two days ahead of UTC passed in $zone"
+      else
+        [ "$offset" = 2 ] || rs_fail "$label one day ahead of UTC was refused in $zone"
+        grep -qF "$label is in the future: $value" "$rs_dir/date-result.txt" ||
+          rs_fail "$label was refused for a reason other than its future date in $zone"
+      fi
+    done
+  done
+  rs_ok "$label one day ahead of UTC passes and two days ahead is refused in every time zone tested"
+done
+
 # --- shared parts ----------------------------------------------------------
 mkdir -p "$rs_dir/parts"
 printf '%s\n' 'How it works: filled in' 'How it is checked: filled in' 'Who runs it: the kit' \
