@@ -243,7 +243,7 @@ out=$(PATH="$WORK/bin" HOME="$HOME" "$CHECK" --recipe "$WORK/recipe.md" 2>&1) &&
 printf '%s\n' "$out" | grep -q "^git is ready: the recipe's launch checks run it" \
   && pass "it reports a recipe tool that is ready" \
   || fail "the ready recipe tool line is missing"
-printf '%s\n' "$out" | grep -q "^stand-in-deploy-tool is missing: .*before the first /ship. It does not stop founding" \
+printf '%s\n' "$out" | grep -q "^stand-in-deploy-tool is missing: .*before the first /setup-hosting. It does not stop founding" \
   && pass "it names a missing recipe tool as needed before the first launch" \
   || fail "the missing recipe tool line is missing"
 
@@ -255,7 +255,7 @@ out=$(PATH="$WORK/bin" HOME="$HOME" "$CHECK" --recipe "$WORK/recipe.md" 2>&1) &&
 write_gh 0 '{"nameWithOwner":"someone/project","hasIssuesEnabled":true,"viewerPermission":"ADMIN"}'
 
 for name in nextjs-supabase-on-vercel nextjs-supabase-on-coolify; do
-  recipe="$ROOT/skills/ship/recipes/$name.md"
+  recipe="$ROOT/skills/setup-hosting/recipes/$name.md"
   [ -f "$recipe" ] || recipe="$ROOT/tests/recipes-awaiting-run/$name.md"
   [ -f "$recipe" ] || { fail "$name is neither on the menu nor waiting"; continue; }
   out=$(PATH="$WORK/bin" HOME="$HOME" "$CHECK" --recipe "$recipe" 2>&1) && code=0 || code=$?

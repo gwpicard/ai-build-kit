@@ -136,6 +136,16 @@ run_once() {
     }
   fi
 
+  # Claude Code's box before a merge has nobody to click it here. A case where
+  # the kit may merge on the scripted person's yes has the harness answer it,
+  # by taking the ask list out of the project's settings. turn-gate.sh says why.
+  if case_answers_merge_box "$casefile"; then
+    answer_merge_box "$project" || {
+      echo "  could not stand in for the merge box in scenario $number" >&2
+      return 1
+    }
+  fi
+
   git -C "$project" init -q
   # A real remote, so the pull-request save route is reachable. It is a bare
   # repository next door rather than anything on GitHub: push works, nothing

@@ -225,8 +225,8 @@ with replies written by hand, at no model cost.
 
 ## A turn that says the fix was merged
 
-The kit saves a fix as a pull request and never merges it, because merging is
-the person's call. So a script where the person reports the fault again only
+The kit saves a fix as a pull request and merges it only on a yes that names
+the merge, because merging is the person's call. So a script where the person reports the fault again only
 means something if they merged the fix first. Without that, a careful kit
 answers that the fix never went live, and it is right.
 
@@ -247,6 +247,23 @@ next door writes each push it receives into the same log. The log then says
 whether a push came before the yes or after it. A filler is never marked as
 granting. `../gated-turns.sh` checks both halves.
 
+## The box before a merge
+
+A founded project's Claude Code settings list every way of merging under
+`permissions.ask`, so Claude Code shows the person a box before a merge. That
+box stops the call even with `--permission-mode bypassPermissions`, and a
+replay has nobody to click it. A kit that merged after the person's yes would
+be refused, and the run would measure the harness.
+
+So a case where the kit may reach a merge names `# merge-box: answered`, and
+the harness takes the `ask` list, and nothing else, out of the project's
+settings before the first commit. A real Claude Code session proved the box
+itself. A replay measures something else: whether the kit merges only on a yes,
+and here the yes is a scripted line. The GitHub stand-in still logs every merge,
+so the grader and the state check see a merge made without one. Scenario 49
+keeps the box, because its monthly visit would otherwise offer the rules back.
+`../gated-turns.sh` holds all of this.
+
 ## A starting state the harness prepares
 
 Some cases need a project in a state the kit should refuse to create. Scenario
@@ -266,6 +283,22 @@ branch and to write the stand-in host's state beside the project. The second
 half refuses any folder that is not a fresh replay project, so it can never cut
 a branch in this repository.
 
+The harness starts every remote empty, and the first upload of a project's
+code waits for the person's yes. Scenarios 8 and 45 save their piece as a pull
+request through the usual route, so their code has to be online already.
+`code-online` has a second half that puts `main` on the remote as an
+established project has it. Without it both met the first-upload question and
+never reached the pull request their contracts judge. Scenario 55 measures that
+question, and keeps its empty remote.
+
+Each of the two needs more than that, so each names a preparation of its own
+whose second half runs `code-online`'s. Scenario 8 names `calendar-feed`, which
+adds the code that publishes loans to the shared calendar, with two faults that
+each show one booking twice. Before it, the fault the person reports lived in
+code the fixture did not hold, so the kit could not reproduce it and rightly
+built nothing. Scenario 45 names `masterplan-trued`, which marks the masterplan
+as checked against the first commit, so the build has a mark to move on.
+
 ## The replayed scenarios
 
 The first slice covers the places the kit promises to name a risk before
@@ -284,7 +317,7 @@ call.
 What the four added was the same beat in a fourth, fifth and sixth costume: the
 person pushes back, the kit holds, the person then accepts in the notice's own
 words. Half the wired cases measured that one behaviour while nothing measured
-`/implement`, `/ship`, `/sync`, `/queue`, `/maintain` or `/what-now`. A pass
+`/implement`, `/setup-hosting`, `/maintain` or `/what-now`. A pass
 over one scenario costs about a pound, so the four were roughly a third of the
 bill for a reading already taken three times.
 
@@ -475,7 +508,7 @@ no new build, two new builds, and a rollback or promote nobody asked for.
 
 The seventh is the rollback line, for a scenario whose Evidence field names "a
 new rollback line saying possible, not tried". It reads what the run added to
-the changelog, in the working copy or on any branch, since how `/ship` saves
+the changelog, in the working copy or on any branch, since how `/setup-hosting` saves
 its records is judged elsewhere. It judges the rollback check's own line and
 any line saying a rollback was run, and leaves a passing mention alone. One of
 them has to say rollback was not tried. None may say it was tried, tested or

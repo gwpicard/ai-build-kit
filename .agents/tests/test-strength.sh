@@ -8,11 +8,11 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 
 RULES="$ROOT/.agents/skills/section-builder/references/test-strength.md"
 BUILDER="$ROOT/.agents/skills/section-builder/SKILL.md"
-FIX="$ROOT/.agents/skills/fix/SKILL.md"
+REPAIR="$ROOT/.agents/skills/section-builder/references/repair.md"
 WORKFLOW="$ROOT/WORKFLOW.md"
 
 rs_init "Test-strength rules"
-rs_exists "$RULES" "$BUILDER" "$FIX" "$WORKFLOW"
+rs_exists "$RULES" "$BUILDER" "$REPAIR" "$WORKFLOW"
 
 rs_rule "only offered on Build with care" 'offered only on build with care'
 rs_rule "needs a runner for the language" "only where a local runner exists for the project's language"
@@ -57,14 +57,14 @@ rs_rule "builder reports and sorts misses" "use that reference's one-line report
 rs_guard "$BUILDER" "section-builder's test-strength offer"
 
 rs_reset
-rs_rule "fix offers to test the regression check" "on build with care, where a runner exists for the project's language, offer to check the regression test by breaking the repaired code on purpose"
-rs_rule "fix loads the shared rules" 'follow the `section-builder` skill.s `references/test-strength\.md` for this optional check'
-rs_rule "fix limits the run to its repair" 'keep the run to the repaired code and the regression test'
-rs_rule "fix does not repeat the offer at save" 'do not offer it again when section-builder saves the repair'
-rs_guard "$FIX" "fix's test-strength offer"
+rs_rule "a repair offers to test the regression check" "on build with care, where a runner exists for the project's language, offer to check the regression test by breaking the repaired code on purpose"
+rs_rule "a repair loads the shared rules" 'follow the `section-builder` skill.s `references/test-strength\.md` for this optional check'
+rs_rule "a repair limits the run to its repair" 'keep the run to the repaired code and the regression test'
+rs_rule "a repair does not repeat the offer at save" 'do not offer it again when section-builder saves the repair'
+rs_guard "$REPAIR" "the repair reference's test-strength offer"
 
 rs_require "WORKFLOW explains the optional offer" "$WORKFLOW" 'on build with care, /implement can offer to break the changed code on purpose'
-rs_require "WORKFLOW explains the repair offer" "$WORKFLOW" '/fix offers the same check for the test that keeps a repaired fault from returning'
+rs_require "WORKFLOW explains the repair offer" "$WORKFLOW" 'a repair gets the same offer for the test that keeps a repaired fault from returning'
 rs_require "WORKFLOW explains how misses are sorted" "$WORKFLOW" 'misses in a named sensitive area are worth stopping for; the rest are worth knowing'
 
 rs_done

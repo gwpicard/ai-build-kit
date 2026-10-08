@@ -17,7 +17,9 @@ follow them.
 ## Who it is for
 
 Someone who already builds with an AI coding agent and wants what it builds to
-still work six weeks later. Two kinds of person reach for that. One is a
+still work six weeks later. Two kinds of person reach for that.
+
+One is a
 developer new to agent-led work, who finds their usual discipline either too
 heavy for it or quietly skipped. The other came to software from another job.
 They run a team, a product, an operation or a dataset, and they now have some
@@ -25,7 +27,7 @@ practice at directing an agent and getting a working tool out of it. Both want
 the reliability of a real process. Neither wants to carry the process by hand.
 
 The kit rests on one rule: the workflow never requires reading code. None of the
-nine commands asks anyone to open a file of code, and every check is something a
+six commands asks anyone to open a file of code, and every check is something a
 person sees or tries. The rule describes the process and leaves the person
 alone. A developer can read every diff if they like. The kit never depends on
 it, because a process that only works while somebody reads the code stops
@@ -35,8 +37,11 @@ That rule settles every argument below. When a choice comes up, the question is
 always what this person can see, what they can try, and what they can safely
 leave to the machinery.
 
-Solo here means without a professional development team behind the project, so
-a team of five is as much the audience as a team of one. The skills are plain
+The audience is a person or a small team without a professional development
+team behind the project. Several people can share one project, because the
+work is kept as pieces on GitHub and each one arrives through its own pull
+request, with conflicts settled the ordinary way. The kit does not try to
+coordinate a large team or many agents working at once. The skills are plain
 markdown, and a technical person can read and extend them. What people build
 with the kit is mostly internal, and the README's fit section says which
 projects qualify.
@@ -62,17 +67,40 @@ rather than patched a fourth time, often ending in a rebuild from the
 documents, and why a disappointing autonomous run is answered by sharpening
 the plan instead of hand-editing whatever it produced.
 
-The vocabulary stays small and grows only by deliberate redesign. Nine commands,
+The vocabulary stays small and grows only by deliberate redesign. Six commands,
 each named after a moment a person actually reaches for, and every new
 capability arrives as behaviour of an existing command wherever it can. A
 capability that genuinely needs its own command is a sign a command was carrying
 two jobs at once, and splitting it is a redesign conversation, not a casual
-addition. The count has moved twice, both times for that reason. Seven became
+addition.
+
+The count has gone up twice, both times for that reason. Seven became
 eight when `/build` was found to be both planning and building, and the planning
 half became its own command, now `/shape`. Eight became nine when `/what-now`
 was found to be both orientation and overview: it names at most three things
 because somebody lost cannot use more, and somebody taking on several pieces at
 once needs the whole list, so that half became `/queue`.
+
+The count has also come down, from nine to six. Three commands were second
+doors to the same work, and one name competed with the merge.
+
+A separate repair command made the person sort
+their own request before typing, which is the kit's job, so `/fix` folded into
+`/shape` and `/implement`: a bug is a piece like any other. Taking on several
+pieces is a moment of building, so the whole ready list moved into
+`/implement`, while `/what-now` kept its cap of three. Catching the records up
+is what a service visit does, so `/sync` folded into `/maintain`, which now
+makes the project true on every visit.
+
+The fourth change was a name. `/ship` said it was the one step that changed
+the live copy. On both recipes the host builds the main copy on every merge,
+so the merge was the release, and the name claimed a job the merge was already
+doing. In one real run, asked only to put the tool live, it merged two pull
+requests nobody had named.
+
+So the merge moved into `/implement`, which asks
+for a yes that names it, and the command became `/setup-hosting`, named for
+what it still does: set up how the tool runs live, and check it later.
 
 A name can also be forced from outside. Where the coding agent the kit runs inside takes a command
 name for itself, the person either cannot reach the kit's command or loses the
@@ -109,7 +137,9 @@ launch is the most valuable thing here.
 The same workflow must not treat a private experiment and a business-critical
 internal system as if they carry the same consequences. Every project has one
 build path: explore privately, build and run it, or build with care. The path
-decides which checks, reviews, saving steps, and launch conditions apply. It is
+decides which checks, reviews, saving steps, and launch conditions apply.
+
+It is
 decided by what the work touches. Build with care means some of the work sits
 in a sensitive area: personal data, money, sign-in, automatic action,
 irreplaceable live data, or a regulated decision. The masterplan names each
@@ -120,7 +150,9 @@ The path count has moved once too, and the other way. Four became three when
 the two most careful paths were found to be asking the wrong question. Both
 asked who should own the build, one for a single named area and one for the
 whole thing, and a person who had already decided to build it themselves heard
-either as a refusal wearing a different name. What the kit needed to know was
+either as a refusal wearing a different name.
+
+What the kit needed to know was
 what the work touches. So the two became build with care, which names each
 sensitive area and the one caution that goes with it, and the ownership
 answers became founding tasks rather than a path. A path that changes how
@@ -169,7 +201,9 @@ It is not a way to learn programming. It does not assume the person is an
 engineer, and it does not need them to be one. The kit is shaped first for
 internal tools. It may also be used to define, prototype, and accept externally
 used software, and the fit check names what that touches before launch, not
-after the system has acquired users. It does not replace a developer where one
+after the system has acquired users.
+
+It does not replace a developer where one
 is wanted. It is at its best when it can say precisely which one area needs
 another pair of eyes, and hand that area over with nothing lost, which is an
 odd thing for a tool to be proud of and is the point anyway.
@@ -192,7 +226,9 @@ it.
 
 The one exception is a recipe: one build stack paired with one place to run it.
 A recipe names services somebody else runs, because the person's tool will run
-on them. The kit still runs none of them, and the person holds the accounts. What
+on them. The kit still runs none of them, and the person holds the accounts.
+
+What
 the kit holds is a written account of how that pair handles the eight things a
 live tool needs, from preview to health, each with a way to check it, and the
 record of one real run that proved it. A service a tool runs on, meaning its
@@ -221,7 +257,7 @@ all five, do not add it.
    wrong version of it.
 
 4. **What does the person do when it goes wrong?** Stated as an action they can
-   take without reading anything technical. "Type /fix" is an answer. "Check the
+   take without reading anything technical. "Type /shape and say what broke" is an answer. "Check the
    logs" is not.
 
 5. **What can they never need to learn?** Name it explicitly. That is the value
@@ -247,22 +283,24 @@ cannot use.
 
 Automatic tests on every pull request, added. It fits under /implement. The person
 sees a green tick or a red cross beside the merge button. The sentence is "green
-means the tests really passed; red means don't merge". When it is red they type
-/fix. They never need to know GitHub Actions exists.
+means the tests really passed; red means don't merge". When it is red they tell
+/implement. They never need to know GitHub Actions exists.
 
 Review reports split into "worth stopping for" and "worth knowing", added. The
 same findings as before, sorted, so the decision becomes one question: is the
 first list empty?
 
-`/queue`, the whole ready list at once, added as a ninth command. It failed
-question 1 under every existing command, which is the answer that mattered:
-`/what-now` was doing orientation and overview at once, and the cap that keeps
-orientation usable is what squeezed the overview out. The person sees two lists
-when they type it, what can be built together now and what is waiting on what.
-The sentence is "it shows everything ready to build at once, and what is waiting
-on what". When the list looks wrong they type it again, since it is printed from
-the issues and never edited. They never need to learn that a piece can depend on
-another piece.
+The whole ready list at once, added inside `/implement`. It once had a command
+of its own, on the view that it failed question 1 under every existing
+command. That view was wrong: somebody taking on several pieces is about to
+build, so the list fits where the building starts.
+
+The person sees two lists
+when more than one piece is ready, what can be built together now and what is
+waiting on what, and nothing is built until they choose. The sentence is "with
+several ready, it shows what can go together and what waits". When the list
+looks wrong they type the command again. They never need to learn that a piece
+can depend on another piece.
 
 Specialised agent role systems, rejected. Fails question 1, because each role is
 a new thing to know, and question 3, because there is no one-sentence version.
@@ -275,9 +313,10 @@ Parallel agents on separate worktrees, rejected. Fails question 4, because when
 something goes wrong the recovery involves git states the person should never
 have to untangle.
 
-Tight bug reproduction before a fix, added. It fits under /fix; the user sees
-the exact failing case and the evidence that it stopped failing; they never
-need to learn instrumentation or bisection.
+Tight bug reproduction before a fix, added. It fits under /shape, which
+reproduces a bug before /implement repairs it; the user sees the exact failing
+case and the evidence that it stopped failing; they never need to learn
+instrumentation or bisection.
 
 Disposable decision prototype, added. It fits under /setup-ai-build-kit or /shape;
 the user tries a rough artifact to settle one question. What they get is chosen
@@ -288,13 +327,17 @@ wrong thing, they say so and the question gets split. They never need to
 understand prototype branches or throwaway architecture.
 
 A piece written in two layers, added. It fits under /shape and /implement. The
-person sees a plain surface that stays comprehensive about anything affecting the
+person sees a plain surface that stays complete about anything affecting the
 product, so a simple read is never a false one; the build detail sits in a
-collapsed "under the hood" section they never have to open. The sentence is "you
+collapsed "under the hood" section they never have to open.
+
+The sentence is "you
 read the plain part; the agent reads the rest". When it goes wrong, the surface
 missed something that changed a product decision, and /shape puts it back on the
 surface. They never need to read the build notes, but nothing that affects their
-product is hidden from them. This answers the question a workshop raised: a ready
+product is hidden from them.
+
+This answers the question a workshop raised: a ready
 piece must carry enough to build without fresh research, which matters most when
 /implement runs a batch with nobody watching. Context that reaches past one piece
 is not duplicated onto it: a whole-product decision lives in the masterplan, a
@@ -314,7 +357,9 @@ than a permanent ban; a later cycle may revisit it.
 Sub-issues for a piece made of parts, added. GitHub already models a
 parent/child relationship, so the kit uses it rather than inventing one. It fits
 under /shape, which splits a piece too big to hold whole, and under /implement,
-which builds the parts and lets the parent close on its own. The person sees a
+which builds the parts and lets the parent close on its own.
+
+The person sees a
 piece that is "made of parts", nothing more. The line that keeps it from becoming
 a second way to be blocked is the outcome: a part shares the parent's outcome,
 while a blocked-by piece is a different outcome that must come first. Without that
@@ -325,20 +370,24 @@ Recipes, added. A recipe pairs a build stack with a place to run it, and for
 each part of a launch it says how that part is checked and who runs the check:
 the kit, a companion or the person with the result read back, or a person
 looking. It fits under /setup-ai-build-kit, which offers a short menu with one
-recommended, and under /ship, which works through the recipe's checks. The person sees the menu once, at
+recommended, and under /setup-hosting, which works through the recipe's checks.
+
+The person sees the menu once, at
 founding, and after that a launch that says what it checked. The sentence is
 "this is a stack the kit has run for real, so it can check your launch as well
-as warn about it". When a check fails they type /fix. A person who wants their
+as warn about it". When a check fails they tell /shape. A person who wants their
 own stack says so, and the kit carries on with fewer promises.
 
 They never need to learn how the place they run on does a rollback or where its
 backups live, because the recipe carries that. It applies only to a project
 that chose a recipe. On its own stack a project gets the general checks, and
 those are warnings too: a check not done is said once and written in the
-changelog, and the launch goes ahead. The one launch check /ship waits for is
-the address, since a tool with no recorded address is not live. Recipes make the
+changelog, and the launch goes ahead. The one launch check /setup-hosting waits for is
+the address, since a tool with no recorded address is not live.
+
+Recipes make the
 kit bigger, and that should be said plainly. What they take away is the
-question /ship used to put to every project, how a backup, a rollback and a
+question the launch used to put to every project, how a backup, a rollback and a
 restore would work, which a person on a recipe no longer has to invent. The menu
 stays short because a pair joins it only after a real run.
 

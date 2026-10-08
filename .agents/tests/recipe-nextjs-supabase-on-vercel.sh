@@ -22,7 +22,7 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 . "$ROOT/.agents/tests/lib/recipe-rehearsal.sh"
 
 rs_init "Next.js and Supabase on Vercel recipe"
-rr_locate "$ROOT/.agents/skills/ship/recipes/nextjs-supabase-on-vercel.md"
+rr_locate "$ROOT/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel.md"
 
 # The free plan's limit. Two foundings for a work team missed it, and one
 # called the account free. Founding says this line to a work team, so it has

@@ -235,3 +235,44 @@ rs_done() {
   echo
   echo "$(basename -- "$0"): all $rs_pass checks passed"
 }
+
+# --- retired commands -----------------------------------------------------
+
+rs_retired_mentions() {
+  # rs_retired_mentions <pattern> <path>...: print each file that still sends
+  # the person to a retired command. A few sentences exist to name the retired
+  # commands, because an older project still offers them until /maintain takes
+  # them out. They sit in two files, the maintain skill and WORKFLOW.md, and
+  # only those exact sentences are read past. Anything else naming a retired
+  # command, in those files or any other, is a stale pointer, a stale
+  # "run /sync" added inside the migration section included.
+  rs_pat=$1
+  shift
+  grep -rlE "$rs_pat" "$@" 2>/dev/null | while IFS= read -r rs_file; do
+    case "$rs_file" in
+      # The record of what the retired skills said in old releases, which is
+      # how a leftover folder is recognised as the kit's. It is data, never
+      # read as advice.
+      */.agents/skills/maintain/scripts/kit-retired-skills.json) continue ;;
+      # The record of the files a released whole copy carried, by path. Its
+      # paths name the retired skills' folders, and it is data too.
+      */.agents/skills/maintain/scripts/kit-released-copies.json) continue ;;
+      */.agents/tests/fixtures/upgrade-v0.19.3/*) continue ;;
+      */.agents/skills/maintain/scripts/upgrade-check.py) continue ;;
+      */.agents/skills/maintain/SKILL.md|*/WORKFLOW.md) ;;
+      *) printf '%s\n' "$rs_file"; continue ;;
+    esac
+    rs_fold "$rs_file" | python3 -c '
+import sys
+text = sys.stdin.read()
+for sentence in (
+    "`/fix` folded into `/shape` and `/implement`, `/queue` into `/implement`, and `/sync` into `/maintain`. `/ship` was renamed `/setup-hosting`.",
+    "a mention of `/fix`, `/queue`, `/sync` or `/ship` in `changelog.md` is history.",
+    "/fix and /queue are part of /shape and /implement, /sync is part of /maintain, and /ship is now /setup-hosting.",
+    "/fix and /queue are now part of /shape and /implement, /sync is part of /maintain, and /ship is now /setup-hosting.",
+):
+    text = text.replace(sentence, "", 1)
+sys.stdout.write(text)
+' | grep -qE "$rs_pat" && printf '%s\n' "$rs_file"
+  done || :
+}

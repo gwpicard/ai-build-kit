@@ -3,7 +3,8 @@
 # pieces.
 #
 # The masterplan says what the tool must do and the pieces say what gets built.
-# The coverage read compares them at the end of founding and inside /sync, says
+# The coverage read compares them at the end of founding and inside every
+# /maintain visit's truing, says
 # what nothing would build, and changes nothing by itself. A
 # machine cannot watch that conversation without paying a model, so this guards
 # its source on every push: the rules that keep the read honest, the two
@@ -16,7 +17,7 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 
 READFILE="$ROOT/.agents/skills/setup-ai-build-kit/references/coverage-read.md"
 SETUP="$ROOT/.agents/skills/setup-ai-build-kit/SKILL.md"
-SYNC="$ROOT/.agents/skills/sync/SKILL.md"
+SYNC="$ROOT/.agents/skills/maintain/references/truing.md"
 WORKFLOW="$ROOT/WORKFLOW.md"
 
 rs_init "Coverage-read checks"
@@ -36,7 +37,7 @@ rs_rule "missing and different terms are record gaps" 'name a settled term missi
 rs_rule "a settled name cannot promise a future capability" 'do not turn a future capability into a present promise'
 rs_rule "a clean report also requires the terms to agree" 'when every promise has a piece and no term is missing or different'
 rs_rule "terms share the existing list and offer" 'include missing or different terms in that same short list and single offer'
-rs_rule "term reconciliation requires a yes" 'with a yes, /sync reconciles the term against the current tool'
+rs_rule "term reconciliation requires a yes" 'with a yes, the truing reconciles the term against the current tool'
 rs_rule "the piece keeps its note until reconciliation" 'keep the note on its piece until that happens'
 rs_rule "future terms stay on their pieces" 'a term for work that is still only planned stays on its piece'
 rs_rule "declining or silence preserves both records" 'a declined or unanswered offer leaves both records alone'
@@ -49,17 +50,17 @@ rs_guard "$READFILE" "the shipped coverage-read.md"
 
 rs_require "/setup runs the coverage read once the pieces are cut" \
   "$SETUP" 'references/coverage-read\.md'
-rs_require "/sync runs the coverage read while reconciling" \
+rs_require "the truing runs the coverage read while reconciling" \
   "$SYNC" 'coverage-read\.md'
 
 # The house rule is that a behaviour is told in three places or it is not
 # finished. The skills carry two of them; WORKFLOW.md carries the plain one, in
-# both the founding and the sync sections.
-rs_require_twice "WORKFLOW.md explains it for founding and for sync" \
+# both the founding and the maintenance sections.
+rs_require_twice "WORKFLOW.md explains it for founding and for maintenance" \
   "$WORKFLOW" 'piece that builds it'
 rs_require_load_bearing "WORKFLOW names the wider founding read" \
   "$WORKFLOW" 'the coverage read includes who can see and do what, the data the tool holds, and its outside connections'
-rs_require_load_bearing "WORKFLOW names the wider sync read" \
+rs_require_load_bearing "WORKFLOW names the wider maintenance read" \
   "$WORKFLOW" 'the coverage read includes permissions, data and outside connections here too'
 rs_require_load_bearing "WORKFLOW explains that parking cannot hide terms" \
   "$WORKFLOW" 'it also compares settled terms on every piece with the masterplan, even if a piece was parked or reshaped'

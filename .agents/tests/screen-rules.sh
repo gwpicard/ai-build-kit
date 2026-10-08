@@ -26,8 +26,8 @@ WORKFLOW="$ROOT/WORKFLOW.md"
 rs_init "Screen-rule checks"
 rs_exists "$SCREEN" "$SECTION" "$SECOND" "$FOUNDATION" "$WORKFLOW"
 
-rs_rule "the skill stays out of founding, shaping, and ship" \
-  'do not run at founding, shaping, or ./ship.'
+rs_rule "the skill stays out of founding, shaping, and setup-hosting" \
+  'do not run at founding, shaping, or ./setup-hosting.'
 rs_rule "a build with no screen does nothing" \
   'do nothing when the piece and the change have no screen'
 rs_rule "project design rules win where they conflict" \
@@ -113,15 +113,15 @@ rs_require "section-builder also fires from a screen file" \
   "$SECTION" 'change touches a screen file'
 rs_require_order "screen rules run before the guided manual check" \
   "$SECTION" 'load and follow .screen-check.' 'screen.s guided manual check'
-rs_require "a screen fault in fix gets the rules and another fault does not" \
+rs_require "a screen fault in a repair gets the rules and another fault does not" \
   "$SECTION" 'a fault on a screen gets the rules and any other fault does not'
 
 rs_require "second-opinion checks screens during a build review" \
   "$SECOND" 'during a build review'
 rs_require "second-opinion keeps the two report headings" \
   "$SECOND" 'inside the two existing report headings'
-rs_require "second-opinion leaves masterplan and ship reviews alone" \
-  "$SECOND" 'does not run on a masterplan review or the whole-build review during ./ship.'
+rs_require "second-opinion leaves masterplan and setup-hosting reviews alone" \
+  "$SECOND" 'does not run on a masterplan review or the whole-build review during ./setup-hosting.'
 rs_require_absent "second-opinion does not add a screen report heading" \
   "$SECOND" '## screen'
 

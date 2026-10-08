@@ -1,6 +1,6 @@
 ---
 name: change-triage
-description: Classify a request written in plain words before any work happens. Used by shape when the user typed a request, and by fix to check a report before repairing. Decides whether the request is new work, a repair, too vague to size, or a change that needs the masterplan or the fit check first.
+description: Classify a request written in plain words before any work happens. Used by shape for every request, a report that something is broken included. Decides whether the request is new work, a repair, too vague to size, or a change that needs the masterplan or the fit check first, and offers the earlier version back first when the live tool broke after a recent merge.
 user-invocable: false
 ---
 
@@ -20,6 +20,65 @@ not only open ones. The reason was written down to stop the same idea coming
 back around and getting built by accident, and it only works if somebody looks. Is the report actually a
 misunderstanding or a setup problem rather than a real gap? Does it contradict
 an existing rule in the masterplan?
+
+## A report that something is broken
+
+A bug is a piece like any other, so a report of a fault comes here too, in
+whatever words it arrives. These four checks come first, in this order, before
+the usual steps.
+
+### Was this ever promised?
+
+Read the masterplan, build-path section first. A report is a repair only where
+the behaviour it asks for was promised. Where it was never promised, say so
+kindly and route it as new behaviour: a new wish treated as a repair ends up in
+the wrong procedure. Nobody can misfile work by typing the wrong words;
+catching that is this check's whole job.
+
+### A live break after a recent merge
+
+This applies only where the masterplan's "How it stays running" records a live
+address, the project is on a recipe whose rollback section names how to roll
+back, the report is that the live tool broke, and a merge in the last few days
+is the likely cause.
+
+Check first that the version before that merge did not
+have the fault: the changelog or closed pieces show it working then, or the
+person says it did. A fault that was already there is not brought back by a
+rollback, so offer none.
+
+Where all of that holds, offer the earlier version back first, before shaping
+the repair. Say in one line what the rollback brings back and that it puts
+nothing else right, close to: "The live tool broke after Tuesday's change. I
+can put the version from before it back while we find the cause. Shall I roll
+back?"
+
+Run it only after a yes that names it, following the `setup-hosting` skill's
+"Rolling back". Off a recipe, say what a rollback would need and that the kit
+cannot do it here, as that section says. Either way, then shape the repair. A
+no leaves the live tool as it is, and the repair is shaped the same way.
+
+### A fault that has survived three attempts
+
+Read the history for the same area before shaping anything: `CHANGELOG.md`,
+closed pieces and merged pull requests. Count the attempts the way the
+`section-builder` skill's `references/repair.md` counts them under "What counts
+as three": by the fault surviving, not by your own tally. Where this report
+means the fault has survived three attempts, follow that file's "Escalation"
+in this same reply, notice included, before marking anything ready. A fresh
+session is no reason to start the count again.
+
+### A small, clear repair
+
+Where one look on this computer shows the fault, on the screen, in a command's
+output or in the code, and the change is a few lines, such as a typo or a wrong
+label, that look is the reproduction. A report alone is not enough: you must
+have seen the fault yourself. Still define the symptom as "Shaping a repair"
+says, and write what the look was onto the piece. Mark the piece ready at once,
+with the failing case as its `## Done when`, and offer to build it in this
+same session rather than a fresh one. Anything less certain is shaped by
+reproducing it, as the `section-builder` skill's `references/repair.md`
+describes under "Shaping a repair".
 
 ## Step 2: Classify intent
 
@@ -77,7 +136,7 @@ from scratch.
 
 ## Step 4: Route
 
-Route to one of: `/fix`; a ready piece; clarify; a decision
+Route to one of: a repair, shaped by reproducing it; a ready piece; clarify; a decision
 prototype; a source check; a search for existing work; a step only the person
 can do; update the masterplan first; rerun the fit
 check; prepare the handover; give the risk notice where a sensitive area
@@ -113,8 +172,8 @@ piece as its `## Waiting on you` section, in the shape
 the `setup-ai-build-kit` skill's `references/pieces.md` describes. Do the step
 yourself where you can; write it down only where you cannot.
 
-A repair takes `broken` as well as its subjects, which is what points `/what-now`
-and `/fix` at it.
+A repair takes `broken` as well as its subjects, which is what points `/what-now`,
+`/shape` and `/implement` at it. It is ready once it is reproduced.
 
 The request touches what data is stored, who can see or do what, or money:
 update the masterplan first and say what changed before routing further. If

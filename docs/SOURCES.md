@@ -71,7 +71,9 @@ Nobody named here was asked first, and nobody named here has endorsed the kit.
 | [Nielsen Norman Group's usability heuristics](https://www.nngroup.com/articles/ten-usability-heuristics/) | Consistency, plain error recovery, visible system state, undo before confirmation, and designing empty, loading, and error states as part of the task |
 | [Carbon Design System](https://carbondesignsystem.com/) | The spacing and type scales, productive product-screen typography, and the treatment of forms, tables, loading, and empty states |
 | [Shopify Polaris](https://polaris.shopify.com/) | Using colour for meaning without relying on it alone, keeping errors beside the failed control, and naming destructive choices by their outcome |
-| [coolify-devops](https://github.com/KasperHonore/coolify-devops) | The hosting request `/ship` writes on a first launch, its fields, and the rule that the person carries it to the server by hand rather than the server fetching it |
+| [coolify-devops](https://github.com/KasperHonore/coolify-devops) | The hosting request `/setup-hosting` writes on a first launch, its fields, and the rule that the person carries it to the server by hand rather than the server fetching it |
+| [Google's SRE book](https://sre.google/sre-book/table-of-contents/) and [DORA's delivery metrics](https://dora.dev/guides/dora-metrics/) | Treating recovery as a step of its own, so a live tool that broke after a recent change gets its earlier version back first, and the repair is shaped after that |
+| [Continuous delivery](https://continuousdelivery.com/) | That once a host builds the main copy, merging a change is releasing it, so the step that merges is the step that puts a change live and reads the live copy straight afterwards |
 | [W3C's WCAG 2.2 quick reference](https://www.w3.org/WAI/WCAG22/quickref/) | The criteria behind keyboard operation, visible and unobscured focus, contrast, reflow, target size, consistent identification, labels, and errors |
 
 Copyright © 2023 W3C®. This software or document includes material copied from

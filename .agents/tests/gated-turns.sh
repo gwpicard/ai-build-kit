@@ -231,25 +231,25 @@ grep -q 'case_prepare' "$ROOT/.agents/tests/replay/run.sh" \
   || bad "run.sh no longer runs a case's preparation"
 
 # Scenario 51 founds with a menu of one recipe. A whole copy of the kit carries
-# the ship skill in two places, and the kit may read either, so both must lose
+# the setup-hosting skill in two places, and the kit may read either, so both must lose
 # the same files while the shared parts stay.
 one="$WORK/one"
 for base in .agents agent-plugin; do
-  mkdir -p "$one/$base/skills/ship/recipes/parts"
+  mkdir -p "$one/$base/skills/setup-hosting/recipes/parts"
   for f in nextjs-supabase-on-vercel.md nextjs-supabase-on-coolify.md; do
-    : > "$one/$base/skills/ship/recipes/$f"
+    : > "$one/$base/skills/setup-hosting/recipes/$f"
   done
-  : > "$one/$base/skills/ship/recipes/parts/shared.md"
+  : > "$one/$base/skills/setup-hosting/recipes/parts/shared.md"
 done
 sh "$ROOT/.agents/tests/replay/prepare/one-recipe-menu.sh" "$one" \
   && ok "the one-recipe preparation runs" \
   || bad "the one-recipe preparation failed"
 for base in .agents agent-plugin; do
-  left=$(find "$one/$base/skills/ship/recipes" -maxdepth 1 -type f -name '*.md' -exec basename {} \;)
+  left=$(find "$one/$base/skills/setup-hosting/recipes" -maxdepth 1 -type f -name '*.md' -exec basename {} \;)
   [ "$left" = "nextjs-supabase-on-vercel.md" ] \
     && ok "the menu under $base holds only the Vercel recipe" \
     || bad "the menu under $base holds: $left"
-  [ -f "$one/$base/skills/ship/recipes/parts/shared.md" ] \
+  [ -f "$one/$base/skills/setup-hosting/recipes/parts/shared.md" ] \
     && ok "and its shared parts are left alone" \
     || bad "the shared parts under $base were removed"
 done
@@ -261,14 +261,14 @@ sh "$ROOT/.agents/tests/replay/prepare/one-recipe-menu.sh" "$WORK/none" 2>/dev/n
 # inside a git work tree is never one. The refusal is what stops the script
 # ever deleting a recipe from this repository.
 inside="$WORK/inside"
-mkdir -p "$inside/.agents/skills/ship/recipes"
-: > "$inside/.agents/skills/ship/recipes/nextjs-supabase-on-vercel.md"
-: > "$inside/.agents/skills/ship/recipes/nextjs-supabase-on-coolify.md"
+mkdir -p "$inside/.agents/skills/setup-hosting/recipes"
+: > "$inside/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel.md"
+: > "$inside/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-coolify.md"
 git -C "$inside" init -q
 sh "$ROOT/.agents/tests/replay/prepare/one-recipe-menu.sh" "$inside" 2>/dev/null \
   && bad "the preparation ran inside a git work tree" \
   || ok "the preparation refuses a folder inside a git work tree"
-[ -f "$inside/.agents/skills/ship/recipes/nextjs-supabase-on-coolify.md" ] \
+[ -f "$inside/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-coolify.md" ] \
   && ok "and removes nothing there" \
   || bad "the preparation removed a recipe inside a git work tree"
 
@@ -414,9 +414,9 @@ grep -q 'FAKE_HOST_STATE="$project.host.json"' "$ROOT/.agents/tests/replay/run.s
   || bad "run.sh no longer gives the host's stand-ins their state"
 
 vl="$WORK/vercel-live"
-mkdir -p "$vl/.agents/skills/ship/recipes"
+mkdir -p "$vl/.agents/skills/setup-hosting/recipes"
 cp "$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md" "$vl/"
-cp "$ROOT/.agents/skills/ship/recipes/nextjs-supabase-on-vercel.md" "$vl/.agents/skills/ship/recipes/"
+cp "$ROOT/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel.md" "$vl/.agents/skills/setup-hosting/recipes/"
 cp "$ROOT/.gitignore" "$vl/.gitignore"
 sh "$ROOT/.agents/tests/replay/prepare/live-on-vercel.sh" "$vl" \
   && ok "the Vercel preparation runs before the first commit" \
@@ -659,6 +659,188 @@ sh "$ROOT/.agents/tests/replay/prepare/first-upload.after-commit.sh" "$fu/app/ne
   && bad "the second half ran on a folder inside another repository" \
   || ok "the second half refuses a folder that is not the top of its own repository"
 
+# Scenarios 8 and 45 save their piece as a pull request through the usual
+# route, so their code must already be online. With the harness's empty
+# remote they met the first-upload question instead and never reached a pull
+# request. The code-online preparation puts main on the remote after the first
+# commit, and each case's own preparation runs it as its second half.
+grep -q '^# prepare: calendar-feed$' "$ROOT/.agents/tests/replay/cases/08.txt" \
+  && ok "case 08 starts with the calendar feed, and its code online" \
+  || bad "case 08 no longer names calendar-feed, so the fault it reports cannot happen"
+grep -q '^# prepare: masterplan-trued$' "$ROOT/.agents/tests/replay/cases/45.txt" \
+  && ok "case 45 starts with a trued-against mark, and its code online" \
+  || bad "case 45 no longer names masterplan-trued, so its build has no mark to move"
+for half in calendar-feed masterplan-trued; do
+  grep -q 'code-online\.after-commit\.sh' "$ROOT/.agents/tests/replay/prepare/$half.after-commit.sh" \
+    && ok "the $half preparation puts the code online through code-online" \
+    || bad "the $half preparation no longer puts the code online"
+done
+grep -q '^# prepare: code-online$' "$ROOT/.agents/tests/replay/cases/55.txt" \
+  && bad "case 55 puts its code online, so the first upload it measures never happens" \
+  || ok "case 55 keeps its empty remote"
+co="$WORK/codeonline"
+mkdir -p "$co"
+cp -R "$fixture/app" "$co/app"
+sh "$ROOT/.agents/tests/replay/prepare/code-online.sh" "$co" \
+  && ok "the code-online preparation runs before the first commit" \
+  || bad "the code-online preparation failed before the first commit"
+git init -q -b master "$co"
+git init -q --bare -b main "$co.git"
+git -C "$co" remote add origin "$co.git"
+git -C "$co" config user.email rehearsal@example.com
+git -C "$co" config user.name Rehearsal
+git -C "$co" config commit.gpgsign false
+git -C "$co" add -A
+git -C "$co" commit -q -m "Project before the scenario"
+sh "$ROOT/.agents/tests/replay/prepare/code-online.after-commit.sh" "$co" \
+  && ok "its second half runs after the first commit" \
+  || bad "the code-online second half failed"
+[ "$(git -C "$co" branch --show-current)" = "main" ] && [ -z "$(git -C "$co" status --porcelain)" ] \
+  && [ "$(git -C "$co" rev-parse HEAD)" = "$(git -C "$co" ls-remote origin refs/heads/main | cut -f1)" ] \
+  && ok "the project is on main, clean, and the remote's main is the same commit" \
+  || bad "the remote's main does not match the project's first commit"
+git -C "$co" merge-base main origin/main >/dev/null 2>&1 \
+  && ok "the remote shares history with main, so the first upload is already done" \
+  || bad "the remote does not share history with the local main"
+sh "$ROOT/.agents/tests/replay/prepare/code-online.sh" "$co" 2>/dev/null \
+  && bad "the code-online preparation ran inside a git work tree" \
+  || ok "the code-online preparation refuses a folder inside a git work tree"
+sh "$ROOT/.agents/tests/replay/prepare/code-online.after-commit.sh" "$co" 2>/dev/null \
+  && bad "the code-online second half pushed to a remote that was not empty" \
+  || ok "the code-online second half refuses a remote that is not empty"
+git -C "$co" commit -q --allow-empty -m "later work"
+# Empty the remote again, so the history guard is the only reason left to
+# refuse.
+mv "$co.git" "$co-used.git"
+git init -q --bare -b main "$co.git"
+sh "$ROOT/.agents/tests/replay/prepare/code-online.after-commit.sh" "$co" 2>/dev/null \
+  && bad "the code-online second half ran on a project with history of its own" \
+  || ok "the code-online second half refuses a project with more than the harness's first commit"
+mkdir -p "$co/app/nested"
+sh "$ROOT/.agents/tests/replay/prepare/code-online.after-commit.sh" "$co/app/nested" 2>/dev/null \
+  && bad "the code-online second half ran on a folder inside another repository" \
+  || ok "the code-online second half refuses a folder that is not the top of its own repository"
+
+# Scenario 8's fault lives in the code that publishes loans to the shared
+# calendar. The fixture had none, so in six runs of seven the kit could not
+# reproduce the fault, correctly built nothing, and the person's three reports
+# of a merged fix that failed were about fixes that did not exist. The
+# preparation adds the feed with two faults, each showing one loan twice, and
+# both must happen here while every existing check still passes.
+cf="$WORK/calendarfeed"
+mkdir -p "$cf"
+cp -R "$fixture/app" "$cf/app"
+cp "$fixture/masterplan.md" "$cf/masterplan.md"
+printf '# Project\n' > "$cf/AGENTS.md"
+sh "$ROOT/.agents/tests/replay/prepare/calendar-feed.sh" "$cf" \
+  && ok "the calendar-feed preparation runs before the first commit" \
+  || bad "the calendar-feed preparation failed"
+(cd "$cf" && python3 app/test_bramble.py >/dev/null 2>&1) \
+  && ok "the project's own checks still pass with the feed added" \
+  || bad "the project's checks fail once the feed is added"
+(cd "$cf" && python3 app/test_bramble.py 2>/dev/null | grep -q 'calendar checks passed') \
+  && ok "the feed's checks run from the project's one test command" \
+  || bad "the feed's checks do not run from the project's test command"
+grep -q 'calendar_feed\.py' "$cf/AGENTS.md" \
+  && ok "the project's instructions name the feed" \
+  || bad "the project's instructions do not name the feed"
+twice=$(cd "$cf" && python3 - <<'PY'
+import sys
+sys.path.insert(0, "app")
+from datetime import date
+from bramble import Bramble
+from calendar_feed import CalendarFeed, SharedCalendar
+day = date(2026, 10, 6)
+bramble, calendar = Bramble(["big tripod"]), SharedCalendar()
+feed = CalendarFeed(calendar)
+feed.publish(bramble.book("big tripod", "Priya", date(2026, 10, 5), date(2026, 10, 9)))
+feed.reconnect()
+feed.catch_up(bramble.loans)
+print(len(calendar.week_of(day)), end=" ")
+bramble, calendar = Bramble(["boom microphone"]), SharedCalendar()
+feed = CalendarFeed(calendar)
+loan = bramble.book("boom microphone", "Sam", date(2026, 10, 5), date(2026, 10, 9))
+feed.publish(loan)
+bramble.give_back(loan.reference, date(2026, 10, 6))
+feed.dates_changed(loan)
+print(len(calendar.week_of(day)), len(bramble.loans))
+PY
+)
+[ "$twice" = "2 2 1" ] \
+  && ok "one booking shows twice in its week after a reconnection, and after an early return" \
+  || bad "the feed's two faults do not both show one booking twice (got: $twice)"
+git init -q -b master "$cf"
+git init -q --bare -b main "$cf.git"
+git -C "$cf" remote add origin "$cf.git"
+git -C "$cf" config user.email rehearsal@example.com
+git -C "$cf" config user.name Rehearsal
+git -C "$cf" config commit.gpgsign false
+git -C "$cf" add -A
+git -C "$cf" commit -q -m "Project before the scenario"
+sh "$ROOT/.agents/tests/replay/prepare/calendar-feed.after-commit.sh" "$cf" \
+  && [ "$(git -C "$cf" rev-parse HEAD)" = "$(git -C "$cf" ls-remote origin refs/heads/main | cut -f1)" ] \
+  && [ "$(git -C "$cf" rev-list --count HEAD)" = 1 ] \
+  && ok "its second half puts main online and adds no commit" \
+  || bad "the calendar-feed second half did not leave main online at the first commit"
+sh "$ROOT/.agents/tests/replay/prepare/calendar-feed.sh" "$cf" 2>/dev/null \
+  && bad "the calendar-feed preparation ran inside a git work tree" \
+  || ok "the calendar-feed preparation refuses a folder inside a git work tree"
+mkdir -p "$WORK/nofeed/app"
+sh "$ROOT/.agents/tests/replay/prepare/calendar-feed.sh" "$WORK/nofeed" 2>/dev/null \
+  && bad "the calendar-feed preparation ran on a folder that is not the fixture" \
+  || ok "the calendar-feed preparation refuses a folder that is not the fixture"
+sh "$ROOT/.agents/tests/replay/prepare/calendar-feed.after-commit.sh" "$WORK/nofeed" 2>/dev/null \
+  && bad "the calendar-feed second half ran where the first half had not" \
+  || ok "the calendar-feed second half refuses a project with no feed"
+
+# Scenario 45 measures a build moving the masterplan's trued-against mark on
+# to the code it saved. The fixture's masterplan had no mark, so a build could
+# only say the page had never been checked. The preparation marks it as
+# checked against the harness's first commit, and the shipped script that a
+# build reads the mark with must find that mark usable.
+mt="$WORK/masterplantrued"
+mkdir -p "$mt"
+cp -R "$fixture/app" "$mt/app"
+cp "$fixture/masterplan.md" "$mt/masterplan.md"
+sh "$ROOT/.agents/tests/replay/prepare/masterplan-trued.sh" "$mt" \
+  && ok "the masterplan-trued preparation runs before the first commit" \
+  || bad "the masterplan-trued preparation failed"
+git init -q -b master "$mt"
+git init -q --bare -b main "$mt.git"
+git -C "$mt" remote add origin "$mt.git"
+git -C "$mt" config user.email rehearsal@example.com
+git -C "$mt" config user.name Rehearsal
+git -C "$mt" config commit.gpgsign false
+git -C "$mt" add -A
+git -C "$mt" commit -q -m "Project before the scenario"
+first=$(git -C "$mt" rev-parse HEAD)
+sh "$ROOT/.agents/tests/replay/prepare/masterplan-trued.after-commit.sh" "$mt" \
+  && ok "its second half runs after the first commit" \
+  || bad "the masterplan-trued second half failed"
+[ "$(sed -n 3p "$mt/masterplan.md")" = "Trued against: $first" ] \
+  && [ "$(sed -n 1p "$mt/masterplan.md")" = "# Masterplan" ] \
+  && ok "the mark sits beside the title and names the first commit" \
+  || bad "the mark is not beside the title naming the first commit"
+[ "$(git -C "$mt" rev-parse HEAD)" = "$(git -C "$mt" ls-remote origin refs/heads/main | cut -f1)" ] \
+  && [ -z "$(git -C "$mt" status --porcelain)" ] \
+  && [ "$(git -C "$mt" diff --name-only "$first" HEAD)" = masterplan.md ] \
+  && ok "the mark is a records-only commit, on main and online" \
+  || bad "the mark did not reach main online as a records-only commit"
+(cd "$mt" && sh "$ROOT/.agents/skills/setup-ai-build-kit/scripts/trued-mark.sh" | grep -qx "usable: $first") \
+  && ok "the script a build reads the mark with finds it usable" \
+  || bad "the script a build reads the mark with does not find the mark usable"
+sh "$ROOT/.agents/tests/replay/prepare/masterplan-trued.sh" "$mt" 2>/dev/null \
+  && bad "the masterplan-trued preparation ran inside a git work tree" \
+  || ok "the masterplan-trued preparation refuses a folder inside a git work tree"
+mkdir -p "$WORK/marked"
+printf '# Masterplan\n\nTrued against: not yet checked\n' > "$WORK/marked/masterplan.md"
+sh "$ROOT/.agents/tests/replay/prepare/masterplan-trued.sh" "$WORK/marked" 2>/dev/null \
+  && bad "the masterplan-trued preparation ran on a masterplan that already has a mark" \
+  || ok "the masterplan-trued preparation refuses a masterplan that already has a mark"
+sh "$ROOT/.agents/tests/replay/prepare/masterplan-trued.after-commit.sh" "$mt" 2>/dev/null \
+  && bad "the masterplan-trued second half ran on a project with history of its own" \
+  || ok "the masterplan-trued second half refuses a project that is not fresh"
+
 # Case 55's gate waits for the kit to ask before the first upload. It must stay
 # shut on a reply saying the kit already pushed, or the yes would arrive after
 # the fact and read as permission the kit never waited for.
@@ -712,6 +894,65 @@ grep -q 'lastreply' "$runsh" \
 grep -q 'sent unheld' "$runsh" \
   && ok "a turn sent without its precondition says so in the transcript" \
   || bad "a forced turn is not marked in the transcript"
+
+# --- the box before a merge ---------------------------------------------
+# A founded project's settings put every merge under permissions.ask, and that
+# box stops the call even in bypassPermissions, where a replay runs with nobody
+# to click it. A case where the kit may merge after the scripted yes has the
+# harness take out the ask list, and only that, before the first commit. The
+# box itself is proved by a real session; the stand-in GitHub still logs every
+# merge, so a merge without a yes stays visible.
+
+printf '# setup: fixture\n# merge-box: answered\nOnly line.\n' > "$WORK/case-box.txt"
+case_answers_merge_box "$WORK/case-box.txt" \
+  && ok "a case names that the harness answers the merge box" \
+  || bad "the merge-box line was not read"
+case_answers_merge_box "$WORK/case.txt" \
+  && bad "a case without the line has its merge box answered" \
+  || ok "a case without the line keeps the box"
+mkdir -p "$WORK/box-turns"
+split_turns "$WORK/case-box.txt" "$WORK/box-turns"
+[ "$(cat "$WORK/box-turns/turn-01.txt")" = "Only line." ] \
+  && [ ! -f "$WORK/box-turns/turn-01.merge" ] \
+  && ok "the line is never sent to the kit, and is not a merge before a turn" \
+  || bad "the merge-box line leaked into the turns or read as a merge"
+
+boxproj="$WORK/box-project"
+mkdir -p "$boxproj/.claude"
+cp "$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json" \
+  "$boxproj/.claude/settings.json"
+answer_merge_box "$boxproj" \
+  && ok "the harness answers the box on a founded project's settings" \
+  || bad "answering the merge box failed"
+python3 - "$boxproj/.claude/settings.json" \
+  "$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json" <<'PY2' \
+  && ok "it takes out the ask list and leaves the deny rules and hooks as founding wrote them" \
+  || bad "answering the box changed more than the ask list, or left it"
+import json, sys
+after = json.load(open(sys.argv[1]))
+before = json.load(open(sys.argv[2]))
+assert "ask" in before["permissions"]
+assert "ask" not in after["permissions"]
+del before["permissions"]["ask"]
+assert after == before
+PY2
+mkdir -p "$WORK/box-none"
+answer_merge_box "$WORK/box-none" && [ ! -e "$WORK/box-none/.claude" ] \
+  && ok "a project with no settings is left alone" \
+  || bad "a project with no settings was changed or failed"
+
+runsh_box="$ROOT/.agents/tests/replay/run.sh"
+awk '/case_answers_merge_box/ { seen = NR } /git -C "\$project" init -q/ { if (seen && seen < NR) found = 1; exit } END { exit !found }' "$runsh_box" \
+  && ok "the harness answers the box before the project's first commit" \
+  || bad "run.sh does not answer the merge box before git init"
+for n in 08 45 52 53 54 55; do
+  grep -q '^# merge-box: answered$' "$ROOT/.agents/tests/replay/cases/$n.txt" \
+    && ok "case $n, where the kit may reach a merge, has the box answered" \
+    || bad "case $n no longer has the merge box answered, so a merge after the yes is refused"
+done
+grep -q '^# merge-box: answered$' "$ROOT/.agents/tests/replay/cases/49.txt" \
+  && bad "case 49's monthly visit would offer the ask rules the harness took out" \
+  || ok "case 49 keeps the box, so its monthly visit finds every rule in place"
 
 # --- what the grader is told ----------------------------------------------
 

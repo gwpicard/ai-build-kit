@@ -21,7 +21,10 @@ root are read. Each finding prints as one line, in one of two forms:
     file:line<TAB>old pointer<TAB>left as written: <why>
 
 Nothing prints when there is nothing to find. Only a pointer into one of the
-kit's skills, under today's name or a name it had before, is found. A project's
+kit's skills, under today's name or a name it had before, is found. A pointer
+already in the named form, naming the skill and then the path inside it, is
+found only where it names a skill the kit has retired, since that skill is no longer
+installed and the pointer opens nothing. A project's
 own skill under the same folder, a placeholder such as `<name>`, and a mention
 of the folder itself are never found, since those are the person's words or
 still true.
@@ -39,10 +42,10 @@ import os
 import re
 import sys
 
-# The kit's fourteen skills. A name outside this list may be the project's own
+# The kit's eleven skills. A name outside this list may be the project's own
 # skill, and its pointer is the person's to keep.
 KIT_SKILLS = (
-    "setup-ai-build-kit", "shape", "implement", "queue", "fix", "ship", "sync",
+    "setup-ai-build-kit", "shape", "implement", "setup-hosting",
     "maintain", "what-now", "clarify", "change-triage", "screen-check",
     "section-builder", "second-opinion",
 )
@@ -51,7 +54,23 @@ KIT_SKILLS = (
 # earliest releases pointed into the founding skill under its first name, and
 # the rename migration removes that folder, so those pointers open nothing on
 # any install route.
-FORMER_NAMES = {"start": "setup-ai-build-kit"}
+FORMER_NAMES = {
+    "start": "setup-ai-build-kit", "ship": "setup-hosting", "fix": "section-builder",
+    "queue": "implement", "sync": "maintain",
+}
+
+# A former skill's file that moved somewhere other than the same path in the
+# skill that took its name. The fix skill had only its SKILL.md, and its rules
+# now sit in section-builder's repair reference, so a pointer to that file
+# follows them there. The routine of `sync` became the maintain skill's truing
+# reference. The handover template left `ship` for the maintain skill, which
+# now owns handovers. Sync's document read and script kept their paths, and the
+# rules of `queue` joined implement's own SKILL.md, so those need no entry here.
+FORMER_FILES = {
+    ("fix", "SKILL.md"): ("section-builder", "references/repair.md"),
+    ("sync", "SKILL.md"): ("maintain", "references/truing.md"),
+    ("ship", "templates/handover.md"): ("maintain", "templates/handover.md"),
+}
 
 FILES = ("AGENTS.md", "masterplan.md")
 
@@ -59,6 +78,11 @@ NAMES = sorted(KIT_SKILLS + tuple(FORMER_NAMES), key=len, reverse=True)
 POINTER = re.compile(
     r"\.agents/skills/(" + "|".join(re.escape(s) for s in NAMES) + r")/"
     r"([A-Za-z0-9_./-]*[A-Za-z0-9_-])"
+)
+# A pointer that already names its skill, under a name the kit has retired.
+NAMED = re.compile(
+    r"`(" + "|".join(re.escape(s) for s in sorted(FORMER_NAMES, key=len, reverse=True)) + r")`"
+    r" skill['\u2019]s `([A-Za-z0-9_./-]*[A-Za-z0-9_-])`"
 )
 # A code span opens and closes with the same run of backticks.
 CODE_SPAN = re.compile(r"(`+)(.+?)(?<!`)\1(?!`)")
@@ -100,11 +124,27 @@ def placement(line, start, end):
     return None, "it runs on into more of a path or an address"
 
 
+def new_home(name, path):
+    """The skill and path a pointer into `name` at `path` should name now."""
+    if (name, path) in FORMER_FILES:
+        return FORMER_FILES[(name, path)]
+    return FORMER_NAMES.get(name, name), path
+
+
 def findings(line, in_block):
     """Yield (start, end, old, new-or-None, reason) for each pointer on the line."""
+    for match in NAMED.finditer(line):
+        skill, path = new_home(match.group(1), match.group(2))
+        if in_block:
+            yield match.start(), match.end(), match.group(0), None, "it sits inside a code block"
+            continue
+        problem = target_problem(skill, path)
+        if problem:
+            yield match.start(), match.end(), match.group(0), None, problem
+            continue
+        yield match.start(), match.end(), match.group(0), "`%s` skill's `%s`" % (skill, path), ""
     for match in POINTER.finditer(line):
-        skill = FORMER_NAMES.get(match.group(1), match.group(1))
-        path = match.group(2)
+        skill, path = new_home(match.group(1), match.group(2))
         if in_block:
             yield match.start(), match.end(), match.group(0), None, "it sits inside a code block"
             continue
@@ -129,6 +169,9 @@ def main(argv):
     project = rest[0] if rest else "."
     for name in FILES:
         path = os.path.join(project, name)
+        if os.path.islink(path):
+            print("%s\t\tleft as written: it is a link, so it was left alone" % name)
+            continue
         try:
             # newline="" keeps each line's own ending, so a rewrite changes the
             # pointers and nothing else.

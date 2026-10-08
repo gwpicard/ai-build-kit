@@ -1,5 +1,5 @@
 ---
-description: The command for turning an idea into a ready piece before anything is built.
+description: The command for turning any request into a ready piece before anything is built, a new idea or something that is broken.
 ---
 <!-- GENERATED from .agents/skills/shape/. Do not edit here; regenerate with .agents/tools/build-adapters.sh -->
 

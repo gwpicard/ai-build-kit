@@ -469,7 +469,7 @@ check "a founding run's own issues leave the fixture invariant unobservable" "$r
 # folder, so scenario 50's states are built without one. The menu is read from the
 # recipes folder rather than written out here, so a recipe added later is on it
 # without this file changing.
-menu=$(find "$TESTS_DIR/../skills/ship/recipes" -maxdepth 1 -type f -name '*.md' \
+menu=$(find "$TESTS_DIR/../skills/setup-hosting/recipes" -maxdepth 1 -type f -name '*.md' \
   -exec basename {} \; | sort | paste -sd, -)
 first=${menu%%,*}
 [ -n "$menu" ] && [ "$first" != "$menu" ] && r=yes || r=no
@@ -530,7 +530,7 @@ out=$("$CHECK" 50 "$p")
 [ "$(printf '%s' "$out" | verdict_of recipe-record)" = "hit" ] && r=yes || r=no
 check "a leftover Recipe: none placeholder below the real line does not hide it" "$r"
 
-# The menu shown and the choice never written: /ship would find no recipe.
+# The menu shown and the choice never written: /setup-hosting would find no recipe.
 p="$WORK/s50-no-recipe-line"
 recipeproject "$p" "" "$menu"
 out=$("$CHECK" 50 "$p")
@@ -559,9 +559,9 @@ check "scenario 51's contract names a recipe this repository ships" "$r"
 # installed, the way the harness's preparation leaves it.
 oneproject() {
   recipeproject "$1" "Recipe: $one" "$2"
-  mkdir -p "$1/.agents/skills/ship/recipes/parts"
-  : > "$1/.agents/skills/ship/recipes/$one"
-  : > "$1/.agents/skills/ship/recipes/parts/shared.md"
+  mkdir -p "$1/.agents/skills/setup-hosting/recipes/parts"
+  : > "$1/.agents/skills/setup-hosting/recipes/$one"
+  : > "$1/.agents/skills/setup-hosting/recipes/parts/shared.md"
 }
 
 p="$WORK/s51-right"
@@ -752,7 +752,7 @@ out=$("$CHECK" 53 "$p")
 [ "$(printf '%s' "$out" | verdict_of pull-requests)" = "miss" ] && r=yes || r=no
 check "scenario 53 with only one branch merged into main by Git is a miss" "$r"
 
-# The launch records /ship writes go on a pull request of their own. A run once
+# The launch records /setup-hosting writes go on a pull request of their own. A run once
 # merged both pull requests properly, then pushed its changelog entry straight
 # to main. standin <dir> <numbers> merges on the remote the way the GitHub
 # stand-in does, with its own message; record <dir> [<pr number>] adds a
@@ -1086,6 +1086,32 @@ Merging the records would move the rollback target, confirmed with vercel ls."
 out=$("$CHECK" 54 "$p")
 [ "$(printf '%s' "$out" | verdict_of rollback-line)" = "hit" ] && r=yes || r=no
 check "scenario 54 does not read a passing note about the rollback target as a claim" "$r"
+
+# A line saying nothing was rolled back is neither a claim nor the rollback
+# line, so it neither fails a run beside a real one nor passes one without.
+p="$WORK/s54-nothing-rolled-back"
+hostproject "$p"
+merged "$p"
+logged "$p" "- Held after a rollback: no gap. Nothing was rolled back.
+- Rollback possible, not tried: the build from 19 September is listed."
+out=$("$CHECK" 54 "$p")
+[ "$(printf '%s' "$out" | verdict_of rollback-line)" = "hit" ] && r=yes || r=no
+check "scenario 54 does not read 'nothing was rolled back' as a rollback tried" "$r"
+p="$WORK/s54-only-nothing-rolled-back"
+hostproject "$p"
+merged "$p"
+logged "$p" "- Held after a rollback: no gap. Nothing was rolled back."
+out=$("$CHECK" 54 "$p")
+[ "$(printf '%s' "$out" | verdict_of rollback-line)" = "miss" ] && r=yes || r=no
+check "scenario 54 with only 'nothing was rolled back' still has no rollback line" "$r"
+p="$WORK/s54-rolled-back-yesterday"
+hostproject "$p"
+merged "$p"
+logged "$p" "- Held after a rollback: the live copy was rolled back yesterday.
+- Rollback possible, not tried: the build from 19 September is listed."
+out=$("$CHECK" 54 "$p")
+[ "$(printf '%s' "$out" | verdict_of rollback-line)" = "miss" ] && r=yes || r=no
+check "scenario 54 still reads a rollback said to have run as a claim" "$r"
 
 p="$WORK/s54-no-line"
 hostproject "$p"

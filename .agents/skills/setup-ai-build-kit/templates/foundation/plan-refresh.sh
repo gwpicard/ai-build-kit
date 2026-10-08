@@ -228,7 +228,13 @@ def render(heading, group, note):
     lines.append(heading)
     for issue in group:
         who = ", ".join(a["login"] for a in issue.get("assignees", []))
-        suffix = " ".join(p for p in (note(issue), state_note(issue)) if p)
+        said, state = note(issue), state_note(issue)
+        # A repair stays under Broken whatever holds it, so there "(ready)"
+        # means free to build now: nobody on it and nothing open before it.
+        # A note about either says why it is not, and "(ready)" is left off.
+        if said and state == "(ready)":
+            state = ""
+        suffix = " ".join(p for p in (said, state) if p)
         head = "  #%-4s %s" % (issue["number"], issue["title"])
         if who:
             head += "   (%s)" % who
@@ -238,7 +244,16 @@ def render(heading, group, note):
         lines.append("       %s" % issue["html_url"])
     lines.append("")
 
-render("Broken", broken, lambda i: "(being fixed)" if "building" in labels(i) else "")
+def broken_note(issue):
+    if "building" in labels(issue):
+        return "(being fixed)"
+    if blockers.get(issue["number"]):
+        return "(needs %s)" % blockers[issue["number"]]
+    if "blocked" in labels(issue):
+        return "(waiting)"
+    return ""
+
+render("Broken", broken, broken_note)
 render("Building", building, lambda i: "")
 render("Made of parts", parents,
        lambda i: "(%d of %d parts done, build the parts)" % (sub_summary(i)[1], sub_summary(i)[0]))

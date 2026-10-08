@@ -4,8 +4,8 @@ Compare what the masterplan promises against what the pieces would build, name
 what nothing builds, and change nothing by yourself.
 
 It runs on every build path at the end of founding, once the pieces are cut,
-and inside /sync.
-Both are moments where the plan can still be changed for free. /ship asks the
+and inside the truing every /maintain visit runs.
+Both are moments where the plan can still be changed for free. /setup-hosting asks the
 same question at launch, by walking the main journeys, which is months later and
 far more expensive to answer.
 
@@ -23,8 +23,8 @@ carry no reference numbers and never will.
 
 Read each piece's `## Masterplan change` alongside its promised result. A
 "nothing" there means the page already covers the result, not that the piece
-covers no promise. An unapplied change on a landed piece goes to /sync's
-reconciliation; it must not be offered as a new piece. A future change on an
+covers no promise. An unapplied change on a landed piece goes to the
+truing's reconciliation; it must not be offered as a new piece. A future change on an
 open piece does not become a present promise merely because this read saw it.
 
 A promise whose only piece is parked counts as a gap. The idea was set aside
@@ -58,7 +58,7 @@ description, so an occasional wrong name costs one sentence.
 Include missing or different terms in that same short list and single offer.
 Name the piece in plain words: "The parked reminder piece settled 'borrower'
 as the person using an item, but the masterplan has no definition. Shall I
-carry that definition into the masterplan?" With a yes, /sync reconciles the
+carry that definition into the masterplan?" With a yes, the truing reconciles the
 term against the current tool; during founding, carry it into the masterplan
 being written.
 
@@ -72,7 +72,7 @@ leaves both records alone.
 - It never adds a piece without a yes.
 - It never edits, closes, or relabels a piece by itself.
 - It never asks twice: one offer, then carry on either way.
-- It blocks nothing. Founding and /sync both continue whatever the answer.
+- It blocks nothing. Founding and the truing both continue whatever the answer.
 
 On the explore privately path, report and stop there rather than offering to add
 pieces. A private experiment is allowed to be incomplete on purpose.

@@ -33,7 +33,7 @@ if git -C "$project" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   echo "live-on-vercel.sh: $project is inside a git work tree, so it is not a fresh replay project" >&2
   exit 1
 fi
-[ -f "$project/AGENTS.md" ] && [ -f "$project/.agents/skills/ship/recipes/nextjs-supabase-on-vercel.md" ] || {
+[ -f "$project/AGENTS.md" ] && [ -f "$project/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel.md" ] || {
   echo "live-on-vercel.sh: $project is not an installed kit with the Vercel recipe" >&2
   exit 1
 }

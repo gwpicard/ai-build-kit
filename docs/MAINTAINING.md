@@ -24,7 +24,7 @@ produced the same mistake more than once.
   inherit it and nothing warns you that it is missing. Root `AGENTS.md` says why
   the rule exists and what else holds it shut.
 
-The nine user-facing commands are product under test here, not the source
+The six user-facing commands are product under test here, not the source
 repository's own operating workflow. Maintainer changes follow root `AGENTS.md`
 and this guide.
 
@@ -147,7 +147,7 @@ condition, not in the shared default.
 
 ## Changing a skill
 
-This section governs the fourteen canonical skills in `.agents/skills/`. A
+This section governs the eleven canonical skills in `.agents/skills/`. A
 maintainer skill sits outside it, and `AGENTS.md` says what it does and does not
 owe.
 
@@ -161,7 +161,7 @@ the regenerated compatibility fixtures. Never hand-edit anything under
 `.claude/`, `.cursor/`, or `.gemini/`. New projects use the shared skills
 installer, the optional Claude Code plugin, or the Agent Plugins folder. The
 Claude plugin metadata lives under `.claude-plugin/`. It explicitly
-selects the nine generated command files and five generated background skills.
+selects the six generated command files and five generated background skills.
 Those thin adapters load the canonical instructions from the plugin cache. The
 Agent Plugins manifest lives under `agent-plugin/`, and its `skills`
 folder is assembled by the release allowlist rather than by
@@ -172,7 +172,7 @@ protect.
 One setting says how a skill is triggered. A background skill another skill
 calls carries `user-invocable: false` in its own file. A skill without it is a
 command. The adapter builder reads that setting and nothing else, so a dropped
-or misspelt line shows up as ten commands and three background skills, and the
+or misspelt line shows up as seven commands and four background skills, and the
 count check stops the build there.
 
 The commands used to carry a second setting that stopped the agent starting one
@@ -191,7 +191,7 @@ generated adapters look like.
 `user-invocable` is not in the written Agent Skills standard, so its reference
 checker reports the five background skills as invalid. Keep it anyway, with the
 cost on the record: the plugin standard tells a client to skip any skill that
-fails the skill standard, so a strict Agent Plugins client would load the nine
+fails the skill standard, so a strict Agent Plugins client would load the six
 commands and skip the five. Claude Code accepts the setting, which is why that
 route works today. If the standard adopts a setting of its own, follow it and
 update the short person-facing version in `docs/COMPATIBILITY.md`.
@@ -209,10 +209,10 @@ part or date itself. A proposal worth keeping becomes an issue.
 
 The reason is what a shared skills installer reads. It looks in
 `.agents/skills/` and `.claude/skills/` and offers whatever it finds in either,
-merging the two by the `name` in each file's frontmatter. The fourteen adapters
-carry the names of the fourteen skills they point at, so they merge away and an
-installer finds fourteen. No maintainer skill shares a name with one of the
-fourteen, so a copy of any of them in those folders would be a fifteenth skill
+merging the two by the `name` in each file's frontmatter. The eleven adapters
+carry the names of the eleven skills they point at, so they merge away and an
+installer finds eleven. No maintainer skill shares a name with one of the
+eleven, so a copy of any of them in those folders would be a twelfth skill
 offered to every project.
 
 Sitting outside both folders is what prevents that. It is also why the skill
@@ -240,9 +240,10 @@ session-start script into a project.
 
 The session-end hook, `.agents/hooks/session-end-sync.sh`, ships alongside it
 but is opt-in by design rather than by oversight: a check-up cadence should not
-be missed, while reconciling records at session end is a lighter prompt. Its own
-header gives the per-tool wiring, and typing `/sync` by hand does the same job on
-any tool.
+be missed, while a reminder about unsaved work at session end is a lighter
+prompt. Its own header gives the per-tool wiring, and typing `/what-now` at the
+start of the next session does the same job on any tool. The file keeps its
+old name, since a project that wired it points at that name.
 
 Editing a skill's body usually produces no adapter diff, because the adapters are
 pointers carrying only the frontmatter description; changing a description does.
@@ -253,7 +254,7 @@ COMPATIBILITY.md, beside this file, holds the full per-tool map.
 Every change to `.agents/skills/` or the kit's own machinery runs
 `.agents/tools/validate-kit.sh`, which checks:
 
-- the canonical skill inventory (exactly nine commands and five background
+- the canonical skill inventory (exactly six commands and five background
   skills, named exactly, with nothing else in the folder);
 - the maintainer skill boundary: every folder under `.agents/maintainer-skills/`
   is read off the disk rather than from a list, the vendored writing skill
@@ -281,7 +282,7 @@ Every change to `.agents/skills/` or the kit's own machinery runs
   referenced nowhere;
 - that clarify says which questions may be offered as choices and which are
   asked in plain words, with the matching maintainer scenario present;
-- that `/ship` keeps its go-live and operational-readiness steps inside the
+- that `/setup-hosting` keeps its go-live and operational-readiness steps inside the
   path branches that use them, never as a shared section reachable from all
   three;
 - that the generated adapters match what `.agents/skills/` produces, with no
@@ -403,12 +404,12 @@ workflows ships.
 
 A service a tool runs on, meaning its hosting, its data or its deploy, is
 named nowhere either, except inside a recipe file under
-`.agents/skills/ship/recipes/` and in the README. A recipe pairs a build stack
+`.agents/skills/setup-hosting/recipes/` and in the README. A recipe pairs a build stack
 with a place to run it, so naming those services is its whole job. A skill that
 needs to know how one behaves reads the project's recipe, which keeps
 every skill the same whichever recipe a project runs on. `hosting-request.sh`
 refuses a hosting, data or deploy product's name in every skill file outside
-`.agents/skills/ship/recipes/`, which holds the recipes and their shared parts.
+`.agents/skills/setup-hosting/recipes/`, which holds the recipes and their shared parts.
 The screen rules' link to Vercel's interface guidelines is the one exception,
 because it names a design guide rather than a place a tool runs. The
 `stack-research` maintainer skill names those products too, because reading
@@ -416,7 +417,7 @@ their changelogs is its job, and it never ships.
 
 A recipe waiting for its real run sits in `.agents/tests/recipes-awaiting-run/`,
 which ships nowhere, and its rehearsal reads it there. Once the run is recorded
-in its proven section, move the file into `.agents/skills/ship/recipes/` with
+in its proven section, move the file into `.agents/skills/setup-hosting/recipes/` with
 `git mv`. The rehearsal finds it on the menu from then on, and fails if a copy
 is left in both places.
 
@@ -462,7 +463,7 @@ maintainer's real Claude configuration.
 
 Run `.agents/tests/agent-plugin.sh` too. It builds a release and checks the
 assembled `agent-plugin` folder against the open standard: the manifest's
-permitted fields, the fourteen skills as immediate children of `skills`, no
+permitted fields, the eleven skills as immediate children of `skills`, no
 skill hidden deeper, no maintainer-only writing skill, and a project
 stand-up from that folder alone.
 
@@ -516,6 +517,22 @@ the draft before publishing. Remove internal noise, correct any misleading
 summary, and state any action an existing user must take. Use
 `skip-release-notes` only when a merged pull request has no useful place in the
 project's public history.
+
+Some releases need words no pull request title carries. Where
+`docs/release-notes/` holds a file named for the version, the published notes
+open with that file's text, word for word, above the drafted changes. Paste it
+in when you edit the notes on the Release's web page. The v0.20.0 notes must
+open with this line: "After updating, start a new session (or /reload-plugins)
+and type /maintain again." The visit that runs an update still follows the old
+release's maintain text, which reads the new release's notes and nothing else
+of it. So the notes are the one place that can send the person back for the
+visit that finishes the update. The folder never ships.
+
+After a release is published, run `.agents/tools/record-released-copies.py`
+with its archive on the next branch. It adds the release's whole-copy files to
+the record `/maintain` compares against, so a later update can offer to remove
+an untouched copy of them. A release missing from the record costs nothing
+worse than its files being named rather than offered for removal.
 
 Edit the notes in the Release's web page. An edit through the API is where a
 draft loses its tag: a `PATCH /releases/{id}` that sends only `body` resets the
@@ -653,7 +670,7 @@ stays on this computer, and the next section says how to try one.
 
 ## Trying unreleased work as a person would
 
-Do this before any release that touches founding or `/ship`. It checks what a
+Do this before any release that touches founding or `/setup-hosting`. It checks what a
 person sees, which no rehearsal reaches. It asks the person for one GitHub click
 and one Supabase project. The Supabase Free plan allows two active projects, so
 one of those two slots must be unused. Pick a number for the run and put it
@@ -669,7 +686,7 @@ wherever `N` appears.
    git status --short
    git pull --ff-only
    git rev-parse --short HEAD
-   .agents/skills/setup-ai-build-kit/scripts/check-tooling.sh --recipe .agents/skills/ship/recipes/nextjs-supabase-on-vercel.md
+   .agents/skills/setup-ai-build-kit/scripts/check-tooling.sh --recipe .agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel.md
    .agents/tools/build-release.sh v0.0.0-preview.N /private/tmp/abk-preview-N
    ```
 
@@ -688,9 +705,9 @@ wherever `N` appears.
    npx skills add /private/tmp/abk-preview-N -a claude-code -a codex -s '*' -y
    ```
 
-   The first puts the fourteen skills in `.claude/skills/`, the second in
-   `.agents/skills/` with links in `.claude/skills/`. In both, `ship/recipes/`
-   holds the same recipes as `ls <kit checkout>/.agents/skills/ship/recipes/`.
+   The first puts the eleven skills in `.claude/skills/`, the second in
+   `.agents/skills/` with links in `.claude/skills/`. In both, `setup-hosting/recipes/`
+   holds the same recipes as `ls <kit checkout>/.agents/skills/setup-hosting/recipes/`.
 
    Each `skills-lock.json` now records `"sourceType": "local"`, with a path into
    `/private/tmp/abk-preview-N`. A project installed this way cannot update
@@ -711,9 +728,10 @@ wherever `N` appears.
    A failed check is a finding. File it as an issue, and do not fix it in the
    throwaway project.
 
-4. In the first folder only, run `/implement` on one ready piece, then `/ship`
-   once, asking for a Vercel project named `abk-try-N`. Without that name,
-   `/ship` names the project after the tool. The person does two things:
+4. In the first folder only, run `/implement` on one ready piece and say yes
+   to its merge, then run `/setup-hosting` once, asking for a Vercel project
+   named `abk-try-N`. Without that name, `/setup-hosting` names the project
+   after the tool. The person does two things:
 
    - On GitHub, Settings, Applications, Installed GitHub Apps, Configure beside
      Vercel. GitHub asks for a passkey or password before it shows that page.
@@ -764,7 +782,7 @@ wherever `N` appears.
    Vercel's GitHub app, so leave the app installed. Only if it was installed
    for this run, uninstall it under Installed GitHub Apps.
 
-   `/ship` leaves two things on this computer. `~/Backups/abk-try-N` holds the
+   `/setup-hosting` leaves two things on this computer. `~/Backups/abk-try-N` holds the
    database's roles, structure and data, and the `trash` line above takes it.
    The kit also writes temporary files in `/private/tmp`, such as restore-test
    folders and logs, whose names this section cannot know. List everything
@@ -852,7 +870,7 @@ home and every other mention is a link.
 
 - Root `README.md`: what the kit is, installation, and positioning for someone
   deciding whether to use it. It ships as the public README unchanged, so it is
-  written for that reader rather than for a maintainer. The nine-command table
+  written for that reader rather than for a maintainer. The six-command table
   there is a summary; what each command actually does belongs to WORKFLOW.
   Orientation for someone working on the source belongs in root `AGENTS.md`.
 - `WORKFLOW.md`: everything operational. How work runs, day to day, for someone
@@ -869,9 +887,9 @@ home and every other mention is a link.
 - `docs/SOURCES.md`: the outside work the kit took ideas from, and what each
   source contributed. It names a borrowed idea in the kit's own vocabulary and
   links to that idea's owner rather than explaining it again.
-- `.agents/skills/ship/recipes/`: one file for each recipe, and the only place
+- `.agents/skills/setup-hosting/recipes/`: one file for each recipe, and the only place
   outside the README that names a service a tool runs on. What a recipe must hold, and what
-  proves it, belongs to `.agents/skills/ship/references/recipe-format.md`. A
+  proves it, belongs to `.agents/skills/setup-hosting/references/recipe-format.md`. A
   project records which recipe it runs on in its own AGENTS.md, in the stack
   section.
 

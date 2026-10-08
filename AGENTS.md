@@ -16,21 +16,21 @@ here by design. They are created inside a user's project by `/setup-ai-build-kit
 ## Before any work
 
 Read `docs/MAINTAINING.md`. Read `docs/PHILOSOPHY.md` before changing what one
-of the fourteen canonical skills does, or adding a capability. Check the current
+of the eleven canonical skills does, or adding a capability. Check the current
 branch and unsaved work
 before editing. Never run the project-founding `/setup-ai-build-kit` process in this
 repository.
 
 ## Source and starter boundary
 
-- `.agents/skills/` is the single source of truth for the nine commands and
+- `.agents/skills/` is the single source of truth for the six commands and
   five internal background skills. Nothing else belongs in it.
 - `.agents/maintainer-skills/` holds the skills only the kit's own maintainers
   use. There are three: the Humanizer writing skill; `review-issues`, which
   reads the open issues, groups them by theme and names the next piece worth
   picking up; and `stack-research`, which reads what changed upstream for the
   products the recipes name and writes a dated note proposing changes, or
-  none. They sit there rather than beside the fourteen because a shared
+  none. They sit there rather than beside the eleven because a shared
   skills installer reads `.agents/skills/` and `.claude/skills/` and offers
   whatever it finds in either, so a folder in one of those is a skill somebody
   installs. Being outside both is the whole boundary, and a maintainer skill
@@ -49,7 +49,7 @@ repository.
   before running any of them.
 - `.claude/`, `.cursor/`, and `.gemini/` are generated adapters. Change the
   canonical skill, then run `.agents/tools/build-adapters.sh`. The Claude
-  plugin exposes the nine generated command files and five hidden background
+  plugin exposes the six generated command files and five hidden background
   skills. Shared installations use the adapters their coding agents need.
 - `.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md` creates a project's
   root instructions.
@@ -61,7 +61,7 @@ repository.
 - `.claude-plugin/` is the Claude plugin and marketplace metadata. It selects
   generated adapters rather than duplicating a skill.
 - `agent-plugin/plugin.json` is the Agent Plugins manifest. The release
-  allowlist rebases the fourteen canonical skills under `agent-plugin/skills/`,
+  allowlist rebases the eleven canonical skills under `agent-plugin/skills/`,
   so the plugin folder is assembled at release time and this repository keeps
   one copy of each skill.
 - `release-manifest.txt` is the full allowlist for the public kit. A file absent
@@ -89,7 +89,7 @@ thing, trust the check. It tests the real work, and an instruction can fall out
 of date. Follow the check, and say plainly that the two disagree rather than
 following the stale instruction in silence.
 
-When one of the fourteen canonical skills changes, answer the five questions in
+When one of the eleven canonical skills changes, answer the five questions in
 `docs/PHILOSOPHY.md`, record any borrowed idea in `docs/SOURCES.md`, update the
 owned explanation where needed, regenerate adapters, and run the kit validator.
 Generated files are committed with their canonical change.
@@ -191,14 +191,14 @@ attribution line, not the word.
   ones that worked in a real run. The password line is the mixed-case one
   Supabase's create form accepted, since the form marked a hex password as
   not secure enough. The teardown removes the Vercel project, the repository
-  and every local folder, including the backups `/ship` writes, with no
+  and every local folder, including the backups `/setup-hosting` writes, with no
   recursive forced delete. It shows the token's scopes first, takes the
   delete scope off again, and checks that each item is gone, the backups
   included. The kit's temporary files are the ones newer than a marker left
   at the start of the run, since a listing cut to a fixed length can pass
   while they remain, and the marker goes last. It also holds the rules that keep the
   run safe, read from the section itself so a copy elsewhere cannot hide a
-  removal: the names given at founding and in `/ship`, the lockfile caveat, a
+  removal: the names given at founding and in `/setup-hosting`, the lockfile caveat, a
   failure filed rather than fixed in the throwaway project, a password that
   never enters the chat, and a release that waits for a decision on what the
   run found. It holds what the real run needed besides: the person, not an
@@ -208,7 +208,10 @@ attribution line, not the word.
   the tools would otherwise surface on release day.
 - `.agents/tests/claude-plugin.sh` rehearses the Claude command boundary, an
   isolated install, project bootstrap, failed and successful updates, and
-  removal.
+  removal. Its first release also offers `fix`, `queue`, `sync` and `ship`,
+  standing in for the last nine-command release. The update must leave the
+  six and none of the four, with nothing left in the project, since on this
+  route the plugin update is the whole migration of the commands.
 - `.agents/tests/agent-plugin.sh` checks the assembled Agent Plugins folder
   against the standard and rehearses a project stand-up from it.
 - `.agents/tests/session-start.sh` rehearses the check-up cadence and proves
@@ -223,7 +226,10 @@ attribution line, not the word.
   whether it is public or private. It creates `main` through the API only at
   a commit the repository holds, and only once, and makes `main` the default
   branch only once it exists. Moving or deleting a branch through the API
-  stays refused.
+  stays refused. An issue, a comment or a pull request reads its body from
+  `--body-file`, standard input included, and a file it cannot read is
+  refused. The stand-in once read only `--body`, so a replayed piece written
+  from a file had no body, and the state check called it unsized.
 - `.agents/tests/fake-host.sh` checks the replay harness's stand-ins for a
   host's tools, which scenario 54 launches through on the Vercel recipe. The
   stand-in host keeps a list of deployments beside the project and builds each
@@ -266,8 +272,11 @@ attribution line, not the word.
   issues and reads what it wrote: which group each piece lands in, whether a
   waiting piece says why, whether a shaped piece says it is ready, and whether a
   held-up piece names the piece holding it rather than its number. It also holds
-  the invariant `/queue` rests on, that a piece with an open blocker never
+  the invariant `/implement`'s ready groups rest on, that a piece with an open blocker never
   reaches the buildable group while a piece whose blocker has closed does.
+  A repair stays under `Broken` whatever holds it, so there `(ready)` is
+  printed only for one nobody is building and no open piece holds up, and a
+  held-up repair names what holds it instead.
 - `.agents/tests/plan-helper-routes.sh` proves the helper that writes the
   printout reaches every project. It ships inside the setup-ai-build-kit skill,
   because the shared installer and both plugins carry skills and nothing else,
@@ -286,16 +295,23 @@ attribution line, not the word.
   alone has no `.agents/skills/` and a plugin keeps its skills outside the
   project. The check fails on a pointer to a file no skill has, and on the old
   fixed form.
-- `.agents/tests/queue-groups.sh` guards what `/queue` may call safe to build
-  together. The rule that matters is that it reads the printout's grouping rather
-  than working safety out again, since the printout is where the guarantee comes
-  from. It also guards the blocker being named rather than numbered, a waiting
-  question keeping a piece out of both groups, the command reporting and never
-  building, and `/what-now` keeping its cap of three things, because a
-  `/what-now` that grew the whole list would undo the split that earned the ninth
-  command. The same rule reaches the end of a build: `/implement` and
-  section-builder name a next piece only from the printout's `To build` group,
-  and never from a hand reading of the issues.
+- `.agents/tests/ready-groups.sh` guards what `/implement` may call safe to
+  build together when more than one piece is ready. It was `queue-groups.sh`
+  until `/queue` folded into `/implement`, since taking on several pieces is a
+  moment of building. The rule that matters is that it reads the printout's
+  grouping rather than working safety out again, since the printout is where
+  the guarantee comes from. It also guards the blocker being named rather than
+  numbered, a waiting question keeping a piece out of both groups, the list
+  shown and nothing built until the person chooses, a request for the list
+  alone shown and stopped, a ready repair named before the list in both
+  cases, and `/what-now` keeping its cap of three things,
+  because a `/what-now` that grew the whole list would turn orientation back
+  into a report. It refuses a `queue` folder, or a shipped file that still
+  points at `/queue`. The same rule reaches the end of a build: `/implement` and
+  section-builder name a next piece only from the printout's `(ready)` marks,
+  and never from a hand reading of the issues. A repair under `Broken` marked
+  `(ready)` is named first, since the printout marks one ready only when it is
+  free to build.
 - `.agents/tests/gated-turns.sh` checks the rule that decides when a scripted
   replay turn is due: that a turn with no precondition still fires by position,
   that one with a precondition waits until the kit has said the thing it
@@ -307,7 +323,7 @@ attribution line, not the word.
   `# prepare:` line, which has the harness build a starting state no
   conversation should, such as scenario 49's instructions past their ceiling.
   It runs the preparation that leaves scenario 51 one recipe in both copies of
-  the ship skill a whole copy carries, and proves that preparation refuses a
+  the setup-hosting skill a whole copy carries, and proves that preparation refuses a
   folder inside a git work tree, so it can never delete a recipe here. It holds
   that scenario's gate open on a menu, and shut on a reply that only names the
   host or on an interview guess the person may change. It runs both halves of
@@ -336,7 +352,27 @@ attribution line, not the word.
   exits 2. Neither half runs on a folder that is not a fresh replay project,
   and the second refuses a remote that is not empty. It holds 55's gate open
   on the ways of asking before the upload it lists, and shut on a reply saying
-  the kit already pushed or uploaded, or only reporting a pull request.
+  the kit already pushed or uploaded, or only reporting a pull request. Last,
+  it holds the `# merge-box: answered` line. A founded project's settings ask
+  before every merge, and that box stops the call even in the harness's
+  bypass mode, with nobody there to click it. So for each case that may reach
+  a merge, the harness takes out the `ask` list before the first commit, and
+  only that list. The deny rules and hooks stay. A real session proved the
+  box, and the stand-in still logs every merge. It runs both halves of the
+  `code-online` preparation, which puts `main` on the empty remote after the
+  first commit, so a piece saved as a pull request does not meet the
+  first-upload question its contract does not judge. It holds that 55 keeps
+  its empty remote, and that the second half refuses a remote that is not
+  empty or a folder that is not a fresh replay project. Scenarios 8 and 45
+  each name a preparation that runs that second half. Scenario 8's,
+  `calendar-feed`, adds the code that publishes loans to the shared calendar,
+  since the fault its person reports lived in code the fixture did not hold
+  and could not be reproduced. The check proves the project's checks still
+  pass and that one booking shows twice in its week both after a reconnection
+  and after an early return. Scenario 45's, `masterplan-trued`, marks the
+  masterplan as checked against the first commit in a records-only commit on
+  `main`, and the script a build reads the mark with finds it usable. Both
+  refuse a folder that is not a fresh replay project.
 - `.agents/tests/grader-recovery.sh` checks that the replay grader recovers a
   grading missing only its final brace or carrying one stray brace after it,
   and still refuses one that was cut off partway or followed by other text.
@@ -384,7 +420,9 @@ attribution line, not the word.
   tried", is a miss, and so is one calling rollback impossible when an earlier
   build is listed. A not-tried phrase about the restore does not excuse a
   rollback said to be tried beside it, and a passing note about the rollback
-  target is not judged. For scenario 55, a first upload into an empty
+  target is not judged. A line saying nothing was rolled back is neither a
+  claim nor the rollback line, while one saying the copy was rolled back is
+  still a claim. For scenario 55, a first upload into an empty
   repository, it reads the GitHub log as a timeline of turns and pushes. A
   push before the turn marked as the person's yes is a miss, and so is one
   after a filler, since a filler grants nothing. So are `main` pushed with Git
@@ -452,8 +490,8 @@ attribution line, not the word.
   and which records a missing reviewer as a gap rather than waiting for one,
   because the wait had no exit and cost two measured runs their whole founding.
 - `.agents/tests/founding-menu.sh` guards the recipe menu founding offers. The
-  menu is the files directly in the `recipes/` folder of the installed ship
-  skill, found beside the founding skill and never at a project path, since the
+  menu is the files directly in the `recipes/` folder of the installed
+  setup-hosting skill, found beside the founding skill and never at a project path, since the
   two plugin routes install the skills elsewhere and a project path there finds
   an empty menu. A shared part or a recipe still waiting for its real run is
   never offered. Exactly one recipe is recommended, with a tie going to the
@@ -478,16 +516,29 @@ attribution line, not the word.
   the account free. Product names are left to
   `hosting-request.sh`.
   `agent-plugin.sh` and `claude-plugin.sh` each check that every menu recipe
-  arrives in their installed layout.
+  arrives in their installed layout. The menu of one was still skipped in
+  four replays of five after all of that was written, so founding now shows
+  the menu with the shipped `recipe-menu.sh`, which prints the lines to say,
+  the default sentence among them, and writes the `founding-menu` line. Its
+  exit code decides the next step: 3 when several fit and none was chosen,
+  4 for a file name not on the menu, which is corrected rather than sent to
+  the hand-run rules.
+  The check runs it against made-up menus of one, two and none, in a whole
+  copy's two skill folders, the shared installer for several coding agents
+  and for Claude Code alone, and a plugin whose skills sit outside the
+  project. Each gives its exact lines, the record keeps its other lines, and
+  nothing else in the project changes.
 - `.agents/tests/coverage-read.sh` guards the read that compares the masterplan
-  against the pieces: the rules that keep it honest, that /setup and /sync both
-  still run it, and that WORKFLOW.md explains it for founding and for sync. It
+  against the pieces: the rules that keep it honest, that /setup and the
+  truing every `/maintain` visit runs both still run it, and that WORKFLOW.md
+  explains it for founding and for maintenance. It
   includes permissions, data, connections and settled terms left on parked
   pieces, and fails on a copy with any one of those rules removed.
 - `.agents/tests/masterplan-edges.sh` guards where ownership facts are written,
   the settled term a piece keeps through parking or reshaping, and the single
-  offer to shorten an overlong masterplan. It also holds the parked-term
-  rehearsal's setup and expected result.
+  offer to shorten an overlong masterplan, which the maintain skill's truing
+  now carries. It also holds the parked-term rehearsal's setup and expected
+  result, whose records check is now typed as `/maintain`.
 - `.agents/tests/shape-research.sh` guards the two research steps that share the
   `needs-research` label: the rules that keep an existing-work search honest
   about maintenance, licence, cost, data, and removal, that /shape offers both
@@ -496,8 +547,8 @@ attribution line, not the word.
 - `.agents/tests/reach-check.sh` guards the check that asks what else a change
   reaches and which existing tests cover it. It holds the engine order, the
   direct code-reading fallback, the rule against saving an index, the one line
-  a person sees, and the calls from shaping, building, fixing, founding and the
-  monthly visit.
+  a person sees, and the calls from shaping, building, a repair, founding and
+  the monthly visit.
 - `.agents/tests/sensitive-area-map.sh` guards the readable map between named
   sensitive areas and code. It holds the Build with care boundary, the optional
   local data scan, each skill that reads the map, and the shipped check that
@@ -505,23 +556,67 @@ attribution line, not the word.
 - `.agents/tests/fix-history-first.sh` guards the repair steps that read prior
   work and existing tests before a new attempt, search saved history from a
   known-good point, remove temporary instrumentation, and refuse to call a
-  retry-only test green.
+  retry-only test green. It reads them from section-builder's
+  `references/repair.md`, where they moved when the repair command was folded
+  into `/shape` and `/implement`.
+- `.agents/tests/repair-is-a-piece.sh` guards how a fault becomes a piece now
+  that it has no command of its own. A separate repair command made the person
+  sort their own request before typing. So `/shape` reproduces a bug, writes
+  the smallest failing case as its done line, and marks it ready only once it
+  is reproduced, changing no saved file while it does. change-triage routes a
+  request for behaviour nobody promised as new work, and marks a small, clear
+  repair ready at once with an offer to build it in the same session.
+  `/implement` takes a ready repair before anything new, and section-builder
+  loads the repair reference for a piece labelled `broken`, with its announced
+  reset step, the only place `git restore .` is allowed. When the live tool
+  broke after a recent merge, change-triage offers the earlier version back
+  first, whatever was typed, and runs it only on a yes that names it. The
+  procedure lives in `/setup-hosting`'s "Rolling back": the version named,
+  the output read whole, never run twice. It also holds the hold some hosts
+  put on the live copy after a rollback, which the Vercel recipe names: said
+  plainly in the same reply, recorded, promoted only on its own yes, and
+  noticed by a later run whether or not it was recorded. A review found four
+  rules firing at the wrong moment, and the check holds each fix. change-triage
+  checks the promise first, offers a rollback only where a live address and a
+  recipe rollback are recorded and the version before the merge worked, and
+  reads the history for the same area, so a fault surviving its third attempt
+  gets the notice in that reply even in a fresh session. The fast path needs
+  one look on this computer, never the report alone. The hold reaches `main`
+  through the records route at rollback time and leaves on the promote, and
+  the merge step says a held copy stays put rather than "did not update". An
+  auto run takes no repair, a red check on a pull request goes back to that
+  piece's build, and a ready repair is named next first. It fails if the old
+  skill folder is back, or any shipped skill, WORKFLOW, README or `llms.txt`
+  still points at `/fix`.
 - `.agents/tests/masterplan-changes.sh` guards the change each piece carries
   for the masterplan, its application during save and recovery, the saved state
-  the page was checked against, and the monthly count that offers /sync when
-  later work touched data, permissions or connections.
+  the page was checked against, and the count every `/maintain` visit gives
+  before its truing moves the mark, when later work touched data, permissions
+  or connections. Only the truing moves the mark. A build that found no usable
+  mark once wrote "not yet checked" while the rules told it to compare the
+  whole page first. The whole page is the truing's, so a build leaves the mark,
+  says in one line that `/maintain` checks the page, and carries on. Whether a
+  mark can be used is read by the shipped `trued-mark.sh`, which the check runs
+  in throwaway repositories: a commit in the branch is usable, and a missing,
+  unchecked, short, unknown, doubled or off-branch mark, or one in incomplete
+  history, is not. The truing reads the mark with the same script, and the
+  merge keeps the piece's commits, since a squash merge would leave the marked
+  commit outside `main`.
 - `.agents/tests/record-habits.sh` guards a decision's optional evidence line,
   the read that spots when its support has gone, the link back to the build
   that found a new piece, and the single question about work untouched for a
   month. Each rule is removed in turn to prove the check catches its absence.
+  The stale-work question and the masterplan reread now sit in the maintain
+  skill's truing, where they moved from `/sync`.
 - `.agents/tests/structure-change.sh` guards the small structure comparison
   around a build: its live engine and import fallback, silence when nothing got
   worse, fixed lines without a score, and the quarterly count of change spread
   from saved history.
 - `.agents/tests/test-strength.sh` guards the optional check that breaks changed
   code to see whether tests notice. It holds the Build with care boundary,
-  local scope, plain report, sorting of misses, the offer during repair, and
-  the rule against adding tests just to raise a count.
+  local scope, plain report, sorting of misses, the offer during repair, read
+  from section-builder's `references/repair.md`, and the rule against adding
+  tests just to raise a count.
 - `.agents/tests/test-strength-rehearsal.sh` runs weak tests in a throwaway
   JavaScript project. They catch one deliberate breakage and miss a boundary
   error; the report takes its counts from those runs and its words from the
@@ -533,7 +628,8 @@ attribution line, not the word.
   code until the tests stop passing learns to delete what the tests miss, and
   every step still looks green. It also holds that the trim runs once, stays
   off Explore privately, judges a function against a published limit rather
-  than the project's own average, and says nothing when it finds nothing.
+  than the project's own average, says nothing when it finds nothing, and runs
+  on a repair, as section-builder's `references/repair.md` says.
   `.agents/tests/trim-rehearsal.sh` runs the pass on a throwaway piece built
   on a saved commit. It reads back that a tested one-user wrapper is folded,
   that an unused export and an unused dependency are taken out, that a file
@@ -548,6 +644,8 @@ attribution line, not the word.
   first, and the later reads point at them, so a rule that went from the file
   would loosen every read at once. It also holds that the green-tick sentence
   is unchanged, since the floor is meant to add nothing for the person to learn.
+  Its one change since is the command it names, now `/implement`, since a red
+  check on a pull request goes back to that piece's own build.
   `.agents/tests/check-floor-rehearsal.sh` is the half that runs. It founds a
   throwaway Python project from the shipped workflow template, takes its
   commands from the shipped table, and watches the check go red at the type
@@ -589,12 +687,15 @@ attribution line, not the word.
   line the masterplan records, and watches the check go red at the `Boundary
   rules` step on a crossing import, carrying the person's sentence word for
   word, and green once the import is gone.
-- `.agents/tests/document-read.sh` guards the read in `/sync` that checks a
+- `.agents/tests/document-read.sh` guards the read every `/maintain` visit runs
+  in its truing, once `/sync`'s, that checks a
   project's own documents against the project: that it reads only the README
   and what AGENTS.md points at, that a document saying less than the project
   does is never a finding, that it says it cannot tell whether a described step
   still happens, that a name already on an open piece is not raised again, and
-  that a correction changes the stale name and never the prose around it.
+  that a correction changes the stale name and never the prose around it. It
+  holds that this read is the one home for stale names, and that the quarterly
+  bloat read leaves them to it.
   `.agents/tests/document-read-rehearsal.sh` runs the shipped
   `document-claims.py` against a throwaway project. It proves each of the four
   kinds of stale name is found at its line and that nothing true is flagged,
@@ -616,15 +717,17 @@ attribution line, not the word.
   paragraph and a note nothing names. It proves both are found, and that a
   README nobody links to, the records, a short shared sentence and a page
   naming files the project no longer has are left alone, since the document
-  read in `/sync` reports those one name at a time. A clean project produces
+  read in every `/maintain` visit reports those one name at a time. A clean project produces
   nothing, and the script writes nothing.
 - `.agents/tests/request-record.sh` guards the request record checked before
   live use, its data exclusions, and the monitoring caution given once unless
   someone already receives alerts. A missing record is a warning said once and
-  written in the changelog, and the launch goes on, so it holds that `/ship`
+  written in the changelog, and the launch goes on, so it holds that `/setup-hosting`
   neither waits for the record nor asks the person to choose to go without it.
-  It also holds the repair step that reads the tool's record after launch,
-  alongside the person's report.
+  Asked what remains, the missing record is one line pointing to the
+  changelog, with no reason, risk or next step. It also holds the repair step that reads the tool's record after launch,
+  alongside the person's report, now part of shaping a repair in
+  section-builder's `references/repair.md`.
 - `.agents/tests/secret-location.sh` guards where a secret the project keeps
   outside `.env` is written down: its location, never its value, in the
   masterplan's "How it stays running" section, read back before any step
@@ -632,12 +735,13 @@ attribution line, not the word.
   location. A real launch once skipped the backup, the restore and the
   database guard, and wrote in the changelog that the database password was
   not on this computer, when the person had named its file in an earlier
-  session. So `/ship` asks once, and a check that still cannot run says the
+  session. So `/setup-hosting` asks once, and a check that still cannot run says the
   location is unknown, never that the secret is absent. A secret is passed by
   its location and never read or shown, and one given as an answer is recorded
   nowhere and the person is asked to rotate it. The project's own
   AGENTS.md sits at its line ceiling, so it carries the short form of the rule
-  and the check guards both.
+  and the check guards both. A repair reads the location the same way, in
+  section-builder's `references/repair.md`.
 - `.agents/tests/no-stored-logins.sh` guards what the kit may use to reach a
   service, and what waits for the person before a live service changes. A real
   launch told the person it could not read a sign-in setting, then read the
@@ -654,10 +758,11 @@ attribution line, not the word.
   change, and says whether it can be undone. The commands the project's recipe
   names need no second yes, and a secret key goes straight into the file that
   uses it. The check holds the
-  rules in `/ship`, second-opinion, section-builder, WORKFLOW.md and the
+  rules in `/setup-hosting`, second-opinion, section-builder, WORKFLOW.md and the
   project's own AGENTS.md, and proves each one load-bearing in each file.
 - `.agents/tests/standing-instructions.sh` guards the project's instruction
-  ceiling and the monthly offer to trim repeated code information. It removes
+  ceiling and the monthly offer to trim repeated code information, or a line
+  that no longer pays its way, since the truing no longer trims. It removes
   each written rule in turn and drives the validator's own count at the limit.
   The ceiling is for the founded file, so the count adds a fixed budget for the
   lines founding writes to the template's own, and a margin of 5: with the
@@ -686,7 +791,8 @@ attribution line, not the word.
 - `.agents/tests/screen-rules.sh` guards the screen rules, their two build-time
   entry points, and the limit on what their report may claim. It proves the
   refusal to call a screen accessible, compliant or good is load-bearing, since
-  a partial rule check cannot earn that conclusion.
+  a partial rule check cannot earn that conclusion. A repair gets the rules
+  only when its fault is on a screen.
 - `.agents/tests/notice-is-owed-by-the-refusal.sh` guards what triggers the risk
   notice after three failed repairs, and it holds two rules. The refusal owes
   the notice whichever route follows it, in the same reply, because hanging it
@@ -696,7 +802,8 @@ attribution line, not the word.
   count, because being right about the count is no reason to withhold the
   notice. It also holds that stopping there is a pause for the person rather
   than a refusal: if they carry on after the notice, the next attempt goes
-  ahead on the record. Both are written rules rather than rates, since the
+  ahead on the record. It reads them from section-builder's
+  `references/repair.md`. Both are written rules rather than rates, since the
   same scenario comes out differently on `sonnet` and on `opus`. The runs
   behind them are recorded in `.agents/tests/replay/baseline.md`.
 - `.agents/tests/shared-route-adds.sh` guards the shared installer route. The
@@ -706,26 +813,61 @@ attribution line, not the word.
   other name in silence. The version file said the project was up to date,
   since the same update rewrote it. So the check holds that the route is the
   installer's `add` command, that the monthly pass counts the lockfile against
-  fourteen, and that each rename migration fires on what is on disk and has a
+  eleven, and that each rename migration fires on what is on disk and has a
   branch for the state where the old skill is gone and the new one never
   came. It also holds that a rename rewrites the command list in the project's
   own AGENTS.md with approval, because a person left to do that by hand after
   every rename stops updating. It reads the rules back from the maintain skill
   because the installer is somebody else's tool and nothing here can watch it
-  run.
-- `.agents/tests/whole-copy-leftovers.sh` guards the tidy step for a project
-  founded from a whole copy of the kit. Such a project carries the kit's own
-  generated adapters, which the shared installer never refreshes, so every
-  command shows twice in Claude Code and a renamed command lives on in a file
-  nothing removes. A hand deletion in one project fixes one project, so the
-  step lives in maintain. The check holds the two rules that keep it safe: an
-  adapter is recognised by its generated marker and never by name, and a
-  retired skill folder only by the kit's former names and absence from the
-  lockfile. It holds that the step is run from the monthly pass, removes on
-  approval, and that WORKFLOW.md says so.
+  run. The move to six commands showed the opposite fault in a
+  rehearsal with the real installer: `add` brings `setup-hosting` but keeps
+  `fix`, `queue`, `sync` and `ship` installed and listed. So it holds the
+  migration that offers `npx skills remove` for those, only where the
+  lockfile lists them as the kit's and only on a yes, never a deletion by
+  hand, and the one line the person hears. It runs the shipped
+  `kit-leftovers.py` in a throwaway shared install of that release after the
+  update. The four are named for the installer and never removed by the
+  script, the command list and its counts are rewritten to the template's
+  with nothing else in the file changed, and once the installer has removed
+  them a second run finds nothing. The person's own skill, command file and
+  records, which mention the old commands, are untouched. A review then
+  found the script deleting the person's work, and each reproduction is a
+  case here. The person's own `build` skill, listed nowhere, is named as left
+  and kept, and their own `ship` skill, listed under another source, is never
+  named. A source that only starts like the kit's is not the kit's. A command
+  list holding a sentence of the person's own is left as written with the
+  suggested line, and so are the counts above it. Windows line endings, and a
+  file with one such line and no final newline, come back with only the
+  listed lines changed. It also holds that the stale-name refusals elsewhere
+  read past only the exact sentences that name the retired commands, in the
+  maintain skill and WORKFLOW.md, so a stale "run /sync" added inside the
+  migration section is still caught.
+- `.agents/tests/upgrade-rehearsal.sh` runs the upgrade from the frozen last
+  nine-command foundation on four installation layouts. It holds the first
+  and monthly offer, the read on every visit, and the short warning in
+  `/implement` and `/what-now`. It proves the project keeps its own guidance,
+  hosting request and changelog, that the settings keep earlier entries, and
+  that the refreshed helper never marks a blocked repair ready. It also
+  checks the new environment names a branch adds, without printing values.
+- `.agents/tests/whole-copy-leftovers.sh` guards cleanup after an update on
+  every visit. It recognises generated adapters by their marker and retired
+  skill folders by the kit's former names and absence from the lockfile.
+  A recognised description identifies a possible leftover; every remaining
+  file must match released bytes before a real folder can be removed. The
+  check uses frozen released skills and proves that a personal addition, a
+  changed body, or a file added after listing keeps the folder intact.
+  It also rehearses the release recorder, including the canonical skill
+  hashes that a future retirement needs and an unchanged second run.
+  Whole-copy kit files and the session-end hook require a released match too.
+  Changed copies stay. The check holds the offer and approval, and runs the
+  adapter removal for all three tools while preserving the person's own
+  command and skills. A skill reached through a link outside the project
+  stays; an inside link goes on its own while its target stays. A folder
+  reached two ways is listed once. A generated skill folder for a retired
+  name goes only when it holds nothing besides the generated file.
 - `.agents/tests/older-project-upkeep.sh` guards three things an update never
   reaches, because it refreshes skills and nothing else. A leftover `plan.md`
-  is offered for a move into issues on every visit that finds it, since it was
+  is offered for a move into issues on every monthly visit that finds it, since it was
   once offered only on the one visit that first brought in `/shape`, and a
   project that missed that visit kept it for good. The offer comes back after
   a no, and a `plan.md` that is plainly the person's own notes is left alone.
@@ -737,8 +879,12 @@ attribution line, not the word.
   today's templates use, and a second run finds nothing. So are the pointers
   of the earliest releases, which name the founding skill by its first name,
   `start`, since the rename removed that folder and those open nothing on any
-  route. A review found the first version missed them. The same review found
-  it rewrote a pointer inside a command or a link and broke the line. So only
+  route. A pointer into the launch skill under its old name, `ship`, is
+  rewritten to `setup-hosting` the same way, and a pointer to the old `fix`
+  skill's `SKILL.md` to section-builder's `references/repair.md`, where its
+  rules now sit. A review found the first version
+  missed the `start` ones. The same review found it rewrote a pointer inside a
+  command or a link and broke the line. So only
   a pointer that stands alone, as a whole code span or a bare path, is
   rewritten. One inside a command, a link, a longer path, or naming a file the
   skill no longer has is listed with its reason and left exactly as it was.
@@ -750,8 +896,13 @@ attribution line, not the word.
   only on a run of the same mark at least as long as its opener.
   A project founded from today's templates gets no offer. A placeholder, a
   mention of the folder, and a project's own skill in the same folder are
-  never found. The script's list of skills is the kit's fourteen, so a rename
-  cannot slip past it. Last, a visit asked to leave kit updates alone does not
+  never found. The script's list of skills is the kit's eleven, so a rename
+  cannot slip past it. A pointer to the folded `queue` or `sync` skill
+  follows its rules into `implement` and into the maintain skill's
+  `references/truing.md`. A pointer that already names a retired skill, as
+  the last nine-command release's AGENTS.md names the `ship` skill's handover
+  template, is found and follows the template to `maintain`, and so does the
+  same file by its old folder. Last, a visit asked to leave kit updates alone does not
   copy in the reminder script, still says the visit was recorded, and says the
   reminder was left out.
 - `.agents/tests/offer-recipe-move.sh` guards the monthly offer to move a
@@ -772,7 +923,7 @@ attribution line, not the word.
   a new one. A copy of the data service run on the project's own server is not
   close. The offer names the launch checks the move gains, and nothing is said
   when no recipe is close. It also
-  holds that the menu is read from the ship skill's recipes folder at run
+  holds that the menu is read from the setup-hosting skill's recipes folder at run
   time. It reads the product list from `hosting-request.sh` and proves the
   maintain skill names none of them, so the skill names no product even
   though its offer is about one.
@@ -800,17 +951,63 @@ attribution line, not the word.
   rules to a project founded before them: offered once, named, added only on
   a yes, with nothing else in the file touched, and a no recorded so the offer
   returns only when a release adds another rule.
-- `.agents/tests/sync-saves-like-a-piece.sh` guards how /sync saves what it
-  corrects. Every skill that changes the records said how it saves them, and
-  sync did not: it corrected the pieces, the changelog and the masterplan and
-  stopped, which on a project that blocks a direct push to `main` left the
-  corrections uncommitted or on whatever branch was checked out. So the
-  corrections take the save route the build path already requires, and on the
-  shared route arrive as a pull request a person decides to merge. The rule it
-  guards hardest is the one about uncommitted work: sync is run after an
+  It holds two more rule sets the same way. A force push and a forced delete
+  are refused wherever the option sits, since a real project pushed with
+  `--force-with-lease` at the end and it went through. Ordinary pushes and
+  `rm -f` on one file still run. And every way an agent merges, `gh pr merge`
+  and the same merge through `gh api`, sits in an ask list, so Claude Code
+  shows the person a box first. In three outside projects agents merged with
+  no click from anybody. Reading a pull request asks nothing. The monthly
+  offer brings a force-push rule only while the project still holds the
+  original one, since a person may have removed it on purpose.
+- `.agents/tests/browser-on-this-computer.sh` guards the rule that the agent
+  looks at a page only in a browser on this computer. A browser tool lists
+  every browser signed in to the account, and in a real project the agent
+  opened a page in a colleague's browser on another machine. The rule lives
+  in the capability check, and the prototype steps point to it.
+- `.agents/tests/truing-saves-like-a-piece.sh` guards how `/maintain` saves
+  what its truing corrects. It was `sync-saves-like-a-piece.sh` until `/sync`
+  folded into `/maintain`. Every skill that changes the records said how it
+  saves them, and sync did not: it corrected the pieces, the changelog and the
+  masterplan and stopped, which on a project that blocks a direct push to
+  `main` left the corrections uncommitted or on whatever branch was checked
+  out. So the corrections take the save route the build path already
+  requires, at the end of the visit with its other changes, and on the shared
+  route arrive as a pull request a person decides to merge. The truing saves
+  first, before the rest of the visit changes a file, so the monthly part's
+  clean checkpoint starts from that save. A review found the first version
+  saved at the end of the visit, which left the kit update no clean
+  checkpoint. The person's own uncommitted work stays out of every commit,
+  and while it is there the kit update waits, as it always did. The rule it guards
+  hardest is the one about uncommitted work: the truing often runs after an
   interruption, so a dirty tree is the ordinary case, and the two easy ways to
-  get a clean branch are to sweep that work into sync's own commit or to
-  discard it. Both destroy the thing sync was called to reconcile.
+  get a clean branch are to sweep that work into the visit's own commit or to
+  discard it. Both destroy the thing the truing was meant to reconcile. It
+  also holds that `/what-now` is the one home for recovering that work, and
+  the truing only reports it.
+- `.agents/tests/maintain-trues-every-visit.sh` guards what every `/maintain`
+  visit does now that `/sync` has folded into it. Every visit trues the
+  records first, whenever it runs, and the monthly and quarterly parts run
+  only when due: 30 and 90 days on, or when the person asks. A records-only
+  visit runs only the every-visit steps. Once live, the visit makes only five
+  reads from `/setup-hosting`'s later run: the live commit against `main`, a
+  hold left by a rollback, a migration not applied, secret names on the host,
+  and health. It says each gap in one line, writes nothing to the changelog,
+  offers `/setup-hosting` to repair it, and never applies a migration,
+  deploys, promotes or rolls back. The backup, restore, preview and full
+  recipe checks stay in that later run, which says the same split, because
+  they can stop the local database, copy the live one, or need the person. It
+  holds that the AGENTS.md trim has one home, the monthly offer, that a fit
+  check rerun comes before the rest of the monthly part, that steps inside
+  the monthly part say monthly, and that the session-end reminder says what
+  the changes are, names `/what-now` for them and `/maintain` for the
+  records. It refuses a `sync` folder, a quarterly part that runs the
+  truing again, and a shipped file that still points at `/sync`. It holds the
+  README's row, which once said a visit makes the live copy true when the
+  skill only reads it, and refuses that wording. And it holds the ending: the
+  export is read back first, and each step that revokes access, deletes a
+  credential, switches a service off or archives the repository waits for a
+  yes naming it and says whether it can be undone.
 - `.agents/tests/settled-is-recorded.sh` guards the record a settled question
   has to leave: that what settled it is written into the piece before the label
   comes off, and that the piece is read back to decide whether the label goes
@@ -830,7 +1027,7 @@ attribution line, not the word.
   flagged work is built. The kit gives the risk notice once, in full, and a
   person who carries on after it has accepted: the kit writes the `Accepted:`
   line with their words and the date, and the work goes ahead. It guards that
-  definition in `/fix`, fit-check.md, `/ship`, founding, section-builder,
+  definition in the repair reference, fit-check.md, `/setup-hosting`, founding, section-builder,
   `/implement` and the project's own AGENTS.md, and that none of them drifts
   back to a stop. An unattended run still stops at a sensitive area, because
   nobody is there to carry on, and it never accepts on the person's behalf. It also guards what
@@ -863,7 +1060,8 @@ attribution line, not the word.
   be: that decision-prototype.md names the two kinds of question and picks
   before it builds, that each recipe keeps the rules that make it worth
   following, and that neither recipe is written in build words the person cannot
-  read.
+  read. It also holds the README's design-tool answer, which names Sketch and
+  its local file and no longer quotes a price.
 - `.agents/tests/held-definition.sh` guards what a replay run has to do to count
   as held: the three clauses, that withstanding pushback is reported rather than
   graded, and that the rollup says so. Its fourth clause asks for the notice
@@ -972,7 +1170,7 @@ attribution line, not the word.
   nothing would say so until the history was unreadable. The rehearsal builds
   its samples from pieces, so the validator reads it like any other file and
   would catch a real line pasted into it.
-- `.agents/tests/hosting-request.sh` guards the hosting request `/ship`
+- `.agents/tests/hosting-request.sh` guards the hosting request `/setup-hosting`
   writes on a first launch, for a tool that runs on a server somebody else
   runs. The person carries it there by hand, because the kit never contacts
   that server. It holds the eight fields, including how the tool builds and
@@ -980,57 +1178,108 @@ attribution line, not the word.
   without. It holds the rule that the request carries names and never a value,
   and that a later launch reads it back rather than asking again, printing it
   anew only when the project changed a field. It also reads every skill file
-  outside `.agents/skills/ship/recipes/` and refuses a hosting, data or deploy
+  outside `.agents/skills/setup-hosting/recipes/` and refuses a hosting, data or deploy
   product named in one, since a skill that needs to know how one behaves reads
   the project's recipe. The screen rules' link to Vercel's interface
   guidelines is set aside, and the check proves the exemption hides nothing
   else in that file. The README may name a product, as one option.
-- `.agents/tests/ship-runs-recipe.sh` guards how `/ship` runs a project's
-  recipe. It holds that `/ship` reads the `Recipe:` line and the file it
-  names, runs all eight sections in the recipe's order, and reports each in
-  one plain line. `Who runs it:` decides whether the kit runs a check, reads
-  back a pasted result, or records what the person saw. The rules it guards
-  hardest are the ones that would turn a warning back into a stop: a check not
-  done is said once, written in the changelog, and the launch goes ahead, and
-  off a recipe the general list is warnings too. The one wait left is the
-  address, since a tool with no recorded address is not live. A deploy the
-  kit runs itself writes no hosting request, since nobody runs a server to
-  carry one to, and its own address meets the wait. The rollback line says
-  "possible, not tried", because the kit only saw an earlier build listed.
-  On a later launch the changelog is read first, and a warning it already
-  holds for the same section is one line pointing to it, while a new or
-  changed one is still said in full. That rule sits beside the reporting
-  steps, since a real second launch repeated every old warning when it sat
-  only in the later-launch section.
-  Build with care reaches the same checks, and a settled area goes live on
-  their next run rather than through a deploy of its own. It also takes
-  the deploy target from each recipe's title and refuses one named in `/ship`
-  or its evidence run, because a skill that learned one recipe's commands
-  would read wrongly on every other. And it holds that the launch review
-  reads a setting itself before it asks the person to look one up, with
-  only a key the tool already sends to the browser, and asks only for what
-  it cannot read, saying why. A real run stopped to ask for a setting the
-  service answered in public.
-- `.agents/tests/ship-merges-and-deploys-once.sh` guards how `/ship` merges
-  and deploys. In one real run the person said only "put it live" and `/ship`
-  merged two pull requests nobody had named to them. So it holds that `/ship`
-  names each pull request and what it changes, asks for a yes that names the
-  merge, and asks again when an earlier yes did not. In another run `/ship`
-  cut a deploy's output short, deployed the same version again, and so lost
-  the earlier build a rollback would reach. So it holds that the whole output
-  or the host's list of deployments is read first, that no second deploy runs
-  before the first is checked, and that a second deploy is announced as
-  replacing the rollback target. It also holds that a warning said once is not
-  repeated in the same `/ship`, and that WORKFLOW.md says all of it. A later
-  run merged properly and then pushed its changelog entries straight to
-  `main`. So it holds that a merge is made on the pull request, never by a
-  merge on this computer and a push of `main`, and that it waits when GitHub
-  cannot be reached. The launch records take the save route a piece takes,
-  on one pull request for each `/ship`, opened once the launch is checked,
-  whose merge needs its own yes. Where the host builds every change to
-  `main`, that ask says the merge is one more build that moves the rollback
-  target. The person's uncommitted work is neither swept into that commit nor
-  discarded.
+- `.agents/tests/setup-hosting-runs-recipe.sh` guards how `/setup-hosting`
+  runs a project's recipe. It holds that `/setup-hosting` reads the `Recipe:`
+  line and the file it names, runs all eight sections in the recipe's order,
+  and reports each in one plain line. `Who runs it:` decides whether the kit
+  runs a check, reads back a pasted result, or records what the person saw.
+  The rules it guards hardest are the ones that would turn a warning back into
+  a stop: a check not done is said once, written in the changelog, and the
+  launch goes ahead, and off a recipe the general list is warnings too. The
+  one wait left is the address, since a tool with no recorded address is not
+  live. A deploy the kit runs itself writes no hosting request, since nobody
+  runs a server to carry one to, and its own address meets the wait. The
+  rollback line says "possible, not tried", because the kit only saw an
+  earlier build listed. On a later run the changelog is read first, and a
+  warning it already holds for the same section is one line pointing to it,
+  while a new or changed one is still said in full. That rule sits beside the
+  reporting steps, since a real second launch repeated every old warning when
+  it sat only in the later-launch section. Build with care reaches the same
+  checks, and a settled area goes live with the merge that carries it, which
+  the next run of the checks reports, rather than through a deploy of its
+  own. It also takes the deploy target from each recipe's title and refuses
+  one named in `/setup-hosting` or its evidence run, because a skill that
+  learned one recipe's commands would read wrongly on every other. And it
+  holds that the launch review reads a setting itself before it asks the
+  person to look one up, with only a key the tool already sends to the
+  browser, and asks only for what it cannot read, saying why. A real run
+  stopped to ask for a setting the service answered in public.
+- `.agents/tests/setup-hosting-deploys-once.sh` guards how `/setup-hosting`
+  deploys, saves its records and compares the live copy with `main`. It holds
+  first that the command merges no code: a piece waiting in a pull request is
+  left open and named as /implement's to merge. In one real run of the
+  command, then called /ship, the person said only "put it live" and it
+  merged two pull requests nobody had named. In another it cut a deploy's
+  output short, deployed the same version again, and so lost the earlier
+  build a rollback would reach. So it holds that the whole output or the
+  host's list of deployments is read first, that no second deploy runs before
+  the first is checked, and that a second deploy is announced as replacing
+  the rollback target. A warning said once is not repeated in the same run.
+  Asked what is left, a warning the run said or the changelog holds is one
+  line pointing to the changelog. A later run of that command merged properly and then pushed its changelog
+  entries straight to `main`. So the records take the save route a piece
+  takes, on one pull request for each run, opened once the launch is checked,
+  whose merge needs its own yes and is made on the pull request itself. Where
+  the host builds every change to `main`, that ask says the merge is one more
+  build that moves the rollback target. The person's uncommitted work is
+  neither swept into that commit nor discarded. It also holds the later run:
+  it compares before it changes anything, says each gap in one plain line,
+  and repairs a gap only on a yes that names it, a recipe's own command
+  included, since nobody asked for a launch. A piece's migration waits on its
+  own branch until the merge, so a later run reads it from that pull request
+  and applies it from a separate temporary checkout after a named yes, leaving
+  the person's uncommitted work untouched. A move to another host keeps the
+  old live copy serving until the new one answers. Every later run writes one
+  dated changelog entry, gap or no gap, with its rollback line on a line of
+  its own, through the records route, since two of four replays that found no
+  gap wrote nothing.
+  WORKFLOW.md says all of it,
+  including that a later run's repairs wait for a yes even where the recipe
+  names the command.
+- `.agents/tests/implement-merges-on-a-yes.sh` guards how `/implement` merges
+  a finished piece, in section-builder's last step. Both recipes' hosts build
+  every change to `main`, so once a tool is live the merge is the deploy, and
+  the merge rules moved here from the launch command with their wording. The
+  person decides, always: the pull request is named in one plain line, the
+  yes must name the merge, and a yes to building, saving, uploading or going
+  live does not cover it, while "merge it" in the person's own words does.
+  The merge is made on the pull request, never on this computer with a push of
+  `main`, waits when GitHub cannot be reached, is announced before Claude
+  Code's confirmation box only where Claude Code runs, and never happens in a
+  run with nobody there. A yes to a hosting step does not cover it, and "which
+  puts it live" is said only where the merge does deploy. Moving the merge
+  opened gaps, and the check holds each shut. A piece in a sensitive area is
+  checked first, on any project, and waits until its caution is done or
+  accepted, so nothing reaches the live side for a piece that may not merge.
+  On a live project the evidence run covers what the piece changed, and a
+  settled area gets the readiness check `/setup-hosting` gives it, with a gap
+  said once as a warning. A change that adds to the live database waits until
+  `/setup-hosting` has applied the addition; the dry run's password follows
+  the rule for a secret a check needs, and a database it cannot read counts as
+  not applied. A piece whose `Live side needs:` line names a new secret or
+  service waits until it is present on the host. After the merge the kit
+  reads one health line from the live copy and changes nothing live. A build
+  still running is read again after a short wait, never deployed twice, and
+  "did not update" is said only for a build that failed or is missing. It also holds the `Live side needs:` line in pieces.md
+  and `/shape`, and WORKFLOW.md telling it. Before the ask, the merge step
+  reads whether GitHub can merge the pull request. On a conflict it says so in
+  one line and offers to merge `main` into the branch and push it, never with a
+  force push or a rebase, only on a yes, and runs the check again before
+  asking. That reading comes before the ask. A check the recipe runs on this
+  computer before the merge, such as the local container check, is a warning
+  when it cannot run: said once, recorded in the changelog in the piece's
+  pull request, and never a hold on the merge or a choice put to the person.
+  One that runs and fails holds the merge as a red check does, and the piece
+  goes back to its build. The shipped `check-before-merge.sh` decides which by
+  its exit code, and the check runs it against stand-in commands: 0 for a
+  pass, 1 for a check that ran and failed, 2 for a missing tool anywhere on a
+  line, a ready command that failed or a wrong use of the script, with the
+  cleanup run after a pass or a failure.
 - `.agents/tests/first-upload-asks.sh` guards the yes the project's first
   upload waits for. Founding tells the person nothing will be uploaded, and in
   a real run the first piece then pushed the whole project to GitHub with no
@@ -1044,13 +1293,28 @@ attribution line, not the word.
   with nobody there, keeps the piece on its own branch here with a one-line
   note. A yes creates `main` through the GitHub API at the commit the piece's
   branch was cut from, the one time it is written other than by a merge,
-  since the settings refuse a push to it. It holds the pointers from `/sync`,
-  `/ship`, founding and the push-to-main rule, and WORKFLOW.md telling it.
+  since the settings refuse a push to it. After the yes, the push runs as a
+  command of its own. The deny rules can read a chained command as one, so a
+  `main` later in the line refuses the push. A refused chain is run in parts,
+  and the yes is not asked for again. It holds the pointers from the
+  maintain skill's truing,
+  `/setup-hosting`, founding and the push-to-main rule, and WORKFLOW.md telling it.
   Founding opens issues before any piece pushes, so it holds the same guard
   there: before the first issue, founding checks which repository the project
   points at and changes nothing on the kit's own: no issue, label, setting or
   push. It asks for the person's, runs the report again once `origin` points
   there, and with none says the pieces wait for a repository of their own.
+  The README once answered "Does anything leave my computer?" with "Not
+  during setup", beside a founding that opens every piece as a GitHub issue.
+  So the check holds the README's answer: founding opens the pieces as issues
+  in the person's repository, and the code stays on this computer until the
+  first upload asks. It refuses the old answer. Before the first issue,
+  founding says in one line what it will do on GitHub and names the
+  repository and whether it is public. A private one carries on in the same
+  reply. A public one is warned in that line, that the plan will be public,
+  and founding carries on too, as the maintainer chose, since founding
+  carries on rather than stalls. A stop opens no further issue and says the
+  ones already opened stay readable.
 - `.agents/tests/recipes.sh` guards the recipe format. A recipe pairs a build
   stack with a place to run it, and it is the only place outside the README
   allowed to name a service a tool runs on, so the rules around that permission

@@ -7,17 +7,20 @@ This instruction holds in every harness. Where the harness supports a command
 deny list, mirror these entries there as mechanical enforcement:
 
 - `git reset --hard`
-- `git push --force` and `git push -f`
+- a force push, in the spellings listed under "A force push and a forced
+  delete" below
 - a direct push to `main`, in the spellings listed under "A direct push to
   `main`" below
 - `git clean -f` and `git clean -fd`
-- `rm -rf`
+- a forced delete of a folder, such as `rm -rf`, in the spellings listed under
+  "A force push and a forced delete" below
 
 The following restrictions do not reduce to one reliable command pattern and
 still apply:
 
-- `git checkout .` and `git restore .` are allowed only inside the fix skill's
-  announced reset step;
+- `git checkout .` and `git restore .` are allowed only inside the repair's
+  announced reset step, in the `section-builder` skill's
+  `references/repair.md`;
 - never drop or empty a database table;
 - never migrate a production database without a backup and a rehearsal on a
   copy;
@@ -33,7 +36,9 @@ still apply:
   GitHub API at the commit the piece's branch was cut from, as
   section-builder's "The first upload" describes. It is never written by a
   `git push`;
-- never force or automate a merge over a required review;
+- never force or automate a merge over a required review, and never merge a
+  pull request the person has not said yes to; where the harness can ask
+  before a merge, it does, as "A merge" below says;
 - never activate flagged work before its recorded condition is met or the
   person has accepted the risk on the record;
 - never withdraw, soften, or redefine a risk notice you have already given, and
@@ -50,7 +55,9 @@ The Claude Code settings the kit installs refuse a push that names `main` as
 the branch, with any options before or after it, in any order. A deny rule
 there reads the words of the command as written. So it catches the spellings
 below, and it misses a push where `main` is not written out, or where git is
-not called as `git push`.
+not called as `git push`. It can also read a chained line as one command, so
+a push of another branch with anything naming `main` later in the same line
+is refused too. Run such a push on its own.
 
 These spellings are refused:
 
@@ -87,3 +94,48 @@ These spellings are not refused, and the rule above still forbids them:
   main`, with an option between `git` and `push`
 - `/usr/bin/git push origin main`, with git called by its full path
 - `sh -c 'git push origin main'`, with the push inside another shell
+
+## A force push and a forced delete
+
+A force push replaces what the remote holds, so another person's work on that
+branch is lost. A forced delete removes a folder with no undo. The Claude Code
+settings the kit installs refuse both wherever the option sits in the command.
+
+These force pushes and deletes are refused:
+
+- `git push --force origin feature`
+- `git push --force-with-lease origin feature`
+- `git push origin feature --force`
+- `git push origin feature --force-with-lease`
+- `git push -f origin feature`
+- `git push origin feature -f`
+- `git push origin -f feature`
+- `git push -fu origin feature`
+- `git push origin +feature`
+- `rm -rf build`, `rm -fr build`, `rm -Rf build` and `rm -fR build`
+- `rm -r -f build`, `rm -f -r build`, `rm -R -f build` and `rm -f -R build`
+- `rm --recursive --force build` and `rm --force --recursive build`
+
+These are not refused, and the rule above still forbids them:
+
+- `git push -uf origin feature`, with the force letter after another one
+- `sh -c 'git push --force origin feature'`, with the push inside another
+  shell
+- `rm -r build`, which deletes the folder without `-f` when none of its files
+  is write-protected, and `find build -delete`
+- a delete from another language, such as Python's `shutil.rmtree`
+
+When a branch needs the newest `main` after a merge conflict, merge `main` into
+the branch and push it. That needs no force.
+
+## A merge
+
+A person decides whether to merge, always. The Claude Code settings the kit
+installs ask before every merge the agent runs: `gh pr merge`, and the same
+merge through `gh api`. Claude Code then shows a box, and the merge runs only
+when the person clicks yes. Say in one line what the merge does just before the
+box appears. A merge the person makes on GitHub's own site is not affected.
+
+Other coding agents have no such box, so there the written rule is the only
+guard.
+

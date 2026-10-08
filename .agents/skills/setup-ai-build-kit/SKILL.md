@@ -1,9 +1,9 @@
 ---
 name: setup-ai-build-kit
-description: Begin a new project, or resume a beginning that was interrupted. Use when the user types /setup-ai-build-kit or asks to start or set up a new tool. Runs once per project; if the founding documents already exist and are complete, say so and point at /implement. Do not use for new features on an existing project (that is shape) or for repairs (that is fix).
+description: Begin a new project, or resume a beginning that was interrupted. Use when the user types /setup-ai-build-kit or asks to start or set up a new tool. Runs once per project; if the founding documents already exist and are complete, say so and point at /implement. Do not use for new features or repairs on an existing project; both are shape.
 ---
 
-# Start
+# Setup AI Build Kit
 
 You take a team from an idea to a project ready to build: interviewed,
 assessed, documented, stood up. You write no feature code in this skill. It is
@@ -194,7 +194,7 @@ external fact; settle a visual or behavioural question with a mock or
 sketch the person already has, or a disposable decision prototype where they
 have none; keep open questions visible
 rather than quietly guessing past them. It ends when your guesses keep being
-right.
+right. The reply that closes it also shows the recipe menu, as step 11 says.
 
 Write each answer into `.agents/tmp/setup-notes.md` as it is agreed, before
 asking the next question, so a long conversation cannot lose it. Plain
@@ -322,6 +322,21 @@ finds. With none, save everything else and say plainly that the pieces are
 created once the project has a repository of its own, the way the last
 paragraph of this step handles a GitHub setup that cannot be finished.
 
+Before the first issue, say in one line what founding is about to do on
+GitHub: open the pieces as issues, replace the labels GitHub made with the
+kit's own, and switch on removing a pull request's branch once it merges. Name
+the repository as `owner/name` and say whether it is public or private, read
+with `gh repo view --json visibility`. Where you cannot read that, say so
+rather than guess.
+
+On a private repository, carry on in the same reply. On a public one, say in
+that same line that the plan will be public to anyone, and that the person can
+ask for a private repository at any point. Then carry on in the same reply, as
+on a private one. Where they ask to stop, open no further issue, say that the
+issues already opened stay readable to anyone who saw them, save everything
+else, and treat it the way the last paragraph of this step treats a GitHub
+setup that cannot be finished.
+
 Each piece becomes an issue, written to the shape in references/pieces.md. This
 needs a GitHub repository and the GitHub command line tool signed in; where that
 is not yet in place, guide the person through it now, following
@@ -378,13 +393,37 @@ team signs in to, with saved data".
 
 Then offer the recipe menu. A recipe is one build stack paired with one place
 to run it, which the kit knows well enough to check at launch. The installed
-ship skill sits beside this skill's folder, however the kit was installed, and
-its `ship/references/recipe-format.md` says what a recipe holds. The menu is
-the files directly in the `recipes/` folder of the installed ship skill, beside
-this skill's folder, read now rather than remembered. Nothing else is on it:
+setup-hosting skill sits beside this skill's folder, however the kit was
+installed, and its `setup-hosting/references/recipe-format.md` says what a
+recipe holds. The menu is the files directly in the `recipes/` folder of the
+installed setup-hosting skill, beside this skill's folder, read now rather
+than remembered. Nothing else is on it:
 not the `parts/` folder, and not a recipe kept anywhere else while it waits for
 its real run. Read each file's `Fits:` line and keep the ones that fit the
 shape.
+
+Show the menu with `scripts/recipe-menu.sh` from this installed skill folder.
+It finds the recipes folder beside this skill, so it reads the same menu on
+every installation route.
+
+Pass `--record .ai-build-kit-maintenance`, which writes the menu line
+described below, then the files that fit, or `--none` where none does. Its
+exit code decides the next step. 3 means several fit: it prints what each
+recipe says, so choose one by the rule below and run it again with
+`--recommend <file>`. 4 means a file name it was given is not on the menu:
+correct it and run it again. 0 means it printed the lines to say: put
+them in your reply exactly as printed, before the stand-up begins. The plain
+words below go after the numbered list and before its last sentence, and the
+printed lines stay word for word. Any other exit means it could not read the
+menu, so follow the rules below by hand.
+
+Show it early. The stand-up runs as one long turn, and only that turn's last
+reply reaches the person, so a menu printed during it arrives after the
+project exists. Run the script once the shape is known, and put its lines in
+the reply that closes the founding interview: the one that reads the agreed
+answers back, or asks a question still open. That reply ends on its own
+question, never on the menu. The reply that reports the stand-up is never the
+first to show it.
 
 If one recipe fits, recommend it and still show it as a menu. A menu of one
 follows every rule below, as a longer menu does, including the sentence naming
@@ -432,12 +471,12 @@ the first checkpoint, so the save holds it. Do not mention it to the person.
 
 Once a recipe is chosen, build on its `Build stack:` line. Record it in
 AGENTS.md's stack section as `Recipe: <file name>.md`, the file name exactly
-as it sits in the folder with `.md` included, so /ship can open it. Run
+as it sits in the folder with `.md` included, so /setup-hosting can open it. Run
 `scripts/check-tooling.sh --recipe <recipe file>` from this installed skill
-folder, passing the chosen file's path inside the ship skill's `recipes/`
+folder, passing the chosen file's path inside the setup-hosting skill's `recipes/`
 folder beside it. Run it for every chosen recipe, a menu of one included,
 before the first checkpoint, and let the completion report's recipe line say
-what it found. A tool it reports missing is needed before the first /ship,
+what it found. A tool it reports missing is needed before the first /setup-hosting,
 not now: name it once, add it to the masterplan as a setup task, and carry on.
 That report never stops founding.
 
@@ -449,10 +488,11 @@ sign-ins, payments, or files; those never get hand-built, however capable you
 feel, unless a person who does that work for a living owns a different design
 and has said so on the record. Use references/manual-setup.md for any step only
 a human can complete. If hosting is needed, arrange it so day-to-day pushes
-land at a preview address and only /ship changes the address the team uses; on
-a recipe, its preview section says how. Where a hosting companion or whoever
-runs the server will host it, /ship writes the hosting request on the first
-launch, and the person takes it there.
+land at a preview address; on a recipe, its preview section says how. The
+team's address comes later: /setup-hosting sets it up, and from then on each
+merge /implement makes on the person's yes puts that change live. Where a
+hosting companion or whoever runs the server will host it, /setup-hosting
+writes the hosting request on the first launch, and the person takes it there.
 
 Choose routine technical parts quietly. Record run and check commands and any
 non-standard conventions under AGENTS.md's stack section, keeping its content
@@ -497,7 +537,7 @@ placeholder step unless the project genuinely requires a broader workflow
 change.
 
 Say one sentence about it when done: "green means the tests really passed;
-red means don't merge, tell /fix."
+red means don't merge, tell /implement."
 
 Before starting the unfinished project to prove it runs, explain the action
 using the rule in AGENTS.md, close to: "I'm going to start the unfinished

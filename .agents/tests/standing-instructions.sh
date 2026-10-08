@@ -33,7 +33,10 @@ rs_reset
 rs_rule "every path gets a complete count" 'on every build path, count every line in the project.s agents\.md, including blank lines'
 rs_rule "the read checks all four kinds of content" 'read it for a directory layout, dependency list, architecture overview or style rule an automatic check could enforce'
 rs_rule "maintain holds the ceiling and content rule" 'it stays under 200 lines and holds only what the code cannot show: the save and review routes, conventions that differ from the default, and pointers to the records'
-rs_rule "length or content triggers one measured offer" 'at 200 lines or more, or with any of the named content even below that count, offer a trim in one line, using the measured count and what can go'
+rs_rule "length or content triggers one measured offer" 'at 200 lines or more, or with any of the named content or such a line even below that count, offer a trim in one line, using the measured count and what can go'
+# A short file can still carry a line that stopped paying its way, and the
+# truing no longer trims, so the monthly offer has to catch it.
+rs_rule "a line that no longer pays its way is read for too" 'and for lines that no longer pay their way, such as a rule about a tool or a step the project has dropped'
 rs_rule "the visible line asks for the trim" 'the standing instructions have reached 240 lines, and 30 of them describe the folder layout the code already shows\. shall i trim them\?'
 rs_rule "length alone needs no invented content" 'where length alone triggers the offer, name that alone; never invent removable content to fill the example'
 rs_rule "the monthly offer waits for the person's yes" 'cut nothing without the person.s yes'
@@ -42,8 +45,8 @@ rs_rule "a short file without redundant content stays quiet" 'if the file is sho
 rs_rule "the full visit cannot repeat or override the choice" 'agents\.md was already checked in the monthly pass; do not repeat its trim offer or cut anything without the person.s yes'
 rs_guard "$MAINTAIN" "the maintenance trim offer"
 
-rs_require_order "the check sits in the monthly pass" "$MAINTAIN" '^## Monthly, light$' 'count every line'
-rs_require_order "the check precedes the full-visit section" "$MAINTAIN" 'count every line' '^## Quarterly, or before a handover$'
+rs_require_order "the check sits in the monthly pass" "$MAINTAIN" '^## Monthly, when due$' 'count every line'
+rs_require_order "the check precedes the full-visit section" "$MAINTAIN" 'count every line' '^## Quarterly, when due$'
 rs_require_load_bearing "setup writes commands and exceptions within the rule" "$SETUP" 'record run and check commands and any non-standard conventions under agents\.md.s stack section, keeping its content rule and line ceiling'
 rs_require_load_bearing "WORKFLOW explains the offer and the person's choice" "$WORKFLOW" 'one line saying how long it is and what can go\. nothing is cut without your yes'
 rs_require_load_bearing "the validator counts the foundation template" "$VALIDATOR" 'foundation_agents="\$skills/setup-ai-build-kit/templates/foundation/agents\.md"'
@@ -131,7 +134,7 @@ Recipe: nextjs-supabase-on-vercel.md
   them before writing Next.js code.
 - Hosting: Vercel, linked to the GitHub repository, so a merge to `main`
   deploys. The database runs on hosted Supabase.
-- Launch checks: `/ship` runs the recipe's eight sections and records the
+- Launch checks: `/setup-hosting` runs the recipe's eight sections and records the
   address in the changelog.
 - Design tool: none recorded.
 STACK

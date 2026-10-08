@@ -151,7 +151,7 @@ if grep -qE 'rm +-[a-z]*r[a-z]*f|rm +-[a-z]*f[a-z]*r' "$SECTION"; then
 fi
 rs_ok "the section never uses a recursive forced delete"
 
-rs_rule "when it is due" 'before any release that touches founding or `/ship`'
+rs_rule "when it is due" 'before any release that touches founding or `/setup-hosting`'
 rs_rule "what it asks of the person" 'one github click'
 rs_rule "the lockfile records a local source" '"sourcetype": "local"'
 rs_rule "a local install cannot update" 'cannot update later'
@@ -167,7 +167,7 @@ rs_rule "Supabase is deleted in the dashboard" 'delete the supabase project in t
 rs_rule "what the log records" 'the commit it was built from'
 rs_rule "the release waits" 'the release waits'
 rs_rule "names the repository at founding" 'name it `abk-try-n` in the first folder'
-rs_rule "names the Vercel project in the ship request" 'asking for a vercel project named `abk-try-n`'
+rs_rule "names the Vercel project in the setup-hosting request" 'asking for a vercel project named `abk-try-n`'
 rs_rule "GitHub asks for a passkey first" 'asks for a passkey or password'
 rs_rule "the clipboard is emptied" 'pbcopy < /dev/null'
 rs_rule "the Vercel app keeps its selection" 'add `abk-try-n` to that selection, and never replace or clear it'

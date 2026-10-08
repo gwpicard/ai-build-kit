@@ -78,7 +78,7 @@ rs_rule "maintain never removes a branch" 'never remove a branch\.'
 rs_guard "$MAINTAIN" "maintain's old-branch step"
 
 rs_require_order "the branch step sits in the monthly pass" "$MAINTAIN" \
-  'references/stale-branches\.md' '^## Quarterly, or before a handover'
+  'references/stale-branches\.md' '^## Quarterly, when due'
 
 rs_require "WORKFLOW says what is listed" "$WORKFLOW" \
   'lists old branches whose work is already in your main branch'

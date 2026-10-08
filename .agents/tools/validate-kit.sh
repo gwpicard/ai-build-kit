@@ -33,19 +33,16 @@ pass() {
 
 SKILLS="$ROOT/.agents/skills"
 # A skill only the kit's own maintainers use lives here rather than beside the
-# fourteen. A shared skills installer reads .agents/skills/ and .claude/skills/
+# eleven. A shared skills installer reads .agents/skills/ and .claude/skills/
 # and merges what it finds by the name in its frontmatter, so a folder in
 # either one is a skill somebody installs. This folder is in neither.
 MAINTAINER_SKILLS="$ROOT/.agents/maintainer-skills"
 
-expected_commands="fix
-implement
+expected_commands="implement
 maintain
-queue
 setup-ai-build-kit
+setup-hosting
 shape
-ship
-sync
 what-now"
 
 expected_disciplines="change-triage
@@ -186,16 +183,16 @@ actual=$(find "$SKILLS" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | s
 expected=$(printf '%s\n%s\n' "$expected_commands" "$expected_disciplines" | sort)
 
 if [ "$actual" != "$expected" ]; then
-  fail "skill inventory does not match the canonical nine commands and five disciplines"
+  fail "skill inventory does not match the canonical six commands and five disciplines"
   echo "  expected:" >&2
   echo "$expected" | sed 's/^/    /' >&2
   echo "  found:" >&2
   echo "$actual" | sed 's/^/    /' >&2
 else
-  pass "exactly nine commands and five disciplines, named exactly"
+  pass "exactly six commands and five disciplines, named exactly"
 fi
 
-# Each of the fourteen has a SKILL.md. Which of them are commands and which
+# Each of the eleven has a SKILL.md. Which of them are commands and which
 # are background skills is settled by one setting, and the trigger contract
 # further down checks that. Here the question is only that the file exists.
 while IFS= read -r name; do
@@ -269,7 +266,7 @@ else
 fi
 
 # Claude Code: the five generated background skills are hidden from the user
-# command menu. The nine generated commands carry neither setting. A command
+# command menu. The six generated commands carry neither setting. A command
 # used to carry disable-model-invocation, and a regenerate from a stale builder
 # would put it back, so its absence is checked rather than assumed.
 while IFS= read -r name; do
@@ -373,7 +370,7 @@ else
   expected_command_files=$(printf '%s\n' "$expected_commands" | sed 's/$/.md/' | sort)
   actual_command_files=$(find "$ROOT/.claude/commands" -mindepth 1 -maxdepth 1 -exec basename {} \; | sort)
   if [ "$actual_command_files" != "$expected_command_files" ]; then
-    fail ".claude/commands/ must hold exactly the nine generated command files"
+    fail ".claude/commands/ must hold exactly the six generated command files"
     echo "  expected:" >&2
     echo "$expected_command_files" | sed 's/^/    /' >&2
     echo "  found:" >&2
@@ -398,7 +395,7 @@ else
   fi
 fi
 
-# The Cursor and Gemini trees carry the same nine commands and were covered
+# The Cursor and Gemini trees carry the same six commands and were covered
 # only by the drift comparison, which asks whether the committed adapters match
 # what the source generates. A source mistake that generates a wrong but
 # self-consistent tree satisfies that and reaches a project. These anchor both
@@ -416,7 +413,7 @@ for adapter in ".cursor/commands:.md:Cursor" ".gemini/commands:.toml:Gemini CLI"
   expected_files=$(printf '%s\n' "$expected_commands" | sed "s/\$/$ext/" | sort)
   actual_files=$(find "$ROOT/$dir" -mindepth 1 -maxdepth 1 -exec basename {} \; | sort)
   if [ "$actual_files" != "$expected_files" ]; then
-    fail "$dir/ must hold exactly the nine generated $tool command files"
+    fail "$dir/ must hold exactly the six generated $tool command files"
     echo "  expected:" >&2
     echo "$expected_files" | sed 's/^/    /' >&2
     echo "  found:" >&2
@@ -464,7 +461,7 @@ pass "frontmatter checked on $(printf '%s\n' "$skillfiles" | grep -c .) SKILL.md
 echo "== References =="
 
 # Every local Markdown link resolves.
-mdfiles=$(find "$ROOT" -name '*.md' -not -path '*/.git/*' | sort)
+mdfiles=$(find "$ROOT" -name '*.md' -not -path '*/.git/*' -not -path '*/.agents/tmp/*' | sort)
 while IFS= read -r mdfile; do
   [ -n "$mdfile" ] || continue
   # The public README lives one level down in the maintainer source, then moves
@@ -514,7 +511,7 @@ MDFILES
 # spans, not just markdown links) resolves.
 pathrefs=$(grep -rnoE --include='*.md' -- \
   '\.agents/(skills|tests|guard|hooks|tools)/[A-Za-z0-9_./-]+\.(md|sh)' \
-  "$ROOT" 2>/dev/null | sort -u || true)
+  "$ROOT" 2>/dev/null | grep -v '/\.agents/tmp/' | sort -u || true)
 while IFS=: read -r reffile lineno relpath; do
   [ -n "$relpath" ] || continue
   # .agents/hooks/session-start.sh is a project path that start creates from
@@ -594,7 +591,7 @@ RELHITS
 pass "bare relative skill references (references/*.md, templates/*.md, recipes/*.md, sibling-skill form) resolve"
 
 # Recipes. A recipe is one build stack paired with one place to run it, and
-# ship/references/recipe-format.md says what one must hold. The folder is the
+# setup-hosting/references/recipe-format.md says what one must hold. The folder is the
 # menu, so a file in it is offered to somebody founding a project. Each one
 # must have the shape the format asks for and carry real dates. Each must also
 # have its own rehearsal that sources the rule-shape helper and names the
@@ -606,7 +603,7 @@ pass "bare relative skill references (references/*.md, templates/*.md, recipes/*
 # only the files directly in recipes/. The folder may be empty, since the
 # format came before the first recipe.
 recipe_checker="$ROOT/.agents/tools/check-recipes.sh"
-recipe_blank="$SKILLS/ship/templates/recipe.md"
+recipe_blank="$SKILLS/setup-hosting/templates/recipe.md"
 recipe_ok=1
 if [ ! -x "$recipe_checker" ]; then
   fail ".agents/tools/check-recipes.sh is missing or not executable"
@@ -616,14 +613,14 @@ else
     fail "$recipe_blank: the recipe blank does not have the shape the format asks for"
     recipe_ok=0
   fi
-  for recipe_part in "$SKILLS"/ship/recipes/parts/*.md; do
+  for recipe_part in "$SKILLS"/setup-hosting/recipes/parts/*.md; do
     [ -f "$recipe_part" ] || continue
     if ! "$recipe_checker" --part "$recipe_part" >&2; then
       fail "$recipe_part: the shared part does not carry the lines a section needs"
       recipe_ok=0
     fi
   done
-  for recipe in "$SKILLS"/ship/recipes/*.md; do
+  for recipe in "$SKILLS"/setup-hosting/recipes/*.md; do
     [ -f "$recipe" ] || continue
     recipe_name=$(basename "$recipe" .md)
     if ! "$recipe_checker" "$recipe" >&2; then
@@ -997,7 +994,8 @@ fi
 # Build mechanics and pull-request hygiene: a piece starts from up-to-date main
 #; a new issue is unassigned until pickup; a direct push to main is
 # blocked and merged branches auto-delete; the agent opens the pull
-# request and stops, leaving the merge to a person.
+# request and merges it only on a yes that names the merge, made on the pull
+# request itself, and never in a run with nobody there to say it.
 sbfile="$SKILLS/section-builder/SKILL.md"
 blocked="$SKILLS/setup-ai-build-kit/references/blocked-commands.md"
 settings="$SKILLS/setup-ai-build-kit/templates/foundation/claude-settings.json"
@@ -1015,10 +1013,14 @@ if [ -f "$sbfile" ] && [ -f "$blocked" ] && [ -f "$settings" ] && [ -f "$startfi
     { fail "$settings: deny list does not block a direct push to main"; mech_ok=0; }
   grep -qF "delete_branch_on_merge" "$startfile" || \
     { fail "$startfile: does not enable auto-deletion of merged branches"; mech_ok=0; }
-  grep -qF "Do not merge the pull request, and do not delete the branch" "$sbfile" || \
-    { fail "$sbfile: pull-request route does not stop before merge and leave it to a person"; mech_ok=0; }
+  grep -qF "Merge only on a yes" "$sbfile" || \
+    { fail "$sbfile: the merge step does not wait for a yes that names the merge"; mech_ok=0; }
+  grep -qF "Make an approved merge on the pull request itself" "$sbfile" || \
+    { fail "$sbfile: the merge step does not make the merge on the pull request itself"; mech_ok=0; }
+  grep -qF "In an unattended run nobody is there to say yes, so never merge" "$sbfile" || \
+    { fail "$sbfile: an unattended run could merge with nobody there to say yes"; mech_ok=0; }
   [ "$mech_ok" -eq 1 ] && \
-    pass "pieces start from fresh main, new issues are unassigned, main is push-guarded, merged branches auto-delete, and the agent leaves the merge to a person"
+    pass "pieces start from fresh main, new issues are unassigned, main is push-guarded, merged branches auto-delete, and the agent merges only on a yes that names the merge"
 fi
 
 # Machine-check-first evidence: where a machine can check a piece, that
@@ -1036,12 +1038,12 @@ fi
 
 # The plan migration is deleted and stays deleted. No project needs it, and a
 # route nobody exercises would ship untested while reading as supported.
-syncfile="$SKILLS/sync/SKILL.md"
+syncfile="$SKILLS/maintain/references/truing.md"
 if [ -f "$syncfile" ]; then
   if grep -qF "Moving an existing plan into issues" "$syncfile"; then
     fail "$syncfile: the plan migration route is back; it ships untested"
   else
-    pass "sync carries no plan migration route"
+    pass "the truing carries no plan migration route"
   fi
 fi
 
@@ -1175,13 +1177,13 @@ for item in \
 done
 [ "$quiet_ok" -eq 1 ] && pass "start keeps routine technical activity behind the scenes across harnesses"
 
-syncfile="$SKILLS/sync/SKILL.md"
+syncfile="$SKILLS/maintain/references/truing.md"
 if ! grep -qF 'jobs.project-check' "$syncfile"; then
   fail "$syncfile: does not identify the standalone project check"
 elif grep -qF 'both `if:` conditions' "$syncfile"; then
   fail "$syncfile: still treats private source conditions as part of every project"
 else
-  pass "sync updates the standalone project check while preserving older layouts"
+  pass "the truing updates the standalone project check while preserving older layouts"
 fi
 
 # ---------------------------------------------------------------------------
@@ -1230,7 +1232,7 @@ done
 [ "$fu_ok" -eq 1 ] && pass "a named tool is explained in one sentence, and a throwaway prototype is not labelled as one"
 
 # ---------------------------------------------------------------------------
-echo "== Ship control-flow contract =="
+echo "== Setup-hosting control-flow contract =="
 
 # Operational readiness and go-live belong inside the path branches that use
 # them (Build and run it, Build with care), never as a shared section after
@@ -1238,9 +1240,9 @@ echo "== Ship control-flow contract =="
 # reaching launch instructions despite its own branch saying to stop. The
 # anchor is the last branch heading, so a rename of that heading without a
 # matching change here would let the check pass on nothing.
-shipfile="$SKILLS/ship/SKILL.md"
-if [ ! -f "$shipfile" ]; then
-  fail "$shipfile: missing"
+hostingfile="$SKILLS/setup-hosting/SKILL.md"
+if [ ! -f "$hostingfile" ]; then
+  fail "$hostingfile: missing"
 else
   leaked=$(awk '
     /^### Build with care/ { seen=1; next }
@@ -1248,11 +1250,11 @@ else
       low = tolower($0)
       if (low ~ /go live/ || low ~ /operational readiness/) print NR ": " $0
     }
-  ' "$shipfile")
+  ' "$hostingfile")
   if [ -n "$leaked" ]; then
-    fail "$shipfile: a go-live or operational-readiness heading appears after all three path branches, so every path reaches it: $leaked"
+    fail "$hostingfile: a go-live or operational-readiness heading appears after all three path branches, so every path reaches it: $leaked"
   else
-    pass "ship/SKILL.md keeps go-live and operational-readiness steps inside their path branches"
+    pass "setup-hosting/SKILL.md keeps go-live and operational-readiness steps inside their path branches"
   fi
 
   # The recipe's checks move work to a live address, so they sit inside Build
@@ -1263,11 +1265,11 @@ else
     /^### Build and run it/ { inrun=1; next }
     /^### / { inrun=0 }
     /^#+ On a recipe/ { print (inrun ? "inside" : "outside"); exit }
-  ' "$shipfile")
+  ' "$hostingfile")
   if [ "$recipe_at" = inside ]; then
-    pass "ship/SKILL.md keeps the recipe's checks inside Build and run it"
+    pass "setup-hosting/SKILL.md keeps the recipe's checks inside Build and run it"
   else
-    fail "$shipfile: the 'On a recipe' checks are ${recipe_at:-missing}, not inside Build and run it"
+    fail "$hostingfile: the 'On a recipe' checks are ${recipe_at:-missing}, not inside Build and run it"
   fi
 fi
 
@@ -1277,7 +1279,7 @@ echo "== Codex adapter claims =="
 # Codex has never had a generated adapter tree; it reads .agents/skills/
 # directly. scenarios.md and MAINTAINING.md are maintainer-only and already
 # excluded by the same convention as the team.md check below.
-codex_docs=$(find "$ROOT" -name '*.md' -not -path '*/.git/*' | sort \
+codex_docs=$(find "$ROOT" -name '*.md' -not -path '*/.git/*' -not -path '*/.agents/tmp/*' | sort \
   | grep -v '\.agents/tests/scenarios\.md$' \
   | grep -v 'docs/MAINTAINING\.md$' || true)
 
@@ -1385,6 +1387,7 @@ while IFS= read -r term; do
   hits=$(grep -rlFi --include='*.md' -- "$term" "$ROOT/.agents" "$ROOT/docs" \
     "$ROOT/README.md" "$ROOT/WORKFLOW.md" "$ROOT/AGENTS.md" "$ROOT/starter" 2>/dev/null \
     | grep -v '/\.git/' \
+    | grep -v '/\.agents/tmp/' \
     | grep -v '\.agents/tests/scenarios\.md$' \
     | grep -v 'docs/MAINTAINING\.md$' \
     | grep -v '\.agents/skills/maintain/SKILL\.md$' \
@@ -1627,7 +1630,7 @@ if [ ! -x "$claude_plugin_check" ]; then
   fail ".agents/tests/claude-plugin.sh is missing or not executable"
 elif command -v claude >/dev/null 2>&1; then
   if "$claude_plugin_check"; then
-    pass "Claude plugin exposes the nine commands, prepares a project, recovers, updates, and uninstalls in isolation"
+    pass "Claude plugin exposes the six commands, prepares a project, recovers, updates, and uninstalls in isolation"
   else
     fail "Claude plugin rehearsal failed"
   fi
@@ -1690,13 +1693,11 @@ plugin_marketplace="$ROOT/.claude-plugin/marketplace.json"
 plugin_contract_ok=yes
 for literal in \
   '"name": "ai-build-kit"' \
-  '"./.claude/commands/fix.md"' \
   '"./.claude/commands/implement.md"' \
   '"./.claude/commands/maintain.md"' \
   '"./.claude/commands/shape.md"' \
-  '"./.claude/commands/ship.md"' \
+  '"./.claude/commands/setup-hosting.md"' \
   '"./.claude/commands/setup-ai-build-kit.md"' \
-  '"./.claude/commands/sync.md"' \
   '"./.claude/commands/what-now.md"' \
   '"./.claude/skills/change-triage"' \
   '"./.claude/skills/clarify"' \
@@ -2075,7 +2076,29 @@ Bash(git push * +main *)
 Bash(git push *:main)
 Bash(git push *:main *)
 Bash(git push *refs/heads/main)
-Bash(git push *refs/heads/main *)"
+Bash(git push *refs/heads/main *)
+Bash(git push --force*)
+Bash(git push -f*)
+Bash(git push * --force*)
+Bash(git push * -f)
+Bash(git push * -f *)
+Bash(git push * +*)
+Bash(rm -fr:*)
+Bash(rm -Rf:*)
+Bash(rm -fR:*)
+Bash(rm -r -f:*)
+Bash(rm -f -r:*)
+Bash(rm -R -f:*)
+Bash(rm -f -R:*)
+Bash(rm --recursive --force:*)
+Bash(rm --force --recursive:*)"
+# A project also asks before any merge, so a merge never happens without a
+# person's click in the box Claude Code shows. This repository's own settings
+# carry no ask list.
+expected_ask_project="Bash(gh pr merge:*)
+Bash(gh api *pulls/*/merge*)
+Bash(gh api *merges*)
+Bash(gh api graphql *mergePullRequest*)"
 deny_ok=1
 if command -v python3 >/dev/null 2>&1; then
   py_script=/tmp/validate-kit-deny.$$
@@ -2108,9 +2131,23 @@ PYEOF
   done <<DENYFILES
 $deny_jsonfiles
 DENYFILES
+  ask_file="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json"
+  if ! python3 - "$ask_file" "$expected_ask_project" 2>/tmp/validate-kit-ask-out.$$ <<'PYEOF'
+import json, sys
+expected = set(sys.argv[2].splitlines())
+actual = set(json.load(open(sys.argv[1])).get("permissions", {}).get("ask", []))
+if actual != expected:
+    sys.stderr.write("missing: %s; unexpected extra: %s\n" % (sorted(expected - actual), sorted(actual - expected)))
+    sys.exit(1)
+PYEOF
+  then
+    fail "$ask_file permissions.ask does not exactly match the merge rules: $(cat /tmp/validate-kit-ask-out.$$)"
+    deny_ok=0
+  fi
+  rm -f /tmp/validate-kit-ask-out.$$
   rm -f "$py_script"
   [ "$deny_ok" -eq 0 ] || \
-    pass "both Claude deny lists are exactly the mechanically enforceable blocked commands"
+    pass "both Claude deny lists are exactly the mechanically enforceable blocked commands, and a project asks before every merge"
 else
   note "python3 not available; falling back to a substring check on permissions.deny"
   while IFS= read -r deny_json; do
@@ -2218,7 +2255,20 @@ check_claim "seven skills" "seven skills"
 # check above knows how many commands there really are; nothing else did, so a
 # document could keep the old number after the count moved and no check would
 # say so.
+check_claim "nine commands" "nine commands"
 check_claim "eight commands" "eight commands"
+check_claim "eight are commands" "eight are commands"
+# The skill count moved with it, from thirteen to eleven. The word alone also
+# counts other things, such as pull request descriptions, so these name the
+# phrases that counted skills.
+check_claim "thirteen skills" "thirteen skills"
+check_claim "thirteen canonical skills" "thirteen canonical"
+check_claim "thirteen kit skills" "thirteen AI Build Kit"
+check_claim "thirteen installed skills" "thirteen installed"
+check_claim "thirteen installable skills" "thirteen installable"
+check_claim "thirteen skill names" "the thirteen names"
+check_claim "beside the thirteen" "beside the thirteen"
+check_claim "the same thirteen" "the same thirteen"
 check_claim "four project documents" "four project documents"
 check_claim "four project records" "four project records"
 check_claim "four documents" "four documents hold"

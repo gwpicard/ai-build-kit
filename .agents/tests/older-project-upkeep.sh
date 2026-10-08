@@ -27,27 +27,28 @@ rs_init "Older-project upkeep rules"
 rs_exists "$MAINTAIN" "$SCRIPT" "$WORKFLOW" "$TEMPLATES/foundation/AGENTS.md" "$TEMPLATES/masterplan.md"
 
 # Both are decided by what is on disk, every visit.
-rs_rule "the monthly step runs both on what is on disk" 'on every visit, run "pointing the records at a skill by name" below, and whenever a `plan\.md` is at the project root, run "moving a plan\.md into issues" below'
-rs_rule "plan.md is offered for as long as it is there" 'run this on any visit that finds a `plan\.md` at the project root, for as long as it is there'
+rs_rule "the monthly step runs both on what is on disk" 'whenever a `plan\.md` is at the project root, run "moving a plan\.md into issues" below'
+rs_rule "plan.md is offered for as long as it is there" 'run this on any monthly visit that finds a `plan\.md` at the project root, for as long as it is there'
 rs_rule "the shape migration points to it" 'move a `plan\.md` into issues, as "moving a plan\.md into issues" below says'
 rs_rule "a plan.md of the person's own is left alone" 'where the file is plainly something else of the person.s, such as their own notes, leave it and say nothing'
 rs_rule "plan.md is removed only after the move" 'name what moved, and only then remove `plan\.md`'
 rs_rule "a no to the move comes back next visit" 'nothing records the no, so the offer comes back on the next visit that still finds the file'
 
 # The pointer rewrite.
-rs_rule "the pointer step runs every visit" 'pointing the records at a skill by name run this on every visit'
+rs_rule "the pointer step runs every monthly visit" '"finishing a kit update" runs this on every visit, through its check.s `pointer` lines'
 rs_rule "it runs the shipped script" 'scripts/old-skill-pointers\.py'
 rs_rule "nothing to change says nothing" 'when it prints nothing, say nothing'
 rs_rule "the rewrite waits for a yes" 'as one the person may want to change by hand\. wait for the person.s yes'
 rs_rule "the rewrite is read back" 'run it again without, and carry on only once no line it prints ends in a new form'
 rs_rule "a former skill name is found" 'under today.s name or one it had before, such as `start` for `setup-ai-build-kit`'
+rs_rule "a named pointer to a retired skill is found" 'it also finds a pointer that already names its skill, where that skill is one the kit has retired'
 rs_rule "only a pointer that stands alone is rewritten" 'the pointer stands alone, as a whole code span or a bare path, and the skill still has the file'
 rs_rule "a line left as written is never rewritten" 'a line ending in `left as written:` gives the reason it cannot, such as a pointer inside a code block, a command or a link, where a rewrite would break the line\. those are never rewritten'
 rs_rule "a rewrite changes nothing else" 'a rewrite changes the pointers and nothing else in the file, line endings included'
 rs_rule "lines only left as written get one line, not an offer" 'where the script finds only lines left as written, offer nothing: say in one line how many there are and in which file'
 rs_rule "the person hears which lines were left" 'name each line left as written, with its reason, as one the person may want to change by hand'
 rs_rule "no rewrite by hand when the script cannot run" 'where the harness cannot run the script, leave the files as they are and say that the check did not run'
-rs_rule "a no changes nothing" 'where the person says no, leave both files as they are\. the offer comes back on the next visit that still finds an old pointer'
+rs_rule "a no changes nothing" 'where the person says no, leave both files as they are, and record the no as "finishing a kit update" says'
 
 # The reminder script after a no to kit updates.
 rs_rule "the hook is skipped after no kit updates" 'unless the person asked during this visit to leave kit updates alone'
@@ -119,6 +120,60 @@ rs_report "a pointer under the founding skill's first name is rewritten to today
   "$(grep -qF "The restrictions in the \`setup-ai-build-kit\` skill's \`references/blocked-commands.md\` always apply." "$WORK/first/AGENTS.md" \
      && grep -qF "the \`setup-ai-build-kit\` skill's \`references/fit-check.md\`. The agent reads this section" "$WORK/first/masterplan.md" && echo yes || echo no)"
 
+# The fix skill was folded into shape and implement, and its rules now sit in
+# section-builder's repair reference. A pointer to its one file follows them.
+mkdir -p "$WORK/repair"
+printf '%s\n' 'Repairs follow `.agents/skills/fix/SKILL.md`.' > "$WORK/repair/AGENTS.md"
+python3 "$SCRIPT" --apply "$WORK/repair" >/dev/null
+rs_report "a pointer to the old fix skill is rewritten to the repair reference" \
+  "$(grep -qF "Repairs follow the \`section-builder\` skill's \`references/repair.md\`." "$WORK/repair/AGENTS.md" && echo yes || echo no)"
+
+# The queue skill folded into implement, and the sync skill's routine became
+# the maintain skill's truing reference. Pointers to either follow the rules.
+mkdir -p "$WORK/folded"
+printf '%s\n' 'Several pieces follow `.agents/skills/queue/SKILL.md`.' \
+  'Records follow `.agents/skills/sync/SKILL.md`.' \
+  'Stale names follow `.agents/skills/sync/references/document-read.md`.' > "$WORK/folded/AGENTS.md"
+python3 "$SCRIPT" --apply "$WORK/folded" >/dev/null
+rs_report "a pointer to the old queue skill is rewritten to implement" \
+  "$(grep -qF "Several pieces follow the \`implement\` skill's \`SKILL.md\`." "$WORK/folded/AGENTS.md" && echo yes || echo no)"
+rs_report "a pointer to the old sync skill is rewritten to the truing reference" \
+  "$(grep -qF "Records follow the \`maintain\` skill's \`references/truing.md\`." "$WORK/folded/AGENTS.md" && echo yes || echo no)"
+rs_report "a pointer to the old document read follows it into maintain" \
+  "$(grep -qF "Stale names follow the \`maintain\` skill's \`references/document-read.md\`." "$WORK/folded/AGENTS.md" && echo yes || echo no)"
+
+# The last nine-command release founded projects whose AGENTS.md names the
+# handover template by skill, as the `ship` skill's. That skill is gone and
+# handovers moved to maintain, so the named pointer opens nothing until it
+# follows them. The same file by its old folder goes to the same place. A named
+# pointer under a current name, one in a code block, and one to a file no skill
+# has are left alone.
+mkdir -p "$WORK/six"
+cat > "$WORK/six/AGENTS.md" <<'EOF'
+by install route. A pointer such as the `ship` skill's `templates/handover.md`
+names a file there. Recipes follow the `ship` skill's `templates/recipe.md`.
+Hand over with `.agents/skills/ship/templates/handover.md` when you leave.
+Already current: the `maintain` skill's `templates/handover.md`.
+```
+the `sync` skill's `SKILL.md`
+```
+Gone: the `queue` skill's `references/no-such-file.md` here.
+EOF
+sed -n '4,8p' "$WORK/six/AGENTS.md" > "$WORK/six/tail-before"
+six=$(python3 "$SCRIPT" "$WORK/six")
+python3 "$SCRIPT" --apply "$WORK/six" >/dev/null
+rs_report "a named pointer to the ship handover template follows it to maintain" \
+  "$(grep -qF "A pointer such as the \`maintain\` skill's \`templates/handover.md\`" "$WORK/six/AGENTS.md" && echo yes || echo no)"
+rs_report "a named pointer to another ship file goes to setup-hosting" \
+  "$(grep -qF "Recipes follow the \`setup-hosting\` skill's \`templates/recipe.md\`." "$WORK/six/AGENTS.md" && echo yes || echo no)"
+rs_report "the handover template by its old folder goes to maintain too" \
+  "$(grep -qF "Hand over with the \`maintain\` skill's \`templates/handover.md\` when you leave." "$WORK/six/AGENTS.md" && echo yes || echo no)"
+rs_report "a current named pointer, one in a code block, and one to a missing file are left as they were" \
+  "$(sed -n '4,8p' "$WORK/six/AGENTS.md" | cmp -s - "$WORK/six/tail-before" \
+     && [ "$(printf '%s\n' "$six" | grep -c 'left as written: ')" = 2 ] && echo yes || echo no)"
+rs_report "a second run on that project finds nothing more to rewrite" \
+  "$([ -z "$(python3 "$SCRIPT" "$WORK/six" | grep -v 'left as written: ')" ] && echo yes || echo no)"
+
 # Lines where a rewrite would break what the person wrote. Each is listed with
 # its reason and left exactly as it was, and a line with two standalone
 # pointers has both rewritten.
@@ -126,11 +181,11 @@ mkdir -p "$WORK/awkward"
 cat > "$WORK/awkward/AGENTS.md" <<'EOF'
 Run `python3 .agents/skills/maintain/scripts/old-skill-pointers.py` monthly.
 See [pieces](.agents/skills/setup-ai-build-kit/references/pieces.md) for more.
-Folder `.agents/skills/ship/recipes/` holds recipes.
+Folder `.agents/skills/setup-hosting/recipes/` holds recipes.
 Anchor .agents/skills/setup-ai-build-kit/references/pieces.md#shape here.
 Prefixed ./.agents/skills/setup-ai-build-kit/references/pieces.md here.
 Gone `.agents/skills/setup-ai-build-kit/references/no-such-file.md` here.
-Two: `.agents/skills/ship/templates/handover.md` and `.agents/skills/start/references/pieces.md`.
+Two: `.agents/skills/ship/templates/recipe.md` and `.agents/skills/start/references/pieces.md`.
 EOF
 head -6 "$WORK/awkward/AGENTS.md" > "$WORK/awkward/untouched"
 listed_awkward=$(python3 "$SCRIPT" "$WORK/awkward")
@@ -140,7 +195,7 @@ rs_report "a pointer inside a command, a link, a longer path, or to a missing fi
 rs_report "and each of those lines is left exactly as it was" \
   "$(head -6 "$WORK/awkward/AGENTS.md" | cmp -s - "$WORK/awkward/untouched" && echo yes || echo no)"
 rs_report "two standalone pointers on one line are both rewritten" \
-  "$(grep -qF "Two: the \`ship\` skill's \`templates/handover.md\` and the \`setup-ai-build-kit\` skill's \`references/pieces.md\`." "$WORK/awkward/AGENTS.md" && echo yes || echo no)"
+  "$(grep -qF "Two: the \`setup-hosting\` skill's \`templates/recipe.md\` and the \`setup-ai-build-kit\` skill's \`references/pieces.md\`." "$WORK/awkward/AGENTS.md" && echo yes || echo no)"
 rs_report "after the rewrite, nothing is left to rewrite" \
   "$([ -z "$(python3 "$SCRIPT" "$WORK/awkward" | grep -v 'left as written: ')" ] && echo yes || echo no)"
 
@@ -154,9 +209,9 @@ cat > "$WORK/blocks/AGENTS.md" <<'EOF'
 ```sh
 cat .agents/skills/setup-ai-build-kit/references/pieces.md
 ```
-    cat .agents/skills/ship/templates/handover.md
+    cat .agents/skills/maintain/templates/handover.md
 Double `` .agents/skills/setup-ai-build-kit/references/pieces.md `` here.
-Folder .agents/skills/ship/recipes here.
+Folder .agents/skills/setup-hosting/recipes here.
 Read the `.agents/skills/setup-ai-build-kit/references/fit-check.md` file.
 EOF
 head -6 "$WORK/blocks/AGENTS.md" > "$WORK/blocks/untouched"
@@ -228,7 +283,7 @@ print("\n".join(sorted(module.KIT_SKILLS)))
 PY
 )
 shipped=$(ls "$ROOT/.agents/skills" | sort)
-rs_report "the script names exactly the kit's fourteen skills" \
-  "$([ "$listed" = "$shipped" ] && [ "$(printf '%s\n' "$listed" | grep -c .)" = 14 ] && echo yes || echo no)"
+rs_report "the script names exactly the kit's eleven skills" \
+  "$([ "$listed" = "$shipped" ] && [ "$(printf '%s\n' "$listed" | grep -c .)" = 11 ] && echo yes || echo no)"
 
 rs_done

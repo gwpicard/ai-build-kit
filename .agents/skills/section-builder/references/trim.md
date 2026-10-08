@@ -7,8 +7,7 @@ starts using it. The trim finds them while they are still free to remove.
 
 ## Where it applies
 
-Every build on Build and run it and on Build with care, including a repair
-that /fix saves. Not on Explore privately, where the work is thrown away.
+Every build on Build and run it and on Build with care, including a repair. Not on Explore privately, where the work is thrown away.
 
 It runs once, after the tests, the type check and the linter pass and before
 the person tries the result, so they judge the piece as it will be saved.

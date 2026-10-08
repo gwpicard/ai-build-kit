@@ -1,5 +1,6 @@
 # setup: fixture
 # prepare: first-upload
+# merge-box: answered
 # Bramble keeps its pieces as issues on GitHub, and the repository holds
 # nothing else: founding told the person no code was uploaded. One small piece
 # is ready. On the pre-release run of 26 September 2026 the person's first

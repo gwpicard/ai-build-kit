@@ -25,7 +25,7 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 . "$ROOT/.agents/tests/lib/recipe-rehearsal.sh"
 
 rs_init "Next.js and Supabase on Coolify recipe"
-rr_locate "$ROOT/.agents/skills/ship/recipes/nextjs-supabase-on-coolify.md"
+rr_locate "$ROOT/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-coolify.md"
 rr_shape
 
 # Preview.

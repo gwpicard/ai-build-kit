@@ -22,16 +22,16 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 . "$ROOT/.agents/tests/lib/rule-shape.sh"
 
-SHIP="$ROOT/.agents/skills/ship/SKILL.md"
+HOSTING="$ROOT/.agents/skills/setup-hosting/SKILL.md"
 SECOND="$ROOT/.agents/skills/second-opinion/SKILL.md"
 BUILDER="$ROOT/.agents/skills/section-builder/SKILL.md"
 FOUNDATION="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md"
 WORKFLOW="$ROOT/WORKFLOW.md"
 
 rs_init "Stored-login and live-change rules"
-rs_exists "$SHIP" "$SECOND" "$BUILDER" "$FOUNDATION" "$WORKFLOW"
+rs_exists "$HOSTING" "$SECOND" "$BUILDER" "$FOUNDATION" "$WORKFLOW"
 
-# /ship is where the keychain was read, in the launch review.
+# /setup-hosting is where the keychain was read, in the launch review.
 rs_rule "the login rule reaches every step that reaches a service" 'this holds for the launch review and for every step in this skill that reaches a service'
 rs_rule "only the tool's own commands and the browser's keys" 'the kit uses only what a tool offers through its own commands, and the keys the tool already sends to the browser'
 rs_rule "never a stored login from the keychain or another tool's files" 'it never reads a stored login, token or password out of the keychain, a credential store, or another tool.s own files'
@@ -42,19 +42,19 @@ rs_rule "never cannot-read followed by a read" 'once it has said it cannot read 
 rs_rule "a key the person gave the project is the project's own" 'a key the person gave this project, kept where the masterplan records it, belongs to the project'
 rs_rule "a live change waits for a yes that names it and says whether it can be undone" 'a command that changes a live service.s settings or data, other than saving code through the save route, waits for a yes that names the change and says whether it can be undone'
 rs_rule "not knowing whether it can be undone is said" 'where the kit does not know whether the change can be undone, it says that'
-rs_rule "ship names everything the command changes, from its preview" 'name every setting or record the command will change, not only the one you meant to change, taken from the command.s own preview where it has one'
-rs_rule "ship knows a settings push changes all that differs" 'pushing a whole local settings file changes everything in it that differs from the live project'
+rs_rule "setup-hosting names everything the command changes, from its preview" 'name every setting or record the command will change, not only the one you meant to change, taken from the command.s own preview where it has one'
+rs_rule "setup-hosting knows a settings push changes all that differs" 'pushing a whole local settings file changes everything in it that differs from the live project'
 rs_rule "the recipe's own commands, in any section, need no further yes" 'the commands the project.s recipe names, in any section, are the launch the person asked for, and need no further yes'
 rs_rule "anything the recipe does not name, and any settings push, still waits" 'anything the recipe does not name, and any push of a settings file, waits for the named yes'
 rs_rule "a whole-account token is for the recipe's reads only" 'a token in the person.s environment that reaches the whole account is used only for the reads the recipe names'
 rs_rule "a change with that token waits for the yes" 'a change made with it waits for the yes above'
-rs_rule "migrations to the live project are a live change in ship" 'applying migrations to the live project'
+rs_rule "migrations to the live project are a live change in setup-hosting" 'applying migrations to the live project'
 rs_rule "no secret key in a shared temporary folder" 'a secret key is never written to a shared temporary folder such as `/tmp`'
 rs_rule "a key goes straight into the file that uses it" 'write what a step needs straight into the git-ignored file that uses it'
 rs_rule "the setting read goes through the tool's own commands" 'a command-line tool this session is already signed in to, through that tool.s own commands'
-rs_guard "$SHIP" "ship's login and live-change rules"
-rs_require_order "the login rule follows the setting rule" "$SHIP" '^#### A setting the kit can read$' '^#### A login the kit does not own$'
-rs_require_order "the live-change rule comes before the secret rule" "$SHIP" '^#### A change to a live service$' '^#### A secret a check needs$'
+rs_guard "$HOSTING" "setup-hosting's login and live-change rules"
+rs_require_order "the login rule follows the setting rule" "$HOSTING" '^#### A setting the kit can read$' '^#### A login the kit does not own$'
+rs_require_order "the live-change rule comes before the secret rule" "$HOSTING" '^#### A change to a live service$' '^#### A secret a check needs$'
 
 # The launch review itself runs in second-opinion.
 rs_reset

@@ -121,8 +121,8 @@ rs_require "the FAQ says a Pencil design lives in the project" \
   "$README" 'pencil.*\.pen.*project'
 rs_require "the FAQ names free Penpot and where its design lives" \
   "$README" 'penpot.*free.*server'
-rs_require "the FAQ names Sketch's price and local file" \
-  "$README" 'sketch.*12.*local'
+rs_require "the FAQ names Sketch and its local file, with no price" \
+  "$README" 'sketch.*local'
 
 for skill_file in "$STRUCTURE" "$ARTIFACT" "$SETUP"; do
   rs_require_absent "skills name no companion design or browser product" \

@@ -12,7 +12,7 @@ prints one line for each of two findings, and nothing when there are none:
         listed, since it is where a reader starts.
 
 A document that names things the project no longer has is the document read's
-to find, in /sync, one name at a time.
+to find, in every /maintain visit, one name at a time.
 
 It compares paragraphs word for word, after ignoring case, spacing and
 punctuation, so it finds a copy and never two documents that say the same

@@ -1,13 +1,72 @@
 ---
 name: maintain
-description: The service visit for AI Build Kit updates, project upkeep, handovers, and retirement. Trigger monthly for the light pass, quarterly or before any handover for the full one, and when a tool is being retired. Composes sync and the evidence run instead of repeating them. Do not use for building, fixing, or planning.
+description: Make the project true and healthy, at any time. Every visit trues the records against what actually happened and compares the live copy with main without changing it. The monthly and quarterly upkeep run only when due, and the visit also holds handovers and retirement. Trigger when it has been a while, after work done outside the skills, before a handover, and when a tool is being retired. A session that died part-way goes to what-now first. Do not use for building, repairing, or planning.
 ---
 
 # Maintain
 
 Small regular maintenance is what keeps the rare big problem from arriving. Report findings before applying anything beyond routine updates.
 
-## Monthly, light
+This command can run at any time. Every visit makes the project true again.
+The monthly and quarterly parts run only when they are due.
+
+## Every visit
+
+1. Make the records true. Load `references/truing.md` and follow it. Its
+   save step saves the corrections through the save route as soon as the
+   truing is done, before the rest of the visit changes a file. The monthly
+   part's clean checkpoint starts from that save.
+
+   The person's own uncommitted work stays out of every commit the visit
+   makes. Report it in one line and name /what-now, which offers to continue
+   it, save it or clear it. While it is there, the tree is not clean, so the
+   kit update and every other step that needs the clean checkpoint waits, as
+   it always has: say so in one line. Steps that only read carry on.
+2. Compare the live copy with `main`, read-only. Where the masterplan's "How
+   it stays running" section records a live address, make only these reads,
+   each as the `setup-hosting` skill's "A later run" describes it:
+
+   - whether the live copy runs the latest merge on `main`, from its health
+     route or the host's list of deployments;
+   - whether the live copy is still held on an earlier version since a
+     rollback;
+   - whether `main` holds a database migration the live database does not
+     have, read with the recipe's own dry run where it has one, its secret
+     passed by its location as "A secret a check needs" in that skill says;
+   - whether each secret name the tool needs is present on the host, by name
+     only;
+   - whether health answers.
+
+   Report each gap in one plain line, and change nothing. Say nothing more
+   about a part that matches, and say in one line when a read could not be
+   made. Write nothing to the changelog here, and do not rerun the fit check
+   from this step.
+
+   The backup, the restore, the preview and the rest of the recipe's checks
+   stay in /setup-hosting's later run. They can stop the local database, copy
+   the live one, or need the person, so a visit nobody asked to touch the
+   live side never runs them. Offer that later run in one line, with any gap
+   found, since each repair there waits for its own yes. Never apply a
+   migration, deploy, promote or roll back from this visit. Without a
+   recorded live address, skip this step and say nothing.
+3. Decide what else is due. Read `.ai-build-kit-maintenance`. The monthly part
+   is due 30 days after its `last-light-pass` date, or 30 days after founding
+   when no visit is recorded. The quarterly part is due 90 days after its
+   `last-full-pass` date, or 90 days after founding when no full visit is
+   recorded, and whenever the person asks for a handover. The person may ask
+   for either part at any time, and then it is due. A records-only visit,
+   where the person asks only for the records to be checked, runs only the
+   every-visit steps. Run what is due. Where a part is not due, say so in one
+   line with the date it falls due. When nothing more is due, the visit ends
+   with the truing's summary and step 4. A monthly or quarterly part that runs
+   saves its own changes the same way at its end, on top of the truing's save.
+4. Finish a kit update, as "Finishing a kit update" below says. This runs on
+   every visit, a records-only one included, since the visit that ran the
+   update was still following the release it replaced. Where the monthly part
+   runs on this visit, its step 5 runs this after the update; do not run it
+   twice on the same visit.
+
+## Monthly, when due
 
 1. Read this skill's `VERSION` file, which is the version this project holds.
    Then ask for the latest published one with
@@ -17,7 +76,7 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    its first row for anybody who can see the repository, which would offer an
    update that does not exist yet.
 
-   Say both numbers, every visit, whichever way they compare: "This project
+   Say both numbers, every monthly visit, whichever way they compare: "This project
    holds v0.15.0, and the latest published AI Build Kit is v0.16.0." Where they
    differ, say so plainly rather than leaving the person to compare two numbers,
    read the newer version's notes, and add: "A newer AI Build Kit is available.
@@ -38,10 +97,13 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    rule there. Wait for approval rather than replacing an edit silently.
 3. Identify how this project receives AI Build Kit. Check whether
    `skills-lock.json` records skills from `gwpicard/ai-build-kit`. Where it
-   does, count its entries against the fourteen names and say which are
+   does, count its entries against the eleven names and say which are
    missing. A short installation means a skill the kit renamed or added never
    arrived. The version file cannot show this, because the same update that
    drops a skill rewrites the version, so the count is the only sign.
+   An entry under one of the kit's former names, such as `fix`, `queue`,
+   `sync` or `ship`, is an old skill the installer kept. "Migrating a project
+   installed before the six commands" below removes it.
    In Claude Code, also use `claude plugin list --json` to check for the enabled
    `ai-build-kit@ai-build-kit` plugin and note its installation scope. Also
    check for an Agent Plugins installation: a `plugin.json` naming
@@ -58,7 +120,11 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    - For an Agent Plugins installation, use the coding agent's own plugin
      update command. When the agent has none, download the latest public
      Release and replace the installed `agent-plugin` folder after the same
-     approval and clean checkpoint.
+     approval and clean checkpoint. Afterwards, read the installed folder's
+     `skills` folder back. It holds the eleven and no folder under a former
+     name such as `fix`, `queue`, `sync` or `ship`. Where an old folder is
+     still there, the agent's command did not replace the folder whole. Say
+     so, and offer the replacement from the Release after the same approval.
    - For a shared skills installation, run
      `npx skills add gwpicard/ai-build-kit` and let the person choose the same
      coding agents the project already uses. Choosing `universal` is what puts
@@ -75,7 +141,7 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    Do not update unrelated plugins, project skills, or global skills.
 5. For the shared route, confirm that this skill's `VERSION` now matches the
    version step 1 read from `releases/latest`, and that the count from step 3
-   is now fourteen. When the shared installation did not have `screen-check`
+   is now eleven. When the shared installation did not have `screen-check`
    before this visit, confirm that the same `npx skills add` command added it,
    and carry on only once it is there. A matching version
    alone is not proof the installation is whole. For the Claude route, confirm
@@ -96,19 +162,16 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    skill, also run "Migrating a project founded before the shape rename". Both
    are decided by what is on disk rather than by which update this is, because
    an update that removed the old skill without adding the new one leaves
-   nothing else to say it happened. Whenever the build-path section of
+   nothing else to say it happened. Then run "Finishing a kit update" below,
+   with `--monthly`; it finds what the six commands left, on disk too.
+   Whenever the build-path section of
    `masterplan.md` carries a `Required controls:` or `Outside help:` line, or
    a `Path:` value the kit no longer uses, also run "Migrating a masterplan
    written with four build paths" below; that too is decided by what the
-   masterplan says rather than by which update this is. On the shared route,
-   also run "Tidying a project founded from a whole copy of the kit" below
-   whenever the leftovers it names are present. On every route and every
-   visit, run "Adding the plan printout helper" below; it does nothing when
-   the project's copy is already current. On every visit, run "Pointing the
-   records at a skill by name" below, and whenever a `plan.md` is at the
-   project root, run "Moving a plan.md into issues" below. Both are decided by
-   what is on disk, so a project that missed the update which first needed
-   them still gets them.
+   masterplan says rather than by which update this is. Whenever a `plan.md`
+   is at the project root, run "Moving a plan.md into issues" below. That is
+   decided by what is on disk, so a project that missed the update which
+   first needed it still gets it.
 6. Re-read the capability profile's reach-check engine against what the
    harness and project can use now. Keep the same preference order as
    the `section-builder` skill's `references/reach-check.md`, and update the
@@ -119,8 +182,10 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    then update the map only after the person answers.
 8. If the normal route is unavailable, use the latest published Release, the
    one step 1 read, as the fallback source. A shared installation may replace
-   only the fourteen AI Build Kit skill folders after the same approval and
-   clean checkpoint. A Claude
+   only the eleven AI Build Kit skill folders after the same approval and
+   clean checkpoint. That leaves the folder of a skill the kit has since
+   retired, so run "Tidying a project founded from a whole copy of the kit"
+   afterwards too. A Claude
    plugin installation keeps its current enabled version when the marketplace
    cannot be reached. Confirm that version with `claude plugin list --json`,
    tell the person the update did not happen, and retry when the marketplace is
@@ -128,24 +193,23 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
    checkpoint can restore Claude's plugin cache. If the plugin is no longer
    enabled, stop and ask the person to reinstall it after the marketplace is
    reachable.
-9. Read the masterplan's trued-against mark and count landed changes since it
-   using the `setup-ai-build-kit` skill's `references/masterplan-changes.md`.
-   When data, permissions or connections were touched, report the count and
-   offer /sync in one line. An absent or unusable mark gets the same offer
-   without a guessed count. Then update project dependencies and check for known
-   vulnerabilities. Report what changed; apply on approval.
+9. Update project dependencies and check for known vulnerabilities. Report
+   what changed; apply on approval. The masterplan's gap since its
+   trued-against mark was already read in the truing, on every visit.
 10. Once live: read the error alerts and the bills. Anything real becomes a piece, for implement to take: open an issue in the shape the `setup-ai-build-kit` skill's `references/pieces.md` describes. A finding nobody wrote down is a finding nobody acts on.
 11. Verify backups still run where the tool has any. A check that needs a secret reads where it lives from the masterplan first, asks once when that is unknown, and never calls the secret absent. Confirm the named operational owner from the masterplan still holds that role, and that no critical service or credential is tied to someone who has left.
-12. Check whether use or reliance has grown enough that the fit check should run again; if it has, run it before anything else this visit.
+12. Check whether use or reliance has grown enough that the fit check should run again; if it has, run it before the rest of the monthly part.
 13. On every build path, count every line in the project's AGENTS.md, including
     blank lines, and read it for a directory layout, dependency list,
-    architecture overview or style rule an automatic check could enforce. It
+    architecture overview or style rule an automatic check could enforce, and
+    for lines that no longer pay their way, such as a rule about a tool or a
+    step the project has dropped. It
     stays under 200 lines and holds only what the code cannot show: the save
     and review routes, conventions that differ from the default, and pointers
     to the records.
 
-    At 200 lines or more, or with any of the named content even below that
-    count, offer a trim in one line, using the measured count and what can
+    At 200 lines or more, or with any of the named content or such a line
+    even below that count, offer a trim in one line, using the measured count and what can
     go: "The standing instructions have reached 240 lines, and 30 of them
     describe the folder layout the code already shows. Shall I trim them?"
 
@@ -161,10 +225,7 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
     command that removes it. List this computer and GitHub separately. Keep
     the ones Git confirms apart from the ones only GitHub records as merged.
     Never remove a branch. When no branch qualifies, say nothing.
-16. Run "Adding the rules that stop a push to `main`" below. It says nothing
-    when the project already has them, or when the person said no to the same
-    rules before.
-17. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
+16. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
     today's date on the `last-light-pass` line, written as YYYY-MM-DD. If that
     file is missing, create it with a `founded` line holding the date
     masterplan.md was first saved, then the two pass lines. If the project has
@@ -181,6 +242,96 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
     settings existed before AI Build Kit did, add that the reminder cannot
     appear by itself there, and that `/what-now` reports it when asked.
 
+## Finishing a kit update
+
+An update refreshes the kit's skills and nothing else. The visit that runs it
+is still following the maintain text of the release it replaces, which knows
+nothing of what the new release changed. So what an update leaves behind is
+finished here, on the next visit, whatever day it falls on. It never waits for
+the monthly part.
+
+1. Read what is left. From the project root, run `python3 <installed maintain
+   skill>/scripts/upgrade-check.py`, with `--monthly` added when the monthly
+   part runs on this visit. It changes nothing. It prints one line for each
+   thing left, and its exit code decides. Exit 0 means no step is left. Then
+   offer nothing; step 2 still names unseen informational lines. Say nothing
+   else about the update, except one line for each `declined` step
+   below. On a monthly visit, also say in one line how many `pointer` or
+   `commands` lines end in `left as written:`, and in which file, since those
+   come back every month until the person changes them. Exit 1 means at least one step is left, and the rest of this
+   section runs. Exit 2 means the check could not run: say so in one line and
+   carry on with the visit.
+2. Make the full offer only on the first visit that finds a leftover and on
+   monthly visits. Read `upgrade-offered|<installed VERSION>` in
+   `.ai-build-kit-maintenance`. After showing the offers, record that line,
+   keeping the other lines. On other visits with the same version, say only:
+   "The kit update is not finished. The earlier /maintain offer still stands."
+   Apply nothing until the person answers that offer. The automatic helper
+   step still runs after the checkpoint. Do not repeat `mention` or `left`
+   lines on those visits. When exit 0 has only those lines, name them once
+   and record the same line too, so a project with no actionable step still
+   hears about its own guidance.
+
+   Say once, in the reply that makes the offers below, where a line names a
+   retired skill or command, or `setup-hosting` as missing: "The kit now has
+   six commands. /fix and /queue are part of /shape and /implement, /sync is
+   part of /maintain, and /ship is now /setup-hosting. Nothing you built has
+   changed." Add that a saved note or shortcut typing an old command still
+   needs changing by hand.
+3. Put the helper in place. A `helper` line is the kit's own machinery, so it
+   needs no question: on the clean checkpoint the truing's save leaves, run
+   the check with `--apply helper`, as "Adding the plan printout helper" below
+   says.
+4. Make every other offer in one reply, each in plain words, and change
+   nothing without a yes to that offer, except recovery of an already approved
+   update:
+   - `installer` lines: the installer's own removal, as "Migrating a project
+     installed before the six commands" below says.
+   - `missing` lines: recover with the add command from the monthly part's
+     update step after the update approval already given. Do not ask again
+     for that recovery. Where no update was approved, offer the add first.
+   - `folder`, `adapter`, `kitcopy` and `hook` lines: `--apply remove`, as
+     "Tidying a project founded from a whole copy of the kit" below says.
+   - `commands` and `pointer` lines that show a new form: `--apply commands`
+     and `--apply pointers`, each shown old and new, as "Bringing the
+     project's instructions up to the current names" and "Pointing the records
+     at a skill by name" below say.
+   - `settings` lines: `--apply settings`, as "Adding the kit's newer safety
+     rules" below says.
+   - a `template` line: `--apply template`. It rewrites one sentence the kit
+     itself wrote into the masterplan's "How it stays running" comment, which
+     still names the old launch command, and nothing else in the file.
+5. After each step, run the check again, and carry on only once that step's
+   lines are gone. Where they remain, say so in one line and carry on with the
+   other steps. Every step that changes a file waits for the clean checkpoint.
+   While the person's own uncommitted work is there, make the offers and say
+   that they wait, as "Every visit" says.
+6. Lines starting `mention` name a line of the person's own in AGENTS.md or
+   masterplan.md that still names a retired command, such as a note of when
+   they run one. Those lines guide later sessions, so they are not history.
+   Name each one once, in the reply that makes the offers, as the person's to
+   change, and never rewrite one. Name `left` lines once in the same reply.
+   Keep the named lines in the visit's changelog record. Before naming one,
+   read that record: do not repeat a line already named, even on a monthly
+   visit, unless its text has changed.
+   The changelog is the only history, and the check never reads it.
+7. Where the person says no to an offer, run the check with `--decline` and
+   that step's name, such as `--decline installer` or `--decline
+   commands,template`. It records the no. On a later visit without
+   `--monthly`, that step prints as a `declined` line: say it in one line,
+   such as "The old skills are still installed, as you chose; the next monthly
+   visit offers their removal again." Make the full offer again only on a
+   monthly visit. A declined safety rule follows the rule in "Adding the kit's
+   newer safety rules" instead.
+8. Record one dated changelog line that says what was done and what was
+   declined. Save it with the visit's other changes, through the save route.
+9. Run the check once more at the end of the visit. Exit 0 ends the update,
+   and a later visit says nothing about it. Exit 1 means a step is still left:
+   say which in one line, and that the next visit finishes it.
+
+Where the harness cannot run the check, say so in one line and follow the
+sections below by hand, each as it says.
+
 ## Adding the plan printout helper
 
 `plan.local.md` is written by `.agents/tools/plan-refresh.sh` in the project.
@@ -189,14 +340,16 @@ in. A project founded before that has no copy, unless it came from a whole copy
 of the kit, and then its copy may be older. An update refreshes skills and
 nothing else, so the helper would never arrive.
 
-On the clean checkpoint from step 2, and after the update where the person
-approved one, run `sh <installed setup-ai-build-kit skill>/scripts/place-plan-helper.sh`
-from the project root. It adds the helper when it is missing, replaces a copy
-that differs from the installed one, and changes nothing when the copy is
-current, so it is safe on every visit.
+"Finishing a kit update" runs this on any visit whose check prints a `helper`
+line, on the clean checkpoint the truing's save leaves, and after the update
+where the person approved one. Its `--apply helper` runs `sh <installed
+setup-ai-build-kit skill>/scripts/place-plan-helper.sh` from the project root.
+That adds the helper when it is missing, replaces a copy that differs from the
+installed one, and changes nothing when the copy is current, so it is safe on
+every visit.
 
 Where it added the helper, say one sentence: "I have added the helper that
-prints your list of pieces, so /what-now, /queue and /implement read what is
+prints your list of pieces, so /what-now and /implement read what is
 ready from it rather than from the issues by hand." Where it replaced one, say
 that the helper was brought up to date, and that any change made to the old
 copy by hand was replaced too and is kept in the checkpoint saved first. Where
@@ -206,36 +359,55 @@ nothing. Where the harness cannot run the script and the project has no
 helper, copy the installed skill's `templates/foundation/plan-refresh.sh` to
 `.agents/tools/plan-refresh.sh` by hand.
 
-## Adding the rules that stop a push to `main`
+## Adding the kit's newer safety rules
 
 Founding copies the kit's Claude Code settings into `.claude/settings.json`
 once, and no update touches that file again. A project founded before the kit
-learned a new way to write a push to `main` keeps the older rules, and a push
-the older rules miss goes through with nothing to stop it. So the visit offers
+learned a new way to write a dangerous command keeps the older rules, and a
+command the older rules miss goes through with nothing to stop it. The same
+holds for the question Claude Code asks before a merge. So the visit offers
 the missing rules, once.
 
+The script `<installed maintain skill>/scripts/settings-rules.py` makes the
+comparison, so nobody edits the JSON by hand. The check in "Finishing a kit
+update" runs it on every visit, and its `settings` lines are what it found.
+
 1. Where the project has no `.claude/settings.json`, this step ends. Otherwise
-   read its `permissions.deny` list, and the one in the installed
-   setup-ai-build-kit skill's `templates/foundation/claude-settings.json`.
-   Take the rules from that file, never from memory.
-2. List each rule the template holds that names both `git push` and `main`,
-   and the project's list lacks. Leave out every other rule, such as the
-   force-push ones, since the person may have removed one on purpose. When there is none, say nothing.
-3. Read the `push-rules-declined` line in `.ai-build-kit-maintenance`, if there
-   is one. Where it already lists every missing rule, the earlier no stands,
-   and you say nothing.
+   the script reads its `permissions.deny` and `permissions.ask` lists, and
+   the ones in the installed setup-ai-build-kit skill's
+   `templates/foundation/claude-settings.json`. Take the rules from that file,
+   never from memory.
+2. It lists each rule the template holds and the project lacks, in three
+   groups. It leaves out a group when its condition does not hold, since the
+   person may have removed a rule on purpose. When no rule is left, say
+   nothing.
+   - A rule in `deny` that names both `git push` and `main`. Always offered.
+   - A rule in `deny` that stops a force push or a forced delete. Offered only
+     while the project still holds `Bash(git push --force:*)` for a force
+     push, or `Bash(rm -rf:*)` for a forced delete.
+   - A rule in `ask`, which makes Claude Code ask before a merge. Always
+     offered.
+3. It reads the `push-rules-declined` line in `.ai-build-kit-maintenance`, if
+   there is one. Where it already lists every missing rule, the earlier no
+   stands, the rules print as `declined`, and you say nothing more than the
+   one line "Finishing a kit update" gives a declined step.
 4. Offer the change once, in one reply. Name the rules it adds, and say in
    plain words what they stop: a push to `main` written with an option before
-   the remote, such as `-q`, or as `HEAD:refs/heads/main`. Say that it adds
-   lines to the deny list and changes nothing else in the file. Say too that
-   the `setup-ai-build-kit` skill's `references/blocked-commands.md` lists the
-   spellings the rules still cannot catch. Ask for a yes.
-5. On a yes, add only the missing rules to the end of `permissions.deny`. Keep
-   every other entry and setting as it is, even an older push rule the new
-   ones cover. Check that the file still reads as valid JSON. Save it with the
-   visit's other changes and add a dated changelog line.
-6. On a no, change nothing. Record the no as one line in
-   `.ai-build-kit-maintenance`, replacing any earlier one:
+   the remote, such as `-q`, or as `HEAD:refs/heads/main`; a force push with
+   the option at the end; a forced delete written as `rm -fr`; a merge with no
+   click from the person. Say that it adds lines to those lists and changes
+   nothing else in the file. Say too that the `setup-ai-build-kit` skill's
+   `references/blocked-commands.md` lists the spellings the rules still cannot
+   catch. Ask for a yes.
+5. On a yes, run the check with `--apply settings`. It adds only the missing
+   rules to the end of the list each came from. It keeps every other entry
+   and setting as it is, even an older rule the new ones cover, and it writes
+   nothing unless the file still reads as valid JSON with every earlier entry
+   in it. Save it with the visit's other changes and add a dated changelog
+   line.
+6. On a no, change nothing. Run the check with `--decline settings`, which
+   records the no as one line in `.ai-build-kit-maintenance`, replacing any
+   earlier one:
    `push-rules-declined|<YYYY-MM-DD>|<the rules offered, separated by " ; ">`.
    A later visit offers again only when a new release adds a rule that line
    does not list.
@@ -266,7 +438,7 @@ Record the migration in the changelog as a dated line.
 
 ## Moving a plan.md into issues
 
-Run this on any visit that finds a `plan.md` at the project root, for as long
+Run this on any monthly visit that finds a `plan.md` at the project root, for as long
 as it is there. It used to run only on the visit that first brought in
 `/shape` and `/implement`, and a project that missed that visit kept its
 `plan.md` for good, with nothing to say its pieces were never picked up.
@@ -289,7 +461,8 @@ on the next visit that still finds the file. Say that too, in the same reply.
 
 ## Pointing the records at a skill by name
 
-Run this on every visit. A project founded before the kit named its pointers
+"Finishing a kit update" runs this on every visit, through its check's
+`pointer` lines. A project founded before the kit named its pointers
 by skill carries lines in AGENTS.md and masterplan.md that name a skill's file
 by its place in the project's `.agents/skills/` folder. A project installed
 for Claude Code alone, or through a plugin, has no such folder, so the line
@@ -298,11 +471,15 @@ opens nothing. The current form names the skill and the path inside it: the
 skills and never touches these two files, so the old lines stay until the
 visit changes them.
 
-1. From the project root, run `python3 <installed maintain
-   skill>/scripts/old-skill-pointers.py`. It reads only those two files and
-   prints one line for each old pointer it finds, and nothing when there is
-   none. It finds a pointer into one of the kit's skills under today's name
-   or one it had before, such as `start` for `setup-ai-build-kit`. A project's
+1. The check runs `python3 <installed maintain
+   skill>/scripts/old-skill-pointers.py` from the project root, and prints
+   each of its lines with `pointer` in front. The script reads only those two
+   files and prints one line for each old pointer it finds, and nothing when
+   there is none. It finds a pointer into one of the kit's skills under today's name
+   or one it had before, such as `start` for `setup-ai-build-kit`. It also
+   finds a pointer that already names its skill, where that skill is one the
+   kit has retired. A pointer to the handover template in `ship` now names
+   the `maintain` skill, since handovers moved there. A project's
    own skill, a placeholder such as `<name>`, and a mention of the folder
    itself are never found. When it prints nothing, say nothing.
 2. A line ending in the new form is one the script can rewrite: the pointer
@@ -316,13 +493,15 @@ visit changes them.
    before and after. Name each line left as written, with its reason, as one
    the person may want to change by hand. Wait for the person's yes. Where the
    script finds only lines left as written, offer nothing: say in one line how
-   many there are and in which file, since they come back on every visit
+   many there are and in which file, since they come back on every monthly visit
    until the person changes them.
-4. On a yes, run the same command with `--apply`, then run it again without,
-   and carry on only once no line it prints ends in a new form. Save the
-   change with the visit's other changes and add a dated changelog line.
-5. Where the person says no, leave both files as they are. The offer comes
-   back on the next visit that still finds an old pointer.
+4. On a yes, run the check with `--apply pointers`, which runs the script
+   with `--apply`. Then run it again without, and carry on only once no line
+   it prints ends in a new form. Save the change with the visit's other
+   changes and add a dated changelog line.
+5. Where the person says no, leave both files as they are, and record the no
+   as "Finishing a kit update" says. The offer comes back in full on the next
+   monthly visit that still finds an old pointer.
 
 Where the harness cannot run the script, leave the files as they are and say
 that the check did not run. A rewrite by hand cannot tell a pointer that stands
@@ -331,7 +510,7 @@ line.
 
 ## Migrating a project founded before the setup-ai-build-kit rename
 
-Run this on any visit that finds a `start` skill installed, or no
+Run this on any monthly visit that finds a `start` skill installed, or no
 `setup-ai-build-kit` skill. It is idempotent: a visit that finds only
 `setup-ai-build-kit` does nothing here.
 
@@ -360,7 +539,7 @@ Record the tidy-up in the changelog as a dated line.
 
 ## Migrating a project founded before the shape rename
 
-Run this on any visit that finds a `plan` skill installed, or no `shape`
+Run this on any monthly visit that finds a `plan` skill installed, or no `shape`
 skill. It is idempotent: a visit that finds only `shape` does nothing here.
 
 The command that turns an idea into a ready piece was renamed from `/plan` to
@@ -389,9 +568,77 @@ the new name is said out loud rather than only tidied away in the files:
 
 Record the tidy-up in the changelog as a dated line.
 
+## Migrating a project installed before the six commands
+
+"Finishing a kit update" runs this on any visit whose check finds a `fix`,
+`queue`, `sync` or `ship` skill installed, no `setup-hosting` skill, or a
+command list in AGENTS.md that names one of the four. It is idempotent: a
+visit that finds the six commands and the list already current does nothing
+here and says nothing.
+
+The kit cut its commands from nine to six. `/fix` folded into `/shape` and
+`/implement`, `/queue` into `/implement`, and `/sync` into `/maintain`. `/ship`
+was renamed `/setup-hosting`. Every rule moved with its job, so nothing the
+person built or saved changes. An update brings the new skills, but the shared
+installer keeps an old skill it still lists, and nothing updates the project's
+AGENTS.md. So the old commands stay on offer until this step runs.
+
+1. Read what is left. The check in "Finishing a kit update" runs `python3
+   <installed maintain skill>/scripts/kit-leftovers.py` from the project root
+   and prints its lines. It prints one line for each thing left behind, and
+   nothing when nothing is.
+2. Remove the old skills the installer still lists. A line starting
+   `installer` names a skill under a former name that `skills-lock.json` lists
+   as the kit's. It is a managed package the kit retired, not the person's own
+   work, so offer to remove it with the installer, naming each one in a single
+   command such as `npx skills remove fix queue sync ship`. The installer
+   removes the folder, every link to it, and its lockfile entry. On a yes, run
+   it, then run the check again and carry on only once no `installer` line
+   is left and the lockfile lists the eleven kit skills and none of the former
+   ones. A lockfile may list other people's skills too, so its length proves
+   nothing. Never delete one of these folders
+   by hand, since the lockfile would still list it.
+3. Recover a missing new skill. A line starting `missing` names one of the
+   eleven that is not installed, such as `setup-hosting` after an update that
+   removed `ship` without adding its new name. Run the add command from the
+   monthly step, then run the check again and carry on only once no
+   `missing` line is left.
+4. Lines starting `folder` or `adapter` are leftovers the lockfile does not
+   list. "Tidying a project founded from a whole copy of the kit" below
+   removes them, after its own approval. A line starting `left` names
+   something that looks like a leftover but is never removed: a folder not
+   recognised as the kit's, or one whose real place is outside the project.
+   Name it once, beside a removal the visit offers, as the person's to keep or
+   remove.
+5. Rewrite the command list in the project's AGENTS.md as "Bringing the
+   project's instructions up to the current names" below says. Lines starting
+   `commands` show the change.
+6. On the Claude Code plugin route, the plugin update itself replaces the
+   commands: the new release offers the six and nothing else, and no old skill
+   is left in the project. Steps 2 to 4 find nothing there. The AGENTS.md list
+   still needs step 5.
+7. A mention of `/fix`, `/queue`, `/sync` or `/ship` in `CHANGELOG.md` is
+   history. It says what happened at the time, so leave it. The changelog is
+   never rewritten. A line in AGENTS.md or masterplan.md is different: it
+   guides later sessions. The kit's own sentence there is the check's
+   `template` line, and a line of the person's own is a `mention` line, named
+   once and never rewritten. A pointer to a retired skill's file is a
+   different thing again, because it opens nothing now. "Pointing the records
+   at a skill by name" below finds those and follows each rule to its new
+   home.
+
+Where the person says no to a removal, leave it. Say that the old command
+stays on offer beside the new one until it is removed, and record the no as
+"Finishing a kit update" says, so the next monthly visit offers it again.
+Where the harness cannot run the script, read
+the lockfile and the two skill folders by hand for the four names, and leave
+the AGENTS.md list for the person, naming each word to change.
+
+Record what changed in the changelog as one dated line.
+
 ## Migrating a masterplan written with four build paths
 
-Run this on any visit that finds, in the build-path section of
+Run this on any monthly visit that finds, in the build-path section of
 `masterplan.md`, a `Required controls:` line, an `Outside help:` line, or a
 `Path:` of `Build with expert help` or `Professional-led`. It is idempotent: a
 section whose fields are Path, Why, Sensitive areas, Accepted, Recheck when
@@ -444,27 +691,45 @@ has.
 
 ## Bringing the project's instructions up to the current names
 
-Run this from either rename migration. A project's AGENTS.md is project-owned
+Run this from any rename migration. A project's AGENTS.md is project-owned
 and no update touches it. But the line that lists the commands is the kit's own
 template text, and a person made to fix it by hand after every rename will stop
 updating. So the kit does it for them, with approval:
 
 1. Find the line that lists the commands. In the foundation template it begins
-   `- Commands:` and names all nine. Where it names `start`, replace it with
+   `- Commands:` and names all six. Where it names `start`, replace it with
    `setup-ai-build-kit`. Where it names `plan`, replace it with `shape`. Where
-   `queue` is missing, add it after `implement`. Where the sentences nearby
-   give an older count of commands or skills, make them nine and fourteen.
-2. Show the change and apply it on approval. Say what changed in one sentence.
-3. Where the file lists the commands in its own words and the line cannot be
+   it names `ship`, replace it with `setup-hosting`. Where it names `fix`,
+   `queue` or `sync`, take the name out, since its command folded into
+   another. Bring the `- Background skills:` line to the five the template
+   names. Where the sentences nearby give an older count of commands or
+   skills, make them six and eleven.
+2. The script `<installed maintain skill>/scripts/kit-leftovers.py` does this
+   from the template that came with the update. Its `commands` lines show each
+   change, old and new. It rewrites a list only when it holds the kit's names
+   and nothing else, in the template's shape. A line ending in `left as
+   written:` is one it will not change, with the reason and the suggested
+   line: a name in the list that is not one of the kit's, or words of the
+   person's own inside it. Show that suggestion for the person to apply by
+   hand. When the commands line is left as written, the counts above it are
+   left too.
+3. Show the change and apply it on approval, by running the script with
+   `--rewrite-commands`, which the check's `--apply commands` does. It
+   changes those lines and nothing else in the file,
+   line endings included. Run it again without, and carry on only once no
+   `commands` line offers a change. Say what changed in one sentence.
+4. Where the file lists the commands in its own words and the line cannot be
    recognised, leave the file alone and say which name needs changing, so the
-   person edits one line rather than reads a diff.
+   person edits one line rather than reads a diff. Where the harness cannot
+   run the script, make the same change by hand, to those lines only.
 
 Record it in the changelog with the tidy-up that called it.
 
 ## Tidying a project founded from a whole copy of the kit
 
-Run this on any visit on the shared route that finds the leftovers below. It
-is idempotent: a project that has none of them gets nothing here.
+"Finishing a kit update" runs this on any visit, on the shared route or after
+a manual update, whose check finds the leftovers below. It is idempotent: a
+project that has none of them gets nothing here.
 
 A project founded from a whole copy of the kit brought the kit's own generated
 adapters with it: `.claude/commands/<name>.md`, `.cursor/commands/<name>.md`
@@ -481,25 +746,69 @@ is a step here rather than advice:
    `build-adapters.sh`. Never by its name: a command file the person wrote
    themselves has no marker and is never touched. List every file under
    `.claude/commands/`, `.cursor/commands/` and `.gemini/commands/` that
-   carries the marker.
+   carries the marker, and every generated skill folder for a name the kit
+   no longer has, such as a `grilling` folder in Claude's skills folder.
 2. Find retired skill folders. Look in both `.agents/skills/` and
    `.claude/skills/`, since an installation for Claude Code alone keeps its
    skills only in the second. A folder there counts only
-   when it carries one of the kit's former names, `build`, `start` or `plan`,
-   and the lockfile does not list it. Any other folder there is the person's
-   own and is left alone.
-3. Show the list and say what removing it does: each command appears once,
-   and the renamed command goes. Remove on approval, and remove the empty
-   folders too. Where the files are tracked, the removal is part of the
-   visit's saved change.
-4. Record a changelog line saying what was removed and why.
+   when it carries one of the kit's former names, `build`, `start`, `plan`,
+   `grilling`, `fix`, `queue`, `sync` or `ship`, and the lockfile does not
+   list it under any source, and its `SKILL.md` carries that name and a
+   description one of the kit's releases gave it. Any other folder there is
+   the person's own and is left alone, a skill of theirs under one of those
+   names included. A former name the lockfile lists as the kit's is the
+   installer's to remove, in "Migrating a project installed before the six
+   commands" above.
+   A recognised name and description identify a possible leftover. Removal
+   also requires that every remaining file in it matches a released copy for
+   that skill. A changed file or a personal addition keeps the whole folder,
+   reported as `left`. The script checks that again before removal.
+
+3. Run `python3 <installed maintain skill>/scripts/kit-leftovers.py` from the
+   project root. Its `adapter` and `folder` lines are the two lists above,
+   found by these rules. A generated skill folder under `.claude/skills/`,
+   `.cursor/skills/` or `.gemini/skills/` is an adapter too, when its
+   `SKILL.md` carries the marker and its name is one the kit no longer has.
+   Nothing whose real place is outside the project is listed for removal, and
+   a link is never followed: at most the link itself goes. A generated command file for a retired command is
+   listed on every route, since it opens nothing. One for a current command
+   is listed only on the shared route, where the installer already reaches
+   that command.
+4. Find the kit's own files a whole copy brought. When the project's
+   `.ai-build-kit-version` names an older release than this skill's `VERSION`,
+   the copy's kit files are from that older release, and no update refreshes
+   them. The script lists each of `agent-plugin/`, `.claude-plugin/`,
+   `WORKFLOW.md`, `.agents/guard/blocked-commands.md`,
+   `.agents/tools/build-adapters.sh` and `.ai-build-kit-version` as a
+   `kitcopy` line only when every byte matches a copy a release shipped at the
+   same path, read from `kit-released-copies.json` beside it. A changed one
+   gets a `left` line and stays: it may hold the person's own words. The
+   kit's README from a whole copy is only ever named, as the person's to
+   replace with one about their tool.
+5. A whole copy also brought `.agents/hooks/session-end-sync.sh`. A `hook`
+   line means it matches an older copy a release shipped, so the one this
+   release ships replaces it on `--remove`. One that was changed by hand and
+   still names a retired command gets a `left` line: say once that
+   `/what-now` and `/maintain` do that job now, and leave the file as it is.
+6. Show the list and say what removing it does: each command appears once,
+   the renamed or folded command goes, and the kit's own files stop
+   describing an older kit. Remove on approval, by running the check with
+   `--apply remove`, which runs the script with `--remove`. That removes only
+   what it listed and any folder that leaves empty, and checks each kit file
+   byte for byte again first. Run the check again, and carry on only once it
+   lists none of these kinds. Where the files are tracked, the removal is part
+   of the visit's saved change. Where the harness cannot run the script,
+   apply only the generated-marker rule for adapters by hand. Leave retired
+   folders, the kit's files and the hook as they are, since their released
+   bytes cannot be checked by reading their names.
+7. Record a changelog line saying what was removed and why.
 
 ## Offering a move onto a recipe
 
 A project founded before the kit had recipes has no `Recipe:` line in its
 AGENTS.md. A project whose person chose their own stack has `Recipe: none`.
 Either one can be built much like a recipe on the menu without anybody
-noticing. On a recipe, /ship checks the launch steps. Off one, it can only
+noticing. On a recipe, /setup-hosting checks the launch steps. Off one, it can only
 name what it could not check. So the monthly visit makes the offer, and the
 person decides. The move is never required.
 
@@ -507,13 +816,13 @@ Skip this on Explore privately. Nothing there goes live, so the launch checks
 would gain nothing.
 
 1. Read the `Recipe:` line in the stack section of the project's AGENTS.md.
-   Where it names a file that is in the installed ship skill's `recipes/`
+   Where it names a file that is in the installed setup-hosting skill's `recipes/`
    folder, the project is on a recipe, and this step ends. `Recipe: none`, no
    line at all, or a file that is no longer there counts as off a recipe.
 2. Look at the project's open pieces. Where an open piece already proposes a
    move onto a recipe, the person said yes on an earlier visit and the move is
    waiting to be built, so this step ends. Filing it again would make a copy.
-3. Read the menu at this moment: each file directly in the installed ship
+3. Read the menu at this moment: each file directly in the installed setup-hosting
    skill's `recipes/` folder, not the `parts/` folder inside it. Read each
    file's `Build stack:` and `Deploy target:` lines. Take every product name
    from those files, and never write one into this skill.
@@ -554,7 +863,7 @@ would gain nothing.
    left, take the one whose `Build stack:` line matches the most, or the
    first by file name.
 8. Offer the move once, in one reply. Name the recipe from its file. Say what
-   it gains in plain words: the launch checks /ship would then run, one for
+   it gains in plain words: the launch checks /setup-hosting would then run, one for
    each section the recipe checks, such as preview, rollback, backup and
    restore. Say what it would change, from the differences step 4 found: for
    example, add the recipe's shared Dockerfile and health route, move the tool
@@ -562,7 +871,7 @@ would gain nothing.
    migrations and the project's tables are made only in the data service's
    dashboard, move those tables into migrations. Never quote a price. Say that
    the project keeps working as it is if they say no. For example: "This
-   project is built much like the [recipe name] recipe. On that recipe, /ship
+   project is built much like the [recipe name] recipe. On that recipe, /setup-hosting
    would check the preview, rollback, backup and restore for you. The move
    would add a Dockerfile and a health route, and move the tool to [deploy
    target]. Shall I file it as a piece? Nothing changes if you say no."
@@ -577,12 +886,11 @@ would gain nothing.
     one: `recipe-move-declined|<YYYY-MM-DD>|<recipe file>|<menu files, comma
     separated>`. Step 6 reads it on later visits.
 
-## Quarterly, or before a handover
+## Quarterly, when due
 
-Everything above, plus:
+The monthly part as well, plus:
 
-1. Run sync.
-2. A hot-spot review, not a general architecture pass. Look first at: areas
+1. A hot-spot review, not a general architecture pass. Look first at: areas
    changed repeatedly, areas behind repeated bugs, areas whose evidence is
    slow or unreliable, areas where one change spreads across many files,
    integrations that fail often, and records that no longer explain reality.
@@ -602,11 +910,13 @@ Everything above, plus:
    Apply on approval.
    Do not run a broad architecture programme merely because the quarter
    changed.
-3. Review project skills for instructions that no longer pay their way and
+2. Review project skills for instructions that no longer pay their way and
    offer to remove them. AGENTS.md was already checked in the monthly pass;
    do not repeat its trim offer or cut anything without the person's yes.
-4. Run ship's evidence run, scoped by the build path and its sensitive areas.
-5. The ownership and graduation check: can the team still explain the main
+3. Run the evidence run in the `setup-hosting` skill's
+   `references/evidence-run.md`, scoped by the build path and its sensitive
+   areas.
+4. The ownership and graduation check: can the team still explain the main
    flows? Can it verify important changes without reading code? Can it
    identify where data, secrets, service owners, and bills live? Can it
    recover, or use the manual fallback? Has reliability, complexity, or
@@ -618,10 +928,29 @@ Everything above, plus:
    only when a genuine redesign has removed what put it there; an acceptance
    drops its caution and leaves the area named. Where the person asks for a
    handover, or a caution names a person the team has to find, prepare
-   the `ship` skill's `templates/handover.md` for the area or the whole
-   build.
-6. Put today's date on the `last-full-pass` line as well as the
+   one for the area or the whole build, as "A handover" below says.
+5. Put today's date on the `last-full-pass` line as well as the
    `last-light-pass` line in `.ai-build-kit-maintenance`.
+
+## A handover
+
+A handover is what the team gives somebody outside it to look at one
+sensitive area, or to take the whole build on. This section is its one home.
+/setup-hosting offers one on Build with care where a caution is a person the
+team has nobody to ask, and a flagged piece that stops at its condition names
+it too.
+
+A handover is a document the person asks for, not a stop. Prepare it only on
+a yes, from this skill's `templates/handover.md`, filled in for that area or
+for the whole build, in plain words for the reader outside the project. Never
+put a secret in it: say where access is granted. Carry on with everything
+outside the area either way.
+
+Where preparing it changes the build path or names a new sensitive area,
+record what changed, why the previous path no longer fits, each new area and
+its caution, which work may continue, and which work waits.
+
+It is done when it is complete and says what it does not cover.
 
 ## When a tool's time is over
 
@@ -633,6 +962,14 @@ nothing keeps billing quietly, confirm billing has actually stopped, and
 archive the repo. An abandoned tool with real data in it is a liability; a
 retired one is finished.
 
+Export first, and read the export back before anything is switched off. Each
+step that revokes access, deletes a credential, removes a scheduled job or
+webhook, switches a service off or archives the repository waits for a yes
+that names that step. Before asking, say what it changes and whether it can
+be undone: a deleted credential or database cannot be brought back, while an
+archived repository can be unarchived. A yes to one step covers only that
+step. A no leaves that part running, and the ending lists it as still open.
+
 ## Done when
 
-The findings are reported, the approved changes are applied and recorded, today's visit is written into `.ai-build-kit-maintenance`, and the calendar says when the next visit is due.
+The records match what happened, the upgrade check has run and anything it still finds is said, any gap between the live copy and `main` is reported, the findings are reported, the approved changes are applied and saved through the build path's route, a monthly or quarterly part that ran is written into `.ai-build-kit-maintenance`, and the person knows when the next one is due.

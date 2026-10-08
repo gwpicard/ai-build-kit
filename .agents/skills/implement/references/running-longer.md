@@ -35,9 +35,14 @@ by hand") gets skipped and left marked to-build; say so in the report. The
 plan sorts itself: the how-to-check phrase on each done line is the
 eligibility rule.
 
+A repair, a piece labelled `broken`, is never taken. Its rules ask for a
+person: three failed attempts owe the risk notice in the same reply, and a run
+with nobody there would retry and park it instead. Skip it, and name it in the
+report as waiting for an ordinary `/implement`.
+
 When a piece fails: retry within the piece, up to three attempts, the same
-number fix uses. After the third, park it, mark it `blocked` with one line on
-what kept failing, and move to the next piece; never let one piece consume the
+number a repair uses. After the third, park it, mark it `blocked` with one
+line on what kept failing, and move to the next piece; never let one piece consume the
 run. Route the parked piece further when the failure points somewhere specific:
 send it back to `/shape`, which settles a missing decision, chases a missing
 external fact, or reassesses a shape the team could not safely own, rather than
@@ -50,7 +55,7 @@ ambiguous; never guess to keep a run going.
 The whole run happens on one branch and ends as one pull request, where the
 build path requires a pull request at all; a run confined to the checkpoint
 route may end in a single confirmed checkpoint instead. Skip the per-piece
-hand-over; end the run with the evidence run (ship/references/evidence-run.md),
+hand-over; end the run with the evidence run (setup-hosting/references/evidence-run.md),
 and write the report as: what was parked and why first, then what was built
 and what passed, what was skipped as eyes-only, and a checklist of things to
 try before merging, riskiest first, anything near a sensitive area on

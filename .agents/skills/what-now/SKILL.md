@@ -1,11 +1,11 @@
 ---
 name: what-now
-description: Orientation for a lost or returning user. Trigger when someone asks what to do next, has been away a while, feels lost, or a session died in the middle of something. Reads the documents and the git state and says where the project stands and what to do next. Never builds, fixes, or changes anything.
+description: Orientation for a lost or returning user. Trigger when someone asks what to do next, has been away a while, feels lost, or a session died in the middle of something. Reads the documents and the git state and says where the project stands and what to do next. Never builds or repairs anything, and changes nothing unless the person chooses a recovery step it offers.
 ---
 
 # What now
 
-You are the safety net under the other six commands. Someone who forgets everything else and remembers this one is fine.
+You are the safety net under the other five commands. Someone who forgets everything else and remembers this one is fine.
 
 ## Read
 
@@ -29,12 +29,18 @@ shows a merge or rebase conflict, whether a check-up is overdue, taken from
 when it does not, and whether anything on the build path's recheck-when list has
 happened.
 
+Read whether a kit update is still unfinished. From the project root, run
+`python3` with the `maintain` skill's `scripts/upgrade-check.py`, and keep only
+its exit code. It reads and changes nothing. Exit 1 means an update left
+something /maintain has not yet finished, such as old commands still on
+offer. Any other exit says nothing here.
+
 ## Say
 
 Open with where the build stands, in one line, then which command comes next and
 why, in a few sentences of plain language.
 
-Before the first ship, count: "you are four pieces in with three left, nothing
+Before the first launch, count: "you are four pieces in with three left, nothing
 blocked and nothing half done". Once the project is live, drop the counts and
 describe the state instead: "nothing is blocked and nothing is half done, three
 things are waiting". A count reads as progress towards a finish line, and a live
@@ -42,8 +48,11 @@ project's list never empties.
 
 Anything labelled `broken` comes first, before the counts. A thing that used to
 work and no longer does outranks a thing that was never built: "the booking
-confirmation is broken, so /fix comes before anything else". Name what is broken
-rather than saying a piece is labelled.
+confirmation is broken, so repairing it comes before anything else". Name what
+is broken rather than saying a piece is labelled. A repair already reproduced
+and marked ready goes to /implement; one not yet reproduced goes to /shape.
+Where the person says the live tool broke after a recent merge, run the
+`change-triage` skill's "A live break after a recent merge" first.
 
 A failing check is named next, after anything broken and before the counts. Say
 it plainly as failing, because a red check is a fact the person cannot see for
@@ -79,7 +88,12 @@ because a step nobody names is a step nobody does.
 Say piece names, never issue numbers. Say dependencies as sentences: "deposits
 cannot start until card payments are set up", never "blocked by #9". Name at
 most three things; if more apply, say how many and name the nearest. More than
-three stops being orientation and becomes a report. Match where the project is in its life. Still building toward the first launch: the answer is usually /implement for the next ready piece, /shape to shape a new one, or /ship when the plan has run dry. Live and running: the answer is usually "say what you want to /shape", /fix for the thing that broke, or the /maintain that the recorded check-up dates show is overdue.
+three stops being orientation and becomes a report. Where the person wants
+every ready piece at once, /implement shows the whole list. Match where the project is in its life. Still building toward the first launch: the answer is usually /implement for the next ready piece, /shape to shape a new one, or /setup-hosting once the person wants people to use it. Live and running: the answer is usually "say what you want to /shape", /shape for the thing that broke, or the /maintain that the recorded check-up dates show is overdue.
+
+Where the update check exited 1, say one line before the recap, apart from
+the three things: "The kit update is not finished. /maintain finishes it."
+Say nothing more about it here.
 
 End with a short recap of where the tool has got to, in the words a person would
 use. Say what the last stretch of work was about, and whether anything is on the
@@ -94,7 +108,9 @@ where it did before.
 
 ### Uncommitted work
 
-Explain what it appears to belong to, then offer a choice: continue it, save
+This is the one home for recovering work an interrupted session left behind.
+/maintain's truing reports such work and leaves it alone; the choice of what
+to do with it is made here. Explain what it appears to belong to, then offer a choice: continue it, save
 it as a checkpoint, or clear it after showing exactly what would be lost.
 Never run a destructive command without explicit approval for that specific
 action.
@@ -131,8 +147,11 @@ be pasted into a message.
 
 Name the check that is failing and what it is there to catch, in plain words,
 for example the test that stops a booking being taken twice. Say that a red check
-means the tool is not doing something it is meant to, and that /fix is where that
-goes. Do not show the check's output or its logs.
+means the tool is not doing something it is meant to. A red check on an open
+pull request belongs to that piece's own build, so /implement is where it goes:
+the piece is not finished until its check is green. A red check on `main`,
+where no piece is being built, is a fault, so /shape is where that goes, to
+turn it into a repair. Do not show the check's output or its logs.
 
 ### Open review finding
 

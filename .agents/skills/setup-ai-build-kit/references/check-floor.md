@@ -4,7 +4,7 @@ Every founded project gets its language's own mechanical checks on the first
 day: a type check and a linter, wherever the language has them. They sit in
 `jobs.project-check` beside install and test, so they turn the same tick red.
 The person meets no new idea. Green still means the checks that exist really
-passed, and red still means don't merge and tell /fix.
+passed, and red still means don't merge and tell /implement.
 
 This is a whole-project read, so the rules in `whole-project-reads.md` apply.
 

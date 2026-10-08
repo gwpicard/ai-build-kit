@@ -16,12 +16,12 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 
 TRIM="$ROOT/.agents/skills/section-builder/references/trim.md"
 BUILDER="$ROOT/.agents/skills/section-builder/SKILL.md"
-FIX="$ROOT/.agents/skills/fix/SKILL.md"
+REPAIR="$ROOT/.agents/skills/section-builder/references/repair.md"
 WORKFLOW="$ROOT/WORKFLOW.md"
 SOURCES="$ROOT/docs/SOURCES.md"
 
 rs_init "Trim rules"
-rs_exists "$TRIM" "$BUILDER" "$FIX" "$WORKFLOW" "$SOURCES"
+rs_exists "$TRIM" "$BUILDER" "$REPAIR" "$WORKFLOW" "$SOURCES"
 
 # Where and when it runs.
 rs_rule "it does not run on Explore privately" 'not on explore privately'
@@ -82,7 +82,7 @@ rs_require_order "the trim runs after the type check and linter" "$BUILDER" \
 rs_require_order "the trim runs before the hand-over" "$BUILDER" \
   'references/trim\.md' '^Stop\. Give the exact action'
 
-rs_require_load_bearing "/fix runs the trim on a repair" "$FIX" \
+rs_require_load_bearing "a repair runs the trim" "$REPAIR" \
   'run the trim in the `section-builder` skill.s `references/trim\.md`'
 rs_require "WORKFLOW says what the trim takes out" "$WORKFLOW" \
   'takes out anything the change added that nothing needs'

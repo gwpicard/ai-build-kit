@@ -5,7 +5,7 @@ description: Read every open issue in this repository, group them by theme, and 
 
 # Review issues
 
-The kit's own `/queue` and `/what-now` read `plan.local.md`, which sorts a
+The kit's own `/implement` and `/what-now` read `plan.local.md`, which sorts a
 backlog by the labels a project built with the kit uses. This repository uses
 its own labels, so that printout drops almost everything into a single heap.
 This is the maintainer's read of the same backlog.

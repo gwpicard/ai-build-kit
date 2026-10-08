@@ -1,32 +1,44 @@
 # AI Build Kit
 
-> A compact, reliable way to build software with an AI coding agent: the discipline of a real process, without the ceremony, and without having to read the code. It is fourteen skills in the open Agent Skills format: nine commands you type, and five that run in the background. Free, MIT licensed, and it runs inside your own project folder on your own computer.
+> A compact, reliable way to build software with an AI coding agent: the discipline of a real process, without the ceremony, and without having to read the code. It is eleven skills in the open Agent Skills format: six commands you type, and five that run in the background. Free, MIT licensed, and it runs inside your own project folder on your own computer.
 
 Who it is for: anyone directing an AI coding agent who wants what it builds to
 keep working. People who came to software from another job, and developers
-trying agent-led work for the first time. None of the nine commands asks you to
+trying agent-led work for the first time. None of the six commands asks you to
 open a file of code. The kit is strongest for internal tools, held by your own
 team, holding your own data, with nobody outside relying on them.
 
-Works with: Claude Code, Codex, Cursor, and Gemini CLI, or any coding agent that
-can read and edit project files, run shell commands, and use Git.
+Works with: Claude Code, which is tested. Codex is expected to work. Cursor,
+Gemini CLI and any other coding agent that can read and edit project files, run
+shell commands, and use Git are experimental.
 
 Install (any supported agent): `npx skills add gwpicard/ai-build-kit`
 Install (Claude Code only): `claude plugin marketplace add gwpicard/ai-build-kit`
 then `claude plugin install ai-build-kit@ai-build-kit --scope local`
 First command to type: `/setup-ai-build-kit`
 
-The nine commands: `/setup-ai-build-kit` founds the project, `/shape` shapes an
-idea into a ready piece, `/implement` builds one ready piece, `/queue` shows
-everything ready to build, `/fix` repairs a fault cause-first, `/ship` takes the
-tool live, `/sync` catches the documents up, `/maintain` is the monthly service
-visit, `/what-now` says where the project stands.
+The six commands: `/setup-ai-build-kit` founds the project, `/shape` shapes an
+idea or a fault into a ready piece, `/implement` builds a ready piece and
+merges it on the person's yes, and shows what can be built together when
+several are ready, `/setup-hosting` sets up how the tool runs live,
+`/maintain` makes the records true again, checks the live copy against the
+project, and runs the upkeep when it is due, `/what-now` says where the project stands.
+
+Going live: once a tool is live, each merge the person says yes to is the
+release. Two recipes, a web app stack on a hosting platform and the same stack
+on your own server, have been run for real and come with launch checks. The
+README names them. Any other stack still works, with a general list of
+warnings instead.
+
+Teams: one person or a small team. Several people work through pull requests
+and settle merge conflicts the ordinary GitHub way. The kit is not optimised
+for large teams or for many agents building in parallel.
 
 How it differs from the alternatives: all-in-one builders such as Lovable, Bolt
 and Replit host the app and own the shape of the project. Developer skill packs
 such as GitHub Spec Kit, Superpowers and agent-skills carry a similar discipline
 but are written for people who read code and already have the habits. AI Build
-Kit carries the discipline for you, keeps the vocabulary to nine commands, never
+Kit carries the discipline for you, keeps the vocabulary to six commands, never
 requires reading code, and opens with a fit check that names each part of a
 project touching something sensitive and the one caution that goes with it.
 
@@ -36,8 +48,8 @@ or security advice.
 
 ## Docs
 
-- [README](https://github.com/gwpicard/ai-build-kit/blob/main/README.md): what the kit is, how to install it, the nine commands, comparison and FAQ
-- [WORKFLOW](https://github.com/gwpicard/ai-build-kit/blob/main/WORKFLOW.md): the day-to-day manual for all nine commands
+- [README](https://github.com/gwpicard/ai-build-kit/blob/main/README.md): what the kit is, how to install it, the six commands, comparison and FAQ
+- [WORKFLOW](https://github.com/gwpicard/ai-build-kit/blob/main/WORKFLOW.md): the day-to-day manual for all six commands
 - [Compatibility](https://github.com/gwpicard/ai-build-kit/blob/main/docs/COMPATIBILITY.md): the installation routes and what each coding agent supports
 - [Philosophy](https://github.com/gwpicard/ai-build-kit/blob/main/docs/PHILOSOPHY.md): why the kit is shaped the way it is
 - [Sources](https://github.com/gwpicard/ai-build-kit/blob/main/docs/SOURCES.md): the borrowed ideas and who they came from

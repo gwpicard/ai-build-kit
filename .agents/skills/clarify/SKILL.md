@@ -1,6 +1,6 @@
 ---
 name: clarify
-description: Interview the team before work is specified, one question at a time, each with a best guess attached. Used by start for the founding interview and by shape when a request is too vague to size. Do not use for small clear changes or for repairs, and never write code during it.
+description: Interview the team before work is specified, one question at a time, each with a best guess attached. Used by setup-ai-build-kit for the founding interview and by shape when a request is too vague to size. Do not use for small clear changes or for repairs, and never write code during it.
 user-invocable: false
 ---
 
@@ -50,7 +50,7 @@ carry this. The settled term ends up in the masterplan, in plain language, where
 the rest of the product description already lives: written there when founding,
 or when `/implement` next builds the piece that carries it. The coverage read
 in setup-ai-build-kit/references/coverage-read.md catches a settled term left
-behind on a piece and offers to reconcile it through /sync.
+behind on a piece and offers to reconcile it through /maintain.
 
 ## Pressure-testing a rule
 

@@ -47,10 +47,10 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 . "$ROOT/.agents/tests/lib/rule-shape.sh"
 
-FIX="$ROOT/.agents/skills/fix/SKILL.md"
+REPAIR="$ROOT/.agents/skills/section-builder/references/repair.md"
 
 rs_init "Notice trigger checks"
-rs_exists "$FIX"
+rs_exists "$REPAIR"
 
 rs_rule "the refusal owes the notice, not the route chosen after it" \
   'declining the fourth attempt is what owes the notice, not the route'
@@ -91,11 +91,11 @@ rs_rule "carrying on after the notice lets the next attempt go ahead" \
 rs_rule "one more go after the notice is carrying on" \
   'asking for one more go after hearing the notice is the person carrying on'
 
-rs_guard "$FIX" "the fix skill's escalation notice"
+rs_guard "$REPAIR" "the repair reference's escalation notice"
 
 # The notice is worth nothing if it is withdrawn the moment somebody objects, so
 # the paragraph that holds it has to survive beside the one above.
-rs_require "the notice is held against pressure" "$FIX" \
+rs_require "the notice is held against pressure" "$REPAIR" \
   'none of them is a reason the fault is now understood'
 
 # The contract the replay grades against still asks for the same notice at the

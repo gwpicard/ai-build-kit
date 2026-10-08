@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# hosting-request.sh: guard the hosting request /ship writes on a first launch.
+# hosting-request.sh: guard the hosting request /setup-hosting writes on a first launch.
 #
 # A tool that runs on a server somebody else runs gets its address from that
 # server, and the kit never contacts it. The person carries a short request
@@ -15,8 +15,8 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 . "$ROOT/.agents/tests/lib/rule-shape.sh"
 
-SHIP="$ROOT/.agents/skills/ship/SKILL.md"
-HOSTING="$ROOT/.agents/skills/ship/references/hosting-request.md"
+SKILLFILE="$ROOT/.agents/skills/setup-hosting/SKILL.md"
+HOSTING="$ROOT/.agents/skills/setup-hosting/references/hosting-request.md"
 SETUP="$ROOT/.agents/skills/setup-ai-build-kit/SKILL.md"
 MASTERPLAN="$ROOT/.agents/skills/setup-ai-build-kit/templates/masterplan.md"
 WORKFLOW="$ROOT/WORKFLOW.md"
@@ -24,7 +24,7 @@ README="$ROOT/README.md"
 SOURCES="$ROOT/docs/SOURCES.md"
 
 rs_init "Hosting request rules"
-rs_exists "$SHIP" "$HOSTING" "$SETUP" "$MASTERPLAN" "$WORKFLOW" "$README" "$SOURCES"
+rs_exists "$SKILLFILE" "$HOSTING" "$SETUP" "$MASTERPLAN" "$WORKFLOW" "$README" "$SOURCES"
 
 # When it applies.
 rs_rule "it applies to a server this session cannot reach" 'where the tool will run on a server this session cannot reach'
@@ -40,7 +40,7 @@ rs_rule "the skill points at the request's own file" 'write one there, as `refer
 rs_rule "the launch waits for an address" 'the first launch is not finished until an address is recorded under the request'
 rs_rule "the person hears it is not live yet" 'tell the person plainly that the tool is not live yet and is waiting on the server.s answer'
 rs_rule "it is not recorded as live meanwhile" 'do not write it into changelog\.md as live'
-rs_guard "$SHIP" "ship's hosting request"
+rs_guard "$SKILLFILE" "setup-hosting's hosting request"
 
 # The request itself, its answer and a later launch live in one reference file
 # the skill points at, since they are one procedure used only when a server
@@ -73,7 +73,7 @@ rs_rule "an answer is recorded in any session" 'whenever the person pastes an an
 rs_rule "a secret in the answer is left out" 'leave out any secret value it carries'
 
 # A later launch.
-rs_rule "a later launch reads it back" 'on a later /ship, read the recorded hosting request back instead of asking again'
+rs_rule "a later launch reads it back" 'on a later /setup-hosting, read the recorded hosting request back instead of asking again'
 rs_rule "a missing answer is noticed" 'where no address is recorded under it, the request went out and no answer came back'
 rs_rule "a missing answer is said and the request printed again" 'say so plainly, print the request again for the person to carry, and ask them to paste the answer here when it arrives'
 rs_rule "a changed field is updated and printed again" 'where the project has changed a field since, update that line from the project and print the request again'
@@ -82,21 +82,21 @@ rs_guard "$HOSTING" "the hosting request's own file"
 # Only the live paths. Explore privately never moves work to a live address, so
 # the pointer to the request must sit after that branch ends and before Build
 # with care begins.
-rs_require_order "the request sits after Explore privately" "$SHIP" \
+rs_require_order "the request sits after Explore privately" "$SKILLFILE" \
   '^### Build and run it' 'references/hosting-request\.md'
-rs_require_order "the request sits inside Build and run it" "$SHIP" \
+rs_require_order "the request sits inside Build and run it" "$SKILLFILE" \
   'references/hosting-request\.md' '^### Build with care'
 
 # The skills name no hosting, data or deploy product. A recipe file and the
 # shared parts it links are the one place in the skills that may, since naming
-# those services is their whole job, so everything under ship/recipes/ is left
+# those services is their whole job, so everything under setup-hosting/recipes/ is left
 # out. Every other file under the skills is read. The screen rules link Vercel's
 # interface guidelines, which is a design guide rather than a place a tool runs,
 # so that one link is set aside before the read.
 PRODUCTS='coolify|vercel|supabase|netlify|heroku|railway|railpack|fly\.io|hetzner|hostinger|firebase|digitalocean'
 products_named() {
   # products_named <skills folder>: each file and line that names a product.
-  find "$1" -type f ! -path '*/ship/recipes/*' | sort | while IFS= read -r pn_file; do
+  find "$1" -type f ! -path '*/setup-hosting/recipes/*' ! -path '*/maintain/scripts/kit-released-copies.json' ! -path '*/maintain/scripts/kit-retired-skills.json' | sort | while IFS= read -r pn_file; do
     tr '[:upper:]' '[:lower:]' < "$pn_file" \
       | sed -e 's#vercel web interface guidelines##g' \
             -e 's#github\.com/vercel-labs/web-interface-guidelines##g' \
@@ -113,31 +113,31 @@ if [ -z "${RS_LIST:-}" ]; then
 
   # The read has to notice a name, keep the exemption narrow, and leave the
   # recipes alone, or it proves nothing.
-  mkdir -p "$rs_dir/skills/ship/recipes/parts" "$rs_dir/skills/screen-check" "$rs_dir/skills/ship/references"
+  mkdir -p "$rs_dir/skills/setup-hosting/recipes/parts" "$rs_dir/skills/screen-check" "$rs_dir/skills/setup-hosting/references"
   grep -i 'web interface guidelines' "$ROOT/.agents/skills/screen-check/SKILL.md" > "$rs_dir/skills/screen-check/SKILL.md"
-  printf '%s\n' 'Runs on Vercel with a Supabase database.' > "$rs_dir/skills/ship/recipes/on-vercel.md"
-  printf '%s\n' 'Backups on Supabase.' > "$rs_dir/skills/ship/recipes/parts/backup.md"
+  printf '%s\n' 'Runs on Vercel with a Supabase database.' > "$rs_dir/skills/setup-hosting/recipes/on-vercel.md"
+  printf '%s\n' 'Backups on Supabase.' > "$rs_dir/skills/setup-hosting/recipes/parts/backup.md"
   [ -z "$(products_named "$rs_dir/skills")" ] ||
     rs_fail "the guidelines link, a recipe or a part was counted as a product name"
   rs_ok "the guidelines link, a recipe and a part are left alone"
-  printf '%s\n' 'Deploy it to Vercel.' > "$rs_dir/skills/ship/references/steps.md"
+  printf '%s\n' 'Deploy it to Vercel.' > "$rs_dir/skills/setup-hosting/references/steps.md"
   [ -n "$(products_named "$rs_dir/skills")" ] ||
     rs_fail "a skill file naming a hosting product was not noticed"
   rs_ok "a skill file naming a hosting product is noticed"
-  printf '%s\n' 'Vercel is fast.' 'The Vercel Web Interface Guidelines' > "$rs_dir/skills/ship/references/steps.md"
+  printf '%s\n' 'Vercel is fast.' 'The Vercel Web Interface Guidelines' > "$rs_dir/skills/setup-hosting/references/steps.md"
   [ -n "$(products_named "$rs_dir/skills")" ] ||
     rs_fail "the guidelines exemption hid a product named elsewhere in the same file"
   rs_ok "the guidelines exemption hides nothing else in the same file"
 fi
 
 rs_require_load_bearing "setup step 11 names the hand-off" "$SETUP" \
-  'where a hosting companion or whoever runs the server will host it, /ship writes the hosting request on the first launch'
+  'where a hosting companion or whoever runs the server will host it, /setup-hosting writes the hosting request on the first launch'
 rs_require_load_bearing "the masterplan template has a place for it" "$MASTERPLAN" \
-  '/ship writes a hosting request here on the first launch'
+  '/setup-hosting writes a hosting request here on the first launch'
 rs_require "the masterplan template keeps it to names" "$MASTERPLAN" 'names only, never a value'
-rs_require "WORKFLOW tells the story" "$WORKFLOW" 'so /ship writes a hosting request into the masterplan'
+rs_require "WORKFLOW tells the story" "$WORKFLOW" 'so /setup-hosting writes a hosting request into the masterplan'
 rs_require "WORKFLOW says it holds names only" "$WORKFLOW" 'it holds names only, never a password or key'
-rs_require "WORKFLOW says a later launch reads it back" "$WORKFLOW" 'on a later launch /ship reads the request back'
+rs_require "WORKFLOW says a later launch reads it back" "$WORKFLOW" 'on a later launch /setup-hosting reads the request back'
 rs_require "the README FAQ answers where it runs" "$README" 'where does the tool run once it is built\?'
 rs_require "the README says the companion is a separate install" "$README" 'it is a separate install, made by somebody else'
 rs_require_absent "the README does not put the companion on the server" "$README" 'separate install on the server'

@@ -44,6 +44,9 @@ operational rehearsal>
 <only when the work cannot go further until the person does something the agent
 cannot: where to go, what to do there, and what to bring back>
 
+Live side needs: <only when the live copy must gain a new secret, setting or
+outside service before this can go live: each by name, never a value>
+
 <details><summary>Under the hood</summary>
 
 <the build approach, the seams, code-level dependencies, any groundwork: the
@@ -100,6 +103,13 @@ stopped at a recorded condition and a piece parked after repeated failure, and a
 third meaning would make all three unreadable. A piece waiting on the person
 keeps whatever labels it had.
 
+`Live side needs:` is left out too, unless the change needs something new on
+the live copy: a secret, a setting, or an outside service the host must reach.
+Name each one, never its value. On a live project the merge is a deploy, so
+`/implement` asks for the merge only once `/setup-hosting` reports each name
+present. A database migration needs no line, since `/implement` finds it in the
+change itself.
+
 ## The two layers of a piece
 
 The sections above are the surface. They stay in plain words, and they stay
@@ -151,9 +161,10 @@ Four more labels carry state that open and closed cannot:
 - `parked`, on a closed issue, for an idea deliberately left out;
 - `broken`, when the piece is repairing something that used to work.
 
-`broken` sends the work to `/fix` rather than to `/implement`, and it sits
-alongside the subjects rather than replacing them, because a broken thing is
-still about something.
+`broken` marks a repair. `/shape` reproduces it, and the failing case becomes
+its `## Done when`; `/implement` takes a ready repair before anything new and
+builds it with the repair rules. It sits alongside the subjects rather than
+replacing them, because a broken thing is still about something.
 
 Three more say the piece is waiting on a question, and each says who can answer
 it:
@@ -199,14 +210,14 @@ picks the piece up, and the merged pull request closes it.
 A piece never carries `ready` and a `needs-` label at the same time; settling
 the question is what moves it from one to the other.
 
-`/queue` reads this label to answer a different question: not which piece is
-next, but which of them can be taken on at the same time. A piece can be shaped
-and still be held up, so `ready` alone does not mean startable. What `/queue`
-offers is the ready pieces the printout has already put under `To build`, and a
+`/implement` reads this label to answer a second question when more than one
+piece is ready: not which piece is next, but which of them can be taken on at
+the same time. A piece can be shaped and still be held up, so `ready` alone
+does not mean startable. What `/implement` offers then is the ready pieces the printout has already put under `To build`, and a
 piece with an open blocker is never there. That is what makes the group safe to
 take on at once: no two pieces in it are waiting on each other. Shape still
 decides too, so a piece somebody labelled `ready` without giving it a
-`## Done when` is a note, and `/queue` does not offer it either.
+`## Done when` is a note, and `/implement` does not offer it either.
 
 Those fifteen are the only labels the kit owns. Any other label on an issue
 belongs to somebody else, so the kit reads past it and never removes it.
@@ -301,14 +312,14 @@ the form it expected.
 | Assigns themselves | Treats the piece as theirs, and `/implement` will not hand it to anyone else. Assignment says whose it is; `building` says work is under way now |
 | Assigns somebody else | `/implement` skips it and says who has it, rather than quietly taking it |
 | Adds `building` | Treats the piece as under way and leaves it alone |
-| Closes an issue by hand | It stays closed. `/sync` may say that no changelog line matches it, and ask whether it was done or dropped |
+| Closes an issue by hand | It stays closed. `/maintain` may say that no changelog line matches it, and ask whether it was done or dropped |
 | Reopens a closed issue | Treats it as work again, and takes off a `parked` label, because reopening is the decision to unpark it |
 | Edits the body so `## Done when` is gone | Treats it as a request rather than a piece, and refines it before building |
 | Adds labels of their own | Leaves them alone |
 | Puts two subject labels on one piece | Takes both, and satisfies what each one demands |
 | Leaves the subject off | change-triage classifies it when the piece is refined |
 | Uses milestones or a project board | Ignores both, and neither reads nor writes them |
-| Deletes an issue | Lets it go. If a branch still refers to it, `/sync` says so |
+| Deletes an issue | Lets it go. If a branch still refers to it, `/maintain` says so |
 | Fills the issue form in properly | Nothing special. It is a piece, and it gets built |
 
 ## The local printout

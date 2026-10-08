@@ -1,0 +1,7 @@
+# GENERATED from .agents/skills/setup-hosting/. Do not edit here.
+# Regenerate with .agents/tools/build-adapters.sh
+description = "Set up how the tool runs live, and run it again to check or change that."
+prompt = """
+Load and follow the instructions in `.agents/skills/setup-hosting/SKILL.md`, the single source of truth for the /setup-hosting command.
+Treat the following as the user's request (it may be empty): {{args}}
+"""

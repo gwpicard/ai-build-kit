@@ -4,7 +4,8 @@
 # Founding copies the helper in. A project founded before the helper shipped
 # inside this skill has no copy, or holds the older copy a whole copy of the kit
 # carried, and an update only ever refreshes skills. So /maintain runs this on
-# every visit, and this is how the helper reaches such a project.
+# any visit whose upgrade check finds the helper missing, older or not
+# runnable, and this is how the helper reaches such a project.
 #
 # It is safe to run again. A copy that already matches is left alone. A copy
 # that differs is replaced, because the helper is the kit's machinery rather

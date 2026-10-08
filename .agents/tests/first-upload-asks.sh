@@ -23,13 +23,14 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 
 BUILDER="$ROOT/.agents/skills/section-builder/SKILL.md"
 SETUP="$ROOT/.agents/skills/setup-ai-build-kit/SKILL.md"
-SYNC="$ROOT/.agents/skills/sync/SKILL.md"
-SHIP="$ROOT/.agents/skills/ship/SKILL.md"
+SYNC="$ROOT/.agents/skills/maintain/references/truing.md"
+HOSTING="$ROOT/.agents/skills/setup-hosting/SKILL.md"
 BLOCKED="$ROOT/.agents/skills/setup-ai-build-kit/references/blocked-commands.md"
 WORKFLOW="$ROOT/WORKFLOW.md"
+README="$ROOT/README.md"
 
 rs_init "First upload checks"
-rs_exists "$BUILDER" "$SETUP" "$SYNC" "$SHIP" "$BLOCKED" "$WORKFLOW"
+rs_exists "$BUILDER" "$SETUP" "$SYNC" "$HOSTING" "$BLOCKED" "$WORKFLOW" "$README"
 
 # The ask, and when it is due.
 rs_rule "the first push waits for a yes" 'the first push of the project.s code waits for their yes'
@@ -60,6 +61,13 @@ rs_rule "an unreadable visibility is said, not guessed" 'where you cannot read t
 rs_rule "a yes creates main at the commit the branch was cut from" 'create `main` on github at the commit the branch was cut from, `git merge-base main <piece branch>`'
 rs_rule "and makes it the default branch" 'make it the default branch'
 rs_rule "the default-branch change is told" 'tell the person in one clause that github now starts from their project.s main copy'
+# The deny rules can read a chained command as one, so a push chained to the
+# call that creates main was refused in two of five replays of scenario 55,
+# and the kit then asked for the yes again.
+rs_rule "the push runs on its own" 'run the push as a command of its own, with nothing chained to it'
+rs_rule "a chained main refuses the push" 'they can read a chained command as one, so a `main` later in the same line refuses the push'
+rs_rule "a refused chain is run in parts" 'where a command is refused that way, run its parts one at a time'
+rs_rule "the yes still stands" 'the person.s yes still stands, so do not ask for it again'
 rs_rule "the one time main is written other than by a merge" 'this is the one time `main` is written other than by a merge'
 
 # A no, and nobody there.
@@ -73,8 +81,8 @@ rs_require_order "the rules sit in the safe start, before the piece is labelled"
 rs_require_load_bearing "the save step points back at the ask" "$BUILDER" 'the project.s first upload waits for the yes in step 1'
 
 # The other commands that push follow the same rule.
-rs_require_load_bearing "sync's save follows the first upload rule" "$SYNC" 'the project.s first upload waits for the yes section-builder.s "the first upload" describes'
-rs_require_load_bearing "ship's records follow the first upload rule" "$SHIP" 'the project.s first upload waits for the yes section-builder.s "the first upload" describes'
+rs_require_load_bearing "the truing's save follows the first upload rule" "$SYNC" 'the project.s first upload waits for the yes section-builder.s "the first upload" describes'
+rs_require_load_bearing "setup-hosting's records follow the first upload rule" "$HOSTING" 'the project.s first upload waits for the yes section-builder.s "the first upload" describes'
 rs_require_load_bearing "the push-to-main rule names its one narrow exception" "$BLOCKED" 'the one exception is the project.s first upload: after the person.s yes, and only when the remote lists no branch, `main` is created through the github api at the commit the piece.s branch was cut from'
 rs_require_load_bearing "and main is never written by a git push" "$BLOCKED" 'it is never written by a `git push`'
 
@@ -97,5 +105,26 @@ rs_require_load_bearing "WORKFLOW says it is asked once for each project" "$WORK
 rs_require_load_bearing "WORKFLOW says a no or nobody there keeps the piece local" "$WORKFLOW" 'if you say no, or nobody is there to answer, the piece is still built and checked, and it waits on its own branch on your computer until you say yes'
 rs_require_load_bearing "WORKFLOW says an unrelated or kit repository gets nothing" "$WORKFLOW" 'if the repository already holds something that is not your project, or still points at the kit.s own repository, nothing is pushed and the agent asks you what to do'
 rs_require_load_bearing "WORKFLOW's founding story says the first build asks" "$WORKFLOW" 'if none of your code is online yet, it stays there until your first build asks you before putting it online'
+
+# The README once said nothing left the computer during setup, beside a
+# founding that opens every piece as a GitHub issue. Both halves are true only
+# when it says what founding puts online and what it keeps local.
+rs_require_load_bearing "the README says founding opens the pieces as issues" "$README" 'founding opens your project.s pieces of work as issues in a github repository you own'
+rs_require_load_bearing "the README says the code waits for the first upload's yes" "$README" 'your code stays on your computer until the first piece that needs to upload it asks you'
+rs_require_absent "the README no longer says nothing leaves during setup" "$README" 'does anything leave my computer\?\*\* not during setup'
+
+# Founding's own acts on GitHub are said first. A public repository gets a
+# warning in the same line and founding carries on, as the maintainer chose:
+# founding carries on rather than stalls, and the person can still stop it.
+rs_require_load_bearing "founding says what it will do on GitHub first" "$SETUP" 'before the first issue, say in one line what founding is about to do on github: open the pieces as issues, replace the labels github made with the kit.s own, and switch on removing'
+rs_require_load_bearing "founding names the repository and its visibility" "$SETUP" 'name the repository as `owner/name` and say whether it is public or private'
+rs_require_load_bearing "a private repository carries on" "$SETUP" 'on a private repository, carry on in the same reply'
+rs_require_load_bearing "a public repository is warned in the same line" "$SETUP" 'on a public one, say in that same line that the plan will be public to anyone'
+rs_require_load_bearing "a public repository carries on too" "$SETUP" 'then carry on in the same reply, as on a private one'
+rs_require_load_bearing "a stop opens no further issue" "$SETUP" 'where they ask to stop, open no further issue, say that the issues already opened stay readable'
+rs_require_absent "the old single stop is gone" "$SETUP" 'that one offer ends the reply'
+rs_require_load_bearing "the README says founding warns and carries on" "$README" 'on a public one it warns you that the plan will be public, and carries on unless you ask it to stop'
+rs_require_load_bearing "WORKFLOW says founding warns and carries on" "$WORKFLOW" 'on a public repository it warns that the plan will be public to anyone and carries on'
+rs_require_order "the notice comes before the first issue" "$SETUP" 'Before the first issue, say in one line' 'Each piece becomes an issue, written to the shape'
 
 rs_done

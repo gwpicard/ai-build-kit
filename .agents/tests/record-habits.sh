@@ -11,7 +11,7 @@ PIECES="$ROOT/.agents/skills/setup-ai-build-kit/references/pieces.md"
 TEMPLATE="$ROOT/.agents/skills/setup-ai-build-kit/templates/masterplan.md"
 SHAPE="$ROOT/.agents/skills/shape/SKILL.md"
 BUILDER="$ROOT/.agents/skills/section-builder/SKILL.md"
-SYNC="$ROOT/.agents/skills/sync/SKILL.md"
+SYNC="$ROOT/.agents/skills/maintain/references/truing.md"
 WORKFLOW="$ROOT/WORKFLOW.md"
 
 rs_init "Record habit checks"
@@ -51,23 +51,23 @@ rs_rule "building says where the work came from" 'say one line such as "found wh
 rs_guard "$BUILDER" "the build's discovery record"
 
 rs_reset
-rs_rule "sync checks age before changing the records" 'check for stale pieces before correcting their records'
-rs_rule "sync reads current open-piece dates on every path" 'on every build path, read the open pieces. last-updated times from github'
+rs_rule "the truing checks age before changing the records" 'check for stale pieces before correcting their records'
+rs_rule "the truing reads current open-piece dates on every path" 'on every build path, read the open pieces. last-updated times from github'
 rs_rule "the list includes the thirty-day boundary" 'list pieces untouched for at least 30 days once, in one short list by title'
 rs_rule "one question covers every listed piece" 'ask once: "for each of these, is it still wanted, should it be parked, or is it done\?"'
 rs_rule "each change needs the person's yes" 'change nothing on that list without a yes to the proposed action for that piece'
-rs_rule "no answer leaves the piece alone and work continues" 'silence leaves it as it is, and sync carries on without asking again'
+rs_rule "no answer leaves the piece alone and work continues" 'silence leaves it as it is, and the visit carries on without asking again'
 rs_rule "age alone cannot change a piece" 'age alone never closes or relabels a piece'
 rs_rule "missing dates are not guessed" 'if the dates cannot be read, say the stale-piece check could not be made; do not guess from the local printout'
-rs_rule "sync rereads all masterplan support" 're-read every "rests on" clause in the masterplan against what it names'
-rs_rule "sync names lost support in one line" 'when its support has gone, say in one line which decision lost its ground'
-rs_rule "sync leaves the decision visible for settlement" 'keep the decision on the page and ask what should settle it'
-rs_guard "$SYNC" "the sync record checks"
+rs_rule "the truing rereads all masterplan support" 're-read every "rests on" clause in the masterplan against what it names'
+rs_rule "the truing names lost support in one line" 'when its support has gone, say in one line which decision lost its ground'
+rs_rule "the truing leaves the decision visible for settlement" 'keep the decision on the page and ask what should settle it'
+rs_guard "$SYNC" "the truing record checks"
 
 rs_require_order "stale inspection precedes piece corrections" "$SYNC" 'Check for stale pieces' 'Correct the pieces to match reality'
-rs_require_load_bearing "WORKFLOW explains evidence rereads" "$WORKFLOW" 'when /shape uses that decision, or /sync checks the masterplan, the agent reads its support again'
+rs_require_load_bearing "WORKFLOW explains evidence rereads" "$WORKFLOW" 'when /shape uses that decision, or /maintain checks the masterplan, the agent reads its support again'
 rs_require_load_bearing "WORKFLOW explains links in both directions" "$WORKFLOW" 'both pieces link to each other, so you can follow where the work came from'
-rs_require_load_bearing "WORKFLOW explains the one stale-work question" "$WORKFLOW" '/sync names open pieces untouched for 30 days in one short list and asks once'
+rs_require_load_bearing "WORKFLOW explains the one stale-work question" "$WORKFLOW" '/maintain names open pieces untouched for 30 days in one short list and asks once'
 rs_require_load_bearing "WORKFLOW keeps the choice with the person" "$WORKFLOW" 'it changes nothing on that list without your yes'
 
 rs_done

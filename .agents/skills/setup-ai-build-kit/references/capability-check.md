@@ -17,6 +17,11 @@ Check:
 9. The project can be started or its runtime can be installed.
 10. The test or smoke-check command can be discovered or created.
 11. A browser or preview can be reached, when behaviour needs visual checking.
+    Use only a browser on this computer. A browser tool may list browsers on
+    other computers signed in to the same account, and a page opened there
+    runs on somebody else's machine. Where the tool says which browser is
+    local, choose that one. Where no browser on this computer is available, use
+    a headless browser here, or say that you could not see the page.
 12. An independent-review route exists: subagent, separate session, or a
     user-opened clean chat.
 13. A reach-check engine is recorded. Prefer the harness's language server or

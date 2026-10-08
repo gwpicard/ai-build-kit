@@ -7,7 +7,7 @@
 # and are not have to be left alone: a README nothing links to, the project
 # records and the kit's own files, a short sentence two documents share, and a
 # page naming files the project no longer has, which the document read in
-# /sync reports one name at a time. A clean project produces nothing, and the
+# every /maintain visit reports one name at a time. A clean project produces nothing, and the
 # script writes nothing.
 #
 # Leaving those alone is the half that matters. A tidy-up offered for a note
@@ -106,7 +106,7 @@ has "$(printf 'unreferenced\tdocs/scratch.md')" \
 echo "  ok: the short sentence two documents share is not called a repeat"
 printf '%s\n' "$out" | grep -qE 'masterplan|AGENTS|WORKFLOW|guide\.md|legacy\.md' &&
   fail "a record, a kit file, a live document or the stale-names page was reported"
-echo "  ok: a page naming files the project no longer has is left to the sync read"
+echo "  ok: a page naming files the project no longer has is left to the document read"
 echo "  ok: nothing else is reported"
 printf '%s\n' "$out" | grep -qE '[0-9]+ *%|score|grade' && fail "a score reached the output"
 echo "  ok: no score, grade or percentage"

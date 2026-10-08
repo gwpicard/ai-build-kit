@@ -42,9 +42,9 @@ trap 'rm -rf "$WORK"' EXIT INT TERM
 # AGENTS.md and the Vercel recipe, the preparation, the first commit, the remote
 # next door, and the preparation's second half.
 p="$WORK/s54"
-mkdir -p "$p/.agents/skills/ship/recipes"
+mkdir -p "$p/.agents/skills/setup-hosting/recipes"
 cp "$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md" "$p/"
-cp "$ROOT/.agents/skills/ship/recipes/nextjs-supabase-on-vercel.md" "$p/.agents/skills/ship/recipes/"
+cp "$ROOT/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel.md" "$p/.agents/skills/setup-hosting/recipes/"
 cp "$ROOT/.gitignore" "$p/.gitignore"
 sh "$PREPARE.sh" "$p"
 git -C "$p" init -q
