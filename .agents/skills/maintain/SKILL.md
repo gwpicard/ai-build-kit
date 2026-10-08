@@ -256,10 +256,9 @@ the monthly part.
    thing left, and its exit code decides. Exit 0 means no step is left. Then
    offer nothing; step 2 still names unseen informational lines. Say nothing
    else about the update, except one line for each `declined` step
-   below. On a monthly visit, also say in one line how many `pointer` or
-   `commands` lines end in `left as written:`, and in which file, since those
-   come back every month until the person changes them. Exit 1 means at least one step is left, and the rest of this
-   section runs. Exit 2 means the check could not run: say so in one line and
+   below. On a monthly visit, also say in one line how many `pointer` lines
+   end in `left as written:`, and in which file. Exit 1 means at least one
+   step is left, and the rest of this section runs. Exit 2 means the check could not run: say so in one line and
    carry on with the visit.
 2. Make the full offer only on the first visit that finds a leftover and on
    monthly visits. Read `upgrade-offered|<installed VERSION>` in
@@ -296,6 +295,9 @@ the monthly part.
      and `--apply pointers`, each shown old and new, as "Bringing the
      project's instructions up to the current names" and "Pointing the records
      at a skill by name" below say.
+   - `commands` lines ending in `left as written:`: propose and apply an agent
+     edit as "Bringing the project's instructions up to the current names"
+     says. A linked file stays untouched.
    - `settings` lines: `--apply settings`, as "Adding the kit's newer safety
      rules" below says.
    - a `template` line: `--apply template`. It rewrites one sentence the kit
@@ -710,18 +712,27 @@ updating. So the kit does it for them, with approval:
    and nothing else, in the template's shape. A line ending in `left as
    written:` is one it will not change, with the reason and the suggested
    line: a name in the list that is not one of the kit's, or words of the
-   person's own inside it. Show that suggestion for the person to apply by
-   hand. When the commands line is left as written, the counts above it are
-   left too.
+   person's own inside it. When the commands line is left as written, the
+   counts above it are left too.
 3. Show the change and apply it on approval, by running the script with
    `--rewrite-commands`, which the check's `--apply commands` does. It
    changes those lines and nothing else in the file,
    line endings included. Run it again without, and carry on only once no
    `commands` line offers a change. Say what changed in one sentence.
-4. Where the file lists the commands in its own words and the line cannot be
-   recognised, leave the file alone and say which name needs changing, so the
-   person edits one line rather than reads a diff. Where the harness cannot
-   run the script, make the same change by hand, to those lines only.
+4. When the script cannot rewrite a command list, show the old lines and a
+   proposed replacement. Name the six commands and the five background skills,
+   eleven in all, using the installed founding template. Keep the rest of the
+   paragraph's meaning and the person's own sentences. Say: "The command list
+   still names old commands. Shall I replace it with this wording?" On a yes,
+   apply the replacement as an agent edit to those lines only, then run the
+   check again. Never ask the person to edit the command list by hand. A linked
+   file stays untouched. Where the harness cannot run the script, use the
+   same proposal and approval before editing.
+5. On a no, record `--decline commands` as "Finishing a kit update" says.
+   Name the declined command-list lines once and keep them in the visit's
+   changelog record, using the same rule as a `mention` line. The update stays
+   unfinished while a command list names a retired command, unless the person
+   declined it, even when the installed version already matches the release.
 
 Record it in the changelog with the tidy-up that called it.
 

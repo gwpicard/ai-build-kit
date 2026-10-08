@@ -849,6 +849,8 @@ attribution line, not the word.
   hosting request and changelog, that the settings keep earlier entries, and
   that the refreshed helper never marks a blocked repair ready. It also
   checks the new environment names a branch adds, without printing values.
+  It holds the offered agent edit for a sentence-form command list, the unfinished
+  update until it is fixed or declined, and an older plain version marker.
 - `.agents/tests/whole-copy-leftovers.sh` guards cleanup after an update on
   every visit. It recognises generated adapters by their marker and retired
   skill folders by the kit's former names and absence from the lockfile.
