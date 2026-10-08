@@ -162,7 +162,7 @@ for route in ('claude-only','shared','whole','plugin'):
         for path in ('.claude-plugin','WORKFLOW.md','.agents/guard/blocked-commands.md','.agents/tools/build-adapters.sh','.ai-build-kit-version'):
             assert not (p/path).exists(),path
         assert (p/'README.md').read_text()=='Our club tool.\n'
-        assert (p/'.agents/hooks/session-end-sync.sh').read_bytes()==(source/'maintain/templates/session-end-sync.sh').read_bytes()
+        assert (p/'.agents/hooks/session-end-sync.sh').read_bytes()==(source/'setup-ai-build-kit/templates/foundation/session-end-sync.sh').read_bytes()
     snapshot={str(f.relative_to(p)):f.read_bytes() for f in p.rglob('*') if f.is_file() and '.git' not in f.parts}
     assert check(skills,p,0)==after
     assert snapshot=={str(f.relative_to(p)):f.read_bytes() for f in p.rglob('*') if f.is_file() and '.git' not in f.parts}
@@ -184,6 +184,20 @@ else: print(json.dumps([{"number":1,"title":"Reminder emails","html_url":"https:
     printout=(p/'plan.local.md').read_text()
     assert '(needs Card checkout)' in printout and '(ready)' not in printout,printout
     print('  ok: '+route+' preserves the person\'s work and finishes the upgrade')
+# The record rewrite tools must not follow linked project documents.
+p=work/'linked-records'; p.mkdir(); outside=work/'outside-records'; outside.mkdir()
+for name in ('AGENTS.md','masterplan.md'):
+    copy(fixture/(name+'.txt'),outside/name)
+    (p/name).symlink_to(outside/name)
+before={name:(outside/name).read_bytes() for name in ('AGENTS.md','masterplan.md')}
+for step in ('commands','pointers','template'):
+    apply(source,p,step)
+assert before=={name:(outside/name).read_bytes() for name in before}
+listed=check(source,p,1)  # The helper is still missing; links are informational.
+assert not any(line.startswith('template\t') for line in listed.splitlines()),listed
+assert 'left as written: it is a link' in listed
+print('  ok: linked records and their external targets stay untouched')
+
 PY
 fi
 rs_done

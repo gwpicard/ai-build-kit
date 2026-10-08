@@ -96,6 +96,8 @@ rs_rule "a project without the leftovers gets nothing" \
 rs_rule "kit files require a released byte match" 'only when every byte matches a copy a release shipped at the same path'
 rs_rule "a changed kit copy stays" 'a changed one gets a `left` line and stays'
 rs_rule "the hook is replaced on a match" 'the one this release ships replaces it on `--remove`'
+rs_rule "retired folders require released files" 'every remaining file in it matches a released copy for that skill'
+rs_rule "personal additions keep a retired folder" 'a changed file or a personal addition keeps the whole folder'
 rs_guard "$MAINTAIN" "the maintain skill"
 
 rs_require "WORKFLOW.md says the visit offers to remove the kit's command files" \
@@ -112,11 +114,7 @@ KNOWN="$ROOT/.agents/skills/maintain/scripts/kit-retired-skills.json"
 kit_skill() {
   # kit_skill <folder> <name>: a SKILL.md as a kit release wrote it.
   mkdir -p "$1"
-  python3 - "$KNOWN" "$2" > "$1/SKILL.md" <<'PY'
-import json, sys
-description = json.load(open(sys.argv[1]))["skills"][sys.argv[2]][-1]
-print("---\nname: %s\ndescription: %s\n---\n" % (sys.argv[2], description))
-PY
+  cp "$ROOT/.agents/tests/fixtures/upgrade-v0.19.3/retired-skills/$2.md.txt" "$1/SKILL.md"
 }
 P="$rs_dir/copy"
 nine="setup-ai-build-kit shape implement queue fix ship sync maintain what-now"
@@ -238,5 +236,53 @@ for name in shape sync; do
 done
 rs_report "without a lockfile, only the retired command's file is listed" \
   "$([ "$(python3 "$LEFTOVERS" "$Q")" = "adapter	.claude/commands/sync.md" ] && echo yes || echo no)"
+
+# A recognised description must never authorise deleting personal additions.
+C="$rs_dir/changed-retired"
+kit_skill "$C/.agents/skills/fix" fix
+printf '%s\n' 'My club notes.' > "$C/.agents/skills/fix/club-notes.md"
+before=$(cksum < "$C/.agents/skills/fix/club-notes.md")
+listed=$(python3 "$LEFTOVERS" "$C")
+python3 "$LEFTOVERS" --remove "$C"
+rs_report "a personal addition keeps the whole retired folder" \
+  "$(printf '%s\n' "$listed" | grep -q '^left	.agents/skills/fix	' \
+     && [ -f "$C/.agents/skills/fix/SKILL.md" ] \
+     && [ "$(cksum < "$C/.agents/skills/fix/club-notes.md")" = "$before" ] && echo yes || echo no)"
+B="$rs_dir/changed-body"
+kit_skill "$B/.agents/skills/fix" fix
+printf '%s\n' 'My personal instructions.' >> "$B/.agents/skills/fix/SKILL.md"
+before=$(cksum < "$B/.agents/skills/fix/SKILL.md")
+python3 "$LEFTOVERS" --remove "$B"
+rs_report "a changed body with the old description stays intact" \
+  "$([ -f "$B/.agents/skills/fix/SKILL.md" ] \
+     && [ "$(cksum < "$B/.agents/skills/fix/SKILL.md")" = "$before" ] && echo yes || echo no)"
+
+# Recheck the bytes after listing, and rehearse the post-release recorder.
+if [ -z "${RS_LIST:-}" ]; then
+  python3 - "$ROOT" "$rs_dir" <<'PY'
+import hashlib, importlib.util, json, pathlib, shutil, subprocess, sys
+root, work = map(pathlib.Path,sys.argv[1:])
+script=root/'.agents/skills/maintain/scripts/kit-leftovers.py'
+spec=importlib.util.spec_from_file_location('leftovers',script); module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+p=work/'changed-after-list'; target=p/'.agents/skills/fix'; target.mkdir(parents=True)
+shutil.copy2(root/'.agents/tests/fixtures/upgrade-v0.19.3/retired-skills/fix.md.txt',target/'SKILL.md')
+found=module.skill_findings(str(p)); assert ('folder','.agents/skills/fix') in found
+(target/'notes.md').write_text('Personal work added after the list.\n')
+module.remove(str(p),found)
+assert (target/'notes.md').read_text()=='Personal work added after the list.\n'
+print('  ok: a file added after listing keeps the retired folder')
+# The recorder must also keep canonical skill bytes for a later retirement.
+tool_root=work/'recorder'; tool=tool_root/'.agents/tools/record-released-copies.py';tool.parent.mkdir(parents=True)
+shutil.copy2(root/'.agents/tools/record-released-copies.py',tool)
+record=tool_root/'.agents/skills/maintain/scripts/kit-released-copies.json';record.parent.mkdir(parents=True)
+release=work/'released-copy'; (release/'.agents/skills/fix').mkdir(parents=True)
+data=(target/'SKILL.md').read_bytes();(release/'.agents/skills/fix/SKILL.md').write_bytes(data)
+(release/'.ai-build-kit-version').write_text('v0.19.3\n')
+subprocess.run([sys.executable,str(tool),str(release)],check=True,capture_output=True)
+known=json.loads(record.read_text()); assert known['files']['.agents/skills/fix/SKILL.md']==[hashlib.sha256(data).hexdigest()[:16]]
+first=record.read_bytes();subprocess.run([sys.executable,str(tool),str(release)],check=True,capture_output=True);assert record.read_bytes()==first
+print('  ok: the recorder keeps skill hashes and a second run changes nothing')
+PY
+fi
 
 rs_done

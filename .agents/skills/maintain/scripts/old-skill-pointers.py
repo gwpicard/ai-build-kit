@@ -169,6 +169,9 @@ def main(argv):
     project = rest[0] if rest else "."
     for name in FILES:
         path = os.path.join(project, name)
+        if os.path.islink(path):
+            print("%s\t\tleft as written: it is a link, so it was left alone" % name)
+            continue
         try:
             # newline="" keeps each line's own ending, so a rewrite changes the
             # pointers and nothing else.

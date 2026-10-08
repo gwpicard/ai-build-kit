@@ -7,8 +7,10 @@ root: the Agent Plugins folder, the Claude plugin folder, WORKFLOW.md, the
 kit's README, the guard file, the adapter builder, the session-end hook and
 the version marker. No update refreshes them, so after an update they describe
 an older kit. The maintain skill's `kit-leftovers.py` offers to remove one
-only when every byte matches a copy a release shipped at the same path. This
-tool writes the record it compares against:
+only when every byte matches a copy a release shipped at the same path. The
+record also keeps canonical skill files, so a later retirement can recognise
+their released bytes and preserve personal additions. This tool writes the
+record it compares against:
 `.agents/skills/maintain/scripts/kit-released-copies.json`.
 
 Usage:
@@ -40,7 +42,7 @@ FILES = (
     ".agents/guard/blocked-commands.md", ".agents/tools/build-adapters.sh",
     ".agents/hooks/session-end-sync.sh",
 )
-FOLDERS = ("agent-plugin/", ".claude-plugin/")
+FOLDERS = ("agent-plugin/", ".claude-plugin/", ".agents/skills/")
 
 COMMENT = ("The kit files a released whole copy carried, by path, each as the first "
            "16 hex digits of its SHA-256. kit-leftovers.py removes such a file only "

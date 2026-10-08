@@ -131,6 +131,8 @@ def helper_finding(project):
 
 
 def template_findings(project):
+    if linked_path(project, "masterplan.md"):
+        return [("left", "masterplan.md", "it is a link, so it was left alone")]
     path = os.path.join(project, "masterplan.md")
     found = []
     try:

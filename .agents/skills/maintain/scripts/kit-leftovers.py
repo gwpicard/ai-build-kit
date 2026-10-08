@@ -45,7 +45,9 @@ separated by tabs. The first field says what it is:
 What it will not touch. A name the lockfile lists under any other source is
 the person's. A folder not in the lockfile counts as the kit's only when its
 SKILL.md carries the former name and a description one of the kit's releases
-gave it, kept in kit-retired-skills.json beside this script. Nothing whose
+gave it, and every file matches a released copy for that skill, kept in
+kit-retired-skills.json beside this script. Personal additions or edits keep
+the whole folder. Nothing whose
 real location is outside the project is ever listed for removal, and a link is
 never followed: at most the link itself goes. A rewrite of AGENTS.md changes
 only a list that holds the kit's names and nothing else, and only those lines,
@@ -94,7 +96,7 @@ KNOWN = os.path.join(HERE, "kit-retired-skills.json")
 RELEASED = os.path.join(HERE, "kit-released-copies.json")
 VERSION = os.path.join(os.path.dirname(HERE), "VERSION")
 HOOK = ".agents/hooks/session-end-sync.sh"
-NEW_HOOK = os.path.join(os.path.dirname(HERE), "templates", "session-end-sync.sh")
+NEW_HOOK = os.path.join(INSTALLED, "setup-ai-build-kit", "templates", "foundation", "session-end-sync.sh")
 MARKER = ".ai-build-kit-version"
 # What a whole copy carries that only the kit itself needs, in the order the
 # lines print. The version marker comes last, since once it goes the copy is no
@@ -255,7 +257,8 @@ def skill_findings(project):
                 continue
             got_name, description = frontmatter(skill)
             if got_name == name and description in known.get(name, []):
-                found.append(("folder", path))
+                problem = retired_folder_problem(project, path)
+                found.append(("left", path, problem) if problem else ("folder", path))
             else:
                 found.append(("left", path, "not recognised as the kit's"))
 
@@ -356,6 +359,28 @@ def folder_problem(project, path, known):
             changed, "" if changed == 1 else "s", "s" if changed == 1 else "")
     return None
 
+
+
+def retired_folder_problem(project, path):
+    # A link is removed on its own, never with its target. A real folder must
+    # contain only unchanged released files, including SKILL.md's body.
+    if os.path.islink(os.path.join(project, path)):
+        return None
+    name = path.rsplit("/", 1)[-1]
+    try:
+        with open(KNOWN, encoding="utf-8") as handle:
+            hashes = json.load(handle).get("files", {})
+    except (OSError, ValueError):
+        hashes = {}
+    known = {path + "/" + rel[len(name) + 1:]: set(values)
+             for rel, values in hashes.items() if rel.startswith(name + "/")}
+    # Future releases record the skill folders too, so today's current skill
+    # can later be recognised when it is retired.
+    prefix = ".agents/skills/" + name + "/"
+    for rel, values in released().items():
+        if rel.startswith(prefix):
+            known.setdefault(path + "/" + rel[len(prefix):], set()).update(values)
+    return folder_problem(project, path, known)
 
 def stale_copy(project):
     """True when the project is a whole copy and its kit files are from an
@@ -480,6 +505,8 @@ def commands_findings(project, shipped):
     (line number, old, new or None, kind) where kind is a reason, "block"
     with a (begin, end) old, or ("count", column)."""
     path = os.path.join(project, "AGENTS.md")
+    if os.path.islink(path):
+        return [(1, "AGENTS.md", None, "it is a link, so it was left alone")], None
     try:
         with open(path, encoding="utf-8", newline="") as handle:
             lines = handle.readlines()
@@ -572,6 +599,8 @@ def remove(project, findings):
         if kind not in ("folder", "adapter", "kitcopy", "hook"):
             continue
         where = os.path.join(project, path)
+        if kind == "folder" and retired_folder_problem(project, path) is not None:
+            continue
         if kind in ("kitcopy", "hook"):
             # Checked again here, byte for byte, whatever the listing said.
             known = released() if known is None else known

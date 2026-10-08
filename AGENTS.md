@@ -849,32 +849,22 @@ attribution line, not the word.
   hosting request and changelog, that the settings keep earlier entries, and
   that the refreshed helper never marks a blocked repair ready. It also
   checks the new environment names a branch adds, without printing values.
-- `.agents/tests/whole-copy-leftovers.sh` guards the tidy step for a project
-  founded from a whole copy of the kit. Such a project carries the kit's own
-  generated adapters, which the shared installer never refreshes, so every
-  command shows twice in Claude Code and a renamed command lives on in a file
-  nothing removes. A hand deletion in one project fixes one project, so the
-  step lives in maintain. The check holds the two rules that keep it safe: an
-  adapter is recognised by its generated marker and never by name, and a
-  retired skill folder only by the kit's former names and absence from the
-  lockfile. It holds that the step is run from the monthly pass, removes on
-  approval, and that WORKFLOW.md says so. The former names now include
-  `fix`, `queue`, `sync` and `ship`. It runs the shipped `kit-leftovers.py` in
-  a throwaway whole copy of the last nine-command release: every generated
-  command file for the three tools and the four retired folders are listed
-  and removed, the person's own command file and skill stay, the old
-  session-end hook is named and left, and a second run lists only that hook,
-  which a visit names only beside a removal it offers.
-  Without a lockfile, only a retired command's generated file is listed.
-  A review found the removal deleting the person's work, and each
-  reproduction is a case here. A retired folder counts only when its
-  `SKILL.md` carries a description a kit release gave it, read from the
-  record beside the script, so the person's own `build` skill is named as
-  left and kept. A skill in a linked folder outside the project is never
-  removed, and a link inside the project goes on its own while its target
-  stays. A folder reached two ways is listed once. A generated skill folder
-  for a name the kit dropped, such as `grilling`, is listed, and one holding
-  a file of the person's is left.
+- `.agents/tests/whole-copy-leftovers.sh` guards cleanup after an update on
+  every visit. It recognises generated adapters by their marker and retired
+  skill folders by the kit's former names and absence from the lockfile.
+  A recognised description identifies a possible leftover; every remaining
+  file must match released bytes before a real folder can be removed. The
+  check uses frozen released skills and proves that a personal addition, a
+  changed body, or a file added after listing keeps the folder intact.
+  It also rehearses the release recorder, including the canonical skill
+  hashes that a future retirement needs and an unchanged second run.
+  Whole-copy kit files and the session-end hook require a released match too.
+  Changed copies stay. The check holds the offer and approval, and runs the
+  adapter removal for all three tools while preserving the person's own
+  command and skills. A skill reached through a link outside the project
+  stays; an inside link goes on its own while its target stays. A folder
+  reached two ways is listed once. A generated skill folder for a retired
+  name goes only when it holds nothing besides the generated file.
 - `.agents/tests/older-project-upkeep.sh` guards three things an update never
   reaches, because it refreshes skills and nothing else. A leftover `plan.md`
   is offered for a move into issues on every monthly visit that finds it, since it was

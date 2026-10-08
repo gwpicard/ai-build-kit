@@ -759,6 +759,11 @@ is a step here rather than advice:
    names included. A former name the lockfile lists as the kit's is the
    installer's to remove, in "Migrating a project installed before the six
    commands" above.
+   A recognised name and description identify a possible leftover. Removal
+   also requires that every remaining file in it matches a released copy for
+   that skill. A changed file or a personal addition keeps the whole folder,
+   reported as `left`. The script checks that again before removal.
+
 3. Run `python3 <installed maintain skill>/scripts/kit-leftovers.py` from the
    project root. Its `adapter` and `folder` lines are the two lists above,
    found by these rules. A generated skill folder under `.claude/skills/`,
@@ -793,8 +798,9 @@ is a step here rather than advice:
    byte for byte again first. Run the check again, and carry on only once it
    lists none of these kinds. Where the files are tracked, the removal is part
    of the visit's saved change. Where the harness cannot run the script,
-   apply the two rules for adapters and folders by hand, and leave the kit's
-   files and the hook as they are.
+   apply only the generated-marker rule for adapters by hand. Leave retired
+   folders, the kit's files and the hook as they are, since their released
+   bytes cannot be checked by reading their names.
 7. Record a changelog line saying what was removed and why.
 
 ## Offering a move onto a recipe

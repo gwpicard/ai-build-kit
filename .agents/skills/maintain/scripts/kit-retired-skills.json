@@ -1,5 +1,5 @@
 {
-  "comment": "Descriptions the kit's retired skills, `grilling` among them, carried in every release up to v0.19.3. A folder under a former name counts as the kit's only when its SKILL.md carries that name and one of these descriptions word for word.",
+  "comment": "Retired skill names and descriptions identify a possible leftover. A folder is removable only when every remaining file matches a released file for that skill. The files record uses the first 16 hex digits of SHA-256, from release tags up to v0.19.3. A changed or added file keeps the whole folder.",
   "skills": {
     "build": [
       "The everyday word for making the tool do something new or different. Typed alone it takes the next piece from the plan. Typed with words after it, it takes the request in plain language and works out what kind of work it is. \"/build auto\" builds several pieces in a row. Do not use for repairs of promised behaviour; that is fix.",
@@ -35,6 +35,272 @@
     ],
     "grilling": [
       "Interview the team before work is specified, one question at a time, each with a best guess attached. Used by start for the founding interview and by build when a request is too vague to size. Do not use for small clear changes or for repairs, and never write code during it."
+    ]
+  },
+  "files": {
+    "build/SKILL.md": [
+      "70dadb56d43d81b3",
+      "93f1d744360f7d22",
+      "a12d5e23683c6ee4",
+      "fe904304571ed12a"
+    ],
+    "build/agents/openai.yaml": [
+      "a1499d95abd84475"
+    ],
+    "build/references/running-longer.md": [
+      "7527c5788433b648",
+      "c741d3d994d9899f"
+    ],
+    "fix/SKILL.md": [
+      "0d1c3dae40bf9a47",
+      "14edb32d5bd7fb3e",
+      "173c08175cdb4b9c",
+      "3375be3afb457f6d",
+      "3e4a5cdba2306bc3",
+      "47cd35ff322e58c7",
+      "6783201e44bb68c6",
+      "67b9235782cda2d7",
+      "67f20e769aba9dc1",
+      "7b4cc72d9f7cc651",
+      "87adf347365926e0",
+      "ac1ec426cdb61c27",
+      "beb7ca90773afec0",
+      "d9d40a3a2c4f52f5",
+      "e3ab04128221a41b"
+    ],
+    "fix/agents/openai.yaml": [
+      "a1499d95abd84475"
+    ],
+    "grilling/SKILL.md": [
+      "aab3940bfa9e7b73",
+      "cac4ee1926718725"
+    ],
+    "grilling/references/decision-prototype.md": [
+      "3e19824f8ac9c9c4"
+    ],
+    "plan/SKILL.md": [
+      "1bd85a1e57246512",
+      "30885f5d0d823960",
+      "370ca47c5c9e764d",
+      "6a629f4c365ab201",
+      "6c4e45c939fde608",
+      "9d0475719d9fb1df",
+      "cf908a27e05433e2"
+    ],
+    "plan/agents/openai.yaml": [
+      "a1499d95abd84475"
+    ],
+    "queue/SKILL.md": [
+      "1c8786f06de7d0f0",
+      "c72ae6a5d6fe4009",
+      "e0cd44463c717ec0",
+      "fa09df8387d3e1b0"
+    ],
+    "queue/agents/openai.yaml": [
+      "a1499d95abd84475"
+    ],
+    "ship/SKILL.md": [
+      "1f94f7b06e692b2f",
+      "4d5a377e32381102",
+      "76800553a58dcd21",
+      "9531118e3e302a17",
+      "9bf135b0c8847b34",
+      "9fe07ec5995ae67b",
+      "b3163e02f63bd830",
+      "b71c9cbdc544a73a",
+      "bbf0d5bf9a9f45de",
+      "bf1c68d381095d94",
+      "c29f49172aafa6e3",
+      "e6e82e9a408bcc6f"
+    ],
+    "ship/agents/openai.yaml": [
+      "a1499d95abd84475"
+    ],
+    "ship/recipes/nextjs-supabase-on-coolify.md": [
+      "4e74e1c7a15b9db6",
+      "dc71488f4fe40a99",
+      "ed192ebc64b0145f"
+    ],
+    "ship/recipes/nextjs-supabase-on-vercel.md": [
+      "15baf2cdcab068c5",
+      "3087142cbfe90ca9",
+      "ddc6308a533a11e1"
+    ],
+    "ship/recipes/parts/nextjs-container.md": [
+      "603f5ef3897bd92f"
+    ],
+    "ship/recipes/parts/supabase-backup.md": [
+      "337df27c2dbe7fe2"
+    ],
+    "ship/recipes/parts/supabase-restore.md": [
+      "93a2349b1fd1621a"
+    ],
+    "ship/recipes/parts/supabase-settings.md": [
+      "6e7542f8f1b65717"
+    ],
+    "ship/references/evidence-run.md": [
+      "110e87f04ea8c1ba",
+      "61fc4f5fc7c1ad16",
+      "70e2f505101d4327",
+      "c650e8097f24c153",
+      "fa9c081c515723d3"
+    ],
+    "ship/references/hosting-request.md": [
+      "5c0d4defb5fcbbd0"
+    ],
+    "ship/references/recipe-format.md": [
+      "4d7a9eb5f81e5106",
+      "5ea8d20efd46128a",
+      "b13ce935b7f70121"
+    ],
+    "ship/templates/expert-brief.md": [
+      "d477b02a00db30b5"
+    ],
+    "ship/templates/handover.md": [
+      "14fda20dfe5e0e66"
+    ],
+    "ship/templates/recipe.md": [
+      "88aee9a7c4a6610d"
+    ],
+    "start/SKILL.md": [
+      "0391d1e92347cf2e",
+      "2ccb6942086960ed",
+      "5fe1987fe59abdb7",
+      "6f6f7255f3af9451",
+      "b56602761712b59a",
+      "bdc2a7a2a5499b3b",
+      "d0d36147a8a064e9",
+      "fd44adfd4a3842cb"
+    ],
+    "start/agents/openai.yaml": [
+      "a1499d95abd84475"
+    ],
+    "start/references/adopting.md": [
+      "10e2675bb41be1f5",
+      "49f764f9d499fc09",
+      "5889b417a8fd36ec"
+    ],
+    "start/references/blocked-commands.md": [
+      "1f0fcbfaa916123a",
+      "c0002cbfd997493e",
+      "c81fd7902dc19daf"
+    ],
+    "start/references/board-view.md": [
+      "8661bb8ece2d593a"
+    ],
+    "start/references/capability-check.md": [
+      "01cd8a7a073e2577",
+      "248442004ab0bba6",
+      "572492d380442cf7",
+      "5a860e15909a8e55"
+    ],
+    "start/references/completion-report.md": [
+      "540438394571b064",
+      "771cf1d0574038d9",
+      "a87e4b7a29996df0",
+      "b6777935c801be69"
+    ],
+    "start/references/fit-check.md": [
+      "16dffab1d49c44bc",
+      "55b27cb8fcd43312",
+      "ef3ba9950a8c52fe",
+      "ffbb7377e67f31fa"
+    ],
+    "start/references/manual-setup.md": [
+      "821b9bd18a52644d",
+      "914125a001ed1e46"
+    ],
+    "start/references/pieces.md": [
+      "1756450dd9fa8967",
+      "36a88d26b5cbc106",
+      "7a7680b8cf1570ec",
+      "9c5bb53203d4d949"
+    ],
+    "start/scripts/bootstrap-project.sh": [
+      "36424127b00c0627",
+      "a96aee7ad492f7d8"
+    ],
+    "start/templates/CHANGELOG.md": [
+      "dcfca02b48fed8b4"
+    ],
+    "start/templates/foundation/AGENTS.md": [
+      "60a89134ab750bb7",
+      "86e3d3f98f5ea276",
+      "a7083843dbac33d5",
+      "c871c5be355ac189"
+    ],
+    "start/templates/foundation/CLAUDE.md": [
+      "336cc4fbf19beaad"
+    ],
+    "start/templates/foundation/GEMINI.md": [
+      "42fbbc9d55ee0d14"
+    ],
+    "start/templates/foundation/README.md": [
+      "af83743716d75b84",
+      "b7f03d702a7f065d"
+    ],
+    "start/templates/foundation/checks.yml": [
+      "8bb9b9c3a909c3cd"
+    ],
+    "start/templates/foundation/claude-settings.json": [
+      "9986bb91f6bfe303",
+      "b9e893159b573e6c",
+      "d992e1bba1e0750d"
+    ],
+    "start/templates/foundation/copilot-instructions.md": [
+      "4dd33d686767e95e"
+    ],
+    "start/templates/foundation/env.example": [
+      "015483d1c2b61712"
+    ],
+    "start/templates/foundation/gitignore": [
+      "26d9cf949c73cb1f",
+      "becd53a3c3ad23ae",
+      "e28e408bf15e0941"
+    ],
+    "start/templates/foundation/piece-issue.yml": [
+      "40609f8a72955759",
+      "aef1cfd1b28178fd"
+    ],
+    "start/templates/foundation/session-start.sh": [
+      "e38f8bd57dc13d36"
+    ],
+    "start/templates/maintenance-record": [
+      "077d3ea032eec651"
+    ],
+    "start/templates/masterplan.md": [
+      "2b1c25202bd53df8",
+      "fd5639cf05359d66"
+    ],
+    "start/templates/plan.md": [
+      "a619776e29f740ad",
+      "f7664b8439eab8e4"
+    ],
+    "sync/SKILL.md": [
+      "05b0571a7cb76b63",
+      "0e0f1b61eeb2f54d",
+      "2f20a019d7a3d80d",
+      "30a5ea055c41365b",
+      "534e3bb9eb23d55e",
+      "562a96113d507160",
+      "879eb2f6d452f1f1",
+      "8c6e37baaca1f69d",
+      "8fdc3112c1331224",
+      "97dac3d448b07e1d",
+      "a8ed966db84f1da6",
+      "cf6489fc54fb7273",
+      "d1b80a87a97cce7c"
+    ],
+    "sync/agents/openai.yaml": [
+      "a1499d95abd84475"
+    ],
+    "sync/references/document-read.md": [
+      "3db90490a3efd55a",
+      "dae776bc4d827b8a"
+    ],
+    "sync/scripts/document-claims.py": [
+      "44df48db76ad2bde",
+      "b555252fa226f84f"
     ]
   }
 }

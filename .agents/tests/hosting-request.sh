@@ -96,7 +96,7 @@ rs_require_order "the request sits inside Build and run it" "$SKILLFILE" \
 PRODUCTS='coolify|vercel|supabase|netlify|heroku|railway|railpack|fly\.io|hetzner|hostinger|firebase|digitalocean'
 products_named() {
   # products_named <skills folder>: each file and line that names a product.
-  find "$1" -type f ! -path '*/setup-hosting/recipes/*' ! -path '*/maintain/scripts/kit-released-copies.json' | sort | while IFS= read -r pn_file; do
+  find "$1" -type f ! -path '*/setup-hosting/recipes/*' ! -path '*/maintain/scripts/kit-released-copies.json' ! -path '*/maintain/scripts/kit-retired-skills.json' | sort | while IFS= read -r pn_file; do
     tr '[:upper:]' '[:lower:]' < "$pn_file" \
       | sed -e 's#vercel web interface guidelines##g' \
             -e 's#github\.com/vercel-labs/web-interface-guidelines##g' \
