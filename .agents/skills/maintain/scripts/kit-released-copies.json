@@ -28,7 +28,8 @@
   "v0.19.1",
   "v0.19.2",
   "v0.19.3",
-  "v0.20.0"
+  "v0.20.0",
+  "v0.20.1"
  ],
  "files": {
   ".agents/guard/blocked-commands.md": [
@@ -72,9 +73,11 @@
    "91899e3d59f75e48"
   ],
   ".agents/skills/maintain/SKILL.md": [
-   "31013fe4ac635e56"
+   "31013fe4ac635e56",
+   "6ce945dbbcbb2cfc"
   ],
   ".agents/skills/maintain/VERSION": [
+   "743d13342ab3ea39",
    "847119a517b31dac"
   ],
   ".agents/skills/maintain/references/document-bloat.md": [
@@ -102,9 +105,11 @@
    "833f7bd63e8d01d9"
   ],
   ".agents/skills/maintain/scripts/kit-leftovers.py": [
+   "153b528a7e53b7a5",
    "7d81a9086ac91839"
   ],
   ".agents/skills/maintain/scripts/kit-released-copies.json": [
+   "656f9b3a61b66abb",
    "d2acd4aaca7babca"
   ],
   ".agents/skills/maintain/scripts/kit-retired-skills.json": [
@@ -117,7 +122,8 @@
    "a1828c5af45428e6"
   ],
   ".agents/skills/maintain/scripts/upgrade-check.py": [
-   "a0fc8df57575714a"
+   "a0fc8df57575714a",
+   "e78b669e3c13ee49"
   ],
   ".agents/skills/maintain/templates/handover.md": [
    "14fda20dfe5e0e66"
@@ -323,6 +329,7 @@
    "576845201b93694d",
    "635d5dd5a4ace775",
    "6a3af52fc45d4d44",
+   "743d13342ab3ea39",
    "847119a517b31dac",
    "9ccb2326fed99f74",
    "a3f2c68bcd98fbd9",
@@ -342,6 +349,7 @@
    "5d9dccd5cbdcd2db",
    "89d183d1858e2f17",
    "909f372db0369189",
+   "90aa8eef92ff7110",
    "9528d0959d5759d2",
    "a34961ca6bbb3187",
    "a43db8e4bc51f474",
@@ -358,6 +366,7 @@
    "088a1a1a70dba296",
    "2648029fdfbd75ca",
    "35aa4445931c0649",
+   "502b720bbee9bd0b",
    "5972f0ebdf63cd5e",
    "5d20ee6506090e9f",
    "627de996be4e2bd5",
@@ -393,6 +402,7 @@
    "8aea28710c31d8a2",
    "8d6e1ee7eedd09ae",
    "9ae33ba4416b0a8f",
+   "9bd8c40b02728b3b",
    "b9cd4af809525fc6",
    "c282deeeaafd1036",
    "c725e6190bb2e4d5",
@@ -409,6 +419,7 @@
    "73c755d4abce9840",
    "7f60336b4b007cf3",
    "85e5b1fd37e55636",
+   "88cd350763f3e213",
    "95323a777cdec8d7",
    "aaf9aabfc46bedd7",
    "aeda967acc5d0514",
@@ -489,6 +500,7 @@
    "397a4ff9099603ff",
    "551e0ae8a5961c5b",
    "5935a021817f3b11",
+   "6ce945dbbcbb2cfc",
    "72496ffe63ca627e",
    "74716a4dfc7a2de0",
    "9386e5e1b6f5c78b",
@@ -508,6 +520,7 @@
    "576845201b93694d",
    "635d5dd5a4ace775",
    "6a3af52fc45d4d44",
+   "743d13342ab3ea39",
    "847119a517b31dac",
    "9ccb2326fed99f74",
    "a3f2c68bcd98fbd9",
@@ -551,9 +564,11 @@
    "833f7bd63e8d01d9"
   ],
   "agent-plugin/skills/maintain/scripts/kit-leftovers.py": [
+   "153b528a7e53b7a5",
    "7d81a9086ac91839"
   ],
   "agent-plugin/skills/maintain/scripts/kit-released-copies.json": [
+   "656f9b3a61b66abb",
    "d2acd4aaca7babca"
   ],
   "agent-plugin/skills/maintain/scripts/kit-retired-skills.json": [
@@ -567,7 +582,8 @@
    "a1828c5af45428e6"
   ],
   "agent-plugin/skills/maintain/scripts/upgrade-check.py": [
-   "a0fc8df57575714a"
+   "a0fc8df57575714a",
+   "e78b669e3c13ee49"
   ],
   "agent-plugin/skills/maintain/templates/handover.md": [
    "14fda20dfe5e0e66"
