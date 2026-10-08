@@ -170,7 +170,7 @@ These are different ways to organise the work. Features vary within each categor
 |---|---|---|---|---|
 | Best for | A fast first app | Control over how you work | Defining a development process | Small teams wanting the agent to run the process |
 | Where you work | Platform workspace; code export varies | Your project folder | Your project folder | Your folder and GitHub repository |
-| Reading code | Natural-language building | You judge the work | Your team decides | Not required |
+| Reading code | Not required | You judge the work | Usually yes | Not required |
 | Process | Platform's workflow | You choose it | Toolkit's planning and build steps | Plan, build, check, go live, maintain |
 | What you learn | Platform controls | Agent and development tools | Toolkit commands and conventions | Six commands and how to try the result |
 | Going live | Platform publishing | You arrange it | Depends on the toolkit | Two recipes or a general checklist |
