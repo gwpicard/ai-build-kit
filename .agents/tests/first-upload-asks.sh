@@ -109,7 +109,7 @@ rs_require_load_bearing "WORKFLOW's founding story says the first build asks" "$
 # The README once said nothing left the computer during setup, beside a
 # founding that opens every piece as a GitHub issue. Both halves are true only
 # when it says what founding puts online and what it keeps local.
-rs_require_load_bearing "the README says founding opens the pieces as issues" "$README" 'founding opens your project.s pieces of work as issues in a github repository you own'
+rs_require_load_bearing "the README says setup opens the pieces as issues" "$README" 'setup opens one github issue for each piece in a repository you own'
 rs_require_load_bearing "the README says the code waits for the first upload's yes" "$README" 'your code stays on your computer until the first piece that needs to upload it asks you'
 rs_require_absent "the README no longer says nothing leaves during setup" "$README" 'does anything leave my computer\?\*\* not during setup'
 
@@ -123,7 +123,7 @@ rs_require_load_bearing "a public repository is warned in the same line" "$SETUP
 rs_require_load_bearing "a public repository carries on too" "$SETUP" 'then carry on in the same reply, as on a private one'
 rs_require_load_bearing "a stop opens no further issue" "$SETUP" 'where they ask to stop, open no further issue, say that the issues already opened stay readable'
 rs_require_absent "the old single stop is gone" "$SETUP" 'that one offer ends the reply'
-rs_require_load_bearing "the README says founding warns and carries on" "$README" 'on a public one it warns you that the plan will be public, and carries on unless you ask it to stop'
+rs_require_load_bearing "the README says setup warns and carries on" "$README" 'on a public repository it warns that the plan will be public and carries on unless you ask it to stop'
 rs_require_load_bearing "WORKFLOW says founding warns and carries on" "$WORKFLOW" 'on a public repository it warns that the plan will be public to anyone and carries on'
 rs_require_order "the notice comes before the first issue" "$SETUP" 'Before the first issue, say in one line' 'Each piece becomes an issue, written to the shape'
 

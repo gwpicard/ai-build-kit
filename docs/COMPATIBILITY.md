@@ -11,6 +11,27 @@ The eleven skills use the open Agent Skills folder format. Each skill keeps its
 own instructions and supporting files together. A command that needs a
 background skill loads it by name.
 
+## What is installed
+
+Each skill folder holds its instructions with any references, templates and
+scripts it needs. The [installation routes](#choose-one-installation-route)
+explain where those folders live and how their source is recorded.
+
+The setup skill carries the project foundation. On its first run it creates
+missing project instructions, pointers for coding agents, environment examples,
+the helper that prints the work list, Claude Code settings for push and merge
+rules, and a placeholder project check. It preserves existing files. The
+interview then produces `masterplan.md` and `CHANGELOG.md`, and one GitHub issue
+for each piece still to build.
+
+The source repository keeps only the Agent Plugins manifest; packaging adds
+the skills to `agent-plugin` in the release archive. This keeps one source copy
+of each skill to maintain.
+
+Each numbered release has a matching tag and reviewed notes. `/maintain` reads
+the latest published notes before offering an update. The repository also holds
+the kit's maintainer tools; they do not ship in the release archive.
+
 ## How much has been proved on each agent
 
 Meeting the portable core means the kit should work on an agent. It does not

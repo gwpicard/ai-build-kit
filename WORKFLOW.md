@@ -443,9 +443,11 @@ Some launch checks reach your data. On a recipe, the restore check copies the
 live database onto this computer and stops the local database while it runs.
 Where the database plan keeps no backups of its own, the kit takes one after
 each launch into a dated folder outside the repository. Each pull request's
-preview uses a separate database kept for previews. Where the plan has no room
-for a second one, a recipe may point previews at the live data instead, and
-the kit says so once.
+preview is meant to use a separate database kept for previews. Where the plan
+has no room for a second one, a recipe may point previews at the live data
+instead, and the kit says so once. The recorded recipe trials shared one
+database between previews and the live copy, so they have not proved that
+separate preview data stays separate.
 
 Keys and passwords never go in a file Git tracks. On this computer they live
 in files Git ignores, such as `.env`, and the live values sit in the host's own
@@ -458,6 +460,23 @@ It repairs each gap only after a yes that names it. It rechecks the build path f
 You can also ask /setup-hosting for a rollback outright. It reads the host's list of builds, names the version it would bring back by the change it carried and its date, and waits for a yes that names it. It runs the rollback once, or tells you where to click when the host offers nothing the kit can run, and checks that the live copy now reports the earlier version.
 
 A rollback does not undo a database addition, which is why database changes only add. Off a recipe the kit cannot roll back, and says what a rollback there would need.
+
+### What the launch trials proved
+
+Each recipe was tried on a throwaway app before it joined the menu. Both trials
+proved the preview, launch, rollback, secrets, logs and health steps on a live
+deployment. The backup and restore steps are shared and were run for real once.
+The recipe for your own server was tried on a private network and on the public
+internet. Its preview for an app without a domain ran on the server but had no
+address the person could open. Read the recipes' trial records through the
+[README's recipe links](README.md#going-live) for the results and their limits.
+
+The kit runs a rollback itself where the recipe provides a command. Otherwise
+you use the host's page and paste back the result. The host may keep only the
+build before the live one, and may hold new merges off the live copy after a
+rollback until you approve putting the repair live. The recipe says which
+applies. Confirming an earlier build exists does not prove a rollback works;
+launch checks do not try one on a working live tool.
 
 ## 10. Autonomy: /implement auto and goal modes
 
@@ -698,6 +717,22 @@ tell the team, revoke access, and switch off the services. The export is read
 back first. Each step that revokes access, deletes a credential, switches a
 service off or archives the repository waits for your yes, and says first
 whether it can be undone.
+
+## Configuration
+
+| What you can change | Where |
+|---|---|
+| Project rules the agent must follow | Your project's `AGENTS.md` |
+| Keys, passwords and tokens | Files Git ignores, such as `.env`, made from `.env.example`; live values belong in the host's settings |
+| The build path and accepted risks | The build-path section of `masterplan.md` |
+| The recipe the project runs on | The `Recipe:` line in the stack section of `AGENTS.md` |
+| Commands the agent may not run | The kit's [blocked-command list](.agents/guard/blocked-commands.md) and your agent's own settings |
+
+Keep project rules in `AGENTS.md`. Update the installed skills with `/maintain`
+rather than editing their folders. An update replaces those files, while your
+application code, records, environment files and project checks stay yours.
+[Compatibility](docs/COMPATIBILITY.md#update-the-installed-skills) explains
+how each installation route updates.
 
 ## What stays yours
 

@@ -113,7 +113,7 @@ rs_require_load_bearing "WORKFLOW says the upkeep waits until due" \
 # The row once said a visit makes the live copy true. The skill only reads
 # the live copy and sends a gap to /setup-hosting, so the row says that.
 rs_require "README's row says what a visit does" \
-  "$README" 'makes the records true again and checks the live copy against your project, plus any upkeep that is due'
+  "$README" 'makes the records true again, reads the live copy and reports gaps, plus any upkeep that is due'
 rs_require_absent "README's row no longer says a visit makes the live copy true" \
   "$README" 'makes the records and the live copy true again'
 
