@@ -14,6 +14,8 @@ rs_rule "a helper follows the saved checkpoint" 'on the clean checkpoint the tru
 rs_rule "the settings step is reached" '`settings` lines: `--apply settings`'
 rs_rule "the pointer step is reached" 'and `--apply pointers`, each shown old and new'
 rs_rule "own guidance is never changed" 'name each one once, in the reply that makes the offers, as the person.s to change, and never rewrite one'
+rs_rule "approved update recovery asks no second question" 'do not ask again for that recovery'
+rs_rule "guidance is not repeated monthly" 'do not repeat a line already named, even on a monthly visit, unless its text has changed'
 rs_rule "the read runs again at the end" 'run the check once more at the end of the visit'
 rs_guard "$MAINTAIN" "the upgrade visit"
 rs_reset
@@ -114,6 +116,9 @@ for route in ('claude-only','shared','whole','plugin'):
                 target.symlink_to('../../.agents/skills/'+name)
     if route=='whole':
         put(p/'.ai-build-kit-version','v0.19.3\n')
+        copy(fixture/'WORKFLOW.md.txt',p/'WORKFLOW.md')
+        put(p/'README.md','Our club tool.\n')
+        copy(fixture/'build-adapters.sh.txt',p/'.agents/tools/build-adapters.sh')
         copy(fixture/'agent-plugin.json',p/'agent-plugin/plugin.json')
         copy(fixture/'claude-plugin.json',p/'.claude-plugin/plugin.json')
         copy(fixture/'claude-marketplace.json',p/'.claude-plugin/marketplace.json')
@@ -125,10 +130,16 @@ for route in ('claude-only','shared','whole','plugin'):
     listed=check(skills,p,1)
     kinds=[line.split('\t')[0] for line in listed.splitlines()]
     assert {'commands','pointer','helper','settings','template','mention'} <= set(kinds), listed
+    assert kinds.count('commands')==3, listed
+    assert kinds.count('pointer')==1 and kinds.count('helper')==1 and kinds.count('template')==1,listed
     assert kinds.count('installer') == (0 if route=='plugin' else 4), listed
     assert ('kitcopy\t.claude-plugin' in listed)==(route=='whole'), listed
     assert ('hook\t.agents/hooks/session-end-sync.sh' in listed)==(route=='whole'), listed
     assert 'mention\tmasterplan.md:' in listed and 'We run /ship before' in listed
+    if route=='whole':
+        for path in ('.claude-plugin','WORKFLOW.md','.agents/guard/blocked-commands.md','.agents/tools/build-adapters.sh','.ai-build-kit-version'):
+            assert 'kitcopy\t'+path in listed,listed
+        assert 'left\tagent-plugin\t' in listed,listed
     if route!='plugin':
         run([npx,'skills','remove',*retired,'-y'],p)
         assert set(json.loads((p/'skills-lock.json').read_text())['skills'])==set(eleven)
@@ -148,7 +159,9 @@ for route in ('claude-only','shared','whole','plugin'):
     assert (p/'.agents/tools/plan-refresh.sh').read_bytes()==(source/'setup-ai-build-kit/templates/foundation/plan-refresh.sh').read_bytes()
     if route=='whole':
         assert (p/'agent-plugin/notes.md').read_text()=='My own notes.\n'
-        assert not (p/'.claude-plugin').exists()
+        for path in ('.claude-plugin','WORKFLOW.md','.agents/guard/blocked-commands.md','.agents/tools/build-adapters.sh','.ai-build-kit-version'):
+            assert not (p/path).exists(),path
+        assert (p/'README.md').read_text()=='Our club tool.\n'
         assert (p/'.agents/hooks/session-end-sync.sh').read_bytes()==(source/'maintain/templates/session-end-sync.sh').read_bytes()
     snapshot={str(f.relative_to(p)):f.read_bytes() for f in p.rglob('*') if f.is_file() and '.git' not in f.parts}
     assert check(skills,p,0)==after

@@ -62,6 +62,9 @@ work and leaves it alone.
    the `maintain` skill's `references/document-read.md` and check the README
    and every document AGENTS.md points at for a file, link, command or setting that no longer
    exists. Offer to correct only the stale name, or to file it as a piece.
+   Retired-command guidance in AGENTS.md and masterplan.md belongs only to
+   maintain's "Finishing a kit update" step. Leave it for that step's exact
+   template rewrite or own-guidance report, rather than correcting it here.
    This is the visit's one read for stale names. The quarterly read for
    documents that repeat each other leaves those names to it.
 5. Identify anything left open: an unresolved recheck trigger from the build-path section, flagged work still waiting, or interrupted manual setup. Say what's open rather than closing it quietly. Where flagged work was built during the period being reconciled, check the build-path section carries an `Accepted:` line for it; if the work happened and the line is missing, say so rather than writing one now, because an acceptance recorded after the fact is a record of nothing.

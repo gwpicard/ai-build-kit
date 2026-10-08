@@ -283,10 +283,13 @@ the monthly part.
    the check with `--apply helper`, as "Adding the plan printout helper" below
    says.
 4. Make every other offer in one reply, each in plain words, and change
-   nothing without a yes to that offer:
+   nothing without a yes to that offer, except recovery of an already approved
+   update:
    - `installer` lines: the installer's own removal, as "Migrating a project
      installed before the six commands" below says.
-   - `missing` lines: the add command from the monthly part's update step.
+   - `missing` lines: recover with the add command from the monthly part's
+     update step after the update approval already given. Do not ask again
+     for that recovery. Where no update was approved, offer the add first.
    - `folder`, `adapter`, `kitcopy` and `hook` lines: `--apply remove`, as
      "Tidying a project founded from a whole copy of the kit" below says.
    - `commands` and `pointer` lines that show a new form: `--apply commands`
@@ -308,6 +311,9 @@ the monthly part.
    they run one. Those lines guide later sessions, so they are not history.
    Name each one once, in the reply that makes the offers, as the person's to
    change, and never rewrite one. Name `left` lines once in the same reply.
+   Keep the named lines in the visit's changelog record. Before naming one,
+   read that record: do not repeat a line already named, even on a monthly
+   visit, unless its text has changed.
    The changelog is the only history, and the check never reads it.
 7. Where the person says no to an offer, run the check with `--decline` and
    that step's name, such as `--decline installer` or `--decline
