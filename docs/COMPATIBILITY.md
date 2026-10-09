@@ -159,8 +159,8 @@ On 9 October 2026, plain Codex CLI 0.161.0 on macOS, with the
 user`). Signing in again inside that session did not help. A new launcher
 session worked for `gh auth status` and `git ls-remote --heads origin` when Git
 was set to ask `gh` through `gh auth setup-git`. Git accepted the equivalent
-process settings in a local check. Rehearsals now cover those settings; a real
-founding through the launcher without the global helper remains to be tried.
+process settings in a local check. Rehearsals cover those settings. That
+observation did not yet prove a founding without the global helper.
 
 Later that day, Orca started Codex CLI 0.162.0 through the updated launcher
 with an empty temporary global Git config and system Git config disabled.
@@ -170,8 +170,28 @@ The active-account check also succeeded. Checking every saved account failed
 in the same session, so the startup and tooling checks now ask only about the
 active GitHub account. No personal Git settings changed. This checks session
 access: plain Codex failed the same account and credential checks, while the
-launcher session passed both kit checks silently. The real founding and first
-upload remain to be tried.
+launcher session passed both kit checks silently. That probe did not run
+founding or upload code.
+
+A later Orca run used a fresh installation assembled from commit `7330c07`
+and a preanswered brief for a disposable local notes tool. Plain Codex gave
+the exact restart sentence and prepared no project files. The launcher then
+carried founding through the tool report, real private GitHub issues and a
+local checkpoint, with no code uploaded during founding. A new zsh session
+typed `codex` through the approved function, built a piece, passed eleven
+local tests, type checking and lint, then pushed its branch. GitHub created
+`main` at the founding checkpoint through the API, made it the default branch
+and opened the piece's pull request. It stayed unmerged.
+
+The run used an empty temporary global Git config, disabled system Git config
+and a disposable shell settings file. Its login shell kept the working PATH
+used for founding, since a different Node runtime could not start Codex. No
+personal Git or shell setting changed. The project hook stayed untrusted;
+the AGENTS startup rule checked access before work. Hook trust approval was
+not automated. GitHub could not start the private project's remote check
+because of the account's billing or spending limit. Local checks passed;
+this is evidence for real founding and first-upload access, not a passing
+remote project check.
 
 Codex supports project hooks at `.codex/hooks.json`. It loads them only for a
 trusted project, and the person reviews each new or changed definition with
