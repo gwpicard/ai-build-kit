@@ -162,6 +162,17 @@ was set to ask `gh` through `gh auth setup-git`. Git accepted the equivalent
 process settings in a local check. Rehearsals now cover those settings; a real
 founding through the launcher without the global helper remains to be tried.
 
+Later that day, Orca started Codex CLI 0.162.0 through the updated launcher
+with an empty temporary global Git config and system Git config disabled.
+Inside Codex's shell tool, `gh api user` succeeded, Git's credential helper
+returned a credential, and that credential authenticated an account read.
+The active-account check also succeeded. Checking every saved account failed
+in the same session, so the startup and tooling checks now ask only about the
+active GitHub account. No personal Git settings changed. This checks session
+access: plain Codex failed the same account and credential checks, while the
+launcher session passed both kit checks silently. The real founding and first
+upload remain to be tried.
+
 Codex supports project hooks at `.codex/hooks.json`. It loads them only for a
 trusted project, and the person reviews each new or changed definition with
 `/hooks`. The kit's check returns a stop and a restart sentence on failure,

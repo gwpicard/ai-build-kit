@@ -46,7 +46,7 @@ fi
 
 gh_ready=no
 if command -v gh >/dev/null 2>&1; then
-  if gh_status=$(gh auth status 2>&1); then
+  if gh_status=$(gh auth status --active --hostname github.com 2>&1); then
     echo "The GitHub command line tool is ready: your pieces are kept as issues, and you are signed in."
     gh_ready=yes
   else

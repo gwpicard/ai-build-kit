@@ -50,7 +50,9 @@ def authenticated():
     env.pop("GH_DEBUG", None)
     env.pop("DEBUG", None)
     try:
-        result = subprocess.run(["gh", "auth", "status", "--hostname", "github.com"],
+        # A saved, inactive Keychain account may fail while the session's
+        # environment login works. Check only the account this session uses.
+        result = subprocess.run(["gh", "auth", "status", "--active", "--hostname", "github.com"],
                                 env=env, capture_output=True, timeout=15)
         return result.returncode == 0
     except (OSError, subprocess.TimeoutExpired):

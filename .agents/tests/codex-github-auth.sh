@@ -104,7 +104,9 @@ with tempfile.TemporaryDirectory(prefix="codex project ") as temp:
     bin_dir = folder / "bin"; bin_dir.mkdir()
     gh = bin_dir / "gh"
     gh.write_text("#!" + sys.executable + "\nimport os, sys\n"
-                  'if os.environ.get("FAIL_AUTH"): print("HTTP 401 token=synthetic-private-value", file=sys.stderr); sys.exit(1)\n')
+                  'if os.environ.get("FAIL_AUTH"): print("HTTP 401 token=synthetic-private-value", file=sys.stderr); sys.exit(1)\n'
+                  'if sys.argv[1:3] == ["auth", "status"] and ("--active" not in sys.argv or "--hostname" not in sys.argv or "github.com" not in sys.argv): print("Inactive saved account is invalid", file=sys.stderr); sys.exit(1)\n'
+                  'if sys.argv[1:3] == ["repo", "view"]: print("{}")\n')
     gh.chmod(0o700)
     env = {k:v for k,v in os.environ.items() if k not in ("GH_TOKEN", "GITHUB_TOKEN", "CODEX_THREAD_ID", "CODEX_SANDBOX")}
     env.update(HOME=str(home), SHELL="/bin/zsh", PATH=str(bin_dir) + os.pathsep + os.environ["PATH"], CODEX_THREAD_ID="fixture")
@@ -130,6 +132,12 @@ with tempfile.TemporaryDirectory(prefix="codex project ") as temp:
     copied = project / ".agents/tools/codex-github-check.py"
     result = command(copied, "--hook", stdin=json.dumps({"cwd":str(project)}))
     assert_case("authenticated session check stays silent", result.returncode == 0 and not result.stdout and not result.stderr)
+    result = command(copied)
+    assert_case("an inactive saved account cannot reject the working session login", result.returncode == 0 and not result.stdout and not result.stderr)
+    report = subprocess.run(["sh", str(launcher.with_name("check-tooling.sh"))], cwd=project,
+                            env=env, capture_output=True, text=True)
+    assert_case("tooling checks only the active GitHub account", report.returncode == 0 and
+                "you are signed in" in report.stdout and "Quit and start Codex" not in report.stdout)
     result = command(copied, "--hook", extra={"FAIL_AUTH":"1"}, stdin=json.dumps({"cwd":str(project)}))
     data = json.loads(result.stdout)
     assert_case("failed session hook stops work with an absolute restart command", data["continue"] is False and
