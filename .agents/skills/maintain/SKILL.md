@@ -10,6 +10,12 @@ Small regular maintenance is what keeps the rare big problem from arriving. Repo
 This command can run at any time. Every visit makes the project true again.
 The monthly and quarterly parts run only when they are due.
 
+In Codex, when a Git push, fetch or remote check fails with
+`unable to get password from user`, run the installed `setup-ai-build-kit`
+skill's `templates/foundation/codex-github-check.py` with python3 and `--message`.
+Give its sentence with the absolute launcher path and stop this session's work.
+Do not sign in again or retry the failed command in this session.
+
 ## Every visit
 
 1. Make the records true. Load `references/truing.md` and follow it. Its
@@ -58,13 +64,32 @@ The monthly and quarterly parts run only when they are due.
    where the person asks only for the records to be checked, runs only the
    every-visit steps. Run what is due. Where a part is not due, say so in one
    line with the date it falls due. When nothing more is due, the visit ends
-   with the truing's summary and step 4. A monthly or quarterly part that runs
+   with the truing's summary and steps 4 and 5. A monthly or quarterly part that runs
    saves its own changes the same way at its end, on top of the truing's save.
 4. Finish a kit update, as "Finishing a kit update" below says. This runs on
    every visit, a records-only one included, since the visit that ran the
    update was still following the release it replaced. Where the monthly part
    runs on this visit, its step 5 runs this after the update; do not run it
    twice on the same visit.
+5. In Codex, offer the session-start GitHub check to an older project missing
+   it. Wait for the clean checkpoint before changing a project file. On a yes
+   naming `.codex/hooks.json` and `.agents/tools/codex-github-check.py`, run
+   `python3` with the installed `setup-ai-build-kit` skill's
+   `scripts/setup-codex.py`, passing `--hooks`. It preserves other hooks and records the
+   installed skill's path for plugin installations. Explain that the person
+   trusts the project and reviews the hook with `/hooks`, then restarts;
+   never bypass that review. With approval, add the template's short
+   check-before-work rule to the top of the project's AGENTS.md, preserving
+   its other instructions and line ceiling. Save these changes through the
+   project's save route. The check also runs while the hook is untrusted or
+   disabled. A no leaves the files alone and the visit carries on.
+
+   On a later visit, a hook whose command points at a former project location
+   is offered for the same repair. Refresh a changed kit helper or plugin path
+   only on the same named yes. For the marked shell block, a requested update
+   or removal runs that installed skill's `scripts/setup-codex.py` with
+   `--shell-install` or `--shell-remove`, only on a yes naming the shell file. Never repeat
+   founding's declined shell offer.
 
 ## Monthly, when due
 

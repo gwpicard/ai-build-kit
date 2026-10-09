@@ -52,6 +52,12 @@ and `XDG_CONFIG_HOME`. Never print a credential or use `--show-token`.
 For Codex, follow [the recovery guide](codex-github.md) when networking or
 credential access differs between those environments.
 
+In Codex, an HTTP 401 or `unable to get password from user` first gets this
+skill's `templates/foundation/codex-github-check.py`, run with python3 and `--message`.
+Give its restart sentence and stop the session's work, without signing in again
+or retrying. The recovery guide holds diagnostics for a restart that still
+fails. The tool report and plan helper already print this sentence themselves.
+
 If those checks establish that the account is signed out, guide `gh auth login`
 in the person's terminal. If it refuses repository access, check the account's permissions for
 that repository. Neither is repaired by enabling network access.

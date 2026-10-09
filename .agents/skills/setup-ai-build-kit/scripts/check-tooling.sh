@@ -57,10 +57,20 @@ if command -v gh >/dev/null 2>&1; then
         echo "The GitHub command line tool cannot reach GitHub: network access may be blocked or unavailable. Request GitHub access for this session, then run this report again." ;;
       *"HTTP 403"* | *"Resource not accessible"* | *"permission denied"*)
         echo "The GitHub command line tool was refused permission: check this session's GitHub access and the signed-in account's permissions, then run this report again." ;;
-      *"HTTP 401"* | *"Bad credentials"* | *"Failed to log in"*)
-        echo "The GitHub command line tool could not authenticate: compare GH_TOKEN and GITHUB_TOKEN presence and gh auth status in this session and your terminal before signing in again. A sandbox may not read your stored login." ;;
+      *"HTTP 401"* | *"Bad credentials"* | *"Failed to log in"* | *"token"*"invalid"*)
+        if [ -n "${CODEX_THREAD_ID:-}${CODEX_SANDBOX:-}" ] && command -v python3 >/dev/null 2>&1; then
+          skill_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd -P)
+          python3 "$skill_root/templates/foundation/codex-github-check.py" --message --skill "$skill_root"
+        else
+          echo "The GitHub command line tool could not authenticate: compare GH_TOKEN and GITHUB_TOKEN presence and gh auth status in this session and your terminal before signing in again. A sandbox may not read your stored login."
+        fi ;;
       *)
-        echo "The GitHub command line tool is installed but nobody is signed in, or the sign-in could not be verified: run gh auth login if signed out. Check this session's GitHub access otherwise. See manual-setup.md." ;;
+        if [ -n "${CODEX_THREAD_ID:-}${CODEX_SANDBOX:-}" ] && command -v python3 >/dev/null 2>&1; then
+          skill_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd -P)
+          python3 "$skill_root/templates/foundation/codex-github-check.py" --message --skill "$skill_root"
+        else
+          echo "The GitHub command line tool is installed but nobody is signed in, or the sign-in could not be verified: run gh auth login if signed out. Check this session's GitHub access otherwise. See manual-setup.md."
+        fi ;;
     esac
     blocked=1
   fi
@@ -98,7 +108,19 @@ fi
 # These need a repository and python3, so they run only when both are here. On a
 # fresh project with no repository yet, they wait until one exists.
 if [ "$gh_ready" = yes ] && command -v python3 >/dev/null 2>&1 && [ "$kit_origin" = no ]; then
-  repo_json=$(gh repo view --json nameWithOwner,hasIssuesEnabled,viewerPermission 2>/dev/null || true)
+  if repo_answer=$(gh repo view --json nameWithOwner,hasIssuesEnabled,viewerPermission 2>&1); then
+    repo_json=$repo_answer
+  else
+    repo_json=
+    case "$repo_answer" in
+      *"HTTP 401"* | *"Bad credentials"* | *"unable to get password from user"*)
+        if [ -n "${CODEX_THREAD_ID:-}${CODEX_SANDBOX:-}" ]; then
+          skill_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd -P)
+          python3 "$skill_root/templates/foundation/codex-github-check.py" --message --skill "$skill_root"
+          exit 1
+        fi ;;
+    esac
+  fi
   read_field() {
     printf '%s' "$repo_json" \
       | python3 -c "import json,sys; print(json.load(sys.stdin).get('$1',''))" 2>/dev/null \

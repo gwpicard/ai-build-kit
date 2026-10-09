@@ -65,6 +65,11 @@ answer can still be changed afterwards and an unfounded project cannot.
 
 ## 0. Resume safely
 
+In Codex, before preparing a file or starting the interview, run this skill's
+`templates/foundation/codex-github-check.py` with `python3`. On failure, give
+its restart sentence and stop; start no work in this session. Do not sign in
+again or retry the task. The script finds this installed skill's launcher.
+
 First, run `scripts/bootstrap-project.sh` from this installed skill folder in
 the project root. It creates only missing project foundation files and leaves
 anything already there untouched. If the harness cannot run the script, copy
@@ -72,6 +77,24 @@ the missing files from `templates/foundation/` to the paths named by the
 script. Never replace an existing file during this preparation. When an
 existing `AGENTS.md` lacks the installed-skill load rule, preserve its project
 instructions and add the smallest compatible rule before continuing.
+
+When founding runs in Codex, run `python3` with this skill's
+`scripts/setup-codex.py`, passing `--hooks`. It installs `.codex/hooks.json` without
+replacing anyone's other hooks. Say: "The GitHub check runs when Codex starts;
+trust this project and review its hook with /hooks, then restart." Never trust
+it for the person or bypass hook review. Until trusted, the first rule in the
+project's AGENTS.md runs the same check before work.
+
+In Codex on macOS only, run `scripts/setup-codex.py` with python3 and `--shell-status`
+and give its offer once. It names the person's shell settings file and the
+marked block to remove to undo the change. On a yes naming that file, run
+that script with `--shell-install`; on a no, run it with `--shell-decline`.
+Both record the answer in `.ai-build-kit-maintenance`, so resuming never repeats
+the offer. Nothing changes in shell settings without that yes. The function
+finds the current project's installed launcher, and runs ordinary Codex outside
+a kit project or when the launcher is missing. It cannot call itself: the
+launcher finds the real binary with `shutil.which`, which sees no shell function.
+Keep this offer outside the interview; a pending answer does not stop founding.
 
 The same script works when a coding agent runs this skill from a plugin, in
 Claude Code or through the Agent Plugins format. If it reports that the
@@ -227,6 +250,8 @@ present tense throughout. The build-path section goes first: the fit check's
 result. Create CHANGELOG.md from its template, empty; it has to exist before
 the next step writes its first line to it. Create `.ai-build-kit-maintenance`
 from `templates/maintenance-record` and put today's date on its `founded` line.
+If the shell offer already made that file, preserve its `codex-shell` line
+while adding the founding and pass lines; never reset the person's answer.
 Leave the two pass lines empty, because `/maintain` fills those in. Do not
 mention that small file to the person. Do not create team.md; it no
 longer exists. Fill in AGENTS.md's project line and the capability profile

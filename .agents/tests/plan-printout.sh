@@ -12,6 +12,7 @@
 # Everything here runs in a throwaway directory. No network, no account.
 
 set -eu
+unset CODEX_THREAD_ID CODEX_SANDBOX
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 REFRESH="$ROOT/skills/setup-ai-build-kit/templates/foundation/plan-refresh.sh"

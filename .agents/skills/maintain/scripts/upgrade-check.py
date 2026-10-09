@@ -129,6 +129,15 @@ def helper_finding(project):
             return [("helper", HELPER, "older than the installed copy")]
     if not os.access(path, os.X_OK):
         return [("helper", HELPER, "not runnable")]
+    for companion in ("codex-github-check.py", "codex-setup-path"):
+        relative = ".agents/tools/" + companion
+        target = os.path.join(project, relative)
+        if linked_path(project, relative) or (os.path.exists(target) and not os.path.isfile(target)):
+            return [("left", relative, "it is a link or not a file, so it was left alone")]
+        expected = ((os.path.realpath(SETUP) + "\n").encode() if companion == "codex-setup-path" else
+                    open(os.path.join(SETUP, "templates", "foundation", companion), "rb").read())
+        if not os.path.isfile(target) or open(target, "rb").read() != expected:
+            return [("helper", HELPER, "GitHub recovery helper needs refreshing")]
     return []
 
 

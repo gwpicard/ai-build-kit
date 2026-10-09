@@ -71,6 +71,11 @@ points at the kit's repository, and ask for their own. Never push a project
 there.
 
 Then run `git ls-remote --exit-code --heads origin` and read its exit code.
+In Codex, a push, fetch or remote check that reports `unable to get password
+from user` gets the installed `setup-ai-build-kit` skill's
+`templates/foundation/codex-github-check.py`, run with python3 and `--message`.
+Give that restart sentence and stop work in this session, without signing in
+again or retrying the command. It names the launcher by its absolute path.
 Exit 2 means the repository has no branch: nothing from this project is
 online yet, and this push is the first upload. Any exit other than 0 or 2
 means the listing could not be read, because there is no `origin`, GitHub
