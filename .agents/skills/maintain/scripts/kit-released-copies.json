@@ -29,7 +29,8 @@
   "v0.19.2",
   "v0.19.3",
   "v0.20.0",
-  "v0.20.1"
+  "v0.20.1",
+  "v0.20.2"
  ],
  "files": {
   ".agents/guard/blocked-commands.md": [
@@ -67,16 +68,19 @@
    "33e23c06ad06643d"
   ],
   ".agents/skills/implement/SKILL.md": [
-   "7ff25ca0329d1fc3"
+   "7ff25ca0329d1fc3",
+   "d18c5e7aefa1a513"
   ],
   ".agents/skills/implement/references/running-longer.md": [
    "91899e3d59f75e48"
   ],
   ".agents/skills/maintain/SKILL.md": [
    "31013fe4ac635e56",
+   "6958c9356bdcacb3",
    "6ce945dbbcbb2cfc"
   ],
   ".agents/skills/maintain/VERSION": [
+   "217162228df4688e",
    "743d13342ab3ea39",
    "847119a517b31dac"
   ],
@@ -110,7 +114,8 @@
   ],
   ".agents/skills/maintain/scripts/kit-released-copies.json": [
    "656f9b3a61b66abb",
-   "d2acd4aaca7babca"
+   "d2acd4aaca7babca",
+   "e8f4730f0e1ee940"
   ],
   ".agents/skills/maintain/scripts/kit-retired-skills.json": [
    "6ea0e7e221fbd15b"
@@ -123,6 +128,7 @@
   ],
   ".agents/skills/maintain/scripts/upgrade-check.py": [
    "a0fc8df57575714a",
+   "d157bb941992b6b9",
    "e78b669e3c13ee49"
   ],
   ".agents/skills/maintain/templates/handover.md": [
@@ -135,7 +141,8 @@
    "62ec469b909cf3cf"
   ],
   ".agents/skills/section-builder/SKILL.md": [
-   "975b2871d1fb0511"
+   "975b2871d1fb0511",
+   "e912ddfe59f63645"
   ],
   ".agents/skills/section-builder/references/reach-check.md": [
    "2d736e083b6eaab9"
@@ -156,7 +163,8 @@
    "4f6a6ea128ed01dd"
   ],
   ".agents/skills/setup-ai-build-kit/SKILL.md": [
-   "348368f11a919f3d"
+   "348368f11a919f3d",
+   "7c302af73bb2ec0d"
   ],
   ".agents/skills/setup-ai-build-kit/references/adopting.md": [
    "ce5de980800c76d4"
@@ -174,7 +182,8 @@
    "bb2b480226817c44"
   ],
   ".agents/skills/setup-ai-build-kit/references/codex-github.md": [
-   "80759762cdb460bb"
+   "80759762cdb460bb",
+   "da16ea36e8d8d2f7"
   ],
   ".agents/skills/setup-ai-build-kit/references/completion-report.md": [
    "4afc1e39762529e1"
@@ -195,33 +204,45 @@
    "37745da0b64f79e1"
   ],
   ".agents/skills/setup-ai-build-kit/references/required-tools.md": [
+   "6a02adf128cb2235",
    "d168855b60becca3"
   ],
   ".agents/skills/setup-ai-build-kit/references/whole-project-reads.md": [
    "5d795092fcb80093"
   ],
   ".agents/skills/setup-ai-build-kit/scripts/bootstrap-project.sh": [
+   "2a3027bf7b11547e",
    "ace7a33621468f31"
   ],
   ".agents/skills/setup-ai-build-kit/scripts/check-tooling.sh": [
+   "bdd9199af7bfca22",
    "ffde95fee80b2870"
   ],
   ".agents/skills/setup-ai-build-kit/scripts/codex-with-github.py": [
-   "69636c1758f761a7"
+   "69636c1758f761a7",
+   "cc97977f4da449a7"
   ],
   ".agents/skills/setup-ai-build-kit/scripts/place-plan-helper.sh": [
-   "363c38407fb46dea"
+   "363c38407fb46dea",
+   "3be49d880bbd4726"
   ],
   ".agents/skills/setup-ai-build-kit/scripts/recipe-menu.sh": [
    "5e19233efd2dd12d"
   ],
+  ".agents/skills/setup-ai-build-kit/scripts/setup-codex.py": [
+   "6a2a322e8a634ba2"
+  ],
   ".agents/skills/setup-ai-build-kit/scripts/trued-mark.sh": [
    "c806be9d8f404dd4"
+  ],
+  ".agents/skills/setup-ai-build-kit/scripts/workflow-upload-check.py": [
+   "fc8685ca91372579"
   ],
   ".agents/skills/setup-ai-build-kit/templates/CHANGELOG.md": [
    "dcfca02b48fed8b4"
   ],
   ".agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md": [
+   "bdc7048d31ec89b7",
    "f26e78f5b003a461"
   ],
   ".agents/skills/setup-ai-build-kit/templates/foundation/CLAUDE.md": [
@@ -242,6 +263,9 @@
   ".agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json": [
    "6112863a5bd07d8a"
   ],
+  ".agents/skills/setup-ai-build-kit/templates/foundation/codex-github-check.py": [
+   "a6c36be504b22dba"
+  ],
   ".agents/skills/setup-ai-build-kit/templates/foundation/copilot-instructions.md": [
    "4dd33d686767e95e"
   ],
@@ -255,6 +279,7 @@
    "d188c009e6fc556a"
   ],
   ".agents/skills/setup-ai-build-kit/templates/foundation/plan-refresh.sh": [
+   "24a03c736d4ad1f5",
    "eb782000c26af283"
   ],
   ".agents/skills/setup-ai-build-kit/templates/foundation/session-end-sync.sh": [
@@ -322,6 +347,7 @@
   ],
   ".ai-build-kit-version": [
    "1eba167c105aab62",
+   "217162228df4688e",
    "241eb70c2e1d50f6",
    "349f0b2fb5b9c498",
    "3bb6d9bd34b24136",
@@ -359,6 +385,7 @@
    "ba61d1df5330171b",
    "c41f29cc0b612d16",
    "cb577518be240bc1",
+   "dc6cfff7507b5c6b",
    "e046f8ccbc4cfb4a"
   ],
   "README.md": [
@@ -371,6 +398,7 @@
    "5d20ee6506090e9f",
    "627de996be4e2bd5",
    "6ac597b6e4de6a80",
+   "70d472e2b4ab9dac",
    "774c60d2f041eb2c",
    "819819117d3b1541",
    "8679c6f95e125003",
@@ -405,6 +433,7 @@
    "9bd8c40b02728b3b",
    "b9cd4af809525fc6",
    "c282deeeaafd1036",
+   "c38cac33cb5443ab",
    "c725e6190bb2e4d5",
    "ec299482141eea0d",
    "efa60f8a75b82e2b",
@@ -415,6 +444,7 @@
    "0233241ceb33299f",
    "28539385fc51f921",
    "3f1d07462738ffad",
+   "428e230f675d376a",
    "5a36f1db66356006",
    "73c755d4abce9840",
    "7f60336b4b007cf3",
@@ -484,6 +514,7 @@
    "7ff25ca0329d1fc3",
    "bca8e7808a3b80e1",
    "c18efed0881c6dd1",
+   "d18c5e7aefa1a513",
    "ec1463263c05a153"
   ],
   "agent-plugin/skills/implement/agents/openai.yaml": [
@@ -500,6 +531,7 @@
    "397a4ff9099603ff",
    "551e0ae8a5961c5b",
    "5935a021817f3b11",
+   "6958c9356bdcacb3",
    "6ce945dbbcbb2cfc",
    "72496ffe63ca627e",
    "74716a4dfc7a2de0",
@@ -513,6 +545,7 @@
   ],
   "agent-plugin/skills/maintain/VERSION": [
    "1eba167c105aab62",
+   "217162228df4688e",
    "241eb70c2e1d50f6",
    "349f0b2fb5b9c498",
    "3bb6d9bd34b24136",
@@ -569,7 +602,8 @@
   ],
   "agent-plugin/skills/maintain/scripts/kit-released-copies.json": [
    "656f9b3a61b66abb",
-   "d2acd4aaca7babca"
+   "d2acd4aaca7babca",
+   "e8f4730f0e1ee940"
   ],
   "agent-plugin/skills/maintain/scripts/kit-retired-skills.json": [
    "6ea0e7e221fbd15b"
@@ -583,6 +617,7 @@
   ],
   "agent-plugin/skills/maintain/scripts/upgrade-check.py": [
    "a0fc8df57575714a",
+   "d157bb941992b6b9",
    "e78b669e3c13ee49"
   ],
   "agent-plugin/skills/maintain/templates/handover.md": [
@@ -623,7 +658,8 @@
    "9a975f0452f36e34",
    "a905ce425da225f7",
    "b88da1b239b7f026",
-   "c9dd8e7ac1b5f9d7"
+   "c9dd8e7ac1b5f9d7",
+   "e912ddfe59f63645"
   ],
   "agent-plugin/skills/section-builder/references/reach-check.md": [
    "2d736e083b6eaab9"
@@ -652,6 +688,7 @@
    "4ce87aa373279aac",
    "642e7a480d4f0bd4",
    "719b6bc5dc09ddb4",
+   "7c302af73bb2ec0d",
    "9f6195e966455b16",
    "a45c41465f2e68c6",
    "b4e994c9cbb2930e"
@@ -685,7 +722,8 @@
    "bb2b480226817c44"
   ],
   "agent-plugin/skills/setup-ai-build-kit/references/codex-github.md": [
-   "80759762cdb460bb"
+   "80759762cdb460bb",
+   "da16ea36e8d8d2f7"
   ],
   "agent-plugin/skills/setup-ai-build-kit/references/completion-report.md": [
    "3940b0138cb49b7d",
@@ -730,6 +768,7 @@
    "cc06af542ec956e2"
   ],
   "agent-plugin/skills/setup-ai-build-kit/references/required-tools.md": [
+   "6a02adf128cb2235",
    "91f9f73da6897ecf",
    "d168855b60becca3",
    "eedc47ee7ff57aca",
@@ -740,6 +779,7 @@
    "5d795092fcb80093"
   ],
   "agent-plugin/skills/setup-ai-build-kit/scripts/bootstrap-project.sh": [
+   "2a3027bf7b11547e",
    "8f3fa2a51e47e8b0",
    "a1482ddb62dd8907",
    "ace7a33621468f31",
@@ -748,21 +788,30 @@
   "agent-plugin/skills/setup-ai-build-kit/scripts/check-tooling.sh": [
    "2618b9484ed85b59",
    "ae0c5befa060a41c",
+   "bdd9199af7bfca22",
    "f3915949664a1cce",
    "ffde95fee80b2870"
   ],
   "agent-plugin/skills/setup-ai-build-kit/scripts/codex-with-github.py": [
-   "69636c1758f761a7"
+   "69636c1758f761a7",
+   "cc97977f4da449a7"
   ],
   "agent-plugin/skills/setup-ai-build-kit/scripts/place-plan-helper.sh": [
    "363c38407fb46dea",
+   "3be49d880bbd4726",
    "fa044d6dca021125"
   ],
   "agent-plugin/skills/setup-ai-build-kit/scripts/recipe-menu.sh": [
    "5e19233efd2dd12d"
   ],
+  "agent-plugin/skills/setup-ai-build-kit/scripts/setup-codex.py": [
+   "6a2a322e8a634ba2"
+  ],
   "agent-plugin/skills/setup-ai-build-kit/scripts/trued-mark.sh": [
    "c806be9d8f404dd4"
+  ],
+  "agent-plugin/skills/setup-ai-build-kit/scripts/workflow-upload-check.py": [
+   "fc8685ca91372579"
   ],
   "agent-plugin/skills/setup-ai-build-kit/templates/CHANGELOG.md": [
    "dcfca02b48fed8b4"
@@ -774,6 +823,7 @@
    "50b92c617cc0a3e0",
    "7e22bee85fcb374b",
    "a575279cefbc627d",
+   "bdc7048d31ec89b7",
    "c453a39e43ea0b46",
    "d322675302bff810",
    "e49b6af54afee63e",
@@ -802,6 +852,9 @@
    "6112863a5bd07d8a",
    "d992e1bba1e0750d"
   ],
+  "agent-plugin/skills/setup-ai-build-kit/templates/foundation/codex-github-check.py": [
+   "a6c36be504b22dba"
+  ],
   "agent-plugin/skills/setup-ai-build-kit/templates/foundation/copilot-instructions.md": [
    "4dd33d686767e95e"
   ],
@@ -818,6 +871,7 @@
   ],
   "agent-plugin/skills/setup-ai-build-kit/templates/foundation/plan-refresh.sh": [
    "0dafa678acb00455",
+   "24a03c736d4ad1f5",
    "7830fd5d0b7be6ac",
    "eb782000c26af283"
   ],
