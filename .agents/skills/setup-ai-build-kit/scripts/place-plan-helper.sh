@@ -53,6 +53,25 @@ destination="$PROJECT_ROOT/$TARGET"
 [ ! -e "$destination" ] || [ -f "$destination" ] || \
   fail "$TARGET is not a file, so it was left alone"
 
+# The recovery message belongs to the printout too. Older plugin projects need
+# the installed skill's location because their skills live outside the project.
+for companion in codex-github-check.py codex-setup-path; do
+  companion_target="$PROJECT_ROOT/.agents/tools/$companion"
+  [ ! -L "$companion_target" ] || fail "$companion is a link, so it was left alone"
+  [ ! -e "$companion_target" ] || [ -f "$companion_target" ] || \
+    fail "$companion is not a file, so it was left alone"
+done
+mkdir -p "$PROJECT_ROOT/.agents/tools"
+recovery="$PROJECT_ROOT/.agents/tools/codex-github-check.py"
+if ! cmp -s "$SKILL_ROOT/templates/foundation/codex-github-check.py" "$recovery" 2>/dev/null; then
+  cp "$SKILL_ROOT/templates/foundation/codex-github-check.py" "$recovery"
+  chmod 755 "$recovery"
+fi
+location="$PROJECT_ROOT/.agents/tools/codex-setup-path"
+if [ ! -f "$location" ] || [ "$(cat "$location")" != "$SKILL_ROOT" ]; then
+  printf '%s\n' "$SKILL_ROOT" > "$location"
+fi
+
 if [ -f "$destination" ] && cmp -s "$HELPER" "$destination"; then
   if [ -x "$destination" ]; then
     echo "plan helper: already current at $TARGET"

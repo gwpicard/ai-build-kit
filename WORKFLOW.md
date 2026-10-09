@@ -41,7 +41,21 @@ and a recovery step. The last printout stays as it was, with the time it was wri
 For a Codex session that cannot reach GitHub or use its stored login, follow the
 [GitHub access guidance](docs/COMPATIBILITY.md#github-access-in-codex).
 The kit carries a launcher for a fresh Codex session to use your existing login
-without saving the credential. It runs from an ordinary terminal.
+without saving the credential. It runs from an ordinary terminal and gives Git
+the same access for that session. A failed sign-in in Codex shows the exact
+restart command; signing in again in that session does not help.
+
+In Codex projects, a check at session start stays silent when GitHub works.
+When it cannot authenticate, it shows the restart sentence and starts no work.
+Codex asks you to trust the project and review the hook with `/hooks`; until
+then, the project's instructions ask the agent to run the same check first.
+`/maintain` offers to add it to an older project on your yes.
+
+Founding on a Mac offers once to make typing `codex` use the launcher in kit
+projects. The offer names your shell settings file and the marked block you
+can remove to undo it. Nothing changes without your yes, and a no is recorded.
+Outside a kit project, typing `codex` works as usual. The function uses the
+current project's installed skill, so a later project uses its own launcher.
 
 | Record | Purpose |
 |---|---|

@@ -40,10 +40,18 @@ github_json() {
   if gh "$@" 2>"$scratch/github-error"; then
     return 0
   fi
-  python3 - "$scratch/github-error" <<'PYERROR' >&2
-import os, re, sys
+  python3 - "$scratch/github-error" "$0" <<'PYERROR' >&2
+import os, re, sys, runpy
+from pathlib import Path
 
 error = open(sys.argv[1], errors="replace").read()
+text = error.lower()
+if (os.environ.get("CODEX_THREAD_ID") or os.environ.get("CODEX_SANDBOX")) and any(
+        word in text for word in ("http 401", "bad credentials", "unable to get password from user")):
+    helper = Path(sys.argv[2]).resolve().with_name("codex-github-check.py")
+    if helper.is_file():
+        print(runpy.run_path(str(helper))["restart_message"]())
+        sys.exit(0)
 # Mask secret environment values as well as credentials in common gh errors
 # and HTTP diagnostics. A failed lookup must never print a credential.
 for key, value in sorted(os.environ.items(), key=lambda item: -len(item[1])):

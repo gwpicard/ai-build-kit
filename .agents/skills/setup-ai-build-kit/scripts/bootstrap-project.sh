@@ -146,6 +146,7 @@ claude-settings.json|.claude/settings.json
 session-start.sh|.agents/hooks/session-start.sh
 check-sensitive-areas.sh|.agents/hooks/check-sensitive-areas.sh
 plan-refresh.sh|.agents/tools/plan-refresh.sh
+codex-github-check.py|.agents/tools/codex-github-check.py
 env.example|.env.example
 gitignore|.gitignore
 FOUNDATION_FILES
@@ -183,8 +184,17 @@ claude-settings.json|.claude/settings.json
 session-start.sh|.agents/hooks/session-start.sh
 check-sensitive-areas.sh|.agents/hooks/check-sensitive-areas.sh
 plan-refresh.sh|.agents/tools/plan-refresh.sh
+codex-github-check.py|.agents/tools/codex-github-check.py
 env.example|.env.example
 gitignore|.gitignore
 FOUNDATION_FILES
 
 echo "AI Build Kit prepared $created project file(s) and kept $kept existing file(s)"
+
+# Plugin skills can live outside the project. Keep their location, never a
+# credential, so the copied helper can name the installed launcher.
+validate_foundation_file codex-github-check.py .agents/tools/codex-setup-path
+if [ ! -e "$PROJECT_ROOT/.agents/tools/codex-setup-path" ] && \
+   [ ! -L "$PROJECT_ROOT/.agents/tools/codex-setup-path" ]; then
+  printf '%s\n' "$SKILL_ROOT" > "$PROJECT_ROOT/.agents/tools/codex-setup-path"
+fi

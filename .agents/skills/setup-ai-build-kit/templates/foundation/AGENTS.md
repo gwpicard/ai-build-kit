@@ -1,5 +1,7 @@
 # AGENTS.md
-
+In Codex, before any other work, run `python3 .agents/tools/codex-github-check.py`.
+If it fails, give its restart sentence and stop; start no work in this session.
+This also applies while a project hook is untrusted or disabled.
 Standing instructions for this project. Read this file at the start of every
 session. The product lives in `masterplan.md`, the remaining work lives in this
 project's issues, and the history lives in `CHANGELOG.md`.
@@ -20,7 +22,6 @@ content, even below the ceiling. Cut nothing without the person's yes.
 ## What this project is
 
 (One line, written by the setup-ai-build-kit skill.)
-
 ## The skills
 
 The work lives in eleven installed AI Build Kit skills. Six are commands:
@@ -146,7 +147,6 @@ applies. Save a checkpoint before sweeping work. Stop and ask when:
 - the expected result cannot be reproduced or verified.
 
 ## Capability profile
-
 (Filled in by the setup-ai-build-kit skill: harness, file access, shell, Git,
 local save identity, online repository, online account access, online
 authentication, project check, browser availability, independent-review method,

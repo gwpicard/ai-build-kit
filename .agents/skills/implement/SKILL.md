@@ -38,6 +38,12 @@ and work from it. The piece already in hand carries on. Anything that would
 change what is on the plan waits, because an issue that cannot be updated is
 not a record of anything.
 
+In Codex, when a Git push, fetch or remote check fails with
+`unable to get password from user`, run the installed `setup-ai-build-kit`
+skill's `templates/foundation/codex-github-check.py` with python3 and `--message`.
+Give its sentence with the absolute launcher path and stop this session's work.
+Do not sign in again or retry the failed command in this session.
+
 ## Typed alone
 
 A ready repair comes first: a piece under the printout's `Broken` group marked

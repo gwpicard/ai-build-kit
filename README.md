@@ -57,6 +57,9 @@ npx skills add gwpicard/ai-build-kit
 Choose the agents you use and install all eleven skills. Then ask your agent:
 "Run the setup-ai-build-kit skill."
 
+For Codex on a Mac, start each session from your project folder with
+`python3 .agents/skills/setup-ai-build-kit/scripts/codex-with-github.py`.
+
 Setup interviews you one question at a time, with a best guess you can correct.
 You can stop and resume it. It prepares the project and tells you what to do
 next. [Manual installation](docs/COMPATIBILITY.md#manual-fallback) and the

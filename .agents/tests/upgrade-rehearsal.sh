@@ -205,6 +205,9 @@ with (p/'AGENTS.md').open('a') as handle:
 original=(p/'AGENTS.md').read_text()
 
 def sentence_pending(skills):
+    # This fixture isolates command-list detection after helper upkeep. Its
+    # recovery companion also records the running installation's location.
+    apply(skills,p,'helper')
     listed=check(skills,p,1)
     commands=[line for line in listed.splitlines() if line.startswith('commands\t')]
     assert len(commands)==1 and 'AGENTS.md:3' in commands[0],listed
@@ -253,6 +256,7 @@ for name,(script,old,new) in mutations.items():
     print('  ok: removing '+name+' is caught')
 
 # A no is retained, offered monthly, and never duplicated as a mention.
+apply(source,p,'helper')
 run([sys.executable,source/'maintain/scripts/upgrade-check.py','--decline','commands',p])
 apply(source,p,'remove')
 declined=check(source,p,0)

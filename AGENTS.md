@@ -430,7 +430,11 @@ attribution line, not the word.
   need no stored-login read, forwarded arguments survive, and a failed or
   malformed credential read starts no session and prints no credential. It
   also holds that shell snapshots are disabled and the permission profile is
-  preserved. The installation-route rehearsal checks that the launcher ships.
+  preserved. Git itself checks that the session helper reaches `gh` and leaves
+  global settings alone. It also runs the quiet session check, failed hook,
+  restart messages, hook installation and approved shell block in disposable
+  projects, including both shells, installed skill routes and a plugin path.
+  The installation-route rehearsal checks that the launcher ships.
 - `.agents/tests/check-tooling.sh` runs the setup tooling report against a set of
   throwaway PATHs and reads when it stops: a missing tool or a signed-out account
   blocks founding, while issues switched off or a read-only account do not.

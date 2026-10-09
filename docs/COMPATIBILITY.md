@@ -136,15 +136,15 @@ The installed setup skill's
 [Codex recovery guide](../.agents/skills/setup-ai-build-kit/references/codex-github.md)
 holds the settings and the checks, including managed restrictions.
 
-An HTTP 401 after networking works can mean Codex cannot retrieve the current
-login. Compare token environment presence and the account, executable and
-configuration directory before signing in again. On macOS a terminal can read
-the Keychain while sandboxed Codex cannot. The kit includes a
+On macOS a terminal can read the Keychain while sandboxed Codex cannot. Start
+each Codex session with the
 [session launcher](../.agents/skills/setup-ai-build-kit/scripts/codex-with-github.py)
-for that case. Run it with python3 from your project's ordinary terminal; the
-agent gives the installed path. It supplies the current login to that Codex
-process in memory and disables shell snapshots. It needs no editor integration
-and does not change your permission settings or credential storage.
+from your project's ordinary terminal, as the README's install step shows.
+It supplies the current login to that Codex process in memory, disables shell
+snapshots and sends Git's GitHub sign-ins to `gh` for that process only. No
+global Git setting changes, and `gh auth setup-git` is not needed. The recovery
+guide holds the agent-facing diagnostics; the scripts give you the exact
+restart command when access fails.
 
 The network and credential route was tried on 1 October 2026 with Codex CLI
 0.159.3 on macOS. Both account and repository reads succeeded in the new command
@@ -152,6 +152,52 @@ tool with a restricted filesystem and networking enabled. Automated checks
 cover launch failure, existing token precedence, credential masking and the
 installation routes. This is evidence for GitHub access, not a replayed founding
 or build, so Codex keeps its grade above.
+
+On 9 October 2026, plain Codex CLI 0.161.0 on macOS, with the
+`workspace-network` profile and no token environment variable, failed both
+`gh api user` (HTTP 401) and Git remote reads (`unable to get password from
+user`). Signing in again inside that session did not help. A new launcher
+session worked for `gh auth status` and `git ls-remote --heads origin` when Git
+was set to ask `gh` through `gh auth setup-git`. Git accepted the equivalent
+process settings in a local check. Rehearsals cover those settings. That
+observation did not yet prove a founding without the global helper.
+
+Later that day, Orca started Codex CLI 0.162.0 through the updated launcher
+with an empty temporary global Git config and system Git config disabled.
+Inside Codex's shell tool, `gh api user` succeeded, Git's credential helper
+returned a credential, and that credential authenticated an account read.
+The active-account check also succeeded. Checking every saved account failed
+in the same session, so the startup and tooling checks now ask only about the
+active GitHub account. No personal Git settings changed. This checks session
+access: plain Codex failed the same account and credential checks, while the
+launcher session passed both kit checks silently. That probe did not run
+founding or upload code.
+
+A later Orca run used a fresh installation assembled from commit `7330c07`
+and a preanswered brief for a disposable local notes tool. Plain Codex gave
+the exact restart sentence and prepared no project files. The launcher then
+carried founding through the tool report, real private GitHub issues and a
+local checkpoint, with no code uploaded during founding. A new zsh session
+typed `codex` through the approved function, built a piece, passed eleven
+local tests, type checking and lint, then pushed its branch. GitHub created
+`main` at the founding checkpoint through the API, made it the default branch
+and opened the piece's pull request. It stayed unmerged.
+
+The run used an empty temporary global Git config, disabled system Git config
+and a disposable shell settings file. Its login shell kept the working PATH
+used for founding, since a different Node runtime could not start Codex. No
+personal Git or shell setting changed. The project hook stayed untrusted;
+the AGENTS startup rule checked access before work. Hook trust approval was
+not automated. GitHub could not start the private project's remote check
+because of the account's billing or spending limit. Local checks passed;
+this is evidence for real founding and first-upload access, not a passing
+remote project check.
+
+Codex supports project hooks at `.codex/hooks.json`. It loads them only for a
+trusted project, and the person reviews each new or changed definition with
+`/hooks`. The kit's check returns a stop and a restart sentence on failure,
+and no output on success. The project's short instruction runs the same check
+while the hook is untrusted or disabled. See [Codex hooks](https://learn.chatgpt.com/docs/hooks).
 
 A failed plan refresh shows a credential-masked GitHub error and a recovery step,
 and leaves the previous printout intact.

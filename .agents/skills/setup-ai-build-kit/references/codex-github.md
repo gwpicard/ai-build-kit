@@ -4,6 +4,12 @@ Use this only when a kit operation needs GitHub and Codex cannot reach it or
 authenticate. First report the failing command and exit status, with credentials
 masked. Keep the last plan until a refresh succeeds.
 
+On HTTP 401 or Git's `unable to get password from user`, first run this skill's
+`templates/foundation/codex-github-check.py` with python3 and `--message`. Give its
+restart sentence with the absolute installed path and stop work in this session.
+Never retry signing in to repair a working terminal login. The diagnostics
+below are for a restart that still fails, or a network or permission failure.
+
 ## Reach GitHub
 
 Run `curl -I --connect-timeout 10 https://api.github.com` in Codex's command tool.
@@ -65,6 +71,15 @@ GitHub's storage. It disables shell snapshots and uses a dedicated process to
 keep the credential out of snapshots and a shared daemon. It preserves the
 configured permissions and approval reviewer. The old session gains no access.
 
+Git has its own credential helper, which can otherwise still ask the Keychain.
+The launcher appends an empty `credential.https://github.com.helper`, then
+`!gh auth git-credential`, through `GIT_CONFIG_COUNT`, `GIT_CONFIG_KEY_n` and
+`GIT_CONFIG_VALUE_n`. This resets the helper list for GitHub and sends Git to
+the same `gh` login, in the new process only. Existing process settings are
+preserved; no global file changes and no `gh auth setup-git` step is needed.
+If a custom Codex environment policy filters these variables, allow these
+session settings along with the token, preserving the rest of the policy.
+
 Offer this only for access the person authorised. The agent does not run it or
 read a stored credential itself without that authorisation. Do not put tokens
 in settings, project files, shell startup files, prompts or logs. Do not enable
@@ -86,3 +101,7 @@ project. The first confirms the account, the second the repository. Refresh the
 plan only after they succeed. A read does not prove write permissions; a refused
 operation still needs its own repository permission. Do not create a test issue.
 A connector's separate authorisation failure is not repaired by this launcher.
+
+Also run `git ls-remote --heads origin` on an HTTPS GitHub remote. A successful
+`gh` call alone does not prove Git access. The helper covers HTTPS GitHub;
+an SSH remote still needs its own SSH access.

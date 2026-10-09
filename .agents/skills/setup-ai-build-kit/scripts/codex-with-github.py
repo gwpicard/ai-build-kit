@@ -30,6 +30,23 @@ def main():
             sys.exit("Unexpected GitHub credential response; Codex was not started.")
         env["GH_TOKEN"] = token
 
+    # Append to inherited process settings. Reset the GitHub helper list so
+    # a system Keychain helper cannot run before gh. No Git file is written.
+    try:
+        count = int(env.get("GIT_CONFIG_COUNT", "0"))
+        if count < 0:
+            raise ValueError
+        for index in range(count):
+            if any(f"GIT_CONFIG_{field}_{index}" not in env for field in ("KEY", "VALUE")):
+                raise ValueError
+    except ValueError:
+        sys.exit("Git session settings are incomplete; Codex was not started.")
+    for value in ("", "!gh auth git-credential"):
+        env[f"GIT_CONFIG_KEY_{count}"] = "credential.https://github.com.helper"
+        env[f"GIT_CONFIG_VALUE_{count}"] = value
+        count += 1
+    env["GIT_CONFIG_COUNT"] = str(count)
+
     # The credential stays in process memory, never in argv or a settings file.
     # A dedicated process and disabled snapshots keep it out of a shared daemon
     # and the exported environment a shell snapshot saves on disk.
