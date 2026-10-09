@@ -92,6 +92,24 @@ Where the repository has branches but none shares history with `main`, push
 nothing. It may hold a first commit GitHub made itself, or other work. Name
 `owner/name`, say it holds something else, and ask the person what to do.
 
+Before asking for the first-upload yes, run the installed
+`setup-ai-build-kit` skill's `scripts/workflow-upload-check.py` with python3.
+In Codex, add `--codex`. Exit 1 gives the exact line to say: run
+`gh auth refresh -h github.com -s workflow` in the person's own terminal,
+which opens the browser once. In Codex it also names the absolute launcher
+command to use after quitting, because this session keeps the login it
+started with. Build and save locally first, then leave the upload waiting
+for that step before asking for its yes. Exit 0 means no missing permission
+was found; an SSH push or unreadable permissions remain unknown, and the
+upload question carries on.
+
+Where a push is refused because adding or changing a workflow needs the
+`workflow` permission, run the same helper with `--refused` (and `--codex`
+in Codex), give its line, and leave the saved work local. Never ask the
+person to "update the credential", never refresh the login for them, and
+never retry in a Codex session holding the old login. Their upload yes
+still stands when they return after fixing the permission.
+
 Build and check the piece first. Only the push waits. In the reply that
 reports the piece, ask for a yes that names the upload: the repository as
 `owner/name`, and whether it is public or private, read with

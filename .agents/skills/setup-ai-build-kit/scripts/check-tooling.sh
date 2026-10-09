@@ -49,6 +49,11 @@ if command -v gh >/dev/null 2>&1; then
   if gh_status=$(gh auth status --active --hostname github.com 2>&1); then
     echo "The GitHub command line tool is ready: your pieces are kept as issues, and you are signed in."
     gh_ready=yes
+    if command -v python3 >/dev/null 2>&1; then
+      skill_root=$(CDPATH= cd -- "${0%/*}/.." && pwd -P)
+      # This is needed at upload, so the warning never blocks founding.
+      printf '%s\n' "$gh_status" | python3 "$skill_root/scripts/workflow-upload-check.py" --status-stdin || true
+    fi
   else
     # Do not print auth status: it may include credential diagnostics. A failed
     # network check is not evidence that the account has signed out.
@@ -59,14 +64,14 @@ if command -v gh >/dev/null 2>&1; then
         echo "The GitHub command line tool was refused permission: check this session's GitHub access and the signed-in account's permissions, then run this report again." ;;
       *"HTTP 401"* | *"Bad credentials"* | *"Failed to log in"* | *"token"*"invalid"*)
         if [ -n "${CODEX_THREAD_ID:-}${CODEX_SANDBOX:-}" ] && command -v python3 >/dev/null 2>&1; then
-          skill_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd -P)
+          skill_root=$(CDPATH= cd -- "${0%/*}/.." && pwd -P)
           python3 "$skill_root/templates/foundation/codex-github-check.py" --message --skill "$skill_root"
         else
           echo "The GitHub command line tool could not authenticate: compare GH_TOKEN and GITHUB_TOKEN presence and gh auth status in this session and your terminal before signing in again. A sandbox may not read your stored login."
         fi ;;
       *)
         if [ -n "${CODEX_THREAD_ID:-}${CODEX_SANDBOX:-}" ] && command -v python3 >/dev/null 2>&1; then
-          skill_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd -P)
+          skill_root=$(CDPATH= cd -- "${0%/*}/.." && pwd -P)
           python3 "$skill_root/templates/foundation/codex-github-check.py" --message --skill "$skill_root"
         else
           echo "The GitHub command line tool is installed but nobody is signed in, or the sign-in could not be verified: run gh auth login if signed out. Check this session's GitHub access otherwise. See manual-setup.md."
@@ -115,7 +120,7 @@ if [ "$gh_ready" = yes ] && command -v python3 >/dev/null 2>&1 && [ "$kit_origin
     case "$repo_answer" in
       *"HTTP 401"* | *"Bad credentials"* | *"unable to get password from user"*)
         if [ -n "${CODEX_THREAD_ID:-}${CODEX_SANDBOX:-}" ]; then
-          skill_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd -P)
+          skill_root=$(CDPATH= cd -- "${0%/*}/.." && pwd -P)
           python3 "$skill_root/templates/foundation/codex-github-check.py" --message --skill "$skill_root"
           exit 1
         fi ;;

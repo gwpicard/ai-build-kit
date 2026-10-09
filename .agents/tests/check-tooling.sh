@@ -47,7 +47,7 @@ write_gh() {
   cat >"$WORK/bin/gh" <<SH
 #!/usr/bin/env sh
 case "\$1 \$2" in
-  "auth status") exit $1 ;;
+  "auth status") echo "\${WORKFLOW_STATUS:-}"; exit $1 ;;
   "repo view") echo '$2' ;;
   *) echo '{}' ;;
 esac
@@ -80,6 +80,77 @@ printf '%s\n' "$out" | grep -q "Issues are switched on" \
 printf '%s\n' "$out" | grep -q "Labels can be put in order" \
   && pass "it reports the account can manage labels" \
   || fail "the labels line is missing"
+
+echo "== Workflow upload permission =="
+
+for scopes in "'repo', 'read:org', 'gist'" "'repo', 'workflow'" "" "'repo', 'workflow_extra'"; do
+  export WORKFLOW_STATUS="  - Token scopes: $scopes"
+  out=$(run_check) && code=0 || code=$?
+  [ "$code" -eq 0 ] || fail "workflow permission warning blocked founding"
+  case "$scopes" in
+    "'repo', 'read:org', 'gist'" | "'repo', 'workflow_extra'")
+      printf '%s\n' "$out" | grep -q 'gh auth refresh -h github.com -s workflow' \
+        && printf '%s\n' "$out" | grep -q 'browser once' \
+        && pass "known missing workflow permission gives the terminal command" \
+        || fail "missing workflow permission has no recovery: $out" ;;
+    *)
+      ! printf '%s\n' "$out" | grep -q 'gh auth refresh' \
+        && pass "present or unreadable scopes get no warning" \
+        || fail "present or unreadable scopes were called missing" ;;
+  esac
+  ! printf '%s\n' "$out" | grep -q 'Token scopes:' \
+    || fail "the report printed raw authentication output"
+done
+unset WORKFLOW_STATUS
+
+python3 - "$ROOT" <<'PYTEST'
+import os, pathlib, subprocess, sys, tempfile
+root = pathlib.Path(sys.argv[1])
+helper = root / 'skills/setup-ai-build-kit/scripts/workflow-upload-check.py'
+with tempfile.TemporaryDirectory() as folder:
+    folder = pathlib.Path(folder)
+    gh = folder / 'gh'
+    gh.write_text('#!' + sys.executable + '\n' +
+                  'import os, sys\n' +
+                  'assert sys.argv[1:] == ["auth", "status", "--active", "--hostname", "github.com"]\n' +
+                  'assert "GH_DEBUG" not in os.environ\n' +
+                  'print(os.environ["STATUS"])\n' +
+                  'sys.exit(int(os.environ.get("STATUS_EXIT", "0")))\n')
+    gh.chmod(0o700)
+    git = folder / 'git'
+    git.write_text('#!' + sys.executable + '\nimport os\nprint(os.environ.get("ORIGIN", ""))\n')
+    git.chmod(0o700)
+    env = {k:v for k,v in os.environ.items() if k not in ('CODEX_THREAD_ID', 'CODEX_SANDBOX')}
+    env.update(PATH=str(folder), GH_DEBUG='api', STATUS="Token: SECRET-FIXTURE\nToken scopes: 'repo', 'gist'",
+               ORIGIN='https://github.com/someone/project.git')
+    def run(name, changes, args, missing, codex=False):
+        case_env = dict(env, **changes)
+        result = subprocess.run([sys.executable, str(helper), *args], env=case_env,
+                                capture_output=True, text=True, cwd=folder)
+        assert result.returncode == int(missing), (name, result)
+        output = result.stdout + result.stderr
+        assert 'SECRET-FIXTURE' not in output, name
+        if missing:
+            assert 'gh auth refresh -h github.com -s workflow' in output and 'browser once' in output, name
+            assert ('quit and restart Codex' in output) == codex, name
+            if codex:
+                assert str(helper.parent / 'codex-with-github.py') in output, name
+                assert 'session starts' in output, name
+        else:
+            assert not output, (name, output)
+        print('ok: ' + name)
+    run('first upload checks active scopes', {}, [], True)
+    run('Codex first upload names the absolute restart launcher', {}, ['--codex'], True, True)
+    run('Codex founding recognises the session', {'CODEX_THREAD_ID':'fixture'}, [], True, True)
+    run('workflow permission is already present', {'STATUS':"Token scopes: 'repo', 'workflow'"}, [], False)
+    run('fine-grained token has no readable scopes', {'STATUS':'Token scopes: \nOther diagnostic: unavailable'}, [], False)
+    run('failed status is unknown', {'STATUS_EXIT':'1'}, [], False)
+    run('SSH origin uses different authentication', {'ORIGIN':'git@github.com:someone/project.git'}, [], False)
+    run('SSH protocol before origin exists is unknown', {'ORIGIN':'', 'STATUS':"Git operations protocol: ssh\nToken scopes: 'repo'"}, [], False)
+    run('unreadable status stays unknown', {'STATUS':'unreadable'}, [], False)
+    run('refused push gives the command even when scopes cannot be read', {'STATUS':'unreadable'}, ['--refused'], True)
+    run('refused push in Codex also requires restart', {}, ['--refused', '--codex'], True, True)
+PYTEST
 
 echo "== The GitHub command line tool missing =="
 
