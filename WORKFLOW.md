@@ -45,6 +45,15 @@ without saving the credential. It runs from an ordinary terminal and gives Git
 the same access for that session. A failed sign-in in Codex shows the exact
 restart command; signing in again in that session does not help.
 
+Founding also warns when your GitHub login needs permission to upload the
+automated checks. Run `gh auth refresh -h github.com -s workflow` in your
+own terminal; it opens the browser once. Founding carries on, and
+`/implement` checks again before asking to upload your code for the first
+time. In Codex, quit and restart through the launcher afterwards so the new
+session uses the updated login. The same command is shown if GitHub refuses
+an upload for this reason. Where the permissions cannot be read, the kit
+makes no claim that one is missing.
+
 In Codex projects, a check at session start stays silent when GitHub works.
 When it cannot authenticate, it shows the restart sentence and starts no work.
 Codex asks you to trust the project and review the hook with `/hooks`; until
