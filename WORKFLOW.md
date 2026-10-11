@@ -187,7 +187,7 @@ If the tool needs confidential files to work from, say so during the interview. 
 
 ## 5. Day to day
 
-Typed alone, /implement takes the next ready piece from the plan. It agrees with you in one sentence what the piece should do, chooses the evidence that piece needs, builds until that evidence holds, then stops so you can try it. Nothing is saved until you confirm it behaves, and the merge is asked for only after you have tried it. If you ask for more while it builds, it first asks whether that belongs in this piece, which then says so, or in a new one. A piece that is not ready yet, still waiting on a question, goes to /shape first; /implement builds, it does not shape.
+Typed alone, /implement takes the next ready piece from the plan. It agrees with you in one sentence what the piece should do, chooses the evidence that piece needs, builds until that evidence holds, then stops so you can try it. Nothing is saved until you confirm it behaves, and the merge is asked for only after you have tried it. You get one address to try it on, the agent checks the page in a tab of its own rather than yours, and it stops its previews once you are done. If you ask for more while it builds, it first asks whether that belongs in this piece, which then says so, or in a new one. A piece that is not ready yet, still waiting on a question, goes to /shape first; /implement builds, it does not shape.
 
 Before saving, the kit checks what else the change touches and runs the tests
 that already cover those parts first. If it reaches another part of the tool,

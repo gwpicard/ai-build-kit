@@ -284,7 +284,17 @@ nothing when it found nothing.
 
 Stop. Give the exact action, the expected result, any known limitation, and
 whether the evidence behind it is automated, manual, source-backed, or
-operational. The user confirms the behaviour wherever human judgement is
+operational.
+
+Give one address to try it on. Before starting a preview, stop any preview this
+session started earlier, and use the project's recorded preview address. Where
+something else already holds that address, say what holds it, and do not start
+a second preview on another address. Never click, type or reload in a browser
+tab the person is using. Check the page in a tab of your own. Once the person
+has tried the piece, or the pass ends, stop the previews you started and say so
+in one line.
+
+The user confirms the behaviour wherever human judgement is
 required; for a piece with no face (a scheduled job, an email), trigger it
 against a made-up case and show what it produced. Describe any gap as
 expected versus actual, and fix it at the root.

@@ -21,7 +21,8 @@ Check:
     other computers signed in to the same account, and a page opened there
     runs on somebody else's machine. Where the tool says which browser is
     local, choose that one. Where no browser on this computer is available, use
-    a headless browser here, or say that you could not see the page.
+    a headless browser here, or say that you could not see the page. Open a
+    tab of your own for a check, and never act in a tab the person is using.
 12. An independent-review route exists: subagent, separate session, or a
     user-opened clean chat.
 13. A reach-check engine is recorded. Prefer the harness's language server or

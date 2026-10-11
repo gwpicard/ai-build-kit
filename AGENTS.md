@@ -976,7 +976,12 @@ attribution line, not the word.
   looks at a page only in a browser on this computer. A browser tool lists
   every browser signed in to the account, and in a real project the agent
   opened a page in a colleague's browser on another machine. The rule lives
-  in the capability check, and the prototype steps point to it.
+  in the capability check, and the prototype steps point to it. In a real
+  build the agent also acted in the tab the person was testing in, and an
+  older preview stayed running on the usual address, so the person tried the
+  old version. So it holds that the agent checks a page in a tab of its own,
+  and that a build gives one address, stops its earlier previews first, and
+  stops them again at the end.
 - `.agents/tests/truing-saves-like-a-piece.sh` guards how `/maintain` saves
   what its truing corrects. It was `sync-saves-like-a-piece.sh` until `/sync`
   folded into `/maintain`. Every skill that changes the records said how it
