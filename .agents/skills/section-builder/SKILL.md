@@ -248,6 +248,13 @@ Put the originating title on the new piece's surface and name the new piece
 on the originating record. Say one line such as "Found while building the
 invoice list." Keep the current build within its agreed scope.
 
+When the person asks for more during the build, ask one question before
+building it: add it to this piece, or make it a new piece. On "this piece",
+write it into the piece's `## Done when`, read the new lines back, and build
+them, so the piece says what it holds. On "a new piece", file it by the same
+rule and keep this build to its scope. Never fold a request into the build
+without that answer.
+
 A test that passes only on a retry is a fault in the test, never a passing
 result. Report it as unreliable evidence and repair or replace it before the
 piece can be saved.
@@ -404,6 +411,11 @@ is also how the change goes live.
 
 First, say what the person can try and where: the preview address, on a recipe
 whose preview section gives one, or how to try it on this computer.
+
+Where step 6 left the person's own check outstanding, because the piece's
+evidence names a guided check or a result only they can judge, ask for the
+merge only after they say it behaves. Until then, the pull request stays open
+and the report says it waits for them to try it.
 
 **A sensitive area first, on any project.** Where the piece touches a named
 sensitive area, the merge takes that area a step nearer live, so check it

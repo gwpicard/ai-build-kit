@@ -162,6 +162,17 @@ rs_require_load_bearing "shape writes the line" "$SHAPE" 'write its `live side n
 rs_require_load_bearing "founding turns off squash and rebase merges" "$ROOT/.agents/skills/setup-ai-build-kit/SKILL.md" 'allow_squash_merge=false -f allow_rebase_merge=false'
 rs_require_load_bearing "pieces.md says a closed piece carries neither label" "$PIECES" 'so a closed piece carries neither label'
 
+# A real build took the person's new requests into the pull request without
+# changing the piece's done line, then asked "Shall I merge?" while its own
+# changelog said the full flow was still unconfirmed.
+rs_require_load_bearing "a request during the build gets one question first" "$BUILDER" 'when the person asks for more during the build, ask one question before building it: add it to this piece, or make it a new piece'
+rs_require_load_bearing "this piece means the done line says so" "$BUILDER" 'write it into the piece.s `## done when`, read the new lines back, and build them'
+rs_require_load_bearing "nothing is folded in without the answer" "$BUILDER" 'never fold a request into the build without that answer'
+rs_require_load_bearing "the merge waits for the person's own check" "$BUILDER" 'ask for the merge only after they say it behaves'
+rs_require_order "the person's check comes before the merge is asked for" "$BUILDER" '^Where step 6 left the person.s own check outstanding' '^\*\*Asking\.\*\*'
+rs_require_load_bearing "WORKFLOW says the merge comes after the person tried it" "$WORKFLOW" 'the merge is asked for only after you have tried it'
+rs_require_load_bearing "WORKFLOW says a new request gets one question" "$WORKFLOW" 'if you ask for more while it builds, it first asks whether that belongs in this piece'
+
 rs_require_load_bearing "WORKFLOW says /implement asks for a yes that names the merge" "$WORKFLOW" 'names the pull request in one plain line and asks for a yes that names the merge'
 rs_require_load_bearing "WORKFLOW says put it live is not that yes" "$WORKFLOW" 'saying "put it live" or "save it" before any merge was named is not that yes'
 rs_require_load_bearing "WORKFLOW says the merge is made on the pull request" "$WORKFLOW" 'it makes the merge on the pull request itself, never by merging on your computer and pushing `main`'

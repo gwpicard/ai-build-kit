@@ -1300,7 +1300,11 @@ attribution line, not the word.
   still carrying `building` or `ready`. So the merge is always `--merge`,
   founding turns the other two kinds off on the repository, the first step
   swaps `ready` for `building`, and after the merge both come off and the
-  labels are read back.
+  labels are read back. The same run took the person's new requests into the
+  pull request without changing the piece's done line, then asked to merge
+  while its own changelog said the flow was still unconfirmed. So a request
+  made during a build gets one question first, this piece or a new one, and
+  the merge is asked for only after the person has tried the result.
 - `.agents/tests/first-upload-asks.sh` guards the yes the project's first
   upload waits for. Founding tells the person nothing will be uploaded, and in
   a real run the first piece then pushed the whole project to GitHub with no
