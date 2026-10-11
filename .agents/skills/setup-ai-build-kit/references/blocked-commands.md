@@ -28,7 +28,9 @@ still apply:
   that exact action;
 - never print, commit, or otherwise expose a secret;
 - never disable authentication or access control to make a check pass;
-- never bypass a red project check to ship or merge;
+- never bypass a red project check to ship or merge. A check GitHub never
+  started ran no step and is not red; section-builder's "A check GitHub did not
+  start" says what happens instead;
 - never push a change directly to `main`; every change to `main` goes through a
   pull request, so shared work reaches it by merge rather than by a direct push.
   The one exception is the project's first upload: after the person's yes,

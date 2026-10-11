@@ -206,6 +206,10 @@ that is `/implement` running on the piece just shaped, not this command writing
 code, and a fresh session stays the better path whenever the planning context
 has grown heavy.
 
+A question asked while shaping never offers building as one of its answers,
+and the answer to it is never a request to build. Build here only when the
+person asks to after the build offer, in their own words.
+
 ## Record only durable information
 
 Follow change-triage's rule: add a changelog line only when work actually lands,

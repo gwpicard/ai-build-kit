@@ -57,7 +57,13 @@ rs_rule "only the truing moves the mark" 'only the truing moves it, once it has 
 # whether the mark can be used is read by a shipped script, not judged.
 rs_rule "a shipped script says whether the mark can be used" 'whether the mark can be used is a fact, and the `setup-ai-build-kit` skill.s `scripts/trued-mark\.sh` reads it'
 rs_rule "its exit code says why not" 'exit 0 prints the commit the mark names, and any other exit says why it cannot be used'
-rs_rule "only the truing compares the whole page" 'where the mark is absent or unusable, only the truing compares the whole page against the code and sets a starting point'
+rs_rule "only the truing compares the whole page" 'where the mark is absent or unusable after founding, only the truing compares the whole page against the code and sets a starting point'
+# A real founding wrote its own words on the mark line, "founding starter; no
+# whiteboard features built yet". Every build then found it unusable and said
+# so in the changelog, and nobody was sent to /maintain. So founding sets the
+# mark itself, and the line holds a hash or the template's words, nothing else.
+rs_rule "founding writes its checkpoint into the mark" 'once that checkpoint exists it writes the checkpoint.s hash into the mark, in a records-only commit'
+rs_rule "nothing else goes on the line" 'nothing else ever goes on that line: a hash or `not yet checked`'
 rs_rule "the truing reads the mark with the same script" 'read the mark with `scripts/trued-mark\.sh`, as a build does, so the two agree'
 rs_rule "a squash merge would strand the mark" 'a squash merge would leave the marked commit outside `main`.s history'
 rs_rule "a build leaves the mark, says so once, and carries on" 'a build leaves the mark as it is, says in one line that /maintain checks the whole masterplan against the code, and carries on with its save'
@@ -91,12 +97,17 @@ rs_require_load_bearing "WORKFLOW says a checkable rule is a change" "$ROOT/WORK
 rs_require_load_bearing "building applies it before saving on every route" "$BUILDER" 'before saving on any route, apply the piece'
 rs_require_load_bearing "building updates the mark using its owner" "$BUILDER" 'update the trued-against mark as the `setup-ai-build-kit` skill.s `references/masterplan-changes\.md` describes'
 rs_require_load_bearing "building reads the mark with the script and leaves the page to /maintain" "$BUILDER" 'read the mark with the `setup-ai-build-kit` skill.s `scripts/trued-mark\.sh`; where it exits other than 0, leave the mark as it is, say in one line that /maintain checks the whole masterplan against the code, and carry on'
-rs_require_load_bearing "the merge keeps the marked commit" "$BUILDER" '`gh pr merge --merge`, which keeps the piece.s commits, so the masterplan.s trued-against mark still names a commit on `main`'
+rs_require_load_bearing "the merge keeps the marked commit" "$BUILDER" 'a merge commit keeps the piece.s commits, so the masterplan.s trued-against mark still names a commit on `main`'
 rs_require_load_bearing "WORKFLOW says a build leaves the first check to /maintain" "$ROOT/WORKFLOW.md" 'where the masterplan.s last check against the code cannot be found, /implement says in one line that /maintain does that check, and carries on'
 rs_require_load_bearing "the truing recovers unapplied changes and moves the mark" "$SYNC" 'merge each landed piece.*that has not yet been applied, and move the trued-against mark'
 rs_require_load_bearing "a current changelog cannot hide an older mark" "$SYNC" 'read from the older of that mark and the last changelog entry'
 rs_require_load_bearing "the truing reads the count rules before the mark moves" "$SYNC" 'read the gap first, as its "read the gap at each visit" says, before anything moves the mark'
 rs_require_load_bearing "the monthly part does not read the gap a second time" "$MAINTAIN" 'the masterplan.s gap since its trued-against mark was already read in the truing, on every visit'
+rs_require_load_bearing "founding keeps the template's words until its checkpoint" "$ROOT/.agents/skills/setup-ai-build-kit/SKILL.md" 'until that checkpoint exists\. never put words of your own there'
+rs_require_load_bearing "founding sets the mark in a records-only checkpoint" "$ROOT/.agents/skills/setup-ai-build-kit/SKILL.md" 'write the checkpoint.s full hash into the line and save it in a second, records-only checkpoint'
+rs_require_load_bearing "founding reads the mark back with the script" "$ROOT/.agents/skills/setup-ai-build-kit/SKILL.md" 'check it with `scripts/trued-mark\.sh`, which must exit 0'
+rs_require_load_bearing "what-now reads the mark with the script" "$ROOT/.agents/skills/what-now/SKILL.md" 'run `sh` with the `setup-ai-build-kit` skill.s `scripts/trued-mark\.sh`, and keep only its exit code'
+rs_require_load_bearing "what-now names /maintain while the mark is unusable" "$ROOT/.agents/skills/what-now/SKILL.md" 'the masterplan has not been checked against the code yet\. /maintain checks it'
 rs_require_load_bearing "coverage reads the recorded change" "$COVERAGE" 'read each piece.*masterplan change.*alongside its promised result'
 rs_require_load_bearing "coverage does not turn unapplied work into a new piece" "$COVERAGE" 'it must not be offered as a new piece'
 rs_require_load_bearing "WORKFLOW explains what the person sees" "$ROOT/WORKFLOW.md" 'each piece says what it changes in the masterplan'
@@ -134,6 +145,7 @@ if [ -z "${RS_LIST:-}" ]; then
   [ "$out" = "usable: $first" ] || rs_fail "a usable mark does not print its commit: $out"
   rs_ok "and the commit is printed for the build to move it on from"
   mark_is 1 "a page never checked is not usable" "Trued against: not yet checked"
+  mark_is 1 "words of founding's own are not usable" "Trued against: founding starter; no features built yet"
   mark_is 1 "a page with no mark is not usable" none
   mark_is 1 "an empty mark is not usable" "Trued against:"
   mark_is 1 "a short hash is not usable" "Trued against: $(printf '%s' "$first" | cut -c1-12)"

@@ -135,9 +135,9 @@ one-line note, and the next piece that pushes asks again. In an unattended
 run nobody is there to say yes, so never upload on the person's behalf: keep
 the work local and note it on the piece.
 
-Label the piece `building` and assign it to whoever is building it before
-changing anything. That is what stops two people starting the same piece, and it
-costs one call.
+Replace the piece's `ready` label with `building`, and assign it to whoever is
+building it, before changing anything. That is what stops two people starting
+the same piece, and it costs one call. A piece never carries both labels.
 
 ## 2. Agree the visible result
 
@@ -248,6 +248,13 @@ Put the originating title on the new piece's surface and name the new piece
 on the originating record. Say one line such as "Found while building the
 invoice list." Keep the current build within its agreed scope.
 
+When the person asks for more during the build, ask one question before
+building it: add it to this piece, or make it a new piece. On "this piece",
+write it into the piece's `## Done when`, read the new lines back, and build
+them, so the piece says what it holds. On "a new piece", file it by the same
+rule and keep this build to its scope. Never fold a request into the build
+without that answer.
+
 A test that passes only on a retry is a fault in the test, never a passing
 result. Report it as unreliable evidence and repair or replace it before the
 piece can be saved.
@@ -277,7 +284,17 @@ nothing when it found nothing.
 
 Stop. Give the exact action, the expected result, any known limitation, and
 whether the evidence behind it is automated, manual, source-backed, or
-operational. The user confirms the behaviour wherever human judgement is
+operational.
+
+Give one address to try it on. Before starting a preview, stop any preview this
+session started earlier, and use the project's recorded preview address. Where
+something else already holds that address, say what holds it, and do not start
+a second preview on another address. Never click, type or reload in a browser
+tab the person is using. Check the page in a tab of your own. Once the person
+has tried the piece, or the pass ends, stop the previews you started and say so
+in one line.
+
+The user confirms the behaviour wherever human judgement is
 required; for a piece with no face (a scheduled job, an email), trigger it
 against a made-up case and show what it produced. Describe any gap as
 expected versus actual, and fix it at the root.
@@ -337,6 +354,26 @@ Once the check is green the piece is ready for review, and step 10 asks the
 person whether to merge it. Never merge before that step, and never on a red
 check.
 
+**A check GitHub did not start.** GitHub can refuse to start the check at
+all, for example when the account's billing or spending limit stops it, or
+Actions is switched off. The check then ran no step, so it is not red. Read
+the reason from the run's own message with `gh run view`, and run the project
+check on this computer instead, as AGENTS.md's stack section names it.
+
+- On Explore privately the remote check is optional, so the local result
+  decides. Say once, in one line, that GitHub did not start the check and why.
+  Record it in CHANGELOG.md with the date in this piece's pull request, and
+  carry on to step 10. Where the changelog already holds that line, one line
+  pointing to it is enough.
+- On Build and run it and Build with care the remote check is required, so the
+  merge waits. Say in one line what stops it and where the person fixes it,
+  such as GitHub's billing page.
+
+Never switch the check off, change its workflow, or retry it in a loop to get
+past this. Switch it off only when the person asks in their own words, and
+record in CHANGELOG.md that it is off and the command that turns it back on.
+/maintain then names it on every visit until it is back on.
+
 Flagged route: where the person carried on and the acceptance is recorded,
 this is the pull-request route and nothing below applies. Otherwise do the
 pull-request route for everything up to the condition, then:
@@ -384,6 +421,11 @@ is also how the change goes live.
 
 First, say what the person can try and where: the preview address, on a recipe
 whose preview section gives one, or how to try it on this computer.
+
+Where step 6 left the person's own check outstanding, because the piece's
+evidence names a guided check or a result only they can judge, ask for the
+merge only after they say it behaves. Until then, the pull request stays open
+and the report says it waits for them to try it.
 
 **A sensitive area first, on any project.** Where the piece touches a named
 sensitive area, the merge takes that area a step nearer live, so check it
@@ -486,9 +528,10 @@ Where more than one piece waits on its merge, name each pull request in its
 own line. A yes covers only the pull requests it names, or all of them where
 it plainly says so, as in "merge both".
 
-**Merging.** Make an approved merge on the pull request itself, such as with
-`gh pr merge --merge`, which keeps the piece's commits, so the masterplan's
-trued-against mark still names a commit on `main`. Never merge the branch on this computer and push `main`. Where
+**Merging.** Make an approved merge on the pull request itself, always with
+`gh pr merge --merge`, never `--squash` or `--rebase`. A merge commit keeps the
+piece's commits, so the masterplan's trued-against mark still names a commit
+on `main`. Never merge the branch on this computer and push `main`. Where
 GitHub cannot be reached, the merge waits: say in one line that the person can
 merge it on GitHub themselves. Where the session runs in Claude Code, read
 first whether the project's settings show a confirmation box before the merge
@@ -504,8 +547,10 @@ In an unattended run nobody is there to say yes, so never merge. Report the
 piece as ready for review, not as done, and leave the merge to a person.
 
 The merge closes the issue, so there is no status to set by hand. After the
-merge, whoever made it, remove the `building` label and refresh the printout
-with `sh .agents/tools/plan-refresh.sh` so the person's list matches what just
+merge, whoever made it, remove the `building` label and any `ready` still on
+the piece. Read its labels back with `gh issue view <number> --json labels`,
+and repeat the removal until neither is there. Then refresh the printout with
+`sh .agents/tools/plan-refresh.sh` so the person's list matches what just
 happened.
 
 **After the merge, on a project held after a rollback.** Where "How it stays

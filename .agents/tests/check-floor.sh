@@ -66,4 +66,22 @@ rs_require "the builder reports a failure as expected versus actual" "$BUILDER" 
 rs_require "the stack section asks for the commands" "$AGENTS_TEMPLATE" 'run, test, type check and lint commands'
 rs_require "WORKFLOW says the check includes them" "$WORKFLOW" 'a type check and a linter wherever it has them'
 
+# A check GitHub never started is not red. In a real project GitHub billing
+# stopped the check from starting. The kit called that red and held the merge
+# on a private exploration where founding calls the remote check optional. The
+# person asked to pause it, and the kit switched the workflow off and recorded
+# nothing, so no later piece had a remote check and nothing said so.
+BLOCKED="$REFS/blocked-commands.md"
+TRUING="$ROOT/.agents/skills/maintain/references/truing.md"
+rs_require_load_bearing "a check that never started is not red" "$BUILDER" 'the check then ran no step, so it is not red'
+rs_require_load_bearing "the local check runs instead" "$BUILDER" 'run the project check on this computer instead, as agents\.md.s stack section names it'
+rs_require_load_bearing "on explore privately the local result decides" "$BUILDER" 'on explore privately the remote check is optional, so the local result decides'
+rs_require_load_bearing "it is said once and recorded" "$BUILDER" 'say once, in one line, that github did not start the check and why\. record it in changelog\.md with the date in this piece.s pull request'
+rs_require_load_bearing "on the other paths the merge waits" "$BUILDER" 'on build and run it and build with care the remote check is required, so the merge waits'
+rs_require_load_bearing "the check is never switched off to get past it" "$BUILDER" 'never switch the check off, change its workflow, or retry it in a loop to get past this'
+rs_require_load_bearing "switching it off is the person's and is recorded" "$BUILDER" 'switch it off only when the person asks in their own words, and record in changelog\.md that it is off and the command that turns it back on'
+rs_require_load_bearing "the blocked list says a check never started is not red" "$BLOCKED" 'a check github never started ran no step and is not red'
+rs_require_load_bearing "maintain names a check left off" "$TRUING" 'while it is off, say in one line that github is not checking pull requests'
+rs_require_load_bearing "WORKFLOW says a check never started is not red" "$WORKFLOW" 'sometimes github will not start the check at all, for example when the account.s billing stops it\. that is not red'
+
 rs_done

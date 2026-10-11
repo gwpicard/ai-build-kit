@@ -378,10 +378,12 @@ before they need it. The bootstrap placed that helper in the project, whichever
 route installed the kit.
 
 Set the repository to delete a merged pull request's branch automatically, so
-the branch list does not fill with finished piece branches
-(`gh api -X PATCH repos/OWNER/REPO -F delete_branch_on_merge=true`), and say in
-one line that you did. That is the whole of the pull-request hygiene the kit sets
-up on the repository. A direct push to `main` is forbidden by
+the branch list does not fill with finished piece branches, and to offer only
+the merge that keeps a piece's commits, since a squash or rebase merge leaves
+the masterplan's mark outside `main`
+(`gh api -X PATCH repos/OWNER/REPO -F delete_branch_on_merge=true -F allow_squash_merge=false -F allow_rebase_merge=false`).
+Say in one line that you did. That is the whole of the pull-request hygiene the
+kit sets up on the repository. A direct push to `main` is forbidden by
 references/blocked-commands.md, and the Claude Code settings refuse the usual
 ways of writing one, rather than a branch protection rule.
 
@@ -599,6 +601,13 @@ Finish with: one command that proves the project starts, one small passing
 behaviour or smoke check, a recorded preview or local run path, and the initial
 state saved as a checkpoint on this computer. Load
 references/completion-report.md and report the result in its shape.
+
+The masterplan's `Trued against:` line keeps the template's form, `not yet
+checked`, until that checkpoint exists. Never put words of your own there. Then
+write the checkpoint's full hash into the line and save it in a second,
+records-only checkpoint. The page was written against that state, so the first
+build has a mark it can move on. Check it with `scripts/trued-mark.sh`, which
+must exit 0.
 
 The founding save is always the checkpoint route, whatever the tool will grow
 into. It stands an initial state up rather than changing anything anybody

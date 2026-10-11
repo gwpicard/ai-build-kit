@@ -222,7 +222,9 @@ attribution line, not the word.
   stays refused. An issue, a comment or a pull request reads its body from
   `--body-file`, standard input included, and a file it cannot read is
   refused. The stand-in once read only `--body`, so a replayed piece written
-  from a file had no body, and the state check called it unsized.
+  from a file had no body, and the state check called it unsized. It accepts
+  founding's call that turns off squash and rebase merges, and then refuses
+  both, as GitHub does, so a replay can see a kit that squashed.
 - `.agents/tests/fake-host.sh` checks the replay harness's stand-ins for a
   host's tools, which scenario 54 launches through on the Vercel recipe. The
   stand-in host keeps a list of deployments beside the project and builds each
@@ -598,7 +600,11 @@ attribution line, not the word.
   unchecked, short, unknown, doubled or off-branch mark, or one in incomplete
   history, is not. The truing reads the mark with the same script, and the
   merge keeps the piece's commits, since a squash merge would leave the marked
-  commit outside `main`.
+  commit outside `main`. A real founding wrote its own words on the mark line,
+  so every build found it unusable and nobody was sent to `/maintain`. Founding
+  now writes its checkpoint's hash into the mark in a records-only commit, the
+  line holds a hash or `not yet checked` and nothing else, and `/what-now`
+  names `/maintain` while the mark cannot be used.
 - `.agents/tests/record-habits.sh` guards a decision's optional evidence line,
   the read that spots when its support has gone, the link back to the build
   that found a new piece, and the single question about work untouched for a
@@ -642,7 +648,14 @@ attribution line, not the word.
   would loosen every read at once. It also holds that the green-tick sentence
   is unchanged, since the floor is meant to add nothing for the person to learn.
   Its one change since is the command it names, now `/implement`, since a red
-  check on a pull request goes back to that piece's own build.
+  check on a pull request goes back to that piece's own build. It also holds
+  that a check GitHub never started is not red. In a real project, billing
+  stopped the check from starting, the kit held a private exploration's merge
+  on it, then switched the workflow off at the person's request and recorded
+  nothing. Now the local check decides on Explore privately, the merge waits
+  on the other paths, a switch-off happens only on the person's words and is
+  recorded with the command to undo it, and `/maintain` names it while it
+  lasts.
   `.agents/tests/check-floor-rehearsal.sh` is the half that runs. It founds a
   throwaway Python project from the shipped workflow template, takes its
   commands from the shipped table, and watches the check go red at the type
@@ -963,7 +976,12 @@ attribution line, not the word.
   looks at a page only in a browser on this computer. A browser tool lists
   every browser signed in to the account, and in a real project the agent
   opened a page in a colleague's browser on another machine. The rule lives
-  in the capability check, and the prototype steps point to it.
+  in the capability check, and the prototype steps point to it. In a real
+  build the agent also acted in the tab the person was testing in, and an
+  older preview stayed running on the usual address, so the person tried the
+  old version. So it holds that the agent checks a page in a tab of its own,
+  and that a build gives one address, stops its earlier previews first, and
+  stops them again at the end.
 - `.agents/tests/truing-saves-like-a-piece.sh` guards how `/maintain` saves
   what its truing corrects. It was `sync-saves-like-a-piece.sh` until `/sync`
   folded into `/maintain`. Every skill that changes the records said how it
@@ -1054,7 +1072,11 @@ attribution line, not the word.
   the old every-time offer stays gone, that change-triage recognises a request
   to file, that pieces.md says roughly what each waiting label costs to settle,
   and that /what-now calls a planning session when more pieces are waiting
-  than are ready.
+  than are ready. A real shaping question once offered "proceed with the
+  slower first build" as an answer, and the kit built the piece on that
+  choice. So it holds that a shaping question never offers building, and that
+  a build in the shaping session needs the person's own words after the build
+  offer.
 - `.agents/tests/prototype-recipes.sh` guards what a prototype is supposed to
   be: that decision-prototype.md names the two kinds of question and picks
   before it builds, that each recipe keeps the rules that make it worth
@@ -1278,7 +1300,16 @@ attribution line, not the word.
   its exit code, and the check runs it against stand-in commands: 0 for a
   pass, 1 for a check that ran and failed, 2 for a missing tool anywhere on a
   line, a ready command that failed or a wrong use of the script, with the
-  cleanup run after a pass or a failure.
+  cleanup run after a pass or a failure. A real build squash-merged one
+  piece, which leaves the masterplan's mark outside `main`, and closed pieces
+  still carrying `building` or `ready`. So the merge is always `--merge`,
+  founding turns the other two kinds off on the repository, the first step
+  swaps `ready` for `building`, and after the merge both come off and the
+  labels are read back. The same run took the person's new requests into the
+  pull request without changing the piece's done line, then asked to merge
+  while its own changelog said the flow was still unconfirmed. So a request
+  made during a build gets one question first, this piece or a new one, and
+  the merge is asked for only after the person has tried the result.
 - `.agents/tests/first-upload-asks.sh` guards the yes the project's first
   upload waits for. Founding tells the person nothing will be uploaded, and in
   a real run the first piece then pushed the whole project to GitHub with no

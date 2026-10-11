@@ -575,6 +575,10 @@ def main():
                 key, _, value = field.partition("=")
                 if field == "delete_branch_on_merge=true":
                     changes["delete_branch_on_merge"] = True
+                elif field in ("allow_squash_merge=false", "allow_rebase_merge=false"):
+                    # Founding turns both off, so only a merge commit is
+                    # offered. Turning one back on is not modelled.
+                    changes[key] = False
                 elif key == "default_branch" and value:
                     changes["default_branch"] = value
                 else:
@@ -756,6 +760,15 @@ def main():
             if pr.get("state") != "OPEN":
                 sys.stderr.write("Pull request #%s is not open\n" % pr["number"])
                 sys.exit(1)
+            # Every kind of merge lands here as a merge commit, so a squash or
+            # rebase is only told apart by the setting that refuses it, the
+            # way GitHub refuses it.
+            for option, setting, kind in (("--squash", "allow_squash_merge", "Squash"),
+                                          ("--rebase", "allow_rebase_merge", "Rebase")):
+                if option in argv and state.get(setting) is False:
+                    sys.stderr.write("GraphQL: %s merges are not allowed on this "
+                                     "repository. (mergePullRequest)\n" % kind)
+                    sys.exit(1)
             if not land_on_remote(pr):
                 sys.stderr.write("Pull request #%s is not mergeable\n" % pr["number"])
                 sys.exit(1)

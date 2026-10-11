@@ -187,7 +187,7 @@ If the tool needs confidential files to work from, say so during the interview. 
 
 ## 5. Day to day
 
-Typed alone, /implement takes the next ready piece from the plan. It agrees with you in one sentence what the piece should do, chooses the evidence that piece needs, builds until that evidence holds, then stops so you can try it. Nothing is saved until you confirm it behaves. A piece that is not ready yet, still waiting on a question, goes to /shape first; /implement builds, it does not shape.
+Typed alone, /implement takes the next ready piece from the plan. It agrees with you in one sentence what the piece should do, chooses the evidence that piece needs, builds until that evidence holds, then stops so you can try it. Nothing is saved until you confirm it behaves, and the merge is asked for only after you have tried it. You get one address to try it on, the agent checks the page in a tab of its own rather than yours, and it stops its previews once you are done. If you ask for more while it builds, it first asks whether that belongs in this piece, which then says so, or in a new one. A piece that is not ready yet, still waiting on a question, goes to /shape first; /implement builds, it does not shape.
 
 Before saving, the kit checks what else the change touches and runs the tests
 that already cover those parts first. If it reaches another part of the tool,
@@ -234,7 +234,7 @@ When more than one piece is ready, /implement shows you the whole set before it 
 
 A repair that is ready comes first, above both lists, since something that used to work outranks anything new. To see the lists without building, ask for them in your own words, such as "what can I build in parallel?". If the list looks out of date, type /implement again, since it is printed fresh from your project's issues every time. /what-now still names at most three things, so the whole list lives here.
 
-/shape is how you bring anything new: "/shape add a filter to the board". You never sort your own request; the agent works out what kind of work it is. Clear and piece-sized becomes a ready piece, and /shape offers to hand it to /implement, best in a fresh session, or to leave it for later. Vague gets a short interview.
+/shape is how you bring anything new: "/shape add a filter to the board". You never sort your own request; the agent works out what kind of work it is. Clear and piece-sized becomes a ready piece, and /shape offers to hand it to /implement, best in a fresh session, or to leave it for later. /shape itself never builds: answering one of its questions is never a yes to building, and the build starts only when you ask for it. Vague gets a short interview.
 
 Each piece says what it changes in the masterplan, and the masterplan says when
 it was last checked. You see a line such as "When this lands, the masterplan
@@ -243,7 +243,8 @@ A new rule you could check, such as a list now sorted by name, counts as a
 change even when the masterplan already describes that list. /implement applies that change as it saves the work, so the page keeps up
 without waiting for a /maintain visit. Where the masterplan's last check against the
 code cannot be found, /implement says in one line that /maintain does that
-check, and carries on.
+check, and carries on, and /what-now names /maintain until it has. Founding
+records that first check itself, so a new project starts with one.
 
 A question a conversation can't settle gets a disposable prototype, a source check, or a search for something that already does the job. Two of those need you there; the research does not, so you can tell /shape you're leaving and it settles what it can alone, then tells you which pieces are waiting on you. Type /shape with a piece's number to settle that one rather than the next in line.
 
@@ -325,7 +326,7 @@ If you say no, or nobody is there to answer, the piece is still built and checke
 
 Next to the merge button sits a check. It re-runs the project's real commands on a clean machine, so the pull request's claims get verified rather than trusted. Those commands include the mechanical checks your project's language offers, a type check and a linter wherever it has them, which catch a whole class of mistakes before anyone tries the tool. They use each tool's own default rules, so a red tick points at a real mistake rather than a matter of taste. The agent runs the same checks before it hands any work over.
 
-Green means the checks that exist really passed, which is a smaller promise than nothing being wrong: it covers the behaviour somebody thought to check and nothing else. Red means don't merge; say it to /implement, which takes that piece's build back up, and the agent reads what failed itself. You never read the machine's logs, and you never merge over a red check.
+Green means the checks that exist really passed, which is a smaller promise than nothing being wrong: it covers the behaviour somebody thought to check and nothing else. Red means don't merge; say it to /implement, which takes that piece's build back up, and the agent reads what failed itself. You never read the machine's logs, and you never merge over a red check. Sometimes GitHub will not start the check at all, for example when the account's billing stops it. That is not red. The agent runs the same checks on your computer instead and tells you once. On a private exploration that is enough to merge; on the other paths the merge waits until GitHub runs it. The check is switched off only if you ask, and /maintain reminds you while it stays off.
 
 A human decides whether to merge, always. Once the check is green, /implement tells you what to try and where, such as the preview address, then names the pull request in one plain line and asks for a yes that names the merge. Saying "put it live" or "save it" before any merge was named is not that yes, so it asks again; saying "merge it" is, and it does not ask twice.
 

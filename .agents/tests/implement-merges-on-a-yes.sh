@@ -104,7 +104,18 @@ rs_rule "several waiting pieces are named one by one" 'where more than one piece
 rs_rule "a yes covers only what it names" 'a yes covers only the pull requests it names, or all of them where it plainly says so'
 
 # How the merge is made.
-rs_rule "an approved merge is made on the pull request" 'make an approved merge on the pull request itself, such as with `gh pr merge --merge`'
+rs_rule "an approved merge is made on the pull request" 'make an approved merge on the pull request itself'
+# A real build squash-merged one piece while three others used a merge commit.
+# The rule named `--merge` only as an example, and a squash leaves the
+# masterplan's mark outside `main`, so every later build finds it unusable.
+rs_rule "always a merge commit, never squash or rebase" 'always with `gh pr merge --merge`, never `--squash` or `--rebase`'
+# The same run closed pieces still carrying `building` or `ready`: the first
+# step added `building` without taking `ready` off, and nothing read the
+# labels back after the merge.
+rs_rule "the first step swaps ready for building" 'replace the piece.s `ready` label with `building`'
+rs_rule "a piece never carries both" 'a piece never carries both labels'
+rs_rule "after the merge both labels come off" 'remove the `building` label and any `ready` still on the piece'
+rs_rule "and the labels are read back" 'read its labels back with `gh issue view <number> --json labels`, and repeat the removal until neither is there'
 rs_rule "never a local merge and a push of main" 'never merge the branch on this computer and push `main`'
 rs_rule "an unreachable github makes the merge wait" 'where github cannot be reached, the merge waits: say in one line that the person can merge it on github themselves'
 rs_rule "the box is announced only in claude code" 'where the session runs in claude code, read first whether the project.s settings show a confirmation box before the merge runs'
@@ -145,6 +156,22 @@ rs_guard "$IMPLEMENT" "implement's merge rules"
 rs_require_load_bearing "pieces.md has the Live side needs line" "$PIECES" 'live side needs: <only when the live copy must gain a new secret, setting or outside service'
 rs_require_load_bearing "pieces.md says names only, and when the merge waits" "$PIECES" 'name each one, never its value\. on a live project the merge is a deploy'
 rs_require_load_bearing "shape writes the line" "$SHAPE" 'write its `live side needs:` line on the surface, following pieces\.md'
+
+# Founding makes the merge commit the only kind the repository offers, so a
+# squash is refused by GitHub itself and not only by the written rule.
+rs_require_load_bearing "founding turns off squash and rebase merges" "$ROOT/.agents/skills/setup-ai-build-kit/SKILL.md" 'allow_squash_merge=false -f allow_rebase_merge=false'
+rs_require_load_bearing "pieces.md says a closed piece carries neither label" "$PIECES" 'so a closed piece carries neither label'
+
+# A real build took the person's new requests into the pull request without
+# changing the piece's done line, then asked "Shall I merge?" while its own
+# changelog said the full flow was still unconfirmed.
+rs_require_load_bearing "a request during the build gets one question first" "$BUILDER" 'when the person asks for more during the build, ask one question before building it: add it to this piece, or make it a new piece'
+rs_require_load_bearing "this piece means the done line says so" "$BUILDER" 'write it into the piece.s `## done when`, read the new lines back, and build them'
+rs_require_load_bearing "nothing is folded in without the answer" "$BUILDER" 'never fold a request into the build without that answer'
+rs_require_load_bearing "the merge waits for the person's own check" "$BUILDER" 'ask for the merge only after they say it behaves'
+rs_require_order "the person's check comes before the merge is asked for" "$BUILDER" '^Where step 6 left the person.s own check outstanding' '^\*\*Asking\.\*\*'
+rs_require_load_bearing "WORKFLOW says the merge comes after the person tried it" "$WORKFLOW" 'the merge is asked for only after you have tried it'
+rs_require_load_bearing "WORKFLOW says a new request gets one question" "$WORKFLOW" 'if you ask for more while it builds, it first asks whether that belongs in this piece'
 
 rs_require_load_bearing "WORKFLOW says /implement asks for a yes that names the merge" "$WORKFLOW" 'names the pull request in one plain line and asks for a yes that names the merge'
 rs_require_load_bearing "WORKFLOW says put it live is not that yes" "$WORKFLOW" 'saying "put it live" or "save it" before any merge was named is not that yes'
