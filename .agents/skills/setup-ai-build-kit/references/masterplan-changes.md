@@ -26,8 +26,10 @@ field, recover its change from that work rather than treating absence as
 Keep one `Trued against: <full commit hash>` line beside the masterplan's title.
 The hash names a saved code state that was checked against the page. It is for
 the agent to read; never ask the person to understand or maintain it. A new
-masterplan starts with `Trued against: not yet checked` until that comparison
-has happened.
+masterplan starts with `Trued against: not yet checked`. Founding writes the
+page against its first checkpoint, so once that checkpoint exists it writes the
+checkpoint's hash into the mark, in a records-only commit. Nothing else ever
+goes on that line: a hash or `not yet checked`.
 
 Before moving the mark, reconcile all changes since the old mark as well as the
 piece in hand. Never move it past work that has not been checked, or past
@@ -36,8 +38,8 @@ uncommitted work that the truing must leave alone.
 Whether the mark can be used is a fact, and the `setup-ai-build-kit` skill's
 `scripts/trued-mark.sh` reads it: exit 0 prints the commit the mark names, and
 any other exit says why it cannot be used. Where the mark is absent or
-unusable, only the truing compares the whole page against the code and sets a
-starting point. A build leaves the mark as it is, says in one line that
+unusable after founding, only the truing compares the whole page against the
+code and sets a starting point. A build leaves the mark as it is, says in one line that
 /maintain checks the whole masterplan against the code, and carries on with its
 save.
 

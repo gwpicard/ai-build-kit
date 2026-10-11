@@ -602,6 +602,13 @@ behaviour or smoke check, a recorded preview or local run path, and the initial
 state saved as a checkpoint on this computer. Load
 references/completion-report.md and report the result in its shape.
 
+The masterplan's `Trued against:` line keeps the template's form, `not yet
+checked`, until that checkpoint exists. Never put words of your own there. Then
+write the checkpoint's full hash into the line and save it in a second,
+records-only checkpoint. The page was written against that state, so the first
+build has a mark it can move on. Check it with `scripts/trued-mark.sh`, which
+must exit 0.
+
 The founding save is always the checkpoint route, whatever the tool will grow
 into. It stands an initial state up rather than changing anything anybody
 relies on, so there is nothing yet for a reviewer to compare against and nothing

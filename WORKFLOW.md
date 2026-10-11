@@ -243,7 +243,8 @@ A new rule you could check, such as a list now sorted by name, counts as a
 change even when the masterplan already describes that list. /implement applies that change as it saves the work, so the page keeps up
 without waiting for a /maintain visit. Where the masterplan's last check against the
 code cannot be found, /implement says in one line that /maintain does that
-check, and carries on.
+check, and carries on, and /what-now names /maintain until it has. Founding
+records that first check itself, so a new project starts with one.
 
 A question a conversation can't settle gets a disposable prototype, a source check, or a search for something that already does the job. Two of those need you there; the research does not, so you can tell /shape you're leaving and it settles what it can alone, then tells you which pieces are waiting on you. Type /shape with a piece's number to settle that one rather than the next in line.
 

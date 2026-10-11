@@ -600,7 +600,11 @@ attribution line, not the word.
   unchecked, short, unknown, doubled or off-branch mark, or one in incomplete
   history, is not. The truing reads the mark with the same script, and the
   merge keeps the piece's commits, since a squash merge would leave the marked
-  commit outside `main`.
+  commit outside `main`. A real founding wrote its own words on the mark line,
+  so every build found it unusable and nobody was sent to `/maintain`. Founding
+  now writes its checkpoint's hash into the mark in a records-only commit, the
+  line holds a hash or `not yet checked` and nothing else, and `/what-now`
+  names `/maintain` while the mark cannot be used.
 - `.agents/tests/record-habits.sh` guards a decision's optional evidence line,
   the read that spots when its support has gone, the link back to the build
   that found a new piece, and the single question about work untouched for a

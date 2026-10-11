@@ -35,6 +35,11 @@ its exit code. It reads and changes nothing. Exit 1 means an update left
 something /maintain has not yet finished, such as old commands still on
 offer. Any other exit says nothing here.
 
+Read whether the masterplan's mark can be used. From the project root, run `sh`
+with the `setup-ai-build-kit` skill's `scripts/trued-mark.sh`, and keep only its
+exit code. Any exit other than 0 means no build can move the mark on, so every
+build leaves the page unchecked until /maintain sets it.
+
 ## Say
 
 Open with where the build stands, in one line, then which command comes next and
@@ -94,6 +99,11 @@ every ready piece at once, /implement shows the whole list. Match where the proj
 Where the update check exited 1, say one line before the recap, apart from
 the three things: "The kit update is not finished. /maintain finishes it."
 Say nothing more about it here.
+
+Where the mark check exited other than 0, /maintain is one of the three things,
+said close to: "The masterplan has not been checked against the code yet.
+/maintain checks it." Say it on every visit until the mark can be used, since
+a builder only names /maintain and nothing else sends the person there.
 
 End with a short recap of where the tool has got to, in the words a person would
 use. Say what the last stretch of work was about, and whether anything is on the
