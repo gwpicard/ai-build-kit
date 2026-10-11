@@ -222,7 +222,9 @@ attribution line, not the word.
   stays refused. An issue, a comment or a pull request reads its body from
   `--body-file`, standard input included, and a file it cannot read is
   refused. The stand-in once read only `--body`, so a replayed piece written
-  from a file had no body, and the state check called it unsized.
+  from a file had no body, and the state check called it unsized. It accepts
+  founding's call that turns off squash and rebase merges, and then refuses
+  both, as GitHub does, so a replay can see a kit that squashed.
 - `.agents/tests/fake-host.sh` checks the replay harness's stand-ins for a
   host's tools, which scenario 54 launches through on the Vercel recipe. The
   stand-in host keeps a list of deployments beside the project and builds each
@@ -1278,7 +1280,12 @@ attribution line, not the word.
   its exit code, and the check runs it against stand-in commands: 0 for a
   pass, 1 for a check that ran and failed, 2 for a missing tool anywhere on a
   line, a ready command that failed or a wrong use of the script, with the
-  cleanup run after a pass or a failure.
+  cleanup run after a pass or a failure. A real build squash-merged one
+  piece, which leaves the masterplan's mark outside `main`, and closed pieces
+  still carrying `building` or `ready`. So the merge is always `--merge`,
+  founding turns the other two kinds off on the repository, the first step
+  swaps `ready` for `building`, and after the merge both come off and the
+  labels are read back.
 - `.agents/tests/first-upload-asks.sh` guards the yes the project's first
   upload waits for. Founding tells the person nothing will be uploaded, and in
   a real run the first piece then pushed the whole project to GitHub with no

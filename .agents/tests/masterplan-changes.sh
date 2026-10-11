@@ -91,7 +91,7 @@ rs_require_load_bearing "WORKFLOW says a checkable rule is a change" "$ROOT/WORK
 rs_require_load_bearing "building applies it before saving on every route" "$BUILDER" 'before saving on any route, apply the piece'
 rs_require_load_bearing "building updates the mark using its owner" "$BUILDER" 'update the trued-against mark as the `setup-ai-build-kit` skill.s `references/masterplan-changes\.md` describes'
 rs_require_load_bearing "building reads the mark with the script and leaves the page to /maintain" "$BUILDER" 'read the mark with the `setup-ai-build-kit` skill.s `scripts/trued-mark\.sh`; where it exits other than 0, leave the mark as it is, say in one line that /maintain checks the whole masterplan against the code, and carry on'
-rs_require_load_bearing "the merge keeps the marked commit" "$BUILDER" '`gh pr merge --merge`, which keeps the piece.s commits, so the masterplan.s trued-against mark still names a commit on `main`'
+rs_require_load_bearing "the merge keeps the marked commit" "$BUILDER" 'a merge commit keeps the piece.s commits, so the masterplan.s trued-against mark still names a commit on `main`'
 rs_require_load_bearing "WORKFLOW says a build leaves the first check to /maintain" "$ROOT/WORKFLOW.md" 'where the masterplan.s last check against the code cannot be found, /implement says in one line that /maintain does that check, and carries on'
 rs_require_load_bearing "the truing recovers unapplied changes and moves the mark" "$SYNC" 'merge each landed piece.*that has not yet been applied, and move the trued-against mark'
 rs_require_load_bearing "a current changelog cannot hide an older mark" "$SYNC" 'read from the older of that mark and the last changelog entry'

@@ -206,7 +206,8 @@ One more is the positive counterpart to those three:
 
 `/shape` adds `ready` once a piece is fully shaped: it has a `## Done when` line
 and waits on no question. `/implement` swaps that label for `building` when it
-picks the piece up, and the merged pull request closes it.
+picks the piece up, and the merged pull request closes it. `building` then
+comes off, so a closed piece carries neither label.
 A piece never carries `ready` and a `needs-` label at the same time; settling
 the question is what moves it from one to the other.
 

@@ -378,10 +378,12 @@ before they need it. The bootstrap placed that helper in the project, whichever
 route installed the kit.
 
 Set the repository to delete a merged pull request's branch automatically, so
-the branch list does not fill with finished piece branches
-(`gh api -X PATCH repos/OWNER/REPO -F delete_branch_on_merge=true`), and say in
-one line that you did. That is the whole of the pull-request hygiene the kit sets
-up on the repository. A direct push to `main` is forbidden by
+the branch list does not fill with finished piece branches, and to offer only
+the merge that keeps a piece's commits, since a squash or rebase merge leaves
+the masterplan's mark outside `main`
+(`gh api -X PATCH repos/OWNER/REPO -F delete_branch_on_merge=true -F allow_squash_merge=false -F allow_rebase_merge=false`).
+Say in one line that you did. That is the whole of the pull-request hygiene the
+kit sets up on the repository. A direct push to `main` is forbidden by
 references/blocked-commands.md, and the Claude Code settings refuse the usual
 ways of writing one, rather than a branch protection rule.
 

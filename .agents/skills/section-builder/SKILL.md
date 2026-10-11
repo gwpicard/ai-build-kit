@@ -135,9 +135,9 @@ one-line note, and the next piece that pushes asks again. In an unattended
 run nobody is there to say yes, so never upload on the person's behalf: keep
 the work local and note it on the piece.
 
-Label the piece `building` and assign it to whoever is building it before
-changing anything. That is what stops two people starting the same piece, and it
-costs one call.
+Replace the piece's `ready` label with `building`, and assign it to whoever is
+building it, before changing anything. That is what stops two people starting
+the same piece, and it costs one call. A piece never carries both labels.
 
 ## 2. Agree the visible result
 
@@ -486,9 +486,10 @@ Where more than one piece waits on its merge, name each pull request in its
 own line. A yes covers only the pull requests it names, or all of them where
 it plainly says so, as in "merge both".
 
-**Merging.** Make an approved merge on the pull request itself, such as with
-`gh pr merge --merge`, which keeps the piece's commits, so the masterplan's
-trued-against mark still names a commit on `main`. Never merge the branch on this computer and push `main`. Where
+**Merging.** Make an approved merge on the pull request itself, always with
+`gh pr merge --merge`, never `--squash` or `--rebase`. A merge commit keeps the
+piece's commits, so the masterplan's trued-against mark still names a commit
+on `main`. Never merge the branch on this computer and push `main`. Where
 GitHub cannot be reached, the merge waits: say in one line that the person can
 merge it on GitHub themselves. Where the session runs in Claude Code, read
 first whether the project's settings show a confirmation box before the merge
@@ -504,8 +505,10 @@ In an unattended run nobody is there to say yes, so never merge. Report the
 piece as ready for review, not as done, and leave the merge to a person.
 
 The merge closes the issue, so there is no status to set by hand. After the
-merge, whoever made it, remove the `building` label and refresh the printout
-with `sh .agents/tools/plan-refresh.sh` so the person's list matches what just
+merge, whoever made it, remove the `building` label and any `ready` still on
+the piece. Read its labels back with `gh issue view <number> --json labels`,
+and repeat the removal until neither is there. Then refresh the printout with
+`sh .agents/tools/plan-refresh.sh` so the person's list matches what just
 happened.
 
 **After the merge, on a project held after a rollback.** Where "How it stays

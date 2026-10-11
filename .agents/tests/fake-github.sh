@@ -140,6 +140,12 @@ case "$("$GH" repo view --json deleteBranchOnMerge)" in
   *'"deleteBranchOnMerge": true'*) pass "and the setting reads back as on" ;;
   *) fail "the merged-branch setting did not read back as on" ;;
 esac
+# Founding also turns off squash and rebase merges in the same call, so only
+# the merge that keeps a piece's commits is offered.
+"$GH" api -X PATCH repos/rehearsal/project -F delete_branch_on_merge=true \
+  -F allow_squash_merge=false -F allow_rebase_merge=false > /dev/null \
+  && pass "founding's merge settings are accepted in one call" \
+  || fail "founding's merge settings were refused"
 "$GH" repo edit --delete-branch-on-merge > /dev/null \
   && pass "repo edit --delete-branch-on-merge is accepted" \
   || fail "repo edit --delete-branch-on-merge was refused"
@@ -197,7 +203,17 @@ case "$("$GH" issue view 1)" in
   *) fail "the piece closed when its pull request was only opened" ;;
 esac
 
-"$GH" pr merge 1 > /dev/null \
+# With squash and rebase turned off, GitHub refuses both, and so must the
+# stand-in, or a replay could not see a kit that squashed.
+for kind in squash rebase; do
+  if "$GH" pr merge 1 "--$kind" > /dev/null 2>&1; then
+    fail "a $kind merge was accepted with $kind merges turned off"
+  else
+    pass "a $kind merge is refused once founding turned it off"
+  fi
+done
+
+"$GH" pr merge 1 --merge > /dev/null \
   && pass "pr merge is accepted" \
   || fail "pr merge was refused"
 case "$("$GH" issue view 1)" in

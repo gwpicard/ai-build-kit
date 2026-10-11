@@ -77,7 +77,7 @@ rs_rule "the next piece asks again" 'the next piece that pushes asks again'
 rs_rule "an unattended run never uploads" 'in an unattended run nobody is there to say yes, so never upload on the person.s behalf: keep the work local and note it on the piece'
 rs_guard "$BUILDER" "section-builder's first upload rules"
 
-rs_require_order "the rules sit in the safe start, before the piece is labelled" "$BUILDER" '^\*\*The first upload\.\*\*' 'Label the piece `building`'
+rs_require_order "the rules sit in the safe start, before the piece is labelled" "$BUILDER" '^\*\*The first upload\.\*\*' '^Replace the piece.s `ready` label with `building`'
 rs_require_load_bearing "the save step points back at the ask" "$BUILDER" 'the project.s first upload waits for the yes in step 1'
 
 # The other commands that push follow the same rule.
