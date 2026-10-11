@@ -337,6 +337,26 @@ Once the check is green the piece is ready for review, and step 10 asks the
 person whether to merge it. Never merge before that step, and never on a red
 check.
 
+**A check GitHub did not start.** GitHub can refuse to start the check at
+all, for example when the account's billing or spending limit stops it, or
+Actions is switched off. The check then ran no step, so it is not red. Read
+the reason from the run's own message with `gh run view`, and run the project
+check on this computer instead, as AGENTS.md's stack section names it.
+
+- On Explore privately the remote check is optional, so the local result
+  decides. Say once, in one line, that GitHub did not start the check and why.
+  Record it in CHANGELOG.md with the date in this piece's pull request, and
+  carry on to step 10. Where the changelog already holds that line, one line
+  pointing to it is enough.
+- On Build and run it and Build with care the remote check is required, so the
+  merge waits. Say in one line what stops it and where the person fixes it,
+  such as GitHub's billing page.
+
+Never switch the check off, change its workflow, or retry it in a loop to get
+past this. Switch it off only when the person asks in their own words, and
+record in CHANGELOG.md that it is off and the command that turns it back on.
+/maintain then names it on every visit until it is back on.
+
 Flagged route: where the person carried on and the acceptance is recorded,
 this is the pull-request route and nothing below applies. Otherwise do the
 pull-request route for everything up to the condition, then:

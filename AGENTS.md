@@ -648,7 +648,14 @@ attribution line, not the word.
   would loosen every read at once. It also holds that the green-tick sentence
   is unchanged, since the floor is meant to add nothing for the person to learn.
   Its one change since is the command it names, now `/implement`, since a red
-  check on a pull request goes back to that piece's own build.
+  check on a pull request goes back to that piece's own build. It also holds
+  that a check GitHub never started is not red. In a real project, billing
+  stopped the check from starting, the kit held a private exploration's merge
+  on it, then switched the workflow off at the person's request and recorded
+  nothing. Now the local check decides on Explore privately, the merge waits
+  on the other paths, a switch-off happens only on the person's words and is
+  recorded with the command to undo it, and `/maintain` names it while it
+  lasts.
   `.agents/tests/check-floor-rehearsal.sh` is the half that runs. It founds a
   throwaway Python project from the shipped workflow template, takes its
   commands from the shipped table, and watches the check go red at the type
