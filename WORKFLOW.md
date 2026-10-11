@@ -234,7 +234,7 @@ When more than one piece is ready, /implement shows you the whole set before it 
 
 A repair that is ready comes first, above both lists, since something that used to work outranks anything new. To see the lists without building, ask for them in your own words, such as "what can I build in parallel?". If the list looks out of date, type /implement again, since it is printed fresh from your project's issues every time. /what-now still names at most three things, so the whole list lives here.
 
-/shape is how you bring anything new: "/shape add a filter to the board". You never sort your own request; the agent works out what kind of work it is. Clear and piece-sized becomes a ready piece, and /shape offers to hand it to /implement, best in a fresh session, or to leave it for later. Vague gets a short interview.
+/shape is how you bring anything new: "/shape add a filter to the board". You never sort your own request; the agent works out what kind of work it is. Clear and piece-sized becomes a ready piece, and /shape offers to hand it to /implement, best in a fresh session, or to leave it for later. /shape itself never builds: answering one of its questions is never a yes to building, and the build starts only when you ask for it. Vague gets a short interview.
 
 Each piece says what it changes in the masterplan, and the masterplan says when
 it was last checked. You see a line such as "When this lands, the masterplan

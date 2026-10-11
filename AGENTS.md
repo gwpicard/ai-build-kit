@@ -1067,7 +1067,11 @@ attribution line, not the word.
   the old every-time offer stays gone, that change-triage recognises a request
   to file, that pieces.md says roughly what each waiting label costs to settle,
   and that /what-now calls a planning session when more pieces are waiting
-  than are ready.
+  than are ready. A real shaping question once offered "proceed with the
+  slower first build" as an answer, and the kit built the piece on that
+  choice. So it holds that a shaping question never offers building, and that
+  a build in the shaping session needs the person's own words after the build
+  offer.
 - `.agents/tests/prototype-recipes.sh` guards what a prototype is supposed to
   be: that decision-prototype.md names the two kinds of question and picks
   before it builds, that each recipe keeps the rules that make it worth

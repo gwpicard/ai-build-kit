@@ -94,4 +94,12 @@ rs_require "WORKFLOW.md says a note starts nothing" \
 rs_require "and says a filed piece still cannot be built" \
   "$WORKFLOW" 'nothing filed can be built until the question is answered'
 
+# Shaping a piece once ended in building it. A shaping question about speed
+# offered "proceed with the slower first build" as an answer, the person chose
+# it, and the kit built the piece in the planning session. The build offer was
+# never made, so the build started on an answer to a different question.
+rs_require_load_bearing "a shaping question never offers building" "$SHAPE" 'a question asked while shaping never offers building as one of its answers, and the answer to it is never a request to build'
+rs_require_load_bearing "building here needs the person's own words after the offer" "$SHAPE" 'build here only when the person asks to after the build offer, in their own words'
+rs_require_load_bearing "WORKFLOW says an answer is never a yes to building" "$WORKFLOW" 'answering one of its questions is never a yes to building, and the build starts only when you ask for it'
+
 rs_done
