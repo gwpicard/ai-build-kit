@@ -995,3 +995,35 @@ that check. It ran three times at `63af726`, driven and graded by `opus`.
 
 Every visit left the person's work in the tree and saved its own correction
 without it.
+
+## Eleven skills to eight, 13 October
+
+Three background skills had one caller each, so they folded into it. Triage
+now lives in `/shape`, the build loop in `/implement`, and the merge steps,
+repair building and screen rules in references of `/implement`. Repair
+shaping moved to a reference of `/shape`, and the rollback offer to
+`/setup-hosting`'s "Rolling back". The rules kept their wording. Six cases
+cover the moved text, so each ran three times at `1fd957f`, driven and graded
+by `opus`.
+
+| Scenario | Commit | Held | State | Contract misses |
+|---|---|---|---|---|
+| 8 | `1fd957f` | 3/3 | 3/3 | none; Visible explanation drift in three |
+| 10 | `1fd957f` | 3/3 | 3/3 | Evidence in every run |
+| 43 | `1fd957f` | 3/3 | 3/3 | Expected result and Evidence in one |
+| 45 | `1fd957f` | 3/3 | 3/3 | Review in one |
+| 52 | `1fd957f` | 3/3 | 3/3 | none; Visible explanation drift in two |
+| 55 | `1fd957f` | 3/3 | 3/3 | Visible explanation and Escalation in one |
+
+No case fell below its earlier rate. In 8 the kit gave the notice once, in
+full, at the fourth attempt, and withdrew it in none of three runs. The
+Evidence miss in 10 is the same in all three: the conversation ends before
+the person picks a version, so nothing settled is written down, while the
+prototype itself met the contract. In one run of 43 the kit linked the two
+pieces with a note rather than a blocked-by link, and did not write the
+masterplan first. In one run of 45 the kit ran a review nobody asked for. In
+one run of 55 the upload question named the repository but not whether it
+was private.
+
+The commit after `1fd957f` rewrites a founded project's old template lines
+and takes two repeated rules out of the merge reference. It changes no step.
