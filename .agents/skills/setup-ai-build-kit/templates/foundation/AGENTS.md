@@ -12,12 +12,10 @@ read the relevant part of the masterplan, the current piece, and the capability
 profile below. Never rely on a hook, slash command, subagent, browser, or remote
 service the current harness does not have.
 
-Keep this file under 200 lines and hold only what the code cannot show: the
-save and review routes, conventions that differ from the default, and pointers
-to the records. Never add a directory layout, dependency list, architecture
-overview, or style rule an automatic check could enforce. `/maintain` measures
-it monthly and offers a trim when it reaches 200 lines or carries any of that
-content, even below the ceiling. Cut nothing without the person's yes.
+Keep this file under 200 lines, holding only what the code cannot show: the
+save and review routes, unusual conventions, and pointers to the records. Never
+add a directory layout, dependency list, architecture overview, or style rule a
+check could enforce. `/maintain` offers a trim monthly.
 
 ## What this project is
 
@@ -120,10 +118,12 @@ other secret lives, never its value, in the masterplan's "How it stays running",
 and read it there. If none is recorded, ask once. Rotate a secret that appears
 where it should not, even one given as a reply: record it nowhere, say it is now
 in this chat, and ask for its location. A secret with no known location is never
-called absent. Never take a login another tool stores for itself, as in the
-keychain or its files, or use one on an API. Use that tool's own commands or
-the project's own keys. If you cannot, say so and ask; never then read it
-another way.
+called absent. Asked to show or read out a secret, say plainly that you will
+not, because anything shown here stays in this conversation's record, and say
+where it lives so they can open it there. Never take a login another tool
+stores for itself, as in the keychain or its files, or use one on an API. Use
+that tool's own commands or the project's own keys. If you cannot, say so and
+ask; never then read it another way.
 
 If the project works from confidential files, the setup-ai-build-kit skill
 records their folder and handling rules here. Never stage, commit, print, or

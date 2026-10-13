@@ -1,7 +1,7 @@
 # Capability check
 
-Determine what the current harness and repository can actually do. Do not ask
-the user to configure optional features before the project interview.
+Find what this harness and repository can actually do. Do not ask the person to
+set up optional features before the interview.
 
 Check:
 
@@ -14,69 +14,38 @@ Check:
 7. The current user has access to that online repository, when required.
 8. Online authentication works, when uploads, pull requests, or online checks
    are required.
-9. The project can be started or its runtime can be installed.
-10. The test or smoke-check command can be discovered or created.
-11. A browser or preview can be reached, when behaviour needs visual checking.
-    Use only a browser on this computer. A browser tool may list browsers on
-    other computers signed in to the same account, and a page opened there
-    runs on somebody else's machine. Where the tool says which browser is
-    local, choose that one. Where no browser on this computer is available, use
-    a headless browser here, or say that you could not see the page. Open a
-    tab of your own for a check, and never act in a tab the person is using.
+9. The project can be started or its runtime installed.
+10. A test or smoke-check command can be found or created.
+11. A browser or preview can be reached, when behaviour needs a visual check.
+    Use only a browser on this computer: a browser tool may list browsers on
+    other computers signed in to the same account. Where none is here, use a
+    headless browser, or say you could not see the page. Use a tab of your
+    own, never one the person is using.
 12. An independent-review route exists: subagent, separate session, or a
-    user-opened clean chat.
-13. A reach-check engine is recorded. Prefer the harness's language server or
-    Serena, then a related-test or affected-code command, then a graph tool the
-    person already installed. Where none exists, record that the agent reads
-    imports and callers directly.
-14. Hooks and mechanical command blocks are recorded as optional enhancements,
-    never assumed. Record whether the harness runs anything when a session
-    opens. When it does not, the check-up reminder reaches the person through
-    `/what-now` instead.
+    clean chat the person opens.
+13. A reach-check engine is recorded, in the order the `implement` skill's
+    `references/reach-check.md` gives, or that the agent reads imports and
+    callers directly.
+14. Hooks and command blocks are recorded as optional, never assumed. Record
+    whether the harness runs anything when a session opens; where it does
+    not, the check-up reminder reaches the person through `/what-now`.
+15. The pieces are kept as issues: the GitHub command line tool is installed
+    and signed in, and issues are on for the repository.
+16. The signed-in account can create and delete labels on the repository.
 
-15. The pieces are kept as issues, which the kit requires: the GitHub command
-    line tool is installed and signed in, and issues are switched on for the
-    repository.
-16. The label set can be put in order: the signed-in account can create and
-    delete labels on the repository.
+`scripts/check-tooling.sh` checks items 3, 15 and 16, and says when `origin`
+is the kit's own repository. Confirm the rest by hand.
 
-`scripts/check-tooling.sh` is the machine check behind items 3, 15, and 16. It
-reports whether Git, the GitHub command line tool, and python3 are present, and
-whether the account is signed in with issues switched on and labels it can order.
-`required-tools.md` lists what it checks and why. Run it first, then confirm the
-rest of this list by hand.
+A missing or signed-out GitHub tool is a required setup step: guide it by
+`manual-setup.md` before the pieces are founded. Where issues are switched
+off, say so and offer to switch them on; never do it yourself. Where the
+account cannot create or delete labels, the pieces still become issues: say
+which labels could not be made or removed.
 
-Where that tool is missing or nobody is signed in, the pieces cannot be kept as
-issues yet, and the kit keeps them there. This is a required setup step rather
-than an optional one: guide the person through installing and signing in to the
-GitHub command line tool, following `manual-setup.md`, before the pieces are
-founded. Where the repository has issues switched off, say what you found and
-offer to switch them on. Do not switch them on yourself, because it changes a
-setting on something the person owns.
+A remote address never proves the current person has an account or access. A
+previous commit's author is never the current person's identity.
 
-Where the account cannot create or delete labels, which is what a collaborator
-without write access will find, the pieces still become issues and the work
-still goes ahead. Say which labels could not be made and which of GitHub's own
-could not be removed. A missing label costs a little clarity on the list; it
-stops nothing.
-
-Where `origin` is the kit's own repository, which a whole copy of the kit can
-keep, the report says so and skips the issue and label lookups. That
-repository is not the person's, so nothing is opened or pushed there. Founding
-asks for their own before the first issue, and carries on with none as it does
-when no repository exists.
-
-A remote address is never treated as proof that the current person has an
-account or access to it. A previous commit's author is never treated as the
-current person's identity.
-
-Write the result into AGENTS.md under Capability profile.
-
-For every missing capability, choose one:
-
-- continue with a safe fallback;
-- create a setup task;
-- reduce automation;
-- stop because the current build path requires it.
-
-Never claim "works in this harness" merely because an adapter folder exists.
+Write the result into AGENTS.md under Capability profile. For each missing
+capability, choose one: a safe fallback, a setup task, less automation, or a
+stop because the build path requires it. Never claim "works in this harness"
+because an adapter folder exists.

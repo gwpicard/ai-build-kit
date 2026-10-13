@@ -1,63 +1,46 @@
 # Required tools
 
-The kit runs a few small scripts of its own, and those need three outside tools
-before setup can go ahead. `scripts/check-tooling.sh` checks for them and reports
-which are ready, so a missing one is caught early rather than at the step that
-creates the issues.
+`scripts/check-tooling.sh` checks the three outside tools the kit's scripts
+need, so a missing one is caught early:
 
-- Git, because the kit saves each project version with it.
-- The GitHub command line tool, because the pieces are kept as GitHub issues.
-  Setup needs it installed and signed in before it founds them.
-- python3, because the kit reads the issue list with it to print your pieces.
+- Git, which saves each project version.
+- The GitHub command line tool, installed and signed in, since the pieces are
+  GitHub issues.
+- python3, which reads the issue list to print the pieces.
 
-`jq` is not needed. The kit filters JSON with python3 instead, which is also what
-lets the test harness stand in for the GitHub command line tool. A tool used only
-to build a release lives in the maintainer source and never reaches a project.
+A recipe's launch checks need more tools, named on its `Command-line tools:`
+line. `check-tooling.sh --recipe <recipe folder>` reports each as ready or
+needed before the first `/setup-hosting`. That never stops founding, and nor
+does the line saying `origin` is still the kit's own repository.
 
-A project on a recipe needs a few more tools, but only at launch. Each recipe
-names the command-line tools its launch checks run, on its `Command-line tools:`
-line. `check-tooling.sh --recipe <recipe folder>` adds one line for each: ready,
-or missing and needed before the first `/setup-hosting`. A missing one never stops
-founding, because a project that uses no recipe needs none of them.
-
-The report also says when the project still points at the kit's own
-repository, which a whole copy of the kit can keep as its `origin`. It then
-asks GitHub nothing more about that repository, and founding opens no piece
-there. That line does not stop founding either.
-
-When `check-tooling.sh` reports a tool as missing, `manual-setup.md` guides the
-install one step at a time. Keep this list and the script in step: a tool added
-to one belongs in the other.
+A missing tool is installed step by step by `manual-setup.md`. Keep this list
+and the script in step.
 
 ## When GitHub access fails
 
-This applies whenever a kit command needs GitHub, at founding and afterwards.
-Run `gh` through the current agent's command tool: a working terminal or
-connector does not prove that tool can reach GitHub or write to it.
+This applies whenever a kit command needs GitHub. Run `gh` through the current
+agent's command tool; a working terminal elsewhere proves nothing about it.
 
-A network failure or a command refused by the client does not mean the person
-is signed out. Request the access needed for the authorised operation through
-the client's approval mechanism, then retry it after access is granted. Say:
-"GitHub access is blocked in this session; I need it to read or save your pieces."
-Do not weaken permission settings, repeat a denied request through a different
-tool, or move to an outside terminal unless the person explicitly authorises
-that route. If access remains unavailable, name the limitation and keep the
-last printout; never treat a failed read as an empty backlog or completed work.
+A network failure or a command the client refused does not mean the person is
+signed out. Ask for the access through the client's approval mechanism, then
+retry. Say: "GitHub access is blocked in this session; I need it to read or
+save your pieces." Never weaken permission settings, repeat a denied request
+through another tool, or move to an outside terminal unless the person says
+to. If access stays unavailable, name the limit and keep the last printout;
+never treat a failed read as an empty backlog.
 
-An authentication refusal, including HTTP 401, does not prove sign-out. Compare
-`gh auth status --hostname github.com` in the command tool and the person's
-terminal. Report only whether `GH_TOKEN` and `GITHUB_TOKEN` exist, since they
-override stored credentials. Compare the `gh` path, user, `HOME`, `GH_CONFIG_DIR`
-and `XDG_CONFIG_HOME`. Never print a credential or use `--show-token`.
-For Codex, follow [the recovery guide](codex-github.md) when networking or
-credential access differs between those environments.
+An authentication refusal, HTTP 401 included, does not prove sign-out either.
+Compare `gh auth status --hostname github.com` in the command tool and the
+person's terminal. Report only whether `GH_TOKEN` and `GITHUB_TOKEN` exist.
+Compare the `gh` path, user, `HOME`, `GH_CONFIG_DIR` and `XDG_CONFIG_HOME`.
+Never print a credential or use `--show-token`. For Codex, follow [the
+recovery guide](codex-github.md).
 
 In Codex, an HTTP 401 or `unable to get password from user` first gets this
-skill's `templates/foundation/codex-github-check.py`, run with python3 and `--message`.
-Give its restart sentence and stop the session's work, without signing in again
-or retrying. The recovery guide holds diagnostics for a restart that still
-fails. The tool report and plan helper already print this sentence themselves.
+skill's `templates/foundation/codex-github-check.py`, run with python3 and
+`--message`. Give its restart sentence and stop, without signing in again or
+retrying.
 
-If those checks establish that the account is signed out, guide `gh auth login`
-in the person's terminal. If it refuses repository access, check the account's permissions for
-that repository. Neither is repaired by enabling network access.
+Where the account is plainly signed out, guide `gh auth login` in the
+person's terminal. Where it refuses repository access, check the account's
+permissions for that repository.
