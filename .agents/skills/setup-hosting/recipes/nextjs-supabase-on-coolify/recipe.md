@@ -7,11 +7,11 @@ Deploy target: Coolify on a rented server, with the Coolify GitHub App connected
 Command-line tools: supabase, docker, psql, curl, git
 Last checked: 2026-09-24
 
-The kit never contacts the server. The person, or a companion working with them, reads there what only the server knows and pastes it back, and a script reads the paste. Exit 0 is a pass, 1 a fail and 2 could not run.
+The kit never contacts the server. The person, or a companion working with them, pastes back what only the server knows, and a script reads it.
 
 ## Preview
 
-How it works: Coolify builds each pull request into its own container and removes it when the pull request closes. Previews start off: the person or the companion presses Enable preview deployments on the app's Preview Deployments page. A preview has an address only when the app has a domain; without one the kit says once that the person cannot open it. The preview's own settings in Coolify point at a second Supabase project, which `../parts/scripts/migrate.sh --apply <preview project ref>` gives the branch's migrations. Where no second project can exist, they point at the live one: the kit says once that previews use live data, records it, and gives a preview no migrations.
+How it works: Coolify builds each pull request into its own container and removes it on close. Previews start off: the person or the companion presses Enable preview deployments on the app's Preview Deployments page. A preview has an address only when the app has a domain; without one the kit says once that nobody can open it. Its settings point at a second Supabase project, which `../parts/scripts/migrate.sh --apply <preview project ref>` gives the branch's migrations. Where no second project can exist, they point at the live one: the kit says once that previews use live data, records it, and gives a preview no migrations.
 How it is checked: A finished preview deployment whose health shows the database reachable, the pull request's commit, and a project other than the live one, unless the record says previews share it.
 Script: scripts/preview.sh
 Who runs it: a companion or the person, result read back
@@ -19,15 +19,15 @@ Ask: Please paste the preview deployment's status from Coolify, and the answer f
 
 ## Going live
 
-How it works: Coolify does not run migrations, so before the build that needs them the kit applies them with `../parts/scripts/migrate.sh --apply <live project ref>`. A migration only adds, so the container still live keeps working. Before the merge, the kit runs the Health part's container check, so an image that fails to build, bind or answer is found here. Before the first launch, the person or the companion switches on Coolify's health check, off by default, with path `/api/health`, port 3000 and host `127.0.0.1`, since `localhost` can resolve to IPv6 on Alpine. The health route reports the commit from `SOURCE_COMMIT`. After /implement's merge, Coolify builds `main` and swaps the new container in once its check passes, which needs no published host port and no custom container name. On a first launch `scripts/hosting-request.sh` prints the request the person carries to whoever runs the server, as `hosting-request.md` says, and the address comes from its answer.
-How it is checked: A finished deployment, the health check on for `/api/health` on port 3000 and host `127.0.0.1`, a healthy container, and a health answer with the database reachable and the commit on `main`. The kit also reads that no public table is open to anyone holding the public key.
+How it works: Coolify does not run migrations, so before the build that needs them the kit applies them with `../parts/scripts/migrate.sh --apply <live project ref>`. A migration only adds, so the container still live keeps working. Before the merge, the kit runs the Health part's container check. Before the first launch, the person or the companion switches on Coolify's health check, off by default, with path `/api/health`, port 3000 and host `127.0.0.1`. The health route reports the commit from `SOURCE_COMMIT`. After a merge, Coolify builds `main` and swaps the new container in once its check passes, which needs no published host port and no custom container name. On a first launch `scripts/hosting-request.sh` prints the request for whoever runs the server, as `hosting-request.md` says, and the address comes from its answer.
+How it is checked: A finished deployment, Coolify's health check on as above and passing, a health answer with the database reachable and the commit on `main`, and no public table open to anyone holding the public key.
 Script: scripts/going-live.sh
 Who runs it: a companion or the person, result read back
 Ask: Please paste the deployment's status, the app's health check settings and the container's health status from Coolify, and the answer from the live address's /api/health.
 
 ## Rollback
 
-How it works: Coolify keeps earlier images until its nightly cleanup, which leaves the two newest. After a yes that names it, the person or the companion clicks Roll Back To This Image on the app's Rollback page, under Operations; nothing the kit can call does it. The kept image comes back with no new build. The old container serves for about half a minute, so the kit asks for a second health read. A later deploy of `main` rolls forward. A rollback does not undo a migration.
+How it works: Coolify keeps earlier images until its nightly cleanup, which leaves the two newest. After a yes that names it, the person or the companion clicks Roll Back To This Image on the app's Rollback page, under Operations; nothing the kit can call does it. The old container serves for about half a minute, so the kit asks for a second health read. A later deploy of `main` rolls forward. A rollback does not undo a migration.
 How it is checked: An earlier image is still kept, so a rollback is possible. It is not tried, since that would change the live tool.
 Script: scripts/rollback.sh
 Who runs it: a companion or the person, result read back
