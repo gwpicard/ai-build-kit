@@ -112,8 +112,11 @@ describes, with the subjects from step 3, and label it `ready` by running this
 skill's `scripts/mark-ready.sh` on the piece's number. That is a new issue, and
 it starts unassigned: a person is assigned only when `/implement` picks the
 piece up to build it, never when `/shape` creates it. Then make the build offer
-below, and refresh the printout so the person's list matches what was just
-agreed.
+below.
+
+Whenever this step puts a label on a piece, refresh the printout afterwards, so
+the person's list matches what was just agreed. `mark-ready.sh` refreshes it
+for you.
 
 Too vague to size runs clarify first. A question rather than a ready piece
 puts its route on the issue as a label, as "When a piece is waiting on a

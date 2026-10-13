@@ -12,7 +12,8 @@
 # The script reads the issue, refuses when either section is missing or empty,
 # and otherwise takes every needs- label off and puts ready on in one change.
 # It then reads the labels back, so a piece never carries ready and a needs-
-# label together.
+# label together. Last, it refreshes the project's printout of pieces, so the
+# person's list shows the piece as ready.
 #
 # Exit 0: the piece is ready, read back.
 # Exit 1: refused; the line printed names the missing section. Nothing changed.
@@ -91,4 +92,9 @@ case " $labels " in
   *" needs-"*) echo "mark-ready: issue $number still carries a needs- label after the change" >&2; exit 2 ;;
 esac
 echo "ready: issue $number"
+top=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+if [ -f "$top/.agents/tools/plan-refresh.sh" ]; then
+  (cd "$top" && sh .agents/tools/plan-refresh.sh >/dev/null 2>&1) \
+    || echo "mark-ready: the printout was not refreshed; run sh .agents/tools/plan-refresh.sh" >&2
+fi
 exit 0

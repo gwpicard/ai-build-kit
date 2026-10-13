@@ -50,7 +50,12 @@ labels_of() {
   python3 -c 'import json,sys; print(" ".join(json.load(open(sys.argv[1]))["issues"][sys.argv[2]]["labels"]))' "$STANDIN_GH_STATE" "$1"
 }
 
-run() { PATH="$WORK/bin:$PATH" sh "$SCRIPT" "$@"; }
+# Every run is from a throwaway project, whose printout helper only notes
+# that it ran, so this repository's own helper is never called.
+mkdir -p "$WORK/project/.agents/tools"
+printf '%s\n' 'echo refreshed >> refreshed.log' > "$WORK/project/.agents/tools/plan-refresh.sh"
+run() { (cd "$WORK/project" && PATH="$WORK/bin:$PATH" sh "$SCRIPT" "$@"); }
+refreshes() { if [ -f "$WORK/project/refreshed.log" ]; then grep -c . "$WORK/project/refreshed.log"; else echo 0; fi; }
 
 seed
 
@@ -96,6 +101,24 @@ out=$(run 4) && code=0 || code=$?
 [ "$code" -eq 2 ] \
   && pass "a change that does not read back is reported, not called ready" \
   || fail "a change that did not read back was reported as $code: $out"
+
+# The person's list is refreshed after a piece is marked ready, and only then.
+seed
+rm -f "$WORK/project/refreshed.log"
+run 2 >/dev/null 2>&1 || :
+[ "$(refreshes)" -eq 0 ] \
+  && pass "a refused piece leaves the printout alone" \
+  || fail "a refused piece refreshed the printout"
+out=$(run 1 2>&1) && code=0 || code=$?
+[ "$code" -eq 0 ] && [ "$(refreshes)" -eq 1 ] \
+  && pass "a piece marked ready refreshes the printout" \
+  || fail "the printout was not refreshed after marking ready: $code $out"
+printf '%s\n' 'exit 1' > "$WORK/project/.agents/tools/plan-refresh.sh"
+seed
+out=$(run 1 2>&1) && code=0 || code=$?
+[ "$code" -eq 0 ] && printf '%s' "$out" | grep -q "printout was not refreshed" \
+  && pass "a refresh that fails is said, and the piece stays ready" \
+  || fail "a failed refresh was not said or changed the result: $code $out"
 
 out=$(run abc) && code=0 || code=$?
 [ "$code" -eq 2 ] && pass "a number that is not a number is a usage error" || fail "bad usage returned $code"
