@@ -1,8 +1,10 @@
 #!/usr/bin/env sh
-# older-project-upkeep.sh: run the shipped old-skill-pointers.py against older
-# projects. If this breaks, a monthly visit can rewrite a project's own skill
-# pointer, break a command or link the person wrote, or leave pointers that
-# open nothing on a Claude-Code-only or plugin install.
+# older-project-upkeep.sh: run the shipped old-skill-pointers.py and the
+# upgrade check against older projects. If this breaks, a monthly visit can
+# rewrite a project's own skill pointer, break a command or link the person
+# wrote, leave pointers that open nothing on a Claude-Code-only or plugin
+# install, or stop offering to move a leftover plan.md whose pieces nothing
+# reads.
 
 set -eu
 
@@ -249,6 +251,33 @@ PY
 shipped=$(ls "$ROOT/.agents/skills" | sort)
 report "the script names exactly the kit's eleven skills" \
   "$([ "$listed" = "$shipped" ] && [ "$(printf '%s\n' "$listed" | grep -c .)" = 11 ] && echo yes || echo no)"
+
+# --- a leftover plan.md, on every monthly visit -------------------------------
+
+# A project founded without GitHub kept its pieces in plan.md, which nothing
+# reads. Every monthly visit names it until it moves, and a no is never
+# recorded, so the offer comes back.
+CHECK="$ROOT/.agents/skills/maintain/scripts/upgrade-check.py"
+P="$work/planfile"
+mkdir -p "$P"
+cp "$TEMPLATES/masterplan.md" "$P/masterplan.md"
+printf '%s\n' '| Piece | Done when |' '|---|---|' '| Sign-in | People can sign in |' > "$P/plan.md"
+monthly=$(python3 "$CHECK" --monthly "$P") || true
+report "a monthly visit names a leftover plan.md and says its pieces wait" \
+  "$(printf '%s\n' "$monthly" | grep -qx 'planfile	plan.md' \
+     && printf '%s\n' "$monthly" | grep '^say	planfile	' | grep -q 'not picked up until' && echo yes || echo no)"
+visit=$(python3 "$CHECK" "$P") || true
+report "a visit that is not monthly leaves it to the monthly part" \
+  "$(printf '%s\n' "$visit" | grep -q 'planfile' && echo no || echo yes)"
+python3 "$CHECK" --decline planfile "$P" >/dev/null 2>&1 && code=0 || code=$?
+again=$(python3 "$CHECK" --monthly "$P") || true
+report "a no is not recorded, so the next monthly visit offers it again" \
+  "$([ "$code" = 2 ] && [ ! -e "$P/.ai-build-kit-maintenance" ] \
+     && printf '%s\n' "$again" | grep -qx 'planfile	plan.md' && echo yes || echo no)"
+rm "$P/plan.md"
+moved=$(python3 "$CHECK" --monthly "$P") || true
+report "once it has moved, nothing is said" \
+  "$(printf '%s\n' "$moved" | grep -q 'planfile' && echo no || echo yes)"
 
 echo
 echo "older-project-upkeep.sh: all $passed checks passed"

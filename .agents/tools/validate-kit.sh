@@ -1431,7 +1431,10 @@ while IFS= read -r term; do
     | grep -v '/\.agents/tmp/' \
     | grep -v '\.agents/tests/scenarios\.md$' \
     | grep -v 'docs/MAINTAINING\.md$' \
+    | grep -v '\.agents/skills/maintain/references/four-paths\.md$' \
     || true)
+  # four-paths.md rewrites a section written with the old fields, so it has
+  # to name the fields and paths it recognises. It loads for that alone.
   if [ -n "$hits" ]; then
     fail "retired vocabulary '$term' found in: $(printf '%s' "$hits" | tr '\n' ' ')"
     had_stale=1

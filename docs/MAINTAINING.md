@@ -433,9 +433,9 @@ they will see. A migration lives in the maintain skill's scripts, chiefly
 `upgrade-check.py`, which runs on every `/maintain` visit and is idempotent. The
 script finds what is left, prints the sentence the person hears, and applies the
 change on a yes, so the skill's own text keeps only the ask. The visible change
-is named in the release notes. Once a migration is dropped, raise the script's
-`FLOOR` to the last release that still carries it, so an older project goes
-through that release first.
+is named in the release notes. A migration stays in the scripts for as long
+as a project could still need it. Each update route brings the latest
+release, so nothing sends a project through an older one first.
 If a breaking change has neither, it is not ready to ship. A release that only
 adds behaviour still gets this check, and answers it with "nothing to do".
 

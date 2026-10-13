@@ -18,10 +18,13 @@ Usage:
 
 `--latest` asks GitHub's `releases/latest` endpoint, the only one that cannot
 answer with a draft or a prerelease, and prints `holds`, `latest` and
-`compare` lines, and a `first` line when the project holds a release older
-than v0.20.0, then `say` lines with the words the person hears. It exits 0 when the project holds the latest release, 1 when
-it differs, and 3 when the latest could not be read: never say the project is
-up to date then. `--route` prints a `route` line for each way the kit is
+`compare` lines, then `say` lines with the words the person hears. The
+versions are compared as numbers: `compare` is `same`, `newer` when a newer
+release is published, or `ahead` when the project holds a version the latest
+release has not reached, such as a preview, and `different` when the
+installed version cannot be read. It exits 0 for `same` or `ahead`, 1 for
+`newer` or `different`, and 3 when the latest could not be read: never say the project
+is up to date then. `--route` prints a `route` line for each way the kit is
 installed, with its update command, and a `then` line for a second command.
 The shared route's command is `npx skills add`, never `npx skills update`. It
 exits 4 when more than one route is active, so the person chooses one; with
@@ -46,9 +49,11 @@ the step that settles it:
     settings   deny|ask  RULE  a missing Claude Code safety rule      settings
     template   FILE:LINE  NEW  the kit's own sentence naming /ship    template
     fitcheck   FILE:LINE  OLD  a build-path section with four-path
-                               fields; the fit check writes it again  fitcheck
-    older      VERSION  WHY    a project set up before v0.20, which
-                               installs VERSION first                 older
+                               fields, rewritten as the maintain
+                               skill's references/four-paths.md says  fitcheck
+    ready      NUMBERS         open pieces shaped before the kit had
+                               a `ready` label, so nothing builds
+                               them                                   ready
 
 These are named, never changed, and do not count as left:
 
@@ -57,24 +62,34 @@ These are named, never changed, and do not count as left:
     pointer lines ending in `left as written: WHY`
     command lists left as written that name no retired command or are links
     declined   STEP  ...       an offer the person said no to
+    planfile   plan.md         the kit's old list of pieces, or the
+                               person's own notes: only the agent can
+                               tell. Printed with --monthly alone, and
+                               never recorded, so it comes back on
+                               every monthly visit while the file is
+                               there.
 
 After those lines come `say` lines, `say  STEP  SENTENCE`, one for each step
 or kind printed. Each holds the plain sentence the person hears for it, so
 the words come from here rather than from memory. They are never counted.
+A `mention` or `left` sentence is said once: it is left out when
+CHANGELOG.md already holds the line it names, and on a visit without
+--monthly once `.ai-build-kit-maintenance` records `upgrade-offered|` with
+the installed version.
 
 Exit codes: 1 while any line above the second list is printed, 0 when none
 is, 2 when it could not run. A step the person declined prints as `declined`
 until a run with `--monthly`, which offers it again. A declined safety rule
 stays declined until a release adds a rule the no did not cover.
 
-`--apply` runs the step's own tool: `helper` places the plan helper, `remove`
+`--apply` runs the step's own tool: `helper` places the plan helper, `ready`
+labels the shaped pieces `ready` on GitHub, `remove`
 runs `kit-leftovers.py --remove`, `commands` runs `kit-leftovers.py
 --rewrite-commands`, `pointers` runs `old-skill-pointers.py --apply`,
 `settings` runs `settings-rules.py --apply`, and `template` rewrites the one
-sentence. `--apply helper` also prints a `say` line with what changed. The
-installer's own steps, `installer` and `missing`, and the `fitcheck` and
-`older` steps, which the person and the agent carry out, are never run
-from here. `--decline` writes `upgrade-declined|<date>|<steps>` into
+sentence. `--apply helper` and `--apply ready` also print a `say` line with
+what changed. The installer's own steps, `installer` and `missing`, and the
+`fitcheck` step, which the agent carries out, are never run from here. `--decline` writes `upgrade-declined|<date>|<steps>` into
 `.ai-build-kit-maintenance`, keeping only steps that still have something
 left, and passes a declined `settings` to `settings-rules.py --decline`.
 """
@@ -113,20 +128,20 @@ STEP_OF = {
     "adapter": "remove", "kitcopy": "remove", "hook": "remove",
     "commands": "commands", "pointer": "pointers", "helper": "helper",
     "settings": "settings", "template": "template", "fitcheck": "fitcheck",
-    "older": "older",
+    "ready": "ready",
 }
 DECLINABLE = ("installer", "missing", "remove", "commands", "pointers", "settings", "template",
-              "fitcheck", "older")
-
-# The oldest release whose /maintain this one can carry a project on from.
-# A project set up earlier installs this release first, runs /maintain, and
-# then updates to the latest: that release still finishes the older changes,
-# such as labelling the pieces of a project that had one /build command.
-FLOOR = "v0.20.3"
-FLOOR_MINOR = (0, 20)
+              "fitcheck")
 # The build-path fields the kit used while it had four build paths.
 FOUR_PATHS = re.compile(r"^\s*(Required controls:|Outside help:|Path:\s*(Build with expert help|Professional-led))")
-APPLIABLE = ("helper", "remove", "commands", "pointers", "settings", "template")
+APPLIABLE = ("helper", "ready", "remove", "commands", "pointers", "settings", "template")
+
+# The label /implement builds from, as founding creates it. A project founded
+# before the kit split /build into /shape and /implement never had it, so none
+# of its pieces carries it and /implement would build nothing.
+READY = ("ready", "0e8a16", "Shaped and waiting to be built")
+WAITING = ("needs-clarification", "needs-prototype", "needs-research")
+DONE_WHEN = re.compile(r"^##\s+Done when\b", re.M)
 
 
 
@@ -204,13 +219,72 @@ def fitcheck_findings(project):
     return []
 
 
-def older_findings(found):
-    """A project set up before v0.20 still carries the `build` skill, which
-    the kit split in two before then. The release named in FLOOR labels its
-    pieces ready; this one no longer can."""
-    for finding in found:
-        if finding[0] in ("installer", "folder") and finding[1].rsplit("/", 1)[-1] == "build":
-            return [("older", FLOOR, "it still has the build command the kit split in two before v0.20")]
+def origin_repo(project):
+    """OWNER/NAME of the GitHub repository `origin` names, or None."""
+    try:
+        result = subprocess.run(["git", "remote", "get-url", "origin"], cwd=project,
+                                capture_output=True, text=True)
+    except OSError:
+        return None
+    match = re.search(r"github\.com[:/]+([^/\s]+)/([^/\s]+?)(?:\.git)?/?$", result.stdout.strip(), re.I)
+    if result.returncode != 0 or not match:
+        return None
+    return "%s/%s" % (match.group(1), match.group(2))
+
+
+def gh_json(project, args):
+    """GitHub's answer as data, or None when it could not be read."""
+    try:
+        result = subprocess.run(["gh"] + args, cwd=project, capture_output=True, text=True, timeout=120)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if result.returncode != 0:
+        return None
+    try:
+        return json.loads(result.stdout)
+    except ValueError:
+        return None
+
+
+def unready_pieces(project):
+    """The open pieces a project founded before /shape and /implement shaped
+    but never labelled `ready`. Read from the project's own GitHub records,
+    never from which skill folders are installed, so every install route and
+    an edited folder are read alike. Empty when GitHub could not be read."""
+    repo = origin_repo(project)
+    if not repo or repo.lower() == KIT_REPO:
+        return []
+    labels = gh_json(project, ["label", "list", "--json", "name", "--limit", "1000"])
+    if not isinstance(labels, list):
+        return []
+    if any(isinstance(l, dict) and l.get("name") == READY[0] for l in labels):
+        return []
+    issues = gh_json(project, ["issue", "list", "--state", "open", "--json", "number,labels,body",
+                               "--limit", "1000"])
+    if not isinstance(issues, list):
+        return []
+    shaped = []
+    for issue in issues:
+        if not isinstance(issue, dict):
+            continue
+        names = {l.get("name") for l in issue.get("labels") or [] if isinstance(l, dict)}
+        if names & set(WAITING) or names & {"parked", READY[0]}:
+            continue
+        if DONE_WHEN.search(issue.get("body") or ""):
+            shaped.append(issue.get("number"))
+    return sorted(n for n in shaped if isinstance(n, int))
+
+
+def ready_findings(project):
+    numbers = unready_pieces(project)
+    if not numbers:
+        return []
+    return [("ready", ",".join(str(n) for n in numbers))]
+
+
+def planfile_findings(project, monthly):
+    if monthly and os.path.isfile(os.path.join(project, "plan.md")):
+        return [("planfile", "plan.md")]
     return []
 
 
@@ -257,7 +331,7 @@ def findings(project):
     templates = template_findings(project)
     found.extend(templates)
     found.extend(fitcheck_findings(project))
-    found = older_findings(found) + found
+    found = ready_findings(project) + found
     # A line another step already names is not a mention as well.
     skip = {f[1] for f in found if f[0] in ("commands", "pointer", "template")}
     # Every line of a command list, its continuation included, belongs to
@@ -280,7 +354,7 @@ def command_list_lines(project):
 
 def informational(finding):
     kind = finding[0]
-    if kind in ("mention", "left", "declined"):
+    if kind in ("mention", "left", "declined", "planfile"):
         return True
     if kind == "commands" and finding[-1].startswith("left as written:"):
         return finding[-1].startswith("left as written: it is a link") or not re.search(
@@ -308,7 +382,7 @@ def founded(project):
 
 
 def listing(project, monthly):
-    found = findings(project)
+    found = findings(project) + planfile_findings(project, monthly)
     declined = set() if monthly else declined_steps(project)
     left = False
     out = []
@@ -322,13 +396,61 @@ def listing(project, monthly):
         out.append(finding)
     for finding in out:
         print("\t".join(finding))
-    for step, sentence in sentences(out, project):
+    for step, sentence in sentences(said_once(out, project, monthly), project):
         print("say\t%s\t%s" % (step, sentence))
     return 1 if left else 0
+
+
+def read_text(path):
+    try:
+        with open(path, encoding="utf-8", errors="replace") as handle:
+            return handle.read()
+    except OSError:
+        return ""
+
+
+def left_words(finding):
+    return "%s, because %s" % (finding[1], finding[2])
+
+
+def said_once(out, project, monthly):
+    """The listing without the `mention` and `left` lines already said.
+
+    Each is named once. The visit's changelog line keeps its sentence, so a
+    line the changelog already holds was named on an earlier visit. Between
+    monthly visits, an offer already made for this version is not repeated."""
+    changelog = read_text(os.path.join(project, "CHANGELOG.md"))
+    offered = False
+    if not monthly:
+        mark = "upgrade-offered|%s" % installed_version()
+        offered = any(line.strip() == mark for line in
+                      read_text(os.path.join(project, MAINTENANCE)).splitlines())
+    kept = []
+    for finding in out:
+        if finding[0] == "mention" and (offered or finding[2] in changelog):
+            continue
+        if finding[0] == "left" and (offered or left_words(finding) in changelog):
+            continue
+        kept.append(finding)
+    return kept
 
 # --- the words the person hears ----------------------------------------------
 
 RETIRED_NAMES = ("fix", "queue", "sync", "ship")
+# The commands renamed before the six, each with the skills that replaced it
+# and the sentence the person hears once.
+RENAMED = (
+    ("build", ("implement",),
+     "The old /build command has become two: /shape turns a new idea into a ready piece, and "
+     "/implement builds one. Nothing you saved is lost; only the command names changed."),
+    ("start", ("setup-ai-build-kit",),
+     "The command that founds a project is now /setup-ai-build-kit, not /start. Founding runs "
+     "once, so nothing you saved changes. A saved command that updates the kit by name uses "
+     "the new name."),
+    ("plan", ("shape",),
+     "/shape is the command that turns an idea into a ready piece. It does everything /plan "
+     "did. A saved note or shortcut that types /plan still needs changing by hand."),
+)
 SIX = ("The kit now has six commands. /fix and /queue are part of /shape and /implement, "
        "/sync is part of /maintain, and /ship is now /setup-hosting. Nothing you built has "
        "changed. A saved note or shortcut that types an old command still needs changing by hand.")
@@ -381,13 +503,21 @@ def sentences(out, project):
         or f[0] == "template"
         or (f[0] == "commands" and not informational(f))
         for f in out)
-    if "older" in by:
-        said.append(("older", "This project was set up before AI Build Kit v0.20, and this release "
-                     "cannot finish the changes made before then. Install %s first, from "
-                     "https://github.com/%s/releases/tag/%s, run /maintain, and then update to "
-                     "the latest release. Nothing you built changes." % (FLOOR, KIT_REPO, FLOOR)))
+    for old, new, words in RENAMED:
+        if any((f[0] in ("installer", "folder") and f[1].rsplit("/", 1)[-1] == old)
+               or (f[0] == "adapter" and os.path.splitext(f[1].rsplit("/", 1)[-1])[0] == old)
+               or (f[0] == "missing" and f[1] in new)
+               or (f[0] == "ready" and old == "build")
+               for f in out):
+            said.append(("renamed", words))
     if retired:
         said.append(("kit", SIX))
+    if "ready" in by:
+        n = len(by["ready"][0][1].split(","))
+        said.append(("ready", "%d %s shaped before the kit had a ready label, so /implement "
+                     "would never build %s. I am marking %s ready now, and changing nothing "
+                     "else on them." % (n, plural(n, "piece was", "pieces were"),
+                                        plural(n, "it", "them"), plural(n, "it", "them"))))
     if "installer" in by:
         names = [f[1] for f in by["installer"]]
         said.append(("installer", "The old skills %s are still installed beside the new ones. The "
@@ -395,8 +525,8 @@ def sentences(out, project):
                      "`npx skills remove %s`. Shall I run it?" % (joined(names), " ".join(names))))
     if "missing" in by:
         names = [f[1] for f in by["missing"]]
-        said.append(("missing", "The update did not bring %s. Running `%s` again adds %s." % (
-            joined(names), SHARED, plural(len(names), "it", "them"))))
+        said.append(("missing", "The update did not bring %s. Running `%s` again adds %s. "
+                     "Shall I run it?" % (joined(names), SHARED, plural(len(names), "it", "them"))))
     removable = [f for f in out if f[0] in ("folder", "adapter", "kitcopy", "hook")]
     if removable:
         n = len(removable)
@@ -428,11 +558,10 @@ def sentences(out, project):
                          plural(n, "points", "point"), pointers[0][2], pointers[0][3])))
     if kept:
         n = len(kept)
-        said.append(("pointers", "%d %s in %s %s left as written, because changing %s would "
-                     "break the line. %s yours to change if you want." % (
-                         n, plural(n, "pointer", "pointers"), files_of(kept),
-                         plural(n, "is", "are"), plural(n, "it", "them"),
-                         plural(n, "It is", "They are"))))
+        said.append(("pointers", "%s left as written: %s. %s yours to change if you want." % (
+            plural(n, "One pointer to a kit file is", "%d pointers to kit files are" % n),
+            "; ".join("%s, because %s" % (f[1], f[-1][len("left as written: "):]) for f in kept),
+            plural(n, "It is", "They are"))))
     if "settings" in by:
         stops = []
         for f in by["settings"]:
@@ -451,19 +580,26 @@ def sentences(out, project):
                      "nothing else."))
     if "fitcheck" in by:
         said.append(("fitcheck", "Your masterplan's build-path section was written when the kit "
-                     "had four build paths. Running the fit check again writes it in today's "
-                     "shape, where the path follows what the work touches. Every accepted risk "
-                     "stays as written. Shall I run it?"))
+                     "had four build paths. It now has three, and the path follows what the "
+                     "work touches rather than who owns the build. I can rewrite the section "
+                     "to the new shape and show it to you above the old one first. Each "
+                     "accepted risk is copied word for word, and nothing else in the "
+                     "masterplan changes. Shall I?"))
     if "mention" in by:
         n = len(by["mention"])
         said.append(("mention", "%s still %s an old command in your own words: %s. %s yours to "
                      "change, and I leave %s as written." % (
                          plural(n, "This line", "These lines"), plural(n, "names", "name"),
-                         joined(f[1] for f in by["mention"]), plural(n, "It is", "They are"),
-                         plural(n, "it", "them"))))
+                         "; ".join('%s, "%s"' % (f[1], f[2]) for f in by["mention"]),
+                         plural(n, "It is", "They are"), plural(n, "it", "them"))))
     if "left" in by:
         said.append(("left", "These stay as they are: %s." % "; ".join(
-            "%s, because %s" % (f[1], f[2]) for f in by["left"])))
+            left_words(f) for f in by["left"])))
+    if "planfile" in by:
+        said.append(("planfile", "This project still keeps pieces in plan.md, which nothing reads "
+                     "any more, so they are not picked up until they move into issues. I can "
+                     "open one issue for each row and remove plan.md once they are all there. "
+                     "Shall I? If you say no, I ask again on the next monthly visit."))
     for f in by.get("declined", []):
         if f[1] == "settings":
             words = ("You said no to the newer safety rules. I offer them again only when a "
@@ -480,7 +616,7 @@ STEP_WORDS = {
     "installer": "the old skills installed", "missing": "the missing skills out",
     "remove": "the older kit files in place", "commands": "the command list as it is",
     "pointers": "the old pointers as they are", "template": "the masterplan sentence as it is",
-    "fitcheck": "the build-path section as it is", "older": "the update through v0.20.3",
+    "fitcheck": "the build-path section as it is",
 }
 
 HELPER_WORDS = (
@@ -514,6 +650,49 @@ def apply_template(project):
     return 0
 
 
+def apply_ready(project):
+    """Label `ready` every open piece shaped before the kit had that label.
+
+    It reads the pieces again rather than trusting an earlier listing, creates
+    the label as founding does, and adds it to each piece. A piece that waits
+    on a question, or is parked, is left for /shape. Once the label exists the
+    listing finds nothing, so a second run changes nothing."""
+    numbers = unready_pieces(project)
+    if not numbers:
+        return 0
+    try:
+        made = subprocess.run(["gh", "label", "create", READY[0], "--color", READY[1],
+                               "--description", READY[2], "--force"],
+                              cwd=project, capture_output=True, text=True)
+    except OSError:
+        print("upgrade-check.py: the GitHub command line tool is not installed", file=sys.stderr)
+        return 2
+    if made.returncode != 0:
+        print("upgrade-check.py: GitHub refused the ready label: %s" % made.stderr.strip(),
+              file=sys.stderr)
+        return 1
+    marked, failed = [], []
+    for number in numbers:
+        result = subprocess.run(["gh", "issue", "edit", str(number), "--add-label", READY[0]],
+                                cwd=project, capture_output=True, text=True)
+        (marked if result.returncode == 0 else failed).append(str(number))
+    for number in marked:
+        print("ready\t%s\tmarked" % number)
+    for number in failed:
+        print("ready\t%s\tnot marked" % number)
+    n = len(marked)
+    if n:
+        print("say\tready\tI have marked %d %s ready, so /implement builds %s. Your backlog is "
+              "all still there." % (n, plural(n, "piece", "pieces"), plural(n, "it", "them")))
+    if failed:
+        print("say\tready\tGitHub did not take the ready label on %s, so %s still %s. The next "
+              "visit tries again." % (joined("#" + f for f in failed),
+                                      plural(len(failed), "that piece", "those pieces"),
+                                      plural(len(failed), "waits", "wait")))
+        return 1
+    return 0
+
+
 def apply(project, step):
     if step == "helper":
         if not os.path.isfile(PLACE_HELPER):
@@ -529,6 +708,8 @@ def apply(project, step):
                     print("say\thelper\t%s" % sentence)
                     break
         return result.returncode
+    if step == "ready":
+        return apply_ready(project)
     if step == "remove":
         return subprocess.run(python(LEFTOVERS, "--remove", project)).returncode
     if step == "commands":
@@ -576,7 +757,10 @@ SHARED = "npx skills add %s" % KIT_REPO
 VERSION_FILE = os.path.join(os.path.dirname(HERE), "VERSION")
 
 
-def held_version():
+def installed_version():
+    """The version of the kit installed beside this script. The monthly part
+    asks for it before it updates anything, so it is the version the project
+    holds at that moment."""
     try:
         with open(VERSION_FILE, encoding="utf-8") as handle:
             return handle.read().strip() or "unknown"
@@ -584,19 +768,25 @@ def held_version():
         return "unknown"
 
 
-def below_floor(version):
-    match = re.match(r"v?(\d+)\.(\d+)\.", version)
-    return bool(match) and (int(match.group(1)), int(match.group(2))) < FLOOR_MINOR
+def version_key(version):
+    """A version as numbers, so v0.10.0 sorts after v0.9.0. A preview sorts
+    before the release of the same number. None when it is not a version."""
+    match = re.fullmatch(r"v?(\d+)\.(\d+)\.(\d+)(-[0-9A-Za-z.-]+)?", version.strip())
+    if not match:
+        return None
+    return (int(match.group(1)), int(match.group(2)), int(match.group(3)),
+            0 if match.group(4) else 1)
 
 
 def latest():
     """Print what this project holds and the latest published release.
 
     Only `releases/latest` is asked: it is the one endpoint that cannot answer
-    with a draft or a prerelease. Exit 0 when they match, 1 when a newer one is
-    published, 3 when the latest could not be read.
+    with a draft or a prerelease. Exit 0 when they match or the project is
+    ahead, 1 when a newer one is published, 3 when the latest could not be
+    read.
     """
-    held = held_version()
+    held = installed_version()
     print("holds\t%s" % held)
     unknown = ("say\tversion\tThe version check did not happen, because %s. I cannot say whether "
                "this project is up to date.")
@@ -615,21 +805,20 @@ def latest():
         return 3
     print("latest\t%s" % tag)
     both = "This project holds %s, and the latest published AI Build Kit is %s." % (held, tag)
-    if below_floor(held):
-        print("first\t%s\tthis project holds a release older than v0.20, so it installs %s "
-              "first, runs /maintain, and then updates to the latest" % (FLOOR, FLOOR))
-    if tag.lstrip("v") == held.lstrip("v"):
+    mine, theirs = version_key(held), version_key(tag)
+    if mine is not None and mine == theirs:
         print("compare\tsame")
         print("say\tversion\t%s It is on the latest release." % both)
         return 0
-    print("compare\tdifferent")
+    if mine is not None and mine > theirs:
+        print("compare\tahead")
+        print("say\tversion\t%s This project is ahead of the latest release, so there is "
+              "nothing newer to install." % both)
+        return 0
+    print("compare\t%s" % ("newer" if mine is not None else "different"))
     print("say\tversion\t%s A newer AI Build Kit is available. It refreshes the installed "
           "workflow skills. Your tool, project records and project instructions remain yours."
           % both)
-    if below_floor(held):
-        print("say\tolder\tThis project holds a release older than v0.20. Install %s first, "
-              "from https://github.com/%s/releases/tag/%s, run /maintain, and then update to "
-              "the latest release." % (FLOOR, KIT_REPO, FLOOR))
     return 1
 
 
@@ -759,7 +948,7 @@ def main(argv):
     try:
         if apply_step:
             if apply_step not in APPLIABLE:
-                if apply_step in ("installer", "missing", "fitcheck", "older"):
+                if apply_step in ("installer", "missing", "fitcheck"):
                     return usage("that step is not run from here: its say line says who carries it out")
                 return usage("unknown step %s" % apply_step)
             return apply(project, apply_step)

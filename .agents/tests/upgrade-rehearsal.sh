@@ -3,6 +3,9 @@
 # install routes, with the shipped upgrade-check.py and kit-leftovers.py. If
 # this breaks, an update can overwrite a person's own guidance, settings or
 # changelog, leave retired commands installed, or mark a blocked repair ready.
+# It also covers a project from before the ready label, whose pieces
+# /implement would never build, the renames said to the person, and lines
+# named once rather than on every visit.
 set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 work=$(mktemp -d)
@@ -275,31 +278,149 @@ apply(source,p,'remove')
 assert (p/'.ai-build-kit-version').is_symlink() and outside_marker.read_text()=='v0.10.0\n'
 print('  ok: sentence list stays unfinished until an agent edit or a recorded no')
 
-# A project set up before v0.20 is sent to that release first, and a
-# masterplan with the four-path fields is offered the fit check again.
-p=work/'before-twenty'; p.mkdir()
+# A project founded while the kit had one /build command, installed through a
+# plugin so no skill folder sits in the project, and with no `build` skill
+# left anywhere. Its issues never had a `ready` label, so /implement would
+# build none of them. The check reads that from GitHub and labels the shaped
+# pieces, whatever the install route, and leaves the rest for /shape.
+p=work/'before-ready'; p.mkdir()
 copy(fixture/'masterplan.md.txt',p/'masterplan.md')
 with (p/'masterplan.md').open('a') as f:
     f.write('\nPath: Professional-led\nOutside help: review, for client records\n')
-put(p/'skills-lock.json',json.dumps({'version':1,'skills':{n:{'source':'gwpicard/ai-build-kit'} for n in eleven+['build']}}))
-shutil.copytree(source,p/'.agents/skills')
-put(p/'.agents/skills/build/SKILL.md','---\nname: build\n---\n')
-placed=run([sys.executable,source/'maintain/scripts/upgrade-check.py','--apply','helper',p])
-assert 'say\thelper\t' in placed,placed
-listed=check(source,p,1)
+plugin=work/'old-plugin/skills'; shutil.copytree(source,plugin)
+run(['git','init','-q','-b','main'],p)
+run(['git','remote','add','origin','https://github.com/club/tool.git'],p)
+state=work/'gh-state.json'
+def issue(number,labels,body):
+    return {'number':number,'labels':[{'name':n} for n in labels],'body':body}
+state.write_text(json.dumps({'labels':['visual','data'],'calls':[],'issues':[
+    issue(1,['visual'],'## Problem\nSlow.\n\n## Done when\nIt loads in a second.'),
+    issue(2,['needs-clarification'],'## Done when\nUnclear.'),
+    issue(3,['parked'],'## Done when\nLater.'),
+    issue(4,[],'Just an idea.'),
+    issue(5,[],'## Done when\nThe list prints.')]}))
+fakegh=work/'ready-bin/gh'
+put(fakegh, '''#!/usr/bin/env python3
+import json, os, sys
+path=os.environ['GH_STATE']; s=json.load(open(path)); a=sys.argv[1:]
+s['calls'].append(' '.join(a))
+if os.environ.get('GH_DOWN'):
+    json.dump(s,open(path,'w')); sys.exit(1)
+if a[:2]==['label','list']:
+    print(json.dumps([{'name':n} for n in s['labels']]))
+elif a[:2]==['label','create']:
+    s['labels'].append(a[2])
+elif a[:2]==['issue','list']:
+    print(json.dumps(s['issues']))
+elif a[:2]==['issue','edit'] and a[3]=='--add-label':
+    assert a[4] in s['labels'], 'GitHub refuses a label that does not exist'
+    for i in s['issues']:
+        if i['number']==int(a[2]): i['labels'].append({'name':a[4]})
+else:
+    sys.exit(1)
+json.dump(s,open(path,'w'))
+'''); fakegh.chmod(0o755)
+oldpath=os.environ['PATH']
+os.environ['PATH']=str(fakegh.parent)+os.pathsep+oldpath
+os.environ['GH_STATE']=str(state)
+listed=check(plugin,p,1)
 lines=listed.splitlines()
-assert lines[0].startswith('older\tv0.20.3\t'),listed
-assert any(l.startswith('fitcheck\tmasterplan.md:') for l in lines),listed
-said={l.split('\t')[1] for l in lines if l.startswith('say\t')}
-assert {'older','fitcheck','installer'} <= said,listed
-for step in ('older','fitcheck'):
-    run([sys.executable,source/'maintain/scripts/upgrade-check.py','--apply',step,p],code=2)
-run([sys.executable,source/'maintain/scripts/upgrade-check.py','--decline','fitcheck',p])
-assert 'declined\tfitcheck\tfitcheck\t' in check(source,p,1)
-data=json.loads((p/'skills-lock.json').read_text()); del data['skills']['build']
-put(p/'skills-lock.json',json.dumps(data)); shutil.rmtree(p/'.agents/skills/build')
-assert not any(l.startswith('older\t') for l in check(source,p,1).splitlines())
-print('  ok: a project from before v0.20 is sent there first, and old build-path fields go to the fit check')
+assert lines[0]=='ready\t1,5',listed
+said=[l.split('\t',2) for l in lines if l.startswith('say\t')]
+assert any(k=='renamed' and '/build' in w and '/implement' in w for _,k,w in said),listed
+assert any(k=='ready' and '2 pieces' in w for _,k,w in said),listed
+# A step the person need not be asked about is not one they can decline.
+run([sys.executable,plugin/'maintain/scripts/upgrade-check.py','--decline','ready',p],code=2)
+applied=run([sys.executable,plugin/'maintain/scripts/upgrade-check.py','--apply','ready',p])
+assert 'say\tready\tI have marked 2 pieces ready' in applied,applied
+data=json.loads(state.read_text())
+marked={i['number'] for i in data['issues'] if {'name':'ready'} in i['labels']}
+assert marked=={1,5},data
+assert 'ready' in data['labels'],data
+again=check(plugin,p,1)  # the four-path fields are still there
+assert not any(l.startswith(('ready\t','say\tready','say\trenamed')) for l in again.splitlines()),again
+before=state.read_text()
+run([sys.executable,plugin/'maintain/scripts/upgrade-check.py','--apply','ready',p])
+assert json.loads(state.read_text())['issues']==json.loads(before)['issues']
+# GitHub out of reach is not a finding and does not stop the check.
+os.environ['GH_DOWN']='1'
+assert not any(l.startswith('ready\t') for l in check(plugin,p,1).splitlines())
+del os.environ['GH_DOWN']
+# The kit's own repository is never asked.
+calls=len(json.loads(state.read_text())['calls'])
+run(['git','remote','set-url','origin','git@github.com:gwpicard/ai-build-kit.git'],p)
+check(plugin,p,1)
+assert len(json.loads(state.read_text())['calls'])==calls
+os.environ['PATH']=oldpath
+print('  ok: pieces shaped before the ready label are marked ready on any install route')
+
+# The old build-path fields get the rewrite in four-paths.md, which keeps
+# every accepted risk word for word, and the offer can be declined.
+assert any(l.startswith('fitcheck\tmasterplan.md:') for l in again.splitlines()),again
+fit=[w for _,k,w in (l.split('\t',2) for l in again.splitlines() if l.startswith('say\t')) if k=='fitcheck']
+assert fit and 'word for word' in fit[0] and 'above the old one' in fit[0],again
+# The rewrite's rules are in a reference the skill points at; it has to open.
+assert 'references/four-paths.md' in (source/'maintain/SKILL.md').read_text()
+assert (source/'maintain/references/four-paths.md').is_file()
+run([sys.executable,plugin/'maintain/scripts/upgrade-check.py','--apply','fitcheck',p],code=2)
+run([sys.executable,plugin/'maintain/scripts/upgrade-check.py','--decline','fitcheck',p])
+assert 'declined\tfitcheck\tfitcheck\t' in check(plugin,p,1)
+print('  ok: old build-path fields are offered the rewrite, which keeps accepted risks')
+
+# The renames before the six commands are said to the person, once each,
+# and a missing skill is offered with a question.
+p=work/'renamed'; p.mkdir()
+copy(fixture/'masterplan.md.txt',p/'masterplan.md')
+put(p/'skills-lock.json',json.dumps({'version':1,'skills':{n:{'source':'gwpicard/ai-build-kit'}
+    for n in [n for n in eleven if n!='shape']+['start','build']}}))
+shutil.copytree(source,p/'.agents/skills'); shutil.rmtree(p/'.agents/skills/shape')
+for name in ('start','build'):
+    put(p/'.agents/skills'/name/'SKILL.md','---\nname: '+name+'\n---\n')
+listed=check(source,p,1)
+said=[l.split('\t',2)[1:] for l in listed.splitlines() if l.startswith('say\t')]
+words=' '.join(w for k,w in said if k=='renamed')
+assert '/setup-ai-build-kit, not /start' in words,listed
+assert 'everything /plan did' in words,listed       # shape is missing
+assert '/build command has become two' in words,listed
+assert sum(1 for k,_ in said if k=='renamed')==3,listed
+assert any(k=='missing' and 'Shall I run it?' in w for k,w in said),listed
+print('  ok: the /build, /start and /plan renames and a missing skill are said')
+
+# A line of the person's own naming an old command, and something left as it
+# is, are said once: the changelog keeps the sentence, and between monthly
+# visits the recorded offer covers them.
+p=work/'said-once'; p.mkdir()
+copy(source/'setup-ai-build-kit/templates/masterplan.md',p/'masterplan.md')
+copy(source/'setup-ai-build-kit/templates/foundation/plan-refresh.sh',p/'.agents/tools/plan-refresh.sh')
+apply(source,p,'helper')
+with (p/'masterplan.md').open('a') as f: f.write('\nWe run /ship before the club night.\n')
+put(p/'CHANGELOG.md','Launched with /ship.\n')
+(p/'.claude/skills').mkdir(parents=True)
+(p/'.claude/skills/ship').symlink_to(work/'nowhere-ship')
+def sayings(args):
+    out=run([sys.executable,source/'maintain/scripts/upgrade-check.py',*args,p])
+    return {l.split('\t',2)[1]:l.split('\t',2)[2] for l in out.splitlines() if l.startswith('say\t')}
+first=sayings([])
+assert {'mention','left'} <= set(first),first
+assert 'We run /ship before the club night.' in first['mention'],first
+version=(source/'maintain/VERSION').read_text().strip()
+put(p/'.ai-build-kit-maintenance','upgrade-offered|'+version+'\n')
+assert not {'mention','left'} & set(sayings([])),'repeated between monthly visits'
+assert {'mention','left'} <= set(sayings(['--monthly']))
+with (p/'CHANGELOG.md').open('a') as f:
+    f.write('2026-10-13: '+first['mention']+' '+first['left']+'\n')
+assert not {'mention','left'} & set(sayings(['--monthly'])),'repeated after the changelog named them'
+print('  ok: a line already named is not named again')
+
+# A pointer left in a file that is not readable text is given that reason,
+# not the one for a pointer inside a command.
+p=work/'unreadable'; p.mkdir()
+copy(source/'setup-ai-build-kit/templates/masterplan.md',p/'masterplan.md')
+(p/'AGENTS.md').write_bytes(b'ok\n\xff\xfe not text\n')
+pointers=[w for k,w in ((l.split('\t',2)[1],l.split('\t',2)[2]) for l in check(source,p,1).splitlines()
+          if l.startswith('say\t')) if k=='pointers']
+assert pointers and 'not readable text' in pointers[0] and 'break the line' not in pointers[0],pointers
+print('  ok: a pointer left in an unreadable file says why')
 
 # The record rewrite tools must not follow linked project documents.
 p=work/'linked-records'; p.mkdir(); outside=work/'outside-records'; outside.mkdir()
