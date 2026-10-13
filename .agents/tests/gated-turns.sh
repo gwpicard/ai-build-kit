@@ -971,7 +971,7 @@ for c in 05 08; do
     || bad "case $c still accepts a risk on turn count alone"
 done
 
-for c in 31 47; do
+for c in 31; do
   f="$ROOT/.agents/tests/replay/cases/$c.txt"
   grep -q '^# when: ' "$f" \
     && bad "case $c gained a precondition it does not need" \

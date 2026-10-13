@@ -367,19 +367,20 @@ What the agent may not do is take the notice back. Pushing back on the cost, the
 
 **Explore privately.** /setup-hosting runs no production evidence or launch procedure; it only confirms the prototype stays disposable and private, and records what would have to change to graduate.
 
-**Build and run it.** /setup-hosting runs the full evidence run, independent review, operational readiness, and the live transition. Off a recipe, readiness is a general list: a backup, a restored-backup rehearsal, a manual fallback, rollback, and a single caution if nobody receives alerts. Anything missing from it is a warning you hear once and find in the changelog, and the launch goes ahead.
+**Build and run it.** /setup-hosting runs the full evidence run, independent review, operational readiness, and the live transition. Off a recipe, the kit cannot check the launch steps: it names each of the eight it could not check, once, as a warning in the changelog, and the launch goes ahead.
 
 **Build with care.** /setup-hosting takes live everything outside a named sensitive area, does the caution it can do itself (a backup restored once, a rehearsal on a copy), and at a caution that is a person who has not looked, gives you the risk notice once. If you carry on, your acceptance is written down and that area goes live too. Where somebody outside the team is going to look, ask for the handover and /maintain prepares it.
 
-On a recipe, the recipe's own checks take the place of that list. /setup-hosting reads
-the recipe your project's AGENTS.md names and works through its eight sections
-in order, and each one gives you a plain line: preview up, live address updated,
+On a recipe, /setup-hosting reads the recipe your project's AGENTS.md names, and
+a script runs its eight checks in order. Each one gives you a plain line, in
+the same words every time: preview up, live address updated,
 rollback possible, backup present, restore works, no secret in the repo, logs
 readable, health answers. The rollback line says a rollback is possible and
 was not tried, because the kit does not roll back the live tool just to check.
 
 The kit runs the checks it can reach. Where a check runs on a server the kit
-cannot reach, you paste the result back and the kit reads it. Where only a
+cannot reach, it asks you in fixed words to paste the result back, and a
+script reads what you paste. Where only a
 person can judge, you look and the kit writes down what you said. A check that
 fails or cannot run is a warning, said once and written in the changelog, and
 the launch goes ahead. The one thing a first launch waits for is its address,
@@ -449,10 +450,10 @@ when it breaks, that is a service somebody runs and pays for, and the kit does
 not set one up." If the fit check already names who receives alerts, it does
 not repeat this caution. Explore privately gets neither check nor caution.
 
-When the tool will run on a server somebody else runs, the first launch needs
-an address, and the kit never contacts that server. So /setup-hosting writes a hosting
-request into the masterplan's "How it stays running" section and prints it for
-you.
+When the tool will run on a server somebody else runs, as on the Coolify
+recipe, the first launch needs an address, and the kit never contacts that
+server. So /setup-hosting writes a hosting request into the masterplan's "How
+it stays running" section and prints it for you.
 
 It names the repository and branch, the lane (private network or
 internet), the port, the names of the settings the tool needs, the folders that
@@ -480,7 +481,7 @@ Keys and passwords never go in a file Git tracks. On this computer they live
 in files Git ignores, such as `.env`, and the live values sit in the host's own
 settings, entered by name.
 
-After the first launch, a later /setup-hosting compares the live copy with `main` and tells you each gap in one plain line: whether the live copy runs the latest merge, whether a database change has not been applied, whether a secret or setting is missing on the host, whether health answers, and whether the backup works.
+After the first launch, a later /setup-hosting compares the live copy with `main` and tells you each gap in one plain line: whether the live copy runs the latest merge, whether it is held on an earlier version since a rollback, whether a database change has not been applied, whether a secret or setting is missing on the host, and whether health answers. It then runs the recipe's checks again, the backup and the restore included.
 
 It repairs each gap only after a yes that names it. It rechecks the build path first if reliance or consequence has grown. A warning the changelog already holds comes back as one line pointing to it, so anything given in full is new. Every later run leaves one dated entry in the changelog, even when it finds nothing to repair, with its rollback line, such as "Rollback possible, not tried". That entry arrives as a records pull request with its own merge question, and where your host builds every change, that merge is one more build. Moving to another host or recipe is a later run too: the old live copy keeps serving until the new one answers.
 
@@ -495,8 +496,9 @@ proved the preview, launch, rollback, secrets, logs and health steps on a live
 deployment. The backup and restore steps are shared and were run for real once.
 The recipe for your own server was tried on a private network and on the public
 internet. Its preview for an app without a domain ran on the server but had no
-address the person could open. Read the recipes' trial records through the
-[README's recipe links](README.md#going-live) for the results and their limits.
+address the person could open. Each recipe's trial record, with the results
+and their limits, is the `PROVEN.md` in its folder, which the
+[README's recipe links](README.md#going-live) lead to.
 
 The kit runs a rollback itself where the recipe provides a command. Otherwise
 you use the host's page and paste back the result. The host may keep only the

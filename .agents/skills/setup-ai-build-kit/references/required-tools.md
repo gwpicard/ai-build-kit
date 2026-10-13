@@ -16,7 +16,7 @@ to build a release lives in the maintainer source and never reaches a project.
 
 A project on a recipe needs a few more tools, but only at launch. Each recipe
 names the command-line tools its launch checks run, on its `Command-line tools:`
-line. `check-tooling.sh --recipe <recipe file>` adds one line for each: ready,
+line. `check-tooling.sh --recipe <recipe folder>` adds one line for each: ready,
 or missing and needed before the first `/setup-hosting`. A missing one never stops
 founding, because a project that uses no recipe needs none of them.
 

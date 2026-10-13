@@ -175,9 +175,9 @@ APPLIABLE = ("helper", "ready", "remove", "commands", "pointers", "settings", "t
              "recipe")
 
 # A project founded before recipes became folders names its recipe by its file,
-# as in `Recipe: nextjs-supabase-on-vercel.md`. The kit reads that as the
-# folder of the same name, so nothing waits on it, but the record says the
-# folder now. The line may sit in a list item, in bold or in code quotes.
+# as in `Recipe: <name>.md`. The kit reads that as the folder of the same
+# name, so nothing waits on it, but the record says the folder now. The line
+# may sit in a list item, in bold or in code quotes.
 RECIPE_LINE = re.compile(r"^(\s*(?:[-*]\s+)?`?(?:\*\*)?Recipe:(?:\*\*)?\s*`?)([A-Za-z0-9_-]+)\.md(`?\s*)$")
 RECIPES = os.path.join(INSTALLED, "setup-hosting", "recipes")
 

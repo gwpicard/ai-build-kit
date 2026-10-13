@@ -152,11 +152,12 @@ A recipe pairs the tools used to build an app with a place to run it. The kit
 has run these two recipes for real; both use Next.js, TypeScript and hosted
 Supabase for data and sign-in:
 
-- [On Vercel](.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel.md), for a team without its own server. The kit runs most launch checks itself.
-- [On your server with Coolify](.agents/skills/setup-hosting/recipes/nextjs-supabase-on-coolify.md), for a team that runs or rents a server. Whoever runs it performs the server checks and sends back the results.
+- [On Vercel](.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/recipe.md), for a team without its own server. The kit runs most launch checks itself.
+- [On your server with Coolify](.agents/skills/setup-hosting/recipes/nextjs-supabase-on-coolify/recipe.md), for a team that runs or rents a server. Whoever runs it performs the server checks and sends back the results.
 
-Check each recipe's plan terms before choosing. Any other stack or host works
-with fewer checks and a general launch checklist.
+Each recipe's folder holds the record of its real run, in `PROVEN.md`. Check
+each recipe's plan terms before choosing. Any other stack or host works too,
+but the kit cannot check its launch steps, and says so once for each.
 [Going live in WORKFLOW.md](WORKFLOW.md#9-going-live) covers previews, backups
 and rollback, which means returning to an earlier live version.
 

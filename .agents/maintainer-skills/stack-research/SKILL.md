@@ -20,23 +20,26 @@ ordinary work on a branch, through a pull request.
 
 ## Read the recipes first
 
-Read `.agents/skills/setup-hosting/references/recipe-format.md` before anything else.
+Read `docs/RECIPES.md` before anything else.
 Every proposal is made against that format, so a proposal that breaks it is no
 use.
 
-Then read every recipe in `.agents/skills/setup-hosting/recipes/` and every part in
-`.agents/skills/setup-hosting/recipes/parts/`. For each, note its `Last checked:` date,
-the products it names, and the `How it works:` line of each section. For a
-recipe, note which sections link a shared part rather than carrying their own
-lines, since a change to that part reaches every recipe that links it.
+Then read every recipe folder in `.agents/skills/setup-hosting/recipes/` and
+every part in `.agents/skills/setup-hosting/recipes/parts/`. For each, note its
+`Last checked:` date, the products it names, the `How it works:` line of each
+section, and the commands its scripts run, since a product's command or option
+changing breaks the script. For a recipe, note which sections link a shared
+part rather than carrying their own lines, since a change to that part reaches
+every recipe that links it.
 
 Where the folder holds no recipe yet, say so at the top of the note and carry on
 with the rest of the read. The upstream sources and the default stacks are
 still worth reading, and a new recipe can still be proposed.
 
-Read the kit's hosting request in
-`.agents/skills/setup-hosting/references/hosting-request.md` as well. It is
-the block of fields `/setup-hosting` writes on a first launch for a tool that runs on a
+Read the hosting request in
+`.agents/skills/setup-hosting/recipes/nextjs-supabase-on-coolify/hosting-request.md`
+as well, and the `scripts/hosting-request.sh` beside it. It is the block of
+fields the Coolify recipe prints on a first launch, for a tool that runs on a
 server somebody else runs.
 
 ## Read upstream
@@ -145,8 +148,10 @@ is an answer the maintainer can act on.
 
 ### A change to a How it works line
 
-The format says a change to any section's `How it works:` line, in a recipe or
-in a part it links, needs a new real run before the next release. Say so on
+The format says a change to what any section does, in a recipe, a part it
+links, or a script either names, needs a new real run before the next release.
+A command moved from prose into a script, unchanged and in the same order, does
+not. Say so on
 every proposal that changes one. For a part, name every recipe that links it,
 because each of those needs its own real run. A change to `How it is checked:`
 or `Who runs it:` alone does not need a real run, though the recipe's rehearsal

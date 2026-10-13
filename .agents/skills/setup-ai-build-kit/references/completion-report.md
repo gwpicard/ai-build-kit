@@ -18,7 +18,7 @@ Internal facts recorded for later agents, and what the user hears instead:
 - the online repository holds none of the project's code yet, so the first push waits for a yes -> "The code stays on this computer until your first build asks you before putting it online."
 - the pieces were opened as issues -> "The build steps are listed as issues in the project's online repository, [owner/name], which is [private or public]."
 - the label set and the branch setting -> "GitHub's default labels were replaced with the kit's own, and a piece's branch is removed once it merges."
-- `Recipe: <file name>.md` in AGENTS.md -> "The tool will run on [the recipe's name, from its file], and the kit can check its launch steps."
+- `Recipe: <folder name>` in AGENTS.md -> "The tool will run on [the recipe's name, from its recipe.md], and the kit can check its launch steps."
 - the recipe's tool report, on the same line -> "This computer has the tools those checks use." or "Before the first launch this computer needs [each missing tool, in plain words]; that is on the plan as a setup task."
 - `Recipe: none` in AGENTS.md -> "The tool runs on a stack the kit has no recipe for, so it cannot check the launch steps a recipe would."
 

@@ -28,7 +28,7 @@ it as a flake and move on.
 ./run.sh 5 8                # only these scenarios
 REPEATS=1 ./run.sh 5        # one run, for a quick look
 JOBS=8 ./run.sh             # more at once
-REPLAY_PROVIDER=codex REPEATS=1 ./run.sh 47
+REPLAY_PROVIDER=codex REPEATS=1 ./run.sh 57
 ```
 
 Claude Code is the default provider, so existing commands and recorded

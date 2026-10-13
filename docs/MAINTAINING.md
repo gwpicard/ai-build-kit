@@ -401,13 +401,14 @@ repository in a gate, so none of them runs in somebody's fork, and none of those
 workflows ships.
 
 A service a tool runs on, meaning its hosting, its data or its deploy, is
-named nowhere either, except inside a recipe file under
+named nowhere either, except inside a recipe folder under
 `.agents/skills/setup-hosting/recipes/` and in the README. A recipe pairs a build stack
 with a place to run it, so naming those services is its whole job. A skill that
 needs to know how one behaves reads the project's recipe, which keeps
 every skill the same whichever recipe a project runs on. `validate-kit.sh`
 refuses a hosting, data or deploy product's name in every skill file outside
-`.agents/skills/setup-hosting/recipes/`, which holds the recipes and their shared parts.
+`.agents/skills/setup-hosting/recipes/`, which holds the recipes, their scripts
+and their shared parts.
 Its list of names includes the place each recipe's title names, so a new recipe
 adds its own host. The screen rules' link to Vercel's interface guidelines is
 the one exception, because it names a design guide rather than a place a tool
@@ -417,9 +418,9 @@ their changelogs is its job, and it never ships.
 
 A recipe waiting for its real run sits in `.agents/tests/recipes-awaiting-run/`,
 which ships nowhere, and its rehearsal reads it there. Once the run is recorded
-in its proven section, move the file into `.agents/skills/setup-hosting/recipes/` with
+in its `PROVEN.md`, move the folder into `.agents/skills/setup-hosting/recipes/` with
 `git mv`. The rehearsal finds it on the menu from then on, and fails if a copy
-is left in both places.
+is left in both places. `docs/RECIPES.md` gives the whole format.
 
 ## When a release is cut
 
@@ -691,7 +692,7 @@ wherever `N` appears.
    git status --short
    git pull --ff-only
    git rev-parse --short HEAD
-   .agents/skills/setup-ai-build-kit/scripts/check-tooling.sh --recipe .agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel.md
+   .agents/skills/setup-ai-build-kit/scripts/check-tooling.sh --recipe .agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel
    .agents/tools/build-release.sh v0.0.0-preview.N /private/tmp/abk-preview-N
    ```
 
@@ -726,7 +727,7 @@ wherever `N` appears.
 
    - During the interview, the kit showed the recipe menu, marked one recipe
      as recommended, and said it would use that one unless told otherwise.
-   - `grep '^Recipe:' AGENTS.md` names one recipe file.
+   - `grep '^Recipe:' AGENTS.md` names one recipe folder.
    - `grep founding-menu .ai-build-kit-maintenance` names every recipe on the
      menu.
 
@@ -892,11 +893,10 @@ home and every other mention is a link.
 - `docs/SOURCES.md`: the outside work the kit took ideas from, and what each
   source contributed. It names a borrowed idea in the kit's own vocabulary and
   links to that idea's owner rather than explaining it again.
-- `.agents/skills/setup-hosting/recipes/`: one file for each recipe, and the only place
+- `.agents/skills/setup-hosting/recipes/`: one folder for each recipe, and the only place
   outside the README that names a service a tool runs on. What a recipe must hold, and what
-  proves it, belongs to `.agents/skills/setup-hosting/references/recipe-format.md`. A
-  project records which recipe it runs on in its own AGENTS.md, in the stack
-  section.
+  proves it, belongs to `docs/RECIPES.md`. A project records which recipe it
+  runs on in its own AGENTS.md, in the stack section.
 
 Two concepts carry two names on purpose, on the same reasoning both times: the
 name a person reads is the one that matters, and an internal name is left alone

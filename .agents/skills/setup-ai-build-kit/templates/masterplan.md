@@ -78,7 +78,7 @@ owner, and manual fallback. Do not copy credentials here. Where a secret lives
 outside the project goes here as its location only: a file path, a password
 manager entry's name, or an environment variable's name. Never a value.
 
-Where AGENTS.md names a recipe, that recipe file says how the tool previews,
+Where AGENTS.md names a recipe, that recipe says how the tool previews,
 goes live, rolls back, and is backed up and restored. Link it rather than
 copying it, and write here only what it cannot know, such as who owns billing.
 

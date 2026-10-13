@@ -77,7 +77,7 @@ cat > "$WORK/profile" <<'PROFILE'
   line tool's own sign-in.
 PROFILE
 cat > "$WORK/stack" <<'STACK'
-Recipe: nextjs-supabase-on-vercel.md
+Recipe: nextjs-supabase-on-vercel
 
 - Install `npm ci` (Node 22). Run `npm run dev`, then open
   http://localhost:3000.
@@ -130,7 +130,7 @@ This block is written and re-added by `next dev`. Committing it with your work k
 
 <!-- END:nextjs-agent-rules -->
 NEXTJS
-if ! grep -qF 'Recipe: nextjs-supabase-on-vercel.md' "$founded" || \
+if ! grep -qF 'Recipe: nextjs-supabase-on-vercel' "$founded" || \
    ! grep -qF -- '- Hooks: yes.' "$founded" || \
    ! grep -qF "A sign-up list for the team's weekly football" "$founded" || \
    grep -qF '(Filled in by the setup-ai-build-kit skill:' "$founded"; then

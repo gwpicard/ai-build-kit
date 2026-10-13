@@ -425,23 +425,21 @@ team signs in to, with saved data".
 Then offer the recipe menu. A recipe is one build stack paired with one place
 to run it, which the kit knows well enough to check at launch. The installed
 setup-hosting skill sits beside this skill's folder, however the kit was
-installed, and its `setup-hosting/references/recipe-format.md` says what a
-recipe holds. The menu is the files directly in the `recipes/` folder of the
-installed setup-hosting skill, beside this skill's folder, read now rather
-than remembered. Nothing else is on it:
+installed. The menu is the recipe folders in its `recipes/` folder, each
+holding a `recipe.md`, read now rather than remembered. Nothing else is on it:
 not the `parts/` folder, and not a recipe kept anywhere else while it waits for
-its real run. Read each file's `Fits:` line and keep the ones that fit the
-shape.
+its real run. Read each `recipe.md`'s `Fits:` line and keep the ones that fit
+the shape.
 
 Show the menu with `scripts/recipe-menu.sh` from this installed skill folder.
 It finds the recipes folder beside this skill, so it reads the same menu on
 every installation route.
 
 Pass `--record .ai-build-kit-maintenance`, which writes the menu line
-described below, then the files that fit, or `--none` where none does. Its
-exit code decides the next step. 3 means several fit: it prints what each
-recipe says, so choose one by the rule below and run it again with
-`--recommend <file>`. 4 means a file name it was given is not on the menu:
+described below, then the recipes that fit, by folder name, or `--none`
+where none does. Its exit code decides the next step. 3 means several fit: it
+prints what each recipe says, so choose one by the rule below and run it again
+with `--recommend <recipe>`. 4 means a name it was given is not on the menu:
 correct it and run it again. 0 means it printed the lines to say: put
 them in your reply exactly as printed, before the stand-up begins. The plain
 words below go after the numbered list and before its last sentence, and the
@@ -461,13 +459,13 @@ follows every rule below, as a longer menu does, including the sentence naming
 it the default, and it is shown in a reply before the stand-up begins, never
 only as a choice reported in the completion report. If several fit, recommend
 the one whose `Recommended when:` line best matches what the interview said, or
-the first by file name when none or several match. Show the ones that fit with
+the first by name when none or several match. Show the ones that fit with
 exactly one recommended. For each, say in plain words what it promises: the
 launch steps the kit can check on it, such as preview, rollback, backup and
 restore. Say what running it involves in the same plain words, meaning which
 accounts the person will hold and whether the tool runs on a hosting platform
 or on a server they rent. Never quote a price. Take every product name from the
-recipe file at this moment, and never write one into this skill. Say that they
+recipe at this moment, and never write one into this skill. Say that they
 may bring their own stack instead.
 
 Read each offered recipe's `Plan terms:` line, where it has one. When the
@@ -495,17 +493,17 @@ Whatever the choice, record the menu this step read, so a later monthly visit
 can tell which recipes joined it afterwards. In `.ai-build-kit-maintenance`,
 which step 7 created, add one line, replacing any earlier one without asking,
 since it is kit bookkeeping and not one of the project records step 0 protects:
-`founding-menu|<YYYY-MM-DD>|<menu files, comma separated>`. List every file
-directly in the `recipes/` folder, including the ones that did not fit, each
-written exactly as it sits there with `.md` included. Write this line before
-the first checkpoint, so the save holds it. Do not mention it to the person.
+`founding-menu|<YYYY-MM-DD>|<menu recipes, comma separated>`. List every
+recipe on the menu, including the ones that did not fit, each by its folder
+name. `recipe-menu.sh --record` writes exactly this line. Write it before the
+first checkpoint, so the save holds it. Do not mention it to the person.
 
 Once a recipe is chosen, build on its `Build stack:` line. Record it in
-AGENTS.md's stack section as `Recipe: <file name>.md`, the file name exactly
-as it sits in the folder with `.md` included, so /setup-hosting can open it. Run
-`scripts/check-tooling.sh --recipe <recipe file>` from this installed skill
-folder, passing the chosen file's path inside the setup-hosting skill's `recipes/`
-folder beside it. Run it for every chosen recipe, a menu of one included,
+AGENTS.md's stack section as `Recipe: <folder name>`, the folder's name
+exactly as it sits in `recipes/`, so /setup-hosting can open it. Run
+`scripts/check-tooling.sh --recipe <recipe folder>` from this installed skill
+folder, passing the chosen folder's path inside the setup-hosting skill's
+`recipes/` folder beside it, as `recipe-menu.sh` printed it. Run it for every chosen recipe, a menu of one included,
 before the first checkpoint, and let the completion report's recipe line say
 what it found. A tool it reports missing is needed before the first /setup-hosting,
 not now: name it once, add it to the masterplan as a setup task, and carry on.

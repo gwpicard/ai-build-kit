@@ -1,44 +1,59 @@
-# The recipe format
+# RECIPES.md: the recipe format
 
-A recipe is one build stack paired with one place to run it, which the kit knows
-well enough to check. The shape of the tool picks the stack: a web app with
-sign-in and saved data wants a different one from a static site. The place to
-run it is where the tool lives once people use it. Each pair is its own recipe,
-so a stack that runs in two places is two recipes.
+This is maintainer documentation and never ships. The kit reads recipes at run
+time; it does not read this file. `.agents/tools/check-recipes.sh` enforces the
+shape described here, and the validator runs it on every recipe, every shared
+part and the blank.
 
-Recipes live in `setup-hosting/recipes/`, one file each, named for the pair in lower case
-with hyphens. The folder is the menu: a recipe is offered once its file is there,
-and not before. `setup-hosting/templates/recipe.md` is the blank to copy.
+A recipe is one build stack paired with one place to run it, which the kit
+knows well enough to check. The shape of the tool picks the stack: a web app
+with sign-in and saved data wants a different one from a static site. The
+place to run it is where the tool lives once people use it. Each pair is its
+own recipe, so a stack that runs in two places is two recipes.
 
-## What a recipe holds
+## A recipe is a folder
 
-The file opens with six lines.
+Recipes live in `.agents/skills/setup-hosting/recipes/`, one folder each, named
+for the pair in lower case with hyphens. The folder holds three things:
+
+- `recipe.md`, which the kit reads at run time. It stays short, around 700
+  words, because every word competes for the agent's attention.
+- `scripts/`, one script for each check the kit can run on this computer,
+  each action a section names, and `live-check.sh`.
+- `PROVEN.md`, the record of the real run. The kit never loads it.
+
+The recipes folder is the menu: a folder in it with a `recipe.md` is offered
+once it is there, and not before. `setup-hosting/templates/recipe.md` is the
+blank `recipe.md` to copy.
+
+## What recipe.md holds
+
+It opens with six lines.
 
 - `Fits:` the shape of tool the recipe suits, in words the person would use.
 - `Recommended when:` one plain sentence saying when founding should recommend
   this recipe over another that fits the same shape.
 - `Build stack:` what the tool is built with.
 - `Deploy target:` where it runs once it is live.
-- `Command-line tools:` the tools the recipe's checks run on the person's
+- `Command-line tools:` the tools the recipe's scripts run on the person's
   machine, as command names separated by commas, or `none`. The setup tooling
   check reads this line and reports each one, and a missing one never stops
   founding, because only a project on this recipe needs it.
-- `Last checked:` a date, written YYYY-MM-DD, when somebody last read the recipe
-  against the current documentation of everything it names. The date moves only
-  when somebody did that.
+- `Last checked:` a date, written YYYY-MM-DD, when somebody last read the
+  recipe against the current documentation of everything it names. The date
+  moves only when somebody did that.
 
-A seventh line may follow them. `Plan terms:` says, in one plain sentence, who
-a free or entry plan the recipe relies on is not for, such as personal,
-non-commercial use only, and which plan such a person needs instead. It ends
-with when and where the terms were read, as `(read YYYY-MM-DD at <source
-page>)`, and the source page is the service's own. Terms change without
-notice, and a restriction with no date cannot be told from a current one. The
-line never quotes a price. Founding reads it when it offers the recipe, and
-says it only to a person it applies to. A recipe whose plans carry no such
-limit leaves the line out.
+A seventh line may follow. `Plan terms:` says, in one plain sentence, who a
+free or entry plan the recipe relies on is not for, and which plan such a
+person needs instead. It ends with when and where the terms were read, as
+`(read YYYY-MM-DD at <source page>)`, from the service's own page. Terms change
+without notice, and a restriction with no date cannot be told from a current
+one. The line never quotes a price. Founding reads it when it offers the
+recipe, and says it only to a person it applies to.
 
 Then comes one section for each of the eight things a live tool needs, in this
-order: preview, going live, rollback, backup, restore, secrets, logs and health.
+order: preview, going live, rollback, backup, restore, secrets, logs and
+health.
 
 - Preview is how a change is seen somewhere safe before it goes live.
 - Going live is how a checked change reaches the live address.
@@ -49,87 +64,106 @@ order: preview, going live, rollback, backup, restore, secrets, logs and health.
 - Logs is where the tool's record of requests and errors is read.
 - Health is how anyone knows the live tool is up.
 
-Each section carries three lines. `How it works:` says what happens on this
-pair, in the order it happens. `How it is checked:` says how anyone would know
-it worked: the command or check and what a pass looks like, or what a person
-looks at. `Who runs it:` says who runs that check, and takes one of three
-values.
+Each section carries four lines, and a fifth where the kit does not run the
+check itself.
 
-- `the kit` when the kit runs the check itself, from the project.
-- `a companion or the person, result read back` when the check runs somewhere
-  the kit cannot reach, such as a server it never contacts, and the result is
-  pasted back for the kit to read.
-- `a person looking` when no machine can judge it.
+- `How it works:` what happens on this pair, in the order it happens, naming
+  the scripts that act, such as one that connects the host or applies
+  migrations.
+- `How it is checked:` what a pass means, in plain words.
+- `Script:` the check, as `scripts/<name>.sh`, read from the folder of the file
+  it is written in.
+- `Who runs it:` one of three values. `the kit` when the kit runs the check
+  itself. `a companion or the person, result read back` when the check needs
+  somewhere the kit cannot reach, and the script reads what is pasted back. `a
+  person looking` when no machine can judge the result; the script reads
+  whatever a machine can, and the person's answer decides.
+- `Ask:` the fixed words the person hears, for a section the kit does not run.
+  The runner prints them, so every launch asks the same way.
 
 A section with no check is not finished. Saying the service handles it tells
-nobody how they would find out that it did not. A person looking is a full
-answer wherever no machine can judge the result.
+nobody how they would find out that it did not.
+
+## Scripts
+
+Every script runs from the project's folder and decides by its exit code: 0 a
+pass, 1 a fail, 2 could not run, such as a missing tool or an unknown location.
+Its last line is one plain sentence saying what it found, and that sentence is
+what the person hears. A script never prints a secret. A password is read
+inside the script from the location the masterplan records.
+
+A check whose result is pasted back takes `--pasted <file>` and reads it.
+Where the paste has a fixed shape, such as a health answer or a list of names,
+the script reads that shape, so the kit never judges it by eye.
+
+`live-check.sh` makes the five reads a later `/setup-hosting` run and every
+`/maintain` visit make: the live copy against `main`, a hold since a rollback,
+a migration not applied, setting names on the host, and health. It changes
+nothing. Exit 0 means no gap, 1 a gap, and 2 that a read could not be made.
+
+`setup-hosting/scripts/run-recipe.sh` runs a recipe's eight checks in its
+order, prints one line for each, and writes the run's dated changelog entry. A
+warning the changelog already holds comes back as a pointer. Off a recipe it
+lists the eight section names as warnings and nothing more.
 
 ## Shared parts
 
 Two recipes often share a half. A stack deployed in two places keeps the same
 data service, so its backup and restore read the same in both. Such a section
-is written once, as a part in `setup-hosting/recipes/parts/`, and a recipe links it in
-place of writing the section out, with one line: `Shared part:` followed by a
-Markdown link to the part's file. A part holds the same three lines a
-section would. The parts folder is not a menu entry, and nothing that reads the
-menu treats it as one.
+is written once, as a part in `recipes/parts/`, and a recipe links it in place
+of writing the section out, with one line: `Shared part:` followed by a
+Markdown link to `../parts/<file>.md`. A part holds the lines a section would,
+and its script sits in `recipes/parts/scripts/`. Scripts several recipes use,
+such as the migration read, sit there too, beside `check-lib.sh`, which they
+all share. The parts folder holds no `recipe.md`, so nothing reads it as a
+menu entry.
 
 ## Settings the kit can read
 
-A recipe may carry one more section, `## Settings the kit can read`, between
-health and the proven section. It says which settings of the services the tool
-runs on the kit can read for itself, and how, so the launch review reads them
-rather than asking the person to look them up. Such a read uses only a key the
-project already sends to the browser. A setting that needs a secret key to read
-does not belong here, and the section says what the kit cannot read and why.
-The section carries the same three lines as the others, or a `Shared part:`
-link. It is not one of the eight, and /setup-hosting gives it no line of its own. A
-recipe that carries it gives it an outcome line in its proven section, starting
-`Settings the kit can read:`, like each of the eight. A shared part proven in
-another recipe's real run may say so there instead.
+A recipe may carry one more section, `## Settings the kit can read`, after
+health. It names the script that reads settings of the services the tool runs
+on with a key the project already sends to the browser, so the launch review
+reads them rather than asking the person. It carries the same lines as the
+others, or a `Shared part:` link. It is not one of the eight, and the runner
+gives it no line. `PROVEN.md` gives it an outcome line like each of the eight.
 
 ## What proven means
 
-A recipe joins the menu only when two things are true. Offline rehearsals guard
-its rules: a maintainer check names the recipe file and fails when a rule goes
-missing. And one real deploy has been run from an empty project to a live
-address and through all eight sections, with the maintainer's approval and
-accounts, and written down. A shared part proven once, in another recipe's real
-run, counts for every recipe that links it. The outcome line for that section
-says so and names the run it comes from.
+A recipe joins the menu only when two things are true. A rehearsal named
+`.agents/tests/recipe-<name>.sh` runs every script it names against stand-ins
+for its tools, to a pass and to something else, and then runs the whole recipe
+through the runner. And one real deploy has been run from an empty project to
+a live address and through all eight sections, with the maintainer's approval
+and accounts, and written down. A shared part proven once, in another recipe's
+real run, counts for every recipe that links it, and its outcome line says so.
 
-The record lives in the recipe's own proven section, so it travels with the
-recipe and anyone can read what was tried. It opens with `Real run:` and the
-date, then gives one outcome line for each of the eight sections, starting with
-the section's name, saying what was done and what came out. A recipe without
-its real run stays out of the folder. There is no draft state, because a draft
-in the folder would be on the menu.
+`PROVEN.md` opens with `Real run:` and the date, then gives one outcome line
+for each of the eight sections, starting with the section's name, saying what
+was done and what came out.
 
-A change to any section's `How it works:` line, in the recipe or in a part it
-links, needs a new real run before the next release. The old record describes a
-recipe that no longer exists.
+A recipe waiting for its real run sits in `.agents/tests/recipes-awaiting-run/`
+as a folder of the same shape, which ships nowhere, and its rehearsal reads it
+there. Its `PROVEN.md` says `Real run: awaiting the first real run`, and the
+shape check must fail on that line alone. Once the run is recorded, move the
+folder into the recipes folder with `git mv`. There is no draft state, because
+a draft on the menu would be offered.
+
+A change to what a section does, in `recipe.md`, a part or a script, needs a
+new real run before the next release. Moving a command from prose into a
+script, unchanged and in the same order, does not.
 
 ## Where product names go
 
-A recipe names the services the person's tool runs on: its hosting, its data
-and its deploy. That is its job, and the README may name them as well. No
-other file in the kit names a service a tool runs on. A skill that needs to know
-how one behaves reads the project's recipe, so the skills read the same
-whichever recipe a project runs on. Tools the kit itself works through, such as
-the coding agent or the issue tracker, are a separate matter and are not
-governed here.
+A recipe folder names the services the person's tool runs on: its hosting,
+its data and its deploy. That is its job, and the README may name them as
+well. No other file in the kit names one. A skill that needs to know how one
+behaves reads the project's recipe, so the skills read the same whichever
+recipe a project runs on.
 
 ## Where a project records its recipe
 
 A project names its recipe in its own AGENTS.md, in the stack section, as
-`Recipe: <file name>.md`, the file name with `.md` included, or `Recipe: none`
-when the person chose their own stack or no recipe fits.
-It does not go in the build-path block. The build path says how carefully the
-work is built and the recipe says what it runs on, and the two change for
-different reasons.
-
-A project on its own stack still works with the kit, with fewer promises. On a
-recipe, each of the eight sections says how it is checked and who runs the
-check. On a stack the kit does not know, it can only name what it could not
-check.
+`Recipe: <folder name>`, or `Recipe: none` when the person chose their own
+stack or no recipe fits. A project founded before recipes became folders
+names the file, `Recipe: <folder name>.md`. The kit reads that as the folder,
+and `/maintain` offers to rewrite the line.
