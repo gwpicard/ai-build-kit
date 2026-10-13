@@ -13,6 +13,14 @@ holds:
     repo         "owner/name"
     visibility   "PRIVATE" or "PUBLIC"
     view_fails   true makes `repo view` fail, as a signed-out tool does
+    default_repo the repository `repo view` names when given none, as gh
+                 picks one from the remotes; absent means `repo`
+    permission   what `repo view --json viewerPermission` answers; ADMIN
+                 when absent
+    api_fails    true makes the API call that creates a branch fail, as it
+                 does for a signed-out tool
+    read_lag     number of `issue view` calls after a label change that still
+                 show the labels from before it, as GitHub's reads can lag
     remote       path of a bare Git repository standing in for GitHub's copy
     labels       names the repository has
     refuse       label names whose deletion is refused
@@ -68,8 +76,13 @@ def main(argv):
     if words == ["repo", "view"]:
         if state.get("view_fails"):
             fail("To get started with GitHub CLI, please run:  gh auth login", 4)
+        named = argv[2] if len(argv) > 2 and not argv[2].startswith("-") else None
+        if named is not None and named.lower() != state["repo"].lower():
+            fail("GraphQL: Could not resolve to a Repository with the name '%s'." % named)
+        repo = state.get("default_repo", state["repo"]) if named is None else state["repo"]
         fields = (flags(argv, "--json") or ["nameWithOwner"])[0].split(",")
-        known = {"nameWithOwner": state["repo"], "visibility": state.get("visibility", "PRIVATE")}
+        known = {"nameWithOwner": repo, "visibility": state.get("visibility", "PRIVATE"),
+                 "viewerPermission": state.get("permission", "ADMIN")}
         print(json.dumps({f: known[f] for f in fields if f in known}))
         return 0
 
@@ -89,8 +102,13 @@ def main(argv):
         issue = state["issues"].get(argv[2])
         if issue is None:
             fail("GraphQL: Could not resolve to an issue with the number of %s." % argv[2])
+        shown = issue.get("labels", [])
+        if issue.get("stale_reads", 0) > 0:
+            issue["stale_reads"] -= 1
+            shown = issue.get("stale", [])
+            save(state)
         print(json.dumps({"body": issue.get("body", ""),
-                          "labels": [{"name": n} for n in issue.get("labels", [])]}))
+                          "labels": [{"name": n} for n in shown]}))
         return 0
 
     if words == ["issue", "edit"]:
@@ -101,6 +119,9 @@ def main(argv):
             state["lag"] -= 1
             save(state)
             return 0
+        if state.get("read_lag") and not issue.get("stale_reads"):
+            issue["stale"] = list(issue["labels"])
+            issue["stale_reads"] = state["read_lag"]
         for value in flags(argv, "--add-label"):
             for name in value.split(","):
                 if name not in state.get("labels", []):
@@ -153,6 +174,8 @@ def main(argv):
             save(state)
             return 0
         if path == "repos/%s/git/refs" % state["repo"]:
+            if state.get("api_fails"):
+                fail("HTTP 401: Bad credentials (https://api.github.com/repos/%s/git/refs)" % state["repo"])
             fields = dict(f.partition("=")[::2] for f in flags(argv, "-f"))
             ref, sha = fields.get("ref", ""), fields.get("sha", "")
             remote = state["remote"]

@@ -94,6 +94,13 @@ Where the repository has branches but none shares history with `main`, push
 nothing. It may hold a first commit GitHub made itself, or other work. Name
 `owner/name`, say it holds something else, and ask the person what to do.
 
+The script names the repository from `origin`, never from the GitHub tool's
+own default. It says `unknown` when the tool is signed out or cannot write
+there, so nothing goes up that could leave a branch online with no `main`.
+State `no-main`, exit 9, means an earlier first upload pushed the branch but
+did not create `main`. Ask for a yes to create it, then run the script with
+`--approved`. It creates `main` and pushes nothing.
+
 Before asking for the first-upload yes, run the installed
 `setup-ai-build-kit` skill's `scripts/workflow-upload-check.py` with python3.
 In Codex, add `--codex`. Exit 1 gives the exact line to say: run

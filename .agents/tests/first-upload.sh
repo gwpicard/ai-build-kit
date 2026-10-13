@@ -49,7 +49,10 @@ setup() {
   git -C "$P" add app.txt
   git -C "$P" commit -q -m "Sign an item out"
   git init -q --bare "$R"
-  git -C "$P" remote add origin "$R"
+  # origin names the GitHub repository, and Git reaches the bare remote next
+  # door in its place, so the name comes from origin as it would for real.
+  git -C "$P" remote add origin https://github.com/someone/kit-log.git
+  git -C "$P" config url."$R".insteadOf https://github.com/someone/kit-log.git
   python3 - "$STANDIN_GH_STATE" "$R" "${1:-PRIVATE}" <<'PY'
 import json, sys
 json.dump({"repo": "someone/kit-log", "visibility": sys.argv[3], "remote": sys.argv[2],
@@ -59,6 +62,14 @@ PY
 }
 run() { (cd "$P" && PATH="$WORK/bin:$PATH" python3 "$SCRIPT" "$@"); }
 heads() { git -C "$R" for-each-ref --format='%(refname:short)' refs/heads/ | tr '\n' ' '; }
+set_state() {
+  python3 - "$STANDIN_GH_STATE" "$1" "$2" <<'PY'
+import json, sys
+state = json.load(open(sys.argv[1]))
+state[sys.argv[2]] = json.loads(sys.argv[3])
+json.dump(state, open(sys.argv[1], "w"))
+PY
+}
 
 echo "== The first upload =="
 setup
@@ -112,7 +123,8 @@ out=$(run --approved) && code=0 || code=$?
   || fail "a repository holding other work returned $code, heads '$(heads)'"
 
 setup
-git -C "$P" remote set-url origin "$WORK/missing.git"
+git -C "$P" config --unset url."$R".insteadOf
+git -C "$P" config url."$WORK/missing.git".insteadOf https://github.com/someone/kit-log.git
 out=$(run --approved 2>&1) && code=0 || code=$?
 [ "$code" -eq 5 ] && printf '%s\n' "$out" | grep -q '^state	unknown' \
   && pass "a remote that cannot be listed is unknown, never an empty repository" \
@@ -145,6 +157,57 @@ out=$(run --approved 2>&1) && code=0 || code=$?
 [ "$code" -eq 2 ] && [ -z "$(heads)" ] \
   && pass "standing on main, nothing is pushed" \
   || fail "an upload from main returned $code, heads '$(heads)'"
+
+echo "== The repository is the one origin names =="
+setup
+set_state default_repo '"upstream/kit-log"'
+out=$(run --approved) && code=0 || code=$?
+printf '%s\n' "$out" | grep -qx 'repository	someone/kit-log' \
+  && grep -q 'repos/someone/kit-log/git/refs' "$STANDIN_GH_LOG" && ! grep -q 'upstream/kit-log' "$STANDIN_GH_LOG" \
+  && pass "the repository comes from origin, not from the tool's own default" \
+  || fail "with another default repository the script named: $out / $(cat "$STANDIN_GH_LOG")"
+
+setup
+git -C "$P" remote set-url origin https://gitlab.com/someone/kit-log.git
+out=$(run --approved 2>&1) && code=0 || code=$?
+[ "$code" -eq 5 ] && [ -z "$(heads)" ] && ! grep -q 'git/refs' "$STANDIN_GH_LOG" \
+  && pass "an origin that is not on GitHub is unknown, and nothing is pushed" \
+  || fail "an origin off GitHub returned $code: $out"
+
+echo "== GitHub is checked before anything is pushed =="
+setup
+set_state view_fails true
+out=$(run --approved 2>&1) && code=0 || code=$?
+[ "$code" -eq 5 ] && [ -z "$(heads)" ] \
+  && pass "a signed-out tool gets nothing pushed, so main is never left uncreated" \
+  || fail "a signed-out tool returned $code with remote heads '$(heads)': $out"
+
+setup
+set_state permission '"READ"'
+out=$(run --approved 2>&1) && code=0 || code=$?
+[ "$code" -eq 5 ] && [ -z "$(heads)" ] \
+  && pass "an account that cannot write to the repository gets nothing pushed" \
+  || fail "a read-only account returned $code with remote heads '$(heads)': $out"
+
+echo "== A branch online but no main =="
+setup
+set_state api_fails true
+base=$(git -C "$P" rev-parse main)
+out=$(run --approved 2>&1) && code=0 || code=$?
+[ "$code" -eq 8 ] && [ "$(heads)" = "sign-out " ] \
+  && pass "when main cannot be created after the push, it says so" \
+  || fail "a failed main returned $code with remote heads '$(heads)': $out"
+out=$(run 2>&1) && code=0 || code=$?
+[ "$code" -eq 9 ] && printf '%s\n' "$out" | grep -q '^state	no-main' \
+  && pass "a retry reads the branch online with no main as a state of its own, not online" \
+  || fail "the retry read $code: $out"
+set_state api_fails false
+out=$(run --approved 2>&1) && code=0 || code=$?
+[ "$code" -eq 0 ] && [ "$(heads)" = "main sign-out " ] && [ "$(git -C "$R" rev-parse main)" = "$base" ] \
+  && pass "on a yes, main is created where the piece's branch was cut, with no push" \
+  || fail "creating the missing main returned $code with heads '$(heads)': $out"
+out=$(run) && code=0 || code=$?
+[ "$code" -eq 0 ] && pass "after that the code is online" || fail "after creating main the state read $code: $out"
 
 [ "$FAIL" -eq 0 ] || exit 1
 echo "first-upload.sh: all checks passed"

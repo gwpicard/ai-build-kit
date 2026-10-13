@@ -180,6 +180,15 @@ run_once() {
     cp "$project/.gh-fixture.json" "$ghstate"
   fi
 
+  # The kit names the repository from origin's GitHub address, as it would for
+  # real, so origin carries one. Git reaches the bare remote next door in its
+  # place, so nothing leaves this machine.
+  ghrepo=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("repo") or "")' \
+    "$ghstate" 2>/dev/null || true)
+  [ -n "$ghrepo" ] || ghrepo=rehearsal/project
+  git -C "$project" remote set-url origin "https://github.com/$ghrepo.git"
+  git -C "$project" config url."$project.git".insteadOf "https://github.com/$ghrepo.git"
+
   # Every push that reaches the remote next door is written to the GitHub
   # log, between the markers for the turns it happened in. That is what shows
   # whether a push came before or after the person's yes. The hook is in the
