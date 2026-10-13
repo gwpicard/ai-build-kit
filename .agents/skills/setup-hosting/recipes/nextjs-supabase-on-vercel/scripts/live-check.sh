@@ -41,7 +41,7 @@ while [ $# -gt 0 ]; do
   esac
 done
 case "$only" in ''|commit|hold|migration|secrets|health) ;; *) cl_cannot "live-check.sh has no read called $only." ;; esac
-[ -n "${LIVE_ADDRESS:-}" ] || cl_cannot "No live address is recorded, so there is no live copy to compare."
+[ -n "${LIVE_ADDRESS:-}" ] || cl_cannot "No live address was given with --address, so there is no live copy to compare."
 address=${LIVE_ADDRESS%/}
 case "$address" in https://*|http://*) ;; *) address="https://$address" ;; esac
 

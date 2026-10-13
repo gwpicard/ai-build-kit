@@ -232,8 +232,9 @@ live." Do not read the health line as "did not update", and suggest no
 redeploy.
 
 **After the merge, on a project live on a recipe.** Once the host has had
-time to build, read the live copy, read-only, with the recipe's `live-check.sh`
-and `--only commit`. Where the recipe's Going live section is read back from
+time to build, read the live copy, read-only, with the recipe's `live-check.sh`,
+`--only commit` and `--address` set to the live address "How it stays
+running" records. Where the recipe's Going live section is read back from
 a paste, ask in one sentence for the live address's health answer and pass
 what they paste with `--pasted-health`. Exit 0 means it runs the merge: say
 "The live copy now runs this change." Otherwise read the host's own list of

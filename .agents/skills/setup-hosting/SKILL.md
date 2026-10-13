@@ -71,8 +71,10 @@ question it prints in your reply word for word. Pass what is pasted back as
 Give its lines as printed. Exit 0 means every check passed. Exit 1 means
 warnings: each is in the changelog, none holds the launch, and the person is
 never asked to choose to go live without one. A warning the changelog already
-held comes back as a pointer; say only that, and point there when asked what
-is left. Exit 3 means no address is recorded, so the tool is not live yet.
+held comes back as a pointer; say only that. Asked what is left, give each
+warning this run said or the changelog holds as one line pointing to the
+changelog, without its reason, its risk or what to do about it. Exit 3 means
+no address is recorded, so the tool is not live yet.
 Record the live address in "How it stays running", and tell the person once
 that each merge /implement makes puts that change live.
 
@@ -88,8 +90,9 @@ Pass a secret by the location "How it stays running" records, never its
 value; the scripts read it themselves. With none recorded, ask once and record
 the answer as a location. A secret given as an answer is recorded nowhere: say
 it is now in this conversation and ask for it to be rotated. Asked to show a
-secret, say plainly that the kit will not, because anything shown here stays
-in the conversation's record, and that they can open it at its location. Where
+secret, say plainly that the kit does not read or show it, because anything
+shown here stays in the conversation's record, and that they can open it at
+its location. Where
 the location is unknown, the check is a warning saying so, never that the
 secret is missing.
 
@@ -112,12 +115,12 @@ Before deciding a deploy failed, read its whole output or the host's list of
 deployments. Never deploy again before checking the first did not go live: a
 second deploy replaces the rollback target, so say that in one line first.
 
-Save the run's records through the `implement` skill's save route, one branch
-and pull request for each run with its `scripts/save-records.sh`, merged on
-the pull request only after a yes that names it, never pushed to `main`, and
-never sweeping the person's uncommitted work in; where the host builds every
-change to `main`, say that merge moves the rollback target and offer to leave
-it open.
+Save the run's records through the `implement` skill's save route: one branch
+and pull request for each run with its `scripts/save-records.sh`, never pushed
+to `main`, never sweeping the person's uncommitted work in, and merged on the
+pull request only after a yes that names it, asked for in the reply that
+reports the run. Where the host builds every change to `main`, say that merge
+moves the rollback target and offer to leave it open.
 
 ### Build with care
 
