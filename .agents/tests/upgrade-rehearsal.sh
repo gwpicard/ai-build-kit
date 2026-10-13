@@ -116,7 +116,7 @@ for route in ('claude-only','shared','whole','plugin'):
     assert 'kit' in said, listed
     assert {'commands','pointer','helper','settings','template','mention'} <= set(kinds), listed
     assert kinds.count('commands')==5, listed
-    assert kinds.count('pointer')==1 and kinds.count('helper')==1 and kinds.count('template')==1,listed
+    assert kinds.count('pointer')==1 and kinds.count('helper')==1 and kinds.count('template')==6,listed
     assert kinds.count('installer') == (0 if route=='plugin' else 7), listed
     assert ('kitcopy\t.claude-plugin' in listed)==(route=='whole'), listed
     assert ('hook\t.agents/hooks/session-end-sync.sh' in listed)==(route=='whole'), listed
@@ -136,6 +136,9 @@ for route in ('claude-only','shared','whole','plugin'):
     assert 'Project rule: Keep our club notes private.' in (p/'AGENTS.md').read_text()
     assert 'We run /ship before the club night.' in (p/'masterplan.md').read_text()
     assert '/setup-hosting writes a hosting' in (p/'masterplan.md').read_text()
+    agents=(p/'AGENTS.md').read_text()
+    assert not any(n in agents for n in ('change-triage','section-builder','screen-check')),agents
+    assert "load the `implement` skill's `references/screen-rules.md`" in agents,agents
     current=json.loads((p/'.claude/settings.json').read_text())
     for key,value in before.items():
         if key!='permissions': assert current[key]==value

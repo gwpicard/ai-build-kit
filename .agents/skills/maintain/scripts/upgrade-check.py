@@ -44,7 +44,8 @@ the step that settles it:
                                a pointer to a skill's file            pointers
     helper     PATH  WHY       the plan printout helper               helper
     settings   deny|ask  RULE  a missing Claude Code safety rule      settings
-    template   FILE:LINE  NEW  the kit's own sentence naming /ship    template
+    template   FILE:LINE  NEW  the kit's own sentence naming a retired
+                               command or skill                       template
     fitcheck   FILE:LINE  OLD  a build-path section with four-path
                                fields; the fit check writes it again  fitcheck
     older      VERSION  WHY    a project set up before v0.20, which
@@ -104,6 +105,22 @@ DECLINED = "upgrade-declined|"
 # kit's own text; any other line naming a retired command is the person's.
 OLD_SENTENCE = "Where the tool runs on a server somebody else runs, /ship writes a hosting"
 NEW_SENTENCE = "Where the tool runs on a server somebody else runs, /setup-hosting writes a hosting"
+# The AGENTS.md template's lines that named a background skill folded into
+# /shape or /implement, as the eleven-skill releases wrote them. Each line is
+# replaced by one line, so the file keeps its shape and its line count.
+TEMPLATE_LINES = (
+    ("masterplan.md", OLD_SENTENCE, NEW_SENTENCE),
+    ("AGENTS.md", "The user describes intent in plain language; change-triage chooses the route.",
+     "The user describes intent in plain language; `/shape` chooses the route."),
+    ("AGENTS.md", "piece carries `visual`, or a change touches a screen file, load `screen-check`",
+     "piece carries `visual`, or a change touches a screen file, load the `implement` skill's `references/screen-rules.md`"),
+    ("AGENTS.md", "before the guided manual check. It reads this project's design rules first and",
+     "before the guided manual check. They read this project's design rules first and"),
+    ("AGENTS.md", "never calls a screen accessible, compliant, or good.",
+     "never call a screen accessible, compliant, or good."),
+    ("AGENTS.md", "piece has a subject label, set once by change-triage. `plan.local.md` prints the",
+     "piece has a subject label, set once by `/shape`. `plan.local.md` prints the"),
+)
 
 RETIRED = re.compile(r"(?<![\w/.-])/(fix|queue|sync|ship)(?![\w/-])")
 MENTION_FILES = ("AGENTS.md", "masterplan.md")
@@ -177,18 +194,21 @@ def helper_finding(project):
 
 
 def template_findings(project):
-    if linked_path(project, "masterplan.md"):
-        return [("left", "masterplan.md", "it is a link, so it was left alone")]
-    path = os.path.join(project, "masterplan.md")
     found = []
-    try:
-        with open(path, encoding="utf-8", newline="") as handle:
-            lines = handle.readlines()
-    except (OSError, UnicodeDecodeError):
-        return found
-    for number, line in enumerate(lines, 1):
-        if line.rstrip("\r\n") == OLD_SENTENCE:
-            found.append(("template", "masterplan.md:%d" % number, NEW_SENTENCE))
+    for name in ("masterplan.md", "AGENTS.md"):
+        if linked_path(project, name):
+            found.append(("left", name, "it is a link, so it was left alone"))
+            continue
+        try:
+            with open(os.path.join(project, name), encoding="utf-8", newline="") as handle:
+                lines = handle.readlines()
+        except (OSError, UnicodeDecodeError):
+            continue
+        swaps = {old: new for file, old, new in TEMPLATE_LINES if file == name}
+        for number, line in enumerate(lines, 1):
+            body = line.rstrip("\r\n")
+            if body in swaps:
+                found.append(("template", "%s:%d" % (name, number), swaps[body]))
     return found
 
 
@@ -378,7 +398,7 @@ def sentences(out, project):
         (f[0] in ("installer", "folder") and f[1].rsplit("/", 1)[-1] in RETIRED_NAMES)
         or (f[0] == "missing" and f[1] == "setup-hosting")
         or (f[0] == "adapter" and os.path.splitext(f[1].rsplit("/", 1)[-1])[0] in RETIRED_NAMES)
-        or f[0] == "template"
+        or (f[0] == "template" and f[2] == NEW_SENTENCE)
         or (f[0] == "commands" and not informational(f))
         for f in out)
     if "older" in by:
@@ -446,9 +466,13 @@ def sentences(out, project):
                      "the rules still cannot catch. Shall I add them?" % (
                          n, plural(n, "rule", "rules"), joined(stops))))
     if "template" in by:
-        said.append(("template", "Your masterplan still holds one sentence the kit wrote that "
-                     "names /ship. I can change that sentence to name /setup-hosting, and "
-                     "nothing else."))
+        n = len(by["template"])
+        files = sorted({f[1].split(":")[0] for f in by["template"]})
+        said.append(("template", "%s still %s %d %s the kit wrote that %s an old command or "
+                     "skill. I can change %s to today's wording, and nothing else." % (
+                         " and ".join(files), plural(len(files), "holds", "hold"), n,
+                         plural(n, "line", "lines"), plural(n, "names", "name"),
+                         plural(n, "that line", "those lines"))))
     if "fitcheck" in by:
         said.append(("fitcheck", "Your masterplan's build-path section was written when the kit "
                      "had four build paths. Running the fit check again writes it in today's "
@@ -479,7 +503,7 @@ def sentences(out, project):
 STEP_WORDS = {
     "installer": "the old skills installed", "missing": "the missing skills out",
     "remove": "the older kit files in place", "commands": "the command list as it is",
-    "pointers": "the old pointers as they are", "template": "the masterplan sentence as it is",
+    "pointers": "the old pointers as they are", "template": "the kit's old lines as they are",
     "fitcheck": "the build-path section as it is", "older": "the update through v0.20.3",
 }
 
@@ -496,21 +520,26 @@ HELPER_WORDS = (
 # --- changing -----------------------------------------------------------------
 
 def apply_template(project):
-    if linked_path(project, "masterplan.md"):
-        print("left\tmasterplan.md\tit is a link, so it was left alone")
-        return 0
-    path = os.path.join(project, "masterplan.md")
-    with open(path, encoding="utf-8", newline="") as handle:
-        lines = handle.readlines()
-    changed = False
-    for index, line in enumerate(lines):
-        body = line.rstrip("\r\n")
-        if body == OLD_SENTENCE:
-            lines[index] = NEW_SENTENCE + line[len(body):]
-            changed = True
-    if changed:
-        with open(path, "w", encoding="utf-8", newline="") as handle:
-            handle.writelines(lines)
+    for name in ("masterplan.md", "AGENTS.md"):
+        if linked_path(project, name):
+            print("left\t%s\tit is a link, so it was left alone" % name)
+            continue
+        path = os.path.join(project, name)
+        try:
+            with open(path, encoding="utf-8", newline="") as handle:
+                lines = handle.readlines()
+        except (OSError, UnicodeDecodeError):
+            continue
+        swaps = {old: new for file, old, new in TEMPLATE_LINES if file == name}
+        changed = False
+        for index, line in enumerate(lines):
+            body = line.rstrip("\r\n")
+            if body in swaps:
+                lines[index] = swaps[body] + line[len(body):]
+                changed = True
+        if changed:
+            with open(path, "w", encoding="utf-8", newline="") as handle:
+                handle.writelines(lines)
     return 0
 
 

@@ -559,7 +559,8 @@ On the pull-request route, once the check is green and the records are in the
 pull request, the person decides whether to merge, always. Load
 `references/merge.md` and follow it: what to try first, the checks before the
 merge on a live project, asking, merging, and reading one line of health after
-it. In an unattended run nobody is there to say yes, so never merge.
+it. In an unattended run nobody is there to say yes, so never merge: report
+the piece as ready for review, not as done.
 
 ## Typed with auto, or handed to a goal mode
 

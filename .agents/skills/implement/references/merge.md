@@ -84,11 +84,9 @@ the work local and note it on the piece.
 
 ## Merging a finished piece
 
-On the pull-request route, once the check is green and the records are in the
-pull request, the person decides whether to merge, always. Merge only on a yes
-that names it. On a project that is live, the merge is a deploy, so this step
-is also how the change goes live. The steps named here are the build steps in
-SKILL.md.
+Merge only on a yes that names it. On a project that is live, the merge is a
+deploy, so this step is also how the change goes live. The steps named here
+are the build steps in SKILL.md.
 
 First, say what the person can try and where: the preview address, on a recipe
 whose preview section gives one, or how to try it on this computer.
@@ -214,8 +212,8 @@ box, so promise none. Say in one line that the merge runs on their yes in this
 chat, and that /maintain can add the question. Under another coding agent,
 say nothing about a box. Leave the branch to GitHub, which removes it once merged.
 
-In an unattended run nobody is there to say yes, so never merge. Report the
-piece as ready for review, not as done, and leave the merge to a person.
+In an unattended run, report the piece as ready for review, not as done, and
+leave the merge to a person.
 
 The merge closes the issue, so there is no status to set by hand. After the
 merge, whoever made it, remove the `building` label and any `ready` still on

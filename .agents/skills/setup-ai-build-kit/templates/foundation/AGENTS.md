@@ -51,10 +51,9 @@ Every promised behaviour needs evidence: an automated check where a machine can
 judge it reliably, a guided manual check for visual or exploratory work, a
 source check for a decision that rests on an external fact, and a rehearsal for
 backup, restore, migration, rollback, or other operational claims. When a
-piece carries `visual`, or a change touches a screen file, load
-the `implement` skill's `references/screen-rules.md` before the guided manual
-check. They read this project's design rules first and never call a screen
-accessible, compliant, or good.
+piece carries `visual`, or a change touches a screen file, load the `implement` skill's `references/screen-rules.md`
+before the guided manual check. They read this project's design rules first and
+never call a screen accessible, compliant, or good.
 
 ## The records
 
