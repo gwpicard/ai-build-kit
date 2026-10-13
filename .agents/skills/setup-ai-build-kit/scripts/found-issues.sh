@@ -8,8 +8,11 @@
 #                                repository settings and the issue template
 #   sh found-issues.sh refresh   print the plan once the issues are open
 #
-# Every mode first reads where origin points. On the kit's own repository it
-# changes nothing there, since a project's pieces must never land on it.
+# Every mode first reads where origin points, and the repository is always the
+# one origin names. The GitHub tool's own default is never used, since it can
+# be another remote, such as the one a project was copied from. On the kit's
+# own repository it changes nothing there, since a project's pieces must never
+# land on it. An origin that is not on GitHub changes nothing either.
 #
 # prepare does this, in order:
 #   - creates the fifteen labels the kit owns;
@@ -49,30 +52,29 @@ command -v python3 >/dev/null 2>&1 || { echo "found-issues: python3 is needed to
 
 lower() { printf '%s' "$1" | python3 -c 'import sys; print(sys.stdin.read().strip().lower())'; }
 
-origin=$(git remote get-url origin 2>/dev/null || true)
-from_url=$(printf '%s' "$origin" | python3 -c '
+# The URL as written, before any insteadOf rewrite, names the repository.
+origin=$(git config --get remote.origin.url 2>/dev/null || true)
+repo=$(printf '%s' "$origin" | python3 -c '
 import re, sys
 m = re.search(r"github\.com[:/]+([^/\s]+)/([^/\s]+?)(?:\.git)?/?$", sys.stdin.read().strip(), re.I)
 print("%s/%s" % (m.group(1), m.group(2)) if m else "")
 ')
-if [ "$(lower "$from_url")" = "$KIT" ]; then
+if [ "$(lower "$repo")" = "$KIT" ]; then
   echo "repository	$KIT"
   echo "found-issues: origin is the kit's own repository, so nothing was changed there"
   exit 6
 fi
-
-view=$(gh repo view --json nameWithOwner,visibility 2>/dev/null) || {
-  echo "found-issues: GitHub could not be read, so nothing was changed" >&2
+[ -n "$repo" ] || {
+  echo "found-issues: origin does not point at a GitHub repository, so nothing was changed" >&2
   exit 5
 }
-repo=$(printf '%s' "$view" | python3 -c 'import json, sys; print(json.load(sys.stdin).get("nameWithOwner") or "")' 2>/dev/null || true)
+
+view=$(gh repo view "$repo" --json visibility 2>/dev/null) || {
+  echo "found-issues: GitHub could not read $repo, so nothing was changed" >&2
+  exit 5
+}
 visibility=$(printf '%s' "$view" | python3 -c 'import json, sys; print((json.load(sys.stdin).get("visibility") or "unknown").lower())' 2>/dev/null || echo unknown)
-[ -n "$repo" ] || { echo "found-issues: GitHub did not name the repository, so nothing was changed" >&2; exit 5; }
 echo "repository	$repo"
-if [ "$(lower "$repo")" = "$KIT" ]; then
-  echo "found-issues: origin is the kit's own repository, so nothing was changed there"
-  exit 6
-fi
 echo "visibility	$visibility"
 
 [ "$mode" = check ] && exit 0
@@ -87,7 +89,7 @@ fi
 failed=
 while IFS='|' read -r name colour description; do
   [ -n "$name" ] || continue
-  gh label create "$name" --color "$colour" --description "$description" --force >/dev/null 2>&1 ||
+  gh label create "$name" --color "$colour" --description "$description" --force --repo "$repo" >/dev/null 2>&1 ||
     failed="$failed${failed:+, }$name"
 done <<'LABELS'
 visual|1d76db|The interface, what people see and click
@@ -113,13 +115,13 @@ else
 fi
 
 # GitHub's own nine labels go only while no issue can be wearing one.
-issues=$(gh issue list --state all --limit 1 --json number 2>/dev/null || echo error)
+issues=$(gh issue list --state all --limit 1 --json number --repo "$repo" 2>/dev/null || echo error)
 removed=
 kept=
 case "$issues" in
   "[]"|"")
     for name in bug documentation duplicate enhancement "good first issue" "help wanted" invalid question wontfix; do
-      if out=$(gh label delete "$name" --yes 2>&1); then
+      if out=$(gh label delete "$name" --yes --repo "$repo" 2>&1); then
         removed="$removed${removed:+, }$name"
       else
         case "$out" in

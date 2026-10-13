@@ -286,12 +286,46 @@ REPLAY_PROVIDER=claude
 provider_session_records "$RECORDS/s01-r1" | grep -q '/claude-session.jsonl$' \
   && pass "the Claude Code session record is found by the recorded id" \
   || fail_provider "the Claude Code session record was not found"
+# A subagent's transcript, and a command output too long for the session file,
+# sit in a folder named by the session id. Another session's folder is not
+# this run's.
+mkdir -p "$CLAUDE_CONFIG_DIR/projects/-some-project/claude-session/subagents" \
+  "$CLAUDE_CONFIG_DIR/projects/-some-project/claude-session/tool-results" \
+  "$CLAUDE_CONFIG_DIR/projects/-some-project/other-session/subagents"
+: > "$CLAUDE_CONFIG_DIR/projects/-some-project/claude-session/subagents/agent-a1.jsonl"
+: > "$CLAUDE_CONFIG_DIR/projects/-some-project/claude-session/tool-results/t1.txt"
+: > "$CLAUDE_CONFIG_DIR/projects/-some-project/other-session/subagents/agent-b2.jsonl"
+listed=$(provider_session_records "$RECORDS/s01-r1")
+printf '%s\n' "$listed" | grep -q '/claude-session/subagents/agent-a1.jsonl$' \
+  && printf '%s\n' "$listed" | grep -q '/claude-session/tool-results/t1.txt$' \
+  && pass "a subagent's transcript and a long command output are read as session records" \
+  || fail_provider "the session's subagent or tool-result records were not listed: $listed"
+printf '%s\n' "$listed" | grep -q 'other-session' \
+  && fail_provider "another session's subagent record was listed" \
+  || pass "another session's subagent record is not listed"
 : > "$RECORDS/s01-r1-t1.json"
 : > "$RECORDS/s01-r1-t2.json"
 REPLAY_PROVIDER=codex
+CODEX_HOME="$TEST_WORK/codex-home"
+export CODEX_HOME
+mkdir -p "$CODEX_HOME/sessions/2026/10/13"
+printf '%s\n' codex-thread > "$RECORDS/s01-r1.session"
 [ "$(provider_session_records "$RECORDS/s01-r1" | wc -l | tr -d ' ')" = 2 ] \
   && pass "every Codex turn's output is read as its session record" \
   || fail_provider "the Codex turn outputs were not all listed"
+printf '%s\n' '{"type":"session_meta","payload":{"id":"codex-thread"}}' \
+  > "$CODEX_HOME/sessions/2026/10/13/rollout-1-codex-thread.jsonl"
+printf '%s\n' '{"type":"session_meta","payload":{"id":"sub","parent":"codex-thread"}}' \
+  > "$CODEX_HOME/sessions/2026/10/13/rollout-2-sub.jsonl"
+printf '%s\n' '{"type":"session_meta","payload":{"id":"unrelated"}}' \
+  > "$CODEX_HOME/sessions/2026/10/13/rollout-3-unrelated.jsonl"
+listed=$(provider_session_records "$RECORDS/s01-r1")
+[ "$(printf '%s\n' "$listed" | wc -l | tr -d ' ')" = 4 ] \
+  && printf '%s\n' "$listed" | grep -q 'rollout-2-sub.jsonl$' \
+  && pass "the Codex thread's rollout, and a subagent's that names it, are read too" \
+  || fail_provider "the Codex rollouts were not listed as expected: $listed"
+unset CODEX_HOME
+printf '%s\n' claude-session > "$RECORDS/s01-r1.session"
 REPLAY_PROVIDER=claude
 
 grep -q 'PROVIDER_SESSION:-}" > "$WORK/s${number}-r${repeat}.session"' "$RUNNER" \

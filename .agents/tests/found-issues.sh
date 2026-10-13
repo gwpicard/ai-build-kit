@@ -60,10 +60,10 @@ for url in https://github.com/gwpicard/ai-build-kit.git git@github.com:GWPicard/
 done
 project /somewhere/else.git
 state gwpicard/ai-build-kit PUBLIC '{}'
-out=$(run prepare) && code=0 || code=$?
-[ "$code" -eq 6 ] && [ -z "$(changed)" ] \
-  && pass "a repository GitHub names as the kit's is refused too" \
-  || fail "a repository named the kit's by GitHub returned $code"
+out=$(run prepare 2>&1) && code=0 || code=$?
+[ "$code" -eq 5 ] && [ -z "$(changed)" ] \
+  && pass "an origin that is not on GitHub changes nothing, whatever the tool's default is" \
+  || fail "an origin off GitHub returned $code and asked: $(changed)"
 project https://github.com/someone/ai-build-kit-fork.git
 state someone/ai-build-kit-fork PRIVATE '{}'
 out=$(run check) && code=0 || code=$?
@@ -112,6 +112,17 @@ out=$(run prepare) && code=0 || code=$?
 [ "$code" -eq 0 ] && printf '%s\n' "$out" | grep -qx 'kept	wontfix' \
   && pass "a label GitHub will not delete is named and the rest carries on" \
   || fail "a refused delete was not reported: $code $out"
+
+echo "== The repository is the one origin names =="
+python3 -c 'import json,sys; s=json.load(open(sys.argv[1])); s["default_repo"]="upstream/kit-log"; json.dump(s,open(sys.argv[1],"w"))' "$STANDIN_GH_STATE"
+: > "$STANDIN_GH_LOG"
+out=$(run prepare) && code=0 || code=$?
+[ "$code" -eq 0 ] && printf '%s\n' "$out" | grep -qx 'repository	someone/kit-log' \
+  && grep -q '^api -X PATCH repos/someone/kit-log ' "$STANDIN_GH_LOG" \
+  && ! grep -q 'upstream/kit-log' "$STANDIN_GH_LOG" \
+  && ! grep -E '^(label|issue list)' "$STANDIN_GH_LOG" | grep -vq -- '--repo someone/kit-log' \
+  && pass "labels, issues and settings go to the repository origin names, not the tool's default" \
+  || fail "with another default repository, prepare used: $out / $(cat "$STANDIN_GH_LOG")"
 
 out=$(run refresh) && code=0 || code=$?
 [ "$code" -eq 0 ] && printf '%s' "$out" | grep -q 'plan printed' \

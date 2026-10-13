@@ -7,8 +7,10 @@
 #                                             the person running the build
 #   sh piece-labels.sh merged <issue number>   building and ready off
 #
-# GitHub can answer a label change and still show the old labels for a moment,
-# so the script reads the labels back and repeats the change up to three times.
+# GitHub can answer a label change and still show the old labels for a few
+# seconds, so after each change the script reads the labels back, waiting 1,
+# 2 and 3 seconds between reads. Only when they still read wrong does it
+# repeat the change, up to three times.
 #
 # Exit 0: the labels read back as wanted.
 # Exit 1: they still do not after three tries; the line printed says which.
@@ -35,14 +37,25 @@ print(" ".join(l["name"] if isinstance(l, dict) else l for l in data.get("labels
 }
 
 has() { case " $current " in *" $1 "*) return 0 ;; esac; return 1; }
+wanted() {
+  if [ "$step" = start ]; then
+    has building && ! has ready
+  else
+    ! has building && ! has ready
+  fi
+}
 
 tries=0
 while :; do
   current=$(labels) || { echo "piece-labels: could not read issue $number" >&2; exit 2; }
-  if [ "$step" = start ]; then
-    has building && ! has ready && break
-  else
-    ! has building && ! has ready && break
+  wanted && break
+  # After a change, give GitHub's reads time to catch up before repeating it.
+  if [ "$tries" -gt 0 ]; then
+    for wait in 1 2 3; do
+      sleep "$wait"
+      current=$(labels) || { echo "piece-labels: could not read issue $number" >&2; exit 2; }
+      wanted && break 2
+    done
   fi
   [ "$tries" -lt 3 ] || {
     echo "piece-labels: issue $number still reads \"$current\" after three tries"

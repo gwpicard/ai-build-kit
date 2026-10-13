@@ -180,6 +180,15 @@ run_once() {
     cp "$project/.gh-fixture.json" "$ghstate"
   fi
 
+  # The kit names the repository from origin's GitHub address, as it would for
+  # real, so origin carries one. Git reaches the bare remote next door in its
+  # place, so nothing leaves this machine.
+  ghrepo=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("repo") or "")' \
+    "$ghstate" 2>/dev/null || true)
+  [ -n "$ghrepo" ] || ghrepo=rehearsal/project
+  git -C "$project" remote set-url origin "https://github.com/$ghrepo.git"
+  git -C "$project" config url."$project.git".insteadOf "https://github.com/$ghrepo.git"
+
   # Every push that reaches the remote next door is written to the GitHub
   # log, between the markers for the turns it happened in. That is what shows
   # whether a push came before or after the person's yes. The hook is in the
@@ -262,6 +271,13 @@ run_once() {
     # The same marker goes in the host's log, so a change to the live database
     # can be placed before or after the person's yes as a push can.
     printf 'TURN\t%s\t%s\n' "$turn" "$kind" >> "$FAKE_HOST_LOG"
+    # A command can outlive the turn that started it, in the background or
+    # behind a wait, and its line then lands after a later turn's marker. Every
+    # process this turn starts inherits the turn's number, so the stand-ins and
+    # the remote's hook tag each line with the turn that started the command,
+    # and the state check places it by that rather than by where it landed.
+    REPLAY_TURN=$turn
+    export REPLAY_TURN
     # PATH is a suggestion rather than a boundary. A session that doubts an
     # answer could look for the real tool, find it at its usual place, and use
     # the maintainer's own signed-in account. The credentials are taken away

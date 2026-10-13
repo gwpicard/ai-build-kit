@@ -54,5 +54,26 @@ case "$(probe "v0.0.0.preview")" in
   *) fail "the version probe cannot tell a refused version from an accepted one" ;;
 esac
 
+# The teardown deletes real projects and repositories, so its commands are
+# held here as commands, not as sentences.
+if grep -qE '(^|[^[:alnum:]])rm +-[a-zA-Z]*[rR]' "$SECTION"; then
+  fail "the section deletes something recursively with rm; the teardown trashes items one by one"
+fi
+ok "no recursive rm in the section"
+add_line=$(grep -nE 'gh auth refresh .*-s +delete_repo' "$SECTION" | head -1 | cut -d: -f1)
+del_line=$(grep -nE 'gh repo delete ' "$SECTION" | head -1 | cut -d: -f1)
+off_line=$(grep -nE 'gh auth refresh .*-r +delete_repo' "$SECTION" | head -1 | cut -d: -f1)
+[ -n "$add_line" ] && [ -n "$del_line" ] && [ -n "$off_line" ] \
+  && [ "$add_line" -lt "$del_line" ] && [ "$del_line" -lt "$off_line" ] \
+  || fail "the repository delete must sit between adding the delete scope and taking it off again"
+ok "the delete scope is added just for the delete and taken off after it"
+grep -qE 'find .*-newer ' "$SECTION" || fail "the teardown no longer finds what the run made by the start marker"
+ok "the teardown finds the run's files by the start marker"
+for place in '/private/tmp/abk-' '~/.config/abk-try-' '~/Backups/abk-try-' '~/.abk-try-'; do
+  grep -qE "^ *ls $(printf '%s' "$place" | sed 's/[.]/[.]/g')" "$SECTION" \
+    || fail "the teardown no longer checks that $place... is gone"
+done
+ok "the teardown checks each place it cleaned, the backups included"
+
 echo
 echo "$(basename -- "$0"): all $pass checks passed"
