@@ -43,6 +43,7 @@ stand_in_or_real() {
       -e 's#(postgres(ql)?://)[^[:space:]"'"'"']+#\1[masked]#g' \
       -e 's#(--dbname[= ])[^[:space:]]+#\1[masked]#g' \
       -e 's#((--token|-t)[= ])[^[:space:]]+#\1[masked]#g' \
+      -e 's#(( |^)(-p|--password)[= ])[^[:space:]]+#\1[masked]#g' \
       -e 's#([Aa]uthorization:[[:space:]]*).*#\1[masked]#' \
       -e 's#([Bb]earer[[:space:]]+)[^[:space:]]+#\1[masked]#g' \
     >> "${FAKE_HOST_LOG:-$FAKE_HOST_STATE.log}"

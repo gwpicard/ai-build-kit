@@ -58,7 +58,8 @@ broken-link
 stale-term
 agent-manifest-extra-field
 release-nondeterministic
-runnable-bit-lost"
+runnable-bit-lost
+product-named"
 
 describe() {
   case "$1" in
@@ -82,6 +83,7 @@ describe() {
     agent-manifest-extra-field) echo "the agent plugin manifest carries a field the standard omits" ;;
     release-nondeterministic) echo "an untracked file inside an approved folder enters the release" ;;
     runnable-bit-lost) echo "a script that is started by path loses its saved runnable bit" ;;
+    product-named) echo "a skill file outside the recipes names a place a tool runs" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -92,6 +94,7 @@ checks_for() {
     gate-widened) echo "$MODE_CHECKS" ;;
     runnable-bit-lost) echo "$MODE_CHECKS" ;;
     discipline-user-invocable) echo "validate-kit" ;;
+    product-named) echo "validate-kit" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -290,6 +293,14 @@ open(p, "w").write(t)
       target="$tree/.agents/tests/replay/fake-github/gh"
       [ -x "$target" ] || { echo "the stand-in is already not runnable" >&2; return 1; }
       chmod -x "$target"
+      ;;
+    product-named)
+      # A skill that learned one host's commands reads wrongly on every
+      # project that runs somewhere else. The validator's product-name rule
+      # is the only thing that stops one.
+      target="$tree/.agents/skills/setup-hosting/references/evidence-run.md"
+      [ -f "$target" ] || { echo "no evidence-run reference to plant a name in" >&2; return 1; }
+      printf '\n%s\n' 'When it is ready, deploy it to Netlify.' >> "$target"
       ;;
     *)
       echo "unknown mutation: $name" >&2

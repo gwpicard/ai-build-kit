@@ -405,11 +405,13 @@ named nowhere either, except inside a recipe file under
 `.agents/skills/setup-hosting/recipes/` and in the README. A recipe pairs a build stack
 with a place to run it, so naming those services is its whole job. A skill that
 needs to know how one behaves reads the project's recipe, which keeps
-every skill the same whichever recipe a project runs on. `hosting-request.sh`
+every skill the same whichever recipe a project runs on. `validate-kit.sh`
 refuses a hosting, data or deploy product's name in every skill file outside
 `.agents/skills/setup-hosting/recipes/`, which holds the recipes and their shared parts.
-The screen rules' link to Vercel's interface guidelines is the one exception,
-because it names a design guide rather than a place a tool runs. The
+Its list of names includes the place each recipe's title names, so a new recipe
+adds its own host. The screen rules' link to Vercel's interface guidelines is
+the one exception, because it names a design guide rather than a place a tool
+runs. The
 `stack-research` maintainer skill names those products too, because reading
 their changelogs is its job, and it never ships.
 
