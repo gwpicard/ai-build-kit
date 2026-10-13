@@ -199,11 +199,8 @@ changing it. For visual work: capture or describe the current state and say
 what visible difference to expect. Do not write a meaningless automated test
 merely to have one.
 
-Load `references/reach-check.md` and use its current engine to take a small
-structure baseline before code changes. Record only the relationships needed
-for comparison: imports between the parts being changed, and any declared
-sensitive-area boundary. Where no engine is present, read those imports
-directly. Do not save the baseline as a project file or turn it into a score.
+Note the commit the piece starts from. The trim and the structure comparison
+read the project as it was there, again from Git history, so nothing is saved.
 
 ## 5. Build one vertical slice
 
@@ -316,12 +313,14 @@ present, and by reading the changed imports where neither is present.
 Update that map in the same save as any code move that changes it. Keep the full
 project check for the pull-request gate.
 
-Compare the finished structure with the baseline from step 4, using the same
-engine. Say one line only when it got worse: "This change added a loop between
-<part> and <part>." On Build with care, use "This change crossed the boundary
-around <area>." Never show a score. When nothing worsened, say nothing. If it
-did, the person can ask to fix it before the save or leave it; record the choice
-on the piece and carry on.
+Compare the structure with the piece's starting commit: run `python3` with
+this skill's `scripts/quality.py`, passing `loops --base <that commit>`. Exit 0 means
+nothing got worse: say nothing. Exit 1 prints each new loop; say one line:
+"This change added a loop between <part> and <part>." When the boundary check
+above found a crossing, say "This change crossed the boundary around <area>."
+Exit 2 means the comparison could not run; note it in the internal evidence
+and carry on. Never show a score. The person can ask to fix either before the
+save or leave it; record the choice on the piece and carry on.
 
 Review triggers come from the build path, the change's consequence
 classification, or the masterplan's sensitive areas. When

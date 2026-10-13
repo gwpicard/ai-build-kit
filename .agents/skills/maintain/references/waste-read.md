@@ -1,64 +1,37 @@
 # Waste read
 
-Before the quarterly visit proposes anything, gather three kinds of waste from
-the project as it is now: code copied from one place to another, code nothing
-uses any more, and dependencies nothing imports. The proposals then rest on
-what is in the project rather than on what the session happened to notice.
+At the quarterly visit, on Build and run it and on Build with care, gather
+three kinds of waste before proposing anything: code copied from one place to
+another, code nothing uses, and dependencies nothing imports.
 
-This is a whole-project read, so the rules in
-the `setup-ai-build-kit` skill's `references/whole-project-reads.md` apply.
+## Run the script
 
-## Where it applies
+From the project, run `python3` with the `section-builder` skill's
+`scripts/quality.py`, passing `waste --since-visit`, and `--fetch` where
+AGENTS.md's stack section says `Quality engines: fetch`. It runs the engines
+over the whole project, drops any name found elsewhere in it, and prints only
+what is new since the `last-full-pass` date.
 
-At the quarterly visit, on Build and run it and on Build with care. Not on
-Explore privately.
+- Exit 0: nothing new. Say nothing about it.
+- Exit 1: each line is one finding: `copy`, `unused-export`, `unused-file`,
+  `unused-code`, `unreachable-code` or `unused-dependency`, with its place.
+- Exit 2: no engine could run. Read the areas the quarterly spread count named
+  for the same three kinds, and say in the internal evidence that this was the
+  fallback.
 
-## Engines, best first
-
-| What | JavaScript and TypeScript | Python | Any other language |
-|---|---|---|---|
-| Copied code | `jscpd --ignore-identifiers --reporters json --output <temporary folder> .` | the same | the same |
-| Unused code | `knip --include files,exports --reporter json` | `vulture --min-confidence 100 .` | read the code directly |
-| Unused dependencies | `knip --include dependencies --reporter json` | `deptry .` | read the code directly |
-
-The last resort for every row is reading the code directly. Keep that to the
-areas the quarterly spread count already named, and say in the internal
-evidence that it was the fallback.
-
-Where an engine is not already in the project, `npx` or `pipx run` can fetch it
-for this visit without adding it to the project. Ask once before doing that.
-If the person says no, use the next entry.
-
-Three settings are there on purpose:
-
-- `--ignore-identifiers` finds a copy whose names were changed after pasting,
-  as well as an exact copy.
-- At `--min-confidence 100`, `vulture` names only code that certainly cannot
-  run: an unused argument, or code after a return. It does not name an unused
-  function or import at that setting. Imports are already the linter's job in
-  the project check.
-- `jscpd` writes a report folder. Point it at a temporary folder outside the
-  project and delete it afterwards, so nothing is saved.
-
-## Checking a finding
-
-An engine's finding is a lead. Before it becomes a proposal:
-
-- Name the file and line. `knip` and `deptry` name a dependency without a
-  line, so find its line in the package file.
-- Search the whole project for the name. Code can be reached by a name built
-  at run time, a framework convention or a configuration file, and no engine
-  sees those. If the name turns up anywhere outside its own definition, drop
-  the finding.
-- Keep the kind of finding with it. A copied block, an unused export and an
-  unused dependency are different claims, and the proposal says which it is.
+A `not-checked` line names one kind no engine could read. Where the person has
+not been asked, ask once whether the kit may fetch the missing tools, as the
+trim does, and record the answer in the same line of AGENTS.md.
 
 ## Turning findings into proposals
 
-Waste findings join the other hot-spot inputs, and the cap of three proposals
-holds for all of them together. Rank a finding higher when it sits in an area
-the spread count or a repeated bug already named. Say it in plain words, with
-the place:
+Open each finding at its line and confirm it is meant as part of this
+project. A name reached by a framework convention the script cannot see, such
+as a page file the framework loads by its place, is not waste. Drop it.
+
+Findings join the other hot-spot inputs, under the cap of three proposals.
+Rank a finding higher when it sits in an area the spread count or a repeated
+bug already named. Say which kind it is, in plain words, with the place:
 
 - "The same total calculation is written twice, in `src/pricing.js` at line 1
   and `src/report.js` at line 1. Keeping one would mean a fix lands once."
@@ -68,9 +41,6 @@ the place:
 Say how many more findings there are in one line, and offer to list them.
 Remove nothing without a yes.
 
-Whenever a proposal names copied code, or the person asks whether duplication
-was checked, say once: "This finds copied code. It does not find two pieces of
-code that do the same job written differently." No tool finds that reliably.
-
-When the read finds nothing, say nothing about it. There is no filler
-proposal.
+When a proposal names copied code, or the person asks whether duplication was
+checked, say once: "This finds copied code. It does not find two pieces of
+code that do the same job written differently."

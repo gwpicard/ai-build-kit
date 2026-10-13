@@ -18,15 +18,25 @@ It compares paragraphs word for word, after ignoring case, spacing and
 punctuation, so it finds a copy and never two documents that say the same
 thing in different words.
 
+With --since-visit it prints only what is new since the last full visit: a
+finding already there on the `last-full-pass` date in
+`.ai-build-kit-maintenance` was offered then, so it is left out. That earlier
+state is read again from Git history, in a temporary copy, and never saved.
+
+Exit codes: 0 nothing to report, 1 findings printed, 2 not a project under
+Git.
+
 It reads the project and writes nothing. Run it from the project root:
 
-    python3 <maintain skill folder>/scripts/document-bloat.py
+    python3 <maintain skill folder>/scripts/document-bloat.py [--since-visit]
 """
 
 import os
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 from collections import defaultdict
 
 SKIPPED = {
@@ -114,12 +124,58 @@ def unreferenced(docs, files):
     return found
 
 
-def main():
+def findings():
     files = tracked()
     docs = documents(files)
-    for finding in repeated(docs) + unreferenced(docs, files):
+    return repeated(docs) + unreferenced(docs, files)
+
+
+def key(finding):
+    return tuple(part.rsplit(":", 1)[0] for part in finding)
+
+
+def at_last_visit():
+    """The findings as they stood at the last full visit, or None when there is none."""
+    try:
+        with open(".ai-build-kit-maintenance", encoding="utf-8") as handle:
+            record = handle.read()
+    except OSError:
+        return None
+    date = re.search(r"^last-full-pass:?\s*(\d{4}-\d{2}-\d{2})", record, re.M)
+    if not date:
+        return None
+    commit = subprocess.run(["git", "rev-list", "-1", f"--before={date.group(1)} 23:59:59", "HEAD"],
+                            capture_output=True, text=True).stdout.strip()
+    if not commit:
+        return None
+    here, folder = os.getcwd(), tempfile.mkdtemp()
+    copy = os.path.join(folder, "earlier")
+    try:
+        cloned = subprocess.run(["git", "clone", "-q", "--shared", "--no-checkout", here, copy],
+                                capture_output=True).returncode == 0
+        if not cloned or subprocess.run(["git", "checkout", "-q", "--detach", commit], cwd=copy,
+                                        capture_output=True).returncode != 0:
+            return None
+        os.chdir(copy)
+        return findings()
+    finally:
+        os.chdir(here)
+        shutil.rmtree(folder, ignore_errors=True)
+
+
+def main():
+    if subprocess.run(["git", "rev-parse", "--git-dir"], capture_output=True).returncode != 0:
+        print("This folder is not a project under Git.", file=sys.stderr)
+        return 2
+    found = findings()
+    if "--since-visit" in sys.argv[1:]:
+        earlier = at_last_visit()
+        if earlier is not None:
+            known = {key(f) for f in earlier}
+            found = [f for f in found if key(f) not in known]
+    for finding in found:
         print("\t".join(finding))
-    return 0
+    return 1 if found else 0
 
 
 if __name__ == "__main__":

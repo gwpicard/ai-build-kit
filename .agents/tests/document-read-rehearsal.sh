@@ -59,9 +59,11 @@ commit "A project whose documents are true"
 
 # --- a clean project --------------------------------------------------------
 
-out=$(python3 "$SCRIPT")
+status=0
+out=$(python3 "$SCRIPT") || status=$?
 [ -z "$out" ] || fail "a clean project should produce nothing, got: $out"
-echo "  ok: documents that name only real things produce nothing"
+[ "$status" = 0 ] || fail "a clean project should exit 0, got $status"
+echo "  ok: documents that name only real things produce nothing and exit 0"
 [ -z "$(git status --porcelain)" ] || fail "the script wrote into the project"
 echo "  ok: the script writes nothing"
 
@@ -86,8 +88,10 @@ EOF
 git add -A
 commit "The README drifts"
 
-out=$(python3 "$SCRIPT")
+status=0
+out=$(python3 "$SCRIPT") || status=$?
 printf '%s\n' "$out" | sed 's/^/    /'
+[ "$status" = 1 ] || fail "findings should exit 1, got $status"
 
 expect() {
   printf '%s\n' "$out" | grep -qF "$(printf '%s\t%s\t%s' "$1" "$2" "$3")" ||
@@ -140,6 +144,32 @@ esac
 python3 "$SCRIPT" | grep -qF "$(printf 'docs/setup.md:4\tcommand\tmake release')" ||
   fail "a make target the Makefile does not have was not named"
 echo "  ok: a make target the Makefile does not have is named"
+
+# --- only what is new since the last visit ------------------------------------
+
+printf 'last-light-pass: %s\n' "$(date +%Y-%m-%d)" > .ai-build-kit-maintenance
+git add -A
+commit "Record the visit"
+status=0
+out=$(python3 "$SCRIPT" --since-visit) || status=$?
+[ -z "$out" ] && [ "$status" = 0 ] ||
+  fail "names already missing at the last visit were raised again ($status): $out"
+echo "  ok: a name already missing at the last visit is not raised again"
+printf '%s\n' '' 'Backups run from `scripts/backup.sh`.' >> README.md
+git add -A
+GIT_COMMITTER_DATE=2099-01-01T10:00:00 GIT_AUTHOR_DATE=2099-01-01T10:00:00 commit "A new stale name after the visit"
+status=0
+out=$(python3 "$SCRIPT" --since-visit) || status=$?
+[ "$status" = 1 ] || fail "a new finding since the visit should exit 1, got $status"
+[ "$(printf '%s\n' "$out" | cut -f3)" = scripts/backup.sh ] ||
+  fail "expected only the name gone missing since the visit, got: $out"
+[ -z "$(git status --porcelain)" ] || fail "reading the earlier state wrote into the project"
+echo "  ok: only the name gone missing since the last visit is printed, read from history"
+
+status=0
+(cd "$WORK" && python3 "$SCRIPT" >/dev/null 2>&1) || status=$?
+[ "$status" = 2 ] || fail "outside a Git project it should exit 2, got $status"
+echo "  ok: outside a project under Git it exits 2"
 
 echo
 echo "document-read-rehearsal.sh: stale names found at their lines, true ones left alone"

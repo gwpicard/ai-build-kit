@@ -211,7 +211,8 @@ for you to decide instead.
 You hear one line, such as "I took out two things this change did not need.
 They are listed on the piece.", or nothing when there was nothing to take out.
 The removals are saved as their own step, so asking for one back undoes only
-that step. A repair gets the same.
+that step. That step is refused if it changed a test, and the check on the
+pull request goes red if one ever does. A repair gets the same.
 
 If a build uncovers another piece of work, that new piece says "Found while
 building the invoice list", using the title of the piece that surfaced it.
@@ -717,8 +718,8 @@ of guessing from memory.
 Unless the project is a private exploration, it also looks for code copied
 from one place to another, code nothing uses any more, and dependencies nothing
 needs, using tools that read the project rather than the agent's impression of
-it. Each finding names the file and line, and it joins the same short list of
-at most three proposals. It finds copied code; it does not find two pieces of
+it. Each finding names the file and line, only what is new since the last full
+visit is raised, and it joins the same short list of at most three proposals. It finds copied code; it does not find two pieces of
 code that do the same job written differently. When it finds nothing, you hear
 nothing about it.
 
@@ -731,7 +732,7 @@ got worse, and you hear nothing.
 It also reads all of the project's documents for bloat: a paragraph written
 out in full in two places, and a document nothing mentions any more. Each one
 comes as an offer, to keep one copy or to delete the page, and nothing changes
-without your yes. It finds copies, not two documents that say the same thing
+without your yes. One you were offered at an earlier visit is not raised again. It finds copies, not two documents that say the same thing
 in different words.
 
 /maintain also prepares a handover when you ask for one: a document for
