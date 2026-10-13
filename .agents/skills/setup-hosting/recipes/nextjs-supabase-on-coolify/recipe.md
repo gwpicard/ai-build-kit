@@ -11,7 +11,7 @@ The kit never contacts the server. The person, or a companion working with them,
 
 ## Preview
 
-How it works: Coolify builds each pull request into its own container and removes it on close. Previews start off: the person or the companion presses Enable preview deployments on the app's Preview Deployments page. A preview has an address only when the app has a domain; without one the kit says once that nobody can open it. Its settings point at a second Supabase project, which `../parts/scripts/migrate.sh --apply <preview project ref>` gives the branch's migrations. Where no second project can exist, they point at the live one: the kit says once that previews use live data, records it, and gives a preview no migrations.
+How it works: Coolify builds each pull request into its own container and removes it on close. Previews start off: the person or the companion presses Enable preview deployments on the app's Preview Deployments page. A preview has an address only when the app has a domain; without one the kit says once that nobody can open it. Its settings point at a second Supabase project, which `../parts/scripts/migrate.sh --apply <preview project ref>`, with that project's password location as `PREVIEW_DB_PASSWORD_FILE`, gives the branch's migrations. Where no second project can exist, they point at the live one: the kit says once that previews use live data, records it, and gives a preview no migrations.
 How it is checked: A finished preview deployment whose health shows the database reachable, the pull request's commit, and a project other than the live one, unless the record says previews share it.
 Script: scripts/preview.sh
 Who runs it: a companion or the person, result read back

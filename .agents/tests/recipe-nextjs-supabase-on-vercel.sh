@@ -83,8 +83,18 @@ rr_case 0 good migrate.sh
 rr_case 1 bad migrate.sh
 rr_case 2 down migrate.sh
 rr_case 2 good DB_PASSWORD_FILE= migrate.sh
+rr_case 1 bad RR_DRY=colour LC_ALL=C migrate.sh
+rr_said yes "20260101000000_pinned.sql"
+rr_case 2 good RR_DRY=nameless migrate.sh
 rr_case 0 good migrate.sh --apply liveref
 rr_case 1 bad migrate.sh --apply liveref
+# A preview project needs its own password, and the folder stays linked to
+# the live project afterwards.
+rr_case 2 good migrate.sh --apply previewref
+printf 'preview-stand-in\n' > "$RR_TMP/preview-password"
+rr_case 0 good PREVIEW_DB_PASSWORD_FILE="$RR_TMP/preview-password" migrate.sh --apply previewref
+rr_report "migrate.sh leaves the folder linked to the live project after a preview apply" \
+  "$([ "$(cat "$RR_TMP/work/supabase/.temp/project-ref")" = liveref ] && echo yes || echo no)"
 rr_case 0 good rls.sh
 rr_case 1 bad rls.sh
 rr_case 0 bad rls.sh --on-record notices
@@ -92,7 +102,10 @@ rr_case 2 down rls.sh
 rr_case 0 good keep-out-of-git.sh
 rr_case 2 good GIT_DIR=/nonexistent keep-out-of-git.sh
 rr_case 0 good container-check.sh
+rr_called "docker rmi app-check"
+rr_case 0 good RR_PORT_BUSY=1 container-check.sh
 rr_case 1 bad container-check.sh
+rr_called "docker rmi app-check"
 rr_case 2 down container-check.sh
 rr_case 0 good backup.sh
 rr_case 1 bad backup.sh

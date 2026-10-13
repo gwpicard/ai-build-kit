@@ -269,19 +269,37 @@ echo "supabase $*" >> "$RR_CALLS"
 refuse() { echo "supabase stand-in: not a documented command: supabase $*" >&2; exit 64; }
 down() { [ "${RR_WORLD:-good}" != down ] || { echo "failed to connect to postgres" >&2; exit 1; }; }
 bad() { [ "${RR_WORLD:-good}" = bad ]; }
+# The preview project has a password of its own, so the live one is refused.
+password() {
+  case "$(cat supabase/.temp/project-ref 2>/dev/null):${SUPABASE_DB_PASSWORD:-}" in
+    previewref:preview-stand-in|liveref:?*|:?*) ;;
+    *) echo "password authentication failed" >&2; exit 1 ;;
+  esac
+}
 case "$*" in
   "init"|"start"|"stop"|"stop --no-backup") down; mkdir -p supabase ;;
   "db push --dry-run")
     down
-    [ -n "${SUPABASE_DB_PASSWORD:-}" ] || { echo "password authentication failed" >&2; exit 1; }
-    if bad; then printf 'Would push these migrations:\n • 20260101000000_pinned.sql\n'
-    else echo "Remote database is up to date."; fi ;;
+    password
+    # RR_DRY=colour answers as a terminal does, in colour; RR_DRY=nameless
+    # says a push would happen in words no script can read names from.
+    esc=$(printf '\033')
+    case "${RR_DRY:-}" in
+      colour) printf '%s[1mWould push these migrations:%s[0m\n %s[32m•%s[0m %s[1m20260101000000_pinned.sql%s[0m\n' \
+        "$esc" "$esc" "$esc" "$esc" "$esc" "$esc" ;;
+      nameless) printf 'Would push these migrations:\n (one migration)\n' ;;
+      *) if bad; then printf 'Would push these migrations:\n • 20260101000000_pinned.sql\n'
+         else echo "Remote database is up to date."; fi ;;
+    esac ;;
   "db push")
     down
-    [ -n "${SUPABASE_DB_PASSWORD:-}" ] || { echo "password authentication failed" >&2; exit 1; }
+    password
     bad && { echo "ERROR: column already exists" >&2; exit 1; }
     echo "Finished supabase db push." ;;
-  "link --project-ref "*) [ "$#" -eq 3 ] || refuse "$@"; down ;;
+  "link --project-ref "*)
+    [ "$#" -eq 3 ] || refuse "$@"; down
+    mkdir -p supabase/.temp
+    printf '%s\n' "$3" > supabase/.temp/project-ref ;;
   "db dump"*)
     shift 2
     file=
@@ -339,7 +357,7 @@ while [ "$#" -gt 0 ]; do
     --retry|--retry-delay|--max-time) [ -n "${2:-}" ] || refuse "$@"; shift 2 ;;
     --retry-connrefused) shift ;;
     -H) [ -n "${2:-}" ] || refuse "$@"; headers="$headers|$2"; shift 2 ;;
-    https://*|http://localhost:3000/*) [ -z "$url" ] || refuse "$@"; url=$1; shift ;;
+    https://*|http://localhost:[1-9]*/*) [ -z "$url" ] || refuse "$@"; url=$1; shift ;;
     *) refuse "$@" ;;
   esac
 done
@@ -362,7 +380,7 @@ case "$url" in
     [ "$world" != down ] || exit 6
     if [ "$world" = bad ]; then echo '{}'
     else echo '{"external":{"email":true},"disable_signup":false,"mailer_autoconfirm":false}'; fi ;;
-  http://localhost:3000/api/health)
+  http://localhost:[1-9]*/api/health)
     [ "$world" != down ] || exit 7
     image=$(cat "$RR_STATE/image" 2>/dev/null)
     case "$world:$image" in
@@ -395,7 +413,11 @@ case "$1" in
     done
     [ "${1:-}" = . ] && [ -n "$tag" ] || refuse build "$@" ;;
   run)
-    [ "$#" -eq 9 ] && [ "$2 $3 $5 $6 $7" = "-d --name -p 3000:3000 --env-file" ] || refuse "$@"
+    [ "$#" -eq 9 ] && [ "$2 $3 $5 $7" = "-d --name -p --env-file" ] || refuse "$@"
+    case "$6" in [1-9]*:3000) ;; *) refuse "$@" ;; esac
+    # RR_PORT_BUSY: something else on this computer holds port 3000.
+    [ -z "${RR_PORT_BUSY:-}" ] || [ "$6" != 3000:3000 ] ||
+      { echo "docker: Error response from daemon: port is already allocated." >&2; exit 125; }
     printf '%s\n' "$9" > "$RR_STATE/image" ;;
   rm) [ "$#" -eq 3 ] && [ "$2" = -f ] || refuse "$@" ;;
   rmi) [ "$#" -eq 2 ] || refuse "$@" ;;
@@ -510,6 +532,8 @@ rr_case() {
   cp -R "$RR_TMP/fixture.git" "$RR_TMP/work.git"
   "$rr_real_git" -C "$RR_TMP/work" remote set-url origin "$RR_TMP/work.git"
   rm -f "$RR_STATE/image"
+  [ -z "${RR_ORIGIN:-}" ] || "$rr_real_git" -C "$RR_TMP/work" remote set-url origin "$RR_ORIGIN"
+  rr_mark=$(wc -l < "$RR_CALLS")
   rr_got=0
   # shellcheck disable=SC2086
   (cd "$RR_TMP/work" && env -u SUPABASE_DB_PASSWORD -u SUPABASE_ACCESS_TOKEN \
@@ -536,6 +560,13 @@ rr_said() {
   if grep -qF -- "$2" "$RR_TMP/out"; then rr_got=yes; else rr_got=no; fi
   [ "$rr_got" = "$1" ] || { sed 's/^/    /' "$RR_TMP/out" >&2; rr_fail "$rr_file printed '$2': $rr_got, not $1"; }
   rr_ok "$rr_file printed '$2': $1"
+}
+
+rr_called() {
+  # rr_called <call>: the last case made this exact call to a tool.
+  tail -n "+$((rr_mark + 1))" "$RR_CALLS" | grep -qxF -- "$1" ||
+    rr_fail "$rr_file did not call '$1'"
+  rr_ok "$rr_file called '$1'"
 }
 
 rr_tools() {
