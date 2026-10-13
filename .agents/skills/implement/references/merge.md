@@ -2,8 +2,12 @@
 
 A finished piece reaches `main` through its pull request, and on a live
 project that merge is the deploy. The first upload waits for the person's yes
-before any push, and the merge waits for a yes that names it. A Codex sign-in
-failure on a push follows SKILL.md.
+before any push, and the merge waits for a yes that names it.
+
+In Codex, a push, fetch or remote check that fails with `unable to get password
+from user` gets the installed `setup-ai-build-kit` skill's
+`templates/foundation/codex-github-check.py`, run with python3 and `--message`.
+Give its sentence and stop, without signing in again or retrying.
 
 ## The first upload
 
@@ -132,7 +136,7 @@ stays on `main`. Never merge on this computer and push `main`. Where GitHub
 cannot be reached, the merge waits, and the person can merge it on GitHub.
 
 In Claude Code, run `python3` with the `maintain` skill's
-`scripts/settings-rules.py --merge-box` first. Exit 0 means a confirmation box
+`scripts/settings-rules.py` with `--merge-box` first. Exit 0 means a confirmation box
 will ask them to allow the merge: say so in one line. Any other exit means no
 box: say the merge runs on their yes in this chat, and that /maintain can add
 the question. Under another coding agent, say nothing about a box.

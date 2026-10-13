@@ -50,7 +50,7 @@ its sentence, and stop this session's work.
 5. In Codex, offer the session-start GitHub check to an older project missing
    it, once the tree is clean. On a yes naming `.codex/hooks.json` and
    `.agents/tools/codex-github-check.py`, run the installed
-   `setup-ai-build-kit` skill's `scripts/setup-codex.py --hooks`, explain that
+   `setup-ai-build-kit` skill's `scripts/setup-codex.py` with `--hooks`, explain that
    the person trusts the project and reviews the hook with `/hooks`, then
    restarts, and with approval add the template's check-before-work rule to the
    top of AGENTS.md. Never bypass the review. A hook pointing at a former
