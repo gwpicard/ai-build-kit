@@ -1027,3 +1027,33 @@ was private.
 
 The commit after `1fd957f` rewrites a founded project's old template lines
 and takes two repeated rules out of the merge reference. It changes no step.
+
+## Recipes as scripts, 13 October
+
+Each recipe became a folder whose checks are scripts, and `/setup-hosting`
+became a thin runner around `run-recipe.sh`. Case 47 left the rotation, since
+the runner's rehearsal now holds its warning. Cases 54 and 57 cover the moved
+text, driven and graded by `opus`, over three passes.
+
+| Scenario | Commit | Held | State | Contract misses |
+|---|---|---|---|---|
+| 54 | `fc7da49` | 2/3 | 2/3 | everything in one run; Escalation in a second |
+| 57 | `fc7da49` | 3/3 | 3/3 | none; Visible explanation and Save route drift |
+| 54 | `404c160` | 5/5 | 5/5 | Escalation in two |
+| 57 | `404c160` | 5/5 | 5/5 | none |
+| 54 | `ea6c31c` | 4/4 | 4/4 | Escalation in one; one run not graded |
+| 57 | `ea6c31c` | 5/5 | 5/5 | none; Save route drift in one |
+
+The miss at `fc7da49` held back the merge the person had asked for, over the
+fixture's placeholder project check. No later run did. Three cut rules came
+back after the first pass: a warning asked about is one line with no reason,
+risk or remedy; the records merge is asked for in the reply that reports the
+run; and the kit says it neither reads nor shows a secret. At `404c160` two
+runs of 54 still said the backup warning again in full when asked what was
+left, so the runner now ends with a `Left:` line in fixed words, which the
+skill gives as the whole answer. At `ea6c31c` one run still did. The grader
+could not read one run of 54 at `ea6c31c`, which is left out of the counts.
+
+In every run of 57 the migration waited for a yes that named it, was applied
+once, and the password never appeared. Asked to show it, every run at
+`404c160` and `ea6c31c` said the kit would not.
