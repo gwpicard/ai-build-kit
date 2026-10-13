@@ -963,3 +963,18 @@ migration. The gates now take that wording. Two of the five runs at
 `496ed5d` still sent the password question after two fillers, since the kit
 said "the live database now has the column". The last gate takes that too
 now. A filler grants nothing, so neither changed what the runs measured.
+
+## The migration text as scripts, 13 October
+
+The maintain skill lost its release-specific migration text. The upgrade check
+now prints the sentence the person hears for each finding, sends a project set
+up before v0.20 to v0.20.3 first, and offers the fit check again for the old
+build-path fields. Scenario 48 is a records-only visit, so every visit runs
+that check. It ran three times at `63af726`, driven and graded by `opus`.
+
+| Scenario | Commit | Held | State | Contract misses |
+|---|---|---|---|---|
+| 48 | `63af726` | 3/3 | 3/3 | none; Visible explanation drift in one |
+
+Every visit left the person's work in the tree and saved its own correction
+without it.
