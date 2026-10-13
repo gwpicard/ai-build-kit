@@ -643,7 +643,7 @@ word for word, and changes nothing else in the masterplan without your yes.
 
 A project installed before the kit had six commands still offers the old
 ones after its update. The first /maintain after the update says so in one
-line: /fix and /queue are now part of /shape and /implement, /sync is part of
+line: /fix and /queue are part of /shape and /implement, /sync is part of
 /maintain, and /ship is now /setup-hosting. Nothing you built changes. It
 offers to remove the old skills, to rewrite the command list in your
 AGENTS.md, and to correct the one sentence the kit itself wrote into your

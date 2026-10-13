@@ -43,7 +43,7 @@ code and sets a starting point. A build leaves the mark as it is, says in one li
 /maintain checks the whole masterplan against the code, and carries on with its
 save.
 
-Section-builder applies the change before saving, saves the checked code, then,
+`/implement` applies the change before saving, saves the checked code, then,
 where the mark could be used, writes that saved commit into the mark and saves
 the mark in a records-only commit on the same route. Both commits belong to the
 same piece and pull request. The merge keeps them, as "Merging" in the

@@ -3,54 +3,135 @@
 # skills stay retired.
 #
 # /fix, /queue, /sync and /ship were folded into other commands or renamed. A
-# person sent to one of them types a command that does nothing. Only the
-# maintain skill, which migrates older projects, and WORKFLOW.md may name them.
+# person sent to one of them types a command that does nothing. Every shipped
+# file is read, WORKFLOW.md and the maintain skill included. The only text
+# that may name them is the sentence that tells a person they were retired,
+# which upgrade-check.py says and WORKFLOW.md repeats, and the old masterplan
+# sentence upgrade-check.py recognises to rewrite. The released descriptions
+# in kit-retired-skills.json and kit-released-copies.json are data the
+# maintain skill matches old folders against, so they are not read.
 #
 # change-triage, section-builder and screen-check folded into /shape and
 # /implement. A skill told to load one of them finds nothing on a project
-# updated past the fold, so no shipped file names them except the maintain
-# skill's scripts, which recognise the old folders to remove them.
+# updated past the fold, so no shipped file names them, in any case, except
+# the maintain skill's scripts, which recognise the old folders to remove them.
+#
+# A scanned path that is missing fails rather than being skipped, and the
+# check proves itself on copies: a planted "run /sync" in the maintain skill
+# or in WORKFLOW.md fails, a planted "Section-builder" fails, and a missing
+# WORKFLOW.md fails.
 
 set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
-SKILLS="$ROOT/.agents/skills"
-fail=0
+work=$(mktemp -d)
+trap 'rm -rf "$work"' EXIT
 
-for name in fix queue sync ship change-triage section-builder screen-check; do
-  if [ -e "$SKILLS/$name" ]; then
-    echo "FAIL: the retired $name skill folder is back"
-    fail=1
-  fi
-  for adapter in "$ROOT/.claude/skills/$name" "$ROOT/.claude/commands/$name.md"; do
-    if [ -e "$adapter" ]; then
-      echo "FAIL: a generated adapter for the retired $name skill is back: $adapter"
-      fail=1
-    fi
+cat > "$work/scan.py" <<'PY'
+import os, re, runpy, sys
+
+root = sys.argv[1]
+skills = os.path.join(root, ".agents/skills")
+fail = []
+
+COMMANDS = ("README.md", "llms.txt", "WORKFLOW.md", "docs/COMPATIBILITY.md",
+            ".agents/hooks", ".agents/skills")
+FOLDED_PATHS = ("README.md", "llms.txt", "WORKFLOW.md", "docs/COMPATIBILITY.md",
+                "docs/PHILOSOPHY.md", ".agents/hooks", ".agents/guard", ".claude-plugin",
+                "agent-plugin", "release-manifest.txt", ".agents/skills")
+DATA = {".agents/skills/maintain/scripts/kit-retired-skills.json",
+        ".agents/skills/maintain/scripts/kit-released-copies.json"}
+RETIRED = re.compile(r"/(fix|queue|sync|ship)([^a-z/-]|$)", re.M)
+FOLDED = re.compile(r"(?i)change-triage|section-builder|screen-check")
+
+for name in ("fix", "queue", "sync", "ship", "change-triage", "section-builder", "screen-check"):
+    for path in (".agents/skills/" + name, ".claude/skills/" + name, ".claude/commands/" + name + ".md"):
+        if os.path.lexists(os.path.join(root, path)):
+            fail.append("the retired %s skill is back: %s" % (name, path))
+
+# The sentences allowed to name a retired command, read from the script that
+# says them, so a reworded announcement is held to the script's words.
+check = runpy.run_path(os.path.join(skills, "maintain/scripts/upgrade-check.py"))
+announce = re.search(r"/fix and /queue[^.]*\.", check["SIX"]).group(0)
+ALLOWED = [check["SIX"], announce, check["OLD_SENTENCE"]]
+
+
+def files(paths):
+    for rel in paths:
+        full = os.path.join(root, rel)
+        if not os.path.lexists(full):
+            fail.append("a path this check reads is missing: %s" % rel)
+            continue
+        if os.path.isfile(full):
+            yield rel
+            continue
+        for here, dirs, names in os.walk(full):
+            dirs[:] = [d for d in dirs if d != "__pycache__"]
+            for n in sorted(names):
+                yield os.path.relpath(os.path.join(here, n), root)
+
+
+def text(rel):
+    with open(os.path.join(root, rel), encoding="utf-8", errors="replace") as handle:
+        return handle.read()
+
+
+def flat(body, rel):
+    """The text with line breaks as spaces, and a Python string split over
+    several literals joined, so a wrapped sentence reads as one."""
+    if rel.endswith(".py"):
+        body = re.sub(r'"\s*\n\s*"', "", body)
+    return re.sub(r"\s+", " ", body)
+
+
+for rel in files(COMMANDS):
+    if rel in DATA:
+        continue
+    body = flat(text(rel), rel)
+    for sentence in ALLOWED:
+        body = body.replace(sentence, " ")
+    for match in RETIRED.finditer(body):
+        fail.append("%s still sends the person to a retired command: ...%s..." % (
+            rel, body[max(0, match.start() - 40):match.end() + 20]))
+        break
+
+for rel in files(FOLDED_PATHS):
+    if rel.startswith(".agents/skills/maintain/scripts/"):
+        continue
+    match = FOLDED.search(text(rel))
+    if match:
+        fail.append("%s still names a folded background skill: %s" % (rel, match.group(0)))
+
+for line in fail:
+    print("FAIL: " + line)
+sys.exit(1 if fail else 0)
+PY
+
+python3 "$work/scan.py" "$ROOT" || exit 1
+
+# The check must catch what it exists to catch. Each case runs on a copy.
+copy() {
+  rm -rf "$work/copy"; mkdir -p "$work/copy/docs" "$work/copy/.agents"
+  for p in README.md llms.txt WORKFLOW.md release-manifest.txt .claude-plugin agent-plugin; do
+    cp -R "$ROOT/$p" "$work/copy/$p"
   done
-done
+  cp "$ROOT/docs/COMPATIBILITY.md" "$ROOT/docs/PHILOSOPHY.md" "$work/copy/docs/"
+  for p in skills hooks guard; do cp -R "$ROOT/.agents/$p" "$work/copy/.agents/$p"; done
+}
+refused() {
+  if python3 "$work/scan.py" "$work/copy" >/dev/null; then
+    echo "FAIL: the check passed $1"; exit 1
+  fi
+  echo "  ok: $1 is caught"
+}
+copy; python3 "$work/scan.py" "$work/copy" >/dev/null || { echo "FAIL: a clean copy is refused"; exit 1; }
+copy; printf '\nWhen the records drift, run /sync.\n' >> "$work/copy/.agents/skills/maintain/SKILL.md"
+refused "a planted \"run /sync\" in the maintain skill"
+copy; printf '\nAfter a launch, run /ship again.\n' >> "$work/copy/WORKFLOW.md"
+refused "a planted \"run /ship\" in WORKFLOW.md"
+copy; printf '\nSection-builder saves the change.\n' >> "$work/copy/.agents/skills/implement/SKILL.md"
+refused "a capitalised folded skill name"
+copy; rm "$work/copy/WORKFLOW.md"
+refused "a missing scanned file"
 
-stale=$(grep -rlE '/(fix|queue|sync|ship)([^a-z/-]|$)' \
-    "$SKILLS" "$ROOT/README.md" "$ROOT/llms.txt" "$ROOT/docs/COMPATIBILITY.md" \
-    "$ROOT/.agents/hooks" 2>/dev/null \
-  | grep -v "^$SKILLS/maintain/" || :)
-if [ -n "$stale" ]; then
-  echo "FAIL: a shipped file still sends the person to a retired command:"
-  echo "$stale"
-  fail=1
-fi
-
-folded=$(grep -rlE 'change-triage|section-builder|screen-check' \
-    "$SKILLS" "$ROOT/README.md" "$ROOT/llms.txt" "$ROOT/WORKFLOW.md" \
-    "$ROOT/docs/COMPATIBILITY.md" "$ROOT/docs/PHILOSOPHY.md" "$ROOT/.agents/hooks" \
-    "$ROOT/.agents/guard" "$ROOT/.claude-plugin" "$ROOT/agent-plugin" \
-    "$ROOT/release-manifest.txt" 2>/dev/null \
-  | grep -v "^$SKILLS/maintain/scripts/" || :)
-if [ -n "$folded" ]; then
-  echo "FAIL: a shipped file still names a folded background skill:"
-  echo "$folded"
-  fail=1
-fi
-
-[ "$fail" -eq 0 ] || exit 1
 echo "retired-names.sh: all checks passed"
