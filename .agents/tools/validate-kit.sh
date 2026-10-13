@@ -1273,7 +1273,10 @@ echo "== Product names stay in the recipes =="
 # adds its own host to the list, a recipe still waiting for its real run
 # included. Two exemptions: the screen rules link Vercel's interface
 # guidelines, a design guide rather than a place a tool runs, and the
-# maintain skill's two records of released copies name old file paths.
+# maintain skill's two records of released copies name old file paths. The
+# founding settings template is a list of rules Claude Code applies, not words
+# a skill learns from. It names the recipes' own commands that change a live
+# service, so a box asks before each one, and push-to-main-rules.sh reads it.
 product_list='coolify|vercel|supabase|netlify|heroku|railway|railpack|fly\.io|hetzner|hostinger|firebase|digitalocean'
 recipe_targets=$(for rf in "$SKILLS"/setup-hosting/recipes/*.md "$ROOT"/.agents/tests/recipes-awaiting-run/*.md; do
   [ -f "$rf" ] || continue
@@ -1290,7 +1293,8 @@ fi
 products_named() {
   find "$1" -type f ! -path '*/setup-hosting/recipes/*' \
     ! -path '*/maintain/scripts/kit-released-copies.json' \
-    ! -path '*/maintain/scripts/kit-retired-skills.json' | sort | while IFS= read -r pn_file; do
+    ! -path '*/maintain/scripts/kit-retired-skills.json' \
+    ! -path '*/templates/foundation/claude-settings.json' | sort | while IFS= read -r pn_file; do
     tr '[:upper:]' '[:lower:]' < "$pn_file" \
       | sed -e 's#vercel web interface guidelines##g' \
             -e 's#github\.com/vercel-labs/web-interface-guidelines##g' \
