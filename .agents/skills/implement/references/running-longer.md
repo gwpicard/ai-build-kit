@@ -1,78 +1,47 @@
 # Running longer: auto and goal modes
 
-Loaded when a run covers several pieces instead of one. The discipline is
-unchanged; what changes is that nobody is present between the steps, so the
-conditions carry the quality and everything gets a cap.
+Loaded when a run covers several pieces with nobody present between them. The
+discipline is unchanged; the conditions carry the quality and everything has a
+cap.
 
 ## Eligibility by build path
 
-- **Explore privately:** permitted only for disposable work with
-  machine-checkable evidence.
-- **Build and run it:** permitted once at least three normal pieces have
-  completed cleanly.
-- **Build with care:** permitted only for pieces entirely outside every named
-  sensitive area.
+- **Explore privately:** only disposable work with machine-checkable evidence.
+- **Build and run it:** once three ordinary pieces have completed cleanly.
+- **Build with care:** only pieces entirely outside every named sensitive area.
 
-## Capability rule
-
-Assume nothing beyond ordinary sequential agent work: no native goal mode, no
-background agents, no worktrees. Where a harness offers those as an
-enhancement, they may speed the run up, but the portable implementation is
-plain sequential building, one piece after another in the same way a person
-would run them by hand.
+Assume only plain sequential building, one piece after another. A harness's
+goal mode, background agents or worktrees may speed it up, never replace it.
 
 ## Typed with auto
 
-The plan gets approved once; the pieces then run in a row with nobody in
-between. The rules of the mode: every piece still gets the evidence its
-consequence classification requires, and every piece gets its own commit, so
-anything can be unwound piece by piece.
+The plan is approved once. Every piece still gets the evidence its subjects
+require and its own commit, so anything can be unwound piece by piece.
 
-Which pieces the run may take: only those whose done line a machine can
-prove, meaning it names a test or a command with a checkable result. A piece
-whose done line needs human eyes ("you see it in the browser", "you check it
-by hand") gets skipped and left marked to-build; say so in the report. The
-plan sorts itself: the how-to-check phrase on each done line is the
-eligibility rule.
+Take only pieces whose done line a machine can prove: it names a test or a
+command with a checkable result. Skip a piece needing human eyes and say so in
+the report. Never take a repair: its three-failure notice needs a person.
 
-A repair, a piece labelled `broken`, is never taken. Its rules ask for a
-person: three failed attempts owe the risk notice in the same reply, and a run
-with nobody there would retry and park it instead. Skip it, and name it in the
-report as waiting for an ordinary `/implement`.
+A failing piece gets up to three attempts. After the third, label it
+`blocked` with one line on what kept failing, move on, and send it back to
+`/shape` where the failure points at a missing decision or fact.
 
-When a piece fails: retry within the piece, up to three attempts, the same
-number a repair uses. After the third, park it, mark it `blocked` with one
-line on what kept failing, and move to the next piece; never let one piece consume the
-run. Route the parked piece further when the failure points somewhere specific:
-send it back to `/shape`, which settles a missing decision, chases a missing
-external fact, or reassesses a shape the team could not safely own, rather than
-a fourth attempt.
+Stop the whole run at anything that needs planning, would change the build
+path, touches a named sensitive area, or is ambiguous. Never guess to keep a
+run going. Never merge, and never accept a risk on the person's behalf.
 
-Stop the whole run at anything that needs planning or would change the build
-path, at any touch of a named sensitive area, and at anything
-ambiguous; never guess to keep a run going.
+The run uses one branch and ends as one pull request where the build path
+requires one, or one confirmed checkpoint for eligible private exploration.
+End with the `setup-hosting` skill's `references/evidence-run.md`, and report:
+what was parked and why first, then what was built and passed, what was
+skipped as eyes-only, and a checklist to try before merging, riskiest first.
 
-The whole run happens on one branch and ends as one pull request, where the
-build path requires a pull request at all; a run confined to the checkpoint
-route may end in a single confirmed checkpoint instead. Skip the per-piece
-hand-over; end the run with the evidence run (setup-hosting/references/evidence-run.md),
-and write the report as: what was parked and why first, then what was built
-and what passed, what was skipped as eyes-only, and a checklist of things to
-try before merging, riskiest first, anything near a sensitive area on
-top.
-
-When a run disappoints, the fix is in the documents rather than in the code by
-hand: sharpen the done lines that let weak work through, add the missing rule
-to the masterplan, then run it again. Hand-editing what a run wrote turns a
-readable project into a mystery.
+When a run disappoints, fix the documents, not the code by hand: sharpen the
+done lines, add the missing rule to the masterplan, and run it again.
 
 ## Goal modes
 
-Some tools ship a /goal feature: state a condition and the agent keeps going
-until a separate model judges it met. Treat it as this mode wearing the
-tool's clothes, under the same rules: the condition comes from a done line or
-a plan area's done lines, read aloud; sensitive areas stay
-stop conditions the goal may not cross; the three-attempt parking rule still
-applies per piece; and the result still lands through the save route the
-build path requires, because merging belongs to a human however long the
-machine ran.
+A tool's /goal feature is this mode under the same rules: the condition comes
+from done lines read aloud, sensitive areas stay stop conditions, the
+three-attempt rule holds per piece, and the result lands through the save route
+the build path requires, with the merge left to a person.

@@ -1,86 +1,59 @@
 # Keeping the masterplan current
 
 These rules apply on every build path. Each piece carries its change to the
-masterplan as [pieces.md](pieces.md) describes. The masterplan keeps its existing
-sections and stays a description of the present.
+masterplan as [pieces.md](pieces.md) describes. The masterplan keeps its
+sections and describes the present.
 
 ## Apply a piece's change
 
-At save time, read the piece's `## Masterplan change` and apply it to the named
-section, checking it against the behaviour that was actually built. A value of
-"nothing" leaves the prose alone. If the result differs from the piece, correct
-the piece before applying it. A safely blocked capability stays described as
-waiting; do not write that it is live.
+At save time, apply the piece's `## Masterplan change` to the named section,
+checked against what was actually built. "Nothing" leaves the prose alone.
+Where the result differs from the piece, correct the piece first. A safely
+blocked capability stays described as waiting, never as live.
 
-When recovering work, read the changes on pieces whose work landed, including
-closed pieces. Compare each with the current page and apply only what is still
-missing. A later piece may have replaced or removed the same behaviour, so
-follow landing order and the current tool. Repeating the truing must not add the same
-line twice or restore something deliberately removed. An open or parked piece
-is not proof its work landed; check the saved work. If an older piece has no
-field, recover its change from that work rather than treating absence as
-"nothing".
+When recovering work, read the changes on pieces whose work landed, closed ones
+included, and apply only what the page still lacks, in landing order. Never add
+a line twice or restore something a later piece removed. An open or parked
+piece is not proof its work landed. A piece with no such section has its change
+recovered from the saved work.
 
 ## Record what was checked
 
-Keep one `Trued against: <full commit hash>` line beside the masterplan's title.
-The hash names a saved code state that was checked against the page. It is for
-the agent to read; never ask the person to understand or maintain it. A new
-masterplan starts with `Trued against: not yet checked`. Founding writes the
-page against its first checkpoint, so once that checkpoint exists it writes the
-checkpoint's hash into the mark, in a records-only commit. Nothing else ever
-goes on that line: a hash or `not yet checked`.
+One `Trued against: <full commit hash>` line sits beside the masterplan's
+title. It names a saved state checked against the page, and only the agent
+reads it. A new masterplan starts with `Trued against: not yet checked`, and
+founding writes its first checkpoint's hash there in a records-only commit.
+Nothing else ever goes on that line.
 
-Before moving the mark, reconcile all changes since the old mark as well as the
-piece in hand. Never move it past work that has not been checked, or past
-uncommitted work that the truing must leave alone.
+Never move the mark past work that has not been checked, or past uncommitted
+work. The `setup-ai-build-kit` skill's `scripts/trued-mark.sh` says whether the
+mark can be used: exit 0 prints its commit, any other exit says why not. An
+unusable mark is set only by the truing, after comparing the whole page with
+the code. A build leaves it, says in one line that /maintain checks the whole
+masterplan against the code, and carries on.
 
-Whether the mark can be used is a fact, and the `setup-ai-build-kit` skill's
-`scripts/trued-mark.sh` reads it: exit 0 prints the commit the mark names, and
-any other exit says why it cannot be used. Where the mark is absent or
-unusable after founding, only the truing compares the whole page against the
-code and sets a starting point. A build leaves the mark as it is, says in one line that
-/maintain checks the whole masterplan against the code, and carries on with its
-save.
-
-`/implement` applies the change before saving, saves the checked code, then,
-where the mark could be used, writes that saved commit into the mark and saves
-the mark in a records-only commit on the same route. Both commits belong to the
-same piece and pull request. The merge keeps them, as "Merging" in the
-`implement` skill's `references/merge.md` says: a squash merge would leave the marked commit outside `main`'s
-history, and every later build would find the mark unusable. The truing uses the current saved commit it has
-just reconciled and saves the updated page through its normal route. Neither
-tries to write the hash of the commit that will contain the mark, since that
-hash does not exist yet.
+`/implement` applies the change, saves the code, then writes that saved commit
+into the mark and saves it in a records-only commit on the same route. Both
+belong to the piece's pull request, and the merge keeps them, since a squash
+would leave the marked commit outside `main`. The truing writes the commit it
+has just reconciled. Neither writes the hash of the commit that holds the
+mark.
 
 ## Read the gap at each visit
 
-Every /maintain visit reads this first, in its truing, before anything moves
-the mark. Read the mark on the current shared branch and count later landed
-code changes.
-Count each change once along the first-parent history; a merge contributes its
-combined change, not its branch commits as well. Leave records-only commits
-out, including the commit that saved the mark. Do not include unmerged work.
+Every /maintain visit reads this in its truing, before anything moves the
+mark. Read the mark with `scripts/trued-mark.sh`. Count later landed code
+changes along the first-parent history, each merge once, leaving out
+records-only commits and unmerged work. Count how many touched the subjects of
+the masterplan's data, permissions or connections sections, following renamed
+paths and using the sensitive-area map where one exists.
 
-Read the changed code to count which of those changes touched the subjects of
-the masterplan's data, permissions or connections sections. Follow renamed
-paths. Use a sensitive-area map where one exists, but do not require one on the
-other build paths. Count a change once for each subject it touched, even when
-several files cover that subject. A section's heading changing is not evidence
-that its subject changed, and a code change alone does not prove the page is
-wrong.
+When any count is above zero, say one line with the total and the subjects
+touched, then check the page: "Eleven changes have landed since the masterplan
+was last checked, and four touched what data it holds; I will check whether
+the page still matches." Stay quiet when all three are zero.
 
-When any subject count is non-zero, give one line with the total and the affected
-subjects, then say in that same line that the truing now checks the page:
-"Eleven changes have landed since the masterplan was last checked, and four
-touched what data it holds; I will check whether the page still matches."
-Include permissions or connections when they were touched too. Stay quiet when
-all three counts are zero.
-
-Read the mark with `scripts/trued-mark.sh`, as a build does, so the two agree.
-If it exits other than 0, because the mark is missing, does not resolve, is
-outside the current branch's history, or the available history is incomplete,
-do not invent a count or reset the mark. Say in one line that the last check cannot be established, and
-compare the whole page with the code instead. The count reports the gap; it
-never moves the mark itself. Only the truing moves it, once it has checked the
+Where the mark cannot be used, do not invent a count or reset it. Say the last
+check cannot be established, and compare the whole page with the code. The
+count never moves the mark; only the truing does, once it has checked the
 page.
