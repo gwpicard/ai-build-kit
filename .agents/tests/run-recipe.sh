@@ -88,6 +88,7 @@ run "$P" --looked preview=yes --pasted logs="$WORK/paste-good"
 grep -qx 'Rollback possible, not tried. The Rollback stub passed.' "$WORK/out" ||
   fail "a rollback seen to be possible was not reported as possible, not tried"
 grep -qx 'Every check passed. The entry is in CHANGELOG.md.' "$WORK/out" || fail "a passing run did not close by saying so"
+grep -q '^Left:' "$WORK/out" && fail "a run with nothing open still gave a Left line"
 ok "a run where every check passes prints a line for each, and exits 0"
 
 head -n 6 "$P/CHANGELOG.md" | grep -q "^## $(date +%Y-%m-%d)\$" ||
@@ -115,6 +116,8 @@ grep -qx 'Each warning is written in CHANGELOG.md, and none of them holds the la
 grep -q '^- Request record: warning\.' "$P/CHANGELOG.md" || fail "the missing request record is not in the changelog"
 grep -q '^- Monitoring caution given: ' "$P/CHANGELOG.md" || fail "the monitoring caution is not recorded"
 grep -iq 'sensitive area\|Accepted:' "$P/CHANGELOG.md" && fail "an operational gap was written as a sensitive area or an acceptance"
+[ "$(tail -n 1 "$WORK/out")" = 'Left: the checks still open are written in CHANGELOG.md: preview up, logs readable and request record.' ] ||
+  fail "the last line does not name the checks still open and point to the changelog"
 ok "a missing request record and a missing paste are warnings said once and written down, and the launch goes on"
 
 # A second run finds them in the changelog and points to them instead.
@@ -168,7 +171,7 @@ sh "$RUNNER" --project "$P" --set LIVE_ADDRESS=https://stub.example.test none > 
 [ "$code" = 1 ] || fail "a run off a recipe exited $code, not 1"
 [ "$(grep -c 'The project is on no recipe, so the kit cannot check this\.$' "$WORK/out")" = 8 ] ||
   fail "a run off a recipe did not give the eight sections one warning line each"
-[ "$(wc -l < "$WORK/out" | tr -d ' ')" = 9 ] || fail "a run off a recipe said more than the eight lines and its closing"
+[ "$(wc -l < "$WORK/out" | tr -d ' ')" = 10 ] || fail "a run off a recipe said more than the eight lines, its closing and what is left"
 grep -q '^/setup-hosting ran on no recipe' "$P/CHANGELOG.md" || fail "the entry off a recipe does not say so"
 code=0
 sh "$RUNNER" --project "$P" --set LIVE_ADDRESS=https://stub.example.test none > "$WORK/out" 2>&1 || code=$?

@@ -71,10 +71,10 @@ question it prints in your reply word for word. Pass what is pasted back as
 Give its lines as printed. Exit 0 means every check passed. Exit 1 means
 warnings: each is in the changelog, none holds the launch, and the person is
 never asked to choose to go live without one. A warning the changelog already
-held comes back as a pointer; say only that. Asked what is left, give each
-warning this run said or the changelog holds as one line pointing to the
-changelog, without its reason, its risk or what to do about it. Exit 3 means
-no address is recorded, so the tool is not live yet.
+held comes back as a pointer; say only that. Asked what is left, give the
+runner's `Left:` line as printed, and nothing more about those checks: no
+reason, no risk, and nothing to do about them. Exit 3 means no address is
+recorded, so the tool is not live yet.
 Record the live address in "How it stays running", and tell the person once
 that each merge /implement makes puts that change live.
 

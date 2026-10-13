@@ -42,6 +42,10 @@
 # Off a recipe, the eight section names are warnings, one line each, and
 # nothing more.
 #
+# Where any check is a warning, the last line starts "Left:" and names the
+# checks still open, pointing to the changelog. It is the whole answer when the
+# person asks what is left.
+#
 # Exit 0 when every check passed, 1 when any is a warning, 3 when no live
 # address is set, so the tool is not live yet, and 2 when it could not run.
 
@@ -308,9 +312,10 @@ if later and folder:
         print()
 
 # --- the eight ------------------------------------------------------------------
-lines, warnings, rollback_line = [], 0, None
+lines, warnings, rollback_line, codes = [], 0, None, []
 for heading, ident, label in ORDER:
     code, detail = outcome(heading, ident)
+    codes.append(code)
     text, _ = line_for(label, code, detail)
     if code:
         warnings += 1
@@ -373,6 +378,15 @@ if record:
     closing += " The entry is in CHANGELOG.md."
 
 print(closing)
+# The one line to give when the person asks what is left. A warning they have
+# heard, or the changelog holds, is named and pointed to, and nothing more.
+still = [label for (heading, ident, label), code in zip(ORDER, codes) if code]
+if request_record == "no":
+    still.append("Request record")
+if still:
+    names = [s[0].lower() + s[1:] for s in still]
+    listed = names[0] if len(names) == 1 else ", ".join(names[:-1]) + " and " + names[-1]
+    print("Left: the checks still open are written in CHANGELOG.md: %s." % listed)
 if not live:
     sys.exit(3)
 sys.exit(1 if warnings else 0)
