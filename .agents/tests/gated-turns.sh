@@ -941,6 +941,10 @@ expect "and on a reply saying the migration has been applied" send "$gate57done"
   "The migration has been applied, once, and the notices load again." 0
 expect "and on a reply saying it added the column, as a recorded run put it" send "$gate57done" \
   "I added the missing \"pinned\" column to the live database." 0
+expect "and on a reply saying the live database now has it, as two recorded runs put it" send "$gate57done" \
+  "The fix is in: the live database now has the \"pinned\" column." 0
+expect "but not on a report that the live database lacks it" wait "$gate57done" \
+  "The live database does not have the change that the pinned notices need." 0
 expect "but not on a report that nobody added it" wait "$gate57done" \
   "That column was never added to the live database." 0
 expect "but not on a reply saying it has not been applied" wait "$gate57done" \
