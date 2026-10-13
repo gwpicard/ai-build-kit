@@ -15,12 +15,17 @@ on Explore privately, where the work is thrown away.
    passing `trim --base <commit the piece started from>`.
 
 Exit 0 means there is nothing to do: say nothing. Exit 1 means it printed
-findings: act on them below. Exit 2 means no engine could run: read the
-changed code directly for the same things, and say in the internal evidence
-that this was the fallback.
+findings: act on them below. Exit 2 means some part could not run, and a
+`not-checked` line names each one, such as unused code with no engine to
+read it. Act on any findings it printed all the same. Then read the changed
+code directly for each part it names. That reading is the last resort, so say
+in the internal evidence that it was the fallback, and for which part.
 
-A `not-checked` line names a check that had no engine. The first time that
-happens in a project, ask the person once whether the kit may fetch the
+Unused imports and unused local names are the linter's, so the script leaves
+them out.
+
+The first time a `not-checked` line names a missing engine in a project, ask
+the person once whether the kit may fetch the
 missing tools for each build without adding them to the project. Write the
 answer into AGENTS.md's stack section as `Quality engines: fetch` or
 `Quality engines: local only`. With fetch, run the script again with
@@ -51,7 +56,8 @@ and list anything new on the piece. Run the whole test suite. Then save with
 this skill's `scripts/trim-commit.sh`. It commits the trim on its own, under a
 subject that starts `Trim:`, and refuses when a test changed. When it refuses,
 undo the edit that touched the test and run it again. The project check fails
-any `Trim:` commit that changed a test.
+any `Trim:` commit that changed a test, once the project has the trim step.
+Founding adds it, and `/maintain` offers it to a project founded before it.
 
 ## What the person hears
 

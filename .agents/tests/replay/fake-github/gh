@@ -401,7 +401,10 @@ def main():
     argv = sys.argv[1:]
     if not argv:
         unsupported(argv, "no command given")
-    note("CALL\t%s" % " ".join(argv))
+    # The turn that started this call, where the harness names one, since a
+    # call run in the background can land after a later turn's marker.
+    turn = os.environ.get("REPLAY_TURN", "")
+    note("CALL\t%s%s" % (" ".join(argv), "\tturn=" + turn if turn.isdigit() else ""))
     state = load()
     command = argv[0]
 

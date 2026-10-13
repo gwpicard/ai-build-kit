@@ -97,6 +97,15 @@ out=$(run 4) && code=0 || code=$?
   && pass "a change that does not read back is reported, not called ready" \
   || fail "a change that did not read back was reported as $code: $out"
 
+# GitHub makes the change at once, but its reads show the old labels for a
+# moment. A change that worked must not be reported as a failure.
+seed
+python3 -c 'import json,sys; s=json.load(open(sys.argv[1])); s["read_lag"]=2; json.dump(s,open(sys.argv[1],"w"))' "$STANDIN_GH_STATE"
+out=$(run 4) && code=0 || code=$?
+[ "$code" -eq 0 ] && [ "$(labels_of 4)" = "visual ready" ] \
+  && pass "a change whose read-back lags is waited for, and reported as ready" \
+  || fail "a change that worked but read back late returned $code: $out"
+
 out=$(run abc) && code=0 || code=$?
 [ "$code" -eq 2 ] && pass "a number that is not a number is a usage error" || fail "bad usage returned $code"
 

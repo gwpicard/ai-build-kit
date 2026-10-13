@@ -5,35 +5,44 @@ Run it from inside the project. Four reads:
 
     quality.py trim --base COMMIT [--fetch]
         What the change since COMMIT added that nothing needs.
-    quality.py waste [--since-visit] [--fetch]
+    quality.py waste [--skip-offered] [--fetch]
         Copied code, unused code and unused dependencies across the project.
-    quality.py loops (--base COMMIT | --since-visit) [--reader auto|builtin]
-        Import loops that were not there at COMMIT, or at the last full visit.
+    quality.py loops (--base COMMIT | --skip-offered) [--reader auto|builtin]
+        Import loops that were not there at COMMIT, or every loop in the
+        project that no earlier visit offered.
     quality.py strength --base COMMIT [--fetch]
         Break the code changed since COMMIT on purpose, in a throwaway copy,
         and count how often the tests notice.
+    quality.py offered (waste | loops) < LINES
+        Record the finding lines on standard input as offered to the person.
 
 Each finding is one line of fields separated by tabs. The first field says
 what kind of line it is, and a place is always FILE:LINE. A `not-checked`
-line names a check no engine could run, and why; the agent reads that part
-of the code directly instead. A `not-compared` line says the earlier state
-could not be read, so every finding is printed.
+line names a part of the read that did not run, and why. The agent reads
+that part of the code directly instead, which is the last resort.
 
 Exit codes:
 
-    0  nothing found
-    1  findings printed
-    2  could not run at all: not a project under Git, a commit that does not
-       exist, or no engine for any check
+    0  nothing found, and every part of the read that applies ran
+    1  findings printed, and every part of the read that applies ran
+    2  a part could not run: not a project under Git, a commit that does not
+       exist, or a part with no engine. Findings from the parts that did run
+       are still printed.
 
-It writes nothing into the project. Engines are taken from the project's own
-`node_modules/.bin` or virtual environment, then from PATH. With --fetch, a
-missing JavaScript engine is fetched for this run with npx, and a missing
-Python engine with uvx or pipx, without adding it to the project.
+It writes nothing into the project, apart from `offered`. Engines are taken
+from the project's own `node_modules/.bin` or virtual environment, then from
+PATH. With --fetch, a missing JavaScript engine is fetched for this run with
+npx, and a missing Python engine with uvx or pipx, without adding it to the
+project.
 
---since-visit reads `last-full-pass` from `.ai-build-kit-maintenance` and
-compares with the project as it was on that date, read again from Git
-history. Nothing is saved between runs.
+--skip-offered leaves out each finding an earlier visit offered the person,
+as `offered` recorded it in `.ai-build-kit-maintenance`. A finding that never
+reached the person, because it did not fit under the cap or its read failed,
+comes back at the next visit.
+
+Which paths are tests comes from the one rule check-trim.sh holds, in the
+setup-ai-build-kit skill beside this one, so this script, trim-commit.sh and
+the project check cannot disagree.
 """
 
 import argparse
@@ -46,17 +55,33 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from datetime import date
 
 LIMIT = 15  # lizard's documented warning for cyclomatic complexity
 JS_EXT = (".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs", ".mts", ".cts")
 SOURCE_EXT = JS_EXT + (".py",)
 SKIP_DIRS = {"node_modules", ".git", ".venv", "venv", "__pycache__", "dist",
-             "build", ".next", "coverage", "reports", "mutants"}
+             "build", ".next", "coverage"}
+# Engine output the strength read writes at the top of its throwaway copy.
+TOP_LEVEL_OUTPUT = {"reports", "mutants", ".stryker-tmp"}
 LOCKFILES = {"package-lock.json", "pnpm-lock.yaml", "yarn.lock", "bun.lockb",
              "bun.lock", "poetry.lock", "uv.lock", "Pipfile.lock"}
-TEST_PATH = re.compile(
-    r"(^|/)(tests?|__tests__|spec|testdata|__snapshots__|e2e|fixtures?)/"
-    r"|\.(test|spec)\.[^/]+$|(^|/)test_[^/]*\.py$|_test\.(py|go)$|(^|/)conftest\.py$")
+RECORD = ".ai-build-kit-maintenance"
+TEST_RULE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..",
+                         "setup-ai-build-kit", "templates", "foundation", "check-trim.sh")
+
+
+def test_rule():
+    """The test-path rule from check-trim.sh, or None when it cannot be read."""
+    try:
+        with open(TEST_RULE, encoding="utf-8") as handle:
+            match = re.search(r"^TEST_PATH='([^']+)'$", handle.read(), re.M)
+        return re.compile(match.group(1)) if match else None
+    except (OSError, re.error):
+        return None
+
+
+TEST_PATH = test_rule()
 ENGINES = {
     # name: (npm package, Python package)
     "knip": ("knip@6", None),
@@ -72,6 +97,41 @@ ENGINES = {
 
 def is_test(path):
     return bool(TEST_PATH.search(path))
+
+
+# --- what earlier visits offered -------------------------------------------------
+
+def offered_keys(root, read_name):
+    """The findings of READ_NAME an earlier visit recorded as offered."""
+    keys = set()
+    try:
+        with open(os.path.join(root, RECORD), encoding="utf-8") as handle:
+            for line in handle.read().splitlines():
+                parts = line.split("|", 3)
+                if len(parts) == 4 and parts[0] == "offered" and parts[1] == read_name:
+                    keys.add(parts[3])
+    except OSError:
+        pass
+    return keys
+
+
+def record_offered(root, read_name, keys):
+    """Add one `offered` line for each key, keeping every other line."""
+    path = os.path.join(root, RECORD)
+    try:
+        with open(path, encoding="utf-8") as handle:
+            text = handle.read()
+    except OSError:
+        text = ""
+    known = offered_keys(root, read_name)
+    lines = [f"offered|{read_name}|{date.today().isoformat()}|{key}"
+             for key in dict.fromkeys(keys) if key not in known]
+    if lines:
+        if text and not text.endswith("\n"):
+            text += "\n"
+        with open(path, "w", encoding="utf-8") as handle:
+            handle.write(text + "\n".join(lines) + "\n")
+    return len(lines)
 
 
 # --- running things ------------------------------------------------------------
@@ -182,7 +242,8 @@ def uses_of(root, files, name, skip):
     needle = re.compile(r"(?<![\w$-])" + re.escape(name) + r"(?![\w$-])")
     uses = []
     for path in files:
-        if os.path.basename(path) in LOCKFILES:
+        # The visit record names findings it offered, which is not a use.
+        if os.path.basename(path) in LOCKFILES or path == RECORD:
             continue
         for number, text in enumerate(read(root, path).split("\n"), 1):
             if skip(path, number):
@@ -211,18 +272,6 @@ def snapshot(root, commit, folder):
     if os.path.isdir(modules) and not os.path.exists(os.path.join(folder, "node_modules")):
         os.symlink(modules, os.path.join(folder, "node_modules"))
     return True
-
-
-def visit_commit(root, first_commit_if_none):
-    record = read(root, ".ai-build-kit-maintenance")
-    match = re.search(r"^last-full-pass:?\s*(\d{4}-\d{2}-\d{2})", record, re.M)
-    if match:
-        out = git("rev-list", "-1", f"--before={match.group(1)} 23:59:59", "HEAD", cwd=root)
-        return (out or "").strip() or None
-    if first_commit_if_none:
-        out = git("rev-list", "--max-parents=0", "HEAD", cwd=root)
-        return (out or "").split("\n")[0].strip() or None
-    return None
 
 
 # --- engines -------------------------------------------------------------------
@@ -282,7 +331,8 @@ def vulture(root, engines, notes, confidence):
         if not m:
             continue
         path, number, message = m.group(1), int(m.group(2)), m.group(3)
-        if message.startswith("unused import") or is_test(path):
+        # Unused imports and unused local names are the linter's to report.
+        if message.startswith(("unused import", "unused variable")) or is_test(path):
             continue
         name = re.search(r"'([^']+)'", message)
         found.append((path, number, name.group(1) if name else message, message))
@@ -466,7 +516,7 @@ def trim(root, base, engines):
     sources = [f for f in files if f.endswith(SOURCE_EXT) and f in changed and not is_test(f)]
     now = lizard(root, engines, notes, sources)
     if now is not None:
-        tests = [f for f in files if is_test(f) and f.endswith(SOURCE_EXT)]
+        run_by_tests = reached_from(builtin_graph(root), [f for f in files if is_test(f)])
         for (path, name), (ccn, start, end) in sorted(now.items()):
             if not hit(path, start) or end <= start:
                 continue
@@ -479,9 +529,9 @@ def trim(root, base, engines):
             if len(users) != 1 or is_test(users[0][0]):
                 continue
             user_file, user_line = users[0]
-            stem = os.path.splitext(os.path.basename(user_file))[0]
-            tested = any(re.search(r"^\s*(import|from)\b.*\b" + re.escape(stem) + r"\b|require\(.*\b"
-                                   + re.escape(stem) + r"\b", read(root, t), re.M) for t in tests)
+            # Folded only when a test runs the user: a test imports its file,
+            # or a file that leads to it, resolved to the file itself.
+            tested = user_file in run_by_tests
             out.append(("fold" if tested else "report", "one-user" if tested else "untested-one-user",
                         f"{path}:{start}", short, f"{user_file}:{user_line}"))
 
@@ -526,16 +576,14 @@ def trim(root, base, engines):
         if row not in seen:
             seen.add(row)
             print("\t".join(row))
-    if not out and couldnt_run(notes, js, py):
+    return answer(notes, out)
+
+
+def answer(notes, found):
+    """2 when any part of the read could not run, else 1 for findings, else 0."""
+    if any(note[0] == "not-checked" for note in notes):
         return 2
-    return 1 if out else 0
-
-
-def couldnt_run(notes, js, py):
-    """True when no engine ran for any check that applies."""
-    missed = {n[1] for n in notes if n[0] == "not-checked"}
-    wanted = {"copies"} | ({"unused-code"} if js or py else set())
-    return wanted <= missed
+    return 1 if found else 0
 
 
 def waste_rows(root, engines, notes):
@@ -554,32 +602,28 @@ def waste_rows(root, engines, notes):
 
 
 def waste_key(row):
+    """A finding without its line numbers, which move as the code changes."""
     if row[0] == "copy":
-        return ("copy", row[1].rsplit(":", 1)[0], row[2].rsplit(":", 1)[0])
-    return (row[0], row[1].rsplit(":", 1)[0], row[2])
+        return "|".join(("copy", row[1].rsplit(":", 1)[0], row[2].rsplit(":", 1)[0]))
+    return "|".join((row[0], row[1].rsplit(":", 1)[0], row[2]))
 
 
-def waste(root, engines, since_visit):
+def loop_key(row):
+    """A loop by its files, whichever one the line starts from."""
+    return "|".join(sorted(step.split(":", 1)[0] for step in row[1:]))
+
+
+def waste(root, engines, skip_offered):
     notes = []
     rows = waste_rows(root, engines, notes)
-    if since_visit:
-        commit = visit_commit(root, False)
-        if commit:
-            with tempfile.TemporaryDirectory() as folder:
-                earlier = os.path.join(folder, "earlier")
-                if snapshot(root, commit, earlier):
-                    known = {waste_key(r) for r in waste_rows(earlier, engines, [])}
-                    rows = [r for r in rows if waste_key(r) not in known]
-                else:
-                    notes.append(("not-compared", "the project at the last visit could not be read"))
+    if skip_offered:
+        known = offered_keys(root, "waste")
+        rows = [r for r in rows if waste_key(r) not in known]
     for note in notes:
         print("\t".join(note))
     for row in rows:
         print("\t".join(row))
-    files = project_files(root)
-    if not rows and couldnt_run(notes, *languages(root, files)):
-        return 2
-    return 1 if rows else 0
+    return answer(notes, rows)
 
 
 # --- loops ---------------------------------------------------------------------
@@ -690,16 +734,35 @@ def builtin_graph(root):
     return edges
 
 
+def reached_from(edges, starts):
+    """Every file the STARTS import, directly or through other files."""
+    reached, stack = set(), list(starts)
+    while stack:
+        for target in edges.get(stack.pop(), {}):
+            if target not in reached:
+                reached.add(target)
+                stack.append(target)
+    return reached
+
+
 def depcruise_graph(root, cmd):
+    """dependency-cruiser's JavaScript graph, with Python read by the script's own reader.
+
+    The project's tsconfig or jsconfig is passed in, so a path alias such as
+    `@/` resolves. Where dependency-cruiser still misses an import the
+    script's own reader resolves, its graph is not used, and None is returned.
+    """
     folders = sorted({f.split("/")[0] for f in project_files(root)
                       if f.endswith(JS_EXT) and "/" in f}) or ["."]
-    code, out, _ = run(cmd + ["--no-config", "--output-type", "json", *folders], cwd=root)
+    config = [n for n in ("tsconfig.json", "jsconfig.json") if os.path.isfile(os.path.join(root, n))]
+    code, out, _ = run(cmd + ["--no-config", *(["--ts-config", config[0]] if config else []),
+                              "--output-type", "json", *folders], cwd=root)
     try:
         modules = json.loads(out)["modules"]
     except (ValueError, KeyError):
         return None
     line_map = builtin_graph(root)
-    edges = {}
+    edges = {source: dict(targets) for source, targets in line_map.items() if source.endswith(".py")}
     for module in modules:
         for dep in module.get("dependencies", []):
             if dep.get("coreModule") or "node_modules" in dep.get("resolved", "") or not dep.get("resolved"):
@@ -710,6 +773,10 @@ def depcruise_graph(root, cmd):
             number = line_map.get(source, {}).get(target) or line_of(
                 root, source, os.path.splitext(os.path.basename(target))[0])
             edges.setdefault(source, {}).setdefault(target, number)
+    if aliases(root):
+        for source, targets in line_map.items():
+            if any(target not in edges.get(source, {}) for target in targets):
+                return None
     return edges
 
 
@@ -756,13 +823,8 @@ def strongly_connected(edges):
     return out
 
 
-def loops(root, base, since_visit, reader, engines):
-    if since_visit:
-        base = visit_commit(root, True)
-        if not base:
-            print("not-compared\tthe project has no saved history to compare with")
-            return 2
-    if git("rev-parse", "--verify", "-q", base + "^{commit}", cwd=root) is None:
+def loops(root, base, skip_offered, reader, engines):
+    if base and git("rev-parse", "--verify", "-q", base + "^{commit}", cwd=root) is None:
         print(f"not-compared\t{base} is not a commit in this project")
         return 2
     cmd = engines.find("depcruise") if reader == "auto" and os.path.isfile(os.path.join(root, "package.json")) else None
@@ -771,20 +833,23 @@ def loops(root, base, since_visit, reader, engines):
         if cmd:
             found = depcruise_graph(folder, cmd)
             if found is not None:
-                return found
-        return builtin_graph(folder)
+                return found, "dependency-cruiser"
+        return builtin_graph(folder), "the script's own import reader"
 
-    print("reader: " + ("dependency-cruiser" if cmd else "the script's own import reader"), file=sys.stderr)
-    now = graph(root)
-    with tempfile.TemporaryDirectory() as folder:
-        earlier = os.path.join(folder, "earlier")
-        if not snapshot(root, base, earlier):
-            print("not-compared\tthe project at the earlier commit could not be read")
-            return 2
-        known = set(strongly_connected(graph(earlier)))
+    now, used = graph(root)
+    print("reader: " + used, file=sys.stderr)
+    known = set()
+    if base:
+        with tempfile.TemporaryDirectory() as folder:
+            earlier = os.path.join(folder, "earlier")
+            if not snapshot(root, base, earlier):
+                print("not-compared\tthe project at the earlier commit could not be read")
+                return 2
+            known = set(strongly_connected(graph(earlier)[0]))
+    offered = offered_keys(root, "loops") if skip_offered else set()
     found = 0
     for group in strongly_connected(now):
-        if group in known:
+        if group in known or "|".join(group) in offered:
             continue
         members = set(group)
         steps = []
@@ -814,14 +879,31 @@ def ranges(lines):
 
 
 def throwaway_copy(root, folder):
+    """A copy to break code in, with no real records and nothing that reaches a live service.
+
+    It leaves out Git, installed packages, and every `.env` file but
+    `.env.example`, since a test run with real keys can act on live data.
+    Earlier engine output is left out only at the top, where the engines
+    write it, so a project folder that happens to share its name is kept.
+    """
+    top = os.path.abspath(root)
+
     def ignore(directory, names):
-        return [n for n in names if n in (".git", "node_modules", "reports", ".stryker-tmp", "mutants")]
+        left_out = [n for n in names if n in (".git", "node_modules")
+                    or (n.startswith(".env") and n != ".env.example")]
+        if os.path.abspath(directory) == top:
+            left_out += [n for n in names if n in TOP_LEVEL_OUTPUT]
+        return left_out
     shutil.copytree(root, folder, ignore=ignore, symlinks=True)
     if os.path.isdir(os.path.join(root, "node_modules")):
         os.symlink(os.path.join(root, "node_modules"), os.path.join(folder, "node_modules"))
 
 
 def strength_js(root, changed, engines):
+    targets = [f"{p}:{a}-{b}" for p, lines in sorted(changed.items())
+               if p.endswith(JS_EXT) and not is_test(p) for a, b in ranges(lines)]
+    if not targets:
+        return [], None
     cmd = engines.find("stryker")
     if not cmd:
         return None, "StrykerJS is not installed"
@@ -831,10 +913,6 @@ def strength_js(root, changed, engines):
         scripts = {}
     if "test" not in scripts:
         return None, "the project has no test command"
-    targets = [f"{p}:{a}-{b}" for p, lines in sorted(changed.items())
-               if p.endswith(JS_EXT) and not is_test(p) for a, b in ranges(lines)]
-    if not targets:
-        return [], None
     with tempfile.TemporaryDirectory() as folder:
         copy = os.path.join(folder, "copy")
         throwaway_copy(root, copy)
@@ -853,38 +931,52 @@ def strength_js(root, changed, engines):
             line = mutant["location"]["start"]["line"]
             results.append((mutant["status"], rel, line,
                             f'{mutant.get("mutatorName", "")}: {mutant.get("replacement", "")}'.strip()))
+    if not results:
+        return None, "StrykerJS found nothing to break in the changed lines"
     status = {"Killed": "caught", "Survived": "missed", "NoCoverage": "missed"}
     return [(status.get(s, "unchecked:" + s), p, l, d) for s, p, l, d in results], None
 
 
 def python_functions(root, path):
+    """(mutmut's name, first line, last line) for each function mutmut breaks.
+
+    mutmut 3 breaks module-level functions, named `x_<function>`, and the
+    methods of module-level classes, named `xǁ<Class>ǁ<method>`. A function
+    nested inside another is not broken on its own, so it is not listed.
+    """
     try:
         tree = ast.parse(read(root, path))
     except SyntaxError:
         return []
+    kinds = (ast.FunctionDef, ast.AsyncFunctionDef)
     out = []
-    for node in ast.walk(tree):
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            out.append((node.name, node.lineno, getattr(node, "end_lineno", node.lineno)))
+    for node in tree.body:
+        if isinstance(node, kinds):
+            out.append((f"x_{node.name}", node.lineno, getattr(node, "end_lineno", node.lineno)))
+        elif isinstance(node, ast.ClassDef):
+            for item in node.body:
+                if isinstance(item, kinds):
+                    out.append((f"xǁ{node.name}ǁ{item.name}", item.lineno,
+                                getattr(item, "end_lineno", item.lineno)))
     return out
 
 
 def strength_py(root, changed, engines):
-    cmd = engines.find("mutmut")
-    if not cmd:
-        return None, "mutmut is not installed in the project's environment"
     targets = [p for p in sorted(changed) if p.endswith(".py") and not is_test(p)]
     if not targets:
         return [], None
+    cmd = engines.find("mutmut")
+    if not cmd:
+        return None, "mutmut is not installed in the project's environment"
     wanted = {}
     for path in targets:
         for name, start, end in python_functions(root, path):
             if any(n in changed[path] for n in range(start, end + 1)):
                 module = os.path.splitext(path)[0].replace("/", ".")
                 module = module[4:] if module.startswith("src.") else module
-                wanted[f"{module}.x_{name}"] = (path, start)
+                wanted[f"{module}.{name}"] = (path, start)
     if not wanted:
-        return [], None
+        return None, "the changed Python lines are outside any function mutmut can break"
     with tempfile.TemporaryDirectory() as folder:
         copy = os.path.join(folder, "copy")
         throwaway_copy(root, copy)
@@ -894,13 +986,18 @@ def strength_py(root, changed, engines):
         folders = sorted({p.split("/")[0] if "/" in p else p for p in targets})
         with open(config, "w", encoding="utf-8") as handle:
             handle.write(text + "\n[tool.mutmut]\nsource_paths = " + json.dumps(folders) + "\n")
-        run(cmd + ["run", *[name + "__mutmut_*" for name in sorted(wanted)]], cwd=copy, timeout=3600)
+        code, _, _ = run(cmd + ["run", *[name + "__mutmut_*" for name in sorted(wanted)]],
+                         cwd=copy, timeout=3600)
+        if code != 0:
+            # mutmut first runs the tests on the unbroken code. When that run
+            # fails, nothing was tried, and no result below means anything.
+            return None, "the tests failed before any code was broken, so nothing was tried"
         code, out, err = run(cmd + ["results", "--all", "true"], cwd=copy)
         if code != 0:
             return None, "mutmut did not finish"
         results = []
         for line in out.splitlines():
-            m = re.match(r"^\s*([\w.]+)__mutmut_\d+: (.+)$", line)
+            m = re.match(r"^\s*(\S+?)__mutmut_\d+: (.+)$", line)
             if not m or m.group(1) not in wanted:
                 continue
             path, start = wanted[m.group(1)]
@@ -939,12 +1036,14 @@ def strength(root, base, engines):
             reasons.append(reason)
         else:
             results += found
+    caught = sum(1 for r in results if r[0] == "caught")
+    missed = [r for r in results if r[0] == "missed"]
+    if results and not caught + len(missed):
+        reasons.append("every breakage crashed or timed out, so the tests were not checked")
     for reason in reasons:
         print(f"not-checked\tstrength\t{reason}")
     if not results and reasons:
         return 2
-    caught = sum(1 for r in results if r[0] == "caught")
-    missed = [r for r in results if r[0] == "missed"]
     print(f"tried\t{caught + len(missed)}")
     print(f"caught\t{caught}")
     for status, path, line, detail in sorted(missed, key=lambda r: (r[1], r[2])):
@@ -952,6 +1051,8 @@ def strength(root, base, engines):
     for status, path, line, detail in sorted((r for r in results if r[0].startswith("unchecked")),
                                              key=lambda r: (r[1], r[2])):
         print(f"unchecked\t{path}:{line}\t{status.split(':', 1)[1]}")
+    if reasons:
+        return 2
     return 1 if missed else 0
 
 
@@ -963,16 +1064,21 @@ def main():
         p.add_argument("--base", required=True)
         p.add_argument("--fetch", action="store_true")
     p = sub.add_parser("waste")
-    p.add_argument("--since-visit", action="store_true")
+    p.add_argument("--skip-offered", action="store_true")
     p.add_argument("--fetch", action="store_true")
     p = sub.add_parser("loops")
     group = p.add_mutually_exclusive_group(required=True)
     group.add_argument("--base")
-    group.add_argument("--since-visit", action="store_true")
+    group.add_argument("--skip-offered", action="store_true")
     p.add_argument("--reader", choices=("auto", "builtin"), default="auto")
+    p = sub.add_parser("offered")
+    p.add_argument("which", choices=("waste", "loops"))
     try:
         args = parser.parse_args()
     except SystemExit:
+        return 2
+    if TEST_PATH is None:
+        print("not-checked\tall\tthe rule for which paths are tests could not be read from " + TEST_RULE)
         return 2
     top = git("rev-parse", "--show-toplevel")
     if top is None:
@@ -980,13 +1086,22 @@ def main():
         return 2
     root = top.strip()
     os.chdir(root)
+    if args.read == "offered":
+        rows = [line.rstrip("\n").split("\t") for line in sys.stdin if line.strip()]
+        key = waste_key if args.which == "waste" else loop_key
+        if args.which == "loops":
+            rows = [r for r in rows if r[0] == "loop" and len(r) >= 3]
+        else:
+            rows = [r for r in rows if len(r) >= 3 and not r[0].startswith("not-")]
+        print(f"recorded\t{record_offered(root, args.which, [key(r) for r in rows])}")
+        return 0
     engines = Engines(root, getattr(args, "fetch", False))
     if args.read == "trim":
         return trim(root, args.base, engines)
     if args.read == "waste":
-        return waste(root, engines, args.since_visit)
+        return waste(root, engines, args.skip_offered)
     if args.read == "loops":
-        return loops(root, args.base, args.since_visit, args.reader, engines)
+        return loops(root, args.base, args.skip_offered, args.reader, engines)
     return strength(root, args.base, engines)
 
 
