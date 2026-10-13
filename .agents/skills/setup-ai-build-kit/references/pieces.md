@@ -121,7 +121,7 @@ written.
 
 `Under the hood` is a collapsed section for that build context: the approach, the
 seams, code-level dependencies, any groundwork. The person never has to open it,
-and `section-builder` always reads it before building. Most short pieces need
+and `/implement` always reads it before building. Most short pieces need
 none of it. This is the same principle the issue already follows, that an issue
 is the agent's memory and carries as much context as a piece deserves.
 
@@ -146,7 +146,7 @@ the consequence classification uses. Most pieces have one:
 | `background automation` | something that runs on its own, with nobody watching |
 
 A subject label is not a description of the piece. Each one decides evidence and
-a save route, so `section-builder` reads the labels rather than re-deriving them.
+a save route, so `/implement` reads the labels rather than re-deriving them.
 Where a piece carries more than one, its evidence is everything those subjects
 demand between them, and its save route is the strictest of the ones present.
 
@@ -318,7 +318,7 @@ the form it expected.
 | Edits the body so `## Done when` is gone | Treats it as a request rather than a piece, and refines it before building |
 | Adds labels of their own | Leaves them alone |
 | Puts two subject labels on one piece | Takes both, and satisfies what each one demands |
-| Leaves the subject off | change-triage classifies it when the piece is refined |
+| Leaves the subject off | `/shape` classifies it when the piece is refined |
 | Uses milestones or a project board | Ignores both, and neither reads nor writes them |
 | Deletes an issue | Lets it go. If a branch still refers to it, `/maintain` says so |
 | Fills the issue form in properly | Nothing special. It is a piece, and it gets built |

@@ -105,7 +105,7 @@ Do not sign in again or retry the failed command in this session.
    rule there. Wait for approval rather than replacing an edit silently.
 3. Identify how this project receives AI Build Kit. Check whether
    `skills-lock.json` records skills from `gwpicard/ai-build-kit`. Where it
-   does, count its entries against the eleven names and say which are
+   does, count its entries against the eight names and say which are
    missing. A short installation means a skill the kit renamed or added never
    arrived. The version file cannot show this, because the same update that
    drops a skill rewrites the version, so the count is the only sign.
@@ -129,7 +129,7 @@ Do not sign in again or retry the failed command in this session.
      update command. When the agent has none, download the latest public
      Release and replace the installed `agent-plugin` folder after the same
      approval and clean checkpoint. Afterwards, read the installed folder's
-     `skills` folder back. It holds the eleven and no folder under a former
+     `skills` folder back. It holds the eight and no folder under a former
      name such as `fix`, `queue`, `sync` or `ship`. Where an old folder is
      still there, the agent's command did not replace the folder whole. Say
      so, and offer the replacement from the Release after the same approval.
@@ -148,7 +148,7 @@ Do not sign in again or retry the failed command in this session.
 
    Do not update unrelated plugins, project skills, or global skills.
 5. For the shared route, confirm that this skill's `VERSION` now matches the
-   version step 1 read, and that the count from step 3 is now eleven. A
+   version step 1 read, and that the count from step 3 is now eight. A
    matching version alone is not proof the installation is whole. For the
    Claude route, confirm that `claude plugin list --json` reports the matching
    version without the leading `v`. Claude loads an updated plugin after
@@ -167,7 +167,7 @@ Do not sign in again or retry the failed command in this session.
    the file only after the move.
 6. Re-read the capability profile's reach-check engine against what the
    harness and project can use now. Keep the same preference order as
-   the `section-builder` skill's `references/reach-check.md`, and update the
+   the `implement` skill's `references/reach-check.md`, and update the
    profile when a better engine has appeared or the recorded one has gone.
 7. Run the sensitive-area check installed during founding. It is silent outside
    Build with care. Where it names a missing path or an unassigned source folder,
@@ -175,7 +175,7 @@ Do not sign in again or retry the failed command in this session.
    then update the map only after the person answers.
 8. If the normal route is unavailable, use the latest published Release, the
    one step 1 read, as the fallback source. A shared installation may replace
-   only the eleven AI Build Kit skill folders after the same approval and
+   only the eight AI Build Kit skill folders after the same approval and
    clean checkpoint. The check in "Finishing a kit update" then finds the
    folder of any skill the kit has since retired. A Claude
    plugin installation keeps its current enabled version when the marketplace

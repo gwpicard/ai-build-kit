@@ -7,7 +7,7 @@ break the others, and none of them can be tested alone.
 
 ## Run the script
 
-From the project, run `python3` with the `section-builder` skill's
+From the project, run `python3` with the `implement` skill's
 `scripts/quality.py`, passing `loops --since-visit`. It reads the project as it was on
 the `last-full-pass` date, again from Git history, and compares the loops
 then and now. A loop that was already there is not printed.

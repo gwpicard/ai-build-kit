@@ -7,7 +7,7 @@
 # A repair tries one cause at a time, and a failed attempt is undone before the
 # next one, so failed fixes never stack. The coding agent's settings refuse the
 # plain commands that throw changes away, so this named script is the one way
-# a repair resets. It is the reset step in section-builder's
+# a repair resets. It is the reset step in the implement skill's
 # references/repair.md, and nothing else should run it.
 #
 # It puts every saved file back as the last commit holds it, staged or not, and

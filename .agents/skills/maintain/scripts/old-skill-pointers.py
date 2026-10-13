@@ -42,12 +42,11 @@ import os
 import re
 import sys
 
-# The kit's eleven skills. A name outside this list may be the project's own
+# The kit's eight skills. A name outside this list may be the project's own
 # skill, and its pointer is the person's to keep.
 KIT_SKILLS = (
     "setup-ai-build-kit", "shape", "implement", "setup-hosting",
-    "maintain", "what-now", "clarify", "change-triage", "screen-check",
-    "section-builder", "second-opinion",
+    "maintain", "what-now", "clarify", "second-opinion",
 )
 
 # Names a kit skill had before, with the name it has now. The templates of the
@@ -55,21 +54,30 @@ KIT_SKILLS = (
 # the rename migration removes that folder, so those pointers open nothing on
 # any install route.
 FORMER_NAMES = {
-    "start": "setup-ai-build-kit", "ship": "setup-hosting", "fix": "section-builder",
-    "queue": "implement", "sync": "maintain",
+    "start": "setup-ai-build-kit", "ship": "setup-hosting", "fix": "implement",
+    "queue": "implement", "sync": "maintain", "change-triage": "shape",
+    "section-builder": "implement", "screen-check": "implement",
 }
 
 # A former skill's file that moved somewhere other than the same path in the
 # skill that took its name. The fix skill had only its SKILL.md, and its rules
-# now sit in section-builder's repair reference, so a pointer to that file
-# follows them there. The routine of `sync` became the maintain skill's truing
+# now sit in implement's repair reference, so a pointer to that file follows
+# them there. The routine of `sync` became the maintain skill's truing
 # reference. The handover template left `ship` for the maintain skill, which
-# now owns handovers. Sync's document read and script kept their paths, and the
-# rules of `queue` joined implement's own SKILL.md, so those need no entry here.
+# now owns handovers. Change-triage's two research references became shape's
+# one, and its rules joined shape's own SKILL.md. Section-builder's repair
+# reference kept its path in implement, its rules joined implement's SKILL.md,
+# and screen-check became implement's screen rules. Section-builder's other
+# references and scripts, sync's document read and script, and the rules of
+# `queue` kept their paths or joined the SKILL.md of the skill that took the
+# name, so those need no entry here.
 FORMER_FILES = {
-    ("fix", "SKILL.md"): ("section-builder", "references/repair.md"),
+    ("fix", "SKILL.md"): ("implement", "references/repair.md"),
     ("sync", "SKILL.md"): ("maintain", "references/truing.md"),
     ("ship", "templates/handover.md"): ("maintain", "templates/handover.md"),
+    ("change-triage", "references/source-check.md"): ("shape", "references/research.md"),
+    ("change-triage", "references/existing-work.md"): ("shape", "references/research.md"),
+    ("screen-check", "SKILL.md"): ("implement", "references/screen-rules.md"),
 }
 
 FILES = ("AGENTS.md", "masterplan.md")

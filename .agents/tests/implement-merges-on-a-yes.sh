@@ -14,7 +14,7 @@ pass=0
 ok() { echo "  ok: $1"; pass=$((pass + 1)); }
 fail() { echo "FAIL: $1" >&2; exit 1; }
 
-CHECK="$ROOT/.agents/skills/section-builder/scripts/check-before-merge.sh"
+CHECK="$ROOT/.agents/skills/implement/scripts/check-before-merge.sh"
 [ -f "$CHECK" ] || fail "missing file $CHECK"
 log="$WORK/cleanup.log"
 run_check() {

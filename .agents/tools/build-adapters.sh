@@ -7,7 +7,7 @@
 # Single source of truth: .agents/skills/<name>/SKILL.md
 # Generated (thin) adapters, all pointing back at canonical:
 #   .claude/commands/<name>.md       the six commands as Claude Code slash commands
-#   .claude/skills/<discipline>/      the five disciplines as auto-triggering skills
+#   .claude/skills/<discipline>/      the two disciplines as auto-triggering skills
 #   .cursor/commands/<name>.md        the six commands as Cursor slash commands
 #   .gemini/commands/<name>.toml      the six commands as Gemini CLI slash commands
 #
@@ -126,7 +126,7 @@ generate_all() {
     # without that line is a command, which the agent may start when the
     # person types it, names it, or asks for its job in plain words. Nothing
     # else is declared, so a dropped user-invocable line cannot hide: it shows
-    # up as ten commands and three disciplines and stops the build at the
+    # up as seven commands and one discipline and stops the build at the
     # count check below.
     if grep -q '^user-invocable:[ \t]*false' "$file"; then
       kind=discipline
@@ -180,8 +180,8 @@ generate_all() {
     fi
   done
 
-  if [ "$commands" -ne 6 ] || [ "$disciplines" -ne 5 ]; then
-    echo "error: expected 6 commands and 5 disciplines; found $commands and $disciplines" >&2
+  if [ "$commands" -ne 6 ] || [ "$disciplines" -ne 2 ]; then
+    echo "error: expected 6 commands and 2 disciplines; found $commands and $disciplines" >&2
     exit 1
   fi
 

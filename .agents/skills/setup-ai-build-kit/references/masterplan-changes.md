@@ -46,8 +46,8 @@ save.
 Section-builder applies the change before saving, saves the checked code, then,
 where the mark could be used, writes that saved commit into the mark and saves
 the mark in a records-only commit on the same route. Both commits belong to the
-same piece and pull request. The merge keeps them, as section-builder's
-Merging says: a squash merge would leave the marked commit outside `main`'s
+same piece and pull request. The merge keeps them, as "Merging" in the
+`implement` skill's `references/merge.md` says: a squash merge would leave the marked commit outside `main`'s
 history, and every later build would find the mark unusable. The truing uses the current saved commit it has
 just reconciled and saves the updated page through its normal route. Neither
 tries to write the hash of the commit that will contain the mark, since that

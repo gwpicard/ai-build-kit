@@ -411,7 +411,7 @@ def sentences(out, project):
                if f[-1].startswith("left as written:") and not informational(f)]
     if rewrite:
         said.append(("commands", "The command list in AGENTS.md still names old commands. I can "
-                     "bring it up to this release's six commands and five background skills, "
+                     "bring it up to this release's six commands and two background skills, "
                      "and change nothing else in the file. Shall I?"))
     if by_hand:
         said.append(("commands", "The command list in AGENTS.md still names old commands, and it "

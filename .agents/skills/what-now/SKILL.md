@@ -56,8 +56,8 @@ work and no longer does outranks a thing that was never built: "the booking
 confirmation is broken, so repairing it comes before anything else". Name what
 is broken rather than saying a piece is labelled. A repair already reproduced
 and marked ready goes to /implement; one not yet reproduced goes to /shape.
-Where the person says the live tool broke after a recent merge, run the
-`change-triage` skill's "A live break after a recent merge" first.
+Where the person says the live tool broke after a recent merge, follow the
+`setup-hosting` skill's "Rolling back" first.
 
 A failing check is named next, after anything broken and before the counts. Say
 it plainly as failing, because a red check is a fact the person cannot see for

@@ -10,7 +10,7 @@
 # run once more, which must print nothing and exit 0.
 #
 # The same comparison runs for one build, against the commit the piece started
-# from, which is how section-builder uses it. Each case runs twice, once with
+# from, which is how /implement uses it. Each case runs twice, once with
 # dependency-cruiser and once with the script's own import reader, since a
 # project may have either. Every run must leave the project's working tree as
 # it found it.
@@ -22,7 +22,7 @@
 set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
-QUALITY="$ROOT/.agents/skills/section-builder/scripts/quality.py"
+QUALITY="$ROOT/.agents/skills/implement/scripts/quality.py"
 
 fail() {
   echo "FAIL: $1" >&2

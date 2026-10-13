@@ -11,9 +11,11 @@ somebody could build, and settles anything the piece is still waiting on. When
 a piece is ready it offers to hand it to `/implement`, but building is always a
 separate, deliberate step.
 
-Read masterplan.md first, build-path section first, then the project's pieces,
-the same way `/implement` does. Refresh the printout and read that.
-The `setup-ai-build-kit` skill's `references/pieces.md` describes how the pieces are kept.
+The person never sorts their own request; you do, and the masterplan is the
+referee. Read masterplan.md first, build-path section first, then the
+project's pieces, the same way `/implement` does. Refresh the printout and read
+that. The `setup-ai-build-kit` skill's `references/pieces.md` describes how the
+pieces are kept.
 
 Whenever shaping touches a decision, re-read any "rests on" clause in the
 piece's `## Decided` or the masterplan, following pieces.md's decision rules.
@@ -24,26 +26,138 @@ words, then settle any question this opens through the usual shaping route.
 
 ## Typed with words
 
-Run change-triage on the request and follow its route: shape it into a ready
-piece now, run clarify first, run a decision prototype, run a source check,
-update the masterplan first, or stop and rerun the fit check. Say which route
-you chose and why, in one line.
+Work through these steps before any work happens, and say the route you chose
+and why, in one line.
 
-A fault is shaped by reproducing it. Where change-triage routes the request as
-a repair, follow "Shaping a repair" in the `section-builder` skill's
-`references/repair.md`: record the symptom, build the tightest repeatable
-check, reproduce it and cut it down to the smallest failing case. That case is
-the piece's `## Done when`, and the piece is ready once it is reproduced.
-Shaping changes no file the project saves. Where change-triage marks a small,
-clear repair ready at once, make the build offer for this same session.
+### 1. Understand the request
 
-Clear, piece-sized work becomes a ready piece straight away: write it into the
-shape the `setup-ai-build-kit` skill's `references/pieces.md` describes, take its subjects
-from change-triage rather than choosing them yourself, and label it `ready`
-by running this skill's `scripts/mark-ready.sh` on the piece's number.
-That is a new issue, and it starts unassigned: a person is assigned only when
-`/implement` picks the piece up to build it, never when `/shape` creates it. Then
-make the build offer below.
+Compare it with the masterplan, the project's pieces, parked ideas, the recent
+changelog, and existing behaviour where that's cheap to check. Before accepting
+it as new work, check: does this already exist under another name? Was it
+deliberately parked or rejected before?
+
+A parked idea is a closed issue labelled `parked`, so search closed issues too,
+not only open ones. The reason was written down to stop the same idea coming
+back around and getting built by accident, and it only works if somebody looks.
+Is the report actually a misunderstanding or a setup problem rather than a real
+gap? Does it contradict an existing rule in the masterplan?
+
+A report that something is broken comes here too, in whatever words it
+arrives. Load `references/repair.md` and run its four checks first, in order:
+whether the behaviour was ever promised, a live break after a recent merge, a
+fault that has survived three attempts, and a small, clear repair. A repair is
+then shaped by reproducing it, as that file describes. That case is the
+piece's `## Done when`, and the piece is ready once it is reproduced. Shaping
+changes no file the project saves.
+
+### 2. Classify intent
+
+One of: repair of promised behaviour; new behaviour; clarification or
+copy/presentation change; setup or operational task; a decision that needs
+clarify; a decision that needs a prototype; a decision that needs source
+research; a change that alters the build path or a sensitive area.
+
+### 3. Classify consequence
+
+Every consequence that applies, from: presentation-only; behaviour; data;
+access; integration or service; money; automatic or irreversible action;
+operational reliance. This classification is what later decides the evidence,
+the review, and the save route; `/implement` reads it rather than re-deriving
+it.
+
+When the request is, or becomes, a piece, store the classification on it as
+subject labels, mapped to the small vocabulary the kit uses everywhere:
+
+| Internal consequence | Subject |
+|---|---|
+| presentation-only | visual |
+| behaviour | how it works |
+| data | data |
+| access | accounts and permissions |
+| money | finance |
+| integration or service | external service |
+| automatic action, operational reliance | background automation |
+
+An irreversible action takes the subject of whatever it is irreversible about,
+which is usually `data`.
+
+A request often lands on more than one row, and every row it lands on is stored.
+A checkout takes `finance` and `external service`. A nightly backup takes `data`
+and `background automation`. Do not pick the closest single subject: the one
+dropped takes its evidence with it. A later session reads the stored subjects
+rather than reclassifying the piece from scratch.
+
+With the subjects settled, look at the open pieces that carry one of the same
+ones, and at anything labelled `building`. Read their titles and their `## So
+that` lines. Where one would plainly be built in the same place as this request,
+name it before routing: which piece, and what the two have in common. Nothing is
+blocked and nothing waits. The person decides whether to carry on, hold this
+until the other piece lands, or fold the two together.
+
+Say nothing where no open piece shares a subject, or where the only thing in
+common is that both touch this project. A pause on every request teaches people
+to skip the pause.
+
+### 4. Route
+
+Route to one of: a repair, shaped by reproducing it; a ready piece; clarify; a
+decision prototype; a source check; a search for existing work; a step only the
+person can do; update the masterplan first; rerun the fit check; prepare the
+handover; give the risk notice where a sensitive area survives redesign.
+
+Piece-sized and clear (one sitting, a done line you could write now, small
+enough for a fresh session to hold whole) becomes a ready piece straight away:
+write it into the shape the `setup-ai-build-kit` skill's `references/pieces.md`
+describes, with the subjects from step 3, and label it `ready` by running this
+skill's `scripts/mark-ready.sh` on the piece's number. That is a new issue, and
+it starts unassigned: a person is assigned only when `/implement` picks the
+piece up to build it, never when `/shape` creates it. Then make the build offer
+below, and refresh the printout so the person's list matches what was just
+agreed.
+
+Too vague to size runs clarify first. A question rather than a ready piece
+puts its route on the issue as a label, as "When a piece is waiting on a
+question" below says. Without the label the reason a piece is waiting lives
+only in the session that found it, and the next person to open the list sees a
+piece that has simply stopped.
+
+Where the request is bigger than a piece, it goes into the masterplan first and
+is cut into pieces on the plan, order confirmed with the user. Parts of one
+outcome become sub-issues of a parent piece, each a vertical slice; separate
+outcomes that must come in order become separate pieces linked by blocked-by. The
+test is the outcome: one shared `## So that` means parts of a whole, and the
+parent is done when its parts are.
+
+A setup or operational task the person has to do themselves is written onto the
+piece as its `## Waiting on you` section, in the shape pieces.md describes. Do
+the step yourself where you can; write it down only where you cannot.
+
+A repair takes `broken` as well as its subjects, which is what points
+`/what-now`, `/shape` and `/implement` at it. It is ready once it is reproduced.
+
+The request touches what data is stored, who can see or do what, or money:
+update the masterplan first and say what changed before routing further. If
+it changes the shape of data the tool already holds, and that data is real
+rather than made-up, treat it as flagged territory: a backup first, the
+change rehearsed on a copy, and only then done for real.
+
+The request would change what kind of project this is (outside users, real
+money moving, a promise to someone, a new kind of data about people,
+autonomous action): stop, rerun the fit check, record the new build path, and
+only then route the work. The build path decides how the whole system
+behaves, and building past it is how safe projects quietly become unsafe
+ones.
+
+Where that check leaves a trigger standing, give the risk notice described in
+the `setup-ai-build-kit` skill's `references/fit-check.md` before routing the flagged work,
+and hold it. Nothing is refused and nothing stops there: if the person carries
+on after the notice, record the acceptance as fit-check.md says and route the
+work. What may not happen is the notice quietly going away, or you deciding on
+their behalf that it no longer applies because they pushed back. Repeat the
+request back, however many times it arrives, and route it the same way each
+time.
+
+### Writing the piece
 
 Shape the piece in its two layers. The surface stays plain and comprehensive
 about anything that affects the product, so it never reads as simpler than the
@@ -51,11 +165,12 @@ work is: a fact that would change a product decision goes on the surface, in the
 person's words. The build context that only affects how the code gets written
 goes in the collapsed `Under the hood` section, so the person never has to read
 it and `/implement` still has it. Route context that reaches past this piece by
-how far it reaches: a whole-product decision to the masterplan, a whole-codebase
-convention to AGENTS.md's stack section. A piece must be small enough for a fresh
-session to hold whole; where it is not, cut it down. Any groundwork the piece
-needs is itself a vertical slice, ordered ahead of the piece that needs it, never
-a separate "database" or "API" layer.
+how far it reaches: a whole-product decision to the masterplan, in plain words,
+and a whole-codebase convention to AGENTS.md's stack section. Anything
+particular to one piece stays on that piece. A piece must be small enough for a
+fresh session to hold whole; where it is not, cut it down. Any groundwork the
+piece needs is itself a vertical slice, ordered ahead of the piece that needs
+it, never a separate "database" or "API" layer.
 
 On every piece you shape or refine, write `## Masterplan change` on the
 surface before marking it ready, following pieces.md. Say what the masterplan
@@ -71,18 +186,10 @@ write its `Live side needs:` line on the surface, following pieces.md: each by
 name, never a value. Leave the line out otherwise.
 
 When writing the `Under the hood` notes for a project with code, load
-the `section-builder` skill's `references/reach-check.md` and run its reach
+the `implement` skill's `references/reach-check.md` and run its reach
 check. Use the live result to name the code seams and existing covering tests,
 instead of researching them again from nothing. Keep the result on the piece as
 build context only; never create a separate index or record for it.
-
-Where the request is bigger than a piece, it goes into the masterplan first and
-is cut into pieces on the plan, order confirmed with the user. Parts of one
-outcome become sub-issues of a parent piece, each a vertical slice; separate
-outcomes that must come in order become separate pieces linked by blocked-by. The
-test is the outcome: one shared `## So that` means parts of a whole, and the
-parent is done when its parts are. Where it would change what kind of project
-this is, stop and rerun the fit check before shaping anything.
 
 ## Shaping now, or filing for later
 
@@ -98,7 +205,7 @@ The person can say "later" at any point in a step. File the piece then, with
 anything the step has already agreed written onto it, and stop.
 
 Filing is also something the person can ask for outright, in words such as
-"note this for later" or "just file this idea". Run change-triage as usual so
+"note this for later" or "just file this idea". Route the request as usual so
 the piece gets its route and its subjects, then file it without starting any
 step. It is not a separate command. A clear, piece-sized request filed this way
 is simply a ready piece, written without the build offer.
@@ -152,13 +259,12 @@ noticed until the files were read.
   already made. Otherwise run the decision prototype in
   the `clarify` skill's `references/decision-prototype.md`. Either way, the
   decision goes back onto the piece in words.
-- `needs-research` runs one of two steps and records what it finds on the
-  piece. A question about one external fact, such as what a provider's API
-  supports, runs the source check in
-  the `change-triage` skill's `references/source-check.md`. A question about
-  whether something already exists that could do the work runs
-  the `change-triage` skill's `references/existing-work.md`. Say which step you
-  ran and why, in one line, because a question can plausibly match either.
+- `needs-research` runs one of the two steps in `references/research.md` and
+  records what it finds on the piece. A question about one external fact, such
+  as what a provider's API supports, runs the source check. A question about
+  whether something already exists that could do the work runs the search for
+  existing work. Say which step you ran and why, in one line, because a
+  question can plausibly match either.
 
 Two of those three need the person in the room. An interview needs somebody to
 interview, and a prototype exists so somebody can react to it. Research does
@@ -215,15 +321,17 @@ person asks to after the build offer, in their own words.
 
 ## Record only durable information
 
-Follow change-triage's rule: add a changelog line only when work actually lands,
-the masterplan changes, the build path changes, a risk notice is accepted, or an
-idea is parked or rejected for a durable reason. Shaping a piece is not itself a
-changelog entry; the piece is the record.
+Most shaping conversations leave no trace worth keeping, and shaping a piece is
+not itself a changelog entry: the piece is the record. Add a changelog line
+only when the masterplan changes, the build path changes, a risk notice is
+accepted, an idea is parked or rejected for a durable reason, a sensitive area
+changes, or work actually lands.
 
 ## Done when
 
-The request has exactly one route, the piece is written into its proper shape
-and labelled `ready` or with the question it still waits on, a routed question was
-started unless the person asked to file it, the person's original words are kept
-underneath a refinement, and nothing was built except
-through an accepted build offer.
+The request has exactly one route and the reason is written down, no work
+started before the route was chosen, the piece is written into its proper shape
+and labelled `ready` or with the question it still waits on, a routed question
+was started unless the person asked to file it, the person's original words are
+kept underneath a refinement, and nothing was built except through an accepted
+build offer.

@@ -17,8 +17,8 @@ deny list, mirror these entries there as mechanical enforcement:
 - a push that skips the project's own push check, `git push --no-verify`
 - throwing away changes nobody saved: `git checkout .`, `git checkout -- .`,
   `git restore .`, `git stash drop` and `git stash clear`. A repair that needs
-  to undo a failed attempt runs the `section-builder` skill's
-  `scripts/reset-attempt.sh` instead, as the `section-builder` skill's
+  to undo a failed attempt runs the `implement` skill's
+  `scripts/reset-attempt.sh` instead, as the `implement` skill's
   `references/repair.md` says
 - reading a login another tool keeps for itself, as listed under "A stored
   login" below
@@ -34,14 +34,15 @@ still apply:
 - never print, commit, or otherwise expose a secret;
 - never disable authentication or access control to make a check pass;
 - never bypass a red project check to ship or merge. A check GitHub never
-  started ran no step and is not red; section-builder's "A check GitHub did not
+  started ran no step and is not red; the `implement` skill's "A check GitHub did not
   start" says what happens instead;
 - never push a change directly to `main`; every change to `main` goes through a
   pull request, so shared work reaches it by merge rather than by a direct push.
   The one exception is the project's first upload: after the person's yes,
   and only when the remote lists no branch, `main` is created through the
   GitHub API at the commit the piece's branch was cut from, as
-  section-builder's "The first upload" describes. It is never written by a
+  "The first upload" in the `implement` skill's `references/merge.md`
+  describes. It is never written by a
   `git push`;
 - never force or automate a merge over a required review, and never merge a
   pull request the person has not said yes to; where the harness can ask

@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# save-records.sh: run section-builder's save-records.sh in a throwaway
+# save-records.sh: run implement's save-records.sh in a throwaway
 # project.
 #
 # If this breaks, a records commit sweeps up the person's own unsaved work, or
@@ -9,7 +9,7 @@
 set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
-SCRIPT="$ROOT/.agents/skills/section-builder/scripts/save-records.sh"
+SCRIPT="$ROOT/.agents/skills/implement/scripts/save-records.sh"
 
 FAIL=0
 fail() { echo "FAIL: $1" >&2; FAIL=1; }

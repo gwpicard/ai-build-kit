@@ -293,23 +293,24 @@ records pull request, below, and only on a yes that names it.
 The records /setup-hosting writes during a run, such as its CHANGELOG.md
 entries and a confirmation the person gives later, such as a colleague saying
 the new version is live, take the save route the build path already requires:
-the three routes section-builder names, with no fourth for records. On the
+the three routes the `implement` skill names, with no fourth for records. On the
 checkpoint route, a checkpoint commit is enough. Otherwise put them on one
 branch for this run, cut from the up-to-date `main`, and stage only the files
-this run itself changed: commit them with the `section-builder` skill's
+this run itself changed: commit them with the `implement` skill's
 `scripts/save-records.sh`, naming each file. Open one pull request for them, once, after the
 launch is checked and its records are written, and ask for its yes in the
 reply that reports the launch. Where GitHub cannot be reached, save the
 records on that branch, note in one plain line the step that did not happen,
 and open the pull request once GitHub is reachable. The project's first upload
-waits for the yes section-builder's "The first upload" describes. Never push
+waits for the yes "The first upload" in the `implement` skill's
+`references/merge.md` describes. Never push
 records straight to `main`. A later confirmation joins that branch while its
 pull request is open, or a new branch and pull request once it has merged.
 
 The records pull request is a merge like any other: name it in one plain line
 and ask for a yes that names it. No yes given earlier covers it, because that
 pull request did not exist when the person gave it. Make the merge as
-section-builder's "Merging" says: on the pull request itself, never on this
+the `implement` skill's `references/merge.md` says under "Merging": on the pull request itself, never on this
 computer with a push of `main`. Where the host builds every change to `main`,
 merging it starts one more build of the same code and moves the rollback
 target. Say so in the line that asks for its yes, and offer to leave it open
@@ -339,10 +340,24 @@ Build with care still gives it at the moment that area goes live.
 #### Rolling back
 
 This holds whenever the live copy is brought back to an earlier version, on a
-recipe or off one. The `change-triage` skill's "A live break after a recent
-merge" offers it first when the live tool broke after a recent merge. Where a
-run of this skill starts with such a report, run that check first. The person
-may also ask for a rollback outright.
+recipe or off one. The person may ask for a rollback outright, or the kit
+offers one first when the live tool broke after a recent merge, wherever that
+report arrives: in `/shape`, `/implement`, `/what-now` or a run of this skill.
+
+The offer applies only where the masterplan's "How it stays running" records a
+live address, the project is on a recipe whose rollback section names how to
+roll back, the report is that the live tool broke, and a merge in the last few
+days is the likely cause. Check first that the version before that merge did
+not have the fault: the changelog or closed pieces show it working then, or the
+person says it did. A fault that was already there is not brought back by a
+rollback, so offer none.
+
+Where all of that holds, offer the earlier version back first, before shaping
+the repair. Say in one line what the rollback brings back and that it puts
+nothing else right, close to: "The live tool broke after Tuesday's change. I
+can put the version from before it back while we find the cause. Shall I roll
+back?" Run it only after a yes that names it. A no leaves the live tool as it
+is. Either way, the repair is then shaped in `/shape`.
 
 A rollback changes the live service, so it waits for a yes that names it, as
 "A change to a live service" says, even where the recipe names the command.
@@ -420,7 +435,7 @@ Inside a named area, take each area in turn:
    run of the eight checks reports it, not through a separate deploy.
 
 After the first launch, a piece inside a named area goes live when /implement
-merges it. section-builder asks for that merge only once the area's caution is
+merges it. `/implement` asks for that merge only once the area's caution is
 done or accepted on the record, so this skill does not hold each later
 go-live.
 

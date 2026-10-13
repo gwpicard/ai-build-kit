@@ -1,6 +1,7 @@
 #!/usr/bin/env sh
 # whole-copy-leftovers.sh: run the shipped kit-leftovers.py and the release
-# recorder in throwaway whole copies of the last nine-command release. If this
+# recorder in throwaway whole copies of the last nine-command release and the
+# last eleven-skill release. If this
 # breaks, a monthly visit can delete a command file, skill or notes the person
 # wrote, follow a link out of the project, or leave every command offered twice.
 
@@ -27,7 +28,7 @@ echo "Whole-copy leftovers:"
 
 # A whole copy of the last nine-command release. It carries the kit's own
 # command files for every tool and the old session-end hook, and the update has
-# just registered the eleven with the installer. The person added a skill and a
+# just registered the eight with the installer. The person added a skill and a
 # command of their own. The copy's retired skills carry the descriptions the
 # kit's releases gave them, read from the record the script uses.
 KNOWN="$ROOT/.agents/skills/maintain/scripts/kit-retired-skills.json"
@@ -38,9 +39,9 @@ kit_skill() {
 }
 P="$work/copy"
 nine="setup-ai-build-kit shape implement queue fix ship sync maintain what-now"
-eleven="setup-ai-build-kit shape implement setup-hosting maintain what-now clarify change-triage screen-check section-builder second-opinion"
+eight="setup-ai-build-kit shape implement setup-hosting maintain what-now clarify second-opinion"
 mkdir -p "$P/.agents/skills" "$P/.agents/hooks" "$P/.claude/commands" "$P/.cursor/commands" "$P/.gemini/commands"
-for name in $eleven my-notes; do
+for name in $eight my-notes; do
   mkdir -p "$P/.agents/skills/$name"
   printf -- '---\nname: %s\n---\n' "$name" > "$P/.agents/skills/$name/SKILL.md"
 done
@@ -48,9 +49,9 @@ for name in queue fix ship sync; do kit_skill "$P/.agents/skills/$name" "$name";
 # The person's own skill under a former name, in no lockfile.
 mkdir -p "$P/.agents/skills/build"
 printf -- '---\nname: build\ndescription: my own build notes\n---\n' > "$P/.agents/skills/build/SKILL.md"
-# The kit's generated background skill folders: four under current names, one
+# The kit's generated background skill folders: two under current names, one
 # under the name `clarify` once had, and one the person added a file to.
-for name in clarify change-triage grilling plan; do
+for name in clarify second-opinion grilling plan; do
   mkdir -p "$P/.claude/skills/$name"
   printf -- '---\nname: %s\n---\n<!-- GENERATED from .agents/skills/%s/. Do not edit here; regenerate with .agents/tools/build-adapters.sh -->\n' "$name" "$name" > "$P/.claude/skills/$name/SKILL.md"
 done
@@ -66,7 +67,7 @@ printf '%s\n' '#!/usr/bin/env sh' 'echo "Run /sync to check and reconcile them."
 {
   printf '{"version": 1, "skills": {'
   sep=""
-  for name in $eleven; do
+  for name in $eight; do
     printf '%s"%s": {"source": "gwpicard/ai-build-kit", "sourceType": "github"}' "$sep" "$name"
     sep=", "
   done
@@ -85,7 +86,7 @@ report "the person's own build skill is named as left, not recognised" \
      && ! printf '%s\n' "$listed" | grep -q '^folder	.agents/skills/build' && echo yes || echo no)"
 report "a generated skill folder for a dropped name is listed, one for a current name is not" \
   "$(printf '%s\n' "$listed" | grep -qx 'adapter	.claude/skills/grilling' \
-     && ! printf '%s\n' "$listed" | grep -qE 'adapter	\.claude/skills/(clarify|change-triage)$' && echo yes || echo no)"
+     && ! printf '%s\n' "$listed" | grep -qE 'adapter	\.claude/skills/(clarify|second-opinion)$' && echo yes || echo no)"
 report "a generated skill folder holding a file of the person's is left" \
   "$(printf '%s\n' "$listed" | grep -qx 'left	.claude/skills/plan	it holds files besides the generated one' && echo yes || echo no)"
 report "the person's own command file and skill are never listed" \
@@ -96,8 +97,8 @@ report "the old hook is named" \
 python3 "$LEFTOVERS" --remove "$P"
 r=yes
 for n in queue fix ship sync; do [ ! -e "$P/.agents/skills/$n" ] || r=no; done
-for n in $eleven; do [ -f "$P/.agents/skills/$n/SKILL.md" ] || r=no; done
-report "the retired folders are gone and the eleven remain" "$r"
+for n in $eight; do [ -f "$P/.agents/skills/$n/SKILL.md" ] || r=no; done
+report "the retired folders are gone and the eight remain" "$r"
 report "every generated command file is gone, and the emptied tool folders with them" \
   "$([ ! -e "$P/.cursor" ] && [ ! -e "$P/.gemini" ] && [ "$(ls "$P/.claude/commands")" = deploy.md ] && echo yes || echo no)"
 report "the person's command file, skills and hook are untouched" \
@@ -109,6 +110,51 @@ report "the stale generated skill folder is gone, the current ones stay" \
 report "a second run lists only what is never removed, which the visit then keeps quiet about" \
   "$([ "$(python3 "$LEFTOVERS" "$P" | grep -cv '^left	')" = 0 ] \
      && python3 "$LEFTOVERS" "$P" | grep -q '^left	.agents/hooks/session-end-sync.sh	' && echo yes || echo no)"
+
+# A whole copy of the last eleven-skill release. Its three background skills
+# folded into shape and implement, and the update left their folders, with
+# the bytes that release shipped, and their generated Claude Code folders. The
+# person added a note to one copy of section-builder in a second project.
+E="$work/eleven"
+F="$ROOT/.agents/tests/fixtures/upgrade-v0.20.3/retired-skills"
+folded="change-triage screen-check section-builder"
+mkdir -p "$E/.agents/skills"
+for name in $eight; do
+  mkdir -p "$E/.agents/skills/$name"
+  printf -- '---\nname: %s\n---\n' "$name" > "$E/.agents/skills/$name/SKILL.md"
+done
+(cd "$F" && find . -type f -name '*.txt') | while IFS= read -r file; do
+  target="$E/.agents/skills/${file#./}"
+  target="${target%.txt}"
+  mkdir -p "$(dirname "$target")"
+  cp "$F/$file" "$target"
+done
+for name in $folded; do
+  mkdir -p "$E/.claude/skills/$name"
+  printf -- '---\nname: %s\nuser-invocable: false\n---\n<!-- GENERATED from .agents/skills/%s/. Do not edit here; regenerate with .agents/tools/build-adapters.sh -->\n' "$name" "$name" > "$E/.claude/skills/$name/SKILL.md"
+done
+cp -R "$E" "$work/eleven-changed"
+printf '%s\n' 'My build notes.' > "$work/eleven-changed/.agents/skills/section-builder/notes.md"
+listed=$(python3 "$LEFTOVERS" "$E")
+report "the three folded background skill folders are listed, with their generated copies" \
+  "$([ "$(printf '%s\n' "$listed" | grep -cE '^folder	\.agents/skills/(change-triage|screen-check|section-builder)$')" = 3 ] \
+     && [ "$(printf '%s\n' "$listed" | grep -cE '^adapter	\.claude/skills/(change-triage|screen-check|section-builder)$')" = 3 ] && echo yes || echo no)"
+report "nothing is removed before the yes" \
+  "$(for n in $folded; do [ -d "$E/.agents/skills/$n" ] && [ -d "$E/.claude/skills/$n" ] || echo gone; done | grep -q gone && echo no || echo yes)"
+python3 "$LEFTOVERS" --remove "$E"
+r=yes
+for n in $folded; do [ ! -e "$E/.agents/skills/$n" ] && [ ! -e "$E/.claude/skills/$n" ] || r=no; done
+for n in $eight; do [ -f "$E/.agents/skills/$n/SKILL.md" ] || r=no; done
+report "on the yes the three folders go and the eight remain" "$r"
+report "a second run finds nothing" \
+  "$([ -z "$(python3 "$LEFTOVERS" "$E")" ] && echo yes || echo no)"
+changed=$(python3 "$LEFTOVERS" "$work/eleven-changed")
+python3 "$LEFTOVERS" --remove "$work/eleven-changed"
+report "a folded folder holding a note of the person's is left whole" \
+  "$(printf '%s\n' "$changed" | grep -q '^left	.agents/skills/section-builder	' \
+     && [ -f "$work/eleven-changed/.agents/skills/section-builder/notes.md" ] \
+     && [ -f "$work/eleven-changed/.agents/skills/section-builder/SKILL.md" ] \
+     && [ ! -e "$work/eleven-changed/.agents/skills/change-triage" ] && echo yes || echo no)"
 
 # Links. A review linked the project's .claude/skills to a shared folder
 # outside it, holding the person's own `sync` skill, and the removal followed

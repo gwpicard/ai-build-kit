@@ -121,9 +121,8 @@ scroll past. Failed fixes never stack; stacked fixes are how clean projects rot.
 before trying differently. Commit what is worth keeping, such as a test that
 reproduces the fault, before an attempt starts, so the reset cannot take it.
 Say in one line, before you run it, that the reset throws away the failed
-attempt and nothing else, then run `sh` with this skill's
-`scripts/reset-attempt.sh` from the project root. This announced step is the
-only place it runs.
+attempt and nothing else, then run `git restore .` or `git checkout .`. This
+announced step is the only place either command is allowed.
 
 ### Fix and lock it down
 

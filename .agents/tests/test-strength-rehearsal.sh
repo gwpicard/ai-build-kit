@@ -17,7 +17,7 @@
 set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
-QUALITY="$ROOT/.agents/skills/section-builder/scripts/quality.py"
+QUALITY="$ROOT/.agents/skills/implement/scripts/quality.py"
 
 fail() {
   echo "FAIL: $1" >&2

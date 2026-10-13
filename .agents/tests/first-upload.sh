@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# first-upload.sh: run section-builder's first-upload.py against a real bare
+# first-upload.sh: run implement's first-upload.py against a real bare
 # remote and a stand-in for the GitHub command line tool.
 #
 # Founding tells the person nothing will be uploaded. If this breaks, a piece
@@ -11,7 +11,7 @@
 set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
-SCRIPT="$ROOT/.agents/skills/section-builder/scripts/first-upload.py"
+SCRIPT="$ROOT/.agents/skills/implement/scripts/first-upload.py"
 HOOK="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/pre-push"
 
 FAIL=0

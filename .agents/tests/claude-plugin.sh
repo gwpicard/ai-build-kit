@@ -48,18 +48,27 @@ if ! CLAUDE_CONFIG_DIR="$CONFIG" claude plugin validate "$MARKET" --strict \
   fi
 fi
 # The first release stands in for the last nine-command release: it also
-# offers fix, queue, sync and ship. The update to the second release must take
-# them away by itself, since nothing in the project holds them on this route.
+# offers fix, queue, sync and ship. It also stands in for the last
+# eleven-skill release, with the three background skills that folded into
+# shape and implement. The update to the second release must take all of them
+# away by itself, since nothing in the project holds them on this route.
 RETIRED="fix queue sync ship"
+RETIRED_SKILLS="change-triage screen-check section-builder"
 for word in $RETIRED; do
   printf -- '---\ndescription: A retired command, %s.\n---\nRetired.\n' "$word" \
     > "$MARKET/.claude/commands/$word.md"
 done
-python3 - "$MARKET/.claude-plugin/plugin.json" $RETIRED <<'PY'
+for name in $RETIRED_SKILLS; do
+  mkdir -p "$MARKET/.claude/skills/$name"
+  printf -- '---\nname: %s\ndescription: A retired background skill, %s.\nuser-invocable: false\n---\nRetired.\n' \
+    "$name" "$name" > "$MARKET/.claude/skills/$name/SKILL.md"
+done
+python3 - "$MARKET/.claude-plugin/plugin.json" "$RETIRED" "$RETIRED_SKILLS" <<'PY'
 import json, sys
 path = sys.argv[1]
 data = json.load(open(path))
-data["commands"] += ["./.claude/commands/%s.md" % word for word in sys.argv[2:]]
+data["commands"] += ["./.claude/commands/%s.md" % word for word in sys.argv[2].split()]
+data["skills"] = sorted(data["skills"] + ["./.claude/skills/%s" % name for name in sys.argv[3].split()])
 json.dump(data, open(path, "w"), indent=2)
 PY
 CLAUDE_CONFIG_DIR="$CONFIG" claude plugin marketplace add "$MARKET" >/dev/null
@@ -118,7 +127,7 @@ for recipe in "$ROOT"/.agents/skills/setup-hosting/recipes/*.md; do
     fail "installed Claude plugin lost a recipe founding offers: $(basename -- "$recipe")"
 done
 grep -qF 'user-invocable: false' \
-  "$INSTALL_PATH/.claude/skills/change-triage/SKILL.md" || \
+  "$INSTALL_PATH/.claude/skills/second-opinion/SKILL.md" || \
   fail "installed internal discipline is visible in Claude's command menu"
 "$BOOTSTRAP" "$PROJECT" >/dev/null || \
   fail "installed Claude plugin could not prepare the project"
@@ -159,6 +168,8 @@ CLAUDE_CONFIG_DIR="$CONFIG" claude plugin marketplace update ai-build-kit >/dev/
   CLAUDE_CONFIG_DIR="$CONFIG" \
     claude plugin update ai-build-kit@ai-build-kit --scope local >/dev/null
   CLAUDE_CONFIG_DIR="$CONFIG" claude plugin list --json > "$LISTING"
+  CLAUDE_CONFIG_DIR="$CONFIG" \
+    claude plugin details ai-build-kit@ai-build-kit > "$DETAILS"
 )
 grep -qF '"version": "0.2.1"' "$LISTING" || \
   fail "Claude plugin update did not install the later release"
@@ -174,6 +185,14 @@ for word in implement maintain setup-ai-build-kit setup-hosting shape what-now; 
   [ -f "$NEW_PATH/.claude/commands/$word.md" ] || \
     fail "the plugin update lost a command: $word"
 done
+for name in $RETIRED_SKILLS; do
+  if grep -qF "\"./.claude/skills/$name\"" "$NEW_PATH/.claude-plugin/plugin.json" \
+      || [ -e "$NEW_PATH/.claude/skills/$name" ] || [ -e "$NEW_PATH/.agents/skills/$name" ]; then
+    fail "the plugin update kept a retired background skill: $name"
+  fi
+done
+grep -qF 'Skills (2)  clarify, second-opinion' "$DETAILS" || \
+  fail "after the update Claude does not offer exactly the two background skills"
 [ ! -e "$PROJECT/.agents/skills" ] && [ ! -e "$PROJECT/.claude/commands" ] || \
   fail "the plugin update left skills or commands in the project"
 

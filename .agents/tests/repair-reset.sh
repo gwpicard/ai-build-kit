@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# repair-reset.sh: run section-builder's reset-attempt.sh in a throwaway
+# repair-reset.sh: run implement's reset-attempt.sh in a throwaway
 # project.
 #
 # A project's Claude Code settings refuse the plain commands that throw
@@ -10,7 +10,7 @@
 set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
-SCRIPT="$ROOT/.agents/skills/section-builder/scripts/reset-attempt.sh"
+SCRIPT="$ROOT/.agents/skills/implement/scripts/reset-attempt.sh"
 
 FAIL=0
 fail() { echo "FAIL: $1" >&2; FAIL=1; }

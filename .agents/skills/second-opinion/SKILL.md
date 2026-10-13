@@ -52,7 +52,8 @@ way.
 
 ## Axis 3: Screen
 
-During a build review, load and follow `screen-check` when the piece carries
+During a build review, load and follow
+the `implement` skill's `references/screen-rules.md` when the piece carries
 `visual`, or when the diff touches a screen file whatever subject the piece
 carries. Say which screen rules were applied, which could not be checked, and
 what a person still has to try. Put each finding under `Worth stopping for` or

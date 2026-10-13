@@ -346,7 +346,7 @@ discard_allowed = [
     "git stash list",
     "git stash pop",
     "git push -u origin feature",
-    "sh .agents/skills/section-builder/scripts/reset-attempt.sh",
+    "sh .agents/skills/implement/scripts/reset-attempt.sh",
 ]
 discard_rules = [r for r in rules if r.startswith(("Bash(git checkout", "Bash(git restore",
                                                     "Bash(git stash", "Bash(git push --no-verify",

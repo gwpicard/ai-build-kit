@@ -624,10 +624,10 @@ live to protect. Do not push it, do not open a pull request for it, and do not
 read a remote being reachable as a reason to use one. Founding already told the
 person "Nothing will be uploaded", and that has to stay true. Where the online
 repository holds none of the code yet, the code stays on this computer until
-the first piece that pushes asks the person first, as section-builder's "The
-first upload" describes.
+the first piece that pushes asks the person first, as "The first upload" in
+the `implement` skill's `references/merge.md` describes.
 
-section-builder chooses between the checkpoint, pull-request and flagged routes
+`/implement` chooses between the checkpoint, pull-request and flagged routes
 for each piece built afterwards, on what that piece touches. That choice is
 about the work, not about this. A tool the whole team will share still founds
 locally, and its first piece takes whichever route it earns.

@@ -1,6 +1,7 @@
 #!/usr/bin/env sh
 # upgrade-rehearsal.sh: rehearse an upgrade from the frozen last nine-command foundation on four
-# install routes, with the shipped upgrade-check.py and kit-leftovers.py. If
+# install routes, with the three background skills the last eleven-skill
+# release still had kept by the installer too, with the shipped upgrade-check.py and kit-leftovers.py. If
 # this breaks, an update can overwrite a person's own guidance, settings or
 # changelog, leave retired commands installed, or mark a blocked repair ready.
 set -eu
@@ -13,8 +14,8 @@ import hashlib, importlib.util, json, os, pathlib, shutil, subprocess, sys
 root, work = map(pathlib.Path, sys.argv[1:])
 source = root / '.agents/skills'
 fixture = root / '.agents/tests/fixtures/upgrade-v0.19.3'
-eleven = [p.name for p in source.iterdir() if p.is_dir()]
-retired = ['fix', 'queue', 'sync', 'ship']
+kit_names = [p.name for p in source.iterdir() if p.is_dir()]
+retired = ['fix', 'queue', 'sync', 'ship', 'change-triage', 'section-builder', 'screen-check']
 known = json.loads((source/'maintain/scripts/kit-retired-skills.json').read_text())['skills']
 
 def run(args, cwd=None, code=0):
@@ -86,9 +87,9 @@ for route in ('claude-only','shared','whole','plugin'):
     if route != 'plugin':
         for name in retired:
             put(skills/name/'SKILL.md','---\nname: '+name+'\ndescription: '+known[name][-1]+'\n---\n')
-        put(p/'skills-lock.json',json.dumps({'version':1,'skills':{n:{'source':'gwpicard/ai-build-kit','sourceType':'github'} for n in eleven+retired}}))
+        put(p/'skills-lock.json',json.dumps({'version':1,'skills':{n:{'source':'gwpicard/ai-build-kit','sourceType':'github'} for n in kit_names+retired}}))
         if route in ('shared','whole'):
-            for name in eleven+retired:
+            for name in kit_names+retired:
                 target=p/'.claude/skills'/name
                 target.parent.mkdir(parents=True,exist_ok=True)
                 target.symlink_to('../../.agents/skills/'+name)
@@ -114,9 +115,9 @@ for route in ('claude-only','shared','whole','plugin'):
     assert {steps[k] for k in kinds if k in steps} <= said, listed
     assert 'kit' in said, listed
     assert {'commands','pointer','helper','settings','template','mention'} <= set(kinds), listed
-    assert kinds.count('commands')==3, listed
+    assert kinds.count('commands')==5, listed
     assert kinds.count('pointer')==1 and kinds.count('helper')==1 and kinds.count('template')==1,listed
-    assert kinds.count('installer') == (0 if route=='plugin' else 4), listed
+    assert kinds.count('installer') == (0 if route=='plugin' else 7), listed
     assert ('kitcopy\t.claude-plugin' in listed)==(route=='whole'), listed
     assert ('hook\t.agents/hooks/session-end-sync.sh' in listed)==(route=='whole'), listed
     assert 'mention\tmasterplan.md:' in listed and 'We run /ship before' in listed
@@ -126,7 +127,8 @@ for route in ('claude-only','shared','whole','plugin'):
         assert 'left\tagent-plugin\t' in listed,listed
     if route!='plugin':
         run([npx,'skills','remove',*retired,'-y'],p)
-        assert set(json.loads((p/'skills-lock.json').read_text())['skills'])==set(eleven)
+        assert set(json.loads((p/'skills-lock.json').read_text())['skills'])==set(kit_names)
+        assert not any((p/folder/name).exists() for folder in ('.agents/skills','.claude/skills') for name in retired)
     for step in ('helper','remove','commands','pointers','settings','template'): apply(skills,p,step)
     after=check(skills,p,0)
     assert all(l.startswith(('mention\t','left\t','say\t')) for l in after.splitlines()),after
@@ -150,7 +152,7 @@ for route in ('claude-only','shared','whole','plugin'):
     snapshot={str(f.relative_to(p)):f.read_bytes() for f in p.rglob('*') if f.is_file() and '.git' not in f.parts}
     assert check(skills,p,0)==after
     assert snapshot=={str(f.relative_to(p)):f.read_bytes() for f in p.rglob('*') if f.is_file() and '.git' not in f.parts}
-    env=skills/'section-builder/scripts/env-names-added.sh'
+    env=skills/'implement/scripts/env-names-added.sh'
     assert run(['sh',env,'piece','main'],p,1).splitlines()==['NEW_CLUB_SETTING','SECOND_SETTING']
     assert run(['sh',env,'main','main'],p)==''
     run(['sh',env,'unknown','main'],p,2)
@@ -245,7 +247,7 @@ assert 'commands\tAGENTS.md:3' in monthly and 'declined\tcommands' not in monthl
 replacement=original.replace('nine commands','six commands').replace(
     '`setup-ai-build-kit`, `shape`, `implement`, `queue`, `fix`, `ship`, `sync`,',
     '`setup-ai-build-kit`, `shape`, `implement`, `setup-hosting`,').replace(
-    'fourteen skills','eleven skills')
+    'fourteen skills','eight skills')
 put(p/'AGENTS.md',replacement)
 finished=check(source,p,0)
 assert 'commands\t' not in finished and 'declined\tcommands' not in finished,finished
@@ -281,7 +283,7 @@ p=work/'before-twenty'; p.mkdir()
 copy(fixture/'masterplan.md.txt',p/'masterplan.md')
 with (p/'masterplan.md').open('a') as f:
     f.write('\nPath: Professional-led\nOutside help: review, for client records\n')
-put(p/'skills-lock.json',json.dumps({'version':1,'skills':{n:{'source':'gwpicard/ai-build-kit'} for n in eleven+['build']}}))
+put(p/'skills-lock.json',json.dumps({'version':1,'skills':{n:{'source':'gwpicard/ai-build-kit'} for n in kit_names+['build']}}))
 shutil.copytree(source,p/'.agents/skills')
 put(p/'.agents/skills/build/SKILL.md','---\nname: build\n---\n')
 placed=run([sys.executable,source/'maintain/scripts/upgrade-check.py','--apply','helper',p])

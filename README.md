@@ -86,7 +86,7 @@ For another agent, or a project using several agents, run:
 npx skills add gwpicard/ai-build-kit
 ```
 
-Choose the agents you use and install all eleven skills. Then ask your agent:
+Choose the agents you use and install all eight skills. Then ask your agent:
 "Run the setup-ai-build-kit skill."
 
 For Codex on a Mac, start each session from your project folder with

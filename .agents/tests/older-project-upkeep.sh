@@ -85,12 +85,29 @@ report "a pointer under the founding skill's first name is rewritten to today's"
      && grep -qF "the \`setup-ai-build-kit\` skill's \`references/fit-check.md\`. The agent reads this section" "$WORK/first/masterplan.md" && echo yes || echo no)"
 
 # The fix skill was folded into shape and implement, and its rules now sit in
-# section-builder's repair reference. A pointer to its one file follows them.
+# implement's repair reference. A pointer to its one file follows them.
 mkdir -p "$WORK/repair"
 printf '%s\n' 'Repairs follow `.agents/skills/fix/SKILL.md`.' > "$WORK/repair/AGENTS.md"
 python3 "$SCRIPT" --apply "$WORK/repair" >/dev/null
 report "a pointer to the old fix skill is rewritten to the repair reference" \
-  "$(grep -qF "Repairs follow the \`section-builder\` skill's \`references/repair.md\`." "$WORK/repair/AGENTS.md" && echo yes || echo no)"
+  "$(grep -qF "Repairs follow the \`implement\` skill's \`references/repair.md\`." "$WORK/repair/AGENTS.md" && echo yes || echo no)"
+
+# Three background skills folded into shape and implement. A pointer to one
+# of their files follows it to its new home, in the old folder form and in the
+# named form a project founded on the eleven-skill releases carries.
+mkdir -p "$WORK/eleven"
+printf '%s\n' 'Facts follow `.agents/skills/change-triage/references/source-check.md`.' \
+  'Screens follow `.agents/skills/screen-check/SKILL.md`.' \
+  'The trim follows `.agents/skills/section-builder/references/trim.md`.' \
+  "Repairs follow the \`section-builder\` skill's \`references/repair.md\`." > "$WORK/eleven/AGENTS.md"
+python3 "$SCRIPT" --apply "$WORK/eleven" >/dev/null
+report "pointers into the three folded background skills follow them" \
+  "$(grep -qF "Facts follow the \`shape\` skill's \`references/research.md\`." "$WORK/eleven/AGENTS.md" \
+     && grep -qF "Screens follow the \`implement\` skill's \`references/screen-rules.md\`." "$WORK/eleven/AGENTS.md" \
+     && grep -qF "The trim follows the \`implement\` skill's \`references/trim.md\`." "$WORK/eleven/AGENTS.md" \
+     && grep -qF "Repairs follow the \`implement\` skill's \`references/repair.md\`." "$WORK/eleven/AGENTS.md" && echo yes || echo no)"
+report "and a second run finds nothing there" \
+  "$([ -z "$(python3 "$SCRIPT" "$WORK/eleven")" ] && echo yes || echo no)"
 
 # The queue skill folded into implement, and the sync skill's routine became
 # the maintain skill's truing reference. Pointers to either follow the rules.
@@ -247,8 +264,8 @@ print("\n".join(sorted(module.KIT_SKILLS)))
 PY
 )
 shipped=$(ls "$ROOT/.agents/skills" | sort)
-report "the script names exactly the kit's eleven skills" \
-  "$([ "$listed" = "$shipped" ] && [ "$(printf '%s\n' "$listed" | grep -c .)" = 11 ] && echo yes || echo no)"
+report "the script names exactly the kit's eight skills" \
+  "$([ "$listed" = "$shipped" ] && [ "$(printf '%s\n' "$listed" | grep -c .)" = 8 ] && echo yes || echo no)"
 
 echo
 echo "older-project-upkeep.sh: all $passed checks passed"

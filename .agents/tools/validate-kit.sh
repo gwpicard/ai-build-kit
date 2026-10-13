@@ -33,7 +33,7 @@ pass() {
 
 SKILLS="$ROOT/.agents/skills"
 # A skill only the kit's own maintainers use lives here rather than beside the
-# eleven. A shared skills installer reads .agents/skills/ and .claude/skills/
+# eight. A shared skills installer reads .agents/skills/ and .claude/skills/
 # and merges what it finds by the name in its frontmatter, so a folder in
 # either one is a skill somebody installs. This folder is in neither.
 MAINTAINER_SKILLS="$ROOT/.agents/maintainer-skills"
@@ -45,11 +45,8 @@ setup-hosting
 shape
 what-now"
 
-expected_disciplines="change-triage
-clarify
-screen-check
-second-opinion
-section-builder"
+expected_disciplines="clarify
+second-opinion"
 
 # Every folder under .agents/maintainer-skills/ is a maintainer skill, and the
 # list is read off the folder rather than written out here. A written-out list
@@ -183,16 +180,16 @@ actual=$(find "$SKILLS" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | s
 expected=$(printf '%s\n%s\n' "$expected_commands" "$expected_disciplines" | sort)
 
 if [ "$actual" != "$expected" ]; then
-  fail "skill inventory does not match the canonical six commands and five disciplines"
+  fail "skill inventory does not match the canonical six commands and two disciplines"
   echo "  expected:" >&2
   echo "$expected" | sed 's/^/    /' >&2
   echo "  found:" >&2
   echo "$actual" | sed 's/^/    /' >&2
 else
-  pass "exactly six commands and five disciplines, named exactly"
+  pass "exactly six commands and two disciplines, named exactly"
 fi
 
-# Each of the eleven has a SKILL.md. Which of them are commands and which
+# Each of the eight has a SKILL.md. Which of them are commands and which
 # are background skills is settled by one setting, and the trigger contract
 # further down checks that. Here the question is only that the file exists.
 while IFS= read -r name; do
@@ -265,7 +262,7 @@ else
   pass "no .codex/skills adapter tree"
 fi
 
-# Claude Code: the five generated background skills are hidden from the user
+# Claude Code: the two generated background skills are hidden from the user
 # command menu. The six generated commands carry neither setting. A command
 # used to carry disable-model-invocation, and a regenerate from a stale builder
 # would put it back, so its absence is checked rather than assumed.
@@ -386,7 +383,7 @@ else
   expected_skill_dirs=$(printf '%s\n' "$expected_disciplines" | sort)
   actual_skill_dirs=$(find "$ROOT/.claude/skills" -mindepth 1 -maxdepth 1 -exec basename {} \; | sort)
   if [ "$actual_skill_dirs" != "$expected_skill_dirs" ]; then
-    fail ".claude/skills/ must hold exactly the five disciplines"
+    fail ".claude/skills/ must hold exactly the two disciplines"
     echo "  expected:" >&2
     echo "$expected_skill_dirs" | sed 's/^/    /' >&2
     echo "  found:" >&2
@@ -888,7 +885,7 @@ fi
 # The layered piece: a plain surface that stays comprehensive about the
 # product, a collapsed "under the hood" tier the builder reads, a self-sufficiency
 # bar before an unwatched auto run, and groundwork kept to a vertical slice.
-layer_sbfile="$SKILLS/section-builder/SKILL.md"
+layer_sbfile="$SKILLS/implement/SKILL.md"
 if [ -f "$pieces" ] && [ -f "$implementfile" ] && [ -f "$layer_sbfile" ]; then
   layer_ok=1
   grep -qF "## The two layers of a piece" "$pieces" || \
@@ -965,12 +962,13 @@ fi
 # blocked and merged branches auto-delete; the agent opens the pull
 # request and merges it only on a yes that names the merge, made on the pull
 # request itself, and never in a run with nobody there to say it.
-sbfile="$SKILLS/section-builder/SKILL.md"
+sbfile="$SKILLS/implement/SKILL.md"
+mergefile="$SKILLS/implement/references/merge.md"
 blocked="$SKILLS/setup-ai-build-kit/references/blocked-commands.md"
 settings="$SKILLS/setup-ai-build-kit/templates/foundation/claude-settings.json"
 startfile="$SKILLS/setup-ai-build-kit/SKILL.md"
 shapefile="$SKILLS/shape/SKILL.md"
-if [ -f "$sbfile" ] && [ -f "$blocked" ] && [ -f "$settings" ] && [ -f "$startfile" ] && [ -f "$shapefile" ]; then
+if [ -f "$sbfile" ] && [ -f "$mergefile" ] && [ -f "$blocked" ] && [ -f "$settings" ] && [ -f "$startfile" ] && [ -f "$shapefile" ]; then
   mech_ok=1
   grep -qF "save route including the checkpoint route" "$sbfile" || \
     { fail "$sbfile: does not start every piece from up-to-date main"; mech_ok=0; }
@@ -982,10 +980,10 @@ if [ -f "$sbfile" ] && [ -f "$blocked" ] && [ -f "$settings" ] && [ -f "$startfi
     { fail "$settings: deny list does not block a direct push to main"; mech_ok=0; }
   grep -qF "delete_branch_on_merge" "$startfile" || \
     { fail "$startfile: does not enable auto-deletion of merged branches"; mech_ok=0; }
-  grep -qF "Merge only on a yes" "$sbfile" || \
-    { fail "$sbfile: the merge step does not wait for a yes that names the merge"; mech_ok=0; }
-  grep -qF "Make an approved merge on the pull request itself" "$sbfile" || \
-    { fail "$sbfile: the merge step does not make the merge on the pull request itself"; mech_ok=0; }
+  grep -qF "Merge only on a yes" "$mergefile" || \
+    { fail "$mergefile: the merge step does not wait for a yes that names the merge"; mech_ok=0; }
+  grep -qF "Make an approved merge on the pull request itself" "$mergefile" || \
+    { fail "$mergefile: the merge step does not make the merge on the pull request itself"; mech_ok=0; }
   grep -qF "In an unattended run nobody is there to say yes, so never merge" "$sbfile" || \
     { fail "$sbfile: an unattended run could merge with nobody there to say yes"; mech_ok=0; }
   [ "$mech_ok" -eq 1 ] && \
@@ -1293,8 +1291,8 @@ fi
 # The rule has to notice a name, keep each exemption narrow, and leave the
 # recipes alone, or it proves nothing. So it is run on a planted folder.
 plant=$(mktemp -d)
-mkdir -p "$plant/setup-hosting/recipes/parts" "$plant/setup-hosting/references" "$plant/screen-check"
-grep -i 'web interface guidelines' "$SKILLS/screen-check/SKILL.md" > "$plant/screen-check/SKILL.md" || true
+mkdir -p "$plant/setup-hosting/recipes/parts" "$plant/setup-hosting/references" "$plant/implement/references"
+grep -i 'web interface guidelines' "$SKILLS/implement/references/screen-rules.md" > "$plant/implement/references/screen-rules.md" || true
 printf '%s\n' 'Runs on Vercel with a Supabase database.' > "$plant/setup-hosting/recipes/on-vercel.md"
 printf '%s\n' 'Backups on Supabase.' > "$plant/setup-hosting/recipes/parts/backup.md"
 plant_ok=1
@@ -1711,11 +1709,8 @@ for literal in \
   '"./.claude/commands/setup-hosting.md"' \
   '"./.claude/commands/setup-ai-build-kit.md"' \
   '"./.claude/commands/what-now.md"' \
-  '"./.claude/skills/change-triage"' \
   '"./.claude/skills/clarify"' \
-  '"./.claude/skills/screen-check"' \
-  '"./.claude/skills/second-opinion"' \
-  '"./.claude/skills/section-builder"'; do
+  '"./.claude/skills/second-opinion"'; do
   if ! grep -qF "$literal" "$plugin_manifest"; then
     fail "Claude plugin manifest is missing: $literal"
     plugin_contract_ok=no
@@ -2299,9 +2294,14 @@ check_claim "seven skills" "seven skills"
 check_claim "nine commands" "nine commands"
 check_claim "eight commands" "eight commands"
 check_claim "eight are commands" "eight are commands"
-# The skill count moved with it, from thirteen to eleven. The word alone also
-# counts other things, such as pull request descriptions, so these name the
-# phrases that counted skills.
+# The skill count moved with it, from thirteen to eleven and then to eight.
+# The word alone also counts other things, such as pull request descriptions,
+# so these name the phrases that counted skills.
+check_claim "eleven skills" "eleven skills"
+check_claim "eleven installed skills" "eleven installed"
+check_claim "eleven kit skills" "eleven AI Build Kit"
+check_claim "the same eleven" "the same eleven"
+check_claim "five background skills" "five background skills"
 check_claim "thirteen skills" "thirteen skills"
 check_claim "thirteen canonical skills" "thirteen canonical"
 check_claim "thirteen kit skills" "thirteen AI Build Kit"

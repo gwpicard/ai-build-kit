@@ -71,8 +71,8 @@ answers the one question it exists to answer, and the decision gets written
 back into the masterplan or the request before the interview continues.
 
 If an answer instead depends on an external fact, such as what a provider's
-API actually supports, load change-triage/references/source-check.md rather
-than guessing.
+API actually supports, run the source check in the `shape` skill's
+`references/research.md` rather than guessing.
 
 ## When to stop
 
