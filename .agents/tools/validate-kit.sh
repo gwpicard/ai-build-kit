@@ -938,26 +938,6 @@ if [ -f "$pieces" ] && [ -f "$implementfile" ] && [ -f "$refreshtool" ]; then
     pass "a piece made of parts uses sub-issues, the parent is a container, and the printout reads the parts"
 fi
 
-# A project founded before the /shape and /implement split needs migrating: its
-# issues carry no `ready` label, so /maintain backfills it, and moves a leftover
-# plan.md into issues where one survives from the old fallback.
-maintfile="$SKILLS/maintain/SKILL.md"
-if [ -f "$maintfile" ]; then
-  mig_ok=1
-  grep -qF 'Backfill the `ready` label' "$maintfile" || \
-    { fail "$maintfile: does not backfill the ready label for a pre-split project"; mig_ok=0; }
-  grep -qF 'Move a `plan.md` into issues' "$maintfile" || \
-    { fail "$maintfile: does not move a leftover plan.md into issues"; mig_ok=0; }
-  grep -qF 'Remove a stale `start` skill' "$maintfile" || \
-    { fail "$maintfile: does not tidy a stale start skill after the setup-ai-build-kit rename"; mig_ok=0; }
-  grep -qF 'Remove a stale `plan` skill' "$maintfile" || \
-    { fail "$maintfile: does not tidy a stale plan skill after the shape rename"; mig_ok=0; }
-  grep -qF 'the update removed the old skill without adding the new' "$maintfile" || \
-    { fail "$maintfile: the rename migration cannot recover a project whose update removed the old skill without adding the new one"; mig_ok=0; }
-  [ "$mig_ok" -eq 1 ] && \
-    pass "maintain migrates a project founded before /shape and /implement, and before the setup-ai-build-kit and shape renames"
-fi
-
 # Every release asks what an existing user must do to upgrade (real users since
 # v0.5): MAINTAINING.md carries that standing check when a release is cut.
 mfile="$ROOT/docs/MAINTAINING.md"
@@ -1451,10 +1431,7 @@ while IFS= read -r term; do
     | grep -v '/\.agents/tmp/' \
     | grep -v '\.agents/tests/scenarios\.md$' \
     | grep -v 'docs/MAINTAINING\.md$' \
-    | grep -v '\.agents/skills/maintain/SKILL\.md$' \
     || true)
-  # maintain/SKILL.md is excluded because its migration has to name the old
-  # fields and paths it recognises on disk; nothing else may use them.
   if [ -n "$hits" ]; then
     fail "retired vocabulary '$term' found in: $(printf '%s' "$hits" | tr '\n' ' ')"
     had_stale=1

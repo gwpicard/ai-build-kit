@@ -619,19 +619,19 @@ holding an older copy, gets the current one on that visit, so the kit reads
 what is ready from that list rather than working it out by hand. A clean
 checkpoint comes first, so an interrupted update can be recovered.
 
-The one update that split the old `/build` into what are now `/shape` and
-`/implement` runs a one-time step that labels your existing pieces so they can
-still be built; it says what it changed. Any visit that finds an older
-`plan.md` list offers to move it into your project's issues, and keeps
-offering until it is moved. Any visit that finds a line in AGENTS.md
-or the masterplan pointing at a skill's file by a folder your installation may
-not have offers to name the skill instead, changing only those lines, and only
-on your yes.
+A project set up before v0.20 is asked to install v0.20.3 first, run
+/maintain there, and then update to the latest. That release still finishes
+the older changes, such as labelling the pieces of a project that once had a
+single `/build` command. Any monthly visit that finds an older `plan.md` list
+offers to move it into your project's issues. Any visit that finds a line in
+AGENTS.md or the masterplan pointing at a skill's file by a folder your
+installation may not have offers to name the skill instead, changing only
+those lines, and only on your yes.
 
-The first visit after the kit changed how it decides the build path offers to
-rewrite the build-path section of your masterplan to the new shape, shows the
-old text above the new, keeps every accepted risk word for word, and changes
-nothing without your approval.
+A masterplan whose build-path section still uses the fields from before the
+kit decided the path by what the work touches is offered the fit check again.
+It writes the section in today's shape and keeps every accepted risk as
+written.
 
 A project installed before the kit had six commands still offers the old
 ones after its update. The first /maintain after the update says so in one

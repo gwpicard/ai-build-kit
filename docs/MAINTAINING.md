@@ -429,8 +429,13 @@ newcomer. Name anything that breaks a project already running on an earlier
 version: a renamed command, a removed feature, a changed record or label, or a
 new precondition. For each, there must be a path that carries an existing project
 across without losing its work, and the person must be told about it in a place
-they will see. A one-time migration lives in `/maintain`, which runs on its own
-clock and is idempotent, and the visible change is named in the release notes.
+they will see. A migration lives in the maintain skill's scripts, chiefly
+`upgrade-check.py`, which runs on every `/maintain` visit and is idempotent. The
+script finds what is left, prints the sentence the person hears, and applies the
+change on a yes, so the skill's own text keeps only the ask. The visible change
+is named in the release notes. Once a migration is dropped, raise the script's
+`FLOOR` to the last release that still carries it, so an older project goes
+through that release first.
 If a breaking change has neither, it is not ready to ship. A release that only
 adds behaviour still gets this check, and answers it with "nothing to do".
 

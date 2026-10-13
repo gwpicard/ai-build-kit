@@ -107,6 +107,12 @@ for route in ('claude-only','shared','whole','plugin'):
         put(p/'.cursor/commands/ship.md','<!-- GENERATED from .agents/skills/ship/. Do not edit here; regenerate with .agents/tools/build-adapters.sh -->\n')
     listed=check(skills,p,1)
     kinds=[line.split('\t')[0] for line in listed.splitlines()]
+    # Every step the person is offered comes with the words they hear.
+    said={line.split('\t')[1] for line in listed.splitlines() if line.startswith('say\t')}
+    steps={'installer':'installer','commands':'commands','pointer':'pointers','settings':'settings',
+           'template':'template','mention':'mention','kitcopy':'remove','hook':'remove','left':'left'}
+    assert {steps[k] for k in kinds if k in steps} <= said, listed
+    assert 'kit' in said, listed
     assert {'commands','pointer','helper','settings','template','mention'} <= set(kinds), listed
     assert kinds.count('commands')==3, listed
     assert kinds.count('pointer')==1 and kinds.count('helper')==1 and kinds.count('template')==1,listed
@@ -123,7 +129,7 @@ for route in ('claude-only','shared','whole','plugin'):
         assert set(json.loads((p/'skills-lock.json').read_text())['skills'])==set(eleven)
     for step in ('helper','remove','commands','pointers','settings','template'): apply(skills,p,step)
     after=check(skills,p,0)
-    assert all(l.startswith(('mention\t','left\t')) for l in after.splitlines()),after
+    assert all(l.startswith(('mention\t','left\t','say\t')) for l in after.splitlines()),after
     assert (p/'CHANGELOG.md').read_bytes()==changelog
     assert 'Project rule: Keep our club notes private.' in (p/'AGENTS.md').read_text()
     assert 'We run /ship before the club night.' in (p/'masterplan.md').read_text()
@@ -268,6 +274,32 @@ assert 'left\t.ai-build-kit-version\tit is a link' in check(source,p,0)
 apply(source,p,'remove')
 assert (p/'.ai-build-kit-version').is_symlink() and outside_marker.read_text()=='v0.10.0\n'
 print('  ok: sentence list stays unfinished until an agent edit or a recorded no')
+
+# A project set up before v0.20 is sent to that release first, and a
+# masterplan with the four-path fields is offered the fit check again.
+p=work/'before-twenty'; p.mkdir()
+copy(fixture/'masterplan.md.txt',p/'masterplan.md')
+with (p/'masterplan.md').open('a') as f:
+    f.write('\nPath: Professional-led\nOutside help: review, for client records\n')
+put(p/'skills-lock.json',json.dumps({'version':1,'skills':{n:{'source':'gwpicard/ai-build-kit'} for n in eleven+['build']}}))
+shutil.copytree(source,p/'.agents/skills')
+put(p/'.agents/skills/build/SKILL.md','---\nname: build\n---\n')
+placed=run([sys.executable,source/'maintain/scripts/upgrade-check.py','--apply','helper',p])
+assert 'say\thelper\t' in placed,placed
+listed=check(source,p,1)
+lines=listed.splitlines()
+assert lines[0].startswith('older\tv0.20.3\t'),listed
+assert any(l.startswith('fitcheck\tmasterplan.md:') for l in lines),listed
+said={l.split('\t')[1] for l in lines if l.startswith('say\t')}
+assert {'older','fitcheck','installer'} <= said,listed
+for step in ('older','fitcheck'):
+    run([sys.executable,source/'maintain/scripts/upgrade-check.py','--apply',step,p],code=2)
+run([sys.executable,source/'maintain/scripts/upgrade-check.py','--decline','fitcheck',p])
+assert 'declined\tfitcheck\tfitcheck\t' in check(source,p,1)
+data=json.loads((p/'skills-lock.json').read_text()); del data['skills']['build']
+put(p/'skills-lock.json',json.dumps(data)); shutil.rmtree(p/'.agents/skills/build')
+assert not any(l.startswith('older\t') for l in check(source,p,1).splitlines())
+print('  ok: a project from before v0.20 is sent there first, and old build-path fields go to the fit check')
 
 # The record rewrite tools must not follow linked project documents.
 p=work/'linked-records'; p.mkdir(); outside=work/'outside-records'; outside.mkdir()

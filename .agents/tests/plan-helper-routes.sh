@@ -346,7 +346,7 @@ bad=$(grep -rn "plan-refresh\.sh" "$ROOT/.agents/skills" \
 [ -z "$bad" ] && pass "every skill names the helper where a project keeps it" || \
   fail "a skill names the helper at a path no project has: $bad"
 
-grep -q "place-plan-helper\.sh" "$ROOT/.agents/skills/maintain/SKILL.md" && \
+grep -q "place-plan-helper\.sh" "$ROOT/.agents/skills/maintain/scripts/upgrade-check.py" && \
   pass "/maintain runs the backfill" || \
   fail "/maintain does not run the backfill"
 

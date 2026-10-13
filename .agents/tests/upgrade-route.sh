@@ -123,6 +123,22 @@ unset SCRIPT_AT
 [ "$code" -eq 0 ] && printf '%s\n' "$out" | grep -q '^route	agent-plugin' \
   && pass "an Agent Plugins installation is named as its own route" || fail "the agent plugin route read as $code: $out"
 
+# A project holding a release from before v0.20 goes through v0.20.3 first,
+# since a later release no longer finishes the changes made before then.
+mkdir -p "$WORK/old-kit"
+cp -R "$SKILL" "$WORK/old-kit/maintain"
+printf 'v0.19.3\n' > "$WORK/old-kit/maintain/VERSION"
+LATEST=v99.0.0
+SCRIPT_AT="$WORK/old-kit/maintain/scripts/upgrade-check.py"
+out=$(run --latest) && code=0 || code=$?
+unset SCRIPT_AT
+[ "$code" -eq 1 ] && printf '%s\n' "$out" | grep -q '^first	v0.20.3	' \
+  && pass "a project older than v0.20 is told to install v0.20.3 first" \
+  || fail "an older project read as $code: $out"
+out=$(run --latest) && code=0 || code=$?
+! printf '%s\n' "$out" | grep -q '^first' \
+  && pass "a current project is not sent back to v0.20.3" || fail "a current project was sent back: $out"
+
 LATEST=$HELD
 out=$(run --latest --route) && code=0 || code=$?
 [ "$code" -eq 0 ] && printf '%s\n' "$out" | grep -q '^latest' && printf '%s\n' "$out" | grep -q '^route' \
