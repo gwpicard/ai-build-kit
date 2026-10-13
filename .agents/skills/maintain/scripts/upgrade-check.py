@@ -115,27 +115,43 @@ HELPER = ".agents/tools/plan-refresh.sh"
 MAINTENANCE = ".ai-build-kit-maintenance"
 DECLINED = "upgrade-declined|"
 
-# The masterplan template's one sentence that named /ship, as every release
-# from v0.17.0 to v0.19.3 wrote it. Only a line that matches it exactly is the
-# kit's own text; any other line naming a retired command is the person's.
+# The masterplan template's one sentence that named the old launch command, as
+# every release from v0.17.0 to v0.19.3 wrote it. Only a line that matches it
+# exactly is the kit's own text; any other line naming a retired command is the
+# person's.
 OLD_SENTENCE = "Where the tool runs on a server somebody else runs, /ship writes a hosting"
 NEW_SENTENCE = "Where the tool runs on a server somebody else runs, /setup-hosting writes a hosting"
 # The AGENTS.md template's lines that named a background skill folded into
-# /shape or /implement, as the eleven-skill releases wrote them. Each line is
-# replaced by one line, so the file keeps its shape and its line count.
+# /shape or /implement, as the eleven-skill releases wrote them. Each entry is
+# a block of lines that must all match, in order, as the kit wrote them, so a
+# block whose neighbour line the person edited is theirs and is left alone.
+# Each old line becomes one new line, so the file keeps its line count.
 TEMPLATE_LINES = (
-    ("masterplan.md", OLD_SENTENCE, NEW_SENTENCE),
-    ("AGENTS.md", "The user describes intent in plain language; change-triage chooses the route.",
-     "The user describes intent in plain language; `/shape` chooses the route."),
-    ("AGENTS.md", "piece carries `visual`, or a change touches a screen file, load `screen-check`",
-     "piece carries `visual`, or a change touches a screen file, load the `implement` skill's `references/screen-rules.md`"),
-    ("AGENTS.md", "before the guided manual check. It reads this project's design rules first and",
-     "before the guided manual check. They read this project's design rules first and"),
-    ("AGENTS.md", "never calls a screen accessible, compliant, or good.",
-     "never call a screen accessible, compliant, or good."),
-    ("AGENTS.md", "piece has a subject label, set once by change-triage. `plan.local.md` prints the",
-     "piece has a subject label, set once by `/shape`. `plan.local.md` prints the"),
+    ("masterplan.md", (OLD_SENTENCE,), (NEW_SENTENCE,)),
+    ("AGENTS.md", ("The user describes intent in plain language; change-triage chooses the route.",),
+     ("The user describes intent in plain language; `/shape` chooses the route.",)),
+    ("AGENTS.md", ("piece carries `visual`, or a change touches a screen file, load `screen-check`",
+                   "before the guided manual check. It reads this project's design rules first and",
+                   "never calls a screen accessible, compliant, or good."),
+     ("piece carries `visual`, or a change touches a screen file, load the `implement` skill's `references/screen-rules.md`",
+      "before the guided manual check. They read this project's design rules first and",
+      "never call a screen accessible, compliant, or good.")),
+    ("AGENTS.md", ("piece has a subject label, set once by change-triage. `plan.local.md` prints the",),
+     ("piece has a subject label, set once by `/shape`. `plan.local.md` prints the",)),
 )
+
+
+def template_blocks(name, lines):
+    """(index, old, new) for each kit block found whole in a file's lines."""
+    bodies = [line.rstrip("\r\n") for line in lines]
+    found = []
+    for file, old, new in TEMPLATE_LINES:
+        if file != name:
+            continue
+        for index in range(len(bodies) - len(old) + 1):
+            if tuple(bodies[index:index + len(old)]) == old:
+                found.append((index, old, new))
+    return sorted(found)
 
 RETIRED = re.compile(r"(?<![\w/.-])/(fix|queue|sync|ship)(?![\w/-])")
 MENTION_FILES = ("AGENTS.md", "masterplan.md")
@@ -219,11 +235,8 @@ def template_findings(project):
                 lines = handle.readlines()
         except (OSError, UnicodeDecodeError):
             continue
-        swaps = {old: new for file, old, new in TEMPLATE_LINES if file == name}
-        for number, line in enumerate(lines, 1):
-            body = line.rstrip("\r\n")
-            if body in swaps:
-                found.append(("template", "%s:%d" % (name, number), swaps[body]))
+        for index, old, new in template_blocks(name, lines):
+            found.append(("template", "%s:%d" % (name, index + 1), " ".join(new)))
     return found
 
 
@@ -457,6 +470,19 @@ def said_once(out, project, monthly):
 # --- the words the person hears ----------------------------------------------
 
 RETIRED_NAMES = ("fix", "queue", "sync", "ship")
+# The background skills folded into /shape and /implement after the six
+# commands. A project founded on v0.20.3 has only these to hear about.
+FOLDED = ("change-triage", "section-builder", "screen-check")
+
+
+def names_skill(text, name):
+    return re.search(r"`/?%s`|(?<![\w/.-])/%s(?![\w/-])" % (re.escape(name), re.escape(name)),
+                     text) is not None
+
+
+def names_retired(text):
+    """True when a line of the command list names one of the four retired commands."""
+    return any(names_skill(text, name) for name in RETIRED_NAMES)
 # The commands renamed before the six, each with the skills that replaced it
 # and the sentence the person hears once.
 RENAMED = (
@@ -521,7 +547,7 @@ def sentences(out, project):
         or (f[0] == "missing" and f[1] == "setup-hosting")
         or (f[0] == "adapter" and os.path.splitext(f[1].rsplit("/", 1)[-1])[0] in RETIRED_NAMES)
         or (f[0] == "template" and f[2] == NEW_SENTENCE)
-        or (f[0] == "commands" and not informational(f))
+        or (f[0] == "commands" and not informational(f) and names_retired(f[2]))
         for f in out)
     for old, new, words in RENAMED:
         if any((f[0] in ("installer", "folder") and f[1].rsplit("/", 1)[-1] == old)
@@ -560,9 +586,18 @@ def sentences(out, project):
     by_hand = [f for f in by.get("commands", [])
                if f[-1].startswith("left as written:") and not informational(f)]
     if rewrite:
-        said.append(("commands", "The command list in AGENTS.md still names old commands. I can "
-                     "bring it up to this release's six commands and two background skills, "
-                     "and change nothing else in the file. Shall I?"))
+        folded = [n for n in FOLDED if any(names_skill(f[2], n) for f in rewrite)]
+        if any(names_retired(f[2]) for f in rewrite):
+            what = "still names old commands"
+        elif folded:
+            what = ("still names the background %s %s, which %s now part of /shape and "
+                    "/implement" % (plural(len(folded), "skill", "skills"), joined(folded),
+                                    plural(len(folded), "is", "are")))
+        else:
+            what = "still counts the skills of an older release"
+        said.append(("commands", "The command list in AGENTS.md %s. I can bring it up to this "
+                     "release's six commands and two background skills, and change nothing "
+                     "else in the file. Shall I?" % what))
     if by_hand:
         said.append(("commands", "The command list in AGENTS.md still names old commands, and it "
                      "holds words of your own, so the script leaves it. I can replace those "
@@ -600,8 +635,8 @@ def sentences(out, project):
         said.append(("template", "%s still %s %d %s the kit wrote that %s an old command or "
                      "skill. I can change %s to today's wording, and nothing else." % (
                          " and ".join(files), plural(len(files), "holds", "hold"), n,
-                         plural(n, "line", "lines"), plural(n, "names", "name"),
-                         plural(n, "that line", "those lines"))))
+                         plural(n, "passage", "passages"), plural(n, "names", "name"),
+                         plural(n, "that passage", "those passages"))))
     if "fitcheck" in by:
         said.append(("fitcheck", "Your masterplan's build-path section was written when the kit "
                      "had four build paths. It now has three, and the path follows what the "
@@ -666,14 +701,12 @@ def apply_template(project):
                 lines = handle.readlines()
         except (OSError, UnicodeDecodeError):
             continue
-        swaps = {old: new for file, old, new in TEMPLATE_LINES if file == name}
-        changed = False
-        for index, line in enumerate(lines):
-            body = line.rstrip("\r\n")
-            if body in swaps:
-                lines[index] = swaps[body] + line[len(body):]
-                changed = True
-        if changed:
+        blocks = template_blocks(name, lines)
+        for index, old, new in blocks:
+            for offset, text in enumerate(new):
+                line = lines[index + offset]
+                lines[index + offset] = text + line[len(line.rstrip("\r\n")):]
+        if blocks:
             with open(path, "w", encoding="utf-8", newline="") as handle:
                 handle.writelines(lines)
     return 0

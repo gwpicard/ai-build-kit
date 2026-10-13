@@ -13,7 +13,7 @@ work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 echo "Upgrade rehearsal:"
 python3 - "$ROOT" "$work" <<'PY'
-import hashlib, importlib.util, json, os, pathlib, shutil, subprocess, sys
+import hashlib, importlib.util, json, os, pathlib, re, shutil, subprocess, sys
 root, work = map(pathlib.Path, sys.argv[1:])
 source = root / '.agents/skills'
 fixture = root / '.agents/tests/fixtures/upgrade-v0.19.3'
@@ -119,7 +119,7 @@ for route in ('claude-only','shared','whole','plugin'):
     assert 'kit' in said, listed
     assert {'commands','pointer','helper','settings','template','mention'} <= set(kinds), listed
     assert kinds.count('commands')==5, listed
-    assert kinds.count('pointer')==1 and kinds.count('helper')==1 and kinds.count('template')==6,listed
+    assert kinds.count('pointer')==1 and kinds.count('helper')==1 and kinds.count('template')==4,listed
     assert kinds.count('installer') == (0 if route=='plugin' else 7), listed
     assert ('kitcopy\t.claude-plugin' in listed)==(route=='whole'), listed
     assert ('hook\t.agents/hooks/session-end-sync.sh' in listed)==(route=='whole'), listed
@@ -426,6 +426,53 @@ pointers=[w for k,w in ((l.split('\t',2)[1],l.split('\t',2)[2]) for l in check(s
           if l.startswith('say\t')) if k=='pointers']
 assert pointers and 'not readable text' in pointers[0] and 'break the line' not in pointers[0],pointers
 print('  ok: a pointer left in an unreadable file says why')
+
+# A project founded on v0.20.3 already has the six commands. Its update only
+# folds three background skills, so it must not hear the six-command news
+# again, and its command list is said to name old background skills, not old
+# commands. The records are the v0.20.3 templates, and the three skill
+# folders are the released copies, kept by the installer.
+p=work/'from-v0.20.3'; p.mkdir()
+v203=root/'.agents/tests/fixtures/upgrade-v0.20.3'
+copy(v203/'AGENTS.md.txt',p/'AGENTS.md'); copy(v203/'masterplan.md.txt',p/'masterplan.md')
+folded=['change-triage','section-builder','screen-check']
+shutil.copytree(source,p/'.agents/skills')
+for name in folded:
+    for f in (v203/'retired-skills'/name).rglob('*.txt'):
+        copy(f,p/'.agents/skills'/name/f.relative_to(v203/'retired-skills'/name).with_suffix(''))
+put(p/'skills-lock.json',json.dumps({'version':1,'skills':{n:{'source':'gwpicard/ai-build-kit'} for n in kit_names+folded}}))
+apply(source,p,'helper')
+listed=check(source,p,1)
+said=[l.split('\t',2)[1:] for l in listed.splitlines() if l.startswith('say\t')]
+assert not any(k=='kit' for k,_ in said),listed
+assert not any(re.search(r'/(fix|queue|sync|ship)\b',w) for _,w in said),listed
+words=[w for k,w in said if k=='commands']
+assert len(words)==1 and 'old commands' not in words[0],listed
+assert all(n in words[0] for n in folded) and '/shape and /implement' in words[0],listed
+assert any(k=='installer' and all(n in w for n in folded) for k,w in said),listed
+assert sum(1 for l in listed.splitlines() if l.startswith('template\tAGENTS.md:'))==3,listed
+for step in ('commands','template'): apply(source,p,step)
+agents=(p/'AGENTS.md').read_text()
+assert not any(n in agents for n in folded),agents
+assert 'eight installed' in agents and 'two run in the background' in agents,agents
+print('  ok: a v0.20.3 project hears only that three background skills folded')
+
+# The three screen lines are one passage. When the person edited one of them,
+# the passage is theirs, so none of its lines is listed or rewritten.
+p=work/'edited-neighbour'; p.mkdir()
+copy(v203/'masterplan.md.txt',p/'masterplan.md')
+text=(v203/'AGENTS.md.txt').read_text()
+mine='never calls a screen accessible, compliant, or good, and we check on a phone too.'
+text=text.replace('never calls a screen accessible, compliant, or good.',mine)
+put(p/'AGENTS.md',text)
+listed=check(source,p,1)
+assert not any(l.startswith('template\tAGENTS.md:') and 'screen-rules' in l for l in listed.splitlines()),listed
+apply(source,p,'template')
+after=(p/'AGENTS.md').read_text()
+for line in ('load `screen-check`','It reads this project\'s design rules first and',mine):
+    assert line in after,(line,after)
+assert '`/shape` chooses the route.' in after,after
+print('  ok: a kit passage with one edited line is left whole')
 
 # The record rewrite tools must not follow linked project documents.
 p=work/'linked-records'; p.mkdir(); outside=work/'outside-records'; outside.mkdir()
