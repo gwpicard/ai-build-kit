@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# Runs every rehearsal in this folder, one after another, and reports each by
+# run-all.sh: runs every rehearsal in this folder, one after another, and reports each by
 # name.
 #
 # A hosted job for each rehearsal names a failure on the checks list by itself,

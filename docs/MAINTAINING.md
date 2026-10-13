@@ -378,10 +378,8 @@ rehearsal job is guarded to this repository, and that it runs `run-all.sh`. The
 last of those is the load-bearing one, because a rehearsal job that ran something
 else, or nothing at all, would go green.
 
-`validate-kit.sh` also calls several of those rehearsals itself by name, and runs
-the whole written-rule family by finding the checks that source
-`lib/rule-shape.sh` rather than by keeping a list of them. That is what keeps it
-a single local command and what gives release preparation its coverage. So the
+`validate-kit.sh` also calls several of those rehearsals itself by name. That is
+what keeps it a single local command and what gives release preparation its coverage. So the
 hosted run does that work twice, and at about half a minute for the whole set
 that is cheaper than either half losing it.
 

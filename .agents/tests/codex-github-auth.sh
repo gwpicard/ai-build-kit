@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# Rehearse session-scoped GitHub credentials without an account or a network.
+# codex-github-auth.sh: rehearse session-scoped GitHub credentials without an account or a network.
 set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 python3 - "$ROOT" <<'PYTEST'

@@ -594,9 +594,9 @@ pass "bare relative skill references (references/*.md, templates/*.md, recipes/*
 # setup-hosting/references/recipe-format.md says what one must hold. The folder is the
 # menu, so a file in it is offered to somebody founding a project. Each one
 # must have the shape the format asks for and carry real dates. Each must also
-# have its own rehearsal that sources the rule-shape helper and names the
-# recipe file, because a recipe joins the menu only once offline rehearsals
-# guard its rules, and a rehearsal that only exits cleanly guards nothing. The
+# have its own rehearsal that runs the recipe's commands against the tool
+# stand-ins and names the recipe file, because a rehearsal that only exits
+# cleanly guards nothing. The
 # blank is held to the same shape so it cannot drift from the format it is
 # copied from. Shared parts sit in recipes/parts/, are held to the lines a
 # section carries, and are never read as menu entries: the glob below takes
@@ -657,30 +657,19 @@ fi
 # ---------------------------------------------------------------------------
 echo "== Record matches machinery =="
 
-# The maintainer AGENTS.md is the written record of the checks this repository
-# runs, and the promise that the documents are the asset only holds while that
-# record stays true. The CI matrix is already kept level with the tests folder
-# further down. This is the other half: a check that gets added and wired into
-# CI but never written into AGENTS.md is caught here rather than drifting
-# unnoticed, which is how grader-recovery.sh once slipped the record. mutate.sh
-# audits the suite rather than being one of the checks, the same carve-out the
-# matrix comparison makes.
-agentsmd="$ROOT/AGENTS.md"
-if [ ! -f "$agentsmd" ]; then
-  fail "$agentsmd: missing"
-else
-  rec_ok=1
-  for testscript in "$ROOT"/.agents/tests/*.sh; do
-    [ -f "$testscript" ] || continue
-    base=$(basename "$testscript")
-    [ "$base" != "mutate.sh" ] || continue
-    if ! grep -qF ".agents/tests/$base" "$agentsmd"; then
-      fail "AGENTS.md does not name the maintainer check .agents/tests/$base"
-      rec_ok=0
-    fi
-  done
-  [ "$rec_ok" -eq 1 ] && pass "AGENTS.md names every maintainer check under .agents/tests/"
-fi
+# Each check describes itself on its second line, as "# <name>: <what it
+# guards>", so the record of the checks lives beside the checks and cannot drift
+# from them. The maintainer AGENTS.md points at the folder rather than listing it.
+rec_ok=1
+for testscript in "$ROOT"/.agents/tests/*.sh; do
+  [ -f "$testscript" ] || continue
+  base=$(basename "$testscript")
+  if ! sed -n 2p "$testscript" | grep -q "^# $base: "; then
+    fail ".agents/tests/$base does not say what it guards on its second line"
+    rec_ok=0
+  fi
+done
+[ "$rec_ok" -eq 1 ] && pass "every check under .agents/tests/ says what it guards"
 
 # Keep the project template short enough to read every session. The maintainer's
 # own AGENTS.md has a different job and is outside this ceiling.

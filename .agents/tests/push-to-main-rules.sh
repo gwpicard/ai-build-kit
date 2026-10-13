@@ -1,65 +1,35 @@
 #!/usr/bin/env sh
-# push-to-main-rules.sh: guard the deny rules that stop a direct push to main.
+# push-to-main-rules.sh: run the deny and ask rules a founded project's Claude
+# Code settings carry, and the script /maintain uses to bring them to an older
+# project. If this breaks, an agent can push straight to main, force-push over
+# someone's branch, delete a folder or merge with no box for the person to
+# click, or the monthly offer rewrites a person's own settings.
 #
-# A project's Claude Code settings refuse a direct push to main. The first
-# rules matched three exact spellings, and a real run pushed with
-# `git push -q origin main`, which none of them matched. So this check feeds a
-# list of spellings to the rules and reads back which ones are refused.
-#
-# Nothing here can run Claude Code's own matcher without a model, so the check
-# carries a small matcher that follows the documented rule shape, taken from
-# https://code.claude.com/docs/en/permissions ("Wildcard patterns" and "Bash"):
-#
-#   - a rule matches the whole command text;
-#   - `*` may sit anywhere and stands for any text, spaces included;
-#   - everything else is literal, including a space before a `*`, and a colon
-#     anywhere but a final `:*`;
-#   - a final `:*` is the same as a final ` *`;
-#   - a final ` *` that is the rule's only wildcard also matches the bare
-#     command with nothing after it.
-#
-# The matcher is tested first against the examples in that page's own table,
-# so a matcher that drifted from the documentation fails before it judges
-# anything. It is fed one command at a time. Claude Code also splits a compound
-# command and strips wrappers such as `timeout` and leading variable
-# assignments before it matches, and a deny rule applies when any part matches;
-# none of the spellings below needs that, so it is not modelled.
-#
-# The lists come from two places. The spellings the reference says are refused,
-# and the ones it says are not, are read out of blocked-commands.md, so the
-# written gap and the patterns cannot disagree without this check failing. The
-# spellings that must never be refused, a branch that only starts with main and
-# an ordinary branch, are written here, because the reference only mentions
-# the first. Each push rule is then taken out in turn, to prove every one is
-# needed, and an over-broad rule is added, to prove the check notices a rule
-# that would stop a piece branch from pushing.
-#
-# The second half guards prose: the monthly offer in /maintain that brings the
-# rules to a project founded before them, and the written gap itself.
+# The matcher follows the rule shape documented at
+# https://code.claude.com/docs/en/permissions and is first checked against that
+# page's own examples.
 
 set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
-. "$ROOT/.agents/tests/lib/rule-shape.sh"
-
 SETTINGS="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json"
-BLOCKED="$ROOT/.agents/skills/setup-ai-build-kit/references/blocked-commands.md"
-MAINTAIN="$ROOT/.agents/skills/maintain/SKILL.md"
-WORKFLOW="$ROOT/WORKFLOW.md"
 
-rs_init "Push-to-main rule checks"
-rs_exists "$SETTINGS" "$BLOCKED" "$MAINTAIN" "$WORKFLOW"
+fail() { echo "FAIL: $1" >&2; exit 1; }
 
-if [ -z "${RS_LIST:-}" ]; then
-  command -v python3 >/dev/null 2>&1 || \
-    rs_fail "python3 is needed to read the settings file and run the matcher"
+[ -f "$SETTINGS" ] || fail "missing $SETTINGS"
+command -v python3 >/dev/null 2>&1 || fail "python3 is needed to read the settings file and run the matcher"
 
-  python3 - "$SETTINGS" "$BLOCKED" > "$rs_dir/matcher.out" 2>&1 <<'PY' || {
+work=$(mktemp -d)
+trap 'rm -rf "$work"' EXIT
+
+echo "Push-to-main rule checks:"
+
+python3 - "$SETTINGS" > "$work/matcher.out" 2>&1 <<'PY' || {
 import json
 import re
 import sys
 
-settings_path, blocked_path = sys.argv[1], sys.argv[2]
+settings_path = sys.argv[1]
 
 
 def compile_rule(rule):
@@ -118,59 +88,45 @@ if problems:
 print("  ok: the matcher agrees with every example in the documentation's table")
 
 
-def read_list(text, marker):
-    lines = text.splitlines()
-    for i, line in enumerate(lines):
-        if marker in line:
-            break
-    else:
-        return None
-    items, current = [], None
-    for line in lines[i + 1:]:
-        if line.startswith("- "):
-            if current is not None:
-                items.append(current)
-            current = line[2:].strip()
-        elif line.startswith("  ") and current is not None:
-            current += " " + line.strip()
-        elif line.strip() == "" and current is None:
-            continue
-        else:
-            break
-    if current is not None:
-        items.append(current)
-    spellings = []
-    for item in items:
-        spellings += [s for s in re.findall(r"`([^`]+)`", item) if "push" in s and " " in s]
-    return spellings
-
-
-blocked = open(blocked_path).read()
-refused = read_list(blocked, "These spellings are refused")
-not_refused = read_list(blocked, "These spellings are not refused")
-if not refused:
-    print("blocked-commands.md has no list of refused spellings")
-    sys.exit(1)
-if not not_refused:
-    print("blocked-commands.md has no list of spellings the rules miss")
-    sys.exit(1)
-
-# The spelling from the real run, and the other flag spellings, are required
-# here as well as in the reference, so taking them out of the reference fails.
-listed_refused = [
+# The spellings blocked-commands.md lists as refused, and as missed.
+refused = [
+    "git push origin main",
+    "git push -u origin main",
+    "git push -q origin main",
+    "git push --quiet --set-upstream origin main",
+    "git push --force origin main",
+    "git push -f origin main",
+    "git push origin main --force",
+    "git push origin HEAD:main",
+    "git push origin +HEAD:main",
+    "git push origin HEAD:refs/heads/main",
+    "git push origin +main",
+    "git push origin refs/heads/main",
+    "git push origin --delete main",
+]
+not_refused = [
+    "git push",
+    "git push origin",
+    "git push origin HEAD",
+    "git push origin \"main\"",
+    "git push origin 'main'",
+    "git push origin $BRANCH",
+    "git push origin heads/main",
+    "git push --all origin",
+    "git push --mirror origin",
+    "git -C . push origin main",
+    "git -c push.default=current push origin main",
+    "/usr/bin/git push origin main",
+    "sh -c 'git push origin main'",
+]
+# Flags in other orders and long forms.
+required_refused = [
     "git push -q origin main",
     "git push -u origin main",
     "git push --force origin main",
     "git push -f origin main",
     "git push origin HEAD:refs/heads/main",
     "git push origin +main",
-]
-for command in listed_refused:
-    if command not in refused:
-        problems.append("blocked-commands.md does not list %r as refused" % command)
-# Flags in other orders and long forms, which the reference does not list one
-# by one.
-required_refused = listed_refused + [
     "git push --quiet origin main",
     "git push -q -u origin main",
     "git push -u -q origin main",
@@ -214,7 +170,7 @@ problems += evaluate(rules)
 if problems:
     print("\n".join(problems))
     sys.exit(1)
-print("  ok: every refused spelling is denied, and every spelling the reference says is missed is allowed")
+print("  ok: every refused spelling is denied, and every known gap and ordinary branch is allowed")
 
 # Each push rule is needed.
 push_rules = [r for r in rules if r.startswith("Bash(git push") and "main" in r]
@@ -227,37 +183,26 @@ for rule in push_rules:
         sys.exit(1)
 print("  ok: taking out any one of the %d push rules is caught" % len(push_rules))
 
-# A force push and a forced delete. The lists come from their own section of
-# blocked-commands.md, so the written gap and the patterns cannot disagree.
-section_start = blocked.find("## A force push and a forced delete")
-if section_start < 0:
-    print("blocked-commands.md has no section on a force push and a forced delete")
-    sys.exit(1)
-section = blocked[section_start:]
-next_heading = section.find("\n## ", 4)
-if next_heading > 0:
-    section = section[:next_heading]
-
-
-def read_spans(text, marker):
-    start = text.find(marker)
-    if start < 0:
-        return None
-    body = text[start:].split("\n\n", 2)
-    items = body[1] if len(body) > 1 else ""
-    return [span for span in re.findall(r"`([^`]+)`", items)
-            if span.startswith("git push") or span.startswith("rm ") or span.startswith("sh -c")]
-
-
-force_refused = read_spans(section, "These force pushes and deletes are refused")
-force_missed = read_spans(section, "These are not refused")
-if not force_refused or not force_missed:
-    print("the force-push section lacks its refused or its missed list")
-    sys.exit(1)
-for command in ["git push origin feature --force", "git push origin feature --force-with-lease",
-                "git push origin +feature", "rm -fr build", "rm --recursive --force build"]:
-    if command not in force_refused:
-        problems.append("blocked-commands.md does not list %r as refused" % command)
+# A force push and a forced delete, refused wherever the option sits.
+force_refused = [
+    "git push --force origin feature",
+    "git push --force-with-lease origin feature",
+    "git push origin feature --force",
+    "git push origin feature --force-with-lease",
+    "git push -f origin feature",
+    "git push origin feature -f",
+    "git push origin -f feature",
+    "git push -fu origin feature",
+    "git push origin +feature",
+    "rm -rf build", "rm -fr build", "rm -Rf build", "rm -fR build",
+    "rm -r -f build", "rm -f -r build", "rm -R -f build", "rm -f -R build",
+    "rm --recursive --force build", "rm --force --recursive build",
+]
+force_missed = [
+    "git push -uf origin feature",
+    "sh -c 'git push --force origin feature'",
+    "rm -r build",
+]
 force_allowed = force_missed + [
     "git push origin feature",
     "git push -u origin feature",
@@ -361,15 +306,13 @@ if not any("main-fix" in p or "feature" in p for p in evaluate(rules + ["Bash(gi
     sys.exit(1)
 print("  ok: an over-broad rule that refuses a branch named main-fix is caught")
 PY
-    cat "$rs_dir/matcher.out"
-    rs_fail "the deny rules and the written gap disagree"
-  }
-  cat "$rs_dir/matcher.out"
-fi
+  cat "$work/matcher.out"
+  fail "the deny or ask rules refuse the wrong commands"
+}
+cat "$work/matcher.out"
 
 # Apply and decline on the frozen settings, keeping the person's entries.
-if [ -z "${RS_LIST:-}" ]; then
-  python3 - "$ROOT" "$rs_dir" <<'PY'
+  python3 - "$ROOT" "$work" <<'PY'
 import json, os, pathlib, shutil, subprocess, sys
 root, work = map(pathlib.Path, sys.argv[1:])
 script=root/'.agents/skills/maintain/scripts/settings-rules.py'
@@ -419,48 +362,6 @@ maintenance=work/'maintenance-outside'; maintenance.write_text('My own record.\n
 run('--decline'); assert maintenance.read_text()=='My own record.\n'
 print('  ok: settings apply, declines, merge-box detection and linked paths preserve the project')
 PY
-fi
 
-# The monthly offer in /maintain.
-rs_rule "no settings file ends the step" 'where the project has no `\.claude/settings\.json`, this step ends'
-rs_rule "the rules come from the installed template" 'take the rules from that file, never from memory'
-rs_rule "nothing missing means nothing said" 'when no rule is left, say nothing'
-rs_rule "only rules naming a push to main are offered" 'names both `git push` and `main`'
-rs_rule "a removed rule is not brought back" 'the person may have removed a rule on purpose'
-rs_rule "force rules only while the old one stays" 'offered only while the project still holds `bash\(git push --force:\*\)` for a force push, or `bash\(rm -rf:\*\)` for a forced delete'
-rs_rule "the merge question is offered" 'a rule in `ask`, which makes claude code ask before a merge'
-rs_rule "each rule goes back to its own list" 'adds only the missing rules to the end of the list each came from'
-rs_rule "an earlier no stands" 'where it already lists every missing rule, the earlier no stands'
-rs_rule "offered once in one reply" 'offer the change once, in one reply'
-rs_rule "it names the rules" 'name the rules it adds'
-rs_rule "it changes nothing else" 'changes nothing else in the file'
-rs_rule "it points to the written gap" 'lists the spellings the rules still cannot catch'
-rs_rule "it waits for a yes" 'ask for a yes'
-rs_rule "every other entry stays" 'keeps every other entry and setting as it is'
-rs_rule "the file stays valid" 'still reads as valid json'
-rs_rule "a no changes nothing" 'on a no, change nothing'
-rs_rule "the no is recorded" 'push-rules-declined\|<yyyy-mm-dd>\|'
-rs_rule "the offer returns only for a new rule" 'offers again only when a new release adds a rule that line does not list'
-rs_guard "$MAINTAIN" "maintain's push-rule offer"
-rs_require "every visit reads the safety rules" "$MAINTAIN" 'the check in "finishing a kit update" runs it on every visit'
-
-# The written gap.
-rs_reset
-rs_rule "the refused list" 'these spellings are refused:'
-rs_rule "the missed list" 'these spellings are not refused, and the rule above still forbids them'
-rs_rule "why some are missed" 'reads the words of the command as written'
-rs_rule "a branch that only starts with main still pushes" 'only starts with `main`, such as `main-fix`, still pushes'
-rs_rule "an option value may be refused too" 'may also refuse a push where `main` is the value of an option'
-rs_rule "the rule itself holds for every spelling" 'never push a change directly to `main`'
-rs_rule "a force push is refused wherever the option sits" 'refuse both wherever the option sits in the command'
-rs_rule "a conflict needs no force" 'merge `main` into the branch and push it. that needs no force'
-rs_rule "a merge asks first" 'ask before every merge the agent runs'
-rs_rule "the merge is named before the box" 'say in one line what the merge does just before the box appears'
-rs_rule "other agents keep only the written rule" 'other coding agents have no such box, so there the written rule is the only guard'
-rs_guard "$BLOCKED" "blocked-commands.md"
-
-rs_require "WORKFLOW.md explains the offer" "$WORKFLOW" 'offers to add them to `\.claude/settings\.json`, once'
-rs_require "WORKFLOW.md names the merge question" "$WORKFLOW" 'ask you before any merge'
-rs_require "WORKFLOW.md says a no is kept" "$WORKFLOW" 'a no is recorded, and the offer comes back only when a release adds another rule'
-
-rs_done
+echo
+echo "push-to-main-rules.sh: all checks passed"

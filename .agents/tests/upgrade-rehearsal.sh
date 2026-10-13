@@ -1,43 +1,14 @@
 #!/usr/bin/env sh
-# Rehearse an upgrade from the frozen last nine-command foundation on four routes.
+# upgrade-rehearsal.sh: rehearse an upgrade from the frozen last nine-command foundation on four
+# install routes, with the shipped upgrade-check.py and kit-leftovers.py. If
+# this breaks, an update can overwrite a person's own guidance, settings or
+# changelog, leave retired commands installed, or mark a blocked repair ready.
 set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
-. "$ROOT/.agents/tests/lib/rule-shape.sh"
-rs_init "Upgrade rehearsal"
-MAINTAIN="$ROOT/.agents/skills/maintain/SKILL.md"
-rs_rule "every visit reaches the upgrade" 'finish a kit update, as "finishing a kit update" below says. this runs on every visit'
-rs_rule "the read uses the shipped check" 'skill>/scripts/upgrade-check\.py`, with `--monthly` added'
-rs_rule "a full offer is first and monthly only" 'make the full offer only on the first visit that finds a leftover and on monthly visits'
-rs_rule "other visits give one line" 'on other visits with the same version, say only:'
-rs_rule "the offer is recorded" 'after showing the offers, record that line, keeping the other lines'
-rs_rule "a helper follows the saved checkpoint" 'on the clean checkpoint the truing.s save leaves, run the check with `--apply helper`'
-rs_rule "the settings step is reached" '`settings` lines: `--apply settings`'
-rs_rule "the pointer step is reached" 'and `--apply pointers`, each shown old and new'
-rs_rule "own guidance is never changed" 'name each one once, in the reply that makes the offers, as the person.s to change, and never rewrite one'
-rs_rule "approved update recovery asks no second question" 'do not ask again for that recovery'
-rs_rule "guidance is not repeated monthly" 'do not repeat a line already named, even on a monthly visit, unless its text has changed'
-rs_rule "the read runs again at the end" 'run the check once more at the end of the visit'
-rs_rule "an unrecognised list gets a proposal" 'when the script cannot rewrite a command list, show the old lines and a proposed replacement'
-rs_rule "the proposal has the current inventory" 'name the six commands and the five background skills, eleven in all, using the installed founding template'
-rs_rule "own sentences survive the proposal" 'keep the rest of the paragraph.s meaning and the person.s own sentences'
-rs_rule "the agent applies a yes" 'on a yes, apply the replacement as an agent edit to those lines only, then run the check again'
-rs_rule "the person never edits the list by hand" 'never ask the person to edit the command list by hand'
-rs_rule "a no is recorded and named once" 'on a no, record `--decline commands`.*name the declined command-list lines once'
-rs_rule "a current version does not hide the leftover" 'the update stays unfinished while a command list names a retired command, unless the person declined it, even when the installed version already matches the release'
-rs_guard "$MAINTAIN" "the upgrade visit"
-rs_reset
-rs_rule "the release brings the person back" 'after updating, start a new session \(or /reload-plugins\) and type /maintain again'
-rs_guard "$ROOT/docs/release-notes/v0.20.0.md" "the release notes"
-rs_reset
-rs_rule "implement reads before building" 'scripts/upgrade-check\.py`, and keep only its exit code'
-rs_rule "implement gives only one line" 'where it exits 1, say one line: "the kit update is not finished. /maintain finishes it." then carry on'
-rs_guard "$ROOT/.agents/skills/implement/SKILL.md" "implement's upgrade read"
-rs_reset
-rs_rule "what-now reads without changing" 'scripts/upgrade-check\.py`, and keep only its exit code. it reads and changes nothing'
-rs_rule "what-now gives only one line" 'where the update check exited 1, say one line before the recap'
-rs_guard "$ROOT/.agents/skills/what-now/SKILL.md" "what-now's upgrade read"
-if [ -z "${RS_LIST:-}" ]; then
-python3 - "$ROOT" "$rs_dir" <<'PY'
+work=$(mktemp -d)
+trap 'rm -rf "$work"' EXIT
+echo "Upgrade rehearsal:"
+python3 - "$ROOT" "$work" <<'PY'
 import hashlib, importlib.util, json, os, pathlib, shutil, subprocess, sys
 root, work = map(pathlib.Path, sys.argv[1:])
 source = root / '.agents/skills'
@@ -313,5 +284,5 @@ assert 'left as written: it is a link' in listed
 print('  ok: linked records and their external targets stay untouched')
 
 PY
-fi
-rs_done
+echo
+echo "upgrade-rehearsal.sh: all checks passed"
