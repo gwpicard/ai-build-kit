@@ -27,8 +27,9 @@
 # same three lines a section would and nothing else is asked of it.
 #
 # With --rehearsal the second file must be a real rehearsal for the first: it
-# uses the shared rule-shape helper and names the recipe file. A rehearsal that
-# only says `exit 0` would otherwise count as proof.
+# sources the shared recipe rehearsal, runs the recipe's commands against the
+# tool stand-ins, and names the recipe file. A rehearsal that only says `exit 0`
+# would otherwise count as proof.
 #
 # Prints each problem and exits 1 when any file has one. Writes nothing.
 
@@ -51,8 +52,9 @@ if [ "$mode" = rehearsal ]; then
     exit 1
   fi
   status=0
-  if ! grep -Eq '^[[:space:]]*\.[[:space:]].*lib/rule-shape\.sh' "$2"; then
-    echo "$2: does not source lib/rule-shape.sh, so it cannot prove the recipe's rules are load-bearing"
+  if ! grep -Eq '^[[:space:]]*\.[[:space:]].*lib/recipe-rehearsal\.sh' "$2" \
+      || ! grep -Eq '^[[:space:]]*rr_stand_ins' "$2"; then
+    echo "$2: does not run the recipe's commands through lib/recipe-rehearsal.sh"
     status=1
   fi
   if ! grep -qF "recipes/$name" "$2"; then

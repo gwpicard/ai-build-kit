@@ -1,29 +1,27 @@
 #!/usr/bin/env sh
-# recipe-rehearsal.sh: what the rehearsal of each recipe shares.
+# recipe-rehearsal.sh: what the rehearsal of each recipe shares. Source it,
+# call rr_init, then rr_locate, rr_shape and rr_stand_ins.
 #
-# Source it after rule-shape.sh. It gives a recipe rehearsal three things.
-#
-# 1. Where the recipe is. A recipe joins the menu, setup-hosting/recipes/, only after
-#    its real run is recorded, and there is no draft state. Until then it waits
-#    in .agents/tests/recipes-awaiting-run/, which ships nowhere. rr_locate
-#    finds it in one place or the other and refuses it in both.
-#
-# 2. Its shape. On the menu it must pass the shipped shape check outright.
-#    Waiting, it must fail that check on its real run and on nothing else, so a
-#    recipe is never waiting on anything but the run.
-#
-# 3. Its commands, run against stand-ins. Every command a recipe or a part it
-#    links writes in backticks, whose first word is one of the recipe's
-#    command-line tools, is run against a stand-in that answers only the
-#    subcommands and options those tools document. A mistyped option or an
-#    invented subcommand is refused, which is the mistake a recipe read by eye
-#    lets through. The stand-ins reach no network and no account. Each tool the
-#    recipe names must be used by at least one command, so the tooling check
-#    never asks a person to install something nothing runs.
-#
-# The three Supabase parts are guarded here too, once for every recipe that
-# links them, by rr_guard_supabase_parts. The third is the settings the launch
-# review reads with the public key before it asks the person about them.
+# rr_locate finds the recipe on the menu or waiting for its real run in
+# .agents/tests/recipes-awaiting-run/, and refuses it in both. rr_shape runs
+# the shipped shape check: on the menu it must pass, and waiting it must fail
+# on its real run alone. rr_stand_ins runs every backticked command the recipe
+# and its parts write against stand-ins that answer only what each tool
+# documents, so a mistyped option or invented subcommand is refused, and every
+# tool the recipe names must be used by some command.
+
+rr_init() {
+  # rr_init <title>
+  RR_TMP=$(mktemp -d)
+  trap 'rm -rf "$RR_TMP"' EXIT
+  echo "$1:"
+}
+rr_ok() { echo "  ok: $1"; }
+rr_fail() { echo "FAIL: $1" >&2; exit 1; }
+rr_report() {
+  # rr_report <description> <yes|no>
+  if [ "$2" = yes ]; then rr_ok "$1"; else rr_fail "$1"; fi
+}
 
 RR_CHECKER="$ROOT/.agents/tools/check-recipes.sh"
 RR_MENU="$ROOT/.agents/skills/setup-hosting/recipes"
@@ -34,7 +32,7 @@ rr_locate() {
   # rr_locate <menu path of the recipe>: sets RR_RECIPE and RR_ON_MENU.
   rr_name=$(basename -- "$1")
   if [ -f "$1" ] && [ -f "$RR_WAITING/$rr_name" ]; then
-    rs_fail "$rr_name is on the menu and still waiting for its real run; one copy has to go"
+    rr_fail "$rr_name is on the menu and still waiting for its real run; one copy has to go"
   fi
   if [ -f "$1" ]; then
     RR_RECIPE=$1
@@ -43,27 +41,26 @@ rr_locate() {
     RR_RECIPE="$RR_WAITING/$rr_name"
     RR_ON_MENU=no
   else
-    rs_fail "$rr_name is neither on the menu nor waiting for its real run"
+    rr_fail "$rr_name is neither on the menu nor waiting for its real run"
   fi
 }
 
 rr_shape() {
-  [ -z "${RS_LIST:-}" ] || return 0
   if [ "$RR_ON_MENU" = yes ]; then
     "$RR_CHECKER" "$RR_RECIPE" >&2 ||
-      rs_fail "$rr_name is on the menu without the shape the format asks for"
-    rs_ok "$rr_name is on the menu with its real run recorded"
+      rr_fail "$rr_name is on the menu without the shape the format asks for"
+    rr_ok "$rr_name is on the menu with its real run recorded"
     return 0
   fi
   if rr_out=$("$RR_CHECKER" "$RR_RECIPE" 2>&1); then
-    rs_fail "$rr_name passed the shape check while waiting, so a real run is recorded and it belongs on the menu"
+    rr_fail "$rr_name passed the shape check while waiting, so a real run is recorded and it belongs on the menu"
   fi
   rr_want="$RR_RECIPE: Real run is not a real date written YYYY-MM-DD: awaiting the first real run"
   if [ "$rr_out" != "$rr_want" ]; then
     printf '%s\n' "$rr_out" >&2
-    rs_fail "$rr_name is waiting on something besides its real run"
+    rr_fail "$rr_name is waiting on something besides its real run"
   fi
-  rs_ok "$rr_name has every part the format asks for and waits only on its real run"
+  rr_ok "$rr_name has every part the format asks for and waits only on its real run"
 }
 
 # --- the stand-ins ---------------------------------------------------------
@@ -296,7 +293,7 @@ rr_commands() {
   for rr_part in $(sed -n 's/^Shared part: .*](\(parts\/[^)]*\)).*/\1/p' "$1"); do
     rr_files="$rr_files $rr_dir/$rr_part"
   done
-  rr_tools "$1" > "$rs_dir/tools"
+  rr_tools "$1" > "$RR_TMP/tools"
   # shellcheck disable=SC2086
   awk '
     NR == FNR { tool[$0] = 1; next }
@@ -315,66 +312,65 @@ rr_commands() {
         if (first in tool) { gsub(/<[^>]*>/, "stand-in", span); print span }
       }
     }
-  ' "$rs_dir/tools" $rr_files
+  ' "$RR_TMP/tools" $rr_files
 }
 
 rr_run_commands() {
   # rr_run_commands <recipe>: 0 when every command is accepted and every tool
   # is used; otherwise names what went wrong and returns 1.
-  RR_CALLS="$rs_dir/calls"
+  RR_CALLS="$RR_TMP/calls"
   export RR_CALLS
   : > "$RR_CALLS"
-  rr_write_stand_ins "$rs_dir/bin"
-  mkdir -p "$rs_dir/work"
+  rr_write_stand_ins "$RR_TMP/bin"
+  mkdir -p "$RR_TMP/work"
   rr_status=0
-  rr_commands "$1" > "$rs_dir/commands"
-  [ -s "$rs_dir/commands" ] || { echo "  no command in the recipe uses one of its tools"; return 1; }
+  rr_commands "$1" > "$RR_TMP/commands"
+  [ -s "$RR_TMP/commands" ] || { echo "  no command in the recipe uses one of its tools"; return 1; }
   while IFS= read -r rr_cmd; do
     rr_exit=0
-    (cd "$rs_dir/work" && PATH="$rs_dir/bin:$PATH" SUPABASE_ACCESS_TOKEN=stand-in SUPABASE_DB_URL=stand-in VALUE=stand-in \
+    (cd "$RR_TMP/work" && PATH="$RR_TMP/bin:$PATH" SUPABASE_ACCESS_TOKEN=stand-in SUPABASE_DB_URL=stand-in VALUE=stand-in \
       NEXT_PUBLIC_SUPABASE_ANON_KEY=public-stand-in SUPABASE_SERVICE_ROLE_KEY=service-role-stand-in \
-      SUPABASE_SECRET_KEY=secret-stand-in sh -c "$rr_cmd") >/dev/null 2>"$rs_dir/refusal" || rr_exit=$?
+      SUPABASE_SECRET_KEY=secret-stand-in sh -c "$rr_cmd") >/dev/null 2>"$RR_TMP/refusal" || rr_exit=$?
     # git check-ignore answers status 1 when no path is ignored, which is the
     # answer a recipe's check can ask for. Every other command must succeed.
     case "$rr_exit $rr_cmd" in "1 git check-ignore "*) rr_exit=0 ;; esac
     if [ "$rr_exit" -ne 0 ]; then
       echo "  refused: $rr_cmd"
-      sed 's/^/    /' "$rs_dir/refusal"
+      sed 's/^/    /' "$RR_TMP/refusal"
       rr_status=1
     fi
-  done < "$rs_dir/commands"
+  done < "$RR_TMP/commands"
   while IFS= read -r rr_tool; do
     grep -q "^$rr_tool " "$RR_CALLS" || grep -qx "$rr_tool" "$RR_CALLS" || {
       echo "  the recipe names $rr_tool, and no command it writes uses it"
       rr_status=1
     }
-  done < "$rs_dir/tools"
+  done < "$RR_TMP/tools"
   return $rr_status
 }
 
 rr_stand_ins() {
   # rr_stand_ins: run the recipe's commands, then prove the run notices an
   # invented subcommand and a named tool that nothing uses.
-  [ -z "${RS_LIST:-}" ] || return 0
   if ! rr_run_commands "$RR_RECIPE"; then
-    rs_fail "$rr_name writes a command its tools do not have"
+    rr_fail "$rr_name writes a command its tools do not have"
   fi
-  rr_count=$(wc -l < "$rs_dir/commands" | tr -d ' ')
-  rs_ok "every one of the $rr_count commands $rr_name writes is one its tools document"
+  rr_count=$(wc -l < "$RR_TMP/commands" | tr -d ' ')
+  rr_ok "every one of the $rr_count commands $rr_name writes is one its tools document"
 
-  mkdir -p "$rs_dir/copy"
-  ln -s "$RR_PARTS" "$rs_dir/copy/parts"
+  mkdir -p "$RR_TMP/copy"
+  ln -s "$RR_PARTS" "$RR_TMP/copy/parts"
   awk '!done && sub(/`supabase db push`/, "`supabase db advisors --type security`") { done = 1 } { print }' \
-    "$RR_RECIPE" > "$rs_dir/copy/$rr_name"
-  cmp -s "$RR_RECIPE" "$rs_dir/copy/$rr_name" && rs_fail "the invented-command copy changed nothing"
-  rr_run_commands "$rs_dir/copy/$rr_name" >/dev/null &&
-    rs_fail "a copy writing a subcommand nobody documents was not refused"
-  rs_ok "a copy writing a subcommand nobody documents is refused"
+    "$RR_RECIPE" > "$RR_TMP/copy/$rr_name"
+  cmp -s "$RR_RECIPE" "$RR_TMP/copy/$rr_name" && rr_fail "the invented-command copy changed nothing"
+  rr_run_commands "$RR_TMP/copy/$rr_name" >/dev/null &&
+    rr_fail "a copy writing a subcommand nobody documents was not refused"
+  rr_ok "a copy writing a subcommand nobody documents is refused"
 
-  sed 's/^Command-line tools: .*/&, flyctl/' "$RR_RECIPE" > "$rs_dir/copy/$rr_name"
-  rr_run_commands "$rs_dir/copy/$rr_name" >/dev/null &&
-    rs_fail "a copy naming a tool no command uses was not refused"
-  rs_ok "a copy naming a tool no command uses is refused"
+  sed 's/^Command-line tools: .*/&, flyctl/' "$RR_RECIPE" > "$RR_TMP/copy/$rr_name"
+  rr_run_commands "$RR_TMP/copy/$rr_name" >/dev/null &&
+    rr_fail "a copy naming a tool no command uses was not refused"
+  rr_ok "a copy naming a tool no command uses is refused"
 
   # A misspelt option must fail rather than be taken for the deployment, and
   # the options each command documents must still pass. vercel project add
@@ -385,134 +381,54 @@ rr_stand_ins() {
     "project update stand-in --framwork nextjs" "link --projet stand-in" "git connect --yse" \
     "curl" "curl /api/health --deploymnet stand-in" "curl /api/health --deployment"; do
     # shellcheck disable=SC2086
-    if PATH="$rs_dir/bin:$PATH" vercel $rr_probe >/dev/null 2>&1; then
-      rs_fail "the vercel stand-in accepted 'vercel $rr_probe'"
+    if PATH="$RR_TMP/bin:$PATH" vercel $rr_probe >/dev/null 2>&1; then
+      rr_fail "the vercel stand-in accepted 'vercel $rr_probe'"
     fi
   done
   for rr_probe in "rollback --timeout 5m stand-in" "inspect --wait stand-in" "promote --yes stand-in" \
     "project update stand-in --framework nextjs --yes" "link --project stand-in --yes" "git connect --yes" \
     "curl /api/health --deployment stand-in --yes"; do
     # shellcheck disable=SC2086
-    PATH="$rs_dir/bin:$PATH" vercel $rr_probe >/dev/null 2>&1 ||
-      rs_fail "the vercel stand-in refused 'vercel $rr_probe'"
+    PATH="$RR_TMP/bin:$PATH" vercel $rr_probe >/dev/null 2>&1 ||
+      rr_fail "the vercel stand-in refused 'vercel $rr_probe'"
   done
-  rs_ok "the vercel stand-in refuses a misspelt option and keeps the documented ones"
+  rr_ok "the vercel stand-in refuses a misspelt option and keeps the documented ones"
 
   # The settings read goes out with the public key alone. Without it, with a
   # bearer token beside it, or at an address the service does not answer in
   # public, the stand-in refuses.
   rr_settings=https://stand-in.supabase.co/auth/v1/settings
-  PATH="$rs_dir/bin:$PATH" curl -fsS -H "apikey: stand-in" "$rr_settings" >/dev/null 2>&1 ||
-    rs_fail "the curl stand-in refused the settings read with the public key"
+  PATH="$RR_TMP/bin:$PATH" curl -fsS -H "apikey: stand-in" "$rr_settings" >/dev/null 2>&1 ||
+    rr_fail "the curl stand-in refused the settings read with the public key"
   for rr_probe in "" "Authorization: Bearer stand-in"; do
     if [ -z "$rr_probe" ]; then
       set -- curl -fsS "$rr_settings"
     else
       set -- curl -fsS -H "apikey: stand-in" -H "$rr_probe" "$rr_settings"
     fi
-    if PATH="$rs_dir/bin:$PATH" "$@" >/dev/null 2>&1; then
-      rs_fail "the curl stand-in accepted a settings read '$*'"
+    if PATH="$RR_TMP/bin:$PATH" "$@" >/dev/null 2>&1; then
+      rr_fail "the curl stand-in accepted a settings read '$*'"
     fi
   done
-  if PATH="$rs_dir/bin:$PATH" curl -fsS -H "apikey: stand-in" https://stand-in.supabase.co/auth/v1/admin/users >/dev/null 2>&1; then
-    rs_fail "the curl stand-in accepted a read of the admin address"
+  if PATH="$RR_TMP/bin:$PATH" curl -fsS -H "apikey: stand-in" https://stand-in.supabase.co/auth/v1/admin/users >/dev/null 2>&1; then
+    rr_fail "the curl stand-in accepted a read of the admin address"
   fi
-  rs_ok "the curl stand-in answers the settings read with the public key alone"
+  rr_ok "the curl stand-in answers the settings read with the public key alone"
 
   # And a recipe whose settings read carried a secret instead is refused as a
   # whole, which proves the read is among the commands the run tries.
   if grep -qF 'parts/supabase-settings.md' "$RR_RECIPE"; then
-    mkdir -p "$rs_dir/secret/parts"
-    cp "$RR_PARTS"/*.md "$rs_dir/secret/parts/"
-    cp "$RR_RECIPE" "$rs_dir/secret/$rr_name"
+    mkdir -p "$RR_TMP/secret/parts"
+    cp "$RR_PARTS"/*.md "$RR_TMP/secret/parts/"
+    cp "$RR_RECIPE" "$RR_TMP/secret/$rr_name"
     for rr_secret in SUPABASE_SERVICE_ROLE_KEY SUPABASE_SECRET_KEY; do
       sed "s#apikey: \$NEXT_PUBLIC_SUPABASE_ANON_KEY#apikey: \$$rr_secret#" \
-        "$RR_PARTS/supabase-settings.md" > "$rs_dir/secret/parts/supabase-settings.md"
-      cmp -s "$RR_PARTS/supabase-settings.md" "$rs_dir/secret/parts/supabase-settings.md" &&
-        rs_fail "the secret-key copy of the settings part changed nothing"
-      rr_run_commands "$rs_dir/secret/$rr_name" >/dev/null &&
-        rs_fail "a settings read sending $rr_secret was not refused"
+        "$RR_PARTS/supabase-settings.md" > "$RR_TMP/secret/parts/supabase-settings.md"
+      cmp -s "$RR_PARTS/supabase-settings.md" "$RR_TMP/secret/parts/supabase-settings.md" &&
+        rr_fail "the secret-key copy of the settings part changed nothing"
+      rr_run_commands "$RR_TMP/secret/$rr_name" >/dev/null &&
+        rr_fail "a settings read sending $rr_secret was not refused"
     done
-    rs_ok "a settings read sending the service role key or a secret key is refused"
+    rr_ok "a settings read sending the service role key or a secret key is refused"
   fi
-}
-
-# --- the Supabase parts ------------------------------------------------------
-
-rr_guard_container_part() {
-  # The Dockerfile and the health route every Next.js recipe shares, whichever
-  # host runs the app, so the two recipes cannot drift apart on them.
-  rs_reset
-  rs_rule "the project always carries the same dockerfile" 'the project always carries the same dockerfile'
-  rs_rule "a host that ignores it still gets a matching local check" 'it gives a local check that matches production'
-  rs_rule "it keeps a way off the host" 'moving to a host that runs containers changes the host and nothing else'
-  rs_rule "Next.js builds standalone" 'output: "standalone"'
-  rs_rule "the server listens on every address" 'hostname=0\.0\.0\.0. and .port=3000.'
-  rs_rule "the image carries wget" 'starts from a node alpine image, which carries .wget.'
-  rs_rule "a slim image has neither tool" 'a .node:\*-slim. image has neither'
-  rs_rule "one check on one route" 'it carries no .healthcheck. line: on a host that runs its own health check, such a line takes precedence over the host.s settings'
-  rs_rule "the health route makes a real round trip" 'makes one real round trip to the database'
-  rs_rule "it is never answered from a build-time copy" 'export const dynamic = "force-dynamic"'
-  rs_rule "public variables are fixed at build" 'next\.js fixes public variables when it builds'
-  rs_rule "the image answers locally before anything goes live" 'before anything goes live, the kit checks docker is running'
-  rs_rule "the local answer is read" 'curl -fss http://localhost:3000/api/health.: 200, ."database":"ok".'
-  rs_rule "a dead database gives 503" 'the same route answers 503 rather than claiming the tool is up'
-  rs_rule "the container gets its own env file" 'the container gets its values from .\.env\.container., a file git ignores that holds only the names in .\.env\.example.'
-  rs_rule "it never gets the local env file" 'it never gets .\.env\.local., because other tools write their own tokens there'
-  rs_rule "the container file holds no stray name" '.\.env\.container. holds no name missing from .\.env\.example., its values never leave the machine'
-  rs_guard "$RR_PARTS/nextjs-container.md" "the container part"
-}
-
-rr_guard_supabase_parts() {
-  rs_reset
-  rs_rule "Free takes no backup of its own" 'the free plan takes none'
-  rs_rule "on Free the kit takes its own after each launch" 'on free the kit takes its own after each launch'
-  rs_rule "the data is dumped with copy statements" 'supabase db dump --linked --data-only --use-copy -x storage\.buckets_vectors -x storage\.vector_indexes -f data\.sql'
-  rs_rule "a dump needs the database password" 'from .supabase_db_password., from .-p., or from what .supabase link. stored'
-  rs_rule "the password is never shown" 'never writes the password into a command it shows'
-  rs_rule "point-in-time recovery hides the daily backups" 'with point-in-time recovery switched on, the listing shows no daily backups at all'
-  rs_rule "the dump is kept outside the repository" 'into a dated folder outside the repository'
-  rs_rule "the gap in a daily backup is named once" 'holds neither the passwords of custom roles nor the files in storage'
-  rs_rule "a paid plan's backups are listed" 'api\.supabase\.com/v1/projects/<project ref>/database/backups. lists a backup taken in the last day'
-  rs_rule "the access token is never printed" 'the kit never prints it or writes it down'
-  rs_guard "$RR_PARTS/supabase-backup.md" "the backup part"
-
-  rs_reset
-  rs_rule "the restore test never touches the live database" 'the restore test never touches the live database'
-  rs_rule "roles, schema and data are dumped" 'with .--role-only. into .roles\.sql., with no option into .schema\.sql., and with'
-  rs_rule "the data dump leaves out the same tables" 'with .--data-only --use-copy -x storage\.buckets_vectors -x storage\.vector_indexes. into .data\.sql.'
-  rs_rule "the project's own local database is stopped" 'stops the project.s own local database with .supabase stop., since the restore uses the same ports'
-  rs_rule "it restores into an empty local database" 'in a throwaway folder outside the project it runs .supabase init.'
-  rs_rule "the local services match live" 'copies the linked project.s .supabase/\.temp/\*-version. files into the throwaway folder.s .supabase/\.temp/., so the local services run the same versions as the live project'
-  rs_rule "the whole stack starts" 'runs .supabase start. with the full stack, leaving no service out, because the auth and storage tables come from those services'
-  rs_rule "the files load as supabase_admin" 'loads the three files as .supabase_admin. with .psql .*postgresql://supabase_admin:postgres.127\.0\.0\.1:54322/postgres., because .roles\.sql. grants settings the local .postgres. user may not grant'
-  rs_rule "the project's migrations and seed stay out" 'would load its migrations, which clash with .schema\.sql., and its .supabase/seed\.sql., whose rows would be counted as restored'
-  rs_rule "the load stops on the first error" 'psql --single-transaction --variable on_error_stop=1'
-  rs_rule "triggers stay off while the data loads" 'set session_replication_role = replica'
-  rs_rule "the restore time is written down" 'written down as the restore time'
-  rs_rule "the rows are counted table by table" 'equals .select count\(\*\). on that table in the local database'
-  rs_rule "a restore that loads nothing fails" 'at least one table holds rows'
-  rs_rule "the local copy is removed" '.supabase stop --no-backup. in the throwaway folder removes the local copy'
-  rs_guard "$RR_PARTS/supabase-restore.md" "the restore part"
-
-  # The part the launch review reads before it asks the person about a
-  # sign-in setting. A real run asked the person to open the dashboard for
-  # "Confirm email", which this address answers to the public key.
-  rs_reset
-  rs_rule "the review reads before it asks" 'the launch review reads these settings itself before it asks the person about any of them'
-  rs_rule "the settings answer to the public key" 'supabase answers a project.s sign-in settings to anyone holding its public key, which the tool already sends to the browser'
-  rs_rule "the read is the settings address with the public key as apikey" 'curl -fss -h "apikey: \$next_public_supabase_anon_key" https://<project ref>\.supabase\.co/auth/v1/settings'
-  rs_rule "the key comes from the project's own files" 'with .next_public_supabase_anon_key. taken from the project.s own .\.env\.local.'
-  rs_rule "false means confirm email is on" '.false. means the dashboard.s "confirm email" setting is on, and .true. means it is off'
-  rs_rule "the public key and nothing else" 'the kit sends the public key for this read and nothing else'
-  rs_rule "a secret key is never sent" 'it never sends the service role key or a secret key, whatever the variable holding it is called'
-  rs_rule "the redirect list is not in the answer" 'the list of addresses sign-in may send a person back to is not in this answer'
-  rs_rule "the person is asked for the redirect list, and told why" 'so the kit asks the person to look at that list, and says that the public key cannot read it'
-  rs_rule "no setting in the answer is asked about" 'asks the person about no setting this answer holds'
-  rs_rule "the kit runs the read" 'who runs it: the kit'
-  rs_guard "$RR_PARTS/supabase-settings.md" "the settings part"
-
-  rs_reset
-  rs_rule "the recipe links the settings part after health" '## settings the kit can read shared part: \[sign-in settings on hosted supabase\]\(parts/supabase-settings\.md\) ## proven'
-  rs_guard "$RR_RECIPE" "$rr_name's settings section"
 }
