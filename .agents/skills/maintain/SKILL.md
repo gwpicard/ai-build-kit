@@ -94,8 +94,10 @@ Do not sign in again or retry the failed command in this session.
 1. From the project root, run `python3` with this skill's
    `scripts/upgrade-check.py --latest --route`. It asks only GitHub's
    `releases/latest`, the one endpoint that never answers with a draft. Give
-   its `say` lines on every monthly visit. Where the versions differ, read the
-   newer version's notes, give a short summary, and wait for approval. Exit 3
+   its `say` lines on every monthly visit. Exit 1 means a newer release is
+   published: read its notes, give a short summary, and wait for approval.
+   Exit 0 means there is nothing newer, including a project ahead of the
+   latest release. Exit 3
    means the check did not happen: never call the project up to date then.
    Its `route` lines give step 4's update command.
 2. Before registering or changing the kit, require the clean checkpoint used by
@@ -161,19 +163,27 @@ Do not sign in again or retry the failed command in this session.
    and the project's check, stays project-owned. Then run "Finishing a kit
    update" below, with `--monthly`.
 
-   Where a `plan.md` at the project root is the kit's old list of pieces
-   rather than the person's own notes, offer to open one issue per row as the
-   `setup-ai-build-kit` skill's `references/pieces.md` describes, and remove
-   the file only after the move.
-6. Re-read the capability profile's reach-check engine against what the
+6. Where the check run with `--monthly` prints a `planfile` line, read
+   `plan.md`, whether or not an update ran. Where it is plainly the person's
+   own notes, leave it and say nothing. Where it is the kit's old list of
+   pieces, give the `planfile` sentence: its pieces are not picked up until
+   they move into issues. On a yes, on the clean checkpoint, guide the GitHub
+   setup first if it is not ready (the `setup-ai-build-kit` skill's
+   `references/manual-setup.md`). Open one issue per row as the
+   `setup-ai-build-kit` skill's `references/pieces.md` describes, carry each
+   row's subjects across as labels, label a shaped row `ready`, and label an
+   unshaped one with the question it still waits on. Name what moved, then remove `plan.md`, and
+   add a dated changelog line. On a no, leave the file. Nothing records the
+   no, so the next monthly visit that finds the file offers again.
+7. Re-read the capability profile's reach-check engine against what the
    harness and project can use now. Keep the same preference order as
    the `implement` skill's `references/reach-check.md`, and update the
    profile when a better engine has appeared or the recorded one has gone.
-7. Run the sensitive-area check installed during founding. It is silent outside
+8. Run the sensitive-area check installed during founding. It is silent outside
    Build with care. Where it names a missing path or an unassigned source folder,
    ask which sensitive area it belongs to, or whether it belongs under `none`,
    then update the map only after the person answers.
-8. If the normal route is unavailable, use the latest published Release, the
+9. If the normal route is unavailable, use the latest published Release, the
    one step 1 read, as the fallback source. A shared installation may replace
    only the eight AI Build Kit skill folders after the same approval and
    clean checkpoint. The check in "Finishing a kit update" then finds the
@@ -185,13 +195,13 @@ Do not sign in again or retry the failed command in this session.
    checkpoint can restore Claude's plugin cache. If the plugin is no longer
    enabled, stop and ask the person to reinstall it after the marketplace is
    reachable.
-9. Update project dependencies and check for known vulnerabilities. Report
+10. Update project dependencies and check for known vulnerabilities. Report
    what changed; apply on approval. The masterplan's gap since its
    trued-against mark was already read in the truing, on every visit.
-10. Once live: read the error alerts and the bills. Anything real becomes a piece, for implement to take: open an issue in the shape the `setup-ai-build-kit` skill's `references/pieces.md` describes. A finding nobody wrote down is a finding nobody acts on.
-11. Verify backups still run where the tool has any. A check that needs a secret reads where it lives from the masterplan first, asks once when that is unknown, and never calls the secret absent. Confirm the named operational owner from the masterplan still holds that role, and that no critical service or credential is tied to someone who has left.
-12. Check whether use or reliance has grown enough that the fit check should run again; if it has, run it before the rest of the monthly part.
-13. On every build path, count every line in the project's AGENTS.md, including
+11. Once live: read the error alerts and the bills. Anything real becomes a piece, for implement to take: open an issue in the shape the `setup-ai-build-kit` skill's `references/pieces.md` describes. A finding nobody wrote down is a finding nobody acts on.
+12. Verify backups still run where the tool has any. A check that needs a secret reads where it lives from the masterplan first, asks once when that is unknown, and never calls the secret absent. Confirm the named operational owner from the masterplan still holds that role, and that no critical service or credential is tied to someone who has left.
+13. Check whether use or reliance has grown enough that the fit check should run again; if it has, run it before the rest of the monthly part.
+14. On every build path, count every line in the project's AGENTS.md, including
     blank lines, and read it for a directory layout, dependency list,
     architecture overview or style rule an automatic check could enforce, and
     for lines that no longer pay their way, such as a rule about a tool or a
@@ -209,13 +219,13 @@ Do not sign in again or retry the failed command in this session.
     removable content to fill the example. Cut nothing without the person's
     yes. A no leaves the file intact and the visit carries on. If the file is
     short and carries none of that content, say nothing.
-14. Unless the project explores privately, run "Offering a move onto a
+15. Unless the project explores privately, run "Offering a move onto a
     recipe" below. When no recipe on the menu is close to the project's stack,
     it says nothing.
-15. On every build path, load `references/stale-branches.md` and run its
+16. On every build path, load `references/stale-branches.md` and run its
     script, which lists the branches whose work is already in the default
     branch, each with the command that removes it. Never remove a branch.
-16. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
+17. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
     today's date on the `last-light-pass` line, written as YYYY-MM-DD. If that
     file is missing, create it with a `founded` line holding the date
     masterplan.md was first saved, then the two pass lines. If the project has
@@ -240,28 +250,35 @@ finishes what it left, whatever day it falls on. From the project root, run
 `--monthly` when the monthly part runs on this visit. It changes nothing.
 Exit 0 means nothing is left, exit 1 means a step is, and exit 2 means it
 could not run: say so in one line and carry on. Where the harness cannot run
-it, say the check did not happen and change nothing by hand.
+it, say the check did not happen and change nothing by hand, with one
+exception. Where the project has no `.agents/tools/plan-refresh.sh`, copy the
+installed `setup-ai-build-kit` skill's `templates/foundation/plan-refresh.sh`
+there, since /what-now and /implement read what is ready from it.
 
 Its `say` lines hold the words the person hears for each finding. Give them
 in one reply, in the order printed, and keep to these rules:
 
-- An `older` line comes first. When there is one, make only that offer.
 - Ask once. Make the full offer on the first visit that finds a step and on
   monthly visits, then record `upgrade-offered|<installed VERSION>` in
   `.ai-build-kit-maintenance`. On other visits say only: "The kit update is
-  not finished. The earlier /maintain offer still stands." Name `mention` and
-  `left` lines once, and not again where the changelog already names them.
+  not finished. The earlier /maintain offer still stands." Where exit 0 comes
+  with only `mention` or `left` sentences, say them and record the same line.
+- Copy each `mention` and `left` sentence you say into the visit's changelog
+  line, word for word. The check leaves out a line the changelog already
+  holds, so each is named once.
 - Apply only on a yes to that offer, on the clean checkpoint, with
-  `--apply <step>`. The `helper` step needs no question. A `missing` line is
-  recovered with the update command already approved. An `installer` line is
-  removed with the installer command it names. Never remove a skill, file or
-  folder by hand.
+  `--apply <step>`. The `helper` and `ready` steps need no question: run them
+  on the clean checkpoint and give the sentence each prints. A `missing` line
+  is recovered with the update command already approved on this visit. Where
+  no update was approved, offer the add first. An `installer` line is removed
+  with the installer command it names. Never remove a skill, file or folder
+  by hand.
 - A `commands` line the script leaves as written gets an agent edit: propose
   the lines from the installed founding template, keep the person's own
   sentences, and change only those lines on a yes. Never ask the person to
   edit the list by hand.
-- A `fitcheck` line, on a yes, runs the full fit check in the
-  `setup-ai-build-kit` skill's `references/fit-check.md`.
+- A `fitcheck` line, on a yes, loads `references/four-paths.md` and follows
+  it.
 - On a no, run the check with `--decline <step>`.
 
 Run the check again after each step, and once more at the end of the visit.

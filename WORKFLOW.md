@@ -620,19 +620,26 @@ holding an older copy, gets the current one on that visit, so the kit reads
 what is ready from that list rather than working it out by hand. A clean
 checkpoint comes first, so an interrupted update can be recovered.
 
-A project set up before v0.20 is asked to install v0.20.3 first, run
-/maintain there, and then update to the latest. That release still finishes
-the older changes, such as labelling the pieces of a project that once had a
-single `/build` command. Any monthly visit that finds an older `plan.md` list
-offers to move it into your project's issues. Any visit that finds a line in
-AGENTS.md or the masterplan pointing at a skill's file by a folder your
-installation may not have offers to name the skill instead, changing only
-those lines, and only on your yes.
+A project founded while the kit had a single `/build` command has no `ready`
+label on GitHub, so /implement would build none of its pieces. The check reads
+the project's issues rather than its installed skills, so every install route
+is covered. It labels each shaped piece `ready`, leaves a piece still waiting
+on a question for /shape, and says how many it marked. The visit also says
+once what an old command became: /build is now /shape and /implement, /start
+is now /setup-ai-build-kit, and /plan is now /shape.
+
+Any monthly visit that finds a `plan.md` holding the kit's old list of pieces
+says they are not picked up until they move into your project's issues, and
+offers to move them. A no is not recorded, so the next monthly visit offers
+again while the file is there. Any visit that finds a line in AGENTS.md or the
+masterplan pointing at a skill's file by a folder your installation may not
+have offers to name the skill instead, changing only those lines, and only on
+your yes.
 
 A masterplan whose build-path section still uses the fields from before the
-kit decided the path by what the work touches is offered the fit check again.
-It writes the section in today's shape and keeps every accepted risk as
-written.
+kit decided the path by what the work touches is offered a rewrite to today's
+shape. It shows the old section above the new one, copies each accepted risk
+word for word, and changes nothing else in the masterplan without your yes.
 
 A project installed before the kit had six commands still offers the old
 ones after its update. The first /maintain after the update says so in one

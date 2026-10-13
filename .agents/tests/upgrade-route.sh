@@ -3,9 +3,10 @@
 # the GitHub and Claude Code command line tools.
 #
 # If this breaks, /maintain offers an update that does not exist yet because a
-# draft release was read, says a project is up to date when the check never
-# ran, or updates a shared installation with `npx skills update`, which drops
-# any skill the lockfile does not list and so loses a renamed command.
+# draft release was read, offers an older release as newer to a project ahead
+# of it, says a project is up to date when the check never ran, or updates a
+# shared installation with `npx skills update`, which drops any skill the
+# lockfile does not list and so loses a renamed command.
 
 set -eu
 
@@ -123,21 +124,30 @@ unset SCRIPT_AT
 [ "$code" -eq 0 ] && printf '%s\n' "$out" | grep -q '^route	agent-plugin' \
   && pass "an Agent Plugins installation is named as its own route" || fail "the agent plugin route read as $code: $out"
 
-# A project holding a release from before v0.20 goes through v0.20.3 first,
-# since a later release no longer finishes the changes made before then.
-mkdir -p "$WORK/old-kit"
-cp -R "$SKILL" "$WORK/old-kit/maintain"
-printf 'v0.19.3\n' > "$WORK/old-kit/maintain/VERSION"
+echo "== Versions compared as numbers =="
+
+# The installed version against the latest, as numbers. A project ahead of
+# the latest release, such as one trying a preview, is not offered an older
+# one as newer, and v0.9.0 is older than v0.20.0 although it sorts after it
+# as text.
+LATEST=v0.0.1
+out=$(run --latest) && code=0 || code=$?
+[ "$code" -eq 0 ] && printf '%s\n' "$out" | grep -qx 'compare	ahead' \
+  && ! printf '%s\n' "$out" | grep -q 'newer AI Build Kit is available' \
+  && pass "a project ahead of the latest release is not told a newer one exists" \
+  || fail "a project ahead read as $code: $out"
+LATEST=v0.9.0
+out=$(run --latest) && code=0 || code=$?
+[ "$code" -eq 0 ] && printf '%s\n' "$out" | grep -qx 'compare	ahead' \
+  && pass "v0.9.0 is older than $HELD, not newer" || fail "v0.9.0 read as $code: $out"
+LATEST=${HELD#v}
+out=$(run --latest) && code=0 || code=$?
+[ "$code" -eq 0 ] && printf '%s\n' "$out" | grep -qx 'compare	same' \
+  && pass "a tag without the leading v is the same version" || fail "a bare tag read as $code: $out"
 LATEST=v99.0.0
-SCRIPT_AT="$WORK/old-kit/maintain/scripts/upgrade-check.py"
 out=$(run --latest) && code=0 || code=$?
-unset SCRIPT_AT
-[ "$code" -eq 1 ] && printf '%s\n' "$out" | grep -q '^first	v0.20.3	' \
-  && pass "a project older than v0.20 is told to install v0.20.3 first" \
-  || fail "an older project read as $code: $out"
-out=$(run --latest) && code=0 || code=$?
-! printf '%s\n' "$out" | grep -q '^first' \
-  && pass "a current project is not sent back to v0.20.3" || fail "a current project was sent back: $out"
+[ "$code" -eq 1 ] && printf '%s\n' "$out" | grep -qx 'compare	newer' \
+  && pass "a newer release is named as newer" || fail "a newer release read as $code: $out"
 
 LATEST=$HELD
 out=$(run --latest --route) && code=0 || code=$?
