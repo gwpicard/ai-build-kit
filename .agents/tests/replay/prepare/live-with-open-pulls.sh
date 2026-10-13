@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # live-with-open-pulls.sh: make the fixture a live tool with two pieces waiting.
 #
-# Scenarios 52 and 53 start where a real second launch started on 25 September
+# Scenario 52 starts where a real second launch started on 25 September
 # 2026: the tool is already live, and finished work sits in open pull requests
 # waiting for /setup-hosting. The fixture has never gone live and has no pull requests,
 # so this writes the rest before the project's first commit:

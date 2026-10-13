@@ -1179,8 +1179,8 @@ fi
 echo "== Interview question shape =="
 
 # A machine cannot judge whether an interview felt like a conversation, so this
-# only proves the rule is still written down where the interview reads it. The
-# guided interview review in scenarios.md is what proves the behaviour.
+# only proves the rule is still written down where the interview reads it.
+# Scenario 50's replay grades the behaviour.
 grillfile="$SKILLS/clarify/SKILL.md"
 scenariofile="$ROOT/.agents/tests/scenarios.md"
 shape_ok=1
@@ -1188,7 +1188,7 @@ for item in \
   "$grillfile|Match the question to the shape of its answer" \
   "$grillfile|narrate is asked in plain words" \
   "$startfile|Ask every question in the shape clarify's" \
-  "$scenariofile|## 26. Interview question shape"; do
+  "$scenariofile|arrives as a plain question with room to answer freely"; do
   file=${item%%|*}
   needle=${item#*|}
   if ! tr '\n' ' ' < "$file" | grep -qFi -- "$needle"; then
@@ -1261,6 +1261,74 @@ else
     fail "$hostingfile: the 'On a recipe' checks are ${recipe_at:-missing}, not inside Build and run it"
   fi
 fi
+
+# ---------------------------------------------------------------------------
+echo "== Product names stay in the recipes =="
+
+# A hosting, data or deploy product is named only in a recipe file or a
+# shared part under setup-hosting/recipes/. A skill that learned one
+# service's behaviour would read wrongly on every project that runs
+# somewhere else, with nothing on screen to say so. The names are a fixed
+# list, plus the place each recipe's title names, so a recipe added later
+# adds its own host to the list, a recipe still waiting for its real run
+# included. Two exemptions: the screen rules link Vercel's interface
+# guidelines, a design guide rather than a place a tool runs, and the
+# maintain skill's two records of released copies name old file paths.
+product_list='coolify|vercel|supabase|netlify|heroku|railway|railpack|fly\.io|hetzner|hostinger|firebase|digitalocean'
+recipe_targets=$(for rf in "$SKILLS"/setup-hosting/recipes/*.md "$ROOT"/.agents/tests/recipes-awaiting-run/*.md; do
+  [ -f "$rf" ] || continue
+  sed -n 's/^# Recipe: .* on \(.*\)$/\1/p' "$rf" | head -1
+done | tr '[:upper:]' '[:lower:]' | sed 's/[.]/\\./g' | sort -u | paste -sd'|' -)
+if [ -z "$recipe_targets" ]; then
+  fail "no recipe title names a place to run, so the product-name rule reads nothing from the recipes"
+else
+  product_list="$product_list|$recipe_targets"
+fi
+
+# products_named <skills folder>: each file and line outside the recipes that
+# names a product.
+products_named() {
+  find "$1" -type f ! -path '*/setup-hosting/recipes/*' \
+    ! -path '*/maintain/scripts/kit-released-copies.json' \
+    ! -path '*/maintain/scripts/kit-retired-skills.json' | sort | while IFS= read -r pn_file; do
+    tr '[:upper:]' '[:lower:]' < "$pn_file" \
+      | sed -e 's#vercel web interface guidelines##g' \
+            -e 's#github\.com/vercel-labs/web-interface-guidelines##g' \
+      | grep -nE "$product_list" | sed "s#^#$pn_file:#" || true
+  done
+}
+
+named=$(products_named "$SKILLS")
+if [ -n "$named" ]; then
+  fail "a skill file outside the recipes names a hosting, data or deploy product:
+$named"
+else
+  pass "no skill file outside the recipes names a hosting, data or deploy product"
+fi
+
+# The rule has to notice a name, keep each exemption narrow, and leave the
+# recipes alone, or it proves nothing. So it is run on a planted folder.
+plant=$(mktemp -d)
+mkdir -p "$plant/setup-hosting/recipes/parts" "$plant/setup-hosting/references" "$plant/screen-check"
+grep -i 'web interface guidelines' "$SKILLS/screen-check/SKILL.md" > "$plant/screen-check/SKILL.md" || true
+printf '%s\n' 'Runs on Vercel with a Supabase database.' > "$plant/setup-hosting/recipes/on-vercel.md"
+printf '%s\n' 'Backups on Supabase.' > "$plant/setup-hosting/recipes/parts/backup.md"
+plant_ok=1
+if [ -n "$(products_named "$plant")" ]; then
+  fail "the product-name rule counted the guidelines link, a recipe or a shared part as a product name"
+  plant_ok=0
+fi
+first_target=$(printf '%s' "$recipe_targets" | cut -d'|' -f1 | sed 's/\\//g')
+for planted in "Deploy it to Vercel." "Keep the data in Supabase." "Deploy it with ${first_target:-vercel}." \
+               "$(printf 'Vercel is fast.\nThe Vercel Web Interface Guidelines')"; do
+  printf '%s\n' "$planted" > "$plant/setup-hosting/references/steps.md"
+  if [ -z "$(products_named "$plant")" ]; then
+    fail "the product-name rule missed a planted name: $planted"
+    plant_ok=0
+  fi
+done
+rm -rf "$plant"
+[ "$plant_ok" -eq 1 ] && pass "the product-name rule catches a planted name and leaves the recipes and the guidelines link alone"
 
 # ---------------------------------------------------------------------------
 echo "== Codex adapter claims =="

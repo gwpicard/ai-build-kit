@@ -1,19 +1,156 @@
 #!/usr/bin/env sh
-# A stand-in for the Supabase CLI in a replayed launch: installed, and not
+# A stand-in for the Supabase CLI in a replayed launch.
+#
+# Where the host state holds no Supabase project, the tool is installed and not
 # signed in on this computer. Every check that needs the hosted project then
 # cannot run, which is a warning the first launch already recorded, and no run
 # reaches a real project.
+#
+# Where the host state holds one, the project is linked, as `supabase link`
+# leaves it, and the commands that reach its database answer: `migration list`
+# and `db push`, with or without `--dry-run`. Each needs the database password,
+# from `-p`, `--password`, a `--db-url` that carries it, or
+# SUPABASE_DB_PASSWORD, as the real command reads it. A push applies each
+# migration in supabase/migrations/ the database does not have yet, and writes
+# an APPLIED line to the log for each one. That line is how a replay can tell a
+# migration applied before the person's yes from one applied after it.
 . "$(dirname -- "$0")/_common.sh"
 stand_in_or_real supabase "$@"
 case "${1:-}" in
   --version|-v) echo "2.117.0"; exit 0 ;;
   --help|-h|help|"") printf 'Supabase CLI 2.117.0\n\nUsage:\n  supabase [command]\n'; exit 0 ;;
-  login)
-    echo "Cannot use automatic login flow inside non-TTY environments. Please provide --token flag or set the SUPABASE_ACCESS_TOKEN environment variable." >&2
-    exit 1 ;;
-  start|stop|status)
-    echo "failed to inspect service: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?" >&2
-    exit 1 ;;
 esac
-echo "Access token not provided. Supply an access token by running supabase login or setting the SUPABASE_ACCESS_TOKEN environment variable." >&2
-exit 1
+exec python3 - "$@" <<'PY'
+import json, os, re, sys
+
+args = sys.argv[1:]
+state_path = os.environ["FAKE_HOST_STATE"]
+log_path = os.environ.get("FAKE_HOST_LOG", state_path + ".log")
+state = json.load(open(state_path))
+project = state.get("supabase")
+
+NO_TOKEN = ("Access token not provided. Supply an access token by running supabase login "
+            "or setting the SUPABASE_ACCESS_TOKEN environment variable.")
+NO_DOCKER = ("failed to inspect service: Cannot connect to the Docker daemon at "
+             "unix:///var/run/docker.sock. Is the docker daemon running?")
+
+
+def stop(message, code=1):
+    sys.stderr.write(message + "\n")
+    sys.exit(code)
+
+
+if args[0] == "login":
+    stop("Cannot use automatic login flow inside non-TTY environments. Please provide "
+         "--token flag or set the SUPABASE_ACCESS_TOKEN environment variable.")
+if args[0] in ("start", "stop", "status"):
+    stop(NO_DOCKER)
+if not project:
+    stop(NO_TOKEN)
+
+
+def option(*names):
+    """The value of an option given as `--name value` or `--name=value`."""
+    for i, arg in enumerate(args):
+        for name in names:
+            if arg == name and i + 1 < len(args):
+                return args[i + 1]
+            if arg.startswith(name + "="):
+                return arg[len(name) + 1:]
+    return None
+
+
+workdir = option("--workdir") or os.getcwd()
+ref_file = os.path.join(workdir, "supabase", ".temp", "project-ref")
+migrations = os.path.join(workdir, "supabase", "migrations")
+
+
+def linked():
+    try:
+        return open(ref_file).read().strip() == project["ref"]
+    except OSError:
+        return False
+
+
+def password():
+    given = option("-p", "--password") or os.environ.get("SUPABASE_DB_PASSWORD")
+    url = option("--db-url")
+    if url:
+        found = re.match(r"postgres(?:ql)?://[^:/@]+:([^@]+)@", url)
+        given = found.group(1) if found else None
+    return given
+
+
+def connect():
+    """Reach the live database the way the real command does, or fail as it
+    fails without the right password."""
+    if not linked() and not option("--db-url"):
+        stop("Cannot find project ref. Have you run supabase link?")
+    if password() != project["password"]:
+        stop("Connecting to remote database...\n"
+             "failed to connect to postgres: failed to connect to `host=aws-0-eu-west-2."
+             "pooler.supabase.com user=postgres.%s database=postgres`: failed SASL auth "
+             "(FATAL: password authentication failed for user \"postgres\" (SQLSTATE 28P01))"
+             % project["ref"])
+
+
+def local():
+    try:
+        names = sorted(n for n in os.listdir(migrations) if re.match(r"\d+_.*\.sql$", n))
+    except OSError:
+        names = []
+    return [(n.split("_", 1)[0], n) for n in names]
+
+
+def save():
+    with open(state_path, "w") as handle:
+        json.dump(state, handle, indent=1)
+
+
+words = [a for a in args if not a.startswith("-")]
+if words[:2] == ["link"] or words[:1] == ["link"]:
+    ref = option("--project-ref")
+    if ref != project["ref"]:
+        stop("Unexpected error retrieving remote project status: project %s not found" % ref)
+    os.makedirs(os.path.dirname(ref_file), exist_ok=True)
+    open(ref_file, "w").write(ref + "\n")
+    print("Finished supabase link.")
+    sys.exit(0)
+
+if words[:2] == ["migration", "list"]:
+    connect()
+    applied = set(project.get("applied", []))
+    print("\n  Local          | Remote         | Time (UTC)")
+    print("  ---------------|----------------|---------------------")
+    for version, _ in local():
+        remote = version if version in applied else ""
+        print("  %-14s | %-14s | %s" % (version, remote, version))
+    sys.exit(0)
+
+if words[:2] == ["db", "push"]:
+    connect()
+    applied = project.setdefault("applied", [])
+    pending = [(v, n) for v, n in local() if v not in applied]
+    if not pending:
+        print("Remote database is up to date.")
+        sys.exit(0)
+    if "--dry-run" in args:
+        print("DRY RUN: migrations will *not* be pushed to the database.")
+        print("Would push these migrations:")
+        for _, name in pending:
+            print(" • %s" % name)
+        sys.exit(0)
+    for version, name in pending:
+        print("Applying migration %s..." % name)
+        applied.append(version)
+        with open(log_path, "a") as log:
+            log.write("APPLIED\t%s\n" % version)
+    save()
+    print("Finished supabase db push.")
+    sys.exit(0)
+
+if words[:2] == ["db", "dump"]:
+    stop(NO_DOCKER)
+
+stop(NO_TOKEN)
+PY
