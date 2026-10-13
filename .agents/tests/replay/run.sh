@@ -271,6 +271,13 @@ run_once() {
     # The same marker goes in the host's log, so a change to the live database
     # can be placed before or after the person's yes as a push can.
     printf 'TURN\t%s\t%s\n' "$turn" "$kind" >> "$FAKE_HOST_LOG"
+    # A command can outlive the turn that started it, in the background or
+    # behind a wait, and its line then lands after a later turn's marker. Every
+    # process this turn starts inherits the turn's number, so the stand-ins and
+    # the remote's hook tag each line with the turn that started the command,
+    # and the state check places it by that rather than by where it landed.
+    REPLAY_TURN=$turn
+    export REPLAY_TURN
     # PATH is a suggestion rather than a boundary. A session that doubts an
     # answer could look for the real tool, find it at its usual place, and use
     # the maintainer's own signed-in account. The credentials are taken away

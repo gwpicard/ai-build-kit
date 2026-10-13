@@ -52,6 +52,12 @@ echo "== The commands the kit uses =="
 "$GH" --version | grep -q "gh version" \
   && pass "--version answers plainly" \
   || fail "--version did not answer"
+# A call started in one turn can land after a later turn's marker, so its line
+# carries the turn the harness says started it.
+REPLAY_TURN=2 "$GH" --version >/dev/null
+grep -q "^CALL	--version	turn=2$" "$FAKE_GH_LOG" \
+  && pass "a call is logged with the turn that started it" \
+  || fail "the call was not tagged with its turn: $(tail -n 1 "$FAKE_GH_LOG")"
 
 first=$("$GH" issue create --title "Take a deposit" --body "## Done when
 - a deposit is recorded" --label behaviour)

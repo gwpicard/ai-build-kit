@@ -10,7 +10,10 @@
 #
 # Scenario 57 replays a later run that finds a migration the live database
 # lacks. There the Supabase stand-in answers the recipe's reads and push, needs
-# the database password for each, and logs each migration it applies.
+# the database password for each, and logs each migration it applies, tagged
+# with the turn that started the push. It reads its options as the real
+# command does, global ones before the command included, and refuses an option
+# or a command it does not model, to the log.
 #
 # The rest matters as much. A deploy's output carries its success line near the
 # end, so a kit that cuts it short cannot tell it worked. The other tools fail
@@ -302,18 +305,46 @@ pw_file="$m.secrets/db-password"
     && printf '%s\n' "$out" | grep -qE '^ *20260917090000 \| 20260917090000' \
     && pass "the migration list shows which migration the live database has and which it lacks" \
     || fail "the migration list read: $out"
+  # A global option may come before the command, and an option's value may
+  # follow `=` or be attached to a one-letter name, as the real command takes
+  # them.
+  out=$(cd "$WORK" && SUPABASE_DB_PASSWORD="$(cat "$pw_file")" supabase --workdir "$m" db push --dry-run 2>&1)
+  case "$out" in
+    *"20261005090000_pinned_notices.sql"*) pass "a global option before the command is read as the real command reads it" ;;
+    *) fail "supabase --workdir <folder> db push --dry-run said: $out" ;;
+  esac
+  out=$(cd "$WORK" && supabase --workdir="$m" migration list -p"$(cat "$pw_file")" 2>&1)
+  printf '%s\n' "$out" | grep -qE '^ *20261005090000 \| +\|' \
+    && pass "and so are --workdir=<folder> and a password attached to -p" \
+    || fail "supabase --workdir=<folder> migration list -p<password> said: $out"
+  # An option the command's help does not list is refused, and so is a command
+  # nobody modelled, each to the log.
+  for probe in "db push --dry-run --yse" "db push --project-ref x" "migration list --dry-run" \
+               "projects list" "init" "db reset --linked" "db push extra"; do
+    # shellcheck disable=SC2086
+    if SUPABASE_DB_PASSWORD="$(cat "$pw_file")" supabase $probe >/dev/null 2>&1; then
+      fail "supabase $probe was accepted, though the stand-in does not model it"
+    elif grep -qF "UNSUPPORTED	supabase $probe	" "$mlog"; then
+      pass "supabase $probe is refused, and the refusal is in the log"
+    else
+      fail "supabase $probe was refused without a line in the log"
+    fi
+  done
   grep -q '^APPLIED' "$mlog" \
     && fail "a read applied a migration" \
     || pass "neither read applies anything"
-  out=$(supabase db push --db-url "postgresql://postgres.qwmhzkpvnbxlcrtdyefa:$(cat "$pw_file")@aws-0-eu-west-2.pooler.supabase.com:5432/postgres")
+  out=$(REPLAY_TURN=3 supabase db push --db-url "postgresql://postgres.qwmhzkpvnbxlcrtdyefa:$(cat "$pw_file")@aws-0-eu-west-2.pooler.supabase.com:5432/postgres")
   case "$out" in
     *"Applying migration 20261005090000_pinned_notices.sql"*"Finished supabase db push."*)
       pass "a push with the password in its database address applies the migration" ;;
     *) fail "the push said: $out" ;;
   esac
-  [ "$(grep -c '^APPLIED	20261005090000$' "$mlog")" = "1" ] \
-    && pass "and the log holds one APPLIED line for it" \
-    || fail "the log does not hold one APPLIED line for the migration"
+  [ "$(grep -c '^APPLIED	20261005090000	turn=3$' "$mlog")" = "1" ] \
+    && pass "and the log holds one APPLIED line for it, tagged with the turn that started it" \
+    || fail "the log does not hold one tagged APPLIED line for the migration"
+  grep -q '^CALL	supabase db push --db-url .*	turn=3$' "$mlog" \
+    && pass "the call's own line carries the turn that started it too" \
+    || fail "the call's line does not carry the turn that started it"
   out=$(SUPABASE_DB_PASSWORD="$(cat "$pw_file")" supabase db push)
   [ "$out" = "Remote database is up to date." ] \
     && [ "$(grep -c '^APPLIED' "$mlog")" = "1" ] \

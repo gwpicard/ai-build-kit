@@ -38,12 +38,20 @@ stand_in_or_real() {
     echo "$sr_name: not signed in, and no account is reachable from this run" >&2
     exit 1
   fi
-  printf 'CALL\t%s %s\n' "$sr_name" "$*" \
+  # The turn that started the call goes on the end of its line, since a call
+  # run in the background can land after a later turn's marker.
+  sr_tag=
+  case "${REPLAY_TURN:-}" in
+    ''|*[!0-9]*) ;;
+    *) sr_tag=$(printf '\tturn=%s' "$REPLAY_TURN") ;;
+  esac
+  printf 'CALL\t%s %s%s\n' "$sr_name" "$*" "$sr_tag" \
     | sed -E \
       -e 's#(postgres(ql)?://)[^[:space:]"'"'"']+#\1[masked]#g' \
       -e 's#(--dbname[= ])[^[:space:]]+#\1[masked]#g' \
       -e 's#((--token|-t)[= ])[^[:space:]]+#\1[masked]#g' \
       -e 's#(( |^)(-p|--password)[= ])[^[:space:]]+#\1[masked]#g' \
+      -e 's#(( |^)-p)[^[:space:]= ][^[:space:]]*#\1[masked]#g' \
       -e 's#([Aa]uthorization:[[:space:]]*).*#\1[masked]#' \
       -e 's#([Bb]earer[[:space:]]+)[^[:space:]]+#\1[masked]#g' \
     >> "${FAKE_HOST_LOG:-$FAKE_HOST_STATE.log}"
