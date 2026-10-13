@@ -111,6 +111,42 @@ report "pointers into the three folded background skills follow them" \
 report "and a second run finds nothing there" \
   "$([ -z "$(python3 "$SCRIPT" "$WORK/eleven")" ] && echo yes || echo no)"
 
+# Both repair files held the shaping half and the building half. A sentence
+# about shaping or reproducing a fault follows shape's repair reference; any
+# other follows implement's, which points at shape's first.
+mkdir -p "$WORK/halves"
+printf '%s\n' 'Shaping a repair follows `.agents/skills/fix/SKILL.md`.' \
+  "To reproduce a fault, read the \`section-builder\` skill's \`references/repair.md\`." \
+  'Building a repair follows `.agents/skills/fix/SKILL.md`.' > "$WORK/halves/AGENTS.md"
+python3 "$SCRIPT" --apply "$WORK/halves" >/dev/null
+report "a pointer about shaping a repair follows shape, one about building follows implement" \
+  "$(grep -qF "Shaping a repair follows the \`shape\` skill's \`references/repair.md\`." "$WORK/halves/AGENTS.md" \
+     && grep -qF "To reproduce a fault, read the \`shape\` skill's \`references/repair.md\`." "$WORK/halves/AGENTS.md" \
+     && grep -qF "Building a repair follows the \`implement\` skill's \`references/repair.md\`." "$WORK/halves/AGENTS.md" && echo yes || echo no)"
+
+# A skill of the person's own under a name the kit has retired keeps its
+# pointer, whether its folder is installed or the lockfile lists it under
+# another source. A folder that is the kit's released copy does not count.
+mkdir -p "$WORK/mine/.agents/skills/screen-check" "$WORK/mine/.agents/skills/section-builder"
+printf -- '---\nname: screen-check\ndescription: Our own checklist for the till screens.\n---\n' \
+  > "$WORK/mine/.agents/skills/screen-check/SKILL.md"
+kit_description=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["skills"]["section-builder"][-1])' \
+  "$ROOT/.agents/skills/maintain/scripts/kit-retired-skills.json")
+printf -- '---\nname: section-builder\ndescription: %s\n---\n' "$kit_description" \
+  > "$WORK/mine/.agents/skills/section-builder/SKILL.md"
+printf '%s\n' '{"version":1,"skills":{"change-triage":{"source":"club/own-skills"}}}' > "$WORK/mine/skills-lock.json"
+printf '%s\n' 'Screens follow `.agents/skills/screen-check/SKILL.md`.' \
+  'Requests follow `.agents/skills/change-triage/SKILL.md`.' \
+  'The trim follows `.agents/skills/section-builder/references/trim.md`.' > "$WORK/mine/AGENTS.md"
+listed=$(python3 "$SCRIPT" "$WORK/mine")
+python3 "$SCRIPT" --apply "$WORK/mine" >/dev/null
+report "a pointer into the person's own skill under a retired name is listed and kept" \
+  "$(printf '%s\n' "$listed" | grep -qF 'AGENTS.md:1	.agents/skills/screen-check/SKILL.md	left as written: the project has a `screen-check` skill of its own' \
+     && printf '%s\n' "$listed" | grep -qF 'left as written: the project has a `change-triage` skill of its own' \
+     && grep -qF 'Screens follow `.agents/skills/screen-check/SKILL.md`.' "$WORK/mine/AGENTS.md" \
+     && grep -qF 'Requests follow `.agents/skills/change-triage/SKILL.md`.' "$WORK/mine/AGENTS.md" \
+     && grep -qF "The trim follows the \`implement\` skill's \`references/trim.md\`." "$WORK/mine/AGENTS.md" && echo yes || echo no)"
+
 # The queue skill folded into implement, and the sync skill's routine became
 # the maintain skill's truing reference. Pointers to either follow the rules.
 mkdir -p "$WORK/folded"

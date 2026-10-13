@@ -36,10 +36,25 @@ as a command, or a link, a rewrite would break the line, so the pointer is
 listed with the reason and left for the person. So is a pointer to a file the
 skill no longer has. A rewrite changes only those pointers: every other
 character of the file, line endings included, stays as it was.
+
+A pointer under a name the kit has retired is rewritten only when that name is
+not the project's own skill. Where a folder of that name is still installed,
+it must carry the kit's name and a description a release shipped, as
+kit-leftovers.py recognises the kit's folders. A folder of the person's own, or
+a name the lockfile lists under another source, keeps its pointer, listed with
+the reason.
+
+The fix skill's one file, and section-builder's repair reference, held both
+halves of a repair. Shaping a repair now sits in the `shape` skill's
+`references/repair.md`, and building one in the `implement` skill's. A pointer
+whose sentence speaks of shaping or reproducing a fault, and not of building
+one, follows the first. Every other one follows the second, which opens by
+pointing at the first.
 """
 
 import os
 import re
+import runpy
 import sys
 
 # The kit's eight skills. A name outside this list may be the project's own
@@ -61,8 +76,7 @@ FORMER_NAMES = {
 
 # A former skill's file that moved somewhere other than the same path in the
 # skill that took its name. The fix skill had only its SKILL.md, and its rules
-# now sit in implement's repair reference, so a pointer to that file follows
-# them there. The routine of `sync` became the maintain skill's truing
+# now sit in the two repair references, which REPAIR_FILES chooses between. The routine of `sync` became the maintain skill's truing
 # reference. The handover template left `ship` for the maintain skill, which
 # now owns handovers. Change-triage's two research references became shape's
 # one, and its rules joined shape's own SKILL.md. Section-builder's repair
@@ -79,6 +93,13 @@ FORMER_FILES = {
     ("change-triage", "references/existing-work.md"): ("shape", "references/research.md"),
     ("screen-check", "SKILL.md"): ("implement", "references/screen-rules.md"),
 }
+
+# The two files that held both halves of a repair, and the words that say a
+# sentence means the shaping half: the fault reproduced and written into a
+# piece before anything is built.
+REPAIR_FILES = (("fix", "SKILL.md"), ("section-builder", "references/repair.md"))
+SHAPING = re.compile(r"(?i)\b(shap(e|es|ed|ing)|reproduc\w*|symptom|failing case)\b")
+BUILDING = re.compile(r"(?i)\b(build\w*|built|fix(es|ed|ing)?|attempts?|escalat\w*)\b")
 
 FILES = ("AGENTS.md", "masterplan.md")
 
@@ -132,19 +153,66 @@ def placement(line, start, end):
     return None, "it runs on into more of a path or an address"
 
 
-def new_home(name, path):
-    """The skill and path a pointer into `name` at `path` should name now."""
+def new_home(name, path, sentence=""):
+    """The skill and path a pointer into `name` at `path` should name now.
+
+    `sentence` is the line with its pointers taken out. It decides which half
+    of a repair a pointer to one of REPAIR_FILES means."""
+    if (name, path) in REPAIR_FILES:
+        if SHAPING.search(sentence) and not BUILDING.search(sentence):
+            return "shape", "references/repair.md"
+        return "implement", "references/repair.md"
     if (name, path) in FORMER_FILES:
         return FORMER_FILES[(name, path)]
     return FORMER_NAMES.get(name, name), path
 
 
-def findings(line, in_block):
+def own_skills(project):
+    """{former name: reason} for each retired name the project uses for a
+    skill of its own. Read with kit-leftovers.py's own tests, so the two
+    scripts recognise the kit's folders alike."""
+    try:
+        leftovers = runpy.run_path(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                                "kit-leftovers.py"))
+    except (OSError, SyntaxError):
+        return {}
+    lock = leftovers["lockfile"](project)
+    kit_listed, any_listed = lock if lock else (set(), set())
+    known = leftovers["known_descriptions"]()
+    own = {}
+    for name in FORMER_NAMES:
+        if name in any_listed and name not in kit_listed:
+            own[name] = "the project has a `%s` skill of its own" % name
+            continue
+        for folder in leftovers["SKILL_FOLDERS"]:
+            full = os.path.join(project, folder, name)
+            if not (os.path.islink(full) or os.path.isdir(full)):
+                continue
+            skill = os.path.join(full, "SKILL.md")
+            if leftovers["generated"](skill):
+                continue
+            got_name, description = leftovers["frontmatter"](skill)
+            if got_name != name or description not in known.get(name, []):
+                own[name] = "the project has a `%s` skill of its own" % name
+                break
+    return own
+
+
+def sentence_of(line):
+    return NAMED.sub(" ", POINTER.sub(" ", line))
+
+
+def findings(line, in_block, own=None):
     """Yield (start, end, old, new-or-None, reason) for each pointer on the line."""
+    own = own or {}
+    sentence = sentence_of(line)
     for match in NAMED.finditer(line):
-        skill, path = new_home(match.group(1), match.group(2))
+        skill, path = new_home(match.group(1), match.group(2), sentence)
         if in_block:
             yield match.start(), match.end(), match.group(0), None, "it sits inside a code block"
+            continue
+        if match.group(1) in own:
+            yield match.start(), match.end(), match.group(0), None, own[match.group(1)]
             continue
         problem = target_problem(skill, path)
         if problem:
@@ -152,9 +220,12 @@ def findings(line, in_block):
             continue
         yield match.start(), match.end(), match.group(0), "`%s` skill's `%s`" % (skill, path), ""
     for match in POINTER.finditer(line):
-        skill, path = new_home(match.group(1), match.group(2))
+        skill, path = new_home(match.group(1), match.group(2), sentence)
         if in_block:
             yield match.start(), match.end(), match.group(0), None, "it sits inside a code block"
+            continue
+        if match.group(1) in own:
+            yield match.start(), match.end(), match.group(0), None, own[match.group(1)]
             continue
         where, why = placement(line, match.start(), match.end())
         if where is None:
@@ -175,6 +246,7 @@ def main(argv):
     apply = "--apply" in argv
     rest = [a for a in argv if a != "--apply"]
     project = rest[0] if rest else "."
+    own = own_skills(project)
     for name in FILES:
         path = os.path.join(project, name)
         if os.path.islink(path):
@@ -207,7 +279,7 @@ def main(argv):
                     fence = None
             else:
                 in_block = line.startswith("    ") or line.startswith("\t")
-            found = list(findings(line, in_block))
+            found = list(findings(line, in_block, own))
             for start, end, old, new, why in found:
                 if new is None:
                     print("%s:%d\t%s\tleft as written: %s" % (name, number, old, why))
