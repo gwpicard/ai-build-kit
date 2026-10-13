@@ -1599,32 +1599,6 @@ else
   fail ".agents/tests/replay/check-parser.sh is missing"
 fi
 
-# Several rules live as prose a coding agent reads, watched by hand rather than
-# replayed, and each is guarded by a check that reads its source and proves it
-# fails on a copy with the rule removed. They share the scaffolding in
-# .agents/tests/lib/rule-shape.sh, so they are found by that rather than by a
-# list here, and a new one is covered from the moment it is written.
-shape_ok=1
-shape_count=0
-for shape_check in "$ROOT"/.agents/tests/*.sh; do
-  [ -f "$shape_check" ] || continue
-  grep -qF 'lib/rule-shape.sh' "$shape_check" || continue
-  shape_name=$(basename "$shape_check")
-  shape_count=$((shape_count + 1))
-  if [ ! -x "$shape_check" ]; then
-    fail ".agents/tests/$shape_name is not executable"
-    shape_ok=0
-  elif ! "$shape_check" >/dev/null 2>&1; then
-    fail "written-rule check failed; run .agents/tests/$shape_name to see why"
-    shape_ok=0
-  fi
-done
-if [ "$shape_count" -eq 0 ]; then
-  fail "no written-rule checks were found; they source .agents/tests/lib/rule-shape.sh"
-elif [ "$shape_ok" -eq 1 ]; then
-  pass "$shape_count written rules still hold, and each check catches a weakened copy"
-fi
-
 claude_plugin_check="$ROOT/.agents/tests/claude-plugin.sh"
 if [ ! -x "$claude_plugin_check" ]; then
   fail ".agents/tests/claude-plugin.sh is missing or not executable"

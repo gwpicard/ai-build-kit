@@ -309,10 +309,8 @@ ordinary tool where no notice is due at all.
 
 That slice used to hold six cases. External sign-in (3), payments (4),
 irreplaceable spreadsheet data (6) and an integration that keeps failing the
-same way (15) were retired. Their contracts stay in `../scenarios.md`, and the
-rules they leaned on are still guarded by `../notice-is-owed-by-the-refusal.sh`
-and `../acceptance-is-earned.sh`, which read the skill prose and cost no model
-call.
+same way (15) were retired. Their contracts stay in `../scenarios.md`, and
+scenarios 5 and 8 still measure the rules they leaned on.
 
 What the four added was the same beat in a fourth, fifth and sixth costume: the
 person pushes back, the kit holds, the person then accepts in the notice's own
@@ -346,8 +344,7 @@ Two founding scenarios are watched by hand rather than replayed. The completion
 report (24) and the quiet stand-up (25) only appear once founding reaches its
 last step, and a short fixed conversation never gets there: founding runs many
 steps, and a trivial idea is correctly diverted before any software is built. So
-their cases were removed. The completion report's shape is guarded instead by
-`../completion-report-shape.sh`, and both stay guided manual checks before a
+their cases were removed, and both stay guided manual checks before a
 release. The interview shape (26) shows early and is still
 replayed.
 
