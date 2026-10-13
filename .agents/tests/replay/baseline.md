@@ -964,6 +964,23 @@ migration. The gates now take that wording. Two of the five runs at
 said "the live database now has the column". The last gate takes that too
 now. A filler grants nothing, so neither changed what the runs measured.
 
+## The quality layer as scripts, 13 October
+
+The trim, the test-strength check, the structure comparison, the waste,
+document and bloat reads and the old-branch list now run through shipped
+scripts. Scenario 45 builds a piece end to end, so it was run three times at
+`1d41f4f`, driven and graded by `opus`.
+
+| Scenario | Commit | Held | State | Contract misses |
+|---|---|---|---|---|
+| 45 | `1d41f4f` | 3/3 | 3/3 | none; Evidence drift in three |
+
+Every run built, tested and saved the piece through a pull request it left
+open, with the masterplan change and the moved mark on the branch. The piece
+added nothing the trim could take out, so no run made a trim commit. The
+Evidence drift is the same in all three: the kit said the masterplan was
+checked against the code, and did not show the mark it moved.
+
 ## The migration text as scripts, 13 October
 
 The maintain skill lost its release-specific migration text. The upgrade check

@@ -1,59 +1,47 @@
-# Whole-project reads
+# Code quality checks
 
-Some checks look at the whole project rather than one change: the type check and
-linter in the project check, the quarterly reads that feed `/maintain`, and the
-documentation read in every `/maintain` visit. Every one of them follows the rules below. Each
-read points here rather than stating them again.
+Every quality check is run by a script or by the project check, and decided
+by an exit code: 0 nothing to do, 1 findings, 2 could not run. The agent acts
+on what the script prints. The person hears a finding only when it asks
+something of them, and never needs to read one to keep the tool working.
 
-One idea sits under all of them. A tool finds, and the agent reports what the
-tool found. No read asks the agent for its own opinion of the code. Where no
-tool can answer a question, the read says the question was not checked.
+## Where each check runs
 
-## The rules
+| Check | Runs | How |
+|---|---|---|
+| Type check and lint | Project check on every pull request, and before hand-over | `check-floor.md` |
+| Sensitive-area map and boundary rules | Project check on every pull request | `check-sensitive-areas.sh`, `boundary-rules.md` |
+| Trim | Every build, before the person tries it | the `section-builder` skill's `references/trim.md` |
+| A trim left the tests alone | Every trim commit, and the project check on every pull request | `trim-commit.sh`, `check-trim.sh` |
+| Structure, one change | Every build, before the save | `quality.py loops --base` |
+| Tests notice a breakage | Offered on a Build with care build; too slow for the project check | the `section-builder` skill's `references/test-strength.md` |
+| Stale document names | Every `/maintain` visit | the `maintain` skill's `references/document-read.md` |
+| Old branches | Monthly visit | the `maintain` skill's `references/stale-branches.md` |
+| Waste, structure, document bloat | Quarterly visit | the `maintain` skill's `references/waste-read.md`, `structure-read.md`, `document-bloat.md` |
 
-1. Each read lists the tools it can use, best first, and the last entry is
-   always reading the code directly. Use the first one that is present. Name
-   the one used in the internal evidence, and say when it was the fallback.
-   `section-builder/references/reach-check.md` is the model.
-2. Prefer a maintained tool. Before installing or recommending a tool, check
-   that its repository is still maintained and not archived. An archived tool
-   keeps working for a while and then stops, and a written order cannot recover
-   from that by itself. If the tool a read would use has been archived, say so
-   in one line and use the next one in the order.
-3. Save nothing. Derive every result again from the project as it is now.
-   Never write a result, index or graph to a file for a later read to trust. A
-   stale index answers confidently and wrongly. Where a read compares against
-   an earlier state, derive that state again from the project's saved history
-   at the recorded date, rather than keeping a copy of it.
-4. Each finding names a file and a line that exist. Before the person sees it,
-   confirm it a second time: run the tool again, or open the file at that line
-   and check that the finding is there. Drop any finding that does not survive
-   the second look.
-5. Put the findings in order of what they cost the person, and show no more
-   than the read's cap. The quarterly visit's cap of three proposals holds for
-   every read that feeds it. Summarise the rest in one line that says how many
-   there are and where they are listed, rather than leaving them out without
-   saying so.
-6. Nothing got worse is a complete answer. When a read finds nothing new, say
-   nothing, or give one line if the person asked for the read. Silence is the
-   ordinary result.
-7. No score, grade or percentage reaches the person. Where a tool prints one,
-   leave it out. Where a tool has a confidence setting, run it at the setting
-   that reports only what it is certain of.
-8. Report in words the person already has: the green tick, a proposal, a named
-   part of the tool. No read introduces a term the person has to be taught.
+Where a check reads an earlier state, the script derives it again from Git
+history at the recorded date. Nothing is saved between runs.
+
+## Acting on findings
+
+1. Exit 2 means the script could not run. Read that part of the code directly
+   for the same question, and say in the internal evidence that this was the
+   fallback.
+2. Before a fetched engine is trusted, check that its repository is still
+   maintained. If it has been archived, say so in one line and leave that
+   check to the fallback.
+3. Order findings by what they cost the person, and show no more than the
+   read's cap. The quarterly visit's cap of three proposals holds across every
+   read that feeds it. Summarise the rest in one line.
+4. Nothing new is a complete answer. Say nothing, or one line if the person
+   asked for the read.
+5. No score, grade or percentage reaches the person, and no read introduces a
+   term they have to be taught.
 
 ## What a read may never claim
 
-A read says what it checked and what it found. It never says that the rest of
-the project is fine, because no tool checked the rest. Some questions are
-beyond every read here: whether a retry survives a real failure, whether two
-pieces of code written differently do the same job, and whether a described
-flow has quietly changed shape. Say so when the person asks about one of them.
-
-## Where it applies
-
-Always, for every read that looks across the whole project. A read about one
-change, such as the reach check or the structure comparison in
-`section-builder`, already follows its own reference and is not changed by this
-one.
+A read says what it checked and what it found. It never says the rest of the
+project is fine, because nothing checked the rest. Whether a retry survives a
+real failure, whether two pieces of code written differently do the same job,
+and whether a described flow has quietly changed shape are beyond every read
+here. Say so when the person asks.

@@ -22,6 +22,7 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 FLOOR="$ROOT/.agents/skills/setup-ai-build-kit/references/check-floor.md"
 TEMPLATE="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/checks.yml"
 SENSITIVE="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/check-sensitive-areas.sh"
+TRIM_CHECK="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/check-trim.sh"
 
 fail() {
   echo "FAIL: $1" >&2
@@ -58,6 +59,7 @@ fi
 # --- founding: the project and its wired check ------------------------------
 
 cp "$SENSITIVE" "$PROJECT/.agents/hooks/check-sensitive-areas.sh"
+cp "$TRIM_CHECK" "$PROJECT/.agents/hooks/check-trim.sh"
 
 # The edit founding makes: the placeholder step goes, and install, type check,
 # lint and test go in its place, each as its own named step.
@@ -156,6 +158,30 @@ first=$(run_check)
 [ "$first" = "Lint" ] || fail "expected the Lint step to go red, got '${first:-nothing}'"
 echo "  ok: the check goes red at Lint on an unused import"
 
+# A trim commit that changed a test turns the tick red at its own step. The
+# pull request's base is stood in for by a local origin/main.
+sed '1d' "$PROJECT/pricing.py" > "$WORK/unlinted"
+mv "$WORK/unlinted" "$PROJECT/pricing.py"
+in_project() {
+  (cd "$PROJECT" && git -c user.name=Rehearsal -c user.email=rehearsal@example.invalid \
+    -c commit.gpgsign=false "$@") > /dev/null
+}
+in_project init -q -b main
+printf '__pycache__/\n.mypy_cache/\n.ruff_cache/\n' > "$PROJECT/.gitignore"
+in_project add -A
+in_project commit -q -m "Start"
+in_project update-ref refs/remotes/origin/main HEAD
+first=$(run_check)
+[ -z "$first" ] || { cat "$WORK/last-output" >&2; fail "the check was red before the trim, at $first"; }
+sed 's/total(2, 3), 6/total(1, 6), 6/' "$PROJECT/test_pricing.py" > "$WORK/test"
+mv "$WORK/test" "$PROJECT/test_pricing.py"
+in_project commit -q -am "Trim: take out what the piece did not need"
+first=$(run_check)
+[ "$first" = "Check the trim left the tests alone" ] ||
+  fail "expected the trim step to go red on a trim that changed a test, got '${first:-nothing}'"
+grep -q 'test_pricing.py' "$WORK/last-output" || fail "the trim step did not name the test"
+echo "  ok: the check goes red at the trim step when a trim commit changed a test, naming it"
+
 # --- the same again for TypeScript -------------------------------------------
 #
 # The web app recipes build with Next.js in TypeScript, so the TypeScript row is
@@ -188,6 +214,7 @@ echo "  lint: $lint"
 PROJECT="$WORK/ts-project"
 mkdir -p "$PROJECT/.github/workflows" "$PROJECT/.agents/hooks" "$PROJECT/src"
 cp "$SENSITIVE" "$PROJECT/.agents/hooks/check-sensitive-areas.sh"
+cp "$TRIM_CHECK" "$PROJECT/.agents/hooks/check-trim.sh"
 
 awk -v tc="$type_check" -v li="$lint" '
   /- name: Install and test/ { skipping = 1 }

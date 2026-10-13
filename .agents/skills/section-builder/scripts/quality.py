@@ -1,0 +1,994 @@
+#!/usr/bin/env python3
+"""Run the code-quality engines on a project and print what they find.
+
+Run it from inside the project. Four reads:
+
+    quality.py trim --base COMMIT [--fetch]
+        What the change since COMMIT added that nothing needs.
+    quality.py waste [--since-visit] [--fetch]
+        Copied code, unused code and unused dependencies across the project.
+    quality.py loops (--base COMMIT | --since-visit) [--reader auto|builtin]
+        Import loops that were not there at COMMIT, or at the last full visit.
+    quality.py strength --base COMMIT [--fetch]
+        Break the code changed since COMMIT on purpose, in a throwaway copy,
+        and count how often the tests notice.
+
+Each finding is one line of fields separated by tabs. The first field says
+what kind of line it is, and a place is always FILE:LINE. A `not-checked`
+line names a check no engine could run, and why; the agent reads that part
+of the code directly instead. A `not-compared` line says the earlier state
+could not be read, so every finding is printed.
+
+Exit codes:
+
+    0  nothing found
+    1  findings printed
+    2  could not run at all: not a project under Git, a commit that does not
+       exist, or no engine for any check
+
+It writes nothing into the project. Engines are taken from the project's own
+`node_modules/.bin` or virtual environment, then from PATH. With --fetch, a
+missing JavaScript engine is fetched for this run with npx, and a missing
+Python engine with uvx or pipx, without adding it to the project.
+
+--since-visit reads `last-full-pass` from `.ai-build-kit-maintenance` and
+compares with the project as it was on that date, read again from Git
+history. Nothing is saved between runs.
+"""
+
+import argparse
+import ast
+import csv
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+
+LIMIT = 15  # lizard's documented warning for cyclomatic complexity
+JS_EXT = (".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs", ".mts", ".cts")
+SOURCE_EXT = JS_EXT + (".py",)
+SKIP_DIRS = {"node_modules", ".git", ".venv", "venv", "__pycache__", "dist",
+             "build", ".next", "coverage", "reports", "mutants"}
+LOCKFILES = {"package-lock.json", "pnpm-lock.yaml", "yarn.lock", "bun.lockb",
+             "bun.lock", "poetry.lock", "uv.lock", "Pipfile.lock"}
+TEST_PATH = re.compile(
+    r"(^|/)(tests?|__tests__|spec|testdata|__snapshots__|e2e|fixtures?)/"
+    r"|\.(test|spec)\.[^/]+$|(^|/)test_[^/]*\.py$|_test\.(py|go)$|(^|/)conftest\.py$")
+ENGINES = {
+    # name: (npm package, Python package)
+    "knip": ("knip@6", None),
+    "jscpd": ("jscpd@5", None),
+    "depcruise": ("dependency-cruiser@18", None),
+    "stryker": ("@stryker-mutator/core@9", None),
+    "lizard": (None, "lizard>=1.24,<2"),
+    "vulture": (None, "vulture"),
+    "deptry": (None, "deptry"),
+    "mutmut": (None, None),
+}
+
+
+def is_test(path):
+    return bool(TEST_PATH.search(path))
+
+
+# --- running things ------------------------------------------------------------
+
+def run(cmd, cwd=".", timeout=900, env=None):
+    try:
+        result = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True,
+                                timeout=timeout, env=env)
+    except (OSError, subprocess.TimeoutExpired) as error:
+        return 127, "", str(error)
+    return result.returncode, result.stdout, result.stderr
+
+
+def git(*args, cwd="."):
+    code, out, _ = run(["git", *args], cwd=cwd)
+    return out if code == 0 else None
+
+
+class Engines:
+    def __init__(self, root, fetch):
+        self.root, self.fetch, self.used = root, fetch, {}
+
+    def find(self, name):
+        if name in self.used:
+            return self.used[name]
+        found = None
+        for local in (os.path.join(self.root, "node_modules", ".bin", name),
+                      os.path.join(self.root, ".venv", "bin", name),
+                      os.path.join(self.root, "venv", "bin", name)):
+            if os.access(local, os.X_OK):
+                found = [local]
+                break
+        if not found and shutil.which(name):
+            found = [shutil.which(name)]
+        npm, py = ENGINES.get(name, (None, None))
+        if not found and self.fetch and npm and shutil.which("npx"):
+            found = ["npx", "--yes", f"--package={npm}", name]
+        if not found and self.fetch and py:
+            if shutil.which("uvx"):
+                found = ["uvx", "--from", py, name]
+            elif shutil.which("pipx"):
+                found = ["pipx", "run", "--spec", py, name]
+        self.used[name] = found
+        return found
+
+
+# --- the project ---------------------------------------------------------------
+
+def project_files(root):
+    out = git("ls-files", "-co", "--exclude-standard", cwd=root)
+    if out is None:
+        out = ""
+        for folder, dirs, files in os.walk(root):
+            dirs[:] = [d for d in dirs if d not in SKIP_DIRS and not d.startswith(".")]
+            for name in files:
+                out += os.path.relpath(os.path.join(folder, name), root) + "\n"
+    files = []
+    for path in out.splitlines():
+        parts = path.split("/")
+        if any(p in SKIP_DIRS for p in parts[:-1]):
+            continue
+        if os.path.isfile(os.path.join(root, path)):
+            files.append(path)
+    return sorted(set(files))
+
+
+def read(root, path):
+    try:
+        with open(os.path.join(root, path), encoding="utf-8") as handle:
+            return handle.read()
+    except (OSError, UnicodeDecodeError):
+        return ""
+
+
+def languages(root, files):
+    js = os.path.isfile(os.path.join(root, "package.json"))
+    py = any(f.endswith(".py") for f in files) or any(
+        os.path.isfile(os.path.join(root, n))
+        for n in ("pyproject.toml", "requirements.txt", "setup.py"))
+    return js, py
+
+
+def changed_lines(root, base):
+    """Lines the change since BASE added or changed, per file, untracked included."""
+    out = git("diff", "-U0", "--no-color", "--no-ext-diff", base, "--", ".", cwd=root)
+    if out is None:
+        return None
+    changed, current = {}, None
+    for line in out.splitlines():
+        if line.startswith("+++ "):
+            current = None if line == "+++ /dev/null" else line[6:]
+            if current:
+                changed.setdefault(current, set())
+        hunk = re.match(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@", line)
+        if hunk and current:
+            start = int(hunk.group(1))
+            count = 1 if hunk.group(2) is None else int(hunk.group(2))
+            changed[current].update(range(start, start + count))
+    untracked = git("ls-files", "-o", "--exclude-standard", cwd=root) or ""
+    for path in untracked.splitlines():
+        lines = read(root, path).count("\n") + 1
+        changed[path] = set(range(1, lines + 1))
+    return changed
+
+
+def uses_of(root, files, name, skip):
+    """Whole-name uses of NAME outside imports and the places SKIP excludes."""
+    needle = re.compile(r"(?<![\w$-])" + re.escape(name) + r"(?![\w$-])")
+    uses = []
+    for path in files:
+        if os.path.basename(path) in LOCKFILES:
+            continue
+        for number, text in enumerate(read(root, path).split("\n"), 1):
+            if skip(path, number):
+                continue
+            if re.match(r"^\s*(import|from)\b", text) and not path.endswith(".json"):
+                continue
+            if needle.search(text):
+                uses.append((path, number))
+    return uses
+
+
+def line_of(root, path, text):
+    for number, line in enumerate(read(root, path).split("\n"), 1):
+        if text in line:
+            return number
+    return 1
+
+
+def snapshot(root, commit, folder):
+    """The project as it was at COMMIT, in FOLDER, read from Git history only."""
+    if git("clone", "-q", "--shared", "--no-checkout", root, folder) is None:
+        return False
+    if git("checkout", "-q", "--detach", commit, cwd=folder) is None:
+        return False
+    modules = os.path.join(root, "node_modules")
+    if os.path.isdir(modules) and not os.path.exists(os.path.join(folder, "node_modules")):
+        os.symlink(modules, os.path.join(folder, "node_modules"))
+    return True
+
+
+def visit_commit(root, first_commit_if_none):
+    record = read(root, ".ai-build-kit-maintenance")
+    match = re.search(r"^last-full-pass:?\s*(\d{4}-\d{2}-\d{2})", record, re.M)
+    if match:
+        out = git("rev-list", "-1", f"--before={match.group(1)} 23:59:59", "HEAD", cwd=root)
+        return (out or "").strip() or None
+    if first_commit_if_none:
+        out = git("rev-list", "--max-parents=0", "HEAD", cwd=root)
+        return (out or "").split("\n")[0].strip() or None
+    return None
+
+
+# --- engines -------------------------------------------------------------------
+
+def knip(root, engines, notes, what):
+    cmd = engines.find("knip")
+    if not cmd:
+        notes.append(("not-checked", what, "knip is not installed"))
+        return None
+    code, out, err = run(cmd + ["--include", "files,exports,dependencies",
+                                "--reporter", "json", "--no-progress"], cwd=root)
+    try:
+        return json.loads(out[out.index("{"):])
+    except ValueError:
+        notes.append(("not-checked", what, "knip did not finish: " + (err.strip().split("\n") or [""])[-1][:120]))
+        return None
+
+
+def jscpd(root, engines, notes):
+    cmd = engines.find("jscpd")
+    if not cmd:
+        notes.append(("not-checked", "copies", "jscpd is not installed"))
+        return []
+    with tempfile.TemporaryDirectory() as report:
+        run(cmd + ["--ignore-identifiers", "--reporters", "json", "--output", report,
+                   "--silent", "--ignore",
+                   "**/node_modules/**,**/.git/**,**/.venv/**,**/venv/**", "."], cwd=root)
+        try:
+            with open(os.path.join(report, "jscpd-report.json")) as handle:
+                data = json.load(handle)
+        except (OSError, ValueError):
+            notes.append(("not-checked", "copies", "jscpd did not finish"))
+            return []
+    pairs = []
+    for clone in data.get("duplicates", []):
+        a, b = clone["firstFile"], clone["secondFile"]
+        name_a, name_b = os.path.relpath(os.path.join(root, a["name"]), root), os.path.relpath(os.path.join(root, b["name"]), root)
+        if is_test(name_a) and is_test(name_b):
+            continue
+        pairs.append(((name_a, a["start"], a["end"]), (name_b, b["start"], b["end"])))
+    return pairs
+
+
+def vulture(root, engines, notes, confidence):
+    cmd = engines.find("vulture")
+    if not cmd:
+        notes.append(("not-checked", "unused-code", "vulture is not installed"))
+        return []
+    code, out, err = run(cmd + ["--min-confidence", str(confidence), "--exclude",
+                                ".venv,venv,node_modules,mutants", "."], cwd=root)
+    if code not in (0, 1, 3):
+        notes.append(("not-checked", "unused-code", "vulture did not finish"))
+        return []
+    found = []
+    for line in out.splitlines():
+        m = re.match(r"^(?:\./)?(.+?):(\d+): (.+?) \((\d+)% confidence", line)
+        if not m:
+            continue
+        path, number, message = m.group(1), int(m.group(2)), m.group(3)
+        if message.startswith("unused import") or is_test(path):
+            continue
+        name = re.search(r"'([^']+)'", message)
+        found.append((path, number, name.group(1) if name else message, message))
+    return found
+
+
+def deptry(root, engines, notes):
+    if not any(os.path.isfile(os.path.join(root, n)) for n in ("pyproject.toml", "requirements.txt", "setup.py")):
+        return []
+    cmd = engines.find("deptry")
+    if not cmd:
+        notes.append(("not-checked", "unused-dependency", "deptry is not installed"))
+        return []
+    with tempfile.TemporaryDirectory() as folder:
+        report = os.path.join(folder, "deptry.json")
+        run(cmd + [".", "--json-output", report], cwd=root)
+        try:
+            with open(report) as handle:
+                data = json.load(handle)
+        except (OSError, ValueError):
+            notes.append(("not-checked", "unused-dependency", "deptry did not finish"))
+            return []
+    found = []
+    for item in data:
+        if item.get("error", {}).get("code") != "DEP002":
+            continue
+        manifest = (item.get("location") or {}).get("file") or "pyproject.toml"
+        manifest = os.path.relpath(os.path.join(root, manifest), root)
+        found.append((manifest, line_of(root, manifest, item["module"]), item["module"]))
+    return found
+
+
+def lizard(root, engines, notes, files, folder=None):
+    """Functions in FILES: {(file, name): (ccn, start, end)}. None when lizard is missing."""
+    cmd = engines.find("lizard")
+    if not cmd:
+        notes.append(("not-checked", "functions", "lizard is not installed"))
+        return None
+    if not files:
+        return {}
+    where = folder or root
+    code, out, _ = run(cmd + ["--csv", *files], cwd=where)
+    functions = {}
+    for cells in csv.reader(out.splitlines()):
+        if len(cells) < 11 or not cells[1].isdigit():
+            continue
+        path = os.path.relpath(os.path.join(where, cells[6]), where)
+        functions[(path, cells[7])] = (int(cells[1]), int(cells[9]), int(cells[10]))
+    return functions
+
+
+# --- trim and waste ------------------------------------------------------------
+
+def unused_findings(root, files, engines, notes, js, py, confidence):
+    """(kind, file, line, name, span) for unused code and dependencies."""
+    found = []
+    if js:
+        report = knip(root, engines, notes, "unused-code")
+        for issue in (report or {}).get("issues", []):
+            for item in issue.get("exports", []) + issue.get("types", []):
+                found.append(("unused-export", issue["file"], item.get("line", 1), item["name"]))
+            for item in issue.get("files", []):
+                path = item.get("name", issue["file"])
+                found.append(("unused-file", path, 1, os.path.splitext(os.path.basename(path))[0]))
+            for item in issue.get("dependencies", []):
+                found.append(("unused-dependency", issue["file"],
+                              line_of(root, issue["file"], f'"{item["name"]}"'), item["name"]))
+    if py:
+        for path, number, name, message in vulture(root, engines, notes, confidence):
+            if message.startswith("unreachable"):
+                found.append(("unreachable-code", path, number, "-"))
+            else:
+                found.append(("unused-code", path, number, name))
+        for manifest, number, name in deptry(root, engines, notes):
+            found.append(("unused-dependency", manifest, number, name))
+    return found
+
+
+def definition_span(root, path, line):
+    """The lines of the function or class starting at LINE, by indentation and braces."""
+    lines = read(root, path).split("\n")
+    if line < 1 or line > len(lines):
+        return (line, line)
+    if path.endswith(".py"):
+        indent = len(lines[line - 1]) - len(lines[line - 1].lstrip())
+        end = line
+        for number in range(line + 1, len(lines) + 1):
+            text = lines[number - 1]
+            if text.strip() and len(text) - len(text.lstrip()) <= indent:
+                break
+            if text.strip():
+                end = number
+        return (line, end)
+    depth, seen = 0, False
+    for number in range(line, len(lines) + 1):
+        depth += lines[number - 1].count("{") - lines[number - 1].count("}")
+        seen = seen or "{" in lines[number - 1]
+        if seen and depth <= 0:
+            return (line, number)
+        if not seen and lines[number - 1].rstrip().endswith(";"):
+            return (line, number)
+    return (line, line)
+
+
+def second_look(root, files, kind, path, line, name):
+    """True when the finding survives a search for its name outside its own definition."""
+    if kind == "unreachable-code":
+        return True
+    if kind == "unused-file":
+        return not uses_of(root, files, name, lambda p, n: p == path)
+    if kind == "unused-dependency":
+        return not uses_of(root, files, name, lambda p, n: p == path)
+    start, end = definition_span(root, path, line)
+    return not uses_of(root, files, name, lambda p, n: p == path and start <= n <= end)
+
+
+def imports_of(root, path):
+    """Package names a source file imports."""
+    text = read(root, path)
+    if path.endswith(".py"):
+        return {m.group(1).split(".")[0] for m in re.finditer(
+            r"^\s*(?:from|import)\s+([\w.]+)", text, re.M)}
+    names = set()
+    for m in re.finditer(r"""(?:\bfrom\s*|\brequire\(\s*|\bimport\(\s*|^\s*import\s+)['"]([^'"]+)['"]""", text, re.M):
+        spec = m.group(1)
+        if spec.startswith(".") or spec.startswith("/"):
+            continue
+        parts = spec.split("/")
+        names.add("/".join(parts[:2]) if spec.startswith("@") else parts[0])
+    return names
+
+
+def declared_dependencies(root, changed):
+    """(manifest, line, name) for each dependency on a line the change touched."""
+    found = []
+    if "package.json" in changed:
+        try:
+            data = json.loads(read(root, "package.json"))
+        except ValueError:
+            data = {}
+        for name in data.get("dependencies", {}):
+            number = line_of(root, "package.json", f'"{name}"')
+            if number in changed["package.json"]:
+                found.append(("package.json", number, name))
+    for manifest in ("pyproject.toml", "requirements.txt"):
+        for number, text in enumerate(read(root, manifest).split("\n"), 1):
+            if number not in changed.get(manifest, ()):
+                continue
+            m = re.match(r'^\s*"?([A-Za-z0-9][A-Za-z0-9._-]*)\s*(?:[<>=!~;\[" ]|$)', text)
+            if m and "=" not in text.split(m.group(1))[0] and not text.strip().startswith(("[", "#")):
+                if manifest == "pyproject.toml" and not text.strip().startswith('"'):
+                    continue
+                found.append((manifest, number, m.group(1)))
+    return found
+
+
+def trim(root, base, engines):
+    if git("rev-parse", "--verify", "-q", base + "^{commit}", cwd=root) is None:
+        print(f"not-checked\tall\t{base} is not a commit in this project")
+        return 2
+    changed = changed_lines(root, base)
+    files = project_files(root)
+    js, py = languages(root, files)
+    notes, out = [], []
+    hit = lambda path, line: line in changed.get(path, ())
+    span_hit = lambda path, a, b: any(n in changed.get(path, ()) for n in range(a, b + 1))
+
+    # Unused code, files and dependencies the change added, kept after a second look.
+    for kind, path, line, name in unused_findings(root, files, engines, notes, js, py, 60):
+        if is_test(path):
+            continue
+        if kind == "unused-file":
+            if path not in changed:
+                continue
+        elif not hit(path, line):
+            continue
+        if second_look(root, files, kind, path, line, name):
+            out.append(("remove", kind, f"{path}:{line}", name, "-"))
+
+    # Wrappers with one user, and functions past the limit.
+    sources = [f for f in files if f.endswith(SOURCE_EXT) and f in changed and not is_test(f)]
+    now = lizard(root, engines, notes, sources)
+    if now is not None:
+        tests = [f for f in files if is_test(f) and f.endswith(SOURCE_EXT)]
+        for (path, name), (ccn, start, end) in sorted(now.items()):
+            if not hit(path, start) or end <= start:
+                continue
+            body = [l.strip() for l in read(root, path).split("\n")[start:end if path.endswith(".py") else end - 1]]
+            body = [l for l in body if l and l not in ("{", "}", "};")]
+            if len(body) != 1 or not re.match(r"return .*[\w$]\(", body[0]):
+                continue
+            short = name.split("::")[-1].split(".")[-1]
+            users = uses_of(root, files, short, lambda p, n: p == path and start <= n <= end)
+            if len(users) != 1 or is_test(users[0][0]):
+                continue
+            user_file, user_line = users[0]
+            stem = os.path.splitext(os.path.basename(user_file))[0]
+            tested = any(re.search(r"^\s*(import|from)\b.*\b" + re.escape(stem) + r"\b|require\(.*\b"
+                                   + re.escape(stem) + r"\b", read(root, t), re.M) for t in tests)
+            out.append(("fold" if tested else "report", "one-user" if tested else "untested-one-user",
+                        f"{path}:{start}", short, f"{user_file}:{user_line}"))
+
+        before = {}
+        with tempfile.TemporaryDirectory() as old:
+            for path in sources:
+                code, text, _ = run(["git", "show", f"{base}:{path}"], cwd=root)
+                if code != 0:
+                    continue
+                os.makedirs(os.path.dirname(os.path.join(old, path)) or old, exist_ok=True)
+                with open(os.path.join(old, path), "w", encoding="utf-8") as handle:
+                    handle.write(text)
+            before = lizard(old, engines, [], [p for p in sources if os.path.exists(os.path.join(old, p))], old) or {}
+        for (path, name), (ccn, start, end) in sorted(now.items()):
+            if ccn <= LIMIT or not span_hit(path, start, end):
+                continue
+            earlier = before.get((path, name))
+            if earlier and ccn <= earlier[0]:
+                continue
+            out.append(("report", "over-limit", f"{path}:{start}", name.split("::")[-1],
+                        "raised" if earlier else "new"))
+
+    # A dependency the change added for a single use.
+    for manifest, line, name in declared_dependencies(root, changed):
+        module = name.lower().replace("-", "_") if manifest != "package.json" else name
+        users = [f for f in files if f.endswith(SOURCE_EXT) and not is_test(f) and module in imports_of(root, f)]
+        if len(users) == 1 and not any(o[3] == name and o[1] == "unused-dependency" for o in out):
+            out.append(("report", "one-use-dependency", f"{manifest}:{line}", name, users[0]))
+
+    # A block the change added that copies code already in the project.
+    pairs = jscpd(root, engines, notes)
+    for first, second in pairs:
+        for mine, theirs in ((first, second), (second, first)):
+            if span_hit(mine[0], mine[1], mine[2]) and not is_test(mine[0]):
+                out.append(("report", "copy", f"{mine[0]}:{mine[1]}", "-", f"{theirs[0]}:{theirs[1]}"))
+                break
+
+    for note in notes:
+        print("\t".join(note))
+    seen = set()
+    for row in out:
+        if row not in seen:
+            seen.add(row)
+            print("\t".join(row))
+    if not out and couldnt_run(notes, js, py):
+        return 2
+    return 1 if out else 0
+
+
+def couldnt_run(notes, js, py):
+    """True when no engine ran for any check that applies."""
+    missed = {n[1] for n in notes if n[0] == "not-checked"}
+    wanted = {"copies"} | ({"unused-code"} if js or py else set())
+    return wanted <= missed
+
+
+def waste_rows(root, engines, notes):
+    files = project_files(root)
+    js, py = languages(root, files)
+    rows = []
+    for kind, path, line, name in unused_findings(root, files, engines, notes, js, py, 100):
+        if is_test(path):
+            continue
+        if second_look(root, files, kind, path, line, name):
+            rows.append((kind, f"{path}:{line}", name))
+    for first, second in jscpd(root, engines, notes):
+        a, b = sorted([first, second])
+        rows.append(("copy", f"{a[0]}:{a[1]}", f"{b[0]}:{b[1]}"))
+    return rows
+
+
+def waste_key(row):
+    if row[0] == "copy":
+        return ("copy", row[1].rsplit(":", 1)[0], row[2].rsplit(":", 1)[0])
+    return (row[0], row[1].rsplit(":", 1)[0], row[2])
+
+
+def waste(root, engines, since_visit):
+    notes = []
+    rows = waste_rows(root, engines, notes)
+    if since_visit:
+        commit = visit_commit(root, False)
+        if commit:
+            with tempfile.TemporaryDirectory() as folder:
+                earlier = os.path.join(folder, "earlier")
+                if snapshot(root, commit, earlier):
+                    known = {waste_key(r) for r in waste_rows(earlier, engines, [])}
+                    rows = [r for r in rows if waste_key(r) not in known]
+                else:
+                    notes.append(("not-compared", "the project at the last visit could not be read"))
+    for note in notes:
+        print("\t".join(note))
+    for row in rows:
+        print("\t".join(row))
+    files = project_files(root)
+    if not rows and couldnt_run(notes, *languages(root, files)):
+        return 2
+    return 1 if rows else 0
+
+
+# --- loops ---------------------------------------------------------------------
+
+def jsonc(text):
+    """JSON with comments and trailing commas, as tsconfig allows."""
+    out, i, in_string = [], 0, False
+    while i < len(text):
+        c = text[i]
+        if in_string:
+            out.append(c)
+            if c == "\\":
+                out.append(text[i + 1:i + 2])
+                i += 1
+            elif c == '"':
+                in_string = False
+        elif c == '"':
+            in_string = True
+            out.append(c)
+        elif text.startswith("//", i):
+            i = text.find("\n", i)
+            if i < 0:
+                break
+            continue
+        elif text.startswith("/*", i):
+            i = text.find("*/", i) + 2
+            if i < 2:
+                break
+            continue
+        else:
+            out.append(c)
+        i += 1
+    return json.loads(re.sub(r",(\s*[}\]])", r"\1", "".join(out)))
+
+
+def aliases(root):
+    for name in ("tsconfig.json", "jsconfig.json"):
+        try:
+            options = jsonc(read(root, name)).get("compilerOptions", {})
+        except ValueError:
+            continue
+        base = options.get("baseUrl", ".")
+        return [(k.rstrip("*"), [os.path.normpath(os.path.join(base, t.rstrip("*"))) for t in v])
+                for k, v in options.get("paths", {}).items()]
+    return []
+
+
+def resolve_js(root, known, path, spec, alias):
+    if spec.startswith("."):
+        targets = [os.path.normpath(os.path.join(os.path.dirname(path), spec))]
+    else:
+        targets = [os.path.normpath(os.path.join(t, spec[len(k):])) for k, ts in alias
+                   if spec.startswith(k) for t in ts]
+    for target in targets:
+        stem = re.sub(r"\.(m|c)?js$", "", target)
+        for candidate in [target] + [stem + e for e in JS_EXT] + [os.path.join(target, "index" + e) for e in JS_EXT]:
+            if candidate in known:
+                return candidate
+    return None
+
+
+def resolve_py(known, path, dots, module, names):
+    if dots:
+        folder = os.path.dirname(path)
+        for _ in range(len(dots) - 1):
+            folder = os.path.dirname(folder)
+        bases = [os.path.join(folder, *module.split(".")) if module else folder]
+    else:
+        bases = [os.path.join(*module.split(".")), os.path.join("src", *module.split("."))]
+    found = []
+    for base in bases:
+        base = os.path.normpath(base)
+        for candidate in (base + ".py", os.path.join(base, "__init__.py")):
+            if candidate in known:
+                found.append(candidate)
+        for name in names:
+            candidate = os.path.normpath(os.path.join(base, name + ".py"))
+            if candidate in known:
+                found.append(candidate)
+    return found
+
+
+def builtin_graph(root):
+    files = [f for f in project_files(root) if f.endswith(SOURCE_EXT)]
+    known, alias = set(files), aliases(root)
+    edges = {}
+    for path in files:
+        for number, text in enumerate(read(root, path).split("\n"), 1):
+            targets = []
+            if path.endswith(".py"):
+                m = re.match(r"^\s*from\s+(\.*)([\w.]*)\s+import\s+(.+)", text)
+                if m:
+                    names = [n.strip().split(" ")[0] for n in m.group(3).strip("()").split(",")]
+                    targets = resolve_py(known, path, m.group(1), m.group(2), names)
+                else:
+                    m = re.match(r"^\s*import\s+([\w., ]+)", text)
+                    if m:
+                        for module in m.group(1).split(","):
+                            targets += resolve_py(known, path, "", module.strip().split(" ")[0], [])
+            else:
+                for m in re.finditer(r"""(?:\bfrom\s*|^\s*import\s*|\brequire\(\s*|\bimport\(\s*)['"]([^'"]+)['"]""", text):
+                    target = resolve_js(root, known, path, m.group(1), alias)
+                    if target:
+                        targets.append(target)
+            for target in targets:
+                if target != path:
+                    edges.setdefault(path, {}).setdefault(target, number)
+    return edges
+
+
+def depcruise_graph(root, cmd):
+    folders = sorted({f.split("/")[0] for f in project_files(root)
+                      if f.endswith(JS_EXT) and "/" in f}) or ["."]
+    code, out, _ = run(cmd + ["--no-config", "--output-type", "json", *folders], cwd=root)
+    try:
+        modules = json.loads(out)["modules"]
+    except (ValueError, KeyError):
+        return None
+    line_map = builtin_graph(root)
+    edges = {}
+    for module in modules:
+        for dep in module.get("dependencies", []):
+            if dep.get("coreModule") or "node_modules" in dep.get("resolved", "") or not dep.get("resolved"):
+                continue
+            source, target = module["source"], dep["resolved"]
+            if source == target:
+                continue
+            number = line_map.get(source, {}).get(target) or line_of(
+                root, source, os.path.splitext(os.path.basename(target))[0])
+            edges.setdefault(source, {}).setdefault(target, number)
+    return edges
+
+
+def strongly_connected(edges):
+    index, low, stack, on, out, counter = {}, {}, [], set(), [], [0]
+    nodes = sorted(set(edges) | {t for ts in edges.values() for t in ts})
+    for start in nodes:
+        if start in index:
+            continue
+        work = [(start, iter(sorted(edges.get(start, {}))))]
+        index[start] = low[start] = counter[0]
+        counter[0] += 1
+        stack.append(start)
+        on.add(start)
+        while work:
+            node, children = work[-1]
+            advanced = False
+            for child in children:
+                if child not in index:
+                    index[child] = low[child] = counter[0]
+                    counter[0] += 1
+                    stack.append(child)
+                    on.add(child)
+                    work.append((child, iter(sorted(edges.get(child, {})))))
+                    advanced = True
+                    break
+                if child in on:
+                    low[node] = min(low[node], index[child])
+            if advanced:
+                continue
+            work.pop()
+            if work:
+                low[work[-1][0]] = min(low[work[-1][0]], low[node])
+            if low[node] == index[node]:
+                group = []
+                while True:
+                    member = stack.pop()
+                    on.discard(member)
+                    group.append(member)
+                    if member == node:
+                        break
+                if len(group) > 1:
+                    out.append(tuple(sorted(group)))
+    return out
+
+
+def loops(root, base, since_visit, reader, engines):
+    if since_visit:
+        base = visit_commit(root, True)
+        if not base:
+            print("not-compared\tthe project has no saved history to compare with")
+            return 2
+    if git("rev-parse", "--verify", "-q", base + "^{commit}", cwd=root) is None:
+        print(f"not-compared\t{base} is not a commit in this project")
+        return 2
+    cmd = engines.find("depcruise") if reader == "auto" and os.path.isfile(os.path.join(root, "package.json")) else None
+
+    def graph(folder):
+        if cmd:
+            found = depcruise_graph(folder, cmd)
+            if found is not None:
+                return found
+        return builtin_graph(folder)
+
+    print("reader: " + ("dependency-cruiser" if cmd else "the script's own import reader"), file=sys.stderr)
+    now = graph(root)
+    with tempfile.TemporaryDirectory() as folder:
+        earlier = os.path.join(folder, "earlier")
+        if not snapshot(root, base, earlier):
+            print("not-compared\tthe project at the earlier commit could not be read")
+            return 2
+        known = set(strongly_connected(graph(earlier)))
+    found = 0
+    for group in strongly_connected(now):
+        if group in known:
+            continue
+        members = set(group)
+        steps = []
+        for member in group:
+            target = sorted(t for t in now.get(member, {}) if t in members)[0]
+            steps.append(f"{member}:{now[member][target]} imports {target}")
+        print("loop\t" + "\t".join(steps))
+        found += 1
+    return 1 if found else 0
+
+
+# --- strength ------------------------------------------------------------------
+
+def ranges(lines):
+    out, start, last = [], None, None
+    for n in sorted(lines):
+        if start is None:
+            start = last = n
+        elif n == last + 1:
+            last = n
+        else:
+            out.append((start, last))
+            start = last = n
+    if start is not None:
+        out.append((start, last))
+    return out
+
+
+def throwaway_copy(root, folder):
+    def ignore(directory, names):
+        return [n for n in names if n in (".git", "node_modules", "reports", ".stryker-tmp", "mutants")]
+    shutil.copytree(root, folder, ignore=ignore, symlinks=True)
+    if os.path.isdir(os.path.join(root, "node_modules")):
+        os.symlink(os.path.join(root, "node_modules"), os.path.join(folder, "node_modules"))
+
+
+def strength_js(root, changed, engines):
+    cmd = engines.find("stryker")
+    if not cmd:
+        return None, "StrykerJS is not installed"
+    try:
+        scripts = json.loads(read(root, "package.json")).get("scripts", {})
+    except ValueError:
+        scripts = {}
+    if "test" not in scripts:
+        return None, "the project has no test command"
+    targets = [f"{p}:{a}-{b}" for p, lines in sorted(changed.items())
+               if p.endswith(JS_EXT) and not is_test(p) for a, b in ranges(lines)]
+    if not targets:
+        return [], None
+    with tempfile.TemporaryDirectory() as folder:
+        copy = os.path.join(folder, "copy")
+        throwaway_copy(root, copy)
+        code, out, err = run(cmd + ["run", "--mutate", ",".join(targets), "--testRunner", "command",
+                                    "--reporters", "json", "--concurrency", "2",
+                                    "--logLevel", "error", "--fileLogLevel", "off"], cwd=copy, timeout=3600)
+        try:
+            with open(os.path.join(copy, "reports", "mutation", "mutation.json")) as handle:
+                report = json.load(handle)
+        except (OSError, ValueError):
+            return None, "StrykerJS did not finish: " + (err.strip().split("\n") or [""])[-1][:120]
+    results = []
+    for path, data in report.get("files", {}).items():
+        rel = os.path.relpath(os.path.join(copy, path), copy) if os.path.isabs(path) else path
+        for mutant in data.get("mutants", []):
+            line = mutant["location"]["start"]["line"]
+            results.append((mutant["status"], rel, line,
+                            f'{mutant.get("mutatorName", "")}: {mutant.get("replacement", "")}'.strip()))
+    status = {"Killed": "caught", "Survived": "missed", "NoCoverage": "missed"}
+    return [(status.get(s, "unchecked:" + s), p, l, d) for s, p, l, d in results], None
+
+
+def python_functions(root, path):
+    try:
+        tree = ast.parse(read(root, path))
+    except SyntaxError:
+        return []
+    out = []
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            out.append((node.name, node.lineno, getattr(node, "end_lineno", node.lineno)))
+    return out
+
+
+def strength_py(root, changed, engines):
+    cmd = engines.find("mutmut")
+    if not cmd:
+        return None, "mutmut is not installed in the project's environment"
+    targets = [p for p in sorted(changed) if p.endswith(".py") and not is_test(p)]
+    if not targets:
+        return [], None
+    wanted = {}
+    for path in targets:
+        for name, start, end in python_functions(root, path):
+            if any(n in changed[path] for n in range(start, end + 1)):
+                module = os.path.splitext(path)[0].replace("/", ".")
+                module = module[4:] if module.startswith("src.") else module
+                wanted[f"{module}.x_{name}"] = (path, start)
+    if not wanted:
+        return [], None
+    with tempfile.TemporaryDirectory() as folder:
+        copy = os.path.join(folder, "copy")
+        throwaway_copy(root, copy)
+        config = os.path.join(copy, "pyproject.toml")
+        text = read(copy, "pyproject.toml")
+        text = re.sub(r"(?ms)^\[tool\.mutmut\].*?(?=^\[|\Z)", "", text)
+        folders = sorted({p.split("/")[0] if "/" in p else p for p in targets})
+        with open(config, "w", encoding="utf-8") as handle:
+            handle.write(text + "\n[tool.mutmut]\nsource_paths = " + json.dumps(folders) + "\n")
+        run(cmd + ["run", *[name + "__mutmut_*" for name in sorted(wanted)]], cwd=copy, timeout=3600)
+        code, out, err = run(cmd + ["results", "--all", "true"], cwd=copy)
+        if code != 0:
+            return None, "mutmut did not finish"
+        results = []
+        for line in out.splitlines():
+            m = re.match(r"^\s*([\w.]+)__mutmut_\d+: (.+)$", line)
+            if not m or m.group(1) not in wanted:
+                continue
+            path, start = wanted[m.group(1)]
+            name = line.strip().split(":")[0]
+            _, shown, _ = run(cmd + ["show", name], cwd=copy)
+            where, detail = start, ""
+            hunk = re.search(r"^@@ -\d+(?:,\d+)? \+(\d+)", shown, re.M)
+            body = shown[hunk.end():].split("\n")[1:] if hunk else []
+            offset = 0
+            for row in body:
+                if row.startswith("+"):
+                    detail = row[1:].strip()
+                    break
+                if not row.startswith("-"):
+                    offset += 1
+            if hunk:
+                where = start + offset
+            status = {"killed": "caught", "survived": "missed", "no tests": "missed"}.get(m.group(2).strip())
+            results.append((status or "unchecked:" + m.group(2).strip(), path, where, detail))
+    return results, None
+
+
+def strength(root, base, engines):
+    if git("rev-parse", "--verify", "-q", base + "^{commit}", cwd=root) is None:
+        print(f"not-checked\tstrength\t{base} is not a commit in this project")
+        return 2
+    changed = {p: l for p, l in changed_lines(root, base).items() if os.path.isfile(os.path.join(root, p))}
+    files = project_files(root)
+    js, py = languages(root, files)
+    results, reasons = [], []
+    for wanted, runner in ((js, strength_js), (py, strength_py)):
+        if not wanted:
+            continue
+        found, reason = runner(root, changed, engines)
+        if reason:
+            reasons.append(reason)
+        else:
+            results += found
+    for reason in reasons:
+        print(f"not-checked\tstrength\t{reason}")
+    if not results and reasons:
+        return 2
+    caught = sum(1 for r in results if r[0] == "caught")
+    missed = [r for r in results if r[0] == "missed"]
+    print(f"tried\t{caught + len(missed)}")
+    print(f"caught\t{caught}")
+    for status, path, line, detail in sorted(missed, key=lambda r: (r[1], r[2])):
+        print(f"missed\t{path}:{line}\t{detail}")
+    for status, path, line, detail in sorted((r for r in results if r[0].startswith("unchecked")),
+                                             key=lambda r: (r[1], r[2])):
+        print(f"unchecked\t{path}:{line}\t{status.split(':', 1)[1]}")
+    return 1 if missed else 0
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    sub = parser.add_subparsers(dest="read", required=True)
+    for name in ("trim", "strength"):
+        p = sub.add_parser(name)
+        p.add_argument("--base", required=True)
+        p.add_argument("--fetch", action="store_true")
+    p = sub.add_parser("waste")
+    p.add_argument("--since-visit", action="store_true")
+    p.add_argument("--fetch", action="store_true")
+    p = sub.add_parser("loops")
+    group = p.add_mutually_exclusive_group(required=True)
+    group.add_argument("--base")
+    group.add_argument("--since-visit", action="store_true")
+    p.add_argument("--reader", choices=("auto", "builtin"), default="auto")
+    try:
+        args = parser.parse_args()
+    except SystemExit:
+        return 2
+    top = git("rev-parse", "--show-toplevel")
+    if top is None:
+        print("not-checked\tall\tthis folder is not a project under Git")
+        return 2
+    root = top.strip()
+    os.chdir(root)
+    engines = Engines(root, getattr(args, "fetch", False))
+    if args.read == "trim":
+        return trim(root, args.base, engines)
+    if args.read == "waste":
+        return waste(root, engines, args.since_visit)
+    if args.read == "loops":
+        return loops(root, args.base, args.since_visit, args.reader, engines)
+    return strength(root, args.base, engines)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -1,58 +1,42 @@
 # Check whether the tests notice
 
-This check is offered only on Build with care, and only where a local runner
-exists for the project's language. Say: "I can break the changed code on
-purpose to check the tests notice." It is optional evidence. A declined or
-unavailable check does not hold up the piece, and no result from it becomes
-an automatic gate. Existing required checks and sensitive-area cautions still
+On Build with care only, once the ordinary tests pass, offer: "I can break
+the changed code on purpose to check the tests notice." It is optional
+evidence. A no, or a check that cannot run, holds up nothing, and no result
+from it becomes a gate. Required checks and sensitive-area cautions still
 apply.
 
-After the ordinary tests pass, run the check only if the person accepts the
-offer. Limit the deliberate breakages to code changed by this piece. In a
-repair, use the regression test against the repaired code. Run locally in a
-disposable copy, with no hosted service and no real records or live actions.
-Never run it across the whole project or leave deliberately broken code in
-the working tree.
+## Run the script
 
-## Under the hood
+On a yes, run `python3` with this skill's `scripts/quality.py` from the
+project, passing `strength --base <commit the piece started from>`. It breaks
+only the lines
+this piece changed, in a throwaway copy, and leaves the project as it was. In
+a repair, the regression test is among the tests it runs.
 
-Mutation testing means changing code deliberately and checking whether tests
-fail. Use StrykerJS in incremental mode for JavaScript or TypeScript, with
-`--mutate` restricted to the changed files or lines. Incremental mode alone
-does not set that scope: its report can retain older results for other code.
-For Python, use mutmut with targets restricted to the changed functions and
-the relevant tests selected. Read the installed runner's guidance before
-choosing its options. Where no suitable runner exists, leave this evidence
-out rather than inventing a runner or requiring a service.
+Exit 2 means it could not run, and its `not-checked` line says why. Leave
+this evidence out and say in one line that it was not checked. Never invent a
+runner or use a hosted service.
 
-Take counts only from valid breakages in this run's changed scope. Count a
-breakage as caught only when a test fails because of it. List crashes,
-timeouts and invalid changes separately as unchecked; do not count them as
-caught. If the run cannot complete, say what was left unchecked rather than
-presenting a complete result. Keep runner names and the word "mutation" out
-of the person's report.
+Exit 0 or 1 means it ran. It prints `tried` and `caught` counts, then a
+`missed` line for each breakage the tests let through, at its file and line,
+and an `unchecked` line for any that crashed or timed out. Those are not
+counted as caught.
 
-## What the person sees
+## What the person hears
 
-Use this fixed one-line shape, replacing the counts with the observed results:
+One line, with the counts it printed: "The tests were checked by breaking the
+code on purpose <tried> times. They caught <caught>. The <missed> they missed
+are listed on the piece." Use the singular for one miss, and end with "They
+missed none." when there are none. Keep the engine's name and the word
+"mutation" out of it.
 
-"The tests were checked by breaking the code on purpose <tried> times. They
-caught <caught>. The <missed> they missed are listed on the piece."
+On the piece, describe each miss in plain words: what changed, what the tests
+let through, and which promised behaviour that could affect. Compare its place
+with the masterplan's sensitive-area map. A miss inside a named area goes under
+"Worth stopping for", with the area named; any other miss goes under "Worth
+knowing". The person decides whether a miss matters; record that on the piece.
 
-Use the right singular form for one miss. With no misses, end with "They
-missed none." For example: "The tests were checked by breaking the code on
-purpose 40 times. They caught 37. The three they missed are listed on the piece."
-
-List each miss on the piece in plain words: what changed, what the tests let
-through, and which promised behaviour that could affect. Compare its location
-with the masterplan's sensitive-area map. A miss inside a named sensitive area
-goes under "Worth stopping for", with the area named; a miss elsewhere goes
-under "Worth knowing". Explain a change with no observable effect as such.
-The person decides whether a miss matters and whether to strengthen the
-evidence before saving; record that choice on the piece.
-
-Never write a test only to raise the count. Add or improve a test only when
-it protects promised behaviour, and show that it catches the relevant
-breakage. A higher count does not prove the software is correct. After the
-check, confirm the working code is intact and rerun the ordinary tests before
-saving.
+Add or improve a test only when it protects promised behaviour, and show that
+it now catches the breakage. Never write one to raise the count. A higher
+count does not prove the software correct.

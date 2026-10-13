@@ -212,11 +212,9 @@ Do not sign in again or retry the failed command in this session.
 14. Unless the project explores privately, run "Offering a move onto a
     recipe" below. When no recipe on the menu is close to the project's stack,
     it says nothing.
-15. On every build path, load `references/stale-branches.md` and list the
-    branches whose work is already in the default branch, each with the
-    command that removes it. List this computer and GitHub separately. Keep
-    the ones Git confirms apart from the ones only GitHub records as merged.
-    Never remove a branch. When no branch qualifies, say nothing.
+15. On every build path, load `references/stale-branches.md` and run its
+    script, which lists the branches whose work is already in the default
+    branch, each with the command that removes it. Never remove a branch.
 16. Record the visit. In `.ai-build-kit-maintenance` at the project root, put
     today's date on the `last-light-pass` line, written as YYYY-MM-DD. If that
     file is missing, create it with a `founded` line holding the date
@@ -373,12 +371,10 @@ The monthly part as well, plus:
    each change touched in each area. Use that count to name the widest-spreading
    areas rather than judging them from memory. This is a comparison, not a
    health score.
-   On Build and run it and Build with care, load `references/waste-read.md`
-   and gather copied code, unused code and unused dependencies before
-   proposing anything. Load `references/structure-read.md` too, and compare
-   the structure with the last full visit. Then load
-   `references/document-bloat.md` and look for documents that repeat each
-   other or are no longer needed.
+   On Build and run it and Build with care, before proposing anything, load
+   `references/waste-read.md`, `references/structure-read.md` and
+   `references/document-bloat.md`, and run their scripts. Each prints only
+   what is new since the last full visit.
    Propose no more than three simplifications; for each, state the repeated
    problem, the plain-language change, what becomes easier to verify or
    recover, the cost, and whether a person outside the team has to look.

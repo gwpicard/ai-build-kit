@@ -71,9 +71,11 @@ save "A tidy project"
 
 # --- a clean project --------------------------------------------------------
 
-out=$(python3 "$SCRIPT")
+status=0
+out=$(python3 "$SCRIPT") || status=$?
 [ -z "$out" ] || fail "a tidy project should produce nothing, got: $out"
-echo "  ok: a tidy project produces nothing"
+[ "$status" = 0 ] || fail "a tidy project should exit 0, got $status"
+echo "  ok: a tidy project produces nothing and exits 0"
 echo "  ok: a README nothing links to is left alone"
 echo "  ok: the records and the kit's own files are not read, though they repeat and are unnamed"
 [ -z "$(git status --porcelain)" ] || fail "the script wrote into the project"
@@ -87,8 +89,10 @@ printf '# Legacy\n\nStart with `src/old.js`, then `src/older.js`, and run `npm r
 printf '# Scratch\n\nSome notes nobody links to.\n' > docs/scratch.md
 save "The documents grow"
 
-out=$(python3 "$SCRIPT")
+status=0
+out=$(python3 "$SCRIPT") || status=$?
 printf '%s\n' "$out" | sed 's/^/    /'
+[ "$status" = 1 ] || fail "findings should exit 1, got $status"
 
 has() {
   printf '%s\n' "$out" | grep -qF "$(printf '%s' "$1")" || fail "$2"
@@ -112,6 +116,25 @@ printf '%s\n' "$out" | grep -qE '[0-9]+ *%|score|grade' && fail "a score reached
 echo "  ok: no score, grade or percentage"
 [ -z "$(git status --porcelain)" ] || fail "the script wrote into the project"
 echo "  ok: the script still writes nothing"
+
+# --- only what is new since the last full visit ---------------------------------
+
+printf 'last-full-pass: %s\n' "$(date +%Y-%m-%d)" > .ai-build-kit-maintenance
+save "Record the visit"
+status=0
+out=$(python3 "$SCRIPT" --since-visit) || status=$?
+[ -z "$out" ] && [ "$status" = 0 ] || fail "findings from before the visit were offered again ($status): $out"
+echo "  ok: what was there at the last full visit is not offered again"
+printf '# Old plan\n\nNobody links to this either.\n' > docs/old-plan.md
+git add -A
+GIT_COMMITTER_DATE=2099-01-01T10:00:00 GIT_AUTHOR_DATE=2099-01-01T10:00:00 \
+  git -c user.name=Rehearsal -c user.email=rehearsal@example.invalid commit -q -m "A new note after the visit"
+status=0
+out=$(python3 "$SCRIPT" --since-visit) || status=$?
+[ "$status" = 1 ] && [ "$out" = "$(printf 'unreferenced\tdocs/old-plan.md')" ] ||
+  fail "expected only the note added since the visit ($status): $out"
+[ -z "$(git status --porcelain)" ] || fail "reading the earlier state wrote into the project"
+echo "  ok: only what is new since the last full visit is printed, read from history"
 
 echo
 echo "document-bloat-rehearsal.sh: each kind of bloat found, everything else left alone"
