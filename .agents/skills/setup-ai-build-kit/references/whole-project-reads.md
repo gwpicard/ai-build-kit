@@ -12,21 +12,24 @@ something of them, and never needs to read one to keep the tool working.
 | Type check and lint | Project check on every pull request, and before hand-over | `check-floor.md` |
 | Sensitive-area map and boundary rules | Project check on every pull request | `check-sensitive-areas.sh`, `boundary-rules.md` |
 | Trim | Every build, before the person tries it | the `section-builder` skill's `references/trim.md` |
-| A trim left the tests alone | Every trim commit, and the project check on every pull request | `trim-commit.sh`, `check-trim.sh` |
+| A trim left the tests alone | Every trim commit, and the project check on every pull request | `trim-commit.sh`, `check-trim.sh`; `place-trim-check.py` brings the step to an older project |
 | Structure, one change | Every build, before the save | `quality.py loops --base` |
 | Tests notice a breakage | Offered on a Build with care build; too slow for the project check | the `section-builder` skill's `references/test-strength.md` |
 | Stale document names | Every `/maintain` visit | the `maintain` skill's `references/document-read.md` |
 | Old branches | Monthly visit | the `maintain` skill's `references/stale-branches.md` |
 | Waste, structure, document bloat | Quarterly visit | the `maintain` skill's `references/waste-read.md`, `structure-read.md`, `document-bloat.md` |
 
-Where a check reads an earlier state, the script derives it again from Git
-history at the recorded date. Nothing is saved between runs.
+A build's structure check compares with the commit the piece started from,
+read again from Git history. A visit's reads leave out what an earlier visit
+offered, which `.ai-build-kit-maintenance` records, finding by finding. A
+finding that never reached the person comes back.
 
 ## Acting on findings
 
-1. Exit 2 means the script could not run. Read that part of the code directly
-   for the same question, and say in the internal evidence that this was the
-   fallback.
+1. Exit 2 means some part of the read could not run, and a `not-checked` line
+   names each one. Act on any findings it printed. Then read the code directly
+   for each part it names. That reading is the last resort, so say in the
+   internal evidence that it was the fallback, and for which part.
 2. Before a fetched engine is trusted, check that its repository is still
    maintained. If it has been archived, say so in one line and leave that
    check to the fallback.

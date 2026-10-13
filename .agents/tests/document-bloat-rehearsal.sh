@@ -8,7 +8,8 @@
 # records and the kit's own files, a short sentence two documents share, and a
 # page naming files the project no longer has, which the document read in
 # every /maintain visit reports one name at a time. A clean project produces nothing, and the
-# script writes nothing.
+# script writes nothing. A visit that offers one of the two findings records
+# that one, and the next visit leaves it out and brings back the other.
 #
 # Leaving those alone is the half that matters. A tidy-up offered for a note
 # somebody wanted, or for a sentence that belongs in both places, teaches the
@@ -117,24 +118,33 @@ echo "  ok: no score, grade or percentage"
 [ -z "$(git status --porcelain)" ] || fail "the script wrote into the project"
 echo "  ok: the script still writes nothing"
 
-# --- only what is new since the last full visit ---------------------------------
+# --- only what no visit has offered -------------------------------------------
 
+# The visit has room for one of the two, offers the unused note, and records
+# that offer alone. The repeated paragraph never reached the person.
 printf 'last-full-pass: %s\n' "$(date +%Y-%m-%d)" > .ai-build-kit-maintenance
+printf 'unreferenced\tdocs/scratch.md\n' | python3 "$SCRIPT" --record-offered > "$WORK/recorded" ||
+  fail "recording what was offered failed"
+[ "$(cat "$WORK/recorded")" = "$(printf 'recorded\t1')" ] || fail "expected one offer recorded, got: $(cat "$WORK/recorded")"
+grep -qx 'offered|document-bloat|[0-9-]*|unreferenced|docs/scratch.md' .ai-build-kit-maintenance ||
+  fail "the offer was not recorded"
+grep -q '^last-full-pass: ' .ai-build-kit-maintenance || fail "recording the offer lost the record's other lines"
 save "Record the visit"
-status=0
-out=$(python3 "$SCRIPT" --since-visit) || status=$?
-[ -z "$out" ] && [ "$status" = 0 ] || fail "findings from before the visit were offered again ($status): $out"
-echo "  ok: what was there at the last full visit is not offered again"
+
+# The repeated paragraph moves down a line in both documents.
+for doc in README.md docs/release.md; do
+  { head -1 "$doc"; printf '\nA new opening line.\n'; tail -n +2 "$doc"; } > "$WORK/moved"
+  mv "$WORK/moved" "$doc"
+done
 printf '# Old plan\n\nNobody links to this either.\n' > docs/old-plan.md
-git add -A
-GIT_COMMITTER_DATE=2099-01-01T10:00:00 GIT_AUTHOR_DATE=2099-01-01T10:00:00 \
-  git -c user.name=Rehearsal -c user.email=rehearsal@example.invalid commit -q -m "A new note after the visit"
+save "A new note after the visit"
 status=0
-out=$(python3 "$SCRIPT" --since-visit) || status=$?
-[ "$status" = 1 ] && [ "$out" = "$(printf 'unreferenced\tdocs/old-plan.md')" ] ||
-  fail "expected only the note added since the visit ($status): $out"
-[ -z "$(git status --porcelain)" ] || fail "reading the earlier state wrote into the project"
-echo "  ok: only what is new since the last full visit is printed, read from history"
+out=$(python3 "$SCRIPT" --skip-offered) || status=$?
+[ "$status" = 1 ] || fail "findings nobody was offered should exit 1, got $status"
+[ "$out" = "$(printf 'repeated\tREADME.md:7\tdocs/release.md:7\nunreferenced\tdocs/old-plan.md')" ] ||
+  fail "expected the repeat that did not fit and the new note, and not the note offered, got: $out"
+[ -z "$(git status --porcelain)" ] || fail "the read wrote into the project"
+echo "  ok: the note offered is not raised again, the repeat that did not fit comes back, and a new note is raised"
 
 echo
 echo "document-bloat-rehearsal.sh: each kind of bloat found, everything else left alone"

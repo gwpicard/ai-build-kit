@@ -938,8 +938,8 @@ The monthly part as well, plus:
    health score.
    On Build and run it and Build with care, before proposing anything, load
    `references/waste-read.md`, `references/structure-read.md` and
-   `references/document-bloat.md`, and run their scripts. Each prints only
-   what is new since the last full visit.
+   `references/document-bloat.md`, and run their scripts. Each leaves out
+   what an earlier visit offered, and records what this one offers.
    Propose no more than three simplifications; for each, state the repeated
    problem, the plain-language change, what becomes easier to verify or
    recover, the cost, and whether a person outside the team has to look.

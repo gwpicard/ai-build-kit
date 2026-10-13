@@ -1,9 +1,11 @@
 #!/usr/bin/env sh
 # waste-read-rehearsal.sh: run the shipped waste read against a throwaway
 # project with one known copy, one unused export and one unused dependency,
-# and read back that each is printed at a real file and line, that only what
-# is new since the last full visit is printed, that a clean project prints
-# nothing, and that nothing was written into any of them.
+# and read back that each is printed at a real file and line, that a visit
+# leaves out only what an earlier visit recorded as offered, that a finding
+# that did not fit comes back, that a missing engine answers 2 with the other
+# findings still printed, that a clean project prints nothing, and that the
+# read wrote nothing into any of them.
 #
 # The project carries a decoy, an export the engine calls unused that a
 # configuration file names, which the script's second look must drop. A
@@ -100,13 +102,16 @@ function repo(name) {
   return { dir, put, save };
 }
 
-function waste(dir, ...args) {
+function waste(dir, args = [], env = undefined) {
   const before = listing(dir);
-  const result = spawnSync('python3', [quality, 'waste', ...args], { cwd: dir, encoding: 'utf8', timeout: 300000 });
+  const result = spawnSync(env ? env.python : 'python3', [quality, 'waste', ...args],
+    { cwd: dir, encoding: 'utf8', timeout: 300000, env: env ? env.vars : process.env });
   assert.ifError(result.error);
   const rows = result.stdout.trim().split('\n').filter(Boolean).map(l => l.split('\t'));
+  Object.defineProperty(rows, 'status', { value: result.status, enumerable: false });
   const found = rows.filter(r => !r[0].startsWith('not-'));
-  assert.equal(result.status, found.length ? 1 : 0, `the exit code does not match what was printed:\n${result.stdout}${result.stderr}`);
+  const expected = rows.some(r => r[0] === 'not-checked') ? 2 : found.length ? 1 : 0;
+  assert.equal(result.status, expected, `the exit code does not match what was printed:\n${result.stdout}${result.stderr}`);
   assert.equal(listing(dir), before, 'the read wrote something into the project');
   for (const row of found) {
     const [file, line] = row[1].split(/:(?=\d+$)/);
@@ -153,15 +158,45 @@ assert.ok(!all.some(r => r[2] === 'handleRefunds'), 'the export a configuration 
 console.log('  ok: an export named in a configuration file is dropped on the second look');
 assert.ok(!all.some(r => r.join(' ').match(/\d\s*%|percent/i)), 'a percentage reached the output');
 
-// The last full visit is that day. Later, one more unused export arrives.
+assert.equal(all.status, 1);
+assert.ok(!all.some(r => r[0] === 'not-checked'), 'a part was not checked with every engine on hand');
+
+// The visit had room for two of the three, so only those two reached the
+// person and are recorded as offered. The third never did.
 shop.put({ '.ai-build-kit-maintenance': 'last-light-pass: 2026-06-01\nlast-full-pass: 2026-06-01\n' });
 shop.save('Record the visit', '2026-06-01T16:00:00');
-shop.put({ 'src/pricing.js': fs.readFileSync(path.join(shop.dir, 'src/pricing.js'), 'utf8') +
+const named = all.filter(r => r[0] === 'copy' || r[2] === 'discount').map(r => r.join('\t'));
+const recorded = spawnSync('python3', [quality, 'offered', 'waste'], { cwd: shop.dir, encoding: 'utf8', input: named.join('\n') + '\n' });
+assert.equal(recorded.status, 0, recorded.stdout + recorded.stderr);
+const record = fs.readFileSync(path.join(shop.dir, '.ai-build-kit-maintenance'), 'utf8');
+assert.match(record, /^offered\|waste\|\d{4}-\d{2}-\d{2}\|copy\|src\/pricing\.js\|src\/report\.js$/m, 'the copy offered was not recorded');
+assert.match(record, /^offered\|waste\|\d{4}-\d{2}-\d{2}\|unused-export\|src\/pricing\.js\|discount$/m, 'the export offered was not recorded');
+assert.match(record, /^last-full-pass: 2026-06-01$/m, 'recording the offers lost the record\'s other lines');
+shop.save('Record what the visit offered', '2026-06-01T17:00:00');
+
+// Later, one more unused export arrives, and the lines above it move.
+shop.put({ 'src/pricing.js': '// Prices.\n\n' + fs.readFileSync(path.join(shop.dir, 'src/pricing.js'), 'utf8') +
   '\nexport function surcharge(price) {\n  return price * 1.1;\n}\n' });
 shop.save('Add a surcharge', '2026-08-01T10:00:00');
-const fresh = waste(shop.dir, '--since-visit');
-assert.deepEqual(fresh.map(r => [r[0], r[2]]), [['unused-export', 'surcharge']], 'only what is new since the last visit should be printed');
-console.log('  ok: since the last full visit, only the new finding is printed');
+const fresh = waste(shop.dir, ['--skip-offered']);
+assert.deepEqual(fresh.map(r => [r[0], r[2]]).sort(), [['unused-dependency', 'left-pad'], ['unused-export', 'surcharge']],
+  'the next visit should leave out only what was offered, and bring back what did not fit');
+console.log('  ok: what a visit offered is left out after, even moved, and a finding that did not fit comes back');
+
+// Some engines but not all: what ran is printed, the part with no engine is
+// named, and the answer is 2.
+const some = path.join(work, 'some-engines');
+fs.mkdirSync(some);
+for (const tool of ['git', 'node', 'python3', 'knip']) {
+  fs.symlinkSync(execFileSync('sh', ['-c', `command -v ${tool}`], { encoding: 'utf8' }).trim(), path.join(some, tool));
+}
+const partial = waste(shop.dir, [], { python: path.join(some, 'python3'), vars: { PATH: some, HOME: process.env.HOME } });
+assert.equal(partial.status, 2, 'with jscpd missing the read did not exit 2');
+assert.ok(partial.some(r => r[0] === 'not-checked' && r[1] === 'copies'), 'the copy check that could not run was not named');
+assert.ok(partial.some(r => r[0] === 'unused-export' && r[2] === 'surcharge'), 'the findings from the engine that ran were not printed');
+assert.ok(partial.some(r => r[0] === 'unused-export' && r[2] === 'discount'),
+  'a finding the record names as offered was taken for a use of it, and dropped');
+console.log('  ok: with one engine missing, it prints what the others found, names the part not checked, and exits 2');
 
 // --- the clean project ---------------------------------------------------------
 
@@ -190,5 +225,5 @@ assert.ok(pyRows.some(r => r[0] === 'unused-dependency' && r[2] === 'requests' &
   'the Python dependency nothing imports was not named at its line');
 console.log('  ok: in a Python project, code that cannot run and an unused dependency are named at their lines');
 
-console.log('\nwaste-read-rehearsal.sh: all kinds named, only new ones since the visit, clean project silent');
+console.log('\nwaste-read-rehearsal.sh: all kinds named, only what was offered left out, clean project silent');
 NODE

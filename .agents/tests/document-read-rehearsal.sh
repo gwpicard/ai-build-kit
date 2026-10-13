@@ -10,6 +10,10 @@
 # than the project does. A document AGENTS.md never points at is not read at
 # all. A clean project produces no output, and the script writes nothing.
 #
+# A visit names three findings, the cap, and records those as offered. The
+# next visit leaves those three out, even once their lines move, and brings
+# back the three that did not fit.
+#
 # The false-positive half is the one that matters most. A read that flags true
 # things gets ignored, and then the stale name it also found is ignored with it.
 
@@ -145,26 +149,56 @@ python3 "$SCRIPT" | grep -qF "$(printf 'docs/setup.md:4\tcommand\tmake release')
   fail "a make target the Makefile does not have was not named"
 echo "  ok: a make target the Makefile does not have is named"
 
-# --- only what is new since the last visit ------------------------------------
+# --- only what no visit has offered -------------------------------------------
 
+# The visit names three of the six findings, the cap, and records those three.
+all=$(python3 "$SCRIPT" || true)
+[ "$(printf '%s\n' "$all" | wc -l | tr -d ' ')" = 6 ] || fail "expected six findings before the visit, got: $all"
 printf 'last-light-pass: %s\n' "$(date +%Y-%m-%d)" > .ai-build-kit-maintenance
+printf '%s\n' "$all" | head -3 > "$WORK/offered"
+python3 "$SCRIPT" --record-offered < "$WORK/offered" > "$WORK/recorded" ||
+  fail "recording what was offered failed"
+[ "$(cat "$WORK/recorded")" = "$(printf 'recorded\t3')" ] || fail "expected three offers recorded, got: $(cat "$WORK/recorded")"
+grep -q '^last-light-pass: ' .ai-build-kit-maintenance || fail "recording the offers lost the record's other lines"
+[ "$(grep -c '^offered|document-claims|' .ai-build-kit-maintenance)" = 3 ] ||
+  fail "the record does not hold one line for each finding offered"
 git add -A
 commit "Record the visit"
+
 status=0
-out=$(python3 "$SCRIPT" --since-visit) || status=$?
-[ -z "$out" ] && [ "$status" = 0 ] ||
-  fail "names already missing at the last visit were raised again ($status): $out"
-echo "  ok: a name already missing at the last visit is not raised again"
-printf '%s\n' '' 'Backups run from `scripts/backup.sh`.' >> README.md
+out=$(python3 "$SCRIPT" --skip-offered) || status=$?
+[ "$status" = 1 ] || fail "the findings that did not fit should come back with exit 1, got $status"
+[ "$out" = "$(printf '%s\n' "$all" | tail -3)" ] ||
+  fail "expected exactly the three findings nobody was offered, got: $out"
+echo "  ok: the names offered at the last visit are not raised again, and the three that did not fit come back"
+
+# A new stale name near the top of each document moves every line below it.
+for doc in README.md docs/setup.md; do
+  { head -1 "$doc"; printf '\n%s\n' 'Backups run from `scripts/backup.sh`.'; tail -n +2 "$doc"; } > "$WORK/moved"
+  mv "$WORK/moved" "$doc"
+done
 git add -A
-GIT_COMMITTER_DATE=2099-01-01T10:00:00 GIT_AUTHOR_DATE=2099-01-01T10:00:00 commit "A new stale name after the visit"
-status=0
-out=$(python3 "$SCRIPT" --since-visit) || status=$?
-[ "$status" = 1 ] || fail "a new finding since the visit should exit 1, got $status"
-[ "$(printf '%s\n' "$out" | cut -f3)" = scripts/backup.sh ] ||
-  fail "expected only the name gone missing since the visit, got: $out"
-[ -z "$(git status --porcelain)" ] || fail "reading the earlier state wrote into the project"
-echo "  ok: only the name gone missing since the last visit is printed, read from history"
+commit "A new stale name after the visit"
+out=$(python3 "$SCRIPT" --skip-offered || true)
+printf '%s\n' "$out" | grep -qF "$(printf '\tfile\tscripts/backup.sh')" || fail "a new stale name was not raised: $out"
+printf '%s\n' "$all" | head -3 > "$WORK/offered"
+while IFS= read -r line; do
+  document=${line%%:*}
+  rest=$(printf '%s\n' "$line" | cut -f2-)
+  if printf '%s\n' "$out" | grep "^$document:" | grep -qF "$rest"; then
+    fail "a name offered at the last visit was raised again after its line moved: $line"
+  fi
+done < "$WORK/offered"
+[ "$(printf '%s\n' "$out" | wc -l | tr -d ' ')" = 5 ] ||
+  fail "expected the three that did not fit and the new name in two documents, got: $out"
+echo "  ok: a new stale name is raised, and one already offered stays left out when its line moves"
+
+printf '%s\n' "$all" > "$WORK/offered"
+python3 "$SCRIPT" --record-offered < "$WORK/offered" > /dev/null
+python3 "$SCRIPT" --record-offered < "$WORK/offered" > "$WORK/recorded"
+[ "$(cat "$WORK/recorded")" = "$(printf 'recorded\t0')" ] || fail "an offer recorded twice was written twice"
+echo "  ok: an offer already recorded is not written twice"
+git checkout -q -- .ai-build-kit-maintenance
 
 status=0
 (cd "$WORK" && python3 "$SCRIPT" >/dev/null 2>&1) || status=$?

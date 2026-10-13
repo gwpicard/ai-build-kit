@@ -10,18 +10,23 @@ apply.
 
 On a yes, run `python3` with this skill's `scripts/quality.py` from the
 project, passing `strength --base <commit the piece started from>`. It breaks
-only the lines
-this piece changed, in a throwaway copy, and leaves the project as it was. In
-a repair, the regression test is among the tests it runs.
+only the lines this piece changed, in a throwaway copy, and leaves the project
+as it was. The copy holds no real records and reaches nothing live: it leaves
+out every `.env` file but `.env.example`. In a repair, the regression test is
+among the tests it runs.
 
-Exit 2 means it could not run, and its `not-checked` line says why. Leave
-this evidence out and say in one line that it was not checked. Never invent a
-runner or use a hosted service.
+Exit 2 means the check did not happen for some of the changed code, and each
+`not-checked` line says why. That includes a run that broke nothing: changed
+code with nothing tried, or tests that failed before anything was broken. A
+zero there is not a pass. Say in one line that the tests were not checked for
+that code, and never report it as "missed none". Never invent a runner or use
+a hosted service.
 
-Exit 0 or 1 means it ran. It prints `tried` and `caught` counts, then a
-`missed` line for each breakage the tests let through, at its file and line,
-and an `unchecked` line for any that crashed or timed out. Those are not
-counted as caught.
+Exit 0 or 1 means it ran on all the changed code. It prints `tried` and
+`caught` counts, then a `missed` line for each breakage the tests let
+through, at its file and line, and an `unchecked` line for any that crashed
+or timed out. Those are not counted as caught. When exit 2 comes with counts
+for the code that did run, report those counts too.
 
 ## What the person hears
 

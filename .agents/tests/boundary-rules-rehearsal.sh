@@ -119,6 +119,16 @@ put('.github/workflows/checks.yml', workflow);
 put('.agents/hooks/check-sensitive-areas.sh', fs.readFileSync(path.join(foundation, 'check-sensitive-areas.sh'), 'utf8'));
 put('.agents/hooks/check-trim.sh', fs.readFileSync(path.join(foundation, 'check-trim.sh'), 'utf8'));
 
+// The hosted check runs in a clone with the whole history, where the pull
+// request's base is origin/main. The trim step fails without it, so a local
+// origin/main stands in for the base.
+for (const args of [['init', '-q', '-b', 'main'], ['add', '-A'], ['commit', '-q', '-m', 'Start'],
+  ['update-ref', 'refs/remotes/origin/main', 'HEAD']]) {
+  const saved = spawnSync('git', ['-c', 'user.name=Rehearsal', '-c', 'user.email=rehearsal@example.invalid',
+    '-c', 'commit.gpgsign=false', ...args], { cwd: project, encoding: 'utf8' });
+  assert.equal(saved.status, 0, `git ${args[0]} failed:\n${saved.stdout}${saved.stderr}`);
+}
+
 // --- running the check the way the hosted runner would ----------------------
 
 function runCheck() {
