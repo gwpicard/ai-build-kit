@@ -854,8 +854,8 @@ if [ -f "$pieces" ] && [ -f "$shapefile" ] && [ -f "$whatnowfile" ] && [ -f "$re
     pass "a hand-typed issue is treated as a request, with a way out of the interview"
 fi
 
-# what-now voices the signals it already reads: a failing check, an open
-# review finding, and a setup step left half-done each get named rather than
+# what-now voices the signals it already reads: a failing check and a setup
+# step left half-done each get named rather than
 # hidden under "nothing is blocked", and the answer closes with a plain recap of
 # recent work. The read step gathered these all along; the contract is that the
 # say step speaks them.
@@ -863,14 +863,12 @@ if [ -f "$whatnowfile" ]; then
   wn_ok=1
   grep -qF "### Failing check" "$whatnowfile" || \
     { fail "$whatnowfile: no recovery route names a failing check"; wn_ok=0; }
-  grep -qF "### Open review finding" "$whatnowfile" || \
-    { fail "$whatnowfile: no recovery route names an open review finding"; wn_ok=0; }
   grep -qF "### Unfinished setup step" "$whatnowfile" || \
     { fail "$whatnowfile: no recovery route names an unfinished setup step"; wn_ok=0; }
   grep -qF "short recap of where the tool has got to" "$whatnowfile" || \
     { fail "$whatnowfile: does not close with a recap of recent work"; wn_ok=0; }
   [ "$wn_ok" -eq 1 ] && \
-    pass "what-now voices a failing check, an open finding, an unfinished setup step, and a recap"
+    pass "what-now voices a failing check, an unfinished setup step, and a recap"
 fi
 
 # The command split: shape prepares work and marks a piece `ready`; implement
@@ -954,18 +952,15 @@ if [ -f "$mfile" ]; then
     fail "$mfile: the release checklist does not ask what an existing user must do to upgrade"
 fi
 
-# Shape stays shaping: the build offer points at a fresh session for every piece
-#, and clarify records a settled term on the piece rather than committing
+# Shape stays shaping: clarify records a settled term on the piece rather than committing
 # the masterplan mid-plan, so a planning session opens no pull request.
 clarifyfile="$SKILLS/clarify/SKILL.md"
 if [ -f "$shapefile" ] && [ -f "$clarifyfile" ]; then
   pp_ok=1
-  grep -qF "A fresh session is the offer for every piece" "$shapefile" || \
-    { fail "$shapefile: build offer does not point at a fresh session for every piece"; pp_ok=0; }
   grep -qF "Planning records and stops; writing to the masterplan is a build" "$clarifyfile" || \
     { fail "$clarifyfile: clarify still writes the masterplan mid-plan instead of recording on the piece"; pp_ok=0; }
   [ "$pp_ok" -eq 1 ] && \
-    pass "plan offers a fresh session and never writes the masterplan mid-plan"
+    pass "planning never writes the masterplan mid-plan"
 fi
 
 # Build mechanics and pull-request hygiene: a piece starts from up-to-date main

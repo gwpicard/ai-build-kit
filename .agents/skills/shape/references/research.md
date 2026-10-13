@@ -1,93 +1,40 @@
 # Research
 
 A piece labelled `needs-research` runs one of the two steps below and records
-what it finds on the piece. A build whose correctness depends on an external
+what it finds on the piece. A build whose correctness rests on an external
 fact runs the source check too.
 
 ## Source check
 
-Use when a build or product decision depends on an external fact.
+Use when a decision depends on an external fact. Prefer, in order: official
+documentation; specifications or standards; first-party API references; the
+provider's own source code; official support or policy pages. Never base a
+consequential decision on a tutorial, a forum answer, marketing, or memory when
+a primary source exists.
 
-### Sources
-
-Prefer, in order:
-
-1. official documentation;
-2. specifications or standards;
-3. first-party API references;
-4. source code owned by the provider;
-5. official support or policy pages.
-
-Do not base a consequential decision on a tutorial, marketing summary, forum
-answer, or model memory when a primary source exists.
-
-### Output
-
-Record:
-
-- the question;
-- the confirmed answer;
-- the source;
-- the date checked;
-- any uncertainty or interpretation;
-- whether the fact can change;
-- the product decision it affects.
-
-Store the durable conclusion where the decision lives. Do not create a research
-archive for facts that have no future value.
-
-The process must work inline. A background agent is an optional acceleration,
-not a dependency.
+Record the question, the confirmed answer, the source, the date checked, any
+uncertainty, whether the fact can change, and the decision it affects. Store it
+where the decision lives, never in a research archive. It works inline; a
+background agent only speeds it up.
 
 ## Existing work
 
-Use when the open question is whether something already exists that could do the
-job. A question about one external fact runs the source check above instead.
+Use when the question is whether something already does the job. Look in this
+order and stop at the first that answers: the project itself; what it already
+depends on; the language or framework's standard parts; a well-established
+package; an official example from the provider. A new dependency is the last
+resort.
 
-### Where to look, in order
+Before naming a candidate, confirm from the provider's own pages: that it is
+maintained; what its licence allows; what it costs in money, accounts or free
+limits; where the data goes; and how hard it is to remove.
 
-1. the project itself, because the nearest thing to what is wanted is often
-   already here under another name;
-2. what the project already depends on, since a capability already paid for
-   costs nothing more to use;
-3. the language or framework's own standard parts;
-4. a well-established package that many projects rely on;
-5. an official example or template from the provider.
+On the piece, record at most three candidates and the recommended one. On the
+surface, in plain words: what it lets the person do, what it costs, whether
+anything leaves the project, and what changing it later takes. Technical
+detail goes under the hood. Record the date and what was rejected and why.
 
-Stop at the first level that answers the question. A new dependency is the last
-resort rather than the first search.
-
-### What to check before naming a candidate
-
-- Is it maintained? Recent releases and answered questions, rather than a
-  promising name and three years of silence.
-- What does its licence allow? Say plainly where one would restrict how this
-  project can be used, shared, or sold.
-- What does it cost? Money, an account somebody has to own, or a free limit that
-  bites later.
-- Where does the data go? Anything that sends the project's data elsewhere is a
-  product decision for the person, not a technical one.
-- How hard is it to remove? Something that touches every part of the project is
-  a bigger commitment than something sitting behind one seam.
-
-Confirm each of those from the provider's own pages rather than from memory.
-Where the question narrows to a single fact, that is the source check's job.
-
-### What to record on the piece
-
-At most three candidates, which one is recommended, and why. On the surface, in
-plain words: what it lets the person do, what it costs, whether anything leaves
-the project, and what changing it later would take. The technical detail goes
-under the hood.
-
-Record the date checked, and what was rejected and why, so the next session does
-not search the same ground again.
-
-### What this never does
-
-- It never installs, adds, or configures anything. Planning records and stops.
-- It never recommends something that costs money or needs an account without
-  saying so in the same breath.
-- It never settles how something should look or behave. That is the decision
-  prototype.
-- It never claims a capability it has not read on the provider's own pages.
+It never installs or configures anything, never names a cost or an account
+without saying so, never settles how something looks or behaves (that is the
+decision prototype), and never claims a capability it has not read on the
+provider's own pages.

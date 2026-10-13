@@ -9,180 +9,125 @@ You are the safety net under the other five commands. Someone who forgets everyt
 
 ## Read
 
-masterplan.md (build-path section first), the project's pieces, the recent
-changelog, the capability profile in AGENTS.md, git status, the recent commits
-and merged pull requests, and any open pull requests.
+Read masterplan.md (build-path section first), the recent changelog, the
+capability profile in AGENTS.md, git status, recent commits, merged and open
+pull requests. Refresh the printout with `sh .agents/tools/plan-refresh.sh`
+and read `plan.local.md`; the `setup-ai-build-kit` skill's `references/pieces.md` says
+what to run where the helper is missing. Never sort the pieces by hand. If
+GitHub cannot be reached, work from the printout and say when it was written.
 
-Refresh the printout with `sh .agents/tools/plan-refresh.sh` and read
-`plan.local.md`. Where the project has no copy of the helper,
-the `setup-ai-build-kit` skill's `references/pieces.md` says what to run
-instead; never sort the pieces by hand. If GitHub cannot be reached, work from the printout and say when
-it was written, because an old list a person can see beats no list at all. Note
-whether the project has launched (the changelog says), whether work sits
-half-done (git status says), whether a finished piece is waiting for its
-merge click (an open pull request says), whether any check is failing,
-whether an earlier review left an unresolved finding, whether flagged work is
-still waiting, what the build-path section's `Accepted:` lines say the project
-has knowingly given up, whether a manual setup step was left mid-way, whether Git
-shows a merge or rebase conflict, whether a check-up is overdue, taken from
-`.ai-build-kit-maintenance` when that file exists and from the changelog dates
-when it does not, and whether anything on the build path's recheck-when list has
-happened.
+Note: whether the project is live (the changelog says), half-done work, a
+finished piece waiting for its merge, a failing check, flagged work waiting,
+the `Accepted:` lines, a manual setup step left mid-way, a merge or rebase
+conflict, a check-up overdue by `.ai-build-kit-maintenance` (or the changelog
+dates when that file is missing), and anything on the recheck-when list that
+has happened.
 
-Read whether a kit update is still unfinished. From the project root, run
-`python3` with the `maintain` skill's `scripts/upgrade-check.py`, and keep only
-its exit code. It reads and changes nothing. Exit 1 means an update left
-something /maintain has not yet finished, such as old commands still on
-offer. Any other exit says nothing here.
+Run two checks from the project root and keep only their exit codes. Both read
+and change nothing:
 
-Read whether the masterplan's mark can be used. From the project root, run `sh`
-with the `setup-ai-build-kit` skill's `scripts/trued-mark.sh`, and keep only its
-exit code. Any exit other than 0 means no build can move the mark on, so every
-build leaves the page unchecked until /maintain sets it.
+- `python3` with the `maintain` skill's `scripts/upgrade-check.py`. Exit 1
+  means a kit update is unfinished.
+- `sh` with the `setup-ai-build-kit` skill's `scripts/trued-mark.sh`. Any exit
+  other than 0 means the masterplan's mark cannot be used.
 
 ## Say
 
-Open with where the build stands, in one line, then which command comes next and
-why, in a few sentences of plain language.
+Open with where the build stands in one line, then which command comes next
+and why, in a few plain sentences.
 
-Before the first launch, count: "you are four pieces in with three left, nothing
-blocked and nothing half done". Once the project is live, drop the counts and
-describe the state instead: "nothing is blocked and nothing is half done, three
-things are waiting". A count reads as progress towards a finish line, and a live
-project's list never empties.
+Order:
 
-Anything labelled `broken` comes first, before the counts. A thing that used to
-work and no longer does outranks a thing that was never built: "the booking
-confirmation is broken, so repairing it comes before anything else". Name what
-is broken rather than saying a piece is labelled. A repair already reproduced
-and marked ready goes to /implement; one not yet reproduced goes to /shape.
-Where the person says the live tool broke after a recent merge, follow the
-`setup-hosting` skill's "Rolling back" first.
+1. Anything labelled `broken`, by what is broken: "the booking confirmation is
+   broken, so repairing it comes first". A reproduced repair marked ready goes
+   to /implement; one not yet reproduced goes to /shape. Where the live tool
+   broke after a recent merge, follow the `setup-hosting` skill's "Rolling
+   back" first.
+2. A failing check, or a setup step left half-done. Say each plainly. Neither
+   sits under "nothing is blocked".
+3. The counts. Before the first launch: "four pieces in, three left, nothing
+   blocked, nothing half done". Once live, describe the state instead, since
+   a live project's list never empties.
 
-A failing check is named next, after anything broken and before the counts. Say
-it plainly as failing, because a red check is a fact the person cannot see for
-themselves. An open review finding still waiting, and a setup step left
-half-done, are named in the same place. None of the three is left sitting under a
-"nothing is blocked"; each has its own recovery route below.
+Say how many entries are still notes rather than pieces, when any are: "two
+things on the list are still just notes, so I will ask you about them before
+building them".
 
-Say how many entries are still notes rather than pieces, when any are, in the
-words a person would use: "two things on the list are still just notes, so I
-will ask you about them before building them". The printout marks them. Knowing
-that before a build session is worth more than meeting it during one.
+For a waiting piece, pass on why it waits: a few questions, a throwaway build
+to react to, or a fact the agent can confirm alone. The first two need the
+person; the third does not. Where more pieces wait on a question than are
+ready, say this session is better spent planning, and give the counts as the
+reason. A piece waiting on the person is named as their own step, in the
+piece's words, with where it happens.
 
-Where a waiting piece says why it is waiting, pass the reason on rather than the
-label: one needs a few questions, one needs a throwaway build before anybody can
-decide, one needs a fact the agent can go and confirm on its own. Say which of
-the three, because the first two need the person in the room and the third does
-not. Somebody with ten minutes can answer the questions, or leave `/shape` to
-settle the research without them.
+Say piece names, never issue numbers, and dependencies as sentences:
+"deposits cannot start until card payments are set up". Name at most three
+things; if more apply, say how many and name the nearest. /implement shows the
+whole ready list.
 
-Weigh the waiting pieces against the ready ones, in the same place as the counts
-and never ahead of anything broken. Where more pieces are waiting on a question
-than are ready to build, say that this session is better spent planning than
-building, and give the reason in the counts themselves: one piece ready and four
-nobody can build yet. Where the ready pieces outnumber the waiting ones, say
-nothing about it and let the usual advice stand.
+Before launch the answer is usually /implement, /shape, or /setup-hosting once
+people should use it. Once live it is usually /shape for a new wish or a
+fault, or /maintain when a check-up is due.
 
-A piece waiting on the person is named apart from the rest, as their own thing
-to do rather than something the agent is working through: "nothing can happen on
-the payment piece until somebody opens the card account, and it takes about ten
-minutes". Say what the step is and where it happens, in the piece's own words,
-because a step nobody names is a step nobody does.
+Where the update check exited 1, say one line before the recap: "The kit
+update is not finished. /maintain finishes it." Where the mark check failed,
+/maintain is one of the three things: "The masterplan has not been checked
+against the code yet. /maintain checks it."
 
-Say piece names, never issue numbers. Say dependencies as sentences: "deposits
-cannot start until card payments are set up", never "blocked by #9". Name at
-most three things; if more apply, say how many and name the nearest. More than
-three stops being orientation and becomes a report. Where the person wants
-every ready piece at once, /implement shows the whole list. Match where the project is in its life. Still building toward the first launch: the answer is usually /implement for the next ready piece, /shape to shape a new one, or /setup-hosting once the person wants people to use it. Live and running: the answer is usually "say what you want to /shape", /shape for the thing that broke, or the /maintain that the recorded check-up dates show is overdue.
-
-Where the update check exited 1, say one line before the recap, apart from
-the three things: "The kit update is not finished. /maintain finishes it."
-Say nothing more about it here.
-
-Where the mark check exited other than 0, /maintain is one of the three things,
-said close to: "The masterplan has not been checked against the code yet.
-/maintain checks it." Say it on every visit until the mark can be used, since
-a builder only names /maintain and nothing else sends the person there.
-
-End with a short recap of where the tool has got to, in the words a person would
-use. Say what the last stretch of work was about, and whether anything is on the
-go right now, drawn from the changelog, the recent commits, and the merged pull
-requests read together. Tell it as a short account of where things stand, not a
-count of commits or pieces. Leave out the broken or waiting items already named
-above, since the recap is the wider sense of the project rather than a second
-list. Where nothing has happened lately, say nothing here and the answer ends
-where it did before.
+End with a short recap of where the tool has got to: what the last stretch of
+work was about and whether anything is on the go, from the changelog, commits
+and merged pull requests. Leave out what was already named. When nothing has
+happened lately, leave the recap out.
 
 ## Recovery routes
 
 ### Uncommitted work
 
-This is the one home for recovering work an interrupted session left behind.
-/maintain's truing reports such work and leaves it alone; the choice of what
-to do with it is made here. Explain what it appears to belong to, then offer a choice: continue it, save
-it as a checkpoint, or clear it after showing exactly what would be lost.
-Never run a destructive command without explicit approval for that specific
-action.
+This is the one home for work an interrupted session left behind. Say what it
+appears to belong to, then offer: continue it, save it as a checkpoint, or
+clear it after showing exactly what would be lost. Never run a destructive
+command without a yes for that action.
 
 ### Merge or rebase conflict
 
-Explain which two intentions collided. Resolve it automatically only when
-the records make the right outcome unambiguous; otherwise preserve both
-sides and ask. Treat any conflict touching data or deployment as one to
-escalate rather than guess through.
+Say which two intentions collided. Resolve it only when the records make the
+outcome plain; otherwise keep both sides and ask. A conflict touching data or
+deployment is escalated, never guessed.
 
 ### Missing capability
 
-State plainly what the current harness cannot do, name the fallback in use,
-and give one concrete setup action when one would remove the gap. Do not
-imply the whole kit is incompatible because one optional enhancement is
-missing.
+Say what this harness cannot do, the fallback in use, and one setup action that
+would close the gap. One missing extra does not make the kit incompatible.
 
 ### Flagged work waiting
 
-State the blocked area, the help it's waiting on, where its brief lives, and
-which work can keep going safely in the meantime. Say that the wait ends either
-way: when that help happens, or when they carry on after the notice and their
-acceptance goes on the record.
+Name the area, the help it waits on, where its brief lives, and what can carry
+on meanwhile. The wait ends when that help happens, or when the person carries
+on after the notice and the acceptance is recorded.
 
 ### A step only you can do
 
-Name the step, where it happens, and what to bring back, in the words the piece
-uses. Say what starts moving again once it is done, and what can carry on in the
-meantime. Never repeat a key, password, or token back, and never ask for one to
-be pasted into a message.
+Name the step, where it happens, what to bring back, and what starts moving
+once it is done. Never repeat a key, password or token, and never ask for one
+in a message.
 
 ### Failing check
 
-Name the check that is failing and what it is there to catch, in plain words,
-for example the test that stops a booking being taken twice. Say that a red check
-means the tool is not doing something it is meant to. A red check on an open
-pull request belongs to that piece's own build, so /implement is where it goes:
-the piece is not finished until its check is green. A red check on `main`,
-where no piece is being built, is a fault, so /shape is where that goes, to
-turn it into a repair. Do not show the check's output or its logs.
-
-### Open review finding
-
-Where an earlier review raised something and nobody has settled it, name it in
-the words the review used and say it is still open. Say it is a point somebody
-made and no one has answered, so it is worth closing before more is built on top
-of it. Name the piece it belongs to.
+Name the check and what it catches, in plain words, such as the test that
+stops a booking being taken twice. A red check on an open pull request belongs
+to that piece's build, so /implement. A red check on `main` is a fault, so
+/shape. Never show its output or logs.
 
 ### Unfinished setup step
 
-Where a manual setup step was started and left part-way, name the step and say it
-is unfinished, so the person knows the tool is not fully stood up. Give the one
-action that would finish it, and say what stays unavailable until it is done.
+Name the step, say it is unfinished, give the one action that finishes it, and
+say what stays unavailable until then.
 
 ### Accepted risks
 
-Where the build-path section carries `Accepted:` lines, say what the project has
-given up, in one line each and in the words the person would use. This is a
-reminder rather than a reopened argument: name what it was, when, and who
-accepted it, and say plainly that it can be revisited by asking for the check
-that was skipped. Do not ask again unasked.
+Say each `Accepted:` line in one line of plain words: what was given up, when
+and by whom, and that asking for the skipped check reopens it. Do not ask again
+unasked.
 
 ## Done when
 

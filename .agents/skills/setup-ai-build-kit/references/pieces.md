@@ -1,23 +1,13 @@
 # Pieces
 
-A piece is one small, visible, end-to-end change, sized for a single sitting and
-small enough for a fresh session to hold the whole of it. It lives as a GitHub
-issue.
-
-The project's issues are the only record of what is left to build. Keeping the
-pieces there needs a GitHub repository and the GitHub command line tool signed
-in, which the kit sets up when a project is founded; `capability-check.md`
-records it in the capability profile.
-
-Issues are the agent's memory rather than the person's reading material. They
-can carry as much context as a piece deserves, because nobody reads them all at
-once. What the person reads is `/what-now`, and a local printout of the open
-issues that never becomes a source of truth.
+A piece is one small, visible, end-to-end change, sized for one sitting. It
+lives as a GitHub issue. The issues are the only record of what is left to
+build. They are the agent's memory, so they can carry as much context as a
+piece deserves; the person reads `/what-now` and the local printout instead.
 
 ## What an issue carries
 
-The title says what the person will be able to do, in their words. Not a task
-for the agent.
+The title says what the person will be able to do, in their words.
 
 ```md
 ## So that
@@ -55,85 +45,43 @@ technical context a builder needs and the person never has to open>
 </details>
 ```
 
-`## Done when` is written as conditions somebody can check rather than a
-description. If a line cannot be answered yes or no by trying the tool, it
-belongs in `## So that`.
+`## Done when` holds conditions answered yes or no by trying the tool. Anything
+else belongs in `## So that`.
 
-`## Masterplan change` is always on the surface, in plain words. Name the
-section and what it gains, changes or loses when this piece lands. Most pieces
-say "nothing", because the masterplan already describes the promised result.
-Test that before writing it. Read each line of `## Done when` against the
-masterplan alone, and write "nothing" only when the masterplan already says it.
-A rule the person could check the tool against, such as an order, a limit, a
-default or a message, is a change even when it narrows a promise the masterplan
-already makes. A piece that puts an existing list in alphabetical order gains
-that rule in `What correct looks like`.
-This is the piece's delta, meaning its change to the present record. Writing
-it does not apply it early. The save and recovery rules live in
-[masterplan-changes.md](masterplan-changes.md).
+`## Masterplan change` names the section and what it gains, changes or loses.
+Read each `## Done when` line against the masterplan alone, and write "nothing"
+only when the masterplan already says it. A rule the person could check, such
+as an order, a limit, a default or a message, is a change even when it narrows
+an existing promise: putting a list in alphabetical order gains that rule in
+`What correct looks like`. Writing it does not apply it;
+[masterplan-changes.md](masterplan-changes.md) says when it is applied.
 
-`## Decided` is left out entirely on the pieces that had no argument behind
-them, which is most of them. A section of thin prose repeated on every issue
-teaches a reader to skip all of them.
+`## Decided`, `## Waiting on you` and `Live side needs:` are left out unless
+they apply. `## Waiting on you` never carries the secret it asks for: say where
+the key goes. It is not `blocked`, and the piece keeps its labels. A database
+migration needs no `Live side needs:` line, since `/implement` finds it in the
+change.
 
-A decision in `## Decided`, or a key term or decided line in the masterplan,
-may carry an optional one-line "rests on" clause in plain words. This applies
-on every build path. Name what supports it: a test, a piece, a source, or a
-person's answer with its date. For example: "A returned item can be booked
-again; rests on the returning-early check." Leave the clause out when there
-is no evidence to name. Never invent support to fill the line.
-
-Before relying on a clause, read the thing it names against the current
-branch or source. A missing or contradicted source no longer supports the
-decision. An unreachable source is unconfirmed, rather than gone. Say which
-in one plain line, without asking the person to read code or understand a
-test name. Keep the decision visible until it is settled through the command's
-usual route; a missing source is not permission to reverse the decision.
-
-`## Waiting on you` is left out the same way, and for a stronger reason: it is
-the one thing on a piece that only the person can clear. It appears when the
-work stops until they sign up for something, hand over a key, or move some data
-themselves. Write it as something they could follow without help, and never ask
-for something the agent could go and do instead. It never carries the secret it
-asks for: say where the key goes, and the key itself stays out of every tracked
-file, as it always does.
-
-This is not `blocked`. That label already means two things, a piece safely
-stopped at a recorded condition and a piece parked after repeated failure, and a
-third meaning would make all three unreadable. A piece waiting on the person
-keeps whatever labels it had.
-
-`Live side needs:` is left out too, unless the change needs something new on
-the live copy: a secret, a setting, or an outside service the host must reach.
-Name each one, never its value. On a live project the merge is a deploy, so
-`/implement` asks for the merge only once `/setup-hosting` reports each name
-present. A database migration needs no line, since `/implement` finds it in the
-change itself.
+A decision in `## Decided`, or a decided line in the masterplan, may carry a
+one-line "rests on" clause naming what supports it: a test, a piece, a source,
+or a person's answer with its date. Never invent support. Before relying on a
+clause, read what it names against the current branch or source. Missing or
+contradicted support no longer holds; unreachable support is unconfirmed. Say
+which in one plain line, such as "The rule that a job closes once rested on a
+test that no longer exists." Keep the decision until it is settled through the
+usual route; lost support is not permission to reverse it.
 
 ## The two layers of a piece
 
-The sections above are the surface. They stay in plain words, and they stay
-comprehensive about anything that affects the product, so a simple read is never
-a false one. A fact belongs on the surface when it would change a product
-decision: put it in `## Decided`, or name it as a dependency, in words the person
-would use. A fact belongs under the hood when it only affects how the code gets
-written.
-
-`Under the hood` is a collapsed section for that build context: the approach, the
-seams, code-level dependencies, any groundwork. The person never has to open it,
-and `/implement` always reads it before building. Most short pieces need
-none of it. This is the same principle the issue already follows, that an issue
-is the agent's memory and carries as much context as a piece deserves.
-
-Context that reaches past one piece does not live here. A decision that affects
-the whole product goes in the masterplan, in plain words. A technical convention
-that affects the whole codebase goes in AGENTS.md's stack section. The piece
-holds only what is particular to it.
+The surface stays plain and names every fact that would change a product
+decision, so a simple read is never a false one. `Under the hood` is collapsed
+build context the person never has to open and `/implement` always reads. Most
+short pieces need none. Context reaching past one piece goes to the masterplan
+(a product decision) or AGENTS.md's stack section (a codebase convention).
 
 ## Labels
 
-A piece carries every subject label that fits it, from the same small vocabulary
-the consequence classification uses. Most pieces have one:
+A piece carries every subject label that fits it:
 
 | Label | What the piece is about |
 |---|---|
@@ -145,231 +93,96 @@ the consequence classification uses. Most pieces have one:
 | `external service` | somebody else's system that this piece needs |
 | `background automation` | something that runs on its own, with nobody watching |
 
-A subject label is not a description of the piece. Each one decides evidence and
-a save route, so `/implement` reads the labels rather than re-deriving them.
-Where a piece carries more than one, its evidence is everything those subjects
-demand between them, and its save route is the strictest of the ones present.
+Each subject decides evidence and a save route. With several, the evidence is
+everything they demand between them and the save route is the strictest.
 
-Ticking every subject that fits, rather than the closest single one, stops the
-kit dropping a true fact about a piece: a checkout is `finance` and
-`external service`, and picking one would lose the evidence the other requires.
-
-Four more labels carry state that open and closed cannot:
+State labels:
 
 - `building`, while somebody is working on it;
-- `blocked`, when something outside the project holds it up;
-- `parked`, on a closed issue, for an idea deliberately left out;
-- `broken`, when the piece is repairing something that used to work.
+- `blocked`, when something outside the project holds it up, or after repeated failure;
+- `parked`, on a closed issue, for an idea deliberately left out, with the reason in the body;
+- `broken`, when the piece repairs something that used to work. It sits beside the subjects.
 
-`broken` marks a repair. `/shape` reproduces it, and the failing case becomes
-its `## Done when`; `/implement` takes a ready repair before anything new and
-builds it with the repair rules. It sits alongside the subjects rather than
-replacing them, because a broken thing is still about something.
+Waiting on a question, each saying who can answer it:
 
-Three more say the piece is waiting on a question, and each says who can answer
-it:
+- `needs-clarification`, when talking it through will settle it. The person has to be there.
+- `needs-prototype`, when only something to look at will settle it. The person has to be there.
+- `needs-research`, when it needs a fact or existing work from outside the project. The agent settles it alone.
 
-- `needs-clarification`, when talking it through will settle it. The person has
-  to be there: an interview the agent answers itself is a guess with a record
-  attached.
-- `needs-prototype`, when only something to look at will settle it, whether a
-  throwaway build or a mock the person already has. The person has to be there,
-  because reacting to the thing is the whole point.
-- `needs-research`, when it needs something from outside the project: a fact to
-  confirm, or existing work that might already do the job. The agent settles
-  this one alone, with nobody present.
-
-So the label already says whether the person is needed, and the list shows it at
-a glance. No further label carries that.
-
-They cost different amounts to settle, which is why `/shape` names the cost in
-one line before it starts a sitting, so the person can say "later" and file the
-piece instead. `needs-research` is minutes, and nobody has to be there for it.
-`needs-clarification` and `needs-prototype` are a sitting: an interview runs
-until the questions run out, and a prototype has to be built before anybody can
-react to it. Keep the estimate that coarse. A real estimate
-per piece would be a guess dressed as a number.
-
-Settling one of these writes what settled it into the piece's `## Decided`
-section before the label comes off: the fact and where it was found, the decision
-the prototype produced, or what the interview agreed. Without that the label is
-the only sign the question was ever asked, and taking it off leaves a piece that
-looks the same whether the work happened or not.
-
-Anything nobody has sized starts at `needs-clarification`. The interview swaps
-that for one of the other two once it finds what is actually in the way. All
-three mean the same thing to `/implement`: not ready, and here is why.
-
-One more is the positive counterpart to those three:
+Anything nobody has sized starts at `needs-clarification`. Settling one writes
+what settled it into `## Decided` before the label comes off.
 
 - `ready`, when the piece is shaped and waiting to be built.
 
-`/shape` adds `ready` once a piece is fully shaped: it has a `## Done when` line
-and waits on no question. `/implement` swaps that label for `building` when it
-picks the piece up, and the merged pull request closes it. `building` then
-comes off, so a closed piece carries neither label.
-A piece never carries `ready` and a `needs-` label at the same time; settling
-the question is what moves it from one to the other.
+`/shape` adds `ready` through `mark-ready.sh`, which refuses without `## Done
+when` and, after a `needs-` label, without `## Decided`. `/implement` swaps
+`ready` for `building` when it starts and takes both off after the merge. A
+piece never carries `ready` and a `needs-` label together.
 
-`/implement` reads this label to answer a second question when more than one
-piece is ready: not which piece is next, but which of them can be taken on at
-the same time. A piece can be shaped and still be held up, so `ready` alone
-does not mean startable. What `/implement` offers then is the ready pieces the printout has already put under `To build`, and a
-piece with an open blocker is never there. That is what makes the group safe to
-take on at once: no two pieces in it are waiting on each other. Shape still
-decides too, so a piece somebody labelled `ready` without giving it a
-`## Done when` is a note, and `/implement` does not offer it either.
-
-Those fifteen are the only labels the kit owns. Any other label on an issue
-belongs to somebody else, so the kit reads past it and never removes it.
-
-The nine labels GitHub puts on a new repository are the one exception, and only
-at founding. `bug`, `documentation`, `duplicate`, `enhancement`, `good first
-issue`, `help wanted`, `invalid`, `question` and `wontfix` were nobody's
-decision: they were there before anybody arrived. `/setup-ai-build-kit` deletes them and says
-which ones went. After founding they are somebody's to keep, so the ordinary
-rule applies again and the kit leaves them alone.
-
-A label is created when it is first needed. Where the person's account cannot
-create one, because they are a collaborator without write access, the work
-carries on without the label and the agent says which one is missing. A piece
-that cannot be labelled is still a piece.
+Those are the only labels the kit owns. It reads past any other label and
+never removes it. The one exception is founding, which deletes the nine labels
+GitHub puts on a new repository. After founding they are somebody's to keep.
+Where an account cannot create a label, carry on without it and say which is
+missing.
 
 ## Status, owner, and order
 
-Open and closed already mean "to build" and "built". Do not add labels that
-repeat them.
+Open and closed mean "to build" and "built". The assignee is who is building
+it. Dependencies use GitHub's blocked-by relationship, never prose.
 
-The assignee is who is building it. This works the same whether one person or
-five are on the project, so nothing changes on the day a second person arrives.
+Same outcome means a sub-issue; a different outcome that has to come first
+means blocked-by. A sub-issue shares the parent's `## So that`, and the parent
+is done when its parts are. A piece too big to hold whole is split into
+sub-issues, each a vertical slice. A parent with open parts is a container:
+`/implement` builds the parts.
 
-Dependencies use GitHub's own blocked-by relationship, not a line of prose. A
-piece that needs another names it there, and the agent reads it rather than
-parsing a body.
-
-A piece with parts uses GitHub's own sub-issue relationship. The two
-relationships answer different questions, and the answer decides which to use. A
-sub-issue is a part of the same outcome: it shares the parent's `## So that`, and
-the parent is not done until its parts are. A blocked-by piece is a different
-outcome that must land first. Same outcome means a sub-issue; a different outcome
-that has to come first means blocked-by. A piece too big to hold whole in a fresh
-session is split into sub-issues, each a vertical slice of its own.
-
-When a build uncovers work and files a new piece, write "Found while building
-<piece title>" on the new piece's surface, with the title linked to the piece
-that surfaced it. The originating piece's record names and links to the new
-piece too, so either one leads to the other.
-
-Parts of the same outcome stay sub-issues. A find with a different outcome gets
-the found-while-building link; it gains a blocked-by relationship only if one
-piece really must land before the other. Finding work does not add it to the
-piece being built.
-
-`/implement` takes the lowest-numbered `ready` issue whose blockers are all closed
-and whose subjects the current build path all permit. A parent with open children
-is a container rather than a buildable slice: `/implement` builds the children,
-and the parent closes when they all close. This is what keeps the two ways of
-being not-ready apart. A blocker is a different piece that must land first; an
-open child is a part of this piece still to build. Issue numbers give a stable
-creation order and the two relationships give the structure, so nothing extra is
-maintained by hand.
+Work found during a build becomes a new piece with "Found while building
+<piece title>" on its surface, linked both ways. It gains a blocked-by link
+only if one piece really must land first.
 
 ## An issue somebody typed by hand
 
-Anybody can open an issue, from a phone, in half a sentence. That is a request
-rather than a piece, and it cannot be built or proved as it stands.
-
-Shape is what decides, not who wrote it or whether anyone remembered to mark it.
-An issue with no `## Done when` has not been sized. Label it
-`needs-clarification` the first time you see one, so somebody reading the list on
-GitHub can tell which entries are still notes. The label is there for people; the
-agent goes by shape, so an unlabelled note is still a note.
-
-If the interview finds that talking will not settle it, swap the label for the
-`needs-` label that says why (see Labels above), and say which you moved it to
-and why, because a label change nobody explained reads as the agent losing track.
-
-Refining one produces the shape above. Keep what the person originally typed
-underneath rather than replacing it, because their words are what a refinement
-can be checked against and what to return to when it reads wrong.
+An issue with no `## Done when` has not been sized. It is a request, not a
+piece. Label it `needs-clarification` the first time you see one, so people can
+see it is still a note; the agent goes by shape either way. Refining it keeps
+the person's original words underneath.
 
 ## When somebody acts on GitHub
 
-The issues are shared, so people assign, close, label and edit them by hand.
-Three rules settle nearly every case.
-
 A person's action wins. The agent never undoes something somebody did on
-purpose. It can say what it found, and then it works with what is there.
-
-Absence is not a decision. A piece carrying no subject label is unclassified
-rather than assumed to be `how it works`. Several subject labels are not excess,
-because a piece is allowed to be about more than one thing.
-
-The agent says what it found. It does not quietly reshape a project back into
-the form it expected.
+purpose. Absence is not a decision: a piece with no subject label is
+unclassified, not `how it works`. The agent says what it found. It works with
+what is there.
 
 | What the person does | What the kit does |
 |---|---|
-| Assigns themselves | Treats the piece as theirs, and `/implement` will not hand it to anyone else. Assignment says whose it is; `building` says work is under way now |
-| Assigns somebody else | `/implement` skips it and says who has it, rather than quietly taking it |
+| Assigns themselves | Treats the piece as theirs |
+| Assigns somebody else | `/implement` skips it and says who has it |
 | Adds `building` | Treats the piece as under way and leaves it alone |
-| Closes an issue by hand | It stays closed. `/maintain` may say that no changelog line matches it, and ask whether it was done or dropped |
-| Reopens a closed issue | Treats it as work again, and takes off a `parked` label, because reopening is the decision to unpark it |
-| Edits the body so `## Done when` is gone | Treats it as a request rather than a piece, and refines it before building |
+| Closes an issue by hand | It stays closed. `/maintain` may ask whether it was done or dropped |
+| Reopens a closed issue | Treats it as work again and takes off `parked` |
+| Edits the body so `## Done when` is gone | Treats it as a request again |
 | Adds labels of their own | Leaves them alone |
 | Puts two subject labels on one piece | Takes both, and satisfies what each one demands |
 | Leaves the subject off | `/shape` classifies it when the piece is refined |
 | Uses milestones or a project board | Ignores both, and neither reads nor writes them |
 | Deletes an issue | Lets it go. If a branch still refers to it, `/maintain` says so |
-| Fills the issue form in properly | Nothing special. It is a piece, and it gets built |
 
 ## The local printout
 
-`plan.local.md` is a printout of the open issues and nothing else. It is
-gitignored, so it is one person's view of a shared record and can never collide
-with anyone else's.
+`plan.local.md` is a git-ignored printout of the open issues, made with
+`sh .agents/tools/plan-refresh.sh` and never read back as a record. Refresh it
+when reading or changing the plan. Where a project has no copy of the helper,
+run the same file from the installed setup-ai-build-kit skill's
+`templates/foundation/plan-refresh.sh` from the project root, and say the next
+`/maintain` adds it. Never sort pieces by reading the issues by hand: the
+printout keeps a piece with an open blocker out of `To build`.
 
-Information flows one way: issues are the record, and the printout is made from
-them, never read back. A change to a piece goes to the issue, and the printout is
-made again with `sh .agents/tools/plan-refresh.sh`, so if it looks stale,
-refresh it. Run the refresh when reading or changing the plan rather than on
-every session start, so a session that never touches the plan stays light.
+A command naming what to build next names only a piece under `To build`
+marked `(ready)` in a printout it has just refreshed. With none, say nothing
+is ready and what the rest wait on.
 
-Founding copies that helper into the project from this skill's
-`templates/foundation/plan-refresh.sh`, whichever route installed the kit, and
-`/maintain` adds it to a project founded before it shipped. Where a project
-still has no copy, run the same file from the installed setup-ai-build-kit
-skill, from the project's root folder, and say in one line that the next
-`/maintain` adds it to the project. Never sort the pieces by reading the issues
-by hand instead. The printout is what keeps a piece with an open blocker out of
-`To build`, and a hand reading once named a blocked piece as the next one to
-build.
-
-When a command names what can be built next, it names a piece under `To build`
-marked `(ready)` in a printout it has just refreshed, and nothing else. Where
-that group holds no such piece, say that nothing is ready to build now and what
-the rest are waiting on, and name no piece as next.
-
-When a refresh fails, follow [required tools](required-tools.md),
-"When GitHub access fails", before concluding GitHub is unavailable. That
-route requests access through the client when permission is the missing part.
-
-It carries the time it was written, which is what makes it safe when GitHub is
-unreachable. The agent can say "here is your list as of 18:40, and I cannot
-reach GitHub to confirm it is current" rather than leaving somebody with
-nothing. Work that would change the plan waits until GitHub is back, because
-the agent will not update issues it cannot see. The piece already in hand
-carries on.
-
-One call to GitHub covers the whole backlog. The issue list carries a
-dependency summary, so whether a piece is held up by another is known without
-asking about each one. Only the pieces that are actually blocked need a second
-call, to name what is holding them.
-
-## Parked ideas
-
-An idea deliberately left out becomes a closed issue labelled `parked`, with the
-reason in the body. Closed, so it never reads as work waiting to be done.
-
-Before accepting a request as new, search closed issues too. The reason exists
-so the same idea does not come back around and get built by accident.
+When a refresh fails, follow [required tools](required-tools.md), "When
+GitHub access fails". The printout carries the time it was written, so with
+GitHub unreachable say "here is your list as of 18:40". Work that would change
+the plan waits until GitHub is back; the piece in hand carries on.
