@@ -128,7 +128,9 @@ open and the live tool as it was.
 
 Where several pieces wait, name each pull request on its own line. A yes
 covers only those it names, or all where it plainly says so, as in "merge
-both".
+both". Where merging one of them leaves another `CONFLICTING`, the same yes
+covers bringing `main` into it, as above: settle it, run the check, and merge
+it once green, saying so. Do not ask again.
 
 **Merging.** Make an approved merge on the pull request itself, always with
 `gh pr merge --merge`, never `--squash` or `--rebase`, so the masterplan's mark
