@@ -33,6 +33,17 @@ for rr_section in preview going-live rollback secrets logs; do
   rr_case 2 good "$rr_section.sh"
 done
 rr_case 0 good SHARED_PREVIEW=yes preview.sh --pasted "$(rr_paste bad preview)"
+# Only the newest deployment's status counts, the health check's values must
+# sit in its own settings, and an image needs a tag. A paste the script
+# cannot read with confidence asks again in the recipe's words.
+rr_case 0 good preview.sh --pasted "$(rr_paste older-failed preview)"
+rr_case 0 good going-live.sh --pasted "$(rr_paste older-failed going-live)"
+rr_case 1 good going-live.sh --pasted "$(rr_paste newest-failed going-live)"
+rr_case 1 good going-live.sh --pasted "$(rr_paste wrong-port going-live)"
+rr_case 2 good going-live.sh --pasted "$(rr_paste unlabelled going-live)"
+rr_said yes "$(sed -n '/^## Going live$/,/^## /s/^Ask: //p' "$RR_RECIPE/recipe.md")"
+rr_case 2 good rollback.sh --pasted "$(rr_paste untagged rollback)"
+rr_said yes "$(sed -n '/^## Rollback$/,/^## /s/^Ask: //p' "$RR_RECIPE/recipe.md")"
 rr_case 2 good secrets.sh --pasted "$(rr_paste value secrets)"
 # The kit's own half of going live: the table read.
 rr_case 1 bad going-live.sh --pasted "$(rr_paste good going-live)"
@@ -52,6 +63,16 @@ rr_case 2 good hosting-request.sh --lane outside
 rr_case 2 good GIT_DIR=/nonexistent hosting-request.sh
 printf 'FROM node:22-slim\nCMD ["node", "server.js"]\n' > "$RR_TMP/fixture/Dockerfile"
 rr_case 1 good hosting-request.sh
+for rr_bind in 'ENV HOSTNAME="0.0.0.0"' "ENV HOSTNAME='0.0.0.0'" 'ENV HOSTNAME 0.0.0.0'; do
+  printf 'FROM node:22-alpine\n%s\nCMD ["node", "server.js"]\n' "$rr_bind" > "$RR_TMP/fixture/Dockerfile"
+  rr_case 0 good hosting-request.sh
+done
+# A remote address holding a sign-in is printed without it.
+RR_ORIGIN=https://someone:token-stand-in@github.com/team/app.git
+rr_case 0 good hosting-request.sh
+RR_ORIGIN=
+rr_said no "token-stand-in"
+rr_said yes "Repo:          https://github.com/team/app.git, branch main"
 printf 'FROM node:22-alpine\nENV HOSTNAME=0.0.0.0 PORT=3000\nCMD ["node", "server.js"]\n' > "$RR_TMP/fixture/Dockerfile"
 
 # The shared parts this recipe names.

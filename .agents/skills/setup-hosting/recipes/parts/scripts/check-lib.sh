@@ -100,6 +100,19 @@ for found in re.finditer(r"\{[^{}]*\}", text):
 PY
 }
 
+cl_ask() {
+  # cl_ask <recipe.md> <heading>: the fixed words a section asks with.
+  sed -n "/^## $2\$/,/^## /s/^Ask: //p" "$1"
+}
+
+cl_newest_status() {
+  # cl_newest_status <file>: the status of the first deployment a paste
+  # names, the newest, as finished, failed or another word. Nothing when the
+  # paste names none.
+  awk '{ l = tolower($0) }
+    match(l, /finished|failed|in progress|queued|cancell?ed|building/) { print substr(l, RSTART, RLENGTH); exit }' "$1"
+}
+
 cl_main_commit() {
   # The commit `main` holds on GitHub, as this computer last fetched it.
   git rev-parse origin/main 2>/dev/null

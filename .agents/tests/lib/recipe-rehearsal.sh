@@ -484,8 +484,17 @@ rr_paste_files() {
   printf 'Deployment status: Finished\n{"status":"ok","database":"ok","commit":"%s","project":"liveref"}\n' "$rr_main" > "$rr_p/bad-preview"
   printf 'Deployment status: Finished\nHealth check: on, path /api/health, port 3000, host 127.0.0.1\nContainer: Running (healthy)\n{"status":"ok","database":"ok","commit":"%s","project":"liveref"}\n' "$rr_main" > "$rr_p/good-going-live"
   printf 'Deployment status: Finished\nHealth check: on, path /api/health, port 3000, host localhost\nContainer: Running (healthy)\n{"status":"ok","database":"ok","commit":"%s","project":"liveref"}\n' "$rr_main" > "$rr_p/bad-going-live"
-  printf 'Images kept:\n%s  live\nab12cd3  2026-01-01 10:00\n' "$rr_main" > "$rr_p/good-rollback"
-  printf 'Images kept:\n%s  live  2026-01-02 10:00\n' "$rr_main" > "$rr_p/bad-rollback"
+  # The newest deployment comes first; an older failed one is history.
+  printf 'Deployment status: Finished\nPrevious deployment: Failed\n{"status":"ok","database":"ok","commit":"%s","project":"previewref"}\n' "$rr_main" > "$rr_p/older-failed-preview"
+  printf 'Deployment status: Finished\nPrevious deployment: Failed\nHealth check: on, path /api/health, port 3000, host 127.0.0.1\nContainer: Running (healthy)\n{"status":"ok","database":"ok","commit":"%s","project":"liveref"}\n' "$rr_main" > "$rr_p/older-failed-going-live"
+  printf 'Deployment status: Failed\nPrevious deployment: Finished\nHealth check: on, path /api/health, port 3000, host 127.0.0.1\nContainer: Running (healthy)\n{"status":"ok","database":"ok","commit":"%s","project":"liveref"}\n' "$rr_main" > "$rr_p/newest-failed-going-live"
+  # The right values appear, but not in the health check's own settings.
+  printf 'Deployment status: Finished\nHealth check: on, path /api/health, port 8080, host localhost\nContainer: Running (healthy), ready on 3000 at 127.0.0.1\n{"status":"ok","database":"ok","commit":"%s","project":"liveref"}\n' "$rr_main" > "$rr_p/wrong-port-going-live"
+  printf 'Deployment status: Finished\nContainer: Running (healthy)\n{"status":"ok","database":"ok","commit":"%s","project":"liveref"}\n' "$rr_main" > "$rr_p/unlabelled-going-live"
+  printf 'Images kept:\napp:%s  live\napp:ab12cd3  2026-01-01 10:00\n' "$rr_main" > "$rr_p/good-rollback"
+  printf 'Images kept:\napp:%s  live  2026-01-02 10:00\n' "$rr_main" > "$rr_p/bad-rollback"
+  # Hexadecimal runs with nothing to say they are images.
+  printf 'Build log deadbee, then cafe123\n' > "$rr_p/untagged-rollback"
   printf 'NEXT_PUBLIC_SUPABASE_URL\nNEXT_PUBLIC_SUPABASE_ANON_KEY\nSUPABASE_SERVICE_ROLE_KEY\n' > "$rr_p/good-secrets"
   printf 'NEXT_PUBLIC_SUPABASE_URL\nNEXT_PUBLIC_SUPABASE_ANON_KEY\n' > "$rr_p/bad-secrets"
   printf 'NEXT_PUBLIC_SUPABASE_URL=https://liveref.supabase.co\n' > "$rr_p/value-secrets"

@@ -26,6 +26,8 @@ case "$lane" in internal|public) ;; *) cl_cannot "The lane is internal or public
 cl_need git
 repo=$(git remote get-url origin 2>/dev/null) ||
   cl_cannot "The project has no GitHub repository yet, so there is nothing for the server to build."
+# A sign-in written into the address, user:token@, is never printed.
+repo=$(printf '%s\n' "$repo" | sed -E 's#^([A-Za-z][A-Za-z0-9+.-]*://)[^/@]*@#\1#')
 case "$lane" in
   internal) lane_text="internal (private network)" ;;
   public) lane_text="public (internet)" ;;
@@ -41,7 +43,8 @@ if [ -f Dockerfile ]; then
   else
     build="Dockerfile at root, image has curl or wget"
   fi
-  if grep -q 'HOSTNAME=0\.0\.0\.0' Dockerfile; then
+  # HOSTNAME=0.0.0.0, quoted or not, or the older form HOSTNAME 0.0.0.0.
+  if grep -Eq "(^|[[:space:]])HOSTNAME([[:space:]]+|=)[\"']?0\\.0\\.0\\.0[\"']?([[:space:]]|\$)" Dockerfile; then
     bind=0.0.0.0
   else
     bind="127.0.0.1 (not hostable yet)"

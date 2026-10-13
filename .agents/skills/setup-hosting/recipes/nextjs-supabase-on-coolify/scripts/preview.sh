@@ -10,7 +10,7 @@
 #
 # The paste holds the preview deployment's status in Coolify and the answer
 # from the preview's /api/health, read at its address or on the server. A
-# finished deployment, "database":"ok", the pull request's commit, and a
+# finished newest deployment, the first one the paste names, "database":"ok", the pull request's commit, and a
 # project other than the live one pass. Where previews share the live
 # database by record, the project is not compared, and the line says previews
 # use live data.
@@ -27,10 +27,15 @@ here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 pasted=$2
 grep -qi 'preview deployments disabled' "$pasted" &&
   cl_fail "Coolify says preview deployments are switched off for this app."
-grep -qi 'failed' "$pasted" && cl_fail "The pasted status shows the preview deployment failed."
-grep -qi 'finished' "$pasted" || cl_fail "The pasted status does not show a finished preview deployment."
+ask=$(cl_ask "$here/../recipe.md" Preview)
+case $(cl_newest_status "$pasted") in
+  finished) ;;
+  failed) cl_fail "The pasted status shows the newest preview deployment failed." ;;
+  '') cl_cannot "The paste names no deployment status the kit can read. $ask" ;;
+  *) cl_fail "The pasted status does not show a finished preview deployment." ;;
+esac
 fields=$(cl_health_fields "$pasted")
-[ -n "$fields" ] || cl_cannot "The paste holds no answer from the preview's health route."
+[ -n "$fields" ] || cl_cannot "The paste holds no answer from the preview's health route. $ask"
 [ "$(printf '%s\n' "$fields" | sed -n 2p)" = ok ] || cl_fail "The preview answered, but it cannot reach its database."
 commit=$(printf '%s\n' "$fields" | sed -n 3p)
 if [ -n "${PREVIEW_COMMIT:-}" ] && [ "$commit" != "$PREVIEW_COMMIT" ]; then
