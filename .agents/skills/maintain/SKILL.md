@@ -94,7 +94,10 @@ Do not sign in again or retry the failed command in this session.
 ## Monthly, when due
 
 1. Read this skill's `VERSION` file, which is the version this project holds.
-   Then ask for the latest published one with
+   Then ask for the latest published one: from the project root, run `python3`
+   with this skill's `scripts/upgrade-check.py --latest --route`. Its `holds`
+   and `latest` lines give both numbers, exit 3 means the latest could not be
+   read, and its `route` lines give step 4's update command. It runs
    `gh api repos/gwpicard/ai-build-kit/releases/latest --jq .tag_name`. Ask
    that endpoint and no other: it is the only one that cannot answer with a
    draft or a prerelease, while `gh release list` puts an unpublished draft in
@@ -136,7 +139,8 @@ Do not sign in again or retry the failed command in this session.
    its plugins. If more than one route is active, stop and ask the person which
    one to keep. Use a plugin when one coding agent runs the project and the
    shared skills installation when the project uses several coding agents.
-4. Update only through the route found in step 3:
+4. Update only through the route found in step 3, with the command its
+   `route` line from step 1 names:
 
    - For the Claude plugin, refresh its marketplace with
      `claude plugin marketplace update ai-build-kit`, then run

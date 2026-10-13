@@ -1,0 +1,43 @@
+#!/usr/bin/env sh
+# pre-push: refuse a push to main, and a push that would replace work on the
+# remote.
+#
+# Founding places this file at .agents/hooks/git/pre-push and points Git's
+# core.hooksPath at that folder. Git runs it before every push, whichever
+# coding agent or person runs the push, so it holds where a coding agent's own
+# settings do not reach.
+#
+# Every change reaches main through a pull request. The project's first upload
+# creates main through the GitHub API, which is not a push, so it is not
+# stopped here.
+#
+# Git passes one line on standard input for each branch the push would change:
+#   <local ref> <local commit> <remote ref> <remote commit>
+
+refused=0
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [ -n "$remote_ref" ] || continue
+  case "$remote_ref" in
+    refs/heads/main)
+      echo "This push was stopped: it would change main directly." >&2
+      echo "Changes reach main through a pull request. Push the piece's own branch instead." >&2
+      refused=1
+      continue
+      ;;
+    refs/heads/*) ;;
+    *) continue ;;
+  esac
+  # A new branch, or a deleted one, replaces nothing on the remote.
+  case "$remote_sha" in *[!0]*) ;; *) continue ;; esac
+  case "$local_sha" in *[!0]*) ;; *) continue ;; esac
+  if ! git cat-file -e "$remote_sha^{commit}" 2>/dev/null ||
+     ! git merge-base --is-ancestor "$remote_sha" "$local_sha" 2>/dev/null; then
+    branch=${remote_ref#refs/heads/}
+    echo "This push was stopped: it would replace work on $branch that this copy does not have." >&2
+    echo "Bring that work in first with git pull, then push again." >&2
+    refused=1
+  fi
+done
+
+exit "$refused"

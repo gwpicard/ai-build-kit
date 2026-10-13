@@ -26,7 +26,9 @@ tabs:
                         the file could not be read, so it was left alone
 
 Which rules are offered. A deny rule that names both `git push` and `main` is
-always offered. One that stops a force push is offered only while the project
+always offered, and so is one that stops a push skipping the push guard,
+throws away unsaved changes, or reads another tool's stored login, since no
+earlier rule did that job. One that stops a force push is offered only while the project
 still holds `Bash(git push --force:*)`, and one that stops a forced delete only
 while it holds `Bash(rm -rf:*)`, since a person may have taken those out on
 purpose. Every ask rule is offered. Any other rule the project lacks is left
@@ -65,6 +67,14 @@ DECLINED = "push-rules-declined|"
 FORCE_PUSH = "Bash(git push --force:*)"
 FORCED_DELETE = "Bash(rm -rf:*)"
 MERGE = "Bash(gh pr merge:*)"
+# Refusals added after the first founding settings, which no earlier rule
+# stood in for: skipping the push guard, throwing away unsaved changes, and
+# reading another tool's stored login.
+ALWAYS_OFFERED = (
+    "Bash(git push --no-verify", "Bash(git push * --no-verify",
+    "Bash(git checkout ", "Bash(git restore ", "Bash(git stash ",
+    "Bash(security ", "Bash(gh auth token", "Read(",
+)
 
 
 # --- reading ----------------------------------------------------------------
@@ -100,7 +110,7 @@ def offered(project_lists, template_lists):
     for rule in template_lists["deny"]:
         if rule in have["deny"]:
             continue
-        if "git push" in rule and "main" in rule:
+        if ("git push" in rule and "main" in rule) or rule.startswith(ALWAYS_OFFERED):
             out.append(("deny", rule))
         elif rule.startswith("Bash(git push") and FORCE_PUSH in have["deny"]:
             out.append(("deny", rule))

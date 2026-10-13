@@ -145,6 +145,7 @@ checks.yml|.github/workflows/checks.yml
 claude-settings.json|.claude/settings.json
 session-start.sh|.agents/hooks/session-start.sh
 check-sensitive-areas.sh|.agents/hooks/check-sensitive-areas.sh
+pre-push|.agents/hooks/git/pre-push
 plan-refresh.sh|.agents/tools/plan-refresh.sh
 codex-github-check.py|.agents/tools/codex-github-check.py
 env.example|.env.example
@@ -183,6 +184,7 @@ checks.yml|.github/workflows/checks.yml
 claude-settings.json|.claude/settings.json
 session-start.sh|.agents/hooks/session-start.sh
 check-sensitive-areas.sh|.agents/hooks/check-sensitive-areas.sh
+pre-push|.agents/hooks/git/pre-push
 plan-refresh.sh|.agents/tools/plan-refresh.sh
 codex-github-check.py|.agents/tools/codex-github-check.py
 env.example|.env.example
@@ -198,3 +200,8 @@ if [ ! -e "$PROJECT_ROOT/.agents/tools/codex-setup-path" ] && \
    [ ! -L "$PROJECT_ROOT/.agents/tools/codex-setup-path" ]; then
   printf '%s\n' "$SKILL_ROOT" > "$PROJECT_ROOT/.agents/tools/codex-setup-path"
 fi
+
+# The pre-push guard runs only once Git is pointed at it. A project that is not
+# a Git repository yet gets this from the founding save instead.
+sh "$SKILL_ROOT/scripts/use-push-guard.sh" "$PROJECT_ROOT" || \
+  note "the push guard is not on, so only the coding agent's own settings stop a push to main."

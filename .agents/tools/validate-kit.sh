@@ -2054,14 +2054,43 @@ Bash(rm -f -r:*)
 Bash(rm -R -f:*)
 Bash(rm -f -R:*)
 Bash(rm --recursive --force:*)
-Bash(rm --force --recursive:*)"
-# A project also asks before any merge, so a merge never happens without a
-# person's click in the box Claude Code shows. This repository's own settings
-# carry no ask list.
+Bash(rm --force --recursive:*)
+Bash(git push --no-verify*)
+Bash(git push * --no-verify*)
+Bash(git checkout .)
+Bash(git checkout * .)
+Bash(git restore .)
+Bash(git restore * .)
+Bash(git stash drop:*)
+Bash(git stash clear:*)
+Bash(security find-*)
+Bash(security dump-keychain:*)
+Bash(gh auth token:*)
+Read(//**/.config/gh/hosts.yml)
+Read(//**/GitHub CLI/hosts.yml)
+Read(//**/com.vercel.cli/auth.json)
+Read(//**/.vercel/auth.json)
+Read(//**/.supabase/access-token)"
+# A project also asks before any merge, and before a command that changes a
+# live service, so neither happens without a person's click in the box Claude
+# Code shows. This repository's own settings carry no ask list.
 expected_ask_project="Bash(gh pr merge:*)
 Bash(gh api *pulls/*/merge*)
 Bash(gh api *merges*)
-Bash(gh api graphql *mergePullRequest*)"
+Bash(gh api graphql *mergePullRequest*)
+Bash(supabase config push:*)
+Bash(supabase db push:*)
+Bash(vercel *--prod*)
+Bash(vercel *--target*production*)
+Bash(vercel rollback:*)
+Bash(vercel promote:*)
+Bash(gh repo archive:*)
+Bash(gh repo edit *--visibility*)
+Bash(gh api *-X DELETE*)
+Bash(gh api *-XDELETE*)
+Bash(gh api *-X=DELETE*)
+Bash(gh api *--method DELETE*)
+Bash(gh api *--method=DELETE*)"
 deny_ok=1
 if command -v python3 >/dev/null 2>&1; then
   py_script=/tmp/validate-kit-deny.$$
@@ -2104,13 +2133,13 @@ if actual != expected:
     sys.exit(1)
 PYEOF
   then
-    fail "$ask_file permissions.ask does not exactly match the merge rules: $(cat /tmp/validate-kit-ask-out.$$)"
+    fail "$ask_file permissions.ask does not exactly match the merge and live-service rules: $(cat /tmp/validate-kit-ask-out.$$)"
     deny_ok=0
   fi
   rm -f /tmp/validate-kit-ask-out.$$
   rm -f "$py_script"
   [ "$deny_ok" -eq 0 ] || \
-    pass "both Claude deny lists are exactly the mechanically enforceable blocked commands, and a project asks before every merge"
+    pass "both Claude deny lists are exactly the mechanically enforceable blocked commands, and a project asks before every merge and live-service change"
 else
   note "python3 not available; falling back to a substring check on permissions.deny"
   while IFS= read -r deny_json; do

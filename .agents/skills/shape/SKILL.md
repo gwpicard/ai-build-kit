@@ -39,7 +39,8 @@ clear repair ready at once, make the build offer for this same session.
 
 Clear, piece-sized work becomes a ready piece straight away: write it into the
 shape the `setup-ai-build-kit` skill's `references/pieces.md` describes, take its subjects
-from change-triage rather than choosing them yourself, and label it `ready`.
+from change-triage rather than choosing them yourself, and label it `ready`
+by running `sh` with this skill's `scripts/mark-ready.sh <number>`.
 That is a new issue, and it starts unassigned: a person is assigned only when
 `/implement` picks the piece up to build it, never when `/shape` creates it. Then
 make the build offer below.
@@ -121,7 +122,9 @@ question is the work of this command. An issue with no `## Done when` was typed
 by hand and never sized, so treat it as `needs-clarification`.
 
 Run the step the label names, write what settled it into the piece's `## Decided`
-section, and only then take the label off and mark the piece `ready`. The record
+section, and only then take the label off and mark the piece `ready`, with
+this skill's `scripts/mark-ready.sh <number>`. It refuses while either section
+below is missing, and says which. The record
 goes first because the label is the only thing saying the question was ever open:
 once it is gone, a piece settled properly and a piece nobody looked at read
 exactly alike.

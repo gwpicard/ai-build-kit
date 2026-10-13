@@ -296,7 +296,8 @@ the new version is live, take the save route the build path already requires:
 the three routes section-builder names, with no fourth for records. On the
 checkpoint route, a checkpoint commit is enough. Otherwise put them on one
 branch for this run, cut from the up-to-date `main`, and stage only the files
-this run itself changed. Open one pull request for them, once, after the
+this run itself changed: commit them with the `section-builder` skill's
+`scripts/save-records.sh`, naming each file. Open one pull request for them, once, after the
 launch is checked and its records are written, and ask for its yes in the
 reply that reports the launch. Where GitHub cannot be reached, save the
 records on that branch, note in one plain line the step that did not happen,

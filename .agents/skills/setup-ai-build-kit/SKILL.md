@@ -339,7 +339,8 @@ Before the first issue, check which repository the project points at. A project
 founded from a whole copy of the kit can keep the kit's `origin`, and the
 GitHub tool would then open its pieces on the kit's own repository,
 `gwpicard/ai-build-kit`. The tooling report in scripts/check-tooling.sh says
-so when it finds that. Where it does, change nothing there: open no issue, make
+so when it finds that, and `sh scripts/found-issues.sh check`, run from the
+project root, exits 6 on it. Where it does, change nothing there: open no issue, make
 or remove no label, change no setting, and push nothing. Say in one line that
 the project still points at the kit's repository, and ask for the person's own.
 With one, point `origin` at it, run the report again, and carry on with what it
@@ -350,9 +351,9 @@ paragraph of this step handles a GitHub setup that cannot be finished.
 Before the first issue, say in one line what founding is about to do on
 GitHub: open the pieces as issues, replace the labels GitHub made with the
 kit's own, and switch on removing a pull request's branch once it merges. Name
-the repository as `owner/name` and say whether it is public or private, read
-with `gh repo view --json visibility`. Where you cannot read that, say so
-rather than guess.
+the repository as `owner/name` and say whether it is public or private, from
+the `repository` and `visibility` lines `scripts/found-issues.sh check`
+prints. Where it says `unknown`, say so rather than guess.
 
 On a private repository, carry on in the same reply. On a public one, say in
 that same line that the plan will be public to anyone, and that the person can
@@ -367,13 +368,15 @@ needs a GitHub repository and the GitHub command line tool signed in; where that
 is not yet in place, guide the person through it now, following
 references/manual-setup.md, because the pieces live as issues and there is no
 file-based substitute. A private repository keeps issues just as well as a
-public one, so a project that wants to stay private still uses one. Do this without narrating it: create the
-label set, delete the labels GitHub made by itself, copy
-templates/foundation/piece-issue.yml to `.github/ISSUE_TEMPLATE/piece.yml`, open
+public one, so a project that wants to stay private still uses one. Do this without narrating it: run
+`sh scripts/found-issues.sh prepare` to create the label set,
+delete the labels GitHub made by itself, set the repository as below, and copy
+templates/foundation/piece-issue.yml to `.github/ISSUE_TEMPLATE/piece.yml`; open
 one issue per piece, label each shaped piece `ready` (or the matching `needs-`
 label where it still holds an open question for `/shape` to settle), and link the
 ones that genuinely block each other using GitHub's blocked-by relationship.
-Then run `sh .agents/tools/plan-refresh.sh` once, so the person has their list
+Then run `sh scripts/found-issues.sh refresh` once, which runs
+`.agents/tools/plan-refresh.sh`, so the person has their list
 before they need it. The bootstrap placed that helper in the project, whichever
 route installed the kit.
 
@@ -381,7 +384,8 @@ Set the repository to delete a merged pull request's branch automatically, so
 the branch list does not fill with finished piece branches, and to offer only
 the merge that keeps a piece's commits, since a squash or rebase merge leaves
 the masterplan's mark outside `main`
-(`gh api -X PATCH repos/OWNER/REPO -F delete_branch_on_merge=true -F allow_squash_merge=false -F allow_rebase_merge=false`).
+(`gh api -X PATCH repos/OWNER/REPO -F delete_branch_on_merge=true -F allow_squash_merge=false -F allow_rebase_merge=false`,
+which `found-issues.sh prepare` runs; its `settings` line says whether it held).
 Say in one line that you did. That is the whole of the pull-request hygiene the
 kit sets up on the repository. A direct push to `main` is forbidden by
 references/blocked-commands.md, and the Claude Code settings refuse the usual
@@ -607,7 +611,11 @@ checked`, until that checkpoint exists. Never put words of your own there. Then
 write the checkpoint's full hash into the line and save it in a second,
 records-only checkpoint. The page was written against that state, so the first
 build has a mark it can move on. Check it with `scripts/trued-mark.sh`, which
-must exit 0.
+must exit 0. Make both checkpoints with `sh scripts/found-save.sh`, run from
+the project root. It sets the neutral label only where no save name or email
+is set, and says so on its `identity` line, then saves the checkpoint, writes
+and saves the mark, and runs `scripts/trued-mark.sh`. Any exit other than 0
+means a checkpoint was not made: say what its line says.
 
 The founding save is always the checkpoint route, whatever the tool will grow
 into. It stands an initial state up rather than changing anything anybody

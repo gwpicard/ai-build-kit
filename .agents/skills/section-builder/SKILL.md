@@ -70,7 +70,9 @@ check where `origin` points. Where it is the kit's own repository,
 points at the kit's repository, and ask for their own. Never push a project
 there.
 
-Then run `git ls-remote --exit-code --heads origin` and read its exit code.
+Then run `python3` with this skill's `scripts/first-upload.py` from the
+project root. It runs `git ls-remote --exit-code --heads origin` and reads the
+exit code as below; its `state` line and its own exit code give the answer.
 In Codex, a push, fetch or remote check that reports `unable to get password
 from user` gets the installed `setup-ai-build-kit` skill's
 `templates/foundation/codex-github-check.py`, run with python3 and `--message`.
@@ -112,12 +114,13 @@ still stands when they return after fixing the permission.
 
 Build and check the piece first. Only the push waits. In the reply that
 reports the piece, ask for a yes that names the upload: the repository as
-`owner/name`, and whether it is public or private, read with
-`gh repo view --json visibility`. Where you cannot read that, say so rather
+`owner/name`, and whether it is public or private, from the script's
+`repository` and `visibility` lines. Where it says `unknown`, say so rather
 than guess. Close to: "This is the first time your project's code goes
 online. It goes to owner/name, which is private. Shall I upload it?"
 
-On a yes, push the piece's branch, then create `main` on GitHub at the commit
+On a yes, run the same script with `--approved`, from the piece's branch. It
+pushes the piece's branch, then creates `main` on GitHub at the commit
 the branch was cut from, `git merge-base main <piece branch>`, with
 `gh api repos/<owner>/<name>/git/refs -f ref=refs/heads/main -f sha=<commit>`.
 Run the push as a command of its own, with nothing chained to it. In Claude
@@ -125,8 +128,8 @@ Code, the project's settings refuse a push that names `main`, and they can read 
 chained command as one, so a `main` later in the same line refuses the push.
 Where a command is refused that way, run its parts one at a time. The
 person's yes still stands, so do not ask for it again.
-Make it the default branch with `gh repo edit --default-branch main`, open
-the pull request, and tell the person in one clause that GitHub now starts
+The script also makes it the default branch with
+`gh repo edit --default-branch main`. Open the pull request, and tell the person in one clause that GitHub now starts
 from their project's main copy. This is the one time `main` is written other
 than by a merge. It holds only what the person already has, so it changes
 nothing anybody relies on. On a no, keep the piece on its own branch on this
@@ -136,8 +139,9 @@ run nobody is there to say yes, so never upload on the person's behalf: keep
 the work local and note it on the piece.
 
 Replace the piece's `ready` label with `building`, and assign it to whoever is
-building it, before changing anything. That is what stops two people starting
-the same piece, and it costs one call. A piece never carries both labels.
+building it, before changing anything, by running `sh` with this skill's
+`scripts/piece-labels.sh start <number>`. That is what stops two people
+starting the same piece, and it costs one call. A piece never carries both labels.
 
 ## 2. Agree the visible result
 
@@ -548,8 +552,8 @@ piece as ready for review, not as done, and leave the merge to a person.
 
 The merge closes the issue, so there is no status to set by hand. After the
 merge, whoever made it, remove the `building` label and any `ready` still on
-the piece. Read its labels back with `gh issue view <number> --json labels`,
-and repeat the removal until neither is there. Then refresh the printout with
+the piece with this skill's `scripts/piece-labels.sh merged <number>`, which
+reads the labels back and repeats the removal until neither is there. Then refresh the printout with
 `sh .agents/tools/plan-refresh.sh` so the person's list matches what just
 happened.
 

@@ -13,6 +13,18 @@ Usage:
     upgrade-check.py --apply STEP [PROJECT]      apply one step
     upgrade-check.py --decline STEPS [PROJECT]   record a no, STEPS separated
                                                  by commas
+    upgrade-check.py --latest --route [PROJECT]  the version check and the
+                                                 update command, either alone
+
+`--latest` asks GitHub's `releases/latest` endpoint, the only one that cannot
+answer with a draft or a prerelease, and prints `holds`, `latest` and
+`compare` lines. It exits 0 when the project holds the latest release, 1 when
+it differs, and 3 when the latest could not be read: never say the project is
+up to date then. `--route` prints a `route` line for each way the kit is
+installed, with its update command, and a `then` line for a second command.
+The shared route's command is `npx skills add`, never `npx skills update`. It
+exits 4 when more than one route is active, so the person chooses one; with
+`--latest` too, 4 wins and otherwise the version's code stands.
 
 PROJECT defaults to the current folder, which must hold a masterplan.md.
 
@@ -57,6 +69,7 @@ left, and passes a declined `settings` to `settings-rules.py --decline`.
 """
 
 import datetime
+import json
 import runpy
 import os
 import re
@@ -335,16 +348,131 @@ def decline(project, steps):
     return 0
 
 
+# --- the version and the route ------------------------------------------------
+
+KIT_REPO = "gwpicard/ai-build-kit"
+SHARED = "npx skills add %s" % KIT_REPO
+VERSION_FILE = os.path.join(os.path.dirname(HERE), "VERSION")
+
+
+def held_version():
+    try:
+        with open(VERSION_FILE, encoding="utf-8") as handle:
+            return handle.read().strip() or "unknown"
+    except OSError:
+        return "unknown"
+
+
+def latest():
+    """Print what this project holds and the latest published release.
+
+    Only `releases/latest` is asked: it is the one endpoint that cannot answer
+    with a draft or a prerelease. Exit 0 when they match, 1 when a newer one is
+    published, 3 when the latest could not be read.
+    """
+    held = held_version()
+    print("holds\t%s" % held)
+    try:
+        result = subprocess.run(["gh", "api", "repos/%s/releases/latest" % KIT_REPO,
+                                 "--jq", ".tag_name"], capture_output=True, text=True)
+    except OSError:
+        print("latest\tunknown\tthe GitHub command line tool is not installed")
+        return 3
+    tag = result.stdout.strip()
+    if result.returncode != 0 or not re.fullmatch(r"v?\d+\.\d+\.\d+", tag):
+        why = (result.stderr.strip().splitlines() or ["GitHub gave no release"])[-1]
+        print("latest\tunknown\t%s" % why)
+        return 3
+    print("latest\t%s" % tag)
+    if tag.lstrip("v") == held.lstrip("v"):
+        print("compare\tsame")
+        return 0
+    print("compare\tdifferent")
+    return 1
+
+
+def claude_plugin_scope(project):
+    """The scope of the ai-build-kit Claude plugin enabled for this project, or
+    None. A local or project install records the folder it belongs to, and one
+    for another folder does not count."""
+    try:
+        result = subprocess.run(["claude", "plugin", "list", "--json"],
+                                capture_output=True, text=True, timeout=60)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if result.returncode != 0:
+        return None
+    try:
+        data = json.loads(result.stdout)
+    except ValueError:
+        return None
+    entries = data if isinstance(data, list) else data.get("plugins", []) if isinstance(data, dict) else []
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        ident = entry.get("id") or entry.get("name") or ""
+        if ident != "ai-build-kit@ai-build-kit" or not entry.get("enabled", True):
+            continue
+        where = entry.get("projectPath")
+        if where and os.path.realpath(where) != os.path.realpath(project):
+            continue
+        return entry.get("scope") or "user"
+    return None
+
+
+def agent_plugin_here():
+    """True when this skill runs from an Agent Plugins folder named ai-build-kit."""
+    manifest = os.path.join(os.path.dirname(INSTALLED), "plugin.json")
+    try:
+        with open(manifest, encoding="utf-8") as handle:
+            data = json.load(handle)
+    except (OSError, ValueError):
+        return False
+    return isinstance(data, dict) and data.get("name") == "ai-build-kit"
+
+
+def shared_lock(project):
+    try:
+        with open(os.path.join(project, "skills-lock.json"), encoding="utf-8") as handle:
+            return KIT_REPO in handle.read()
+    except OSError:
+        return False
+
+
+def route(project):
+    """Print the route this project receives the kit by, and its update
+    command. Exit 0 for one route, 4 when more than one is active, so the
+    person chooses which to keep. The shared route's command is always `add`,
+    never `update`, which drops any skill the lockfile does not list yet."""
+    routes = []
+    if shared_lock(project):
+        routes.append(("shared", [SHARED]))
+    scope = claude_plugin_scope(project)
+    if scope:
+        routes.append(("claude-plugin", ["claude plugin marketplace update ai-build-kit",
+                                         "claude plugin update ai-build-kit@ai-build-kit --scope %s" % scope]))
+    if agent_plugin_here():
+        routes.append(("agent-plugin", ["the coding agent's own plugin update command, or the "
+                                        "agent-plugin folder from the latest published Release"]))
+    if not routes:
+        routes.append(("older", [SHARED]))
+    for name, commands in routes:
+        print("route\t%s\t%s" % (name, commands[0]))
+        for command in commands[1:]:
+            print("then\t%s" % command)
+    return 4 if len(routes) > 1 else 0
+
+
 def usage(message=None):
     if message:
         print("upgrade-check.py: %s" % message, file=sys.stderr)
-    print("usage: upgrade-check.py [--monthly | --apply STEP | --decline STEPS] [PROJECT]",
+    print("usage: upgrade-check.py [--monthly | --apply STEP | --decline STEPS | --latest | --route] [PROJECT]",
           file=sys.stderr)
     return 2
 
 
 def main(argv):
-    monthly = False
+    monthly = want_latest = want_route = False
     apply_step = decline_steps = None
     rest = []
     args = list(argv)
@@ -352,6 +480,10 @@ def main(argv):
         arg = args.pop(0)
         if arg == "--monthly":
             monthly = True
+        elif arg == "--latest":
+            want_latest = True
+        elif arg == "--route":
+            want_route = True
         elif arg in ("--apply", "--decline"):
             if not args:
                 return usage("%s needs a step" % arg)
@@ -366,11 +498,18 @@ def main(argv):
             rest.append(arg)
     if len(rest) > 1 or (apply_step and decline_steps is not None):
         return usage()
+    if (want_latest or want_route) and (monthly or apply_step or decline_steps is not None):
+        return usage("--latest and --route go together or alone")
     project = os.path.abspath(rest[0] if rest else ".")
     if not founded(project):
         print("upgrade-check.py: %s holds no masterplan.md, so it is not a founded project" % project,
               file=sys.stderr)
         return 2
+    if want_latest or want_route:
+        code = latest() if want_latest else 0
+        if want_route and route(project) == 4:
+            return 4
+        return code
     for script in (LEFTOVERS, POINTERS, SETTINGS):
         if not os.path.isfile(script):
             print("upgrade-check.py: %s is missing beside it" % os.path.basename(script), file=sys.stderr)

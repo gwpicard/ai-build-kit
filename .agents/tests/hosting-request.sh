@@ -20,7 +20,11 @@ echo "Product names stay in the recipes:"
 PRODUCTS='coolify|vercel|supabase|netlify|heroku|railway|railpack|fly\.io|hetzner|hostinger|firebase|digitalocean'
 products_named() {
   # products_named <skills folder>: each file and line that names a product.
-  find "$1" -type f ! -path '*/setup-hosting/recipes/*' ! -path '*/maintain/scripts/kit-released-copies.json' ! -path '*/maintain/scripts/kit-retired-skills.json' | sort | while IFS= read -r pn_file; do
+  # The founding settings template is a list of rules Claude Code applies, not
+  # words a skill learns from. It names the recipes' own commands that change a
+  # live service, so a box asks before each one, and it is read whole by
+  # push-to-main-rules.sh.
+  find "$1" -type f ! -path '*/setup-hosting/recipes/*' ! -path '*/maintain/scripts/kit-released-copies.json' ! -path '*/maintain/scripts/kit-retired-skills.json' ! -path '*/templates/foundation/claude-settings.json' | sort | while IFS= read -r pn_file; do
     tr '[:upper:]' '[:lower:]' < "$pn_file" \
       | sed -e 's#vercel web interface guidelines##g' \
             -e 's#github\.com/vercel-labs/web-interface-guidelines##g' \

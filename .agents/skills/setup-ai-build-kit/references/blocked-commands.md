@@ -14,13 +14,18 @@ deny list, mirror these entries there as mechanical enforcement:
 - `git clean -f` and `git clean -fd`
 - a forced delete of a folder, such as `rm -rf`, in the spellings listed under
   "A force push and a forced delete" below
+- a push that skips the project's own push check, `git push --no-verify`
+- throwing away changes nobody saved: `git checkout .`, `git checkout -- .`,
+  `git restore .`, `git stash drop` and `git stash clear`. A repair that needs
+  to undo a failed attempt runs the `section-builder` skill's
+  `scripts/reset-attempt.sh` instead, as the `section-builder` skill's
+  `references/repair.md` says
+- reading a login another tool keeps for itself, as listed under "A stored
+  login" below
 
 The following restrictions do not reduce to one reliable command pattern and
 still apply:
 
-- `git checkout .` and `git restore .` are allowed only inside the repair's
-  announced reset step, in the `section-builder` skill's
-  `references/repair.md`;
 - never drop or empty a database table;
 - never migrate a production database without a backup and a rehearsal on a
   copy;
@@ -129,6 +134,44 @@ These are not refused, and the rule above still forbids them:
 
 When a branch needs the newest `main` after a merge conflict, merge `main` into
 the branch and push it. That needs no force.
+
+## A push the project's own check stops
+
+Founding places a Git hook at `.agents/hooks/git/pre-push` and points Git at
+it. Git runs it before every push, whichever coding agent or person pushes. It
+stops a push to `main` and a push that would replace work on the remote, in
+every spelling, since it reads what the push would change rather than the
+words of the command. A clone does not carry the setting that points Git at
+it, so founding sets it on this computer only.
+
+## A stored login
+
+A command line tool, GitHub's or a host's, keeps its login for its own use.
+That login reaches every project on the account. The Claude Code settings the
+kit installs refuse these ways of reading one:
+
+- `security find-generic-password`, `security find-internet-password` and any
+  other `security find-` command, and `security dump-keychain`
+- `gh auth token`
+- opening the file where GitHub's tool, or a recipe's host or database tool,
+  keeps its login
+
+They do not refuse a script that opens those files itself. The rule above
+still forbids it.
+
+## A change to a live service
+
+The Claude Code settings the kit installs ask before each of these, so Claude
+Code shows a box and the command runs only when the person clicks yes:
+
+- a recipe's commands that push database changes or settings to the live
+  database, a dry run included
+- a recipe's production deploy, rollback and promote commands
+- `gh repo archive` and `gh repo edit --visibility`
+- `gh api` with the `DELETE` method
+
+Say in one line what the command changes, and whether it can be undone, just
+before the box appears.
 
 ## A merge
 

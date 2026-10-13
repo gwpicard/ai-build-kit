@@ -1,0 +1,174 @@
+#!/usr/bin/env python3
+"""A small stand-in for the GitHub command line tool, for the script rehearsals.
+
+The scripts the skills call read and change a repository, its labels and its
+issues. This answers only those calls, from a JSON state file, and writes each
+call it receives to a log, so a rehearsal can say what was asked and what was
+not. Anything else exits 1, as an unknown command would. It never reaches the
+network.
+
+STANDIN_GH_STATE names the state file and STANDIN_GH_LOG the log. The state
+holds:
+
+    repo         "owner/name"
+    visibility   "PRIVATE" or "PUBLIC"
+    view_fails   true makes `repo view` fail, as a signed-out tool does
+    remote       path of a bare Git repository standing in for GitHub's copy
+    labels       names the repository has
+    refuse       label names whose deletion is refused
+    issues       {"<n>": {"body": "...", "labels": [...], "assignees": [...]}}
+    lag          number of `issue edit` calls to answer without changing
+                 anything, as GitHub does when a change is slow to show
+    latest       the tag `releases/latest` answers with; absent means 404
+    settings     what `api -X PATCH repos/OWNER/NAME` set
+    refs         branches created through the API
+    default      the default branch `repo edit` set
+"""
+
+import json
+import os
+import subprocess
+import sys
+
+STATE = os.environ["STANDIN_GH_STATE"]
+LOG = os.environ.get("STANDIN_GH_LOG", os.devnull)
+
+
+def load():
+    with open(STATE) as handle:
+        return json.load(handle)
+
+
+def save(state):
+    with open(STATE, "w") as handle:
+        json.dump(state, handle, indent=2)
+
+
+def flags(argv, name):
+    out = []
+    for i, arg in enumerate(argv):
+        if arg == name and i + 1 < len(argv):
+            out.append(argv[i + 1])
+        elif arg.startswith(name + "="):
+            out.append(arg.split("=", 1)[1])
+    return out
+
+
+def fail(message, code=1):
+    sys.stderr.write(message + "\n")
+    sys.exit(code)
+
+
+def main(argv):
+    with open(LOG, "a") as handle:
+        handle.write(" ".join(argv) + "\n")
+    state = load()
+    words = argv[:2]
+
+    if words == ["repo", "view"]:
+        if state.get("view_fails"):
+            fail("To get started with GitHub CLI, please run:  gh auth login", 4)
+        fields = (flags(argv, "--json") or ["nameWithOwner"])[0].split(",")
+        known = {"nameWithOwner": state["repo"], "visibility": state.get("visibility", "PRIVATE")}
+        print(json.dumps({f: known[f] for f in fields if f in known}))
+        return 0
+
+    if words == ["repo", "edit"]:
+        branch = (flags(argv, "--default-branch") or [None])[0]
+        if branch is None:
+            fail("stand-in: unmodelled repo edit")
+        heads = subprocess.run(["git", "-C", state["remote"], "for-each-ref", "--format=%(refname:short)",
+                                "refs/heads/"], capture_output=True, text=True).stdout.split()
+        if branch not in heads:
+            fail("HTTP 422: The branch %s was not found." % branch)
+        state["default"] = branch
+        save(state)
+        return 0
+
+    if words == ["issue", "view"]:
+        issue = state["issues"].get(argv[2])
+        if issue is None:
+            fail("GraphQL: Could not resolve to an issue with the number of %s." % argv[2])
+        print(json.dumps({"body": issue.get("body", ""),
+                          "labels": [{"name": n} for n in issue.get("labels", [])]}))
+        return 0
+
+    if words == ["issue", "edit"]:
+        issue = state["issues"].get(argv[2])
+        if issue is None:
+            fail("GraphQL: Could not resolve to an issue with the number of %s." % argv[2])
+        if state.get("lag", 0) > 0:
+            state["lag"] -= 1
+            save(state)
+            return 0
+        for value in flags(argv, "--add-label"):
+            for name in value.split(","):
+                if name not in state.get("labels", []):
+                    fail("'%s' not found" % name)
+                if name not in issue["labels"]:
+                    issue["labels"].append(name)
+        for value in flags(argv, "--remove-label"):
+            for name in value.split(","):
+                if name in issue["labels"]:
+                    issue["labels"].remove(name)
+        for value in flags(argv, "--add-assignee"):
+            issue.setdefault("assignees", []).append(value)
+        save(state)
+        return 0
+
+    if words == ["issue", "list"]:
+        print(json.dumps([{"number": int(n)} for n in state.get("issues", {})][:1]))
+        return 0
+
+    if words == ["label", "create"]:
+        name = argv[2]
+        if name not in state.setdefault("labels", []):
+            state["labels"].append(name)
+        save(state)
+        return 0
+
+    if words == ["label", "delete"]:
+        name = argv[2]
+        if name in state.get("refuse", []):
+            fail("HTTP 403: Resource not accessible by integration")
+        if name not in state.get("labels", []):
+            fail("HTTP 404: Not Found")
+        state["labels"].remove(name)
+        save(state)
+        return 0
+
+    if argv[:1] == ["api"]:
+        path = next((a for a in argv[1:] if "/" in a and "=" not in a), "")
+        method = (flags(argv, "-X") + flags(argv, "--method") + [""])[0].upper()
+        if path.endswith("/releases/latest"):
+            if "latest" not in state:
+                fail("gh: Not Found (HTTP 404)")
+            print(state["latest"])
+            return 0
+        if method == "PATCH" and path == "repos/" + state["repo"]:
+            settings = state.setdefault("settings", {})
+            for field in flags(argv, "-F") + flags(argv, "-f"):
+                key, _, value = field.partition("=")
+                settings[key] = value
+            save(state)
+            return 0
+        if path == "repos/%s/git/refs" % state["repo"]:
+            fields = dict(f.partition("=")[::2] for f in flags(argv, "-f"))
+            ref, sha = fields.get("ref", ""), fields.get("sha", "")
+            remote = state["remote"]
+            if subprocess.run(["git", "-C", remote, "cat-file", "-e", sha + "^{commit}"]).returncode:
+                fail("gh: Object does not exist (HTTP 422)")
+            if subprocess.run(["git", "-C", remote, "rev-parse", "-q", "--verify", ref],
+                              capture_output=True).returncode == 0:
+                fail("gh: Reference already exists (HTTP 422)")
+            subprocess.run(["git", "-C", remote, "update-ref", ref, sha], check=True)
+            state.setdefault("refs", []).append({"ref": ref, "sha": sha})
+            save(state)
+            print(json.dumps({"ref": ref}))
+            return 0
+
+    fail("stand-in: unmodelled call: %s" % " ".join(argv))
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

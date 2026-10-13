@@ -2,8 +2,10 @@
 # push-to-main-rules.sh: run the deny and ask rules a founded project's Claude
 # Code settings carry, and the script /maintain uses to bring them to an older
 # project. If this breaks, an agent can push straight to main, force-push over
-# someone's branch, delete a folder or merge with no box for the person to
-# click, or the monthly offer rewrites a person's own settings.
+# someone's branch, skip the push guard, throw away unsaved changes, read
+# another tool's stored login, delete a folder, or merge or change a live
+# service with no box for the person to click, or the monthly offer rewrites a
+# person's own settings.
 #
 # The matcher follows the rule shape documented at
 # https://code.claude.com/docs/en/permissions and is first checked against that
@@ -234,6 +236,7 @@ print("  ok: every force-push and forced-delete spelling listed as refused is de
 
 kept_for_parity = {"Bash(git push --force:*)", "Bash(git push -f:*)", "Bash(rm -rf:*)"}
 force_rules = [r for r in rules if r not in push_rules and r not in kept_for_parity
+               and "--no-verify" not in r
                and (r.startswith("Bash(git push") or r.startswith("Bash(rm "))]
 if len(force_rules) < 5:
     print("the settings hold fewer than five newer force-push or forced-delete rules")
@@ -287,11 +290,12 @@ if ask_problems(ask):
     print("\n".join(ask_problems(ask)))
     sys.exit(1)
 print("  ok: every way of merging asks first, and reading a pull request does not")
-for rule in ask:
-    if not ask_problems([r for r in ask if r != rule]):
+merge_rules = [r for r in ask if "merge" in r.lower()]
+for rule in merge_rules:
+    if not ask_problems([r for r in merge_rules if r != rule]):
         print("taking out the ask rule %s changes nothing, so the check does not need it" % rule)
         sys.exit(1)
-print("  ok: taking out any one of the %d ask rules is caught" % len(ask))
+print("  ok: taking out any one of the %d merge ask rules is caught" % len(merge_rules))
 # The first rules miss the spelling from the real run.
 first_rules = ["Bash(git push origin main:*)", "Bash(git push -u origin main:*)",
                "Bash(git push origin HEAD:main:*)"]
@@ -305,6 +309,201 @@ if not any("main-fix" in p or "feature" in p for p in evaluate(rules + ["Bash(gi
     print("an over-broad rule that refuses main-fix went unnoticed")
     sys.exit(1)
 print("  ok: an over-broad rule that refuses a branch named main-fix is caught")
+
+
+def leave_out_each(group, check, label):
+    """Every rule in the group is needed: taking it out must break the check."""
+    for rule in group:
+        if not check([r for r in group if r != rule]):
+            print("taking out %s changes nothing, so the check does not need it" % rule)
+            sys.exit(1)
+    print("  ok: taking out any one of the %d %s is caught" % (len(group), label))
+
+
+# Skipping the push guard, and throwing away unsaved changes.
+discard_refused = [
+    "git push --no-verify origin feature",
+    "git push origin feature --no-verify",
+    "git push -u origin feature --no-verify",
+    "git checkout .",
+    "git checkout -- .",
+    "git checkout HEAD -- .",
+    "git restore .",
+    "git restore -- .",
+    "git restore --worktree .",
+    "git restore --source=HEAD --staged --worktree .",
+    "git stash drop",
+    "git stash drop stash@{1}",
+    "git stash clear",
+]
+discard_allowed = [
+    "git checkout main",
+    "git checkout -b fix-total",
+    "git checkout -- app/sum.js",
+    "git restore app/sum.js",
+    "git restore --staged app/sum.js",
+    "git stash",
+    "git stash list",
+    "git stash pop",
+    "git push -u origin feature",
+    "sh .agents/skills/section-builder/scripts/reset-attempt.sh",
+]
+discard_rules = [r for r in rules if r.startswith(("Bash(git checkout", "Bash(git restore",
+                                                    "Bash(git stash", "Bash(git push --no-verify",
+                                                    "Bash(git push * --no-verify"))]
+
+
+def discard_problems(group):
+    found = ["%r is not refused" % c for c in discard_refused if not denied(group, c)]
+    found += ["%r is refused" % c for c in discard_allowed if denied(group, c)]
+    return found
+
+
+for command in discard_refused + discard_allowed:
+    print("  %-7s %s" % ("denied" if denied(rules, command) else "allowed", command))
+if discard_problems(discard_rules):
+    print("\n".join(discard_problems(discard_rules)))
+    sys.exit(1)
+print("  ok: every way of skipping the guard or discarding changes is refused, and the repair's reset script and ordinary commands are not")
+leave_out_each(discard_rules, discard_problems, "discard and guard rules")
+
+
+# Reading another tool's stored login.
+def read_matches(rule, path):
+    m = re.fullmatch(r"Read\((.*)\)", rule)
+    if not m:
+        return False
+    body = m.group(1)
+    if body.startswith("//"):
+        body, target = body[2:], path.lstrip("/")
+    else:
+        return False
+    regex = ""
+    i = 0
+    while i < len(body):
+        if body.startswith("**/", i):
+            regex += "(?:.*/)?"
+            i += 3
+        elif body[i] == "*":
+            regex += "[^/]*"
+            i += 1
+        else:
+            regex += re.escape(body[i])
+            i += 1
+    return re.fullmatch(regex, target) is not None
+
+
+# The documentation's own examples for a rule anchored at the filesystem root.
+assert read_matches("Read(//**/.env)", "/Users/alice/project/.env")
+assert read_matches("Read(//**/.env)", "/.env")
+assert not read_matches("Read(//**/.env)", "/Users/alice/project/.env.local")
+print("  ok: the path matcher agrees with the documentation's examples")
+
+secret_files = [
+    "/Users/sam/.config/gh/hosts.yml",
+    "/home/sam/.config/gh/hosts.yml",
+    "/c/Users/sam/AppData/Roaming/GitHub CLI/hosts.yml",
+    "/Users/sam/Library/Application Support/com.vercel.cli/auth.json",
+    "/home/sam/.local/share/com.vercel.cli/auth.json",
+    "/Users/sam/.vercel/auth.json",
+    "/Users/sam/.supabase/access-token",
+]
+ordinary_files = [
+    "/Users/sam/project/.env.example",
+    "/Users/sam/project/hosts.yml",
+    "/Users/sam/project/.vercel/project.json",
+    "/Users/sam/project/supabase/config.toml",
+    "/Users/sam/.config/gh/config.yml",
+]
+login_commands = [
+    "security find-generic-password -s gh:github.com -w",
+    "security find-internet-password -s github.com",
+    "security dump-keychain",
+    "gh auth token",
+    "gh auth token --hostname github.com",
+]
+login_allowed = ["gh auth status", "gh auth login", "security list-keychains"]
+login_rules = [r for r in rules if r.startswith(("Read(", "Bash(security", "Bash(gh auth token"))]
+
+
+def login_problems(group):
+    found = ["reading %s is not refused" % p for p in secret_files
+             if not any(read_matches(r, p) for r in group)]
+    found += ["reading %s is refused" % p for p in ordinary_files
+              if any(read_matches(r, p) for r in group)]
+    found += ["%r is not refused" % c for c in login_commands if not denied(group, c)]
+    found += ["%r is refused" % c for c in login_allowed if denied(group, c)]
+    return found
+
+
+if login_problems(login_rules):
+    print("\n".join(login_problems(login_rules)))
+    sys.exit(1)
+print("  ok: every stored login named is refused, on each system's path, and the project's own files are not")
+leave_out_each(login_rules, login_problems, "stored-login rules")
+
+
+# A box before each command that changes a live service.
+live_ask = [
+    "supabase config push",
+    "supabase db push",
+    "supabase db push --linked",
+    "supabase db push --dry-run",
+    "vercel --prod",
+    "vercel --prod --yes",
+    "vercel deploy --prod",
+    "vercel deploy --prebuilt --prod",
+    "vercel --target production",
+    "vercel deploy --target=production",
+    "vercel rollback dpl_123 --yes",
+    "vercel promote dpl_456 --yes",
+    "gh repo archive someone/kit-log --yes",
+    "gh repo edit --visibility public --accept-visibility-change-consequences",
+    "gh repo edit someone/kit-log --visibility private",
+    "gh api -X DELETE repos/someone/kit-log/git/refs/heads/old",
+    "gh api --method DELETE repos/someone/kit-log",
+    "gh api -XDELETE repos/someone/kit-log/hooks/1",
+    "gh api --method=DELETE repos/someone/kit-log/hooks/1",
+    "gh api -X=DELETE repos/someone/kit-log/hooks/1",
+    "gh api repos/someone/kit-log/hooks/1 -X DELETE",
+]
+live_runs = [
+    "supabase start",
+    "supabase db dump --linked -f schema.sql",
+    "supabase link --project-ref abc",
+    "vercel",
+    "vercel deploy",
+    "vercel link",
+    "vercel env ls production",
+    "vercel logs --environment production --level error --since 1h --no-branch --json",
+    "vercel inspect https://kit-log-git-sign-out.vercel.app",
+    "vercel git connect --yes",
+    "gh repo view --json visibility",
+    "gh repo edit someone/kit-log --default-branch main",
+    "gh api repos/someone/kit-log/git/refs -f ref=refs/heads/main -f sha=abc",
+    "gh api -X PATCH repos/someone/kit-log -F delete_branch_on_merge=true",
+    "gh pr view 12",
+]
+live_rules = [r for r in ask if not any(word in r for word in ("merge", "Merge"))]
+
+
+def live_problems(group):
+    found = ["%r does not ask" % c for c in live_ask if not denied(group, c)]
+    found += ["%r asks" % c for c in live_runs if denied(group, c)]
+    return found
+
+
+for command in live_ask + live_runs:
+    print("  %-7s %s" % ("asks" if denied(ask, command) else "runs", command))
+if live_problems(live_rules):
+    print("\n".join(live_problems(live_rules)))
+    sys.exit(1)
+print("  ok: every live-service change asks first, and reading or a preview deploy does not")
+leave_out_each(live_rules, live_problems, "live-service ask rules")
+if not live_problems(ask + ["Bash(vercel *)"]):
+    print("an over-broad rule that asks before every vercel command went unnoticed")
+    sys.exit(1)
+print("  ok: an over-broad rule that asks before reading the host is caught")
 PY
   cat "$work/matcher.out"
   fail "the deny or ask rules refuse the wrong commands"
@@ -326,7 +525,17 @@ def run(flag=None,code=0):
     result=subprocess.run(command,capture_output=True,text=True)
     assert result.returncode==code,(command,result.returncode,result.stdout,result.stderr)
     return result.stdout
-assert '\nask\tBash(gh pr merge:*)' in '\n'+run(code=1)
+first_offer='\n'+run(code=1)
+assert '\nask\tBash(gh pr merge:*)' in first_offer
+# The rules added after that release reach an older project too, and only
+# through the offer: nothing in the file changes until --apply.
+template=json.loads((root/'.agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json').read_text())
+newer_deny=[r for r in template['permissions']['deny'] if r.startswith(('Read(','Bash(security','Bash(gh auth token','Bash(git checkout','Bash(git restore','Bash(git stash','Bash(git push --no-verify','Bash(git push * --no-verify'))]
+newer_ask=[r for r in template['permissions']['ask'] if 'merge' not in r.lower()]
+assert len(newer_deny)>=16 and len(newer_ask)>=13,(newer_deny,newer_ask)
+for rule in newer_deny: assert '\ndeny\t'+rule+'\n' in first_offer+'\n',(rule,first_offer)
+for rule in newer_ask: assert '\nask\t'+rule+'\n' in first_offer+'\n',(rule,first_offer)
+assert json.loads(settings.read_text())==old
 run('--merge-box',1)
 original=settings.read_bytes()
 run('--decline'); assert settings.read_bytes()==original
@@ -341,13 +550,15 @@ for key,value in old['permissions'].items():
     if key in ('ask','deny'): assert current['permissions'][key][:len(value)]==value
     else: assert current['permissions'][key]==value
 assert not run(); run('--merge-box')
+assert all(r in current['permissions']['deny'] for r in newer_deny)
+assert all(r in current['permissions']['ask'] for r in newer_ask)
 second=settings.read_bytes(); run('--apply'); assert second==settings.read_bytes()
 # Removed broad force/delete rules stay removed; asks and main rules still offered.
 old['permissions']['deny']=[r for r in old['permissions']['deny'] if r not in ('Bash(git push --force:*)','Bash(rm -rf:*)')]
 settings.write_text(json.dumps(old))
 (p/'.ai-build-kit-maintenance').unlink()
 offer=run(code=1)
-assert not any(l.startswith('deny\tBash(rm ') or l.startswith('deny\tBash(git push') and 'main' not in l for l in offer.splitlines()),offer
+assert not any(l.startswith('deny\tBash(rm ') or l.startswith('deny\tBash(git push') and 'main' not in l and '--no-verify' not in l for l in offer.splitlines()),offer
 # Invalid JSON, malformed lists and linked parents must not be rewritten.
 settings.write_text('{not json'); assert 'left\t' in run('--apply'); assert settings.read_text()=='{not json'
 settings.write_text('{"permissions":{"ask":"my own value"}}'); original=settings.read_bytes()

@@ -75,7 +75,8 @@ output or in the code, and the change is a few lines, such as a typo or a wrong
 label, that look is the reproduction. A report alone is not enough: you must
 have seen the fault yourself. Still define the symptom as "Shaping a repair"
 says, and write what the look was onto the piece. Mark the piece ready at once,
-with the failing case as its `## Done when`, and offer to build it in this
+with the failing case as its `## Done when`, by running the `shape` skill's
+`scripts/mark-ready.sh <number>`, and offer to build it in this
 same session rather than a fresh one. Anything less certain is shaped by
 reproducing it, as the `section-builder` skill's `references/repair.md`
 describes under "Shaping a repair".
@@ -157,7 +158,8 @@ Where the request is a piece and the route is a question rather than a ready
 piece, put the route on the issue: `needs-clarification` for clarify,
 `needs-prototype` for a decision prototype, `needs-research` for a source check
 or a search for existing work.
-Take the label off and mark it `ready` once the question is answered.
+Take the label off and mark it `ready` once the question is answered, with the
+`shape` skill's `scripts/mark-ready.sh <number>`.
 Without the label the reason a piece is waiting lives only in the session that
 found it, and the next person to open the list sees a piece that has simply
 stopped.
