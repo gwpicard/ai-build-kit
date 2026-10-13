@@ -19,7 +19,13 @@
 # part here only removes and folds what the script marks, and the commit goes
 # through trim-commit.sh, which refuses a test change. The project check's
 # check-trim.sh is then run against a trim commit that changed a test, made by
-# hand past the guard, and must fail. All three name a test path the same way.
+# hand past the guard, and must fail. The rule for which paths are tests lives
+# once, in check-trim.sh, and covers each stack's test layout and set-up files.
+#
+# A wrapper is folded only when a test runs its user. A test of a file in
+# another folder with the same name as that user does not count. With one
+# engine missing, the script still prints what the others found, names the
+# part it could not check, and answers 2. An unused local name is the linter's.
 #
 # The engines are used from PATH when present and otherwise installed into a
 # throwaway folder. A machine that can do neither fails here rather than
@@ -169,6 +175,11 @@ const start = {
   'src/grade.js': branchy('grade', 'grade'),
   ...test('test/pricing.test.js', 'total', "import { total } from '../src/pricing.js';"),
   ...test('test/grade.test.js', 'grade', "import { grade } from '../src/grade.js';"),
+  // A file in another folder with the same name as the untested wrapper's
+  // user, src/cli.js, and a test that runs it. A test that runs this file
+  // does not run src/cli.js, so it must not count as a test of that wrapper.
+  'tools/cli.js': "export function banner() {\n  return 'shop';\n}\n",
+  'test/tools.test.js': "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport { banner } from '../tools/cli.js';\ntest('banner', () => assert.equal(banner(), 'shop'));\n",
 };
 
 const piece = {
@@ -364,20 +375,36 @@ console.log('  ok: the project check fails a trim commit that changed a test, an
 
 // --- the three name a test path the same way ------------------------------------
 
-const paths = ['test/a.js', 'src/a.test.ts', 'src/__tests__/b.js', 'tests/test_app.py', 'app/thing_test.py',
-  'conftest.py', 'test/fixtures/data.json', 'fixtures/orders.csv', 'pkg/x_test.go', 'src/app.js',
-  'src/contest.js', 'latest/notes.md', 'src/testing.py', 'attest.py'];
+const tests = ['test/a.js', 'src/a.test.ts', 'src/__tests__/b.js', 'tests/test_app.py', 'app/thing_test.py',
+  'conftest.py', 'test/fixtures/data.json', 'fixtures/orders.csv', 'pkg/x_test.go',
+  // The test layouts other stacks use, and the files that set the tests up.
+  'shop/tests.py', 'spec/models/user_spec.rb', 'src/app.e2e-spec.ts', 'src/__mocks__/api.js',
+  'jest.config.js', 'vitest.config.ts', 'playwright.config.ts', 'pytest.ini', 'src/setupTests.ts',
+  'cypress/e2e/login.cy.js'];
+const notTests = ['src/app.js', 'src/contest.js', 'latest/notes.md', 'src/testing.py', 'attest.py',
+  'src/ab-test.js', 'src/spec.ts', 'src/inspect.js'];
+const paths = [...tests, ...notTests];
 const pyAnswer = sh(work, 'python3', ['-B', '-c', `import importlib.util,sys
 spec = importlib.util.spec_from_file_location('q', ${JSON.stringify(quality)})
 q = importlib.util.module_from_spec(spec); spec.loader.exec_module(q)
 print('\\n'.join(p for p in sys.argv[1:] if q.is_test(p)))`, ...paths]).stdout.trim();
-const pattern = file => read(path.dirname(file), path.basename(file)).match(/^TEST_PATH='([^']+)'/m)[1];
-for (const file of [trimCommit, checkTrim]) {
-  const shAnswer = paths.filter(p => spawnSync('grep', ['-qE', pattern(file)], { input: p + '\n' }).status === 0).join('\n');
-  assert.equal(shAnswer, pyAnswer, `${path.basename(file)} and quality.py disagree about which paths are tests`);
+assert.equal(pyAnswer, tests.join('\n'), `quality.py named the wrong paths as tests: ${pyAnswer}`);
+const rule = read(path.dirname(checkTrim), path.basename(checkTrim)).match(/^TEST_PATH='([^']+)'$/m)[1];
+const shAnswer = paths.filter(p => spawnSync('grep', ['-qE', rule], { input: p + '\n' }).status === 0).join('\n');
+assert.equal(shAnswer, pyAnswer, 'check-trim.sh and quality.py disagree about which paths are tests');
+for (const file of [quality, trimCommit]) {
+  assert.ok(!read(path.dirname(file), path.basename(file)).includes('__tests__'),
+    `${path.basename(file)} carries its own copy of the test-path rule`);
 }
-assert.equal(pyAnswer.split('\n').length, 9, `expected nine test paths, got: ${pyAnswer}`);
-console.log('  ok: the script, the commit guard and the project check agree on which paths are tests');
+console.log('  ok: the test-path rule lives once, in check-trim.sh, and covers each stack\'s test layout');
+
+// trim-commit.sh refuses a trim that changed a test set-up file, by the same rule.
+write(dir, { 'jest.config.js': 'export default {};\n' });
+const config = sh(dir, 'sh', [trimCommit], true);
+assert.equal(config.status, 1, 'trim-commit saved a trim that changed a test set-up file');
+assert.match(config.stderr, /jest\.config\.js/);
+fs.rmSync(path.join(dir, 'jest.config.js'));
+console.log('  ok: trim-commit reads that rule, and refuses a trim that changed a test set-up file');
 
 // --- the piece with nothing to take out ----------------------------------------
 
@@ -403,6 +430,20 @@ assert.equal(bare.status, 2, `with no engine at all the script did not exit 2:\n
 assert.match(bare.stdout, /^not-checked\tcopies\t/m, 'the copy check that could not run was not named');
 console.log('  ok: with no engine at all, it names each check it could not run and exits 2');
 
+// Some engines but not all: the parts that ran still print their findings, the
+// part that did not is named, and the answer is 2, never a clean 0 or 1.
+const some = path.join(work, 'some-engines');
+fs.mkdirSync(some);
+for (const tool of ['git', 'node', 'python3', 'knip', 'jscpd']) {
+  fs.symlinkSync(sh(work, 'sh', ['-c', `command -v ${tool}`]).stdout.trim(), path.join(some, tool));
+}
+const partial = spawnSync(path.join(some, 'python3'), [quality, 'trim', '--base', base],
+  { cwd: dir, encoding: 'utf8', env: { PATH: some, HOME: process.env.HOME } });
+assert.equal(partial.status, 2, `with lizard missing the script did not exit 2:\n${partial.stdout}${partial.stderr}`);
+assert.match(partial.stdout, /^not-checked\tfunctions\tlizard is not installed$/m, 'the part with no engine was not named');
+assert.match(partial.stdout, /^report\tcopy\tsrc\/report\.js:/m, 'the findings from the engines that ran were not printed');
+console.log('  ok: with one engine missing, it prints what the others found, names the part not checked, and exits 2');
+
 // --- a Python piece -------------------------------------------------------------
 
 const py = path.join(work, 'python');
@@ -418,7 +459,7 @@ git(py, 'commit', '-q', '-m', 'Start');
 const pyBase = git(py, 'rev-parse', 'HEAD');
 write(py, {
   'shop/app.py': 'def total(prices):\n    return sum(prices)\n\n\ndef as_text(value):\n    return str(round(value))\n\n\n' +
-    'def label(prices):\n    amount = total(prices)\n    return as_text(amount)\n\n\ndef old_label(prices):\n    amount = total(prices)\n    return amount\n\n\n' +
+    'def label(prices):\n    amount = total(prices)\n    draft = amount\n    return as_text(amount)\n\n\ndef old_label(prices):\n    amount = total(prices)\n    return amount\n\n\n' +
     'if __name__ == "__main__":\n    print(total([1, 2]))\n',
 });
 git(py, 'add', '-A');
@@ -429,6 +470,8 @@ assert.deepEqual(pyRows.filter(r => r.action === 'remove').map(r => r.name), ['o
 assert.deepEqual(pyRows.filter(r => r.action === 'fold').map(r => r.name), ['as_text'], 'the one-user Python wrapper was not marked to fold');
 assert.ok(!pyRows.some(r => ['total', 'label'].includes(r.name)), 'a function in use was marked');
 console.log('  ok: on a Python piece, the unused function and the one-user wrapper are marked, and nothing in use');
+assert.ok(!pyRows.some(r => r.name === 'draft'), 'an unused local name was marked; it is the linter\'s to report');
+console.log('  ok: an unused local name is left to the linter');
 
 console.log('\ntrim-rehearsal.sh: findings, edits, the commit guard and silence all held');
 NODE

@@ -8,12 +8,12 @@ tell which is current.
 ## Run the script
 
 From the project root, run `python3` with this skill's
-`scripts/document-bloat.py`, passing `--since-visit`. It reads every Markdown document
-the project saves, apart from the records, the kit's own files and anything
-in a folder starting with a dot. It prints only what is new since the
-`last-full-pass` date.
+`scripts/document-bloat.py`, passing `--skip-offered`. It reads every Markdown
+document the project saves, apart from the records, the kit's own files and
+anything in a folder starting with a dot. It leaves out each finding an
+earlier visit offered.
 
-- Exit 0: nothing new. Say nothing about it.
+- Exit 0: nothing to offer. Say nothing about it.
 - Exit 1: `repeated` names a paragraph of forty words or more that appears
   word for word in two documents, at both places. `unreferenced` names a
   document no other file mentions. A README is never one.
@@ -36,3 +36,7 @@ proposals:
 Change nothing without a yes, and keep the person's own words in the copy that
 stays. With any finding, say once: "This finds copied and unused documents. It
 cannot find two documents that say the same thing in different words."
+
+Record what the person was offered, and only that: pipe the line of each
+finding you named to the same script with `--record-offered`, exactly as
+printed. A finding you did not name comes back at the next visit.

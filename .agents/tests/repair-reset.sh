@@ -29,7 +29,7 @@ printf 'expect 3\n' > "$P/app/sum.test.js"
 git -C "$P" add -A
 git -C "$P" commit -q -m "Reproduce the wrong total"
 
-run() { (cd "$P" && sh "$SCRIPT"); }
+run() { (cd "$P" && sh "$SCRIPT" "$@"); }
 
 # A failed attempt: one edit unstaged, one staged, and a new scratch file.
 printf 'total = a - b\n' > "$P/app/sum.js"
@@ -59,6 +59,48 @@ out=$(run) && code=0 || code=$?
 
 out=$(cd "$WORK" && sh "$SCRIPT" 2>&1) && code=0 || code=$?
 [ "$code" -eq 2 ] && pass "outside a Git repository it refuses" || fail "outside a repository it returned $code"
+
+echo "== An attempt with a recorded start =="
+# debug.log is already there, so it is not the attempt's. The person's notes
+# are too.
+printf 'my notes\n' > "$P/notes.txt"
+out=$(run --start) && code=0 || code=$?
+[ "$code" -eq 0 ] && printf '%s' "$out" | grep -q '^start: recorded' \
+  && pass "the start of an attempt is recorded" || fail "--start returned $code: $out"
+
+# The attempt edits a saved file, adds a scratch file and a helper in a new
+# folder, and stages one of them.
+printf 'total = a * b\n' > "$P/app/sum.js"
+printf 'scratch\n' > "$P/app/scratch.js"
+mkdir -p "$P/app/try"
+printf 'helper\n' > "$P/app/try/helper.js"
+git -C "$P" add app/try/helper.js
+
+# Run from a folder inside the project, as a coding agent often is.
+out=$(cd "$P/app" && sh "$SCRIPT") && code=0 || code=$?
+[ "$code" -eq 0 ] && [ "$(cat "$P/app/sum.js")" = "total = a + b" ] \
+  && pass "run from a folder inside the project, the saved file goes back" \
+  || fail "the reset from a subfolder returned $code: $out"
+[ ! -e "$P/app/scratch.js" ] && [ ! -e "$P/app/try/helper.js" ] \
+  && pass "files the attempt added since its start are removed, staged or not" \
+  || fail "the attempt's own new files were left: $(ls "$P/app")"
+[ -f "$P/notes.txt" ] && [ -f "$P/app/debug.log" ] \
+  && pass "files that were there before the attempt started are kept" \
+  || fail "the reset removed a file from before the attempt"
+printf '%s\n' "$out" | grep -q 'app/scratch.js' && printf '%s\n' "$out" | grep -q 'app/try/helper.js' \
+  && ! printf '%s\n' "$out" | sed -n '/^removed/,/^[a-z]/p' | grep -q 'notes.txt' \
+  && printf '%s\n' "$out" | sed -n '/^left in place/,$p' | grep -q 'notes.txt' \
+  && pass "the report names each file removed, and not the ones kept" \
+  || fail "the report was not accurate: $out"
+snapshot=$(printf '%s\n' "$out" | sed -n 's/^snapshot	\([^	]*\).*/\1/p')
+[ -n "$snapshot" ] && [ "$(git -C "$P" show "$snapshot:app/sum.js")" = "total = a * b" ] \
+  && [ "$(git -C "$P" show "$snapshot:app/scratch.js")" = "scratch" ] \
+  && [ "$(git -C "$P" show "$snapshot:app/try/helper.js")" = "helper" ] \
+  && pass "everything thrown away is kept first in a snapshot the report names" \
+  || fail "no usable snapshot was named: '$snapshot' / $out"
+[ -z "$(git -C "$P" status --porcelain --untracked-files=no)" ] \
+  && pass "nothing saved or staged differs from the last commit afterwards" \
+  || fail "the reset left changes: $(git -C "$P" status --porcelain)"
 
 [ "$FAIL" -eq 0 ] || exit 1
 echo "repair-reset.sh: all checks passed"

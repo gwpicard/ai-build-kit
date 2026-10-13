@@ -11,6 +11,10 @@
 # The broken function has no test. That is the point of the floor: the tests
 # pass, and the type check is what turns the tick red.
 #
+# The trim step goes red on a trim commit that changed a test, and also when it
+# cannot read the commits at all. A project founded before that step gets it
+# from place-trim-check.py, on a yes, exactly as founding writes it today.
+#
 # Python is the language rehearsed because its two tools install as small
 # packages. They are used from PATH when present and otherwise installed into a
 # throwaway environment. A machine that can do neither fails here rather than
@@ -121,6 +125,38 @@ run_check() {
   done < "$WORK/steps"
 }
 
+in_project() {
+  (cd "$PROJECT" && git -c user.name=Rehearsal -c user.email=rehearsal@example.invalid \
+    -c commit.gpgsign=false "$@") > /dev/null
+}
+
+# The hosted check runs in a clone with the whole history, where the pull
+# request's base is origin/main. A local origin/main stands in for it.
+save_as_base() {
+  in_project add -A
+  in_project commit -q -m "$1"
+  in_project update-ref refs/remotes/origin/main HEAD
+}
+
+# The trim step fails when it cannot read the pull request's commits, since a
+# trim it never read is not a trim it checked. It said "passed" once.
+mkdir -p "$WORK/no-history"
+status=0
+(cd "$WORK/no-history" && sh "$TRIM_CHECK") > "$WORK/last-output" 2>&1 || status=$?
+[ "$status" != 0 ] || fail "the trim step passed with no history to read"
+grep -q 'could not be read' "$WORK/last-output" || fail "the trim step did not say it could not read the commits"
+echo "  ok: the trim step goes red, and says why, when it cannot read the commits"
+
+in_project init -q -b main
+printf '__pycache__/\n.mypy_cache/\n.ruff_cache/\n' > "$PROJECT/.gitignore"
+in_project add -A
+in_project commit -q -m "Start"
+status=0
+(cd "$PROJECT" && sh .agents/hooks/check-trim.sh) > "$WORK/last-output" 2>&1 || status=$?
+[ "$status" != 0 ] || fail "the trim step passed with no base branch to compare with"
+echo "  ok: the trim step goes red when the history holds no base branch, as a shallow checkout leaves it"
+in_project update-ref refs/remotes/origin/main HEAD
+
 started=$(date +%s)
 first=$(run_check)
 finished=$(date +%s)
@@ -162,15 +198,7 @@ echo "  ok: the check goes red at Lint on an unused import"
 # pull request's base is stood in for by a local origin/main.
 sed '1d' "$PROJECT/pricing.py" > "$WORK/unlinted"
 mv "$WORK/unlinted" "$PROJECT/pricing.py"
-in_project() {
-  (cd "$PROJECT" && git -c user.name=Rehearsal -c user.email=rehearsal@example.invalid \
-    -c commit.gpgsign=false "$@") > /dev/null
-}
-in_project init -q -b main
-printf '__pycache__/\n.mypy_cache/\n.ruff_cache/\n' > "$PROJECT/.gitignore"
-in_project add -A
-in_project commit -q -m "Start"
-in_project update-ref refs/remotes/origin/main HEAD
+save_as_base "The checked code"
 first=$(run_check)
 [ -z "$first" ] || { cat "$WORK/last-output" >&2; fail "the check was red before the trim, at $first"; }
 sed 's/total(2, 3), 6/total(1, 6), 6/' "$PROJECT/test_pricing.py" > "$WORK/test"
@@ -181,6 +209,62 @@ first=$(run_check)
   fail "expected the trim step to go red on a trim that changed a test, got '${first:-nothing}'"
 grep -q 'test_pricing.py' "$WORK/last-output" || fail "the trim step did not name the test"
 echo "  ok: the check goes red at the trim step when a trim commit changed a test, naming it"
+
+# --- a project founded before the trim step ----------------------------------
+#
+# The same project as an older founding left it: no hook, no trim step, and a
+# checkout of the last commit only. /maintain's truing runs place-trim-check.py,
+# which finds all three, records a no, and on a yes puts back exactly what
+# founding writes today.
+
+PLACE="$ROOT/.agents/skills/setup-ai-build-kit/scripts/place-trim-check.py"
+founded="$WORK/founded-checks.yml"
+cp "$PROJECT/.github/workflows/checks.yml" "$founded"
+awk '
+  /- name: Check the trim left the tests alone/ { skip = 2 }
+  skip > 0 { skip--; next }
+  /^ *with:$/ || /^ *fetch-depth: 0$/ { next }
+  { print }
+' "$founded" > "$PROJECT/.github/workflows/checks.yml"
+rm "$PROJECT/.agents/hooks/check-trim.sh"
+grep -q 'check-trim\|fetch-depth' "$PROJECT/.github/workflows/checks.yml" && fail "the older check still has the trim step"
+in_project checkout -q -b older origin/main
+save_as_base "An older founding"
+
+place() { (cd "$PROJECT" && python3 "$PLACE" "$@") > "$WORK/place-output" 2>&1; }
+status=0; place || status=$?
+[ "$status" = 1 ] || fail "an older project's missing trim step was not found (exit $status)"
+for kind in hook step history; do
+  grep -q "^$kind	" "$WORK/place-output" || fail "place-trim-check.py did not name the missing $kind"
+done
+[ -z "$(cd "$PROJECT" && git status --porcelain)" ] || fail "place-trim-check.py changed the project while only looking"
+echo "  ok: an older project's check is found to lack the hook, the step and the history, and nothing changes"
+
+status=0; place --decline || status=$?
+[ "$status" = 0 ] || fail "recording a no failed"
+status=0; place || status=$?
+[ "$status" = 0 ] && grep -qx 'declined' "$WORK/place-output" || fail "a no was not kept (exit $status)"
+grep -q '^trim-check-declined|' "$PROJECT/.ai-build-kit-maintenance" || fail "the no was not recorded"
+rm "$PROJECT/.ai-build-kit-maintenance"
+echo "  ok: a no is recorded, and the offer is not made again while the kit's hook is the same"
+
+status=0; place --apply || status=$?
+[ "$status" = 0 ] || { cat "$WORK/place-output" >&2; fail "adding the trim step failed"; }
+cmp -s "$founded" "$PROJECT/.github/workflows/checks.yml" ||
+  { diff "$founded" "$PROJECT/.github/workflows/checks.yml" >&2; fail "the check is not what founding writes today"; }
+cmp -s "$TRIM_CHECK" "$PROJECT/.agents/hooks/check-trim.sh" || fail "the hook was not added"
+status=0; place || status=$?
+[ "$status" = 0 ] && [ ! -s "$WORK/place-output" ] || fail "a second look still found something missing (exit $status)"
+echo "  ok: on a yes, the hook, the step and the whole history are added, matching a founding today, and nothing else"
+
+save_as_base "The trim step added"
+sed 's/total(2, 3), 6/total(3, 2), 6/' "$PROJECT/test_pricing.py" > "$WORK/test"
+mv "$WORK/test" "$PROJECT/test_pricing.py"
+in_project commit -q -am "Trim: take out what the piece did not need"
+first=$(run_check)
+[ "$first" = "Check the trim left the tests alone" ] ||
+  fail "after the step was added, a trim that changed a test did not turn the check red, got '${first:-nothing}'"
+echo "  ok: once added, the older project's check goes red on a trim that changed a test"
 
 # --- the same again for TypeScript -------------------------------------------
 #
@@ -291,6 +375,10 @@ TS
 echo "  installing the project's own check tools"
 (cd "$PROJECT" && npm install --no-audit --no-fund --silent) ||
   fail "could not install the TypeScript check tools, so the check could not be rehearsed"
+
+in_project init -q -b main
+printf 'node_modules/\n' > "$PROJECT/.gitignore"
+save_as_base "Start"
 
 started=$(date +%s)
 first=$(run_check)

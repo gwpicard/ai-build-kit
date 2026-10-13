@@ -64,7 +64,16 @@ out=$(run start 1) && code=0 || code=$?
   && pass "a change slow to show is read back and repeated until it holds" \
   || fail "a slow change was not repeated: $(field labels), exit $code"
 
-python3 -c 'import json,sys; s=json.load(open(sys.argv[1])); s["issues"]["1"]["labels"].append("ready"); s["lag"]=5; json.dump(s,open(sys.argv[1],"w"))' "$STANDIN_GH_STATE"
+# GitHub makes the change at once, but its reads show the old labels for a
+# few seconds. A change that worked must not be reported as a failure.
+seed 0
+python3 -c 'import json,sys; s=json.load(open(sys.argv[1])); s["read_lag"]=4; json.dump(s,open(sys.argv[1],"w"))' "$STANDIN_GH_STATE"
+out=$(run start 1) && code=0 || code=$?
+[ "$code" -eq 0 ] && [ "$(field labels)" = "visual building" ] \
+  && pass "a change whose read-back lags is waited for, and reported as done" \
+  || fail "a change that worked but read back late returned $code: $out"
+
+python3 -c 'import json,sys; s=json.load(open(sys.argv[1])); s["issues"]["1"]["labels"].append("ready"); s["lag"]=5; s["read_lag"]=0; json.dump(s,open(sys.argv[1],"w"))' "$STANDIN_GH_STATE"
 out=$(run merged 1) && code=0 || code=$?
 [ "$code" -eq 1 ] && printf '%s' "$out" | grep -q "after three tries" \
   && pass "a change that never shows is reported after three tries, not called done" \

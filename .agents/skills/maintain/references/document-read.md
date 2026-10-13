@@ -9,10 +9,10 @@ names.
 ## Run the script
 
 From the project root, run `python3` with this skill's
-`scripts/document-claims.py`, passing `--since-visit`. It reads `README.md` and every
-document AGENTS.md points at, and checks each file, link, `npm run`, `pnpm
-run`, `yarn run` and `make` command, and environment variable they name. It
-prints only names gone missing since the `last-light-pass` date, a document
+`scripts/document-claims.py`, passing `--skip-offered`. It reads `README.md`
+and every document AGENTS.md points at, and checks each file, link, `npm
+run`, `pnpm run`, `yarn run` and `make` command, and environment variable they
+name. It leaves out each name an earlier visit offered, and lists a document
 changed longest ago first.
 
 - Exit 0: every name still points at something real. Say nothing about it.
@@ -39,3 +39,8 @@ cannot tell whether a described step still happens that way."
 For each, offer to correct the name on the spot, changing that name and
 nothing else in the sentence, or to file it as a piece. Never rewrite the
 person's prose. A correction is saved with the truing's other corrections.
+
+Record what the person was offered, and only that: pipe the line of each
+finding you named to the same script with `--record-offered`, exactly as
+printed. A later visit leaves those out. A finding you did not name comes back
+at the next visit.

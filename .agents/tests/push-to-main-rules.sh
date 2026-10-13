@@ -325,13 +325,45 @@ discard_refused = [
     "git push --no-verify origin feature",
     "git push origin feature --no-verify",
     "git push -u origin feature --no-verify",
+    "git -c core.hooksPath=/dev/null push origin feature",
+    "git -C . -c core.hooksPath=/dev/null push origin main",
+    "git -c core.hookspath=/dev/null push origin feature",
+    "git config core.hooksPath .git/hooks",
+    "git config --local --unset core.hooksPath",
     "git checkout .",
+    "git checkout HEAD .",
     "git checkout -- .",
+    "git checkout -- app/sum.js",
     "git checkout HEAD -- .",
+    "git checkout HEAD -- app/sum.js",
+    "git checkout -f main",
+    "git checkout main -f",
+    "git checkout --force main",
+    "git checkout main --force",
+    "git switch -f main",
+    "git switch main -f",
+    "git switch --force main",
+    "git switch --discard-changes main",
+    "git switch main --discard-changes",
     "git restore .",
     "git restore -- .",
+    "git restore -- app/sum.js",
     "git restore --worktree .",
     "git restore --source=HEAD --staged --worktree .",
+    "git restore -W app/sum.js",
+    "git restore --staged -W app/sum.js",
+    "git clean -f",
+    "git clean -fd",
+    "git clean -df",
+    "git clean -fdx",
+    "git clean -xdf",
+    "git clean -d -f",
+    "git clean --force -d",
+    "git clean build -fd",
+    "git reset --hard",
+    "git reset --hard HEAD~1",
+    "git reset -q --hard",
+    "git reset -q --hard HEAD",
     "git stash drop",
     "git stash drop stash@{1}",
     "git stash clear",
@@ -339,21 +371,33 @@ discard_refused = [
 discard_allowed = [
     "git checkout main",
     "git checkout -b fix-total",
-    "git checkout -- app/sum.js",
-    "git restore app/sum.js",
+    "git checkout -b feature-fix",
+    "git switch main",
+    "git switch -c fix-total",
     "git restore --staged app/sum.js",
+    "git restore --staged .",
+    "git clean -n",
+    "git clean -nd",
+    "git reset -q",
+    "git reset HEAD app/sum.js",
+    "git reset --soft HEAD~1",
     "git stash",
     "git stash list",
     "git stash pop",
     "git push -u origin feature",
     "sh .agents/skills/implement/scripts/reset-attempt.sh",
 ]
-discard_rules = [r for r in rules if r.startswith(("Bash(git checkout", "Bash(git restore",
-                                                    "Bash(git stash", "Bash(git push --no-verify",
-                                                    "Bash(git push * --no-verify"))]
+# Kept from the first founding settings, and in this repository's own, so
+# they are needed for parity rather than for any one spelling here.
+parity = {"Bash(git reset --hard:*)", "Bash(git clean -f:*)", "Bash(git clean -fd:*)"}
+discard_rules = [r for r in rules if r.startswith((
+    "Bash(git checkout", "Bash(git restore", "Bash(git switch", "Bash(git clean",
+    "Bash(git reset", "Bash(git stash", "Bash(git push --no-verify",
+    "Bash(git push * --no-verify", "Bash(git *core.hooks"))]
 
 
 def discard_problems(group):
+    group = list(group) + sorted(parity)
     found = ["%r is not refused" % c for c in discard_refused if not denied(group, c)]
     found += ["%r is refused" % c for c in discard_allowed if denied(group, c)]
     return found
@@ -365,7 +409,22 @@ if discard_problems(discard_rules):
     print("\n".join(discard_problems(discard_rules)))
     sys.exit(1)
 print("  ok: every way of skipping the guard or discarding changes is refused, and the repair's reset script and ordinary commands are not")
-leave_out_each(discard_rules, discard_problems, "discard and guard rules")
+leave_out_each([r for r in discard_rules if r not in parity], discard_problems,
+               "discard and guard rules")
+
+# A restore that names one file, or unstages, is not refused, since the
+# matcher cannot tell the two apart. It asks first instead.
+restore_ask = ["git restore app/sum.js", "git restore --staged .", "git restore --staged app/sum.js"]
+for command in restore_ask:
+    print("  %-7s %s" % ("asks" if denied(ask, command) else "runs", command))
+missing = [c for c in restore_ask if not denied(ask, c)]
+if missing:
+    print("these restores neither ask nor are refused: %s" % missing)
+    sys.exit(1)
+if [c for c in restore_ask if denied([r for r in ask if r != "Bash(git restore *)"], c)]:
+    print("a restore asks without the restore ask rule, so the check does not need it")
+    sys.exit(1)
+print("  ok: a restore of one file, or an unstage, asks first rather than being refused")
 
 
 # Reading another tool's stored login.
@@ -376,6 +435,11 @@ def read_matches(rule, path):
     body = m.group(1)
     if body.startswith("//"):
         body, target = body[2:], path.lstrip("/")
+    elif body.startswith("~/"):
+        # The home folder of the person in these examples.
+        if not path.startswith(HOME + "/"):
+            return False
+        body, target = body[2:], path[len(HOME) + 1:]
     else:
         return False
     regex = ""
@@ -393,7 +457,11 @@ def read_matches(rule, path):
     return re.fullmatch(regex, target) is not None
 
 
-# The documentation's own examples for a rule anchored at the filesystem root.
+HOME = "/Users/sam"
+# The documentation's own examples for a rule anchored at the filesystem root,
+# and for one anchored at the home folder.
+assert read_matches("Read(~/Documents/*.pdf)", "/Users/sam/Documents/a.pdf")
+assert not read_matches("Read(~/Documents/*.pdf)", "/Users/sam/project/Documents/a.pdf")
 assert read_matches("Read(//**/.env)", "/Users/alice/project/.env")
 assert read_matches("Read(//**/.env)", "/.env")
 assert not read_matches("Read(//**/.env)", "/Users/alice/project/.env.local")
@@ -406,13 +474,21 @@ secret_files = [
     "/Users/sam/Library/Application Support/com.vercel.cli/auth.json",
     "/home/sam/.local/share/com.vercel.cli/auth.json",
     "/Users/sam/.vercel/auth.json",
+    "/home/sam/.vercel/auth.json",
+    "/Users/sam/.vercel/config.json",
     "/Users/sam/.supabase/access-token",
+    "/home/sam/.supabase/access-token",
+    "/Users/sam/.supabase/profile",
+    "/Users/sam/Library/Application Support/supabase/access-token",
+    "/Users/sam/.docker/config.json",
 ]
 ordinary_files = [
     "/Users/sam/project/.env.example",
     "/Users/sam/project/hosts.yml",
     "/Users/sam/project/.vercel/project.json",
     "/Users/sam/project/supabase/config.toml",
+    "/Users/sam/project/supabase/.temp/pooler-url",
+    "/Users/sam/project/Dockerfile",
     "/Users/sam/.config/gh/config.yml",
 ]
 login_commands = [
@@ -421,9 +497,26 @@ login_commands = [
     "security dump-keychain",
     "gh auth token",
     "gh auth token --hostname github.com",
+    "gh auth status --show-token",
+    "gh auth status -t",
+    "gh auth status --hostname github.com -t",
+    "git credential fill",
+    "git credential-osxkeychain get",
+    "git credential-manager get",
+    "less ~/.config/gh/hosts.yml",
+    "head '/c/Users/sam/AppData/Roaming/GitHub CLI/hosts.yml'",
+    "python3 -c \"print(open('/Users/sam/Library/Application Support/com.vercel.cli/auth.json').read())\"",
+    "jq .token ~/.vercel/auth.json",
+    "cat ~/.supabase/access-token",
+    "cat \"$HOME/Library/Application Support/supabase/access-token\"",
+    "jq .auths ~/.docker/config.json",
 ]
-login_allowed = ["gh auth status", "gh auth login", "security list-keychains"]
-login_rules = [r for r in rules if r.startswith(("Read(", "Bash(security", "Bash(gh auth token"))]
+login_allowed = ["gh auth status", "gh auth status --hostname github.com", "gh auth status --active",
+                 "gh auth login", "security list-keychains", "cat .env.example",
+                 "cat supabase/config.toml", "cat .vercel/project.json"]
+login_rules = [r for r in rules if r.startswith(("Read(", "Bash(security", "Bash(gh auth token",
+                                                 "Bash(gh auth status", "Bash(git credential",
+                                                 "Bash(*"))]
 
 
 def login_problems(group):
@@ -466,6 +559,13 @@ live_ask = [
     "gh api --method=DELETE repos/someone/kit-log/hooks/1",
     "gh api -X=DELETE repos/someone/kit-log/hooks/1",
     "gh api repos/someone/kit-log/hooks/1 -X DELETE",
+    # A branch written through the API never meets the push guard.
+    "gh api repos/someone/kit-log/git/refs -f ref=refs/heads/main -f sha=abc",
+    "gh api -X PATCH repos/someone/kit-log/git/refs/heads/main -f sha=abc -F force=true",
+    "gh api --method POST repos/someone/kit-log/git/refs -f ref=refs/heads/x -f sha=abc",
+    "gh api graphql -f query='mutation { createRef(input: {name: \"refs/heads/main\"}) { ref { id } } }'",
+    "gh api graphql -f query='mutation { updateRef(input: {refId: \"x\", oid: \"abc\", force: true}) { ref { id } } }'",
+    "gh api graphql -f query='mutation { deleteRef(input: {refId: \"x\"}) { clientMutationId } }'",
 ]
 live_runs = [
     "supabase start",
@@ -480,11 +580,12 @@ live_runs = [
     "vercel git connect --yes",
     "gh repo view --json visibility",
     "gh repo edit someone/kit-log --default-branch main",
-    "gh api repos/someone/kit-log/git/refs -f ref=refs/heads/main -f sha=abc",
     "gh api -X PATCH repos/someone/kit-log -F delete_branch_on_merge=true",
+    "gh api repos/someone/kit-log/git/ref/heads/main",
+    "gh api graphql -f query='{ repository(owner: \"someone\", name: \"kit-log\") { defaultBranchRef { name } } }'",
     "gh pr view 12",
 ]
-live_rules = [r for r in ask if not any(word in r for word in ("merge", "Merge"))]
+live_rules = [r for r in ask if not any(word in r for word in ("merge", "Merge", "git restore"))]
 
 
 def live_problems(group):
@@ -530,7 +631,7 @@ assert '\nask\tBash(gh pr merge:*)' in first_offer
 # The rules added after that release reach an older project too, and only
 # through the offer: nothing in the file changes until --apply.
 template=json.loads((root/'.agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json').read_text())
-newer_deny=[r for r in template['permissions']['deny'] if r.startswith(('Read(','Bash(security','Bash(gh auth token','Bash(git checkout','Bash(git restore','Bash(git stash','Bash(git push --no-verify','Bash(git push * --no-verify'))]
+newer_deny=[r for r in template['permissions']['deny'] if r.startswith(('Read(','Bash(security','Bash(gh auth token','Bash(git checkout','Bash(git restore','Bash(git stash','Bash(git push --no-verify','Bash(git push * --no-verify','Bash(git switch','Bash(git clean -*','Bash(git clean * ','Bash(git reset * ','Bash(git *core.hooks','Bash(gh auth status','Bash(git credential','Bash(*'))]
 newer_ask=[r for r in template['permissions']['ask'] if 'merge' not in r.lower()]
 assert len(newer_deny)>=16 and len(newer_ask)>=13,(newer_deny,newer_ask)
 for rule in newer_deny: assert '\ndeny\t'+rule+'\n' in first_offer+'\n',(rule,first_offer)

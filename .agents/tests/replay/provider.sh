@@ -84,6 +84,14 @@ provider_new_session() {
 # record of the session under its configuration folder, named by the session id
 # the harness chose. run_once writes that id beside the run, because it runs in
 # a subshell and the caller never sees the variable.
+#
+# The session's own file is not the whole record. Claude Code keeps each
+# subagent's transcript, and any command output too long for the session file,
+# in a folder named by the session id beside it: subagents/agent-*.jsonl and
+# tool-results/. A subagent that read a secret shows up only there, so every
+# file in that folder is listed too. Codex keeps a rollout of each thread under
+# its home folder, and a subagent's rollout names the thread that started it,
+# so every rollout naming this run's thread is listed beside the turn outputs.
 provider_session_records() {
   prefix=$1
   session=
@@ -91,13 +99,18 @@ provider_session_records() {
   case "$REPLAY_PROVIDER" in
     claude)
       [ -n "$session" ] || return 0
-      find "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/projects" -maxdepth 2 \
-        -name "$session.jsonl" 2>/dev/null || true
+      projects="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/projects"
+      find "$projects" -maxdepth 2 -name "$session.jsonl" 2>/dev/null || true
+      find "$projects" -mindepth 3 -type f -path "$projects/*/$session/*" \
+        2>/dev/null || true
       ;;
     codex)
       for raw in "$prefix"-t*.json; do
         [ -f "$raw" ] && printf '%s\n' "$raw"
       done
+      [ -n "$session" ] || return 0
+      rollouts="${CODEX_HOME:-$HOME/.codex}/sessions"
+      [ -d "$rollouts" ] && grep -rlF -- "$session" "$rollouts" 2>/dev/null
       ;;
   esac
   return 0

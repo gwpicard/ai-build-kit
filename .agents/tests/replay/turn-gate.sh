@@ -135,11 +135,16 @@ gate_decision() {
 # with its old and new commit. run.sh marks each turn in the same log, so a
 # push can be placed before or after the person's yes. The hook lives in the
 # bare remote, outside the project, where the kit has no reason to look.
+# Where the push carries the turn that started it in REPLAY_TURN, the line
+# ends with turn=<n>, since a push run in the background can land after a
+# later turn's marker.
 log_pushes() {
   cat > "$1/hooks/post-receive" <<HOOK
 #!/bin/sh
+tag=
+[ -n "\${REPLAY_TURN:-}" ] && tag="\$(printf '\tturn=%s' "\$REPLAY_TURN")"
 while read old new ref; do
-  printf 'PUSH\t%s\t%s\t%s\n' "\$ref" "\$old" "\$new" >> '$2'
+  printf 'PUSH\t%s\t%s\t%s%s\n' "\$ref" "\$old" "\$new" "\$tag" >> '$2'
 done
 HOOK
   chmod +x "$1/hooks/post-receive"

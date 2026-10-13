@@ -23,7 +23,9 @@ before editing.
   `.agents/skills/` and `.claude/skills/` so no installer offers them, and they
   get no adapter. Load one by its path: `humanizer/SKILL.md` for writing,
   `review-issues/SKILL.md` to choose the next piece of work,
-  `stack-research/SKILL.md` to check the recipes against their products.
+  `stack-research/SKILL.md` to check the recipes against their products. Its
+  note goes to `.agents/tmp/stack-research/`, which git ignores, so it never
+  ships.
 - `.claude/`, `.cursor/`, `.gemini/`: generated adapters. Change the canonical
   skill, then run `.agents/tools/build-adapters.sh`, and commit both together.
 - `.claude-plugin/` and `agent-plugin/plugin.json`: plugin metadata. The

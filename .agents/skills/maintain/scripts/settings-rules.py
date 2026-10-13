@@ -27,7 +27,8 @@ tabs:
 
 Which rules are offered. A deny rule that names both `git push` and `main` is
 always offered, and so is one that stops a push skipping the push guard,
-throws away unsaved changes, or reads another tool's stored login, since no
+switches the guard off, throws away unsaved changes, or reads another tool's
+stored login, since no
 earlier rule did that job. One that stops a force push is offered only while the project
 still holds `Bash(git push --force:*)`, and one that stops a forced delete only
 while it holds `Bash(rm -rf:*)`, since a person may have taken those out on
@@ -68,12 +69,14 @@ FORCE_PUSH = "Bash(git push --force:*)"
 FORCED_DELETE = "Bash(rm -rf:*)"
 MERGE = "Bash(gh pr merge:*)"
 # Refusals added after the first founding settings, which no earlier rule
-# stood in for: skipping the push guard, throwing away unsaved changes, and
-# reading another tool's stored login.
+# stood in for: skipping or switching off the push guard, throwing away
+# unsaved changes, and reading another tool's stored login.
 ALWAYS_OFFERED = (
-    "Bash(git push --no-verify", "Bash(git push * --no-verify",
-    "Bash(git checkout ", "Bash(git restore ", "Bash(git stash ",
-    "Bash(security ", "Bash(gh auth token", "Read(",
+    "Bash(git push --no-verify", "Bash(git push * --no-verify", "Bash(git *core.hooks",
+    "Bash(git checkout ", "Bash(git restore ", "Bash(git stash ", "Bash(git switch ",
+    "Bash(git clean -*", "Bash(git clean * ", "Bash(git reset * ",
+    "Bash(security ", "Bash(gh auth token", "Bash(gh auth status", "Bash(git credential",
+    "Bash(*", "Read(",
 )
 
 

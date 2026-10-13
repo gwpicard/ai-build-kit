@@ -69,6 +69,24 @@ out=$(run "Escape" ../outside.md) && code=0 || code=$?
 out=$(cd "$P/app" && sh "$SCRIPT" "Wrong place" ../masterplan.md 2>&1) && code=0 || code=$?
 [ "$code" -eq 2 ] && pass "running it away from the project root is refused" || fail "running from a subfolder returned $code"
 
+mkdir -p "$P/docs"
+for sweep in . ./ docs/.. app/.. ':/' ':(top)' ':(top)app' '*' '*.md' app 'app/*' .git/config; do
+  printf 'more\n' >> "$P/masterplan.md"
+  before=$(git -C "$P" rev-parse HEAD)
+  out=$(run "Sweep" "$sweep") && code=0 || code=$?
+  if [ "$code" -eq 1 ] && [ "$(git -C "$P" rev-parse HEAD)" = "$before" ] \
+     && [ -z "$(git -C "$P" diff --cached --name-only)" ]; then
+    pass "the path '$sweep' is refused, and nothing is staged or saved"
+  else
+    fail "the path '$sweep' returned $code and saved $(git -C "$P" show --name-only --format= HEAD | tr '\n' ' '): $out"
+    git -C "$P" reset -q --soft "$before"
+    git -C "$P" reset -q
+  fi
+done
+git -C "$P" status --porcelain | grep -q '^ M app/page.js' \
+  && pass "after every refused path the person's edit is still unsaved" \
+  || fail "the person's edit was swept up"
+
 out=$(run "Two records" masterplan.md CHANGELOG.md) && code=0 || code=$?
 [ "$code" -eq 0 ] && [ "$(git -C "$P" show --name-only --format= HEAD)" = "masterplan.md" ] \
   && pass "several named paths commit together, and an unchanged one is fine" \

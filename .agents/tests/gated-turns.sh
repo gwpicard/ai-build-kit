@@ -519,6 +519,16 @@ git -C "$pl" push -q origin a-piece
 grep -q "^PUSH	refs/heads/a-piece	0\{40\}	$(git -C "$pl" rev-parse a-piece)$" "$pushlog" \
   && ok "a push to the remote is written to the log with its branch and commit" \
   || bad "the push was not logged: $(cat "$pushlog")"
+# A push started in one turn can land after a later turn's marker, so the hook
+# tags it with the turn whose process started it.
+git -C "$pl" checkout -q -b another-piece
+REPLAY_TURN=4 git -C "$pl" push -q origin another-piece
+grep -q "^PUSH	refs/heads/another-piece	0\{40\}	$(git -C "$pl" rev-parse another-piece)	turn=4$" "$pushlog" \
+  && ok "a push is tagged with the turn that started it" \
+  || bad "the push was not tagged with its turn: $(cat "$pushlog")"
+grep -q 'REPLAY_TURN=\$turn' "$runsh" && grep -q 'export REPLAY_TURN' "$runsh" \
+  && ok "the harness hands each turn's number to every command that turn starts" \
+  || bad "run.sh no longer hands the turn's number to the commands"
 
 grep -q '^# prepare: first-upload$' "$ROOT/.agents/tests/replay/cases/55.txt" \
   && grep -q '^# grants: ' "$ROOT/.agents/tests/replay/cases/55.txt" \

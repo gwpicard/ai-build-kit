@@ -134,5 +134,47 @@ out=$(sh "$USE" "$Q/sub" 2>&1) && code=0 || code=$?
 mkdir -p "$WORK/plain"
 sh "$USE" "$WORK/plain" && pass "a folder that is not a repository yet is left for the founding save" || fail "a plain folder failed"
 
+# A tool such as lefthook, git-lfs or an older husky puts its hooks in Git's
+# own hooks folder. Pointing Git elsewhere would silently stop them running.
+H="$WORK/lefthook"
+git init -q "$H"
+mkdir -p "$H/.agents/hooks/git"
+cp "$HOOK" "$H/.agents/hooks/git/pre-push"
+printf '#!/bin/sh\nexit 0\n' > "$H/.git/hooks/pre-commit"
+chmod +x "$H/.git/hooks/pre-commit"
+out=$(sh "$USE" "$H" 2>&1) && code=0 || code=$?
+[ "$code" -eq 1 ] && [ -z "$(git -C "$H" config --local --get core.hooksPath || true)" ] \
+  && printf '%s' "$out" | grep -q 'pre-commit' \
+  && pass "hooks already in Git's own hooks folder keep running, and the line names them" \
+  || fail "an existing pre-commit hook was switched off or not reported: $code $out"
+rm "$H/.git/hooks/pre-commit"
+sh "$USE" "$H" >/dev/null 2>&1 && [ "$(git -C "$H" config --local core.hooksPath)" = .agents/hooks/git ] \
+  && pass "Git's own sample hooks alone do not stop the guard" \
+  || fail "a hooks folder holding only samples stopped the guard"
+
+# A hooks folder set for every project on this computer.
+G="$WORK/global"
+git init -q "$G"
+mkdir -p "$G/.agents/hooks/git"
+cp "$HOOK" "$G/.agents/hooks/git/pre-push"
+git config --global core.hooksPath "$HOME/.githooks"
+out=$(sh "$USE" "$G" 2>&1) && code=0 || code=$?
+[ "$code" -eq 1 ] && [ -z "$(git -C "$G" config --local --get core.hooksPath || true)" ] \
+  && printf '%s' "$out" | grep -q '.githooks' \
+  && pass "a hooks folder set for every project is not overridden, and the line says so" \
+  || fail "a user-wide hooks path was overridden or not reported: $code $out"
+git config --global --unset core.hooksPath
+
+# A hook copied without its executable bit is one Git skips.
+X="$WORK/noexec"
+git init -q "$X"
+mkdir -p "$X/.agents/hooks/git"
+cp "$HOOK" "$X/.agents/hooks/git/pre-push"
+chmod a-x "$X/.agents/hooks/git/pre-push"
+sh "$USE" "$X" >/dev/null 2>&1 && code=0 || code=$?
+[ "$code" -eq 0 ] && [ -x "$X/.agents/hooks/git/pre-push" ] \
+  && pass "a hook without its executable bit gets it, so Git runs it" \
+  || fail "the hook was left unrunnable, exit $code"
+
 [ "$FAIL" -eq 0 ] || exit 1
 echo "push-guard.sh: all checks passed"

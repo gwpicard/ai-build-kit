@@ -151,7 +151,7 @@ This section governs the eight canonical skills in `.agents/skills/`. A
 maintainer skill sits outside it, and `AGENTS.md` says what it does and does not
 owe.
 
-Start with PHILOSOPHY.md, beside this file. Its five questions get answered in
+Start with PHILOSOPHY.md, beside this file. Its four questions get answered in
 the pull request description before the skill changes. A change that cannot
 answer them gets reshaped before it's considered for merge.
 
@@ -439,7 +439,7 @@ release, so nothing sends a project through an older one first.
 If a breaking change has neither, it is not ready to ship. A release that only
 adds behaviour still gets this check, and answers it with "nothing to do".
 
-Run PHILOSOPHY.md's five questions over everything already here, including what
+Run PHILOSOPHY.md's four questions over everything already here, including what
 is being added. Anything that now fails a question it used to pass has drifted
 (PHILOSOPHY.md explains how), and that is the list of work for the next pass.
 

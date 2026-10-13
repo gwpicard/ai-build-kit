@@ -615,7 +615,8 @@ must exit 0. Make both checkpoints with `sh scripts/found-save.sh`, run from
 the project root. It sets the neutral label only where no save name or email
 is set, and says so on its `identity` line, then saves the checkpoint, writes
 and saves the mark, and runs `scripts/trued-mark.sh`. Any exit other than 0
-means a checkpoint was not made: say what its line says.
+means a checkpoint was not made: say what its line says. A `left` line names a
+change that was already there and stays unsaved; say so in one line.
 
 The founding save is always the checkpoint route, whatever the tool will grow
 into. It stands an initial state up rather than changing anything anybody

@@ -9,17 +9,17 @@ commands take it from a first idea to a tool that is live, backed up and kept
 up to date.
 
 The tool is yours from the first day. The code is in your own GitHub
-repository, it runs on your own host account, and the data is in your own
-database account. Nothing is locked inside a platform.
+repository, it runs on a host account or a server of your own, and the data
+is in your own database account. Nothing is locked inside a platform.
 
 Three things make the road:
 
 - Recipes. A recipe is a build stack and a place to run it, with going live,
   backups and rollback already worked out and proven by a real run. That is
   what makes it fast.
-- Enforced rules. In Claude Code, the agent cannot push straight to the main
-  copy or force a change through, and every merge waits for your click. Other
-  agents get the same rules in writing.
+- Enforced rules. In Claude Code, settings refuse the usual ways to push
+  straight to the main copy or force a change through, and a box asks you
+  before each merge. Other agents get the same rules in writing.
 - Risk boundaries. If the tool touches personal data, money, sign-in or
   automatic actions, you hear who could be hurt, once and in plain words, and
   you decide. Your decision is recorded.
@@ -34,8 +34,9 @@ limits](docs/COMPATIBILITY.md#how-much-has-been-proved-on-each-agent) before cho
 You do not read code. You do learn four ideas, and the kit explains each one
 the first time it comes up:
 
-1. Accounts. You create a GitHub account, a host account and a database
-   account once. The recipe names which ones.
+1. Accounts. You create a GitHub account, a place to run the tool (a host
+   account, or a server you already run) and a database account once. The
+   recipe names which ones.
 2. A repository. This is where your project and its history live on GitHub.
 3. A pull request. This is a proposed change. You try it, then say yes to
    merge it into the main copy.
@@ -206,8 +207,8 @@ attention](docs/COMPATIBILITY.md#optional-harness-features).
 | Reading code | Not required | Usually yes | Not required |
 | What you learn | The platform | The toolkit and engineering practice | Four ideas and six commands |
 | Going live | Platform publishing | You arrange it | A proven recipe, or a general checklist |
-| Risk to people | Platform security scans | Not covered | Named, decided by you, and recorded |
-| After launch | Platform tools | Not covered | Upkeep, handover and switch-off |
+| Risk to people | Depends on the platform | Depends on the toolkit | Named, decided by you, and recorded |
+| After launch | Platform tools | Depends on the toolkit | Upkeep, handover and switch-off |
 
 A hosted builder is faster for a demo you will throw away. The kit is faster
 to a tool you can keep, change and hand over.

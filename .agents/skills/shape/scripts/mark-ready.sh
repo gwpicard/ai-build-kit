@@ -78,19 +78,25 @@ for label in ${verdict#ok}; do
 done
 gh issue edit "$number" "$@" >/dev/null || { echo "mark-ready: GitHub refused the label change on issue $number" >&2; exit 2; }
 
-labels=$(read_issue | python3 -c '
+# GitHub can make the change and still show the old labels for a few seconds,
+# so the read-back waits 1, 2 and 3 seconds before calling the change failed.
+for wait in 0 1 2 3; do
+  sleep "$wait"
+  labels=$(read_issue | python3 -c '
 import json, sys
 data = json.load(sys.stdin)
 print(" ".join(l["name"] if isinstance(l, dict) else l for l in data.get("labels") or []))
 ') || { echo "mark-ready: could not read issue $number back" >&2; exit 2; }
-
-case " $labels " in
-  *" ready "*) ;;
-  *) echo "mark-ready: issue $number does not carry ready after the change" >&2; exit 2 ;;
-esac
-case " $labels " in
-  *" needs-"*) echo "mark-ready: issue $number still carries a needs- label after the change" >&2; exit 2 ;;
-esac
+  case " $labels " in
+    *" needs-"*) problem="still carries a needs- label after the change" ;;
+    *" ready "*) problem= ; break ;;
+    *) problem="does not carry ready after the change" ;;
+  esac
+done
+if [ -n "$problem" ]; then
+  echo "mark-ready: issue $number $problem" >&2
+  exit 2
+fi
 echo "ready: issue $number"
 top=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
 if [ -f "$top/.agents/tools/plan-refresh.sh" ]; then

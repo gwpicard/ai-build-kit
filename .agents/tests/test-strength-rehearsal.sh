@@ -8,7 +8,12 @@
 # missing the one that moves the boundary, at its file and line, with exit
 # code 1. Code from before the piece is never broken, the project is left
 # exactly as it was, and once a test covers the boundary the script exits 0.
-# The same runs for a Python piece.
+# The tests run in a copy with no real .env, with .env.example, and with the
+# project's own folder named reports.
+#
+# The same runs for a Python piece, a changed method on a class included. A
+# change with nothing the engine can break, and tests that fail before
+# anything is broken, both answer 2: a run that tried nothing is never a pass.
 #
 # The engines are used from PATH when present and otherwise installed into a
 # throwaway folder. A machine that can do neither fails here rather than
@@ -85,9 +90,12 @@ function repo(name) {
   return { dir, put, save };
 }
 
+const probe = path.join(work, 'probe.txt');
+
 function strength(dir, base) {
   const before = listing(dir);
-  const result = spawnSync('python3', [quality, 'strength', '--base', base], { cwd: dir, encoding: 'utf8', timeout: 900000 });
+  const result = spawnSync('python3', [quality, 'strength', '--base', base], { cwd: dir, encoding: 'utf8', timeout: 900000,
+    env: { ...process.env, STRENGTH_PROBE: probe } });
   assert.ifError(result.error);
   console.log(result.stdout.trim().split('\n').map(l => `    ${l}`).join('\n'));
   assert.equal(listing(dir), before, 'the check left something changed in the project');
@@ -101,12 +109,33 @@ function strength(dir, base) {
 
 const js = repo('javascript');
 js.put({
-  '.gitignore': 'node_modules/\nreports/\n.stryker-tmp/\n',
+  '.gitignore': 'node_modules/\n/reports/\n.stryker-tmp/\n.env\n',
   'package.json': JSON.stringify({ name: 'shop', private: true, scripts: { test: 'node --test' } }, null, 2) + '\n',
   'src/old.cjs': 'module.exports = n => n + 1;\n',
   'test/old.test.cjs': "const test = require('node:test');\nconst assert = require('node:assert/strict');\nconst old = require('../src/old.cjs');\ntest('old', () => assert.equal(old(1), 2));\n",
+  // A folder of the project's own that shares its name with engine output.
+  // The tests need it, so a copy that left it out could not run them.
+  'src/reports/label.cjs': "module.exports = () => 'report';\n",
+  // A test that writes down, outside the project, what the copy it ran in
+  // held: the real .env must never be there, and .env.example always is.
+  'test/probe.test.cjs': [
+    "const test = require('node:test');",
+    "const assert = require('node:assert/strict');",
+    "const fs = require('node:fs');",
+    "const path = require('node:path');",
+    "test('probe', () => {",
+    "  assert.equal(require('../src/reports/label.cjs')(), 'report');",
+    "  const root = path.join(__dirname, '..');",
+    "  if (process.env.STRENGTH_PROBE) fs.appendFileSync(process.env.STRENGTH_PROBE,",
+    "    `env=${fs.existsSync(path.join(root, '.env'))} example=${fs.existsSync(path.join(root, '.env.example'))}\\n`);",
+    "});",
+    '',
+  ].join('\n'),
+  '.env.example': 'SHOP_API_KEY=\n',
 });
 const jsBase = js.save();
+// The real keys, which git ignores and the throwaway copy must leave out.
+fs.writeFileSync(path.join(js.dir, '.env'), 'SHOP_API_KEY=live-key-for-the-rehearsal\n');
 js.put({
   'src/delivery.cjs': 'module.exports = total => total >= 50;\n',
   'test/delivery.test.cjs': "const test = require('node:test');\nconst assert = require('node:assert/strict');\nconst free = require('../src/delivery.cjs');\ntest('free delivery', () => {\n  assert.equal(free(49), false);\n  assert.equal(free(51), true);\n});\n",
@@ -121,6 +150,10 @@ assert.equal(weak.missed[0][1], 'src/delivery.cjs:1', 'the miss is not named at 
 assert.match(weak.missed[0][2], />\s*50/, 'the miss does not say what was changed');
 assert.ok(!weak.rows.some(r => (r[1] || '').startsWith('src/old.cjs')), 'code from before the piece was broken on purpose');
 console.log('  ok: the weak test misses the boundary breakage, named at its line, and code from before the piece is left alone');
+const seen = fs.readFileSync(probe, 'utf8').trim().split('\n');
+assert.ok(seen.length >= 1 && seen.every(l => l === 'env=false example=true'),
+  `the tests ran with the real .env in the copy, or without .env.example:\n${seen.join('\n')}`);
+console.log('  ok: the tests ran in a copy with no real .env, with .env.example, and with the project\'s own reports folder');
 
 js.put({ 'test/delivery.test.cjs': fs.readFileSync(path.join(js.dir, 'test/delivery.test.cjs'), 'utf8')
   .replace('assert.equal(free(51), true);', 'assert.equal(free(51), true);\n  assert.equal(free(50), true);') });
@@ -143,13 +176,39 @@ const pyBase = py.save();
 py.put({
   'shop/delivery.py': 'def free_delivery(total):\n    return total >= 50\n',
   'tests/test_delivery.py': 'from shop.delivery import free_delivery\n\n\ndef test_free():\n    assert free_delivery(49) is False\n    assert free_delivery(51) is True\n',
+  // A method on a class, which mutmut names differently from a function.
+  'shop/cart.py': 'class Cart:\n    def big_order(self, total):\n        return total >= 100\n',
+  'tests/test_cart.py': 'from shop.cart import Cart\n\n\ndef test_big():\n    assert Cart().big_order(99) is False\n    assert Cart().big_order(101) is True\n',
 });
-py.save();
+const pyPiece = py.save();
 const pyWeak = strength(py.dir, pyBase);
 assert.equal(pyWeak.status, 1, `weak Python tests should give exit code 1:\n${pyWeak.out}`);
 assert.ok(pyWeak.missed.some(r => r[1] === 'shop/delivery.py:2' && />\s*50/.test(r[2])), 'the Python boundary miss is not named at its line');
 assert.ok(!pyWeak.rows.some(r => (r[1] || '').startsWith('shop/old.py')), 'Python code from before the piece was broken');
 console.log('  ok: on a Python piece, the boundary miss is named at its line, and old code is left alone');
+assert.ok(pyWeak.missed.some(r => r[1] === 'shop/cart.py:3' && />\s*100/.test(r[2])),
+  'the method the piece changed was never broken, so its boundary miss is not named');
+console.log('  ok: a changed method on a class is broken too, and its boundary miss is named at its line');
+
+// A change outside any function breaks nothing, so nothing was checked: exit
+// 2, never "tried 0" reported as a pass.
+py.put({ 'shop/settings.py': 'LIMIT = 50\n' });
+const pyGood = py.save();
+const outside = strength(py.dir, pyPiece);
+assert.equal(outside.status, 2, `a change with nothing to break should exit 2:\n${outside.out}`);
+assert.match(outside.out, /^not-checked\tstrength\t/m);
+console.log('  ok: a change with nothing the engine can break exits 2 and says it was not checked');
+
+// Tests that already fail on the unchanged code: nothing was tried, exit 2.
+py.put({
+  'shop/delivery.py': 'def free_delivery(total):\n    return total >= 60\n',
+});
+py.save();
+const failing = strength(py.dir, pyGood);
+assert.equal(failing.status, 2, `tests that fail before anything is broken should exit 2:\n${failing.out}`);
+assert.match(failing.out, /^not-checked\tstrength\tthe tests failed before any code was broken/m, 'the failed first run was not named');
+assert.ok(!/^tried\t/m.test(failing.out), 'a run that broke nothing still printed a count');
+console.log('  ok: tests that fail on the unchanged code exit 2, with no count');
 
 const bad = spawnSync('python3', [quality, 'strength', '--base', 'no-such-commit'], { cwd: js.dir, encoding: 'utf8' });
 assert.equal(bad.status, 2, 'a base that is not a commit did not exit 2');

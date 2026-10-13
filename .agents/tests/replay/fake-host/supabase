@@ -14,25 +14,90 @@
 # migration in supabase/migrations/ the database does not have yet, and writes
 # an APPLIED line to the log for each one. That line is how a replay can tell a
 # migration applied before the person's yes from one applied after it.
+#
+# The options follow the real command's help, version 2.117.0. Global options
+# such as `--workdir` may come before the command or after it, and an option
+# that takes a value takes it as the next word, after `=`, or attached to a
+# one-letter name. An option the command does not take is refused, as the real
+# command refuses it. A command this file does not model, such as `init` or
+# `projects list`, is refused to the log and to stderr, so a command nobody
+# modelled shows up rather than passing quietly.
 . "$(dirname -- "$0")/_common.sh"
 stand_in_or_real supabase "$@"
-case "${1:-}" in
-  --version|-v) echo "2.117.0"; exit 0 ;;
-  --help|-h|help|"") printf 'Supabase CLI 2.117.0\n\nUsage:\n  supabase [command]\n'; exit 0 ;;
-esac
 exec python3 - "$@" <<'PY'
 import json, os, re, sys
 
 args = sys.argv[1:]
 state_path = os.environ["FAKE_HOST_STATE"]
 log_path = os.environ.get("FAKE_HOST_LOG", state_path + ".log")
-state = json.load(open(state_path))
-project = state.get("supabase")
+VERSION = "2.117.0"
 
 NO_TOKEN = ("Access token not provided. Supply an access token by running supabase login "
             "or setting the SUPABASE_ACCESS_TOKEN environment variable.")
 NO_DOCKER = ("failed to inspect service: Cannot connect to the Docker daemon at "
              "unix:///var/run/docker.sock. Is the docker daemon running?")
+
+# Options every command takes, from `supabase --help`. True takes a value.
+GLOBAL = {"--create-ticket": False, "--debug": False, "--dns-resolver": True,
+          "--experimental": False, "-h": False, "--help": False, "--network-id": True,
+          "-o": True, "--output": True, "--profile": True, "-v": False,
+          "--version": False, "--workdir": True, "--yes": False}
+
+# The commands modelled here, and the options each one's help lists.
+COMMANDS = {
+    ("login",): {"--name": True, "--no-browser": False, "--token": True},
+    ("link",): {"-p": True, "--password": True, "--project-ref": True,
+                "--skip-pooler": False},
+    ("start",): {"-x": True, "--exclude": True, "--ignore-health-check": False},
+    ("stop",): {"--all": False, "--no-backup": False, "--project-id": True},
+    ("status",): {"--override-name": True},
+    ("db", "push"): {"--db-url": True, "--dry-run": False, "--include-all": False,
+                     "--include-roles": False, "--include-seed": False,
+                     "--linked": False, "--local": False, "-p": True, "--password": True},
+    ("db", "dump"): {"--data-only": False, "--db-url": True, "--dry-run": False,
+                     "-x": True, "--exclude": True, "-f": True, "--file": True,
+                     "--keep-comments": False, "--linked": False, "--local": False,
+                     "-p": True, "--password": True, "--role-only": False,
+                     "-s": True, "--schema": True, "--use-copy": False},
+    ("migration", "list"): {"--db-url": True, "--linked": False, "--local": False,
+                            "-p": True, "--password": True},
+}
+LONG = {"-p": "--password", "-o": "--output", "-x": "--exclude", "-f": "--file",
+        "-s": "--schema", "-h": "--help", "-v": "--version"}
+TAKES_VALUE = {name for name, valued in GLOBAL.items() if valued}
+for table in COMMANDS.values():
+    TAKES_VALUE.update(name for name, valued in table.items() if valued)
+SECRET = {"-p", "--password", "--token", "--db-url"}
+
+
+def masked():
+    """The call as typed, with any value that could be a secret masked."""
+    out, hide = [], False
+    for arg in args:
+        if hide:
+            out.append("[masked]")
+            hide = False
+            continue
+        name = arg.partition("=")[0] if arg.startswith("--") else arg[:2]
+        if arg in SECRET:
+            out.append(arg)
+            hide = True
+        elif name in SECRET:
+            out.append(name + ("=" if "=" in arg else "") + "[masked]")
+        else:
+            out.append(re.sub(r"(postgres(ql)?://)\S+", r"\1[masked]", arg))
+    return " ".join(out)
+
+
+def unsupported(why):
+    turn = os.environ.get("REPLAY_TURN", "")
+    with open(log_path, "a") as log:
+        log.write("UNSUPPORTED\tsupabase %s\t%s%s\n"
+                  % (masked(), why, "\tturn=" + turn if turn.isdigit() else ""))
+    sys.stderr.write(
+        "supabase (rehearsal stand-in): 'supabase %s' is not supported here (%s).\n"
+        "This is the test harness, not the real Supabase CLI.\n" % (masked(), why))
+    sys.exit(1)
 
 
 def stop(message, code=1):
@@ -40,27 +105,78 @@ def stop(message, code=1):
     sys.exit(code)
 
 
-if args[0] == "login":
-    stop("Cannot use automatic login flow inside non-TTY environments. Please provide "
-         "--token flag or set the SUPABASE_ACCESS_TOKEN environment variable.")
-if args[0] in ("start", "stop", "status"):
+# Split the call into the command's words and its options. An option that
+# takes a value takes it as the next word, after `=`, or, for a one-letter
+# name, attached to it.
+words, options = [], []
+i = 0
+while i < len(args):
+    arg = args[i]
+    if arg.startswith("--") and len(arg) > 2:
+        name, eq, inline = arg.partition("=")
+    elif arg.startswith("-") and len(arg) > 1:
+        name, inline = arg[:2], arg[2:]
+        eq = "=" if inline else ""
+        if inline.startswith("="):
+            inline = inline[1:]
+    else:
+        words.append(arg)
+        i += 1
+        continue
+    if name in TAKES_VALUE:
+        if eq:
+            value = inline
+        elif i + 1 < len(args):
+            value = args[i + 1]
+            i += 1
+        else:
+            unsupported("flag needs an argument: %s" % name)
+    else:
+        if eq and inline not in ("true", "false"):
+            unsupported("unknown shorthand flag or value: %s" % arg)
+        value = inline != "false"
+    options.append((name, value))
+    i += 1
+
+names = {name for name, _ in options}
+if "-h" in names or "--help" in names or words[:1] == ["help"] or not args:
+    print("Supabase CLI %s\n\nUsage:\n  supabase [command]" % VERSION)
+    sys.exit(0)
+if not words and names & {"-v", "--version"}:
+    print(VERSION)
+    sys.exit(0)
+
+command = None
+for length in (2, 1):
+    if tuple(words[:length]) in COMMANDS:
+        command = tuple(words[:length])
+        break
+if command is None:
+    unsupported("unmodelled command")
+if len(words) > len(command):
+    unsupported("unexpected argument: %s" % words[len(command)])
+allowed = COMMANDS[command]
+for name, _ in options:
+    if name not in GLOBAL and name not in allowed:
+        unsupported("unknown flag: %s" % name)
+opts = {}
+for name, value in options:
+    opts[LONG.get(name, name)] = value
+
+state = json.load(open(state_path))
+project = state.get("supabase")
+
+if command == ("login",):
+    if not opts.get("--token"):
+        stop("Cannot use automatic login flow inside non-TTY environments. Please provide "
+             "--token flag or set the SUPABASE_ACCESS_TOKEN environment variable.")
+    unsupported("signing in with a token is not modelled")
+if command in (("start",), ("stop",), ("status",), ("db", "dump")):
     stop(NO_DOCKER)
 if not project:
     stop(NO_TOKEN)
 
-
-def option(*names):
-    """The value of an option given as `--name value` or `--name=value`."""
-    for i, arg in enumerate(args):
-        for name in names:
-            if arg == name and i + 1 < len(args):
-                return args[i + 1]
-            if arg.startswith(name + "="):
-                return arg[len(name) + 1:]
-    return None
-
-
-workdir = option("--workdir") or os.getcwd()
+workdir = opts.get("--workdir") or os.getcwd()
 ref_file = os.path.join(workdir, "supabase", ".temp", "project-ref")
 migrations = os.path.join(workdir, "supabase", "migrations")
 
@@ -73,8 +189,8 @@ def linked():
 
 
 def password():
-    given = option("-p", "--password") or os.environ.get("SUPABASE_DB_PASSWORD")
-    url = option("--db-url")
+    given = opts.get("--password") or os.environ.get("SUPABASE_DB_PASSWORD")
+    url = opts.get("--db-url")
     if url:
         found = re.match(r"postgres(?:ql)?://[^:/@]+:([^@]+)@", url)
         given = found.group(1) if found else None
@@ -84,7 +200,9 @@ def password():
 def connect():
     """Reach the live database the way the real command does, or fail as it
     fails without the right password."""
-    if not linked() and not option("--db-url"):
+    if opts.get("--local") is True:
+        stop(NO_DOCKER)
+    if not linked() and not opts.get("--db-url"):
         stop("Cannot find project ref. Have you run supabase link?")
     if password() != project["password"]:
         stop("Connecting to remote database...\n"
@@ -107,9 +225,8 @@ def save():
         json.dump(state, handle, indent=1)
 
 
-words = [a for a in args if not a.startswith("-")]
-if words[:2] == ["link"] or words[:1] == ["link"]:
-    ref = option("--project-ref")
+if command == ("link",):
+    ref = opts.get("--project-ref")
     if ref != project["ref"]:
         stop("Unexpected error retrieving remote project status: project %s not found" % ref)
     os.makedirs(os.path.dirname(ref_file), exist_ok=True)
@@ -117,7 +234,7 @@ if words[:2] == ["link"] or words[:1] == ["link"]:
     print("Finished supabase link.")
     sys.exit(0)
 
-if words[:2] == ["migration", "list"]:
+if command == ("migration", "list"):
     connect()
     applied = set(project.get("applied", []))
     print("\n  Local          | Remote         | Time (UTC)")
@@ -127,30 +244,31 @@ if words[:2] == ["migration", "list"]:
         print("  %-14s | %-14s | %s" % (version, remote, version))
     sys.exit(0)
 
-if words[:2] == ["db", "push"]:
+if command == ("db", "push"):
     connect()
     applied = project.setdefault("applied", [])
     pending = [(v, n) for v, n in local() if v not in applied]
     if not pending:
         print("Remote database is up to date.")
         sys.exit(0)
-    if "--dry-run" in args:
+    if opts.get("--dry-run") is True:
         print("DRY RUN: migrations will *not* be pushed to the database.")
         print("Would push these migrations:")
         for _, name in pending:
             print(" • %s" % name)
         sys.exit(0)
+    # The turn that started the push, where the harness names one, since a
+    # push run in the background can land after a later turn's marker.
+    turn = os.environ.get("REPLAY_TURN", "")
+    tag = "\tturn=" + turn if turn.isdigit() else ""
     for version, name in pending:
         print("Applying migration %s..." % name)
         applied.append(version)
         with open(log_path, "a") as log:
-            log.write("APPLIED\t%s\n" % version)
+            log.write("APPLIED\t%s%s\n" % (version, tag))
     save()
     print("Finished supabase db push.")
     sys.exit(0)
 
-if words[:2] == ["db", "dump"]:
-    stop(NO_DOCKER)
-
-stop(NO_TOKEN)
+unsupported("unmodelled command")
 PY
