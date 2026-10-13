@@ -12,3 +12,4 @@ Thumbs.db
 plan.local.md
 .claude/settings.local.json
 .claude/worktrees/
+__pycache__/
