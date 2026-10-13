@@ -139,9 +139,9 @@ run nobody is there to say yes, so never upload on the person's behalf: keep
 the work local and note it on the piece.
 
 Replace the piece's `ready` label with `building`, and assign it to whoever is
-building it, before changing anything, by running `sh` with this skill's
-`scripts/piece-labels.sh start <number>`. That is what stops two people
-starting the same piece, and it costs one call. A piece never carries both labels.
+building it, before changing anything: run this skill's
+`scripts/piece-labels.sh` with `start` and the piece's number. That is what
+stops two people starting the same piece, and it costs one call. A piece never carries both labels.
 
 ## 2. Agree the visible result
 
@@ -552,8 +552,9 @@ piece as ready for review, not as done, and leave the merge to a person.
 
 The merge closes the issue, so there is no status to set by hand. After the
 merge, whoever made it, remove the `building` label and any `ready` still on
-the piece with this skill's `scripts/piece-labels.sh merged <number>`, which
-reads the labels back and repeats the removal until neither is there. Then refresh the printout with
+the piece: run this skill's `scripts/piece-labels.sh` with `merged` and the
+piece's number, which reads the labels back and repeats the removal until
+neither is there. Then refresh the printout with
 `sh .agents/tools/plan-refresh.sh` so the person's list matches what just
 happened.
 
