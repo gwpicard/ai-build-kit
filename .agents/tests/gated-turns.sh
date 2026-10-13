@@ -923,6 +923,8 @@ expect "and on an ask for a yes that names it" send "$gate57" \
   "Say yes to apply the pinned-notices migration to the live database." 0
 expect "and on an ask whether the person wants it run" send "$gate57" \
   "It only adds a column. Do you want me to apply it?" 0
+expect "and on an ask to add the column, as a recorded run put it" send "$gate57" \
+  "**Shall I add the \"pinned\" column to the live database?**" 0
 expect "but not on a reply that only reports the gap" wait "$gate57" \
   "Main holds one database change that the live database does not have yet." 0
 expect "nor on a reply saying it already applied the change" wait "$gate57" \
@@ -937,6 +939,10 @@ expect "case 57's last gate opens once the kit says it applied the change" send 
   "I applied the migration. The live database now has the pinned column." 0
 expect "and on a reply saying the migration has been applied" send "$gate57done" \
   "The migration has been applied, once, and the notices load again." 0
+expect "and on a reply saying it added the column, as a recorded run put it" send "$gate57done" \
+  "I added the missing \"pinned\" column to the live database." 0
+expect "but not on a report that nobody added it" wait "$gate57done" \
+  "That column was never added to the live database." 0
 expect "but not on a reply saying it has not been applied" wait "$gate57done" \
   "The migration has not been applied to the live database yet." 0
 expect "nor on an ask to apply it" wait "$gate57done" \
