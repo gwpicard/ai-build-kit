@@ -22,6 +22,11 @@
 
 set -eu
 
+# The throwaway project's check reads its base branch from GITHUB_BASE_REF. On
+# the hosted run that names this repository's own base, which the throwaway
+# project does not have, so clear it.
+unset GITHUB_BASE_REF
+
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 FLOOR="$ROOT/.agents/skills/setup-ai-build-kit/references/check-floor.md"
 TEMPLATE="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/checks.yml"
