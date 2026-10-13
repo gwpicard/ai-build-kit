@@ -121,7 +121,10 @@ then ask for a yes that names the merge: "Say yes to merge it, which puts it
 live." Say the second half only where the merge deploys: on a recipe, or where
 the masterplan records that the host builds every change to `main`. Merge only
 when the reply plainly covers that merge. Where their own words already named
-it, as in "merge it", that is the yes: do not ask again. A yes to building,
+it, as in "merge it", that is the yes: do not ask again. Something you notice
+that none of the checks above holds the merge for, such as a project check
+still running the setup placeholder, is said in one line and offered as a
+piece; it never takes back a yes the person already gave. A yes to building,
 saving, uploading, going live or a hosting step, or to any question asked
 before the merge was named, does not cover it. A no leaves the pull request
 open and the live tool as it was.
