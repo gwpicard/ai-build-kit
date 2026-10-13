@@ -1,37 +1,43 @@
 #!/usr/bin/env sh
-# check-recipes.sh: check that each recipe file has the shape the format asks for.
+# check-recipes.sh: check that each recipe folder has the shape the format asks
+# for.
 #
-# The format lives in .agents/skills/setup-hosting/references/recipe-format.md. A recipe
-# is only worth offering if every one of the eight sections says how it works,
-# how anybody would know it did, and who runs that check, and if the file
-# carries the dates that say when it was last read and when it was really run.
-# A missing section is easy to miss by eye and costs the person a launch step
-# nobody can check, so a machine reads for it.
+# The format lives in docs/RECIPES.md. A recipe is a folder: `recipe.md`, which
+# the kit reads at run time, `scripts/`, which holds its checks and its
+# `live-check.sh`, and `PROVEN.md`, the record of its real run, which the kit
+# never loads. A recipe is only worth offering if every one of the eight
+# sections says how it works, what a pass means, which script checks it and
+# who runs that check, and if the folder carries the dates that say when it
+# was last read and when it was really run. A missing section or script is
+# easy to miss by eye and costs the person a launch step nobody can check, so
+# a machine reads for it.
 #
 # Usage:
-#   check-recipes.sh [--template] FILE...
-#   check-recipes.sh --part FILE...
+#   check-recipes.sh RECIPE...              a recipe folder, or its recipe.md
+#   check-recipes.sh --template FILE        the blank recipe.md
+#   check-recipes.sh --part FILE...         a shared part in recipes/parts/
 #   check-recipes.sh --rehearsal RECIPE REHEARSAL
 #
-# A recipe may add one section to the eight, "## Settings the kit can read",
-# between health and the proven section. When it is there, it is held to the
-# same three lines as the others, and the proven section gives it an outcome
-# line.
+# Each section carries `How it works:`, `How it is checked:`, `Script:` and
+# `Who runs it:`, or a `Shared part:` link to a part in `../parts/` that
+# carries them. A script path is read from the file it is written in, and the
+# script must be there and executable. A section the kit does not run itself
+# also carries `Ask:`, the fixed words the person or a companion hears. A
+# recipe may add one section to the eight, "## Settings the kit can read",
+# between health and the end, held to the same lines, and then PROVEN.md
+# gives it an outcome line too.
 #
-# With --template the two dates may still read YYYY-MM-DD and "Who runs it:"
-# may still be a placeholder, since the blank has nothing real to give. Every
-# other rule applies to the blank as well, so it cannot drift away from the
-# format it is copied from.
-#
-# With --part the file is a shared part from recipes/parts/, which holds the
-# same three lines a section would and nothing else is asked of it.
+# With --template the dates may still read YYYY-MM-DD, and "Who runs it:" and
+# "Script:" may still be placeholders, since the blank has nothing real to
+# give. Every other rule applies to the blank as well, so it cannot drift away
+# from the format it is copied from.
 #
 # With --rehearsal the second file must be a real rehearsal for the first: it
-# sources the shared recipe rehearsal, runs the recipe's commands against the
-# tool stand-ins, and names the recipe file. A rehearsal that only says `exit 0`
-# would otherwise count as proof.
+# sources the shared recipe rehearsal, runs the recipe's scripts against the
+# tool stand-ins, and names the recipe folder. A rehearsal that only says
+# `exit 0` would otherwise count as proof.
 #
-# Prints each problem and exits 1 when any file has one. Writes nothing.
+# Prints each problem and exits 1 when any recipe has one. Writes nothing.
 
 set -eu
 
@@ -42,158 +48,202 @@ case "${1:-}" in
   --rehearsal) mode=rehearsal; shift ;;
 esac
 
-[ "$#" -gt 0 ] || { echo "usage: check-recipes.sh [--template|--part] FILE... | --rehearsal RECIPE REHEARSAL" >&2; exit 2; }
+[ "$#" -gt 0 ] || { echo "usage: check-recipes.sh [--template|--part] FILE... | RECIPE... | --rehearsal RECIPE REHEARSAL" >&2; exit 2; }
 
 if [ "$mode" = rehearsal ]; then
   [ "$#" -eq 2 ] || { echo "usage: check-recipes.sh --rehearsal RECIPE REHEARSAL" >&2; exit 2; }
-  name=$(basename -- "$1")
+  name=$(basename -- "${1%/recipe.md}")
   if [ ! -f "$2" ]; then
     echo "$1: no rehearsal guards it; add $2"
     exit 1
   fi
   status=0
   if ! grep -Eq '^[[:space:]]*\.[[:space:]].*lib/recipe-rehearsal\.sh' "$2" \
-      || ! grep -Eq '^[[:space:]]*rr_stand_ins' "$2"; then
-    echo "$2: does not run the recipe's commands through lib/recipe-rehearsal.sh"
+      || ! grep -Eq '^[[:space:]]*rr_scripts' "$2"; then
+    echo "$2: does not run the recipe's scripts through lib/recipe-rehearsal.sh"
     status=1
   fi
   if ! grep -qF "recipes/$name" "$2"; then
-    echo "$2: does not name the recipe file recipes/$name"
+    echo "$2: does not name the recipe folder recipes/$name"
     status=1
   fi
   exit "$status"
 fi
 
+exec python3 - "$mode" "$@" <<'PY'
+import datetime, os, re, sys
+
+mode, paths = sys.argv[1], sys.argv[2:]
 # A local date can be one day ahead of UTC. Use the same limit everywhere.
-latest_date=$(python3 - <<'PY'
-from datetime import datetime, timedelta, timezone
+LATEST = (datetime.datetime.now(datetime.timezone.utc).date() + datetime.timedelta(days=1)).isoformat()
+ORDER = ["Preview", "Going live", "Rollback", "Backup", "Restore", "Secrets", "Logs", "Health"]
+EXTRA = "Settings the kit can read"
+WHO = ("the kit", "a companion or the person, result read back", "a person looking")
+HEADS = ["Fits", "Recommended when", "Build stack", "Deploy target", "Command-line tools",
+         "Last checked"]
+bad = False
 
-print((datetime.now(timezone.utc).date() + timedelta(days=1)).isoformat())
-PY
-)
-status=0
 
-for file in "$@"; do
-  if [ ! -f "$file" ]; then
-    echo "$file: no such file"
-    status=1
-    continue
-  fi
-  awk -v mode="$mode" -v latest_date="$latest_date" -v file="$file" -v dir="$(dirname -- "$file")" '
-    function problem(msg) { print file ": " msg; bad = 1 }
-    function realdate(v,   y, m, d, days) {
-      if (v !~ /^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$/) return 0
-      y = substr(v, 1, 4) + 0; m = substr(v, 6, 2) + 0; d = substr(v, 9, 2) + 0
-      if (m < 1 || m > 12 || d < 1) return 0
-      days = 31
-      if (m == 4 || m == 6 || m == 9 || m == 11) days = 30
-      if (m == 2) days = ((y % 4 == 0 && y % 100 != 0) || y % 400 == 0) ? 29 : 28
-      return d <= days
-    }
-    function datecheck(label, value) {
-      if (mode == "template" && value == "YYYY-MM-DD") return
-      if (!realdate(value)) problem(label " is not a real date written YYYY-MM-DD: " value)
-      else if (value > latest_date) problem(label " is in the future: " value)
-    }
-    # An optional opening line. The terms of a plan change without notice, so the
-    # line has to say when they were read and where, or nobody can tell a
-    # stale restriction from a current one.
-    function planterms(line) {
-      if (!match(line, /^Plan terms: [^(]+ \(read [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] at [^)]+\)$/)) {
-        problem("\"Plan terms:\" does not read as a sentence ending \"(read YYYY-MM-DD at <source page>)\"")
+def realdate(value):
+    try:
+        datetime.date.fromisoformat(value)
+    except ValueError:
+        return False
+    return bool(re.match(r"^\d{4}-\d{2}-\d{2}$", value))
+
+
+def problem(where, message):
+    global bad
+    print("%s: %s" % (where, message))
+    bad = True
+
+
+def datecheck(where, label, value):
+    if mode == "template" and value == "YYYY-MM-DD":
         return
-      }
-      match(line, /\(read [0-9-]+ at /)
-      datecheck("Plan terms", substr(line, RSTART + 6, 10))
-    }
-    function whocheck(where, value) {
-      if (mode == "template" && value ~ /^</) return 1
-      if (value == "the kit" || value == "a companion or the person, result read back" || value == "a person looking") return 1
-      problem(where " says \"Who runs it: " value "\", which is not one of: the kit; a companion or the person, result read back; a person looking")
-      return 1
-    }
-    # One line of a section, or of a part, recorded under key.
-    function body(key, line, where) {
-      if (line ~ /^How it works: ./) works[key] = 1
-      else if (line ~ /^How it is checked: ./) checked[key] = 1
-      else if (line ~ /^Who runs it:/) { who[key] = 1; whocheck(where, substr(line, 14)) }
-    }
-    function lacks(key, where) {
-      if (!(key in works)) problem(where " does not say \"How it works:\"")
-      if (!(key in checked)) problem(where " does not say \"How it is checked:\"")
-      if (!(key in who)) problem(where " does not say \"Who runs it:\"")
-    }
-    # A section carries its three lines, written out or in the part it links.
-    function section_lines(s,   path, line) {
-      if (s in part) {
-        path = dir "/" part[s]; line = ""
-        if ((getline line < path) < 0) { problem("\"## " s "\" links a shared part that does not exist: " part[s]); return }
-        do { body(s, line, part[s]) } while ((getline line < path) > 0)
-        close(path)
-        lacks(s, part[s] " (linked from \"## " s "\")")
-      } else {
-        lacks(s, "\"## " s "\"")
-      }
-    }
-    BEGIN {
-      n = split("Preview|Going live|Rollback|Backup|Restore|Secrets|Logs|Health|Proven", order, "|")
-      extra = "Settings the kit can read"
-      for (i = 1; i <= n; i++) want[order[i]] = i
-    }
-    mode == "part" { body("part", $0, "the part"); next }
-    /^## / {
-      section = substr($0, 4)
-      if (section in want) { seen[section] = 1; pos[section] = ++count }
-      # The one section a recipe may add to the eight. It sits after health.
-      if (section == extra) { hasextra = 1; extrapos = count }
-      next
-    }
-    section == "" && /^Fits: ./             { head["Fits"] = 1 }
-    section == "" && /^Recommended when: ./ { head["Recommended when"] = 1 }
-    section == "" && /^Build stack: ./      { head["Build stack"] = 1 }
-    section == "" && /^Deploy target: ./    { head["Deploy target"] = 1 }
-    section == "" && /^Command-line tools: ./ { head["Command-line tools"] = 1 }
-    section == "" && /^Last checked:/       { head["Last checked"] = 1; datecheck("Last checked", substr($0, 15)) }
-    section == "" && /^Plan terms:/         { planterms($0) }
-    section == "Proven" && /^Real run:/     { realrun = 1; datecheck("Real run", substr($0, 11)); next }
-    section == "Proven" {
-      for (i = 1; i < n; i++)
-        if (index($0, order[i] ": ") == 1 && length($0) > length(order[i]) + 2) outcome[order[i]] = 1
-      if (index($0, extra ": ") == 1 && length($0) > length(extra) + 2) outcome[extra] = 1
-      next
-    }
-    section != "" && /^Shared part: / {
-      link = $0
-      if (match(link, /\]\(parts\/[A-Za-z0-9_.-]+\.md\)/)) part[section] = substr(link, RSTART + 2, RLENGTH - 3)
-      else problem("\"## " section "\" has a shared part that is not a link into parts/")
-      next
-    }
-    section != "" { body(section, $0, "\"## " section "\"") }
-    END {
-      if (mode == "part") { lacks("part", "the part"); exit bad }
-      split("Fits|Recommended when|Build stack|Deploy target|Command-line tools|Last checked", heads, "|")
-      for (i = 1; i <= 6; i++)
-        if (!(heads[i] in head)) problem("the opening lines lack \"" heads[i] ":\"")
-      for (i = 1; i <= n; i++) {
-        s = order[i]
-        if (!(s in seen)) { problem("no \"## " s "\" section"); continue }
-        if (pos[s] != i) problem("\"## " s "\" is out of order")
-        if (s == "Proven") continue
-        section_lines(s)
-      }
-      if (hasextra) {
-        if (extrapos != 8) problem("\"## " extra "\" does not sit between \"## Health\" and \"## Proven\"")
-        section_lines(extra)
-      }
-      if ("Proven" in seen) {
-        if (!realrun) problem("\"## Proven\" does not open with \"Real run:\" and a date")
-        for (i = 1; i < n; i++)
-          if (!(order[i] in outcome)) problem("\"## Proven\" has no outcome line for " order[i])
-        if (hasextra && !(extra in outcome)) problem("\"## Proven\" has no outcome line for " extra)
-      }
-      exit bad
-    }
-  ' "$file" || status=1
-done
+    if not realdate(value):
+        problem(where, "%s is not a real date written YYYY-MM-DD: %s" % (label, value))
+    elif value > LATEST:
+        problem(where, "%s is in the future: %s" % (label, value))
 
-exit "$status"
+
+def lines_of(text):
+    """The labelled lines of a section or part, as {label: value}."""
+    found = {}
+    for line in text.splitlines():
+        for label in ("How it works", "How it is checked", "Script", "Who runs it", "Ask",
+                      "Shared part"):
+            if line.startswith(label + ": ") and line[len(label) + 2:].strip():
+                found[label] = line[len(label) + 2:].strip()
+            elif line.rstrip() == label + ":":
+                found.setdefault(label, "")
+    return found
+
+
+def body_check(where, base, found):
+    for label in ("How it works", "How it is checked", "Script", "Who runs it"):
+        if not found.get(label):
+            problem(where, "does not say \"%s:\"" % label)
+    who = found.get("Who runs it", "")
+    if who and not (mode == "template" and who.startswith("<")) and who not in WHO:
+        problem(where, "says \"Who runs it: %s\", which is not one of: %s" % (who, "; ".join(WHO)))
+    if who and who != "the kit" and not found.get("Ask"):
+        problem(where, "is not run by the kit, so it needs \"Ask:\", the words the person hears")
+    script = found.get("Script", "")
+    if script and not (mode == "template" and "<" in script):
+        path = os.path.normpath(os.path.join(base, script))
+        if not script.startswith("scripts/") or not script.endswith(".sh"):
+            problem(where, "names a script outside its scripts/ folder: %s" % script)
+        elif not os.path.isfile(path):
+            problem(where, "names a script that is not there: %s" % script)
+        elif not os.access(path, os.X_OK):
+            problem(where, "names a script that is not executable: %s" % script)
+
+
+def sections(text):
+    out, order, current = {}, [], None
+    for line in text.splitlines():
+        if line.startswith("## "):
+            current = line[3:].strip()
+            order.append(current)
+            out[current] = []
+        elif current is not None:
+            out[current].append(line)
+    return order, {k: "\n".join(v) for k, v in out.items()}
+
+
+def check_recipe(md, proven):
+    where = md
+    base = os.path.dirname(md)
+    text = open(md).read()
+    head = text.split("\n## ", 1)[0]
+    for label in HEADS:
+        if not re.search(r"^%s: \S" % re.escape(label), head, re.M):
+            problem(where, "the opening lines lack \"%s:\"" % label)
+    found = re.search(r"^Last checked: (.*)$", head, re.M)
+    if found:
+        datecheck(where, "Last checked", found.group(1).strip())
+    terms = re.search(r"^Plan terms:.*$", head, re.M)
+    if terms:
+        line = terms.group(0)
+        shaped = re.match(r"^Plan terms: [^(]+ \(read (\S+) at [^)]+\)$", line)
+        if not shaped:
+            problem(where, "\"Plan terms:\" does not read as a sentence ending \"(read YYYY-MM-DD at <source page>)\"")
+        else:
+            datecheck(where, "Plan terms", shaped.group(1))
+    order, body = sections(text)
+    if "Proven" in order:
+        problem(where, "carries a \"## Proven\" section; the real run belongs in PROVEN.md")
+    wanted = [s for s in order if s in ORDER]
+    for name in ORDER:
+        if name not in order:
+            problem(where, "no \"## %s\" section" % name)
+    if wanted != [s for s in ORDER if s in order]:
+        problem(where, "the eight sections are out of order")
+    extra = EXTRA in order
+    if extra and order.index(EXTRA) != len(order) - 1:
+        problem(where, "\"## %s\" does not come after \"## Health\", at the end" % EXTRA)
+    if extra and "Health" in order and order.index(EXTRA) < order.index("Health"):
+        problem(where, "\"## %s\" does not come after \"## Health\"" % EXTRA)
+    for name in ORDER + ([EXTRA] if extra else []):
+        if name not in body:
+            continue
+        found = lines_of(body[name])
+        if "Shared part" in found:
+            link = re.match(r"^.*\]\((\.\./parts/[A-Za-z0-9_.-]+\.md)\)", found["Shared part"])
+            if not link:
+                problem(where, "\"## %s\" has a shared part that is not a link into ../parts/" % name)
+                continue
+            part = os.path.normpath(os.path.join(base, link.group(1)))
+            if not os.path.isfile(part):
+                problem(where, "\"## %s\" links a shared part that does not exist: %s" % (name, link.group(1)))
+                continue
+            body_check("%s (linked from \"## %s\" in %s)" % (part, name, md), os.path.dirname(part),
+                       lines_of(open(part).read()))
+        else:
+            body_check("%s \"## %s\"" % (md, name), base, found)
+    if mode == "template":
+        return
+    live = os.path.join(base, "scripts", "live-check.sh")
+    if not os.path.isfile(live) or not os.access(live, os.X_OK):
+        problem(where, "the folder has no executable scripts/live-check.sh")
+    if not os.path.isfile(proven):
+        problem(proven, "missing; the record of the real run belongs here")
+        return
+    ptext = open(proven).read()
+    run = re.search(r"^Real run: (.*)$", ptext, re.M)
+    if not run:
+        problem(proven, "does not say \"Real run:\" and a date")
+    else:
+        datecheck(proven, "Real run", run.group(1).strip())
+    for name in ORDER + ([EXTRA] if extra else []):
+        if not re.search(r"^%s: \S" % re.escape(name), ptext, re.M):
+            problem(proven, "has no outcome line for %s" % name)
+
+
+def check_part(path):
+    body_check(path, os.path.dirname(path), lines_of(open(path).read()))
+
+
+for path in paths:
+    if mode == "part":
+        if not os.path.isfile(path):
+            problem(path, "no such file")
+        else:
+            check_part(path)
+        continue
+    if mode == "template":
+        if not os.path.isfile(path):
+            problem(path, "no such file")
+        else:
+            check_recipe(path, None)
+        continue
+    folder = path[:-len("/recipe.md")] if path.endswith("/recipe.md") else path
+    md = os.path.join(folder, "recipe.md")
+    if not os.path.isfile(md):
+        problem(path, "no recipe.md in this folder")
+        continue
+    check_recipe(md, os.path.join(folder, "PROVEN.md"))
+
+sys.exit(1 if bad else 0)
+PY

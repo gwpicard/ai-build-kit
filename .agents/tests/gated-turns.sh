@@ -340,12 +340,12 @@ grep -q 'FAKE_HOST_STATE="$project.host.json"' "$ROOT/.agents/tests/replay/run.s
 vl="$WORK/vercel-live"
 mkdir -p "$vl/.agents/skills/setup-hosting/recipes"
 cp "$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md" "$vl/"
-cp "$ROOT/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel.md" "$vl/.agents/skills/setup-hosting/recipes/"
+cp -R "$ROOT/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel" "$vl/.agents/skills/setup-hosting/recipes/"
 cp "$ROOT/.gitignore" "$vl/.gitignore"
 sh "$ROOT/.agents/tests/replay/prepare/live-on-vercel.sh" "$vl" \
   && ok "the Vercel preparation runs before the first commit" \
   || bad "the Vercel preparation failed before the first commit"
-grep -q '^Recipe: nextjs-supabase-on-vercel.md$' "$vl/AGENTS.md" \
+grep -q '^Recipe: nextjs-supabase-on-vercel$' "$vl/AGENTS.md" \
   && ! grep -q '(Filled in by the setup-ai-build-kit skill: `Recipe:' "$vl/AGENTS.md" \
   && ok "AGENTS.md names the Vercel recipe in place of the template's placeholder" \
   || bad "AGENTS.md does not name the Vercel recipe"
@@ -855,7 +855,7 @@ grep -q '^# setup: blank$' "$ROOT/.agents/tests/replay/cases/57.txt" \
 mp="$WORK/migration"
 mkdir -p "$mp/.agents/skills/setup-hosting/recipes"
 cp "$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md" "$mp/"
-cp "$ROOT/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel.md" "$mp/.agents/skills/setup-hosting/recipes/"
+cp -R "$ROOT/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel" "$mp/.agents/skills/setup-hosting/recipes/"
 cp "$ROOT/.gitignore" "$mp/.gitignore"
 sh "$ROOT/.agents/tests/replay/prepare/migration-pending.sh" "$mp" \
   && ok "the migration preparation runs before the first commit" \

@@ -51,7 +51,7 @@ trap 'rm -rf "$WORK"' EXIT INT TERM
 p="$WORK/s54"
 mkdir -p "$p/.agents/skills/setup-hosting/recipes"
 cp "$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md" "$p/"
-cp "$ROOT/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel.md" "$p/.agents/skills/setup-hosting/recipes/"
+cp -R "$ROOT/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel" "$p/.agents/skills/setup-hosting/recipes/"
 cp "$ROOT/.gitignore" "$p/.gitignore"
 sh "$PREPARE.sh" "$p"
 git -C "$p" init -q
@@ -265,7 +265,7 @@ echo "== A linked Supabase project =="
 m="$WORK/s57"
 mkdir -p "$m/.agents/skills/setup-hosting/recipes"
 cp "$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md" "$m/"
-cp "$ROOT/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel.md" "$m/.agents/skills/setup-hosting/recipes/"
+cp -R "$ROOT/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel" "$m/.agents/skills/setup-hosting/recipes/"
 cp "$ROOT/.gitignore" "$m/.gitignore"
 sh "$ROOT/.agents/tests/replay/prepare/migration-pending.sh" "$m"
 m=$(cd "$m" && pwd -P)
