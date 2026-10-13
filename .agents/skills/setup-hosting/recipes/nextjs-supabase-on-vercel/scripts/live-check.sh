@@ -88,10 +88,9 @@ import json, sys
 deps = json.load(open(sys.argv[1])).get("deployments", [])
 live = json.load(open(sys.argv[2]))
 live_id = live.get("id") or live.get("uid")
-ready = [d for d in deps if (d.get("readyState") or d.get("state")) == "READY"
-         and d.get("target") == "production"]
-ready.sort(key=lambda d: str(d.get("created", "")), reverse=True)
-print("yes" if ready and (ready[0].get("uid") or ready[0].get("id")) != live_id else "no")
+ready = [d for d in deps if d.get("state") == "READY" and d.get("target") == "production"]
+ready.sort(key=lambda d: d.get("createdAt") or 0, reverse=True)
+print("yes" if ready and ready[0].get("id") != live_id else "no")
 PY
 )
     if [ "$newer" = yes ] || [ "$recorded" = yes ]; then

@@ -22,7 +22,7 @@
 # what a machine can.
 #
 # Exit 0 when the preview is Ready and, where read, healthy, 1 when it is not,
-# 2 when it could not be checked.
+# 2 when it could not be checked, such as Vercel not reached or not signed in.
 
 set -u
 here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
@@ -31,8 +31,13 @@ here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 [ -n "${PREVIEW_ADDRESS:-}" ] || cl_cannot "No preview address was given, so there is no preview to check yet."
 cl_need vercel
 
-vercel inspect "$PREVIEW_ADDRESS" --wait --timeout 5m 2>&1 | grep -q 'Ready' ||
+state=$(vercel inspect "$PREVIEW_ADDRESS" --wait --timeout 5m 2>&1)
+if printf '%s\n' "$state" | grep -q 'Ready'; then :
+elif printf '%s\n' "$state" | grep -Eq 'status.*(Error|Canceled)'; then
   cl_fail "The preview did not reach Ready on Vercel."
+else
+  cl_cannot "Vercel did not say how the preview stands, so it could not be checked. This computer may not be signed in to Vercel."
+fi
 
 [ "${PREVIEW_HEALTH:-}" = yes ] ||
   cl_pass "The preview is built and Ready. The person opens it signed in to Vercel to try the change."

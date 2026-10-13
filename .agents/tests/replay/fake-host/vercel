@@ -245,6 +245,11 @@ def age(created):
     return "%ds" % seconds
 
 
+def millis(created):
+    then = datetime.strptime(created, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+    return int(then.timestamp() * 1000)
+
+
 STATUS = {"READY": "● Ready", "BUILDING": "● Building", "ERROR": "● Error"}
 
 # Options every command takes, and whether each takes a value.
@@ -373,12 +378,14 @@ def cmd_ls(state, argv):
     if environment:
         deps = [d for d in deps if d["target"] == environment]
     if options.get("--json") or options.get("--format") == "json" or options.get("-F") == "json":
-        print(json.dumps({"deployments": [
-            {"uid": d["id"], "name": state["project"], "url": d["url"],
-             "state": d["state"], "readyState": d["state"], "target": d["target"],
-             "created": d["created"], "meta": {"githubCommitSha": d["commit"],
-                                                "githubCommitRef": d["branch"]}}
-            for d in deps]}, indent=2))
+        # The shape Vercel CLI 60 prints: createdAt in milliseconds.
+        print(json.dumps({"contextName": state["team"], "deployments": [
+            {"id": d["id"], "name": state["project"], "url": d["url"],
+             "state": d["state"], "target": d["target"],
+             "createdAt": millis(d["created"]), "meta": {"githubCommitSha": d["commit"],
+                                                         "githubCommitRef": d["branch"]}}
+            for d in sorted(deps, key=lambda d: d["created"], reverse=True)],
+            "pagination": None}, indent=2))
         return
     print(HEADER)
     print("> Deployments for %s/%s [318ms]" % (state["team"], state["project"]))
@@ -408,7 +415,7 @@ def cmd_inspect(state, argv):
     if options.get("--json") or "json" in (options.get("--format"), options.get("-F")):
         print(json.dumps({"id": dep["id"], "url": dep["url"], "name": state["project"],
                           "target": dep["target"], "readyState": dep["state"],
-                          "createdAt": dep["created"],
+                          "createdAt": millis(dep["created"]),
                           "meta": {"githubCommitSha": dep["commit"],
                                    "githubCommitRef": dep["branch"]}}, indent=2))
         return

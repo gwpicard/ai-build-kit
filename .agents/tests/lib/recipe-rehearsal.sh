@@ -124,6 +124,7 @@ one_deployment() {
 case "$1" in
   inspect)
     one_deployment "$@"; down
+    case "$target" in */) echo "Error: Can't find the deployment \"$target\"" >&2; exit 1 ;; esac
     if [ "$RR_JSON" = yes ]; then echo '{"id":"dpl_live","target":"production","readyState":"READY"}'
     elif bad; then echo "status  ● Error"
     else echo "status  ● Ready"; fi ;;
@@ -142,11 +143,15 @@ case "$1" in
       esac
     done
     down
-    if bad; then
-      echo '{"deployments":[{"uid":"dpl_live","state":"READY","target":"production","created":"2026-01-02T00:00:00Z"}]}'
-    else
-      echo '{"deployments":[{"uid":"dpl_live","state":"READY","target":"production","created":"2026-01-02T00:00:00Z"},{"uid":"dpl_earlier","state":"READY","target":"production","created":"2026-01-01T00:00:00Z"}]}'
-    fi ;;
+    # The shape Vercel CLI 60 prints: id, url, state, target, and createdAt
+    # in milliseconds. With RR_HELD a newer build waits, listed after the live
+    # one, so a script that trusts the order instead of createdAt is caught.
+    live='{"id":"dpl_live","url":"app-live.vercel.app","state":"READY","target":"production","createdAt":1767312000000}'
+    newer='{"id":"dpl_newer","url":"app-newer.vercel.app","state":"READY","target":"production","createdAt":1767398400000}'
+    earlier='{"id":"dpl_earlier","url":"app-earlier.vercel.app","state":"READY","target":"production","createdAt":1767225600000}'
+    if bad; then echo '{"contextName":"team","deployments":['"$live"'],"pagination":null}'
+    elif [ -n "${RR_HELD:-}" ]; then echo '{"contextName":"team","deployments":['"$live,$earlier,$newer"'],"pagination":null}'
+    else echo '{"contextName":"team","deployments":['"$live,$earlier"'],"pagination":null}'; fi ;;
   curl)
     # A path, then only the options vercel curl documents. It is marked beta,
     # and it answers a protected deployment through a bypass token.
@@ -524,6 +529,13 @@ rr_case() {
   fi
   printf '%s %s\n' "$rr_file" "$rr_got" >> "$RR_RAN"
   rr_ok "$rr_file in the $rr_world world exits $rr_want: $rr_last"
+}
+
+rr_said() {
+  # rr_said <yes|no> <text>: the last case's output holds the text, or not.
+  if grep -qF -- "$2" "$RR_TMP/out"; then rr_got=yes; else rr_got=no; fi
+  [ "$rr_got" = "$1" ] || { sed 's/^/    /' "$RR_TMP/out" >&2; rr_fail "$rr_file printed '$2': $rr_got, not $1"; }
+  rr_ok "$rr_file printed '$2': $1"
 }
 
 rr_tools() {

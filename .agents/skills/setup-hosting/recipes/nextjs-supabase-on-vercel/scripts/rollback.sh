@@ -27,20 +27,25 @@ live=$(mktemp)
 trap 'rm -f "$list" "$live"' EXIT
 vercel ls --environment production --format json >"$list" 2>/dev/null ||
   cl_cannot "Vercel's list of deployments could not be read, so the kit cannot tell whether a rollback is possible."
-vercel inspect "${LIVE_ADDRESS#https://}" --format json >"$live" 2>/dev/null ||
+address=${LIVE_ADDRESS%/}
+address=${address#https://}
+vercel inspect "${address#http://}" --format json >"$live" 2>/dev/null ||
   cl_cannot "Vercel could not say which build is live, so the kit cannot tell whether a rollback is possible."
 
+# Each listed build has id, state, target and createdAt, in milliseconds.
 earlier=$(python3 - "$list" "$live" <<'PY'
-import json, sys
+import datetime, json, sys
 deps = json.load(open(sys.argv[1])).get("deployments", [])
 live = json.load(open(sys.argv[2]))
 live_id = live.get("id") or live.get("uid")
-for dep in deps:
-    ident = dep.get("uid") or dep.get("id")
-    state = dep.get("readyState") or dep.get("state")
-    if ident != live_id and state == "READY" and dep.get("target") == "production":
-        print(str(dep.get("created", ""))[:10])
-        break
+when = {d.get("id"): d.get("createdAt") or 0 for d in deps}
+live_at = when.get(live_id) or live.get("createdAt") or float("inf")
+ready = [d for d in deps if d.get("state") == "READY" and d.get("target") == "production"
+         and d.get("id") != live_id and (d.get("createdAt") or 0) < live_at]
+if ready:
+    newest = max(ready, key=lambda d: d.get("createdAt") or 0)
+    stamp = datetime.datetime.fromtimestamp((newest.get("createdAt") or 0) / 1000, datetime.timezone.utc)
+    print(stamp.strftime("%Y-%m-%d"))
 PY
 )
 [ -n "$earlier" ] ||

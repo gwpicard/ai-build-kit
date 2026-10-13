@@ -33,6 +33,7 @@ rr_case 0 good PREVIEW_ADDRESS=https://preview.example.test PREVIEW_HEALTH=yes p
 rr_case 1 bad PREVIEW_ADDRESS=https://preview.example.test preview.sh
 rr_case 1 good PREVIEW_ADDRESS=https://preview.example.test PREVIEW_HEALTH=yes LIVE_REF=previewref preview.sh
 rr_case 2 good preview.sh
+rr_case 2 down PREVIEW_ADDRESS=https://preview.example.test preview.sh
 
 # Going live: main is live, and no table is open to the public key.
 rr_case 0 good going-live.sh
@@ -41,6 +42,9 @@ rr_case 2 good LIVE_ADDRESS= going-live.sh
 
 # Rollback: possible when an earlier build is listed, and never tried here.
 rr_case 0 good rollback.sh
+rr_said yes "from 2026-01-01"
+rr_case 0 good RR_HELD=1 LIVE_ADDRESS=https://app.example.test/ rollback.sh
+rr_said yes "from 2026-01-01"
 rr_case 1 bad rollback.sh
 rr_case 2 down rollback.sh
 rr_main=$(git -C "$RR_TMP/fixture" rev-parse main)
@@ -69,6 +73,8 @@ rr_case 1 bad logs.sh
 rr_case 2 down logs.sh
 rr_case 0 good live-check.sh
 rr_case 1 bad live-check.sh
+rr_case 0 good live-check.sh --only hold
+rr_case 1 good RR_HELD=1 live-check.sh --only hold
 rr_case 2 down live-check.sh --only migration
 rr_case 2 good live-check.sh --only nothing
 
