@@ -81,8 +81,10 @@ that each merge /implement makes puts that change live.
 #### Off a recipe
 
 Run `scripts/run-recipe.sh none` with the two answers above, and the live
-address once the person gives one. It lists the eight section names as
-one-line warnings and records them, and the kit checks nothing more.
+address once the person gives one. It lists the eight section names and the
+general readiness items as one-line warnings and records them, and the kit
+checks nothing more. A server this session cannot reach gets the request in
+`references/hosting-request.md`.
 
 #### A secret a check needs
 

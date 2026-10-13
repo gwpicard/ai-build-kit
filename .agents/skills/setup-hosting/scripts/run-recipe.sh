@@ -35,12 +35,12 @@
 # person can judge takes their answer from --looked.
 #
 # A check that failed or could not run is a warning: one line, written in the
-# changelog, and the launch goes on. A warning the changelog already holds for
-# the same section, of the same kind, is a one-line pointer to it instead. The
-# rollback line goes on a line of its own, and says "possible, not tried" when
-# an earlier build is listed, since a rollback is never tried to prove it.
-# Off a recipe, the eight section names are warnings, one line each, and
-# nothing more.
+# changelog, and the launch goes on. Where the newest changelog line for the
+# same check says the same words, the warning is a one-line pointer to it
+# instead. The rollback line goes on a line of its own, and says "possible,
+# not tried" when an earlier build is listed, since a rollback is never tried
+# to prove it. Off a recipe, the eight section names and the general
+# readiness items are warnings, one line each, and nothing more.
 #
 # Where any check is a warning, the last line starts "Left:" and names the
 # checks still open, pointing to the changelog. It is the whole answer when the
@@ -65,6 +65,9 @@ ORDER = [("Preview", "preview", "Preview up"),
          ("Logs", "logs", "Logs readable"),
          ("Health", "health", "Health answers")]
 IDS = {ident for _, ident, _ in ORDER}
+# What a recipe's checks stand in for. Off a recipe each is a warning.
+READINESS = ["Service and billing owner named", "Manual fallback ready",
+             "Test data removed", "Access reviewed", "Service account owner named"]
 
 
 def stop(message, code=2):
@@ -247,7 +250,10 @@ def outcome(heading, ident):
 
 # --- what the changelog already holds -----------------------------------------
 changelog = os.path.join(project, "CHANGELOG.md")
-held = {}
+# For each label, the newest line the changelog holds that is not a pointer,
+# newest first: its full text and date when it is a warning. A label whose
+# newest line is a pass holds nothing.
+held, decided = {}, set()
 if os.path.isfile(changelog):
     date = None
     for line in open(changelog, errors="replace"):
@@ -255,39 +261,42 @@ if os.path.isfile(changelog):
         if heading:
             date = heading.group(1)
             continue
-        found = re.match(r"^\s*(?:[-*]\s+)?\**([A-Za-z ]+?)\**:\s*(.*)$", line)
+        body = re.sub(r"^\s*(?:[-*]\s+)?", "", line).strip()
+        if body.startswith("Rollback possible, not tried"):
+            decided.add("rollback possible")
+            continue
+        found = re.match(r"^\**([A-Za-z ]+?)\**:\s*(.*)$", body)
         if not found or date is None:
             continue
         label, rest = found.group(1).strip().lower(), found.group(2).lower()
-        if not re.match(r"warning|no\b|not checked", rest):
+        if label in decided or rest.startswith("still "):
             continue
-        # The runner writes "not checked" for a check that could not run. An
-        # entry written by hand before the runner existed says "could not".
-        kind = "cannot" if re.search(r"not checked|could not", rest) else "fail"
-        key = (label, kind)
-        if key not in held or date < held[key]:
-            held[key] = date
+        decided.add(label)
+        if re.match(r"warning|no\b|not checked", rest):
+            held[label] = (body, date)
 caution_given = os.path.isfile(changelog) and \
     "monitoring caution given" in open(changelog, errors="replace").read().lower()
 
 
 def line_for(label, code, detail):
     """The plain line, and whether it is a pointer to a warning already held."""
-    kind = {1: "fail", 2: "cannot"}.get(code)
     rollback = label == "Rollback possible"
-    if kind and (label.lower(), kind) in held:
-        since = held[(label.lower(), kind)]
-        if rollback:
-            return "Rollback possible: still no, as the changelog has recorded since %s." % since, True
-        return "%s: still a warning, as the changelog has recorded since %s." % (label, since), True
     if code == 0:
         return ("Rollback possible, not tried. %s" % detail if rollback
                 else "%s: yes. %s" % (label, detail)), False
     if code == 1:
-        return ("Rollback possible: no. %s" % detail if rollback
-                else "%s: warning. %s" % (label, detail)), False
-    return ("Rollback possible: not checked. %s" % detail if rollback
-            else "%s: warning, not checked. %s" % (label, detail)), False
+        text = ("Rollback possible: no. %s" % detail if rollback
+                else "%s: warning. %s" % (label, detail))
+    else:
+        text = ("Rollback possible: not checked. %s" % detail if rollback
+                else "%s: warning, not checked. %s" % (label, detail))
+    # A pointer only where the newest entry for this label says the same.
+    newest = held.get(label.lower())
+    if newest and newest[0] == text:
+        if rollback:
+            return "Rollback possible: still no, as the changelog has recorded since %s." % newest[1], True
+        return "%s: still a warning, as the changelog has recorded since %s." % (label, newest[1]), True
+    return text, False
 
 
 # --- a later run compares first ------------------------------------------
@@ -325,7 +334,14 @@ for heading, ident, label in ORDER:
         lines.append(text)
     print(text)
 
-extra = []
+extra, readiness_open = [], []
+if folder is None:
+    for label in READINESS:
+        text, _ = line_for(label, 2, "The project is on no recipe, so the kit cannot check this.")
+        warnings += 1
+        readiness_open.append(label)
+        lines.append(text)
+        print(text)
 if request_record:
     if request_record == "yes":
         text, _ = line_for("Request record", 0, "The tool records what each request did.")
@@ -380,7 +396,7 @@ if record:
 print(closing)
 # The one line to give when the person asks what is left. A warning they have
 # heard, or the changelog holds, is named and pointed to, and nothing more.
-still = [label for (heading, ident, label), code in zip(ORDER, codes) if code]
+still = [label for (heading, ident, label), code in zip(ORDER, codes) if code] + readiness_open
 if request_record == "no":
     still.append("Request record")
 if still:

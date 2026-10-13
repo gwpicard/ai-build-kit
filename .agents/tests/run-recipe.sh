@@ -139,6 +139,20 @@ grep -qx 'Logs readable: warning. The Logs stub failed.' "$WORK/out" ||
   fail "a pasted result that fails was not read back as a warning"
 ok "a warning whose cause changed is said in full"
 
+# A pointer only where the newest entry for the check says the same words.
+P="$WORK/p8"
+project "$P"
+STUB_BACKUP=1 run "$P" --looked preview=yes --pasted logs="$WORK/paste-good"
+sed -i.bak 's/^- Backup present: warning\. The Backup stub failed\.$/- Backup present: warning. An older reason./' "$P/CHANGELOG.md"
+STUB_BACKUP=1 run "$P" --looked preview=yes --pasted logs="$WORK/paste-good"
+grep -qx 'Backup present: warning. The Backup stub failed.' "$WORK/out" ||
+  fail "a warning whose reason changed since the newest entry was given as a pointer"
+STUB_BACKUP=0 run "$P" --looked preview=yes --pasted logs="$WORK/paste-good"
+STUB_BACKUP=1 run "$P" --looked preview=yes --pasted logs="$WORK/paste-good"
+grep -qx 'Backup present: warning. The Backup stub failed.' "$WORK/out" ||
+  fail "a warning that came back after a pass was given as a pointer"
+ok "a warning is said in full when its reason changed, or when it passed in between"
+
 # --- the rollback line never claims more than was seen ----------------------
 P="$WORK/p3"
 project "$P"
@@ -169,15 +183,18 @@ project "$P"
 code=0
 sh "$RUNNER" --project "$P" --set LIVE_ADDRESS=https://stub.example.test none > "$WORK/out" 2>&1 || code=$?
 [ "$code" = 1 ] || fail "a run off a recipe exited $code, not 1"
-[ "$(grep -c 'The project is on no recipe, so the kit cannot check this\.$' "$WORK/out")" = 8 ] ||
-  fail "a run off a recipe did not give the eight sections one warning line each"
-[ "$(wc -l < "$WORK/out" | tr -d ' ')" = 10 ] || fail "a run off a recipe said more than the eight lines, its closing and what is left"
+[ "$(grep -c 'The project is on no recipe, so the kit cannot check this\.$' "$WORK/out")" = 13 ] ||
+  fail "a run off a recipe did not give the eight sections and five readiness items one warning line each"
+for item in 'Service and billing owner named' 'Manual fallback ready' 'Test data removed' 'Access reviewed' 'Service account owner named'; do
+  grep -q "^$item: warning, not checked\." "$WORK/out" || fail "a run off a recipe left out the readiness item: $item"
+done
+[ "$(wc -l < "$WORK/out" | tr -d ' ')" = 15 ] || fail "a run off a recipe said more than the thirteen lines, its closing and what is left"
 grep -q '^/setup-hosting ran on no recipe' "$P/CHANGELOG.md" || fail "the entry off a recipe does not say so"
 code=0
 sh "$RUNNER" --project "$P" --set LIVE_ADDRESS=https://stub.example.test none > "$WORK/out" 2>&1 || code=$?
-[ "$(grep -c 'still a warning\|still no' "$WORK/out")" = 8 ] ||
-  fail "a second run off a recipe repeated the eight warnings in full"
-ok "off a recipe the eight section names are one-line warnings, and pointers the next time"
+[ "$(grep -c 'still a warning\|still no' "$WORK/out")" = 13 ] ||
+  fail "a second run off a recipe repeated the warnings in full"
+ok "off a recipe the eight section names and five readiness items are one-line warnings, and pointers the next time"
 
 # --- a later run compares first, and keeps the notes ---------------------------
 P="$WORK/p6"
