@@ -94,6 +94,44 @@ out=$(run "$P") && code=0 || code=$?
   && pass "a folder inside a larger repository is refused and nothing is committed there" \
   || fail "a nested folder returned $code: $out"
 
+echo "== Secrets and other work stay out of the checkpoint =="
+P=$(new_project secrets)
+printf 'API_KEY=real-value\n' > "$P/.env"
+printf 'API_KEY=real-value\n' > "$P/.env.local"
+printf 'API_KEY=\n' > "$P/.env.example"
+out=$(run "$P") && code=0 || code=$?
+saved=$(git -C "$P" ls-tree -r --name-only HEAD 2>/dev/null || true)
+[ "$code" -eq 0 ] && ! printf '%s\n' "$saved" | grep -qx '.env' && ! printf '%s\n' "$saved" | grep -qx '.env.local' \
+  && printf '%s\n' "$saved" | grep -qx '.env.example' \
+  && pass "the .env files are never saved, and .env.example is" \
+  || fail "the founding save returned $code and saved: $(printf '%s ' $saved)"
+git -C "$P" check-ignore -q .env && git -C "$P" check-ignore -q .env.local && ! git -C "$P" check-ignore -q .env.example \
+  && printf '%s\n' "$saved" | grep -qx '.gitignore' \
+  && pass "the .env files are ignored from now on, in a saved .gitignore" \
+  || fail "the .env files are not ignored after founding"
+
+P=$(new_project key)
+printf -- '-----BEGIN PRIVATE KEY-----\n' > "$P/deploy-key.pem"
+out=$(run "$P") && code=0 || code=$?
+[ "$code" -eq 1 ] && ! git -C "$P" rev-parse -q --verify HEAD >/dev/null \
+  && printf '%s' "$out" | grep -q 'deploy-key.pem' \
+  && pass "a file that looks like a secret stops the save, and is named" \
+  || fail "a private key file returned $code: $out"
+
+P=$(new_project other-work)
+git -C "$P" init -q -b main
+printf 'app v1\n' > "$P/app.js"
+git -C "$P" add app.js
+git -C "$P" -c user.name=Sam -c user.email=sam@example.invalid -c commit.gpgsign=false commit -q -m "Sam's app"
+printf 'app v2, half done\n' > "$P/app.js"
+out=$(run "$P") && code=0 || code=$?
+[ "$code" -eq 0 ] && [ "$(git -C "$P" log -1 --format=%s -- app.js)" = "Sam's app" ] \
+  && git -C "$P" show --name-only --format= HEAD~1 | grep -qx 'masterplan.md' \
+  && [ "$(cat "$P/app.js")" = "app v2, half done" ] && git -C "$P" status --porcelain | grep -q '^ M app.js' \
+  && printf '%s' "$out" | grep -q 'app.js' \
+  && pass "the person's unsaved change to a file already saved stays out of the checkpoint, and is named" \
+  || fail "the person's other work was swept up, exit $code: $out / $(git -C "$P" log --format=%s --name-only -3)"
+
 # A masterplan with two mark lines is not guessed at.
 P=$(new_project doubled)
 printf 'Trued against: not yet checked\n' >> "$P/masterplan.md"
