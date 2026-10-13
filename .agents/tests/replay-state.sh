@@ -1638,7 +1638,11 @@ cp "$p/seed" "$WORK/seed-kept"
 printf 'seed, rewritten by the run\n' > "$p/seed"
 git -C "$p" add seed
 cp "$WORK/seed-kept" "$p/seed"
-truing "$p"
+# The visit commits only its own file, so the staged version is in no commit.
+git -C "$p" checkout -q -b records-truing
+printf 'Borrower: the person using an item.\n' > "$p/masterplan.md"
+git -C "$p" add masterplan.md
+git -C "$p" commit -q -m "True the records" -- masterplan.md
 out=$("$CHECK" 48 "$p")
 [ "$(printf '%s' "$out" | verdict_of person-work)" = "miss" ] && r=yes || r=no
 check "scenario 48 with another version of the person's file staged is a miss" "$r"
