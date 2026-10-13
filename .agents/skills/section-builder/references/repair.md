@@ -120,10 +120,12 @@ scroll past. Failed fixes never stack; stacked fixes are how clean projects rot.
 **The reset step.** Reset to the last saved state after any failed attempt
 before trying differently. Commit what is worth keeping, such as a test that
 reproduces the fault, before an attempt starts, so the reset cannot take it.
-Say in one line, before you run it, that the reset throws away the failed
-attempt and nothing else, then run `sh` with this skill's
-`scripts/reset-attempt.sh` from the project root. This announced step is the
-only place it runs.
+Then run `sh` with this skill's `scripts/reset-attempt.sh --start`, so the
+reset knows which new files are the attempt's. Say in one line, before you
+run the reset, that it throws away the failed attempt and nothing else, then
+run the same script with no option. It keeps a snapshot of what it throws
+away and prints its name, and it removes only files added since the start.
+This announced step is the only place it runs.
 
 ### Fix and lock it down
 
