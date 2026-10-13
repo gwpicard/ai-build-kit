@@ -1,402 +1,190 @@
 # PHILOSOPHY.md: why this kit exists and what belongs in it
 
-Why the kit is shaped the way it is, who it is for, and how to decide what
-belongs. Read this before adding anything.
+Read this before you add to the kit, change what a command does, or cut
+something. It says who the kit is for, what makes it different, and the test
+every rule has to pass.
 
 ## The problem
 
-Capable, motivated people can suddenly produce software, without the process that
-keeps it reliable or the judgement about when to stop and get help. The result
-demos beautifully on a Tuesday and cannot be changed by anyone six weeks later,
-including the person who built it.
+People who do not write code can now get a working tool out of a coding agent
+in an afternoon. Most of those tools are prototypes. They demo well, and six
+weeks later nobody can change them safely, nobody knows where the data lives,
+and nobody decided what happens when they break.
 
-The steps that close that gap are the ones the README opens with. This kit is
-those steps, packaged so that nobody has to read the code they produce to
-follow them.
+The usual answers each give something up. A hosted app builder is fast, but
+the tool lives inside the platform and on its terms. A developer's skill kit
+makes the work reliable, but it expects you to read code. The kit sits between
+them.
+
+## What the kit is
+
+The kit is a paved road from an idea to a real tool. "Paved road" is a term
+from platform engineering: a route that someone has already made safe, so the
+people who use it do not decide everything again each time.
+
+On the road you build fast, without reading code, and the result is real
+software in your own accounts. Three things carry it.
+
+Recipes make it fast. A recipe pairs a build stack with a place to run it,
+and settles in advance how the tool goes live, how it is backed up, and how it
+rolls back to an earlier version. A recipe joins the menu only after a recorded
+real run. The person does not make those decisions, so they cannot get them
+wrong.
+
+Mechanisms make it reliable. A rule that a machine can check is a hook, a
+setting, or a script. It holds on every model and every coding agent, and it
+costs no words. Prose is kept for the judgements a machine cannot make.
+
+Risk boundaries keep it honest. At the start, and again when the project
+changes, the kit names anything that could hurt people: personal data, money,
+sign-in, automatic actions, data that cannot be replaced, a regulated decision.
+The person hears the risk once, in plain words, and decides. Their decision is
+recorded with the date.
+
+The tool belongs to the person from the first day. The code is in their
+repository, it runs on their host account, and the data is in their database
+account. They can change coding agent, host, or developer later and lose
+nothing.
 
 ## Who it is for
 
-Someone who already builds with an AI coding agent and wants what it builds to
-still work six weeks later. Two kinds of person reach for that.
+The kit is for someone who is comfortable with technology and does not write
+code: a team lead, an operations person, an analyst, a product manager, a
+founder. They can create accounts and follow setup steps, and they want a tool
+that still works next quarter. A developer new to agent-led work fits too.
 
-One is a
-developer new to agent-led work, who finds their usual discipline either too
-heavy for it or quietly skipped. The other came to software from another job.
-They run a team, a product, an operation or a dataset, and they now have some
-practice at directing an agent and getting a working tool out of it. Both want
-the reliability of a real process. Neither wants to carry the process by hand.
+They learn four ideas, at the moment each one first appears:
 
-The kit rests on one rule: the workflow never requires reading code. None of the
-six commands asks anyone to open a file of code, and every check is something a
-person sees or tries. The rule describes the process and leaves the person
-alone. A developer can read every diff if they like. The kit never depends on
-it, because a process that only works while somebody reads the code stops
-working the day nobody does.
+1. Accounts: GitHub, a host, and a database service, created once.
+2. A repository: where the project and its history live.
+3. A pull request: a proposed change. They try it, then say yes to merge it.
+4. Going live: after a merge, the host puts the change in front of users.
 
-That rule settles every argument below. When a choice comes up, the question is
-always what this person can see, what they can try, and what they can safely
-leave to the machinery.
+The kit is not for someone who wants an app in ten minutes and never wants to
+see GitHub. A hosted builder serves them better, and the README says so.
 
-The audience is a person or a small team without a professional development
-team behind the project. Several people can share one project, because the
-work is kept as pieces on GitHub and each one arrives through its own pull
-request, with conflicts settled the ordinary way. The kit does not try to
-coordinate a large team or many agents working at once. The skills are plain
-markdown, and a technical person can read and extend them. What people build
-with the kit is mostly internal, and the README's fit section says which
-projects qualify.
+## The rule that settles arguments
 
-The kit optimises for the least process that materially reduces failure for the
-project's current consequences, complexity, and ownership burden. A control
-may be always required, activated only when a risk appears, or carried by a
-sensitive area as its caution. More process is not automatically better;
-process earns its place by changing an outcome the user can understand.
+The work never requires reading code. Every check is something a person sees
+or tries, and every report says what was tried and what happened. A developer
+can read every change if they like. The kit never depends on it, because a
+process that works only while somebody reads the code stops working on the day
+nobody does.
 
-## What follows from that
+## Small is a reliability feature
 
-Every check is behavioural. Verification is something the person clicks or sees:
-a real input and the output they expected, a green tick beside a button, a
-plain-language report saying what was tried and what happened. Nothing in the
-workflow asks anyone to read a diff.
+The kit should be as small as it can be while it still holds. Every sentence
+in a skill competes for the agent's attention, and an agent given more rules
+skips some of them, and nobody can say in advance which. So a rule that is not
+pulling its weight is not harmless. It makes the rules that matter less likely
+to be followed.
 
-The documents are the asset and the code is their current expression. Three
-records hold the project's present, future, and history. `AGENTS.md` carries
-the standing instructions for how work happens. The agent forgets everything between sessions and they do not. This is
-why a piece that resists fixing is routed by what the failure revealed
-rather than patched a fourth time, often ending in a rebuild from the
-documents, and why a disappointing autonomous run is answered by sharpening
-the plan instead of hand-editing whatever it produced.
+Small also means fewer commands. Six commands, each named after a moment a
+person reaches for. A new capability is new behaviour of an existing command.
+A new command is a redesign, and so is a cut.
 
-The vocabulary stays small and grows only by deliberate redesign. Six commands,
-each named after a moment a person actually reaches for, and every new
-capability arrives as behaviour of an existing command wherever it can. A
-capability that genuinely needs its own command is a sign a command was carrying
-two jobs at once, and splitting it is a redesign conversation, not a casual
-addition.
+Small means the person can understand what protects them: a handful of things
+are always enforced, and the rest is a short conversation.
 
-The count has gone up twice, both times for that reason. Seven became
-eight when `/build` was found to be both planning and building, and the planning
-half became its own command, now `/shape`. Eight became nine when `/what-now`
-was found to be both orientation and overview: it names at most three things
-because somebody lost cannot use more, and somebody taking on several pieces at
-once needs the whole list, so that half became `/queue`.
+## What earns a place
 
-The count has also come down, from nine to six. Three commands were second
-doors to the same work, and one name competed with the merge.
+A rule earns its place in a skill only if it passes one of these:
 
-A separate repair command made the person sort
-their own request before typing, which is the kit's job, so `/fix` folded into
-`/shape` and `/implement`: a bug is a piece like any other. Taking on several
-pieces is a moment of building, so the whole ready list moved into
-`/implement`, while `/what-now` kept its cap of three. Catching the records up
-is what a service visit does, so `/sync` folded into `/maintain`, which now
-makes the project true on every visit.
+1. A machine enforces it. Then it lives in a hook, a setting, or a script,
+   and the skill says at most one line about it.
+2. A measurement shows it changes the outcome: a replay with the rule
+   behaves better than a replay without it.
+3. It carries a judgement that only a person or the agent can make, such as whether a
+   request is clear, whether a risk is present, or how to say it to the person.
 
-The fourth change was a name. `/ship` said it was the one step that changed
-the live copy. On both recipes the host builds the main copy on every merge,
-so the merge was the release, and the name claimed a job the merge was already
-doing. In one real run, asked only to put the tool live, it merged two pull
-requests nobody had named.
+A rule that came from one failed run is a hypothesis. It stays only once a
+measurement backs it.
 
-So the merge moved into `/implement`, which asks
-for a yes that names it, and the command became `/setup-hosting`, named for
-what it still does: set up how the tool runs live, and check it later.
+Every capability that passes also answers these, in writing:
 
-A name can also be forced from outside. Where the coding agent the kit runs inside takes a command
-name for itself, the person either cannot reach the kit's command or loses the
-agent's own, and renaming the kit's command is the repair. That is a rename
-rather than a redesign, so the count stays where it is. `/plan` became `/shape`
-on those grounds.
+- What does the person see, and when?
+- Can it be said in one sentence at that moment?
+- What does the person do when it goes wrong, without reading anything
+  technical?
+- Where does it apply: always, on one build path, or inside one sensitive area?
 
-Where the person can judge a risk, the kit suggests and warns rather than
-blocks. These readers have built things before, and once a cost is named in a
-line they can weigh it. So a step they could skip is offered with what it
-costs, a warning says what could go wrong, and the choice stays with them. A
-risk the person cannot judge alone is what the build path and its cautions are
-for, as the next sections describe.
+A capability with no answer to the last question becomes ceremony for
+everybody.
 
-Machinery stays invisible until it matters. Nobody needs to know a review
-skill exists until the agent says a change touched sign-in and a fresh
-session is checking it. Nobody needs to know what a continuous integration runner
-is to understand that green means the tests really passed.
+## Testing the kit
 
-Trust becomes mechanism wherever it can. A claim that can be checked
-automatically gets checked automatically, and the result shows up as something
-visible. Instructions ask. Machinery guarantees, and it guarantees exactly what
-it checks and nothing beyond that, which is why the kit says what a check
-covers rather than letting a green tick stand for everything.
+A test checks an outcome, never a sentence. A test that greps a skill for a
+phrase proves the phrase is there. It does not prove the agent does the thing,
+and it makes the prose harder to cut. Those tests do not belong here.
 
-And the kit is honest about its own limits. A fit check at the start, and again
-whenever a project changes character, decides how much care applies and names
-each part of the work that touches something sensitive, with the one caution
-that goes with it. Being told at the start what you would otherwise discover at
-launch is the most valuable thing here.
+Two kinds of test do:
+
+- Boundary checks in shell: what ships, what gets written, what a script
+  decides, what a hook blocks. These run in seconds and fail loudly.
+- Replays: a whole conversation in a throwaway project, graded on what the
+  agent did and on what it left on disk. The result is a rate over several
+  runs, and the rate is the measure of reliability.
+
+A cut that keeps the replay rate is a good cut. A cut that lowers it comes
+back, or the rule moves into a mechanism.
 
 ## Rigour follows the project
 
-The same workflow must not treat a private experiment and a business-critical
-internal system as if they carry the same consequences. Every project has one
-build path: explore privately, build and run it, or build with care. The path
-decides which checks, reviews, saving steps, and launch conditions apply.
+A private experiment and a tool that handles payroll do not carry the same
+consequences, so they do not get the same process. Each project has one build
+path:
 
-It is
-decided by what the work touches. Build with care means some of the work sits
-in a sensitive area: personal data, money, sign-in, automatic action,
-irreplaceable live data, or a regulated decision. The masterplan names each
-area in the tool's own words with the caution beside it, and everything
-outside those areas is built the ordinary way.
+| Path | When |
+|---|---|
+| Explore privately | Trying an idea with data you can throw away |
+| Build and run it | An internal tool with a manual fallback |
+| Build with care | Some of the work touches a sensitive area |
 
-The path count has moved once too, and the other way. Four became three when
-the two most careful paths were found to be asking the wrong question. Both
-asked who should own the build, one for a single named area and one for the
-whole thing, and a person who had already decided to build it themselves heard
-either as a refusal wearing a different name.
+The path decides which checks, reviews, and launch conditions apply. It can
+move either way as the project changes. Build with care applies to the named
+sensitive areas, and everything outside them is built the ordinary way.
 
-What the kit needed to know was
-what the work touches. So the two became build with care, which names each
-sensitive area and the one caution that goes with it, and the ownership
-answers became founding tasks rather than a path. A path that changes how
-carefully a thing is built has to be about the thing.
+## Warn, then respect the decision
 
-The path can move in either direction. A prototype may become an operational
-tool. A risky design may become safe enough after sensitive data or automatic
-actions are removed. The fit check records the current path and the events that
-must trigger another check.
+Where the person can judge a risk, the kit warns and does not block. A step
+they could skip is offered with what it costs, once.
 
-The path is a recommendation the kit is honest about, not a barrier. Where a
-sensitive area survives redesign, the person gets a risk notice naming who is
-exposed and what would normally prevent the harm, and then decides. They can
-accept it and have the work built, or take the flagged thing out of scope. A
-gate somebody cannot get past and cannot understand is worse than one they
-knowingly walked through, because the first gets worked around by starting
-again somewhere with no gate at all.
+For a sensitive area the kit gives a risk notice: who is exposed, and what
+would normally prevent the harm. The person can have that caution done, take
+the work out, or carry on. If they carry on, the kit records their acceptance
+with the date and their words, and builds. The area stays named, because the
+exposure is still there.
 
-What holds is the notice rather than the outcome. Naming an area as sensitive
-is the agent's own judgement; dropping its caution needs the person's plain
-acceptance, recorded with a date and a reason in the build-path section, and
-the area stays named because the exposure is still there. The agent may not
-withdraw a notice under pressure, and may not satisfy a named control by
-appointing itself, because a warning that survives only while the person agrees
-with it is not a control at all.
+Two limits hold whatever the person says. The kit does not withdraw a notice
+because somebody pushes back. And where a caution names a person, such as a
+reviewer who knows the law, no agent session stands in for them. A run with
+nobody present stops at a sensitive area and never accepts on the person's
+behalf.
 
-Controls fall into three groups. Some are always required because they are cheap
-and prevent common harm: secrets stay out of code, destructive actions stop for
-approval, and the user confirms promised behaviour. Some are triggered by the
-path or the change: automated tests, pull requests, independent review, restored
-backups. The rest are the cautions a sensitive area carries, done before the
-area goes live or accepted on the record, and where a caution is a person, no
-session stands in for them.
+A gate that nobody can get past or understand is worse than one they walked
+through knowingly, because people work around the first by starting again
+somewhere with no gate at all.
 
-## What the person still has to learn
+## What the kit does not do
 
-No coding knowledge is required, and zero learning is not the promise. The
-person must learn to describe behaviour, judge evidence, understand where data
-and secrets live, and recognise when the project needs another kind of help.
-The kit teaches those things at the moment they matter and hides the engineering
-machinery beneath them.
+It is not a way to learn programming, and it does not replace a developer
+where one is needed. It is at its best when it can say exactly which area needs
+another pair of eyes, and hand that area over with nothing lost.
 
-## What this is not
+It runs no service of its own: no hosted scanning, no monitoring, no
+dashboards, no stored records anywhere but the person's project. A kit that
+installs into a folder cannot run those honestly, and claiming otherwise is the
+kind of unbacked claim it exists to stop. Where a project needs one, the fit
+check names it as a caution.
 
-It is not a way to learn programming. It does not assume the person is an
-engineer, and it does not need them to be one. The kit is shaped first for
-internal tools. It may also be used to define, prototype, and accept externally
-used software, and the fit check names what that touches before launch, not
-after the system has acquired users.
-
-It does not replace a developer where one
-is wanted. It is at its best when it can say precisely which one area needs
-another pair of eyes, and hand that area over with nothing lost, which is an
-odd thing for a tool to be proud of and is the point anyway.
-
-It also holds nothing that needs a service somebody else runs: no hosted
-scanning, no remote browser testing, no production monitoring, no vulnerability
-feed, no stored assurance records, no trust badges, no compliance dashboard, no
-expert marketplace, and nothing that compares one project against another.
-
-Each of those needs a person to run it, watch it and pay for it. A workflow that
-installs into a folder cannot provide any of them honestly, and a kit that
-pretended otherwise would be making exactly the kind of unbacked claim it exists
-to stop. Where a project genuinely needs one, the fit check says so and names
-it as a caution, in the same way it names a person who has to look.
-
-That line is about who runs a thing, not about what the kit is allowed to look
-at. The kit reads the work it produced and reports in plain words, and it may get
-better at that over time. What it will not do is claim there is a service behind
-it.
-
-The one exception is a recipe: one build stack paired with one place to run it.
-A recipe names services somebody else runs, because the person's tool will run
-on them. The kit still runs none of them, and the person holds the accounts.
-
-What
-the kit holds is a written account of how that pair handles the eight things a
-live tool needs, from preview to health, each with a way to check it, and the
-record of one real run that proved it. A service a tool runs on, meaning its
-hosting, its data or its deploy, is named inside recipe files and the README,
-and nowhere else in the kit.
-
-## Deciding what to add
-
-New techniques appear constantly: repositories, articles, tool features, client
-requests. Most are written by engineers for engineers, and most fail here for the
-same reason. This is the test.
-
-Answer all five questions in writing before adding anything. If you cannot answer
-all five, do not add it.
-
-1. **Does it fit under one of the commands?** The vocabulary stays small. A new
-   capability arrives as behaviour of an existing command, and a new command is
-   a rare, deliberate redesign rather than the default answer.
-
-2. **What does the person actually see, and when?** Name the concrete thing on
-   their screen and the moment it appears. If the honest answer is "nothing",
-   that is fine and often ideal; it means the feature improves quality invisibly.
-
-3. **Can it be taught in one sentence, at the moment it first appears?** If it
-   needs a paragraph, a diagram, or a manual, it is the wrong feature or the
-   wrong version of it.
-
-4. **What does the person do when it goes wrong?** Stated as an action they can
-   take without reading anything technical. "Type /shape and say what broke" is an answer. "Check the
-   logs" is not.
-
-5. **What can they never need to learn?** Name it explicitly. That is the value
-   of the feature, so it should be easy to state.
-
-Every capability that passes the five questions must also declare where it
-applies: always, only on named build paths or changes, or only inside a named
-sensitive area. A rule with no activation boundary becomes universal ceremony.
-
-Two more rules for the ones that pass. The system sorts things for the person
-rather than handing them raw judgement: where it can classify (which kind of work
-a request is, which findings should block a merge, which pieces a run can safely
-take), it classifies, and hands over a decision the person can actually make. A
-list of ten findings with "you decide" looks respectful and is not.
-
-And the story gets told in three places or it is not finished. WORKFLOW.md
-carries the plain explanation, the skill carries the line the agent says out loud
-at the moment it matters, and the thing on screen carries the rest. A feature
-that lives in the machinery but is missing from one of those is one the person
-cannot use.
-
-### Worked examples
-
-Automatic tests on every pull request, added. It fits under /implement. The person
-sees a green tick or a red cross beside the merge button. The sentence is "green
-means the tests really passed; red means don't merge". When it is red they tell
-/implement. They never need to know GitHub Actions exists.
-
-Review reports split into "worth stopping for" and "worth knowing", added. The
-same findings as before, sorted, so the decision becomes one question: is the
-first list empty?
-
-The whole ready list at once, added inside `/implement`. It once had a command
-of its own, on the view that it failed question 1 under every existing
-command. That view was wrong: somebody taking on several pieces is about to
-build, so the list fits where the building starts.
-
-The person sees two lists
-when more than one piece is ready, what can be built together now and what is
-waiting on what, and nothing is built until they choose. The sentence is "with
-several ready, it shows what can go together and what waits". When the list
-looks wrong they type the command again. They never need to learn that a piece
-can depend on another piece.
-
-Specialised agent role systems, rejected. Fails question 1, because each role is
-a new thing to know, and question 3, because there is no one-sentence version.
-
-Architecture decision records, rejected repeatedly. Fails question 2: the person
-never reads them, and even the repositories that ship them admit their agents
-barely use them.
-
-Parallel agents on separate worktrees, rejected. Fails question 4, because when
-something goes wrong the recovery involves git states the person should never
-have to untangle.
-
-Tight bug reproduction before a fix, added. It fits under /shape, which
-reproduces a bug before /implement repairs it; the user sees the exact failing
-case and the evidence that it stopped failing; they never need to learn
-instrumentation or bisection.
-
-Disposable decision prototype, added. It fits under /setup-ai-build-kit or /shape;
-the user tries a rough artifact to settle one question. What they get is chosen
-by the question: one file they open and drive themselves when the question is
-whether something behaves right, or three genuinely different arrangements to
-move between when the question is what shape it should take. When it is the
-wrong thing, they say so and the question gets split. They never need to
-understand prototype branches or throwaway architecture.
-
-A piece written in two layers, added. It fits under /shape and /implement. The
-person sees a plain surface that stays complete about anything affecting the
-product, so a simple read is never a false one; the build detail sits in a
-collapsed "under the hood" section they never have to open.
-
-The sentence is "you
-read the plain part; the agent reads the rest". When it goes wrong, the surface
-missed something that changed a product decision, and /shape puts it back on the
-surface. They never need to read the build notes, but nothing that affects their
-product is hidden from them.
-
-This answers the question a workshop raised: a ready
-piece must carry enough to build without fresh research, which matters most when
-/implement runs a batch with nobody watching. Context that reaches past one piece
-is not duplicated onto it: a whole-product decision lives in the masterplan, a
-whole-codebase convention in AGENTS.md, so each concept keeps one home.
-
-Universal test-first, rejected. Every promised behaviour needs evidence, but
-the evidence may be an automated test, a manual visual check, a source-backed
-fact, or a rehearsed recovery depending on the claim. Where a machine can check
-the claim, that check comes first and must pass; the other three are for the
-claims a machine cannot judge, not a way around one it could.
-
-A wiki, rejected. Each file under `docs/` owns one concept and sits beside the
-source it describes. A wiki would carry the record away from the work it must
-stay true to, and give one concept two homes. This is today's position rather
-than a permanent ban; a later cycle may revisit it.
-
-Sub-issues for a piece made of parts, added. GitHub already models a
-parent/child relationship, so the kit uses it rather than inventing one. It fits
-under /shape, which splits a piece too big to hold whole, and under /implement,
-which builds the parts and lets the parent close on its own.
-
-The person sees a
-piece that is "made of parts", nothing more. The line that keeps it from becoming
-a second way to be blocked is the outcome: a part shares the parent's outcome,
-while a blocked-by piece is a different outcome that must come first. Without that
-line, a piece would have two kinds of not-ready and /implement would not know
-which it was looking at, which is the mistake an earlier investigation warned about.
-
-Recipes, added. A recipe pairs a build stack with a place to run it, and for
-each part of a launch it says how that part is checked and who runs the check:
-the kit, a companion or the person with the result read back, or a person
-looking. It fits under /setup-ai-build-kit, which offers a short menu with one
-recommended, and under /setup-hosting, which works through the recipe's checks.
-
-The person sees the menu once, at
-founding, and after that a launch that says what it checked. The sentence is
-"this is a stack the kit has run for real, so it can check your launch as well
-as warn about it". When a check fails they tell /shape. A person who wants their
-own stack says so, and the kit carries on with fewer promises.
-
-They never need to learn how the place they run on does a rollback or where its
-backups live, because the recipe carries that. It applies only to a project
-that chose a recipe. On its own stack a project gets the general checks, and
-those are warnings too: a check not done is said once and written in the
-changelog, and the launch goes ahead. The one launch check /setup-hosting waits for is
-the address, since a tool with no recorded address is not live.
-
-Recipes make the
-kit bigger, and that should be said plainly. What they take away is the
-question the launch used to put to every project, how a backup, a rollback and a
-restore would work, which a person on a recipe no longer has to invent. The menu
-stays short because a pair joins it only after a real run.
+A recipe is the one place that names services somebody else runs, because the
+person's tool will run on them. The kit still runs none of them, and the person
+holds the accounts. A hosting, data or deploy service is named in recipe files
+and the README, and nowhere else.
 
 ## Keeping it honest
 
-When a release is cut, run the five questions over what is already here. Anything
-that now fails a question it used to pass has drifted, usually by accumulating
-explanation rather than by gaining features. That is the maintenance list, and
-MAINTAINING.md carries the same instruction so it has a place to actually happen.
-
-The kit should get smaller as often as it gets bigger. When it does not,
-something went in that should have been shaped differently or left out.
+At each release, read every skill against "What earns a place". Anything that
+no longer passes comes out. The kit should get smaller as often as it gets
+bigger, and its size in words is reported with each release beside its replay
+rates.

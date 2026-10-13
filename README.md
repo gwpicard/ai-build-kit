@@ -3,15 +3,47 @@
 [![Licence: MIT](https://img.shields.io/github/license/gwpicard/ai-build-kit)](LICENSE)
 [![Latest release](https://img.shields.io/github/v/release/gwpicard/ai-build-kit)](https://github.com/gwpicard/ai-build-kit/releases/latest)
 
-AI Build Kit helps people without a software background and small teams plan,
-build and run tools with Claude Code, Codex, Cursor, Gemini CLI or GitHub Copilot.
-You explain what should happen and try the result; the kit directs the agent's
-work without requiring you to read code.
+AI Build Kit is a paved road from an idea to a real tool, for people who do
+not write code. You say what the tool should do and try the result. Six
+commands take it from a first idea to a tool that is live, backed up and kept
+up to date.
 
-It installs eleven skills: six commands you type and five background skills
-that the commands call. Claude Code is tested, Codex is expected to work, and
-the others are experimental. Read the [agent grades and known
+The tool is yours from the first day. The code is in your own GitHub
+repository, it runs on your own host account, and the data is in your own
+database account. Nothing is locked inside a platform.
+
+Three things make the road:
+
+- Recipes. A recipe is a build stack and a place to run it, with going live,
+  backups and rollback already worked out and proven by a real run. That is
+  what makes it fast.
+- Enforced rules. In Claude Code, the agent cannot push straight to the main
+  copy or force a change through, and every merge waits for your click. Other
+  agents get the same rules in writing.
+- Risk boundaries. If the tool touches personal data, money, sign-in or
+  automatic actions, you hear who could be hurt, once and in plain words, and
+  you decide. Your decision is recorded.
+
+The kit works with Claude Code, Codex, Cursor, Gemini CLI and GitHub Copilot.
+Claude Code is tested, Codex is expected to work, and the others are
+experimental. Read the [agent grades and known
 limits](docs/COMPATIBILITY.md#how-much-has-been-proved-on-each-agent) before choosing.
+
+## What you need to know
+
+You do not read code. You do learn four ideas, and the kit explains each one
+the first time it comes up:
+
+1. Accounts. You create a GitHub account, a host account and a database
+   account once. The recipe names which ones.
+2. A repository. This is where your project and its history live on GitHub.
+3. A pull request. This is a proposed change. You try it, then say yes to
+   merge it into the main copy.
+4. Going live. After a merge, the host puts the change in front of your users.
+
+You also install a coding agent, Git, Python 3 and the GitHub command-line
+tool, and sign in to them. If that sounds like too much, a hosted app builder
+is the better choice for you. The comparison below says when.
 
 ## What you get
 
@@ -33,9 +65,9 @@ happened. The agent reads these records when a new session starts.
 
 ## Quick start
 
-You need a coding agent, Git, Python 3 and the GitHub command-line tool (`gh`),
-installed and signed in. The shared installer also needs Node.js for `npx`.
-Setup reports any extra tools your chosen launch needs.
+You need the tools named in [What you need to know](#what-you-need-to-know).
+The shared installer also needs Node.js for `npx`. Setup reports any extra
+tools your chosen recipe needs.
 
 Choose one route per project. For the Claude Code terminal app alone, run
 these commands from your project folder:
@@ -167,18 +199,18 @@ attention](docs/COMPATIBILITY.md#optional-harness-features).
 
 ## How it compares
 
-These are different ways to organise the work. Features vary within each category.
+| | Hosted app builders, such as [Lovable](https://docs.lovable.dev/introduction/welcome) | Developer kits, such as [Spec Kit](https://github.com/github/spec-kit) | AI Build Kit |
+|---|---|---|---|
+| Best for | A fast first app or a demo | Developers who want a process | People who do not write code and want a tool that lasts |
+| Where the tool lives | In the platform; code export varies | Your accounts | Your accounts |
+| Reading code | Not required | Usually yes | Not required |
+| What you learn | The platform | The toolkit and engineering practice | Four ideas and six commands |
+| Going live | Platform publishing | You arrange it | A proven recipe, or a general checklist |
+| Risk to people | Platform security scans | Not covered | Named, decided by you, and recorded |
+| After launch | Platform tools | Not covered | Upkeep, handover and switch-off |
 
-| | Hosted app builders, such as [Lovable](https://docs.lovable.dev/introduction/welcome) | Coding agent on its own | Developer toolkits, such as [Spec Kit](https://github.com/github/spec-kit) | AI Build Kit |
-|---|---|---|---|---|
-| Best for | A fast first app | Control over how you work | Defining a development process | Small teams wanting the agent to run the process |
-| Where you work | Platform workspace; code export varies | Your project folder | Your project folder | Your folder and GitHub repository |
-| Reading code | Not required | You judge the work | Usually yes | Not required |
-| Process | Platform's workflow | You choose it | Toolkit's planning and build steps | Plan, build, check, go live, maintain |
-| What you learn | Platform controls | Agent and development tools | Toolkit commands and conventions | Six commands and how to try the result |
-| Going live | Platform publishing | You arrange it | Depends on the toolkit | Two recipes or a general checklist |
-
-The kit adds steps. If you need a quick throwaway demo, a hosted builder is faster.
+A hosted builder is faster for a demo you will throw away. The kit is faster
+to a tool you can keep, change and hand over.
 
 ## Limits
 

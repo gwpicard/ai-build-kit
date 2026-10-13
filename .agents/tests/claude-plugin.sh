@@ -39,7 +39,7 @@ CLAUDE_CONFIG_DIR="$CONFIG" claude plugin validate "$MARKET" >/dev/null \
   || fail "the assembled plugin does not validate"
 if ! CLAUDE_CONFIG_DIR="$CONFIG" claude plugin validate "$MARKET" --strict \
     > "$SCRATCH/validate.txt" 2>&1; then
-  grep '❯' "$SCRATCH/validate.txt" > "$SCRATCH/warnings.txt" \
+  grep -E '❯|^ *> ' "$SCRATCH/validate.txt" > "$SCRATCH/warnings.txt" \
     || fail "strict validation failed with no warning named"
   if grep -v 'CLAUDE.md at the plugin root is not loaded as project context' \
       "$SCRATCH/warnings.txt" >/dev/null; then

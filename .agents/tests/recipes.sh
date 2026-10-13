@@ -78,14 +78,6 @@ rs_rule "and not in the build-path block" 'it does not go in the build-path bloc
 rs_guard "$FORMAT" "recipe-format.md"
 
 # --- the house documents allow it, and only there ------------------------
-rs_require "PHILOSOPHY names the recipe as the one exception" "$PHILOSOPHY" \
-  'the one exception is a recipe'
-rs_require "PHILOSOPHY narrows the names to services a tool runs on" "$PHILOSOPHY" \
-  'is named inside recipe files and the readme, and nowhere else in the kit'
-rs_require "PHILOSOPHY answers the five questions for recipes" "$PHILOSOPHY" \
-  'recipes, added'
-rs_require "PHILOSOPHY answers that the kit should get smaller" "$PHILOSOPHY" \
-  'recipes make the kit bigger'
 rs_require_absent "PHILOSOPHY does not promise every check runs by machine" "$PHILOSOPHY" \
   'check it by machine'
 rs_require_absent "the format does not promise every check runs by machine" "$FORMAT" \
