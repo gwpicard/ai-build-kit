@@ -16,7 +16,7 @@
 
 set -u
 here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-. "$here/../../../scripts/check-lib.sh"
+. "$here/check-lib.sh"
 
 recorded=
 [ "${1:-}" = "--on-record" ] && recorded=${2:-}

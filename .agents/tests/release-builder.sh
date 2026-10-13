@@ -53,7 +53,8 @@ for required in \
   .agents/skills/setup-ai-build-kit/scripts/place-plan-helper.sh \
   .agents/skills/setup-ai-build-kit/templates/maintenance-record \
   .agents/skills/implement/references/screen-rules.md \
-  .agents/skills/setup-hosting/references/recipe-format.md \
+  .agents/skills/setup-hosting/scripts/run-recipe.sh \
+  .agents/skills/setup-hosting/recipes/parts/scripts/check-lib.sh \
   .agents/skills/setup-hosting/templates/recipe.md \
   .agents/skills/maintain/VERSION \
   .claude-plugin/plugin.json \
@@ -86,6 +87,7 @@ for forbidden in \
   .ai-build-kit-maintenance \
   release-manifest.txt \
   docs/MAINTAINING.md \
+  docs/RECIPES.md \
   .github/release.yml \
   .github/release-drafter.yml \
   .github/workflows/release-drafter.yml \

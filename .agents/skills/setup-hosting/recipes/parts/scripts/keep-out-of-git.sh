@@ -13,7 +13,7 @@
 
 set -u
 here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-. "$here/../../../scripts/check-lib.sh"
+. "$here/check-lib.sh"
 
 cl_need git
 git rev-parse --is-inside-work-tree >/dev/null 2>&1 ||

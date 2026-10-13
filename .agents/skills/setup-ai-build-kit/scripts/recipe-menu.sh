@@ -8,11 +8,13 @@
 # that have to reach the person are printed here, the same every time, and
 # founding puts them in its reply as given.
 #
-# Usage: sh recipe-menu.sh [--recommend <file>] [--none] [--record <file>] [<file>...]
+# Usage: sh recipe-menu.sh [--recommend <recipe>] [--none] [--record <file>] [<recipe>...]
 #
-#   <file>...           the menu files that fit the tool, by file name. With
-#                       none named, every file on the menu is shown.
-#   --recommend <file>  the one to recommend, where several fit. Several
+#   <recipe>...         the recipes that fit the tool, by folder name. With
+#                       none named, every recipe on the menu is shown. A name
+#                       written with .md, as older projects record a recipe,
+#                       means the folder of that name.
+#   --recommend <recipe> the one to recommend, where several fit. Several
 #                       with none chosen print what each recipe says, so the
 #                       choice can be made, and leave out the lines to say.
 #   --none              no recipe fits the tool, so no menu is shown.
@@ -22,8 +24,8 @@
 # It reads the menu and writes only the file named by --record.
 #
 # Exit 0 with the menu printed, 3 when several recipes fit and none was
-# chosen, 4 when an argument names a file that is not on the menu, so the name
-# can be corrected, and 1 when the recipes folder is missing.
+# chosen, 4 when an argument names a recipe that is not on the menu, so the
+# name can be corrected, and 1 when the recipes folder is missing.
 
 set -eu
 
@@ -37,11 +39,11 @@ none=no
 fits=
 while [ $# -gt 0 ]; do
   case $1 in
-    --recommend) recommend=${2:?--recommend needs a file name}; shift 2 ;;
+    --recommend) recommend=${2:?--recommend needs a recipe name}; recommend=${recommend%.md}; shift 2 ;;
     --record) record=${2:?--record needs a file}; shift 2 ;;
     --none) none=yes; shift ;;
     --*) echo "$me: unknown option $1" >&2; exit 4 ;;
-    *) fits="$fits $1"; shift ;;
+    *) fits="$fits ${1%.md}"; shift ;;
   esac
 done
 
@@ -51,24 +53,25 @@ if [ ! -d "$folder" ]; then
 fi
 folder=$(CDPATH= cd -- "$folder" && pwd -P)
 
-# The menu is the files directly in the folder. The parts folder is not on it.
-menu=$(find "$folder" -mindepth 1 -maxdepth 1 -type f -name '*.md' -exec basename {} \; | LC_ALL=C sort)
+# The menu is the folders directly in recipes/ that hold a recipe.md. The
+# parts folder holds none, so it is not on the menu.
+menu=$(find "$folder" -mindepth 2 -maxdepth 2 -type f -name recipe.md | sed 's#/recipe\.md$##' | while IFS= read -r d; do basename -- "$d"; done | LC_ALL=C sort)
 
 on_menu() {
   printf '%s\n' "$menu" | grep -qxF -- "$1"
 }
 
 line_of() {
-  # line_of <file> <label>: the text after "<label>: " on its own line.
-  sed -n "s/^$2: //p" "$folder/$1" | head -n 1
+  # line_of <recipe> <label>: the text after "<label>: " on its own line.
+  sed -n "s/^$2: //p" "$folder/$1/recipe.md" | head -n 1
 }
 
 name_of() {
-  title=$(sed -n 's/^# Recipe: //p' "$folder/$1" | head -n 1)
-  printf '%s\n' "${title:-${1%.md}}"
+  title=$(sed -n 's/^# Recipe: //p' "$folder/$1/recipe.md" | head -n 1)
+  printf '%s\n' "${title:-$1}"
 }
 
-# The file names stay words: a name such as *.md is not expanded here.
+# The names stay words: a name such as * is not expanded here.
 set -f
 for f in $fits; do
   on_menu "$f" || { echo "$me: $f is not on the menu; the menu holds: $(printf '%s\n' "$menu" | paste -sd' ' -)" >&2; exit 4; }
@@ -131,7 +134,7 @@ fi
 count=$(printf '%s\n' "$shown" | grep -c .)
 if [ -n "$recommend" ]; then
   echo "Recommended: $recommend"
-  echo "Recipe file: $folder/$recommend"
+  echo "Recipe folder: $folder/$recommend"
 fi
 
 echo
@@ -147,7 +150,7 @@ done
 
 if [ -z "$recommend" ]; then
   echo
-  echo "Several recipes fit. Choose the one whose Recommended when: line best matches the interview, or the first by file name when none or several match, and run this again with --recommend <file>."
+  echo "Several recipes fit. Choose the one whose Recommended when: line best matches the interview, or the first by name when none or several match, and run this again with --recommend <recipe>."
   exit 3
 fi
 

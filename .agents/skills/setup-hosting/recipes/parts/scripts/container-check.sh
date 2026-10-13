@@ -22,7 +22,7 @@
 
 set -u
 here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-. "$here/../../../scripts/check-lib.sh"
+. "$here/check-lib.sh"
 
 cl_need docker curl
 docker info >/dev/null 2>&1 ||

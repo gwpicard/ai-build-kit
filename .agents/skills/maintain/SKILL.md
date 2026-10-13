@@ -29,32 +29,27 @@ Do not sign in again or retry the failed command in this session.
    kit update and every other step that needs the clean checkpoint waits, as
    it always has: say so in one line. Steps that only read carry on.
 2. Compare the live copy with `main`, read-only. Where the masterplan's "How
-   it stays running" section records a live address, make only these reads,
-   each as the `setup-hosting` skill's "A later run" describes it:
+   it stays running" section records a live address and AGENTS.md names a
+   recipe, run that recipe's `scripts/live-check.sh` from the project root,
+   with `--address` and the database password's location from that section,
+   passed as the `setup-hosting` skill's "A secret a check needs" says, and
+   `--needs` with the names on any open piece's `Live side needs:` line. On a
+   recipe whose checks are pasted back, ask in one sentence for the health
+   answer and the setting names, and pass what is pasted. It makes five
+   reads: the live copy against `main`, a hold since a rollback, a migration
+   not applied, setting names on the host, and health. Say its lines as
+   printed, and say nothing more about a read that matches. Exit 0 means no
+   gap, 1 a gap and 2 a read that could not be made. Off a recipe, say in one
+   line that the kit cannot compare the live copy here.
 
-   - whether the live copy runs the latest merge on `main`, from its health
-     route or the host's list of deployments;
-   - whether the live copy is still held on an earlier version since a
-     rollback;
-   - whether `main` holds a database migration the live database does not
-     have, read with the recipe's own dry run where it has one, its secret
-     passed by its location as "A secret a check needs" in that skill says;
-   - whether each secret name the tool needs is present on the host, by name
-     only;
-   - whether health answers.
-
-   Report each gap in one plain line, and change nothing. Say nothing more
-   about a part that matches, and say in one line when a read could not be
-   made. Write nothing to the changelog here, and do not rerun the fit check
-   from this step.
-
-   The backup, the restore, the preview and the rest of the recipe's checks
-   stay in /setup-hosting's later run. They can stop the local database, copy
-   the live one, or need the person, so a visit nobody asked to touch the
-   live side never runs them. Offer that later run in one line, with any gap
-   found, since each repair there waits for its own yes. Never apply a
-   migration, deploy, promote or roll back from this visit. Without a
-   recorded live address, skip this step and say nothing.
+   Change nothing, write nothing to the changelog here, and do not rerun the
+   fit check from this step. The backup, the restore, the preview and the
+   rest of the recipe's checks stay in /setup-hosting's later run, since they
+   can stop the local database, copy the live one, or need the person. Offer
+   that later run in one line, with any gap found, since each repair there
+   waits for its own yes. Never apply a migration, deploy, promote or roll
+   back from this visit. Without a recorded live address, skip this step and
+   say nothing.
 3. Decide what else is due. Read `.ai-build-kit-maintenance`. The monthly part
    is due 30 days after its `last-light-pass` date, or 30 days after founding
    when no visit is recorded. The quarterly part is due 90 days after its
@@ -306,16 +301,20 @@ Skip this on Explore privately. Nothing there goes live, so the launch checks
 would gain nothing.
 
 1. Read the `Recipe:` line in the stack section of the project's AGENTS.md.
-   Where it names a file that is in the installed setup-hosting skill's `recipes/`
-   folder, the project is on a recipe, and this step ends. `Recipe: none`, no
-   line at all, or a file that is no longer there counts as off a recipe.
+   Where it names a recipe folder in the installed setup-hosting skill's
+   `recipes/`, the project is on a recipe, and this step ends. A name written
+   with `.md`, as projects founded before recipes became folders record it,
+   means the folder of that name. `Recipe: none`, no line at all, or a recipe
+   that is no longer there counts as off a recipe.
 2. Look at the project's open pieces. Where an open piece already proposes a
    move onto a recipe, the person said yes on an earlier visit and the move is
    waiting to be built, so this step ends. Filing it again would make a copy.
-3. Read the menu at this moment: each file directly in the installed setup-hosting
-   skill's `recipes/` folder, not the `parts/` folder inside it. Read each
-   file's `Build stack:` and `Deploy target:` lines. Take every product name
-   from those files, and never write one into this skill.
+3. Read the menu at this moment: each folder in the installed setup-hosting
+   skill's `recipes/` folder that holds a `recipe.md`, which leaves out
+   `parts/`. Read each `recipe.md`'s `Build stack:` and `Deploy target:`
+   lines. Take every product name from those files, and never write one into
+   this skill. A menu line or a declined line that names a recipe with `.md`
+   means the folder of that name.
 4. Compare each recipe's `Build stack:` line with what the project is built
    with. Read that from the project's code and dependency files, not from
    memory. A recipe is close when the build stack matches in substance: the
@@ -332,8 +331,8 @@ would gain nothing.
    when the stack has become close since, or when the close recipe is new
    since founding. Read the stack at founding from the commit that first
    saved masterplan.md. Read the `founding-menu` line in
-   `.ai-build-kit-maintenance`: it lists the recipe files on the menu
-   founding showed. A close recipe that line does not list joined the menu
+   `.ai-build-kit-maintenance`: it lists the recipes on the menu founding
+   showed. A close recipe that line does not list joined the menu
    later, so the person never had the chance to choose it. Offer it once,
    even if the stack has not changed. A project with no `founding-menu` line
    was founded before founding kept one, so every close recipe counts as new
@@ -341,18 +340,18 @@ would gain nothing.
    already that close then, their choice stands. After a no, step 6 decides
    whether the offer comes back.
 6. Read the `recipe-move-declined` line in `.ai-build-kit-maintenance`, if
-   there is one. It holds the date of an earlier no, the recipe file that was
-   offered, and the recipe files on the menu that day. Offer again only when
-   the menu or the project's stack has changed since that no: a recipe file on
-   the menu now that the line does not list, or a saved change to the
+   there is one. It holds the date of an earlier no, the recipe that was
+   offered, and the recipes on the menu that day. Offer again only when the
+   menu or the project's stack has changed since that no: a recipe on the
+   menu now that the line does not list, or a saved change to the
    project's dependency files after that date. Where only the menu changed,
    allow only the close recipes the line does not list, and the ones it lists
    stay declined. Otherwise the earlier no stands.
 7. When no recipe is close, or an earlier no stands, say nothing. Compare
    only the close recipes that steps 5 and 6 still allow. Where several are
    left, take the one whose `Build stack:` line matches the most, or the
-   first by file name.
-8. Offer the move once, in one reply. Name the recipe from its file. Say what
+   first by name.
+8. Offer the move once, in one reply. Name the recipe from its `recipe.md`. Say what
    it gains in plain words: the launch checks /setup-hosting would then run, one for
    each section the recipe checks, such as preview, rollback, backup and
    restore. Say what it would change, from the differences step 4 found: for
@@ -367,13 +366,13 @@ would gain nothing.
    target]. Shall I file it as a piece? Nothing changes if you say no."
 9. Change nothing without approval. On a yes, open an issue in the shape
    the `setup-ai-build-kit` skill's `references/pieces.md` describes, titled
-   as a move onto the recipe. It holds the recipe's file name and the changes
+   as a move onto the recipe. It holds the recipe's folder name and the changes
    the offer named. Leave it for /shape and /implement like any other piece.
    Do not make the move during the visit. The `Recipe:` line changes only
    when that piece lands.
 10. On a no, leave the project alone and do not ask again this visit. Record
     the no in `.ai-build-kit-maintenance` as one line, replacing any earlier
-    one: `recipe-move-declined|<YYYY-MM-DD>|<recipe file>|<menu files, comma
+    one: `recipe-move-declined|<YYYY-MM-DD>|<recipe>|<menu recipes, comma
     separated>`. Step 6 reads it on later visits.
 
 ## Quarterly, when due

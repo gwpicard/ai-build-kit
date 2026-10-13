@@ -21,7 +21,7 @@
 
 set -u
 here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-. "$here/../../../scripts/check-lib.sh"
+. "$here/check-lib.sh"
 
 apply=no
 [ "${1:-}" = "--apply" ] && { apply=yes; shift; }

@@ -20,7 +20,7 @@
 
 set -u
 here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-. "$here/../../../scripts/check-lib.sh"
+. "$here/check-lib.sh"
 
 ref=$(cl_ref)
 [ -n "$ref" ] || cl_cannot "The kit does not know which database project this is, so the backup could not be checked."

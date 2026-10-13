@@ -22,7 +22,7 @@
 
 set -u
 here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-. "$here/../../../scripts/check-lib.sh"
+. "$here/../../parts/scripts/check-lib.sh"
 
 deployment=${1:-}
 want=${2:-}

@@ -15,16 +15,17 @@
 # jq is not required. The kit filters JSON with python3 on purpose, which is
 # also what lets the test harness stand in for the GitHub command line tool.
 #
-# Run from anywhere inside the project. With --recipe <recipe file>, it also
+# Run from anywhere inside the project. With --recipe <recipe folder>, it also
 # reports the command-line tools that recipe's launch checks run. Those never
-# stop founding.
+# stop founding. The recipe's recipe.md, named itself, does as well.
 
 set -eu
 
 recipe=""
 if [ "${1:-}" = "--recipe" ]; then
   recipe=${2:-}
-  [ -n "$recipe" ] || { echo "usage: check-tooling.sh [--recipe <recipe file>]" >&2; exit 2; }
+  [ -n "$recipe" ] || { echo "usage: check-tooling.sh [--recipe <recipe folder>]" >&2; exit 2; }
+  [ ! -f "$recipe/recipe.md" ] || recipe="$recipe/recipe.md"
 fi
 
 blocked=0
@@ -190,7 +191,7 @@ if [ -n "$recipe" ]; then
       fi
     done
   else
-    echo "The recipe file $recipe was not found, so the tools its checks run were not looked for."
+    echo "The recipe $recipe was not found, so the tools its checks run were not looked for."
   fi
 fi
 

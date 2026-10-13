@@ -588,16 +588,16 @@ RELHITS
 pass "bare relative skill references (references/*.md, templates/*.md, recipes/*.md, sibling-skill form) resolve"
 
 # Recipes. A recipe is one build stack paired with one place to run it, and
-# setup-hosting/references/recipe-format.md says what one must hold. The folder is the
-# menu, so a file in it is offered to somebody founding a project. Each one
-# must have the shape the format asks for and carry real dates. Each must also
-# have its own rehearsal that runs the recipe's commands against the tool
-# stand-ins and names the recipe file, because a rehearsal that only exits
-# cleanly guards nothing. The
-# blank is held to the same shape so it cannot drift from the format it is
-# copied from. Shared parts sit in recipes/parts/, are held to the lines a
-# section carries, and are never read as menu entries: the glob below takes
-# only the files directly in recipes/. The folder may be empty, since the
+# docs/RECIPES.md says what one must hold. A recipe is a folder holding
+# recipe.md, its scripts and PROVEN.md, and the recipes folder is the menu, so
+# a folder in it with a recipe.md is offered to somebody founding a project.
+# Each must have the shape the format asks for and carry real dates. Each must
+# also have its own rehearsal that runs the recipe's scripts against the tool
+# stand-ins and names the recipe folder, because a rehearsal that only exits
+# cleanly guards nothing. The blank is held to the same shape so it cannot
+# drift from the format it is copied from. Shared parts sit in recipes/parts/,
+# are held to the lines a section carries, and are never read as menu entries,
+# since the parts folder holds no recipe.md. The folder may be empty, since the
 # format came before the first recipe.
 recipe_checker="$ROOT/.agents/tools/check-recipes.sh"
 recipe_blank="$SKILLS/setup-hosting/templates/recipe.md"
@@ -617,9 +617,20 @@ else
       recipe_ok=0
     fi
   done
-  for recipe in "$SKILLS"/setup-hosting/recipes/*.md; do
-    [ -f "$recipe" ] || continue
-    recipe_name=$(basename "$recipe" .md)
+  for recipe_loose in "$SKILLS"/setup-hosting/recipes/*.md; do
+    [ -f "$recipe_loose" ] || continue
+    fail "$recipe_loose: a recipe is a folder holding recipe.md, not a loose file"
+    recipe_ok=0
+  done
+  for recipe in "$SKILLS"/setup-hosting/recipes/*/; do
+    recipe=${recipe%/}
+    [ "$(basename "$recipe")" != parts ] || continue
+    recipe_name=$(basename "$recipe")
+    if [ ! -f "$recipe/recipe.md" ]; then
+      fail "$recipe: a folder on the menu holds no recipe.md"
+      recipe_ok=0
+      continue
+    fi
     if ! "$recipe_checker" "$recipe" >&2; then
       fail "$recipe: the recipe does not have the shape the format asks for"
       recipe_ok=0
@@ -1243,10 +1254,10 @@ fi
 # ---------------------------------------------------------------------------
 echo "== Product names stay in the recipes =="
 
-# A hosting, data or deploy product is named only in a recipe file or a
-# shared part under setup-hosting/recipes/. A skill that learned one
-# service's behaviour would read wrongly on every project that runs
-# somewhere else, with nothing on screen to say so. The names are a fixed
+# A hosting, data or deploy product is named only in a recipe folder or a
+# shared part under setup-hosting/recipes/, scripts included. A skill that
+# learned one service's behaviour would read wrongly on every project that
+# runs somewhere else, with nothing on screen to say so. The names are a fixed
 # list, plus the place each recipe's title names, so a recipe added later
 # adds its own host to the list, a recipe still waiting for its real run
 # included. Two exemptions: the screen rules link Vercel's interface
@@ -1256,7 +1267,7 @@ echo "== Product names stay in the recipes =="
 # a skill learns from. It names the recipes' own commands that change a live
 # service, so a box asks before each one, and push-to-main-rules.sh reads it.
 product_list='coolify|vercel|supabase|netlify|heroku|railway|railpack|fly\.io|hetzner|hostinger|firebase|digitalocean'
-recipe_targets=$(for rf in "$SKILLS"/setup-hosting/recipes/*.md "$ROOT"/.agents/tests/recipes-awaiting-run/*.md; do
+recipe_targets=$(for rf in "$SKILLS"/setup-hosting/recipes/*/recipe.md "$ROOT"/.agents/tests/recipes-awaiting-run/*/recipe.md; do
   [ -f "$rf" ] || continue
   sed -n 's/^# Recipe: .* on \(.*\)$/\1/p' "$rf" | head -1
 done | tr '[:upper:]' '[:lower:]' | sed 's/[.]/\\./g' | sort -u | paste -sd'|' -)
@@ -1293,8 +1304,11 @@ fi
 plant=$(mktemp -d)
 mkdir -p "$plant/setup-hosting/recipes/parts" "$plant/setup-hosting/references" "$plant/implement/references"
 grep -i 'web interface guidelines' "$SKILLS/implement/references/screen-rules.md" > "$plant/implement/references/screen-rules.md" || true
-printf '%s\n' 'Runs on Vercel with a Supabase database.' > "$plant/setup-hosting/recipes/on-vercel.md"
+mkdir -p "$plant/setup-hosting/recipes/on-vercel/scripts" "$plant/setup-hosting/recipes/parts/scripts"
+printf '%s\n' 'Runs on Vercel with a Supabase database.' > "$plant/setup-hosting/recipes/on-vercel/recipe.md"
+printf '%s\n' 'vercel env ls production' > "$plant/setup-hosting/recipes/on-vercel/scripts/secrets.sh"
 printf '%s\n' 'Backups on Supabase.' > "$plant/setup-hosting/recipes/parts/backup.md"
+printf '%s\n' 'supabase db dump' > "$plant/setup-hosting/recipes/parts/scripts/backup.sh"
 plant_ok=1
 if [ -n "$(products_named "$plant")" ]; then
   fail "the product-name rule counted the guidelines link, a recipe or a shared part as a product name"

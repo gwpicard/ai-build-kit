@@ -52,6 +52,9 @@ the step that settles it:
     fitcheck   FILE:LINE  OLD  a build-path section with four-path
                                fields, rewritten as the maintain
                                skill's references/four-paths.md says  fitcheck
+    recipe     FILE:LINE  NAME AGENTS.md naming its recipe by file,
+                               as NAME.md, before recipes were
+                               folders                                recipe
     ready      NUMBERS         open pieces shaped before the kit had
                                a `ready` label, so nothing builds
                                them                                   ready
@@ -87,8 +90,9 @@ stays declined until a release adds a rule the no did not cover.
 labels the shaped pieces `ready` on GitHub, `remove`
 runs `kit-leftovers.py --remove`, `commands` runs `kit-leftovers.py
 --rewrite-commands`, `pointers` runs `old-skill-pointers.py --apply`,
-`settings` runs `settings-rules.py --apply`, and `template` rewrites the one
-sentence. `--apply helper` and `--apply ready` also print a `say` line with
+`settings` runs `settings-rules.py --apply`, `template` rewrites the one
+sentence, and `recipe` names the recipe by its folder in AGENTS.md and in the
+check-up record's menu lines. `--apply helper` and `--apply ready` also print a `say` line with
 what changed. The installer's own steps, `installer` and `missing`, and the
 `fitcheck` step, which the agent carries out, are never run from here. `--decline` writes `upgrade-declined|<date>|<steps>` into
 `.ai-build-kit-maintenance`, keeping only steps that still have something
@@ -161,13 +165,21 @@ STEP_OF = {
     "adapter": "remove", "kitcopy": "remove", "hook": "remove",
     "commands": "commands", "pointer": "pointers", "helper": "helper",
     "settings": "settings", "template": "template", "fitcheck": "fitcheck",
-    "ready": "ready",
+    "ready": "ready", "recipe": "recipe",
 }
 DECLINABLE = ("installer", "missing", "remove", "commands", "pointers", "settings", "template",
-              "fitcheck")
+              "fitcheck", "recipe")
 # The build-path fields the kit used while it had four build paths.
 FOUR_PATHS = re.compile(r"^\s*(Required controls:|Outside help:|Path:\s*(Build with expert help|Professional-led))")
-APPLIABLE = ("helper", "ready", "remove", "commands", "pointers", "settings", "template")
+APPLIABLE = ("helper", "ready", "remove", "commands", "pointers", "settings", "template",
+             "recipe")
+
+# A project founded before recipes became folders names its recipe by its file,
+# as in `Recipe: nextjs-supabase-on-vercel.md`. The kit reads that as the
+# folder of the same name, so nothing waits on it, but the record says the
+# folder now. The line may sit in a list item, in bold or in code quotes.
+RECIPE_LINE = re.compile(r"^(\s*(?:[-*]\s+)?`?(?:\*\*)?Recipe:(?:\*\*)?\s*`?)([A-Za-z0-9_-]+)\.md(`?\s*)$")
+RECIPES = os.path.join(INSTALLED, "setup-hosting", "recipes")
 
 # The label /implement builds from, as founding creates it. A project founded
 # before the kit split /build into /shape and /implement never had it, so none
@@ -238,6 +250,64 @@ def template_findings(project):
         for index, old, new in template_blocks(name, lines):
             found.append(("template", "%s:%d" % (name, index + 1), " ".join(new)))
     return found
+
+
+def recipe_findings(project):
+    """The AGENTS.md line naming the recipe by its old file name, where the
+    installed kit holds that recipe as a folder."""
+    if linked_path(project, "AGENTS.md"):
+        return []
+    try:
+        with open(os.path.join(project, "AGENTS.md"), encoding="utf-8", newline="") as handle:
+            lines = handle.read().splitlines()
+    except (OSError, UnicodeDecodeError):
+        return []
+    for number, line in enumerate(lines, 1):
+        found = RECIPE_LINE.match(line)
+        if found and os.path.isfile(os.path.join(RECIPES, found.group(2), "recipe.md")):
+            return [("recipe", "AGENTS.md:%d" % number, found.group(2))]
+    return []
+
+
+def apply_recipe(project):
+    """Name the recipe by its folder in AGENTS.md, and in the check-up
+    record's menu lines, which are the kit's own bookkeeping."""
+    changed = False
+    for finding in recipe_findings(project):
+        path = os.path.join(project, "AGENTS.md")
+        with open(path, encoding="utf-8", newline="") as handle:
+            lines = handle.readlines()
+        index = int(finding[1].split(":")[1]) - 1
+        line = lines[index]
+        ending = line[len(line.rstrip("\r\n")):]
+        lines[index] = RECIPE_LINE.sub(lambda m: m.group(1) + m.group(2) + m.group(3),
+                                       line.rstrip("\r\n")) + ending
+        with open(path, "w", encoding="utf-8", newline="") as handle:
+            handle.writelines(lines)
+        print("recipe\t%s\t%s" % (finding[1], finding[2]))
+        changed = True
+    path = os.path.join(project, MAINTENANCE)
+    if not linked_path(project, MAINTENANCE) and os.path.isfile(path):
+        with open(path, encoding="utf-8", newline="") as handle:
+            lines = handle.readlines()
+        out = []
+        for line in lines:
+            if line.startswith(("founding-menu|", "recipe-move-declined|")):
+                body = line.rstrip("\r\n")
+                ending = line[len(body):]
+                fields = body.split("|")
+                fields[2:] = [",".join(n.strip()[:-3] if n.strip().endswith(".md") else n.strip()
+                                       for n in re.split(r"[,\s]+", f) if n.strip())
+                              for f in fields[2:]]
+                line = "|".join(fields) + ending
+            out.append(line)
+        if out != lines:
+            with open(path, "w", encoding="utf-8", newline="") as handle:
+                handle.writelines(out)
+    if changed:
+        print("say\trecipe\tAGENTS.md now names the recipe by its folder, and nothing else in "
+              "the file changed.")
+    return 0
 
 
 def fitcheck_findings(project):
@@ -364,6 +434,7 @@ def findings(project):
     templates = template_findings(project)
     found.extend(templates)
     found.extend(fitcheck_findings(project))
+    found.extend(recipe_findings(project))
     found = ready_findings(project) + found
     # A line another step already names is not a mention as well.
     skip = {f[1] for f in found if f[0] in ("commands", "pointer", "template")}
@@ -644,6 +715,12 @@ def sentences(out, project):
                      "to the new shape and show it to you above the old one first. Each "
                      "accepted risk is copied word for word, and nothing else in the "
                      "masterplan changes. Shall I?"))
+    if "recipe" in by:
+        name = by["recipe"][0][2]
+        said.append(("recipe", "AGENTS.md names its recipe the old way, as the file %s.md. "
+                     "Recipes are folders now, so that line would read Recipe: %s. The kit "
+                     "reads either, so nothing waits on it. I can change that one line and "
+                     "nothing else. Shall I?" % (name, name)))
     if "mention" in by:
         n = len(by["mention"])
         said.append(("mention", "%s still %s an old command in your own words: %s. %s yours to "
@@ -676,6 +753,7 @@ STEP_WORDS = {
     "remove": "the older kit files in place", "commands": "the command list as it is",
     "pointers": "the old pointers as they are", "template": "the kit's old lines as they are",
     "fitcheck": "the build-path section as it is",
+    "recipe": "the recipe line as it is",
 }
 
 HELPER_WORDS = (
@@ -782,6 +860,8 @@ def apply(project, step):
         return subprocess.run(python(SETTINGS, "--apply", project)).returncode
     if step == "template":
         return apply_template(project)
+    if step == "recipe":
+        return apply_recipe(project)
     return 2
 
 

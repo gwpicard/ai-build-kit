@@ -469,16 +469,16 @@ check "a founding run's own issues leave the fixture invariant unobservable" "$r
 # states are built without one. The menu is read from the
 # recipes folder rather than written out here, so a recipe added later is on it
 # without this file changing.
-menu=$(find "$TESTS_DIR/../skills/setup-hosting/recipes" -maxdepth 1 -type f -name '*.md' \
-  -exec basename {} \; | sort | paste -sd, -)
+menu=$(find "$TESTS_DIR/../skills/setup-hosting/recipes" -mindepth 2 -maxdepth 2 -type f -name recipe.md \
+  | sed 's#/recipe\.md$##; s#.*/##' | sort | paste -sd, -)
 first=${menu%%,*}
 [ -n "$menu" ] && [ "$first" != "$menu" ] && r=yes || r=no
 check "the recipe menu holds more than one recipe, so a line naming one is short" "$r"
 
 # The recipe the contract expects is read from scenario 50's own Evidence field,
-# and "other" is any file on the menu that is not it.
+# and "other" is any recipe on the menu that is not it.
 expected=$(awk '/^## 50\./ { on = 1; next } /^## / { on = 0 } on && /^- Evidence:/' \
-  "$TESTS_DIR/scenarios.md" | grep -o 'Recipe: [A-Za-z0-9._-]*\.md' | tail -1)
+  "$TESTS_DIR/scenarios.md" | grep -o 'Recipe: [A-Za-z0-9._-]*' | grep -v 'Recipe: none' | tail -1)
 expected=${expected#Recipe: }
 other=$(printf '%s\n' "$menu" | tr ',' '\n' | grep -vxF "$expected" | head -1)
 [ -n "$expected" ] && [ -n "$other" ] \
@@ -495,7 +495,7 @@ recipeproject() {
   return 0
 }
 
-# The founding the contract describes: the chosen recipe by file name, and the
+# The founding the contract describes: the chosen recipe by folder name, and the
 # whole menu on the founding-menu line.
 p="$WORK/s50-right"
 recipeproject "$p" "Recipe: $expected" "$menu"

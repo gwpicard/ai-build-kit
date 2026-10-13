@@ -18,7 +18,7 @@
 
 set -u
 here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-. "$here/../../../scripts/check-lib.sh"
+. "$here/../../parts/scripts/check-lib.sh"
 
 lane=internal
 [ "${1:-}" = "--lane" ] && lane=${2:-internal}

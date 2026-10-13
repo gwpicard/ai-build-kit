@@ -15,7 +15,7 @@
 
 set -u
 here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-. "$here/../../../scripts/check-lib.sh"
+. "$here/../../parts/scripts/check-lib.sh"
 
 [ "${1:-}" = "--pasted" ] && [ -f "${2:-}" ] ||
   cl_cannot "Nothing was pasted back from the Rollback page yet."

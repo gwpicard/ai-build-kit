@@ -39,7 +39,8 @@ Before a finding asks the person to look up a setting of a service the tool
 uses, check whether you can read it yourself with what you already have: an
 address the service answers in public, a command-line tool this session is
 already signed in to, through that tool's own commands, or the project's own
-files. On a recipe, the recipe's `Settings the kit can read` section says how.
+files. On a recipe, run the script the recipe's `Settings the kit can read`
+section names from the project root, and report the lines it prints.
 Where you can, read it and report the value and what it means. Use only a key
 the project already sends to the browser, never a secret key, a service key or
 a password. Ask the person only for a setting you cannot read that way, and say

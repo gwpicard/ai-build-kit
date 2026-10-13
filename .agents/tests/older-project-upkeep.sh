@@ -332,5 +332,38 @@ moved=$(python3 "$CHECK" --monthly "$P") || true
 report "once it has moved, nothing is said" \
   "$(printf '%s\n' "$moved" | grep -q 'planfile' && echo no || echo yes)"
 
+# --- a recipe named by its old file ---------------------------------------------
+
+# A project founded before recipes became folders names its recipe as a file,
+# with .md. The kit reads that as the folder of the same name, so nothing waits
+# on it, but the record should say the folder. The line changes only on a yes,
+# which is the apply, and nothing else in AGENTS.md moves. The check-up
+# record's menu lines are the kit's own bookkeeping, and follow along.
+P="$work/old-recipe"
+mkdir -p "$P"
+cp "$TEMPLATES/masterplan.md" "$P/masterplan.md"
+printf '# AGENTS.md\r\n\r\n## Stack\r\n\r\n- `Recipe: nextjs-supabase-on-vercel.md`\r\nRun: `npm run dev`\r\n' > "$P/AGENTS.md"
+printf 'founded|2026-01-02\nfounding-menu|2026-01-02|nextjs-supabase-on-coolify.md nextjs-supabase-on-vercel.md\nrecipe-move-declined|2026-02-02|nextjs-supabase-on-vercel.md|nextjs-supabase-on-vercel.md\n' > "$P/.ai-build-kit-maintenance"
+cp "$P/AGENTS.md" "$work/agents-before"
+found=$(python3 "$CHECK" "$P") || true
+report "an AGENTS.md naming its recipe as a file is found, with what the line would say" \
+  "$(printf '%s\n' "$found" | grep -qx 'recipe	AGENTS.md:5	nextjs-supabase-on-vercel' \
+     && printf '%s\n' "$found" | grep '^say	recipe	' | grep -q 'Recipe: nextjs-supabase-on-vercel\. ' && echo yes || echo no)"
+report "finding it changes nothing" "$(cmp -s "$P/AGENTS.md" "$work/agents-before" && echo yes || echo no)"
+python3 "$CHECK" --apply recipe "$P" >/dev/null
+report "on a yes the line names the folder, and the rest of AGENTS.md is byte for byte the same" \
+  "$(printf '# AGENTS.md\r\n\r\n## Stack\r\n\r\n- `Recipe: nextjs-supabase-on-vercel`\r\nRun: `npm run dev`\r\n' | cmp -s - "$P/AGENTS.md" && echo yes || echo no)"
+report "the check-up record's menu lines name folders too, and its other lines are kept" \
+  "$(grep -qx 'founding-menu|2026-01-02|nextjs-supabase-on-coolify,nextjs-supabase-on-vercel' "$P/.ai-build-kit-maintenance" \
+     && grep -qx 'recipe-move-declined|2026-02-02|nextjs-supabase-on-vercel|nextjs-supabase-on-vercel' "$P/.ai-build-kit-maintenance" \
+     && grep -qx 'founded|2026-01-02' "$P/.ai-build-kit-maintenance" && echo yes || echo no)"
+again=$(python3 "$CHECK" "$P") || true
+report "once it names the folder, nothing is found" \
+  "$(printf '%s\n' "$again" | grep -q '^recipe	' && echo no || echo yes)"
+printf '%s\n' '# AGENTS.md' '' 'Recipe: a-recipe-the-kit-never-had.md' > "$P/AGENTS.md"
+gone=$(python3 "$CHECK" "$P") || true
+report "a recipe file the kit has no folder for is left to the monthly offer, not rewritten" \
+  "$(printf '%s\n' "$gone" | grep -q '^recipe	' && echo no || echo yes)"
+
 echo
 echo "older-project-upkeep.sh: all $passed checks passed"

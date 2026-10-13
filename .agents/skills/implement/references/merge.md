@@ -119,32 +119,25 @@ live, so check these first, read-only, and change nothing live:
   `setup-hosting` skill's `references/evidence-run.md`, scoped to what this
   piece changed.
 - Where the piece touches a named area whose caution is done or accepted,
-  run that area's operational readiness as the `setup-hosting` skill's Build
-  with care step 5 says, with the request record and monitoring rules of its
-  Build and run it step 3. Do not repeat a notice already given. A gap there
-  is a warning, as it is in /setup-hosting: say it once, record it in
-  CHANGELOG.md with the date in this piece's pull request, and carry on.
+  run that area's readiness as the `setup-hosting` skill's "Build with care"
+  says, without repeating a notice already given. A gap there is a warning,
+  as it is in /setup-hosting: say it once, record it in CHANGELOG.md with the
+  date in this piece's pull request, and carry on.
 - Where the change adds a database migration, check whether the live database
-  already has it, with the recipe's own dry run where it has one. Off a recipe,
-  ask the person. Where the dry run needs the database password, follow the
-  `setup-hosting` skill's "A secret a check needs": read where it is kept from
-  the masterplan, ask once when nobody recorded it, and never say it is
-  absent. Where the live database cannot be read, treat the migration as not
-  applied, and say why in one line. If it is not applied, say in one line:
-  "This change adds to the database, so /setup-hosting applies that first,
-  from this pull request. Migrations only add, so the version live now keeps
-  working." Ask for the merge only once /setup-hosting reports it applied.
-- Where the recipe's going-live section runs a check on this computer before
-  the merge, such as building the app the way the host will and reading its
-  health, run it now, so the build that goes live has already answered here.
-  Run it through this skill's `scripts/check-before-merge.sh`:
-  the command that shows the check's tool is running as `--ready`, the one
-  that removes what the check started as `--cleanup`, then each command of the
-  check in the recipe's order.
-
-  A command that reads something the check started in the background waits
-  for it with its own retry option and carries its own time limit. The exit
-  code decides, never a reading of the output. Exit 0 means it passed.
+  already has it. On a recipe, run the recipe's `live-check.sh` with
+  `--only migration`, passing the database password by its location as the
+  `setup-hosting` skill's "A secret a check needs" says. Off a recipe, ask the
+  person. Exit 1 means it is not applied; exit 2 means the live database
+  could not be read, which counts as not applied: say why in one line. If it
+  is not applied, say in one line: "This change adds to the database, so
+  /setup-hosting applies that first, from this pull request. Migrations only
+  add, so the version live now keeps working." Ask for the merge only once
+  /setup-hosting reports it applied.
+- Where the recipe's Going live section runs a check on this computer before
+  the merge, such as the Health part's container check, run that script now
+  from the project root, so the build that goes live has already answered
+  here. The exit code decides, never a reading of the output. Exit 0 means it
+  passed.
   - Exit 2 means it could not run here, for example because no container engine
     is running. Then it is a warning, as a check not done is in /setup-hosting.
     Say it once, record it in CHANGELOG.md with the date in this piece's pull
@@ -239,13 +232,12 @@ live." Do not read the health line as "did not update", and suggest no
 redeploy.
 
 **After the merge, on a project live on a recipe.** Once the host has had
-time to build, read one line of health from the live copy, read-only, as the
-recipe's going-live check and Health section say. Where the check is the kit's
-own, run it. Where a companion or the person runs it, ask in one sentence for
-the live address's health answer and read what they paste. Where it reports the
-merge, say: "The live copy now runs this change." Where it does not, read the
-host's own list of deployments where the recipe names a command for it, or
-ask for it to be read. Where the list shows the build still running, say so,
+time to build, read the live copy, read-only, with the recipe's `live-check.sh`
+and `--only commit`. Where the recipe's Going live section is read back from
+a paste, ask in one sentence for the live address's health answer and pass
+what they paste with `--pasted-health`. Exit 0 means it runs the merge: say
+"The live copy now runs this change." Otherwise read the host's own list of
+deployments where the recipe names a command for it, or ask for it to be read. Where the list shows the build still running, say so,
 wait a short while, and read the health line again. Never suggest a second
 deploy for a build in progress. Only where the build failed or is missing,
 say: "The live copy did not update," with the next step, which is

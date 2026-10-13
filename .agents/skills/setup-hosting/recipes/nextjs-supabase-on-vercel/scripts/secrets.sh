@@ -16,7 +16,7 @@
 
 set -u
 here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-. "$here/../../../scripts/check-lib.sh"
+. "$here/../../parts/scripts/check-lib.sh"
 
 cl_need vercel git
 [ -f .env.example ] || cl_fail "The project has no .env.example, so nobody can tell which names the tool needs."

@@ -26,7 +26,7 @@
 
 set -u
 here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-. "$here/../../../scripts/check-lib.sh"
+. "$here/../../parts/scripts/check-lib.sh"
 
 [ -n "${PREVIEW_ADDRESS:-}" ] || cl_cannot "No preview address was given, so there is no preview to check yet."
 cl_need vercel

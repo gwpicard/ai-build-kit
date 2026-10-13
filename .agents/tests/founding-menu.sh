@@ -31,9 +31,10 @@ SAY_ONE='The kit has one recipe for a tool like this: a way to build it and run 
 SAY_NONE='No recipe the kit knows fits this tool, so I will set it up on a common stack, and the kit cannot check its launch steps for you.'
 
 write_recipe() {
-  # write_recipe <folder> <file> <name>
+  # write_recipe <recipes folder> <recipe> <name>: a recipe folder.
+  mkdir -p "$1/$2"
   printf '# Recipe: %s\n\nFits: a web app people use in a browser, with sign-in and saved data\nRecommended when: %s.\nDeploy target: %s\n' \
-    "$3" "the team wants $3" "the host of $3" > "$1/$2"
+    "$3" "the team wants $3" "the host of $3" > "$1/$2/recipe.md"
 }
 
 fill_menu() {
@@ -42,9 +43,9 @@ fill_menu() {
   mkdir -p "$1/parts"
   printf '# Shared part: a part\n' > "$1/parts/shared-part.md"
   case $2 in
-    one) write_recipe "$1" alpha-on-north.md "Alpha on North" ;;
-    two) write_recipe "$1" alpha-on-north.md "Alpha on North"
-         write_recipe "$1" beta-on-south.md "Beta on South" ;;
+    one) write_recipe "$1" alpha-on-north "Alpha on North" ;;
+    two) write_recipe "$1" alpha-on-north "Alpha on North"
+         write_recipe "$1" beta-on-south "Beta on South" ;;
   esac
 }
 
@@ -70,7 +71,7 @@ menu_route() {
   for f in "$@"; do fill_menu "$f" one; done
   printf 'founded|2026-01-02\nfounding-menu|2025-01-01|old-recipe.md\nmonthly|\n' > "$record"
   before=$(tree_sum "$project")
-  (cd "$project" && sh "$script" --record .ai-build-kit-maintenance alpha-on-north.md > "$out" 2>&1) ||
+  (cd "$project" && sh "$script" --record .ai-build-kit-maintenance alpha-on-north > "$out" 2>&1) ||
     fail "$route: the script failed on a menu of one"
   said "$out" > "$WORK/said"
   [ "$(sed -n 1p "$WORK/said")" = "$SAY_ONE" ] ||
@@ -81,10 +82,10 @@ menu_route() {
     fail "$route: a menu of one is not named the default, with an own stack offered"
   [ "$(grep -c . "$WORK/said")" -eq 3 ] ||
     fail "$route: a menu of one says more than its three lines"
-  grep -qxF "Recipe file: $(CDPATH= cd -- "$1" && pwd -P)/alpha-on-north.md" "$out" ||
+  grep -qxF "Recipe folder: $(CDPATH= cd -- "$1" && pwd -P)/alpha-on-north" "$out" ||
     fail "$route: the script does not give the chosen recipe's path for the tool report"
   [ "$(grep -c '^founding-menu|' "$record")" -eq 1 ] &&
-    grep -qxF "founding-menu|$today|alpha-on-north.md" "$record" ||
+    grep -qxF "founding-menu|$today|alpha-on-north" "$record" ||
     fail "$route: the menu line does not name the one recipe, dated today, in place of the old one"
   grep -qxF 'founded|2026-01-02' "$record" && grep -qxF 'monthly|' "$record" ||
     fail "$route: writing the menu line lost another line of the check-up record"
@@ -103,7 +104,7 @@ menu_route() {
   grep -q '^Say this' "$out" && fail "$route: two recipes with none chosen still printed lines to say"
   grep -q 'Recommended when: the team wants Beta on South' "$out" ||
     fail "$route: two recipes with none chosen do not show what each says"
-  (cd "$project" && sh "$script" --record .ai-build-kit-maintenance --recommend beta-on-south.md > "$out" 2>&1) ||
+  (cd "$project" && sh "$script" --record .ai-build-kit-maintenance --recommend beta-on-south > "$out" 2>&1) ||
     fail "$route: the script failed on a menu of two with one chosen"
   said "$out" > "$WORK/said"
   [ "$(grep -c '(recommended)$' "$WORK/said")" -eq 1 ] &&
@@ -112,21 +113,22 @@ menu_route() {
     fail "$route: a menu of two does not mark exactly the chosen recipe"
   grep -qxF 'Beta on South is the default. Founding carries on with it unless you pick another recipe, and you may bring your own stack instead.' "$WORK/said" ||
     fail "$route: a menu of two does not name the chosen recipe the default"
-  grep -qxF "founding-menu|$today|alpha-on-north.md,beta-on-south.md" "$record" ||
+  grep -qxF "founding-menu|$today|alpha-on-north,beta-on-south" "$record" ||
     fail "$route: the menu line does not list both recipes"
 
   # Two on the menu, one that fits: only that one is shown, both are recorded.
+  # It is named as an older project's Recipe: line names it, with .md.
   (cd "$project" && sh "$script" --record .ai-build-kit-maintenance alpha-on-north.md > "$out" 2>&1) ||
-    fail "$route: the script failed with one of two recipes fitting"
+    fail "$route: the script failed with one of two recipes fitting, named with .md"
   said "$out" | grep -q 'Beta' && fail "$route: a recipe that does not fit was shown"
-  grep -qxF "founding-menu|$today|alpha-on-north.md,beta-on-south.md" "$record" ||
+  grep -qxF "founding-menu|$today|alpha-on-north,beta-on-south" "$record" ||
     fail "$route: a recipe that does not fit was left off the menu line"
 
   # None fits, and an empty menu: one sentence, and the menu line still written.
   (cd "$project" && sh "$script" --record .ai-build-kit-maintenance --none > "$out" 2>&1) ||
     fail "$route: the script failed when no recipe fits"
   [ "$(said "$out")" = "$SAY_NONE" ] || fail "$route: no fitting recipe is not said in its one line"
-  grep -qxF "founding-menu|$today|alpha-on-north.md,beta-on-south.md" "$record" ||
+  grep -qxF "founding-menu|$today|alpha-on-north,beta-on-south" "$record" ||
     fail "$route: no fitting recipe left the menu line unwritten"
   for f in "$@"; do fill_menu "$f" none; done
   (cd "$project" && sh "$script" --record .ai-build-kit-maintenance > "$out" 2>&1) ||
@@ -136,17 +138,17 @@ menu_route() {
   grep -qxF "founding-menu|$today|" "$record" ||
     fail "$route: an empty menu left no menu line"
 
-  # A file that is not on the menu, and a missing folder, stop it.
+  # A recipe that is not on the menu, and a missing folder, stop it.
   for f in "$@"; do fill_menu "$f" one; done
   set +e
-  (cd "$project" && sh "$script" not-on-the-menu.md > "$out" 2>&1)
-  [ $? -eq 4 ] || fail "$route: a file not on the menu did not exit 4"
+  (cd "$project" && sh "$script" not-on-the-menu > "$out" 2>&1)
+  [ $? -eq 4 ] || fail "$route: a recipe not on the menu did not exit 4"
   (cd "$project" && sh "$script" --recommend not-on-the-menu.md > "$out" 2>&1)
   [ $? -eq 4 ] || fail "$route: a recommendation not on the menu did not exit 4"
-  : > "$project/stray-recipe.md"
-  (cd "$project" && sh "$script" '*.md' > "$out" 2>&1)
-  [ $? -eq 4 ] || fail "$route: a pattern for a file name was expanded rather than refused"
-  rm -f "$project/stray-recipe.md"
+  mkdir -p "$project/stray-recipe"
+  (cd "$project" && sh "$script" '*' > "$out" 2>&1)
+  [ $? -eq 4 ] || fail "$route: a pattern for a name was expanded rather than refused"
+  rmdir "$project/stray-recipe"
   set -e
   true
   for f in "$@"; do rm -rf "$f"; done
@@ -197,10 +199,11 @@ menu_runs() {
 }
 
 # --- the half that runs --------------------------------------------------
-# Every file directly in the menu folder carries the two lines founding reads.
-# A shared part does not, and it never has to, because it is not on the menu.
+# Every recipe folder on the menu carries the two lines founding reads. The
+# shared parts folder holds no recipe.md, and never has to, because it is not
+# on the menu.
 entries=0
-for recipe in "$MENU"/*.md; do
+for recipe in "$MENU"/*/recipe.md; do
   [ -f "$recipe" ] || continue
   entries=$((entries + 1))
   [ "$(grep -c '^Fits: ' "$recipe")" -eq 1 ] ||

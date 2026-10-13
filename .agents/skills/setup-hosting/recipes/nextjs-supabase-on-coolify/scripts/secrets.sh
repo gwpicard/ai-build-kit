@@ -15,7 +15,7 @@
 
 set -u
 here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-. "$here/../../../scripts/check-lib.sh"
+. "$here/../../parts/scripts/check-lib.sh"
 
 cl_need git
 [ "${1:-}" = "--pasted" ] && [ -f "${2:-}" ] ||

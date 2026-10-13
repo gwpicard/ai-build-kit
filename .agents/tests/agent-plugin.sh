@@ -242,7 +242,7 @@ for supporting in \
   setup-ai-build-kit/references/fit-check.md \
   maintain/templates/handover.md \
   setup-hosting/templates/recipe.md \
-  setup-hosting/references/recipe-format.md \
+  setup-hosting/scripts/run-recipe.sh \
   implement/references/running-longer.md \
   implement/references/merge.md \
   implement/references/screen-rules.md \
@@ -254,15 +254,22 @@ done
 # Founding reads the recipe menu from the setup-hosting skill beside its own folder, so
 # every recipe on the menu has to arrive there, and no shared part may be
 # mistaken for a menu entry by arriving loose beside them.
-for recipe in "$ROOT"/.agents/skills/setup-hosting/recipes/*.md; do
+# Each recipe is a folder, and its scripts have to arrive runnable.
+for recipe in "$ROOT"/.agents/skills/setup-hosting/recipes/*/recipe.md; do
   [ -f "$recipe" ] || continue
-  [ -f "$SKILLS_DIR/setup-hosting/recipes/$(basename -- "$recipe")" ] || \
-    fail "the agent plugin lost a recipe founding offers: $(basename -- "$recipe")"
+  name=$(basename -- "$(dirname -- "$recipe")")
+  [ -f "$SKILLS_DIR/setup-hosting/recipes/$name/recipe.md" ] || \
+    fail "the agent plugin lost a recipe founding offers: $name"
+  for script in "$(dirname -- "$recipe")"/scripts/*.sh; do
+    [ -x "$SKILLS_DIR/setup-hosting/recipes/$name/scripts/$(basename -- "$script")" ] || \
+      fail "the agent plugin lost a recipe script, or its run permission: $name/scripts/$(basename -- "$script")"
+  done
 done
-for part in "$ROOT"/.agents/skills/setup-hosting/recipes/parts/*.md; do
+for part in "$ROOT"/.agents/skills/setup-hosting/recipes/parts/*.md "$ROOT"/.agents/skills/setup-hosting/recipes/parts/scripts/*.sh; do
   [ -f "$part" ] || continue
-  [ -f "$SKILLS_DIR/setup-hosting/recipes/parts/$(basename -- "$part")" ] || \
-    fail "the agent plugin lost a shared recipe part: $(basename -- "$part")"
+  rel=${part#"$ROOT"/.agents/skills/setup-hosting/recipes/}
+  [ -f "$SKILLS_DIR/setup-hosting/recipes/$rel" ] || \
+    fail "the agent plugin lost a shared recipe part: $rel"
 done
 cmp -s "$SKILLS_DIR/setup-ai-build-kit/SKILL.md" "$PACK/.agents/skills/setup-ai-build-kit/SKILL.md" || \
   fail "the agent plugin's setup-ai-build-kit skill differs from the released canonical skill"

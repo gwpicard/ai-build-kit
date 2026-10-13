@@ -121,11 +121,19 @@ grep -qF '${CLAUDE_PLUGIN_ROOT}/.agents/skills/setup-ai-build-kit/SKILL.md' \
   fail "installed start command does not load the plugin's canonical skill"
 # Founding reads the recipe menu from the setup-hosting skill beside its own folder,
 # which on this route is inside the plugin cache.
-for recipe in "$ROOT"/.agents/skills/setup-hosting/recipes/*.md; do
+# Each recipe is a folder, and its scripts have to arrive runnable.
+for recipe in "$ROOT"/.agents/skills/setup-hosting/recipes/*/recipe.md; do
   [ -f "$recipe" ] || continue
-  [ -f "$INSTALL_PATH/.agents/skills/setup-hosting/recipes/$(basename -- "$recipe")" ] || \
-    fail "installed Claude plugin lost a recipe founding offers: $(basename -- "$recipe")"
+  name=$(basename -- "$(dirname -- "$recipe")")
+  [ -f "$INSTALL_PATH/.agents/skills/setup-hosting/recipes/$name/recipe.md" ] || \
+    fail "installed Claude plugin lost a recipe founding offers: $name"
+  for script in "$(dirname -- "$recipe")"/scripts/*.sh; do
+    [ -x "$INSTALL_PATH/.agents/skills/setup-hosting/recipes/$name/scripts/$(basename -- "$script")" ] || \
+      fail "installed Claude plugin lost a recipe script, or its run permission: $name/scripts/$(basename -- "$script")"
+  done
 done
+[ -x "$INSTALL_PATH/.agents/skills/setup-hosting/scripts/run-recipe.sh" ] || \
+  fail "installed Claude plugin lost the recipe runner, or its run permission"
 grep -qF 'user-invocable: false' \
   "$INSTALL_PATH/.claude/skills/second-opinion/SKILL.md" || \
   fail "installed internal discipline is visible in Claude's command menu"

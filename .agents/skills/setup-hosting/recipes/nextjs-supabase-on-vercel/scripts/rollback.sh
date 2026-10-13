@@ -17,7 +17,7 @@
 
 set -u
 here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-. "$here/../../../scripts/check-lib.sh"
+. "$here/../../parts/scripts/check-lib.sh"
 
 [ -n "${LIVE_ADDRESS:-}" ] || cl_cannot "No live address is recorded, so there is nothing to roll back yet."
 cl_need vercel
