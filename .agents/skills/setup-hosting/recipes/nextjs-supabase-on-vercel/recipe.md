@@ -13,7 +13,7 @@ Jobs: Supabase Cron and Queues
 Testing: Vitest and Playwright
 Linting: ESLint
 Starter: coming
-Optional parts: read-only existing database (coming in part C)
+Optional parts: read-only existing database
 Work-team default: yes (Vercel Pro, Supabase Pro)
 Deploy target: Vercel, with the project's GitHub repository connected so that each push builds
 Command-line tools: vercel, supabase, docker, psql, curl, git
@@ -22,9 +22,8 @@ Last checked: 2026-10-14
 
 Shared stack: [Next.js, TypeScript and Supabase](../parts/nextjs-supabase-stack.md)
 Database types check: `if [ ! -f types/database.ts ] || ! git ls-files --error-unmatch types/database.ts >/dev/null 2>&1; then echo 'could not run: types/database.ts is missing or untracked'; exit 2; fi; if ! supabase status >/dev/null 2>&1; then echo 'could not run: local Supabase is not running'; exit 2; fi; tmp=$(mktemp) || exit 2; trap 'rm -f "$tmp"' EXIT; supabase gen types typescript --local > "$tmp" || { echo 'could not run: database types could not be generated'; exit 2; }; diff -u types/database.ts "$tmp"`
-Plan terms: Supabase Free pauses projects after 7 days of low activity and has no backups, so a work team should use Pro (read 2026-10-14 at https://supabase.com/docs/guides/platform/free-project-pausing and https://supabase.com/docs/guides/platform/backups)
-Plan terms: Vercel Hobby is for personal, non-commercial use only; paid employees or consultants writing the code count as commercial (read 2026-10-14 at https://vercel.com/docs/limits/fair-use-guidelines)
-Plan terms: Hobby lets one outside person use the preview gate (read 2026-10-14 at https://vercel.com/docs/deployment-protection/methods-to-protect-deployments/vercel-authentication)
+Plan terms: Supabase Free pauses projects after 7 days of low activity and has no backups, so it is for exploring privately; a work team should use Pro (read 2026-10-14 at https://supabase.com/docs/guides/platform/free-project-pausing and https://supabase.com/docs/guides/platform/backups)
+Plan terms: Vercel Hobby is for personal, non-commercial use only; paid employees or consultants writing the code count as commercial. It allows one outside person through the preview gate. A work team should use Pro (read 2026-10-14 at https://vercel.com/docs/limits/fair-use-guidelines and https://vercel.com/docs/deployment-protection/methods-to-protect-deployments/vercel-authentication)
 
 ## Preview
 

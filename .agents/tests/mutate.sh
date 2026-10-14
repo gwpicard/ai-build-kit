@@ -73,7 +73,9 @@ background-one-caller
 recipe-framework-major
 recipe-fits-category
 recipe-starter-path
-recipe-deferred-launch-script"
+recipe-deferred-launch-script
+read-only-db-privilege
+worker-queue-name"
 
 describe() {
   case "$1" in
@@ -112,6 +114,8 @@ describe() {
     recipe-fits-category) echo "a recipe accepts a category outside the research list" ;;
     recipe-starter-path) echo "a recipe accepts a starter path that does not exist" ;;
     recipe-deferred-launch-script) echo "a launch section can defer its script to a future part" ;;
+    read-only-db-privilege) echo "the existing database check stops checking whether the user can insert rows" ;;
+    worker-queue-name) echo "the worker check looks for a different queue than the migration creates" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -128,6 +132,8 @@ checks_for() {
     command-over-budget) echo "validate-kit" ;;
     background-one-caller) echo "validate-kit" ;;
     recipe-framework-major|recipe-fits-category|recipe-starter-path|recipe-deferred-launch-script) echo "recipes" ;;
+    read-only-db-privilege) echo "read-only-database" ;;
+    worker-queue-name) echo "python-worker-check" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -186,6 +192,26 @@ t = open(p).read()
 old = "allowed = section in COMING_SECTIONS and script in"
 assert old in t, "deferred-script section boundary not found"
 open(p, "w").write(t.replace(old, "allowed = True and script in", 1))
+'
+      ;;
+    read-only-db-privilege)
+      edit "$tree/.agents/skills/setup-hosting/recipes/parts/scripts/read-only-database.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "has_table_privilege(current_user,c.oid,\x27INSERT\x27)"
+assert old in t, "INSERT privilege read not found"
+open(p, "w").write(t.replace(old, "false", 1))
+'
+      ;;
+    worker-queue-name)
+      edit "$tree/.agents/skills/setup-hosting/recipes/parts/scripts/python-worker-check.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "pgmq.q_document_jobs"
+assert old in t, "document queue name not found"
+open(p, "w").write(t.replace(old, "pgmq.q_wrong_jobs", 1))
 '
       ;;
     reach-route-groups)

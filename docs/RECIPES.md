@@ -90,7 +90,10 @@ It opens with fixed fields. Each names a tool only, so checks can read it.
   `Database:`, `Sign-in:`, `Email:`, `Files:`, `Jobs:`, `Testing:` and
   `Linting:` name the whole stack.
 - `Starter:` names the pinned starter folder, or says when it is coming.
-- `Optional parts:` names the parts the recipe accepts, or `none`.
+- `Optional parts:` names the parts the recipe accepts, or `none`. A part
+  already in the parts folder is named without a note. A planned part may say
+  `(coming in part B)`, `(coming in part C)` or `(coming in part D)` until it
+  is added.
 - `Deploy target:` where it runs once it is live.
 - `Health-check tool:` names the tool used to read the live health route.
 - `Command-line tools:` the tools the recipe's scripts run on the person's

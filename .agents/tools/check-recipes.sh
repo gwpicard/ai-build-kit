@@ -213,8 +213,11 @@ def check_recipe(md, proven):
     optional = re.search(r"^Optional parts: (.*)$", head, re.M)
     if optional and not (mode == "template" and "<" in optional.group(1)):
         value = optional.group(1).strip()
-        if value != "none" and not re.fullmatch(r"[A-Za-z0-9 ,&-]+ \(coming in part [BCD]\)", value):
-            problem(where, "Optional parts must name parts B to D or none")
+        available_parts = {"read-only existing database", "Python document worker",
+                           "read-only existing database and Python document worker"}
+        coming = re.fullmatch(r"[A-Za-z0-9 ,&-]+ \(coming in part [BCD]\)", value)
+        if value != "none" and value not in available_parts and not coming:
+            problem(where, "Optional parts must name the parts the recipe accepts, or none")
     health_tool = re.search(r"^Health-check tool: (.*)$", head, re.M)
     if health_tool and not (mode == "template" and "<" in health_tool.group(1)) and health_tool.group(1) not in {"curl", "wget", "none"}:
         problem(where, "Health-check tool must be curl, wget or none")

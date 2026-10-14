@@ -77,6 +77,14 @@ ok "an unfilled blank is refused as a recipe"
 
 "$CHECKER" "$GOOD" >/dev/null
 ok "a filled recipe folder passes, dated on a leap day"
+sed 's#^Optional parts: none$#Optional parts: read-only existing database#' "$GOOD/recipe.md" > "$WORK/optional-recipe.md"
+cp "$WORK/optional-recipe.md" "$GOOD/recipe.md"
+"$CHECKER" "$GOOD" >/dev/null || fail "a recipe naming an available optional part was refused"
+sed 's#^Optional parts: read-only existing database$#Optional parts: read-only existing database and Python document worker (coming in part C)#' "$GOOD/recipe.md" > "$WORK/optional-recipe.md"
+cp "$WORK/optional-recipe.md" "$GOOD/recipe.md"
+"$CHECKER" "$GOOD" >/dev/null || fail "a recipe naming an available and a planned optional part was refused"
+sed 's#^Optional parts: read-only existing database and Python document worker (coming in part C)$#Optional parts: none#' "$GOOD/recipe.md" > "$WORK/optional-recipe.md"
+cp "$WORK/optional-recipe.md" "$GOOD/recipe.md"
 "$CHECKER" "$GOOD/recipe.md" >/dev/null
 ok "the same recipe passes when its recipe.md is named"
 mkdir -p "$GOOD/starters/example"
