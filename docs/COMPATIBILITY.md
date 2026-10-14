@@ -427,7 +427,7 @@ after a clean checkpoint and explicit approval.
 | Unsaved work | `what-now` says what it belongs to | Session-end reminder |
 | Check-up due | `what-now` says when a visit is overdue | Said automatically when a session opens |
 | Safety | Standing restrictions and approval gates | Mechanical command deny list |
-| Merge | A merge only on a yes that names it | A confirmation box before the agent merges, in Claude Code |
+| Merge | A merge only on a yes that names it; `merge.py` holds the project check and open review boxes | Claude Code blocks raw merge commands |
 | Long runs | Normal sequential work | Native goal or orchestration mode |
 
 During `setup-ai-build-kit`, the capability check records which enhancements the current

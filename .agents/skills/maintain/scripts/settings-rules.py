@@ -3,8 +3,8 @@
 
 Founding copies the kit's Claude Code settings into `.claude/settings.json`
 once, and no update touches that file again. A later release can refuse more
-ways of writing a dangerous command, and ask before a merge, and a project
-founded earlier keeps the older rules. This script compares the project's
+ways of writing a dangerous command, and a project founded earlier keeps the
+older rules. This script compares the project's
 `permissions.deny` and `permissions.ask` lists with the installed founding
 template, so the comparison never rests on memory or on a hand edit of JSON.
 
@@ -13,13 +13,13 @@ Usage:
     settings-rules.py [PROJECT]             list the rules to offer
     settings-rules.py --apply [PROJECT]     add them
     settings-rules.py --decline [PROJECT]   record a no
-    settings-rules.py --merge-box [PROJECT] say whether a merge asks first
+    settings-rules.py --merge-box [PROJECT] say whether direct merges are blocked
 
 PROJECT defaults to the current folder. Each line has fields separated by
 tabs:
 
     deny       RULE     a refusal the template holds and the project lacks
-    ask        RULE     a question before a merge the project lacks
+    ask        RULE     a question before a live change the project lacks
     declined   LIST  RULE
                         a rule the person said no to; the no stands
     left       .claude/settings.json  WHY
@@ -48,8 +48,8 @@ hold every earlier entry and setting plus the new rules.
 
 Exit codes. List mode: 1 when a rule is offered, 0 when none is (a declined
 rule or a `left` line included), 2 on a usage error. `--merge-box`: 0 when the
-project's settings make Claude Code ask before `gh pr merge`, 1 when they do
-not. `--apply` and `--decline`: 0 on success.
+project settings block `gh pr merge`, 1 when they do not. `--apply` and
+`--decline`: 0 on success.
 """
 
 import datetime
@@ -76,7 +76,8 @@ ALWAYS_OFFERED = (
     "Bash(git checkout ", "Bash(git restore ", "Bash(git stash ", "Bash(git switch ",
     "Bash(git clean -*", "Bash(git clean * ", "Bash(git reset * ",
     "Bash(security ", "Bash(gh auth token", "Bash(gh auth status", "Bash(git credential",
-    "Bash(*", "Read(",
+    "Bash(gh pr merge", "Bash(gh api *pulls/*/merge", "Bash(gh api *merges",
+    "Bash(gh api graphql *mergePullRequest", "Bash(*", "Read(",
 )
 
 
@@ -359,12 +360,12 @@ def decline(project, today=None):
 
 
 def merge_box(project):
-    """0 when the project's own settings ask before a merge, 1 when not."""
+    """0 when the project blocks direct merges, 1 when it does not."""
     try:
         data = json.loads(load(os.path.join(project, SETTINGS)))
     except (OSError, ValueError):
         return 1
-    return 0 if MERGE in lists(data)["ask"] else 1
+    return 0 if MERGE in lists(data)["deny"] else 1
 
 
 def listing(project):

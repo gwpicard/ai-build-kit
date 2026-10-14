@@ -95,8 +95,19 @@ printf '%s\n' "$out" | grep -q '^removed	bug, documentation' \
 [ "$(get settings)" = '{"allow_rebase_merge": "false", "allow_squash_merge": "false", "delete_branch_on_merge": "true"}' ] \
   && pass "merged branches go, and squash and rebase merges are off" \
   || fail "the settings were $(get settings)"
+[ "$(get protection)" = '{"enforce_admins": true, "required_status_checks": {"contexts": ["project-check"], "strict": true}}' ] \
+  && grep -q '^api -X PUT repos/someone/kit-log/branches/main/protection' "$STANDIN_GH_LOG" \
+  && pass "main requires project-check, including for admins" \
+  || fail "branch protection was not required: $(get protection)"
 cmp -s "$SKILL/templates/foundation/piece-issue.yml" "$WORK/p/.github/ISSUE_TEMPLATE/piece.yml" \
   && pass "the piece template is copied into the project" || fail "the piece template was not copied"
+
+state someone/kit-log PRIVATE '{}'
+python3 -c 'import json,sys; p=sys.argv[1]; s=json.load(open(p)); s["protection_status"]=403; json.dump(s,open(p,"w"))' "$STANDIN_GH_STATE"
+out=$(run prepare 2>&1) && code=0 || code=$?
+[ "$code" -eq 2 ] && printf '%s\n' "$out" | grep -Fq 'GitHub cannot require the check on a private project on your plan, so the kit holds the merge itself instead.' \
+  && pass "a plan that cannot protect a private repository names the script hold and exits 2" \
+  || fail "a refused branch protection returned $code: $out"
 
 printf 'mine\n' > "$WORK/p/.github/ISSUE_TEMPLATE/piece.yml"
 state someone/kit-log PRIVATE '{"1": {"body": "", "labels": ["bug"]}}' '["wontfix"]'

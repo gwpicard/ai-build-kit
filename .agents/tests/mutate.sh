@@ -62,7 +62,8 @@ runnable-bit-lost
 product-named
 command-loads-command
 command-over-budget
-background-one-caller"
+background-one-caller
+merge-missing-check"
 
 describe() {
   case "$1" in
@@ -90,6 +91,7 @@ describe() {
     command-loads-command) echo "a command reaches into another command's references instead of calling a background skill" ;;
     command-over-budget) echo "a command grows past its word budget" ;;
     background-one-caller) echo "a background skill is left with one caller and no agent that loads it" ;;
+    merge-missing-check) echo "the merge route proceeds without the required project check" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -104,6 +106,7 @@ checks_for() {
     command-loads-command) echo "validate-kit" ;;
     command-over-budget) echo "validate-kit" ;;
     background-one-caller) echo "validate-kit" ;;
+    merge-missing-check) echo "merge-gate" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -344,6 +347,17 @@ open(p, "w").write(t)'
       target="$tree/.agents/skills/shape/SKILL.md"
       [ -f "$target" ] || return 1
       python3 -c "import sys; open(sys.argv[1], 'a').write('\n' + ' '.join(['word'] * 400) + '\n')" "$target"
+      ;;
+    merge-missing-check)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "if not project:" + chr(10) + "        stop(" + chr(34) + "merge: project-check is missing; the pull request stays open" + chr(34) + ")"
+new = "if False:" + chr(10) + "        stop(" + chr(34) + "merge: project-check is missing; the pull request stays open" + chr(34) + ")"
+assert old in t, "required project-check guard not found"
+open(p, "w").write(t.replace(old, new, 1))
+'
       ;;
     *)
       echo "unknown mutation: $name" >&2

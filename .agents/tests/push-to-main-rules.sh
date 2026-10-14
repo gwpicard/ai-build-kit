@@ -251,51 +251,35 @@ if not force_problems(rules + ["Bash(rm -*f*)"]):
     sys.exit(1)
 print("  ok: an over-broad rule that refuses an ordinary delete is caught")
 
-# The question before a merge.
-ask = json.load(open(settings_path)).get("permissions", {}).get("ask", [])
-must_ask = [
+# Direct merges and merge APIs are refused; the merge script alone can proceed.
+merge_commands = [
     "gh pr merge",
     "gh pr merge 12 --squash",
     "gh pr merge 12 --merge --delete-branch",
     "gh pr merge --auto 12",
+    "gh pr merge 12 --admin",
     "gh api -X PUT repos/team/tool/pulls/12/merge",
     "gh api --method PUT repos/team/tool/pulls/12/merge -f merge_method=squash",
     "gh api repos/team/tool/merges -f base=main -f head=feature",
     "gh api graphql -f query='mutation { mergePullRequest(input: {pullRequestId: \"x\"}) { clientMutationId } }'",
 ]
-must_not_ask = [
-    "gh pr view 12",
-    "gh pr list --state merged",
-    "gh pr create --base main --fill",
-    "gh pr checks 12",
-    "gh api repos/team/tool/pulls/12",
-    "gh api repos/team/tool/branches",
-]
-
-
-def ask_problems(rules_ask):
-    found = []
-    for command in must_ask:
-        if not denied(rules_ask, command):
-            found.append("%r does not ask" % command)
-    for command in must_not_ask:
-        if denied(rules_ask, command):
-            found.append("%r asks" % command)
-    return found
-
-
-for command in must_ask + must_not_ask:
-    print("  %-7s %s" % ("asks" if denied(ask, command) else "runs", command))
-if ask_problems(ask):
-    print("\n".join(ask_problems(ask)))
+merge_reads = ["gh pr view 12", "gh pr checks 12", "gh api repos/team/tool/pulls/12"]
+for command in merge_commands + merge_reads:
+    print("  %-7s %s" % ("denied" if denied(rules, command) else "allowed", command))
+if any(not denied(rules, command) for command in merge_commands):
+    print("a direct merge route is not denied")
     sys.exit(1)
-print("  ok: every way of merging asks first, and reading a pull request does not")
-merge_rules = [r for r in ask if "merge" in r.lower()]
+if any(denied(rules, command) for command in merge_reads):
+    print("reading pull request state is denied")
+    sys.exit(1)
+print("  ok: direct merge commands and APIs are denied while reads remain available")
+merge_rules = [r for r in rules if "merge" in r.lower()]
 for rule in merge_rules:
-    if not ask_problems([r for r in merge_rules if r != rule]):
-        print("taking out the ask rule %s changes nothing, so the check does not need it" % rule)
+    if all(denied([item for item in merge_rules if item != rule], command) for command in merge_commands):
+        print("taking out %s changes nothing, so the check does not need it" % rule)
         sys.exit(1)
-print("  ok: taking out any one of the %d merge ask rules is caught" % len(merge_rules))
+print("  ok: each merge denial covers a distinct route")
+ask = json.load(open(settings_path)).get("permissions", {}).get("ask", [])
 # The first rules miss the spelling from the real run.
 first_rules = ["Bash(git push origin main:*)", "Bash(git push -u origin main:*)",
                "Bash(git push origin HEAD:main:*)"]
@@ -641,11 +625,11 @@ def run(flag=None,code=0):
     assert result.returncode==code,(command,result.returncode,result.stdout,result.stderr)
     return result.stdout
 first_offer='\n'+run(code=1)
-assert '\nask\tBash(gh pr merge:*)' in first_offer
+assert '\ndeny\tBash(gh pr merge:*)' in first_offer
 # The rules added after that release reach an older project too, and only
 # through the offer: nothing in the file changes until --apply.
 template=json.loads((root/'.agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json').read_text())
-newer_deny=[r for r in template['permissions']['deny'] if r.startswith(('Read(','Bash(security','Bash(gh auth token','Bash(git checkout','Bash(git restore','Bash(git stash','Bash(git push --no-verify','Bash(git push * --no-verify','Bash(git switch','Bash(git clean -*','Bash(git clean * ','Bash(git reset * ','Bash(git *core.hooks','Bash(gh auth status','Bash(git credential','Bash(*'))]
+newer_deny=[r for r in template['permissions']['deny'] if r.startswith(('Read(','Bash(security','Bash(gh auth token','Bash(git checkout','Bash(git restore','Bash(git stash','Bash(git push --no-verify','Bash(git push * --no-verify','Bash(git switch','Bash(git clean -*','Bash(git clean * ','Bash(git reset * ','Bash(git *core.hooks','Bash(gh auth status','Bash(git credential','Bash(gh pr merge','Bash(gh api *pulls/*/merge','Bash(gh api *merges','Bash(gh api graphql *mergePullRequest','Bash(*'))]
 newer_ask=[r for r in template['permissions']['ask'] if 'merge' not in r.lower()]
 assert len(newer_deny)>=16 and len(newer_ask)>=13,(newer_deny,newer_ask)
 for rule in newer_deny: assert '\ndeny\t'+rule+'\n' in first_offer+'\n',(rule,first_offer)
@@ -686,7 +670,7 @@ assert 'left\t' in run('--apply'); assert external.read_bytes()==original
 maintenance=work/'maintenance-outside'; maintenance.write_text('My own record.\n')
 (p/'.ai-build-kit-maintenance').symlink_to(maintenance)
 run('--decline'); assert maintenance.read_text()=='My own record.\n'
-print('  ok: settings apply, declines, merge-box detection and linked paths preserve the project')
+print('  ok: settings apply, declines, merge-denial detection and linked paths preserve the project')
 PY
 
 echo

@@ -173,6 +173,13 @@ def main(argv):
                 settings[key] = value
             save(state)
             return 0
+        if method == "PUT" and path == "repos/%s/branches/main/protection" % state["repo"]:
+            if state.get("protection_status") == 403:
+                fail("HTTP 403: Resource not accessible by integration")
+            state["protection"] = {"required_status_checks": {"strict": True,
+                                     "contexts": ["project-check"]}, "enforce_admins": True}
+            save(state)
+            return 0
         if path == "repos/%s/git/refs" % state["repo"]:
             if state.get("api_fails"):
                 fail("HTTP 401: Bad credentials (https://api.github.com/repos/%s/git/refs)" % state["repo"])

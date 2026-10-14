@@ -29,7 +29,10 @@ delete the labels GitHub made by itself (`bug`, `documentation`, `duplicate`,
 `wontfix`) while no issue exists, set `delete_branch_on_merge` and turn off
 squash and rebase merges, and copy the issue template. Say which ones went,
 from its `removed` and `kept` lines, and that merged branches are now removed.
-A label it could not remove stays and founding carries on.
+A label it could not remove stays and founding carries on. Exit 2 after the
+plan could not require the check means GitHub reported that the account cannot
+protect this repository. The script says in one line that its merge gate will
+hold instead; carry on with founding.
 
 Open one issue per piece, label each shaped piece `ready` or with the `needs-`
 label for its open question, and link real dependencies with GitHub's
