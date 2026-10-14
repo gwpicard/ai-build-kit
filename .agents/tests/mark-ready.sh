@@ -27,7 +27,7 @@ export STANDIN_GH_STATE STANDIN_GH_LOG
 seed() {
   python3 - "$STANDIN_GH_STATE" <<'PY'
 import json, sys
-done = "## So that\nPeople see who has the camera.\n\n## Done when\n- The list shows who has each item.\n"
+done = "## So that\nPeople see who has the camera.\n\n## Done when\n- The list shows who has each item.\n\nReaches: src/list.ts (1 file)\n"
 state = {
     "repo": "someone/kit-log",
     "labels": ["ready", "needs-clarification", "needs-research", "visual", "building"],
@@ -39,7 +39,8 @@ state = {
               "labels": ["needs-clarification", "needs-research", "visual"]},
         "5": {"body": "### Done when\n\n_No response_\n", "labels": []},
         "6": {"body": done + "\n## Decided\n\n<!-- what settled it -->\n", "labels": ["needs-research"]},
-        "7": {"body": "### So that\n\nA thing.\n\n### Done when\n\n- It works.\n", "labels": []},
+        "7": {"body": "### So that\n\nA thing.\n\n### Done when\n\n- It works.\n\nReaches: src/list.ts\n", "labels": []},
+        "8": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n", "labels": []},
     },
 }
 json.dump(state, open(sys.argv[1], "w"))
@@ -53,6 +54,9 @@ labels_of() {
 # Every run is from a throwaway project, whose printout helper only notes
 # that it ran, so this repository's own helper is never called.
 mkdir -p "$WORK/project/.agents/tools"
+mkdir -p "$WORK/project/src"
+printf '%s\n' 'export const item = 1' > "$WORK/project/src/list.ts"
+(cd "$WORK/project" && git init -q -b main)
 printf '%s\n' 'echo refreshed >> refreshed.log' > "$WORK/project/.agents/tools/plan-refresh.sh"
 run() { (cd "$WORK/project" && PATH="$WORK/bin:$PATH" sh "$SCRIPT" "$@"); }
 refreshes() { if [ -f "$WORK/project/refreshed.log" ]; then grep -c . "$WORK/project/refreshed.log"; else echo 0; fi; }
@@ -78,6 +82,11 @@ out=$(run 7) && code=0 || code=$?
 [ "$code" -eq 0 ] && [ "$(labels_of 7)" = "ready" ] \
   && pass "an issue form's Done when heading counts" \
   || fail "an issue form's Done when was not read: $code $out"
+
+out=$(run 8) && code=0 || code=$?
+[ "$code" -eq 1 ] && [ "$(labels_of 8)" = "" ] && printf '%s' "$out" | grep -q "Reaches" \
+  && pass "a code project with no Reaches line is refused" \
+  || fail "a code project without Reaches was not refused: $code $out"
 
 out=$(run 3) && code=0 || code=$?
 [ "$code" -eq 1 ] && [ "$(labels_of 3)" = "needs-clarification visual" ] && printf '%s' "$out" | grep -q "Decided" \
