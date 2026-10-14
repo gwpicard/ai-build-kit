@@ -12,6 +12,10 @@ cap.
 
 Assume only plain sequential building, one piece after another. A harness's
 goal mode, background agents or worktrees may speed it up, never replace it.
+Where the coding agent has the `builder` agent, start it once for each piece,
+one after another, on the run's branch, so each piece is built in a fresh
+context; it loads the `build-piece` skill and reports back. Read its report
+before starting the next. Without it, build each piece here.
 
 ## Typed with auto
 

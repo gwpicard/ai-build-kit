@@ -21,8 +21,9 @@ Check:
     other computers signed in to the same account. Where none is here, use a
     headless browser, or say you could not see the page. Use a tab of your
     own, never one the person is using.
-12. An independent-review route exists: subagent, separate session, or a
-    clean chat the person opens.
+12. An independent-review route exists: the reviewer agent or another
+    subagent, a headless run, a separate session, or a clean chat the person
+    opens.
 13. A reach-check engine is recorded, in the order the `quality-checks` skill's
     `references/reach-check.md` gives, or that the agent reads imports and
     callers directly.

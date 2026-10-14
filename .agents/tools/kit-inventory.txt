@@ -30,3 +30,7 @@ background live-copy
 background evidence-run
 background triage
 background build-piece
+
+agent reviewer
+agent builder
+agent researcher

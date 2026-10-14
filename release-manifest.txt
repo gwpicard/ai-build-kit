@@ -26,6 +26,11 @@
 .agents/skills/build-piece|
 .agents/tools/build-adapters.sh|
 .agents/tools/kit-inventory.txt|
+.agents/agents|
+.claude/agents|
+.codex/agents|
+.gemini/agents|
+.github/agents|
 .claude/commands|
 .claude/skills/clarify|
 .claude/skills/second-opinion|

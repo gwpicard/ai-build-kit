@@ -67,6 +67,11 @@ for required in \
   .agents/guard/blocked-commands.md \
   .agents/tools/build-adapters.sh \
   .agents/tools/kit-inventory.txt \
+  .agents/agents/reviewer.md \
+  .claude/agents/reviewer.md \
+  .codex/agents/reviewer.toml \
+  .gemini/agents/reviewer.md \
+  .github/agents/reviewer.agent.md \
   .agents/hooks \
   .claude/settings.json \
   .github/copilot-instructions.md \

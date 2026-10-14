@@ -464,6 +464,46 @@ done
 [ "$trigger_ok" -eq 1 ] && pass "background skills carry user-invocable: false and commands do not, and the generated command and skill folders all hold exactly the expected names"
 
 # ---------------------------------------------------------------------------
+echo "== Agents =="
+
+# An agent runs one or more background skills in a fresh context. Its brief has
+# one home, .agents/agents/<name>.md, and each coding agent with a native
+# format gets a generated file that points back at it. The names are anchored
+# to the inventory here, as the command folders are above, so a source mistake
+# that generates a wrong but self-consistent tree still fails. The Copilot file
+# must stay out of the person's own agent picker: the person's view is the six
+# commands.
+agents_ok=1
+expected_agent_files() {
+  printf '%s\n' "$expected_agents" | sed '/^$/d' | sed "s/\$/$1/" | sort
+}
+for agent_dir in ".agents/agents:.md" ".claude/agents:.md" ".codex/agents:.toml" \
+                 ".gemini/agents:.md" ".github/agents:.agent.md"; do
+  dir=${agent_dir%%:*}
+  ext=${agent_dir#*:}
+  actual_agent_files=$(find "$ROOT/$dir" -mindepth 1 -maxdepth 1 -type f -exec basename {} \; 2>/dev/null | sort)
+  if [ "$actual_agent_files" != "$(expected_agent_files "$ext")" ]; then
+    fail "$dir/ must hold exactly the agents the inventory lists"
+    echo "  expected:" >&2
+    expected_agent_files "$ext" | sed 's/^/    /' >&2
+    echo "  found:" >&2
+    printf '%s\n' "$actual_agent_files" | sed 's/^/    /' >&2
+    agents_ok=0
+  fi
+done
+while IFS= read -r name; do
+  [ -n "$name" ] || continue
+  copilot="$ROOT/.github/agents/$name.agent.md"
+  if [ -f "$copilot" ] && ! grep -q '^user-invocable: false$' "$copilot"; then
+    fail "$copilot: a generated Copilot agent must carry user-invocable: false"
+    agents_ok=0
+  fi
+done <<AGENTNAMES
+$expected_agents
+AGENTNAMES
+[ "$agents_ok" -eq 1 ] && pass "each agent has one canonical brief and a generated file for every coding agent that reads one"
+
+# ---------------------------------------------------------------------------
 echo "== Frontmatter =="
 
 seen_names=""
@@ -1398,8 +1438,9 @@ rm -rf "$plant"
 # ---------------------------------------------------------------------------
 echo "== Codex adapter claims =="
 
-# Codex has never had a generated adapter tree; it reads .agents/skills/
-# directly. scenarios.md and MAINTAINING.md are maintainer-only and already
+# Codex has no generated skill or command tree; it reads .agents/skills/
+# directly. The one generated Codex folder is .codex/agents/, for the agents,
+# so a line naming that folder is not the stale claim. scenarios.md and MAINTAINING.md are maintainer-only and already
 # excluded by the same convention as the team.md check below.
 codex_docs=$(find "$ROOT" -name '*.md' -not -path '*/.git/*' -not -path '*/.agents/tmp/*' | sort \
   | grep -v '\.agents/tests/scenarios\.md$' \
@@ -1414,7 +1455,7 @@ codex_group_hits=$(printf '%s\n' "$codex_docs" | while IFS= read -r f; do
     { buf[NR] = $0; window = $0
       if (NR > 1) window = buf[NR-1] " " window
       if (NR > 2) window = buf[NR-2] " " window
-      if (window ~ /[.]claude\// && window ~ /[.]cursor\// && window ~ /[.]gemini\// && window ~ /[.]codex\//) {
+      if (window ~ /[.]claude\// && window ~ /[.]cursor\// && window ~ /[.]gemini\// && window ~ /[.]codex\// && window !~ /[.]codex\/agents/) {
         print FILENAME ":" NR
       }
     }
@@ -1945,7 +1986,7 @@ if command -v python3 >/dev/null 2>&1; then
   fi
 fi
 if [ -n "$toml_reader" ]; then
-  tomlfiles=$(find "$ROOT/.gemini" -name '*.toml' 2>/dev/null | sort)
+  tomlfiles=$(find "$ROOT/.gemini" "$ROOT/.codex" -name '*.toml' 2>/dev/null | sort)
   while IFS= read -r tomlfile; do
     [ -n "$tomlfile" ] || continue
     if ! python3 -c "import $toml_reader as t; t.load(open('$tomlfile','rb'))" 2>/tmp/validate-kit-toml.$$; then

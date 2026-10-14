@@ -42,6 +42,7 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 SKILLS="$ROOT/.agents/skills"
 INVENTORY="$ROOT/.agents/tools/kit-inventory.txt"
+AGENTS="$ROOT/.agents/agents"
 
 CHECK=0
 case "${1:-}" in
@@ -216,7 +217,112 @@ generate_all() {
     exit 1
   fi
 
+  generate_agents "$OUT"
+
   echo "$commands $disciplines" >&3
+}
+
+# YAML-safe and TOML-safe: escape backslash and double quote for a quoted value.
+quoted() {
+  printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
+}
+
+# Generate each agent's file for every coding agent with a native format, from
+# the canonical .agents/agents/<name>.md. Each generated file only points back
+# at the canonical one, so the brief has one home. An agent is a leaf: the
+# command in the main session starts it, and it starts no other agent.
+#   access: read      reads, searches and runs commands, and edits nothing
+#           research  reads and searches, the web included
+#           full      every tool the session has
+#   isolation: none | worktree (Claude Code runs it in a throwaway worktree)
+generate_agents() {
+  OUT="$1"
+  rm -rf "$OUT/.claude/agents" "$OUT/.codex/agents" "$OUT/.gemini/agents" "$OUT/.github/agents"
+  [ -n "$(inventory agent)" ] || return 0
+  mkdir -p "$OUT/.claude/agents" "$OUT/.codex/agents" "$OUT/.gemini/agents" "$OUT/.github/agents"
+
+  found_agents=$(find "$AGENTS" -mindepth 1 -maxdepth 1 -name '*.md' -exec basename {} .md \; 2>/dev/null | sort)
+  if [ "$found_agents" != "$(inventory agent)" ]; then
+    echo "error: the agents in .agents/agents/ do not match $INVENTORY" >&2
+    echo "  listed: $(inventory agent | tr '\n' ' ')" >&2
+    echo "  found:  $(printf '%s' "$found_agents" | tr '\n' ' ')" >&2
+    exit 1
+  fi
+
+  for name in $(inventory agent); do
+    file="$AGENTS/$name.md"
+    fm_name=$(field name "$file")
+    desc=$(field description "$file")
+    access=$(field access "$file")
+    isolation=$(field isolation "$file")
+    skills=$(field skills "$file" | tr -d '[]' | tr ',' ' ')
+    [ "$fm_name" = "$name" ] || { echo "error: .agents/agents/$name.md declares name '$fm_name'" >&2; exit 1; }
+    [ -n "$desc" ] || { echo "error: .agents/agents/$name.md has no description" >&2; exit 1; }
+    case "$access" in
+      read) tools="Read, Grep, Glob, Bash, Skill" ;;
+      research) tools="Read, Grep, Glob, WebFetch, WebSearch, Skill" ;;
+      full) tools="" ;;
+      *) echo "error: .agents/agents/$name.md has access '$access'; use read, research or full" >&2; exit 1 ;;
+    esac
+    case "$isolation" in
+      none|worktree) ;;
+      *) echo "error: .agents/agents/$name.md has isolation '$isolation'; use none or worktree" >&2; exit 1 ;;
+    esac
+    [ -n "$skills" ] || { echo "error: .agents/agents/$name.md names no background skill to load" >&2; exit 1; }
+    for skill in $skills; do
+      if ! inventory background | grep -qx "$skill"; then
+        echo "error: .agents/agents/$name.md loads '$skill', which is not a background skill in the inventory" >&2
+        exit 1
+      fi
+    done
+
+    banner="<!-- GENERATED from .agents/agents/$name.md. Do not edit here; regenerate with .agents/tools/build-adapters.sh -->"
+    pointer="Load and follow \`.agents/agents/$name.md\`, the single source of truth for this agent. Treat what you were asked to do as its brief."
+    desc_q=$(quoted "$desc")
+
+    # Claude Code, which Cursor and VS Code also read.
+    {
+      printf '%s\n' "---"
+      printf 'name: %s\n' "$name"
+      printf 'description: "%s"\n' "$desc_q"
+      [ -z "$tools" ] || printf 'tools: %s\n' "$tools"
+      printf 'model: inherit\n'
+      [ "$isolation" != worktree ] || printf 'isolation: worktree\n'
+      printf '%s\n' "---"
+      printf '%s\n\n' "$banner"
+      printf 'When this agent comes from a Claude plugin, load and follow `${CLAUDE_PLUGIN_ROOT}/.agents/agents/%s.md`. Otherwise, load and follow `.agents/agents/%s.md`. It is the single source of truth for this agent. Treat what you were asked to do as its brief.\n' "$name" "$name"
+    } > "$OUT/.claude/agents/$name.md"
+
+    # Codex
+    {
+      printf '# GENERATED from .agents/agents/%s.md. Do not edit here.\n' "$name"
+      printf '# Regenerate with .agents/tools/build-adapters.sh\n'
+      printf 'name = "%s"\n' "$name"
+      printf 'description = "%s"\n' "$desc_q"
+      printf 'developer_instructions = """\n%s\n"""\n' "$pointer"
+    } > "$OUT/.codex/agents/$name.toml"
+
+    # Gemini CLI
+    {
+      printf '%s\n' "---"
+      printf 'name: %s\n' "$name"
+      printf 'description: "%s"\n' "$desc_q"
+      printf '%s\n' "---"
+      printf '%s\n\n' "$banner"
+      printf '%s\n' "$pointer"
+    } > "$OUT/.gemini/agents/$name.md"
+
+    # GitHub Copilot, kept out of the person's own agent picker.
+    {
+      printf '%s\n' "---"
+      printf 'name: %s\n' "$name"
+      printf 'description: "%s"\n' "$desc_q"
+      printf 'user-invocable: false\n'
+      printf '%s\n' "---"
+      printf '%s\n\n' "$banner"
+      printf '%s\n' "$pointer"
+    } > "$OUT/.github/agents/$name.agent.md"
+  done
 }
 
 if [ "$CHECK" -eq 1 ]; then
@@ -229,7 +335,9 @@ $counts
 EOF
 
   drift=0
-  for d in .claude/commands .claude/skills .cursor/commands .gemini/commands; do
+  for d in .claude/commands .claude/skills .cursor/commands .gemini/commands \
+    .claude/agents .codex/agents .gemini/agents .github/agents; do
+    [ -e "$ROOT/$d" ] || [ -e "$SCRATCH/$d" ] || continue
     if ! diff -rq "$ROOT/$d" "$SCRATCH/$d" >/tmp/adapter-check-diff.$$ 2>&1; then
       echo "drift in $d:" >&2
       cat /tmp/adapter-check-diff.$$ >&2
@@ -252,6 +360,6 @@ read -r commands disciplines <<EOF
 $counts
 EOF
 
-echo "Regenerated adapters for $((commands + disciplines)) skills ($commands commands, $disciplines disciplines) into .claude/ .cursor/ .gemini/"
+echo "Regenerated adapters for $((commands + disciplines)) skills ($commands commands, $disciplines disciplines) and $(inventory agent | grep -c .) agents"
 echo "Generated files:"
-find "$ROOT/.claude/commands" "$ROOT/.claude/skills" "$ROOT/.cursor/commands" "$ROOT/.gemini/commands" -type f | sed "s|^$ROOT/||" | sort
+find "$ROOT/.claude/commands" "$ROOT/.claude/skills" "$ROOT/.cursor/commands" "$ROOT/.gemini/commands" "$ROOT/.claude/agents" "$ROOT/.codex/agents" "$ROOT/.gemini/agents" "$ROOT/.github/agents" -type f 2>/dev/null | sed "s|^$ROOT/||" | sort

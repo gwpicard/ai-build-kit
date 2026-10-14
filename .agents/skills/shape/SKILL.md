@@ -79,7 +79,8 @@ again.
   decision goes back onto the piece in words.
 - `needs-research` runs one step of the `research` skill: the source check
   for one external fact, the search for existing work otherwise. Say which and
-  why in one line.
+  why in one line. The `researcher` agent may run it in a fresh context where
+  the coding agent has one.
 
 An interview and a prototype need the person present; research does not.
 Never answer a person-present question yourself. With nobody there, name the

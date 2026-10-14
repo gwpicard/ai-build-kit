@@ -81,7 +81,9 @@ path, in those terms.
 
 ## Independence fallback
 
-Use, in order: an independent subagent, a clean separate session, or a clean
+Use, in order: the `reviewer` agent where the coding agent has one, or another
+fresh subagent told to load this skill; the same brief run headless with
+`claude -p`, `codex exec` or `gemini -p`; a clean separate session; or a clean
 chat the person opens with a prepared instruction. A same-session review is
 allowed only on Explore privately, labelled as not independent and reading only
 the written agreement and evidence.
