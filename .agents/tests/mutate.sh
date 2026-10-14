@@ -63,7 +63,12 @@ product-named
 command-loads-command
 command-over-budget
 background-one-caller
-test-freeze-removed"
+test-freeze-removed
+tests-untested-status
+tests-zero-coverage-pass
+tests-missing-coverage-pass
+tests-after-failure-pass
+test-fix-empty-reason"
 
 describe() {
   case "$1" in
@@ -92,6 +97,11 @@ describe() {
     command-over-budget) echo "a command grows past its word budget" ;;
     background-one-caller) echo "a background skill is left with one caller and no agent that loads it" ;;
     test-freeze-removed) echo "a later commit can silently edit a test from the red commit" ;;
+    tests-untested-status) echo "a D test can pass before and escape the read exit code" ;;
+    tests-zero-coverage-pass) echo "zero executed changed lines can be accepted" ;;
+    tests-missing-coverage-pass) echo "a missing coverage report can go unreported" ;;
+    tests-after-failure-pass) echo "a failed after-run can be treated as fine" ;;
+    test-fix-empty-reason) echo "an empty Test fix reason can edit a frozen test" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -106,7 +116,7 @@ checks_for() {
     command-loads-command) echo "validate-kit" ;;
     command-over-budget) echo "validate-kit" ;;
     background-one-caller) echo "validate-kit" ;;
-    test-freeze-removed) echo "tests-prove-change" ;;
+    test-freeze-removed|tests-untested-status|tests-zero-coverage-pass|tests-missing-coverage-pass|tests-after-failure-pass|test-fix-empty-reason) echo "tests-prove-change" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -321,6 +331,48 @@ open(p, "w").write(t)
       target="$tree/.agents/skills/implement/SKILL.md"
       [ -f "$tree/.agents/skills/setup-hosting/references/hosting-request.md" ] || return 1
       printf '\n%s\n' "For a server, follow the \`setup-hosting\` skill's \`references/hosting-request.md\`." >> "$target"
+      ;;
+    tests-untested-status)
+      edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
+import os
+p=os.environ["MUTATE_TARGET"]
+s=open(p).read(); old="print(f\"passes-before\\\\tD{n}\"); status = 1"
+assert old in s
+open(p,"w").write(s.replace(old, "print(f\"passes-before\\\\tD{n}\")", 1))'
+      ;;
+    tests-zero-coverage-pass)
+      edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
+import os
+p=os.environ["MUTATE_TARGET"]
+s=open(p).read(); old="if report and changed_code and not (changed_code & covered): status = 1"
+assert old in s
+open(p,"w").write(s.replace(old, "if False and report and changed_code and not (changed_code & covered): status = 1", 1))'
+      ;;
+    tests-missing-coverage-pass)
+      edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
+import os
+p=os.environ["MUTATE_TARGET"]
+s=open(p).read(); old="print(f\"not-checked\\\\tcoverage\\\\t{provider} report is missing\")"
+assert old in s
+open(p,"w").write(s.replace(old, "pass", 1))'
+      ;;
+    tests-after-failure-pass)
+      edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
+import os
+p=os.environ["MUTATE_TARGET"]
+s=open(p).read(); old="if after_code != 0:\n            status = 1"
+assert old in s
+open(p,"w").write(s.replace(old, "if False and after_code != 0:\n            status = 1", 1))'
+      ;;
+    test-fix-empty-reason)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/check-tests.sh" '
+import os
+p=os.environ["MUTATE_TARGET"]
+lines=open(p).read().splitlines()
+i=next(i for i,line in enumerate(lines) if "reason=${later_subject#Test fix:}" in line)
+assert "tr -d" in lines[i+1]
+lines[i+1]=lines[i+1].replace("[ -z", "[ -n", 1)
+open(p,"w").write("\n".join(lines)+"\n")'
       ;;
     test-freeze-removed)
       edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/check-tests.sh" '

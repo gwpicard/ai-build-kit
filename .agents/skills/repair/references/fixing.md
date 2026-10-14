@@ -8,7 +8,7 @@ route, the evidence, the hand-over and the review, and then the merge.
 
 Run the check the piece records before anything else. Where it no longer
 fails, say so in one line and ask whether the fault still happens, before
-changing any code. Where it fails, it is the baseline step 4 asks for.
+changing any code. Where it fails, preserve that case as the regression test.
 
 ## Read the history
 
@@ -49,8 +49,10 @@ This announced step is the only place it runs.
 ## Fix and lock it down
 
 Create the regression evidence at the highest credible user-facing boundary,
-watch it fail, apply the smallest fix that addresses the actual cause, watch
-it pass, then rerun the original, unminimised case. When no credible
+watch it fail, and commit it under `Test:` before the fix. Apply the smallest
+fix that addresses the actual cause, watch it pass, then run
+`quality.py tests --base <start commit> --piece <number>` once after the fix.
+When no credible
 automated boundary exists, record that as a maintainability finding and use
 the strongest manual or operational evidence available instead.
 

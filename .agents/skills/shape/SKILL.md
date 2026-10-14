@@ -35,6 +35,9 @@ context. A whole-product decision goes to the masterplan, a whole-codebase
 convention to AGENTS.md's stack section. Groundwork is its own vertical slice,
 ordered ahead, never a "database" or "API" layer.
 
+Number the bullets under `## Done when` by position as D1, D2, and so on.
+End a line a person must judge with `(try it)`.
+
 Write `## Masterplan change` before marking ready, by pieces.md's test. Read it
 back in the reply that reports the piece: "When this lands, the masterplan
 gains a weekly summary email." For "nothing", say the masterplan already covers

@@ -36,10 +36,9 @@ Choose the save route before changing anything:
    unattended run never write an acceptance: stop at the condition, which is a
    successful outcome (step 8).
 
-The pull-request and flagged routes work on a short-lived branch from the
-up-to-date `main`. Where GitHub cannot be reached, build and save on the
-branch, and note the missing pull request in one plain line on the piece. A
-step a service could not do is a note, never a warning or a risk.
+Use a short-lived branch from up-to-date `main` for pull requests and flagged
+work. If GitHub is unavailable, save on the branch and note the missing pull
+request on the piece.
 
 The project's first push waits for the person's yes, as "The first upload" in
 the `merge` skill's `references/first-upload.md` says.
@@ -50,8 +49,7 @@ piece.
 
 ## 2. Agree the visible result
 
-Say back what the person will be able to do or see, what is outside it, and
-how it will be checked. Ask for a yes only when something is still ambiguous.
+State the visible outcome, scope, and check. Ask only when something is unclear.
 
 ## 3. Choose evidence
 
@@ -73,15 +71,15 @@ that looks right is never a substitute for a check that was available and skippe
 For a change inside a mapped sensitive area, run `quality.py strength --base
 <start commit>` after the tests pass. A repair runs it on the regression test.
 
-## 4. Write and check the tests first
+## 4. Write the tests
 
 For a repair, load the `repair` skill's `references/fixing.md` and follow
 "Building a repair" from here.
 
-Write each machine-judged `Done when` test before the code, name it `D1`, `D2`,
-and commit under `Test:`. Run `quality.py tests --base <start> --piece
-<number>`. Fix findings before coding. Lines ending `(try it)` stay for a person
-to judge. Note the start commit; later reads use it.
+Before coding, commit each machine-judged `Done when` test as `Test:` and name
+it D1, D2, and so on. Later `Test:` commits may add tests to frozen files.
+Changing a red test needs `Test fix: <reason>`. A line ending `(try it)` stays
+for a person. Note the start commit for the post-build read.
 
 ## 5. Build one vertical slice
 
@@ -92,6 +90,12 @@ its own vertical slice, or an
 expand-then-contract sequence that keeps the checks green throughout, ordered
 ahead as its own piece. Stop and say so if the change grows past what was
 agreed.
+
+After the build, run `quality.py tests --base <start commit> --piece <number>`
+once. It runs red tests on the start copy and current code, reporting each D.
+`fails-before` is evidence; `passes-before` is a finding. Exit 0 means checks
+passed, 1 means findings, and 2 means the core runs could not happen. Fix
+findings before hand-over.
 
 A build that reaches an outside service follows AGENTS.md's Secrets rule. A
 command that changes a live service's settings or data, other than saving code
@@ -132,11 +136,9 @@ output shown. Describe a gap as expected versus actual, and fix it at the root.
 
 ## 7. Run required review
 
-Run the reach check, with the tests it names, the boundary check and the loops
-read, as the `quality-checks` skill's "During a build" says. On Build with
-care, compare what the change reaches with the sensitive-area map; a match
-starts the review and you say: "This change reaches <area>, so a review is
-running."
+Run the reach check and its tests, boundary check, and loops read. On Build
+with care, compare changed paths with the sensitive-area map; a match starts
+the review: "This change reaches <area>, so a review is running."
 
 When the build path, the subjects, or a sensitive area call for review, run
 the `second-opinion` skill by the best independent method in the capability

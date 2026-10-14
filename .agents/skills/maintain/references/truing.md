@@ -70,7 +70,7 @@ the project check's file in step 6.
    Then run `python3 <installed setup-ai-build-kit skill>/scripts/place-trim-check.py`.
    Exit 0: say nothing. Exit 1: offer once: "Your project's check does not yet
    reject a silent edit to a test. I can replace the old check with the new one,
-   which changes the workflow and adds or replaces its test-check script." On a yes run it
+   which changes the check file and adds or replaces its test-check script." On a yes run it
    with `--apply` and save it with the corrections; on a no, `--decline`. Exit
    2: say in one line it could not be placed.
 7. A mistake the agent has made twice becomes one line in AGENTS.md. A pattern

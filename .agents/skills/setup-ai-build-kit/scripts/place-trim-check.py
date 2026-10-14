@@ -10,9 +10,9 @@ the truing, offers what it prints once, and runs it with --apply on a yes.
 
 Usage, from the project root:
 
-    place-tests-check.py              say what is missing; change nothing
-    place-tests-check.py --apply      add what is missing
-    place-tests-check.py --decline    record the person's no
+    place-trim-check.py              say what is missing; change nothing
+    place-trim-check.py --apply      add what is missing
+    place-trim-check.py --decline    record the person's no
 
 Without an option it prints one line for each thing missing:
 
@@ -146,6 +146,8 @@ def fingerprint(template):
 def declined(template):
     """True while a recorded no covers the kit's present copy of the hook."""
     record = read(RECORD) or ""
+    if re.search(r"^trim-check-declined\|", record, re.M):
+        return True
     match = re.search(r"^tests-check-declined\|\d{4}-\d{2}-\d{2}\|(\w+)$", record, re.M)
     return bool(match) and match.group(1) == fingerprint(template)
 
@@ -153,7 +155,7 @@ def declined(template):
 def main():
     option = sys.argv[1] if len(sys.argv) > 1 else ""
     if option not in ("", "--apply", "--decline") or len(sys.argv) > 2:
-        print("usage: place-tests-check.py [--apply | --decline]", file=sys.stderr)
+        print("usage: place-trim-check.py [--apply | --decline]", file=sys.stderr)
         return 2
     template = read(TEMPLATE)
     if template is None:
@@ -185,6 +187,10 @@ def main():
                 return 2
             with open(WORKFLOW, "w", encoding="utf-8") as handle:
                 handle.write(changed)
+        # Remove the retired trim hook so founded projects have one test-path guard.
+        old_hook = ".agents/hooks/check-trim.sh"
+        if os.path.isfile(old_hook) and not os.path.islink(old_hook):
+            os.unlink(old_hook)
         if any(kind == "hook" for kind, _ in found):
             os.makedirs(os.path.dirname(HOOK), exist_ok=True)
             shutil.copyfile(TEMPLATE, HOOK)
