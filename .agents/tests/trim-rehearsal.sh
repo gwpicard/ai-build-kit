@@ -18,9 +18,9 @@
 # The script decides what is found, by exit code and fixed lines. The agent's
 # part here only removes and folds what the script marks, and the commit goes
 # through trim-commit.sh, which refuses a test change. The project check's
-# check-trim.sh is then run against a trim commit that changed a test, made by
+# check-tests.sh is then run against a trim commit that changed a test, made by
 # hand past the guard, and must fail. The rule for which paths are tests lives
-# once, in check-trim.sh, and covers each stack's test layout and set-up files.
+# once, in check-tests.sh, and covers each stack's test layout and set-up files.
 #
 # A wrapper is folded only when a test runs its user. A test of a file in
 # another folder with the same name as that user does not count. With one
@@ -35,7 +35,7 @@ set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 SCRIPTS="$ROOT/.agents/skills/quality-checks/scripts"
-CHECK="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/check-trim.sh"
+CHECK="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/check-tests.sh"
 
 fail() {
   echo "FAIL: $1" >&2
@@ -73,7 +73,7 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const { spawnSync } = require('node:child_process');
 
-const [scripts, checkTrim, work] = process.argv.slice(2);
+const [scripts, checkTests, work] = process.argv.slice(2);
 const quality = path.join(scripts, 'quality.py');
 const trimCommit = path.join(scripts, 'trim-commit.sh');
 
@@ -348,7 +348,7 @@ console.log('  ok: the second run over the result finds nothing new');
 assert.ok(result.trimmed, 'the trim was not saved');
 assert.equal(git(dir, 'rev-parse', 'HEAD~1'), result.built, 'the trim is not the commit after the piece');
 assert.match(git(dir, 'log', '-1', '--format=%s'), /^Trim: /, 'the trim commit does not carry its tag');
-assert.equal(sh(dir, 'sh', [checkTrim, `${base}..HEAD`], true).status, 0, 'the project check refused a trim that left the tests alone');
+assert.equal(sh(dir, 'sh', [checkTests, `${base}..HEAD`], true).status, 0, 'the project check refused a trim that left the tests alone');
 git(dir, 'revert', '--no-edit', 'HEAD');
 assert.equal(git(dir, 'diff', result.built, 'HEAD', '--stat'), '', 'undoing the trim did not bring back the piece as built');
 console.log('  ok: the trim sits in its own tagged commit, the project check passes it, and undoing it brings back the piece');
@@ -366,11 +366,11 @@ console.log('  ok: trim-commit refuses a trim that changed a test, names it, and
 
 git(dir, 'add', '-A');
 git(dir, 'commit', '-q', '-m', 'Trim: made by hand past the guard');
-const caught = sh(dir, 'sh', [checkTrim, `${base}..HEAD`], true);
+const caught = sh(dir, 'sh', [checkTests, `${base}..HEAD`], true);
 assert.equal(caught.status, 1, 'the project check passed a trim commit that changed a test');
 assert.match(caught.stderr, /test\/risk\.test\.js/, 'the project check did not name the test');
 git(dir, 'commit', '-q', '--amend', '-m', 'Change the risk test on purpose');
-assert.equal(sh(dir, 'sh', [checkTrim, `${base}..HEAD`], true).status, 0, 'the project check refused a test change that is not a trim');
+assert.equal(sh(dir, 'sh', [checkTests, `${base}..HEAD`], true).status, 0, 'the project check refused a test change that is not a trim');
 console.log('  ok: the project check fails a trim commit that changed a test, and leaves other commits alone');
 
 // --- the three name a test path the same way ------------------------------------
@@ -389,14 +389,14 @@ spec = importlib.util.spec_from_file_location('q', ${JSON.stringify(quality)})
 q = importlib.util.module_from_spec(spec); spec.loader.exec_module(q)
 print('\\n'.join(p for p in sys.argv[1:] if q.is_test(p)))`, ...paths]).stdout.trim();
 assert.equal(pyAnswer, tests.join('\n'), `quality.py named the wrong paths as tests: ${pyAnswer}`);
-const rule = read(path.dirname(checkTrim), path.basename(checkTrim)).match(/^TEST_PATH='([^']+)'$/m)[1];
+const rule = read(path.dirname(checkTests), path.basename(checkTests)).match(/^TEST_PATH='([^']+)'$/m)[1];
 const shAnswer = paths.filter(p => spawnSync('grep', ['-qE', rule], { input: p + '\n' }).status === 0).join('\n');
-assert.equal(shAnswer, pyAnswer, 'check-trim.sh and quality.py disagree about which paths are tests');
+assert.equal(shAnswer, pyAnswer, 'check-tests.sh and quality.py disagree about which paths are tests');
 for (const file of [quality, trimCommit]) {
   assert.ok(!read(path.dirname(file), path.basename(file)).includes('__tests__'),
     `${path.basename(file)} carries its own copy of the test-path rule`);
 }
-console.log('  ok: the test-path rule lives once, in check-trim.sh, and covers each stack\'s test layout');
+console.log('  ok: the test-path rule lives once, in check-tests.sh, and covers each stack\'s test layout');
 
 // trim-commit.sh refuses a trim that changed a test set-up file, by the same rule.
 write(dir, { 'jest.config.js': 'export default {};\n' });

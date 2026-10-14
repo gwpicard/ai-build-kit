@@ -145,7 +145,7 @@ checks.yml|.github/workflows/checks.yml
 claude-settings.json|.claude/settings.json
 session-start.sh|.agents/hooks/session-start.sh
 check-sensitive-areas.sh|.agents/hooks/check-sensitive-areas.sh
-check-trim.sh|.agents/hooks/check-trim.sh
+check-tests.sh|.agents/hooks/check-tests.sh
 pre-push|.agents/hooks/git/pre-push
 plan-refresh.sh|.agents/tools/plan-refresh.sh
 codex-github-check.py|.agents/tools/codex-github-check.py
@@ -185,7 +185,7 @@ checks.yml|.github/workflows/checks.yml
 claude-settings.json|.claude/settings.json
 session-start.sh|.agents/hooks/session-start.sh
 check-sensitive-areas.sh|.agents/hooks/check-sensitive-areas.sh
-check-trim.sh|.agents/hooks/check-trim.sh
+check-tests.sh|.agents/hooks/check-tests.sh
 pre-push|.agents/hooks/git/pre-push
 plan-refresh.sh|.agents/tools/plan-refresh.sh
 codex-github-check.py|.agents/tools/codex-github-check.py
