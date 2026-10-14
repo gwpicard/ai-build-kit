@@ -5,7 +5,7 @@ masterplan's build-path section, a `Required controls:` line, an `Outside
 help:` line, or a `Path:` of `Build with expert help` or `Professional-led`.
 Those are the fields the kit used while it had four build paths. Today the
 path follows what the work touches, and each sensitive area carries one
-caution, as the `setup-ai-build-kit` skill's `references/fit-check.md`
+caution, as the `fit-check` skill
 describes under "Write it down".
 
 The rewrite carries the old fields across. It runs no new fit check and

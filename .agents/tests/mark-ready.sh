@@ -10,7 +10,7 @@
 set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
-SCRIPT="$ROOT/.agents/skills/shape/scripts/mark-ready.sh"
+SCRIPT="$ROOT/.agents/skills/records/scripts/mark-ready.sh"
 
 FAIL=0
 fail() { echo "FAIL: $1" >&2; FAIL=1; }

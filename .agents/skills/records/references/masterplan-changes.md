@@ -26,7 +26,7 @@ founding writes its first checkpoint's hash there in a records-only commit.
 Nothing else ever goes on that line.
 
 Never move the mark past work that has not been checked, or past uncommitted
-work. The `setup-ai-build-kit` skill's `scripts/trued-mark.sh` says whether the
+work. The `records` skill's `scripts/trued-mark.sh` says whether the
 mark can be used: exit 0 prints its commit, any other exit says why not. An
 unusable mark is set only by the truing, after comparing the whole page with
 the code. A build leaves it, says in one line that /maintain checks the whole

@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# retired-names.sh: the four retired commands and the three folded background
+# retired-names.sh: the four retired commands and the two renamed background
 # skills stay retired.
 #
 # /fix, /queue, /sync and /ship were folded into other commands or renamed. A
@@ -11,10 +11,11 @@
 # in kit-retired-skills.json and kit-released-copies.json are data the
 # maintain skill matches old folders against, so they are not read.
 #
-# change-triage, section-builder and screen-check folded into /shape and
-# /implement. A skill told to load one of them finds nothing on a project
-# updated past the fold, so no shipped file names them, in any case, except
-# the maintain skill's scripts, which recognise the old folders to remove them.
+# change-triage became triage and section-builder became build-piece. A skill
+# told to load one of the old names finds nothing on a project updated past
+# the rename, so no shipped file names them, in any case, except the maintain
+# skill's scripts, which recognise the old folders to remove them.
+# screen-check left for a time and came back under its own name.
 #
 # A scanned path that is missing fails rather than being skipped, and the
 # check proves itself on copies: a planted "run /sync" in the maintain skill
@@ -42,9 +43,9 @@ FOLDED_PATHS = ("README.md", "llms.txt", "WORKFLOW.md", "docs/COMPATIBILITY.md",
 DATA = {".agents/skills/maintain/scripts/kit-retired-skills.json",
         ".agents/skills/maintain/scripts/kit-released-copies.json"}
 RETIRED = re.compile(r"/(fix|queue|sync|ship)([^a-z/-]|$)", re.M)
-FOLDED = re.compile(r"(?i)change-triage|section-builder|screen-check")
+FOLDED = re.compile(r"(?i)change-triage|section-builder")
 
-for name in ("fix", "queue", "sync", "ship", "change-triage", "section-builder", "screen-check"):
+for name in ("fix", "queue", "sync", "ship", "change-triage", "section-builder"):
     for path in (".agents/skills/" + name, ".claude/skills/" + name, ".claude/commands/" + name + ".md"):
         if os.path.lexists(os.path.join(root, path)):
             fail.append("the retired %s skill is back: %s" % (name, path))

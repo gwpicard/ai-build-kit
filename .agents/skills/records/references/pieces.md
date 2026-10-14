@@ -182,7 +182,7 @@ A command naming what to build next names only a piece under `To build`
 marked `(ready)` in a printout it has just refreshed. With none, say nothing
 is ready and what the rest wait on.
 
-When a refresh fails, follow [required tools](required-tools.md), "When
-GitHub access fails". The printout carries the time it was written, so with
+When a refresh fails, follow the rule for GitHub failures that AGENTS.md
+names, "When GitHub access fails". The printout carries the time it was written, so with
 GitHub unreachable say "here is your list as of 18:40". Work that would change
 the plan waits until GitHub is back; the piece in hand carries on.

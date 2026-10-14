@@ -69,21 +69,25 @@ import re
 import shutil
 import sys
 
-# The kit's eight skills today.
+# The kit's skills today: the six commands first, then the background skills.
+# validate-kit.sh holds this list to the kit's inventory.
 KIT_SKILLS = (
-    "setup-ai-build-kit", "shape", "implement", "setup-hosting",
-    "maintain", "what-now", "clarify", "second-opinion",
+    "setup-ai-build-kit", "shape", "implement", "setup-hosting", "maintain",
+    "what-now", "clarify", "second-opinion", "records", "fit-check", "repair",
+    "merge", "screen-check", "research", "quality-checks", "live-copy",
+    "evidence-run",
 )
 
 # Every name a kit skill had before. `build` split into `shape` and
 # `implement`, `start` became `setup-ai-build-kit`, `plan` became `shape`,
 # `grilling` became `clarify`,
 # `ship` became `setup-hosting`, `fix`, `queue` and `sync` folded into
-# `shape`, `implement` and `maintain`, and the background skills
-# `change-triage`, `section-builder` and `screen-check` folded into `shape`
-# and `implement`.
+# `shape`, `implement` and `maintain`, and the background skill
+# `change-triage` became `triage` and `section-builder` became `build-piece`.
+# `screen-check` left for a time and came back under its own name, so it is a
+# kit skill again and not a former name.
 FORMER_NAMES = ("build", "start", "plan", "grilling", "fix", "queue", "sync", "ship",
-                "change-triage", "section-builder", "screen-check")
+                "change-triage", "section-builder")
 
 KIT_SOURCE = "gwpicard/ai-build-kit"
 SKILL_FOLDERS = (".agents/skills", ".claude/skills")
@@ -109,7 +113,8 @@ KIT_COPIES = ("agent-plugin", ".claude-plugin", "WORKFLOW.md",
               MARKER)
 
 NUMBERS = ("one two three four five six seven eight nine ten eleven twelve "
-           "thirteen fourteen fifteen sixteen").split()
+           "thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty "
+           "twenty-one twenty-two twenty-three twenty-four").split()
 NUMBER = "(" + "|".join(NUMBERS) + ")"
 # The counts in the sentences above the list, in every wording the template
 # has used. Whitespace may be a line break, since the sentences wrap.

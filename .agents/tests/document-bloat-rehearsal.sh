@@ -18,7 +18,7 @@
 set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
-SCRIPT="$ROOT/.agents/skills/maintain/scripts/document-bloat.py"
+SCRIPT="$ROOT/.agents/skills/quality-checks/scripts/document-bloat.py"
 
 fail() {
   echo "FAIL: $1" >&2
@@ -45,9 +45,9 @@ PARAGRAPH="To release the tool, first make sure the environment file holds the d
 git init -q
 # The script lives inside the project, as it does once the kit is installed, so
 # anything it wrote beside itself would show as a change in the project.
-mkdir -p .agents/skills/maintain/scripts
-cp "$SCRIPT" .agents/skills/maintain/scripts/
-SCRIPT="$PROJECT/.agents/skills/maintain/scripts/document-bloat.py"
+mkdir -p .agents/skills/quality-checks/scripts
+cp "$SCRIPT" .agents/skills/quality-checks/scripts/
+SCRIPT="$PROJECT/.agents/skills/quality-checks/scripts/document-bloat.py"
 printf '%s\n' '{"name":"shop","scripts":{"dev":"node src/index.js"}}' > package.json
 printf '%s\n' 'console.log(1);' > src/index.js
 printf '%s\n' 'export const pay = 1;' > src/pay.js

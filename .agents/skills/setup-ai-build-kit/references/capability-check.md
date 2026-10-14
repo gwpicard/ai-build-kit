@@ -23,7 +23,7 @@ Check:
     own, never one the person is using.
 12. An independent-review route exists: subagent, separate session, or a
     clean chat the person opens.
-13. A reach-check engine is recorded, in the order the `implement` skill's
+13. A reach-check engine is recorded, in the order the `quality-checks` skill's
     `references/reach-check.md` gives, or that the agent reads imports and
     callers directly.
 14. Hooks and command blocks are recorded as optional, never assumed. Record

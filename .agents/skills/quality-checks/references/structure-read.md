@@ -7,7 +7,7 @@ alone.
 
 ## Run the script
 
-From the project, run `python3` with the `implement` skill's
+From the project, run `python3` with the `quality-checks` skill's
 `scripts/quality.py`, passing `loops --skip-offered`. It prints each loop in
 the project that no earlier visit offered.
 

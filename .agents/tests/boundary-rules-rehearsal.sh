@@ -25,7 +25,7 @@ set -eu
 unset GITHUB_BASE_REF
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
-RULES="$ROOT/.agents/skills/setup-ai-build-kit/references/boundary-rules.md"
+RULES="$ROOT/.agents/skills/quality-checks/references/boundary-rules.md"
 FOUNDATION="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation"
 
 fail() {

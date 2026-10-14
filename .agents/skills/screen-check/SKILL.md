@@ -1,3 +1,9 @@
+---
+name: screen-check
+description: Apply the kit's screen rules during a build or review that touches an interface. Read the project's own design system first, report what was applied and what remains for a person to try, and make no claim that the screen is accessible, compliant, or good.
+user-invocable: false
+---
+
 # Screen rules
 
 Apply these rules while a screen is being built, and when that change gets its

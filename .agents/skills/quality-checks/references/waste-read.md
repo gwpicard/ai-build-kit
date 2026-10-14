@@ -6,7 +6,7 @@ another, code nothing uses, and dependencies nothing imports.
 
 ## Run the script
 
-From the project, run `python3` with the `implement` skill's
+From the project, run `python3` with the `quality-checks` skill's
 `scripts/quality.py`, passing `waste --skip-offered`, and `--fetch` where
 AGENTS.md's stack section says `Quality engines: fetch`. It runs the engines
 over the whole project, drops any name found elsewhere in it, and leaves out

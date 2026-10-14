@@ -50,7 +50,7 @@ grep -qx "Trued against: $checkpoint" "$P/masterplan.md" \
   && [ "$(git -C "$P" show --name-only --format= HEAD)" = "masterplan.md" ] \
   && pass "the mark names the founding checkpoint and is saved in a commit of its own" \
   || fail "the mark is $(grep '^Trued against' "$P/masterplan.md")"
-(cd "$P" && sh "$SKILL/scripts/trued-mark.sh" >/dev/null) \
+(cd "$P" && sh "$SKILL/../records/scripts/trued-mark.sh" >/dev/null) \
   && pass "trued-mark.sh finds the mark usable" || fail "the mark is not usable"
 [ "$(git -C "$P" config --local core.hooksPath)" = .agents/hooks/git ] \
   && pass "the push guard is switched on once the folder is a repository" \

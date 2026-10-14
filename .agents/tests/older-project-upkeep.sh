@@ -53,13 +53,13 @@ found=$(python3 "$SCRIPT" "$WORK/old")
 report "an old project's two pointers are both found" \
   "$([ "$(printf '%s\n' "$found" | grep -c .)" = 2 ] && echo yes || echo no)"
 report "each finding names its file, line and new form" \
-  "$(printf '%s\n' "$found" | grep -qF "masterplan.md:2	.agents/skills/setup-ai-build-kit/references/fit-check.md	the \`setup-ai-build-kit\` skill's \`references/fit-check.md\`" && echo yes || echo no)"
+  "$(printf '%s\n' "$found" | grep -qF "masterplan.md:2	.agents/skills/setup-ai-build-kit/references/fit-check.md	the \`fit-check\` skill's \`SKILL.md\`" && echo yes || echo no)"
 report "listing changes nothing" \
   "$(cmp -s "$WORK/old/AGENTS.md" "$WORK/old/AGENTS.before" && echo yes || echo no)"
 
 python3 "$SCRIPT" --apply "$WORK/old" >/dev/null
 report "the rewrite gives the form the templates use now" \
-  "$(grep -qF "the \`setup-ai-build-kit\` skill's \`references/pieces.md\` describes." "$WORK/old/AGENTS.md" && echo yes || echo no)"
+  "$(grep -qF "the \`records\` skill's \`references/pieces.md\` describes." "$WORK/old/AGENTS.md" && echo yes || echo no)"
 report "a placeholder, the folder and the project's own skill are left alone" \
   "$(grep -qF '`.agents/skills/<name>/SKILL.md`' "$WORK/old/AGENTS.md" \
      && grep -qF 'Skills live in `.agents/skills/`.' "$WORK/old/AGENTS.md" \
@@ -84,7 +84,7 @@ EOF
 python3 "$SCRIPT" --apply "$WORK/first" >/dev/null
 report "a pointer under the founding skill's first name is rewritten to today's" \
   "$(grep -qF "The restrictions in the \`setup-ai-build-kit\` skill's \`references/blocked-commands.md\` always apply." "$WORK/first/AGENTS.md" \
-     && grep -qF "the \`setup-ai-build-kit\` skill's \`references/fit-check.md\`. The agent reads this section" "$WORK/first/masterplan.md" && echo yes || echo no)"
+     && grep -qF "the \`fit-check\` skill's \`SKILL.md\`. The agent reads this section" "$WORK/first/masterplan.md" && echo yes || echo no)"
 
 # The fix skill was folded into shape and implement, and its rules now sit in
 # implement's repair reference. A pointer to its one file follows them.
@@ -92,10 +92,11 @@ mkdir -p "$WORK/repair"
 printf '%s\n' 'Repairs follow `.agents/skills/fix/SKILL.md`.' > "$WORK/repair/AGENTS.md"
 python3 "$SCRIPT" --apply "$WORK/repair" >/dev/null
 report "a pointer to the old fix skill is rewritten to the repair reference" \
-  "$(grep -qF "Repairs follow the \`implement\` skill's \`references/repair.md\`." "$WORK/repair/AGENTS.md" && echo yes || echo no)"
+  "$(grep -qF "Repairs follow the \`repair\` skill's \`references/fixing.md\`." "$WORK/repair/AGENTS.md" && echo yes || echo no)"
 
-# Three background skills folded into shape and implement. A pointer to one
-# of their files follows it to its new home, in the old folder form and in the
+# Three background skills left in the eleven-skill releases: two were renamed
+# and screen-check came back. A pointer to one of their files follows it to
+# its home today, in the old folder form and in the
 # named form a project founded on the eleven-skill releases carries.
 mkdir -p "$WORK/eleven"
 printf '%s\n' 'Facts follow `.agents/skills/change-triage/references/source-check.md`.' \
@@ -103,11 +104,11 @@ printf '%s\n' 'Facts follow `.agents/skills/change-triage/references/source-chec
   'The trim follows `.agents/skills/section-builder/references/trim.md`.' \
   "Repairs follow the \`section-builder\` skill's \`references/repair.md\`." > "$WORK/eleven/AGENTS.md"
 python3 "$SCRIPT" --apply "$WORK/eleven" >/dev/null
-report "pointers into the three folded background skills follow them" \
-  "$(grep -qF "Facts follow the \`shape\` skill's \`references/research.md\`." "$WORK/eleven/AGENTS.md" \
-     && grep -qF "Screens follow the \`implement\` skill's \`references/screen-rules.md\`." "$WORK/eleven/AGENTS.md" \
-     && grep -qF "The trim follows the \`implement\` skill's \`references/trim.md\`." "$WORK/eleven/AGENTS.md" \
-     && grep -qF "Repairs follow the \`implement\` skill's \`references/repair.md\`." "$WORK/eleven/AGENTS.md" && echo yes || echo no)"
+report "pointers into the three former background skills follow them" \
+  "$(grep -qF "Facts follow the \`research\` skill's \`SKILL.md\`." "$WORK/eleven/AGENTS.md" \
+     && grep -qF "Screens follow the \`screen-check\` skill's \`SKILL.md\`." "$WORK/eleven/AGENTS.md" \
+     && grep -qF "The trim follows the \`quality-checks\` skill's \`references/trim.md\`." "$WORK/eleven/AGENTS.md" \
+     && grep -qF "Repairs follow the \`repair\` skill's \`references/fixing.md\`." "$WORK/eleven/AGENTS.md" && echo yes || echo no)"
 report "and a second run finds nothing there" \
   "$([ -z "$(python3 "$SCRIPT" "$WORK/eleven")" ] && echo yes || echo no)"
 
@@ -120,32 +121,32 @@ printf '%s\n' 'Shaping a repair follows `.agents/skills/fix/SKILL.md`.' \
   'Building a repair follows `.agents/skills/fix/SKILL.md`.' > "$WORK/halves/AGENTS.md"
 python3 "$SCRIPT" --apply "$WORK/halves" >/dev/null
 report "a pointer about shaping a repair follows shape, one about building follows implement" \
-  "$(grep -qF "Shaping a repair follows the \`shape\` skill's \`references/repair.md\`." "$WORK/halves/AGENTS.md" \
-     && grep -qF "To reproduce a fault, read the \`shape\` skill's \`references/repair.md\`." "$WORK/halves/AGENTS.md" \
-     && grep -qF "Building a repair follows the \`implement\` skill's \`references/repair.md\`." "$WORK/halves/AGENTS.md" && echo yes || echo no)"
+  "$(grep -qF "Shaping a repair follows the \`repair\` skill's \`references/reproduce.md\`." "$WORK/halves/AGENTS.md" \
+     && grep -qF "To reproduce a fault, read the \`repair\` skill's \`references/reproduce.md\`." "$WORK/halves/AGENTS.md" \
+     && grep -qF "Building a repair follows the \`repair\` skill's \`references/fixing.md\`." "$WORK/halves/AGENTS.md" && echo yes || echo no)"
 
 # A skill of the person's own under a name the kit has retired keeps its
 # pointer, whether its folder is installed or the lockfile lists it under
 # another source. A folder that is the kit's released copy does not count.
-mkdir -p "$WORK/mine/.agents/skills/screen-check" "$WORK/mine/.agents/skills/section-builder"
-printf -- '---\nname: screen-check\ndescription: Our own checklist for the till screens.\n---\n' \
-  > "$WORK/mine/.agents/skills/screen-check/SKILL.md"
+mkdir -p "$WORK/mine/.agents/skills/queue" "$WORK/mine/.agents/skills/section-builder"
+printf -- '---\nname: queue\ndescription: Our own list of the till jobs.\n---\n' \
+  > "$WORK/mine/.agents/skills/queue/SKILL.md"
 kit_description=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["skills"]["section-builder"][-1])' \
   "$ROOT/.agents/skills/maintain/scripts/kit-retired-skills.json")
 printf -- '---\nname: section-builder\ndescription: %s\n---\n' "$kit_description" \
   > "$WORK/mine/.agents/skills/section-builder/SKILL.md"
 printf '%s\n' '{"version":1,"skills":{"change-triage":{"source":"club/own-skills"}}}' > "$WORK/mine/skills-lock.json"
-printf '%s\n' 'Screens follow `.agents/skills/screen-check/SKILL.md`.' \
+printf '%s\n' 'Jobs follow `.agents/skills/queue/SKILL.md`.' \
   'Requests follow `.agents/skills/change-triage/SKILL.md`.' \
   'The trim follows `.agents/skills/section-builder/references/trim.md`.' > "$WORK/mine/AGENTS.md"
 listed=$(python3 "$SCRIPT" "$WORK/mine")
 python3 "$SCRIPT" --apply "$WORK/mine" >/dev/null
 report "a pointer into the person's own skill under a retired name is listed and kept" \
-  "$(printf '%s\n' "$listed" | grep -qF 'AGENTS.md:1	.agents/skills/screen-check/SKILL.md	left as written: the project has a `screen-check` skill of its own' \
+  "$(printf '%s\n' "$listed" | grep -qF 'AGENTS.md:1	.agents/skills/queue/SKILL.md	left as written: the project has a `queue` skill of its own' \
      && printf '%s\n' "$listed" | grep -qF 'left as written: the project has a `change-triage` skill of its own' \
-     && grep -qF 'Screens follow `.agents/skills/screen-check/SKILL.md`.' "$WORK/mine/AGENTS.md" \
+     && grep -qF 'Jobs follow `.agents/skills/queue/SKILL.md`.' "$WORK/mine/AGENTS.md" \
      && grep -qF 'Requests follow `.agents/skills/change-triage/SKILL.md`.' "$WORK/mine/AGENTS.md" \
-     && grep -qF "The trim follows the \`implement\` skill's \`references/trim.md\`." "$WORK/mine/AGENTS.md" && echo yes || echo no)"
+     && grep -qF "The trim follows the \`quality-checks\` skill's \`references/trim.md\`." "$WORK/mine/AGENTS.md" && echo yes || echo no)"
 
 # The queue skill folded into implement, and the sync skill's routine became
 # the maintain skill's truing reference. Pointers to either follow the rules.
@@ -159,7 +160,7 @@ report "a pointer to the old queue skill is rewritten to implement" \
 report "a pointer to the old sync skill is rewritten to the truing reference" \
   "$(grep -qF "Records follow the \`maintain\` skill's \`references/truing.md\`." "$WORK/folded/AGENTS.md" && echo yes || echo no)"
 report "a pointer to the old document read follows it into maintain" \
-  "$(grep -qF "Stale names follow the \`maintain\` skill's \`references/document-read.md\`." "$WORK/folded/AGENTS.md" && echo yes || echo no)"
+  "$(grep -qF "Stale names follow the \`quality-checks\` skill's \`references/document-read.md\`." "$WORK/folded/AGENTS.md" && echo yes || echo no)"
 
 # The last nine-command release founded projects whose AGENTS.md names the
 # handover template by skill, as the `ship` skill's. That skill is gone and
@@ -214,7 +215,7 @@ report "a pointer inside a command, a link, a longer path, or to a missing file 
 report "and each of those lines is left exactly as it was" \
   "$(head -6 "$WORK/awkward/AGENTS.md" | cmp -s - "$WORK/awkward/untouched" && echo yes || echo no)"
 report "two standalone pointers on one line are both rewritten" \
-  "$(grep -qF "Two: the \`setup-hosting\` skill's \`templates/recipe.md\` and the \`setup-ai-build-kit\` skill's \`references/pieces.md\`." "$WORK/awkward/AGENTS.md" && echo yes || echo no)"
+  "$(grep -qF "Two: the \`setup-hosting\` skill's \`templates/recipe.md\` and the \`records\` skill's \`references/pieces.md\`." "$WORK/awkward/AGENTS.md" && echo yes || echo no)"
 report "after the rewrite, nothing is left to rewrite" \
   "$([ -z "$(python3 "$SCRIPT" "$WORK/awkward" | grep -v 'left as written: ')" ] && echo yes || echo no)"
 
@@ -244,7 +245,7 @@ report "a pointer in a code block, in double backticks, or naming a folder is li
 report "and those lines are left exactly as they were" \
   "$(head -6 "$WORK/blocks/AGENTS.md" | cmp -s - "$WORK/blocks/untouched" && echo yes || echo no)"
 report "a sentence that already says the gets no second one" \
-  "$(grep -qF "Read the \`setup-ai-build-kit\` skill's \`references/fit-check.md\` file." "$WORK/blocks/AGENTS.md" && echo yes || echo no)"
+  "$(grep -qF "Read the \`fit-check\` skill's \`SKILL.md\` file." "$WORK/blocks/AGENTS.md" && echo yes || echo no)"
 
 # A third review found a fence of four backticks closed by the first line of
 # three, which is how a code block is shown inside a code block. The command
@@ -267,11 +268,11 @@ EOF
 nested=$(python3 "$SCRIPT" "$WORK/nested")
 report "a block shown inside a longer fence stays a code block, and prose after it is read as prose" \
   "$([ "$(printf '%s\n' "$nested" | grep -c 'left as written: it sits inside a code block')" = 2 ] \
-     && [ "$(printf '%s\n' "$nested" | grep -c "skill's \`references/")" = 2 ] && echo yes || echo no)"
+     && [ "$(printf '%s\n' "$nested" | grep -c "skill's \`")" = 2 ] && echo yes || echo no)"
 
 mkdir -p "$WORK/crlf" "$WORK/unreadable"
 printf 'line one\r\nSee `.agents/skills/setup-ai-build-kit/references/pieces.md`.\r\nlast\r\n' > "$WORK/crlf/AGENTS.md"
-printf "line one\r\nSee the \`setup-ai-build-kit\` skill's \`references/pieces.md\`.\r\nlast\r\n" > "$WORK/crlf/expected"
+printf "line one\r\nSee the \`records\` skill's \`references/pieces.md\`.\r\nlast\r\n" > "$WORK/crlf/expected"
 python3 "$SCRIPT" --apply "$WORK/crlf" >/dev/null
 report "a file with Windows line endings keeps them, and only the pointer changes" \
   "$(cmp -s "$WORK/crlf/AGENTS.md" "$WORK/crlf/expected" && echo yes || echo no)"
@@ -302,8 +303,8 @@ print("\n".join(sorted(module.KIT_SKILLS)))
 PY
 )
 shipped=$(ls "$ROOT/.agents/skills" | sort)
-report "the script names exactly the kit's eight skills" \
-  "$([ "$listed" = "$shipped" ] && [ "$(printf '%s\n' "$listed" | grep -c .)" = 8 ] && echo yes || echo no)"
+report "the script names exactly the kit's skills" \
+  "$([ "$listed" = "$shipped" ] && echo yes || echo no)"
 
 # --- a leftover plan.md, on every monthly visit -------------------------------
 

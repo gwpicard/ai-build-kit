@@ -12,7 +12,7 @@ You are the safety net under the other five commands. Someone who forgets everyt
 Read masterplan.md (build-path section first), the recent changelog, the
 capability profile in AGENTS.md, git status, recent commits, merged and open
 pull requests. Refresh the printout with `sh .agents/tools/plan-refresh.sh`
-and read `plan.local.md`; the `setup-ai-build-kit` skill's `references/pieces.md` says
+and read `plan.local.md`; the `records` skill's `references/pieces.md` says
 what to run where the helper is missing. Never sort the pieces by hand. If
 GitHub cannot be reached, work from the printout and say when it was written.
 
@@ -29,7 +29,7 @@ and change nothing:
 
 - `python3` with the `maintain` skill's `scripts/upgrade-check.py`. Exit 1
   means a kit update is unfinished.
-- `sh` with the `setup-ai-build-kit` skill's `scripts/trued-mark.sh`. Any exit
+- `sh` with the `records` skill's `scripts/trued-mark.sh`. Any exit
   other than 0 means the masterplan's mark cannot be used.
 
 ## Say
@@ -42,7 +42,7 @@ Order:
 1. Anything labelled `broken`, by what is broken: "the booking confirmation is
    broken, so repairing it comes first". A reproduced repair marked ready goes
    to /implement; one not yet reproduced goes to /shape. Where the live tool
-   broke after a recent merge, follow the `setup-hosting` skill's "Rolling
+   broke after a recent merge, follow the `live-copy` skill's "Rolling
    back" first.
 2. A failing check, an unsettled review finding, or a setup step left
    half-done. Say each plainly. None sits under "nothing is blocked".
@@ -91,9 +91,7 @@ command without a yes for that action.
 
 ### Merge or rebase conflict
 
-Say which two intentions collided. Resolve it only when the records make the
-outcome plain; otherwise keep both sides and ask. A conflict touching data or
-deployment is escalated, never guessed.
+Follow the `merge` skill's "Merge or rebase conflict".
 
 ### Missing capability
 

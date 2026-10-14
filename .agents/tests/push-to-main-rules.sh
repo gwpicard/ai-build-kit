@@ -385,7 +385,7 @@ discard_allowed = [
     "git stash list",
     "git stash pop",
     "git push -u origin feature",
-    "sh .agents/skills/implement/scripts/reset-attempt.sh",
+    "sh .agents/skills/repair/scripts/reset-attempt.sh",
 ]
 # Kept from the first founding settings, and in this repository's own, so
 # they are needed for parity rather than for any one spelling here.

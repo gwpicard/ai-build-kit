@@ -8,11 +8,11 @@ description: The everyday command for building a piece that has already been sha
 This command builds; it does not shape. It carries a ready piece to a
 confirmed, saved change, and on the pull-request route merges it only on a yes
 that names the merge. On a live project that merge is a deploy.
-`references/merge.md` holds the first upload and the merge.
+The `merge` skill holds the first upload and the merge.
 
 Read masterplan.md first, build-path section first. Refresh the printout with
 `sh .agents/tools/plan-refresh.sh` and read `plan.local.md`; never sort the
-pieces by hand. The `setup-ai-build-kit` skill's `references/pieces.md`
+pieces by hand. The `records` skill's `references/pieces.md`
 describes the pieces, their labels, and what to do when GitHub is unreachable.
 
 Before taking a piece, run `python3` with the `maintain` skill's
@@ -40,7 +40,7 @@ one of its parts.
 Given an issue number, build that piece if it is ready, or send it to `/shape`
 with one line on why not. Given a request in plain words, build the ready piece
 it matches; otherwise point at `/shape`. Given a report that the live tool
-broke, follow the `setup-hosting` skill's "Rolling back" first.
+broke, follow the `live-copy` skill's "Rolling back" first.
 
 A piece still carrying a `needs-` label, or with no `## Done when`, is not
 ready. This command does not settle the question: say what it waits on, point
@@ -80,7 +80,7 @@ choose. Showing the list builds nothing; build the chosen pieces one at a time.
 
 A piece whose pull request is open with a green check waits only for its
 merge. Typed alone, or asked to put such work live, follow
-`references/merge.md` for each. "Put it live" names no merge, so ask.
+the `merge` skill for each. "Put it live" names no merge, so ask.
 
 ## Building the piece
 
@@ -104,8 +104,7 @@ Choose the save route before changing anything:
    build path requires.
 3. **Flagged route.** The work touches a named sensitive area whose caution
    is neither done nor accepted. Before building inside the area, give the
-   risk notice once, in full, as the `setup-ai-build-kit` skill's
-   `references/fit-check.md` describes. If the person carries on after it,
+   risk notice once, in full, as the `fit-check` skill describes. If the person carries on after it,
    write the `Accepted:` line with their words and the date, read it back,
    and build and save on the pull-request route, in the reply that answers
    them, with no further question. A lock that only waits for this caution
@@ -120,9 +119,9 @@ branch, and note the missing pull request in one plain line on the piece. A
 step a service could not do is a note, never a warning or a risk.
 
 The project's first push waits for the person's yes, as "The first upload" in
-`references/merge.md` says.
+the `merge` skill's `references/merge.md` says.
 
-Run this skill's `scripts/piece-labels.sh` with `start` and the piece's number
+Run the `records` skill's `scripts/piece-labels.sh` with `start` and the piece's number
 before changing anything. It swaps `ready` for `building` and assigns the
 piece.
 
@@ -147,15 +146,14 @@ that looks right is never a substitute for a check that was available and skippe
 - An operational rehearsal is required for backups, restores, migrations,
   rollback, alerts, deployment, and failure recovery. Adding a field takes a
   test; changing records people already have takes a rehearsal on a copy.
-- An outside fact runs the source check in the `shape` skill's
-  `references/research.md` first.
+- An outside fact runs the source check in the `research` skill first.
 
-On Build with care, offer the optional check in `references/test-strength.md`
+On Build with care, offer the optional check in the `quality-checks` skill's `references/test-strength.md`
 once the tests pass. It adds no gate.
 
 ### 4. Establish the baseline
 
-A piece labelled `broken` is a repair: load `references/repair.md` and follow
+A piece labelled `broken` is a repair: load the `repair` skill's `references/fixing.md` and follow
 "Building a repair" from here.
 
 Otherwise show the new check fails before the behaviour exists, or establish
@@ -181,7 +179,7 @@ migration itself; /setup-hosting does that before the merge.
 
 When the piece carries `visual`, or the change touches a file that renders a
 page, view, component, template, style or native interface, load
-`references/screen-rules.md` before the guided check.
+the `screen-check` skill before the guided check.
 
 Work the build uncovers becomes a new piece, filed by pieces.md's rule, with
 one line such as "Found while building the invoice list." When the person asks
@@ -196,7 +194,7 @@ before saving. Keep engineering vocabulary out of what the person sees.
 
 Run the tests, and the type check and linter AGENTS.md's stack section names.
 Fix any failure at the root. Then, on Build and run it and Build with care, run
-the trim in `references/trim.md` and give its one line.
+the trim in the `quality-checks` skill's `references/trim.md` and give its one line.
 
 Give the exact action to try, the expected result, any known limitation, and
 the kind of evidence behind it. Give one address: stop any preview this
@@ -210,15 +208,15 @@ output shown. Describe a gap as expected versus actual, and fix it at the root.
 
 ### 7. Run required review
 
-Run the reach check in `references/reach-check.md` and the tests it names. On
+Run the reach check in the `quality-checks` skill's `references/reach-check.md` and the tests it names. On
 Build with care, compare what the change reaches with the sensitive-area map; a
 match starts the review and you say: "This change reaches <area>, so a review
 is running." Check a boundary with sentrux or dependency-cruiser where present,
 or by reading the changed imports. Update the map in the same save as any code
 move.
 
-Run `python3` with this skill's `scripts/quality.py loops --base <start
-commit>`. Exit 0: say nothing. Exit 1: say "This change added a loop between
+Run `python3` with the `quality-checks` skill's `scripts/quality.py`, passing
+`loops --base <start commit>`. Exit 0: say nothing. Exit 1: say "This change added a loop between
 <part> and <part>." A boundary crossing gets "This change crossed the boundary
 around <area>." Exit 2: note it internally. Never show a score. The person may
 fix it or leave it; record the choice on the piece.
@@ -231,7 +229,7 @@ second-opinion run or a green check is not.
 ### 8. Save
 
 Before saving, apply the piece's `## Masterplan change` and move the
-trued-against mark as the `setup-ai-build-kit` skill's
+trued-against mark as the `records` skill's
 `references/masterplan-changes.md` says. Where its `scripts/trued-mark.sh`
 exits other than 0, leave the mark, say in one line that /maintain checks the
 whole masterplan against the code, and carry on.
@@ -275,7 +273,7 @@ rule, and never name the piece just built.
 ### 10. Merge
 
 Once the check is green and the records are in the pull request, load
-`references/merge.md` and follow it. In an unattended run nobody is there to say yes, so never merge: report the piece as ready for review.
+the `merge` skill and follow it. In an unattended run nobody is there to say yes, so never merge: report the piece as ready for review.
 
 ## Typed with auto, or handed to a goal mode
 

@@ -11,13 +11,13 @@ something of them, and never needs to read one to keep the tool working.
 |---|---|---|
 | Type check and lint | Project check on every pull request, and before hand-over | `check-floor.md` |
 | Sensitive-area map and boundary rules | Project check on every pull request | `check-sensitive-areas.sh`, `boundary-rules.md` |
-| Trim | Every build, before the person tries it | the `implement` skill's `references/trim.md` |
+| Trim | Every build, before the person tries it | the `quality-checks` skill's `references/trim.md` |
 | A trim left the tests alone | Every trim commit, and the project check on every pull request | `trim-commit.sh`, `check-trim.sh`; `place-trim-check.py` brings the step to an older project |
 | Structure, one change | Every build, before the save | `quality.py loops --base` |
-| Tests notice a breakage | Offered on a Build with care build; too slow for the project check | the `implement` skill's `references/test-strength.md` |
-| Stale document names | Every `/maintain` visit | the `maintain` skill's `references/document-read.md` |
-| Old branches | Monthly visit | the `maintain` skill's `references/stale-branches.md` |
-| Waste, structure, document bloat | Quarterly visit | the `maintain` skill's `references/waste-read.md`, `structure-read.md`, `document-bloat.md` |
+| Tests notice a breakage | Offered on a Build with care build; too slow for the project check | the `quality-checks` skill's `references/test-strength.md` |
+| Stale document names | Every `/maintain` visit | the `quality-checks` skill's `references/document-read.md` |
+| Old branches | Monthly visit | the `quality-checks` skill's `references/stale-branches.md` |
+| Waste, structure, document bloat | Quarterly visit | the `quality-checks` skill's `references/waste-read.md`, `structure-read.md`, `document-bloat.md` |
 
 A build's structure check compares with the commit the piece started from,
 read again from Git history. A visit's reads leave out what an earlier visit

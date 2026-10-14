@@ -65,7 +65,7 @@ piece.
 
 ## Merging a finished piece
 
-Merge only on a yes that names it. The steps named here are SKILL.md's.
+Merge only on a yes that names it. The steps named here are the `implement` skill's.
 
 First, say what the person can try and where: the preview address, on a recipe
 whose preview section gives one, or how to try it on this computer. Where step
@@ -79,15 +79,14 @@ the record. A piece stopped at its condition is never offered for a merge.
 **Before asking, on a live project.** Where "How it stays running" records a
 live address, the merge puts this change live. Check these first, read-only:
 
-- On Build and run it and Build with care, run the `setup-hosting` skill's
-  `references/evidence-run.md`, scoped to this piece.
+- On Build and run it and Build with care, run the `evidence-run` skill, scoped to this piece.
 - Where the piece touches a named area whose caution is done or accepted, run
   that area's readiness as the `setup-hosting` skill's "Build with care" says,
   without repeating a notice. A gap is a warning: say it once, record it in
   CHANGELOG.md in this pull request, and carry on.
 - Where the change adds a database migration, check whether the live database
   has it. On a recipe, run the recipe's `live-check.sh --only migration`,
-  passing the password by its location as the `setup-hosting` skill's "A
+  passing the password by its location as the `live-copy` skill's "A
   secret a check needs" says. Off a recipe, ask the person. Exit 1, or exit 2
   (could not read, say why in one line), means not applied. Then say: "This
   change adds to the database, so /setup-hosting applies that first, from this
@@ -115,7 +114,7 @@ Until then, the pull request stays open and the report says what it waits for.
 **Whether it can merge.** Read `gh pr view <number> --json mergeable`. Where it
 answers `CONFLICTING`, say so in one line and offer, on a yes, to merge the
 newest `main` into the piece's branch here and push it. Never force a push and
-never rebase. Settle the conflict as the `what-now` skill's "Merge or rebase
+never rebase. Settle the conflict as the `merge` skill's "Merge or rebase
 conflict" says, run the project check again, and ask once it is green. Where it
 answers `UNKNOWN`, read it again after a short wait.
 
@@ -157,7 +156,7 @@ the question. Under another coding agent, say nothing about a box.
 In an unattended run, report the piece as ready for review and leave the merge
 to a person.
 
-After the merge, whoever made it, run this skill's `scripts/piece-labels.sh`
+After the merge, whoever made it, run the `records` skill's `scripts/piece-labels.sh`
 with `merged` and the piece's number, then refresh the printout.
 
 **After the merge, held after a rollback.** Say: "This is merged. The live
@@ -181,4 +180,4 @@ Change nothing live after the merge: no deploy, no rollback, no second push to
 what it shows; a further deploy belongs to /setup-hosting. Asked whether they
 can go back, say what the recipe's rollback section offers, that a rollback
 has not been tried, and run none here. A live break after this merge goes to
-the `setup-hosting` skill's "Rolling back", which asks its own yes.
+the `live-copy` skill's "Rolling back", which asks its own yes.

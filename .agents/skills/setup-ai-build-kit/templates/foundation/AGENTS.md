@@ -22,14 +22,16 @@ check could enforce. `/maintain` offers a trim monthly.
 (One line, written by the setup-ai-build-kit skill.)
 ## The skills
 
-The work lives in eight installed AI Build Kit skills. Six are commands:
+The work lives in seventeen installed AI Build Kit skills. Six are commands:
 start the one the user types, names, or asks for in plain words, and say which
 one you are running. Never start a command the user did not ask for. The other
-two run in the background when a command needs them.
+eleven run in the background when a command needs them.
 
 - Commands: `setup-ai-build-kit`, `shape`, `implement`, `setup-hosting`,
   `maintain`, `what-now`.
-- Background skills: `clarify`, `second-opinion`.
+- Background skills: `clarify`, `evidence-run`, `fit-check`, `live-copy`,
+  `merge`, `quality-checks`, `records`, `repair`, `research`, `screen-check`,
+  `second-opinion`.
 
 When a skill says to run another skill, load that installed skill and follow
 it. The skills sit in `.agents/skills/`, `.claude/skills/` or a plugin's folder,
@@ -49,18 +51,17 @@ Every promised behaviour needs evidence: an automated check where a machine can
 judge it reliably, a guided manual check for visual or exploratory work, a
 source check for a decision that rests on an external fact, and a rehearsal for
 backup, restore, migration, rollback, or other operational claims. When a
-piece carries `visual`, or a change touches a screen file, load the `implement` skill's `references/screen-rules.md`
-before the guided manual check. They read this project's design rules first and
-never call a screen accessible, compliant, or good.
+piece carries `visual`, or a change touches a screen file, load `screen-check`
+before the guided manual check. It reads this project's design rules first and
+never calls a screen accessible, compliant, or good.
 
 ## The records
 
 If it is not written down, it does not exist. When work lands, add a dated
 `CHANGELOG.md` entry in plain words and commit with a clear message. Each piece
-is one issue, shaped as the `setup-ai-build-kit` skill's `references/pieces.md`
-says. A merged pull request saying `Closes #<number>` closes its piece. Each
-piece has a subject label, set once by `/shape`. `plan.local.md` prints the
-open issues via `.agents/tools/plan-refresh.sh`; change the issue, not the file.
+is one issue, shaped as the `records` skill says; `Closes #<number>` in a merged
+pull request closes it. `/shape` sets its subject label once. `plan.local.md`
+prints the open issues via `.agents/tools/plan-refresh.sh`; change the issue, not the file.
 
 When one document says another will do a job, write that job into the other
 document too. The masterplan describes the present only, in roughly one or two

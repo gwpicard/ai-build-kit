@@ -26,7 +26,7 @@ its sentence, and stop this session's work.
 2. Compare the live copy with `main`, read-only. Where "How it stays running"
    records a live address and AGENTS.md names a recipe, run that recipe's
    `scripts/live-check.sh` from the project root with `--address`, the
-   database password's location as the `setup-hosting` skill's "A secret a
+   database password's location as the `live-copy` skill's "A secret a
    check needs" says, and `--needs` with the names on any open piece's `Live
    side needs:` line. Where the recipe reads its checks from a paste, ask in
    one sentence for the health answer and setting names. Say its lines as
@@ -102,7 +102,7 @@ its sentence, and stop this session's work.
    with its subjects, `ready` or its question label, then remove `plan.md` and
    add a dated changelog line. A no is not recorded, so the offer returns.
 7. Re-read the capability profile's reach-check engine against what is
-   available now, by the order in the `implement` skill's
+   available now, by the order in the `quality-checks` skill's
    `references/reach-check.md`, and update it.
 8. Run the sensitive-area check installed at founding. Where it names a
    missing path or an unassigned folder, ask which area it belongs to, or
@@ -134,7 +134,7 @@ its sentence, and stop this session's work.
     nothing without a yes. Otherwise say nothing.
 15. Unless the project explores privately, run "Offering a move onto a
     recipe" below.
-16. Load `references/stale-branches.md` and run its script. Never remove a
+16. Load the `quality-checks` skill's `references/stale-branches.md` and run its script. Never remove a
     branch.
 17. Record the visit: today's date on the `last-light-pass` line of
     `.ai-build-kit-maintenance`, as YYYY-MM-DD. If the file is missing, create
@@ -232,22 +232,21 @@ The monthly part as well, plus:
    or unreliable evidence, where one change spreads across many files (count
    the files each landed change touched per area from Git), failing
    integrations, and records that no longer explain reality. On Build and run
-   it and Build with care, load `references/waste-read.md`,
-   `references/structure-read.md` and `references/document-bloat.md` and run
-   their scripts first. Propose at most three simplifications, each with the
+   it and Build with care, run the waste, structure and document-bloat reads
+   in the `quality-checks` skill first. Propose at most three simplifications, each with the
    repeated problem, the plain change, what becomes easier to verify or
    recover, the cost, and whether someone outside the team must look. Apply
    on approval.
 2. Review project skills for instructions that no longer pay their way, and
    offer to remove them.
-3. Run the `setup-hosting` skill's `references/evidence-run.md`, scoped by the
+3. Run the `evidence-run` skill, scoped by the
    build path and its areas.
 4. The ownership check: can the team still explain the main flows, verify
    important changes without reading code, find where data, secrets, owners
    and bills live, and recover or use the manual fallback? Has reliance
    grown? Are the sensitive areas and cautions still accurate? Name a new
    area when needed. For an area named or given a boundary since the last
-   full visit, offer the rule in the `setup-ai-build-kit` skill's
+   full visit, offer the rule in the `quality-checks` skill's
    `references/boundary-rules.md`. An area comes off only when a redesign
    removed what put it there. Where a handover is asked for, or a caution
    names a person the team must find, prepare one.

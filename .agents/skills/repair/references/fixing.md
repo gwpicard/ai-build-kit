@@ -2,7 +2,7 @@
 
 A repair brings the tool back to doing what it already should. A bug is a
 piece like any other. `/shape` reproduces it and writes the failing case into
-the piece, as the `shape` skill's `references/repair.md` describes, and
+the piece, as the `repair` skill's `references/reproduce.md` describes, and
 `/implement` builds the repair by this file. The discipline is the order:
 never change code before the problem repeats reliably and the cause is
 understood and explained.
@@ -66,7 +66,7 @@ the strongest manual or operational evidence available instead.
 
 On Build with care, where a runner exists for the project's language, offer
 to check the regression test by breaking the repaired code on purpose. Follow
-the `implement` skill's `references/test-strength.md` for this optional
+the `quality-checks` skill's `references/test-strength.md` for this optional
 check, its one-line report, and the misses listed on the repair's piece. Keep
 the run to the repaired code and the regression test; do not offer it again
 when the repair is saved.
@@ -76,10 +76,10 @@ when the repair is saved.
 Name every temporary log and harness added during the repair, remove each one,
 then run the regression evidence without them. Clear what shaping left in
 `.agents/tmp/` for this piece too. On Build and run it and Build with care, run
-the trim in the `implement` skill's `references/trim.md` on the repair, so
+the trim in the `quality-checks` skill's `references/trim.md` on the repair, so
 the repair keeps only what the fix needed. Confirm the original symptom is gone,
 record the cause in the changelog in plain language, update the other records,
-and use the save and review route in SKILL.md for the change itself.
+and use the save and review route in the `implement` skill for the change itself.
 The report says which temporary items were removed and that the evidence still
 passed.
 
@@ -130,7 +130,7 @@ known one, so it waits behind the notice below.
 
 Declining the fourth attempt is what owes the notice, not the route you pick
 after it. Give it in the same reply that declines, in the shape
-the `setup-ai-build-kit` skill's `references/fit-check.md` sets out: name who is
+the `fit-check` skill sets out: name who is
 exposed, which here is whoever relies on the broken behaviour, say they are still
 relying on something that is producing wrong results, say that another attempt on
 a cause nobody has established can hide the fault rather than remove it, and say

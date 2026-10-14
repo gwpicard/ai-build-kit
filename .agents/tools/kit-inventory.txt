@@ -19,3 +19,12 @@ command what-now
 
 background clarify
 background second-opinion
+background records
+background fit-check
+background repair
+background merge
+background screen-check
+background research
+background quality-checks
+background live-copy
+background evidence-run

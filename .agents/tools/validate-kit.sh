@@ -208,6 +208,29 @@ else
   pass "the six commands and $(printf '%s\n' "$expected_disciplines" | grep -c .) background skills match the inventory, named exactly"
 fi
 
+# The update scripts a project runs carry their own list of the kit's skills,
+# since a project has no inventory to read. A skill missing from them is one an
+# older project is never told to install, and a folder of it is taken for the
+# person's own. So each list must hold exactly what the inventory does.
+if command -v python3 >/dev/null 2>&1; then
+  for update_script in kit-leftovers.py old-skill-pointers.py; do
+    listed_skills=$(python3 - "$SKILLS/maintain/scripts/$update_script" <<'PYEOF'
+import ast, sys
+tree = ast.parse(open(sys.argv[1]).read())
+for node in tree.body:
+    if isinstance(node, ast.Assign) and any(getattr(t, "id", "") == "KIT_SKILLS" for t in node.targets):
+        print("\n".join(sorted(ast.literal_eval(node.value))))
+PYEOF
+)
+    inventory_skills=$(printf '%s\n%s\n' "$expected_commands" "$expected_disciplines" | sort)
+    if [ "$listed_skills" != "$inventory_skills" ]; then
+      fail "maintain/scripts/$update_script: KIT_SKILLS does not hold exactly the skills the inventory lists"
+    else
+      pass "maintain/scripts/$update_script knows every skill the inventory lists"
+    fi
+  done
+fi
+
 # Each skill has a SKILL.md. Which of them are commands and which
 # are background skills is settled by one setting, and the trigger contract
 # further down checks that. Here the question is only that the file exists.
@@ -768,7 +791,8 @@ fi
 # ---------------------------------------------------------------------------
 echo "== Fit-check contract =="
 
-fitcheck="$SKILLS/setup-ai-build-kit/references/fit-check.md"
+fitcheck="$SKILLS/fit-check/SKILL.md"
+fitrecord="$SKILLS/fit-check/references/build-path-record.md"
 if [ ! -f "$fitcheck" ]; then
   fail "$fitcheck: missing"
 else
@@ -780,24 +804,24 @@ else
       fc_ok=0
     fi
   done
-  [ "$fc_ok" -eq 1 ] && pass "fit-check.md carries the three canonical paths and the decision-order headings"
+  [ "$fc_ok" -eq 1 ] && pass "the fit-check skill carries the three canonical paths and the decision-order headings"
 fi
 
-# The build-path block has one owner. fit-check.md defines the fields and the
+# The build-path block has one owner. The fit check's build-path record defines the fields and the
 # masterplan template carries them, so a field added to one and forgotten in the
 # other would leave a project recording something the fit check never writes, or
 # writing something the template has no room for.
 mpt="$SKILLS/setup-ai-build-kit/templates/masterplan.md"
-if [ ! -f "$mpt" ] || [ ! -f "$fitcheck" ]; then
-  fail "cannot compare the build-path block: fit-check.md or the masterplan template is missing"
+if [ ! -f "$mpt" ] || [ ! -f "$fitrecord" ]; then
+  fail "cannot compare the build-path block: the fit check's build-path record or the masterplan template is missing"
 else
   bp_ok=1
   for field in Path Why "Sensitive areas" Accepted "Recheck when" "Last checked"; do
     grep -q "^$field:" "$mpt" || { fail "$mpt: build-path block is missing '$field:'"; bp_ok=0; }
-    grep -q "^$field:" "$fitcheck" || { fail "$fitcheck: build-path block is missing '$field:'"; bp_ok=0; }
+    grep -q "^$field:" "$fitrecord" || { fail "$fitrecord: build-path block is missing '$field:'"; bp_ok=0; }
   done
   [ "$bp_ok" -eq 1 ] && \
-    pass "the masterplan template and fit-check.md agree on the build-path fields, including Accepted"
+    pass "the masterplan template and the fit check's build-path record agree on the build-path fields, including Accepted"
 fi
 
 # ---------------------------------------------------------------------------
@@ -806,7 +830,7 @@ echo "== Pieces contract =="
 # A piece's shape has one owner, pieces.md, and one form a project fills in.
 # The two are written separately and read by different audiences, so nothing
 # stops them drifting apart except this.
-pieces="$SKILLS/setup-ai-build-kit/references/pieces.md"
+pieces="$SKILLS/records/references/pieces.md"
 pieceform="$SKILLS/setup-ai-build-kit/templates/foundation/piece-issue.yml"
 if [ ! -f "$pieces" ] || [ ! -f "$pieceform" ]; then
   fail "the pieces contract is incomplete: expected $pieces and $pieceform"
@@ -1018,7 +1042,7 @@ fi
 # request and merges it only on a yes that names the merge, made on the pull
 # request itself, and never in a run with nobody there to say it.
 sbfile="$SKILLS/implement/SKILL.md"
-mergefile="$SKILLS/implement/references/merge.md"
+mergefile="$SKILLS/merge/references/merge.md"
 blocked="$SKILLS/setup-ai-build-kit/references/blocked-commands.md"
 settings="$SKILLS/setup-ai-build-kit/templates/foundation/claude-settings.json"
 startfile="$SKILLS/setup-ai-build-kit/SKILL.md"
@@ -1346,8 +1370,8 @@ fi
 # The rule has to notice a name, keep each exemption narrow, and leave the
 # recipes alone, or it proves nothing. So it is run on a planted folder.
 plant=$(mktemp -d)
-mkdir -p "$plant/setup-hosting/recipes/parts" "$plant/setup-hosting/references" "$plant/implement/references"
-grep -i 'web interface guidelines' "$SKILLS/implement/references/screen-rules.md" > "$plant/implement/references/screen-rules.md" || true
+mkdir -p "$plant/setup-hosting/recipes/parts" "$plant/setup-hosting/references" "$plant/screen-check"
+grep -i 'web interface guidelines' "$SKILLS/screen-check/SKILL.md" > "$plant/screen-check/SKILL.md" || true
 mkdir -p "$plant/setup-hosting/recipes/on-vercel/scripts" "$plant/setup-hosting/recipes/parts/scripts"
 printf '%s\n' 'Runs on Vercel with a Supabase database.' > "$plant/setup-hosting/recipes/on-vercel/recipe.md"
 printf '%s\n' 'vercel env ls production' > "$plant/setup-hosting/recipes/on-vercel/scripts/secrets.sh"

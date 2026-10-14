@@ -10,7 +10,7 @@ settles anything the piece still waits on. Shape itself never builds.
 
 You sort the request; the person never does, and the masterplan is the
 referee. Read masterplan.md first, build-path section first, then refresh the
-printout and read it. The `setup-ai-build-kit` skill's `references/pieces.md`
+printout and read it. The `records` skill's `references/pieces.md`
 is the one home for how a piece is written, its labels, the "rests on"
 clauses, and what to do when somebody acts on GitHub by hand. Follow it.
 
@@ -28,7 +28,7 @@ labelled `parked`, so search closed issues too. Is it a misunderstanding or a
 setup problem rather than a gap? Does it contradict a rule in the masterplan?
 
 A report that something is broken, in whatever words, loads
-`references/repair.md` and runs its checks first. Shaping changes no file the
+the `repair` skill's `references/reproduce.md` and runs its checks first. Shaping changes no file the
 project saves.
 
 ### 2. Classify intent
@@ -71,7 +71,7 @@ handover; the risk notice.
 
 Piece-sized and clear (one sitting, a done line you could write now) becomes a
 ready piece at once. Write it to pieces.md's shape with its subjects, and
-label it `ready` by running this skill's `scripts/mark-ready.sh` on its
+label it `ready` by running the `records` skill's `scripts/mark-ready.sh` on its
 number. It refuses without `## Done when`, and refreshes the printout. A new
 issue starts unassigned; `/implement` assigns it when it picks the piece up.
 Then make the build offer.
@@ -100,7 +100,7 @@ action) stops here: rerun the fit check, record the new build path, then
 route.
 
 Where that check leaves a sensitive area standing, give the risk notice
-described in the `setup-ai-build-kit` skill's `references/fit-check.md` before
+described in the `fit-check` skill before
 routing the flagged work, and hold it. Nothing is refused: if the person
 carries on after the notice, record the acceptance as fit-check.md says and
 route the work. The notice never quietly goes away, and pushback never lets
@@ -124,7 +124,7 @@ Write `Live side needs:` only where the live copy needs a new secret, setting
 or service, each by name, never a value.
 
 For `Under the hood` on a project with code, run the reach check in the
-`implement` skill's `references/reach-check.md` and name the seams and covering
+`quality-checks` skill's `references/reach-check.md` and name the seams and covering
 tests from it.
 
 ## Shaping now, or filing for later
@@ -147,7 +147,7 @@ is settled here. An issue with no `## Done when` was typed by hand and is
 treated as `needs-clarification`.
 
 Run the step the label names, write what settled it into `## Decided`, then
-run `scripts/mark-ready.sh` on the piece. It refuses while `## Decided` or
+run the `records` skill's `scripts/mark-ready.sh` on the piece. It refuses while `## Decided` or
 `## Done when` is missing and says which: write it, then run it again.
 
 - `needs-clarification` runs clarify. Write the result in pieces.md's shape
@@ -156,7 +156,7 @@ run `scripts/mark-ready.sh` on the piece. It refuses while `## Decided` or
   shows it, follow the `clarify` skill's `references/existing-artifact.md`.
   Otherwise run the `clarify` skill's `references/decision-prototype.md`. The
   decision goes back onto the piece in words.
-- `needs-research` runs one step of `references/research.md`: the source check
+- `needs-research` runs one step of the `research` skill: the source check
   for one external fact, the search for existing work otherwise. Say which and
   why in one line.
 

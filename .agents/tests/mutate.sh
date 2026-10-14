@@ -298,7 +298,7 @@ open(p, "w").write(t)
       # A skill that learned one host's commands reads wrongly on every
       # project that runs somewhere else. The validator's product-name rule
       # is the only thing that stops one.
-      target="$tree/.agents/skills/setup-hosting/references/evidence-run.md"
+      target="$tree/.agents/skills/evidence-run/SKILL.md"
       [ -f "$target" ] || { echo "no evidence-run reference to plant a name in" >&2; return 1; }
       printf '\n%s\n' 'When it is ready, deploy it to Netlify.' >> "$target"
       ;;

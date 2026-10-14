@@ -760,7 +760,7 @@ sh "$ROOT/.agents/tests/replay/prepare/masterplan-trued.after-commit.sh" "$mt" \
   && [ "$(git -C "$mt" diff --name-only "$first" HEAD)" = masterplan.md ] \
   && ok "the mark is a records-only commit, on main and online" \
   || bad "the mark did not reach main online as a records-only commit"
-(cd "$mt" && sh "$ROOT/.agents/skills/setup-ai-build-kit/scripts/trued-mark.sh" | grep -qx "usable: $first") \
+(cd "$mt" && sh "$ROOT/.agents/skills/records/scripts/trued-mark.sh" | grep -qx "usable: $first") \
   && ok "the script a build reads the mark with finds it usable" \
   || bad "the script a build reads the mark with does not find the mark usable"
 sh "$ROOT/.agents/tests/replay/prepare/masterplan-trued.sh" "$mt" 2>/dev/null \

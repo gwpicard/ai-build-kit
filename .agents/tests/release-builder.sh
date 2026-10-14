@@ -52,7 +52,7 @@ for required in \
   .agents/skills/setup-ai-build-kit/templates/foundation/plan-refresh.sh \
   .agents/skills/setup-ai-build-kit/scripts/place-plan-helper.sh \
   .agents/skills/setup-ai-build-kit/templates/maintenance-record \
-  .agents/skills/implement/references/screen-rules.md \
+  .agents/skills/screen-check/SKILL.md \
   .agents/skills/setup-hosting/scripts/run-recipe.sh \
   .agents/skills/setup-hosting/recipes/parts/scripts/check-lib.sh \
   .agents/skills/setup-hosting/templates/recipe.md \
@@ -60,7 +60,7 @@ for required in \
   .claude-plugin/plugin.json \
   .claude-plugin/marketplace.json \
   agent-plugin/plugin.json \
-  agent-plugin/skills/implement/references/screen-rules.md \
+  agent-plugin/skills/screen-check/SKILL.md \
   agent-plugin/skills/setup-ai-build-kit/SKILL.md \
   agent-plugin/skills/setup-ai-build-kit/scripts/bootstrap-project.sh \
   agent-plugin/skills/setup-ai-build-kit/templates/foundation/plan-refresh.sh \
@@ -144,16 +144,17 @@ grep -qF '"version": "0.1.0"' "$FIRST/agent-plugin/plugin.json" || \
 grep -qF 'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json' \
   "$FIRST/agent-plugin/plugin.json" || \
   fail "agent plugin does not declare the open plugin standard"
+kit_skill_count=$(awk '$1 == "command" || $1 == "background"' "$ROOT/.agents/tools/kit-inventory.txt" | wc -l | tr -d ' ')
 agent_plugin_skill_count=$(find "$FIRST/agent-plugin/skills" -mindepth 2 -maxdepth 2 \
   -name SKILL.md | wc -l | tr -d ' ')
-[ "$agent_plugin_skill_count" -eq 8 ] || \
-  fail "agent plugin does not expose exactly eight installable skills"
+[ "$agent_plugin_skill_count" -eq "$kit_skill_count" ] || \
+  fail "agent plugin does not expose exactly the kit's installable skills"
 [ "$(cat "$FIRST/agent-plugin/skills/maintain/VERSION")" = "v0.1.0" ] || \
   fail "agent plugin maintain skill version is wrong"
 released_skill_count=$(find "$FIRST/.agents/skills" -mindepth 2 -maxdepth 2 \
   -name SKILL.md | wc -l | tr -d ' ')
-[ "$released_skill_count" -eq 8 ] || \
-  fail "release does not expose exactly eight installable skills"
+[ "$released_skill_count" -eq "$kit_skill_count" ] || \
+  fail "release does not expose exactly the kit's installable skills"
 cmp -s "$FIRST/AGENTS.md" \
   "$FIRST/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md" || \
   fail "released root instructions differ from start's foundation template"

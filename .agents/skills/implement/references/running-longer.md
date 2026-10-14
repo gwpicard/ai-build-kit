@@ -32,7 +32,7 @@ run going. Never merge, and never accept a risk on the person's behalf.
 
 The run uses one branch and ends as one pull request where the build path
 requires one, or one confirmed checkpoint for eligible private exploration.
-End with the `setup-hosting` skill's `references/evidence-run.md`, and report:
+End with the `evidence-run` skill, and report:
 what was parked and why first, then what was built and passed, what was
 skipped as eyes-only, and a checklist to try before merging, riskiest first.
 

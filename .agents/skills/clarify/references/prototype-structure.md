@@ -24,8 +24,8 @@ what it is; the arrangements never announce that they are prototypes.
 Where a design tool is recorded and the harness can reach it, its canvas can
 hold the alternatives before a real page exists. Otherwise use a coded
 throwaway. Where the harness has a browser tool, look at your own throwaway
-first, in a browser on this computer, as the `setup-ai-build-kit` skill's
-`references/capability-check.md` says. Say when you could not inspect it.
+first, in a browser on this computer, never one a browser tool lists on another
+computer, and in a tab of your own. Say when you could not inspect it.
 
 ## What to bring back
 

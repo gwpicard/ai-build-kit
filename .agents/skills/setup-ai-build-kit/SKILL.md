@@ -135,7 +135,7 @@ sure `.gitignore` carries `.agents/tmp/`. Say nothing about the file.
 
 ## 6. Fit check and build path
 
-Go through references/fit-check.md: who will use it, then the consequence and
+Go through the `fit-check` skill: who will use it, then the consequence and
 ownership questions, one at a time, guesses attached. Record in the notes: the
 access setting, the build path and why,
 each sensitive area and its caution, the recheck triggers, and today's date.
@@ -216,7 +216,7 @@ for a private one at any point. Carry on in the same reply either way. Where
 they ask to stop, open no more issues, say the ones opened stay readable, and
 save everything else.
 
-Each piece becomes an issue in the shape references/pieces.md describes. Where
+Each piece becomes an issue in the shape the `records` skill's `references/pieces.md` describes. Where
 the GitHub tool is not ready, guide it now by references/manual-setup.md; there
 is no file-based substitute, and a private repository works as well. Run
 `sh scripts/found-issues.sh prepare` to create the kit's labels,
@@ -232,7 +232,7 @@ label for its open question, and link real dependencies with GitHub's
 blocked-by relationship. An idea left out becomes a closed issue labelled
 `parked`, with the reason. Then run `sh scripts/found-issues.sh refresh` once.
 
-Then load references/coverage-read.md and run the coverage read.
+Then load the `records` skill's `references/coverage-read.md` and run the coverage read.
 
 Where the GitHub setup cannot be finished in this session, save everything
 else, and name signing in the GitHub command line tool as the one remaining
@@ -296,9 +296,9 @@ If `.github/workflows/checks.yml` is missing, copy it from
 `templates/foundation/checks.yml`. Edit only `jobs.project-check`, replacing
 the placeholder `Install and test` commands with the project's real ones, never
 rewriting the file from memory. Leave an older `source-kit-validation` job
-alone. Load `references/check-floor.md` for the type check and linter. On
-Build with care, where an area names a boundary, load
-`references/boundary-rules.md` and offer once to have the check hold it.
+alone. Load the `quality-checks` skill's `references/check-floor.md` for the type check and linter. On
+Build with care, where an area names a boundary, load the
+`quality-checks` skill's `references/boundary-rules.md` and offer once to have the check hold it.
 Explore privately needs a local check; the other paths need the remote check
 working before shared or live work. Say once: "green means the tests really
 passed; red means don't merge, tell /implement."
@@ -326,7 +326,7 @@ question. A `left` line names a change left unsaved; say so in one line.
 The founding save is always this local checkpoint. Do not push it or open a
 pull request, whatever the tool will grow into: founding said nothing would be
 uploaded. The first upload waits until the first piece that pushes asks, as
-"The first upload" in the `implement` skill's `references/merge.md` describes.
+"The first upload" in the `merge` skill's `references/merge.md` describes.
 
 Finish with one command that proves the project starts, one small passing
 check, a recorded preview or local run path, and the saved checkpoint. Load

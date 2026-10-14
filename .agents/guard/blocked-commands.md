@@ -24,7 +24,7 @@ which reduce to a single shell pattern.
 ## Commands
 
 - git reset --hard (throws away unsaved work)
-- git checkout ., git restore ., git stash drop and git stash clear (the same thing wearing different clothes; a project's repair runs the implement skill's scripts/reset-attempt.sh instead)
+- git checkout ., git restore ., git stash drop and git stash clear (the same thing wearing different clothes; a project's repair runs the repair skill's scripts/reset-attempt.sh instead)
 - git push --force, or -f, or --force-with-lease, wherever the option sits (rewrites shared history under teammates' feet)
 - git clean -fd (deletes files git never saved)
 - rm -rf, and the same delete spelled -fr, -Rf, -r -f or --recursive --force (deletes anything, recursively, with no undo)

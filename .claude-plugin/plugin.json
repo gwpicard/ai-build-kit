@@ -25,6 +25,15 @@
   ],
   "skills": [
     "./.claude/skills/clarify",
+    "./.claude/skills/evidence-run",
+    "./.claude/skills/fit-check",
+    "./.claude/skills/live-copy",
+    "./.claude/skills/merge",
+    "./.claude/skills/quality-checks",
+    "./.claude/skills/records",
+    "./.claude/skills/repair",
+    "./.claude/skills/research",
+    "./.claude/skills/screen-check",
     "./.claude/skills/second-opinion"
   ]
 }

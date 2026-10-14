@@ -10,7 +10,7 @@
 set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
-SCRIPT="$ROOT/.agents/skills/implement/scripts/piece-labels.sh"
+SCRIPT="$ROOT/.agents/skills/records/scripts/piece-labels.sh"
 
 FAIL=0
 fail() { echo "FAIL: $1" >&2; FAIL=1; }

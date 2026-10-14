@@ -36,7 +36,7 @@ the project check's file in step 6.
    GitHub is not checking pull requests, with the recorded command to turn it
    back on. Turn it on only on a yes.
 3. Correct masterplan.md where reality moved, by the
-   `setup-ai-build-kit` skill's `references/masterplan-changes.md`: read the gap first, then apply
+   `records` skill's `references/masterplan-changes.md`: read the gap first, then apply
    each landed piece's unapplied `## Masterplan change`, and move the mark to
    the saved state you checked. Read from the older of the mark and the last
    changelog entry. Never rewrite the build-path section; if the project's
@@ -45,7 +45,7 @@ the project check's file in step 6.
    Re-read every "rests on" clause by pieces.md's rule. Where support has gone,
    say which decision lost it, keep the decision, and ask what should settle
    it.
-4. Load the `setup-ai-build-kit` skill's `references/coverage-read.md` and
+4. Load the `records` skill's `references/coverage-read.md` and
    compare the masterplan's promises with the pieces.
 
    Count the words in the masterplan's core sections, leaving out `Build
@@ -55,7 +55,7 @@ the project check's file in step 6.
    pieces?" Move detail only on a yes, keeping every present promise and
    decision.
 
-   Then load the `maintain` skill's `references/document-read.md` and run its read for
+   Then load the `quality-checks` skill's `references/document-read.md` and run its read for
    stale names. Retired-command guidance in AGENTS.md and masterplan.md is
    left to "Finishing a kit update".
 5. Name anything left open: a recheck trigger, flagged work waiting,
@@ -82,14 +82,14 @@ the project check's file in step 6.
    On the checkpoint route, commit on the current branch and state the
    checkpoint. On the pull-request route, cut a short-lived branch from the
    up-to-date `main`, commit only the files the truing changed with the
-   `implement` skill's `scripts/save-records.sh`, naming each file, push, open
+   `merge` skill's `scripts/save-records.sh`, naming each file, push, open
    a pull request titled after the reconciliation with step 9's paragraph as
    its body, and run the project check. The person's uncommitted work stays out
    of it.
 
    Never merge it and never delete the branch: a person decides. Never commit a
    correction straight onto `main` or leave it uncommitted. The first upload
-   waits for its yes, as the `implement` skill's `references/merge.md` says.
+   waits for its yes, as the `merge` skill's `references/merge.md` says.
    Where GitHub cannot be reached, save on the branch and note the missing step
    in one line. A label changed on GitHub needs no branch.
 9. Say in one short paragraph what was corrected, or in one line that nothing

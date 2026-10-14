@@ -142,12 +142,6 @@ TEMPLATE_LINES = (
     ("masterplan.md", (OLD_SENTENCE,), (NEW_SENTENCE,)),
     ("AGENTS.md", ("The user describes intent in plain language; change-triage chooses the route.",),
      ("The user describes intent in plain language; `/shape` chooses the route.",)),
-    ("AGENTS.md", ("piece carries `visual`, or a change touches a screen file, load `screen-check`",
-                   "before the guided manual check. It reads this project's design rules first and",
-                   "never calls a screen accessible, compliant, or good."),
-     ("piece carries `visual`, or a change touches a screen file, load the `implement` skill's `references/screen-rules.md`",
-      "before the guided manual check. They read this project's design rules first and",
-      "never call a screen accessible, compliant, or good.")),
     ("AGENTS.md", ("piece has a subject label, set once by change-triage. `plan.local.md` prints the",),
      ("piece has a subject label, set once by `/shape`. `plan.local.md` prints the",)),
 )
@@ -634,9 +628,10 @@ def said_once(out, project, monthly):
 # --- the words the person hears ----------------------------------------------
 
 RETIRED_NAMES = ("fix", "queue", "sync", "ship")
-# The background skills folded into /shape and /implement after the six
-# commands. A project founded on v0.20.3 has only these to hear about.
-FOLDED = ("change-triage", "section-builder", "screen-check")
+# The background skills renamed after the six commands: `change-triage` is now
+# `triage` and `section-builder` is now `build-piece`. A project founded on
+# v0.20.3 has only these to hear about.
+FOLDED = ("change-triage", "section-builder")
 
 
 def names_skill(text, name):
@@ -754,14 +749,13 @@ def sentences(out, project):
         if any(names_retired(f[2]) for f in rewrite):
             what = "still names old commands"
         elif folded:
-            what = ("still names the background %s %s, which %s now part of /shape and "
-                    "/implement" % (plural(len(folded), "skill", "skills"), joined(folded),
-                                    plural(len(folded), "is", "are")))
+            what = ("still names the background %s %s, which the kit has since renamed"
+                    % (plural(len(folded), "skill", "skills"), joined(folded)))
         else:
             what = "still counts the skills of an older release"
         said.append(("commands", "The command list in AGENTS.md %s. I can bring it up to this "
-                     "release's six commands and two background skills, and change nothing "
-                     "else in the file. Shall I?" % what))
+                     "release's six commands and its background skills, and change "
+                     "nothing else in the file. Shall I?" % what))
     if by_hand:
         said.append(("commands", "The command list in AGENTS.md still names old commands, and it "
                      "holds words of your own, so the script leaves it. I can replace those "

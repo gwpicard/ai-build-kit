@@ -19,8 +19,8 @@ deny list, mirror these entries there as mechanical enforcement:
   off
 - throwing away changes nobody saved, in the spellings listed under "Unsaved
   changes" below. A repair that needs to undo a failed attempt runs the
-  `implement` skill's `scripts/reset-attempt.sh` instead, as the
-  `implement` skill's `references/repair.md` says
+  `repair` skill's `scripts/reset-attempt.sh` instead, as the
+  `repair` skill's `references/fixing.md` says
 - reading a login another tool keeps for itself, as listed under "A stored
   login" below
 
@@ -42,7 +42,7 @@ still apply:
   The one exception is the project's first upload: after the person's yes,
   and only when the remote lists no branch, `main` is created through the
   GitHub API at the commit the piece's branch was cut from, as
-  "The first upload" in the `implement` skill's `references/merge.md`
+  "The first upload" in the `merge` skill's `references/merge.md`
   describes. It is never written by a
   `git push`;
 - never force or automate a merge over a required review, and never merge a

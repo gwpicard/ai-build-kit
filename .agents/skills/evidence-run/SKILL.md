@@ -1,3 +1,9 @@
+---
+name: evidence-run
+description: Gather fresh evidence before the tool is relied on: promised behaviour, failure, data and access, operations, review, and an honest report. Used by setup-hosting, maintain, merge and implement auto.
+user-invocable: false
+---
+
 # The evidence run
 
 Used by setup-hosting before anything goes live, and by implement auto at the end of a
