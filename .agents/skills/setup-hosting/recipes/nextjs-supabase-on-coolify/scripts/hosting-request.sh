@@ -8,8 +8,7 @@
 # the answer is recorded. Repo comes from `origin`, Env vars from
 # `.env.example`, by name only, and Build and Bind from the Dockerfile at the
 # root, since the server builds and checks the tool from those two facts. The
-# lane comes from the fit check: internal unless somebody outside the team
-# signs in or relies on it. On this recipe Port is 3000 and Healthcheck is
+# lane comes from the masterplan's Access: line, as hosting-request.md says. On this recipe Port is 3000 and Healthcheck is
 # /api/health, and a value is never printed.
 #
 # Exit 0 when the request is complete, 1 when the tool cannot be hosted yet,

@@ -7,8 +7,9 @@
 #
 # `vercel promote <deployment> --yes` moves the live address to that build
 # and ends the hold a rollback leaves, so later merges go live by themselves
-# again. Then `curl -fsS https://<live address>/api/health` must answer 200
-# with "database":"ok" and that build's commit.
+# again. Then the live address's /api/health, read as check-lib.sh's
+# cl_live_health says, must answer 200 with "database":"ok" and that build's
+# commit.
 #
 # Exit 0 when the live address serves that commit, 1 when it does not, 2 when
 # it could not run. It never runs the promote a second time.
@@ -29,8 +30,12 @@ vercel promote "$deployment" --yes >&2 ||
 
 answer=$(mktemp)
 trap 'rm -f "$answer"' EXIT
-curl -fsS "${LIVE_ADDRESS%/}/api/health" >"$answer" 2>/dev/null ||
-  cl_fail "Vercel reported the promote, but the live address did not answer its health route."
+cl_live_health "${LIVE_ADDRESS%/}" "$answer"
+case $? in
+  0) ;;
+  3) cl_cannot "Vercel reported the promote, but the live address asks for Vercel's sign-in, so the kit could not read which build it serves." ;;
+  *) cl_fail "Vercel reported the promote, but the live address did not answer its health route." ;;
+esac
 commit=$(cl_health_fields "$answer" | sed -n 3p)
 case "$commit" in
   "$want"*) ;;

@@ -6,6 +6,18 @@ area the work touches, with its caution. It runs during
 promises or reliance; before the first /setup-hosting; at the quarterly
 /maintain; and before a handover.
 
+## Who will use it
+
+Ask this first. A tool for people the owner can name is private: only invited
+people get in. Record `Access: private`. Public is never refused, but only the
+person asks for it. Then say once that strangers can reach the live address
+and, unless sign-up stays by invitation, make an account; that the money,
+sign-in and personal-data areas below apply, each with its notice; and that a
+payment gateway or similar may need a developer. Record `Access: public
+(decided YYYY-MM-DD)`, or `public, invitation only (decided YYYY-MM-DD)`.
+Once live, a change either way waits for a yes that names the effect, runs
+the recipe's access change and check, and goes in the changelog.
+
 ## Consequence questions
 
 Ask one at a time, with a best guess attached. These decide the path.
@@ -249,6 +261,7 @@ first in every session:
 
 Path: <Explore privately | Build and run it | Build with care>
 Why: <one or two sentences>
+Access: <private | public (decided YYYY-MM-DD) | public, invitation only (decided YYYY-MM-DD)>
 Sensitive areas: <none, or one line per area beneath this one>
 Accepted: <none, or one line per accepted risk>
 Recheck when: <specific triggers>

@@ -56,6 +56,13 @@ Who runs it: the kit
 
 Shared part: [the Next.js container and its health route](../parts/nextjs-container.md)
 
+## Access
+
+How it works: The masterplan's `Access:` line says private or public. Private is the default: `../parts/scripts/set-signup.sh closed` closes sign-up, so people get in only by an invitation from the Supabase dashboard, under Authentication, then Users. `scripts/set-access.sh private` puts Vercel's sign-in in front of every address, so each person also needs a Vercel account with access: a Pro Viewer seat costs nothing on Pro, and Hobby allows one outside person. A larger group on Hobby keeps the gate on previews only, and the check says so. `scripts/set-access.sh public` takes the gate off the live address, and sign-up opens unless the line says invitation only. Each change waits for a yes that names its effect, and goes in the changelog. Behind the gate, health is read with `vercel curl`, which makes a bypass key the first time, so the kit sets `GATE_READ=yes` only after a yes.
+How it is checked: Sign-up, read by the shared `../parts/scripts/signup.sh` with an empty attempt that makes no account, Vercel's setting, and a request signed in to nothing all match the record.
+Script: scripts/access.sh
+Who runs it: the kit
+
 ## Settings the kit can read
 
 Shared part: [sign-in settings on hosted Supabase](../parts/supabase-settings.md)

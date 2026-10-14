@@ -130,6 +130,13 @@ in your own words, and a change that crosses it turns the tick red with your
 sentence beside it. Nothing is added or taken away without your yes, and a
 language with no tool for it is told plainly that it has none.
 
+Separate from the path, the masterplan's `Access:` line says who can get in.
+A tool is private by default: only people you invite get in, and the access
+check proves it on each launch and each /maintain visit. Public is never
+refused. Ask for it, and the fit check names its risks once and records the
+date. Changing it either way changes the live tool, so it waits for your yes
+and goes in the changelog.
+
 None of these paths is the kit refusing to build. Build with care is where it says plainly what would normally prevent the harm, and you decide. That is the risk notice, in section 8.
 
 ## 4. Day one
@@ -367,15 +374,15 @@ What the agent may not do is take the notice back. Pushing back on the cost, the
 
 **Explore privately.** /setup-hosting runs no production evidence or launch procedure; it only confirms the prototype stays disposable and private, and records what would have to change to graduate.
 
-**Build and run it.** /setup-hosting runs the full evidence run, independent review, operational readiness, and the live transition. Off a recipe, the kit cannot check the launch steps: it names each of the eight it could not check, once, as a warning in the changelog, and the launch goes ahead.
+**Build and run it.** /setup-hosting runs the full evidence run, independent review, operational readiness, and the live transition. Off a recipe, the kit cannot check the launch steps: it names each of the nine it could not check, once, as a warning in the changelog, and the launch goes ahead.
 
 **Build with care.** /setup-hosting takes live everything outside a named sensitive area, does the caution it can do itself (a backup restored once, a rehearsal on a copy), and at a caution that is a person who has not looked, gives you the risk notice once. If you carry on, your acceptance is written down and that area goes live too. Where somebody outside the team is going to look, ask for the handover and /maintain prepares it.
 
 On a recipe, /setup-hosting reads the recipe your project's AGENTS.md names, and
-a script runs its eight checks in order. Each one gives you a plain line, in
+a script runs its nine checks in order. Each one gives you a plain line, in
 the same words every time: preview up, live address updated,
 rollback possible, backup present, restore works, no secret in the repo, logs
-readable, health answers. The rollback line says a rollback is possible and
+readable, health answers, access as recorded. The rollback line says a rollback is possible and
 was not tried, because the kit does not roll back the live tool just to check.
 
 The kit runs the checks it can reach. Where a check runs on a server the kit

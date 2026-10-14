@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# run-recipe.sh: run a recipe's eight checks in its order, print one plain line
+# run-recipe.sh: run a recipe's nine checks in its order, print one plain line
 # for each, and write the run's dated entry into CHANGELOG.md.
 #
 # Usage: run-recipe.sh [options] <recipe>
@@ -13,7 +13,8 @@
 #   --pasted <section>=<file>
 #                          what the person or a companion pasted back for a
 #                          section the kit cannot reach. live-health and
-#                          live-names feed the live check on a later run.
+#                          live-names feed the live check on a later run, and
+#                          so does access.
 #   --looked <section>=yes|no
 #                          what the person said after looking, for a section
 #                          only a person can judge
@@ -28,7 +29,7 @@
 #   --no-record            print the lines and write nothing
 #
 # The sections are preview, going-live, rollback, backup, restore, secrets,
-# logs and health. Each section in recipe.md names its script with `Script:`
+# logs, health and access. Each section in recipe.md names its script with `Script:`
 # and who runs it with `Who runs it:`. The kit's own checks run here. A check
 # the person or a companion runs reads back what they pasted, and with nothing
 # pasted it is a warning carrying the recipe's fixed question. A check only a
@@ -39,7 +40,7 @@
 # same check says the same words, the warning is a one-line pointer to it
 # instead. The rollback line goes on a line of its own, and says "possible,
 # not tried" when an earlier build is listed, since a rollback is never tried
-# to prove it. Off a recipe, the eight section names and the general
+# to prove it. Off a recipe, the nine section names and the general
 # readiness items are warnings, one line each, and nothing more.
 #
 # Where any check is a warning, the last line starts "Left:" and names the
@@ -63,11 +64,12 @@ ORDER = [("Preview", "preview", "Preview up"),
          ("Restore", "restore", "Restore works"),
          ("Secrets", "secrets", "No secret in the repo"),
          ("Logs", "logs", "Logs readable"),
-         ("Health", "health", "Health answers")]
+         ("Health", "health", "Health answers"),
+         ("Access", "access", "Access as recorded")]
 IDS = {ident for _, ident, _ in ORDER}
 # What a recipe's checks stand in for. Off a recipe each is a warning.
 READINESS = ["Service and billing owner named", "Manual fallback ready",
-             "Test data removed", "Access reviewed", "Service account owner named"]
+             "Test data removed", "Service account owner named"]
 
 
 def stop(message, code=2):
@@ -311,6 +313,8 @@ if later and folder:
             command += ["--pasted-health", os.path.abspath(pasted["live-health"])]
         if "live-names" in pasted:
             command += ["--pasted-names", os.path.abspath(pasted["live-names"])]
+        if "access" in pasted:
+            command += ["--pasted-access", os.path.abspath(pasted["access"])]
         done = subprocess.run(command, cwd=project, env=env, capture_output=True, text=True)
         compared = [l.strip() for l in done.stdout.splitlines() if l.strip()]
         if done.returncode == 0:
@@ -320,7 +324,7 @@ if later and folder:
             print("- " + line)
         print()
 
-# --- the eight ------------------------------------------------------------------
+# --- the nine ------------------------------------------------------------------
 lines, warnings, rollback_line, codes = [], 0, None, []
 for heading, ident, label in ORDER:
     code, detail = outcome(heading, ident)

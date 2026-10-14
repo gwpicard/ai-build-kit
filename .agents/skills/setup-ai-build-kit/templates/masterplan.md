@@ -21,6 +21,11 @@ first, every session. -->
 
 Path:
 Why:
+Access: private
+<!-- Who can get in. `private`: only invited people. `public (decided
+YYYY-MM-DD)`, or `public, invitation only (decided YYYY-MM-DD)` to keep
+sign-up closed. The recipe's access check reads this line. -->
+
 Sensitive areas:
 <!-- Build with care only. Under each area, add an indented `paths:` line and
 at most one `boundary:` line. List every other top-level source folder on an

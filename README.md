@@ -8,6 +8,12 @@ not write code. You say what the tool should do and try the result. Six
 commands take it from a first idea to a tool that is live, backed up and kept
 up to date.
 
+Its focus is a simple way to build and run internal tools, with control over
+who gets access: a team, a club, a family or invited clients. Each tool runs
+on a boring, proven stack and is private by default. Only people you invite
+get in, and a check proves it. Public-facing features are possible too: ask
+for public, and the kit names the risks once and records your choice.
+
 The tool is yours from the first day. The code is in your own GitHub
 repository, it runs on a host account or a server of your own, and the data
 is in your own database account. Nothing is locked inside a platform.
@@ -154,6 +160,11 @@ Supabase for data and sign-in:
 
 - [On Vercel](.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/recipe.md), for a team without its own server. The kit runs most launch checks itself.
 - [On your server with Coolify](.agents/skills/setup-hosting/recipes/nextjs-supabase-on-coolify/recipe.md), for a team that runs or rents a server. Whoever runs it performs the server checks and sends back the results.
+
+On both, a private tool closes sign-up, so people get in by invitation, and
+the host keeps strangers away from the live address. On Vercel, each person
+then also signs in to Vercel. Making a tool public, or private again, changes
+the live tool, so it waits for your yes and goes in the changelog.
 
 Each recipe's folder holds the record of its real run, in `PROVEN.md`. Check
 each recipe's plan terms before choosing. Any other stack or host works too,

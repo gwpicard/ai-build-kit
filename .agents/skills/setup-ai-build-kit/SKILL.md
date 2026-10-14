@@ -135,8 +135,9 @@ sure `.gitignore` carries `.agents/tmp/`. Say nothing about the file.
 
 ## 6. Fit check and build path
 
-Go through references/fit-check.md: the consequence and ownership questions,
-one at a time, guesses attached. Record in the notes: the build path and why,
+Go through references/fit-check.md: who will use it, then the consequence and
+ownership questions, one at a time, guesses attached. Record in the notes: the
+access setting, the build path and why,
 each sensitive area and its caution, the recheck triggers, and today's date.
 Before naming an area, work through the redesign options; if a redesign
 changes the answers, run the check again. Where an area survives, give the risk

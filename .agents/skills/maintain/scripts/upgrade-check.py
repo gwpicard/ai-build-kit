@@ -58,6 +58,9 @@ the step that settles it:
     ready      NUMBERS         open pieces shaped before the kit had
                                a `ready` label, so nothing builds
                                them                                   ready
+    access     masterplan.md  WHY
+                               no `Access:` line, which the recipe's
+                               access check reads                     access
 
 These are named, never changed, and do not count as left:
 
@@ -94,8 +97,10 @@ labels the shaped pieces `ready` on GitHub, `remove`
 runs `kit-leftovers.py --remove`, `commands` runs `kit-leftovers.py
 --rewrite-commands`, `pointers` runs `old-skill-pointers.py --apply`,
 `settings` runs `settings-rules.py --apply`, `template` rewrites the one
-sentence, and `recipe` names the recipe by its folder in AGENTS.md and in the
-check-up record's menu lines. `--apply helper` and `--apply ready` also print a `say` line with
+sentence, `recipe` names the recipe by its folder in AGENTS.md and in the
+check-up record's menu lines, and `access=private`, `access=public` or
+`access=public-invitation` writes the masterplan's `Access:` line the person
+chose. It changes nothing live. `--apply helper` and `--apply ready` also print a `say` line with
 what changed. The installer's own steps, `installer` and `missing`, and the
 `fitcheck` step, which the agent carries out, are never run from here. `--decline` writes `upgrade-declined|<date>|<steps>` into
 `.ai-build-kit-maintenance`, keeping only steps that still have something
@@ -168,10 +173,10 @@ STEP_OF = {
     "adapter": "remove", "kitcopy": "remove", "hook": "remove",
     "commands": "commands", "pointer": "pointers", "helper": "helper",
     "settings": "settings", "template": "template", "fitcheck": "fitcheck",
-    "ready": "ready", "recipe": "recipe",
+    "ready": "ready", "recipe": "recipe", "access": "access",
 }
 DECLINABLE = ("installer", "missing", "remove", "commands", "pointers", "settings", "template",
-              "fitcheck", "recipe")
+              "fitcheck", "recipe", "access")
 # The build-path fields the kit used while it had four build paths.
 FOUR_PATHS = re.compile(r"^\s*(Required controls:|Outside help:|Path:\s*(Build with expert help|Professional-led))")
 APPLIABLE = ("helper", "ready", "remove", "commands", "pointers", "settings", "template",
@@ -310,6 +315,64 @@ def apply_recipe(project):
     if changed:
         print("say\trecipe\tAGENTS.md now names the recipe by its folder, and nothing else in "
               "the file changed.")
+    return 0
+
+
+ACCESS_LINE = re.compile(r"^Access:\s*\S", re.M)
+ACCESS_CHOICES = {"private": "Access: private",
+                  "public": "Access: public (decided %s)",
+                  "public-invitation": "Access: public, invitation only (decided %s)"}
+ACCESS_WORDS = ("This release makes every tool private by default: only people you invite can "
+                "get in, and a check on the live tool proves it. Public is a setting you choose, "
+                "and it is recorded with the date. Your masterplan does not say which this tool "
+                "is. Should it be private, public, or public with sign-up by invitation only? I "
+                "record your answer, then run the access check, which changes nothing. Changing "
+                "the live tool to match waits for a separate yes.")
+
+
+def access_findings(project):
+    """The masterplan's build path with no Access: line, as every project
+    founded before the kit made tools private by default has it."""
+    if linked_path(project, "masterplan.md"):
+        return []
+    text = read_text(os.path.join(project, "masterplan.md"))
+    if not text or ACCESS_LINE.search(text):
+        return []
+    return [("access", "masterplan.md", "no access setting recorded")]
+
+
+def apply_access(project, choice):
+    """Write the Access: line the person chose into the build-path section:
+    before its Sensitive areas: line, or after its Path: line, or under its
+    heading. Nothing live changes."""
+    if choice not in ACCESS_CHOICES:
+        print("upgrade-check.py: the access step takes %s" % ", ".join(
+            "access=" + c for c in ACCESS_CHOICES), file=sys.stderr)
+        return 2
+    if not access_findings(project):
+        return 0
+    line = ACCESS_CHOICES[choice]
+    if "%s" in line:
+        line = line % datetime.date.today().isoformat()
+    path = os.path.join(project, "masterplan.md")
+    with open(path, encoding="utf-8", newline="") as handle:
+        lines = handle.readlines()
+    ending = "\r\n" if lines and lines[0].endswith("\r\n") else "\n"
+    start = next((i for i, l in enumerate(lines) if re.match(r"^##\s+Build path\b", l)), None)
+    if start is None:
+        print("left\tmasterplan.md\tit has no build-path section, so the access line was not written")
+        return 1
+    end = next((i for i in range(start + 1, len(lines)) if lines[i].startswith("## ")), len(lines))
+    at = next((i for i in range(start + 1, end) if lines[i].startswith("Sensitive areas:")), None)
+    if at is None:
+        path_line = next((i for i in range(start + 1, end) if lines[i].startswith("Path:")), None)
+        at = path_line + 1 if path_line is not None else start + 1
+    lines.insert(at, line + ending)
+    with open(path, "w", encoding="utf-8", newline="") as handle:
+        handle.writelines(lines)
+    print("access\tmasterplan.md:%d\t%s" % (at + 1, line))
+    print("say\taccess\tThe masterplan now records %s. Next I run the access check, which "
+          "changes nothing live." % line)
     return 0
 
 
@@ -460,6 +523,7 @@ def findings(project):
     found.extend(templates)
     found.extend(fitcheck_findings(project))
     found.extend(recipe_findings(project))
+    found.extend(access_findings(project))
     found = ready_findings(project) + found
     # A line another step already names is not a mention as well.
     skip = {f[1] for f in found if f[0] in ("commands", "pointer", "template")}
@@ -749,6 +813,8 @@ def sentences(out, project):
                      "Recipes are folders now, so that line would read Recipe: %s. The kit "
                      "reads either, so nothing waits on it. I can change that one line and "
                      "nothing else. Shall I?" % (name, name)))
+    if "access" in by:
+        said.append(("access", ACCESS_WORDS))
     if "mention" in by:
         n = len(by["mention"])
         said.append(("mention", "%s still %s an old command in your own words: %s. %s yours to "
@@ -784,6 +850,7 @@ STEP_WORDS = {
     "pointers": "the old pointers as they are", "template": "the kit's old lines as they are",
     "fitcheck": "the build-path section as it is",
     "recipe": "the recipe line as it is",
+    "access": "the access setting unrecorded",
 }
 
 HELPER_WORDS = (
@@ -892,6 +959,8 @@ def apply(project, step):
         return apply_template(project)
     if step == "recipe":
         return apply_recipe(project)
+    if step.startswith("access="):
+        return apply_access(project, step[len("access="):])
     return 2
 
 
@@ -1119,7 +1188,9 @@ def main(argv):
             return 2
     try:
         if apply_step:
-            if apply_step not in APPLIABLE:
+            if apply_step not in APPLIABLE and not apply_step.startswith("access="):
+                if apply_step == "access":
+                    return usage("say which: access=private, access=public or access=public-invitation")
                 if apply_step in ("installer", "missing", "fitcheck"):
                     return usage("that step is not run from here: its say line says who carries it out")
                 return usage("unknown step %s" % apply_step)

@@ -9,8 +9,9 @@ masterplan's "How it stays running" section.
 
 `scripts/hosting-request.sh --lane <internal|public>` prints the request,
 filled from the project rather than by asking the person. Take the lane from
-the fit check: internal unless somebody outside the team signs in or relies on
-it. Copy the block it prints into the masterplan, and put it in the reply,
+the masterplan's `Access:` line: internal for private, unless the people it is
+for cannot join the private network, and then public with the gate the
+recipe's Access section names. Copy the block it prints into the masterplan, and put it in the reply,
 followed by the script's last line, so the person can paste it. The block
 names settings and never carries a value, key, password or token.
 

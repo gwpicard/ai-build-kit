@@ -8,8 +8,9 @@
 #
 # `vercel rollback <earlier deployment> --yes` points the production address
 # back at that build in seconds, with no new build. Its whole output is read.
-# Then `curl -fsS https://<live address>/api/health` must answer 200 with
-# "database":"ok" and the earlier commit. A rollback does not undo a database
+# Then the live address's /api/health, read as check-lib.sh's cl_live_health
+# says, must answer 200 with "database":"ok" and the earlier commit. A
+# rollback does not undo a database
 # migration, which is why a migration only adds.
 #
 # After a rollback, Vercel stops moving new pushes to production until a newer
@@ -36,8 +37,12 @@ vercel rollback "$deployment" --yes >&2 ||
 
 answer=$(mktemp)
 trap 'rm -f "$answer"' EXIT
-curl -fsS "${LIVE_ADDRESS%/}/api/health" >"$answer" 2>/dev/null ||
-  cl_fail "Vercel reported the rollback, but the live address did not answer its health route."
+cl_live_health "${LIVE_ADDRESS%/}" "$answer"
+case $? in
+  0) ;;
+  3) cl_cannot "Vercel reported the rollback, but the live address asks for Vercel's sign-in, so the kit could not read which build it serves. Vercel holds the live copy on it: new merges will not go live until a newer build is promoted." ;;
+  *) cl_fail "Vercel reported the rollback, but the live address did not answer its health route." ;;
+esac
 commit=$(cl_health_fields "$answer" | sed -n 3p)
 case "$commit" in
   "$want"*) ;;
