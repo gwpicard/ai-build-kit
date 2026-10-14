@@ -654,6 +654,34 @@ def main():
         print()
         print("  Project Name     Latest Production URL                Updated")
         print("  %-16s https://%-28s 7d" % (state["project"], state["production_url"]))
+    elif command == "project" and rest[:1] == ["protection"]:
+        words, options = parse(rest[1:], {"--json"}, {"--format", "-F"})
+        if words is None or words or not (options.get("--json") or "json" in
+                                           (options.get("--format"), options.get("-F"))):
+            unsupported(argv, "only the read, as JSON; a change goes through the API")
+        sso = state.get("sso")
+        bypass = ({"replay-bypass-key": {"createdAt": 1758272752000, "createdBy": state["user"],
+                                         "scope": "automation-bypass"}}
+                  if state.get("bypass") else {})
+        print(json.dumps({"projectId": "prj_noticeboardstandin", "name": state["project"],
+                          "ssoProtection": {"deploymentType": {
+                              "all": "all", "standard": "prod_deployment_urls_and_all_previews"
+                          }[sso]} if sso in ("all", "standard") else None,
+                          "passwordProtection": None, "protectionBypass": bypass}, indent=2))
+    elif command == "api" and rest[:1] and rest[0].startswith("/v9/projects/"):
+        words, options = parse(rest[1:], {"--silent", "--raw"}, {"-X", "--method", "--input"})
+        method = options.get("-X") or options.get("--method")
+        if words is None or words or method != "PATCH" or not options.get("--input"):
+            unsupported(argv, "only a project update with its body in a file")
+        body = open(options["--input"]).read()
+        kind = "all" if '"deploymentType":"all"' in body.replace(" ", "") else \
+            "standard" if "prod_deployment_urls_and_all_previews" in body else None
+        if kind is None:
+            unsupported(argv, "an ssoProtection body the recipe does not send")
+        state["sso"] = kind
+        note("CHANGED\tsso\t%s" % kind)
+        if not options.get("--silent"):
+            print(json.dumps({"id": "prj_noticeboardstandin", "protectionBypass": "masked"}))
     elif command == "project" and rest[:1] == ["inspect"]:
         print(HEADER)
         print("  General")

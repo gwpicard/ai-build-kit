@@ -108,6 +108,7 @@ Path: Build and run it
 Why: An internal noticeboard for one office of twelve. Nothing it holds is
 irreplaceable, nobody outside the office signs in, and Priya can explain and
 operate it.
+Access: private
 Sensitive areas: none
 Accepted: none
 Recheck when: someone outside the office needs to sign in; it starts holding
@@ -162,6 +163,8 @@ Noticeboard is live at https://noticeboard-office.vercel.app. It is on the
 recipe named in AGENTS.md: Vercel builds the GitHub repository
 office-tools/noticeboard, and each change that reaches `main` goes live by
 itself. The database and the email sign-in are a hosted Supabase project.
+Vercel's sign-in stands in front of every address, and sign-up is closed, so
+Priya invites each person.
 
 Priya holds the Vercel, Supabase and GitHub accounts. Vercel is on its Hobby
 plan and Supabase on its Free plan.
