@@ -762,13 +762,26 @@ def sentences(out, project):
                      "lines with the current list and keep your sentences. Shall I?"))
     pointers = [f for f in by.get("pointer", []) if not f[-1].startswith("left as written:")]
     kept = [f for f in by.get("pointer", []) if f[-1].startswith("left as written:")]
-    if pointers:
-        n = len(pointers)
+    # A pointer through the skills folder is one kind; a pointer that already
+    # names its skill, to a file that moved to another skill or a skill that
+    # was renamed, is the other. Each hears the sentence that is true of it.
+    by_folder = [f for f in pointers if ".agents/skills/" in f[2]]
+    moved = [f for f in pointers if ".agents/skills/" not in f[2]]
+    if by_folder:
+        n = len(by_folder)
         said.append(("pointers", "%d %s in %s %s at a kit file through a folder some "
                      "installations do not have. I can name the skill instead, and each line "
                      "keeps its sentence: %s becomes %s. Shall I?" % (
-                         n, plural(n, "line", "lines"), files_of(pointers),
-                         plural(n, "points", "point"), pointers[0][2], pointers[0][3])))
+                         n, plural(n, "line", "lines"), files_of(by_folder),
+                         plural(n, "points", "point"), by_folder[0][2], by_folder[0][3])))
+    if moved:
+        n = len(moved)
+        said.append(("pointers", "%d %s in %s %s at a kit file that has moved to another "
+                     "skill, or to a skill the kit has renamed. I can point %s at the new "
+                     "home, and each line keeps its sentence: %s becomes %s. Shall I?" % (
+                         n, plural(n, "line", "lines"), files_of(moved),
+                         plural(n, "points", "point"), plural(n, "it", "them"),
+                         moved[0][2], moved[0][3])))
     if kept:
         n = len(kept)
         said.append(("pointers", "%s left as written: %s. %s yours to change if you want." % (

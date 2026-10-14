@@ -30,6 +30,11 @@ is actually built, because that is the moment it can still change what the
 person decides. Once an acceptance is recorded for an area, do not give the
 notice for that area again; say in one line what was accepted and when.
 
+The reply is the message that ends your turn, because some coding agents show
+the person only that message. A notice written earlier in a long turn, between
+steps of work, is given in full again in that last message. Never refer to a
+notice as "above": a notice the person cannot see has not been given.
+
 A sensitive area is exposure from the list above, not any imperfection
 somebody might be annoyed by. A vanished booking, a stack choice, a save that
 stays on one machine, an integration not connected yet: these are design

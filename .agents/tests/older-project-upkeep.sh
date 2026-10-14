@@ -292,6 +292,23 @@ printf '%s\n' 'See `.agents/skills/deploy-notes/SKILL.md`.' > "$WORK/own/AGENTS.
 report "a project's own skill is never offered" \
   "$([ -z "$(python3 "$SCRIPT" "$WORK/own")" ] && echo yes || echo no)"
 
+# A project's own document, or a skill of its own, naming a kit file that has
+# moved is reported with the new home, and never rewritten. The kit's own skill
+# folders are not read.
+mkdir -p "$WORK/owndocs/docs" "$WORK/owndocs/.agents/skills/our-release" "$WORK/owndocs/.agents/skills/implement/references"
+line="Pieces follow the \`setup-ai-build-kit\` skill's \`references/pieces.md\`."
+printf '%s\n' "$line" > "$WORK/owndocs/docs/notes.md"
+printf '%s\n' "$line" > "$WORK/owndocs/.agents/skills/our-release/SKILL.md"
+printf '%s\n' "$line" > "$WORK/owndocs/.agents/skills/implement/references/old.md"
+cp "$WORK/owndocs/docs/notes.md" "$WORK/owndocs-before"
+owndocs=$(python3 "$SCRIPT" "$WORK/owndocs")
+python3 "$SCRIPT" --apply "$WORK/owndocs" >/dev/null
+report "a pointer to a moved kit file in a document of the project's own is reported with its new home, and left" \
+  "$(printf '%s\n' "$owndocs" | grep -qF "docs/notes.md:1	\`setup-ai-build-kit\` skill's \`references/pieces.md\`	left as written: it is in a document of your own; the kit's file is now the \`records\` skill's \`references/pieces.md\`" \
+     && printf '%s\n' "$owndocs" | grep -qF ".agents/skills/our-release/SKILL.md:1" \
+     && ! printf '%s\n' "$owndocs" | grep -qF ".agents/skills/implement/" \
+     && cmp -s "$WORK/owndocs/docs/notes.md" "$WORK/owndocs-before" && echo yes || echo no)"
+
 # The script's list of the kit's skills has to be the kit's skills, or a
 # renamed or added skill's pointers would be missed without a word.
 listed=$(PYTHONDONTWRITEBYTECODE=1 python3 - "$SCRIPT" <<'PY'

@@ -108,13 +108,7 @@ target and offer to leave it open.
 ### Build with care
 
 Outside every named area, follow Build and run it. Inside one, take each area
-as the `fit-check` skill says: do the
-kit's caution now and write `done` with the date, or give the risk notice once,
-in full, at the moment the area goes live. If the person carries on, write the
-`Accepted:` line, mark the area `accepted`, read it back, and go on in the same
-reply. On a recipe, an area goes live with the merge that carries it, and the
-next run of the checks reports it. Where a caution is a person and nobody can
-be asked, offer the handover in the `maintain` skill once.
+as the `fit-check` skill's "An area going live" says.
 
 ## 2. Graduation
 

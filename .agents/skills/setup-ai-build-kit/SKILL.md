@@ -72,16 +72,16 @@ references/adopting.md, which reshapes the steps below.
 
 ## 4. Test the need for software
 
-Test the idea against the ladder in `references/need-for-software.md`, cheapest
-first, and carry straight on in the same reply.
+Test the idea against the ladder in `references/need-for-software.md`, and
+carry straight on.
 
 ## 5. Founding interview
 
 Run the `clarify` skill. Settle overloaded terms, use concrete examples, run the
 source check for an outside fact, settle a visual or behavioural question with
 something they have or a throwaway prototype, and keep open questions visible.
-It ends when your guesses keep being right. The reply that closes it also
-shows the recipe menu (step 11).
+It ends when your guesses keep being right. Load `references/stand-up.md`
+before the reply that closes it, which shows the recipe menu.
 
 Write each agreed answer into `.agents/tmp/setup-notes.md` before the next
 question, as plain sentences under the question. Before the first write, make
@@ -104,18 +104,18 @@ move.
 
 ## 7. Write the masterplan
 
-Load `references/write-the-masterplan.md` and follow it, the build-path
-section first.
+Load `references/write-the-masterplan.md` and follow it.
 
 ## 8. Review the masterplan
 
 On Build with care only, review the masterplan with the `second-opinion` skill
 before flagged work continues, by the best independent method in the capability
-profile: an independent subagent, a clean separate session, or a clean chat the
-person opens with a prepared instruction. Where none exists, say so, record it
-in the changelog as a gap to close before flagged work, and carry on. On the
-other paths, say in one line that the review was skipped and why, and record
-that in the changelog.
+profile. Where none exists, say so, record it in the changelog as a gap to
+close before flagged work, and carry on. Apply a finding worth stopping for
+only on the person's yes, or where their go-ahead to use your guesses covers
+it, saying which. The completion report lists those findings. On the other
+paths, say in one line that the review was skipped and why, and record that in
+the changelog.
 
 ## 9. Ownership check
 
@@ -135,7 +135,7 @@ follow it.
 
 ## 11. Stand the project up
 
-Load `references/stand-up.md` and follow it.
+Follow `references/stand-up.md` to the end.
 
 The founding save is always a local checkpoint. Do not push it or open a
 pull request, whatever the tool will grow into: founding said nothing would be

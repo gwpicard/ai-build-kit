@@ -387,6 +387,21 @@ A whole copy of the kit and the Claude Code plugin carry them. The shared
 skills installer and the Agent Plugins folder carry skills only, so there the
 command starts an ordinary subagent and tells it which skill to load.
 
+The reviewer and the researcher only read. How firmly that holds depends on
+the coding agent:
+
+| Coding agent | What keeps a read-only agent from changing files |
+|---|---|
+| Claude Code | Its tool list has no editing tool. The reviewer keeps the command line, because a review runs commands, so a check after the review puts back anything under review that changed and tells you. |
+| Cursor | `readonly: true` in the agent's file: no edits, and no command that changes anything. |
+| Gemini CLI | Its tool list holds only reading and searching tools, with no command line. |
+| GitHub Copilot | Its tool list holds reading, searching and the web, with no editing or commands. |
+| Codex | Nothing in the agent's file. Codex keeps the session's own sandbox and approval settings for every agent, so only the agent's brief and the check after the review hold it. |
+
+VS Code reads agents from both `.github/agents/` and `.claude/agents/`, and
+Cursor from `.claude/agents/` and `.codex/agents/`. Each may list the kit's
+agents twice. They are the same agents, and either copy runs the same brief.
+
 Where a coding agent cannot start a subagent at all, the command runs the same
 brief headless, with `claude -p`, `codex exec` or `gemini -p`. Failing that,
 you open a clean chat and paste the one line the command gives you.

@@ -47,7 +47,9 @@ The initial setup is complete.
 
 - The purpose of the tool, its intended users, and its access rules are written down.
 - The work has been divided into [number] small build steps.
-- A separate review checked the plan, and any important findings were resolved.
+- A separate review checked the plan. [Each finding it listed under "Worth
+  stopping for", in plain words, and for each whether you approved the change,
+  your go-ahead to use my guesses covered it, or it still waits for you.]
 - [What the tool will run on, whether the kit can check its launch steps, and whether this computer has the tools those checks use.]
 - The automatic project check passed.
 - The instructions for opening the private preview were tested successfully.

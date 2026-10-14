@@ -61,7 +61,8 @@ release-nondeterministic
 runnable-bit-lost
 product-named
 command-loads-command
-command-over-budget"
+command-over-budget
+background-one-caller"
 
 describe() {
   case "$1" in
@@ -88,6 +89,7 @@ describe() {
     product-named) echo "a skill file outside the recipes names a place a tool runs" ;;
     command-loads-command) echo "a command reaches into another command's references instead of calling a background skill" ;;
     command-over-budget) echo "a command grows past its word budget" ;;
+    background-one-caller) echo "a background skill is left with one caller and no agent that loads it" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -101,6 +103,7 @@ checks_for() {
     product-named) echo "validate-kit" ;;
     command-loads-command) echo "validate-kit" ;;
     command-over-budget) echo "validate-kit" ;;
+    background-one-caller) echo "validate-kit" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -315,6 +318,26 @@ open(p, "w").write(t)
       target="$tree/.agents/skills/implement/SKILL.md"
       [ -f "$tree/.agents/skills/setup-hosting/references/hosting-request.md" ] || return 1
       printf '\n%s\n' "For a server, follow the \`setup-hosting\` skill's \`references/hosting-request.md\`." >> "$target"
+      ;;
+    background-one-caller)
+      # A rule folded back into one caller leaves its background skill with a
+      # single user, which then earns no place of its own.
+      edit "$tree/.agents/skills/second-opinion/SKILL.md" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "load and follow the `screen-check` skill."
+assert old in s
+open(p, "w").write(s.replace(old, "load and follow the screen rules."))'
+      for agent in reviewer builder; do
+        edit "$tree/.agents/agents/$agent.md" '
+import os, re
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+t = re.sub(r"(skills: \[[^]]*?), screen-check", r"\1", s)
+assert t != s
+open(p, "w").write(t)'
+      done
       ;;
     command-over-budget)
       # A command grows one helpful paragraph at a time.

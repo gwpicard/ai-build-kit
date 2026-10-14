@@ -73,6 +73,34 @@ else
   fail "a cross-command load was missed (exit $rc): $out"
 fi
 
+# The same reach written as a path, with or without a leading folder, and a
+# command's SKILL.md named directly.
+for form in '.agents/skills/beta/references/own.md' 'skills/beta/references/own.md' \
+            '../beta/references/own.md' '`beta/SKILL.md`'; do
+  T="$WORK/path"
+  rm -rf "$T"
+  plant "$T"
+  printf 'Read %s first.\n' "$form" >> "$T/.agents/skills/alpha/SKILL.md"
+  out=$(run --strict "$T") && rc=0 || rc=$?
+  if [ "$rc" -eq 1 ] && printf '%s\n' "$out" | grep -q "^loads	.agents/skills/alpha/SKILL.md:6	loads the beta command's"; then
+    pass "a command reaching into another as $form is named"
+  else
+    fail "a command reaching into another as $form was missed (exit $rc): $out"
+  fi
+done
+
+# A file named on its own that no skill has points at nothing.
+T="$WORK/bare"
+plant "$T"
+printf 'Follow fit-check.md for the notice, and `own.md` for the rest.\n' >> "$T/.agents/skills/beta/references/own.md"
+out=$(run --strict "$T") && rc=0 || rc=$?
+if [ "$rc" -eq 1 ] && printf '%s\n' "$out" | grep -q "^missing	.agents/skills/beta/references/own.md:2	names fit-check.md, which no skill has" \
+  && ! printf '%s\n' "$out" | grep -q "names own.md"; then
+  pass "a file named on its own that no skill has is reported, and one a skill has is not"
+else
+  fail "a bare file name was misjudged (exit $rc): $out"
+fi
+
 # A background skill's reference may be loaded by anyone, and a command's own
 # reference by itself.
 T="$WORK/allowed"

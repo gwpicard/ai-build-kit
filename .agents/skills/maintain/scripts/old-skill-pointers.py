@@ -44,6 +44,11 @@ kit-leftovers.py recognises the kit's folders. A folder of the person's own, or
 a name the lockfile lists under another source, keeps its pointer, listed with
 the reason.
 
+A project's own Markdown elsewhere, such as a skill of its own or a note in
+docs/, can name a kit file that has since moved. Each such pointer is listed
+as left as written, with the file's new home, and never rewritten, since the
+words are the person's.
+
 The fix skill's one file, and section-builder's repair reference, held both
 halves of a repair. Shaping a repair now sits in the `repair` skill's
 `references/reproduce.md`, and building one in its `references/fixing.md`. A pointer
@@ -345,7 +350,48 @@ def main(argv):
         if apply and changed:
             with open(path, "w", encoding="utf-8", newline="") as handle:
                 handle.writelines(lines)
+    for rel, number, old, new in own_document_pointers(project, own):
+        print("%s:%d\t%s\tleft as written: it is in a document of your own; the kit's file is "
+              "now the %s" % (rel, number, old, new))
     return 0
+
+
+# Folders a project's own documents never sit in.
+SKIP_DIRS = {".git", "node_modules", ".agents/tmp", "agent-plugin", ".claude-plugin"}
+
+
+def own_document_pointers(project, own):
+    """(file, line, old, new) for each pointer to a moved or retired kit file in
+    the project's own Markdown, outside AGENTS.md, masterplan.md and the kit's
+    own skill folders. These are only reported: the words are the person's."""
+    kit = set(KIT_SKILLS) | set(FORMER_NAMES)
+    found = []
+    for here, dirs, names in os.walk(project):
+        rel_here = os.path.relpath(here, project).replace(os.sep, "/")
+        rel_here = "" if rel_here == "." else rel_here
+        keep = []
+        for d in sorted(dirs):
+            sub = (rel_here + "/" + d).lstrip("/")
+            if sub in SKIP_DIRS or os.path.islink(os.path.join(here, d)):
+                continue
+            if rel_here in (".agents/skills", ".claude/skills") and d in kit:
+                continue
+            keep.append(d)
+        dirs[:] = keep
+        for name in sorted(names):
+            rel = (rel_here + "/" + name).lstrip("/")
+            if not name.endswith(".md") or rel in FILES:
+                continue
+            try:
+                with open(os.path.join(here, name), encoding="utf-8") as handle:
+                    lines = handle.readlines()
+            except (OSError, UnicodeDecodeError):
+                continue
+            for number, line in enumerate(lines, 1):
+                for start, end, old, new, why in findings(line, False, own):
+                    if new is not None:
+                        found.append((rel, number, old, new.replace("the `", "`", 1)))
+    return found
 
 
 if __name__ == "__main__":

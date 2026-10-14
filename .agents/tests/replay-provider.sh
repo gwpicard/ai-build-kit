@@ -350,6 +350,37 @@ printf '%s\n' "$rolled" | grep -q 's53-r1.json: the real GitHub CLI answered' \
   && pass "the roll-up says why a run was not graded" \
   || fail_provider "the roll-up names an ungraded run without its reason"
 
+# A turn the kit answers in several messages, with tool calls between them,
+# reaches the transcript whole. The headless result keeps only the last one,
+# and a notice given earlier in the turn was once graded as never given.
+TT="$REPLAY_DIR/turn-text.py"
+printf '%s\n' '{"result":"Last message."}' > "$TEST_WORK/turn.json"
+cat > "$TEST_WORK/turn.jsonl" <<'JSONL'
+{"type":"user","message":{"content":"first turn"}}
+{"type":"assistant","message":{"content":[{"type":"text","text":"Old turn."}]}}
+{"type":"user","message":{"content":"second turn"}}
+{"type":"assistant","message":{"content":[{"type":"text","text":"Who is exposed: your patients."},{"type":"tool_use","name":"Bash"}]}}
+{"type":"user","message":{"content":[{"type":"tool_result","content":"ok"}]}}
+{"type":"assistant","isSidechain":true,"message":{"content":[{"type":"text","text":"A subagent's note."}]}}
+{"type":"assistant","message":{"content":[{"type":"text","text":"Last message."}]}}
+JSONL
+python3 "$TT" claude "$TEST_WORK/turn.json" "$TEST_WORK/turn.jsonl" "$TEST_WORK/turn-reply"
+[ "$(cat "$TEST_WORK/turn-reply")" = "$(printf 'Who is exposed: your patients.\n\nLast message.')" ] \
+  && pass "a Claude turn keeps every text block of the turn, without the old turn or a subagent's" \
+  || fail_provider "a Claude turn kept: $(cat "$TEST_WORK/turn-reply")"
+python3 "$TT" claude "$TEST_WORK/turn.json" "" "$TEST_WORK/turn-reply"
+[ "$(cat "$TEST_WORK/turn-reply")" = "Last message." ] \
+  && pass "without a session file the turn keeps its final result" \
+  || fail_provider "without a session file the reply was: $(cat "$TEST_WORK/turn-reply")"
+printf '%s\n' '{"type":"item.completed","item":{"type":"agent_message","text":"Notice first."}}' \
+  '{"type":"item.completed","item":{"type":"command_execution"}}' \
+  '{"type":"item.completed","item":{"type":"agent_message","text":"Then the end."}}' > "$TEST_WORK/turn-codex.jsonl"
+printf '%s' 'Then the end.' > "$TEST_WORK/turn-codex-reply"
+python3 "$TT" codex "$TEST_WORK/turn-codex.jsonl" "$TEST_WORK/turn-codex-reply"
+[ "$(cat "$TEST_WORK/turn-codex-reply")" = "$(printf 'Notice first.\n\nThen the end.')" ] \
+  && pass "a Codex turn keeps every agent message" \
+  || fail_provider "a Codex turn kept: $(cat "$TEST_WORK/turn-codex-reply")"
+
 if (REPLAY_PROVIDER=unknown; provider_check) >/dev/null 2>&1; then
   fail_provider "an unknown replay provider was accepted"
 else

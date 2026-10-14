@@ -132,6 +132,16 @@ changes the answers, so run the check again. One that keeps the surface and
 drops the caution does not.
 
 
+## An area going live
+
+Take each named area as it goes live: do the kit's caution now and write `done`
+with the date, or give the risk notice once, in full, at the moment the area
+goes live. If the person carries on, write the `Accepted:` line, mark the area
+`accepted`, read it back, and go on in the same reply. On a recipe, an area
+goes live with the merge that carries it, and the next run of the checks
+reports it. Where a caution is a person and nobody can be asked, offer the
+handover in the `maintain` skill once.
+
 ## Full and delta checks
 
 Run every question in the situations at the top of this file, and when several

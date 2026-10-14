@@ -15,11 +15,11 @@ decides nothing again, so nothing the person decided is lost.
    - `Explore privately` and `Build and run it` keep their name.
      `Build with expert help` and `Professional-led` become `Build with care`.
    - `Outside help: none` adds nothing.
-   - `Outside help: <level>, for <scope>` becomes one line under
-     `Sensitive areas:`. Name the scope as one of the areas in fit-check.md
-     where it plainly is one, say what in the tool touches it, use the help
-     level as its caution, and mark it `not yet done` unless the changelog
-     records that it happened.
+   - `Outside help: <level>, for <scope>` becomes one line under `Sensitive
+     areas:`. Name the scope as one of the areas in the `fit-check` skill's
+     `SKILL.md` where it plainly is one, say what in the tool touches it, use
+     the help level as its caution, and mark it `not yet done` unless the
+     changelog records that it happened.
    - A `Required controls` entry that protects a place in the tool, such as a
      review of who can see what, a backup, a rehearsal on a copy or a managed
      provider, becomes a line for the area it protects. Where it protects the
@@ -30,7 +30,8 @@ decides nothing again, so nothing the person decided is lost.
      the section. Say so in the changelog line.
    - Copy `Accepted`, `Recheck when` and `Last checked` word for word,
      including an old line that says the path moved. They are history, and
-     fit-check.md adds accepted risks and never replaces them.
+     the `fit-check` skill's `references/build-path-record.md` adds accepted
+     risks and never replaces them.
 2. Show the section as it is, then as it would be, one above the other, and
    ask for a yes. Change nothing else in the masterplan.
 3. On a yes, write the new section as part of the visit's saved change. Where

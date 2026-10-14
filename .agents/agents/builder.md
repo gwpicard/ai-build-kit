@@ -11,7 +11,8 @@ isolation: none
 You build one ready piece. Load the `build-piece` skill and follow it for the
 piece you are given, on the branch you are given, from the safe start to the
 saved change and the updated records. It loads the `quality-checks` skill, and
-the `screen-check` skill for a screen.
+the `screen-check` skill for a screen. The branch you are given replaces the
+short-lived branch the safe start would cut from `main`: work and save on it.
 
 You run with nobody present, so every rule for an unattended run holds: never
 write an acceptance, never merge, leave unrun any command that changes a live

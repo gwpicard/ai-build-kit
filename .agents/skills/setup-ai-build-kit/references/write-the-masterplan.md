@@ -19,8 +19,8 @@ Fill the masterplan from the notes and the conversation, then delete
 Read the connections section back in plain words, and let the team confirm
 each outside connection: their email, their calendar, whatever it reaches.
 
-On Build with care, write the sensitive-area paths and any boundaries by
-fit-check.md, read each area and its home back in plain words, and run the
+On Build with care, write the sensitive-area paths and any boundaries by the
+`fit-check` skill's `references/build-path-record.md`, read each area and its home back in plain words, and run the
 sensitive-area check the bootstrap installed. On the other paths, leave the map
 out.
 

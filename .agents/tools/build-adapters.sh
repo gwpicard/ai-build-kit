@@ -231,10 +231,22 @@ quoted() {
 # the canonical .agents/agents/<name>.md. Each generated file only points back
 # at the canonical one, so the brief has one home. An agent is a leaf: the
 # command in the main session starts it, and it starts no other agent.
-#   access: read      reads, searches and runs commands, and edits nothing
+#   access: read      reads and searches; in Claude Code it may also run commands
 #           research  reads and searches, the web included
 #           full      every tool the session has
 #   isolation: none | worktree (Claude Code runs it in a throwaway worktree)
+#
+# What holds read and research access, by coding agent:
+#   Claude Code  its `tools` list: no Edit or Write. A read agent keeps Bash,
+#                because a review runs commands, and Bash can still change a
+#                file. The second-opinion skill's review-guard.sh puts back
+#                anything under review that changed, and says so.
+#   Cursor       `readonly: true` in the same .claude/agents/ file: no edits,
+#                no shell command that changes state. Claude Code ignores it.
+#   Gemini CLI   its `tools` list: reading and searching tools only, no shell.
+#   Copilot      its `tools` list: read, search and web, no edit or execute.
+#   Codex        nothing. An agent file cannot override the session's sandbox
+#                or approvals, so only the brief and the guard hold it.
 generate_agents() {
   OUT="$1"
   rm -rf "$OUT/.claude/agents" "$OUT/.codex/agents" "$OUT/.gemini/agents" "$OUT/.github/agents"
@@ -259,9 +271,15 @@ generate_agents() {
     [ "$fm_name" = "$name" ] || { echo "error: .agents/agents/$name.md declares name '$fm_name'" >&2; exit 1; }
     [ -n "$desc" ] || { echo "error: .agents/agents/$name.md has no description" >&2; exit 1; }
     case "$access" in
-      read) tools="Read, Grep, Glob, Bash, Skill" ;;
-      research) tools="Read, Grep, Glob, WebFetch, WebSearch, Skill" ;;
-      full) tools="" ;;
+      read)
+        tools="Read, Grep, Glob, Bash, Skill"
+        gemini_tools="[read_file, list_directory, glob, grep_search, web_fetch]"
+        copilot_tools='["read", "search", "web"]' ;;
+      research)
+        tools="Read, Grep, Glob, WebFetch, WebSearch, Skill"
+        gemini_tools="[read_file, list_directory, glob, grep_search, web_fetch, google_web_search]"
+        copilot_tools='["read", "search", "web"]' ;;
+      full) tools=""; gemini_tools=""; copilot_tools="" ;;
       *) echo "error: .agents/agents/$name.md has access '$access'; use read, research or full" >&2; exit 1 ;;
     esac
     case "$isolation" in
@@ -286,6 +304,7 @@ generate_agents() {
       printf 'name: %s\n' "$name"
       printf 'description: "%s"\n' "$desc_q"
       [ -z "$tools" ] || printf 'tools: %s\n' "$tools"
+      [ -z "$tools" ] || printf 'readonly: true\n'
       printf 'model: inherit\n'
       [ "$isolation" != worktree ] || printf 'isolation: worktree\n'
       printf '%s\n' "---"
@@ -307,6 +326,7 @@ generate_agents() {
       printf '%s\n' "---"
       printf 'name: %s\n' "$name"
       printf 'description: "%s"\n' "$desc_q"
+      [ -z "$gemini_tools" ] || printf 'tools: %s\n' "$gemini_tools"
       printf '%s\n' "---"
       printf '%s\n\n' "$banner"
       printf '%s\n' "$pointer"
@@ -318,6 +338,7 @@ generate_agents() {
       printf 'name: %s\n' "$name"
       printf 'description: "%s"\n' "$desc_q"
       printf 'user-invocable: false\n'
+      [ -z "$copilot_tools" ] || printf 'tools: %s\n' "$copilot_tools"
       printf '%s\n' "---"
       printf '%s\n\n' "$banner"
       printf '%s\n' "$pointer"

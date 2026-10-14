@@ -37,8 +37,8 @@ live address, the merge puts this change live. Check these first, read-only:
 - On Build and run it and Build with care, run the `evidence-run` skill,
   scoped to this piece.
 - Where the piece touches a named area whose caution is done or accepted, run
-  that area's readiness as the `fit-check` skill says, without repeating a
-  notice. A gap is a warning: say it once, record it in
+  that area's readiness as the `fit-check` skill's "An area going live" says,
+  without repeating a notice. A gap is a warning: say it once, record it in
   CHANGELOG.md in this pull request, and carry on.
 - Where the change adds a database migration, check whether the live database
   has it. On a recipe, run the recipe's `live-check.sh --only migration`,

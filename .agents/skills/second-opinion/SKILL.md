@@ -88,6 +88,14 @@ chat the person opens with a prepared instruction. A same-session review is
 allowed only on Explore privately, labelled as not independent and reading only
 the written agreement and evidence.
 
+A reviewer that works in this project folder only reads. Before you start it,
+run this skill's `scripts/review-guard.sh snapshot` with the files under
+review: masterplan.md at founding, and the files the change touches for a
+piece. When it returns, run `scripts/review-guard.sh check`. Exit 1: it put
+back what the review changed and named anything else it found changed; tell
+the person in one line, and that their work is as it was. Exit 2: say in one
+line that the review could not be checked for changes.
+
 This covers a review that asks only for eyes other than the builder's. Where
 the build path or a risk notice names a person, such as the owner of a failing
 component or a specialist, that person is the review. No session, passing test

@@ -56,6 +56,25 @@ for name in $agents; do
     full)
       [ -z "$tools" ] && pass "$name, with full access, keeps every tool" \
         || fail "$name has full access but is limited to '$tools'" ;;
+  esac
+  # Where the format can hold a limit, the limit is written: Cursor's
+  # readonly, Gemini CLI's tool list and Copilot's tool list. A missing list
+  # means every tool, so a read agent without one is not read-only there.
+  gemini=$(sed -n 's/^tools: //p' "$K/.gemini/agents/$name.md")
+  copilot=$(sed -n 's/^tools: //p' "$K/.github/agents/$name.agent.md")
+  case "$access" in
+    read|research)
+      if grep -qx 'readonly: true' "$K/.claude/agents/$name.md" \
+        && [ -n "$gemini" ] && ! printf '%s' "$gemini" | grep -qE 'write_file|replace|run_shell_command' \
+        && [ -n "$copilot" ] && ! printf '%s' "$copilot" | grep -qE '"edit"|"execute"'; then
+        pass "$name is read-only in Cursor, Gemini CLI and Copilot"
+      else
+        fail "$name is not held read-only: readonly in .claude/agents, Gemini '$gemini', Copilot '$copilot'"
+      fi ;;
+    full)
+      [ -z "$gemini" ] && [ -z "$copilot" ] && ! grep -q '^readonly:' "$K/.claude/agents/$name.md" \
+        && pass "$name keeps every tool in Cursor, Gemini CLI and Copilot" \
+        || fail "$name has full access but a limit was written for another coding agent" ;;
     *) fail "$name has an access the builder should have refused: $access" ;;
   esac
 done

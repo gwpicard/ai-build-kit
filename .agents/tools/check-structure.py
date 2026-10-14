@@ -11,6 +11,7 @@ ROOT defaults to the repository this script sits in. It reads the inventory in
 agent under .agents/agents/, and prints one line for each thing out of shape:
 
     loads     FILE:LINE  a skill loads a command's reference or section
+    missing   FILE:LINE  a skill names a file that no skill has
     callers   NAME       a background skill with fewer than two callers and no
                          agent that loads it
     words     FILE       a file over its word budget
@@ -44,7 +45,16 @@ LOAD = re.compile(
     r"`?([a-z][a-z-]*)`?\s+skill['’]s\s+"
     r"(`references/[^`]+`|\"[^\"]+\"|“[^”]+”)"
 )
-SIBLING = re.compile(r"(?<![A-Za-z0-9_./-])([a-z][a-z-]*)/references/[A-Za-z0-9_./-]+\.md")
+# A path into another skill's folder, bare or with a leading ../, skills/ or
+# .agents/skills/: its references, or its SKILL.md itself.
+SIBLING = re.compile(
+    r"(?<![A-Za-z0-9_-])(?:\.\./|\.agents/skills/|skills/)?"
+    r"([a-z][a-z-]*)/(?:references/[A-Za-z0-9_./-]+\.md|SKILL\.md)")
+# A file named on its own, such as `fit-check.md`. It must be a file some
+# skill has, or one the project keeps, or it points at nothing.
+BARE = re.compile(r"(?<![A-Za-z0-9_./<-])([A-Za-z0-9_-]+\.md)\b")
+PROJECT_FILES = {"plan.md", "DESIGN.md", "WORKFLOW.md", "CLAUDE.md", "GEMINI.md",
+                 "MAINTAINING.md", "setup-notes.md", "team.md"}
 CALL = re.compile(r"`([a-z][a-z-]*)`\s+skill\b")
 
 
@@ -132,6 +142,9 @@ def main(argv):
     agents = {n for n, k in kinds.items() if k == "agent"}
     findings = []
     callers = {name: set() for name in backgrounds}
+    known_files = set(PROJECT_FILES)
+    for here, dirs, names in os.walk(skills_root):
+        known_files.update(n for n in names if n.endswith(".md"))
 
     for skill in sorted(commands | backgrounds):
         skill_dir = os.path.join(skills_root, skill)
@@ -159,6 +172,10 @@ def main(argv):
                     if owner in commands and owner != skill:
                         findings.append(("loads", "%s:%d" % (rel, lineno),
                                          "loads the %s command's %s" % (owner, match.group(0))))
+                for match in BARE.finditer(line):
+                    if match.group(1) not in known_files:
+                        findings.append(("missing", "%s:%d" % (rel, lineno),
+                                         "names %s, which no skill has" % match.group(1)))
             if os.path.basename(path) == "SKILL.md" and os.path.dirname(path) == skill_dir:
                 kind = kinds[skill]
                 count = words(body(text))
