@@ -3,14 +3,16 @@
 # Coolify, from what was pasted back.
 #
 # Usage: going-live.sh --pasted <file>
+#   DB_PASSWORD_FILE  where the database password is kept, for the table read
+#   TABLES_ON_RECORD  tables the masterplan records as public by choice
 #
 # The paste holds the deployment's status, the app's health check settings,
 # the container's health status, and the answer from <live address>/api/health.
 # A finished newest deployment, the first one the paste names, the check's own
 # path, port and host settings at /api/health, 3000 and 127.0.0.1, a healthy
 # container, "database":"ok" and a commit equal
-# to `git rev-parse origin/main` pass. The shared row rules check runs in the
-# project check on every change.
+# to `git rev-parse origin/main` pass. The row rules check reads the live
+# database at launch.
 #
 # Exit 0 when all of that holds, 1 when a part fails, or 2 when there is no
 # paste or a part of it cannot be read. A paste that cannot be read ends with
@@ -54,4 +56,9 @@ main=$(cl_main_commit)
 [ -n "$main" ] && [ "$(printf '%s\n' "$fields" | sed -n 3p)" = "$main" ] ||
   cl_fail "The live copy runs a different commit from the latest on main."
 
-cl_pass "The live copy runs main's latest commit, Coolify checks its health, and its database is reachable."
+tables=$(sh "$here/../../parts/scripts/rls.sh" --on-record "${TABLES_ON_RECORD:-}")
+case $? in
+  0) cl_pass "The live copy runs main's latest commit, Coolify checks its health, and no table is open to anyone holding the public key." ;;
+  1) cl_fail "The live copy runs main's latest commit, and Coolify checks its health. $tables" ;;
+  *) cl_cannot "The live copy runs main's latest commit, and Coolify checks its health, but the check for tables anyone can read did not run. $tables" ;;
+esac

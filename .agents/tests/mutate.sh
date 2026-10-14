@@ -70,7 +70,10 @@ product-named
 command-loads-command
 command-over-budget
 background-one-caller
-recipe-framework-major"
+recipe-framework-major
+recipe-fits-category
+recipe-starter-path
+recipe-deferred-launch-script"
 
 describe() {
   case "$1" in
@@ -106,6 +109,9 @@ describe() {
     command-over-budget) echo "a command grows past its word budget" ;;
     background-one-caller) echo "a background skill is left with one caller and no agent that loads it" ;;
     recipe-framework-major) echo "a recipe accepts a framework without a pinned major version" ;;
+    recipe-fits-category) echo "a recipe accepts a category outside the research list" ;;
+    recipe-starter-path) echo "a recipe accepts a starter path that does not exist" ;;
+    recipe-deferred-launch-script) echo "a launch section can defer its script to a future part" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -121,7 +127,7 @@ checks_for() {
     command-loads-command) echo "validate-kit" ;;
     command-over-budget) echo "validate-kit" ;;
     background-one-caller) echo "validate-kit" ;;
-    recipe-framework-major) echo "recipes" ;;
+    recipe-framework-major|recipe-fits-category|recipe-starter-path|recipe-deferred-launch-script) echo "recipes" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -150,6 +156,36 @@ t = open(p).read()
 old = "if framework and not re.search("
 assert old in t, "pinned framework major check not found"
 open(p, "w").write(t.replace(old, "if False and framework and not re.search(", 1))
+'
+      ;;
+    recipe-fits-category)
+      edit "$tree/.agents/tools/check-recipes.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "if not categories or any(value not in FIT_CATEGORIES for value in categories):"
+assert old in t, "Fits category check not found"
+open(p, "w").write(t.replace(old, "if False and (not categories or any(value not in FIT_CATEGORIES for value in categories)):", 1))
+'
+      ;;
+    recipe-starter-path)
+      edit "$tree/.agents/tools/check-recipes.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "if value != \"coming\" and not os.path.exists(os.path.join(base, value)):"
+assert old in t, "Starter path check not found"
+open(p, "w").write(t.replace(old, "if False and value != \"coming\" and not os.path.exists(os.path.join(base, value)):", 1))
+'
+      ;;
+    recipe-deferred-launch-script)
+      edit "$tree/.agents/tools/check-recipes.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "allowed = section in COMING_SECTIONS and script in"
+assert old in t, "deferred-script section boundary not found"
+open(p, "w").write(t.replace(old, "allowed = True and script in", 1))
 '
       ;;
     reach-route-groups)

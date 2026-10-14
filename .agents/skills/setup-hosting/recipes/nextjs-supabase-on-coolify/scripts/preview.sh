@@ -5,15 +5,12 @@
 # Usage: preview.sh --pasted <file>
 #   PREVIEW_COMMIT   the pull request's commit, where known
 #   LIVE_REF         the live database project's reference
-#   SHARED_PREVIEW   yes where the masterplan records that previews share the
-#                    live database, because no second project can exist
 #
 # The paste holds the preview deployment's status in Coolify and the answer
 # from the preview's /api/health, read at its address or on the server. A
 # finished newest deployment, the first one the paste names, "database":"ok", the pull request's commit, and a
-# project other than the live one pass. Where previews share the live
-# database by record, the project is not compared, and the line says previews
-# use live data.
+# project other than the live one pass. Previews stay off when no second
+# database project is available.
 #
 # Exit 0 when the paste shows a healthy preview, 1 when it shows a problem,
 # 2 when there is no paste or it holds no health answer.
@@ -40,9 +37,6 @@ fields=$(cl_health_fields "$pasted")
 commit=$(printf '%s\n' "$fields" | sed -n 3p)
 if [ -n "${PREVIEW_COMMIT:-}" ] && [ "$commit" != "$PREVIEW_COMMIT" ]; then
   cl_fail "The preview runs a different commit from the pull request's latest."
-fi
-if [ "${SHARED_PREVIEW:-}" = yes ]; then
-  cl_pass "The preview is finished and healthy. As recorded, previews use the live database."
 fi
 live=${LIVE_REF:-$(cl_ref)}
 project=$(printf '%s\n' "$fields" | sed -n 4p)

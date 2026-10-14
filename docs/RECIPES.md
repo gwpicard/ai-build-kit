@@ -112,8 +112,8 @@ recipe, and says it only to a person it applies to.
 The shared stack part holds sign-in and roles, row rules, files, jobs, email,
 the project check and updates. Each section carries the same four lines as a
 recipe section. The access gate stays in each recipe because it differs by
-host. The project check includes row rules on every change; the unchanged row
-rules script remains the source of that check.
+host. Part D adds the per-change row rules check against migrations and a local
+database. The launch check reads the live database.
 
 Then comes one section for each of the eight things a live tool needs, in this
 order: preview, going live, rollback, backup, restore, secrets, logs and

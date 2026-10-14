@@ -25,7 +25,19 @@ GOOD="$WORK/recipes/example-pair"
 mkdir -p "$GOOD/scripts" "$WORK/recipes/parts/scripts"
 sed -e 's/YYYY-MM-DD/2024-02-29/' -e 's/^Who runs it: .*/Who runs it: a person looking/' \
   -e 's#^Script: .*#Script: scripts/check.sh#' -e 's#^Framework: .*#Framework: Next.js 16#' \
-  -e 's#^Starter: .*#Starter: coming in part B at starters/example#' \
+  -e 's#^Starter: .*#Starter: coming#' \
+  -e 's#^Work-team default: .*#Work-team default: no#' \
+  -e 's#^Language: .*#Language: TypeScript#' \
+  -e 's#^Typing: .*#Typing: TypeScript tsc#' \
+  -e 's#^Database: .*#Database: Supabase Postgres#' \
+  -e 's#^Sign-in: .*#Sign-in: Supabase Auth#' \
+  -e 's#^Email: .*#Email: Resend#' \
+  -e 's#^Files: .*#Files: Supabase Storage#' \
+  -e 's#^Jobs: .*#Jobs: Supabase Cron and Queues#' \
+  -e 's#^Testing: .*#Testing: Vitest and Playwright#' \
+  -e 's#^Linting: .*#Linting: ESLint#' \
+  -e 's#^Optional parts: .*#Optional parts: none#' \
+  -e 's#^Health-check tool: .*#Health-check tool: curl#' \
   -e 's#^Fits: .*#Fits: Project and task trackers#' \
   -e 's#^Shared stack: .*#Shared stack: [stack](../parts/stack.md)#' \
   -e 's/<[^>]*>/filled in/g' "$BLANK" > "$GOOD/recipe.md"
@@ -67,6 +79,12 @@ ok "an unfilled blank is refused as a recipe"
 ok "a filled recipe folder passes, dated on a leap day"
 "$CHECKER" "$GOOD/recipe.md" >/dev/null
 ok "the same recipe passes when its recipe.md is named"
+mkdir -p "$GOOD/starters/example"
+sed 's#^Starter: coming$#Starter: starters/example#' "$GOOD/recipe.md" > "$WORK/starter-path.md"
+cp "$WORK/starter-path.md" "$GOOD/recipe.md"
+"$CHECKER" "$GOOD" >/dev/null || fail "a Starter path that exists was refused"
+sed 's#^Starter: starters/example$#Starter: coming#' "$WORK/starter-path.md" > "$GOOD/recipe.md"
+ok "Starter accepts coming or an existing path"
 
 cp "$WORK/recipes/parts/stack.md" "$WORK/stack.before"
 sed '/^## Email$/d' "$WORK/stack.before" > "$WORK/recipes/parts/stack.md"
@@ -101,9 +119,19 @@ for section in Preview "Going live" Rollback Backup Restore Secrets Logs Health 
   refused "no $section section" recipe.md "/^## $section\$/d"
 done
 refused "no Fits line" recipe.md '/^Fits:/d'
+refused "an unknown Fits category" recipe.md 's/^Fits: .*/Fits: made up category/'
 refused "no Recommended when line" recipe.md '/^Recommended when:/d'
+refused "no Work-team default line" recipe.md '/^Work-team default:/d'
 refused "no Language line" recipe.md '/^Language:/d'
+refused "a Database line that does not name one tool" recipe.md 's/^Database: .*/Database: none, use a spreadsheet/'
 refused "Framework without a pinned major" recipe.md 's/^Framework: .*/Framework: Next.js/'
+refused "Framework with an unlisted major" recipe.md 's/^Framework: .*/Framework: Next.js 15/'
+refused "Framework with alternatives" recipe.md 's/^Framework: .*/Framework: Next.js 16 or latest/'
+refused "Starter without coming or a real path" recipe.md 's#^Starter: .*#Starter: starters/missing#'
+refused "an unknown optional part" recipe.md 's/^Optional parts: .*/Optional parts: fantasy worker/'
+refused "an unknown health-check tool" recipe.md 's/^Health-check tool: .*/Health-check tool: ping/'
+refused "a legacy Build stack field" recipe.md '/^Build stack:/d; /^Language:/a\
+Build stack: old format'
 refused "no shared stack link" recipe.md '/^Shared stack:/d'
 refused "no Deploy target line" recipe.md '/^Deploy target:/d'
 refused "no Command-line tools line" recipe.md '/^Command-line tools:/d'
@@ -118,6 +146,8 @@ refused "one section that does not say how it works" recipe.md '/^## Backup$/,/^
 refused "one section that does not say what a pass means" recipe.md '/^## Health$/,/^## /{/^How it is checked:/d;}'
 refused "one section that does not say who runs it" recipe.md '/^## Secrets$/,/^## /{/^Who runs it:/d;}'
 refused "one section that names no script" recipe.md '/^## Logs$/,/^## /{/^Script:/d;}'
+refused "a launch section that defers its script" recipe.md '/^## Going live$/,/^## /s#^Script: .*#Script: coming in part D#'
+refused "Access that defers its script" recipe.md '/^## Access$/,/^## /s#^Script: .*#Script: coming in part D#'
 refused "a script that is not there" recipe.md '/^## Logs$/,/^## /s#^Script: .*#Script: scripts/missing.sh#'
 refused "a script outside its scripts folder" recipe.md '/^## Logs$/,/^## /s#^Script: .*#Script: ../check.sh#'
 refused "a section a person runs with no Ask line" recipe.md '/^## Preview$/,/^## /{/^Ask:/d;}'
@@ -219,6 +249,20 @@ printf '%s\n' 'How it works: filled in' 'How it is checked: filled in' 'Script: 
 printf '#!/usr/bin/env sh\nexit 0\n' > "$PARTS/scripts/shared.sh"
 chmod +x "$PARTS/scripts/shared.sh"
 cp "$PARTS/whole.md" "$PARTS/shared.md"
+
+# A deferred script belongs only to a named stack section, never launch or
+# access. Each case starts with the complete, otherwise valid shared part.
+for deferred in "## Project check|coming in part D" "## Files|coming in part B"; do
+  section=${deferred%%|*}; marker=${deferred#*|}
+  awk -v section="$section" -v marker="$marker" '
+    $0 == section { inside = 1 }
+    inside && /^Script:/ { $0 = "Script: " marker; inside = 0 }
+    { print }
+  ' "$WORK/recipes/parts/stack.md" > "$WORK/stack-deferred.md"
+  cp "$WORK/stack-deferred.md" "$WORK/recipes/parts/stack.md"
+  "$CHECKER" "$GOOD" >/dev/null || fail "a shared stack section may defer its script"
+done
+ok "named shared-stack sections may defer scripts for parts B to D"
 LINKED="$WORK/recipes/linked"
 cp -R "$GOOD" "$LINKED"
 # The backup section's own lines go, and a link to the part takes their place.
@@ -250,6 +294,14 @@ if "$CHECKER" "$LINKED" >/dev/null; then
   fail "a recipe linking a part with no Who runs it line passed"
 fi
 ok "a shared part missing a line is refused, on its own and through the recipe"
+
+for label in 'How it works' 'How it is checked' 'Script'; do
+  sed "/^$label:/d" "$PARTS/whole.md" > "$PARTS/shared.md"
+  if "$CHECKER" --part "$PARTS/shared.md" >/dev/null; then
+    fail "a shared part missing $label passed"
+  fi
+done
+ok "a shared part missing its explanation, outcome or script is refused"
 
 sed 's#^Script: .*#Script: scripts/absent.sh#' "$PARTS/whole.md" > "$PARTS/shared.md"
 if "$CHECKER" "$LINKED" >/dev/null; then

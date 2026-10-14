@@ -83,10 +83,11 @@ EXTRA = "Settings the kit can read"
 WHO = ("the kit", "a companion or the person, result read back", "a person looking")
 STACK = ["Language", "Framework", "Typing", "Database", "Sign-in", "Email", "Files",
          "Jobs", "Testing", "Linting", "Starter", "Optional parts"]
-HEADS = ["Fits", "Recommended when"] + STACK + ["Deploy target", "Health-check tool",
+HEADS = ["Fits", "Recommended when"] + STACK + ["Work-team default", "Deploy target", "Health-check tool",
          "Command-line tools", "Last checked"]
 STACK_SECTIONS = ["Sign-in and roles", "Row rules", "Files", "Jobs", "Email",
                   "Project check", "Updates"]
+COMING_SECTIONS = set(STACK_SECTIONS)
 FIT_CATEGORIES = {
     "Dashboards and reporting on existing data",
     "Admin panels and back office over an existing database",
@@ -154,7 +155,10 @@ def body_check(where, base, found):
         problem(where, "is not run by the kit, so it needs \"Ask:\", the words the person hears")
     script = found.get("Script", "")
     if script.startswith("coming in part "):
-        pass
+        section = where.rsplit(" ## ", 1)[-1]
+        allowed = section in COMING_SECTIONS and script in ("coming in part B", "coming in part C", "coming in part D")
+        if not allowed:
+            problem(where, "may defer its script only in a named shared-stack section for parts B to D")
     elif script and not (mode == "template" and "<" in script):
         path = os.path.normpath(os.path.join(base, script))
         if not script.startswith("scripts/") or not script.endswith(".sh"):
@@ -188,11 +192,40 @@ def check_recipe(md, proven):
     if re.search(r"^Build stack:", head, re.M):
         problem(where, "uses the old Build stack line instead of the fixed stack fields")
     framework = re.search(r"^Framework: (.*)$", head, re.M)
-    if framework and not re.search(r"\b\d+\b", framework.group(1)) and not (mode == "template" and "<" in framework.group(1)):
-        problem(where, "Framework must name its pinned major version")
+    if framework and not (mode == "template" and "<" in framework.group(1)):
+        value = framework.group(1)
+        if not re.fullmatch(r"[A-Za-z][A-Za-z0-9 .+-]*?\s+\d+", value) or re.search(r"\b(or|latest)\b", value, re.I):
+            problem(where, "Framework must name one tool and one pinned major version")
+    allowed_tools = {
+        "Language": {"TypeScript", "Python"}, "Framework": {"Next.js 16"},
+        "Typing": {"TypeScript tsc", "mypy"}, "Database": {"Supabase Postgres", "PostgreSQL", "SQLite"},
+        "Sign-in": {"Supabase Auth"}, "Email": {"Resend", "Postmark"},
+        "Files": {"Supabase Storage"}, "Jobs": {"Supabase Cron and Queues", "Vercel Cron"},
+        "Testing": {"Vitest and Playwright"}, "Linting": {"ESLint"},
+    }
+    for label, choices in allowed_tools.items():
+        match = re.search(r"^%s: (.*)$" % re.escape(label), head, re.M)
+        if match and not (mode == "template" and "<" in match.group(1)):
+            value = match.group(1).strip()
+            valid = value in choices
+            if not valid:
+                problem(where, "%s must name one tool from the allowed list" % label)
+    optional = re.search(r"^Optional parts: (.*)$", head, re.M)
+    if optional and not (mode == "template" and "<" in optional.group(1)):
+        value = optional.group(1).strip()
+        if value != "none" and not re.fullmatch(r"[A-Za-z0-9 ,&-]+ \(coming in part [BCD]\)", value):
+            problem(where, "Optional parts must name parts B to D or none")
+    health_tool = re.search(r"^Health-check tool: (.*)$", head, re.M)
+    if health_tool and not (mode == "template" and "<" in health_tool.group(1)) and health_tool.group(1) not in {"curl", "wget", "none"}:
+        problem(where, "Health-check tool must be curl, wget or none")
+    default = re.search(r"^Work-team default: (.*)$", head, re.M)
+    if default and not (mode == "template" and "<" in default.group(1)) and not re.fullmatch(r"(?:no|yes \([A-Za-z0-9 ,+-]+\))", default.group(1)):
+        problem(where, "Work-team default must be no or yes with the plans it needs")
     starter = re.search(r"^Starter: (.*)$", head, re.M)
-    if starter and "coming in part B" not in starter.group(1) and not (mode == "template" and "<" in starter.group(1)):
-        problem(where, "Starter must say it is coming in part B")
+    if starter and not (mode == "template" and "<" in starter.group(1)):
+        value = starter.group(1).strip()
+        if value != "coming" and not os.path.exists(os.path.join(base, value)):
+            problem(where, "Starter must say coming or name an existing path")
     fits = re.search(r"^Fits: (.*)$", head, re.M)
     if fits and not (mode == "template" and "<" in fits.group(1)):
         categories = [value.strip() for value in fits.group(1).split(";")]

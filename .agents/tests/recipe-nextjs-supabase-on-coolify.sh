@@ -32,7 +32,7 @@ for rr_section in preview going-live rollback secrets logs access; do
   rr_case 1 good "$rr_section.sh" --pasted "$(rr_paste bad "$rr_section")"
   rr_case 2 good "$rr_section.sh"
 done
-rr_case 0 good SHARED_PREVIEW=yes preview.sh --pasted "$(rr_paste bad preview)"
+rr_case 1 good SHARED_PREVIEW=yes LIVE_REF=liveref preview.sh --pasted "$(rr_paste bad preview)"
 # Only the newest deployment's status counts, the health check's values must
 # sit in its own settings, and an image needs a tag. A paste the script
 # cannot read with confidence asks again in the recipe's words.
@@ -87,8 +87,8 @@ rr_case 2 good set-signup.sh
 rr_case 0 good signup.sh
 rr_case 1 good RR_SIGNUP=open signup.sh
 
-# The row rules script is in the project check on every change. Going live
-# checks only the live deployment and its health.
+# The launch check reads the live row rules. The project check will test
+# migrations against a local database when part D lands.
 rr_case 1 good going-live.sh --pasted "$(rr_paste bad going-live)"
 rr_case 2 good going-live.sh --pasted "$(rr_paste unlabelled going-live)"
 
@@ -115,11 +115,22 @@ RR_ORIGIN=https://someone:token-stand-in@github.com/team/app.git
 rr_case 0 good hosting-request.sh
 RR_ORIGIN=
 rr_said no "token-stand-in"
+rr_said yes "Repo:                https://github.com/team/app.git"
 rr_said yes "Repo (build):       https://github.com/team/app.git"
+rr_said yes "Env vars:            NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY"
 rr_said yes "Branch (build):     main"
 rr_said yes "Build vars (build): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY"
 rr_said yes "Run vars (runtime): SUPABASE_SERVICE_ROLE_KEY"
-rr_said yes "Health-check tool (run): curl"
+rr_said yes "Health-check tool (runtime): wget"
+cp "$RR_TMP/fixture/.env.example" "$RR_TMP/env-example"
+printf '\n# build\nSENTRY_AUTH_TOKEN=\n' >> "$RR_TMP/fixture/.env.example"
+rr_case 0 good hosting-request.sh
+rr_said yes "Build vars (build): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SENTRY_AUTH_TOKEN"
+rr_said yes "Run vars (runtime): SUPABASE_SERVICE_ROLE_KEY"
+cp "$RR_TMP/env-example" "$RR_TMP/fixture/.env.example"
+printf 'FROM gcr.io/distroless/nodejs22\nENV HOSTNAME=0.0.0.0 PORT=3000\n' > "$RR_TMP/fixture/Dockerfile"
+rr_case 1 good hosting-request.sh
+rr_said yes "Health-check tool (runtime): none"
 printf 'FROM node:22-alpine\nENV HOSTNAME=0.0.0.0 PORT=3000\nCMD ["node", "server.js"]\n' > "$RR_TMP/fixture/Dockerfile"
 
 # The shared parts this recipe names.

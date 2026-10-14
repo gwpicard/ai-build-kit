@@ -57,8 +57,8 @@ If `.github/workflows/checks.yml` is missing, copy it from
 the placeholder `Install and test` commands with the project's real ones, never
 rewriting the file from memory. Leave an older `source-kit-validation` job
 alone. Load the `quality-checks` skill's `references/check-floor.md` for the type check and linter. On
-either hosted database recipe, add the shared row rules script to this project check
-so it runs on every change. Keep the row rules script itself unchanged.
+a hosted database recipe, part D adds the row rules check against migrations
+and a local database. The launch check reads the live database.
 On Build with care, where an area names a boundary, load the
 `quality-checks` skill's `references/boundary-rules.md` and offer once to have the check hold it.
 Explore privately needs a local check; the other paths need the remote check

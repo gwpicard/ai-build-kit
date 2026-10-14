@@ -3,7 +3,7 @@
 Fits: Dashboards and reporting on existing data; Admin panels and back office over an existing database; Approvals and request workflows; CRMs, contact trackers and sales tools; Light ERP: stock, orders, purchasing, assets; Client, vendor and partner portals; Project and task trackers; Document processing: upload, extract, review, export; AI assistants over team documents; HR and onboarding; Case management, tickets and incident logs; Booking and scheduling; Forms and data collection; Field, inspection and service apps; Screenless sync and automation
 Recommended when: the team already runs Coolify, or wants the app on a server it rents, such as a Hetzner or Hostinger VPS, rather than on a hosting platform.
 Language: TypeScript
-Framework: Next.js 16 App Router
+Framework: Next.js 16
 Typing: TypeScript tsc
 Database: Supabase Postgres
 Sign-in: Supabase Auth
@@ -12,8 +12,9 @@ Files: Supabase Storage
 Jobs: Supabase Cron and Queues
 Testing: Vitest and Playwright
 Linting: ESLint
-Starter: coming in part B at starters/nextjs-supabase-on-coolify
+Starter: coming
 Optional parts: read-only existing database and Python document worker (coming in part C)
+Work-team default: no
 Deploy target: Coolify on a rented server, with the Coolify GitHub App connected to the project's repository
 Command-line tools: supabase, docker, psql, curl, git
 Health-check tool: curl
@@ -27,8 +28,8 @@ The kit never contacts the server. The person, or a companion working with them,
 
 ## Preview
 
-How it works: Coolify builds each pull request into its own container and removes it on close. Previews start off: the person or the companion presses Enable preview deployments on the app's Preview Deployments page. A preview has an address only when the app has a domain; without one the kit says once that nobody can open it. Its settings point at a second Supabase project, which `../parts/scripts/migrate.sh --apply <preview project ref>`, with that project's password location as `PREVIEW_DB_PASSWORD_FILE`, gives the branch's migrations. Where no second project can exist, they point at the live one: the kit says once that previews use live data, records it, and gives a preview no migrations.
-How it is checked: A finished preview deployment whose health shows the database reachable, the pull request's commit, and a project other than the live one, unless the record says previews share it.
+How it works: Coolify builds each pull request into its own container and removes it on close. Previews start off: the person or the companion presses Enable preview deployments on the app's Preview Deployments page. A preview has an address only when the app has a domain; without one the kit says once that nobody can open it. Its settings point at a second Supabase project, which `../parts/scripts/migrate.sh --apply <preview project ref>`, with that project's password location as `PREVIEW_DB_PASSWORD_FILE`, gives the branch's migrations. Without a second project, previews stay off.
+How it is checked: A finished preview deployment whose health shows the database reachable, the pull request's commit, and a project other than the live one.
 Script: scripts/preview.sh
 Who runs it: a companion or the person, result read back
 Ask: Please paste the preview deployment's status from Coolify, and the answer from the preview's /api/health, read at its address or on the server.
@@ -36,7 +37,7 @@ Ask: Please paste the preview deployment's status from Coolify, and the answer f
 ## Going live
 
 How it works: Coolify does not run migrations, so before the build that needs them the kit applies them with `../parts/scripts/migrate.sh --apply <live project ref>`. A migration only adds, so the container still live keeps working. Before the merge, the kit runs the Health part's container check. Before the first launch, the person or the companion switches on Coolify's health check, off by default, with path `/api/health`, port 3000 and host `127.0.0.1`. The health route reports the commit from `SOURCE_COMMIT`. After a merge, Coolify builds `main` and swaps the new container in once its check passes, which needs no published host port and no custom container name. On a first launch `scripts/hosting-request.sh` prints the request for whoever runs the server, as `hosting-request.md` says, and the address comes from its answer.
-How it is checked: A finished deployment, Coolify's health check on as above and passing, and a health answer with the database reachable and the commit on `main`.
+How it is checked: A finished deployment, Coolify's health check on as above and passing, a health answer with the database reachable and the commit on `main`, and no public table open to anyone holding the public key.
 Script: scripts/going-live.sh
 Who runs it: a companion or the person, result read back
 Ask: Please paste the deployment's status, the app's health check settings and the container's health status from Coolify, and the answer from the live address's /api/health.
@@ -79,7 +80,7 @@ Shared part: [the Next.js container and its health route](../parts/nextjs-contai
 
 ## Access
 
-How it works: The masterplan's `Access:` line says private, open address with invitation only, or public. Production is protected by the tool's invite-only sign-in. Previews are off by default. Turn them on only behind Coolify basic authentication, and never point them at live data. Private keeps the address reachable only on the team's private network, or puts a shared password in front of it. Coolify calls that HTTP Basic Authentication; it is in the app's General settings, under Security, then Authentication, and takes a save and a redeploy, with the password kept in the team's password manager. Open address with invitation only leaves the gate off and sign-up closed. Public takes the gate off and opens sign-up. The person or companion makes the server's change, and the kit never sees the password. Each change waits for a yes that names its effect, and goes in the changelog.
+How it works: The masterplan's `Access:` line says private, open address with invitation only, or public. Production is protected by the tool's invite-only sign-in. Previews are off by default. Turn them on only behind Coolify Basic Authentication, and never point them at live data. Private keeps the address reachable only on the team's private network. Basic Authentication protects previews only; production has no second lock. Set it in the app's General settings, under Security, then Authentication, and keep the password in the team's password manager. Open address with invitation only leaves the gate off and sign-up closed. Public takes the gate off and opens sign-up. The person or companion makes the server's change, and the kit never sees the password. Each change waits for a yes that names its effect, and goes in the changelog.
 How it is checked: For private, a request signed in to nothing from outside the private network is refused, or cannot connect while the same request from inside is answered. For the other two it is answered. Sign-up, read by the shared `../parts/scripts/signup.sh` with an attempt that has no password and so makes no account, matches the record.
 Script: scripts/access.sh
 Who runs it: a companion or the person, result read back

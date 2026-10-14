@@ -11,15 +11,17 @@ Fill it from the project, not by asking the person:
 
 ```
 Hosting request
+Repo:               <url with no sign-in in it>
 Repo (build):       <url with no sign-in in it>
 Branch (build):     main
 Lane (runtime):     internal (private network) | public (internet)
 Port (runtime):     <port the tool listens on>
+Env vars:           <all names, or none>
 Build vars (build): <names the build needs, or none>
 Run vars (runtime): <names needed only while the tool runs, or none>
 Persist (runtime): <paths that must survive a restart, or none>
-Healthcheck (run): <path, or none>
-Health-check tool (run): <tool used to read the healthcheck>
+Healthcheck (runtime): <path, or none>
+Health-check tool (runtime): <tool used to read the healthcheck, or none>
 Build (build):     Dockerfile at root, image has curl or wget | lock file or requirements.txt, plus a Procfile | neither yet
 Bind (runtime):    0.0.0.0 | reads HOST and PORT | 127.0.0.1 (not hostable yet)
 ```

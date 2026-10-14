@@ -28,6 +28,10 @@ Give its `say` lines in one reply, in order, and keep to these rules:
 - A `settings` line is the offer of the kit's newer safety rules: on a yes run
   `--apply settings`. Never edit the JSON by hand.
 - A `fitcheck` line, on a yes, loads `four-paths.md` beside this file.
+- A `recipe-format` line offers a move from `Build stack:` to the current
+  recipe fields. On a yes, open a piece describing the move. On a no, run
+  `--decline recipe-format`; it records the decline without changing project
+  instructions.
 - An `access` line asks which setting the project wants. A public answer first
   hears what public means, as the fit check says. Record the answer with
   `--apply access=private`, `access=open-address` or `access=public`,

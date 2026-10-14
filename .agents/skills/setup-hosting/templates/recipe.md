@@ -14,6 +14,7 @@ Testing: <test tools>
 Linting: <linter>
 Starter: coming in part B at <folder>
 Optional parts: <part names, or none>
+Work-team default: <yes (plans needed) | no>
 Deploy target: <where it runs once it is live>
 Health-check tool: <tool the kit uses to check the live health route>
 Command-line tools: <command names separated by commas, or none>

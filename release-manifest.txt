@@ -9,8 +9,6 @@
 .agents/skills/shape|
 .agents/skills/implement|
 .agents/skills/setup-hosting|
-.agents/skills/setup-hosting/recipes/parts/nextjs-supabase-stack.md|.agents/skills/setup-hosting/recipes/parts/nextjs-supabase-stack.md
-.agents/skills/setup-hosting/recipes/parts/nextjs-supabase-stack.md|agent-plugin/skills/setup-hosting/recipes/parts/nextjs-supabase-stack.md
 .agents/skills/maintain|
 .agents/skills/what-now|
 .agents/skills/clarify|

@@ -33,7 +33,7 @@ SAY_NONE='No recipe the kit knows fits this tool, so I will set it up on a commo
 write_recipe() {
   # write_recipe <recipes folder> <recipe> <name>: a recipe folder.
   mkdir -p "$1/$2"
-  printf '# Recipe: %s\n\nFits: a web app people use in a browser, with sign-in and saved data\nRecommended when: %s.\nFramework: Alpha 1\nDatabase: Data store\nDeploy target: North\n' \
+  printf '# Recipe: %s\n\nFits: a web app people use in a browser, with sign-in and saved data\nRecommended when: %s.\nFramework: Alpha 1\nDatabase: Data store\nWork-team default: yes (North Pro)\nDeploy target: North\n' \
     "$3" "the team wants $3" > "$1/$2/recipe.md"
 }
 
@@ -45,7 +45,9 @@ fill_menu() {
   case $2 in
     one) write_recipe "$1" alpha-on-north "Alpha on North" ;;
     two) write_recipe "$1" alpha-on-north "Alpha on North"
-         write_recipe "$1" beta-on-south "Beta on South" ;;
+         write_recipe "$1" beta-on-south "Beta on South"
+         sed -i.bak 's/^Work-team default: yes.*/Work-team default: no/' "$1/beta-on-south/recipe.md"
+         rm -f "$1/beta-on-south/recipe.md.bak" ;;
   esac
 }
 
@@ -74,16 +76,16 @@ menu_route() {
   (cd "$project" && sh "$script" --record .ai-build-kit-maintenance alpha-on-north > "$out" 2>&1) ||
     fail "$route: the script failed on a menu of one"
   said "$out" > "$WORK/said"
-  [ "$(sed -n 1p "$WORK/said")" = "For a work team, the recommended recipe is Recipe 1, Alpha and Data on North, on Pro plans." ] ||
-    fail "$route: the work-team default is not named"
+  [ "$(grep -c '^Work-team default: recipe 1, Alpha on North;' "$WORK/said")" -eq 1 ] &&
+    grep -q '^Work-team default: recipe 1, Alpha on North; needs North Pro\.$' "$WORK/said" ||
+    fail "$route: the work-team default number and name do not appear once"
   [ "$(sed -n 2p "$WORK/said")" = "$SAY_ONE" ] ||
     fail "$route: a menu of one does not open with the sentence naming one recipe"
   [ "$(sed -n 3p "$WORK/said")" = "1. Alpha on North (recommended)" ] ||
     fail "$route: the single recipe is not shown as recommended"
-  [ "$(sed -n 4p "$WORK/said")" = "Alpha on North is the default. Founding carries on with it unless you pick another recipe, and you may bring your own stack instead." ] ||
+  [ "$(sed -n 4p "$WORK/said")" = "Alpha on North is selected. Founding carries on with it unless you pick another recipe, and you may bring your own stack instead." ] ||
     fail "$route: a menu of one is not named the default, with an own stack offered"
-  [ "$(grep -c . "$WORK/said")" -eq 4 ] ||
-    fail "$route: a menu of one says more than its four lines"
+  [ "$(grep -c . "$WORK/said")" -eq 4 ] || fail "$route: a menu of one says more than its four lines"
   grep -qxF "Recipe folder: $(CDPATH= cd -- "$1" && pwd -P)/alpha-on-north" "$out" ||
     fail "$route: the script does not give the chosen recipe's path for the tool report"
   [ "$(grep -c '^founding-menu|' "$record")" -eq 1 ] &&
@@ -103,7 +105,10 @@ menu_route() {
   code=$?
   set -e
   [ "$code" -eq 3 ] || fail "$route: two recipes with none chosen exited $code, not 3"
-  grep -q '^Say this' "$out" && fail "$route: two recipes with none chosen still printed lines to say"
+  grep -q '^Say this' "$out" || fail "$route: the menu default is not included in the reply"
+  grep -q '^Work-team default: recipe 1, Alpha on North; needs North Pro\.$' "$out" ||
+    fail "$route: two recipes with none chosen do not name the default in menu order"
+  grep -q 'first recipe in the menu' "$out" || fail "$route: exit-3 advice disagrees with the menu order"
   grep -q 'Recommended when: the team wants Beta on South' "$out" ||
     fail "$route: two recipes with none chosen do not show what each says"
   (cd "$project" && sh "$script" --record .ai-build-kit-maintenance --recommend beta-on-south > "$out" 2>&1) ||
@@ -113,12 +118,15 @@ menu_route() {
     grep -qxF '2. Beta on South (recommended)' "$WORK/said" &&
     grep -qxF '1. Alpha on North' "$WORK/said" ||
     fail "$route: a menu of two does not mark exactly the chosen recipe"
-  grep -qxF 'Beta on South is the default. Founding carries on with it unless you pick another recipe, and you may bring your own stack instead.' "$WORK/said" ||
-    fail "$route: a menu of two does not name the chosen recipe the default"
-  [ "$(grep -c '^For a work team, the recommended recipe is Recipe 1, Alpha and Data on North, on Pro plans\.$' "$WORK/said")" -eq 1 ] ||
-    fail "$route: the work-team default is missing or repeated"
+  grep -qxF 'Beta on South is selected. Founding carries on with it unless you pick another recipe, and you may bring your own stack instead.' "$WORK/said" ||
+    fail "$route: a menu of two does not name the chosen recipe"
+  [ "$(grep -c '^Work-team default: recipe 1, Alpha on North; needs North Pro\.$' "$WORK/said")" -eq 1 ] ||
+    fail "$route: the work-team default number and name are missing or repeated"
   grep -qxF "founding-menu|$today|alpha-on-north,beta-on-south" "$record" ||
     fail "$route: the menu line does not list both recipes"
+  (cd "$project" && sh "$script" beta-on-south > "$out" 2>&1) || fail "$route: a menu containing no default failed"
+  if grep -q '^Work-team default:' "$out"; then fail "$route: a default absent from the shown recipes was named"; fi
+  ok "$route: the default is silent when it is not shown"
 
   # Two on the menu, one that fits: only that one is shown, both are recorded.
   # It is named as an older project's Recipe: line names it, with .md.
@@ -232,15 +240,28 @@ ok "the founding skill names no project path to the recipes, and a planted one i
 real_out="$WORK/real-menu"
 sh "$ROOT/.agents/skills/setup-ai-build-kit/scripts/recipe-menu.sh" \
   --recommend nextjs-supabase-on-vercel > "$real_out"
-grep -qxF 'For a work team, the recommended recipe is Recipe 1, Next.js and Supabase on Vercel, on Pro plans.' "$real_out" ||
-  fail "the real menu does not name the work-team default"
-[ "$(grep -c '^For a work team, the recommended recipe is ' "$real_out")" -eq 1 ] ||
-  fail "the real menu names the work-team default more than once"
-grep -qxF '1. Next.js 16, TypeScript and Supabase on Vercel (recommended)' "$real_out" ||
-  fail "the Vercel recipe is not the first recipe in the menu"
-[ "$(grep -c '^  Plan terms: ' "$real_out")" -eq 3 ] ||
+[ "$(grep -c '^Work-team default: recipe 2, Next.js 16, TypeScript and Supabase on Vercel;' "$real_out")" -eq 1 ] &&
+  grep -q '^Work-team default: recipe 2, Next.js 16, TypeScript and Supabase on Vercel; needs Vercel Pro, Supabase Pro\.$' "$real_out" ||
+  fail "the real menu's default number and name do not appear once"
+grep -qxF '2. Next.js 16, TypeScript and Supabase on Vercel (recommended)' "$real_out" ||
+  fail "the Vercel recipe is not second in the menu"
+[ "$(grep -c '^  Plan terms: ' "$real_out")" -eq 4 ] ||
   fail "the menu does not show each service's free-plan terms"
-ok "the real menu names Recipe 1 once, puts it first and shows each service's plan terms"
+ok "the real menu names the default by menu position and title and shows each service's plan terms"
+
+tmp="$WORK/defaults"
+mkdir -p "$tmp/.agents/skills/setup-ai-build-kit/scripts"
+cp "$ROOT/.agents/skills/setup-ai-build-kit/scripts/recipe-menu.sh" "$tmp/.agents/skills/setup-ai-build-kit/scripts/"
+fill_menu "$tmp/.agents/skills/setup-hosting/recipes" two
+sed -i.bak 's/^Work-team default: no.*/Work-team default: yes (South Pro)/' "$tmp/.agents/skills/setup-hosting/recipes/beta-on-south/recipe.md"
+rm -f "$tmp/.agents/skills/setup-hosting/recipes/beta-on-south/recipe.md.bak"
+set +e
+(cd "$tmp" && sh .agents/skills/setup-ai-build-kit/scripts/recipe-menu.sh --recommend alpha-on-north) > "$WORK/default-error" 2>&1
+code=$?
+set -e
+[ "$code" -eq 1 ] && grep -q 'more than one recipe claims the work-team default' "$WORK/default-error" ||
+  fail "two default recipes did not exit with a clear error"
+ok "two recipes claiming the default exit 1 with a clear error"
 
 menu_runs
 
