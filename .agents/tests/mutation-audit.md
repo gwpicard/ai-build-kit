@@ -113,3 +113,6 @@ into another command's references instead of calling a background skill. The
 other grows a command past its word budget. The validator caught both, through
 `check-structure.py`, on the branch that turned that check from reporting to
 failing.
+
+A third joined after review: a background skill left with one caller and no
+agent that loads it. The validator caught it too.
