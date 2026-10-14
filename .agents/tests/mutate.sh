@@ -73,7 +73,8 @@ background-one-caller
 recipe-framework-major
 recipe-fits-category
 recipe-starter-path
-recipe-deferred-launch-script"
+recipe-deferred-launch-script
+starter-copy-overwrites"
 
 describe() {
   case "$1" in
@@ -112,6 +113,7 @@ describe() {
     recipe-fits-category) echo "a recipe accepts a category outside the research list" ;;
     recipe-starter-path) echo "a recipe accepts a starter path that does not exist" ;;
     recipe-deferred-launch-script) echo "a launch section can defer its script to a future part" ;;
+    starter-copy-overwrites) echo "recipe starter copying replaces a project file it should refuse to touch" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -128,6 +130,7 @@ checks_for() {
     command-over-budget) echo "validate-kit" ;;
     background-one-caller) echo "validate-kit" ;;
     recipe-framework-major|recipe-fits-category|recipe-starter-path|recipe-deferred-launch-script) echo "recipes" ;;
+    starter-copy-overwrites) echo "starter-copy-rehearsal" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -186,6 +189,16 @@ t = open(p).read()
 old = "allowed = section in COMING_SECTIONS and script in"
 assert old in t, "deferred-script section boundary not found"
 open(p, "w").write(t.replace(old, "allowed = True and script in", 1))
+'
+      ;;
+    starter-copy-overwrites)
+      edit "$tree/.agents/skills/setup-ai-build-kit/scripts/use-starter.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "if clashes:\n    print(\"refused: these starter files already exist:\", file=sys.stderr)"
+assert old in t, "starter clash refusal not found"
+open(p, "w").write(t.replace(old, "if False and clashes:\n    print(\"refused: these starter files already exist:\", file=sys.stderr)", 1))
 '
       ;;
     reach-route-groups)

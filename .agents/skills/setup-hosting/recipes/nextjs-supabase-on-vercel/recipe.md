@@ -12,7 +12,7 @@ Files: Supabase Storage
 Jobs: Supabase Cron and Queues
 Testing: Vitest and Playwright
 Linting: ESLint
-Starter: coming
+Starter: ../parts/starters/nextjs-supabase
 Optional parts: read-only existing database (coming in part C)
 Work-team default: yes (Vercel Pro, Supabase Pro)
 Deploy target: Vercel, with the project's GitHub repository connected so that each push builds

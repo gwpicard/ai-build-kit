@@ -36,7 +36,9 @@ Once a recipe is chosen, build on its fixed stack fields and record `Recipe:
 <folder name>` in AGENTS.md's stack section. Run `scripts/check-tooling.sh
 --recipe <recipe folder>` with the path `recipe-menu.sh` printed. A tool it
 reports missing becomes a setup task for before the first /setup-hosting, named
-once; it never stops founding.
+once; it never stops founding. Run `scripts/use-starter.sh <recipe folder>`
+with that same path. For a project without a recipe, copy
+`templates/foundation/env.example` to `.env.example`.
 
 On any stack, use managed services for sign-ins, payments and files. Never
 hand-build those unless a person who does that work for a living owns a
