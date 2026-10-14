@@ -4,8 +4,11 @@
 The live address answers from whichever deployment the stand-in host has put
 there, so its health route reports that build's commit and its sign-in page
 shows that build's wording. A generated deployment address is behind Vercel's
-sign-in and answers 302, as the recipe says. The Supabase sign-in settings
-answer to the public key. Every other address fails as an unreachable host
+sign-in and answers 302, as the recipe says, and so does the live address
+when the host state puts Vercel's sign-in in front of every address. The
+Supabase sign-in settings answer to the public key, and a sign-up attempt
+follows Supabase's order: no email goes to anonymous sign-in, which is off,
+and an attempt with an email is refused while sign-up is closed. Every other address fails as an unreachable host
 would, because a run with nobody watching must reach no network.
 
 Where FAKE_HOST_STATE is not set at all, the run is not one of these scenarios
@@ -115,7 +118,7 @@ def parse(argv):
     return urls, options, headers
 
 
-def answer(state, url, headers):
+def answer(state, url, headers, method="GET", data=None):
     """(status, headers, body) for one address, or (exit code, message)."""
     match = re.match(r"^(https?)://([^/:]+)(?::(\d+))?(/.*)?$", url)
     if not match:
@@ -123,6 +126,9 @@ def answer(state, url, headers):
     name, path = match.group(2), match.group(4) or "/"
     vercel = host()
     if name == state["production_url"]:
+        if state.get("sso") == "all":
+            return (302, {"location": "https://vercel.com/sso-api?url=https%%3A%%2F%%2F%s%s"
+                          % (name, path)}, "Redirecting...\n"), 0, ""
         dep = vercel.find(state, state["alias"])
         return page(state, dep, path), 0, ""
     for dep in state["deployments"]:
@@ -132,10 +138,36 @@ def answer(state, url, headers):
     if name == "%s.supabase.co" % state["supabase_ref"]:
         keys = [h.split(":", 1)[1].strip() for h in headers
                 if h.lower().startswith("apikey:")]
+        closed = state.get("signup") == "closed"
         if path.startswith("/auth/v1/settings") and keys and keys[0] == state["public_key"]:
             return (200, {"content-type": "application/json"}, json.dumps({
-                "external": {"email": True}, "disable_signup": False,
+                "external": {"email": True}, "disable_signup": closed,
                 "mailer_autoconfirm": False})), 0, ""
+        if path.startswith("/auth/v1/signup") and method == "POST" and keys \
+                and keys[0] == state["public_key"]:
+            # Supabase's order: no email and no phone goes to anonymous
+            # sign-in, off on this project; then a closed sign-up is refused
+            # before the request is read; then an empty password fails
+            # validation, before any account is made or email sent.
+            try:
+                body = json.loads(data or "{}")
+            except ValueError:
+                body = {}
+            body = body if isinstance(body, dict) else {}
+            if not body.get("email") and not body.get("phone"):
+                return (422, {"content-type": "application/json"}, json.dumps({
+                    "code": 422, "error_code": "anonymous_provider_disabled",
+                    "msg": "Anonymous sign-ins are disabled"})), 0, ""
+            if closed:
+                return (422, {"content-type": "application/json"}, json.dumps({
+                    "code": 422, "error_code": "signup_disabled",
+                    "msg": "Signups not allowed for this instance"})), 0, ""
+            if body.get("password"):
+                return None, 2, ("curl: the stand-in host refuses a sign-up with a password, "
+                                 "which would make an account and send an email")
+            return (400, {"content-type": "application/json"}, json.dumps({
+                "code": 400, "error_code": "validation_failed",
+                "msg": "Signup requires a valid password"})), 0, ""
         return (401, {"content-type": "application/json"},
                 '{"message":"No API key found in request"}'), 0, ""
     if name == "api.supabase.com":
@@ -177,8 +209,12 @@ def main():
     show_error = options.get("-S") or options.get("--show-error") or not silent
     fail = options.get("-f") or options.get("--fail")
     code = 0
+    data_keys = ("-d", "--data", "--data-raw", "--data-binary")
+    method = options.get("-X") or options.get("--request") or \
+        ("POST" if any(options.get(k) for k in data_keys) else "GET")
+    data = next((options.get(k) for k in data_keys if isinstance(options.get(k), str)), None)
     for url in urls:
-        got, exit_code, message = answer(state, url, headers)
+        got, exit_code, message = answer(state, url, headers, method, data)
         if got is None:
             if show_error:
                 sys.stderr.write(message + "\n")
@@ -209,6 +245,8 @@ def main():
             sys.stdout.write(fmt.replace("%{http_code}", str(status))
                              .replace("%{response_code}", str(status))
                              .replace("%{url_effective}", url)
+                             .replace("%{redirect_url}", head.get("location", "")
+                                      if 300 <= status < 400 else "")
                              .replace("\\n", "\n"))
     sys.exit(code)
 

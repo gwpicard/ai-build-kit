@@ -4,7 +4,7 @@
 # Usage: live-check.sh [--address <live address>] [--password-file <file>]
 #                      [--needs NAME,NAME] [--only <read>]
 #
-# The five reads a later /setup-hosting run and every /maintain visit make.
+# The six reads a later /setup-hosting run and every /maintain visit make.
 # Each prints one line, and none changes anything:
 #
 #   commit     the live copy runs the latest merge on main: its health route's
@@ -18,6 +18,11 @@
 #   secrets    every name in .env.example, and each name given with --needs,
 #              is set on Vercel, by name only
 #   health     the health route answers 200 with the database reachable
+#   access     who can reach the live tool matches the masterplan's Access:
+#              line, read by access.sh
+#
+# Behind Vercel's sign-in, health is read as check-lib.sh's cl_live_health
+# says.
 #
 # --only runs one of them. The address and the password's location also come
 # from LIVE_ADDRESS and DB_PASSWORD_FILE.
@@ -37,10 +42,11 @@ while [ $# -gt 0 ]; do
     --password-file) DB_PASSWORD_FILE=${2:-}; export DB_PASSWORD_FILE; shift 2 ;;
     --needs) needs=${2:-}; shift 2 ;;
     --only) only=${2:-}; shift 2 ;;
+    --pasted-access) shift 2 ;;
     *) cl_cannot "live-check.sh does not know the option $1." ;;
   esac
 done
-case "$only" in ''|commit|hold|migration|secrets|health) ;; *) cl_cannot "live-check.sh has no read called $only." ;; esac
+case "$only" in ''|commit|hold|migration|secrets|health|access) ;; *) cl_cannot "live-check.sh has no read called $only." ;; esac
 [ -n "${LIVE_ADDRESS:-}" ] || cl_cannot "No live address was given with --address, so there is no live copy to compare."
 address=${LIVE_ADDRESS%/}
 case "$address" in https://*|http://*) ;; *) address="https://$address" ;; esac
@@ -57,8 +63,9 @@ list=$(mktemp)
 live=$(mktemp)
 trap 'rm -f "$health" "$list" "$live"' EXIT
 healthy=no
-if command -v curl >/dev/null 2>&1 && curl -fsS "$address/api/health" >"$health" 2>/dev/null; then
-  healthy=yes
+if command -v curl >/dev/null 2>&1; then
+  cl_live_health "$address" "$health"
+  case $? in 0) healthy=yes ;; 3) healthy=gated ;; esac
 fi
 fields=$(cl_health_fields "$health")
 
@@ -66,7 +73,9 @@ if wanted commit; then
   git fetch -q origin main 2>/dev/null || true
   main=$(cl_main_commit)
   commit=$(printf '%s\n' "$fields" | sed -n 3p)
-  if [ "$healthy" != yes ] || [ -z "$commit" ]; then
+  if [ "$healthy" = gated ]; then
+    unreadable "Live copy against main: could not be read, since the live address asks for Vercel's sign-in, and reading through it would make a lasting key that gets past that sign-in, which waits for a yes."
+  elif [ "$healthy" != yes ] || [ -z "$commit" ]; then
     unreadable "Live copy against main: could not be read, since the health route did not answer with a commit."
   elif [ -z "$main" ]; then
     unreadable "Live copy against main: could not be read, since this computer does not know main's latest commit on GitHub."
@@ -131,13 +140,24 @@ if wanted secrets; then
 fi
 
 if wanted health; then
-  if [ "$healthy" != yes ]; then
+  if [ "$healthy" = gated ]; then
+    unreadable "Health: could not be read, since the live address asks for Vercel's sign-in, and reading through it waits for a yes."
+  elif [ "$healthy" != yes ]; then
     gapped "Health: the live address did not answer its health route with 200."
   elif [ "$(printf '%s\n' "$fields" | sed -n 2p)" = ok ]; then
     say "Health: the live copy answers, and reaches its database."
   else
     gapped "Health: the live copy answers, but cannot reach its database."
   fi
+fi
+
+if wanted access; then
+  result=$(LIVE_ADDRESS=$address sh "$here/access.sh" 2>/dev/null)
+  case $? in
+    0) say "Access: ${result#Access: }" ;;
+    1) gapped "Access: $result" ;;
+    *) unreadable "Access: could not be read. $result" ;;
+  esac
 fi
 
 [ "$gap" -eq 0 ] || exit 1

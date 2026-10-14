@@ -114,7 +114,8 @@ for route in ('claude-only','shared','whole','plugin'):
     # Every step the person is offered comes with the words they hear.
     said={line.split('\t')[1] for line in listed.splitlines() if line.startswith('say\t')}
     steps={'installer':'installer','commands':'commands','pointer':'pointers','settings':'settings',
-           'template':'template','mention':'mention','kitcopy':'remove','hook':'remove','left':'left','secrets':'secrets'}
+           'template':'template','mention':'mention','kitcopy':'remove','hook':'remove','left':'left','secrets':'secrets',
+           'access':'access'}
     assert {steps[k] for k in kinds if k in steps} <= said, listed
     assert 'kit' in said, listed
     assert {'commands','pointer','helper','settings','template','mention'} <= set(kinds), listed
@@ -125,6 +126,8 @@ for route in ('claude-only','shared','whole','plugin'):
     assert ('hook\t.agents/hooks/session-end-sync.sh' in listed)==(route=='whole'), listed
     assert 'mention\tmasterplan.md:' in listed and 'We run /ship before' in listed
     assert kinds.count('secrets')==1, listed
+    # A project from before Access: lines is asked which setting it wants.
+    assert kinds.count('access')==1, listed
     if route=='whole':
         for path in ('.claude-plugin','WORKFLOW.md','.agents/guard/blocked-commands.md','.agents/tools/build-adapters.sh','.ai-build-kit-version'):
             assert 'kitcopy\t'+path in listed,listed
@@ -134,6 +137,21 @@ for route in ('claude-only','shared','whole','plugin'):
         assert set(json.loads((p/'skills-lock.json').read_text())['skills'])==set(kit_names)
         assert not any((p/folder/name).exists() for folder in ('.agents/skills','.claude/skills') for name in retired)
     for step in ('helper','remove','commands','pointers','settings','template'): apply(skills,p,step)
+    # A no changes nothing; a yes writes the line the person chose, once.
+    if route=='plugin':
+        plan_before=(p/'masterplan.md').read_bytes()
+        run([sys.executable,skills/'maintain/scripts/upgrade-check.py','--decline','access',p])
+        assert 'declined\taccess\taccess\t' in check(skills,p,0)
+        assert (p/'masterplan.md').read_bytes()==plan_before
+    run([sys.executable,skills/'maintain/scripts/upgrade-check.py','--apply','access',p],code=2)
+    if route=='whole':
+        apply(skills,p,'access=open-address')
+        assert len(re.findall(r'\nAccess: open address, invitation only \(decided \d{4}-\d\d-\d\d\)\n',(p/'masterplan.md').read_text()))==1
+    else:
+        apply(skills,p,'access=private')
+        assert (p/'masterplan.md').read_text().count('\nAccess: private\n')==1
+    apply(skills,p,'access=public')
+    assert 'Access: public' not in (p/'masterplan.md').read_text()
     after=check(skills,p,0)
     assert all(l.startswith(('mention\t','left\t','secrets\t','say\t')) for l in after.splitlines()),after
     assert (p/'CHANGELOG.md').read_bytes()==changelog

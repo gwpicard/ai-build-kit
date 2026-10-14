@@ -61,6 +61,14 @@ Ask: Please paste the error lines from the container's output in Coolify since t
 
 Shared part: [the Next.js container and its health route](../parts/nextjs-container.md)
 
+## Access
+
+How it works: The masterplan's `Access:` line says private, open address with invitation only, or public. Private is the default: `../parts/scripts/set-signup.sh closed` closes sign-up, so people get in only by an invitation from the Supabase dashboard, under Authentication, then Users. The server holds the gate. Private keeps the address reachable only on the team's private network, or puts a shared password in front of it, which the browser asks for before the page loads. Coolify calls that HTTP Basic Authentication; it is in the app's General settings, under Security, then Authentication, and takes a save and a redeploy, with the password kept in the team's password manager. Open address with invitation only suits a tool whose address anyone can reach: the gate is off, and sign-up stays closed. Public takes the gate off and opens sign-up. The person or the companion makes the server's change, and the kit never sees the password. Each change waits for a yes that names its effect, and goes in the changelog.
+How it is checked: For private, a request signed in to nothing from outside the private network is refused, or cannot connect while the same request from inside is answered. For the other two it is answered. Sign-up, read by the shared `../parts/scripts/signup.sh` with an attempt that has no password and so makes no account, matches the record.
+Script: scripts/access.sh
+Who runs it: a companion or the person, result read back
+Ask: Please paste what `curl -sS -o /dev/null -w '%{http_code}' <live address>/api/health` prints on a computer outside your private network, or the error it gives. If it cannot connect, also paste what the same command prints on a computer inside the network.
+
 ## Settings the kit can read
 
 Shared part: [sign-in settings on hosted Supabase](../parts/supabase-settings.md)

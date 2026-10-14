@@ -6,6 +6,24 @@ area the work touches, with its caution. It runs during
 promises or reliance; before the first /setup-hosting; at the quarterly
 /maintain; and before a handover.
 
+## Who will use it
+
+Ask this first. A tool for people the owner can name is private: only invited
+people get in. Record `Access: private`. The other two settings are never
+refused when the person asks for one:
+
+- `open address, invitation only (decided YYYY-MM-DD)`: anyone can reach the
+  address, and only invited people can sign in. It suits a group larger than
+  the host's gate allows on its plan, and a server whose address anyone can
+  reach. Each recipe's access section says when it applies. It adds no
+  sensitive area.
+- `public (decided YYYY-MM-DD)`: anyone can make an account. That is a yes to
+  question 1, so record the sign-in and permissions area below. Its notice is
+  the one warning about going public.
+
+Once live, a change either way waits for a yes that names the effect, runs
+the recipe's access change and check, and goes in the changelog.
+
 ## Consequence questions
 
 Ask one at a time, with a best guess attached. These decide the path.
@@ -87,6 +105,10 @@ Change a caution only where the tool's facts make another right, and say why.
 | Automatic action on people or other systems | The tool sends messages, changes records elsewhere, or does anything on its own that is hard to take back. | A person approves each action until a live run has shown it right, and one switch turns it off. |
 | Irreplaceable live data | The only copy of something the team cannot recreate. | A backup taken and restored once, and the change rehearsed on a copy, before the original is touched. |
 | Regulated decisions | Medical, legal, financial, employment, or safety decisions the tool gives or enforces. | Somebody qualified in that field signs off the rule before anyone acts on it. |
+
+On a public tool, the sign-in and permissions notice also says that strangers
+can reach the live address and make an account, and that a payment gateway or
+similar may need a developer.
 
 Where a caution is a person, "The notice holds" applies. Where it is a backup,
 a copy, a rehearsal, a managed service or an approval step, it is the kit's to
@@ -249,6 +271,7 @@ first in every session:
 
 Path: <Explore privately | Build and run it | Build with care>
 Why: <one or two sentences>
+Access: <private | open address, invitation only (decided YYYY-MM-DD) | public (decided YYYY-MM-DD)>
 Sensitive areas: <none, or one line per area beneath this one>
 Accepted: <none, or one line per accepted risk>
 Recheck when: <specific triggers>

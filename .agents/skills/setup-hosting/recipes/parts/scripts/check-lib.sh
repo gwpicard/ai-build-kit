@@ -117,3 +117,88 @@ cl_main_commit() {
   # The commit `main` holds on GitHub, as this computer last fetched it.
   git rev-parse origin/main 2>/dev/null
 }
+
+cl_public_key() {
+  # The Supabase key the tool sends to every browser, from .env.local: the
+  # publishable key a project made today shows, or the older anon key. Never
+  # print it.
+  cl_key=$(cl_value .env.local NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)
+  [ -n "$cl_key" ] || cl_key=$(cl_value .env.local NEXT_PUBLIC_SUPABASE_ANON_KEY)
+  printf '%s' "$cl_key"
+}
+
+cl_access() {
+  # The masterplan's Access: line as two words: the setting, and whether
+  # sign-up is open or closed. private is always closed. open, for "open
+  # address, invitation only", lets anyone reach the address and keeps
+  # sign-up closed. public is open. Nothing when the masterplan records no
+  # setting.
+  [ -f masterplan.md ] || return 0
+  sed -n 's/^Access:[[:space:]]*//p' masterplan.md | head -n 1 | tr 'A-Z' 'a-z' | awk '
+    /^private/ { print "private closed"; exit }
+    /^open address/ || /invitation only/ { print "open closed"; exit }
+    /^public/ { print "public open"; exit }'
+}
+
+cl_access_declined() {
+  # True when the person said no to recording an access setting: the
+  # check-up record's upgrade-declined line names the access step.
+  [ -f .ai-build-kit-maintenance ] || return 1
+  sed -n 's/^upgrade-declined|[^|]*|//p' .ai-build-kit-maintenance |
+    tr ',' '\n' | sed 's/^ *//; s/ *$//' | grep -qx access
+}
+
+cl_access_unrecorded() {
+  # What an access check says when the masterplan records no setting: a pass
+  # when the person chose not to record one, and could not run otherwise.
+  cl_access_declined && cl_pass "Access: not recorded, by your choice."
+  cl_cannot "The masterplan records no access setting, so there is nothing to compare the live tool with."
+}
+
+cl_gate() {
+  # cl_gate <address> [file]: what a request signed in to nothing gets from
+  # the address's health route: open (200), gated (401 or 403, or sent to
+  # another host to sign in) or unknown. The body goes to file, if named.
+  cl_got=$(curl -sS -o "${2:-/dev/null}" -w '%{http_code} %{redirect_url}' "$1/api/health" 2>/dev/null)
+  cl_host=$(printf '%s' "$1" | sed -E 's#^https?://##; s#/.*##')
+  case "$cl_got" in
+    200*) echo open ;;
+    401*|403*) echo gated ;;
+    3[0-9][0-9]\ http*)
+      cl_to=$(printf '%s' "${cl_got#* }" | sed -E 's#^https?://##; s#[/?#].*##')
+      if [ "$cl_to" = "$cl_host" ]; then echo unknown; else echo gated; fi ;;
+    *) echo unknown ;;
+  esac
+}
+
+cl_bypass_key() {
+  # True when the linked Vercel project holds an automation bypass key, so
+  # `vercel curl` reads through Vercel's sign-in without making a new one.
+  # The key itself is never printed.
+  vercel project protection --format json 2>/dev/null | python3 -c '
+import json, sys
+try:
+    keys = json.load(sys.stdin).get("protectionBypass") or {}
+except ValueError:
+    sys.exit(1)
+sys.exit(0 if any(isinstance(v, dict) and v.get("scope") == "automation-bypass"
+                  for v in keys.values()) else 1)'
+}
+
+cl_live_health() {
+  # cl_live_health <address> <file>: the live health answer into file. Behind
+  # Vercel's sign-in it is read with `vercel curl`, which uses the project's
+  # bypass key. Making that key changes who can get past the sign-in, so
+  # without one it is read only with GATE_READ=yes, after the person's yes.
+  # Returns 0 when read, 1 when the address did not answer 200, 3 when it is
+  # behind a sign-in the kit may not read through yet.
+  case $(cl_gate "$1" "$2") in
+    open) return 0 ;;
+    gated) ;;
+    *) return 1 ;;
+  esac
+  command -v vercel >/dev/null 2>&1 || return 3
+  [ "${GATE_READ:-}" = yes ] || cl_bypass_key || return 3
+  vercel curl /api/health --deployment "$1" --yes >"$2" 2>/dev/null || return 1
+  [ -n "$(cl_health_fields "$2")" ] || return 1
+}

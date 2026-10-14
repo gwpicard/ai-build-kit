@@ -3,10 +3,10 @@
 # kit never contacts the server, so what only the server knows is pasted.
 #
 # Usage: live-check.sh [--pasted-health <file>] [--pasted-names <file>]
-#                      [--password-file <file>] [--needs NAME,NAME]
+#                      [--pasted-access <file>] [--password-file <file>] [--needs NAME,NAME]
 #                      [--only <read>]
 #
-# The five reads a later /setup-hosting run and every /maintain visit make.
+# The six reads a later /setup-hosting run and every /maintain visit make.
 # Each prints one line, and none changes anything:
 #
 #   commit     the live copy runs the latest merge on main: the pasted health
@@ -19,6 +19,8 @@
 #   secrets    every name in .env.example, and each name given with --needs,
 #              is on the pasted list of names Coolify holds
 #   health     the pasted health answer shows the database reachable
+#   access     who can reach the live tool matches the masterplan's Access:
+#              line, read by access.sh from the pasted answer
 #
 # A read with nothing pasted for it could not be made, and its line says what
 # to ask for.
@@ -34,10 +36,12 @@ only=
 needs=
 health=
 names=
+access=
 while [ $# -gt 0 ]; do
   case $1 in
     --pasted-health) health=${2:-}; shift 2 ;;
     --pasted-names) names=${2:-}; shift 2 ;;
+    --pasted-access) access=${2:-}; shift 2 ;;
     --password-file) DB_PASSWORD_FILE=${2:-}; export DB_PASSWORD_FILE; shift 2 ;;
     --needs) needs=${2:-}; shift 2 ;;
     --only) only=${2:-}; shift 2 ;;
@@ -45,7 +49,7 @@ while [ $# -gt 0 ]; do
     *) cl_cannot "live-check.sh does not know the option $1." ;;
   esac
 done
-case "$only" in ''|commit|hold|migration|secrets|health) ;; *) cl_cannot "live-check.sh has no read called $only." ;; esac
+case "$only" in ''|commit|hold|migration|secrets|health|access) ;; *) cl_cannot "live-check.sh has no read called $only." ;; esac
 
 gap=0
 unread=0
@@ -113,6 +117,19 @@ if wanted health; then
   else
     gapped "Health: the live copy answers, but cannot reach its database."
   fi
+fi
+
+if wanted access; then
+  if [ -n "$access" ]; then
+    result=$(sh "$here/access.sh" --pasted "$access" 2>/dev/null)
+  else
+    result=$(sh "$here/access.sh" 2>/dev/null)
+  fi
+  case $? in
+    0) say "Access: ${result#Access: }" ;;
+    1) gapped "Access: $result" ;;
+    *) unreadable "Access: could not be read. $result" ;;
+  esac
 fi
 
 [ "$gap" -eq 0 ] || exit 1

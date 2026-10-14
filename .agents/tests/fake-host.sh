@@ -84,9 +84,14 @@ print(sum(1 for d in state["deployments"]
           if d["target"] == "production" and (not sys.argv[2] or d["commit"] == sys.argv[2])))
 PY
 }
+# The office's live address sits behind Vercel's sign-in, so the kit reads it
+# through `vercel curl`, which uses the project's bypass key.
 health_commit() {
-  curl -fsS https://noticeboard-office.vercel.app/api/health \
+  vercel curl /api/health --deployment https://noticeboard-office.vercel.app --yes \
     | python3 -c 'import json, sys; print(json.load(sys.stdin)["commit"])'
+}
+live_page() {
+  vercel curl "$1" --deployment https://noticeboard-office.vercel.app --yes
 }
 
 echo "== What the first launch left =="
@@ -102,9 +107,25 @@ esac
 [ "$(health_commit)" = "$first" ] \
   && pass "the live health route reports the commit on main" \
   || fail "the live health route reports another commit"
-case "$(curl -fsS https://noticeboard-office.vercel.app/sign-in)" in
+case "$(live_page /sign-in)" in
   *">Continue<"*) pass "the live sign-in page shows the old wording" ;;
   *) fail "the live sign-in page does not show the old wording" ;;
+esac
+case "$(curl -sS -o /dev/null -w '%{http_code} %{redirect_url}' https://noticeboard-office.vercel.app/api/health)" in
+  "302 https://vercel.com/sso-api"*) pass "a request signed in to nothing is sent to Vercel's sign-in" ;;
+  *) fail "the live address answered a request signed in to nothing" ;;
+esac
+case "$(vercel project protection --format json)" in
+  *'"deploymentType": "all"'*'"scope": "automation-bypass"'*) pass "the protection read shows the gate on every address and a bypass key" ;;
+  *) fail "the protection read does not show the gate and the key" ;;
+esac
+case "$(curl -sS -w ' %{http_code}' -X POST -H 'apikey: public-anon-key-stand-in' -H 'Content-Type: application/json' -d '{"email":"probe@example.invalid","password":""}' https://qwmhzkpvnbxlcrtdyefa.supabase.co/auth/v1/signup)" in
+  *signup_disabled*" 422") pass "Supabase refuses a sign-up, since sign-up is closed" ;;
+  *) fail "Supabase did not refuse a sign-up" ;;
+esac
+case "$(curl -sS -w ' %{http_code}' -X POST -H 'apikey: public-anon-key-stand-in' -H 'Content-Type: application/json' -d '{}' https://qwmhzkpvnbxlcrtdyefa.supabase.co/auth/v1/signup)" in
+  *anonymous_provider_disabled*" 422") pass "a sign-up with no email goes to anonymous sign-in, as Supabase's does" ;;
+  *) fail "a sign-up with no email did not go to anonymous sign-in" ;;
 esac
 [ -z "$(git -C "$p" status --porcelain)" ] \
   && pass "the host's state sits outside the project, so nothing there changed" \
@@ -128,7 +149,7 @@ esac
 [ "$(health_commit)" = "$merged" ] \
   && pass "the call after that finds it ready, and the live address serves it" \
   || fail "the live address does not serve the merge"
-case "$(curl -fsS https://noticeboard-office.vercel.app/sign-in)" in
+case "$(live_page /sign-in)" in
   *">Email me a sign-in link<"*) pass "the live sign-in page shows the new wording" ;;
   *) fail "the live sign-in page does not show the new wording" ;;
 esac

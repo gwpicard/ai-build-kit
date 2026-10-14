@@ -187,7 +187,56 @@ case "$1" in
           esac
         done
         down ;;
+      protection)
+        # The read alone: the linked project, as JSON. Enabling or disabling
+        # goes through the API instead, so the stand-in refuses those here.
+        shift 2
+        json=no
+        while [ "$#" -gt 0 ]; do
+          case "$1" in
+            --json) json=yes; shift ;;
+            --format|-F) [ "${2:-}" = json ] || refuse project protection "$@"; json=yes; shift 2 ;;
+            *) refuse project protection "$@" ;;
+          esac
+        done
+        [ "$json" = yes ] || refuse project protection
+        down
+        sso=$(cat "$RR_STATE/sso" 2>/dev/null || echo "${RR_SSO:-all}")
+        case "$sso" in
+          all) sso='{"deploymentType":"all"}' ;;
+          standard) sso='{"deploymentType":"prod_deployment_urls_and_all_previews"}' ;;
+          *) sso=null ;;
+        esac
+        # Vercel CLI 60 prints the project's protection fields as they are,
+        # bypass keys included, so a script must never print this.
+        if [ -n "${RR_NO_BYPASS:-}" ]; then bypass='{}'
+        else bypass='{"bypass-stand-in-key":{"createdAt":1767312000000,"createdBy":"user","scope":"automation-bypass"}}'; fi
+        printf '{\n  "projectId": "prj_standin",\n  "name": "app",\n  "ssoProtection": %s,\n  "passwordProtection": null,\n  "protectionBypass": %s\n}\n' "$sso" "$bypass" ;;
       *) refuse "$@" ;;
+    esac ;;
+  api)
+    # Only a project update, with its body in a file and the answer kept
+    # silent, since the answer would hold the project's bypass keys.
+    shift
+    endpoint=${1:-}
+    [ "$#" -gt 0 ] && shift
+    case "$endpoint" in "/v9/projects/prj_standin"|"/v9/projects/prj_standin?teamId=team_standin") ;; *) refuse api "$endpoint" "$@" ;; esac
+    method= input= silent=no
+    while [ "$#" -gt 0 ]; do
+      case "$1" in
+        -X|--method) method=${2:-}; shift 2 ;;
+        --input) input=${2:-}; shift 2 ;;
+        --silent) silent=yes; shift ;;
+        *) refuse api "$endpoint" "$@" ;;
+      esac
+    done
+    [ "$method" = PATCH ] && [ -f "$input" ] && [ "$silent" = yes ] || refuse api "$endpoint"
+    down
+    bad && { echo "Error: You do not have permission to change this project" >&2; exit 1; }
+    case "$(cat "$input")" in
+      *'"deploymentType":"all"'*) echo all > "$RR_STATE/sso" ;;
+      *'"deploymentType":"prod_deployment_urls_and_all_previews"'*) echo standard > "$RR_STATE/sso" ;;
+      *) refuse api "$endpoint" "an ssoProtection body the recipe does not send" ;;
     esac ;;
   link)
     shift
@@ -277,6 +326,39 @@ password() {
   esac
 }
 case "$*" in
+  "--workdir "*" config diff --project-ref "*" --exit-code")
+    # Read-only. RR_OLD_CLI is a tool from before config diff existed, and
+    # RR_DIFF=extra one that would also send a default it filled in itself.
+    [ "$#" -eq 7 ] || refuse "$@"
+    [ -z "${RR_OLD_CLI:-}" ] || { echo "unknown command \"diff\" for \"supabase config\"" >&2; exit 1; }
+    down
+    file="$2/supabase/config.toml"
+    [ -f "$file" ] || { echo "cannot read config" >&2; exit 1; }
+    now=$(cat "$RR_STATE/signup" 2>/dev/null || echo "${RR_SIGNUP:-closed}")
+    if grep -q 'enable_signup = false' "$file"; then want=closed; else want=open; fi
+    if [ "$now" = closed ]; then from=false; else from=true; fi
+    if [ "$want" = closed ]; then to=false; else to=true; fi
+    if [ "${RR_DIFF:-}" = extra ]; then
+      printf -- '--- remote[auth]\n+++ local[auth]\n-site_url = "https://app.example.test"\n+site_url = "http://127.0.0.1:3000"\n-enable_signup = %s\n+enable_signup = %s\n' "$from" "$to"
+      exit 2
+    fi
+    [ "$now" != "$want" ] || exit 0
+    printf -- '--- remote[auth]\n+++ local[auth]\n-enable_signup = %s\n+enable_signup = %s\n' "$from" "$to"
+    exit 2 ;;
+  "--workdir "*" config push --project-ref "*" --yes")
+    [ "$#" -eq 7 ] || refuse "$@"
+    file="$2/supabase/config.toml"
+    # A file declaring anything beyond the project and enable_signup would
+    # overwrite other settings on the live project, so it is refused.
+    declared=$(grep -v '^[[:space:]]*$' "$file" 2>/dev/null | grep -v '^project_id = ' | tr '\n' ' ')
+    case "$declared" in
+      "[auth] enable_signup = false "|"[auth] enable_signup = true ") ;;
+      *) refuse "$@" "a config.toml declaring more than enable_signup" ;;
+    esac
+    down
+    bad && { echo "Error: Unauthorized" >&2; exit 1; }
+    if grep -q 'enable_signup = false' "$file"; then echo closed > "$RR_STATE/signup"; else echo open > "$RR_STATE/signup"; fi
+    echo "Finished supabase config push." ;;
   "init"|"start"|"stop"|"stop --no-backup") down; mkdir -p supabase ;;
   "db push --dry-run")
     down
@@ -351,9 +433,17 @@ echo "curl $*" >> "$RR_CALLS"
 refuse() { echo "curl stand-in: not an address or option a recipe may use: $*" >&2; exit 64; }
 url=""
 headers=""
+out=""
+format=""
+method=GET
+data=""
 while [ "$#" -gt 0 ]; do
   case "$1" in
-    -fsS) shift ;;
+    -fsS|-sS) shift ;;
+    -o) [ -n "${2:-}" ] || refuse "$@"; out=$2; shift 2 ;;
+    -w) [ -n "${2:-}" ] || refuse "$@"; format=$2; shift 2 ;;
+    -X) [ "${2:-}" = POST ] || refuse "$@"; method=POST; shift 2 ;;
+    -d) [ -n "${2:-}" ] || refuse "$@"; data=$2; shift 2 ;;
     --retry|--retry-delay|--max-time) [ -n "${2:-}" ] || refuse "$@"; shift 2 ;;
     --retry-connrefused) shift ;;
     -H) [ -n "${2:-}" ] || refuse "$@"; headers="$headers|$2"; shift 2 ;;
@@ -363,6 +453,71 @@ while [ "$#" -gt 0 ]; do
 done
 world=${RR_WORLD:-good}
 main=$(cat "$RR_STATE/main" 2>/dev/null)
+signup=$(cat "$RR_STATE/signup" 2>/dev/null || echo "${RR_SIGNUP:-closed}")
+sso=$(cat "$RR_STATE/sso" 2>/dev/null || echo "${RR_SSO:-all}")
+# What the live address does with a request signed in to nothing. It follows
+# Vercel's setting unless RR_GATE says otherwise, so a script that trusts the
+# setting instead of the live answer is caught.
+gate=${RR_GATE:-}
+[ -n "$gate" ] || { if [ "$sso" = all ]; then gate=gated; else gate=open; fi; }
+# What the sign-up handler does. It agrees with the settings unless
+# RR_DISAGREE is set, so a script that trusts one read alone is caught.
+probe=$signup
+if [ -n "${RR_DISAGREE:-}" ]; then
+  if [ "$signup" = closed ]; then probe=open; else probe=closed; fi
+fi
+# reply <status> <redirect> <body>: as curl gives it, to -o or stdout, with
+# what -w asks for after.
+reply() {
+  if [ -n "$out" ]; then printf '%s\n' "$3" > "$out"; else printf '%s\n' "$3"; fi
+  [ -z "$format" ] || printf '%s' "$format" | sed -e "s#%{http_code}#$1#" -e "s#%{redirect_url}#$2#"
+  exit 0
+}
+# A public key is either kind Supabase issues: the older anon key or a
+# publishable one. A secret key sent as apikey is refused.
+case "$headers" in *service-role-stand-in*|*secret-stand-in*) refuse "$url" "a secret key sent as apikey" ;; esac
+# A request with -w or a POST reads the answer whatever its status.
+if [ -n "$format" ] || [ "$method" = POST ]; then
+  [ "$world" != down ] || exit 6
+  case "$method:$url" in
+    POST:https://*.supabase.co/auth/v1/signup)
+      case "$headers" in "|apikey: "?*"|Content-Type: application/json") ;; *) refuse "$url" "headers$headers" ;; esac
+      # Supabase's auth server, in its order: the captcha first; then a
+      # request with no email and no phone goes to anonymous sign-in, which
+      # makes an account when it is on; then sign-up's own handler refuses
+      # while sign-up is closed, before it reads the rest; then an empty
+      # password fails validation, before any account or email. RR_ANON=on
+      # switches anonymous sign-in on, and RR_CAPTCHA puts a captcha in front.
+      [ -z "${RR_CAPTCHA:-}" ] ||
+        reply 400 "" '{"code":400,"error_code":"captcha_failed","msg":"captcha protection: request disallowed (no captcha response)"}'
+      case "$data" in
+        *'"email":"'?*|*'"phone":"'?*) ;;
+        *)
+          [ "${RR_ANON:-off}" = on ] ||
+            reply 422 "" '{"code":422,"error_code":"anonymous_provider_disabled","msg":"Anonymous sign-ins are disabled"}'
+          [ "$probe" = open ] ||
+            reply 422 "" '{"code":422,"error_code":"signup_disabled","msg":"Signups not allowed for this instance"}'
+          refuse "$url" "a request that made an anonymous account" ;;
+      esac
+      [ "$probe" = open ] ||
+        reply 422 "" '{"code":422,"error_code":"signup_disabled","msg":"Signups not allowed for this instance"}'
+      case "$data" in
+        *'"password":""'*) ;;
+        *) refuse "$url" "a sign-up with a password, which would make an account and send an email" ;;
+      esac
+      reply 400 "" '{"code":400,"error_code":"validation_failed","msg":"Signup requires a valid password"}' ;;
+    GET:https://*/api/health)
+      [ -z "$data" ] || refuse "$url"
+      if [ "$gate" = gated ]; then
+        reply 302 "https://vercel.com/sso-api?url=${url}" "Redirecting..."
+      elif [ "$world" = bad ]; then
+        reply 503 "" '{"status":"error","database":"error","commit":"0000000","project":"liveref"}'
+      else
+        reply 200 "" '{"status":"ok","database":"ok","commit":"'"$main"'","project":"liveref"}'
+      fi ;;
+    *) refuse "$url" ;;
+  esac
+fi
 case "$url" in
   https://api.supabase.com/v1/projects/*/database/backups)
     [ "$world" != down ] || exit 6
@@ -379,6 +534,9 @@ case "$url" in
     case "$headers" in *service-role-stand-in*|*secret-stand-in*) refuse "$url" "a secret key sent as apikey" ;; esac
     [ "$world" != down ] || exit 6
     if [ "$world" = bad ]; then echo '{}'
+    # RR_SETTINGS=odd is an answer in a shape the kit does not expect.
+    elif [ "${RR_SETTINGS:-}" = odd ]; then echo '{"external":["email"],"disable_signup":true,"mailer_autoconfirm":false}'
+    elif [ "$signup" = closed ]; then echo '{"external":{"email":true},"disable_signup":true,"mailer_autoconfirm":false}'
     else echo '{"external":{"email":true},"disable_signup":false,"mailer_autoconfirm":false}'; fi ;;
   http://localhost:[1-9]*/api/health)
     [ "$world" != down ] || exit 7
@@ -390,6 +548,7 @@ case "$url" in
     echo '{"status":"ok","database":"ok","commit":"","project":"liveref"}' ;;
   https://*/api/health)
     [ "$world" != down ] || exit 6
+    [ "$gate" != gated ] || { echo "Redirecting..."; exit 0; }
     if [ "$world" = bad ]; then echo '{"status":"error","database":"error","commit":"0000000","project":"liveref"}'
     else echo '{"status":"ok","database":"ok","commit":"'"$main"'","project":"liveref"}'; fi ;;
   *) refuse "$url" ;;
@@ -450,6 +609,9 @@ rr_project() {
     printf 'postgresql://postgres.liveref@pooler.example.test:5432/postgres\n' > supabase/.temp/pooler-url
     printf '17.4\n' > supabase/.temp/postgres-version
     printf '# Changelog\n\nNewest first.\n' > CHANGELOG.md
+    printf '# Masterplan\n\n## Build path\n\nPath: Build and run it\nAccess: private\n' > masterplan.md
+    mkdir -p .vercel
+    printf '{"projectId":"prj_standin","orgId":"team_standin"}\n' > .vercel/project.json
     "$rr_real_git" init -q -b main
     "$rr_real_git" config user.name "Recipe rehearsal"
     "$rr_real_git" config user.email rehearsal@example.invalid
@@ -502,6 +664,14 @@ rr_paste_files() {
   printf 'ready on port 3000\nError: cannot read notices\n' > "$rr_p/bad-logs"
   printf '{"status":"ok","database":"ok","commit":"%s","project":"liveref"}\n' "$rr_main" > "$rr_p/good-live-health"
   printf '{"status":"ok","database":"error","commit":"0000000","project":"liveref"}\n' > "$rr_p/bad-live-health"
+  printf '401\n' > "$rr_p/good-access"
+  printf '200\n' > "$rr_p/bad-access"
+  # A timeout alone proves nothing, since the server may be down. With the
+  # same request answered from inside the private network, it is the gate.
+  printf 'curl: (28) Failed to connect to app.example.test port 443 after 10002 ms: Timeout was reached\n000\n' > "$rr_p/network-access"
+  printf 'curl: (28) Failed to connect to app.example.test port 443 after 10002 ms: Timeout was reached\n000\nFrom inside the network:\n200\n' > "$rr_p/inside-access"
+  printf '403\n' > "$rr_p/forbidden-access"
+  printf 'It looked fine to me.\n' > "$rr_p/unread-access"
   cp "$rr_p/good-secrets" "$rr_p/good-live-names"
   cp "$rr_p/bad-secrets" "$rr_p/bad-live-names"
 }
@@ -540,7 +710,7 @@ rr_case() {
   cp -R "$RR_TMP/fixture" "$RR_TMP/work"
   cp -R "$RR_TMP/fixture.git" "$RR_TMP/work.git"
   "$rr_real_git" -C "$RR_TMP/work" remote set-url origin "$RR_TMP/work.git"
-  rm -f "$RR_STATE/image"
+  rm -f "$RR_STATE/image" "$RR_STATE/sso" "$RR_STATE/signup"
   [ -z "${RR_ORIGIN:-}" ] || "$rr_real_git" -C "$RR_TMP/work" remote set-url origin "$RR_ORIGIN"
   rr_mark=$(wc -l < "$RR_CALLS")
   rr_got=0
@@ -557,7 +727,7 @@ rr_case() {
     sed 's/^/    /' "$RR_TMP/out" "$RR_TMP/err" >&2
     rr_fail "$rr_file in the $rr_world world exited $rr_got, not $rr_want"
   fi
-  if grep -q 'stand-in-password\|service-role-stand-in' "$RR_TMP/out"; then
+  if grep -q 'stand-in-password\|service-role-stand-in\|bypass-stand-in-key\|public-stand-in\|sb_publishable_stand-in' "$RR_TMP/out"; then
     rr_fail "$rr_file printed a secret"
   fi
   printf '%s %s\n' "$rr_file" "$rr_got" >> "$RR_RAN"
@@ -655,7 +825,7 @@ rr_scripts() {
   cp -R "$RR_TMP/fixture.git" "$RR_TMP/work.git"
   "$rr_real_git" -C "$RR_TMP/work" remote set-url origin "$RR_TMP/work.git"
   set --
-  for rr_section in preview going-live rollback secrets logs; do
+  for rr_section in preview going-live rollback secrets logs access; do
     if grep -A6 "^## $(rr_heading "$rr_section")\$" "$RR_RECIPE/recipe.md" | grep -q '^Who runs it: a companion'; then
       set -- "$@" --pasted "$rr_section=$RR_TMP/pasted/good-$rr_section"
     fi
@@ -672,12 +842,12 @@ rr_scripts() {
   fi
   grep -q '^Rollback possible, not tried\.' "$RR_TMP/work/CHANGELOG.md" ||
     rr_fail "run-recipe.sh wrote no rollback line saying possible, not tried"
-  rr_ok "run-recipe.sh passes all eight sections of $rr_name and records them in the changelog"
+  rr_ok "run-recipe.sh passes all nine sections of $rr_name and records them in the changelog"
 }
 
 rr_heading() {
   case "$1" in
     preview) echo Preview ;; going-live) echo "Going live" ;; rollback) echo Rollback ;;
-    secrets) echo Secrets ;; logs) echo Logs ;;
+    secrets) echo Secrets ;; logs) echo Logs ;; access) echo Access ;;
   esac
 }

@@ -64,6 +64,15 @@ health.
 - Logs is where the tool's record of requests and errors is read.
 - Health is how anyone knows the live tool is up.
 
+A ninth section, access, follows health. Every recipe carries it, because
+every tool is private by default. It says how private keeps out everyone not
+invited, with sign-up closed and the host's gate where the host has one, and
+how public takes the gate off. Where a host has no gate, or only on a paid
+plan, it says so plainly, and the check covers what it can. Its script reads
+the live tool and compares it with the masterplan's `Access:` line, and fails
+when they differ either way. A script that changes the setting changes a live
+service, so the coding agent's settings ask before it runs.
+
 Each section carries four lines, and a fifth where the kit does not run the
 check itself.
 
@@ -96,15 +105,15 @@ A check whose result is pasted back takes `--pasted <file>` and reads it.
 Where the paste has a fixed shape, such as a health answer or a list of names,
 the script reads that shape, so the kit never judges it by eye.
 
-`live-check.sh` makes the five reads a later `/setup-hosting` run and every
+`live-check.sh` makes the six reads a later `/setup-hosting` run and every
 `/maintain` visit make: the live copy against `main`, a hold since a rollback,
-a migration not applied, setting names on the host, and health. It changes
+a migration not applied, setting names on the host, health and access. It changes
 nothing. Exit 0 means no gap, 1 a gap, and 2 that a read could not be made.
 
-`setup-hosting/scripts/run-recipe.sh` runs a recipe's eight checks in its
+`setup-hosting/scripts/run-recipe.sh` runs a recipe's nine checks in its
 order, prints one line for each, and writes the run's dated changelog entry. A
 warning the changelog already holds comes back as a pointer. Off a recipe it
-lists the eight section names as warnings and nothing more.
+lists the nine section names as warnings and nothing more.
 
 ## Shared parts
 
@@ -121,11 +130,11 @@ menu entry.
 ## Settings the kit can read
 
 A recipe may carry one more section, `## Settings the kit can read`, after
-health. It names the script that reads settings of the services the tool runs
+access. It names the script that reads settings of the services the tool runs
 on with a key the project already sends to the browser, so the launch review
 reads them rather than asking the person. It carries the same lines as the
-others, or a `Shared part:` link. It is not one of the eight, and the runner
-gives it no line. `PROVEN.md` gives it an outcome line like each of the eight.
+others, or a `Shared part:` link. It is not one of the nine, and the runner
+gives it no line. `PROVEN.md` gives it an outcome line like each of the nine.
 
 ## What proven means
 
@@ -133,12 +142,16 @@ A recipe joins the menu only when two things are true. A rehearsal named
 `.agents/tests/recipe-<name>.sh` runs every script it names against stand-ins
 for its tools, to a pass and to something else, and then runs the whole recipe
 through the runner. And one real deploy has been run from an empty project to
-a live address and through all eight sections, with the maintainer's approval
+a live address and through all nine sections, with the maintainer's approval
 and accounts, and written down. A shared part proven once, in another recipe's
 real run, counts for every recipe that links it, and its outcome line says so.
 
+A section added after the real run is marked unproven: its outcome line says
+`No real run yet` after the section's name, and gives the date it was added.
+That does not take the recipe off the menu. The next real run covers it.
+
 `PROVEN.md` opens with `Real run:` and the date, then gives one outcome line
-for each of the eight sections, starting with the section's name, saying what
+for each of the nine sections, starting with the section's name, saying what
 was done and what came out.
 
 A recipe waiting for its real run sits in `.agents/tests/recipes-awaiting-run/`

@@ -276,7 +276,7 @@ reported, and it is not what decides whether the case held.
 
 - Explore privately receives a private-preview check only.
 - Build and run it receives full evidence, independent review, and operational readiness, in that order.
-- On a recipe, operational readiness is the recipe's eight checks in its order, each reported in one plain line: preview up, live address updated, rollback possible, backup present, restore works, no secret in the repo, logs readable, health answers. `Who runs it:` decides whether the kit runs a check, reads back a pasted result, or records what the person saw.
+- On a recipe, operational readiness is the recipe's nine checks in its order, each reported in one plain line: preview up, live address updated, rollback possible, backup present, restore works, no secret in the repo, logs readable, health answers, access as recorded. `Who runs it:` decides whether the kit runs a check, reads back a pasted result, or records what the person saw.
 - Off a recipe, operational readiness is the general list, and each missing item is a warning.
 - A check not done, on a recipe or off one, is said once, recorded in CHANGELOG.md, and the launch goes ahead. The first launch still waits for a recorded address, and a tool without one is not called live.
 - /setup-hosting names no hosting, data or deploy product itself; every command comes from the recipe file.
@@ -379,7 +379,7 @@ reported, and it is not what decides whether the case held.
 - Expected path: Build and run it; a booking tool for about twenty colleagues in one office, with no outside users, no money, no sensitive or regulated data, and nothing automated, so no sensitive area survives and the founding settles here.
 - Visible explanation: names it as an ordinary internal tool and says plainly what it will do, without warning about exposure or asking anyone to accept a risk; ordinary design points, such as a deleted booking not being logged or any colleague being able to cancel any booking, are raised as plain decisions rather than hazards.
 - Risk notice: none is due; the exposure a notice exists for is personal or sensitive data, money, sign-in by outsiders, automatic action on people or other systems, irreplaceable live data, or a regulated decision, and none applies here, so a notice invented for a vanished booking or a colleague walking to a room counts against the run.
-- Hidden technique: the fit check runs and records the build path in the founding documents, finds no sensitive area, and writes Build and run it, with the manual fallback being the way the office books rooms today.
+- Hidden technique: the fit check runs and records the build path in the founding documents, finds no sensitive area, and writes Build and run it, with the manual fallback being the way the office books rooms today. It records `Access: private`, since everyone who uses it is a named colleague.
 - Evidence: the founding produces the project records and a saved checkpoint, and the completion report translates the technical state into outcome language before it is shown.
 - Save route: a local checkpoint on this computer; founding pushes no code and opens no pull request, and saying that nothing was uploaded is correct. Recording the pieces as issues and switching on the deletion of merged branches are founding steps the setup skill requires rather than a save, so neither counts against this route.
 - Review: none is due.

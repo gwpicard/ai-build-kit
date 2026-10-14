@@ -60,6 +60,14 @@ They learn four ideas, at the moment each one first appears:
 3. A pull request: a proposed change. They try it, then say yes to merge it.
 4. Going live: after a merge, the host puts the change in front of users.
 
+The focus is a simple way to build and run internal tools, with control over
+who gets access: people the owner can name, such as a team, a club, a family
+or invited clients. That focus allows a boring, proven stack, and a tool that
+is private by default. Only invited people get in, and a recipe check proves
+it. Public-facing features are possible. Public is a setting on the running
+tool that the person asks for. They hear its risks once, and the choice is
+recorded. A tool that takes money from strangers is a public tool.
+
 The kit is not for someone who wants an app in ten minutes and never wants to
 see GitHub. A hosted builder serves them better, and the README says so.
 

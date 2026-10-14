@@ -178,6 +178,12 @@ Give its `say` lines in one reply, in order, and keep to these rules:
 - A `settings` line is the offer of the kit's newer safety rules: on a yes run
   `--apply settings`. Never edit the JSON by hand.
 - A `fitcheck` line, on a yes, loads `references/four-paths.md`.
+- An `access` line asks which setting the project wants. A public answer first
+  hears what public means, as the fit check says. Record the answer with
+  `--apply access=private`, `access=open-address` or `access=public`,
+  then run the recipe's `live-check.sh --only access` and say its line. Off
+  a recipe, say that the access check cannot run, since no recipe names one.
+  Making the live tool match is a live-service change for /setup-hosting.
 - On a no, run the check with `--decline <step>`.
 
 Run the check again after each step and at the end. Record one dated

@@ -1117,3 +1117,50 @@ At `c01561c` the merge reference limits a named merge of several pieces to a
 conflict the records settle plainly, and checks the second piece again before
 merging it. A red check or an unsettled finding worth stopping for now holds a
 merge whatever was said. Cases 52 and 54 held in every run.
+
+## Private by default, 14 October
+
+Each recipe gained an access section. A tool is private by default: sign-up is
+closed, and the host's gate stands in front of the live address. The
+masterplan records the setting on an `Access:` line, founding asks for it
+first, and `/maintain` asks an older project once. The prepared Vercel project
+for 54 and 57 now records `Access: private`, and its stand-in host keeps
+Vercel's sign-in in front of every address, with a bypass key for the kit's
+reads, and sign-up closed.
+
+Each case ran three times, driven and graded by `opus`.
+
+| Scenario | Commit | Held | State | Contract misses |
+|---|---|---|---|---|
+| 5 | `8a7a844` | 3/3 | 3/3 | Evidence in every run, as before |
+| 31 | `8a7a844` | 3/3 | 3/3 | none |
+| 48 | `8a7a844` | 3/3 | 3/3 | none |
+| 54 | `8a7a844` | 3/3 | 3/3 | Escalation in one |
+| 57 | `8a7a844` | 3/3 | 3/3 | none |
+
+The miss in 54 said again in full a warning the launch changelog already held:
+the container check cannot run without Docker. It has nothing to do with
+access. In every run of 54 the kit read the live copy through the gate, and
+said it could not see the page itself, so the person's own screen was the
+evidence.
+
+## The review of private by default, 14 October
+
+The third access setting is now "open address, invitation only". The sign-up
+probe names an email and no password, so it never reaches anonymous sign-in.
+The prepared Vercel project for 54 and 57 is now on Pro, with each of the
+office's twelve added to the project as someone who only views, so keeping
+every address behind Vercel's sign-in matches the recipe.
+
+Each case ran three times, driven and graded by `opus`.
+
+| Scenario | Commit | Held | State | Contract misses |
+|---|---|---|---|---|
+| 5 | `7b1c70b` | 3/3 | 3/3 | Evidence in every run, as before |
+| 31 | `7b1c70b` | 3/3 | 3/3 | none |
+| 54 | `7b1c70b` | 3/3 | 3/3 | Escalation in one |
+| 57 | `7b1c70b` | 3/3 | 3/3 | none |
+
+The miss in 54 said again in full a warning the launch changelog already held,
+this time that the tool keeps no record of each request. It has nothing to do
+with access. In every run of 57 the live check reported access as recorded.

@@ -33,7 +33,7 @@ chmod +x "$GOOD/scripts/check.sh" "$GOOD/scripts/live-check.sh"
   echo
   echo "Real run: 2024-03-01"
   echo
-  for section in Preview "Going live" Rollback Backup Restore Secrets Logs Health; do
+  for section in Preview "Going live" Rollback Backup Restore Secrets Logs Health Access; do
     echo "$section: filled in"
   done
 } > "$GOOD/PROVEN.md"
@@ -74,7 +74,7 @@ refused() {
   ok "a recipe with $1 is refused"
 }
 
-for section in Preview "Going live" Rollback Backup Restore Secrets Logs Health; do
+for section in Preview "Going live" Rollback Backup Restore Secrets Logs Health Access; do
   refused "no $section section" recipe.md "/^## $section\$/d"
 done
 refused "no Fits line" recipe.md '/^Fits:/d'

@@ -8,8 +8,9 @@
 #   TABLES_ON_RECORD  tables the masterplan records as public by choice,
 #                     separated by commas
 #
-# `curl -fsS https://<live address>/api/health` must answer 200 with
-# "database":"ok", and its commit must equal `git rev-parse origin/main`. The
+# The live address's /api/health must answer 200 with "database":"ok", and
+# its commit must equal `git rev-parse origin/main`. Behind Vercel's sign-in
+# it is read as check-lib.sh's cl_live_health says. The
 # health route reports the commit from VERCEL_GIT_COMMIT_SHA. The shared
 # `rls.sh` lists public tables with row-level security off; none, or only
 # tables on the record, passes.
@@ -28,8 +29,12 @@ git fetch -q origin main 2>/dev/null || true
 main=$(cl_main_commit)
 answer=$(mktemp)
 trap 'rm -f "$answer"' EXIT
-curl -fsS "${LIVE_ADDRESS%/}/api/health" >"$answer" 2>/dev/null ||
-  cl_fail "The live address did not answer its health route with 200."
+cl_live_health "${LIVE_ADDRESS%/}" "$answer"
+case $? in
+  0) ;;
+  3) cl_cannot "The live address asks for Vercel's sign-in, and reading through it would make a lasting key that gets past that sign-in, which waits for the person's yes." ;;
+  *) cl_fail "The live address did not answer its health route with 200." ;;
+esac
 fields=$(cl_health_fields "$answer")
 [ "$(printf '%s\n' "$fields" | sed -n 2p)" = ok ] ||
   cl_fail "The live address answers, but it cannot reach its database."

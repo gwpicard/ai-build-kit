@@ -5,10 +5,11 @@
 # The format lives in docs/RECIPES.md. A recipe is a folder: `recipe.md`, which
 # the kit reads at run time, `scripts/`, which holds its checks and its
 # `live-check.sh`, and `PROVEN.md`, the record of its real run, which the kit
-# never loads. A recipe is only worth offering if every one of the eight
-# sections says how it works, what a pass means, which script checks it and
-# who runs that check, and if the folder carries the dates that say when it
-# was last read and when it was really run. A missing section or script is
+# never loads. A recipe is only worth offering if every one of the nine
+# sections, the eight a live tool needs and access, says how it works, what
+# a pass means, which script checks it and who runs that check, and if the
+# folder carries the dates that say when it was last read and when it was
+# really run. A missing section or script is
 # easy to miss by eye and costs the person a launch step nobody can check, so
 # a machine reads for it.
 #
@@ -23,8 +24,8 @@
 # carries them. A script path is read from the file it is written in, and the
 # script must be there and executable. A section the kit does not run itself
 # also carries `Ask:`, the fixed words the person or a companion hears. A
-# recipe may add one section to the eight, "## Settings the kit can read",
-# between health and the end, held to the same lines, and then PROVEN.md
+# recipe may add one section to the nine, "## Settings the kit can read",
+# after access, at the end, held to the same lines, and then PROVEN.md
 # gives it an outcome line too.
 #
 # With --template the dates may still read YYYY-MM-DD, and "Who runs it:" and
@@ -76,7 +77,8 @@ import datetime, os, re, sys
 mode, paths = sys.argv[1], sys.argv[2:]
 # A local date can be one day ahead of UTC. Use the same limit everywhere.
 LATEST = (datetime.datetime.now(datetime.timezone.utc).date() + datetime.timedelta(days=1)).isoformat()
-ORDER = ["Preview", "Going live", "Rollback", "Backup", "Restore", "Secrets", "Logs", "Health"]
+ORDER = ["Preview", "Going live", "Rollback", "Backup", "Restore", "Secrets", "Logs", "Health",
+         "Access"]
 EXTRA = "Settings the kit can read"
 WHO = ("the kit", "a companion or the person, result read back", "a person looking")
 HEADS = ["Fits", "Recommended when", "Build stack", "Deploy target", "Command-line tools",
@@ -179,12 +181,12 @@ def check_recipe(md, proven):
         if name not in order:
             problem(where, "no \"## %s\" section" % name)
     if wanted != [s for s in ORDER if s in order]:
-        problem(where, "the eight sections are out of order")
+        problem(where, "the nine sections are out of order")
     extra = EXTRA in order
     if extra and order.index(EXTRA) != len(order) - 1:
-        problem(where, "\"## %s\" does not come after \"## Health\", at the end" % EXTRA)
-    if extra and "Health" in order and order.index(EXTRA) < order.index("Health"):
-        problem(where, "\"## %s\" does not come after \"## Health\"" % EXTRA)
+        problem(where, "\"## %s\" does not come after \"## Access\", at the end" % EXTRA)
+    if extra and "Access" in order and order.index(EXTRA) < order.index("Access"):
+        problem(where, "\"## %s\" does not come after \"## Access\"" % EXTRA)
     for name in ORDER + ([EXTRA] if extra else []):
         if name not in body:
             continue

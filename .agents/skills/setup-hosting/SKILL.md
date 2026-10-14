@@ -81,7 +81,7 @@ that each merge /implement makes puts that change live.
 #### Off a recipe
 
 Run `scripts/run-recipe.sh none` with the two answers above, and the live
-address once the person gives one. It lists the eight section names and the
+address once the person gives one. It lists the nine section names and the
 general readiness items as one-line warnings and records them, and the kit
 checks nothing more. A server this session cannot reach gets the request in
 `references/hosting-request.md`.
@@ -109,6 +109,9 @@ and name the page where it lives.
 Outside a first launch, a command that changes a live service's settings or
 data waits for a yes that names every change it makes and says whether it can
 be undone. A no leaves the service as it was, and the step is a warning.
+Changing the masterplan's `Access:` line is one: say who gains or loses the
+way in, and on the yes run the recipe's Access scripts, write the new line,
+dated unless private, and add a changelog line.
 Never write a secret key to a shared temporary folder.
 
 #### Deploying, and the records
