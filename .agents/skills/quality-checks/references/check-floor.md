@@ -24,7 +24,7 @@ Use the first of these that the project has:
 
 | Language | Type check | Lint |
 |---|---|---|
-| TypeScript | `npx tsc --noEmit` | `npx eslint .` with ESLint's own recommended rules and typescript-eslint's recommended rules |
+| TypeScript | `npx next typegen && npx tsc --noEmit` | `npx eslint .` with ESLint's own recommended rules and typescript-eslint's recommended rules |
 | JavaScript | none, unless the project already checks types | `npx eslint .` with ESLint's own recommended rules |
 | Python | `mypy .` | `ruff check .` |
 | Go | the compiler, through `go build ./...` | `go vet ./...` |
@@ -53,6 +53,10 @@ Put each command in its own named step, `Type check` and `Lint`, after install
 and before test, so a red tick says which one failed. Write the same commands
 in AGENTS.md's stack section, so the agent can run them locally before it hands
 work over.
+
+When the project's recipe records a local database types command, add it as a
+`Database types` step after install. It writes the generated types file, then
+compares that file with Git. A difference fails the check.
 
 ## Where it applies
 

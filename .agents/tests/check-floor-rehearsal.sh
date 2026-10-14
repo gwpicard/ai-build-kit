@@ -291,6 +291,8 @@ echo "TypeScript:"
 command -v npm >/dev/null 2>&1 || fail "npm is needed to rehearse the TypeScript row"
 
 row=$(grep '^| TypeScript |' "$FLOOR") || fail "check-floor.md has no TypeScript row"
+printf '%s\n' "$row" | grep -q 'next typegen && npx tsc --noEmit' ||
+  fail "the TypeScript check does not generate Next route types before tsc"
 type_check=$(printf '%s\n' "$row" | awk -F'|' '{print $3}' | sed -n 's/^[^`]*`\([^`]*\)`.*/\1/p')
 lint=$(printf '%s\n' "$row" | awk -F'|' '{print $4}' | sed -n 's/^[^`]*`\([^`]*\)`.*/\1/p')
 [ -n "$type_check" ] || fail "the TypeScript row names no type check command"
@@ -334,7 +336,10 @@ cat > "$PROJECT/package.json" <<'JSON'
     "eslint": "^9",
     "tsx": "^4",
     "typescript": "^5",
-    "typescript-eslint": "^8"
+    "typescript-eslint": "^8",
+    "next": "^15.5",
+    "react": "^19",
+    "react-dom": "^19"
   }
 }
 JSON
@@ -344,6 +349,7 @@ cat > "$PROJECT/tsconfig.json" <<'JSON'
   "compilerOptions": {
     "strict": true,
     "noEmit": true,
+    "jsx": "preserve",
     "module": "nodenext",
     "target": "es2022",
     "skipLibCheck": true
@@ -376,6 +382,45 @@ test("total", () => {
   assert.equal(total(2, 3), 6);
 });
 TS
+
+mkdir -p "$PROJECT/app"
+cat > "$PROJECT/app/page.tsx" <<'TS'
+export default function Page() {
+  return <main>Check floor</main>;
+}
+TS
+
+# Rehearse the recipe's schema-derived type output before the JavaScript tools
+# are installed, so this check still runs in an offline environment.
+RECIPE="$ROOT/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/recipe.md"
+db_check=$(sed -n 's/^Database types check: `\(.*\)`$/\1/p' "$RECIPE")
+[ -n "$db_check" ] || fail "the database types check command could not be read"
+DB="$WORK/database"
+DB_BIN="$WORK/database-bin"
+mkdir -p "$DB/supabase/migrations" "$DB/types" "$DB_BIN"
+cat > "$DB_BIN/supabase" <<'PY'
+#!/usr/bin/env python3
+import pathlib, re, sys
+if sys.argv[1:] != ["gen", "types", "typescript", "--local"]:
+    raise SystemExit(2)
+tables = sorted({name for file in pathlib.Path("supabase/migrations").glob("*.sql")
+                 for name in re.findall(r"create\s+table\s+(?:public\.)?(\w+)", file.read_text(), re.I)})
+print("export type LocalDatabase = " + " | ".join(repr(name) for name in tables) + ";")
+PY
+chmod +x "$DB_BIN/supabase"
+printf '%s\n' 'create table public.items (id integer primary key);' > "$DB/supabase/migrations/001_items.sql"
+(cd "$DB" && PATH="$DB_BIN:$PATH" supabase gen types typescript --local > types/database.ts)
+git -C "$DB" init -q -b main
+git -C "$DB" -c user.name=Rehearsal -c user.email=rehearsal@example.invalid add .
+git -C "$DB" -c user.name=Rehearsal -c user.email=rehearsal@example.invalid commit -qm Start
+(cd "$DB" && PATH="$DB_BIN:$PATH" sh -c "$db_check") ||
+  fail "matching generated database types did not pass"
+echo "  ok: generated database types pass when they match the schema"
+printf '%s\n' 'create table public.rota (id integer primary key);' >> "$DB/supabase/migrations/001_items.sql"
+status=0
+(cd "$DB" && PATH="$DB_BIN:$PATH" sh -c "$db_check") > "$WORK/database-drift.out" 2>&1 || status=$?
+[ "$status" -eq 1 ] || fail "database type drift returned $status"
+echo "  ok: generated database types fail when a migration changes the schema"
 
 echo "  installing the project's own check tools"
 (cd "$PROJECT" && npm install --no-audit --no-fund --silent) ||
