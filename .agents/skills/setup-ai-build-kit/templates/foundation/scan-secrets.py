@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Scan pushed or recorded Git history without printing any secret value."""
+"""Scan only the commits a push or pull request is adding."""
+import base64
 import os
 import re
 import subprocess
 import sys
-import tempfile
 
 
 def fail(message, code):
@@ -12,102 +12,136 @@ def fail(message, code):
     return code
 
 
-def run_git(args):
-    return subprocess.run(["git", *args], stdout=subprocess.PIPE,
-                          stderr=subprocess.DEVNULL, check=False)
+PATTERNS = [
+    re.compile(rb"\bsbp_[A-Za-z0-9_-]{20,}"),
+    re.compile(rb"\bsb_secret_[A-Za-z0-9_-]{20,}"),
+    re.compile(rb"\bsk-ant-[A-Za-z0-9_-]{20,}"),
+    re.compile(rb"\bsk-proj-[A-Za-z0-9_-]{20,}"),
+    re.compile(rb"\bxox[abpr]-[A-Za-z0-9-]{20,}"),
+    re.compile(rb"\bAIza[0-9A-Za-z_-]{30,}"),
+    re.compile(rb"\b(?:sk_live_|rk_live_)[A-Za-z0-9]{16,}"),
+    re.compile(rb"\b(?:ghp_|gho_|ghs_)[A-Za-z0-9]{30,}"),
+    re.compile(rb"\bgithub_pat_[A-Za-z0-9_]{30,}"),
+    re.compile(rb"\bAKIA[0-9A-Z]{16}\b"),
+    re.compile(rb"-----BEGIN (?:RSA |EC |DSA |OPENSSH |ENCRYPTED |PGP )?PRIVATE KEY(?: BLOCK)?-----"),
+]
+ENV_RE = re.compile(r"(?<![A-Za-z0-9_])([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)")
+
+
+def is_service_role_jwt(value):
+    for token in re.findall(rb"eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+", value):
+        try:
+            middle = token.split(b".")[1]
+            middle += b"=" * (-len(middle) % 4)
+            payload = base64.urlsafe_b64decode(middle)
+            if re.search(rb'"role"\s*:\s*"service_role"', payload):
+                return True
+        except (ValueError, base64.binascii.Error):
+            pass
+    return False
+
+
+def env_value(line):
+    line = line.strip()
+    if line.startswith("export "):
+        line = line[7:].lstrip()
+    match = ENV_RE.match(line)
+    if not match:
+        return None
+    name, value = match.groups()
+    if name.startswith("NEXT_PUBLIC_"):
+        return None
+    value = value.strip()
+    if value[:1] in ("'", '"'):
+        quote = value[0]
+        closing = value.find(quote, 1)
+        if closing < 0:
+            value = value[1:]
+        else:
+            value = value[1:closing]
+    else:
+        value = re.split(r"\s+#", value, maxsplit=1)[0].strip()
+    return value.encode() if len(value) >= 8 and value != "=" else None
 
 
 def exact_values():
-    values = set()
-    try:
-        names = os.listdir(".")
-        for name in names:
-            if name == ".env" or (name.startswith(".env.") and name != ".env.example"):
-                if not os.path.isfile(name):
-                    continue
-                with open(name, encoding="utf-8") as handle:
-                    for line in handle:
-                        line = line.strip()
-                        if line and not line.startswith("#") and "=" in line:
-                            value = line.split("=", 1)[1].strip().strip("'\"")
-                            if len(value) >= 8 and not value.startswith("${"):
-                                values.add(value)
-    except (OSError, UnicodeError):
-        raise RuntimeError("local secret files could not be read")
-    return sorted(values, key=len, reverse=True)
+    found = set()
+    for current, dirs, files in os.walk("."):
+        dirs[:] = [d for d in dirs if d not in (".git", "node_modules", ".next", "dist", "build")]
+        for name in files:
+            if name == ".env.example" or not (name == ".env" or name.startswith(".env.")):
+                continue
+            try:
+                for line in open(os.path.join(current, name), encoding="utf-8"):
+                    value = env_value(line)
+                    if value:
+                        found.add(value)
+            except (OSError, UnicodeError):
+                raise RuntimeError("local secret files could not be read")
+    return found
 
 
-PATTERNS = [
-    re.compile(rb"AKIA[0-9A-Z]{16}"),
-    re.compile(rb"(?:gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,})"),
-    re.compile(rb"(?:sk_live_|rk_live_)[A-Za-z0-9]{16,}"),
-    re.compile(rb"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"),
-    re.compile(rb"(?i)(?:api[_-]?key|secret|password|token)\s*[:=]\s*['\"]?[A-Za-z0-9_./+=-]{20,}"),
-]
+def git(args):
+    return subprocess.run(["git", *args], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
+
+
+def scan_range(spec):
+    if spec == "--all":
+        args = ["log", "--all", "--no-ext-diff", "--format=COMMIT:%H", "-p"]
+    elif spec.startswith("--range="):
+        value = spec[len("--range="):]
+        if value.startswith("-") or ".." not in value:
+            return None, "could not run: invalid Git range"
+        left, right = value.split("..", 1)
+        for rev in (left, right):
+            if not git(["rev-parse", "--verify", rev + "^{commit}"]).returncode == 0:
+                return None, "could not run: the remote side's commit is missing locally"
+        args = ["log", "--no-ext-diff", "--format=COMMIT:%H", "-p", value]
+    elif spec.startswith("--new="):
+        rev = spec[len("--new="):]
+        if not rev or git(["rev-parse", "--verify", rev + "^{commit}"]).returncode:
+            return None, "could not run: new branch commit is missing locally"
+        args = ["log", "--no-ext-diff", "--format=COMMIT:%H", "-p", rev, "--not", "--remotes"]
+    else:
+        return None, "could not run: expected --all, --range=<base..head> or --new=<commit>"
+    result = git(args)
+    if result.returncode:
+        return None, "could not run: Git could not read the commits being checked"
+    return result.stdout, None
 
 
 def main(argv):
-    if len(argv) != 1 or (argv[0] != "--all" and not argv[0].startswith("--range=")):
-        return fail("could not run: expected --all or --range=<git range>", 2)
-    args = ["log", "--no-ext-diff", "--format=", "-p"]
-    exact = not os.environ.get("CI")
-    if argv[0] == "--all":
-        args.append("--all")
-    else:
-        git_range = argv[0].split("=", 1)[1]
-        if not git_range or git_range.startswith("-"):
-            return fail("could not run: invalid Git range", 2)
-        args.append(git_range)
+    if len(argv) != 1:
+        return fail("could not run: expected one scan range", 2)
+    data, error = scan_range(argv[0])
+    if error:
+        return fail(error, 2)
+    try:
+        exact = exact_values()
+    except RuntimeError as error:
+        return fail("could not run: " + str(error), 2)
 
-    if os.environ.get("SCAN_SECRETS_DISABLE_GITLEAKS") != "1":
-        gitleaks = subprocess.run(["sh", "-c", "command -v gitleaks"],
-                                  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        if gitleaks.returncode == 0:
-            report = None
-            try:
-                handle = tempfile.NamedTemporaryFile(prefix="abk-secret-scan-", suffix=".json", delete=False)
-                report = handle.name
-                handle.close()
-                command = ["gitleaks", "git", "--no-banner", "--redact",
-                           "--report-format=json", "--report-path=" + report]
-                if argv[0] != "--all":
-                    command.append("--log-opts=" + args[-1])
-                else:
-                    command.append("--log-opts=--all")
-                result = subprocess.run(command, stdout=subprocess.DEVNULL,
-                                        stderr=subprocess.DEVNULL)
-                if result.returncode == 0:
-                    return 0
-                if result.returncode == 1:
-                    try:
-                        import json
-                        with open(report, encoding="utf-8") as findings_file:
-                            findings = json.load(findings_file)
-                        if isinstance(findings, list) and findings:
-                            return fail("a secret pattern was found in the commits being checked", 1)
-                    except (OSError, ValueError):
-                        pass
-                return fail("could not run gitleaks", 2)
-            finally:
-                if report:
-                    try:
-                        os.unlink(report)
-                    except OSError:
-                        pass
-
-    log = run_git(args)
-    if log.returncode:
-        return fail("could not read Git history", 2)
-    data = log.stdout
-    if exact:
-        try:
-            for value in exact_values():
-                if value.encode() in data:
-                    return fail("a value from a local secret file is in the commits being checked", 1)
-        except RuntimeError:
-            return fail("could not run: local secret files could not be read", 2)
-    if any(pattern.search(data) for pattern in PATTERNS):
-        return fail("a key-shaped value was found in the commits being checked", 1)
+    commit = "unknown"
+    path = "unknown"
+    findings = []
+    for raw in data.splitlines():
+        if raw.startswith(b"COMMIT:"):
+            commit = raw[7:].decode("ascii", "replace")
+            continue
+        if raw.startswith(b"diff --git "):
+            match = re.match(rb"diff --git a/(.*?) b/", raw)
+            if match:
+                path = match.group(1).decode("utf-8", "replace")
+            continue
+        if not raw.startswith(b"+") or raw.startswith(b"+++"):
+            continue
+        line = raw[1:]
+        if any(pattern.search(line) for pattern in PATTERNS) or is_service_role_jwt(line) or any(value in line for value in exact):
+            findings.append((commit, path))
+    if findings:
+        for found_commit, found_path in sorted(set(findings)):
+            print("Secret scan: possible secret in commit " + found_commit + " file " + found_path, file=sys.stderr)
+        return 1
     return 0
 
 

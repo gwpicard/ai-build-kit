@@ -84,9 +84,35 @@ fi
 git -C "$P" checkout -q sign-out
 [ "$(remote_main)" = "$before" ] && pass "main on the remote never moved" || fail "main on the remote moved"
 
+# Feed Git's hook the deletion record directly. A bare remote also refuses a
+# main deletion, so a real push alone would not prove this guard did it.
+main_sha=$(remote_main)
+if printf 'refs/heads/main %040d refs/heads/main %s\n' 0 "$main_sha" | \
+  sh "$P/.agents/hooks/git/pre-push" >"$WORK/delete-main-out" 2>&1; then
+  fail "pre-push accepted Git's main deletion input"
+else
+  grep -q 'would change main directly' "$WORK/delete-main-out" \
+    && pass "the hook itself refuses deleting main" \
+    || fail "main deletion failed for a reason other than the hook's main rule"
+fi
+
 pushes -u origin sign-out && pass "a piece branch pushes" || fail "a piece branch was stopped"
 git -C "$P" commit -q --allow-empty -m "Sign it back in"
 pushes origin sign-out && pass "a piece branch that only moves forward pushes again" || fail "a fast-forward push was stopped"
+
+# Existing branches must scan only the commits after the remote SHA. Reversing
+# that range would let this newly added key-shaped value through.
+push_value="ghp_$(python3 -c 'import secrets; print(secrets.token_hex(24))')"
+printf '%s\n' "$push_value" > "$P/push-key.txt"
+git -C "$P" add push-key.txt
+git -C "$P" commit -q -m "Test existing branch range"
+if pushes origin sign-out >"$WORK/secret-push-out" 2>&1; then
+  fail "an existing-branch push containing a key-shaped value was allowed"
+else
+  ! grep -Fq -- "$push_value" "$WORK/secret-push-out" \
+    && pass "an existing-branch push scans only its new commits and hides the value" \
+    || fail "the existing-branch scan printed the test value"
+fi
 
 git -C "$P" reset -q --soft HEAD~1
 git -C "$P" commit -q --allow-empty -m "Sign it back in, rewritten"
@@ -114,6 +140,7 @@ fi
 pushes origin --delete sign-out && pass "deleting a piece branch is allowed" || fail "deleting a piece branch was stopped"
 git -C "$P" tag v1
 pushes origin v1 && pass "a tag pushes" || fail "a tag was stopped"
+git -C "$P" checkout -q main
 git -C "$P" checkout -q -b main-fix
 pushes origin main-fix && pass "a branch whose name starts with main pushes" || fail "main-fix was stopped"
 

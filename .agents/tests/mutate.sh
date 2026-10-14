@@ -14,8 +14,8 @@
 #   ./mutate.sh manifest-drop   one or more by name
 #   ./mutate.sh --list          the names and what each one breaks
 #
-# The clone takes committed history only, so uncommitted work in your tree is
-# not audited. Commit a fix before asking whether it closes a hole.
+# The clone starts at HEAD and receives the tracked worktree diff, so an
+# unfinished slice can be audited without committing it first.
 #
 # For anyone extending this: every mutation asserts that the text it expects is
 # there before changing it, and the runner refuses a mutation that leaves the
@@ -63,7 +63,9 @@ product-named
 command-loads-command
 command-over-budget
 background-one-caller
-secrets-read-guard"
+secrets-read-guard
+redactor-top-level-only
+pre-push-reversed-range"
 
 describe() {
   case "$1" in
@@ -92,6 +94,8 @@ describe() {
     command-over-budget) echo "a command grows past its word budget" ;;
     background-one-caller) echo "a background skill is left with one caller and no agent that loads it" ;;
     secrets-read-guard) echo "the Claude read guard stops refusing environment files" ;;
+    redactor-top-level-only) echo "nested Read and Grep text fields escape result redaction" ;;
+    pre-push-reversed-range) echo "an existing-branch push scans the wrong commit range" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -107,6 +111,8 @@ checks_for() {
     command-over-budget) echo "validate-kit" ;;
     background-one-caller) echo "validate-kit" ;;
     secrets-read-guard) echo "secrets-gates" ;;
+    redactor-top-level-only) echo "secrets-gates" ;;
+    pre-push-reversed-range) echo "push-guard" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -347,10 +353,29 @@ open(p, "w").write(t)'
 import os
 p = os.environ["MUTATE_TARGET"]
 t = open(p).read()
-old = "if name == \".env\" or name.startswith(\".env.\") or re.search("
-assert old in t, "secret path check not found"
-open(p, "w").write(t.replace(old, "if re.search(", 1))
+old = "return (name == \".env\" or name.startswith(\".env.\")) and name != \".env.example\""
+assert old in t, "secret environment-file rule not found"
+open(p, "w").write(t.replace(old, "return False", 1))
 '
+      ;;
+    redactor-top-level-only)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/redact-secrets.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "else redact_shape(tool, item, known))"
+assert old in s
+new = "else (replace_text(item, known) if isinstance(item, str) else item))"
+open(p, "w").write(s.replace(old, new, 1))'
+      ;;
+    pre-push-reversed-range)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/pre-push" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "--range=$remote_sha..$local_sha"
+assert old in s
+open(p, "w").write(s.replace(old, "--range=$local_sha..$remote_sha", 1))'
       ;;
     command-over-budget)
       # A command grows one helpful paragraph at a time.
@@ -406,11 +431,18 @@ run_check() {
   fi
 }
 
+clone_worktree() {
+  target=$1
+  git clone --quiet --local --no-hardlinks "$ROOT" "$target"
+  # Apply tracked working-tree changes without touching the source index.
+  git diff --binary HEAD | git -C "$target" apply
+}
+
 # A clean baseline first. If the suite is not green before anything is broken,
 # nothing after this means anything.
 echo "Baseline: running the checks against an unmutated clone"
 BASE="$WORK/baseline"
-git clone --quiet --local --no-hardlinks "$ROOT" "$BASE"
+clone_worktree "$BASE"
 baseline_failures=""
 for check in $DEFAULT_CHECKS; do
   run_check "$BASE" "$check" baseline || baseline_failures="$baseline_failures $check"
@@ -429,7 +461,7 @@ for name in $wanted; do
   echo "Mutation: $name"
   echo "  breaks: $(describe "$name")"
 
-  git clone --quiet --local --no-hardlinks "$ROOT" "$tree"
+  clone_worktree "$tree"
 
   status=applied
   if ! apply "$name" "$tree" >"$WORK/$name-apply.log" 2>&1; then

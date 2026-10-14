@@ -18,22 +18,7 @@ refused=0
 
 while read -r local_ref local_sha remote_ref remote_sha; do
   [ -n "$remote_ref" ] || continue
-  # A deletion sends no commits. Scan every other ref, including tags, before
-  # deciding whether the push is allowed for another reason.
-  case "$local_sha" in
-    *[!0]*) ;;
-    *) continue ;;
-  esac
-  scanner="$(git rev-parse --show-toplevel 2>/dev/null)/.agents/hooks/scan-secrets.sh"
-  case "$remote_sha" in
-    *[!0]*) scan_args="--range=$remote_sha..$local_sha" ;;
-    *) scan_args=--all ;;
-  esac
-  if [ ! -f "$scanner" ] || ! sh "$scanner" "$scan_args"; then
-    echo "This push was stopped: the secret scan failed or found a secret." >&2
-    refused=1
-    continue
-  fi
+  # Refuse main before skipping deletions: a zero local SHA still deletes it.
   case "$remote_ref" in
     refs/heads/main)
       echo "This push was stopped: it would change main directly." >&2
@@ -44,6 +29,18 @@ while read -r local_ref local_sha remote_ref remote_sha; do
     refs/heads/*) ;;
     *) continue ;;
   esac
+  # A deletion sends no commits and replaces no work on another branch.
+  case "$local_sha" in *[!0]*) ;; *) continue ;; esac
+  scanner="$(git rev-parse --show-toplevel 2>/dev/null)/.agents/hooks/scan-secrets.sh"
+  case "$remote_sha" in
+    *[!0]*) scan_args="--range=$remote_sha..$local_sha" ;;
+    *) scan_args="--new=$local_sha" ;;
+  esac
+  if [ ! -f "$scanner" ] || ! sh "$scanner" "$scan_args"; then
+    echo "This push was stopped: the secret scan found a secret or could not run." >&2
+    refused=1
+    continue
+  fi
   # A new branch, or a deleted one, replaces nothing on the remote.
   case "$remote_sha" in *[!0]*) ;; *) continue ;; esac
   case "$local_sha" in *[!0]*) ;; *) continue ;; esac

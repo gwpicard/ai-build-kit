@@ -124,7 +124,7 @@ not, because anything shown here stays in this conversation's record, and say
 where it lives so they can open it there. Never take a login another tool
 stores for itself, as in the keychain or its files, or use one on an API. Use
 that tool's own commands or the project's own keys. If you cannot, say so and
-ask; never then read it another way. A hook cannot remove text already shown in a reply.
+ask; never then read it another way. Nothing can take back a value once shown in a reply. A failed command's output cannot be redacted.
 
 If the project works from confidential files, the setup-ai-build-kit skill
 records their folder and handling rules here. Never stage, commit, print, or
