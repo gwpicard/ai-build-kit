@@ -144,7 +144,7 @@ apply() {
 import os
 p = os.environ["MUTATE_TARGET"]
 t = open(p).read()
-old = "if part.startswith(\"(\") and part.endswith(\")\"):")
+old = "if part.startswith(\"(\") and part.endswith(\")\"):"
 assert old in t, "route group filter not found"
 open(p, "w").write(t.replace(old, "if False and part.startswith(\"(\") and part.endswith(\")\"):", 1))
 '
