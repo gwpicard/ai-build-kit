@@ -2295,7 +2295,8 @@ Bash(gh api *pulls/*/merge*)
 Bash(gh api *merges*)
 Bash(gh api graphql *mergePullRequest*)"
 # A project blocks direct merge commands and asks before live changes.
-expected_ask_project="Bash(gh api *git/refs*)
+expected_ask_project="Bash(python3 *merge.py --approved *)
+Bash(gh api *git/refs*)
 Bash(gh api graphql *createRef*)
 Bash(gh api graphql *updateRef*)
 Bash(gh api graphql *deleteRef*)
