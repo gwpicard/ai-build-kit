@@ -39,7 +39,14 @@ DEFAULT_CHECKS="release-builder starter-rehearsal agent-plugin session-start val
 PUBLISH_CHECKS="release-builder release-publication validate-kit"
 MODE_CHECKS="validate-kit fake-github"
 
-MUTATIONS="manifest-drop
+MUTATIONS="reach-wide-threshold
+reach-route-groups
+reach-alias-imports
+reach-tables-types
+reach-wide-dependents
+reach-deleted-paths
+reach-wide-tables
+manifest-drop
 manifest-drop-unpaired
 humanizer-leak
 review-issues-leak
@@ -66,6 +73,13 @@ background-one-caller"
 
 describe() {
   case "$1" in
+    reach-wide-threshold) echo "the route threshold rises so a broad route reach is no longer reported as wide" ;;
+    reach-route-groups) echo "Next route groups remain in the reported address" ;;
+    reach-alias-imports) echo "the built-in import reader stops resolving @/ aliases" ;;
+    reach-tables-types) echo "the built-in reader stops detecting Tables type references" ;;
+    reach-wide-dependents) echo "wide dependents count files a changed file imports, not files that import it" ;;
+    reach-deleted-paths) echo "deleted imports are guessed by file name instead of resolved path" ;;
+    reach-wide-tables) echo "wide database tables stop being reported" ;;
     manifest-drop) echo "a document named in both manifests is dropped from the release allowlist" ;;
     manifest-drop-unpaired) echo "a file named only in the release allowlist is dropped, with no second manifest to cross-check it" ;;
     humanizer-leak) echo "the maintainer's writing skill is put back beside the eleven and allowed into the release" ;;
@@ -96,6 +110,7 @@ describe() {
 
 checks_for() {
   case "$1" in
+    reach-wide-threshold|reach-route-groups|reach-alias-imports|reach-tables-types|reach-wide-dependents|reach-deleted-paths|reach-wide-tables) echo "reach-rehearsal" ;;
     publish-writes-a-tree) echo "$PUBLISH_CHECKS" ;;
     gate-widened) echo "$MODE_CHECKS" ;;
     runnable-bit-lost) echo "$MODE_CHECKS" ;;
@@ -124,6 +139,76 @@ apply() {
   name=$1
   tree=$2
   case "$name" in
+    reach-route-groups)
+      edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "if part.startswith(\"(\") and part.endswith(\")\"):"
+assert old in t, "route group filter not found"
+open(p, "w").write(t.replace(old, "if False and part.startswith(\"(\") and part.endswith(\")\"):", 1))
+'
+      ;;
+    reach-alias-imports)
+      edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "targets = [os.path.normpath(os.path.join(t, spec[len(k):])) for k, ts in alias"
+assert old in t, "alias resolver not found"
+open(p, "w").write(t.replace(old, "targets = []  # mutation disables aliases\n    # " + old, 1))
+'
+      ;;
+    reach-tables-types)
+      edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = next((line for line in t.splitlines() if line.strip().startswith("patterns = (")), None)
+assert old is not None and "Tables" in old, "Tables type reader not found"
+open(p, "w").write(t.replace(old, "    patterns = ()", 1))
+'
+      ;;
+    reach-wide-dependents)
+      edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "dependents = len(reached_from(reverse, [path]))"
+assert old in t, "reverse dependent count not found"
+open(p, "w").write(t.replace(old, "dependents = len(reached_from(graph, [path]))", 1))
+'
+      ;;
+    reach-deleted-paths)
+      edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "importers = sorted(deleted_importers.get(path, set()))"
+assert old in t, "deleted path resolution not found"
+open(p, "w").write(t.replace(old, "importers = []", 1))
+'
+      ;;
+    reach-wide-tables)
+      edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "if used_count >= WIDE_TABLE_FILES:"
+assert old in t, "wide table threshold not found"
+open(p, "w").write(t.replace(old, "if False:", 1))
+'
+      ;;
+    reach-wide-threshold)
+      edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "WIDE_ROUTES = 3"
+assert old in t, "route threshold not found"
+open(p, "w").write(t.replace(old, "WIDE_ROUTES = 100", 1))
+'
+      ;;
     manifest-drop)
       grep -v '^docs/SOURCES\.md|' "$tree/release-manifest.txt" > "$tree/rm.tmp"
       mv "$tree/rm.tmp" "$tree/release-manifest.txt"

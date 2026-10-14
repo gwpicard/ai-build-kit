@@ -27,7 +27,7 @@ export STANDIN_GH_STATE STANDIN_GH_LOG
 seed() {
   python3 - "$STANDIN_GH_STATE" <<'PY'
 import json, sys
-done = "## So that\nPeople see who has the camera.\n\n## Done when\n- The list shows who has each item.\n"
+done = "## So that\nPeople see who has the camera.\n\n## Done when\n- The list shows who has each item.\n\nReaches: src/list.ts (1 file)\n"
 state = {
     "repo": "someone/kit-log",
     "labels": ["ready", "needs-clarification", "needs-research", "visual", "building"],
@@ -39,7 +39,15 @@ state = {
               "labels": ["needs-clarification", "needs-research", "visual"]},
         "5": {"body": "### Done when\n\n_No response_\n", "labels": []},
         "6": {"body": done + "\n## Decided\n\n<!-- what settled it -->\n", "labels": ["needs-research"]},
-        "7": {"body": "### So that\n\nA thing.\n\n### Done when\n\n- It works.\n", "labels": []},
+        "7": {"body": "### So that\n\nA thing.\n\n### Done when\n\n- It works.\n\nReaches: src/list.ts\n", "labels": []},
+        "8": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n", "labels": []},
+        "9": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n", "labels": []},
+        "10": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n", "labels": []},
+        "11": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n\nReaches:\n\nMore notes.\n", "labels": []},
+        "12": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n\n**Reaches:** src/list.ts\n", "labels": []},
+        "13": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n\n- Reaches: src/list.ts\n", "labels": []},
+        "14": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n\n**Reaches:**\n", "labels": []},
+        "15": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n\nReaches:src/list.ts\n", "labels": []},
     },
 }
 json.dump(state, open(sys.argv[1], "w"))
@@ -53,8 +61,14 @@ labels_of() {
 # Every run is from a throwaway project, whose printout helper only notes
 # that it ran, so this repository's own helper is never called.
 mkdir -p "$WORK/project/.agents/tools"
+mkdir -p "$WORK/project/.agents/skills/quality-checks/scripts"
+cp "$ROOT/.agents/skills/quality-checks/scripts/reaches_line.py" "$WORK/project/.agents/skills/quality-checks/scripts/"
+mkdir -p "$WORK/project/src"
+printf '%s\n' 'export const item = 1' > "$WORK/project/src/list.ts"
+(cd "$WORK/project" && git init -q -b main)
 printf '%s\n' 'echo refreshed >> refreshed.log' > "$WORK/project/.agents/tools/plan-refresh.sh"
-run() { (cd "$WORK/project" && PATH="$WORK/bin:$PATH" sh "$SCRIPT" "$@"); }
+run_at() { dir=$1; shift; (cd "$dir" && PATH="$WORK/bin:$PATH" sh "$SCRIPT" "$@"); }
+run() { run_at "$WORK/project" "$@"; }
 refreshes() { if [ -f "$WORK/project/refreshed.log" ]; then grep -c . "$WORK/project/refreshed.log"; else echo 0; fi; }
 
 seed
@@ -78,6 +92,42 @@ out=$(run 7) && code=0 || code=$?
 [ "$code" -eq 0 ] && [ "$(labels_of 7)" = "ready" ] \
   && pass "an issue form's Done when heading counts" \
   || fail "an issue form's Done when was not read: $code $out"
+
+out=$(run 8) && code=0 || code=$?
+[ "$code" -eq 1 ] && [ "$(labels_of 8)" = "" ] && printf '%s' "$out" | grep -q "Reaches" \
+  && pass "a code project with no Reaches line is refused" \
+  || fail "a code project without Reaches was not refused: $code $out"
+
+mkdir -p "$WORK/plain" "$WORK/kit-only/.agents/skills"
+(cd "$WORK/plain" && git init -q -b main && printf 'Notes\n' > README.md)
+(cd "$WORK/kit-only" && git init -q -b main && printf 'print(1)\n' > .agents/skills/tool.py)
+out=$(run_at "$WORK/plain" 9) && code=0 || code=$?
+[ "$code" -eq 0 ] && [ "$(labels_of 9)" = "ready" ] \
+  && pass "a project with no code can be marked ready without a Reaches line" \
+  || fail "a no-code project was refused without a Reaches line: $code $out"
+seed
+out=$(run_at "$WORK/kit-only" 10) && code=0 || code=$?
+[ "$code" -eq 0 ] && [ "$(labels_of 10)" = "ready" ] \
+  && pass "kit-only Python files do not make a starter look like a code project" \
+  || fail "a kit-only tree was treated as project code: $code $out"
+
+out=$(run 11) && code=0 || code=$?
+[ "$code" -eq 1 ] && printf '%s' "$out" | grep -q "Reaches" \
+  && pass "an empty Reaches line followed by another line is refused" \
+  || fail "an empty Reaches line was accepted: $code $out"
+out=$(run 12) && code=0 || code=$?
+[ "$code" -eq 0 ] && pass "a bold Reaches label is accepted" \
+  || fail "a bold Reaches label was refused: $code $out"
+out=$(run 13) && code=0 || code=$?
+[ "$code" -eq 0 ] && pass "a list-item Reaches label is accepted" \
+  || fail "a list-item Reaches label was refused: $code $out"
+out=$(run 14) && code=0 || code=$?
+[ "$code" -eq 1 ] && printf '%s' "$out" | grep -q "Reaches" \
+  && pass "an empty bold Reaches label is refused" \
+  || fail "an empty bold Reaches label was accepted: $code $out"
+out=$(run 15) && code=0 || code=$?
+[ "$code" -eq 0 ] && pass "Reaches text immediately after the colon is accepted" \
+  || fail "Reaches without a space was refused: $code $out"
 
 out=$(run 3) && code=0 || code=$?
 [ "$code" -eq 1 ] && [ "$(labels_of 3)" = "needs-clarification visual" ] && printf '%s' "$out" | grep -q "Decided" \
