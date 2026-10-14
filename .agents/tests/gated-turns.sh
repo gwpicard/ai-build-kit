@@ -999,13 +999,10 @@ grep -q 'sent unheld' "$runsh" \
   && ok "a turn sent without its precondition says so in the transcript" \
   || bad "a forced turn is not marked in the transcript"
 
-# --- the box before a merge ---------------------------------------------
-# A founded project's settings put every merge under permissions.ask, and that
-# box stops the call even in bypassPermissions, where a replay runs with nobody
-# to click it. A case where the kit may merge after the scripted yes has the
-# harness take out the ask list, and only that, before the first commit. The
-# box itself is proved by a real session; the stand-in GitHub still logs every
-# merge, so a merge without a yes stays visible.
+# --- confirmation before a merge ----------------------------------------
+# The settings ask before merge.py runs, and that box stops the call even in
+# bypassPermissions. The harness removes only that ask rule before the first
+# commit for a case with a scripted yes. The stand-in GitHub still logs merges.
 
 printf '# setup: fixture\n# merge-box: answered\nOnly line.\n' > "$WORK/case-box.txt"
 case_answers_merge_box "$WORK/case-box.txt" \
@@ -1030,14 +1027,14 @@ answer_merge_box "$boxproj" \
   || bad "answering the merge box failed"
 python3 - "$boxproj/.claude/settings.json" \
   "$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json" <<'PY2' \
-  && ok "it takes out the ask list and leaves the deny rules and hooks as founding wrote them" \
-  || bad "answering the box changed more than the ask list, or left it"
+  && ok "it takes out only the merge.py ask and leaves other rules and hooks" \
+  || bad "answering the box changed another rule or left the merge.py ask"
 import json, sys
 after = json.load(open(sys.argv[1]))
 before = json.load(open(sys.argv[2]))
-assert "ask" in before["permissions"]
-assert "ask" not in after["permissions"]
-del before["permissions"]["ask"]
+rule = "Bash(python3 *merge.py --approved *)"
+assert rule in before["permissions"]["ask"]
+before["permissions"]["ask"].remove(rule)
 assert after == before
 PY2
 mkdir -p "$WORK/box-none"

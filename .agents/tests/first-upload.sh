@@ -97,6 +97,8 @@ out=$(run --approved) && code=0 || code=$?
   || fail "main on the remote is $(git -C "$R" rev-parse main), not $base"
 grep -q 'repos/someone/kit-log/git/refs -f ref=refs/heads/main' "$STANDIN_GH_LOG" \
   && grep -q 'repo edit someone/kit-log --default-branch main' "$STANDIN_GH_LOG" \
+  && grep -q 'repos/someone/kit-log/branches/main/protection --input -' "$STANDIN_GH_LOG" \
+  && python3 -c 'import json,sys; p=json.load(open(sys.argv[1])); assert p["protection"]["required_status_checks"]["contexts"]==["project-check"] and p["protection"]["enforce_admins"] and all(k in p["protection"] for k in ("required_status_checks","enforce_admins","required_pull_request_reviews","restrictions"))' "$STANDIN_GH_STATE" \
   && pass "main is written through the API and made the default branch, with the push guard on" \
   || fail "main was not created through the API: $(cat "$STANDIN_GH_LOG")"
 

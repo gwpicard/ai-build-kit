@@ -59,11 +59,14 @@ review /setup-hosting runs.
 
 ## Report format
 
+Write every finding under `Worth stopping for` as an unticked box in the pull
+request body. Keep a settled finding and tick its box; do not remove it.
+
 ```md
 ## Worth stopping for
 
-- Agreement: <plain finding, what was tried, what happened>
-- Risk: <plain finding, what was tried, what happened>
+- [ ] Agreement: <plain finding, what was tried, what happened>
+- [ ] Risk: <plain finding, what was tried, what happened>
 
 ## Worth knowing
 

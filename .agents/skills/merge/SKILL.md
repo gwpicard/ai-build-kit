@@ -29,7 +29,9 @@ behaves.
 
 **A sensitive area first, on any project.** Run
 `check-sensitive-areas.sh --change <base>` and say one line for each area it
-names. Exit 1 means the area is open and the merge waits.
+names. For an accepted area, say: "This changes <area>, which you accepted on
+<date>." Use the plain date the script gives you. Exit 1 means the area is
+open and the project check and merge hold.
 
 **Before asking, on a live project.** Where "How it stays running" records a
 live address, the merge puts this change live. Check these first, read-only:
@@ -100,9 +102,10 @@ for that piece, and merge it once both pass, saying so.
 
 **Merging.** Make an approved merge on the pull request itself through
 `python3` with this skill's `scripts/merge.py --approved <pull request
-number>`. Exit 0 means it merged.
-Exit 1 means a check or review box holds it. Exit 2 means GitHub could not be
-read. Say what stopped it and leave the pull request open.
+number>`. Claude Code asks before this command runs. Exit 0 means it merged.
+Exit 1 means a check, review box or sensitive area holds it. Exit 2 means a
+required read or check could not run, or GitHub refused the merge. Say what
+stopped it and leave the pull request open.
 
 In an unattended run, report the piece as ready for review and leave the merge
 to a person.

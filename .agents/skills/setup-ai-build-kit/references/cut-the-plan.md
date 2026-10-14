@@ -30,9 +30,12 @@ delete the labels GitHub made by itself (`bug`, `documentation`, `duplicate`,
 squash and rebase merges, and copy the issue template. Say which ones went,
 from its `removed` and `kept` lines, and that merged branches are now removed.
 A label it could not remove stays and founding carries on. Exit 2 after the
-plan could not require the check means GitHub reported that the account cannot
-protect this repository. The script says in one line that its merge gate will
-hold instead; carry on with founding.
+If GitHub cannot require the check, the script names why: the account plan,
+missing admin rights, a missing branch, rejected settings, or a network
+failure. Exit 2 means protection was not confirmed. For a plan restriction,
+the kit holds its own merges; carry on with founding after the script says why.
+If `main` does not exist yet, protection is deferred until the first upload
+creates it.
 
 Open one issue per piece, label each shaped piece `ready` or with the `needs-`
 label for its open question, and link real dependencies with GitHub's

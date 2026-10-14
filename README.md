@@ -201,8 +201,8 @@ repository and whether it is public or private.
 
 Every merge waits for your yes. Changes to live settings or data need a yes
 that names them; a launch request authorises the commands its recipe names.
-On a private repository on GitHub Free, a person can still merge by hand on
-GitHub; the kit cannot stop that.
+Where GitHub cannot require the check, a person with permission can still merge
+by hand on GitHub. The kit's merge script holds merges made through the kit.
 Secrets stay out of files Git tracks. Claude Code's project settings block
 direct pushes to the main branch, force pushes and forced deletes. Existing
 settings are preserved, and `/maintain` offers missing rules. Other agents

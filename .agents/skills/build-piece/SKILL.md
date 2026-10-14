@@ -28,9 +28,9 @@ Choose the save route before changing anything:
 3. **Flagged route.** The work touches a named sensitive area whose caution
    is neither done nor accepted. Before building inside the area, give the
    risk notice once, in full, as the `fit-check` skill describes. If the
-   person carries on after it, write the `Accepted:` line with their words and
-   the date, read it back, and build and save on the pull-request route, in
-   the reply that answers them, with no further question. A lock that only
+   person carries on, run `piece-labels.sh start` before writing `Accepted:`
+   with their words and the date. Read it back, then build and save on the pull-request route
+   in the same reply. A lock that only
    waits for this caution opens with the acceptance unless they ask to keep
    it. If they do not carry on, build only up to the recorded condition. In an
    unattended run never write an acceptance: stop at the condition, which is a
@@ -45,8 +45,7 @@ The project's first push waits for the person's yes, as "The first upload" in
 the `merge` skill's `references/first-upload.md` says.
 
 Run the `records` skill's `scripts/piece-labels.sh` with `start` and the piece's
-number before changing anything. It swaps `ready` for `building` and assigns the
-piece.
+number before changing anything.
 
 ## 2. Agree the visible result
 
@@ -158,8 +157,9 @@ Checkpoint route: update the records, commit, and state the checkpoint.
 
 Pull-request route: update the records, commit, push, open a pull request
 titled after the piece with a plain summary and `Closes #<number>`, and run the
-project checks. List any unsettled finding worth stopping for under `Worth
-stopping for` in the body, and remove it once settled. Never present it as
+  project checks. Put each unsettled finding worth stopping for under `Worth
+stopping for` in the pull request body as an unticked `- [ ]` box. Keep settled
+findings and tick their boxes. Never present it as
 ready until the check is green. If it goes red, say so, read the failure
 yourself, fix it, and push again. Never merge in this skill, and never on a red
 check: the merge is the caller's next step, by the `merge` skill.

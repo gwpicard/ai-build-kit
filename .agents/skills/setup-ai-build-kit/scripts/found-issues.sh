@@ -22,7 +22,8 @@
 #     merges, so a merge keeps a piece's commits;
 #   - copies the piece template to .github/ISSUE_TEMPLATE/piece.yml, unless a
 #     file is already there.
-#   - requires the project-check job on main, with admins included.
+#   - requires the project-check job on main, with admins included, when main
+#     exists. A first upload applies it as soon as main is created.
 #
 # Output lines have fields separated by tabs:
 #   repository  OWNER/NAME
@@ -37,9 +38,7 @@
 #         line and does not stop the rest.
 # Exit 5: GitHub could not be read, so nothing was changed.
 # Exit 6: origin is the kit's own repository, so nothing was changed.
-# Exit 2: GitHub could not require the project check; the merge script still
-#         holds merges. On a private repository on GitHub Free, GitHub cannot
-#         provide that hold.
+# Exit 2: GitHub could not require the project check. The line says why.
 # Exit 2: usage error.
 
 set -u
@@ -89,22 +88,13 @@ if [ "$mode" = refresh ]; then
   exit $?
 fi
 
-protection_error=
-if protection_output=$(printf '%s\n' '{"required_status_checks":{"strict":true,"contexts":["project-check"]},"enforce_admins":true}' |
-  gh api -X PUT "repos/$repo/branches/main/protection" --input - 2>&1); then
-  printf 'protection\tproject-check required on main, including admins\n'
-else
-  case "$protection_output" in
-    *403*|*"Resource not accessible"*)
-      echo "GitHub cannot require the check on a private project on your plan, so the kit holds the merge itself instead."
-      protection_error=1
-      ;;
-    *)
-      echo "found-issues: GitHub could not require project-check on main; the kit holds the merge itself instead" >&2
-      protection_error=1
-      ;;
-  esac
-fi
+protection_status=0
+protection_output=$(python3 "$SKILL_ROOT/../merge/scripts/protect-branch.py" --defer-missing "$repo" main 2>&1) || protection_status=$?
+case "$protection_status" in
+  0) printf '%s\n' "$protection_output" ;;
+  4) printf 'protection\tdeferred until first upload creates main\n' ;;
+  *) printf '%s\n' "$protection_output" >&2 ;;
+esac
 
 # The fifteen labels the kit owns, as name|colour|description.
 failed=
@@ -172,5 +162,5 @@ else
     cp "$SKILL_ROOT/templates/foundation/piece-issue.yml" .github/ISSUE_TEMPLATE/piece.yml &&
     echo "template	copied" || echo "template	not copied"
 fi
-[ -z "$protection_error" ] || exit 2
+[ "$protection_status" -eq 0 ] || [ "$protection_status" -eq 4 ] || exit 2
 exit 0

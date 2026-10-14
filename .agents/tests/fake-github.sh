@@ -219,7 +219,8 @@ for kind in squash rebase; do
   fi
 done
 
-"$GH" pr merge 1 --merge > /dev/null \
+head=$(git rev-parse HEAD)
+"$GH" pr merge 1 --merge --match-head-commit "$head" > /dev/null \
   && pass "pr merge is accepted" \
   || fail "pr merge was refused"
 case "$("$GH" issue view 1)" in

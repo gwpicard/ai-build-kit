@@ -626,6 +626,7 @@ def run(flag=None,code=0):
     return result.stdout
 first_offer='\n'+run(code=1)
 assert '\ndeny\tBash(gh pr merge:*)' in first_offer
+assert '\nask\tBash(python3 *merge.py --approved *)' in first_offer
 # The rules added after that release reach an older project too, and only
 # through the offer: nothing in the file changes until --apply.
 template=json.loads((root/'.agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json').read_text())
@@ -635,7 +636,6 @@ assert len(newer_deny)>=16 and len(newer_ask)>=13,(newer_deny,newer_ask)
 for rule in newer_deny: assert '\ndeny\t'+rule+'\n' in first_offer+'\n',(rule,first_offer)
 for rule in newer_ask: assert '\nask\t'+rule+'\n' in first_offer+'\n',(rule,first_offer)
 assert json.loads(settings.read_text())==old
-run('--merge-box',1)
 original=settings.read_bytes()
 run('--decline'); assert settings.read_bytes()==original
 assert 'push-rules-declined|' in (p/'.ai-build-kit-maintenance').read_text()
@@ -648,7 +648,7 @@ assert current['my-setting']==old['my-setting']
 for key,value in old['permissions'].items():
     if key in ('ask','deny'): assert current['permissions'][key][:len(value)]==value
     else: assert current['permissions'][key]==value
-assert not run(); run('--merge-box')
+assert not run()
 assert all(r in current['permissions']['deny'] for r in newer_deny)
 assert all(r in current['permissions']['ask'] for r in newer_ask)
 second=settings.read_bytes(); run('--apply'); assert second==settings.read_bytes()
@@ -670,7 +670,7 @@ assert 'left\t' in run('--apply'); assert external.read_bytes()==original
 maintenance=work/'maintenance-outside'; maintenance.write_text('My own record.\n')
 (p/'.ai-build-kit-maintenance').symlink_to(maintenance)
 run('--decline'); assert maintenance.read_text()=='My own record.\n'
-print('  ok: settings apply, declines, merge-denial detection and linked paths preserve the project')
+print('  ok: settings apply, declines, merge confirmation offers and linked paths preserve the project')
 PY
 
 echo

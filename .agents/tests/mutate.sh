@@ -63,7 +63,11 @@ product-named
 command-loads-command
 command-over-budget
 background-one-caller
-merge-missing-check"
+merge-missing-check
+merge-pending-bucket-only
+merge-skipping-project-pass
+merge-first-box-only
+merge-any-check-name"
 
 describe() {
   case "$1" in
@@ -92,6 +96,10 @@ describe() {
     command-over-budget) echo "a command grows past its word budget" ;;
     background-one-caller) echo "a background skill is left with one caller and no agent that loads it" ;;
     merge-missing-check) echo "the merge route proceeds without the required project check" ;;
+    merge-pending-bucket-only) echo "a pending check is accepted because gh --json exits zero" ;;
+    merge-skipping-project-pass) echo "a skipped project-check is accepted as passed" ;;
+    merge-first-box-only) echo "the second open finding is ignored after a settled first box" ;;
+    merge-any-check-name) echo "a different passing check stands in for project-check" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -107,6 +115,7 @@ checks_for() {
     command-over-budget) echo "validate-kit" ;;
     background-one-caller) echo "validate-kit" ;;
     merge-missing-check) echo "merge-gate" ;;
+    merge-pending-bucket-only|merge-skipping-project-pass|merge-first-box-only|merge-any-check-name) echo "merge-gate" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -358,6 +367,46 @@ new = "if False:" + chr(10) + "        stop(" + chr(34) + "merge: project-check 
 assert old in t, "required project-check guard not found"
 open(p, "w").write(t.replace(old, new, 1))
 '
+      ;;
+    merge-pending-bucket-only)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "if bucket in (\"fail\", \"cancel\") or bucket == \"pending\":"
+new = "if bucket in (\"fail\", \"cancel\"):"
+assert old in s
+open(p, "w").write(s.replace(old, new, 1))'
+      ;;
+    merge-skipping-project-pass)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "if name == \"project-check\" and bucket != \"pass\":"
+new = "if name == \"project-check\" and bucket not in (\"pass\", \"skipping\"):"
+assert old in s
+open(p, "w").write(s.replace(old, new, 1))'
+      ;;
+    merge-first-box-only)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "if checkbox.group(1).lower() != \"x\":\n                return True"
+new = "if checkbox.group(1).lower() != \"x\":\n                return False"
+assert old in s
+open(p, "w").write(s.replace(old, new, 1))'
+      ;;
+    merge-any-check-name)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "projects = [row for row in rows if row.get(\"name\") == \"project-check\"]"
+new = "projects = [row for row in rows if row.get(\"name\")]"
+assert old in s
+open(p, "w").write(s.replace(old, new, 1))'
       ;;
     *)
       echo "unknown mutation: $name" >&2

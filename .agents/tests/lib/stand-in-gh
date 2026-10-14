@@ -166,6 +166,26 @@ def main(argv):
                 fail("gh: Not Found (HTTP 404)")
             print(state["latest"])
             return 0
+        if method == "GET" and path.startswith("repos/%s/branches/" % state["repo"]) and "/protection" not in path:
+            branch = path.rsplit("/", 1)[-1]
+            heads = state.get("branches", [])
+            if state.get("remote"):
+                heads += subprocess.run(["git", "-C", state["remote"], "for-each-ref",
+                                         "--format=%(refname:short)", "refs/heads/"],
+                                        capture_output=True, text=True).stdout.split()
+            if branch not in heads:
+                fail("HTTP 404: Branch not found")
+            print(json.dumps({"name": branch}))
+            return 0
+        if method == "GET" and path.endswith("/protection"):
+            if state.get("protection_status") == "network":
+                fail("connection timed out")
+            if state.get("protection_status") == "admin":
+                fail("HTTP 403: Must have admin rights to access branch protection")
+            if state.get("protection") is None:
+                fail("HTTP 404: Branch not protected")
+            print(json.dumps(state["protection"]))
+            return 0
         if method == "PATCH" and path == "repos/" + state["repo"]:
             settings = state.setdefault("settings", {})
             for field in flags(argv, "-F") + flags(argv, "-f"):
@@ -173,11 +193,50 @@ def main(argv):
                 settings[key] = value
             save(state)
             return 0
-        if method == "PUT" and path == "repos/%s/branches/main/protection" % state["repo"]:
-            if state.get("protection_status") == 403:
-                fail("HTTP 403: Resource not accessible by integration")
-            state["protection"] = {"required_status_checks": {"strict": True,
-                                     "contexts": ["project-check"]}, "enforce_admins": True}
+        if method == "PUT" and path.endswith("/protection"):
+            body = json.load(sys.stdin)
+            required = {"required_status_checks", "enforce_admins",
+                        "required_pull_request_reviews", "restrictions"}
+            if not required.issubset(body):
+                fail("HTTP 422: missing required branch protection keys")
+            if state.get("protection_status") == "plan":
+                fail("HTTP 403: Upgrade to GitHub Pro or make the repository public to use branch protection")
+            if state.get("protection_status") == "admin":
+                fail("HTTP 403: Must have admin rights to access branch protection")
+            if state.get("protection_status") == "422":
+                fail("HTTP 422: Invalid protection settings")
+            if state.get("protection_status") == "network":
+                fail("connection timed out")
+            branch = path.split("/branches/", 1)[1].split("/", 1)[0]
+            heads = state.get("branches", [])
+            if state.get("remote"):
+                heads += subprocess.run(["git", "-C", state["remote"], "for-each-ref",
+                                         "--format=%(refname:short)", "refs/heads/"],
+                                        capture_output=True, text=True).stdout.split()
+            if branch not in heads:
+                fail("HTTP 404: Branch not found")
+            state["protection"] = body
+            save(state)
+            return 0
+        if method == "POST" and path.endswith("/protection/required_status_checks/contexts"):
+            if state.get("protection_status") == "admin":
+                fail("HTTP 403: Must have admin rights to access branch protection")
+            protection = state.get("protection")
+            if not protection:
+                fail("HTTP 404: Branch not protected")
+            body = json.load(sys.stdin)
+            checks = protection.setdefault("required_status_checks", {"strict": True, "contexts": []})
+            for context in body.get("contexts", []):
+                if context not in checks.setdefault("contexts", []):
+                    checks["contexts"].append(context)
+            save(state)
+            return 0
+        if method == "POST" and path.endswith("/protection/enforce_admins"):
+            if state.get("protection_status") == "admin":
+                fail("HTTP 403: Must have admin rights to access branch protection")
+            if not state.get("protection"):
+                fail("HTTP 404: Branch not protected")
+            state["protection"]["enforce_admins"] = True
             save(state)
             return 0
         if path == "repos/%s/git/refs" % state["repo"]:

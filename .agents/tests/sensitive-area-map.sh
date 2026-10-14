@@ -55,13 +55,13 @@ else
   open=yes
 fi
 check "a changed open area fails: $(cat "$tmp/out")" "$open"
-grep -Fq 'Sensitive area: money; open' "$tmp/out" && named=yes || named=no
+grep -Fq 'This changes money, which still needs your decision.' "$tmp/out" && named=yes || named=no
 check "the open area and decision are named" "$named"
 
 sed 's/caution: checked; not yet done/caution: waiting; accepted 2026-09-18/' "$project/masterplan.md" > "$tmp/masterplan"
 cp "$tmp/masterplan" "$project/masterplan.md"
 printf '%s\n' '    Accepted: I accept this exposure on 2026-09-18' >> "$project/masterplan.md"
-git -C "$project" add masterplan.md
+git -C "$project" add -A
 git -C "$project" commit -qm accepted
 if run_check --change "$base" > "$tmp/out" 2>&1; then
   accepted=yes
@@ -69,8 +69,8 @@ else
   accepted=no
 fi
 check "a changed accepted area passes" "$accepted"
-grep -Fq 'Sensitive area: money; accepted 2026-09-18' "$tmp/out" && named=yes || named=no
-check "the accepted date is named" "$named"
+grep -Fq 'This changes money, which you accepted on 18 September 2026.' "$tmp/out" && named=yes || named=no
+check "the accepted date is plain and named" "$named"
 
 if run_check --bad > "$tmp/out" 2>&1; then
   usage=no
@@ -92,6 +92,22 @@ check "the failure names the moved path" "$named"
 
 sed 's@src/billing/@src/payments/@g' "$project/masterplan.md" > "$tmp/masterplan"
 cp "$tmp/masterplan" "$project/masterplan.md"
+sed 's@src/payments/@src/payments/*.ts@' "$project/masterplan.md" > "$tmp/masterplan"
+cp "$tmp/masterplan" "$project/masterplan.md"
+git -C "$project" add -A
+git -C "$project" commit -qm 'Use a simple glob in the area map'
+rename_base=$(git -C "$project" rev-parse HEAD)
+git -C "$project" mv src/payments/charge.ts src/elsewhere.ts
+git -C "$project" commit -qm 'Move a file out of the mapped area'
+if run_check --change "$rename_base" > "$tmp/out" 2>&1; then
+  changed=yes
+else
+  changed=no
+fi
+grep -Fq 'This changes money, which you accepted on 18 September 2026.' "$tmp/out" \
+  && glob=yes || glob=no
+check "a completed area passes after a rename" "$changed"
+check "the changed path still names the accepted area" "$glob"
 mkdir -p "$project/services"
 printf '%s\n' 'export const send = true' > "$project/services/send.ts"
 if run_check > "$tmp/out" 2>&1; then

@@ -13,7 +13,6 @@ Usage:
     settings-rules.py [PROJECT]             list the rules to offer
     settings-rules.py --apply [PROJECT]     add them
     settings-rules.py --decline [PROJECT]   record a no
-    settings-rules.py --merge-box [PROJECT] say whether direct merges are blocked
 
 PROJECT defaults to the current folder. Each line has fields separated by
 tabs:
@@ -47,9 +46,8 @@ the file back and stops with exit 3, the file untouched, if the result would not
 hold every earlier entry and setting plus the new rules.
 
 Exit codes. List mode: 1 when a rule is offered, 0 when none is (a declined
-rule or a `left` line included), 2 on a usage error. `--merge-box`: 0 when the
-project settings block `gh pr merge`, 1 when they do not. `--apply` and
-`--decline`: 0 on success.
+rule or a `left` line included), 2 on a usage error. `--apply` and `--decline`:
+0 on success.
 """
 
 import datetime
@@ -67,7 +65,6 @@ MAINTENANCE = ".ai-build-kit-maintenance"
 DECLINED = "push-rules-declined|"
 FORCE_PUSH = "Bash(git push --force:*)"
 FORCED_DELETE = "Bash(rm -rf:*)"
-MERGE = "Bash(gh pr merge:*)"
 # Refusals added after the first founding settings, which no earlier rule
 # stood in for: skipping or switching off the push guard, throwing away
 # unsaved changes, and reading another tool's stored login.
@@ -359,15 +356,6 @@ def decline(project, today=None):
     return 0
 
 
-def merge_box(project):
-    """0 when the project blocks direct merges, 1 when it does not."""
-    try:
-        data = json.loads(load(os.path.join(project, SETTINGS)))
-    except (OSError, ValueError):
-        return 1
-    return 0 if MERGE in lists(data)["deny"] else 1
-
-
 def listing(project):
     try:
         _, _, offers = read(project)
@@ -391,8 +379,8 @@ def listing(project):
 def main(argv):
     flags = [a for a in argv if a.startswith("--")]
     rest = [a for a in argv if not a.startswith("--")]
-    if len(flags) > 1 or set(flags) - {"--apply", "--decline", "--merge-box"} or len(rest) > 1:
-        print("usage: settings-rules.py [--apply | --decline | --merge-box] [PROJECT]", file=sys.stderr)
+    if len(flags) > 1 or set(flags) - {"--apply", "--decline"} or len(rest) > 1:
+        print("usage: settings-rules.py [--apply | --decline] [PROJECT]", file=sys.stderr)
         return 2
     project = rest[0] if rest else "."
     if not os.path.isdir(project):
@@ -402,8 +390,6 @@ def main(argv):
         return apply(project)
     if flags == ["--decline"]:
         return decline(project)
-    if flags == ["--merge-box"]:
-        return merge_box(project)
     return listing(project)
 
 

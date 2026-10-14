@@ -213,6 +213,14 @@ def pr_url(state, pr):
     return "https://github.com/%s/pull/%s" % (state["repo"], pr["number"])
 
 
+def git(*args):
+    try:
+        result = subprocess.run(["git", *args], capture_output=True, text=True)
+    except OSError:
+        return ""
+    return result.stdout.strip() if result.returncode == 0 else ""
+
+
 def pr_fields(state, pr, names):
     """The subset of a pull request that --json asks for.
 
@@ -229,6 +237,8 @@ def pr_fields(state, pr, names):
         "url": pr_url(state, pr),
         "headRefName": pr.get("head", ""),
         "baseRefName": pr.get("base", "main"),
+        "headRefOid": git("rev-parse", "refs/heads/" + pr.get("head", "")) or git("rev-parse", "HEAD"),
+        "baseRefOid": git("rev-parse", "refs/heads/" + pr.get("base", "main")) or git("rev-parse", "HEAD"),
         "mergeable": "MERGEABLE",
         "isDraft": False,
         "statusCheckRollup": [{
@@ -737,9 +747,18 @@ def main():
                     "no pull requests found for branch \"%s\"\n"
                     % (target or current_branch()))
                 sys.exit(1)
-            # The real CLI writes one tab-separated row per check and exits 0
-            # when they all pass.
-            print("project-check\tpass\t0s\t%s/checks" % pr_url(state, pr))
+            checks = pr.get("checks", [{"name": "project-check", "state": "SUCCESS",
+                                         "bucket": "pass"}])
+            if not checks:
+                sys.stderr.write("no checks reported on the '%s' branch\n" % pr.get("head", ""))
+                sys.exit(1)
+            if flag(argv, "--json") is not None:
+                print(json.dumps([{key: row.get(key) for key in (flag(argv, "--json") or "").split(",")}
+                                  for row in checks]))
+                return
+            # The real CLI's non-JSON table is retained for other callers.
+            for row in checks:
+                print("%s\t%s\t0s\t%s/checks" % (row.get("name"), row.get("bucket"), pr_url(state, pr)))
             return
 
         if sub == "edit" and len(argv) > 2:
@@ -772,6 +791,12 @@ def main():
                     sys.stderr.write("GraphQL: %s merges are not allowed on this "
                                      "repository. (mergePullRequest)\n" % kind)
                     sys.exit(1)
+            if not any(option in argv for option in ("--merge", "--squash", "--rebase")):
+                unsupported(argv, "only merge commits are modelled")
+            expected_head = git("rev-parse", "refs/heads/" + pr.get("head", "")) or git("rev-parse", "HEAD")
+            if flag(argv, "--match-head-commit") is not None and flag(argv, "--match-head-commit") != expected_head:
+                sys.stderr.write("Pull request head changed before merge\n")
+                sys.exit(1)
             if not land_on_remote(pr):
                 sys.stderr.write("Pull request #%s is not mergeable\n" % pr["number"])
                 sys.exit(1)
