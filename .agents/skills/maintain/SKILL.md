@@ -163,9 +163,10 @@ Give its `say` lines in one reply, in order, and keep to these rules:
   monthly visits, then record `upgrade-offered|<installed VERSION>` in
   `.ai-build-kit-maintenance`. On other visits say only: "The kit update is
   not finished. The earlier /maintain offer still stands." Exit 0 with only
-  `mention` or `left` sentences: say them and record the same line.
-- Copy each `mention` and `left` sentence you say into the visit's changelog
-  line, word for word.
+  `mention`, `left` or `secrets` sentences: say them and record the same line.
+- Copy each `mention`, `left` and `secrets` sentence you say into the visit's
+  changelog line, word for word. On a yes to `secrets`, copy the founding
+  template's lines refusing to show a secret into AGENTS.md.
 - Apply only on a yes, on the clean checkpoint, with `--apply <step>`. The
   `helper` and `ready` steps need no question. A `missing` line is recovered
   with the update command approved this visit, or offered first. An

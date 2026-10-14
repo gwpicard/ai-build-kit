@@ -37,10 +37,12 @@ Before asking, run the installed `setup-ai-build-kit` skill's
 `scripts/workflow-upload-check.py` with python3, adding `--codex` in Codex.
 Exit 1 gives the exact line to say: the person runs `gh auth refresh -h
 github.com -s workflow` in their own terminal, which opens the browser once.
-Save locally and leave the upload waiting for that step. Where a push is
-refused for the `workflow` permission, run the helper with `--refused`, give
-its line, and keep the work local. Never refresh the login for them or retry
-in a Codex session holding the old login. Their yes still stands when they
+Save locally and leave the upload waiting for that step. Exit 0 finds no
+missing permission; an SSH push or unreadable permissions stay unknown. Where
+a push is refused for the `workflow` permission, run the helper with
+`--refused`, give its line, and keep the work local. Never ask them to update
+the credential, refresh the login for them, or retry in a Codex session
+holding the old login. Their yes still stands when they
 return.
 
 Build and check the piece first; only the push waits. In the reply that
@@ -95,9 +97,10 @@ live address, the merge puts this change live. Check these first, read-only:
   the merge, such as the container check, run it now. The exit code decides.
   Exit 1 holds the merge like a red check: say what failed and return to step
   5. Exit 2 means it could not run here: a warning, said once and recorded in
-  CHANGELOG.md in this pull request, and the merge is not held for it. Where
-  the changelog already holds it, one line pointing to it is the whole
-  answer, in this reply and any later one.
+  CHANGELOG.md in this pull request. Do not hold the merge for it, and do not
+  ask the person whether to merge without it. Where the changelog already
+  holds it, one line pointing to it is the whole answer, in this reply and any
+  later one.
 - Where the piece has a `Live side needs:` line, ask for the merge only once
   /setup-hosting reports each name present on the host.
 - Run `sh` with this skill's `scripts/env-names-added.sh` and the piece's
@@ -126,14 +129,19 @@ that none of the checks above holds the merge for, such as a project check
 still running the setup placeholder, is said in one line and offered as a
 piece; it never takes back a yes the person already gave. A yes to building,
 saving, uploading, going live or a hosting step, or to any question asked
-before the merge was named, does not cover it. A no leaves the pull request
-open and the live tool as it was.
+before the merge was named, does not cover it. A red or missing required
+check, or an unsettled finding worth stopping for, always holds the merge,
+whatever was said. A no leaves the pull request open and the live tool as it
+was.
 
 Where several pieces wait, name each pull request on its own line. A yes
 covers only those it names, or all where it plainly says so, as in "merge
 both". Where merging one of them leaves another `CONFLICTING`, the same yes
-covers bringing `main` into it, as above: settle it, run the check, and merge
-it once green, saying so. Do not ask again.
+covers bringing `main` into it only when the records settle the conflict
+plainly. A conflict that needs a question, or touches data, a migration,
+deployment settings or a named sensitive area, takes a new yes that names it.
+Once `main` is in, run the check and "Before asking, on a live project" again
+for that piece, and merge it once both pass, saying so.
 
 **Merging.** Make an approved merge on the pull request itself, always with
 `gh pr merge --merge`, never `--squash` or `--rebase`, so the masterplan's mark
@@ -154,7 +162,7 @@ with `merged` and the piece's number, then refresh the printout.
 
 **After the merge, held after a rollback.** Say: "This is merged. The live
 copy stays on the earlier version until /setup-hosting puts this change live."
-Suggest no redeploy.
+Do not read the health line as "did not update", and suggest no redeploy.
 
 **After the merge, live on a recipe.** Once the host has had time to build,
 read the live copy with the recipe's `live-check.sh --only commit` and

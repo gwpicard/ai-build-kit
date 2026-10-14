@@ -240,9 +240,11 @@ Checkpoint route: update the records, commit, and state the checkpoint.
 
 Pull-request route: update the records, commit, push, open a pull request
 titled after the piece with a plain summary and `Closes #<number>`, and run the
-project checks. Never present it as ready until the check is green. If it goes
-red, say so, read the failure yourself, fix it, and push again. Never merge
-before step 10, and never on a red check.
+project checks. List any unsettled finding worth stopping for under `Worth
+stopping for` in the body, and remove it once settled. Never present it as
+ready until the check is green. If it goes red, say so, read the failure
+yourself, fix it, and push again. Never merge before step 10, and never on a
+red check.
 
 Where GitHub did not start the check at all, such as for billing or Actions
 switched off, read the reason with `gh run view` and run the project check
@@ -278,11 +280,12 @@ Once the check is green and the records are in the pull request, load
 ## Typed with auto, or handed to a goal mode
 
 Auto is earned. Before it runs, require: three ordinary pieces completed
-cleanly, no flagged work waiting, a clean tree, evidence a machine can check
-for every selected piece, no piece waiting on a question, no repair, every
-piece self-sufficient enough to build without a person present through its
-`Under the hood` notes, no pending build-path change, and the person's yes to
-the batch. Then load `references/running-longer.md` and follow it.
+cleanly, no unsettled review finding worth stopping for, no flagged work
+waiting, a clean tree, evidence a machine can check for every selected piece,
+no piece waiting on a question, no repair, every piece
+self-sufficient enough to build without a person present through its
+`Under the hood` notes, nothing needing human judgement in the batch, no
+pending build-path change, and the person's yes to the batch. Then load `references/running-longer.md` and follow it.
 
 ## Excuses that don't hold
 

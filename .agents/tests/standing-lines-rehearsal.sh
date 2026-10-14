@@ -37,6 +37,15 @@ run "$WORK/no-newline.md"
 run "$WORK/missing.md"
 [ "$code" -eq 2 ] || fail "a missing file: expected exit 2, got $code"
 
+# A file it cannot read is exit 2 too. Root reads any file, so skip it there.
+if [ "$(id -u)" -ne 0 ]; then
+  lines 12 > "$WORK/locked.md"
+  chmod 000 "$WORK/locked.md"
+  run "$WORK/locked.md"
+  chmod 600 "$WORK/locked.md"
+  [ "$code" -eq 2 ] || fail "an unreadable file: expected exit 2, got $code"
+fi
+
 # Run from a project root with no argument, it reads AGENTS.md there.
 mkdir "$WORK/project"
 lines 12 > "$WORK/project/AGENTS.md"

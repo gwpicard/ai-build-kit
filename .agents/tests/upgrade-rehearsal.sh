@@ -114,7 +114,7 @@ for route in ('claude-only','shared','whole','plugin'):
     # Every step the person is offered comes with the words they hear.
     said={line.split('\t')[1] for line in listed.splitlines() if line.startswith('say\t')}
     steps={'installer':'installer','commands':'commands','pointer':'pointers','settings':'settings',
-           'template':'template','mention':'mention','kitcopy':'remove','hook':'remove','left':'left'}
+           'template':'template','mention':'mention','kitcopy':'remove','hook':'remove','left':'left','secrets':'secrets'}
     assert {steps[k] for k in kinds if k in steps} <= said, listed
     assert 'kit' in said, listed
     assert {'commands','pointer','helper','settings','template','mention'} <= set(kinds), listed
@@ -124,6 +124,7 @@ for route in ('claude-only','shared','whole','plugin'):
     assert ('kitcopy\t.claude-plugin' in listed)==(route=='whole'), listed
     assert ('hook\t.agents/hooks/session-end-sync.sh' in listed)==(route=='whole'), listed
     assert 'mention\tmasterplan.md:' in listed and 'We run /ship before' in listed
+    assert kinds.count('secrets')==1, listed
     if route=='whole':
         for path in ('.claude-plugin','WORKFLOW.md','.agents/guard/blocked-commands.md','.agents/tools/build-adapters.sh','.ai-build-kit-version'):
             assert 'kitcopy\t'+path in listed,listed
@@ -134,7 +135,7 @@ for route in ('claude-only','shared','whole','plugin'):
         assert not any((p/folder/name).exists() for folder in ('.agents/skills','.claude/skills') for name in retired)
     for step in ('helper','remove','commands','pointers','settings','template'): apply(skills,p,step)
     after=check(skills,p,0)
-    assert all(l.startswith(('mention\t','left\t','say\t')) for l in after.splitlines()),after
+    assert all(l.startswith(('mention\t','left\t','secrets\t','say\t')) for l in after.splitlines()),after
     assert (p/'CHANGELOG.md').read_bytes()==changelog
     assert 'Project rule: Keep our club notes private.' in (p/'AGENTS.md').read_text()
     assert 'We run /ship before the club night.' in (p/'masterplan.md').read_text()
@@ -416,6 +417,23 @@ with (p/'CHANGELOG.md').open('a') as f:
     f.write('2026-10-13: '+first['mention']+' '+first['left']+'\n')
 assert not {'mention','left'} & set(sayings(['--monthly'])),'repeated after the changelog named them'
 print('  ok: a line already named is not named again')
+
+# An AGENTS.md written before the line refusing to show a secret is told about
+# it once; one that already has it, as founding writes it, is not.
+p=work/'secrets'; p.mkdir()
+copy(source/'setup-ai-build-kit/templates/masterplan.md',p/'masterplan.md')
+copy(source/'setup-ai-build-kit/templates/foundation/plan-refresh.sh',p/'.agents/tools/plan-refresh.sh')
+apply(source,p,'helper')
+copy(source/'setup-ai-build-kit/templates/foundation/AGENTS.md',p/'AGENTS.md')
+assert 'secrets' not in set(sayings([])) and 'secrets\t' not in check(source,p,0)
+put(p/'AGENTS.md','# Agents\n\nNever print a secret.\n')
+first=sayings([])
+assert 'secrets' in first and 'Shall I?' in first['secrets'],first
+put(p/'.ai-build-kit-maintenance','upgrade-offered|'+version+'\n')
+assert 'secrets' not in sayings([]),'repeated between monthly visits'
+put(p/'CHANGELOG.md','2026-10-14: '+first['secrets']+'\n')
+assert 'secrets' not in sayings(['--monthly']),'repeated after the changelog named it'
+print('  ok: an older AGENTS.md hears about the secret refusal once')
 
 # A pointer left in a file that is not readable text is given that reason,
 # not the one for a pointer inside a command.

@@ -63,6 +63,8 @@ These are named, never changed, and do not count as left:
 
     mention    FILE:LINE  TEXT another line naming a retired command
     left       PATH  WHY       something that stays as it is
+    secrets    AGENTS.md  WHY  no line refusing to show a secret, as
+                               the founding template now has
     pointer lines ending in `left as written: WHY`
     command lists left as written that name no retired command or are links
     declined   STEP  ...       an offer the person said no to
@@ -76,8 +78,9 @@ These are named, never changed, and do not count as left:
 After those lines come `say` lines, `say  STEP  SENTENCE`, one for each step
 or kind printed. Each holds the plain sentence the person hears for it, so
 the words come from here rather than from memory. They are never counted.
-A `mention` or `left` sentence is said once: it is left out when
-CHANGELOG.md already holds the line it names, and on a visit without
+A `mention`, `left` or `secrets` sentence is said once: it is left out when
+CHANGELOG.md already holds the line it names (for `secrets`, the
+sentence itself), and on a visit without
 --monthly once `.ai-build-kit-maintenance` records `upgrade-offered|` with
 the installed version.
 
@@ -391,6 +394,28 @@ def planfile_findings(project, monthly):
     return []
 
 
+# The founding template's line refusing to show a secret. An AGENTS.md written
+# before it has no such line, so the agent is told once, and adds it on a yes.
+REFUSAL = "show or read out a secret"
+SECRETS_WORDS = ("Your AGENTS.md has no line telling me to refuse to show a secret, because "
+                 "anything shown here stays in this conversation's record. I can add the kit "
+                 "template's lines on that to your secrets section and change nothing else. "
+                 "Shall I?")
+
+
+def secrets_findings(project):
+    if linked_path(project, "AGENTS.md"):
+        return []
+    try:
+        with open(os.path.join(project, "AGENTS.md"), encoding="utf-8") as handle:
+            text = " ".join(handle.read().split())
+    except (OSError, UnicodeDecodeError):
+        return []
+    if REFUSAL in text:
+        return []
+    return [("secrets", "AGENTS.md", "no line refusing to show a secret")]
+
+
 def mention_findings(project, skip):
     found = []
     for name in MENTION_FILES:
@@ -441,6 +466,7 @@ def findings(project):
     # Every line of a command list, its continuation included, belongs to
     # the commands step, even when it needs an agent edit.
     found.extend(mention_findings(project, skip | command_list_lines(project)))
+    found.extend(secrets_findings(project))
     return found
 
 
@@ -458,7 +484,7 @@ def command_list_lines(project):
 
 def informational(finding):
     kind = finding[0]
-    if kind in ("mention", "left", "declined", "planfile"):
+    if kind in ("mention", "left", "declined", "planfile", "secrets"):
         return True
     if kind == "commands" and finding[-1].startswith("left as written:"):
         return finding[-1].startswith("left as written: it is a link") or not re.search(
@@ -534,6 +560,8 @@ def said_once(out, project, monthly):
         if finding[0] == "mention" and (offered or finding[2] in changelog):
             continue
         if finding[0] == "left" and (offered or left_words(finding) in changelog):
+            continue
+        if finding[0] == "secrets" and (offered or SECRETS_WORDS in changelog):
             continue
         kept.append(finding)
     return kept
@@ -728,6 +756,8 @@ def sentences(out, project):
                          plural(n, "This line", "These lines"), plural(n, "names", "name"),
                          "; ".join('%s, "%s"' % (f[1], f[2]) for f in by["mention"]),
                          plural(n, "It is", "They are"), plural(n, "it", "them"))))
+    if "secrets" in by:
+        said.append(("secrets", SECRETS_WORDS))
     if "left" in by:
         said.append(("left", "These stay as they are: %s." % "; ".join(
             left_words(f) for f in by["left"])))

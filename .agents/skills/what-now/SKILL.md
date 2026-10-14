@@ -17,11 +17,12 @@ what to run where the helper is missing. Never sort the pieces by hand. If
 GitHub cannot be reached, work from the printout and say when it was written.
 
 Note: whether the project is live (the changelog says), half-done work, a
-finished piece waiting for its merge, a failing check, flagged work waiting,
-the `Accepted:` lines, a manual setup step left mid-way, a merge or rebase
-conflict, a check-up overdue by `.ai-build-kit-maintenance` (or the changelog
-dates when that file is missing), and anything on the recheck-when list that
-has happened.
+finished piece waiting for its merge, a failing check, an open pull request
+whose body lists `Worth stopping for`, flagged work waiting, the `Accepted:`
+lines, a manual setup step left mid-way, a merge or rebase conflict, a
+check-up overdue by `.ai-build-kit-maintenance` (or the changelog dates when
+that file is missing), and anything on the recheck-when list that has
+happened.
 
 Run two checks from the project root and keep only their exit codes. Both read
 and change nothing:
@@ -43,8 +44,8 @@ Order:
    to /implement; one not yet reproduced goes to /shape. Where the live tool
    broke after a recent merge, follow the `setup-hosting` skill's "Rolling
    back" first.
-2. A failing check, or a setup step left half-done. Say each plainly. Neither
-   sits under "nothing is blocked".
+2. A failing check, an unsettled review finding, or a setup step left
+   half-done. Say each plainly. None sits under "nothing is blocked".
 3. The counts. Before the first launch: "four pieces in, three left, nothing
    blocked, nothing half done". Once live, describe the state instead, since
    a live project's list never empties.
@@ -117,6 +118,11 @@ Name the check and what it catches, in plain words, such as the test that
 stops a booking being taken twice. A red check on an open pull request belongs
 to that piece's build, so /implement. A red check on `main` is a fault, so
 /shape. Never show its output or logs.
+
+### Unsettled review finding
+
+Name it in the review's words and the piece it belongs to. It holds that
+piece's merge until settled, so /implement.
 
 ### Unfinished setup step
 
