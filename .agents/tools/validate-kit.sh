@@ -63,9 +63,8 @@ fi
 
 # The shape rules for the skills: a command never loads another command's
 # files, a background skill has two callers or an agent that loads it, and each
-# file keeps to its word budget. They report without failing until the tree
-# meets them; then this turns to 1 and a breach fails the run.
-structure_strict=0
+# file keeps to its word budget. A breach fails the run.
+structure_strict=1
 
 # Every folder under .agents/maintainer-skills/ is a maintainer skill, and the
 # list is read off the folder rather than written out here. A written-out list

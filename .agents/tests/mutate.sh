@@ -59,7 +59,9 @@ stale-term
 agent-manifest-extra-field
 release-nondeterministic
 runnable-bit-lost
-product-named"
+product-named
+command-loads-command
+command-over-budget"
 
 describe() {
   case "$1" in
@@ -84,6 +86,8 @@ describe() {
     release-nondeterministic) echo "an untracked file inside an approved folder enters the release" ;;
     runnable-bit-lost) echo "a script that is started by path loses its saved runnable bit" ;;
     product-named) echo "a skill file outside the recipes names a place a tool runs" ;;
+    command-loads-command) echo "a command reaches into another command's references instead of calling a background skill" ;;
+    command-over-budget) echo "a command grows past its word budget" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -95,6 +99,8 @@ checks_for() {
     runnable-bit-lost) echo "$MODE_CHECKS" ;;
     discipline-user-invocable) echo "validate-kit" ;;
     product-named) echo "validate-kit" ;;
+    command-loads-command) echo "validate-kit" ;;
+    command-over-budget) echo "validate-kit" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -301,6 +307,20 @@ open(p, "w").write(t)
       target="$tree/.agents/skills/evidence-run/SKILL.md"
       [ -f "$target" ] || { echo "no evidence-run reference to plant a name in" >&2; return 1; }
       printf '\n%s\n' 'When it is ready, deploy it to Netlify.' >> "$target"
+      ;;
+    command-loads-command)
+      # The quickest way to share a rule is to point at the file another
+      # command keeps it in, which is how the commands came to depend on each
+      # other without anyone seeing it.
+      target="$tree/.agents/skills/implement/SKILL.md"
+      [ -f "$tree/.agents/skills/setup-hosting/references/hosting-request.md" ] || return 1
+      printf '\n%s\n' "For a server, follow the \`setup-hosting\` skill's \`references/hosting-request.md\`." >> "$target"
+      ;;
+    command-over-budget)
+      # A command grows one helpful paragraph at a time.
+      target="$tree/.agents/skills/shape/SKILL.md"
+      [ -f "$target" ] || return 1
+      python3 -c "import sys; open(sys.argv[1], 'a').write('\n' + ' '.join(['word'] * 400) + '\n')" "$target"
       ;;
     *)
       echo "unknown mutation: $name" >&2
