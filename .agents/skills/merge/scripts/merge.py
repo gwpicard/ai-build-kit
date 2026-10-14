@@ -5,6 +5,7 @@ import json
 import re
 import subprocess
 import sys
+from pathlib import Path
 
 
 def gh(*args):
@@ -28,27 +29,54 @@ def read_json(result, label):
 
 def open_review_box(body):
     level = None
+    fenced = False
+    settled_indent = None
     for line in body.splitlines():
+        if re.match(r"^\s{0,3}(?:```|~~~)", line):
+            fenced = not fenced
+            continue
+        if fenced:
+            continue
         heading = re.match(r"^\s{0,3}(#{1,6})\s+(.+?)\s*#*\s*$", line)
+        bold = re.match(r"^\s{0,3}\*\*(.+?)\*\*\s*$", line)
         if heading:
             next_level = len(heading.group(1))
             title = heading.group(2).strip().rstrip(":").strip()
             if level is not None and next_level <= level:
-                return False
-            if level is None and title == "Worth stopping for":
+                level = None
+            if title.casefold() == "worth stopping for":
                 level = next_level
+            continue
+        if bold:
+            title = bold.group(1).strip().rstrip(":").strip()
+            if title.casefold() == "worth stopping for":
+                level = 7
+                settled_indent = None
+            elif level is not None:
+                level = None
             continue
         if level is None:
             continue
-        item = re.match(r"^\s*(?:[-+*]|\d+[.)])\s+(.+?)\s*$", line)
-        if not item:
+        if re.match(r"^\s*[-+*]\s+None\s*$", line, re.I):
             continue
-        content = item.group(1)
-        checkbox = re.match(r"^\[([ xX])\]\s*", content)
-        if checkbox:
-            if checkbox.group(1).lower() != "x":
+        indent = len(line) - len(line.lstrip())
+        item = re.match(r"^\s*(?:[-+*]|\d+[.)])\s+(.+?)\s*$", line)
+        if item and settled_indent is not None and indent > settled_indent:
+            continue
+        if item and (settled_indent is None or indent <= settled_indent):
+            settled_indent = None
+        if item:
+            content = item.group(1)
+            checkbox = re.match(r"^\[([ xX])\]\s*", content)
+            if checkbox:
+                if checkbox.group(1).lower() != "x":
+                    return True
+                settled_indent = indent
+            elif re.match(r"^(?:[-+*]|\d+[.)])\s+", content):
+                continue
+            else:
                 return True
-        else:
+        elif line.strip():
             return True
     return False
 
@@ -67,18 +95,43 @@ def check_hold(rows):
             stop("merge: project-check is %s; the pull request stays open" % state)
 
 
-def check_sensitive_area(base):
-    script = ".agents/hooks/check-sensitive-areas.sh"
+def sensitive_area_map():
     try:
-        version = subprocess.run(["sh", script, "--version"], text=True,
-                                 capture_output=True)
+        with open("masterplan.md", encoding="utf-8") as handle:
+            lines = handle.read().splitlines()
+    except FileNotFoundError:
+        return False
+    except (OSError, UnicodeError) as error:
+        stop("merge: could not read the sensitive-area map: " + str(error), 2)
+    return (any(line.strip() == "Path: Build with care" for line in lines)
+            and any(line.strip() == "Sensitive areas:" for line in lines))
+
+
+def kit_area_check():
+    here = Path(__file__).resolve()
+    for parent in here.parents:
+        for candidate in (
+                parent / "setup-ai-build-kit" / "templates" / "foundation" / "check-sensitive-areas.sh",
+                parent / "skills" / "setup-ai-build-kit" / "templates" / "foundation" / "check-sensitive-areas.sh"):
+            if candidate.is_file():
+                return str(candidate)
+    stop("merge: could not find the kit's sensitive-area check", 2)
+
+
+def check_sensitive_area(base, head):
+    script = kit_area_check()
+    try:
+        fetch = subprocess.run(["git", "fetch", "origin", base, head], text=True,
+                               capture_output=True)
     except OSError:
-        stop("merge: could not run the sensitive-area check", 2)
-    if version.returncode != 0 or version.stdout.strip() != "sensitive-area-check-v2":
-        stop("merge: the installed sensitive-area check cannot check changed files; update the kit copy", 2)
+        stop("merge: could not fetch the pull request commits", 2)
+    if fetch.returncode != 0:
+        detail = (fetch.stderr or fetch.stdout).strip()
+        stop("merge: could not fetch the pull request commits" +
+             (": " + detail if detail else ""), 2)
     try:
-        result = subprocess.run(["sh", script, "--change", base], text=True,
-                                capture_output=True)
+        result = subprocess.run(["sh", script, "--change", base, "--head", head],
+                                text=True, capture_output=True)
     except OSError:
         stop("merge: could not run the sensitive-area check", 2)
     if result.stdout:
@@ -108,7 +161,8 @@ def main(argv):
     head = data["headRefOid"]
     if not data.get("baseRefOid"):
         stop("merge: GitHub returned an unreadable pull request base", 2)
-    check_sensitive_area(data["baseRefOid"])
+    if sensitive_area_map():
+        check_sensitive_area(data["baseRefOid"], head)
 
     checks = gh("pr", "checks", number, "--json", "name,state,bucket")
     if checks.returncode == 1 and not checks.stdout.strip() and "no checks reported" in checks.stderr:

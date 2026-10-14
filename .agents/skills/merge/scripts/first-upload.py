@@ -44,14 +44,13 @@ unknown, so nothing is pushed that could leave a branch online with no main.
 
 With --approved, in the first-upload state, it pushes the piece's branch (the
 current branch unless --branch names one) as a command of its own, creates
-main on GitHub at the commit that branch was cut from, makes main the default
-branch and requires project-check. In the no-main state it pushes nothing and
-only creates main, makes it the default and requires the check. It never pushes
-main. Exit 0 then means the code is online and protection is set. Exit 7 means
-the push failed and nothing was created; exit 8 means the branch is online but
-main or its protection could not be confirmed. In any other state --approved
-changes nothing and exits with that
-state's code.
+main on GitHub at the commit that branch was cut from, and makes main the
+default branch. In the no-main state it pushes nothing and only creates main
+and makes it the default. It never pushes main. Exit 0 means the code is online.
+On GitHub Free, the protection line says the kit will hold the merge itself.
+Other protection failures say why protection could not be set. Exit 7 means
+the push failed and nothing was created; exit 8 means main could not be created.
+In any other state --approved changes nothing and exits with that state's code.
 """
 
 import json
@@ -162,8 +161,7 @@ def create_main(project, name, base):
     if protection.returncode != 0:
         if protection.stderr:
             sys.stderr.write(protection.stderr)
-        print("main\tcreated, but required check protection could not be confirmed")
-        return 8
+        return 0
     return 0
 
 

@@ -118,7 +118,14 @@ PY
 run_check() {
   awk '
     /^ *- name: / { sub(/^ *- name: /, ""); name = $0; next }
+    /^ *run: \|[-+]?$/ { run_indent = match($0, /[^ ]/); command = ""; block = 1; next }
+    block && /^[ ]+/ {
+      indent = match($0, /[^ ]/)
+      if (indent > run_indent) { sub(/^[ ]+/, ""); command = command $0 "\n"; next }
+      print name "\t" command; block = 0
+    }
     /^ *run: /    { sub(/^ *run: /, ""); print name "\t" $0 }
+    END { if (block) print name "\t" command }
   ' "$PROJECT/.github/workflows/checks.yml" > "$WORK/steps"
   tab=$(printf '\t')
   while IFS="$tab" read -r step command; do

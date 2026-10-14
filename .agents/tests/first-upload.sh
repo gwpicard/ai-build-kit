@@ -211,5 +211,23 @@ out=$(run --approved 2>&1) && code=0 || code=$?
 out=$(run) && code=0 || code=$?
 [ "$code" -eq 0 ] && pass "after that the code is online" || fail "after creating main the state read $code: $out"
 
+echo "== Protection can be unavailable after a successful upload =="
+for reason in plan admin network; do
+  setup
+  set_state protection_status "\"$reason\""
+  out=$(run --approved 2>&1) && code=0 || code=$?
+  [ "$code" -eq 0 ] && [ "$(heads)" = "main sign-out " ] \
+    || fail "$reason protection failure treated the upload as failed ($code): $out"
+  if [ "$reason" = plan ]; then
+    printf '%s\n' "$out" | grep -q 'kit will hold the merge itself' \
+      && pass "a GitHub Free plan restriction leaves the upload complete and says the kit holds merges" \
+      || fail "the plan restriction did not explain the merge hold: $out"
+  else
+    printf '%s\n' "$out" | grep -q 'protection could not be set' \
+      && pass "$reason protection failure leaves the upload complete with a reason" \
+      || fail "$reason protection failure had no explanation: $out"
+  fi
+done
+
 [ "$FAIL" -eq 0 ] || exit 1
 echo "first-upload.sh: all checks passed"

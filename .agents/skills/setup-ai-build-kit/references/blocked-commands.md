@@ -226,11 +226,12 @@ before the box appears.
 
 ## A merge
 
-A person decides whether to merge, always. The Claude Code settings block
-`gh pr merge` and merge API calls. After the person says yes, the `merge` skill
-runs `merge.py`, which checks the project check and review boxes before it
-merges. On a private repository on GitHub Free, a person can still merge by
-hand on GitHub.
+A person decides whether to merge, always. A confirmation box appears before
+`merge.py` runs. The Claude Code settings block `gh pr merge` and merge API
+calls. After the person says yes, the `merge` skill runs `merge.py`, which
+checks the project check and review boxes before it merges. GitHub Free cannot
+require branch protection on a private repository, so the kit holds the merge
+itself.
 
 Other coding agents have no such box, so there the written rule is the only
 guard.

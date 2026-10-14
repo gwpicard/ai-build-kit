@@ -67,7 +67,9 @@ merge-missing-check
 merge-pending-bucket-only
 merge-skipping-project-pass
 merge-first-box-only
-merge-any-check-name"
+merge-any-check-name
+merge-area-call-skipped
+merge-area-open-ignored"
 
 describe() {
   case "$1" in
@@ -100,6 +102,8 @@ describe() {
     merge-skipping-project-pass) echo "a skipped project-check is accepted as passed" ;;
     merge-first-box-only) echo "the second open finding is ignored after a settled first box" ;;
     merge-any-check-name) echo "a different passing check stands in for project-check" ;;
+    merge-area-call-skipped) echo "an open sensitive area is not checked before merge" ;;
+    merge-area-open-ignored) echo "an open sensitive area is reported but does not hold merge" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -115,7 +119,7 @@ checks_for() {
     command-over-budget) echo "validate-kit" ;;
     background-one-caller) echo "validate-kit" ;;
     merge-missing-check) echo "merge-gate" ;;
-    merge-pending-bucket-only|merge-skipping-project-pass|merge-first-box-only|merge-any-check-name) echo "merge-gate" ;;
+    merge-pending-bucket-only|merge-skipping-project-pass|merge-first-box-only|merge-any-check-name|merge-area-call-skipped|merge-area-open-ignored) echo "merge-gate" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -405,6 +409,26 @@ p = os.environ["MUTATE_TARGET"]
 s = open(p).read()
 old = "projects = [row for row in rows if row.get(\"name\") == \"project-check\"]"
 new = "projects = [row for row in rows if row.get(\"name\")]"
+assert old in s
+open(p, "w").write(s.replace(old, new, 1))'
+      ;;
+    merge-area-call-skipped)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "if sensitive_area_map():"
+new = "if False and sensitive_area_map():"
+assert old in s
+open(p, "w").write(s.replace(old, new, 1))'
+      ;;
+    merge-area-open-ignored)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "if result.returncode == 1:"
+new = "if False and result.returncode == 1:"
 assert old in s
 open(p, "w").write(s.replace(old, new, 1))'
       ;;

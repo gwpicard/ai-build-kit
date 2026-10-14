@@ -107,12 +107,19 @@ def main(argv):
         return 2
     if not argv:
         return validate_map(project, lines)
-    if len(argv) != 2 or argv[0] != "--change":
-        fail("usage: check-sensitive-areas.sh [--change <base>]")
+    if len(argv) not in (2, 4) or argv[0] != "--change" or (len(argv) == 4 and argv[2] != "--head"):
+        fail("usage: check-sensitive-areas.sh [--change <base> [--head <commit>]]")
+        return 2
+    if not argv[1]:
+        fail("Sensitive-area check: the base commit is empty")
+        return 2
+    head = argv[3] if len(argv) == 4 else "HEAD"
+    if not head:
+        fail("Sensitive-area check: the head commit is empty")
         return 2
     try:
         changed = git("diff", "--no-renames", "--name-only", "--diff-filter=ACDMRTUXB",
-                      "-z", argv[1] + "...HEAD", cwd=project)
+                      "-z", argv[1] + "..." + head, cwd=project)
         if changed.returncode:
             raise RuntimeError(changed.stderr.strip() or "git diff failed")
         paths_changed = changed.stdout.split("\0")

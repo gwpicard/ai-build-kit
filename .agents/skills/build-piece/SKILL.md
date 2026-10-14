@@ -28,10 +28,10 @@ Choose the save route before changing anything:
 3. **Flagged route.** The work touches a named sensitive area whose caution
    is neither done nor accepted. Before building inside the area, give the
    risk notice once, in full, as the `fit-check` skill describes. If the
-   person carries on, run `piece-labels.sh start` before writing `Accepted:`
-   with their words and the date. Read it back, then build and save on the pull-request route
-   in the same reply. A lock that only
-   waits for this caution opens with the acceptance unless they ask to keep
+   After a yes, run `piece-labels.sh start`, write and read back `Accepted:`
+   with their words and date, then build and save by pull request in that
+   reply, with no further question. A lock that
+   only waits for this caution opens with the acceptance unless they ask to keep
    it. If they do not carry on, build only up to the recorded condition. In an
    unattended run never write an acceptance: stop at the condition, which is a
    successful outcome (step 8).
@@ -44,8 +44,8 @@ step a service could not do is a note, never a warning or a risk.
 The project's first push waits for the person's yes, as "The first upload" in
 the `merge` skill's `references/first-upload.md` says.
 
-Run the `records` skill's `scripts/piece-labels.sh` with `start` and the piece's
-number before changing anything.
+Elsewhere, run `scripts/piece-labels.sh start <number>` before changing
+anything. It swaps `ready` for `building` and assigns the piece.
 
 ## 2. Agree the visible result
 
@@ -157,7 +157,7 @@ Checkpoint route: update the records, commit, and state the checkpoint.
 
 Pull-request route: update the records, commit, push, open a pull request
 titled after the piece with a plain summary and `Closes #<number>`, and run the
-  project checks. Put each unsettled finding worth stopping for under `Worth
+project checks. Put each unsettled finding worth stopping for under `Worth
 stopping for` in the pull request body as an unticked `- [ ]` box. Keep settled
 findings and tick their boxes. Never present it as
 ready until the check is green. If it goes red, say so, read the failure

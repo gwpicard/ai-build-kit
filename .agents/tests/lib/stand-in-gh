@@ -224,11 +224,21 @@ def main(argv):
             protection = state.get("protection")
             if not protection:
                 fail("HTTP 404: Branch not protected")
+            if not (protection.get("required_status_checks") or {}).get("contexts"):
+                fail("HTTP 404: Not Found")
             body = json.load(sys.stdin)
             checks = protection.setdefault("required_status_checks", {"strict": True, "contexts": []})
             for context in body.get("contexts", []):
                 if context not in checks.setdefault("contexts", []):
                     checks["contexts"].append(context)
+            save(state)
+            return 0
+        if method == "PATCH" and path.endswith("/protection/required_status_checks"):
+            if state.get("protection_status") == "admin":
+                fail("HTTP 403: Must have admin rights to access branch protection")
+            if not state.get("protection"):
+                fail("HTTP 404: Branch not protected")
+            state["protection"]["required_status_checks"] = json.load(sys.stdin)
             save(state)
             return 0
         if method == "POST" and path.endswith("/protection/enforce_admins"):

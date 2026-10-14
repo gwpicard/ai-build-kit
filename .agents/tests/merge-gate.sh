@@ -8,15 +8,29 @@ SCRIPT="$ROOT/.agents/skills/merge/scripts/merge.py"
 AREA="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/check-sensitive-areas.sh"
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT INT TERM
-mkdir -p "$WORK/bin" "$WORK/project/.agents/hooks"
-git -C "$WORK/project" init -q
-cp "$AREA" "$WORK/project/.agents/hooks/check-sensitive-areas.sh"
+mkdir -p "$WORK/bin" "$WORK/project/app"
+git -C "$WORK/project" init -q -b main
+git -C "$WORK/project" config user.name Rehearsal
+git -C "$WORK/project" config user.email rehearsal@example.invalid
+printf 'value = 1\n' > "$WORK/project/app/data.py"
+git -C "$WORK/project" add app/data.py
+git -C "$WORK/project" commit -q -m base
+BASE=$(git -C "$WORK/project" rev-parse HEAD)
+git -C "$WORK" init -q --bare remote.git
+git -C "$WORK/project" remote add origin "$WORK/remote.git"
+git -C "$WORK/project" push -q origin main
+git -C "$WORK/project" checkout -q -b feature
+printf 'value = 2\n' > "$WORK/project/app/data.py"
+git -C "$WORK/project" commit -qam head
+HEAD_SHA=$(git -C "$WORK/project" rev-parse HEAD)
+git -C "$WORK/project" push -q origin feature
+git -C "$WORK/project" checkout -q main
 printf 'Path: Explore privately\n' > "$WORK/project/masterplan.md"
 cat > "$WORK/bin/gh" <<'SH'
 #!/usr/bin/env sh
 printf '%s\n' "$*" >> "$GH_LOG"
 case "$1 $2" in
-  "pr view") python3 -c 'import json,os; print(json.dumps({"body":os.environ.get("PR_BODY", ""), "headRefOid":"abc123", "baseRefOid":"base123"}))' ;;
+  "pr view") python3 -c 'import json,os; print(json.dumps({"body":os.environ.get("PR_BODY", ""), "headRefOid":os.environ["PR_HEAD_OID"], "baseRefOid":os.environ["PR_BASE_OID"]}))' ;;
   "pr checks")
     case "$GH_CASE" in
       red) printf '%s\n' '[{"name":"project-check","state":"FAILURE","bucket":"fail"}]'; exit 0 ;;
@@ -46,7 +60,7 @@ GH_LOG="$WORK/gh.log"
 export GH_LOG
 fail() { echo "FAIL: $1" >&2; exit 1; }
 pass() { echo "ok: $1"; }
-run() { (cd "$WORK/project" && PATH="$WORK/bin:$PATH" GH_CASE="$1" PR_BODY="$2" python3 "$SCRIPT" --approved 12); }
+run() { (cd "$WORK/project" && PATH="$WORK/bin:$PATH" GH_CASE="$1" PR_BODY="$2" PR_HEAD_OID="$HEAD_SHA" PR_BASE_OID="$BASE" GIT_TRACE="$WORK/git.trace" python3 "$SCRIPT" --approved 12); }
 check_hold() {
   case_name=$1 body=$2 expected=$3
   : > "$GH_LOG"
@@ -59,9 +73,29 @@ check_merge() {
   body=$1
   : > "$GH_LOG"
   out=$(run success "$body" 2>&1) && code=0 || code=$?
-  [ "$code" -eq 0 ] && grep -q '^pr merge 12 --merge --match-head-commit abc123$' "$GH_LOG" \
+  [ "$code" -eq 0 ] && grep -Fq "pr merge 12 --merge --match-head-commit $HEAD_SHA" "$GH_LOG" \
     && pass "a settled body allows the merge" \
     || fail "settled body returned $code or did not merge: $out / $(cat "$GH_LOG")"
+}
+
+set_open_map() {
+  cat > "$WORK/project/masterplan.md" <<'EOF'
+Path: Build with care
+
+Sensitive areas:
+  Health:
+    paths: app
+EOF
+}
+set_accepted_map() {
+  cat > "$WORK/project/masterplan.md" <<'EOF'
+Path: Build with care
+
+Sensitive areas:
+  Health:
+    paths: app
+    Accepted: yes, 2026-10-14
+EOF
 }
 
 out=$(PATH="$WORK/bin:$PATH" python3 "$SCRIPT" 12 2>&1) && code=0 || code=$?
@@ -76,24 +110,51 @@ check_hold no-checks '## Worth stopping for' 1
 check_hold denied '## Worth stopping for' 2
 : > "$GH_LOG"
 out=$(run neutral-other $'## Worth stopping for\n- [x] Settled' 2>&1) && code=0 || code=$?
-[ "$code" -eq 0 ] && grep -q '^pr merge 12 --merge --match-head-commit abc123$' "$GH_LOG" \
+[ "$code" -eq 0 ] && grep -Fq "pr merge 12 --merge --match-head-commit $HEAD_SHA" "$GH_LOG" \
   && pass "skipping checks other than project-check do not hold the merge" \
   || fail "a skipped optional check blocked the merge or returned $code: $out"
 check_hold success $'### Worth stopping for:\n  1. [ ] An open finding\n#### details\n- [x] nested item\n### Worth knowing\n- plain note' 1
 check_hold success $'## Review\n### Worth stopping for\n+ [x] Settled\n* [ ] Still open\n## Worth knowing' 1
 check_hold success $'## Worth stopping for\n- [x] Settled\n* plain finding\n## Worth knowing' 1
+check_hold success $'## Worth knowing\n- fine\n## Worth STOPPING FOR\nA paragraph finding.' 1
+check_merge $'## Worth stopping for\n- [x] settled\n  - sub-bullet\n- None'
+check_merge $'## Worth knowing\n```md\n## Worth stopping for\n- [ ] example\n```'
+check_hold success $'## Worth knowing\n- fine\n**WORTH STOPPING FOR**\n- [ ] later finding' 1
 check_merge $'## Worth stopping for\n- [x] Settled\n## Worth knowing\n- plain note'
 check_merge $'## Review\n- ordinary note'
 
 : > "$GH_LOG"
 out=$(run success '## Worth stopping for' 2>&1) && code=0 || code=$?
-[ "$code" -eq 0 ] && grep -q '^pr merge 12 --merge --match-head-commit abc123$' "$GH_LOG" \
+[ "$code" -eq 0 ] && grep -Fq "pr merge 12 --merge --match-head-commit $HEAD_SHA" "$GH_LOG" \
   && pass "passed checks and a yes merge the checked commit" \
   || fail "success returned $code: $out / $(cat "$GH_LOG")"
 
 out=$(run merge-fails '## Worth stopping for' 2>&1) && code=0 || code=$?
-[ "$code" -eq 2 ] && printf '%s' "$out" | grep -q 'Pull request is no longer mergeable' \
+[ "$code" -eq 2 ] && printf '%s' "$out" | grep -q 'no longer mergeable' \
   && pass "a failed gh merge reports its message and exits 2" || fail "failed merge returned $code: $out"
+
+: > "$WORK/git.trace"
+: > "$GH_LOG"
+out=$(run success '## Worth stopping for' 2>&1) && code=0 || code=$?
+[ "$code" -eq 0 ] && ! grep -q 'fetch origin ' "$WORK/git.trace" \
+  && pass "a project without a sensitive-area map skips that check" \
+  || fail "the area check ran without a map ($code): $out / $(cat "$WORK/git.trace")"
+
+set_open_map
+: > "$GH_LOG"
+out=$(run success '## Worth stopping for' 2>&1) && code=0 || code=$?
+[ "$code" -eq 1 ] && printf '%s' "$out" | grep -q 'Health' \
+  && ! grep -q '^pr merge ' "$GH_LOG" \
+  && pass "an open Build with care area holds the merge from main" \
+  || fail "an open area did not hold the merge ($code): $out / $(cat "$GH_LOG")"
+
+set_accepted_map
+: > "$GH_LOG"
+out=$(run success '## Worth stopping for' 2>&1) && code=0 || code=$?
+[ "$code" -eq 0 ] && printf '%s' "$out" | grep -q 'accepted on 14 October 2026' \
+  && grep -Fq "pr merge 12 --merge --match-head-commit $HEAD_SHA" "$GH_LOG" \
+  && pass "an accepted sensitive area reports its line and allows the checked head to merge" \
+  || fail "an accepted area did not merge its head ($code): $out / $(cat "$GH_LOG")"
 
 out=$(cd "$WORK/project" && PATH="/usr/bin:/bin" python3 "$SCRIPT" --approved 12 2>&1) && code=0 || code=$?
 [ "$code" -eq 2 ] && printf '%s' "$out" | grep -q 'GitHub CLI (gh) is not installed' \

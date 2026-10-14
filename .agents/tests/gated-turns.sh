@@ -1036,7 +1036,7 @@ python3 - "$boxproj/.claude/settings.json" \
 import json, sys
 after = json.load(open(sys.argv[1]))
 before = json.load(open(sys.argv[2]))
-rule = "Bash(python3 *merge.py --approved *)"
+rule = "Bash(*merge.py*--approved*)"
 assert rule in before["permissions"]["ask"]
 before["permissions"]["ask"].remove(rule)
 assert after == before

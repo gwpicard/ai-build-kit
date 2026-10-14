@@ -45,6 +45,14 @@ else
 fi
 check "a current map passes" "$pass"
 
+if run_check --change "" > "$tmp/out" 2>&1; then
+  empty_base=no
+else
+  code=$?
+  [ "$code" -eq 2 ] && empty_base=yes || empty_base=no
+fi
+check "an empty base commit exits 2" "$empty_base"
+
 git -C "$project" checkout -qb change
 printf '%s\n' 'export const charge = false' > "$project/src/billing/charge.ts"
 git -C "$project" add src/billing/charge.ts

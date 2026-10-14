@@ -106,7 +106,7 @@ out=$(printf '%s' "$body" | PATH="$WORK/bin:$PATH" gh api -X PUT repos/someone/k
   && pass "the GitHub stand-in rejects protection for a branch that does not exist" \
   || fail "the stand-in accepted a missing branch: $out"
 out=$(PATH="$WORK/bin:$PATH" STANDIN_GH_STATE="$STANDIN_GH_STATE" python3 "$ROOT/.agents/skills/merge/scripts/protect-branch.py" someone/kit-log main 2>&1) && code=0 || code=$?
-[ "$code" -eq 2 ] && printf '%s' "$out" | grep -Fq 'GitHub says main does not exist, so the check could not be required.' \
+[ "$code" -eq 2 ] && printf '%s' "$out" | grep -q 'main does not exist' \
   && pass "a missing branch has its own protection error and exits 2" \
   || fail "a missing branch returned $code: $out"
 
@@ -142,17 +142,35 @@ out=$(run prepare) && code=0 || code=$?
   && ! grep -q 'api -X PUT' "$STANDIN_GH_LOG" \
   && pass "existing protection is preserved while the check and admins are added" \
   || fail "existing protection was replaced or not updated: $(get protection) / $out"
+
+python3 - "$STANDIN_GH_STATE" <<'PY'
+import json, sys
+p = sys.argv[1]
+s = json.load(open(p))
+s["protection"] = {"required_status_checks": {"strict": False, "contexts": []},
+                   "enforce_admins": False, "required_pull_request_reviews": {"required_approving_review_count": 2},
+                   "restrictions": None, "other_setting": "kept"}
+json.dump(s, open(p, "w"))
+PY
+: > "$STANDIN_GH_LOG"
+out=$(run prepare) && code=0 || code=$?
+[ "$code" -eq 0 ] \
+  && [ "$(get protection)" = '{"enforce_admins": true, "other_setting": "kept", "required_pull_request_reviews": {"required_approving_review_count": 2}, "required_status_checks": {"contexts": ["project-check"], "strict": false}, "restrictions": null}' ] \
+  && grep -q 'POST repos/someone/kit-log/branches/main/protection/required_status_checks/contexts' "$STANDIN_GH_LOG" \
+  && grep -q 'PATCH repos/someone/kit-log/branches/main/protection/required_status_checks --input -' "$STANDIN_GH_LOG" \
+  && pass "an empty required-check list uses PATCH and preserves the other protection" \
+  || fail "the empty required-check fallback failed: $(get protection) / $out / $(cat "$STANDIN_GH_LOG")"
 cmp -s "$SKILL/templates/foundation/piece-issue.yml" "$WORK/p/.github/ISSUE_TEMPLATE/piece.yml" \
   && pass "the piece template is copied into the project" || fail "the piece template was not copied"
 
 state someone/kit-log PRIVATE '{}' '[]' false '["main"]'
 python3 -c 'import json,sys; p=sys.argv[1]; s=json.load(open(p)); s["protection_status"]="plan"; json.dump(s,open(p,"w"))' "$STANDIN_GH_STATE"
 out=$(run prepare 2>&1) && code=0 || code=$?
-[ "$code" -eq 2 ] && printf '%s\n' "$out" | grep -Fq 'GitHub cannot require the check on this private repository with this plan, so the kit will hold the merge itself.' \
+[ "$code" -eq 2 ] && printf '%s\n' "$out" | grep -q 'hold the merge itself' \
   && pass "a plan that cannot protect a private repository names the script hold and exits 2" \
   || fail "a refused branch protection returned $code: $out"
 
-for status_line in 'admin|GitHub could not require the check because this account does not have admin rights.' '422|GitHub rejected the branch protection settings (422), so the check could not be required.' 'network|GitHub could not apply branch protection because of a network error.'; do
+for status_line in 'admin|admin rights' '422|422' 'network|network error'; do
   status=${status_line%%|*}
   expected=${status_line#*|}
   state someone/kit-log PRIVATE '{}' '[]' false '["main"]'

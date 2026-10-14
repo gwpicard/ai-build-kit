@@ -57,6 +57,21 @@ def main(argv):
     elif not code:
         code, detail = api("POST", prefix + "/protection/required_status_checks/contexts",
                            {"contexts": ["project-check"]})
+        if code and ("404" in detail or "not found" in detail.lower()):
+            # GitHub REST: https://docs.github.com/rest/branches/branch-protection#update-status-check-protection
+            # Contexts POST can return 404 when protection has no required checks.
+            read_code, current_text = api("GET", prefix + "/protection")
+            if read_code:
+                return report("GitHub's existing required checks could not be read.")
+            try:
+                existing = json.loads(current_text).get("required_status_checks") or {}
+            except (ValueError, TypeError):
+                return report("GitHub's existing required checks could not be read.")
+            contexts = list(existing.get("contexts") or [])
+            if "project-check" not in contexts:
+                contexts.append("project-check")
+            code, detail = api("PATCH", prefix + "/protection/required_status_checks",
+                               {"strict": existing.get("strict", True), "contexts": contexts})
         if code == 0:
             code, detail = api("POST", prefix + "/protection/enforce_admins")
         if not code:
@@ -68,16 +83,16 @@ def main(argv):
             "make the repository public" in lowered or "make this repository public" in lowered):
         return report("GitHub cannot require the check on this private repository with this plan, so the kit will hold the merge itself.")
     if "must have admin rights" in lowered:
-        return report("GitHub could not require the check because this account does not have admin rights.")
+        return report("Branch protection could not be set because this account does not have admin rights.")
     if "404" in detail or "not found" in lowered:
-        return report("GitHub says %s does not exist, so the check could not be required." % branch)
+        return report("Branch protection could not be set because GitHub says %s does not exist." % branch)
     if "422" in detail or "unprocessable" in lowered:
-        return report("GitHub rejected the branch protection settings (422), so the check could not be required.")
+        return report("Branch protection could not be set because GitHub rejected the settings (422).")
     if any(word in lowered for word in (
             "timeout", "network", "connection", "resolve", "curl 6", "curl 7", "curl 28",
             "502", "503", "504")):
-        return report("GitHub could not apply branch protection because of a network error.")
-    return report("GitHub could not apply branch protection: %s" % (detail or "unknown error"))
+        return report("Branch protection could not be set because of a network error.")
+    return report("Branch protection could not be set: %s" % (detail or "unknown error"))
 
 
 if __name__ == "__main__":

@@ -29,11 +29,12 @@ delete the labels GitHub made by itself (`bug`, `documentation`, `duplicate`,
 `wontfix`) while no issue exists, set `delete_branch_on_merge` and turn off
 squash and rebase merges, and copy the issue template. Say which ones went,
 from its `removed` and `kept` lines, and that merged branches are now removed.
-A label it could not remove stays and founding carries on. Exit 2 after the
-If GitHub cannot require the check, the script names why: the account plan,
-missing admin rights, a missing branch, rejected settings, or a network
-failure. Exit 2 means protection was not confirmed. For a plan restriction,
-the kit holds its own merges; carry on with founding after the script says why.
+A label it could not remove stays and founding carries on. If GitHub cannot
+require the check, the script names why: the account plan, missing admin
+rights, a missing branch, rejected settings, or a network failure. For a plan
+restriction, the kit holds its own merges; carry on with founding. For another
+failure, protection is not confirmed and founding stops after preparation,
+which may already have created labels, settings and the issue template.
 If `main` does not exist yet, protection is deferred until the first upload
 creates it.
 

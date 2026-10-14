@@ -626,7 +626,16 @@ def run(flag=None,code=0):
     return result.stdout
 first_offer='\n'+run(code=1)
 assert '\ndeny\tBash(gh pr merge:*)' in first_offer
-assert '\nask\tBash(python3 *merge.py --approved *)' in first_offer
+assert '\nask\tBash(*merge.py*--approved*)' in first_offer
+import fnmatch
+merge_rule = "*merge.py*--approved*"
+for command in (
+    'python3 ".../merge.py" --approved 12',
+    'python merge.py --approved 12',
+    './merge.py --approved 12',
+    'python3 path/to/merge.py --approved 12',
+):
+    assert fnmatch.fnmatchcase(command, merge_rule), command
 # The rules added after that release reach an older project too, and only
 # through the offer: nothing in the file changes until --apply.
 template=json.loads((root/'.agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json').read_text())

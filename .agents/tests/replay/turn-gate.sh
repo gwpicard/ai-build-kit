@@ -213,7 +213,7 @@ with open(path) as handle:
     settings = json.load(handle)
 permissions = settings.get("permissions")
 if isinstance(permissions, dict) and isinstance(permissions.get("ask"), list):
-    rule = "Bash(python3 *merge.py --approved *)"
+    rule = "Bash(*merge.py*--approved*)"
     permissions["ask"] = [item for item in permissions["ask"] if item != rule]
     with open(path, "w") as handle:
         json.dump(settings, handle, indent=2)
