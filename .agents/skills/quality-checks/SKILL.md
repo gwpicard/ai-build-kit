@@ -31,15 +31,8 @@ read again from Git history. A visit's reads leave out what an earlier visit
 offered, which `.ai-build-kit-maintenance` records, finding by finding. A
 finding that never reached the person comes back.
 
-The tests read runs once after the build. It runs the `Test:` tests against a
-throwaway copy of the start commit and against the current code, then reports
-each D result. `fails-before D<n>` means that test failed on the start copy.
-`passes-before D<n>` means it already passed there, so it proves nothing. Exit
-0 means every applicable D test failed before and passed now, and changed lines
-were covered where a provider was available. Exit 1 means a finding, such as
-an uncovered line, a skipped test or a D test that passes before. Exit 2 means
-the core before/after run could not happen. A missing coverage provider is
-reported as `not-checked coverage <reason>` and does not make the read fail.
+The tests read runs once after the build. See
+`references/tests-prove-change.md` for its report lines and exit codes.
 
 ## During a build
 

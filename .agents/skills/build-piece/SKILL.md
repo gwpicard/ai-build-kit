@@ -36,9 +36,10 @@ Choose the save route before changing anything:
    unattended run never write an acceptance: stop at the condition, which is a
    successful outcome (step 8).
 
-Use a short-lived branch from up-to-date `main` for pull requests and flagged
-work. If GitHub is unavailable, save on the branch and note the missing pull
-request on the piece.
+The pull-request and flagged routes work on a short-lived branch from the
+up-to-date `main`. Where GitHub cannot be reached, build and save on the
+branch, and note the missing pull request in one plain line on the piece. A
+step a service could not do is a note, never a warning or a risk.
 
 The project's first push waits for the person's yes, as "The first upload" in
 the `merge` skill's `references/first-upload.md` says.
@@ -49,7 +50,8 @@ piece.
 
 ## 2. Agree the visible result
 
-State the visible outcome, scope, and check. Ask only when something is unclear.
+Say back what the person will be able to do or see, what is outside it, and
+how it will be checked. Ask for a yes only when something is still ambiguous.
 
 ## 3. Choose evidence
 
@@ -59,8 +61,9 @@ piece with two subjects needs what both demand, and the stricter save route.
 Where a machine can check the piece, that check runs and must pass. A screen
 that looks right is never a substitute for a check that was available and skipped.
 
-- Use an automated behaviour test for anything a machine can judge, including
-  rules, permissions, data changes, integrations and bugs.
+- An automated behaviour test is required for rules, calculations,
+  permissions, data changes, integrations, background behaviour, bugs, and any
+  done line a machine can judge.
 - Use a guided manual check for copy, layout, colour, exploratory interaction,
   usability and throwaway prototypes.
 - Rehearse backups, restores, migrations, rollback, alerts, deployment and
@@ -92,10 +95,7 @@ ahead as its own piece. Stop and say so if the change grows past what was
 agreed.
 
 After the build, run `quality.py tests --base <start commit> --piece <number>`
-once. It runs red tests on the start copy and current code, reporting each D.
-`fails-before` is evidence; `passes-before` is a finding. Exit 0 means checks
-passed, 1 means findings, and 2 means the core runs could not happen. Fix
-findings before hand-over.
+once and act on its exit code.
 
 A build that reaches an outside service follows AGENTS.md's Secrets rule. A
 command that changes a live service's settings or data, other than saving code
@@ -109,10 +109,12 @@ When the piece carries `visual`, or the change touches a file that renders a
 page, view, component, template, style or native interface, load
 the `screen-check` skill before the guided check.
 
-File uncovered work as a new piece using the `records` skill's
-`references/pieces.md` and subjects from `triage`. Mid-build, ask once whether
-more belongs here or in a new piece. On "this piece", add it to `## Done when`
-and read it back. Do not fold in work without that answer.
+Work the build uncovers becomes a new piece, filed by the `records` skill's
+`references/pieces.md` with its subjects from the `triage` skill, and
+one line such as "Found while building the invoice list." When the person asks
+for more mid-build, ask once: this piece, or a new one? On "this piece", add
+it to `## Done when`, read it back, and build it. Never fold a request in without
+that answer.
 
 A test that passes only on a retry is unreliable evidence: repair or replace it
 before saving.
@@ -136,9 +138,11 @@ output shown. Describe a gap as expected versus actual, and fix it at the root.
 
 ## 7. Run required review
 
-Run the reach check and its tests, boundary check, and loops read. On Build
-with care, compare changed paths with the sensitive-area map; a match starts
-the review: "This change reaches <area>, so a review is running."
+Run the reach check, with the tests it names, the boundary check and the loops
+read, as the `quality-checks` skill's "During a build" says. On Build with
+care, compare what the change reaches with the sensitive-area map; a match
+starts the review and you say: "This change reaches <area>, so a review is
+running."
 
 When the build path, the subjects, or a sensitive area call for review, run
 the `second-opinion` skill by the best independent method in the capability

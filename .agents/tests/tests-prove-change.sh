@@ -23,13 +23,20 @@ git -C "$PROJECT" config user.email rehearsal@example.invalid
 put() { mkdir -p "$(dirname "$PROJECT/$1")"; cat > "$PROJECT/$1"; }
 save() { git -C "$PROJECT" add -A; git -C "$PROJECT" commit -qm "$1"; git -C "$PROJECT" rev-parse HEAD; }
 
-# The stand-in accepts the same Vitest flags and writes JUnit and v8-shaped
-# coverage. It exercises the report contract without claiming to be Vitest.
+# Use real Vitest when installed. The fallback report stand-in mirrors Vitest's
+# JUnit shape, including module errors that appear only in XML.
 put package.json <<'EOF'
 {"private":true,"scripts":{"test":"vitest run"},"devDependencies":{"vitest":"3.2.0"}}
 EOF
+put .gitignore <<'EOF'
+node_modules/
+EOF
 put src/rule.js <<'EOF'
 module.exports = value => value > 4;
+EOF
+put tests/legacy.test.js <<'EOF'
+import { it } from 'vitest';
+it.skip('old skipped case remains untouched', () => {});
 EOF
 put tools/vitest-standin.js <<'EOF'
 const fs = require('node:fs');
@@ -41,33 +48,55 @@ const fixed = fs.readFileSync('src/rule.js', 'utf8').includes('>= 4');
 const rows = [['D1 accepts four at the limit', fixed], ['D2 accepts five', true]];
 const modulePresent = fs.existsSync('src/new-module.js');
 if (fs.existsSync('tests/new-module.test.js')) rows.push(['D3 new module loads', modulePresent]);
-if (!modulePresent && fs.existsSync('tests/new-module.test.js')) process.stderr.write("Cannot find module '../src/new-module.js'\n");
-if (output) fs.writeFileSync(output, '<testsuites><testsuite>' + rows.map(([n, ok]) => `<testcase name="${n}">${ok ? '' : '<failure message="wrong result"/>'}</testcase>`).join('') + '</testsuite></testsuites>');
+if (output) fs.writeFileSync(output, '<testsuites><testsuite>' + rows.map(([n, ok]) => `<testcase name="${n}">${ok ? '' : `<failure message="${n.startsWith('D3') ? 'Failed to load: Cannot find module' : 'wrong result'}">${n.startsWith('D3') ? 'Cannot find module ../src/new-module.js' : 'wrong result'}</failure>`}</testcase>`).join('') + '</testsuite></testsuites>');
 if (cov && !process.env.MISSING_COVERAGE) { fs.mkdirSync(cov, {recursive:true}); fs.writeFileSync(path.join(cov,'coverage-final.json'), JSON.stringify({[path.resolve('src/rule.js')]:{s:{0:process.env.ZERO_COVERAGE ? 0 : 1},statementMap:{0:{start:{line:1}}}}})); }
 process.exit(process.env.FAIL_AFTER && process.cwd().endsWith('/project') ? 1 : (rows.every(row => row[1]) ? 0 : 1));
 EOF
-put node_modules/@vitest/coverage-v8/provider.json <<'EOF'
-{"stand-in":true}
-EOF
-put node_modules/.bin/vitest <<'EOF'
+mkdir -p "$WORK/bin"
+cat > "$WORK/bin/vitest" <<'EOF'
 #!/bin/sh
 exec node "$PWD/tools/vitest-standin.js" "$@"
 EOF
-chmod +x "$PROJECT/node_modules/.bin/vitest"
+chmod +x "$WORK/bin/vitest"
+VITEST_BIN=${VITEST_BIN:-$(command -v vitest || true)}
+PYTEST_BIN=${PYTEST_BIN:-$(command -v pytest || true)}
+PYTEST_READY=0
+if [ -n "$PYTEST_BIN" ] && (ulimit -c 0; sh -c "$PYTEST_BIN --help" >/dev/null 2>&1); then
+  PYTEST_READY=1
+fi
+PYTEST_NOCOV_BIN=${PYTEST_NOCOV_BIN:-}
+if [ -n "$VITEST_BIN" ] && [ -x "$VITEST_BIN" ]; then
+  VITEST_REAL=$(realpath "$VITEST_BIN")
+  VITEST_PACKAGE=$(dirname "$VITEST_REAL")
+  echo '  available: real Vitest'
+else
+  echo '  not available: real Vitest; using a report stand-in for contract cases'
+fi
+mkdir -p "$PROJECT/node_modules/@vitest/coverage-v8"
+printf '%s\n' '{"name":"@vitest/coverage-v8","version":"0.0.0"}' > "$PROJECT/node_modules/@vitest/coverage-v8/package.json"
+PATH="$WORK/bin:$PATH"
+export PATH
 BASE=$(save 'Start')
 put tests/rule.test.js <<'EOF'
-// test_D1_accepts_limit and test_D2_accepts_five
+import { test, expect } from 'vitest';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+test('D1 accepts four at the limit', () => expect(require('../src/rule.js')(4)).toBe(true));
+test('D2 accepts five', () => expect(require('../src/rule.js')(5)).toBe(true));
 EOF
 save 'Test: cover D1 and D2'
 put src/rule.js <<'EOF'
 module.exports = value => value >= 4;
 EOF
+put "src/my tests/space.js" <<'EOF'
+module.exports = 'space';
+EOF
 PIECE=$(save 'Implement rule')
 cat > "$QUALITY_TEST_PIECE_FILE" <<'EOF'
-## Done when
-- Values at four are accepted
-- Values at five
-  are accepted
+### Done when
+1. Values at four are accepted
+2. Values at five
+   are accepted
 EOF
 run_quality() { (cd "$PROJECT" && python3 "$QUALITY" tests --base "$BASE" --piece 1); }
 set +e
@@ -77,13 +106,42 @@ set -e
 printf '%s\n' "$OUT" | grep -q '^fails-before[[:space:]]D1$'
 printf '%s\n' "$OUT" | grep -q '^passes-before[[:space:]]D2$'
 printf '%s\n' "$OUT" | grep -q '^covered[[:space:]]1$'
+printf '%s\n' "$OUT" | grep -q '^uncovered[[:space:]]src/my tests/space.js:'
+! printf '%s\n' "$OUT" | grep -q '^skipped[[:space:]]tests/legacy.test.js'
 echo '  ok: per-D results distinguish D1 failing before from D2 passing before'
+echo '  ok: paths with spaces are parsed and an old skip in an untouched test is ignored'
 set +e; (cd "$PROJECT" && python3 "$QUALITY" tests --base missing-commit --piece 1) >"$WORK/cannot-run.out" 2>&1; CODE=$?; set -e
 [ "$CODE" -eq 2 ] || { cat "$WORK/cannot-run.out"; echo 'FAIL: an unreadable start commit did not return exit 2'; exit 1; }
 grep -q '^not-checked[[:space:]]tests' "$WORK/cannot-run.out"
 echo '  ok: an unreadable start commit returns not-checked and exit 2'
+cat > "$QUALITY_TEST_PIECE_FILE" <<'EOF'
+### Done when
+EOF
+set +e; run_quality >"$WORK/no-done.out" 2>&1; CODE=$?; set -e
+[ "$CODE" -eq 1 ] || { cat "$WORK/no-done.out"; echo 'FAIL: empty Done when passed'; exit 1; }
+grep -q '^not-checked[[:space:]]tests[[:space:]]no Done when lines found$' "$WORK/no-done.out"
+echo '  ok: a behaviour piece with no Done when lines fails explicitly'
+python3 - "$QUALITY" <<'PY'
+import importlib.util, sys
+import os, tempfile
+spec = importlib.util.spec_from_file_location("quality", sys.argv[1])
+quality = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(quality)
+plan = "Sensitive areas:\n  one: first area\n    paths: src/one/\n  two: second area\n    paths: src/two/\n"
+assert quality.mapped_paths(plan) == ["src/one/", "src/two/"]
+with tempfile.TemporaryDirectory() as root:
+    os.makedirs(os.path.join(root, "tests"))
+    with open(os.path.join(root, "tests", "screen.spec.ts"), "w") as spec_file:
+        spec_file.write("test('D9 screen renders', () => {});\n")
+    assert quality.playwright_specs(root, ["tests/screen.spec.ts"]) == {9: ["tests/screen.spec.ts"]}
+PY
+echo '  ok: the strength trigger reads both mapped areas and finds default-folder Playwright cases'
 put tests/new-module.test.js <<'EOF'
-test_D3_new_module_loads()
+import { test, expect } from 'vitest';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+const newModule = require('../src/new-module.js');
+test('D3 new module loads', () => expect(newModule()).toBe(true));
 EOF
 save 'Test: cover the new module'
 put src/new-module.js <<'EOF'
@@ -132,6 +190,54 @@ set +e; FAIL_AFTER=1 run_quality >"$WORK/after-failure.out" 2>&1; CODE=$?; set -
 unset FAIL_AFTER
 echo '  ok: zero coverage, missing reports or providers, and a failed after-run are handled'
 
+if [ -n "$VITEST_BIN" ] && [ -x "$VITEST_BIN" ]; then
+  REAL="$WORK/real-vitest"
+  mkdir -p "$REAL/src"
+  git -C "$REAL" init -q -b main
+  git -C "$REAL" config user.name Rehearsal; git -C "$REAL" config user.email rehearsal@example.invalid
+  printf '%s\n' '{"private":true,"scripts":{"test":"vitest run"},"devDependencies":{"vitest":"3.2.7"}}' > "$REAL/package.json"
+  printf 'node_modules/\n' > "$REAL/.gitignore"
+  VITEST_NM=$(dirname "$VITEST_PACKAGE")
+  ln -s "$VITEST_NM" "$REAL/node_modules"
+  printf 'export const total = () => 1;\n' > "$REAL/src/total.js"
+  git -C "$REAL" add -A; git -C "$REAL" commit -qm Start
+  REALBASE=$(git -C "$REAL" rev-parse HEAD)
+  cat > "$REAL/src/total.test.js" <<'EOF'
+import { test, expect } from 'vitest';
+import { total } from './total.js';
+test('D1 returns the updated total', () => expect(total()).toBe(2));
+EOF
+  git -C "$REAL" add -A; git -C "$REAL" commit -qm 'Test: add D1'
+  printf 'export const total = () => 2;\n' > "$REAL/src/total.js"
+  git -C "$REAL" add -A; git -C "$REAL" commit -qm 'Build the total'
+  cat > "$QUALITY_TEST_PIECE_FILE" <<'EOF'
+## Done when
+- The total is updated
+EOF
+  set +e; REAL_OUT=$(cd "$REAL" && python3 "$QUALITY" tests --base "$REALBASE" --piece 399 2>&1); CODE=$?; set -e
+  [ "$CODE" -eq 0 ] || { printf '%s\n' "$REAL_OUT"; echo 'FAIL: real Vitest did not prove the change'; exit 1; }
+  printf '%s\n' "$REAL_OUT" | grep -q '^fails-before[[:space:]]D1$'
+  printf '%s\n' "$REAL_OUT" | grep -q '^covered[[:space:]]1$'
+  echo '  ok: real Vitest 3.2.7 runs on the linked project dependencies and proves D1'
+  cat > "$REAL/src/missing.test.js" <<'EOF'
+import { test, expect } from 'vitest';
+import { missing } from './missing.js';
+test('D2 loads the new module', () => expect(missing()).toBe(true));
+EOF
+  git -C "$REAL" add -A; git -C "$REAL" commit -qm 'Test: add D2 module load'
+  printf 'export const missing = () => true;\n' > "$REAL/src/missing.js"
+  git -C "$REAL" add -A; git -C "$REAL" commit -qm 'Build the missing module'
+  cat > "$QUALITY_TEST_PIECE_FILE" <<'EOF'
+## Done when
+- The total is updated
+- The new module loads
+EOF
+  set +e; REAL_OUT=$(cd "$REAL" && python3 "$QUALITY" tests --base "$REALBASE" --piece 399 2>&1); CODE=$?; set -e
+  [ "$CODE" -eq 0 ] || { printf '%s\n' "$REAL_OUT"; echo 'FAIL: JUnit-only missing-module failure was not treated as fails-before'; exit 1; }
+  printf '%s\n' "$REAL_OUT" | grep -q '^fails-before[[:space:]]D2$'
+  echo '  ok: real Vitest missing-module failure in JUnit XML maps to fails-before'
+fi
+
 put tests/skip.test.js <<'EOF'
 describe.skip('D3 skipped block', () => {});
 it.only('D4 focused case', () => {});
@@ -176,10 +282,7 @@ OUT=$(cd "$PROJECT" && python3 "$QUALITY" tests --base "$CURRENT" --piece 4)
 printf '%s\n' "$OUT" | grep -q '^tests[[:space:]]passed$'
 echo '  ok: visual-only and behaviour-preserving refactor exemptions work'
 
-# Real tools are preferred when installed offline. The stand-in above covers
-# the real output shape when they are absent.
-if python3 -c 'import subprocess,sys; sys.exit(subprocess.run(["npx","--no-install","vitest","--version"],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=12).returncode)' 2>/dev/null; then echo '  available: real Vitest'; else echo '  not available: real Vitest, stand-in report used'; fi
-if python3 -c 'import subprocess,sys; sys.exit(subprocess.run([sys.executable,"-m","pytest","--version"],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=12).returncode)' 2>/dev/null; then echo '  available: real pytest'; else echo '  not available: real pytest, pytest case skipped'; fi
+if [ "$PYTEST_READY" -eq 1 ]; then echo '  available: real pytest'; else echo '  not available: real pytest runner could not start'; fi
 
 # The hook's Git subject logic: body-only tags do not count, and Test fix needs a reason.
 HOOK="$PROJECT/.agents/hooks/check-tests.sh"
@@ -206,6 +309,19 @@ EOF
 REASONED=$(save 'Test fix: add the missing D2 case')
 (cd "$PROJECT" && sh "$HOOK" "$BASE..HEAD")
 echo '  ok: a Test fix subject with a reason can change a frozen test'
+put tests/second.test.js <<'EOF'
+test('D1 renamed with a reason', () => {});
+test('D2 added after rename', () => {});
+EOF
+save 'Test fix: rename the frozen case'
+put tests/second.test.js <<'EOF'
+test('D1 renamed with a reason', () => {});
+test('D2 added after rename', () => {});
+test('D3 later addition', () => {});
+EOF
+save 'Test: add a line after the rename'
+(cd "$PROJECT" && sh "$HOOK" "$BASE..HEAD")
+echo '  ok: a later Test addition is compared with its parent after a Test fix rename'
 git -C "$PROJECT" reset --hard "$ADDED" >/dev/null
 put tests/second.test.js <<'EOF'
 test('D1 extra', () => {});
@@ -225,6 +341,19 @@ save 'Test fix:'
 set +e; (cd "$PROJECT" && sh "$HOOK" "$BASE..HEAD") >/dev/null 2>&1; CODE=$?; set -e
 [ "$CODE" -eq 1 ] || { echo 'FAIL: empty Test fix reason was accepted'; exit 1; }
 echo '  ok: an empty Test fix reason is rejected'
+git -C "$PROJECT" reset --hard "$ADDED" >/dev/null
+put tests/sign.test.js <<'EOF'
+-1;
+EOF
+save 'Test: add a minus-leading line'
+put tests/sign.test.js <<'EOF'
+1;
+EOF
+save 'Test: remove a minus-leading line'
+set +e; (cd "$PROJECT" && sh "$HOOK" "$BASE..HEAD") >"$WORK/minus-line.out" 2>&1; CODE=$?; set -e
+[ "$CODE" -eq 1 ] || { cat "$WORK/minus-line.out"; echo 'FAIL: a deleted line starting with a minus was missed'; exit 1; }
+grep -q 'sign.test.js' "$WORK/minus-line.out"
+echo '  ok: the freeze catches a deleted test line whose text starts with a minus'
 
 mkdir -p "$WORK/pytest-project/bin" "$WORK/pytest-project/tests"
 PY="$WORK/pytest-project"
@@ -241,6 +370,9 @@ cat > "$PY/bin/pytest" <<'EOF'
 #!/usr/bin/env python3
 import json, os, sys
 args=sys.argv[1:]
+if '--help' in args:
+ print('--cov and --cov-report=TYPE supports term, xml, and html reports' if os.environ.get('OLD_COV') else '--cov and --cov-report=TYPE supports term, xml, json, and html reports')
+ sys.exit(0)
 xml=next(x.split('=',1)[1] for x in args if x.startswith('--junitxml='))
 ok=open('app.py').read().strip() == 'value = 1'
 open(xml,'w').write('<testsuites><testsuite><testcase name="test_D1_value" classname="D1">'+('' if ok else '<failure/>')+'</testcase></testsuite></testsuites>')
@@ -249,9 +381,6 @@ for x in args:
   path=x.split(':',1)[1]; json.dump({'files':{'app.py':{'executed_lines':[1], 'missing_lines':[]}}},open(path,'w'))
 EOF
 chmod +x "$PY/bin/pytest"
-mkdir -p "$WORK/fake-pytest-cov"
-touch "$WORK/fake-pytest-cov/pytest_cov.py" "$WORK/fake-pytest-cov/coverage.py"
-export PYTHONPATH="$WORK/fake-pytest-cov${PYTHONPATH:+:$PYTHONPATH}"
 git -C "$PY" init -q -b main
 git -C "$PY" config user.name Rehearsal; git -C "$PY" config user.email rehearsal@example.invalid
 rm "$PY/AGENTS.md" "$PY/tests/test_app.py"
@@ -271,5 +400,96 @@ OUT=$(cd "$PY" && python3 "$QUALITY" tests --base "$PYBASE" --piece 2)
 printf '%s\n' "$OUT" | grep -q '^fails-before[[:space:]]D1$'
 printf '%s\n' "$OUT" | grep -q '^covered[[:space:]]1$'
 echo '  ok: recorded Python command, JUnit results and coverage.py JSON are read'
+
+set +e; REALPY_OUT=$(cd "$PY" && OLD_COV=1 python3 "$QUALITY" tests --base "$PYBASE" --piece 2 2>&1); CODE=$?; set -e
+[ "$CODE" -eq 0 ] || { printf '%s\n' "$REALPY_OUT"; echo 'FAIL: pytest-cov without JSON blocked the test read'; exit 1; }
+[ "$(printf '%s\n' "$REALPY_OUT" | grep -c '^not-checked[[:space:]]coverage')" -eq 1 ]
+printf '%s\n' "$REALPY_OUT" | grep -q '^not-checked[[:space:]]coverage[[:space:]]installed pytest-cov does not support JSON output$'
+printf '%s\n' "$REALPY_OUT" | grep -q '^fails-before[[:space:]]D1$'
+echo '  ok: pytest-cov without JSON prints one coverage line and keeps the read at exit 0'
+
+if [ "$PYTEST_READY" -eq 1 ]; then
+  REALPY="$WORK/real-pytest"
+  mkdir -p "$REALPY/tests"
+  git -C "$REALPY" init -q -b main
+  git -C "$REALPY" config user.name Rehearsal; git -C "$REALPY" config user.email rehearsal@example.invalid
+  printf 'def value():\n    return 1\n' > "$REALPY/app.py"
+  printf '[tool.pytest.ini_options]\n' > "$REALPY/pyproject.toml"
+  mkdir -p "$REALPY/.github/workflows"
+  printf 'jobs:\n  project-check:\n    steps:\n      - run: %s -q\n' "$PYTEST_BIN" > "$REALPY/.github/workflows/checks.yml"
+  git -C "$REALPY" add -A; git -C "$REALPY" commit -qm Start
+  REALPYBASE=$(git -C "$REALPY" rev-parse HEAD)
+  cat > "$REALPY/tests/test_app.py" <<'EOF'
+from app import value
+
+def test_D1_value():
+    assert value() == 2
+EOF
+  git -C "$REALPY" add -A; git -C "$REALPY" commit -qm 'Test: add D1'
+  printf 'def value():\n    return 2\n' > "$REALPY/app.py"
+  git -C "$REALPY" add -A; git -C "$REALPY" commit -qm 'Build value'
+  cat > "$QUALITY_TEST_PIECE_FILE" <<'EOF'
+## Done when
+- The value is two
+EOF
+  set +e; REALPY_OUT=$(cd "$REALPY" && python3 "$QUALITY" tests --base "$REALPYBASE" --piece 400 2>&1); CODE=$?; set -e
+  [ "$CODE" -eq 0 ] || { printf '%s\n' "$REALPY_OUT"; echo 'FAIL: real pytest with pytest-cov did not prove the change'; exit 1; }
+  printf '%s\n' "$REALPY_OUT" | grep -q '^fails-before[[:space:]]D1$'
+  printf '%s\n' "$REALPY_OUT" | grep -q '^covered[[:space:]]1$'
+  [ ! -e "$REALPY/.coverage" ] || { echo 'FAIL: pytest-cov wrote .coverage into the project'; exit 1; }
+  echo '  ok: real pytest with pytest-cov proves D1 and keeps .coverage temporary'
+fi
+
+if [ -n "$PYTEST_NOCOV_BIN" ] && (ulimit -c 0; sh -c "$PYTEST_NOCOV_BIN --help" >/dev/null 2>&1); then
+  REALPY="$WORK/pytest-without-cov"
+  mkdir -p "$REALPY/tests"
+  git -C "$REALPY" init -q -b main
+  git -C "$REALPY" config user.name Rehearsal; git -C "$REALPY" config user.email rehearsal@example.invalid
+  printf 'def value():\n    return 1\n' > "$REALPY/app.py"
+  printf '[tool.pytest.ini_options]\n' > "$REALPY/pyproject.toml"
+  mkdir -p "$REALPY/.github/workflows"
+  printf 'jobs:\n  project-check:\n    steps:\n      - run: %s -q\n' "$PYTEST_NOCOV_BIN" > "$REALPY/.github/workflows/checks.yml"
+  git -C "$REALPY" add -A; git -C "$REALPY" commit -qm Start
+  REALPYBASE=$(git -C "$REALPY" rev-parse HEAD)
+  cat > "$REALPY/tests/test_app.py" <<'EOF'
+from app import value
+
+def test_D1_value():
+    assert value() == 2
+EOF
+  git -C "$REALPY" add -A; git -C "$REALPY" commit -qm 'Test: add D1'
+  printf 'def value():\n    return 2\n' > "$REALPY/app.py"
+  git -C "$REALPY" add -A; git -C "$REALPY" commit -qm 'Build value'
+  cat > "$QUALITY_TEST_PIECE_FILE" <<'EOF'
+## Done when
+- The value is two
+EOF
+  set +e; REALPY_OUT=$(cd "$REALPY" && python3 "$QUALITY" tests --base "$REALPYBASE" --piece 401 2>&1); CODE=$?; set -e
+  [ "$CODE" -eq 0 ] || { printf '%s\n' "$REALPY_OUT"; echo 'FAIL: pytest without pytest-cov blocked test results'; exit 1; }
+  printf '%s\n' "$REALPY_OUT" | grep -q '^not-checked[[:space:]]coverage[[:space:]]pytest-cov (coverage.py provider) is not installed$'
+  printf '%s\n' "$REALPY_OUT" | grep -q '^fails-before[[:space:]]D1$'
+  echo '  ok: real pytest without pytest-cov keeps coverage not-checked and proves D1'
+fi
+
+# A recorded Python command with no per-test report must not be inferred as
+# pytest or labelled untested by D number.
+CUSTOM="$WORK/custom-python"
+mkdir -p "$CUSTOM/tests"
+git -C "$CUSTOM" init -q -b main
+git -C "$CUSTOM" config user.name Rehearsal; git -C "$CUSTOM" config user.email rehearsal@example.invalid
+printf 'def value(): return 1\n' > "$CUSTOM/app.py"
+printf 'print("ok")\n' > "$CUSTOM/run_tests.py"
+git -C "$CUSTOM" add -A; git -C "$CUSTOM" commit -qm Start
+CUSTOMBASE=$(git -C "$CUSTOM" rev-parse HEAD)
+printf 'Test command: python3 run_tests.py\n' > "$CUSTOM/AGENTS.md"
+printf 'def test_D1_value(): pass\n' > "$CUSTOM/tests/test_app.py"
+git -C "$CUSTOM" add -A; git -C "$CUSTOM" commit -qm 'Test: add D1'
+printf 'def value(): return 2\n' > "$CUSTOM/app.py"
+git -C "$CUSTOM" add app.py; git -C "$CUSTOM" commit -qm 'Implement value'
+OUT=$(cd "$CUSTOM" && python3 "$QUALITY" tests --base "$CUSTOMBASE" --piece 3 2>&1) && CODE=0 || CODE=$?
+[ "$CODE" -eq 2 ] || { printf '%s\n' "$OUT"; echo 'FAIL: a command without per-test results did not return 2'; exit 1; }
+printf '%s\n' "$OUT" | grep -q '^not-checked[[:space:]]tests[[:space:]]recorded test command has no per-test report$'
+! printf '%s\n' "$OUT" | grep -q '^untested[[:space:]]D1'
+echo '  ok: a recorded plain Python runner is not called pytest and does not claim untested D lines'
 
 echo 'tests-prove-change.sh: Vitest report contract, per-D output and test subject guard checked'

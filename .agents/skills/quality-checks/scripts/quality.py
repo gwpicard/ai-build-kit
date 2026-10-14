@@ -51,6 +51,7 @@ the project check cannot disagree.
 import argparse
 import ast
 import csv
+import fnmatch
 import json
 import os
 import re
@@ -86,6 +87,20 @@ def test_rule():
 
 
 TEST_PATH = test_rule()
+TEST_FILE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..",
+                              "setup-ai-build-kit", "templates", "foundation", "check-tests.sh")
+
+
+def test_file_rule():
+    try:
+        with open(TEST_FILE_PATH, encoding="utf-8") as handle:
+            match = re.search(r"^TEST_FILE_PATH='([^']+)'$", handle.read(), re.M)
+        return re.compile(match.group(1)) if match else None
+    except (OSError, re.error):
+        return None
+
+
+TEST_FILES = test_file_rule()
 ENGINES = {
     # name: (npm package, Python package)
     "knip": ("knip@6", None),
@@ -101,6 +116,10 @@ ENGINES = {
 
 def is_test(path):
     return bool(TEST_PATH.search(path))
+
+
+def is_test_file(path):
+    return bool(TEST_FILES and TEST_FILES.search(path))
 
 
 # --- what earlier visits offered -------------------------------------------------
@@ -226,7 +245,7 @@ def changed_lines(root, base):
     changed, current = {}, None
     for line in out.splitlines():
         if line.startswith("+++ "):
-            current = None if line == "+++ /dev/null" else line[6:]
+            current = None if line == "+++ /dev/null" else line[6:].split("\t", 1)[0]
             if current:
                 changed.setdefault(current, set())
         hunk = re.match(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@", line)
@@ -1063,7 +1082,34 @@ def strength(root, base, engines):
 # --- tests that prove the change -----------------------------------------------
 
 def test_command(root):
-    """Use the test command recorded by the project before guessing."""
+    """Use the check's recorded command before inferring a runner."""
+    for path in (".github/workflows/checks.yml", "checks.yml",
+                 ".agents/skills/quality-checks/references/check-floor.md"):
+        text = read(root, path)
+        if not text:
+            continue
+        commands = []
+        in_run = False
+        run_indent = 0
+        for line in text.splitlines():
+            match = re.match(r"^(\s*)(?:-\s*)?run:\s*(.*)$", line)
+            if match:
+                in_run = True
+                run_indent = len(match.group(1))
+                if match.group(2).strip() and match.group(2).strip() != "|":
+                    commands.append(match.group(2).strip().strip("'\""))
+                continue
+            if in_run:
+                indent = len(line) - len(line.lstrip())
+                if line.strip() and indent <= run_indent:
+                    in_run = False
+                elif line.strip():
+                    commands.append(line.strip())
+        for command in commands:
+            if re.search(r"\bpytest\b", command):
+                return shlex.split(command)
+            if re.search(r"\b(?:vitest|playwright)\b", command):
+                return shlex.split(command)
     agents = read(root, "AGENTS.md")
     match = re.search(r"(?im)^\s*(?:[-*]\s*)?\*{0,2}(?:test(?:\s+command)?|tests)\*{0,2}\s*:\s*`?([^`\n]+)`?\s*$", agents)
     if match:
@@ -1077,10 +1123,6 @@ def test_command(root):
         pass
     if any(os.path.isfile(os.path.join(root, n)) for n in ("pyproject.toml", "pytest.ini", "pytest.toml", "setup.cfg")):
         return [sys.executable, "-m", "pytest", "-q"]
-    if os.path.isfile(os.path.join(root, "app", "test_bramble.py")):
-        if run([sys.executable, "-m", "pytest", "--version"], cwd=root, timeout=30)[0] == 0:
-            return [sys.executable, "-m", "pytest", "-q", "app/test_bramble.py"]
-        return [sys.executable, "app/test_bramble.py"]
     return None
 
 
@@ -1112,232 +1154,324 @@ def junit_cases(path):
         return None
 
 
+def playwright_specs(root, files):
+    """Playwright specs whose test titles name a numbered Done when line."""
+    configs = [p for p in files if re.fullmatch(r"(?:.*/)?playwright\.config\.[^/]+", p)]
+    configured_dirs, configured_matches = ["tests"], []
+    for config in configs:
+        config_text = read(root, config)
+        match = re.search(r"\btestDir\s*:\s*['\"]([^'\"]+)", config_text)
+        if match:
+            configured_dirs.append(match.group(1).strip("./"))
+        match = re.search(r"\btestMatch\s*:\s*(?:\[(.*?)\]|['\"]([^'\"]+)['\"])", config_text, re.S)
+        if match:
+            configured_matches.extend(re.findall(r"['\"]([^'\"]+)['\"]", match.group(1) or match.group(2)))
+    specs = {}
+    for path in files:
+        if not path.endswith(".spec.ts"):
+            continue
+        text = read(root, path)
+        is_configured = any(path == directory or path.startswith(directory.rstrip("/") + "/")
+                            for directory in configured_dirs)
+        is_configured = is_configured or any(fnmatch.fnmatch(path, pattern.lstrip("./"))
+                                             for pattern in configured_matches)
+        is_configured = is_configured or any(re.search(re.escape(path), read(root, c)) for c in configs)
+        if not is_configured:
+            continue
+        titles = re.findall(r"\b(?:test|it)\s*\(\s*(['\"])(.*?)\1", text, re.S)
+        for _, title in titles:
+            for number in re.findall(r"(?i)(?<![A-Za-z0-9])D(\d+)(?![A-Za-z0-9])", title):
+                specs.setdefault(int(number), []).append(path)
+    return specs
+
+
+def mapped_paths(masterplan):
+    """Every inline paths list in the sensitive-area map."""
+    paths = []
+    for line in masterplan.splitlines():
+        match = re.match(r"^\s+paths:\s*(.*)$", line)
+        if match and match.group(1).strip():
+            paths.extend(item.strip().removeprefix("./") for item in match.group(1).split(","))
+    return paths
+
+
 def test_read(root, base, piece):
     if git("rev-parse", "--verify", "-q", base + "^{commit}", cwd=root) is None:
-        print(f"not-checked\ttests\t{base} is not a commit in this project"); return 2
+        print(f"not-checked\ttests\t{base} is not a commit in this project")
+        return 2
     commits = red_commits(root, base)
     command = test_command(root)
-    changed = {p: lines for p, lines in changed_lines(root, base).items() if os.path.isfile(os.path.join(root, p))}
-    test_files = [p for p in changed if is_test(p)]
-    if commits and not test_files:
-        print("not-checked\ttests\tTest: commits added no test files"); return 2
+    changed = {p: lines for p, lines in changed_lines(root, base).items()
+               if os.path.isfile(os.path.join(root, p))}
+    changed_tests = [p for p in changed if is_test_file(p)]
+    if commits and not changed_tests:
+        print("not-checked\ttests\tTest: commits added no test files")
+        return 2
     notes = done_when(root, piece)
     if notes is None:
-        print(f"not-checked\ttests\tcould not read Done when lines for piece {piece}"); return 2
+        print(f"not-checked\ttests\tcould not read Done when lines for piece {piece}")
+        return 2
     section_text = re.search(r"(?ims)(?:^## Under the hood\s*\n|<summary>Under the hood</summary>)(.*?)(?=^## |</details>|\Z)", notes)
     refactor = bool(section_text and re.search(r"(?im)^\s*Kind:\s*refactor\s*$", section_text.group(1)))
-    section = re.search(r"(?ms)^## Done when\s*\n(.*?)(?=^## |\Z)", notes)
-    done_lines, number, bullets = [], 0, []
+    section = re.search(r"(?ms)^#{2,3} Done when\s*\n(.*?)(?=^#{2,3} |\Z)", notes)
+    done_lines, item_count, bullets = [], 0, []
     if section:
         for line in section.group(1).splitlines():
-            bullet = re.match(r"^\s*[-*]\s+(?:\[[ xX]\]\s*)?(.*)$", line)
-            if bullet:
+            item = re.match(r"^\s*(?:[-*]|\d+[.)])\s+(?:\[[ xX]\]\s*)?(.*)$", line)
+            if item:
                 if bullets:
                     detail = " ".join(part.strip() for part in bullets)
-                    if not detail.endswith("(try it)"): done_lines.append((number, detail))
-                number += 1
-                bullets = [bullet.group(1).strip()]
+                    if not detail.endswith("(try it)"):
+                        done_lines.append((item_count, detail))
+                item_count += 1
+                bullets = [item.group(1).strip()]
             elif bullets and line.strip():
                 bullets.append(line.strip())
         if bullets:
             detail = " ".join(part.strip() for part in bullets)
-            if not detail.endswith("(try it)"): done_lines.append((number, detail))
-    all_manual = number > 0 and not done_lines
+            if not detail.endswith("(try it)"):
+                done_lines.append((item_count, detail))
+    all_manual = item_count > 0 and not done_lines
+    if not done_lines and not all_manual:
+        print("not-checked\ttests\tno Done when lines found")
+        return 1
     if not commits and all_manual:
-        print("tests\tvisual-only piece: every Done when condition is for a person to try"); return 0
+        print("tests\tvisual-only piece: every Done when condition is for a person to try")
+        return 0
     if not command:
-        print("not-checked\ttests\tno recorded test command was found"); return 2
-    if not commits:
-        test_files = [p for p in project_files(root) if is_test(p)]
-    test_text = "\n".join(read(root, p) for p in test_files)
-    # Disabled tests and focused tests are findings even when the runner omits them from JUnit.
+        print("not-checked\ttests\tno recorded test command was found")
+        return 2
+    test_files = [p for p in project_files(root) if is_test_file(p)]
+    status, unavailable = 0, False
     skipped_patterns = (r"\b(?:it|test|describe)\s*\.\s*(?:skip|only)\b", r"\bx(?:it|test)\s*\(",
                         r"@pytest\.mark\.skip", r"@unittest\.skip")
-    for path in test_files:
-        for lineno, line in enumerate(read(root, path).splitlines(), 1):
-            if any(re.search(pattern, line) for pattern in skipped_patterns):
-                print(f"skipped\t{path}:{lineno}")
-    status = 1 if any(re.search(pattern, test_text) for pattern in skipped_patterns) else 0
+    diff = git("diff", "--unified=0", "--no-color", base, "--", *test_files, cwd=root) or ""
+    current, current_line = None, 0
+    for line in diff.splitlines():
+        if line.startswith("+++ "):
+            current = line[6:].split("\t", 1)[0]
+        elif line.startswith("@@"):
+            hunk = re.match(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@", line)
+            current_line = int(hunk.group(1)) if hunk else 0
+        elif line.startswith("+") and not line.startswith("+++") and current in test_files:
+            if any(re.search(pattern, line[1:]) for pattern in skipped_patterns):
+                print(f"skipped\t{current}:{current_line}")
+                status = 1
+            current_line += 1
     for source in (p for p in changed if p.endswith(SOURCE_EXT) and not is_test(p)):
         stem = os.path.splitext(os.path.basename(source))[0]
         for test_path in test_files:
             if re.search(r"(?:vi|jest)\s*\.\s*mock\s*\([^\n]*" + re.escape(stem), read(root, test_path)):
                 print(f"stands-in\t{test_path} replaces {source}, which this change edits")
-    # Removed test cases are reported as cases, not every removed source line.
     for path in test_files:
         old = git("show", f"{base}:{path}", cwd=root)
+        if old is None:
+            continue
         now = read(root, path)
-        if old is not None:
-            case = re.compile(r"(?m)^\s*(?:it|test)\s*\([^\n]*")
-            if set(case.findall(old)) - set(case.findall(now)):
-                print(f"removed\t{path}")
-    deleted = git("diff", "--name-status", base, "--", cwd=root) or ""
-    for row in deleted.splitlines():
+        if path.endswith(".py"):
+            cases = re.compile(r"(?m)^\s*def\s+(test_[A-Za-z0-9_]+)\s*\(")
+        else:
+            cases = re.compile(r"(?m)^\s*(?:it|test)\s*\([^\n]*")
+        if set(cases.findall(old)) - set(cases.findall(now)):
+            print(f"removed\t{path}")
+    for row in (git("diff", "--name-status", base, "--", cwd=root) or "").splitlines():
         fields = row.split("\t", 1)
-        if len(fields) == 2 and fields[0] == "D" and is_test(fields[1]):
+        if len(fields) == 2 and fields[0] == "D" and is_test_file(fields[1]):
             print(f"removed\t{fields[1]}")
-    # Git diff headers carry both names; parsing them avoids stripping a real top-level a/ folder.
-    diff = git("diff", "--unified=0", "--no-color", base, "--", cwd=root) or ""
-    for line in diff.splitlines():
-        if line.startswith("diff --git "):
-            match = re.match(r'^diff --git a/(.*?) b/(.*?)$', line)
-            current = match.group(2) if match else ""
-            if current and current in test_files and line.endswith(" /dev/null"):
-                print(f"removed\t{current}")
+    playwright = playwright_specs(root, project_files(root))
     with tempfile.TemporaryDirectory(prefix="quality-tests-") as folder:
         start, before_root = os.path.join(folder, "start"), os.path.join(folder, "before")
         os.makedirs(start)
         archive = subprocess.run(["git", "archive", base], cwd=root, capture_output=True)
         if archive.returncode:
-            print("not-checked\ttests\tcould not make a copy of the start commit"); return 2
+            print("not-checked\ttests\tcould not make a copy of the start commit")
+            return 2
         if subprocess.run(["tar", "-x", "-C", start], input=archive.stdout, capture_output=True).returncode:
-            print("not-checked\ttests\tcould not unpack the start commit"); return 2
+            print("not-checked\ttests\tcould not unpack the start commit")
+            return 2
+        modules = os.path.join(root, "node_modules")
+        if os.path.isdir(modules) and not os.path.exists(os.path.join(start, "node_modules")):
+            os.symlink(modules, os.path.join(start, "node_modules"))
         red_tests = sorted({path for commit in commits for path in
-            (git("diff-tree", "--root", "--no-commit-id", "--name-only", "-r", commit, cwd=root) or "").splitlines() if is_test(path)})
+            (git("diff-tree", "--root", "--no-commit-id", "--name-only", "-r", commit, cwd=root) or "").splitlines()
+            if is_test_file(path)})
         for path in red_tests:
-            source = os.path.join(root, path)
-            dest = os.path.join(start, path)
+            source, dest = os.path.join(root, path), os.path.join(start, path)
             if os.path.isfile(source):
-                os.makedirs(os.path.dirname(dest), exist_ok=True); shutil.copy2(source, dest)
+                os.makedirs(os.path.dirname(dest), exist_ok=True)
+                shutil.copy2(source, dest)
         throwaway_copy(start, before_root)
         before_xml, after_xml = os.path.join(folder, "before.xml"), os.path.join(folder, "after.xml")
         before_cmd, after_cmd = list(command), list(command)
         command_text = " ".join(command)
-        package_text = read(root, "package.json")
-        is_vitest = "vitest" in command_text or '"vitest"' in package_text
+        is_vitest = "vitest" in command_text or '"vitest"' in read(root, "package.json")
         is_pytest = "pytest" in command_text
         cov_before = cov_after = None
         if is_vitest:
             before_cmd += ["--reporter=junit", f"--outputFile={before_xml}"]
             after_cmd += ["--reporter=junit", f"--outputFile={after_xml}"]
-            provider = os.path.join(root, "node_modules", "@vitest", "coverage-v8")
-            if os.path.isdir(provider):
+            if os.path.isdir(os.path.join(root, "node_modules", "@vitest", "coverage-v8")):
                 cov_before, cov_after = os.path.join(folder, "coverage-before"), os.path.join(folder, "coverage-after")
                 before_cmd += ["--coverage", f"--coverage.reportsDirectory={cov_before}"]
                 after_cmd += ["--coverage", f"--coverage.reportsDirectory={cov_after}"]
             else:
                 print("not-checked\tcoverage\t@vitest/coverage-v8 provider is not installed")
         elif is_pytest:
-            before_cmd += [f"--junitxml={before_xml}"]; after_cmd += [f"--junitxml={after_xml}"]
-            cov_available = run([sys.executable, "-c", "import pytest_cov, coverage"], cwd=before_root, timeout=30)[0] == 0
-            if cov_available:
+            before_cmd += [f"--junitxml={before_xml}"]
+            after_cmd += [f"--junitxml={after_xml}"]
+            cov_available = run([*command, "--help"], cwd=before_root, timeout=30)[0] == 0
+            help_text = run([*command, "--help"], cwd=before_root, timeout=30)[1] if cov_available else ""
+            if "--cov-report" in help_text and re.search(r"\bjson\b", help_text):
                 cov_before, cov_after = os.path.join(folder, "coverage-before.json"), os.path.join(folder, "coverage-after.json")
                 before_cmd += ["--cov", f"--cov-report=json:{cov_before}"]
                 after_cmd += ["--cov", f"--cov-report=json:{cov_after}"]
+            elif "--cov" in help_text:
+                print("not-checked\tcoverage\tinstalled pytest-cov does not support JSON output")
             else:
                 print("not-checked\tcoverage\tpytest-cov (coverage.py provider) is not installed")
-        before_code, before_out, before_err = run(before_cmd, cwd=before_root, timeout=900)
-        after_code, after_out, after_err = run(after_cmd, cwd=root, timeout=900)
-        after_d_failure = False
-        if is_vitest or is_pytest:
-            before_cases, after_cases = junit_cases(before_xml), junit_cases(after_xml)
-            missing_module = re.search(r"Cannot find module|No module named|ModuleNotFoundError",
-                                       before_out + before_err)
-            if before_cases is None and missing_module:
-                before_cases = {}
-            if before_cases is None or after_cases is None:
-                print("not-checked\ttests\tthe runner could not produce JUnit results"); return 2
-            if not missing_module:
-                d_patterns = [re.compile(r"(?i)(?<![A-Za-z0-9])D" + str(n) + r"(?![A-Za-z0-9])")
-                              for n, _ in done_lines]
-                unrelated_failures = [name for name, case in before_cases.items()
-                    if (case.find("failure") is not None or case.find("error") is not None)
-                    and not any(p.search(name + " " + case.attrib.get("classname", "")) for p in d_patterns)]
-                if unrelated_failures:
-                    print("not-checked\ttests\tother existing tests fail on the start copy")
-                    return 2
-                after_unrelated = [name for name, case in after_cases.items()
-                    if (case.find("failure") is not None or case.find("error") is not None)
-                    and not any(p.search(name + " " + case.attrib.get("classname", "")) for p in d_patterns)]
-                if after_unrelated:
-                    print("fails-after\tother existing tests fail on the current code")
-                    status = 1
-            for n, detail in ([] if refactor else done_lines):
-                pat = re.compile(r"(?i)(?<![A-Za-z0-9])D" + str(n) + r"(?![A-Za-z0-9])")
-                before_matches = [c for name, c in before_cases.items() if pat.search(name + " " + c.attrib.get("classname", ""))]
-                after_matches = [c for name, c in after_cases.items() if pat.search(name + " " + c.attrib.get("classname", ""))]
-                is_skipped = any(c.find("skipped") is not None for c in after_matches)
-                if not after_matches or is_skipped:
-                    print(f"untested\tD{n}\t{detail}"); status = 1
-                elif any(c.find("failure") is None and c.find("error") is None for c in before_matches):
-                    print(f"passes-before\tD{n}"); status = 1
-                elif not before_matches and missing_module:
-                    print(f"fails-before\tD{n}")
-                elif any(c.find("failure") is not None or c.find("error") is not None for c in after_matches):
-                    print(f"fails-after\tD{n}"); status = 1; after_d_failure = True
-                else:
-                    print(f"fails-before\tD{n}")
-        elif command[-1:] == ["app/test_bramble.py"]:
-            print("not-checked\ttests\tpython3 app/test_bramble.py has no per-test JUnit output")
-            print("not-checked\tcoverage\tcoverage.py provider is not configured for the unittest fixture")
+        else:
+            before_code, _, _ = run(before_cmd, cwd=before_root, timeout=900)
+            after_code, _, _ = run(after_cmd, cwd=root, timeout=900)
+            print("not-checked\ttests\trecorded test command has no per-test report")
             return 2
-            if before_code == 0:
-                status = 1 if refactor else status
-            elif before_code != 0:
-                print("fails-before\tbaseline existing tests fail on the start copy")
-        if after_code != 0 and not (is_vitest or is_pytest):
-            print("not-checked\ttests\tthe recorded test command failed on the current code"); return 2
-        if after_code != 0:
+        before_env, after_env = os.environ.copy(), os.environ.copy()
+        if is_pytest:
+            before_env["COVERAGE_FILE"] = os.path.join(folder, ".coverage-before")
+            after_env["COVERAGE_FILE"] = os.path.join(folder, ".coverage-after")
+        before_code, before_out, before_err = run(before_cmd, cwd=before_root, timeout=900, env=before_env)
+        after_code, after_out, after_err = run(after_cmd, cwd=root, timeout=900, env=after_env)
+        before_cases, after_cases = junit_cases(before_xml), junit_cases(after_xml)
+        if before_cases is None or after_cases is None:
+            print("not-checked\ttests\tthe runner could not produce JUnit results")
+            return 2
+        def failed(case):
+            return case.find("failure") is not None or case.find("error") is not None
+        missing_module_cases = {name: case for name, case in before_cases.items()
+            if failed(case) and re.search(r"Cannot find module|Failed to load|No module named|ModuleNotFoundError",
+                " ".join(case.itertext()))}
+        d_results = []
+        for n, detail in ([] if refactor else done_lines):
+            pat = re.compile(r"(?i)(?<![A-Za-z0-9])D" + str(n) + r"(?![A-Za-z0-9])")
+            before_matches = [c for name, c in before_cases.items()
+                              if pat.search(name + " " + c.attrib.get("classname", ""))]
+            after_matches = [c for name, c in after_cases.items()
+                             if pat.search(name + " " + c.attrib.get("classname", ""))]
+            file_module_failure = bool(missing_module_cases and any(
+                pat.search(" ".join(read(root, path) for path in red_tests)) for path in red_tests))
+            if not after_matches or any(c.find("skipped") is not None for c in after_matches):
+                print(f"untested\tD{n}\t{detail}")
+                status = 1
+            elif any(not failed(c) for c in before_matches):
+                print(f"passes-before\tD{n}")
+                status = 1
+            elif file_module_failure or any(failed(c) for c in before_matches):
+                print(f"fails-before\tD{n}")
+            elif any(failed(c) for c in after_matches):
+                print(f"fails-after\tD{n}")
+                status = 1
+            else:
+                print(f"passes-before\tD{n}")
+                status = 1
+            d_results.append(n)
+        unrelated_before = [name for name, case in before_cases.items()
+                            if failed(case) and name not in missing_module_cases
+                            and not any(re.search(r"(?i)(?<![A-Za-z0-9])D" + str(n) + r"(?![A-Za-z0-9])",
+                                name + " " + case.attrib.get("classname", "")) for n in d_results)]
+        if unrelated_before:
+            print("not-checked\ttests\tother existing tests fail on the start copy")
+            unavailable = True
+        unrelated_after = [name for name, case in after_cases.items()
+                           if failed(case) and not any(re.search(r"(?i)(?<![A-Za-z0-9])D" + str(n) + r"(?![A-Za-z0-9])",
+                               name + " " + case.attrib.get("classname", "")) for n in d_results)]
+        if unrelated_after:
+            print("fails-after\tother existing tests fail on the current code")
+            status = 1
+        if after_code != 0 and not unrelated_after and not any(failed(c) for c in after_cases.values()):
+            print("fails-after\tthe recorded test command exited non-zero")
             status = 1
         if refactor and before_code != 0:
             print("fails-before\trefactor baseline tests must pass on the start copy")
+            status = 1
+        if refactor and after_code != 0:
+            print("fails-after\trefactor tests must pass on the current code")
+            status = 1
+        if not refactor and not commits:
+            print("missing-red-commit\tbehaviour piece needs a Test: commit whose tests fail before the change")
             status = 1
         report = os.path.join(cov_after, "coverage-final.json") if is_vitest and cov_after else cov_after
         covered = set()
         if report and os.path.isfile(report):
             try:
-                data = json.load(open(report, encoding="utf-8"))
+                with open(report, encoding="utf-8") as handle:
+                    data = json.load(handle)
                 if is_pytest:
                     for path, item in data.get("files", {}).items():
                         for line in item.get("executed_lines", []):
-                            covered.add((os.path.relpath(path, root) if os.path.isabs(path) else path, int(line)))
+                            rel = os.path.relpath(path, root) if os.path.isabs(path) else path
+                            covered.add((rel, int(line)))
                 else:
                     for path, item in data.items():
                         rel = os.path.relpath(os.path.realpath(path), os.path.realpath(root)) if os.path.isabs(path) else path
                         for key, count in item.get("s", {}).items():
                             line = item.get("statementMap", {}).get(key, {}).get("start", {}).get("line")
-                            if line and count: covered.add((rel, line))
+                            if line and count:
+                                covered.add((rel, line))
             except (OSError, ValueError, TypeError):
                 report = None
-        if not report or not os.path.isfile(report):
-            provider = "@vitest/coverage-v8" if is_vitest else "pytest-cov (coverage.py)"
-            if cov_before is not None:
-                print(f"not-checked\tcoverage\t{provider} report is missing")
-        changed_code = {(path, line) for path, lines in changed.items() if path.endswith(SOURCE_EXT) and not is_test(path) for line in lines}
+        if cov_after is not None and (not report or not os.path.isfile(report)):
+            print(f"not-checked\tcoverage\t{'@vitest/coverage-v8' if is_vitest else 'pytest-cov (coverage.py)'} report is missing")
+        changed_code = set()
+        for path, lines in changed.items():
+            if path.endswith(SOURCE_EXT) and not is_test(path):
+                source_lines = read(root, path).splitlines()
+                changed_code.update((path, line) for line in lines
+                                    if line <= len(source_lines) and source_lines[line - 1].strip())
         uncovered = sorted(changed_code - covered)
         if report and os.path.isfile(report):
             by_file = {}
-            for path, line in uncovered: by_file.setdefault(path, []).append(line)
+            for path, line in uncovered:
+                by_file.setdefault(path, []).append(line)
             for path, lines in sorted(by_file.items()):
-                lines = sorted(lines); first = previous = lines[0]
+                lines = sorted(lines)
+                first = previous = lines[0]
                 for line in lines[1:] + [None]:
                     if line is not None and line == previous + 1:
-                        previous = line; continue
+                        previous = line
+                        continue
                     print(f"uncovered\t{path}:{first}-{previous}")
-                    if line is not None: first = previous = line
-        if report and os.path.isfile(report) and changed_code and not (changed_code & covered): status = 1
-        print(f"covered\t{len(changed_code & covered)}")
-    if not commits and not refactor:
-        print("missing-red-commit\tbehaviour piece needs a Test: commit whose tests fail before the change")
-        status = 1
-    if refactor and (before_code != 0 or after_code != 0):
-        print("fails-before\trefactor baseline tests must pass on the start copy")
-        status = 1
+                    if line is not None:
+                        first = previous = line
+        if report and os.path.isfile(report):
+            print(f"covered\t{len(changed_code & covered)}")
+            if changed_code and not (changed_code & covered):
+                status = 1
+        if playwright:
+            runner = os.path.join(root, "node_modules", ".bin", "playwright")
+            if not os.access(runner, os.X_OK) and not shutil.which("playwright"):
+                print("not-checked\tplaywright\tPlaywright is not installed")
+                unavailable = True
+            else:
+                for n in sorted(playwright):
+                    code, _, _ = run(["npx", "--no-install", "playwright", "test", "--grep", f"D{n}\\b"], cwd=root, timeout=900)
+                    print(f"playwright\tD{n}\t{'passed' if code == 0 else 'failed'}")
+                    if code:
+                        status = 1
     if git("show", f"{base}:masterplan.md", cwd=root) is not None:
         masterplan = read(root, "masterplan.md")
         if re.search(r"(?m)^Path:\s*Build with care\s*$", masterplan):
-            match = re.search(r"(?ms)^\s+paths:\s*(.+)$", masterplan)
-            mapped = [item.strip().removeprefix("./") for item in match.group(1).split(",")] if match else []
-            touches = any(any(path == item or path.startswith(item.rstrip("/") + "/") for item in mapped)
-                          for path in changed)
-            if touches:
+            mapped = mapped_paths(masterplan)
+            if any(path == item or path.startswith(item.rstrip("/") + "/")
+                   for path in changed for item in mapped):
                 result = subprocess.run([sys.executable, os.path.abspath(__file__), "strength", "--base", base],
                                         cwd=root, capture_output=True, text=True)
                 for line in result.stdout.splitlines():
                     if line.startswith("missed\t") or line.startswith("not-checked\tstrength"):
                         print("strength\t" + line.split("\t", 1)[-1])
-    if status == 0: print("tests\tpassed")
-    return status
+    if status == 0 and not unavailable:
+        print("tests\tpassed")
+    if status == 1:
+        return 1
+    return 2 if unavailable else 0
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
@@ -1363,8 +1497,8 @@ def main():
         args = parser.parse_args()
     except SystemExit:
         return 2
-    if TEST_PATH is None:
-        print("not-checked\tall\tthe rule for which paths are tests could not be read from " + TEST_RULE)
+    if TEST_PATH is None or TEST_FILES is None:
+        print("not-checked\tall\tthe test-path rules could not be read from " + TEST_RULE)
         return 2
     top = git("rev-parse", "--show-toplevel")
     if top is None:

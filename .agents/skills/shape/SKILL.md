@@ -35,6 +35,8 @@ context. A whole-product decision goes to the masterplan, a whole-codebase
 convention to AGENTS.md's stack section. Groundwork is its own vertical slice,
 ordered ahead, never a "database" or "API" layer.
 
+For a behaviour-preserving refactor, write `Kind: refactor` under `Under the hood`.
+
 Number the bullets under `## Done when` by position as D1, D2, and so on.
 End a line a person must judge with `(try it)`.
 

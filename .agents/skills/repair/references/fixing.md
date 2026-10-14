@@ -49,16 +49,17 @@ This announced step is the only place it runs.
 ## Fix and lock it down
 
 Create the regression evidence at the highest credible user-facing boundary,
+title its test with the matching D number or the repair's own number line,
 watch it fail, and commit it under `Test:` before the fix. Apply the smallest
-fix that addresses the actual cause, watch it pass, then run
+fix that addresses the actual cause, watch it pass, then rerun the original,
+unminimised case and run
 `quality.py tests --base <start commit> --piece <number>` once after the fix.
-When no credible
-automated boundary exists, record that as a maintainability finding and use
-the strongest manual or operational evidence available instead.
+When no credible automated boundary exists, record that as a maintainability
+finding and use the strongest manual or operational evidence available instead.
 
-For a repair inside a mapped sensitive area, run `quality.py strength --base
-<start commit>` with the regression test, and act on its exit code. Exit 2
-means the check did not run for part of the changed code.
+For a repair whose regression test touches a mapped sensitive area, run
+`quality.py strength --base <start commit>` with that test, and act on its exit
+code. Exit 2 means the check did not run for part of the changed code.
 
 ## Cleanup
 

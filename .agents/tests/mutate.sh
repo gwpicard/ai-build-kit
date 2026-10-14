@@ -336,33 +336,34 @@ open(p, "w").write(t)
       edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
 import os
 p=os.environ["MUTATE_TARGET"]
-s=open(p).read(); old="print(f\"passes-before\\\\tD{n}\"); status = 1"
-assert old in s
-open(p,"w").write(s.replace(old, "print(f\"passes-before\\\\tD{n}\")", 1))'
+s=open(p).read(); old="print(f\"passes-before\\tD{n}\")\n                status = 1"
+assert old in s, "passes-before no longer fails the read"
+open(p,"w").write(s.replace(old, "print(f\"passes-before\\tD{n}\")", 1))'
       ;;
     tests-zero-coverage-pass)
       edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
 import os
 p=os.environ["MUTATE_TARGET"]
-s=open(p).read(); old="if report and changed_code and not (changed_code & covered): status = 1"
+s=open(p).read(); old="if changed_code and not (changed_code & covered):\n                status = 1"
 assert old in s
-open(p,"w").write(s.replace(old, "if False and report and changed_code and not (changed_code & covered): status = 1", 1))'
+open(p,"w").write(s.replace(old, "if False and changed_code and not (changed_code & covered):\n                status = 1", 1))'
       ;;
     tests-missing-coverage-pass)
       edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
-import os
+import os,re
 p=os.environ["MUTATE_TARGET"]
-s=open(p).read(); old="print(f\"not-checked\\\\tcoverage\\\\t{provider} report is missing\")"
-assert old in s
-open(p,"w").write(s.replace(old, "pass", 1))'
+s=open(p).read()
+s,n=re.subn(r"^\s*print\(f\"not-checked\\tcoverage\\t.* report is missing\"\)$", "", s, count=1, flags=re.M)
+assert n == 1, "coverage report-missing line not found"
+open(p,"w").write(s)'
       ;;
     tests-after-failure-pass)
       edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
 import os
 p=os.environ["MUTATE_TARGET"]
-s=open(p).read(); old="if after_code != 0:\n            status = 1"
+s=open(p).read(); old="if refactor and after_code != 0:\n            print(\"fails-after\\\\trefactor tests must pass on the current code\")\n            status = 1"
 assert old in s
-open(p,"w").write(s.replace(old, "if False and after_code != 0:\n            status = 1", 1))'
+open(p,"w").write(s.replace(old, "if False and after_code != 0:\n            print(\"fails-after\\\\trefactor tests must pass on the current code\")\n            status = 1", 1))'
       ;;
     test-fix-empty-reason)
       edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/check-tests.sh" '
@@ -379,7 +380,7 @@ open(p,"w").write("\n".join(lines)+"\n")'
 import os
 p = os.environ["MUTATE_TARGET"]
 s = open(p).read()
-old = "          echo \"Test check: $file from $commit changed in $later without a Test fix: reason.\" >&2\n          failed=1"
+old = """          report_once \"Test check: $file changed existing lines in $later without Test fix: reason.\"; failed=1"""
 assert old in s, "the silent-edit failure branch is missing"
 open(p, "w").write(s.replace(old, "          echo \"Test check: silent edit ignored\" >&2", 1))
 '
