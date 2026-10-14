@@ -548,6 +548,7 @@ live_ask = [
     # Reading through Vercel's sign-in makes a lasting key the first time.
     "vercel curl /api/health --deployment https://kit-log.vercel.app --yes",
     "GATE_READ=yes sh .agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/live-check.sh --only health",
+    "PREVIEW_HEALTH=yes sh .agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/preview.sh",
     "vercel project protection enable kit-log --sso",
     "vercel project protection disable kit-log --sso",
     "sh .agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/set-access.sh public",
@@ -648,6 +649,7 @@ template=json.loads((root/'.agents/skills/setup-ai-build-kit/templates/foundatio
 newer_deny=[r for r in template['permissions']['deny'] if r.startswith(('Read(','Bash(security','Bash(gh auth token','Bash(git checkout','Bash(git restore','Bash(git stash','Bash(git push --no-verify','Bash(git push * --no-verify','Bash(git switch','Bash(git clean -*','Bash(git clean * ','Bash(git reset * ','Bash(git *core.hooks','Bash(gh auth status','Bash(git credential','Bash(*'))]
 newer_ask=[r for r in template['permissions']['ask'] if 'merge' not in r.lower()]
 assert len(newer_deny)>=16 and len(newer_ask)>=13,(newer_deny,newer_ask)
+assert 'Bash(*PREVIEW_HEALTH=yes*)' in newer_ask
 for rule in newer_deny: assert '\ndeny\t'+rule+'\n' in first_offer+'\n',(rule,first_offer)
 for rule in newer_ask: assert '\nask\t'+rule+'\n' in first_offer+'\n',(rule,first_offer)
 assert json.loads(settings.read_text())==old

@@ -13,6 +13,14 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 SKILL="$ROOT/.agents/skills/setup-ai-build-kit"
 HOOK="$SKILL/templates/foundation/pre-push"
+SCAN="$SKILL/templates/foundation/scan-secrets.sh"
+SCAN_PY="$SKILL/templates/foundation/scan-secrets.py"
+
+copy_scan() {
+  project=$1
+  cp "$SCAN" "$project/.agents/hooks/scan-secrets.sh"
+  cp "$SCAN_PY" "$project/.agents/hooks/scan-secrets.py"
+}
 USE="$SKILL/scripts/use-push-guard.sh"
 
 FAIL=0
@@ -34,6 +42,7 @@ git init -q --bare "$R"
 git init -q "$P"
 mkdir -p "$P/.agents/hooks/git"
 cp "$HOOK" "$P/.agents/hooks/git/pre-push"
+copy_scan "$P"
 git -C "$P" remote add origin "$R"
 git -C "$P" commit -q --allow-empty -m first
 # main reaches the remote before the guard is on, as the first upload's API
@@ -122,6 +131,7 @@ Q="$WORK/husky"
 git init -q "$Q"
 mkdir -p "$Q/.agents/hooks/git"
 cp "$HOOK" "$Q/.agents/hooks/git/pre-push"
+copy_scan "$Q"
 git -C "$Q" config core.hooksPath .husky
 out=$(sh "$USE" "$Q" 2>&1) && code=0 || code=$?
 [ "$code" -eq 1 ] && [ "$(git -C "$Q" config core.hooksPath)" = .husky ] && printf '%s' "$out" | grep -q '.husky' \
@@ -129,6 +139,9 @@ out=$(sh "$USE" "$Q" 2>&1) && code=0 || code=$?
   || fail "an existing hooks path was replaced or not reported: $code $out"
 mkdir -p "$Q/sub/.agents/hooks/git"
 cp "$HOOK" "$Q/sub/.agents/hooks/git/pre-push"
+mkdir -p "$Q/sub/.agents/hooks"
+cp "$SCAN" "$Q/sub/.agents/hooks/scan-secrets.sh"
+cp "$SCAN_PY" "$Q/sub/.agents/hooks/scan-secrets.py"
 out=$(sh "$USE" "$Q/sub" 2>&1) && code=0 || code=$?
 [ "$code" -eq 1 ] && pass "a folder inside a larger repository is not switched on" || fail "a nested folder returned $code"
 mkdir -p "$WORK/plain"
@@ -140,6 +153,7 @@ H="$WORK/lefthook"
 git init -q "$H"
 mkdir -p "$H/.agents/hooks/git"
 cp "$HOOK" "$H/.agents/hooks/git/pre-push"
+copy_scan "$H"
 printf '#!/bin/sh\nexit 0\n' > "$H/.git/hooks/pre-commit"
 chmod +x "$H/.git/hooks/pre-commit"
 out=$(sh "$USE" "$H" 2>&1) && code=0 || code=$?
@@ -157,6 +171,7 @@ G="$WORK/global"
 git init -q "$G"
 mkdir -p "$G/.agents/hooks/git"
 cp "$HOOK" "$G/.agents/hooks/git/pre-push"
+copy_scan "$G"
 git config --global core.hooksPath "$HOME/.githooks"
 out=$(sh "$USE" "$G" 2>&1) && code=0 || code=$?
 [ "$code" -eq 1 ] && [ -z "$(git -C "$G" config --local --get core.hooksPath || true)" ] \
@@ -170,6 +185,7 @@ X="$WORK/noexec"
 git init -q "$X"
 mkdir -p "$X/.agents/hooks/git"
 cp "$HOOK" "$X/.agents/hooks/git/pre-push"
+copy_scan "$X"
 chmod a-x "$X/.agents/hooks/git/pre-push"
 sh "$USE" "$X" >/dev/null 2>&1 && code=0 || code=$?
 [ "$code" -eq 0 ] && [ -x "$X/.agents/hooks/git/pre-push" ] \

@@ -113,6 +113,15 @@ skills installed into the project, which is the shared installer's route.
   `.agents/skills/`, and you start a command by naming it.
 - Nothing reminds you of a check-up when a session opens. `what-now` says when
   a visit is overdue.
+- Tool-result hooks differ. Cursor's `postToolUse` can replace MCP output, but
+  its documented shape does not replace built-in Bash, Read or Grep results.
+  Gemini CLI's `AfterTool` can hide a result and give the agent a replacement
+  reason, but its documented output does not rewrite the original result in
+  place. Claude Code's `PostToolUse` supports `updatedToolOutput` for built-in
+  tools when the replacement keeps that tool's output shape. See the [Cursor
+  hooks reference](https://cursor.com/docs/hooks), [Gemini CLI hooks
+  reference](https://geminicli.com/docs/hooks/reference/) and [Claude Code
+  hooks reference](https://code.claude.com/docs/en/hooks).
 - There is no deny list set up for you, and nothing asks you before the agent
   merges. Codex's own approval settings do that job, and you set them
   yourself.

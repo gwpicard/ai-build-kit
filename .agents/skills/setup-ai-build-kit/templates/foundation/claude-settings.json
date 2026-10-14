@@ -95,6 +95,7 @@
       "Bash(vercel api *patch*)",
       "Bash(vercel curl*)",
       "Bash(*GATE_READ=yes*)",
+      "Bash(*PREVIEW_HEALTH=yes*)",
       "Bash(vercel project protection enable*)",
       "Bash(vercel project protection disable*)",
       "Bash(*set-access.sh*)",
@@ -113,6 +114,46 @@
     ]
   },
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read|Grep|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"$CLAUDE_PROJECT_DIR/.agents/hooks/guard-secrets.sh\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"$CLAUDE_PROJECT_DIR/.agents/hooks/redact-secrets.sh\" Bash"
+          }
+        ]
+      },
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"$CLAUDE_PROJECT_DIR/.agents/hooks/redact-secrets.sh\" Read"
+          }
+        ]
+      },
+      {
+        "matcher": "Grep",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"$CLAUDE_PROJECT_DIR/.agents/hooks/redact-secrets.sh\" Grep"
+          }
+        ]
+      }
+    ],
     "SessionStart": [
       {
         "hooks": [

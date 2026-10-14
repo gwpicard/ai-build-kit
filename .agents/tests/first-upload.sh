@@ -40,6 +40,8 @@ setup() {
   git -C "$P" config user.email rehearsal@example.invalid
   git -C "$P" config commit.gpgsign false
   cp "$HOOK" "$P/.agents/hooks/git/pre-push"
+  cp "$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/scan-secrets.sh" "$P/.agents/hooks/scan-secrets.sh"
+  cp "$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/scan-secrets.py" "$P/.agents/hooks/scan-secrets.py"
   git -C "$P" config core.hooksPath .agents/hooks/git
   printf 'founding\n' > "$P/masterplan.md"
   git -C "$P" add -A

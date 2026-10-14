@@ -35,7 +35,7 @@ REPORT="$WORK/report.tsv"
 # because it also carries checks of its own, on links, stale vocabulary and
 # adapter freshness. When reading the report, a catch by validate-kit alone
 # means only its own direct checks noticed.
-DEFAULT_CHECKS="release-builder starter-rehearsal agent-plugin session-start validate-kit"
+DEFAULT_CHECKS="release-builder starter-rehearsal agent-plugin session-start secrets-gates validate-kit"
 PUBLISH_CHECKS="release-builder release-publication validate-kit"
 MODE_CHECKS="validate-kit fake-github"
 
@@ -62,7 +62,8 @@ runnable-bit-lost
 product-named
 command-loads-command
 command-over-budget
-background-one-caller"
+background-one-caller
+secrets-read-guard"
 
 describe() {
   case "$1" in
@@ -90,6 +91,7 @@ describe() {
     command-loads-command) echo "a command reaches into another command's references instead of calling a background skill" ;;
     command-over-budget) echo "a command grows past its word budget" ;;
     background-one-caller) echo "a background skill is left with one caller and no agent that loads it" ;;
+    secrets-read-guard) echo "the Claude read guard stops refusing environment files" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -104,6 +106,7 @@ checks_for() {
     command-loads-command) echo "validate-kit" ;;
     command-over-budget) echo "validate-kit" ;;
     background-one-caller) echo "validate-kit" ;;
+    secrets-read-guard) echo "secrets-gates" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -338,6 +341,16 @@ t = re.sub(r"(skills: \[[^]]*?), screen-check", r"\1", s)
 assert t != s
 open(p, "w").write(t)'
       done
+      ;;
+    secrets-read-guard)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/guard-secrets.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "if name == \".env\" or name.startswith(\".env.\") or re.search("
+assert old in t, "secret path check not found"
+open(p, "w").write(t.replace(old, "if re.search(", 1))
+'
       ;;
     command-over-budget)
       # A command grows one helpful paragraph at a time.
