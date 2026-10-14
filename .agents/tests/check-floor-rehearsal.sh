@@ -123,7 +123,8 @@ run_check() {
   tab=$(printf '\t')
   while IFS="$tab" read -r step command; do
     [ "$step" = "Install" ] && continue
-    if ! (cd "$PROJECT" && sh -c "$command") > "$WORK/last-output" 2>&1; then
+    base_sha=$(git -C "$PROJECT" rev-parse refs/remotes/origin/main)
+    if ! (cd "$PROJECT" && PR_BASE_SHA="$base_sha" sh -c "$command") > "$WORK/last-output" 2>&1; then
       printf '%s\n' "$step"
       return 0
     fi
