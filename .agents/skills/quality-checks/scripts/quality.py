@@ -63,7 +63,8 @@ import sys
 import tempfile
 from datetime import date
 
-from reaches_line import REACHES_LINE
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from reaches_line import REACHES_LINE  # noqa: E402
 
 LIMIT = 15  # lizard's documented warning for cyclomatic complexity
 JS_EXT = (".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs", ".mts", ".cts")

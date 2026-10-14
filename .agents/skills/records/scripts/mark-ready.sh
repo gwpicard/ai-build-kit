@@ -28,6 +28,8 @@ case "$number" in ''|*[!0-9]*) echo "usage: mark-ready.sh <issue number>" >&2; e
 command -v gh >/dev/null 2>&1 || { echo "mark-ready: the GitHub command line tool is not installed" >&2; exit 2; }
 command -v python3 >/dev/null 2>&1 || { echo "mark-ready: python3 is needed to read the issue" >&2; exit 2; }
 command -v git >/dev/null 2>&1 || { echo "mark-ready: Git is needed to check the project" >&2; exit 2; }
+# The Reaches parser lives beside the quality read, in this kit's own skills.
+parser_dir=$(CDPATH= cd -- "$(dirname -- "$0")/../../quality-checks/scripts" 2>/dev/null && pwd) || parser_dir=
 project_root=$(git rev-parse --show-toplevel 2>/dev/null) || {
   echo "mark-ready: could not find the project under Git" >&2
   exit 2
@@ -52,12 +54,12 @@ read_issue() {
 issue=$(read_issue) || { echo "mark-ready: could not read issue $number" >&2; exit 2; }
 
 # Prints "ok <needs-labels...>" or "missing <section>".
-verdict=$(ISSUE_BODY="$issue" HAS_CODE="$has_code" PROJECT_ROOT="$project_root" python3 - <<'PY'
+verdict=$(ISSUE_BODY="$issue" HAS_CODE="$has_code" PARSER_DIR="$parser_dir" python3 - <<'PY'
 import json, os, re, sys
 data = json.loads(os.environ["ISSUE_BODY"])
 has_code = os.environ["HAS_CODE"] == "yes"
 if has_code:
-    sys.path.insert(0, os.path.join(os.environ["PROJECT_ROOT"], ".agents", "skills", "quality-checks", "scripts"))
+    sys.path.insert(0, os.environ["PARSER_DIR"])
     from reaches_line import REACHES_LINE
 body = data.get("body") or ""
 labels = [l["name"] if isinstance(l, dict) else l for l in data.get("labels") or []]
