@@ -62,7 +62,8 @@ runnable-bit-lost
 product-named
 command-loads-command
 command-over-budget
-background-one-caller"
+background-one-caller
+test-freeze-removed"
 
 describe() {
   case "$1" in
@@ -90,6 +91,7 @@ describe() {
     command-loads-command) echo "a command reaches into another command's references instead of calling a background skill" ;;
     command-over-budget) echo "a command grows past its word budget" ;;
     background-one-caller) echo "a background skill is left with one caller and no agent that loads it" ;;
+    test-freeze-removed) echo "a later commit can silently edit a test from the red commit" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -104,6 +106,7 @@ checks_for() {
     command-loads-command) echo "validate-kit" ;;
     command-over-budget) echo "validate-kit" ;;
     background-one-caller) echo "validate-kit" ;;
+    test-freeze-removed) echo "tests-prove-change" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -318,6 +321,16 @@ open(p, "w").write(t)
       target="$tree/.agents/skills/implement/SKILL.md"
       [ -f "$tree/.agents/skills/setup-hosting/references/hosting-request.md" ] || return 1
       printf '\n%s\n' "For a server, follow the \`setup-hosting\` skill's \`references/hosting-request.md\`." >> "$target"
+      ;;
+    test-freeze-removed)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/check-tests.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "          echo \"Test check: $file from $commit changed in $later without a Test fix: reason.\" >&2\n          failed=1"
+assert old in s, "the silent-edit failure branch is missing"
+open(p, "w").write(s.replace(old, "          echo \"Test check: silent edit ignored\" >&2", 1))
+'
       ;;
     background-one-caller)
       # A rule folded back into one caller leaves its background skill with a

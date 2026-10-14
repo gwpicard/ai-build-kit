@@ -122,7 +122,7 @@ const workflow = fs.readFileSync(path.join(foundation, 'checks.yml'), 'utf8')
   ].join('\n'));
 put('.github/workflows/checks.yml', workflow);
 put('.agents/hooks/check-sensitive-areas.sh', fs.readFileSync(path.join(foundation, 'check-sensitive-areas.sh'), 'utf8'));
-put('.agents/hooks/check-trim.sh', fs.readFileSync(path.join(foundation, 'check-trim.sh'), 'utf8'));
+put('.agents/hooks/check-tests.sh', fs.readFileSync(path.join(foundation, 'check-tests.sh'), 'utf8'));
 
 // The hosted check runs in a clone with the whole history, where the pull
 // request's base is origin/main. The trim step fails without it, so a local

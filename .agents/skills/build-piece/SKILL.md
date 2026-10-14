@@ -6,7 +6,7 @@ user-invocable: false
 
 # Build a piece
 
-One piece per pass, always, directed by someone who judges it by behaviour.
+Build one piece per pass, judged by behaviour.
 
 ## 1. Safe start
 
@@ -61,28 +61,27 @@ piece with two subjects needs what both demand, and the stricter save route.
 Where a machine can check the piece, that check runs and must pass. A screen
 that looks right is never a substitute for a check that was available and skipped.
 
-- An automated behaviour test is required for rules, calculations,
-  permissions, data changes, integrations, background behaviour, bugs, and any
-  done line a machine can judge.
-- A guided manual check is enough for copy, layout, colour, exploratory
-  interaction, usability, and throwaway prototypes.
-- An operational rehearsal is required for backups, restores, migrations,
-  rollback, alerts, deployment, and failure recovery. Adding a field takes a
-  test; changing records people already have takes a rehearsal on a copy.
-- An outside fact runs the source check in the `research` skill first.
+- Use an automated behaviour test for anything a machine can judge, including
+  rules, permissions, data changes, integrations and bugs.
+- Use a guided manual check for copy, layout, colour, exploratory interaction,
+  usability and throwaway prototypes.
+- Rehearse backups, restores, migrations, rollback, alerts, deployment and
+  failure recovery. Test a new field; rehearse changes to existing records on a
+  copy.
+- Check outside facts through the `research` skill first.
 
-On Build with care, offer the optional check in the `quality-checks` skill's
-`references/test-strength.md` once the tests pass. It adds no gate.
+For a change inside a mapped sensitive area, run `quality.py strength --base
+<start commit>` after the tests pass. A repair runs it on the regression test.
 
-## 4. Establish the baseline
+## 4. Write and check the tests first
 
-A piece labelled `broken` is a repair: load the `repair` skill's
-`references/fixing.md` and follow "Building a repair" from here.
+For a repair, load the `repair` skill's `references/fixing.md` and follow
+"Building a repair" from here.
 
-Otherwise show the new check fails before the behaviour exists, or establish
-the passing baseline before a refactor, or describe the current screen before a
-visual change. Never write a meaningless test to have one. Note the commit the
-piece starts from; the trim and the structure check read from it.
+Write each machine-judged `Done when` test before the code, name it `D1`, `D2`,
+and commit under `Test:`. Run `quality.py tests --base <start> --piece
+<number>`. Fix findings before coding. Lines ending `(try it)` stay for a person
+to judge. Note the start commit; later reads use it.
 
 ## 5. Build one vertical slice
 
@@ -106,12 +105,10 @@ When the piece carries `visual`, or the change touches a file that renders a
 page, view, component, template, style or native interface, load
 the `screen-check` skill before the guided check.
 
-Work the build uncovers becomes a new piece, filed by the `records` skill's
-`references/pieces.md` with its subjects from the `triage` skill, and
-one line such as "Found while building the invoice list." When the person asks
-for more mid-build, ask once: this piece, or a new one? On "this piece", add it
-to `## Done when`, read it back, and build it. Never fold a request in without
-that answer.
+File uncovered work as a new piece using the `records` skill's
+`references/pieces.md` and subjects from `triage`. Mid-build, ask once whether
+more belongs here or in a new piece. On "this piece", add it to `## Done when`
+and read it back. Do not fold in work without that answer.
 
 A test that passes only on a retry is unreliable evidence: repair or replace it
 before saving.

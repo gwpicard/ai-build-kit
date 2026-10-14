@@ -54,12 +54,9 @@ it pass, then rerun the original, unminimised case. When no credible
 automated boundary exists, record that as a maintainability finding and use
 the strongest manual or operational evidence available instead.
 
-On Build with care, where a runner exists for the project's language, offer
-to check the regression test by breaking the repaired code on purpose. Follow
-the `quality-checks` skill's `references/test-strength.md` for this optional
-check, its one-line report, and the misses listed on the repair's piece. Keep
-the run to the repaired code and the regression test; do not offer it again
-when the repair is saved.
+For a repair inside a mapped sensitive area, run `quality.py strength --base
+<start commit>` with the regression test, and act on its exit code. Exit 2
+means the check did not run for part of the changed code.
 
 ## Cleanup
 

@@ -18,9 +18,10 @@ something of them, and never needs to read one to keep the tool working.
 | Type check and lint | Project check on every pull request, and before hand-over | `references/check-floor.md` |
 | Sensitive-area map and boundary rules | Project check on every pull request | `check-sensitive-areas.sh`, `references/boundary-rules.md` |
 | Trim | Every build, before the person tries it | `references/trim.md` |
-| A trim left the tests alone | Every trim commit, and the project check on every pull request | `trim-commit.sh`, `check-trim.sh`; `place-trim-check.py` brings the step to an older project |
+| Tests stay frozen | Every project check on a pull request | `check-tests.sh` in the project template |
+| Tests prove the change | Every build, before behaviour is written | `quality.py tests --base --piece` |
 | Structure, one change | Every build, before the save | `quality.py loops --base`, as "During a build" says |
-| Tests notice a breakage | Offered on a Build with care build; too slow for the project check | `references/test-strength.md` |
+| Tests notice a breakage | Build with care changes inside a mapped sensitive area | `quality.py strength --base`; repairs include the regression test |
 | Stale document names | Every `/maintain` visit | `references/document-read.md` |
 | Old branches | Monthly visit | `references/stale-branches.md` |
 | Waste, structure, document bloat | Quarterly visit | `references/waste-read.md`, `references/structure-read.md`, `references/document-bloat.md` |
