@@ -544,6 +544,10 @@ live_ask = [
     "supabase db push --dry-run",
     "supabase --workdir /tmp/signup config push --project-ref abc --yes",
     "vercel api /v9/projects/prj_1 -X PATCH --input body.json --silent",
+    "vercel api /v9/projects/prj_1 -X patch --input body.json --silent",
+    # Reading through Vercel's sign-in makes a lasting key the first time.
+    "vercel curl /api/health --deployment https://kit-log.vercel.app --yes",
+    "GATE_READ=yes sh .agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/live-check.sh --only health",
     "vercel project protection enable kit-log --sso",
     "vercel project protection disable kit-log --sso",
     "sh .agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/set-access.sh public",

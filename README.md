@@ -155,16 +155,13 @@ read [Compatibility](docs/COMPATIBILITY.md#what-is-installed).
 ## Going live
 
 A recipe pairs the tools used to build an app with a place to run it. The kit
-has run these two recipes for real; both use Next.js, TypeScript and hosted
-Supabase for data and sign-in:
+has run both recipes for real, except their newest section, access. Both use
+Next.js, TypeScript and hosted Supabase for data and sign-in:
 
 - [On Vercel](.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/recipe.md), for a team without its own server. The kit runs most launch checks itself.
 - [On your server with Coolify](.agents/skills/setup-hosting/recipes/nextjs-supabase-on-coolify/recipe.md), for a team that runs or rents a server. Whoever runs it performs the server checks and sends back the results.
 
-On both, a private tool closes sign-up, so people get in by invitation, and
-the host keeps strangers away from the live address. On Vercel, each person
-then also signs in to Vercel. Making a tool public, or private again, changes
-the live tool, so it waits for your yes and goes in the changelog.
+On both, a tool starts private, and changing who can get in waits for your yes.
 
 Each recipe's folder holds the record of its real run, in `PROVEN.md`. Check
 each recipe's plan terms before choosing. Any other stack or host works too,

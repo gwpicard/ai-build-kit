@@ -119,9 +119,13 @@ case "$(vercel project protection --format json)" in
   *'"deploymentType": "all"'*'"scope": "automation-bypass"'*) pass "the protection read shows the gate on every address and a bypass key" ;;
   *) fail "the protection read does not show the gate and the key" ;;
 esac
-case "$(curl -sS -w ' %{http_code}' -X POST -H 'apikey: public-anon-key-stand-in' -H 'Content-Type: application/json' -d '{}' https://qwmhzkpvnbxlcrtdyefa.supabase.co/auth/v1/signup)" in
+case "$(curl -sS -w ' %{http_code}' -X POST -H 'apikey: public-anon-key-stand-in' -H 'Content-Type: application/json' -d '{"email":"probe@example.invalid","password":""}' https://qwmhzkpvnbxlcrtdyefa.supabase.co/auth/v1/signup)" in
   *signup_disabled*" 422") pass "Supabase refuses a sign-up, since sign-up is closed" ;;
   *) fail "Supabase did not refuse a sign-up" ;;
+esac
+case "$(curl -sS -w ' %{http_code}' -X POST -H 'apikey: public-anon-key-stand-in' -H 'Content-Type: application/json' -d '{}' https://qwmhzkpvnbxlcrtdyefa.supabase.co/auth/v1/signup)" in
+  *anonymous_provider_disabled*" 422") pass "a sign-up with no email goes to anonymous sign-in, as Supabase's does" ;;
+  *) fail "a sign-up with no email did not go to anonymous sign-in" ;;
 esac
 [ -z "$(git -C "$p" status --porcelain)" ] \
   && pass "the host's state sits outside the project, so nothing there changed" \

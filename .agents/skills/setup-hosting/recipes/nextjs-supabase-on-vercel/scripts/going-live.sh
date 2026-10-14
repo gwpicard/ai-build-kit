@@ -32,7 +32,7 @@ trap 'rm -f "$answer"' EXIT
 cl_live_health "${LIVE_ADDRESS%/}" "$answer"
 case $? in
   0) ;;
-  3) cl_cannot "The live address asks for Vercel's sign-in, and reading through it would add a bypass key to the project, which waits for the person's yes." ;;
+  3) cl_cannot "The live address asks for Vercel's sign-in, and reading through it would make a lasting key that gets past that sign-in, which waits for the person's yes." ;;
   *) cl_fail "The live address did not answer its health route with 200." ;;
 esac
 fields=$(cl_health_fields "$answer")

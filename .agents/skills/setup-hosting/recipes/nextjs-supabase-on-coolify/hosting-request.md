@@ -11,7 +11,8 @@ masterplan's "How it stays running" section.
 filled from the project rather than by asking the person. Take the lane from
 the masterplan's `Access:` line: internal for private, unless the people it is
 for cannot join the private network, and then public with the gate the
-recipe's Access section names. Copy the block it prints into the masterplan, and put it in the reply,
+recipe's Access section names. Open address with invitation only, and public,
+take the public lane with no gate. Copy the block it prints into the masterplan, and put it in the reply,
 followed by the script's last line, so the person can paste it. The block
 names settings and never carries a value, key, password or token.
 

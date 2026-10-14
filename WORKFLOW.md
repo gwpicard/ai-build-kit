@@ -130,12 +130,8 @@ in your own words, and a change that crosses it turns the tick red with your
 sentence beside it. Nothing is added or taken away without your yes, and a
 language with no tool for it is told plainly that it has none.
 
-Separate from the path, the masterplan's `Access:` line says who can get in.
-A tool is private by default: only people you invite get in, and the access
-check proves it on each launch and each /maintain visit. Public is never
-refused. Ask for it, and the fit check names its risks once and records the
-date. Changing it either way changes the live tool, so it waits for your yes
-and goes in the changelog.
+Separate from the path, the masterplan's `Access:` line says who can get in:
+private by default, and checked on each launch and each /maintain visit.
 
 None of these paths is the kit refusing to build. Build with care is where it says plainly what would normally prevent the harm, and you decide. That is the risk notice, in section 8.
 

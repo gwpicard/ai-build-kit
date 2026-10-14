@@ -6,8 +6,9 @@ there, so its health route reports that build's commit and its sign-in page
 shows that build's wording. A generated deployment address is behind Vercel's
 sign-in and answers 302, as the recipe says, and so does the live address
 when the host state puts Vercel's sign-in in front of every address. The
-Supabase sign-in settings answer to the public key, and a sign-up attempt is
-refused while sign-up is closed. Every other address fails as an unreachable host
+Supabase sign-in settings answer to the public key, and a sign-up attempt
+follows Supabase's order: no email goes to anonymous sign-in, which is off,
+and an attempt with an email is refused while sign-up is closed. Every other address fails as an unreachable host
 would, because a run with nobody watching must reach no network.
 
 Where FAKE_HOST_STATE is not set at all, the run is not one of these scenarios
@@ -144,12 +145,28 @@ def answer(state, url, headers, method="GET", data=None):
                 "mailer_autoconfirm": False})), 0, ""
         if path.startswith("/auth/v1/signup") and method == "POST" and keys \
                 and keys[0] == state["public_key"]:
+            # Supabase's order: no email and no phone goes to anonymous
+            # sign-in, off on this project; then a closed sign-up is refused
+            # before the request is read; then an empty password fails
+            # validation, before any account is made or email sent.
+            try:
+                body = json.loads(data or "{}")
+            except ValueError:
+                body = {}
+            body = body if isinstance(body, dict) else {}
+            if not body.get("email") and not body.get("phone"):
+                return (422, {"content-type": "application/json"}, json.dumps({
+                    "code": 422, "error_code": "anonymous_provider_disabled",
+                    "msg": "Anonymous sign-ins are disabled"})), 0, ""
             if closed:
                 return (422, {"content-type": "application/json"}, json.dumps({
                     "code": 422, "error_code": "signup_disabled",
                     "msg": "Signups not allowed for this instance"})), 0, ""
-            return (422, {"content-type": "application/json"}, json.dumps({
-                "code": 422, "error_code": "validation_failed",
+            if body.get("password"):
+                return None, 2, ("curl: the stand-in host refuses a sign-up with a password, "
+                                 "which would make an account and send an email")
+            return (400, {"content-type": "application/json"}, json.dumps({
+                "code": 400, "error_code": "validation_failed",
                 "msg": "Signup requires a valid password"})), 0, ""
         return (401, {"content-type": "application/json"},
                 '{"message":"No API key found in request"}'), 0, ""

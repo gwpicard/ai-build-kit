@@ -144,8 +144,12 @@ for route in ('claude-only','shared','whole','plugin'):
         assert 'declined\taccess\taccess\t' in check(skills,p,0)
         assert (p/'masterplan.md').read_bytes()==plan_before
     run([sys.executable,skills/'maintain/scripts/upgrade-check.py','--apply','access',p],code=2)
-    apply(skills,p,'access=private')
-    assert (p/'masterplan.md').read_text().count('\nAccess: private\n')==1
+    if route=='whole':
+        apply(skills,p,'access=open-address')
+        assert len(re.findall(r'\nAccess: open address, invitation only \(decided \d{4}-\d\d-\d\d\)\n',(p/'masterplan.md').read_text()))==1
+    else:
+        apply(skills,p,'access=private')
+        assert (p/'masterplan.md').read_text().count('\nAccess: private\n')==1
     apply(skills,p,'access=public')
     assert 'Access: public' not in (p/'masterplan.md').read_text()
     after=check(skills,p,0)

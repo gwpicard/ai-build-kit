@@ -146,6 +146,10 @@ a live address and through all nine sections, with the maintainer's approval
 and accounts, and written down. A shared part proven once, in another recipe's
 real run, counts for every recipe that links it, and its outcome line says so.
 
+A section added after the real run is marked unproven: its outcome line says
+`No real run yet` after the section's name, and gives the date it was added. That does not take
+the recipe off the menu. The next real run covers it.
+
 `PROVEN.md` opens with `Real run:` and the date, then gives one outcome line
 for each of the nine sections, starting with the section's name, saying what
 was done and what came out.

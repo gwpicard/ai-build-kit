@@ -128,14 +128,31 @@ cl_public_key() {
 }
 
 cl_access() {
-  # The masterplan's Access: line as two words: the setting, private or
-  # public, and whether sign-up is open or closed. Private is always closed.
-  # Public is open unless the line says invitation only. Nothing when the
-  # masterplan records no setting.
+  # The masterplan's Access: line as two words: the setting, and whether
+  # sign-up is open or closed. private is always closed. open, for "open
+  # address, invitation only", lets anyone reach the address and keeps
+  # sign-up closed. public is open. Nothing when the masterplan records no
+  # setting.
   [ -f masterplan.md ] || return 0
   sed -n 's/^Access:[[:space:]]*//p' masterplan.md | head -n 1 | tr 'A-Z' 'a-z' | awk '
     /^private/ { print "private closed"; exit }
-    /^public/ { print (/invitation only/ ? "public closed" : "public open"); exit }'
+    /^open address/ || /invitation only/ { print "open closed"; exit }
+    /^public/ { print "public open"; exit }'
+}
+
+cl_access_declined() {
+  # True when the person said no to recording an access setting: the
+  # check-up record's upgrade-declined line names the access step.
+  [ -f .ai-build-kit-maintenance ] || return 1
+  sed -n 's/^upgrade-declined|[^|]*|//p' .ai-build-kit-maintenance |
+    tr ',' '\n' | sed 's/^ *//; s/ *$//' | grep -qx access
+}
+
+cl_access_unrecorded() {
+  # What an access check says when the masterplan records no setting: a pass
+  # when the person chose not to record one, and could not run otherwise.
+  cl_access_declined && cl_pass "Access: not recorded, by your choice."
+  cl_cannot "The masterplan records no access setting, so there is nothing to compare the live tool with."
 }
 
 cl_gate() {

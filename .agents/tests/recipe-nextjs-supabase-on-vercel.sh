@@ -79,11 +79,19 @@ rr_case 2 down live-check.sh --only migration
 rr_case 2 good live-check.sh --only nothing
 
 # Access: the fixture records private, so Vercel's sign-in covers every
-# address and sign-up is closed. Each part that differs fails it.
+# address and sign-up is closed. Each part that differs fails it. RR_GATE sets
+# what the live address does apart from Vercel's setting, so the live read is
+# tested on its own.
 rr_case 0 good access.sh
 rr_said no "bypass-stand-in-key"
 rr_case 1 good RR_SSO=standard access.sh
+rr_said yes "Hobby plan"
+rr_case 1 good RR_SSO=standard RR_GATE=gated access.sh
+rr_said yes "Hobby plan"
+rr_case 1 good RR_GATE=open access.sh
+rr_said yes "answers anyone who is not signed in"
 rr_case 1 good RR_SIGNUP=open access.sh
+rr_case 2 good RR_DISAGREE=1 access.sh
 rr_case 2 down access.sh
 rr_case 2 good LIVE_ADDRESS= access.sh
 rr_case 0 good live-check.sh --only access
@@ -99,29 +107,61 @@ rr_case 0 good RR_SSO=standard set-access.sh private
 rr_case 0 good set-access.sh public
 rr_case 1 bad set-access.sh private
 rr_case 2 good set-access.sh
+# Changing sign-up: only when the difference names enable_signup alone, and
+# never with a tool too old to show the difference.
 rr_case 0 good RR_SIGNUP=open set-signup.sh closed
 rr_case 0 good set-signup.sh open
-rr_case 1 bad set-signup.sh closed
+rr_case 0 good set-signup.sh closed
+rr_said yes "Nothing needed changing"
+rr_case 1 bad RR_SIGNUP=open set-signup.sh closed
+rr_case 2 good RR_DIFF=extra set-signup.sh open
+rr_said yes "site_url"
+rr_case 2 good RR_OLD_CLI=1 set-signup.sh open
 rr_case 2 good set-signup.sh
 # Public, by the record: the gate off the live address and sign-up open.
 printf '# Masterplan\n\n## Build path\n\nAccess: public (decided 2026-10-14)\n' > "$RR_TMP/fixture/masterplan.md"
 rr_case 0 good RR_SSO=standard RR_SIGNUP=open access.sh
 rr_case 1 good RR_SIGNUP=open access.sh
 rr_case 1 good RR_SSO=standard access.sh
+rr_case 1 good RR_SSO=standard RR_GATE=gated RR_SIGNUP=open access.sh
+rr_said yes "asks for Vercel's sign-in"
 rr_case 1 good settings.sh
-printf '# Masterplan\n\n## Build path\n\nAccess: public, invitation only (decided 2026-10-14)\n' > "$RR_TMP/fixture/masterplan.md"
+# Open address, invitation only: the gate off the live address, sign-up closed.
+printf '# Masterplan\n\n## Build path\n\nAccess: open address, invitation only (decided 2026-10-14)\n' > "$RR_TMP/fixture/masterplan.md"
 rr_case 0 good RR_SSO=standard access.sh
+rr_said yes "Open address, invitation only, as recorded"
+rr_case 1 good access.sh
+rr_case 1 good RR_SSO=standard RR_SIGNUP=open access.sh
+rr_case 1 good RR_SSO=standard RR_GATE=gated access.sh
+rr_case 0 good RR_SSO=standard settings.sh
+# No access line: could not run, unless the person declined to record one.
 printf '# Masterplan\n\nNo access line yet.\n' > "$RR_TMP/fixture/masterplan.md"
 rr_case 2 good access.sh
 rr_case 2 good signup.sh
+rr_case 2 good live-check.sh --only access
+printf 'upgrade-declined|2026-10-14|settings,access\n' > "$RR_TMP/fixture/.ai-build-kit-maintenance"
+rr_case 0 good live-check.sh --only access
+rr_said yes "Access: not recorded, by your choice."
+rr_case 0 good access.sh
+rm -f "$RR_TMP/fixture/.ai-build-kit-maintenance"
 printf '# Masterplan\n\n## Build path\n\nPath: Build and run it\nAccess: private\n' > "$RR_TMP/fixture/masterplan.md"
 
 # Sign-up and the sign-in settings, read with either public key Supabase
 # issues: the publishable key a project made today shows, or the anon key.
+# The probe names an email and no password, so it can never make an
+# account: with anonymous sign-in on it still reaches sign-up's own handler.
+# A captcha, or a probe and settings that disagree, means the kit cannot say.
 rr_case 0 good signup.sh
+rr_case 0 good RR_ANON=on signup.sh
 rr_case 1 good RR_SIGNUP=open signup.sh
+rr_case 1 good RR_SIGNUP=open RR_ANON=on signup.sh
+rr_case 2 good RR_CAPTCHA=1 signup.sh
+rr_said yes "captcha"
+rr_case 2 good RR_DISAGREE=1 signup.sh
+rr_case 2 good RR_SIGNUP=open RR_DISAGREE=1 signup.sh
 rr_case 2 down signup.sh
 rr_case 1 good RR_SIGNUP=open settings.sh
+rr_case 2 good RR_SETTINGS=odd settings.sh
 cp "$RR_TMP/fixture/.env.local" "$RR_TMP/env-anon"
 printf 'NEXT_PUBLIC_SUPABASE_URL=https://liveref.supabase.co\nNEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_stand-in\n' > "$RR_TMP/fixture/.env.local"
 rr_case 0 good settings.sh

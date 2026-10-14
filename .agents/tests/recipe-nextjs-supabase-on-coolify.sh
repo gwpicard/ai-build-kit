@@ -45,24 +45,44 @@ rr_said yes "$(sed -n '/^## Going live$/,/^## /s/^Ask: //p' "$RR_RECIPE/recipe.m
 rr_case 2 good rollback.sh --pasted "$(rr_paste untagged rollback)"
 rr_said yes "$(sed -n '/^## Rollback$/,/^## /s/^Ask: //p' "$RR_RECIPE/recipe.md")"
 rr_case 2 good secrets.sh --pasted "$(rr_paste value secrets)"
-# Access: the fixture records private. No connection from outside the
-# private network is the internal lane's gate; a paste the script cannot read
-# asks again; and sign-up, which the kit reads itself, must be closed.
-rr_case 0 good access.sh --pasted "$(rr_paste network access)"
+# Access: the fixture records private. 401 or 403 from outside is the gate.
+# A failure to connect proves nothing alone, since the server may be down;
+# with the same request answered from inside the network, it is the gate. A
+# paste the script cannot read asks again, and sign-up, which the kit reads
+# itself, must be closed.
+rr_case 0 good access.sh --pasted "$(rr_paste good access)"
+rr_case 0 good access.sh --pasted "$(rr_paste forbidden access)"
+rr_case 2 good access.sh --pasted "$(rr_paste network access)"
+rr_case 0 good access.sh --pasted "$(rr_paste inside access)"
 rr_case 2 good access.sh --pasted "$(rr_paste unread access)"
 rr_said yes "$(sed -n '/^## Access$/,/^## /s/^Ask: //p' "$RR_RECIPE/recipe.md")"
+rr_case 1 good access.sh --pasted "$(rr_paste bad access)"
 rr_case 1 good RR_SIGNUP=open access.sh --pasted "$(rr_paste good access)"
+rr_case 2 good RR_DISAGREE=1 access.sh --pasted "$(rr_paste good access)"
 rr_case 2 down access.sh --pasted "$(rr_paste good access)"
 rr_case 0 good live-check.sh --only access --pasted-access "$(rr_paste good access)"
 rr_case 1 good live-check.sh --only access --pasted-access "$(rr_paste bad access)"
 printf '# Masterplan\n\n## Build path\n\nAccess: public (decided 2026-10-14)\n' > "$RR_TMP/fixture/masterplan.md"
 rr_case 0 good RR_SIGNUP=open access.sh --pasted "$(rr_paste bad access)"
 rr_case 1 good RR_SIGNUP=open access.sh --pasted "$(rr_paste good access)"
+rr_case 1 good access.sh --pasted "$(rr_paste bad access)"
+# Open address, invitation only: anyone reaches the address, sign-up closed.
+printf '# Masterplan\n\n## Build path\n\nAccess: open address, invitation only (decided 2026-10-14)\n' > "$RR_TMP/fixture/masterplan.md"
+rr_case 0 good access.sh --pasted "$(rr_paste bad access)"
+rr_said yes "Open address, invitation only, as recorded"
+rr_case 1 good RR_SIGNUP=open access.sh --pasted "$(rr_paste bad access)"
+rr_case 1 good access.sh --pasted "$(rr_paste good access)"
+# No access line: could not run, unless the person declined to record one.
 printf '# Masterplan\n\nNo access line yet.\n' > "$RR_TMP/fixture/masterplan.md"
 rr_case 2 good access.sh --pasted "$(rr_paste good access)"
+rr_case 2 good live-check.sh --only access
+printf 'upgrade-declined|2026-10-14|access\n' > "$RR_TMP/fixture/.ai-build-kit-maintenance"
+rr_case 0 good live-check.sh --only access
+rr_said yes "Access: not recorded, by your choice."
+rm -f "$RR_TMP/fixture/.ai-build-kit-maintenance"
 printf '# Masterplan\n\n## Build path\n\nPath: Build and run it\nAccess: private\n' > "$RR_TMP/fixture/masterplan.md"
 rr_case 0 good RR_SIGNUP=open set-signup.sh closed
-rr_case 1 bad set-signup.sh closed
+rr_case 1 bad RR_SIGNUP=open set-signup.sh closed
 rr_case 2 good set-signup.sh
 rr_case 0 good signup.sh
 rr_case 1 good RR_SIGNUP=open signup.sh

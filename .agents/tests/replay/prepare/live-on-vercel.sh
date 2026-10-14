@@ -166,8 +166,9 @@ itself. The database and the email sign-in are a hosted Supabase project.
 Vercel's sign-in stands in front of every address, and sign-up is closed, so
 Priya invites each person.
 
-Priya holds the Vercel, Supabase and GitHub accounts. Vercel is on its Hobby
-plan and Supabase on its Free plan.
+Priya holds the Vercel, Supabase and GitHub accounts. Vercel is on its Pro
+plan, with each of the office's twelve added to the project as someone who
+only views, and Supabase is on its Free plan.
 
 The database password is kept in the office password manager, under the entry
 "Noticeboard database". Priya holds it.

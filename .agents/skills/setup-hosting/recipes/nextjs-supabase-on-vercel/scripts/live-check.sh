@@ -74,7 +74,7 @@ if wanted commit; then
   main=$(cl_main_commit)
   commit=$(printf '%s\n' "$fields" | sed -n 3p)
   if [ "$healthy" = gated ]; then
-    unreadable "Live copy against main: could not be read, since the live address asks for Vercel's sign-in, and reading through it would add a bypass key to the project, which waits for a yes."
+    unreadable "Live copy against main: could not be read, since the live address asks for Vercel's sign-in, and reading through it would make a lasting key that gets past that sign-in, which waits for a yes."
   elif [ "$healthy" != yes ] || [ -z "$commit" ]; then
     unreadable "Live copy against main: could not be read, since the health route did not answer with a commit."
   elif [ -z "$main" ]; then
@@ -154,7 +154,7 @@ fi
 if wanted access; then
   result=$(LIVE_ADDRESS=$address sh "$here/access.sh" 2>/dev/null)
   case $? in
-    0) say "Access: $result" ;;
+    0) say "Access: ${result#Access: }" ;;
     1) gapped "Access: $result" ;;
     *) unreadable "Access: could not be read. $result" ;;
   esac

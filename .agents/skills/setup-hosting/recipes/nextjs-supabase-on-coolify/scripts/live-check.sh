@@ -126,7 +126,7 @@ if wanted access; then
     result=$(sh "$here/access.sh" 2>/dev/null)
   fi
   case $? in
-    0) say "Access: $result" ;;
+    0) say "Access: ${result#Access: }" ;;
     1) gapped "Access: $result" ;;
     *) unreadable "Access: could not be read. $result" ;;
   esac

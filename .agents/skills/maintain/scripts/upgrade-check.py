@@ -98,8 +98,8 @@ runs `kit-leftovers.py --remove`, `commands` runs `kit-leftovers.py
 --rewrite-commands`, `pointers` runs `old-skill-pointers.py --apply`,
 `settings` runs `settings-rules.py --apply`, `template` rewrites the one
 sentence, `recipe` names the recipe by its folder in AGENTS.md and in the
-check-up record's menu lines, and `access=private`, `access=public` or
-`access=public-invitation` writes the masterplan's `Access:` line the person
+check-up record's menu lines, and `access=private`, `access=open-address`
+or `access=public` writes the masterplan's `Access:` line the person
 chose. It changes nothing live. `--apply helper` and `--apply ready` also print a `say` line with
 what changed. The installer's own steps, `installer` and `missing`, and the
 `fitcheck` step, which the agent carries out, are never run from here. `--decline` writes `upgrade-declined|<date>|<steps>` into
@@ -321,11 +321,12 @@ def apply_recipe(project):
 ACCESS_LINE = re.compile(r"^Access:\s*\S", re.M)
 ACCESS_CHOICES = {"private": "Access: private",
                   "public": "Access: public (decided %s)",
-                  "public-invitation": "Access: public, invitation only (decided %s)"}
+                  "open-address": "Access: open address, invitation only (decided %s)"}
 ACCESS_WORDS = ("This release makes every tool private by default: only people you invite can "
                 "get in, and a check on the live tool proves it. Public is a setting you choose, "
                 "and it is recorded with the date. Your masterplan does not say which this tool "
-                "is. Should it be private, public, or public with sign-up by invitation only? I "
+                "is. Should it be private; an open address with invitation only, which anyone "
+                "can reach but only invited people can sign in to; or public? I "
                 "record your answer, then run the access check, which changes nothing. Changing "
                 "the live tool to match waits for a separate yes.")
 
@@ -1190,7 +1191,7 @@ def main(argv):
         if apply_step:
             if apply_step not in APPLIABLE and not apply_step.startswith("access="):
                 if apply_step == "access":
-                    return usage("say which: access=private, access=public or access=public-invitation")
+                    return usage("say which: access=private, access=open-address or access=public")
                 if apply_step in ("installer", "missing", "fitcheck"):
                     return usage("that step is not run from here: its say line says who carries it out")
                 return usage("unknown step %s" % apply_step)

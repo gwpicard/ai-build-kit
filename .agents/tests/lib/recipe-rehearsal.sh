@@ -326,6 +326,25 @@ password() {
   esac
 }
 case "$*" in
+  "--workdir "*" config diff --project-ref "*" --exit-code")
+    # Read-only. RR_OLD_CLI is a tool from before config diff existed, and
+    # RR_DIFF=extra one that would also send a default it filled in itself.
+    [ "$#" -eq 7 ] || refuse "$@"
+    [ -z "${RR_OLD_CLI:-}" ] || { echo "unknown command \"diff\" for \"supabase config\"" >&2; exit 1; }
+    down
+    file="$2/supabase/config.toml"
+    [ -f "$file" ] || { echo "cannot read config" >&2; exit 1; }
+    now=$(cat "$RR_STATE/signup" 2>/dev/null || echo "${RR_SIGNUP:-closed}")
+    if grep -q 'enable_signup = false' "$file"; then want=closed; else want=open; fi
+    if [ "$now" = closed ]; then from=false; else from=true; fi
+    if [ "$want" = closed ]; then to=false; else to=true; fi
+    if [ "${RR_DIFF:-}" = extra ]; then
+      printf -- '--- remote[auth]\n+++ local[auth]\n-site_url = "https://app.example.test"\n+site_url = "http://127.0.0.1:3000"\n-enable_signup = %s\n+enable_signup = %s\n' "$from" "$to"
+      exit 2
+    fi
+    [ "$now" != "$want" ] || exit 0
+    printf -- '--- remote[auth]\n+++ local[auth]\n-enable_signup = %s\n+enable_signup = %s\n' "$from" "$to"
+    exit 2 ;;
   "--workdir "*" config push --project-ref "*" --yes")
     [ "$#" -eq 7 ] || refuse "$@"
     file="$2/supabase/config.toml"
@@ -436,6 +455,17 @@ world=${RR_WORLD:-good}
 main=$(cat "$RR_STATE/main" 2>/dev/null)
 signup=$(cat "$RR_STATE/signup" 2>/dev/null || echo "${RR_SIGNUP:-closed}")
 sso=$(cat "$RR_STATE/sso" 2>/dev/null || echo "${RR_SSO:-all}")
+# What the live address does with a request signed in to nothing. It follows
+# Vercel's setting unless RR_GATE says otherwise, so a script that trusts the
+# setting instead of the live answer is caught.
+gate=${RR_GATE:-}
+[ -n "$gate" ] || { if [ "$sso" = all ]; then gate=gated; else gate=open; fi; }
+# What the sign-up handler does. It agrees with the settings unless
+# RR_DISAGREE is set, so a script that trusts one read alone is caught.
+probe=$signup
+if [ -n "${RR_DISAGREE:-}" ]; then
+  if [ "$signup" = closed ]; then probe=open; else probe=closed; fi
+fi
 # reply <status> <redirect> <body>: as curl gives it, to -o or stdout, with
 # what -w asks for after.
 reply() {
@@ -452,15 +482,33 @@ if [ -n "$format" ] || [ "$method" = POST ]; then
   case "$method:$url" in
     POST:https://*.supabase.co/auth/v1/signup)
       case "$headers" in "|apikey: "?*"|Content-Type: application/json") ;; *) refuse "$url" "headers$headers" ;; esac
-      [ "$data" = '{}' ] || refuse "$url" "a sign-up that carries a person's details"
-      if [ "$signup" = closed ]; then
+      # Supabase's auth server, in its order: the captcha first; then a
+      # request with no email and no phone goes to anonymous sign-in, which
+      # makes an account when it is on; then sign-up's own handler refuses
+      # while sign-up is closed, before it reads the rest; then an empty
+      # password fails validation, before any account or email. RR_ANON=on
+      # switches anonymous sign-in on, and RR_CAPTCHA puts a captcha in front.
+      [ -z "${RR_CAPTCHA:-}" ] ||
+        reply 400 "" '{"code":400,"error_code":"captcha_failed","msg":"captcha protection: request disallowed (no captcha response)"}'
+      case "$data" in
+        *'"email":"'?*|*'"phone":"'?*) ;;
+        *)
+          [ "${RR_ANON:-off}" = on ] ||
+            reply 422 "" '{"code":422,"error_code":"anonymous_provider_disabled","msg":"Anonymous sign-ins are disabled"}'
+          [ "$probe" = open ] ||
+            reply 422 "" '{"code":422,"error_code":"signup_disabled","msg":"Signups not allowed for this instance"}'
+          refuse "$url" "a request that made an anonymous account" ;;
+      esac
+      [ "$probe" = open ] ||
         reply 422 "" '{"code":422,"error_code":"signup_disabled","msg":"Signups not allowed for this instance"}'
-      else
-        reply 422 "" '{"code":422,"error_code":"validation_failed","msg":"Signup requires a valid password"}'
-      fi ;;
+      case "$data" in
+        *'"password":""'*) ;;
+        *) refuse "$url" "a sign-up with a password, which would make an account and send an email" ;;
+      esac
+      reply 400 "" '{"code":400,"error_code":"validation_failed","msg":"Signup requires a valid password"}' ;;
     GET:https://*/api/health)
       [ -z "$data" ] || refuse "$url"
-      if [ "$sso" = all ]; then
+      if [ "$gate" = gated ]; then
         reply 302 "https://vercel.com/sso-api?url=${url}" "Redirecting..."
       elif [ "$world" = bad ]; then
         reply 503 "" '{"status":"error","database":"error","commit":"0000000","project":"liveref"}'
@@ -486,6 +534,8 @@ case "$url" in
     case "$headers" in *service-role-stand-in*|*secret-stand-in*) refuse "$url" "a secret key sent as apikey" ;; esac
     [ "$world" != down ] || exit 6
     if [ "$world" = bad ]; then echo '{}'
+    # RR_SETTINGS=odd is an answer in a shape the kit does not expect.
+    elif [ "${RR_SETTINGS:-}" = odd ]; then echo '{"external":["email"],"disable_signup":true,"mailer_autoconfirm":false}'
     elif [ "$signup" = closed ]; then echo '{"external":{"email":true},"disable_signup":true,"mailer_autoconfirm":false}'
     else echo '{"external":{"email":true},"disable_signup":false,"mailer_autoconfirm":false}'; fi ;;
   http://localhost:[1-9]*/api/health)
@@ -498,7 +548,7 @@ case "$url" in
     echo '{"status":"ok","database":"ok","commit":"","project":"liveref"}' ;;
   https://*/api/health)
     [ "$world" != down ] || exit 6
-    [ "$sso" != all ] || { echo "Redirecting..."; exit 0; }
+    [ "$gate" != gated ] || { echo "Redirecting..."; exit 0; }
     if [ "$world" = bad ]; then echo '{"status":"error","database":"error","commit":"0000000","project":"liveref"}'
     else echo '{"status":"ok","database":"ok","commit":"'"$main"'","project":"liveref"}'; fi ;;
   *) refuse "$url" ;;
@@ -616,7 +666,11 @@ rr_paste_files() {
   printf '{"status":"ok","database":"error","commit":"0000000","project":"liveref"}\n' > "$rr_p/bad-live-health"
   printf '401\n' > "$rr_p/good-access"
   printf '200\n' > "$rr_p/bad-access"
-  printf 'curl: (28) Failed to connect to app.example.test port 443 after 10002 ms: Timeout was reached\n' > "$rr_p/network-access"
+  # A timeout alone proves nothing, since the server may be down. With the
+  # same request answered from inside the private network, it is the gate.
+  printf 'curl: (28) Failed to connect to app.example.test port 443 after 10002 ms: Timeout was reached\n000\n' > "$rr_p/network-access"
+  printf 'curl: (28) Failed to connect to app.example.test port 443 after 10002 ms: Timeout was reached\n000\nFrom inside the network:\n200\n' > "$rr_p/inside-access"
+  printf '403\n' > "$rr_p/forbidden-access"
   printf 'It looked fine to me.\n' > "$rr_p/unread-access"
   cp "$rr_p/good-secrets" "$rr_p/good-live-names"
   cp "$rr_p/bad-secrets" "$rr_p/bad-live-names"
