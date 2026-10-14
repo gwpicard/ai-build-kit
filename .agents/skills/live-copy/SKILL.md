@@ -9,6 +9,18 @@ user-invocable: false
 The live copy is the one the team uses. These rules hold whichever command
 reads it or changes it.
 
+## Comparing the live copy with main
+
+Read-only. Where "How it stays running" records a live address and AGENTS.md
+names a recipe, run that recipe's `scripts/live-check.sh` from the project
+root with `--address`, the database password's location as "A secret a check
+needs" says, and `--needs` with the names on any open piece's `Live side
+needs:` line. Where the recipe reads its checks from a paste, ask in one
+sentence for the health answer and setting names. Say its lines as printed,
+and nothing more about a read that matches. Exit 0 no gap, 1 a gap, 2 a read
+that could not be made. Off a recipe, say in one line that the kit cannot
+compare the live copy. Without a live address, say nothing.
+
 ## A secret a check needs
 
 Pass a secret by the location "How it stays running" records, never its

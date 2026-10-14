@@ -6,7 +6,7 @@ sentence, and the person may leave it. A boundary rule turns the line into part
 of the project check, so a change that crosses it turns the tick red, and the
 red check carries the person's own sentence.
 
-This is a whole-project read, so the rules in `whole-project-reads.md` apply.
+This is a whole-project read, so the rules in the `quality-checks` skill apply.
 
 ## Where it applies
 

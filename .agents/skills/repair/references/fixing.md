@@ -1,26 +1,16 @@
-# Repair
+# Building a repair
 
-A repair brings the tool back to doing what it already should. A bug is a
-piece like any other. `/shape` reproduces it and writes the failing case into
-the piece, as the `repair` skill's `references/reproduce.md` describes, and
-`/implement` builds the repair by this file. The discipline is the order:
-never change code before the problem repeats reliably and the cause is
-understood and explained.
+The `build-piece` skill follows this file for a piece labelled `broken`, from
+its step 4 onwards. Its other steps still apply: the safe start, the save
+route, the evidence, the hand-over and the review, and then the merge.
 
-## Building a repair
-
-
-`/implement` follows this part for a piece labelled `broken`, from step 4
-onwards. Its other steps still apply: the safe start, the save route, the
-evidence, the hand-over, the review and the merge.
-
-### Run the recorded check first
+## Run the recorded check first
 
 Run the check the piece records before anything else. Where it no longer
 fails, say so in one line and ask whether the fault still happens, before
 changing any code. Where it fails, it is the baseline step 4 asks for.
 
-### Read the history
+## Read the history
 
 Before ranking causes, read `CHANGELOG.md` and closed pieces for the same area.
 A repair already tried and failed is ruled out or named as a repeat; a cause
@@ -28,7 +18,7 @@ already established ranks first. When that history changes the ranking, say one
 line: "This was tried on <date> and did not hold, so it is ruled out." The
 history is evidence to check against the present, not a verdict to copy.
 
-### Rank causes
+## Rank causes
 
 List two to five plausible causes internally, each with a falsifiable
 prediction. Show the list to the user only when their domain knowledge could
@@ -39,7 +29,7 @@ tight reproduction to bisect the saved history before testing the ranked
 causes. Report the result as: "It broke in the change called <piece title> on
 <date>." Do not bisect when there is no known-good point.
 
-### Test one cause at a time
+## Test one cause at a time
 
 Change one variable, and keep any temporary instrumentation targeted and clearly
 labelled: name the file you write a temporary log to and read it back while
@@ -56,7 +46,7 @@ run the same script with no option. It keeps a snapshot of what it throws
 away and prints its name, and it removes only files added since the start.
 This announced step is the only place it runs.
 
-### Fix and lock it down
+## Fix and lock it down
 
 Create the regression evidence at the highest credible user-facing boundary,
 watch it fail, apply the smallest fix that addresses the actual cause, watch
@@ -71,7 +61,7 @@ check, its one-line report, and the misses listed on the repair's piece. Keep
 the run to the repaired code and the regression test; do not offer it again
 when the repair is saved.
 
-### Cleanup
+## Cleanup
 
 Name every temporary log and harness added during the repair, remove each one,
 then run the regression evidence without them. Clear what shaping left in
@@ -79,7 +69,7 @@ then run the regression evidence without them. Clear what shaping left in
 the trim in the `quality-checks` skill's `references/trim.md` on the repair, so
 the repair keeps only what the fix needed. Confirm the original symptom is gone,
 record the cause in the changelog in plain language, update the other records,
-and use the save and review route in the `implement` skill for the change itself.
+and use the save and review route in the `build-piece` skill for the change itself.
 The report says which temporary items were removed and that the evidence still
 passed.
 

@@ -243,7 +243,7 @@ for supporting in \
   setup-hosting/templates/recipe.md \
   setup-hosting/scripts/run-recipe.sh \
   implement/references/running-longer.md \
-  merge/references/merge.md \
+  merge/references/first-upload.md \
   screen-check/SKILL.md \
   research/SKILL.md \
   repair/references/reproduce.md; do

@@ -967,7 +967,7 @@ fi
 # The layered piece: a plain surface that stays comprehensive about the
 # product, a collapsed "under the hood" tier the builder reads, a self-sufficiency
 # bar before an unwatched auto run, and groundwork kept to a vertical slice.
-layer_sbfile="$SKILLS/implement/SKILL.md"
+layer_sbfile="$SKILLS/build-piece/SKILL.md"
 if [ -f "$pieces" ] && [ -f "$implementfile" ] && [ -f "$layer_sbfile" ]; then
   layer_ok=1
   grep -qF "## The two layers of a piece" "$pieces" || \
@@ -1041,8 +1041,9 @@ fi
 # blocked and merged branches auto-delete; the agent opens the pull
 # request and merges it only on a yes that names the merge, made on the pull
 # request itself, and never in a run with nobody there to say it.
-sbfile="$SKILLS/implement/SKILL.md"
-mergefile="$SKILLS/merge/references/merge.md"
+sbfile="$SKILLS/build-piece/SKILL.md"
+cutfile="$SKILLS/setup-ai-build-kit/references/cut-the-plan.md"
+mergefile="$SKILLS/merge/SKILL.md"
 blocked="$SKILLS/setup-ai-build-kit/references/blocked-commands.md"
 settings="$SKILLS/setup-ai-build-kit/templates/foundation/claude-settings.json"
 startfile="$SKILLS/setup-ai-build-kit/SKILL.md"
@@ -1057,14 +1058,14 @@ if [ -f "$sbfile" ] && [ -f "$mergefile" ] && [ -f "$blocked" ] && [ -f "$settin
     { fail "$blocked: does not block a direct push to main"; mech_ok=0; }
   grep -qF "git push * main" "$settings" || \
     { fail "$settings: deny list does not block a direct push to main"; mech_ok=0; }
-  grep -qF "delete_branch_on_merge" "$startfile" || \
-    { fail "$startfile: does not enable auto-deletion of merged branches"; mech_ok=0; }
+  grep -qF "delete_branch_on_merge" "$cutfile" || \
+    { fail "$cutfile: does not enable auto-deletion of merged branches"; mech_ok=0; }
   grep -qF "Merge only on a yes" "$mergefile" || \
     { fail "$mergefile: the merge step does not wait for a yes that names the merge"; mech_ok=0; }
   grep -qF "Make an approved merge on the pull request itself" "$mergefile" || \
     { fail "$mergefile: the merge step does not make the merge on the pull request itself"; mech_ok=0; }
-  grep -qF "In an unattended run nobody is there to say yes, so never merge" "$sbfile" || \
-    { fail "$sbfile: an unattended run could merge with nobody there to say yes"; mech_ok=0; }
+  grep -qF "In an unattended run nobody is there to say yes, so never merge" "$implementfile" || \
+    { fail "$implementfile: an unattended run could merge with nobody there to say yes"; mech_ok=0; }
   [ "$mech_ok" -eq 1 ] && \
     pass "pieces start from fresh main, new issues are unassigned, main is push-guarded, merged branches auto-delete, and the agent merges only on a yes that names the merge"
 fi
@@ -1076,8 +1077,8 @@ if [ -f "$sbfile" ]; then
   mc_ok=1
   grep -qF "a substitute for a check that was available and skipped" "$sbfile" || \
     { fail "$sbfile: does not forbid a softer proof standing in for an available machine check"; mc_ok=0; }
-  grep -qF "machine check run and green" "$sbfile" || \
-    { fail "$sbfile: 'Done when' does not name the available machine check as run and green"; mc_ok=0; }
+  grep -qF "machine check run and green" "$implementfile" || \
+    { fail "$implementfile: 'Done when' does not name the available machine check as run and green"; mc_ok=0; }
   [ "$mc_ok" -eq 1 ] && \
     pass "an available machine check runs and must pass before a piece is called done"
 fi
@@ -1133,17 +1134,17 @@ fi
 # Founding is the one moment they can go, because no issue exists yet to be
 # wearing one. Both halves are checked: the deletion, and the sentence that
 # keeps it from reading as a licence to remove somebody's own labels later.
-if [ -f "$startfile" ] && [ -f "$pieces" ] && [ -f "$capfile" ]; then
+if [ -f "$cutfile" ] && [ -f "$pieces" ] && [ -f "$capfile" ]; then
   gl_ok=1
   for label in bug documentation duplicate "good first issue" "help wanted" \
                invalid question wontfix enhancement; do
-    grep -qF "\`$label\`" "$startfile" || \
-      { fail "$startfile: does not name GitHub's '$label' label among the ones founding removes"; gl_ok=0; }
+    grep -qF "\`$label\`" "$cutfile" || \
+      { fail "$cutfile: does not name GitHub's '$label' label among the ones founding removes"; gl_ok=0; }
   done
-  grep -qF "delete the labels GitHub made by itself" "$startfile" || \
-    { fail "$startfile: founding does not delete the labels GitHub made by itself"; gl_ok=0; }
-  grep -qF "Say which ones went" "$startfile" || \
-    { fail "$startfile: founding removes labels without saying which"; gl_ok=0; }
+  grep -qF "delete the labels GitHub made by itself" "$cutfile" || \
+    { fail "$cutfile: founding does not delete the labels GitHub made by itself"; gl_ok=0; }
+  grep -qF "Say which ones went" "$cutfile" || \
+    { fail "$cutfile: founding removes labels without saying which"; gl_ok=0; }
   grep -qF "After founding they are somebody's to keep" "$pieces" || \
     { fail "$pieces: does not limit the label clearout to founding"; gl_ok=0; }
   grep -qF "cannot create or delete labels" "$capfile" || \
@@ -1572,7 +1573,7 @@ grep -qF '.agents/hooks/session-start.sh' "$session_settings" || \
 
 for entry in \
   "$SKILLS/setup-ai-build-kit/scripts/bootstrap-project.sh|session-start.sh|.agents/hooks/session-start.sh" \
-  "$SKILLS/setup-ai-build-kit/SKILL.md|templates/maintenance-record" \
+  "$SKILLS/setup-ai-build-kit/references/write-the-masterplan.md|templates/maintenance-record" \
   "$SKILLS/maintain/SKILL.md|.ai-build-kit-maintenance" \
   "$SKILLS/maintain/SKILL.md|last-light-pass" \
   "$SKILLS/maintain/SKILL.md|last-full-pass" \
@@ -1827,7 +1828,7 @@ for literal in \
     plugin_contract_ok=no
   fi
 done
-maintain_skill="$ROOT/.agents/skills/maintain/SKILL.md"
+maintain_skill="$ROOT/.agents/skills/maintain/references/monthly.md"
 for literal in \
   'claude plugin marketplace update ai-build-kit' \
   'claude plugin update ai-build-kit@ai-build-kit --scope <scope>' \

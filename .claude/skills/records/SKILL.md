@@ -1,6 +1,6 @@
 ---
 name: records
-description: Write and keep the project's records true. A piece and its labels, the printout, a piece's change to the masterplan and its checked mark, and the coverage read. Used by every command.
+description: Write and keep the project's records true. A piece and its labels, the printout, a piece's change to the masterplan and its checked mark, the coverage read, and the records a finished build updates. Used by every command.
 user-invocable: false
 ---
 <!-- GENERATED from .agents/skills/records/. Do not edit here; regenerate with .agents/tools/build-adapters.sh -->

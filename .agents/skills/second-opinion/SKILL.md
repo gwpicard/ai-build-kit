@@ -40,9 +40,9 @@ Secrets rule holds throughout.
 ## Axis 3: Screen
 
 During a build review, when the piece carries `visual` or the diff touches a
-screen file, load and follow the `screen-check` skill. Say which rules were applied, which could not be
-checked, and what a person still has to try. This axis does not run on a
-masterplan review or the whole-build review.
+screen file, load and follow the `screen-check` skill. Say which rules were
+applied, which could not be checked, and what a person still has to try. This
+axis does not run on a masterplan review or the whole-build review.
 
 ## On a masterplan
 

@@ -36,6 +36,11 @@ Check:
 `scripts/check-tooling.sh` checks items 3, 15 and 16, and says when `origin`
 is the kit's own repository. Confirm the rest by hand.
 
+If the harness cannot run `scripts/check-tooling.sh`, work through
+`required-tools.md` beside this file by hand; its "When GitHub access fails"
+route applies to any GitHub failure. Guide a missing tool's install by
+`manual-setup.md` beside this file.
+
 A missing or signed-out GitHub tool is a required setup step: guide it by
 `manual-setup.md` before the pieces are founded. Where issues are switched
 off, say so and offer to switch them on; never do it yourself. Where the

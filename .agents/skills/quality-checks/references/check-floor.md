@@ -6,7 +6,7 @@ day: a type check and a linter, wherever the language has them. They sit in
 The person meets no new idea. Green still means the checks that exist really
 passed, and red still means don't merge and tell /implement.
 
-This is a whole-project read, so the rules in `whole-project-reads.md` apply.
+This is a whole-project read, so the rules in the `quality-checks` skill apply.
 
 ## Choosing the commands
 

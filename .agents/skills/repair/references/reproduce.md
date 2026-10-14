@@ -2,7 +2,7 @@
 
 A report that something is broken is a piece like any other. Run these four
 checks first, in this order, then reproduce the fault. `/implement` builds the
-repair by the `repair` skill's `references/fixing.md`.
+repair by `fixing.md` beside this file.
 
 ## Was this ever promised?
 

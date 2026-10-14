@@ -89,7 +89,7 @@ the project check's file in step 6.
 
    Never merge it and never delete the branch: a person decides. Never commit a
    correction straight onto `main` or leave it uncommitted. The first upload
-   waits for its yes, as the `merge` skill's `references/merge.md` says.
+   waits for its yes, as the `merge` skill's `references/first-upload.md` says.
    Where GitHub cannot be reached, save on the branch and note the missing step
    in one line. A label changed on GitHub needs no branch.
 9. Say in one short paragraph what was corrected, or in one line that nothing

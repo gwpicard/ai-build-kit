@@ -22,16 +22,16 @@ check could enforce. `/maintain` offers a trim monthly.
 (One line, written by the setup-ai-build-kit skill.)
 ## The skills
 
-The work lives in seventeen installed AI Build Kit skills. Six are commands:
+The work lives in nineteen installed AI Build Kit skills. Six are commands:
 start the one the user types, names, or asks for in plain words, and say which
 one you are running. Never start a command the user did not ask for. The other
-eleven run in the background when a command needs them.
+thirteen run in the background when a command needs them.
 
 - Commands: `setup-ai-build-kit`, `shape`, `implement`, `setup-hosting`,
   `maintain`, `what-now`.
-- Background skills: `clarify`, `evidence-run`, `fit-check`, `live-copy`,
-  `merge`, `quality-checks`, `records`, `repair`, `research`, `screen-check`,
-  `second-opinion`.
+- Background skills: `build-piece`, `clarify`, `evidence-run`, `fit-check`,
+  `live-copy`, `merge`, `quality-checks`, `records`, `repair`, `research`,
+  `screen-check`, `second-opinion`, `triage`.
 
 When a skill says to run another skill, load that installed skill and follow
 it. The skills sit in `.agents/skills/`, `.claude/skills/` or a plugin's folder,

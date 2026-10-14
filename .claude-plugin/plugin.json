@@ -24,6 +24,7 @@
     "./.claude/commands/what-now.md"
   ],
   "skills": [
+    "./.claude/skills/build-piece",
     "./.claude/skills/clarify",
     "./.claude/skills/evidence-run",
     "./.claude/skills/fit-check",
@@ -34,6 +35,7 @@
     "./.claude/skills/repair",
     "./.claude/skills/research",
     "./.claude/skills/screen-check",
-    "./.claude/skills/second-opinion"
+    "./.claude/skills/second-opinion",
+    "./.claude/skills/triage"
   ]
 }

@@ -388,7 +388,7 @@ assert any(l.startswith('fitcheck\tmasterplan.md:') for l in again.splitlines())
 fit=[w for _,k,w in (l.split('\t',2) for l in again.splitlines() if l.startswith('say\t')) if k=='fitcheck']
 assert fit and 'word for word' in fit[0] and 'above the old one' in fit[0],again
 # The rewrite's rules are in a reference the skill points at; it has to open.
-assert 'references/four-paths.md' in (source/'maintain/SKILL.md').read_text()
+assert 'four-paths.md' in (source/'maintain/references/kit-update.md').read_text()
 assert (source/'maintain/references/four-paths.md').is_file()
 run([sys.executable,plugin/'maintain/scripts/upgrade-check.py','--apply','fitcheck',p],code=2)
 run([sys.executable,plugin/'maintain/scripts/upgrade-check.py','--decline','fitcheck',p])

@@ -22,6 +22,8 @@
 .agents/skills/quality-checks|
 .agents/skills/live-copy|
 .agents/skills/evidence-run|
+.agents/skills/triage|
+.agents/skills/build-piece|
 .agents/tools/build-adapters.sh|
 .agents/tools/kit-inventory.txt|
 .claude/commands|
@@ -36,6 +38,8 @@
 .claude/skills/quality-checks|
 .claude/skills/live-copy|
 .claude/skills/evidence-run|
+.claude/skills/triage|
+.claude/skills/build-piece|
 .cursor/commands|
 .gemini/commands|
 .github/copilot-instructions.md|
@@ -74,3 +78,5 @@ agent-plugin|
 .agents/skills/quality-checks|agent-plugin/skills/quality-checks
 .agents/skills/live-copy|agent-plugin/skills/live-copy
 .agents/skills/evidence-run|agent-plugin/skills/evidence-run
+.agents/skills/triage|agent-plugin/skills/triage
+.agents/skills/build-piece|agent-plugin/skills/build-piece

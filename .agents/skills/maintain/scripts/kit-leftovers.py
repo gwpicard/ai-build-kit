@@ -75,7 +75,7 @@ KIT_SKILLS = (
     "setup-ai-build-kit", "shape", "implement", "setup-hosting", "maintain",
     "what-now", "clarify", "second-opinion", "records", "fit-check", "repair",
     "merge", "screen-check", "research", "quality-checks", "live-copy",
-    "evidence-run",
+    "evidence-run", "triage", "build-piece",
 )
 
 # Every name a kit skill had before. `build` split into `shape` and

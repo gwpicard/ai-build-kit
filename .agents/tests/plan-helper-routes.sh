@@ -353,7 +353,7 @@ grep -q "place-plan-helper\.sh" "$ROOT/.agents/skills/maintain/scripts/upgrade-c
 
 # Where the harness cannot run the check, the helper still arrives: the
 # maintain skill names the template to copy by hand, and it is there.
-grep -q "templates/foundation/plan-refresh\.sh" "$ROOT/.agents/skills/maintain/SKILL.md" \
+grep -q "templates/foundation/plan-refresh\.sh" "$ROOT/.agents/skills/maintain/references/kit-update.md" \
   && [ -f "$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/plan-refresh.sh" ] && \
   pass "/maintain names a by-hand route to the helper" || \
   fail "/maintain has no by-hand route to the helper"

@@ -43,7 +43,8 @@ run it would need, and stop.
 ### Build and run it
 
 1. Run the evidence run in the `evidence-run` skill.
-2. Run second-opinion with the best independent method AGENTS.md records.
+2. Run the `second-opinion` skill with the best independent method AGENTS.md
+   records.
 3. Make the two judgements the runner cannot. Does the tool record what each
    request did, one line per event with a run id, a time, a level and the
    step? Check with disposable inputs, never print what it holds, and treat a
@@ -97,12 +98,12 @@ Before deciding a deploy failed, read its whole output or the host's list of
 deployments. Never deploy again before checking the first did not go live: a
 second deploy replaces the rollback target, so say that in one line first.
 
-Save the run's records through the `implement` skill's save route: one branch
-and pull request for each run with its `scripts/save-records.sh`, never pushed
-to `main`, never sweeping the person's uncommitted work in, and merged on the
-pull request only after a yes that names it, asked for in the reply that
-reports the run. Where the host builds every change to `main`, say that merge
-moves the rollback target and offer to leave it open.
+Save the run's records on one branch and pull request for each run, with the
+`merge` skill's `scripts/save-records.sh`, never pushed to `main`, never
+sweeping the person's uncommitted work in, and merged on the pull request only
+after a yes that names it, asked for in the reply that reports the run. Where
+the host builds every change to `main`, say that merge moves the rollback
+target and offer to leave it open.
 
 ### Build with care
 
@@ -127,26 +128,7 @@ Follow the `live-copy` skill's "Rolling back".
 
 ## A later run
 
-Rerun the fit check first if reliance, data or consequence has grown. Then
-compare, changing nothing: run the recipe's `scripts/live-check.sh` with
-`--address`, `--password-file` and `--needs` for the names on an open piece's
-`Live side needs:` line. Where its checks are pasted back, ask for the health
-answer and the setting names. Say each gap in one line.
-
-Repair each gap only after a yes that names it, saying what it changes and
-whether it can be undone. A migration is applied with the shared
-`migrate.sh --apply`, once, before the merge that needs it. A piece's
-migration not yet on `main` is applied from a temporary checkout of its
-branch, removed afterwards; then say /implement can ask for the merge.
-
-Then run `scripts/run-recipe.sh --later`, with a first launch's values and a
-`--note` for each gap repaired or left. It writes the run's one dated entry,
-gap or no gap, with its rollback line. A recorded hosting request is read
-back as the recipe's file says. Moving to another host or recipe is a later
-run too: run the
-new recipe as a first launch while the old copy keeps serving, change the
-`Recipe:` line and the address only once the new one answers, and say how to
-switch the old one off.
+Load `references/later-run.md` and follow it.
 
 ## Done when
 
