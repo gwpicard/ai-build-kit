@@ -161,7 +161,12 @@ merge_open_pulls() {
     2>/dev/null || true)
   mo_done=""
   for mo_n in $mo_list; do
-    if (cd "$1" && "$GH_DIR/gh" pr merge "$mo_n" >/dev/null 2>&1); then
+    if (
+      cd "$1" \
+      && mo_head=$("$GH_DIR/gh" pr view "$mo_n" --json headRefOid \
+        | python3 -c 'import json, sys; print(json.load(sys.stdin)["headRefOid"])') \
+      && "$GH_DIR/gh" pr merge "$mo_n" --merge --match-head-commit "$mo_head" >/dev/null 2>&1
+    ); then
       mo_done="$mo_done #$mo_n"
     else
       mo_done="$mo_done #$mo_n (would not merge)"

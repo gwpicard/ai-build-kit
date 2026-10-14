@@ -250,7 +250,11 @@ done
 # Both must merge, in the order the kit is least likely to pick, and the
 # project's own checks must pass on the result.
 FAKE_GH_STATE="$live/.gh-fixture.json"
-(cd "$live" && "$GH_DIR/gh" pr merge 2 >/dev/null && "$GH_DIR/gh" pr merge 1 >/dev/null) \
+(cd "$live" \
+  && head2=$("$GH_DIR/gh" pr view 2 --json headRefOid | python3 -c 'import json, sys; print(json.load(sys.stdin)["headRefOid"])') \
+  && "$GH_DIR/gh" pr merge 2 --merge --match-head-commit "$head2" >/dev/null \
+  && head1=$("$GH_DIR/gh" pr view 1 --json headRefOid | python3 -c 'import json, sys; print(json.load(sys.stdin)["headRefOid"])') \
+  && "$GH_DIR/gh" pr merge 1 --merge --match-head-commit "$head1" >/dev/null) \
   && ok "the two pull requests merge one after the other" \
   || bad "the two pull requests do not both merge"
 FAKE_GH_STATE="$WORK/.gh-fixture.json"
