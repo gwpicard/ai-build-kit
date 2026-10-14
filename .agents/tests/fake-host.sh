@@ -8,6 +8,13 @@
 # build for one merge, a second build only when something deploys again, and a
 # live address that follows the newest working build.
 #
+# Scenario 57 replays a later run that finds a migration the live database
+# lacks. There the Supabase stand-in answers the recipe's reads and push, needs
+# the database password for each, and logs each migration it applies, tagged
+# with the turn that started the push. It reads its options as the real
+# command does, global ones before the command included, and refuses an option
+# or a command it does not model, to the log.
+#
 # The rest matters as much. A deploy's output carries its success line near the
 # end, so a kit that cuts it short cannot tell it worked. The other tools fail
 # the way a machine signed in to nothing fails. A secret a command carried is
@@ -44,7 +51,7 @@ trap 'rm -rf "$WORK"' EXIT INT TERM
 p="$WORK/s54"
 mkdir -p "$p/.agents/skills/setup-hosting/recipes"
 cp "$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md" "$p/"
-cp "$ROOT/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel.md" "$p/.agents/skills/setup-hosting/recipes/"
+cp -R "$ROOT/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel" "$p/.agents/skills/setup-hosting/recipes/"
 cp "$ROOT/.gitignore" "$p/.gitignore"
 sh "$PREPARE.sh" "$p"
 git -C "$p" init -q
@@ -248,6 +255,119 @@ if grep -q -e pw-stand-in -e tok-stand-in -e vtok-stand-in "$FAKE_HOST_LOG"; the
 else
   pass "a database address, a bearer token and a --token value are masked in the log"
 fi
+
+echo "== A linked Supabase project =="
+# Scenario 57's host state holds a Supabase project: linked, with a password,
+# the migrations it has and one it lacks. There the stand-in answers the reads
+# and the push the recipe names, needs the password for each, and writes an
+# APPLIED line for each migration a push applies, so a replay can place it
+# before or after the person's yes.
+m="$WORK/s57"
+mkdir -p "$m/.agents/skills/setup-hosting/recipes"
+cp "$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md" "$m/"
+cp -R "$ROOT/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel" "$m/.agents/skills/setup-hosting/recipes/"
+cp "$ROOT/.gitignore" "$m/.gitignore"
+sh "$ROOT/.agents/tests/replay/prepare/migration-pending.sh" "$m"
+m=$(cd "$m" && pwd -P)
+git -C "$m" init -q
+git init -q --bare "$m.git"
+git -C "$m" remote add origin "$m.git"
+git -C "$m" config user.name "Replay rehearsal"
+git -C "$m" config user.email rehearsal@example.invalid
+git -C "$m" config commit.gpgsign false
+git -C "$m" add -A
+git -C "$m" commit -q -m "Project before the scenario"
+sh "$ROOT/.agents/tests/replay/prepare/migration-pending.after-commit.sh" "$m"
+mlog="$WORK/s57-host.log"
+pw_file="$m.secrets/db-password"
+(
+  cd "$m"
+  FAKE_HOST_STATE="$m.host.json"
+  FAKE_HOST_LOG="$mlog"
+  export FAKE_HOST_STATE FAKE_HOST_LOG
+  if supabase db push --dry-run >/dev/null 2>&1; then
+    fail "a dry run with no password reached the database"
+  else
+    pass "a dry run with no password fails as a wrong password does"
+  fi
+  if SUPABASE_DB_PASSWORD=wrong supabase db push >/dev/null 2>&1; then
+    fail "a push with the wrong password reached the database"
+  else
+    pass "a push with the wrong password fails"
+  fi
+  out=$(SUPABASE_DB_PASSWORD="$(cat "$pw_file")" supabase db push --dry-run)
+  case "$out" in
+    *"20261005090000_pinned_notices.sql"*) pass "a dry run with the password lists the migration the database lacks" ;;
+    *) fail "a dry run with the password listed: $out" ;;
+  esac
+  out=$(supabase migration list --linked -p "$(cat "$pw_file")")
+  printf '%s\n' "$out" | grep -qE '^ *20261005090000 \| +\|' \
+    && printf '%s\n' "$out" | grep -qE '^ *20260917090000 \| 20260917090000' \
+    && pass "the migration list shows which migration the live database has and which it lacks" \
+    || fail "the migration list read: $out"
+  # A global option may come before the command, and an option's value may
+  # follow `=` or be attached to a one-letter name, as the real command takes
+  # them.
+  out=$(cd "$WORK" && SUPABASE_DB_PASSWORD="$(cat "$pw_file")" supabase --workdir "$m" db push --dry-run 2>&1)
+  case "$out" in
+    *"20261005090000_pinned_notices.sql"*) pass "a global option before the command is read as the real command reads it" ;;
+    *) fail "supabase --workdir <folder> db push --dry-run said: $out" ;;
+  esac
+  out=$(cd "$WORK" && supabase --workdir="$m" migration list -p"$(cat "$pw_file")" 2>&1)
+  printf '%s\n' "$out" | grep -qE '^ *20261005090000 \| +\|' \
+    && pass "and so are --workdir=<folder> and a password attached to -p" \
+    || fail "supabase --workdir=<folder> migration list -p<password> said: $out"
+  # An option the command's help does not list is refused, and so is a command
+  # nobody modelled, each to the log.
+  for probe in "db push --dry-run --yse" "db push --project-ref x" "migration list --dry-run" \
+               "projects list" "init" "db reset --linked" "db push extra"; do
+    # shellcheck disable=SC2086
+    if SUPABASE_DB_PASSWORD="$(cat "$pw_file")" supabase $probe >/dev/null 2>&1; then
+      fail "supabase $probe was accepted, though the stand-in does not model it"
+    elif grep -qF "UNSUPPORTED	supabase $probe	" "$mlog"; then
+      pass "supabase $probe is refused, and the refusal is in the log"
+    else
+      fail "supabase $probe was refused without a line in the log"
+    fi
+  done
+  grep -q '^APPLIED' "$mlog" \
+    && fail "a read applied a migration" \
+    || pass "neither read applies anything"
+  out=$(REPLAY_TURN=3 supabase db push --db-url "postgresql://postgres.qwmhzkpvnbxlcrtdyefa:$(cat "$pw_file")@aws-0-eu-west-2.pooler.supabase.com:5432/postgres")
+  case "$out" in
+    *"Applying migration 20261005090000_pinned_notices.sql"*"Finished supabase db push."*)
+      pass "a push with the password in its database address applies the migration" ;;
+    *) fail "the push said: $out" ;;
+  esac
+  [ "$(grep -c '^APPLIED	20261005090000	turn=3$' "$mlog")" = "1" ] \
+    && pass "and the log holds one APPLIED line for it, tagged with the turn that started it" \
+    || fail "the log does not hold one tagged APPLIED line for the migration"
+  grep -q '^CALL	supabase db push --db-url .*	turn=3$' "$mlog" \
+    && pass "the call's own line carries the turn that started it too" \
+    || fail "the call's line does not carry the turn that started it"
+  out=$(SUPABASE_DB_PASSWORD="$(cat "$pw_file")" supabase db push)
+  [ "$out" = "Remote database is up to date." ] \
+    && [ "$(grep -c '^APPLIED' "$mlog")" = "1" ] \
+    && pass "a second push applies nothing and says the database is up to date" \
+    || fail "a second push said: $out"
+  python3 - "$m.host.json" <<'PY' \
+    && pass "the host's state records the migration as applied" \
+    || fail "the host's state does not record the migration as applied"
+import json, sys
+assert json.load(open(sys.argv[1]))["supabase"]["applied"] == ["20260917090000", "20261005090000"]
+PY
+  if supabase db dump --linked -f "$WORK/dump.sql" >/dev/null 2>&1; then
+    fail "a dump ran, though Docker's engine is off"
+  else
+    pass "a dump fails as Docker's engine is off, as before"
+  fi
+  if grep -qF "$(cat "$pw_file")" "$mlog"; then
+    fail "the password reached the host log"
+  else
+    pass "a -p value and a database address are masked in the log"
+  fi
+  exit "$FAIL"
+) || FAIL=1
 
 echo "== Any other run =="
 # With no FAKE_HOST_STATE at all, the run is not a replay, and each stand-in

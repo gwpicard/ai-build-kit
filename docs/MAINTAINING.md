@@ -147,11 +147,11 @@ condition, not in the shared default.
 
 ## Changing a skill
 
-This section governs the eleven canonical skills in `.agents/skills/`. A
+This section governs the eight canonical skills in `.agents/skills/`. A
 maintainer skill sits outside it, and `AGENTS.md` says what it does and does not
 owe.
 
-Start with PHILOSOPHY.md, beside this file. Its five questions get answered in
+Start with PHILOSOPHY.md, beside this file. Its four questions get answered in
 the pull request description before the skill changes. A change that cannot
 answer them gets reshaped before it's considered for merge.
 
@@ -161,7 +161,7 @@ the regenerated compatibility fixtures. Never hand-edit anything under
 `.claude/`, `.cursor/`, or `.gemini/`. New projects use the shared skills
 installer, the optional Claude Code plugin, or the Agent Plugins folder. The
 Claude plugin metadata lives under `.claude-plugin/`. It explicitly
-selects the six generated command files and five generated background skills.
+selects the six generated command files and two generated background skills.
 Those thin adapters load the canonical instructions from the plugin cache. The
 Agent Plugins manifest lives under `agent-plugin/`, and its `skills`
 folder is assembled by the release allowlist rather than by
@@ -172,7 +172,7 @@ protect.
 One setting says how a skill is triggered. A background skill another skill
 calls carries `user-invocable: false` in its own file. A skill without it is a
 command. The adapter builder reads that setting and nothing else, so a dropped
-or misspelt line shows up as seven commands and four background skills, and the
+or misspelt line shows up as seven commands and one background skill, and the
 count check stops the build there.
 
 The commands used to carry a second setting that stopped the agent starting one
@@ -189,10 +189,10 @@ directly, so the setting has to be right in the skill itself, whatever the
 generated adapters look like.
 
 `user-invocable` is not in the written Agent Skills standard, so its reference
-checker reports the five background skills as invalid. Keep it anyway, with the
+checker reports the two background skills as invalid. Keep it anyway, with the
 cost on the record: the plugin standard tells a client to skip any skill that
 fails the skill standard, so a strict Agent Plugins client would load the six
-commands and skip the five. Claude Code accepts the setting, which is why that
+commands and skip the two. Claude Code accepts the setting, which is why that
 route works today. If the standard adopts a setting of its own, follow it and
 update the short person-facing version in `docs/COMPATIBILITY.md`.
 
@@ -209,10 +209,10 @@ part or date itself. A proposal worth keeping becomes an issue.
 
 The reason is what a shared skills installer reads. It looks in
 `.agents/skills/` and `.claude/skills/` and offers whatever it finds in either,
-merging the two by the `name` in each file's frontmatter. The eleven adapters
-carry the names of the eleven skills they point at, so they merge away and an
-installer finds eleven. No maintainer skill shares a name with one of the
-eleven, so a copy of any of them in those folders would be a twelfth skill
+merging the two by the `name` in each file's frontmatter. The eight adapters
+carry the names of the eight skills they point at, so they merge away and an
+installer finds eight. No maintainer skill shares a name with one of the
+eight, so a copy of any of them in those folders would be a ninth skill
 offered to every project.
 
 Sitting outside both folders is what prevents that. It is also why the skill
@@ -254,7 +254,7 @@ COMPATIBILITY.md, beside this file, holds the full per-tool map.
 Every change to `.agents/skills/` or the kit's own machinery runs
 `.agents/tools/validate-kit.sh`, which checks:
 
-- the canonical skill inventory (exactly six commands and five background
+- the canonical skill inventory (exactly six commands and two background
   skills, named exactly, with nothing else in the folder);
 - the maintainer skill boundary: every folder under `.agents/maintainer-skills/`
   is read off the disk rather than from a list, the vendored writing skill
@@ -303,7 +303,7 @@ Every change to `.agents/skills/` or the kit's own machinery runs
   "four project documents", `team.md`, a mandatory fresh session for every
   build, a universal pull-request or test-first requirement, an automatic
   rebuild treated as the fourth `/fix` attempt, an absolute claim that the
-  five background skills never appear in any harness, incorrect Claude invocation
+  background skills never appear in any harness, incorrect Claude invocation
   semantics, `.codex/` described as a generated adapter, or a claim that
   everything in the kit is markdown.
 
@@ -378,10 +378,8 @@ rehearsal job is guarded to this repository, and that it runs `run-all.sh`. The
 last of those is the load-bearing one, because a rehearsal job that ran something
 else, or nothing at all, would go green.
 
-`validate-kit.sh` also calls several of those rehearsals itself by name, and runs
-the whole written-rule family by finding the checks that source
-`lib/rule-shape.sh` rather than by keeping a list of them. That is what keeps it
-a single local command and what gives release preparation its coverage. So the
+`validate-kit.sh` also calls several of those rehearsals itself by name. That is
+what keeps it a single local command and what gives release preparation its coverage. So the
 hosted run does that work twice, and at about half a minute for the whole set
 that is cheaper than either half losing it.
 
@@ -403,23 +401,26 @@ repository in a gate, so none of them runs in somebody's fork, and none of those
 workflows ships.
 
 A service a tool runs on, meaning its hosting, its data or its deploy, is
-named nowhere either, except inside a recipe file under
+named nowhere either, except inside a recipe folder under
 `.agents/skills/setup-hosting/recipes/` and in the README. A recipe pairs a build stack
 with a place to run it, so naming those services is its whole job. A skill that
 needs to know how one behaves reads the project's recipe, which keeps
-every skill the same whichever recipe a project runs on. `hosting-request.sh`
+every skill the same whichever recipe a project runs on. `validate-kit.sh`
 refuses a hosting, data or deploy product's name in every skill file outside
-`.agents/skills/setup-hosting/recipes/`, which holds the recipes and their shared parts.
-The screen rules' link to Vercel's interface guidelines is the one exception,
-because it names a design guide rather than a place a tool runs. The
+`.agents/skills/setup-hosting/recipes/`, which holds the recipes, their scripts
+and their shared parts.
+Its list of names includes the place each recipe's title names, so a new recipe
+adds its own host. The screen rules' link to Vercel's interface guidelines is
+the one exception, because it names a design guide rather than a place a tool
+runs. The
 `stack-research` maintainer skill names those products too, because reading
 their changelogs is its job, and it never ships.
 
 A recipe waiting for its real run sits in `.agents/tests/recipes-awaiting-run/`,
 which ships nowhere, and its rehearsal reads it there. Once the run is recorded
-in its proven section, move the file into `.agents/skills/setup-hosting/recipes/` with
+in its `PROVEN.md`, move the folder into `.agents/skills/setup-hosting/recipes/` with
 `git mv`. The rehearsal finds it on the menu from then on, and fails if a copy
-is left in both places.
+is left in both places. `docs/RECIPES.md` gives the whole format.
 
 ## When a release is cut
 
@@ -429,12 +430,17 @@ newcomer. Name anything that breaks a project already running on an earlier
 version: a renamed command, a removed feature, a changed record or label, or a
 new precondition. For each, there must be a path that carries an existing project
 across without losing its work, and the person must be told about it in a place
-they will see. A one-time migration lives in `/maintain`, which runs on its own
-clock and is idempotent, and the visible change is named in the release notes.
+they will see. A migration lives in the maintain skill's scripts, chiefly
+`upgrade-check.py`, which runs on every `/maintain` visit and is idempotent. The
+script finds what is left, prints the sentence the person hears, and applies the
+change on a yes, so the skill's own text keeps only the ask. The visible change
+is named in the release notes. A migration stays in the scripts for as long
+as a project could still need it. Each update route brings the latest
+release, so nothing sends a project through an older one first.
 If a breaking change has neither, it is not ready to ship. A release that only
 adds behaviour still gets this check, and answers it with "nothing to do".
 
-Run PHILOSOPHY.md's five questions over everything already here, including what
+Run PHILOSOPHY.md's four questions over everything already here, including what
 is being added. Anything that now fails a question it used to pass has drifted
 (PHILOSOPHY.md explains how), and that is the list of work for the next pass.
 
@@ -463,7 +469,7 @@ maintainer's real Claude configuration.
 
 Run `.agents/tests/agent-plugin.sh` too. It builds a release and checks the
 assembled `agent-plugin` folder against the open standard: the manifest's
-permitted fields, the eleven skills as immediate children of `skills`, no
+permitted fields, the eight skills as immediate children of `skills`, no
 skill hidden deeper, no maintainer-only writing skill, and a project
 stand-up from that folder alone.
 
@@ -686,7 +692,7 @@ wherever `N` appears.
    git status --short
    git pull --ff-only
    git rev-parse --short HEAD
-   .agents/skills/setup-ai-build-kit/scripts/check-tooling.sh --recipe .agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel.md
+   .agents/skills/setup-ai-build-kit/scripts/check-tooling.sh --recipe .agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel
    .agents/tools/build-release.sh v0.0.0-preview.N /private/tmp/abk-preview-N
    ```
 
@@ -705,7 +711,7 @@ wherever `N` appears.
    npx skills add /private/tmp/abk-preview-N -a claude-code -a codex -s '*' -y
    ```
 
-   The first puts the eleven skills in `.claude/skills/`, the second in
+   The first puts the eight skills in `.claude/skills/`, the second in
    `.agents/skills/` with links in `.claude/skills/`. In both, `setup-hosting/recipes/`
    holds the same recipes as `ls <kit checkout>/.agents/skills/setup-hosting/recipes/`.
 
@@ -721,7 +727,7 @@ wherever `N` appears.
 
    - During the interview, the kit showed the recipe menu, marked one recipe
      as recommended, and said it would use that one unless told otherwise.
-   - `grep '^Recipe:' AGENTS.md` names one recipe file.
+   - `grep '^Recipe:' AGENTS.md` names one recipe folder.
    - `grep founding-menu .ai-build-kit-maintenance` names every recipe on the
      menu.
 
@@ -887,18 +893,17 @@ home and every other mention is a link.
 - `docs/SOURCES.md`: the outside work the kit took ideas from, and what each
   source contributed. It names a borrowed idea in the kit's own vocabulary and
   links to that idea's owner rather than explaining it again.
-- `.agents/skills/setup-hosting/recipes/`: one file for each recipe, and the only place
+- `.agents/skills/setup-hosting/recipes/`: one folder for each recipe, and the only place
   outside the README that names a service a tool runs on. What a recipe must hold, and what
-  proves it, belongs to `.agents/skills/setup-hosting/references/recipe-format.md`. A
-  project records which recipe it runs on in its own AGENTS.md, in the stack
-  section.
+  proves it, belongs to `docs/RECIPES.md`. A project records which recipe it
+  runs on in its own AGENTS.md, in the stack section.
 
 Two concepts carry two names on purpose, on the same reasoning both times: the
 name a person reads is the one that matters, and an internal name is left alone
 where changing it would churn output nobody reads for no reader benefit.
 
 A person reads "background skills"; the code identifiers and check messages say
-"disciplines". They are the same five skills.
+"disciplines". They are the same two skills.
 
 A person reads that the agent chooses the method; `.agents/tests/scenarios.md`
 and `.agents/tests/replay/grader-prompt.md` call that field "hidden technique".

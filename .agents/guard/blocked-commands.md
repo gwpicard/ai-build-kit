@@ -14,17 +14,17 @@ mechanical enforcement:
 - Codex: set `approval_policy`/sandbox in `~/.codex/config.toml` so shell writes need approval.
 - Cursor: add the same patterns under Cursor's command allow/deny settings.
 
-When you change this file, update `.claude/settings.json` to match. Two
-entries below are left out of the mechanical deny on purpose: `git checkout .`
-/ `git restore .` are allowed inside the repair's announced reset step, and database
-drops are too varied to pattern-match, so they remain instruction-only along
-with the standing-restriction entries below, none of which reduce to a single
-shell pattern.
+When you change this file, update `.claude/settings.json` to match. A founded
+project's settings refuse more: the full list, with the commands it asks
+about first, is the setup-ai-build-kit skill's `references/blocked-commands.md`.
+Database drops are too varied to pattern-match, so they remain
+instruction-only along with the standing-restriction entries below, none of
+which reduce to a single shell pattern.
 
 ## Commands
 
 - git reset --hard (throws away unsaved work)
-- git checkout . and git restore . (the same thing wearing different clothes; allowed only inside the repair's reset step, announced out loud first)
+- git checkout ., git restore ., git stash drop and git stash clear (the same thing wearing different clothes; a project's repair runs the implement skill's scripts/reset-attempt.sh instead)
 - git push --force, or -f, or --force-with-lease, wherever the option sits (rewrites shared history under teammates' feet)
 - git clean -fd (deletes files git never saved)
 - rm -rf, and the same delete spelled -fr, -Rf, -r -f or --recursive --force (deletes anything, recursively, with no undo)

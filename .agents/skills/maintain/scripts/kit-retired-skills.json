@@ -1,5 +1,5 @@
 {
-  "comment": "Retired skill names and descriptions identify a possible leftover. A folder is removable only when every remaining file matches a released file for that skill. The files record uses the first 16 hex digits of SHA-256, from release tags up to v0.19.3. A changed or added file keeps the whole folder.",
+  "comment": "Retired skill names and descriptions identify a possible leftover. A folder is removable only when every remaining file matches a released file for that skill. The files record uses the first 16 hex digits of SHA-256, from release tags up to v0.20.3. A changed or added file keeps the whole folder.",
   "skills": {
     "build": [
       "The everyday word for making the tool do something new or different. Typed alone it takes the next piece from the plan. Typed with words after it, it takes the request in plain language and works out what kind of work it is. \"/build auto\" builds several pieces in a row. Do not use for repairs of promised behaviour; that is fix.",
@@ -35,6 +35,20 @@
     ],
     "grilling": [
       "Interview the team before work is specified, one question at a time, each with a best guess attached. Used by start for the founding interview and by build when a request is too vague to size. Do not use for small clear changes or for repairs, and never write code during it."
+    ],
+    "change-triage": [
+      "Classify a request written in plain words before any work happens. Used by build when the user typed words after the command, and by fix to check a report before repairing. Decides whether the request is new work, a repair, too vague to size, or a change that needs the masterplan or the fit check first.",
+      "Classify a request written in plain words before any work happens. Used by plan when the user typed a request, and by fix to check a report before repairing. Decides whether the request is new work, a repair, too vague to size, or a change that needs the masterplan or the fit check first.",
+      "Classify a request written in plain words before any work happens. Used by shape when the user typed a request, and by fix to check a report before repairing. Decides whether the request is new work, a repair, too vague to size, or a change that needs the masterplan or the fit check first.",
+      "Classify a request written in plain words before any work happens. Used by shape for every request, a report that something is broken included. Decides whether the request is new work, a repair, too vague to size, or a change that needs the masterplan or the fit check first, and offers the earlier version back first when the live tool broke after a recent merge."
+    ],
+    "section-builder": [
+      "Build one piece from the plan to a confirmed, saved change. Used by build for every piece and by fix once the cause is known. Refuses to start on top of uncommitted work. One piece per pass, always.",
+      "Build one piece from the plan to a confirmed, saved change. Used by implement for every piece and by fix once the cause is known. Refuses to start on top of uncommitted work. One piece per pass, always.",
+      "Build one piece from the plan to a confirmed, saved change. Used by implement for every piece, a repair included. Refuses to start on top of uncommitted work. One piece per pass, always."
+    ],
+    "screen-check": [
+      "Apply the kit's screen rules during a build or review that touches an interface. Read the project's own design system first, report what was applied and what remains for a person to try, and make no claim that the screen is accessible, compliant, or good."
     ]
   },
   "files": {
@@ -50,6 +64,27 @@
     "build/references/running-longer.md": [
       "7527c5788433b648",
       "c741d3d994d9899f"
+    ],
+    "change-triage/SKILL.md": [
+      "067e84ffe210b1f4",
+      "13ac07a20a40358e",
+      "154af050a9309e5d",
+      "1e9c2da28e34f94a",
+      "3c65167438b5eddf",
+      "412ed1eaff7ec1f2",
+      "4b9b697ef419bc41",
+      "ae1157adf326e87e",
+      "bfecb55cd372e2eb",
+      "cd2bd67cf5f95e90",
+      "df16765bce964053",
+      "f6cf72e8ae11e96c",
+      "f9ae8545f8a081f4"
+    ],
+    "change-triage/references/existing-work.md": [
+      "dd1f9b9bcc73353a"
+    ],
+    "change-triage/references/source-check.md": [
+      "94cbee9e763d896a"
     ],
     "fix/SKILL.md": [
       "0d1c3dae40bf9a47",
@@ -98,6 +133,50 @@
     ],
     "queue/agents/openai.yaml": [
       "a1499d95abd84475"
+    ],
+    "screen-check/SKILL.md": [
+      "9c288828035416c1",
+      "f73d58e62d8bef3e"
+    ],
+    "section-builder/SKILL.md": [
+      "020ddf4e7e79223d",
+      "0f4240c48b573dcf",
+      "0fc1fd97208197e6",
+      "4878a5154d1ea154",
+      "547bdbc2b10f3594",
+      "5532eae7e4531c90",
+      "5dc6fce7d9a7edd5",
+      "8feb35c836ef1c2b",
+      "957f75cd1bf51649",
+      "975b2871d1fb0511",
+      "9a975f0452f36e34",
+      "a905ce425da225f7",
+      "b88da1b239b7f026",
+      "c9dd8e7ac1b5f9d7",
+      "d6e570e07be40bef",
+      "e1a51fe27e1249ec",
+      "e85bea919e001964",
+      "e912ddfe59f63645",
+      "ee1eecc7483bc9a7"
+    ],
+    "section-builder/references/reach-check.md": [
+      "2d736e083b6eaab9"
+    ],
+    "section-builder/references/repair.md": [
+      "3f775adc5528d2a3"
+    ],
+    "section-builder/references/test-strength.md": [
+      "bbfd9c27764aa922"
+    ],
+    "section-builder/references/trim.md": [
+      "ad03018f0882a6a3",
+      "c6c3502e5742805f"
+    ],
+    "section-builder/scripts/check-before-merge.sh": [
+      "e425d5e749aee862"
+    ],
+    "section-builder/scripts/env-names-added.sh": [
+      "4f6a6ea128ed01dd"
     ],
     "ship/SKILL.md": [
       "1f94f7b06e692b2f",

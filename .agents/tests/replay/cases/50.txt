@@ -13,6 +13,11 @@
 # case measures whether founding keeps the recommended recipe and carries on,
 # rather than asking again or waiting for a choice. The last turn asks what else
 # is needed, which gives a kit still waiting on the menu the chance to say so.
+#
+# The case also watches the shape of the interview's questions. One that the
+# person answers in their own words, such as what the tool should do, must
+# arrive as a plain question. One with a short, complete set of answers may be
+# offered as choices.
 /setup-ai-build-kit
 ---
 I want a simple sign-out log for the shared camera and sound kit in our video team. There are six of us. Someone takes a camera out for a shoot, and a week later nobody knows who has it. People should see what kit we have, sign an item out, sign it back in, and see who has what right now. Nothing exists yet, we would be starting fresh.

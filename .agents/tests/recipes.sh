@@ -1,185 +1,145 @@
 #!/usr/bin/env sh
-# recipes.sh: guard the recipe format and the check that reads recipe files.
+# recipes.sh: run the recipe shape check against good and broken recipe folders.
 #
-# A recipe is one build stack paired with one place to run it, and it is the
-# only place in the kit, besides the README, allowed to name a service a tool
-# runs on. That permission is the risky half. Without the rules around it, a
-# recipe becomes a list of product tips that nobody has tried, offered on a menu
-# as if the kit could vouch for it. So this check reads the rules that stop that
-# back out of the format reference, and proves each one is load-bearing.
-#
-# The second half runs the shipped shape check against a recipe filled in from
-# the blank, then against copies with one part taken away at a time. A check
-# that passed a recipe missing its backup section would let one onto the menu
-# with a launch step nobody can check. It also drives the rehearsal rule, since
-# a rehearsal that only exits cleanly would otherwise count as proof.
+# If this breaks, a recipe missing a launch section, a script, an outcome line
+# or a real dated run could reach the menu, and a recipe rehearsal that proves
+# nothing could count as one.
 
 set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
-. "$ROOT/.agents/tests/lib/rule-shape.sh"
+WORK=$(mktemp -d)
+trap 'rm -rf "$WORK"' EXIT
+pass=0
+ok() { echo "  ok: $1"; pass=$((pass + 1)); }
+fail() { echo "FAIL: $1" >&2; exit 1; }
 
-FORMAT="$ROOT/.agents/skills/setup-hosting/references/recipe-format.md"
 BLANK="$ROOT/.agents/skills/setup-hosting/templates/recipe.md"
 CHECKER="$ROOT/.agents/tools/check-recipes.sh"
-VALIDATOR="$ROOT/.agents/tools/validate-kit.sh"
-PHILOSOPHY="$ROOT/docs/PHILOSOPHY.md"
-MAINTAINING="$ROOT/docs/MAINTAINING.md"
-SOURCES="$ROOT/docs/SOURCES.md"
+# The lines a recipe rehearsal must carry: it sources the shared recipe
+# rehearsal and runs the recipe's scripts against the tool stand-ins.
+HELPER_LINE='. "$ROOT/.agents/tests/lib/recipe-rehearsal.sh"'
 
-rs_init "Recipe format checks"
-rs_exists "$FORMAT" "$BLANK" "$CHECKER" "$VALIDATOR" "$PHILOSOPHY" "$MAINTAINING" "$SOURCES"
-
-# --- what a recipe is ----------------------------------------------------
-rs_rule "a recipe is one stack paired with one place" 'one build stack paired with one place to run it'
-rs_rule "two places are two recipes" 'a stack that runs in two places is two recipes'
-rs_rule "recipes live in setup-hosting/recipes" 'recipes live in .setup-hosting/recipes/.'
-rs_rule "the folder is the menu" 'the folder is the menu'
-rs_rule "a recipe says when it is the one to recommend" 'when founding should recommend this recipe over another that fits the same shape'
-
-# --- what it holds -------------------------------------------------------
-rs_rule "a recipe names the command-line tools its checks run" 'the tools the recipe.s checks run on the person.s machine'
-rs_rule "a missing recipe tool never stops founding" 'a missing one never stops founding'
-rs_rule "the last-checked date moves only on a real read" 'the date moves only when somebody did that'
-rs_rule "the eight sections, in order" 'preview, going live, rollback, backup, restore, secrets, logs and health'
-rs_rule "each section says who runs its check" 'says who runs that check, and takes one of three'
-rs_rule "the kit runs it" '.the kit. when the kit runs the check itself'
-rs_rule "a companion or the person runs it, result read back" 'result read back. when the check runs somewhere the kit cannot reach'
-rs_rule "a person looks" '.a person looking. when no machine can judge it'
-rs_rule "a section with no check is unfinished" 'a section with no check is not finished'
-
-# --- shared parts ----------------------------------------------------------
-rs_rule "a shared section is written once, as a part" 'is written once, as a part in .setup-hosting/recipes/parts/.'
-rs_rule "a part holds the lines a section would" 'a part holds the same three lines a section would'
-rs_rule "the parts folder is not on the menu" 'the parts folder is not a menu entry'
-
-# --- the settings the kit can read -------------------------------------------
-rs_rule "a recipe may say which settings the kit reads" 'a recipe may carry one more section, .## settings the kit can read., between health and the proven section'
-rs_rule "the review reads them rather than asking" 'so the launch review reads them rather than asking the person to look them up'
-rs_rule "only a key the browser already has" 'such a read uses only a key the project already sends to the browser'
-rs_rule "a secret-key read does not belong" 'a setting that needs a secret key to read does not belong here'
-rs_rule "the section gets an outcome line" 'a recipe that carries it gives it an outcome line in its proven section, starting .settings the kit can read:.'
-
-# --- what proven means ---------------------------------------------------
-rs_rule "rehearsals guard the rules" 'offline rehearsals guard its rules'
-rs_rule "the rehearsal names the recipe" 'a maintainer check names the recipe file'
-rs_rule "one real deploy, start to finish" 'one real deploy has been run from an empty project to a live address and through all eight sections'
-rs_rule "with the maintainer's approval and accounts" 'with the maintainer.s approval and accounts'
-rs_rule "the record lives in the recipe" 'the record lives in the recipe.s own proven section'
-rs_rule "one outcome line for each section" 'one outcome line for each of the eight sections'
-rs_rule "a changed how-it-works line needs a new real run" 'needs a new real run before the next release'
-rs_rule "no draft state" 'there is no draft state'
-
-# --- service names and the project's record ------------------------------
-rs_rule "only recipes and the README name a service a tool runs on" 'no other file in the kit names a service a tool runs on'
-rs_rule "a skill reads the recipe instead" 'a skill that needs to know how one behaves reads the project.s recipe'
-rs_rule "the project records it in the stack section" 'in its own agents\.md, in the stack section'
-rs_rule "and not in the build-path block" 'it does not go in the build-path block'
-rs_guard "$FORMAT" "recipe-format.md"
-
-# --- the house documents allow it, and only there ------------------------
-rs_require "PHILOSOPHY names the recipe as the one exception" "$PHILOSOPHY" \
-  'the one exception is a recipe'
-rs_require "PHILOSOPHY narrows the names to services a tool runs on" "$PHILOSOPHY" \
-  'is named inside recipe files and the readme, and nowhere else in the kit'
-rs_require "PHILOSOPHY answers the five questions for recipes" "$PHILOSOPHY" \
-  'recipes, added'
-rs_require "PHILOSOPHY answers that the kit should get smaller" "$PHILOSOPHY" \
-  'recipes make the kit bigger'
-rs_require_absent "PHILOSOPHY does not promise every check runs by machine" "$PHILOSOPHY" \
-  'check it by machine'
-rs_require_absent "the format does not promise every check runs by machine" "$FORMAT" \
-  'eight sections by machine'
-rs_require "MAINTAINING allows those names inside recipes and the README only" "$MAINTAINING" \
-  'named nowhere either, except inside a recipe file under .\.agents/skills/setup-hosting/recipes/. and in the readme'
-rs_require "MAINTAINING names the recipe home" "$MAINTAINING" \
-  '.\.agents/skills/setup-hosting/recipes/.: one file for each recipe'
-rs_require "SOURCES credits the stack you can prove" "$SOURCES" 'boringstack\.org'
-rs_require_absent "SOURCES keeps the word recipe for one thing" "$SOURCES" 'their own recipe'
-
-# --- the validator reads recipes -----------------------------------------
-rs_require "the validator runs the shape check on every recipe" "$VALIDATOR" \
-  'recipe_checker" "\$recipe"'
-rs_require "the validator runs the shape check on every shared part" "$VALIDATOR" \
-  'recipe_checker" --part'
-rs_require "the validator runs the shape check on the blank" "$VALIDATOR" \
-  'recipe_checker" --template'
-rs_require "the validator checks each recipe's rehearsal" "$VALIDATOR" \
-  'recipe_checker" --rehearsal "\$recipe" "\$root/\.agents/tests/recipe-\$recipe_name\.sh"'
-rs_require "relative links into recipes are followed" "$VALIDATOR" \
-  'relpat=.[(]references[|]templates[|]recipes[)]/'
-
-# --- the shape check itself ----------------------------------------------
-FILLED="$rs_dir/filled.md"
+# --- a recipe filled in from the blank ------------------------------------
+GOOD="$WORK/recipes/example-pair"
+mkdir -p "$GOOD/scripts" "$WORK/recipes/parts/scripts"
 sed -e 's/YYYY-MM-DD/2024-02-29/' -e 's/^Who runs it: .*/Who runs it: a person looking/' \
-  -e 's/<[^>]*>/filled in/g' "$BLANK" > "$FILLED"
+  -e 's#^Script: .*#Script: scripts/check.sh#' -e 's/<[^>]*>/filled in/g' "$BLANK" > "$GOOD/recipe.md"
+printf '#!/usr/bin/env sh\nexit 0\n' > "$GOOD/scripts/check.sh"
+cp "$GOOD/scripts/check.sh" "$GOOD/scripts/live-check.sh"
+chmod +x "$GOOD/scripts/check.sh" "$GOOD/scripts/live-check.sh"
+{
+  echo "# Proven: example"
+  echo
+  echo "Real run: 2024-03-01"
+  echo
+  for section in Preview "Going live" Rollback Backup Restore Secrets Logs Health; do
+    echo "$section: filled in"
+  done
+} > "$GOOD/PROVEN.md"
 
 "$CHECKER" --template "$BLANK" >/dev/null
-rs_ok "the blank has the shape it asks for"
+ok "the blank has the shape it asks for"
 
-if "$CHECKER" "$BLANK" >/dev/null; then
-  rs_fail "an unfilled blank passed as a recipe"
+mkdir -p "$WORK/blank/scripts"
+cp "$BLANK" "$WORK/blank/recipe.md"
+if "$CHECKER" "$WORK/blank" >/dev/null; then
+  fail "an unfilled blank passed as a recipe"
 fi
-rs_ok "an unfilled blank is refused as a recipe"
+ok "an unfilled blank is refused as a recipe"
 
-"$CHECKER" "$FILLED" >/dev/null
-rs_ok "a filled recipe passes, dated on a leap day"
+"$CHECKER" "$GOOD" >/dev/null
+ok "a filled recipe folder passes, dated on a leap day"
+"$CHECKER" "$GOOD/recipe.md" >/dev/null
+ok "the same recipe passes when its recipe.md is named"
 
-refused() {
-  # refused <description> <sed-program>: a copy with that edit must fail.
-  sed -e "$2" "$FILLED" > "$rs_dir/mutant.md"
-  if cmp -s "$FILLED" "$rs_dir/mutant.md"; then
-    rs_fail "the edit for '$1' changed nothing, so it proves nothing"
-  fi
-  if "$CHECKER" "$rs_dir/mutant.md" >/dev/null; then
-    rs_fail "a recipe with $1 passed"
-  fi
-  rs_ok "a recipe with $1 is refused"
+copy() {
+  # copy: a fresh copy of the good recipe at $WORK/mutant, printed.
+  rm -rf "$WORK/recipes/mutant"
+  cp -R "$GOOD" "$WORK/recipes/mutant"
+  printf '%s\n' "$WORK/recipes/mutant"
 }
 
-for section in Preview "Going live" Rollback Backup Restore Secrets Logs Health Proven; do
-  refused "no $section section" "/^## $section\$/d"
+refused() {
+  # refused <description> <file in the folder> <sed-program>: a copy with that
+  # edit must fail.
+  m=$(copy)
+  sed -e "$3" "$GOOD/$2" > "$m/$2"
+  if cmp -s "$GOOD/$2" "$m/$2"; then
+    fail "the edit for '$1' changed nothing, so it proves nothing"
+  fi
+  if "$CHECKER" "$m" >/dev/null; then
+    fail "a recipe with $1 passed"
+  fi
+  ok "a recipe with $1 is refused"
+}
+
+for section in Preview "Going live" Rollback Backup Restore Secrets Logs Health; do
+  refused "no $section section" recipe.md "/^## $section\$/d"
 done
-refused "no Fits line" '/^Fits:/d'
-refused "no Recommended when line" '/^Recommended when:/d'
-refused "no Build stack line" '/^Build stack:/d'
-refused "no Deploy target line" '/^Deploy target:/d'
-refused "no Command-line tools line" '/^Command-line tools:/d'
-refused "no Last checked line" '/^Last checked:/d'
-refused "a Last checked line that is not a date" 's/^Last checked: .*/Last checked: recently/'
-refused "a Last checked date in the future" 's/^Last checked: .*/Last checked: 2999-01-01/'
-refused "a Last checked date in month nineteen" 's/^Last checked: .*/Last checked: 2025-19-01/'
-refused "a Last checked date on day thirty-two" 's/^Last checked: .*/Last checked: 2025-01-32/'
-refused "a Last checked date on the thirtieth of February" 's/^Last checked: .*/Last checked: 2025-02-30/'
-refused "a leap day in a year without one" 's/^Last checked: .*/Last checked: 2025-02-29/'
-refused "no Real run line" '/^Real run:/d'
-refused "a Real run line with no date" 's/^Real run: .*/Real run: soon/'
-refused "no outcome line for one section" '/^Logs: /d'
-refused "an empty outcome line" 's/^Rollback: .*/Rollback: /'
-refused "one section that does not say how it works" '/^## Backup$/,/^## /{/^How it works:/d;}'
-refused "one section that does not say how it is checked" '/^## Health$/,/^## /{/^How it is checked:/d;}'
-refused "one section that does not say who runs it" '/^## Secrets$/,/^## /{/^Who runs it:/d;}'
-refused "a Who runs it value outside the three" '/^## Preview$/,/^## /s/^Who runs it: .*/Who runs it: the service/'
-refused "two sections out of order" 's/^## Backup$/## TEMP/; s/^## Restore$/## Backup/; s/^## TEMP$/## Restore/'
+refused "no Fits line" recipe.md '/^Fits:/d'
+refused "no Recommended when line" recipe.md '/^Recommended when:/d'
+refused "no Build stack line" recipe.md '/^Build stack:/d'
+refused "no Deploy target line" recipe.md '/^Deploy target:/d'
+refused "no Command-line tools line" recipe.md '/^Command-line tools:/d'
+refused "no Last checked line" recipe.md '/^Last checked:/d'
+refused "a Last checked line that is not a date" recipe.md 's/^Last checked: .*/Last checked: recently/'
+refused "a Last checked date in the future" recipe.md 's/^Last checked: .*/Last checked: 2999-01-01/'
+refused "a Last checked date in month nineteen" recipe.md 's/^Last checked: .*/Last checked: 2025-19-01/'
+refused "a Last checked date on day thirty-two" recipe.md 's/^Last checked: .*/Last checked: 2025-01-32/'
+refused "a Last checked date on the thirtieth of February" recipe.md 's/^Last checked: .*/Last checked: 2025-02-30/'
+refused "a leap day in a year without one" recipe.md 's/^Last checked: .*/Last checked: 2025-02-29/'
+refused "one section that does not say how it works" recipe.md '/^## Backup$/,/^## /{/^How it works:/d;}'
+refused "one section that does not say what a pass means" recipe.md '/^## Health$/,/^## /{/^How it is checked:/d;}'
+refused "one section that does not say who runs it" recipe.md '/^## Secrets$/,/^## /{/^Who runs it:/d;}'
+refused "one section that names no script" recipe.md '/^## Logs$/,/^## /{/^Script:/d;}'
+refused "a script that is not there" recipe.md '/^## Logs$/,/^## /s#^Script: .*#Script: scripts/missing.sh#'
+refused "a script outside its scripts folder" recipe.md '/^## Logs$/,/^## /s#^Script: .*#Script: ../check.sh#'
+refused "a section a person runs with no Ask line" recipe.md '/^## Preview$/,/^## /{/^Ask:/d;}'
+refused "a Who runs it value outside the three" recipe.md '/^## Preview$/,/^## /s/^Who runs it: .*/Who runs it: the service/'
+refused "two sections out of order" recipe.md 's/^## Backup$/## TEMP/; s/^## Restore$/## Backup/; s/^## TEMP$/## Restore/'
+refused "a Proven section left in recipe.md" recipe.md '$a\
+## Proven\
+Real run: 2024-03-01'
+refused "no Real run line" PROVEN.md '/^Real run:/d'
+refused "a Real run line with no date" PROVEN.md 's/^Real run: .*/Real run: soon/'
+refused "no outcome line for one section" PROVEN.md '/^Logs: /d'
+refused "an empty outcome line" PROVEN.md 's/^Rollback: .*/Rollback: /'
+
+m=$(copy)
+rm "$m/PROVEN.md"
+"$CHECKER" "$m" >/dev/null && fail "a recipe with no PROVEN.md passed"
+ok "a recipe with no PROVEN.md is refused"
+m=$(copy)
+chmod -x "$m/scripts/check.sh"
+"$CHECKER" "$m" >/dev/null && fail "a recipe whose script is not executable passed"
+ok "a recipe whose script is not executable is refused"
+m=$(copy)
+rm "$m/scripts/live-check.sh"
+"$CHECKER" "$m" >/dev/null && fail "a recipe with no live-check.sh passed"
+ok "a recipe with no live-check.sh is refused"
 
 # The optional Plan terms line. Terms change without notice, so a line that
 # does not say when and where it was read cannot be told from a current one.
-TERMS="$rs_dir/terms.md"
+TERMS="$WORK/recipes/terms"
+cp -R "$GOOD" "$TERMS"
 sed '/^Last checked:/a\
 Plan terms: The free plan is for personal use only, so a work team needs the paid plan (read 2024-03-01 at https://example.com/terms)
-' "$FILLED" > "$TERMS"
-grep -q '^Plan terms:' "$TERMS" || rs_fail "the Plan terms line was not added, so the next checks prove nothing"
+' "$GOOD/recipe.md" > "$TERMS/recipe.md"
+grep -q '^Plan terms:' "$TERMS/recipe.md" || fail "the Plan terms line was not added, so the next checks prove nothing"
 "$CHECKER" "$TERMS" >/dev/null
-rs_ok "a recipe with a dated Plan terms line passes"
+ok "a recipe with a dated Plan terms line passes"
 terms_refused() {
-  sed -e "$2" "$TERMS" > "$rs_dir/terms-mutant.md"
-  if cmp -s "$TERMS" "$rs_dir/terms-mutant.md"; then
-    rs_fail "the edit for '$1' changed nothing, so it proves nothing"
+  rm -rf "$WORK/recipes/terms-mutant"
+  cp -R "$TERMS" "$WORK/recipes/terms-mutant"
+  sed -e "$2" "$TERMS/recipe.md" > "$WORK/recipes/terms-mutant/recipe.md"
+  if cmp -s "$TERMS/recipe.md" "$WORK/recipes/terms-mutant/recipe.md"; then
+    fail "the edit for '$1' changed nothing, so it proves nothing"
   fi
-  if "$CHECKER" "$rs_dir/terms-mutant.md" >/dev/null; then
-    rs_fail "a recipe with $1 passed"
+  if "$CHECKER" "$WORK/recipes/terms-mutant" >/dev/null; then
+    fail "a recipe with $1 passed"
   fi
-  rs_ok "a recipe with $1 is refused"
+  ok "a recipe with $1 is refused"
 }
 terms_refused "a Plan terms line with no date" 's/ (read 2024-03-01 at https:\/\/example.com\/terms)$//'
 terms_refused "a Plan terms line with no source page" 's/ at https:\/\/example.com\/terms)$/)/'
@@ -198,136 +158,147 @@ PY
 one_day=${utc_dates% *}
 two_days=${utc_dates#* }
 for label in 'Last checked' 'Real run' 'Plan terms'; do
+  file=recipe.md
+  [ "$label" = 'Real run' ] && file=PROVEN.md
   for offset in 1 2; do
     case "$offset" in
       1) value=$one_day ;;
       2) value=$two_days ;;
     esac
+    rm -rf "$WORK/recipes/date"
+    cp -R "$TERMS" "$WORK/recipes/date"
     awk -v label="$label" -v value="$value" '
       index($0, label ": ") == 1 {
         if (label == "Plan terms") sub(/read [0-9-]+ at/, "read " value " at")
         else $0 = label ": " value
       }
       { print }
-    ' "$TERMS" > "$rs_dir/date-boundary.md"
+    ' "$TERMS/$file" > "$WORK/recipes/date/$file"
     for zone in UTC Pacific/Kiritimati Etc/GMT+12; do
-      if TZ="$zone" "$CHECKER" "$rs_dir/date-boundary.md" > "$rs_dir/date-result.txt"; then
-        [ "$offset" = 1 ] || rs_fail "$label two days ahead of UTC passed in $zone"
+      if TZ="$zone" "$CHECKER" "$WORK/recipes/date" > "$WORK/date-result.txt"; then
+        [ "$offset" = 1 ] || fail "$label two days ahead of UTC passed in $zone"
       else
-        [ "$offset" = 2 ] || rs_fail "$label one day ahead of UTC was refused in $zone"
-        grep -qF "$label is in the future: $value" "$rs_dir/date-result.txt" ||
-          rs_fail "$label was refused for a reason other than its future date in $zone"
+        [ "$offset" = 2 ] || fail "$label one day ahead of UTC was refused in $zone"
+        grep -qF "$label is in the future: $value" "$WORK/date-result.txt" ||
+          fail "$label was refused for a reason other than its future date in $zone"
       fi
     done
   done
-  rs_ok "$label one day ahead of UTC passes and two days ahead is refused in every time zone tested"
+  ok "$label one day ahead of UTC passes and two days ahead is refused in every time zone tested"
 done
 
 # --- shared parts ----------------------------------------------------------
-mkdir -p "$rs_dir/parts"
-printf '%s\n' 'How it works: filled in' 'How it is checked: filled in' 'Who runs it: the kit' \
-  > "$rs_dir/parts/whole.md"
-cp "$rs_dir/parts/whole.md" "$rs_dir/parts/shared.md"
+PARTS="$WORK/recipes/parts"
+printf '%s\n' 'How it works: filled in' 'How it is checked: filled in' 'Script: scripts/shared.sh' \
+  'Who runs it: the kit' > "$PARTS/whole.md"
+printf '#!/usr/bin/env sh\nexit 0\n' > "$PARTS/scripts/shared.sh"
+chmod +x "$PARTS/scripts/shared.sh"
+cp "$PARTS/whole.md" "$PARTS/shared.md"
+LINKED="$WORK/recipes/linked"
+cp -R "$GOOD" "$LINKED"
 # The backup section's own lines go, and a link to the part takes their place.
 awk '
   /^## / { inbackup = ($0 == "## Backup") }
-  inbackup && /^(How it|Who runs it)/ { next }
+  inbackup && /^(How it|Who runs it|Script|Ask)/ { next }
   { print }
-  $0 == "## Backup" { print ""; print "Shared part: [shared](parts/shared.md)" }
-' "$FILLED" > "$rs_dir/linked.md"
+  $0 == "## Backup" { print ""; print "Shared part: [shared](../parts/shared.md)" }
+' "$GOOD/recipe.md" > "$LINKED/recipe.md"
 
-"$CHECKER" --part "$rs_dir/parts/shared.md" >/dev/null
-rs_ok "a shared part with the three lines passes"
-"$CHECKER" "$rs_dir/linked.md" >/dev/null
-rs_ok "a recipe that links a shared part in place of a section passes"
+"$CHECKER" --part "$PARTS/shared.md" >/dev/null
+ok "a shared part with its four lines passes"
+"$CHECKER" "$LINKED" >/dev/null
+ok "a recipe that links a shared part in place of a section passes"
 
-sed 's#parts/shared.md#parts/missing.md#' "$rs_dir/linked.md" > "$rs_dir/mutant.md"
-if "$CHECKER" "$rs_dir/mutant.md" >/dev/null; then
-  rs_fail "a recipe linking a part that does not exist passed"
+sed 's#\.\./parts/shared.md#../parts/missing.md#' "$LINKED/recipe.md" > "$WORK/linked-missing.md"
+cp "$WORK/linked-missing.md" "$LINKED/recipe.md"
+if "$CHECKER" "$LINKED" >/dev/null; then
+  fail "a recipe linking a part that does not exist passed"
 fi
-rs_ok "a recipe linking a part that does not exist is refused"
+ok "a recipe linking a part that does not exist is refused"
+sed 's#\.\./parts/missing.md#../parts/shared.md#' "$WORK/linked-missing.md" > "$LINKED/recipe.md"
 
-sed '/^Who runs it:/d' "$rs_dir/parts/whole.md" > "$rs_dir/parts/shared.md"
-if "$CHECKER" --part "$rs_dir/parts/shared.md" >/dev/null; then
-  rs_fail "a shared part with no Who runs it line passed"
+sed '/^Who runs it:/d' "$PARTS/whole.md" > "$PARTS/shared.md"
+if "$CHECKER" --part "$PARTS/shared.md" >/dev/null; then
+  fail "a shared part with no Who runs it line passed"
 fi
-if "$CHECKER" "$rs_dir/linked.md" >/dev/null; then
-  rs_fail "a recipe linking a part with no Who runs it line passed"
+if "$CHECKER" "$LINKED" >/dev/null; then
+  fail "a recipe linking a part with no Who runs it line passed"
 fi
-rs_ok "a shared part missing a line is refused, on its own and through the recipe"
+ok "a shared part missing a line is refused, on its own and through the recipe"
 
-sed 's/^Who runs it: .*/Who runs it: nobody/' "$rs_dir/parts/whole.md" > "$rs_dir/parts/shared.md"
-if "$CHECKER" "$rs_dir/linked.md" >/dev/null; then
-  rs_fail "a recipe linking a part with a Who runs it value outside the three passed"
+sed 's#^Script: .*#Script: scripts/absent.sh#' "$PARTS/whole.md" > "$PARTS/shared.md"
+if "$CHECKER" "$LINKED" >/dev/null; then
+  fail "a recipe linking a part whose script is not there passed"
 fi
-rs_ok "a shared part with a Who runs it value outside the three is refused"
+ok "a shared part whose script is not there is refused"
+cp "$PARTS/whole.md" "$PARTS/shared.md"
 
 # --- the settings section --------------------------------------------------
-# The one section a recipe may add. It sits between health and the proven
-# section and carries the lines the others do, so a read the launch review
-# relies on is never a bare claim.
-cp "$rs_dir/parts/whole.md" "$rs_dir/parts/shared.md"
-awk '
-  $0 == "## Proven" { print "## Settings the kit can read"; print ""; print "Shared part: [shared](parts/shared.md)"; print "" }
-  { print }
-  END { print "Settings the kit can read: filled in" }
-' "$FILLED" > "$rs_dir/settings.md"
-"$CHECKER" "$rs_dir/settings.md" >/dev/null
-rs_ok "a recipe with a settings section after health, and its outcome line, passes"
+# The one section a recipe may add. It sits after health and carries the
+# lines the others do, so a read the launch review relies on is never a bare
+# claim.
+SET="$WORK/recipes/settings"
+cp -R "$GOOD" "$SET"
+printf '\n## Settings the kit can read\n\nShared part: [shared](../parts/shared.md)\n' >> "$SET/recipe.md"
+echo "Settings the kit can read: filled in" >> "$SET/PROVEN.md"
+"$CHECKER" "$SET" >/dev/null
+ok "a recipe with a settings section after health, and its outcome line, passes"
 
-sed '/^Settings the kit can read: /d' "$rs_dir/settings.md" > "$rs_dir/mutant.md"
-if "$CHECKER" "$rs_dir/mutant.md" >/dev/null; then
-  rs_fail "a settings section with no outcome line in the proven section passed"
+sed '/^Settings the kit can read: /d' "$SET/PROVEN.md" > "$WORK/proven" && cp "$WORK/proven" "$SET/PROVEN.md"
+if "$CHECKER" "$SET" >/dev/null; then
+  fail "a settings section with no outcome line in PROVEN.md passed"
 fi
-rs_ok "a settings section with no outcome line in the proven section is refused"
-
-sed '/^Who runs it:/d' "$rs_dir/parts/whole.md" > "$rs_dir/parts/shared.md"
-if "$CHECKER" "$rs_dir/settings.md" >/dev/null; then
-  rs_fail "a settings section whose part has no Who runs it line passed"
-fi
-rs_ok "a settings section missing a line is refused"
-cp "$rs_dir/parts/whole.md" "$rs_dir/parts/shared.md"
+ok "a settings section with no outcome line in PROVEN.md is refused"
+echo "Settings the kit can read: filled in" >> "$SET/PROVEN.md"
 
 awk '
-  $0 == "## Health" { print "## Settings the kit can read"; print ""; print "Shared part: [shared](parts/shared.md)"; print "" }
+  $0 == "## Health" { print "## Settings the kit can read"; print ""; print "Shared part: [shared](../parts/shared.md)"; print "" }
+  /^## Settings the kit can read$/ && seen { exit }
+  $0 == "## Health" { seen = 1 }
   { print }
-' "$FILLED" > "$rs_dir/mutant.md"
-if "$CHECKER" "$rs_dir/mutant.md" >/dev/null; then
-  rs_fail "a settings section before health passed"
+' "$GOOD/recipe.md" > "$SET/recipe.md"
+if "$CHECKER" "$SET" >/dev/null; then
+  fail "a settings section before health passed"
 fi
-rs_ok "a settings section out of place is refused"
+ok "a settings section out of place is refused"
 
 # --- the rehearsal a recipe needs ----------------------------------------
-mkdir -p "$rs_dir/recipes"
-RECIPE="$rs_dir/recipes/example-pair.md"
-cp "$FILLED" "$RECIPE"
-
-printf '%s\n' '#!/usr/bin/env sh' 'exit 0' > "$rs_dir/empty.sh"
-if "$CHECKER" --rehearsal "$RECIPE" "$rs_dir/empty.sh" >/dev/null; then
-  rs_fail "a rehearsal that only exits cleanly counted"
+printf '%s\n' '#!/usr/bin/env sh' 'exit 0' > "$WORK/empty.sh"
+if "$CHECKER" --rehearsal "$GOOD" "$WORK/empty.sh" >/dev/null; then
+  fail "a rehearsal that only exits cleanly counted"
 fi
-rs_ok "a rehearsal that only exits cleanly is refused"
+ok "a rehearsal that only exits cleanly is refused"
 
-printf '%s\n' '#!/usr/bin/env sh' '. "$ROOT/.agents/tests/lib/rule-shape.sh"' > "$rs_dir/unnamed.sh"
-if "$CHECKER" --rehearsal "$RECIPE" "$rs_dir/unnamed.sh" >/dev/null; then
-  rs_fail "a rehearsal that never names its recipe counted"
+printf '%s\n' '#!/usr/bin/env sh' "$HELPER_LINE" 'rr_scripts' > "$WORK/unnamed.sh"
+if "$CHECKER" --rehearsal "$GOOD" "$WORK/unnamed.sh" >/dev/null; then
+  fail "a rehearsal that never names its recipe counted"
 fi
-rs_ok "a rehearsal that never names its recipe is refused"
+ok "a rehearsal that never names its recipe is refused"
 
-printf '%s\n' '#!/usr/bin/env sh' 'RECIPE=setup-hosting/recipes/example-pair.md' > "$rs_dir/unhelped.sh"
-if "$CHECKER" --rehearsal "$RECIPE" "$rs_dir/unhelped.sh" >/dev/null; then
-  rs_fail "a rehearsal that does not source the rule-shape helper counted"
+printf '%s\n' '#!/usr/bin/env sh' 'rr_scripts' \
+  'RECIPE=setup-hosting/recipes/example-pair' > "$WORK/unhelped.sh"
+if "$CHECKER" --rehearsal "$GOOD" "$WORK/unhelped.sh" >/dev/null; then
+  fail "a rehearsal that does not source the recipe rehearsal counted"
 fi
-rs_ok "a rehearsal that does not source the rule-shape helper is refused"
+ok "a rehearsal that does not source the recipe rehearsal is refused"
 
-if "$CHECKER" --rehearsal "$RECIPE" "$rs_dir/absent.sh" >/dev/null; then
-  rs_fail "a recipe with no rehearsal at all passed"
+printf '%s\n' '#!/usr/bin/env sh' "$HELPER_LINE" \
+  'RECIPE=setup-hosting/recipes/example-pair' > "$WORK/no-scripts.sh"
+if "$CHECKER" --rehearsal "$GOOD" "$WORK/no-scripts.sh" >/dev/null; then
+  fail "a rehearsal that never runs the scripts counted"
 fi
-rs_ok "a recipe with no rehearsal at all is refused"
+ok "a rehearsal that never runs the scripts is refused"
 
-printf '%s\n' '#!/usr/bin/env sh' '. "$ROOT/.agents/tests/lib/rule-shape.sh"' \
-  'RECIPE=setup-hosting/recipes/example-pair.md' > "$rs_dir/real.sh"
-"$CHECKER" --rehearsal "$RECIPE" "$rs_dir/real.sh" >/dev/null
-rs_ok "a rehearsal that sources the helper and names its recipe counts"
+if "$CHECKER" --rehearsal "$GOOD" "$WORK/absent.sh" >/dev/null; then
+  fail "a recipe with no rehearsal at all passed"
+fi
+ok "a recipe with no rehearsal at all is refused"
 
-rs_done
+printf '%s\n' '#!/usr/bin/env sh' "$HELPER_LINE" 'rr_scripts' \
+  'RECIPE=setup-hosting/recipes/example-pair' > "$WORK/real.sh"
+"$CHECKER" --rehearsal "$GOOD" "$WORK/real.sh" >/dev/null ||
+  fail "a rehearsal that sources the recipe rehearsal, runs the scripts and names its recipe was refused"
+ok "a rehearsal that sources the recipe rehearsal, runs the scripts and names its recipe counts"
+
+echo
+echo "$(basename -- "$0"): all $pass checks passed"

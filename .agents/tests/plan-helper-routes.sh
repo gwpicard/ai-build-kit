@@ -1,8 +1,9 @@
 #!/usr/bin/env sh
 # plan-helper-routes.sh: prove every installation route leaves a founded
 # project with a working plan printout helper, and that /maintain's step adds
-# it to a project founded before it shipped. On the same routes, prove every
-# pointer to a file inside a skill opens.
+# it to a project founded before it shipped, or names the template to copy
+# where the step cannot run. On the same routes, prove every pointer to a file
+# inside a skill opens.
 #
 # The helper used to live in the kit's own tools folder, outside every skill.
 # The shared installer and both plugins carry skills and nothing else, so only
@@ -346,9 +347,16 @@ bad=$(grep -rn "plan-refresh\.sh" "$ROOT/.agents/skills" \
 [ -z "$bad" ] && pass "every skill names the helper where a project keeps it" || \
   fail "a skill names the helper at a path no project has: $bad"
 
-grep -q "place-plan-helper\.sh" "$ROOT/.agents/skills/maintain/SKILL.md" && \
+grep -q "place-plan-helper\.sh" "$ROOT/.agents/skills/maintain/scripts/upgrade-check.py" && \
   pass "/maintain runs the backfill" || \
   fail "/maintain does not run the backfill"
+
+# Where the harness cannot run the check, the helper still arrives: the
+# maintain skill names the template to copy by hand, and it is there.
+grep -q "templates/foundation/plan-refresh\.sh" "$ROOT/.agents/skills/maintain/SKILL.md" \
+  && [ -f "$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/plan-refresh.sh" ] && \
+  pass "/maintain names a by-hand route to the helper" || \
+  fail "/maintain has no by-hand route to the helper"
 
 [ "$FAIL" -eq 0 ] || exit 1
 echo "plan-helper-routes.sh: all checks passed"

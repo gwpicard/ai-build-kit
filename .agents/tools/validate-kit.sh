@@ -33,7 +33,7 @@ pass() {
 
 SKILLS="$ROOT/.agents/skills"
 # A skill only the kit's own maintainers use lives here rather than beside the
-# eleven. A shared skills installer reads .agents/skills/ and .claude/skills/
+# eight. A shared skills installer reads .agents/skills/ and .claude/skills/
 # and merges what it finds by the name in its frontmatter, so a folder in
 # either one is a skill somebody installs. This folder is in neither.
 MAINTAINER_SKILLS="$ROOT/.agents/maintainer-skills"
@@ -45,11 +45,8 @@ setup-hosting
 shape
 what-now"
 
-expected_disciplines="change-triage
-clarify
-screen-check
-second-opinion
-section-builder"
+expected_disciplines="clarify
+second-opinion"
 
 # Every folder under .agents/maintainer-skills/ is a maintainer skill, and the
 # list is read off the folder rather than written out here. A written-out list
@@ -183,16 +180,16 @@ actual=$(find "$SKILLS" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | s
 expected=$(printf '%s\n%s\n' "$expected_commands" "$expected_disciplines" | sort)
 
 if [ "$actual" != "$expected" ]; then
-  fail "skill inventory does not match the canonical six commands and five disciplines"
+  fail "skill inventory does not match the canonical six commands and two disciplines"
   echo "  expected:" >&2
   echo "$expected" | sed 's/^/    /' >&2
   echo "  found:" >&2
   echo "$actual" | sed 's/^/    /' >&2
 else
-  pass "exactly six commands and five disciplines, named exactly"
+  pass "exactly six commands and two disciplines, named exactly"
 fi
 
-# Each of the eleven has a SKILL.md. Which of them are commands and which
+# Each of the eight has a SKILL.md. Which of them are commands and which
 # are background skills is settled by one setting, and the trigger contract
 # further down checks that. Here the question is only that the file exists.
 while IFS= read -r name; do
@@ -265,7 +262,7 @@ else
   pass "no .codex/skills adapter tree"
 fi
 
-# Claude Code: the five generated background skills are hidden from the user
+# Claude Code: the two generated background skills are hidden from the user
 # command menu. The six generated commands carry neither setting. A command
 # used to carry disable-model-invocation, and a regenerate from a stale builder
 # would put it back, so its absence is checked rather than assumed.
@@ -386,7 +383,7 @@ else
   expected_skill_dirs=$(printf '%s\n' "$expected_disciplines" | sort)
   actual_skill_dirs=$(find "$ROOT/.claude/skills" -mindepth 1 -maxdepth 1 -exec basename {} \; | sort)
   if [ "$actual_skill_dirs" != "$expected_skill_dirs" ]; then
-    fail ".claude/skills/ must hold exactly the five disciplines"
+    fail ".claude/skills/ must hold exactly the two disciplines"
     echo "  expected:" >&2
     echo "$expected_skill_dirs" | sed 's/^/    /' >&2
     echo "  found:" >&2
@@ -591,16 +588,16 @@ RELHITS
 pass "bare relative skill references (references/*.md, templates/*.md, recipes/*.md, sibling-skill form) resolve"
 
 # Recipes. A recipe is one build stack paired with one place to run it, and
-# setup-hosting/references/recipe-format.md says what one must hold. The folder is the
-# menu, so a file in it is offered to somebody founding a project. Each one
-# must have the shape the format asks for and carry real dates. Each must also
-# have its own rehearsal that sources the rule-shape helper and names the
-# recipe file, because a recipe joins the menu only once offline rehearsals
-# guard its rules, and a rehearsal that only exits cleanly guards nothing. The
-# blank is held to the same shape so it cannot drift from the format it is
-# copied from. Shared parts sit in recipes/parts/, are held to the lines a
-# section carries, and are never read as menu entries: the glob below takes
-# only the files directly in recipes/. The folder may be empty, since the
+# docs/RECIPES.md says what one must hold. A recipe is a folder holding
+# recipe.md, its scripts and PROVEN.md, and the recipes folder is the menu, so
+# a folder in it with a recipe.md is offered to somebody founding a project.
+# Each must have the shape the format asks for and carry real dates. Each must
+# also have its own rehearsal that runs the recipe's scripts against the tool
+# stand-ins and names the recipe folder, because a rehearsal that only exits
+# cleanly guards nothing. The blank is held to the same shape so it cannot
+# drift from the format it is copied from. Shared parts sit in recipes/parts/,
+# are held to the lines a section carries, and are never read as menu entries,
+# since the parts folder holds no recipe.md. The folder may be empty, since the
 # format came before the first recipe.
 recipe_checker="$ROOT/.agents/tools/check-recipes.sh"
 recipe_blank="$SKILLS/setup-hosting/templates/recipe.md"
@@ -620,9 +617,20 @@ else
       recipe_ok=0
     fi
   done
-  for recipe in "$SKILLS"/setup-hosting/recipes/*.md; do
-    [ -f "$recipe" ] || continue
-    recipe_name=$(basename "$recipe" .md)
+  for recipe_loose in "$SKILLS"/setup-hosting/recipes/*.md; do
+    [ -f "$recipe_loose" ] || continue
+    fail "$recipe_loose: a recipe is a folder holding recipe.md, not a loose file"
+    recipe_ok=0
+  done
+  for recipe in "$SKILLS"/setup-hosting/recipes/*/; do
+    recipe=${recipe%/}
+    [ "$(basename "$recipe")" != parts ] || continue
+    recipe_name=$(basename "$recipe")
+    if [ ! -f "$recipe/recipe.md" ]; then
+      fail "$recipe: a folder on the menu holds no recipe.md"
+      recipe_ok=0
+      continue
+    fi
     if ! "$recipe_checker" "$recipe" >&2; then
       fail "$recipe: the recipe does not have the shape the format asks for"
       recipe_ok=0
@@ -657,30 +665,19 @@ fi
 # ---------------------------------------------------------------------------
 echo "== Record matches machinery =="
 
-# The maintainer AGENTS.md is the written record of the checks this repository
-# runs, and the promise that the documents are the asset only holds while that
-# record stays true. The CI matrix is already kept level with the tests folder
-# further down. This is the other half: a check that gets added and wired into
-# CI but never written into AGENTS.md is caught here rather than drifting
-# unnoticed, which is how grader-recovery.sh once slipped the record. mutate.sh
-# audits the suite rather than being one of the checks, the same carve-out the
-# matrix comparison makes.
-agentsmd="$ROOT/AGENTS.md"
-if [ ! -f "$agentsmd" ]; then
-  fail "$agentsmd: missing"
-else
-  rec_ok=1
-  for testscript in "$ROOT"/.agents/tests/*.sh; do
-    [ -f "$testscript" ] || continue
-    base=$(basename "$testscript")
-    [ "$base" != "mutate.sh" ] || continue
-    if ! grep -qF ".agents/tests/$base" "$agentsmd"; then
-      fail "AGENTS.md does not name the maintainer check .agents/tests/$base"
-      rec_ok=0
-    fi
-  done
-  [ "$rec_ok" -eq 1 ] && pass "AGENTS.md names every maintainer check under .agents/tests/"
-fi
+# Each check describes itself on its second line, as "# <name>: <what it
+# guards>", so the record of the checks lives beside the checks and cannot drift
+# from them. The maintainer AGENTS.md points at the folder rather than listing it.
+rec_ok=1
+for testscript in "$ROOT"/.agents/tests/*.sh; do
+  [ -f "$testscript" ] || continue
+  base=$(basename "$testscript")
+  if ! sed -n 2p "$testscript" | grep -q "^# $base: "; then
+    fail ".agents/tests/$base does not say what it guards on its second line"
+    rec_ok=0
+  fi
+done
+[ "$rec_ok" -eq 1 ] && pass "every check under .agents/tests/ says what it guards"
 
 # Keep the project template short enough to read every session. The maintainer's
 # own AGENTS.md has a different job and is outside this ceiling.
@@ -857,8 +854,8 @@ if [ -f "$pieces" ] && [ -f "$shapefile" ] && [ -f "$whatnowfile" ] && [ -f "$re
     pass "a hand-typed issue is treated as a request, with a way out of the interview"
 fi
 
-# what-now voices the signals it already reads: a failing check, an open
-# review finding, and a setup step left half-done each get named rather than
+# what-now voices the signals it already reads: a failing check and a setup
+# step left half-done each get named rather than
 # hidden under "nothing is blocked", and the answer closes with a plain recap of
 # recent work. The read step gathered these all along; the contract is that the
 # say step speaks them.
@@ -866,14 +863,12 @@ if [ -f "$whatnowfile" ]; then
   wn_ok=1
   grep -qF "### Failing check" "$whatnowfile" || \
     { fail "$whatnowfile: no recovery route names a failing check"; wn_ok=0; }
-  grep -qF "### Open review finding" "$whatnowfile" || \
-    { fail "$whatnowfile: no recovery route names an open review finding"; wn_ok=0; }
   grep -qF "### Unfinished setup step" "$whatnowfile" || \
     { fail "$whatnowfile: no recovery route names an unfinished setup step"; wn_ok=0; }
   grep -qF "short recap of where the tool has got to" "$whatnowfile" || \
     { fail "$whatnowfile: does not close with a recap of recent work"; wn_ok=0; }
   [ "$wn_ok" -eq 1 ] && \
-    pass "what-now voices a failing check, an open finding, an unfinished setup step, and a recap"
+    pass "what-now voices a failing check, an unfinished setup step, and a recap"
 fi
 
 # The command split: shape prepares work and marks a piece `ready`; implement
@@ -899,7 +894,7 @@ fi
 # The layered piece: a plain surface that stays comprehensive about the
 # product, a collapsed "under the hood" tier the builder reads, a self-sufficiency
 # bar before an unwatched auto run, and groundwork kept to a vertical slice.
-layer_sbfile="$SKILLS/section-builder/SKILL.md"
+layer_sbfile="$SKILLS/implement/SKILL.md"
 if [ -f "$pieces" ] && [ -f "$implementfile" ] && [ -f "$layer_sbfile" ]; then
   layer_ok=1
   grep -qF "## The two layers of a piece" "$pieces" || \
@@ -949,26 +944,6 @@ if [ -f "$pieces" ] && [ -f "$implementfile" ] && [ -f "$refreshtool" ]; then
     pass "a piece made of parts uses sub-issues, the parent is a container, and the printout reads the parts"
 fi
 
-# A project founded before the /shape and /implement split needs migrating: its
-# issues carry no `ready` label, so /maintain backfills it, and moves a leftover
-# plan.md into issues where one survives from the old fallback.
-maintfile="$SKILLS/maintain/SKILL.md"
-if [ -f "$maintfile" ]; then
-  mig_ok=1
-  grep -qF 'Backfill the `ready` label' "$maintfile" || \
-    { fail "$maintfile: does not backfill the ready label for a pre-split project"; mig_ok=0; }
-  grep -qF 'Move a `plan.md` into issues' "$maintfile" || \
-    { fail "$maintfile: does not move a leftover plan.md into issues"; mig_ok=0; }
-  grep -qF 'Remove a stale `start` skill' "$maintfile" || \
-    { fail "$maintfile: does not tidy a stale start skill after the setup-ai-build-kit rename"; mig_ok=0; }
-  grep -qF 'Remove a stale `plan` skill' "$maintfile" || \
-    { fail "$maintfile: does not tidy a stale plan skill after the shape rename"; mig_ok=0; }
-  grep -qF 'the update removed the old skill without adding the new' "$maintfile" || \
-    { fail "$maintfile: the rename migration cannot recover a project whose update removed the old skill without adding the new one"; mig_ok=0; }
-  [ "$mig_ok" -eq 1 ] && \
-    pass "maintain migrates a project founded before /shape and /implement, and before the setup-ai-build-kit and shape renames"
-fi
-
 # Every release asks what an existing user must do to upgrade (real users since
 # v0.5): MAINTAINING.md carries that standing check when a release is cut.
 mfile="$ROOT/docs/MAINTAINING.md"
@@ -977,18 +952,15 @@ if [ -f "$mfile" ]; then
     fail "$mfile: the release checklist does not ask what an existing user must do to upgrade"
 fi
 
-# Shape stays shaping: the build offer points at a fresh session for every piece
-#, and clarify records a settled term on the piece rather than committing
+# Shape stays shaping: clarify records a settled term on the piece rather than committing
 # the masterplan mid-plan, so a planning session opens no pull request.
 clarifyfile="$SKILLS/clarify/SKILL.md"
 if [ -f "$shapefile" ] && [ -f "$clarifyfile" ]; then
   pp_ok=1
-  grep -qF "A fresh session is the offer for every piece" "$shapefile" || \
-    { fail "$shapefile: build offer does not point at a fresh session for every piece"; pp_ok=0; }
   grep -qF "Planning records and stops; writing to the masterplan is a build" "$clarifyfile" || \
     { fail "$clarifyfile: clarify still writes the masterplan mid-plan instead of recording on the piece"; pp_ok=0; }
   [ "$pp_ok" -eq 1 ] && \
-    pass "plan offers a fresh session and never writes the masterplan mid-plan"
+    pass "planning never writes the masterplan mid-plan"
 fi
 
 # Build mechanics and pull-request hygiene: a piece starts from up-to-date main
@@ -996,12 +968,13 @@ fi
 # blocked and merged branches auto-delete; the agent opens the pull
 # request and merges it only on a yes that names the merge, made on the pull
 # request itself, and never in a run with nobody there to say it.
-sbfile="$SKILLS/section-builder/SKILL.md"
+sbfile="$SKILLS/implement/SKILL.md"
+mergefile="$SKILLS/implement/references/merge.md"
 blocked="$SKILLS/setup-ai-build-kit/references/blocked-commands.md"
 settings="$SKILLS/setup-ai-build-kit/templates/foundation/claude-settings.json"
 startfile="$SKILLS/setup-ai-build-kit/SKILL.md"
 shapefile="$SKILLS/shape/SKILL.md"
-if [ -f "$sbfile" ] && [ -f "$blocked" ] && [ -f "$settings" ] && [ -f "$startfile" ] && [ -f "$shapefile" ]; then
+if [ -f "$sbfile" ] && [ -f "$mergefile" ] && [ -f "$blocked" ] && [ -f "$settings" ] && [ -f "$startfile" ] && [ -f "$shapefile" ]; then
   mech_ok=1
   grep -qF "save route including the checkpoint route" "$sbfile" || \
     { fail "$sbfile: does not start every piece from up-to-date main"; mech_ok=0; }
@@ -1013,10 +986,10 @@ if [ -f "$sbfile" ] && [ -f "$blocked" ] && [ -f "$settings" ] && [ -f "$startfi
     { fail "$settings: deny list does not block a direct push to main"; mech_ok=0; }
   grep -qF "delete_branch_on_merge" "$startfile" || \
     { fail "$startfile: does not enable auto-deletion of merged branches"; mech_ok=0; }
-  grep -qF "Merge only on a yes" "$sbfile" || \
-    { fail "$sbfile: the merge step does not wait for a yes that names the merge"; mech_ok=0; }
-  grep -qF "Make an approved merge on the pull request itself" "$sbfile" || \
-    { fail "$sbfile: the merge step does not make the merge on the pull request itself"; mech_ok=0; }
+  grep -qF "Merge only on a yes" "$mergefile" || \
+    { fail "$mergefile: the merge step does not wait for a yes that names the merge"; mech_ok=0; }
+  grep -qF "Make an approved merge on the pull request itself" "$mergefile" || \
+    { fail "$mergefile: the merge step does not make the merge on the pull request itself"; mech_ok=0; }
   grep -qF "In an unattended run nobody is there to say yes, so never merge" "$sbfile" || \
     { fail "$sbfile: an unattended run could merge with nobody there to say yes"; mech_ok=0; }
   [ "$mech_ok" -eq 1 ] && \
@@ -1190,8 +1163,8 @@ fi
 echo "== Interview question shape =="
 
 # A machine cannot judge whether an interview felt like a conversation, so this
-# only proves the rule is still written down where the interview reads it. The
-# guided interview review in scenarios.md is what proves the behaviour.
+# only proves the rule is still written down where the interview reads it.
+# Scenario 50's replay grades the behaviour.
 grillfile="$SKILLS/clarify/SKILL.md"
 scenariofile="$ROOT/.agents/tests/scenarios.md"
 shape_ok=1
@@ -1199,7 +1172,7 @@ for item in \
   "$grillfile|Match the question to the shape of its answer" \
   "$grillfile|narrate is asked in plain words" \
   "$startfile|Ask every question in the shape clarify's" \
-  "$scenariofile|## 26. Interview question shape"; do
+  "$scenariofile|arrives as a plain question with room to answer freely"; do
   file=${item%%|*}
   needle=${item#*|}
   if ! tr '\n' ' ' < "$file" | grep -qFi -- "$needle"; then
@@ -1272,6 +1245,81 @@ else
     fail "$hostingfile: the 'On a recipe' checks are ${recipe_at:-missing}, not inside Build and run it"
   fi
 fi
+
+# ---------------------------------------------------------------------------
+echo "== Product names stay in the recipes =="
+
+# A hosting, data or deploy product is named only in a recipe folder or a
+# shared part under setup-hosting/recipes/, scripts included. A skill that
+# learned one service's behaviour would read wrongly on every project that
+# runs somewhere else, with nothing on screen to say so. The names are a fixed
+# list, plus the place each recipe's title names, so a recipe added later
+# adds its own host to the list, a recipe still waiting for its real run
+# included. Two exemptions: the screen rules link Vercel's interface
+# guidelines, a design guide rather than a place a tool runs, and the
+# maintain skill's two records of released copies name old file paths. The
+# founding settings template is a list of rules Claude Code applies, not words
+# a skill learns from. It names the recipes' own commands that change a live
+# service, so a box asks before each one, and push-to-main-rules.sh reads it.
+product_list='coolify|vercel|supabase|netlify|heroku|railway|railpack|fly\.io|hetzner|hostinger|firebase|digitalocean'
+recipe_targets=$(for rf in "$SKILLS"/setup-hosting/recipes/*/recipe.md "$ROOT"/.agents/tests/recipes-awaiting-run/*/recipe.md; do
+  [ -f "$rf" ] || continue
+  sed -n 's/^# Recipe: .* on \(.*\)$/\1/p' "$rf" | head -1
+done | tr '[:upper:]' '[:lower:]' | sed 's/[.]/\\./g' | sort -u | paste -sd'|' -)
+if [ -z "$recipe_targets" ]; then
+  fail "no recipe title names a place to run, so the product-name rule reads nothing from the recipes"
+else
+  product_list="$product_list|$recipe_targets"
+fi
+
+# products_named <skills folder>: each file and line outside the recipes that
+# names a product.
+products_named() {
+  find "$1" -type f ! -path '*/setup-hosting/recipes/*' \
+    ! -path '*/maintain/scripts/kit-released-copies.json' \
+    ! -path '*/maintain/scripts/kit-retired-skills.json' \
+    ! -path '*/templates/foundation/claude-settings.json' | sort | while IFS= read -r pn_file; do
+    tr '[:upper:]' '[:lower:]' < "$pn_file" \
+      | sed -e 's#vercel web interface guidelines##g' \
+            -e 's#github\.com/vercel-labs/web-interface-guidelines##g' \
+      | grep -nE "$product_list" | sed "s#^#$pn_file:#" || true
+  done
+}
+
+named=$(products_named "$SKILLS")
+if [ -n "$named" ]; then
+  fail "a skill file outside the recipes names a hosting, data or deploy product:
+$named"
+else
+  pass "no skill file outside the recipes names a hosting, data or deploy product"
+fi
+
+# The rule has to notice a name, keep each exemption narrow, and leave the
+# recipes alone, or it proves nothing. So it is run on a planted folder.
+plant=$(mktemp -d)
+mkdir -p "$plant/setup-hosting/recipes/parts" "$plant/setup-hosting/references" "$plant/implement/references"
+grep -i 'web interface guidelines' "$SKILLS/implement/references/screen-rules.md" > "$plant/implement/references/screen-rules.md" || true
+mkdir -p "$plant/setup-hosting/recipes/on-vercel/scripts" "$plant/setup-hosting/recipes/parts/scripts"
+printf '%s\n' 'Runs on Vercel with a Supabase database.' > "$plant/setup-hosting/recipes/on-vercel/recipe.md"
+printf '%s\n' 'vercel env ls production' > "$plant/setup-hosting/recipes/on-vercel/scripts/secrets.sh"
+printf '%s\n' 'Backups on Supabase.' > "$plant/setup-hosting/recipes/parts/backup.md"
+printf '%s\n' 'supabase db dump' > "$plant/setup-hosting/recipes/parts/scripts/backup.sh"
+plant_ok=1
+if [ -n "$(products_named "$plant")" ]; then
+  fail "the product-name rule counted the guidelines link, a recipe or a shared part as a product name"
+  plant_ok=0
+fi
+first_target=$(printf '%s' "$recipe_targets" | cut -d'|' -f1 | sed 's/\\//g')
+for planted in "Deploy it to Vercel." "Keep the data in Supabase." "Deploy it with ${first_target:-vercel}." \
+               "$(printf 'Vercel is fast.\nThe Vercel Web Interface Guidelines')"; do
+  printf '%s\n' "$planted" > "$plant/setup-hosting/references/steps.md"
+  if [ -z "$(products_named "$plant")" ]; then
+    fail "the product-name rule missed a planted name: $planted"
+    plant_ok=0
+  fi
+done
+rm -rf "$plant"
+[ "$plant_ok" -eq 1 ] && pass "the product-name rule catches a planted name and leaves the recipes and the guidelines link alone"
 
 # ---------------------------------------------------------------------------
 echo "== Codex adapter claims =="
@@ -1390,10 +1438,10 @@ while IFS= read -r term; do
     | grep -v '/\.agents/tmp/' \
     | grep -v '\.agents/tests/scenarios\.md$' \
     | grep -v 'docs/MAINTAINING\.md$' \
-    | grep -v '\.agents/skills/maintain/SKILL\.md$' \
+    | grep -v '\.agents/skills/maintain/references/four-paths\.md$' \
     || true)
-  # maintain/SKILL.md is excluded because its migration has to name the old
-  # fields and paths it recognises on disk; nothing else may use them.
+  # four-paths.md rewrites a section written with the old fields, so it has
+  # to name the fields and paths it recognises. It loads for that alone.
   if [ -n "$hits" ]; then
     fail "retired vocabulary '$term' found in: $(printf '%s' "$hits" | tr '\n' ' ')"
     had_stale=1
@@ -1599,32 +1647,6 @@ else
   fail ".agents/tests/replay/check-parser.sh is missing"
 fi
 
-# Several rules live as prose a coding agent reads, watched by hand rather than
-# replayed, and each is guarded by a check that reads its source and proves it
-# fails on a copy with the rule removed. They share the scaffolding in
-# .agents/tests/lib/rule-shape.sh, so they are found by that rather than by a
-# list here, and a new one is covered from the moment it is written.
-shape_ok=1
-shape_count=0
-for shape_check in "$ROOT"/.agents/tests/*.sh; do
-  [ -f "$shape_check" ] || continue
-  grep -qF 'lib/rule-shape.sh' "$shape_check" || continue
-  shape_name=$(basename "$shape_check")
-  shape_count=$((shape_count + 1))
-  if [ ! -x "$shape_check" ]; then
-    fail ".agents/tests/$shape_name is not executable"
-    shape_ok=0
-  elif ! "$shape_check" >/dev/null 2>&1; then
-    fail "written-rule check failed; run .agents/tests/$shape_name to see why"
-    shape_ok=0
-  fi
-done
-if [ "$shape_count" -eq 0 ]; then
-  fail "no written-rule checks were found; they source .agents/tests/lib/rule-shape.sh"
-elif [ "$shape_ok" -eq 1 ]; then
-  pass "$shape_count written rules still hold, and each check catches a weakened copy"
-fi
-
 claude_plugin_check="$ROOT/.agents/tests/claude-plugin.sh"
 if [ ! -x "$claude_plugin_check" ]; then
   fail ".agents/tests/claude-plugin.sh is missing or not executable"
@@ -1699,11 +1721,8 @@ for literal in \
   '"./.claude/commands/setup-hosting.md"' \
   '"./.claude/commands/setup-ai-build-kit.md"' \
   '"./.claude/commands/what-now.md"' \
-  '"./.claude/skills/change-triage"' \
   '"./.claude/skills/clarify"' \
-  '"./.claude/skills/screen-check"' \
-  '"./.claude/skills/second-opinion"' \
-  '"./.claude/skills/section-builder"'; do
+  '"./.claude/skills/second-opinion"'; do
   if ! grep -qF "$literal" "$plugin_manifest"; then
     fail "Claude plugin manifest is missing: $literal"
     plugin_contract_ok=no
@@ -2091,14 +2110,79 @@ Bash(rm -f -r:*)
 Bash(rm -R -f:*)
 Bash(rm -f -R:*)
 Bash(rm --recursive --force:*)
-Bash(rm --force --recursive:*)"
-# A project also asks before any merge, so a merge never happens without a
-# person's click in the box Claude Code shows. This repository's own settings
-# carry no ask list.
+Bash(rm --force --recursive:*)
+Bash(git push --no-verify*)
+Bash(git push * --no-verify*)
+Bash(git *core.hooksPath*)
+Bash(git *core.hookspath*)
+Bash(git checkout .)
+Bash(git checkout * .)
+Bash(git restore .)
+Bash(git checkout -- *)
+Bash(git checkout * -- *)
+Bash(git checkout -f*)
+Bash(git checkout * -f*)
+Bash(git checkout *--force*)
+Bash(git switch -f*)
+Bash(git switch * -f*)
+Bash(git switch *--force*)
+Bash(git switch *--discard-changes*)
+Bash(git restore -- *)
+Bash(git restore *--worktree*)
+Bash(git restore -W*)
+Bash(git restore * -W*)
+Bash(git clean -*f*)
+Bash(git clean * -*f*)
+Bash(git reset * --hard*)
+Bash(git stash drop:*)
+Bash(git stash clear:*)
+Bash(security find-*)
+Bash(security dump-keychain:*)
+Bash(gh auth token:*)
+Bash(gh auth status*-t*)
+Bash(git credential fill*)
+Bash(git credential-*)
+Bash(*.config/gh/hosts.yml*)
+Bash(*GitHub CLI/hosts.yml*)
+Bash(*com.vercel.cli/auth.json*)
+Bash(*.vercel/auth.json*)
+Bash(*.supabase/access-token*)
+Bash(*Application Support/supabase*)
+Bash(*.docker/config.json*)
+Read(//**/.config/gh/hosts.yml)
+Read(//**/GitHub CLI/hosts.yml)
+Read(//**/com.vercel.cli/auth.json)
+Read(//**/.vercel/auth.json)
+Read(//**/.supabase/access-token)
+Read(~/.vercel/**)
+Read(~/.supabase/**)
+Read(//**/Library/Application Support/supabase/**)
+Read(//**/.docker/config.json)"
+# A project also asks before any merge, and before a command that changes a
+# live service, so neither happens without a person's click in the box Claude
+# Code shows. This repository's own settings carry no ask list.
 expected_ask_project="Bash(gh pr merge:*)
 Bash(gh api *pulls/*/merge*)
 Bash(gh api *merges*)
-Bash(gh api graphql *mergePullRequest*)"
+Bash(gh api graphql *mergePullRequest*)
+Bash(gh api *git/refs*)
+Bash(gh api graphql *createRef*)
+Bash(gh api graphql *updateRef*)
+Bash(gh api graphql *deleteRef*)
+Bash(git restore *)
+Bash(supabase config push:*)
+Bash(supabase db push:*)
+Bash(vercel *--prod*)
+Bash(vercel *--target*production*)
+Bash(vercel rollback:*)
+Bash(vercel promote:*)
+Bash(gh repo archive:*)
+Bash(gh repo edit *--visibility*)
+Bash(gh api *-X DELETE*)
+Bash(gh api *-XDELETE*)
+Bash(gh api *-X=DELETE*)
+Bash(gh api *--method DELETE*)
+Bash(gh api *--method=DELETE*)"
 deny_ok=1
 if command -v python3 >/dev/null 2>&1; then
   py_script=/tmp/validate-kit-deny.$$
@@ -2141,13 +2225,13 @@ if actual != expected:
     sys.exit(1)
 PYEOF
   then
-    fail "$ask_file permissions.ask does not exactly match the merge rules: $(cat /tmp/validate-kit-ask-out.$$)"
+    fail "$ask_file permissions.ask does not exactly match the merge and live-service rules: $(cat /tmp/validate-kit-ask-out.$$)"
     deny_ok=0
   fi
   rm -f /tmp/validate-kit-ask-out.$$
   rm -f "$py_script"
   [ "$deny_ok" -eq 0 ] || \
-    pass "both Claude deny lists are exactly the mechanically enforceable blocked commands, and a project asks before every merge"
+    pass "both Claude deny lists are exactly the mechanically enforceable blocked commands, and a project asks before every merge and live-service change"
 else
   note "python3 not available; falling back to a substring check on permissions.deny"
   while IFS= read -r deny_json; do
@@ -2258,9 +2342,14 @@ check_claim "seven skills" "seven skills"
 check_claim "nine commands" "nine commands"
 check_claim "eight commands" "eight commands"
 check_claim "eight are commands" "eight are commands"
-# The skill count moved with it, from thirteen to eleven. The word alone also
-# counts other things, such as pull request descriptions, so these name the
-# phrases that counted skills.
+# The skill count moved with it, from thirteen to eleven and then to eight.
+# The word alone also counts other things, such as pull request descriptions,
+# so these name the phrases that counted skills.
+check_claim "eleven skills" "eleven skills"
+check_claim "eleven installed skills" "eleven installed"
+check_claim "eleven kit skills" "eleven AI Build Kit"
+check_claim "the same eleven" "the same eleven"
+check_claim "five background skills" "five background skills"
 check_claim "thirteen skills" "thirteen skills"
 check_claim "thirteen canonical skills" "thirteen canonical"
 check_claim "thirteen kit skills" "thirteen AI Build Kit"

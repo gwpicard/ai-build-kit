@@ -1,13 +1,10 @@
 # The fit check
 
-The fit check chooses the project's current **build path** and names each
-sensitive area the work touches, with the caution that goes with it. It runs:
-
-- during /setup-ai-build-kit;
-- when a request changes users, data, money, autonomy, promises, or reliance;
-- before the first /setup-hosting;
-- during quarterly /maintain;
-- before a handover.
+The fit check chooses the project's **build path** and names each sensitive
+area the work touches, with its caution. It runs during
+/setup-ai-build-kit; when a request changes users, data, money, autonomy,
+promises or reliance; before the first /setup-hosting; at the quarterly
+/maintain; and before a handover.
 
 ## Consequence questions
 
@@ -40,47 +37,36 @@ Ask one at a time, with a best guess attached. These decide the path.
 14. Are integrations, background jobs, permissions, and migrations limited
     enough for the team to operate confidently?
 
-These decide setup tasks, never the path. A no to any of them becomes a
-founding task: a piece on the plan where there is work to do (write down the
-manual fallback, name who reads the alerts), or a line in the masterplan's
-"How it stays running" section where there is only a fact to record. Founding
-carries on. A team that cannot yet explain or recover its tool has a gap to
-close, which is a different thing from work that touches a sensitive area.
+These never decide the path. A no becomes a founding task: a piece where there
+is work to do (write down the manual fallback, name who reads the alerts), or a
+line in the masterplan's "How it stays running" section where there is only a
+fact to record. Founding carries on.
 
-The fit check owns the present ownership facts in "How it stays running".
-Keep those facts only there. The changelog records only that the ownership
-check ran and when, without copying its answers. A later ownership check reads
-that section and returns any missing or changed fact to this rule.
-
-For a credential, the fact is where it lives: a file path, a password manager
-entry's name, or an environment variable's name, and never its value. AGENTS.md's
-Secrets rule says how a later session reads it and what it says when the
-location is unknown.
+Those facts live only in "How it stays running"; the changelog records only
+that the check ran and when. For a credential, the fact is where it lives (a
+file path, a password manager entry's name, an environment variable's name),
+never its value.
 
 ## The three build paths
 
-Use these three names everywhere, and do not alternate between path, tier,
-level, mode, verdict, or maturity class. Choose the first that matches, after
+Use these three names everywhere. Choose the first that matches, after
 redesign has been considered.
 
 ### 1. Build with care
 
-Some of the work touches a sensitive area: personal or sensitive data, money,
-sign-in and permissions, automatic action on people or other systems,
-irreplaceable live data, or a regulated decision. A yes to question 1, 2, 4,
-5, 6 or 7 that redesign cannot remove puts the project here. The masterplan
-names each area in the tool's own words and the caution beside it. Everything
-outside those areas is built exactly as Build and run it. Inside one, the
-caution is done before merge or activation, or the person accepts on the
-record.
+Some of the work touches a sensitive area. A yes to question 1, 2, 4, 5, 6 or
+7 that redesign cannot remove puts the project here. The masterplan names each
+area in the tool's own words with its caution. Everything outside those areas
+is built as Build and run it. Inside one, the caution is done before merge or
+activation, or the person accepts on the record.
 
 ### 2. Build and run it
 
 People rely on the tool, no sensitive area is touched, consequences are
 limited and recoverable, and the manual fallback is real. A yes to question 3
-or 8 lands here rather than above: it says the tool is relied on, not what it
-touches, and what it asks for is the operational readiness /setup-hosting requires
-before first live use. This is the kit's primary target path.
+or 8 lands here: it says the tool is relied on, and asks for the operational
+readiness /setup-hosting requires before first live use. This is the kit's
+primary path.
 
 ### 3. Explore privately
 
@@ -89,11 +75,9 @@ exists to answer questions or learn.
 
 ## Sensitive areas
 
-Six areas, fixed. Each carries a default caution, which is what would normally
-prevent the harm. The fit check names the area in the tool's own words (the
-client notes, the refund button, the nurses' protocol) and writes the caution
-beside it. Change a caution only where the tool's own facts make a different
-one right, and say why.
+Six areas, fixed, each with a default caution. Name the area in the tool's own
+words (the client notes, the refund button) and write the caution beside it.
+Change a caution only where the tool's facts make another right, and say why.
 
 | Area | What counts | Default caution |
 |---|---|---|
@@ -104,29 +88,19 @@ one right, and say why.
 | Irreplaceable live data | The only copy of something the team cannot recreate. | A backup taken and restored once, and the change rehearsed on a copy, before the original is touched. |
 | Regulated decisions | Medical, legal, financial, employment, or safety decisions the tool gives or enforces. | Somebody qualified in that field signs off the rule before anyone acts on it. |
 
-Where a caution is a person, the rule under "The notice holds" applies
-unchanged: that person looks, or the person carries on past the notice and the
-risk is accepted on the record. Where a caution is a backup, a copy, a
-rehearsal, a managed service, or an approval step, it is the kit's to do. Do it
-as part of the work, or check it was done, and record the result on the area's
-line. Work inside a named area is flagged work, and that word keeps its meaning
-in every skill.
+Where a caution is a person, "The notice holds" applies. Where it is a backup,
+a copy, a rehearsal, a managed service or an approval step, it is the kit's to
+do as part of the work, with the result recorded on the area's line. Work
+inside a named area is flagged work.
 
 ## Redesign before the notice
 
-Before naming a sensitive area, ask whether the risk can be removed:
-
-- use a copy instead of live data;
-- remove automated action;
-- keep a human approval step;
-- remove regulated advice;
-- reduce external access;
-- use a managed service;
-- keep a manual fallback;
-- narrow the promise.
-
-A redesign that genuinely removes the area changes the answers, so run the
-check again. A redesign that keeps the surface and drops the caution does not.
+Before naming an area, ask whether the risk can be removed: use a copy instead
+of live data, remove automated action, keep a human approval step, remove
+regulated advice, reduce outside access, use a managed service, keep a manual
+fallback, or narrow the promise. A redesign that really removes the area
+changes the answers, so run the check again. One that keeps the surface and
+drops the caution does not.
 
 ## The risk notice
 
@@ -255,28 +229,20 @@ in the same reply and say so in one line. Do not keep the lock and ask for a
 further yes to open it. Keep it only if the person asks you to. The named
 person has still not looked, and the record still says accepted, never done.
 
-## Full fit check
 
-Run every question, in the situations listed at the top of this file, and
-whenever several project characteristics changed together.
+## Full and delta checks
 
-## Delta fit check
-
-For a single change-triggered reassessment:
-
-1. ask the consequence questions affected by the proposed change;
-2. name any sensitive area the change touches, and its caution;
-3. recheck the ownership questions the change affects, and record a new no as
-   a founding task;
-4. apply the decision order;
-5. update `Recheck when` and `Last checked`, and add an `Accepted:` line if a
-   risk was accepted along the way.
-
-Run the full check instead when the affected area cannot be bounded confidently.
+Run every question in the situations at the top of this file, and when several
+characteristics changed together. For a single change, run a delta check: ask
+the consequence questions the change affects, name any area it touches and its
+caution, recheck the ownership questions it affects, apply the decision order,
+and update `Recheck when` and `Last checked`, adding an `Accepted:` line if a
+risk was accepted. Run the full check when the affected area cannot be bounded.
 
 ## Write it down
 
-Whatever the outcome, it goes in the masterplan's build path section:
+The outcome goes in the masterplan's build-path section, which the agent reads
+first in every session:
 
 ```md
 ## Build path
@@ -289,15 +255,15 @@ Recheck when: <specific triggers>
 Last checked: YYYY-MM-DD
 ```
 
-Each named area gets its own line under `Sensitive areas:`, indented two
-spaces. A line carries the area, what in this tool touches it, its caution,
-and where the caution stands: `not yet done`, `done` with the date, or
-`accepted` with the date of the matching `Accepted:` line. On Build with care,
-the next line lists the paths where that area lives. A third line may name one
-boundary the area must not cross, and the project check can hold that boundary
-once the person agrees; `boundary-rules.md` says how. Every top-level source
-folder is listed under an area or on a `none:` line, so the shipped check can
-refuse a new, unassigned folder. Keep this map absent on the other two build paths.
+Each area gets its own line under `Sensitive areas:`, indented two spaces:
+the area, what in this tool touches it, its caution, and where the caution
+stands (`not yet done`, `done` with the date, or `accepted` with the date of
+the matching `Accepted:` line). On Build with care, the next line lists the
+paths where the area lives, and a third may name one boundary it must not
+cross, which the project check can hold once the person agrees, by
+`boundary-rules.md`. Every top-level source folder sits under an area or on a
+`none:` line, so the shipped check refuses a new, unassigned folder. Leave the
+map out on the other two paths.
 
 ```md
 Sensitive areas:
@@ -309,28 +275,22 @@ Sensitive areas:
   none: src/reporting/
 ```
 
-Read the paths back in plain words at founding. For example: "Money is the
-refund button, and it lives in the billing folder." Where the project uses a
-language Bearer covers, offer its local data scan to find files that handle
-personal data. Bearer is free to run under the Elastic License 2.0 and is not
-open source. The scan is optional; the map and its check are not.
+Read the paths back in plain words at founding: "Money is the refund button,
+and it lives in the billing folder." Where the language is one Bearer covers,
+offer its optional local scan for files that handle personal data; it is free
+under the Elastic License 2.0 and is not open source. Update the map in the
+same save as any code move; the foundation check names a listed path that has
+gone or a new folder with no line, and is silent off Build with care.
 
-Write the map in the same save as any code move that changes it. The foundation
-check fails when a listed path has gone or a new top-level source folder has no
-area or `none` line. It says which path or folder needs a decision. The check is
-silent on Explore privately and Build and run it.
-
-Each accepted risk gets its own line, and lines are added rather than replaced.
-A line carries the date, the caution that did not happen, and the words the
-person carried on with, with their name:
+Each accepted risk gets its own line, added and never replaced: the date, the
+caution that did not happen, and the words the person carried on with, with
+their name.
 
 ```md
 Accepted: 2026-08-12, review of who can see the client notes not done; Priya carried on after the notice: "we cannot pay for a review, build it"
 ```
 
-An acceptance drops a caution. It does not move the path or take the area off
-the list, because the exposure is still there; the area's own line changes to
-`accepted 2026-08-12` so the two point at each other. The path moves only by
-running the fit check again, when a redesign has removed the area.
-
-The agent reads that section first in every session.
+An acceptance drops a caution. It does not move the path or remove the area,
+since the exposure is still there; the area's line says `accepted 2026-08-12`.
+The path moves only when the fit check runs again after a redesign has removed
+the area.

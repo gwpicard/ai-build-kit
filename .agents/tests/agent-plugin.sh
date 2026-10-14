@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # agent-plugin.sh: rehearse the Agent Plugins distribution route. It builds a
 # real release, checks the assembled folder against the standard's rules,
-# checks that the one trigger setting marks the five background skills and
+# checks that the one trigger setting marks the two background skills and
 # none of the six commands, and proves that folder can stand a project up on
 # its own.
 
@@ -44,11 +44,8 @@ setup-ai-build-kit
 setup-hosting
 what-now"
 
-expected_disciplines="change-triage
-clarify
-screen-check
-second-opinion
-section-builder"
+expected_disciplines="clarify
+second-opinion"
 
 # --- the plugin directory and its manifest -------------------------------
 [ -d "$PLUGIN" ] || fail "the release does not contain the agent-plugin folder"
@@ -170,8 +167,29 @@ done
 expected_skills=$(printf '%s\n%s\n' "$expected_commands" "$expected_disciplines" | sort)
 found_skills=$(find "$SKILLS_DIR" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sort)
 if [ "$found_skills" != "$expected_skills" ]; then
-  fail "the agent plugin does not expose exactly the eleven installable skills"
+  fail "the agent plugin does not expose exactly the eight installable skills"
 fi
+
+# An Agent Plugins update replaces the installed folder whole, and /maintain
+# then reads its skills folder back for a folder under a former name. So the
+# released folder must hold none, or the read-back could never come out clean.
+# The former names come from the script /maintain runs, not from a list here.
+former=$(PYTHONDONTWRITEBYTECODE=1 python3 - "$ROOT/.agents/skills/maintain/scripts/kit-leftovers.py" <<'PY'
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location("k", sys.argv[1])
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+print(" ".join(module.FORMER_NAMES))
+PY
+)
+case " $former " in
+  *" section-builder "*) ;;
+  *) fail "kit-leftovers.py does not know section-builder as a former name" ;;
+esac
+for name in $former; do
+  [ ! -e "$SKILLS_DIR/$name" ] || \
+    fail "the agent plugin still ships a skill under a former name: $name"
+done
 
 while IFS= read -r skill; do
   [ -n "$skill" ] || continue
@@ -224,24 +242,34 @@ for supporting in \
   setup-ai-build-kit/references/fit-check.md \
   maintain/templates/handover.md \
   setup-hosting/templates/recipe.md \
-  setup-hosting/references/recipe-format.md \
+  setup-hosting/scripts/run-recipe.sh \
   implement/references/running-longer.md \
-  change-triage/references/source-check.md; do
+  implement/references/merge.md \
+  implement/references/screen-rules.md \
+  shape/references/research.md \
+  shape/references/repair.md; do
   [ -f "$SKILLS_DIR/$supporting" ] || \
     fail "the agent plugin lost a file one of its skills needs: $supporting"
 done
 # Founding reads the recipe menu from the setup-hosting skill beside its own folder, so
 # every recipe on the menu has to arrive there, and no shared part may be
 # mistaken for a menu entry by arriving loose beside them.
-for recipe in "$ROOT"/.agents/skills/setup-hosting/recipes/*.md; do
+# Each recipe is a folder, and its scripts have to arrive runnable.
+for recipe in "$ROOT"/.agents/skills/setup-hosting/recipes/*/recipe.md; do
   [ -f "$recipe" ] || continue
-  [ -f "$SKILLS_DIR/setup-hosting/recipes/$(basename -- "$recipe")" ] || \
-    fail "the agent plugin lost a recipe founding offers: $(basename -- "$recipe")"
+  name=$(basename -- "$(dirname -- "$recipe")")
+  [ -f "$SKILLS_DIR/setup-hosting/recipes/$name/recipe.md" ] || \
+    fail "the agent plugin lost a recipe founding offers: $name"
+  for script in "$(dirname -- "$recipe")"/scripts/*.sh; do
+    [ -x "$SKILLS_DIR/setup-hosting/recipes/$name/scripts/$(basename -- "$script")" ] || \
+      fail "the agent plugin lost a recipe script, or its run permission: $name/scripts/$(basename -- "$script")"
+  done
 done
-for part in "$ROOT"/.agents/skills/setup-hosting/recipes/parts/*.md; do
+for part in "$ROOT"/.agents/skills/setup-hosting/recipes/parts/*.md "$ROOT"/.agents/skills/setup-hosting/recipes/parts/scripts/*.sh; do
   [ -f "$part" ] || continue
-  [ -f "$SKILLS_DIR/setup-hosting/recipes/parts/$(basename -- "$part")" ] || \
-    fail "the agent plugin lost a shared recipe part: $(basename -- "$part")"
+  rel=${part#"$ROOT"/.agents/skills/setup-hosting/recipes/}
+  [ -f "$SKILLS_DIR/setup-hosting/recipes/$rel" ] || \
+    fail "the agent plugin lost a shared recipe part: $rel"
 done
 cmp -s "$SKILLS_DIR/setup-ai-build-kit/SKILL.md" "$PACK/.agents/skills/setup-ai-build-kit/SKILL.md" || \
   fail "the agent plugin's setup-ai-build-kit skill differs from the released canonical skill"
@@ -255,7 +283,7 @@ cmp -s "$SKILLS_DIR/setup-ai-build-kit/SKILL.md" "$PACK/.agents/skills/setup-ai-
 # --- the Claude route is untouched and still complete -------------------
 grep -qF '"./.claude/commands/setup-ai-build-kit.md"' "$PACK/.claude-plugin/plugin.json" || \
   fail "the Claude plugin manifest stopped selecting the six manual commands"
-grep -qF '"./.claude/skills/section-builder"' "$PACK/.claude-plugin/plugin.json" || \
+grep -qF '"./.claude/skills/second-opinion"' "$PACK/.claude-plugin/plugin.json" || \
   fail "the Claude plugin manifest stopped selecting the internal disciplines"
 grep -qF '"version": "0.3.0"' "$PACK/.claude-plugin/plugin.json" || \
   fail "the Claude plugin version no longer matches the release"

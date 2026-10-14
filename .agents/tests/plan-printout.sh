@@ -134,7 +134,7 @@ grep -A1 "^Broken$" "$OUT" | grep -q "being fixed" \
   && pass "a repair somebody has started says so" \
   || fail "#7 does not say it is being fixed"
 
-# Under Broken, "(ready)" is what /implement and section-builder read as a
+# Under Broken, "(ready)" is what /implement reads as a
 # repair free to build now. A ready repair nothing holds says so. One held up
 # by an open piece names it and does not say ready, and neither does the
 # repair somebody is already on.

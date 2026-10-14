@@ -5,222 +5,205 @@ description: The command for turning any request into a ready piece before anyth
 
 # Shape
 
-This command shapes work; it does not build it. It takes an idea or a fault in
-plain language, works out what kind of work it is, writes it into a piece
-somebody could build, and settles anything the piece is still waiting on. When
-a piece is ready it offers to hand it to `/implement`, but building is always a
-separate, deliberate step.
+This command turns an idea or a fault into a piece somebody could build, and
+settles anything the piece still waits on. Shape itself never builds.
 
-Read masterplan.md first, build-path section first, then the project's pieces,
-the same way `/implement` does. Refresh the printout and read that.
-The `setup-ai-build-kit` skill's `references/pieces.md` describes how the pieces are kept.
-
-Whenever shaping touches a decision, re-read any "rests on" clause in the
-piece's `## Decided` or the masterplan, following pieces.md's decision rules.
-Check what it names before relying on it, including when the piece is already
-ready. When its support has gone, say in one line: "The rule that a job closes
-once rested on a test that no longer exists." Name the actual rule in plain
-words, then settle any question this opens through the usual shaping route.
+You sort the request; the person never does, and the masterplan is the
+referee. Read masterplan.md first, build-path section first, then refresh the
+printout and read it. The `setup-ai-build-kit` skill's `references/pieces.md`
+is the one home for how a piece is written, its labels, the "rests on"
+clauses, and what to do when somebody acts on GitHub by hand. Follow it.
 
 ## Typed with words
 
-Run change-triage on the request and follow its route: shape it into a ready
-piece now, run clarify first, run a decision prototype, run a source check,
-update the masterplan first, or stop and rerun the fit check. Say which route
-you chose and why, in one line.
+Work through these steps before any work happens. Say the route you chose and
+why, in one line.
 
-A fault is shaped by reproducing it. Where change-triage routes the request as
-a repair, follow "Shaping a repair" in the `section-builder` skill's
-`references/repair.md`: record the symptom, build the tightest repeatable
-check, reproduce it and cut it down to the smallest failing case. That case is
-the piece's `## Done when`, and the piece is ready once it is reproduced.
-Shaping changes no file the project saves. Where change-triage marks a small,
-clear repair ready at once, make the build offer for this same session.
+### 1. Understand the request
 
-Clear, piece-sized work becomes a ready piece straight away: write it into the
-shape the `setup-ai-build-kit` skill's `references/pieces.md` describes, take its subjects
-from change-triage rather than choosing them yourself, and label it `ready`.
-That is a new issue, and it starts unassigned: a person is assigned only when
-`/implement` picks the piece up to build it, never when `/shape` creates it. Then
-make the build offer below.
+Compare it with the masterplan, the open pieces, the recent changelog, and
+existing behaviour where that is cheap to check. Does it already exist under
+another name? Was it parked or rejected before? A parked idea is a closed issue
+labelled `parked`, so search closed issues too. Is it a misunderstanding or a
+setup problem rather than a gap? Does it contradict a rule in the masterplan?
 
-Shape the piece in its two layers. The surface stays plain and comprehensive
-about anything that affects the product, so it never reads as simpler than the
-work is: a fact that would change a product decision goes on the surface, in the
-person's words. The build context that only affects how the code gets written
-goes in the collapsed `Under the hood` section, so the person never has to read
-it and `/implement` still has it. Route context that reaches past this piece by
-how far it reaches: a whole-product decision to the masterplan, a whole-codebase
-convention to AGENTS.md's stack section. A piece must be small enough for a fresh
-session to hold whole; where it is not, cut it down. Any groundwork the piece
-needs is itself a vertical slice, ordered ahead of the piece that needs it, never
-a separate "database" or "API" layer.
+A report that something is broken, in whatever words, loads
+`references/repair.md` and runs its checks first. Shaping changes no file the
+project saves.
 
-On every piece you shape or refine, write `## Masterplan change` on the
-surface before marking it ready, following pieces.md. Say what the masterplan
-gains, changes or loses when it lands. Write "nothing" only when the masterplan
-already says every line of `## Done when`; pieces.md has the test, and a new
-rule the person could check is a change even when it narrows an existing
-promise. Read it back in the reply that reports the piece: "When this lands, the
-masterplan gains a weekly summary email." Use the actual change in that line;
-for "nothing", say the masterplan already covers it. Do not apply a future change while shaping.
+### 2. Classify intent
 
-Where the piece needs a new secret, setting or outside service on the live copy,
-write its `Live side needs:` line on the surface, following pieces.md: each by
-name, never a value. Leave the line out otherwise.
+One of: repair of promised behaviour; new behaviour; copy or presentation
+change; setup or operational task; a decision that needs clarify, a prototype,
+or source research; a change to the build path or a sensitive area.
 
-When writing the `Under the hood` notes for a project with code, load
-the `section-builder` skill's `references/reach-check.md` and run its reach
-check. Use the live result to name the code seams and existing covering tests,
-instead of researching them again from nothing. Keep the result on the piece as
-build context only; never create a separate index or record for it.
+### 3. Classify consequence
 
-Where the request is bigger than a piece, it goes into the masterplan first and
-is cut into pieces on the plan, order confirmed with the user. Parts of one
-outcome become sub-issues of a parent piece, each a vertical slice; separate
-outcomes that must come in order become separate pieces linked by blocked-by. The
-test is the outcome: one shared `## So that` means parts of a whole, and the
-parent is done when its parts are. Where it would change what kind of project
-this is, stop and rerun the fit check before shaping anything.
+Every consequence that applies, stored on the piece as subject labels. The
+build reads them and never reclassifies:
+
+| Consequence | Subject |
+|---|---|
+| presentation-only | visual |
+| behaviour | how it works |
+| data | data |
+| access | accounts and permissions |
+| money | finance |
+| integration or service | external service |
+| automatic action, operational reliance | background automation |
+
+An irreversible action takes the subject of what it cannot undo, usually
+`data`. Store every row that applies: a checkout is `finance` and `external
+service`. A dropped subject takes its evidence with it.
+
+Then read the titles and `## So that` lines of open pieces sharing a subject,
+and anything labelled `building`. Where one would plainly be built in the same
+place, name it and what the two share. Nothing waits; the person decides
+whether to carry on, hold this, or fold the two. Say nothing when the only
+thing in common is the project.
+
+### 4. Route
+
+Routes: a repair, shaped by reproducing it; a ready piece; clarify; a decision
+prototype; a source check; a search for existing work; a step only the person
+can do; update the masterplan first; rerun the fit check; prepare the
+handover; the risk notice.
+
+Piece-sized and clear (one sitting, a done line you could write now) becomes a
+ready piece at once. Write it to pieces.md's shape with its subjects, and
+label it `ready` by running this skill's `scripts/mark-ready.sh` on its
+number. It refuses without `## Done when`, and refreshes the printout. A new
+issue starts unassigned; `/implement` assigns it when it picks the piece up.
+Then make the build offer.
+
+Too vague to size runs clarify. A question rather than a ready piece goes on
+the issue as its `needs-` label, so the next reader sees why it waits.
+
+Bigger than a piece goes into the masterplan first and is cut into pieces,
+order confirmed with the person. pieces.md's "Status, owner, and order" says
+when parts become sub-issues and when separate pieces are linked by
+blocked-by.
+
+A step only the person can do is written as the piece's `## Waiting on you`.
+Do it yourself where you can.
+
+A repair takes `broken` beside its subjects, and is ready once reproduced.
+
+A request that touches stored data, who can see or do what, or money updates
+the masterplan first, and you say what changed before routing further. A
+change to the shape of real data the tool already holds is flagged territory:
+a backup first, a rehearsal on a copy, then the real change.
+
+A request that changes what kind of project this is (outside users, real
+money, a promise to someone, a new kind of data about people, autonomous
+action) stops here: rerun the fit check, record the new build path, then
+route.
+
+Where that check leaves a sensitive area standing, give the risk notice
+described in the `setup-ai-build-kit` skill's `references/fit-check.md` before
+routing the flagged work, and hold it. Nothing is refused: if the person
+carries on after the notice, record the acceptance as fit-check.md says and
+route the work. The notice never quietly goes away, and pushback never lets
+you decide it no longer applies. Route the same request the same way each
+time it arrives.
+
+### Writing the piece
+
+Write the piece in pieces.md's two layers: a plain surface that names every
+fact that could change a product decision, and `Under the hood` for build
+context. A whole-product decision goes to the masterplan, a whole-codebase
+convention to AGENTS.md's stack section. Groundwork is its own vertical slice,
+ordered ahead, never a "database" or "API" layer.
+
+Write `## Masterplan change` before marking ready, by pieces.md's test. Read it
+back in the reply that reports the piece: "When this lands, the masterplan
+gains a weekly summary email." For "nothing", say the masterplan already covers
+it. Never apply it while shaping.
+
+Write `Live side needs:` only where the live copy needs a new secret, setting
+or service, each by name, never a value.
+
+For `Under the hood` on a project with code, run the reach check in the
+`implement` skill's `references/reach-check.md` and name the seams and covering
+tests from it.
 
 ## Shaping now, or filing for later
 
-Typed with words, this command shapes now. The person already chose to shape
-when they typed it, so offering them the choice again asks the same question
-twice. Where the route is a question rather than a ready piece, start the step
-the route names. A source check or a search for existing work simply starts.
-An interview or a prototype takes a sitting, so say so in one line and start:
-"This needs a short interview, which takes a sitting. Say 'later' at any point
-and I'll file it."
+Typed with words, this command shapes now; do not offer that choice again. A
+source check or a search simply starts. An interview or a prototype takes a
+sitting, so say so in one line and start: "This needs a short interview, which
+takes a sitting. Say 'later' at any point and I'll file it."
 
-The person can say "later" at any point in a step. File the piece then, with
-anything the step has already agreed written onto it, and stop.
-
-Filing is also something the person can ask for outright, in words such as
-"note this for later" or "just file this idea". Run change-triage as usual so
-the piece gets its route and its subjects, then file it without starting any
-step. It is not a separate command. A clear, piece-sized request filed this way
-is simply a ready piece, written without the build offer.
-
-Filing writes the piece in full: the person's own words, the question it still
-waits on in plain language, and the label that names who can settle it. It is
-the same piece a session settling the question now would have started from, so
-a fresh session picks it up with nothing lost. Then stop. Do not begin the step,
-or carry on with one already started, and do not raise the question again in
-the same session.
-
-A piece filed this way carries its `needs-` label and no `ready` label, which is
-what keeps it out of `/implement` until its question is answered. Deferring the
-question never lets the piece be built with the question still open.
+On "later", or when asked only to note the idea, route it as usual, then file
+it with what is already agreed: the person's own words, the open question in
+plain language, and the `needs-` label that says who can settle it. Then stop,
+and do not raise the question again this session. A clear, piece-sized request
+filed this way is simply a ready piece, with no build offer.
 
 ## When a piece is waiting on a question
 
-A piece labelled `needs-clarification`, `needs-prototype`, or `needs-research`
-has a question to settle before its code could be written. Settling that
-question is the work of this command. An issue with no `## Done when` was typed
-by hand and never sized, so treat it as `needs-clarification`.
+A piece labelled `needs-clarification`, `needs-prototype` or `needs-research`
+is settled here. An issue with no `## Done when` was typed by hand and is
+treated as `needs-clarification`.
 
-Run the step the label names, write what settled it into the piece's `## Decided`
-section, and only then take the label off and mark the piece `ready`. The record
-goes first because the label is the only thing saying the question was ever open:
-once it is gone, a piece settled properly and a piece nobody looked at read
-exactly alike.
+Run the step the label names, write what settled it into `## Decided`, then
+run `scripts/mark-ready.sh` on the piece. It refuses while `## Decided` or
+`## Done when` is missing and says which: write it, then run it again.
 
-Read the piece back before the label comes off, and let what you read decide
-whether it does. `## Decided` has to hold what settled the question, and
-`## Done when` has to be there at all. Where either is missing, the writing did
-not happen however well the conversation went: write it, read it again, and only
-then relabel.
-
-This is a check, not a reminder. Doing the steps in the right order is what a
-run believes it did; reading the piece back is what tells it whether it did. It
-is the one part of settling a question nobody in the conversation can see, which
-is why a piece has reached `ready` with no `## Done when` in it and nobody
-noticed until the files were read.
-
-- `needs-clarification` runs clarify. Write what comes out into the shape
-  the `setup-ai-build-kit` skill's `references/pieces.md` describes, and keep the person's
-  original words underneath, because their words are what a refinement can be
-  checked against and what to return to when it reads wrong.
-- `needs-prototype` settles the piece with something to look at. Where the
-  person already has a mock, a sketch, or anything else that shows it, follow
-  the `clarify` skill's `references/existing-artifact.md` and build toward
-  that, rather than building a throwaway to rediscover a decision they have
-  already made. Otherwise run the decision prototype in
-  the `clarify` skill's `references/decision-prototype.md`. Either way, the
+- `needs-clarification` runs clarify. Write the result in pieces.md's shape
+  and keep the person's original words underneath.
+- `needs-prototype`: where the person has a mock, sketch or anything that
+  shows it, follow the `clarify` skill's `references/existing-artifact.md`.
+  Otherwise run the `clarify` skill's `references/decision-prototype.md`. The
   decision goes back onto the piece in words.
-- `needs-research` runs one of two steps and records what it finds on the
-  piece. A question about one external fact, such as what a provider's API
-  supports, runs the source check in
-  the `change-triage` skill's `references/source-check.md`. A question about
-  whether something already exists that could do the work runs
-  the `change-triage` skill's `references/existing-work.md`. Say which step you
-  ran and why, in one line, because a question can plausibly match either.
+- `needs-research` runs one step of `references/research.md`: the source check
+  for one external fact, the search for existing work otherwise. Say which and
+  why in one line.
 
-Two of those three need the person in the room. An interview needs somebody to
-interview, and a prototype exists so somebody can react to it. Research does
-not: the agent settles it alone.
+An interview and a prototype need the person present; research does not.
+Never answer a person-present question yourself. With nobody there, name the
+pieces waiting on them and leave their labels as they are. A guess marked
+`ready` is worse than an open question.
 
-Never answer a person-present question yourself. With nobody there, say which
-pieces are waiting on them and leave those pieces labelled as they are. A guess
-written onto a piece and marked `ready` is worse than an open question, because
-the label that said it was open has gone and `/implement` builds on the guess.
-
-The interview may show that the real block is a different one and swap
-`needs-clarification` for `needs-prototype` or `needs-research`. Follow the new
-label rather than shaping past it. A piece whose question is settled carries the
-`ready` label and no `needs-` label; the two never sit together.
+When the interview shows a different block, swap to the matching `needs-`
+label and follow it.
 
 ## Typed alone, or given a piece
 
-Typed alone, take a repair not yet reproduced first: a piece under the
-printout's `Broken` group without `ready`. Something that used to work and no
-longer does outranks anything new. Where there is none, take the
-lowest-numbered piece still waiting on a question, or the next unsized note,
-and shape it as above. When nothing is waiting and every piece is already
-ready, say so and point the person at `/implement` to build the next one. The
-command does not run out of things to do quietly; it says the plan is shaped.
+Typed alone, take a repair not yet reproduced first (under `Broken` without
+`ready`). Otherwise take the lowest-numbered piece waiting on a question, or
+the next unsized note. When every piece is ready, say the plan is shaped and
+point at `/implement`.
 
-Given an issue number, settle that piece rather than the lowest-numbered one, so
-somebody with one piece in mind is not made to work through the list. Where that
-piece is already ready, say so and make the build offer instead.
+Given an issue number, settle that piece. If it is already ready, say so and
+make the build offer.
 
-Where the person says they are not staying, take the pieces the agent can settle
-alone, which is every piece labelled `needs-research`. Then name the ones that
-need them and why, in one short list, so they know what is waiting for their
-return. Settle none of those in their absence.
+Where the person is not staying, settle every `needs-research` piece, then
+name the pieces that need them and why, in one short list.
 
 ## The build offer
 
-When a piece is ready, offer to build it: name the piece, and point at
-`/implement` in a fresh session as the way to build it, or "not now" to leave it
-as a ready piece for later. A fresh session is the offer for every piece, not
-only when a founding or long session ends, so a heavy planning context does not
-carry into the build. A small, clear repair is the one exception: the session
-is still light, so offer to build it here and now, which is `/implement`
-running on it. The offer is genuinely optional, and declining leaves a
-shaped, recorded piece that any `/implement` session picks up.
+When a piece is ready, name it and offer `/implement` to build it, or "not now"
+to leave it ready for later. A small, clear repair can be built here and now.
+Otherwise suggest a fresh chat only when this conversation has grown long, so
+the planning does not crowd the build. Declining leaves a ready piece any
+`/implement` session picks up.
 
-Shape itself never builds. Where the person asks to build here and now anyway,
-that is `/implement` running on the piece just shaped, not this command writing
-code, and a fresh session stays the better path whenever the planning context
-has grown heavy.
-
-A question asked while shaping never offers building as one of its answers,
-and the answer to it is never a request to build. Build here only when the
-person asks to after the build offer, in their own words.
+A question asked while shaping never offers building as an answer. Build here
+only when the person asks to after the build offer; that is `/implement`
+running on the piece.
 
 ## Record only durable information
 
-Follow change-triage's rule: add a changelog line only when work actually lands,
-the masterplan changes, the build path changes, a risk notice is accepted, or an
-idea is parked or rejected for a durable reason. Shaping a piece is not itself a
-changelog entry; the piece is the record.
+The piece is the record. Add a changelog line only when the masterplan or the
+build path changes, a risk notice is accepted, an idea is parked or rejected
+for a durable reason, a sensitive area changes, or work lands.
 
 ## Done when
 
-The request has exactly one route, the piece is written into its proper shape
-and labelled `ready` or with the question it still waits on, a routed question was
-started unless the person asked to file it, the person's original words are kept
-underneath a refinement, and nothing was built except
-through an accepted build offer.
+The request has exactly one route and the reason is written down, no work
+started before the route was chosen, the piece is written into its proper shape
+and labelled `ready` or with the question it still waits on, a routed question
+was started unless the person asked to file it, the person's original words are
+kept underneath a refinement, and nothing was built except through an accepted
+build offer.

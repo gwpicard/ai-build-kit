@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# Rehearse session-scoped GitHub credentials without an account or a network.
+# codex-github-auth.sh: rehearse session-scoped GitHub credentials without an account or a network.
 set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 python3 - "$ROOT" <<'PYTEST'
@@ -229,8 +229,8 @@ with tempfile.TemporaryDirectory(prefix="codex project ") as temp:
     result = command(copied, "--message")
     assert_case("Git failure recovery uses the same absolute command", str(launcher.resolve()) in result.stdout and
                 "do not sign in again" in result.stdout and "gh auth login" not in result.stdout)
-    for name in ("implement", "maintain", "section-builder"):
-        source = " ".join((root / ".agents/skills" / name / "SKILL.md").read_text().split())
+    for name in ("implement/SKILL.md", "maintain/SKILL.md", "implement/references/merge.md"):
+        source = " ".join((root / ".agents/skills" / name).read_text().split())
         assert_case(name + " sends Git password failures to the executable recovery message",
                     "unable to get password from user" in source and "codex-github-check.py" in source and "--message" in source)
     source = (launcher.parent.parent / "templates/foundation/AGENTS.md").read_text()

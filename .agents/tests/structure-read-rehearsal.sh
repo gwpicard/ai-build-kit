@@ -1,16 +1,19 @@
 #!/usr/bin/env sh
-# structure-read-rehearsal.sh: run the quarterly structure read against a
-# throwaway project whose history holds a visit, an old loop and a new one.
+# structure-read-rehearsal.sh: run the shipped loop read against a throwaway
+# project whose history holds a visit, an old loop and a new one.
 #
-# The project's last full visit is dated in its maintenance record, and one loop
-# between two files was already there on that date. After it, a second loop is
-# added. The read has to derive the earlier structure again from the saved
-# history, exactly as the shipped reference says, and name only the new loop,
-# at the line where each file imports the other. Then the visit is recorded
-# again and the read is run once more, which must say nothing at all.
+# For one build, compared with the commit the piece started from, only the
+# loop the piece added is named, at the line where each file imports the
+# other. For a visit, every loop no earlier visit offered is named, the old
+# one included, since nothing says it ever reached the person. Once one is
+# recorded as offered it is left out, and the other comes back; once both
+# are, the read prints nothing and exits 0. Each case runs with
+# dependency-cruiser and with the script's own import reader, and only the
+# record of offers may change in the project.
 #
-# It also proves the earlier state costs nothing on disk: the project's working
-# tree is the same after each read as before it.
+# A project with a `@/` path alias and Python files is read too. With
+# dependency-cruiser on hand, as a Next.js project has it, the alias is
+# followed through the tsconfig and the Python imports still count.
 #
 # The engine is used from PATH when present and otherwise installed into a
 # throwaway folder. A machine that can do neither fails here rather than
@@ -19,7 +22,7 @@
 set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
-READ="$ROOT/.agents/skills/maintain/references/structure-read.md"
+QUALITY="$ROOT/.agents/skills/implement/scripts/quality.py"
 
 fail() {
   echo "FAIL: $1" >&2
@@ -27,6 +30,7 @@ fail() {
 }
 
 command -v node >/dev/null 2>&1 || fail "node is needed to run this rehearsal"
+command -v python3 >/dev/null 2>&1 || fail "python3 is needed to run this rehearsal"
 
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
@@ -35,34 +39,22 @@ if ! command -v depcruise >/dev/null 2>&1; then
   echo "  depcruise not on PATH, installing it into a throwaway folder"
   mkdir -p "$WORK/engines"
   printf '{"name":"engines","private":true}\n' > "$WORK/engines/package.json"
-  (cd "$WORK/engines" && npm install --no-audit --no-fund --silent dependency-cruiser@18) ||
+  # TypeScript comes too, as it does in a Next.js project, since that is what
+  # dependency-cruiser reads TypeScript files and a tsconfig with.
+  (cd "$WORK/engines" && npm install --no-audit --no-fund --silent dependency-cruiser@18 typescript@5) ||
     fail "could not install dependency-cruiser, so the read could not be rehearsed"
   PATH="$WORK/engines/node_modules/.bin:$PATH"
-  export PATH
+  REHEARSAL_INSTALLED_DEPCRUISE=1
+  export PATH REHEARSAL_INSTALLED_DEPCRUISE
 fi
 
-node - "$READ" "$WORK" <<'NODE'
+node - "$QUALITY" "$WORK" <<'NODE'
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { execFileSync, spawnSync } = require('node:child_process');
 
-const [readFile, work] = process.argv.slice(2);
-const reference = fs.readFileSync(readFile, 'utf8');
-
-// --- the commands, read from the shipped reference ---------------------------
-
-function quoted(pattern, what) {
-  const match = reference.replace(/\s+/g, ' ').match(pattern);
-  assert.ok(match, `structure-read.md no longer names ${what}`);
-  return match[1];
-}
-const engine = quoted(/1\. `(depcruise [^`]+)`/, 'its first engine');
-const findCommit = quoted(/`(git rev-list -1 --before="<date> 23:59:59" HEAD)`/, 'how it finds the earlier commit');
-const copyCommand = quoted(/`(git archive <commit> \| tar -x -C <temporary folder>)`/, 'how it copies the earlier project');
-console.log(`  engine: ${engine}`);
-
-// --- the project and its history --------------------------------------------
+const [quality, work] = process.argv.slice(2);
 
 const project = path.join(work, 'project');
 fs.mkdirSync(path.join(project, 'src'), { recursive: true });
@@ -76,8 +68,20 @@ const git = (args, date) => execFileSync('git', args, {
   },
 }).trim();
 const put = (name, lines) => fs.writeFileSync(path.join(project, name), lines.join('\n') + '\n');
+const tree = () => git(['status', '--porcelain', '--untracked-files=all']);
+
+function loops(args, reader) {
+  const result = spawnSync('python3', [quality, 'loops', ...args], { cwd: project, encoding: 'utf8', timeout: 180000 });
+  assert.ifError(result.error);
+  if (reader) assert.ok(result.stderr.includes(`reader: ${reader}`), `the script did not use ${reader}: ${result.stderr}`);
+  const lines = result.stdout.trim().split('\n').filter(Boolean);
+  assert.equal(result.status, lines.some(l => l.startsWith('loop\t')) ? 1 : 0,
+    `the exit code does not match what was printed:\n${result.stdout}${result.stderr}`);
+  return lines;
+}
 
 git(['init', '-q', '-b', 'main']);
+put('package.json', ['{"name": "shop", "private": true, "type": "module"}']);
 put('src/index.js', [
   "import { placeOrder } from './orders.js';",
   "import { pay } from './payments.js';",
@@ -90,8 +94,8 @@ put('src/orders.js', ['export const placeOrder = () => 1;']);
 put('src/invoices.js', ['export const invoice = () => 2;']);
 git(['add', '-A']);
 git(['commit', '-q', '-m', 'Founding'], '2026-06-01T10:00:00');
+const founding = git(['rev-parse', 'HEAD']);
 
-// The last full visit, on the day of that commit.
 put('.ai-build-kit-maintenance', ['last-light-pass: 2026-06-01', 'last-full-pass: 2026-06-01']);
 git(['add', '-A']);
 git(['commit', '-q', '-m', 'Record the visit'], '2026-06-01T16:00:00');
@@ -107,88 +111,97 @@ put('src/invoices.js', ["import { placeOrder } from './orders.js';", 'export con
 git(['add', '-A']);
 git(['commit', '-q', '-m', 'Invoice every order'], '2026-08-15T10:00:00');
 
-// --- the read ---------------------------------------------------------------
+const expected = 'loop\tsrc/invoices.js:1 imports src/orders.js\tsrc/orders.js:3 imports src/invoices.js';
+const old = 'loop\tsrc/payments.js:1 imports src/refunds.js\tsrc/refunds.js:1 imports src/payments.js';
 
-function tree() {
-  return git(['status', '--porcelain', '--untracked-files=all']);
+for (const reader of [[], ['--reader', 'builtin']]) {
+  const label = reader.length ? "the script's own import reader" : 'dependency-cruiser';
+  const build = loops(['--base', founding, ...reader], label);
+  assert.deepEqual(build, [expected], `with ${label}, a build against its starting commit did not name its loop`);
+  console.log(`  ok: with ${label}, a build compared with its starting commit names only the loop it added`);
 }
 
-function loops(folder) {
-  const words = engine.replace('<source folder>', 'src').split(' ');
-  const result = spawnSync(words[0], words.slice(1), { cwd: folder, encoding: 'utf8', timeout: 120000 });
-  assert.ifError(result.error);
-  assert.equal(result.status, 0, `the engine failed: ${result.stderr}`);
-  const found = new Map();
-  for (const mod of JSON.parse(result.stdout).modules) {
-    for (const dep of mod.dependencies) {
-      if (!dep.circular) continue;
-      const members = [mod.source, ...dep.cycle.map(step => step.name)];
-      const key = [...new Set(members)].sort().join(' ');
-      if (!found.has(key)) found.set(key, [...new Set(members)]);
-    }
-  }
-  return found;
+// A visit offers what nobody was offered before, whenever it arrived. The old
+// loop was there at the last visit, but nothing records that it was offered,
+// so it is still printed: a loop that never reached the person is not hidden.
+const offered = line => {
+  const result = spawnSync('python3', [quality, 'offered', 'loops'], { cwd: project, encoding: 'utf8', input: line + '\n' });
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+};
+for (const reader of [[], ['--reader', 'builtin']]) {
+  const said = loops(['--skip-offered', ...reader]);
+  assert.deepEqual(said.sort(), [expected, old].sort(), 'a loop nobody was offered was hidden');
 }
+console.log('  ok: every loop no visit has offered is printed, including one from before the last visit');
 
-function importLine(from, to) {
-  const lines = fs.readFileSync(path.join(project, from), 'utf8').split('\n');
-  const target = './' + path.basename(to);
-  return lines.findIndex(line => line.includes(`'${target}'`)) + 1;
+// The visit offers one of the two, as if the cap had room for only one.
+const before = tree();
+offered(old);
+assert.match(fs.readFileSync(path.join(project, '.ai-build-kit-maintenance'), 'utf8'),
+  /^offered\|loops\|\d{4}-\d{2}-\d{2}\|src\/payments\.js\|src\/refunds\.js$/m, 'the offer was not recorded');
+assert.match(fs.readFileSync(path.join(project, '.ai-build-kit-maintenance'), 'utf8'), /^last-full-pass: 2026-06-01$/m,
+  'recording the offer lost the record\'s other lines');
+for (const reader of [[], ['--reader', 'builtin']]) {
+  assert.deepEqual(loops(['--skip-offered', ...reader]), [expected], 'the loop offered was printed again, or the other was lost');
 }
+console.log('  ok: the loop offered is not raised again, and the one that did not fit comes back');
 
-function read() {
-  const record = fs.readFileSync(path.join(project, '.ai-build-kit-maintenance'), 'utf8');
-  const date = record.match(/^last-full-pass: (\S+)$/m)[1];
-  const commit = git(findCommit.replace('<date>', date).replace(/"/g, '').split(' ').slice(1)
-    .reduce((args, word) => {
-      // Rejoin the date and time the shell would have kept together.
-      if (/^\d\d:\d\d:\d\d$/.test(word)) args[args.length - 1] += ' ' + word;
-      else args.push(word);
-      return args;
-    }, []));
-  const earlier = fs.mkdtempSync(path.join(work, 'earlier-'));
-  const shell = copyCommand.replace('<commit>', commit).replace('<temporary folder>', earlier);
-  execFileSync('sh', ['-c', shell], { cwd: project });
-  const before = loops(earlier);
-  fs.rmSync(earlier, { recursive: true, force: true });
-
-  const said = [];
-  for (const [key, members] of loops(project)) {
-    if (before.has(key)) continue;
-    const [first, second] = members;
-    said.push(`Since the last visit, ${first} and ${second} have started to depend on each other, `
-      + `at line ${importLine(first, second)} and line ${importLine(second, first)}. `
-      + 'A change to either can now break the other.');
-  }
-  return said;
+offered(expected);
+for (const reader of [[], ['--reader', 'builtin']]) {
+  assert.deepEqual(loops(['--skip-offered', ...reader]), [], 'with every loop offered, it should print nothing');
 }
+assert.equal(before, '', 'the reads left something in the project');
+assert.equal(tree(), 'M .ai-build-kit-maintenance', 'recording the offers changed something beyond the record');
+console.log('  ok: once every loop has been offered, it prints nothing and exits 0, and only the record changed');
 
-const treeBefore = tree();
-const said = read();
-console.log(said.map(line => `    ${line}`).join('\n'));
+const bad = spawnSync('python3', [quality, 'loops', '--base', 'no-such-commit'], { cwd: project, encoding: 'utf8' });
+assert.equal(bad.status, 2, 'an earlier state that cannot be read did not exit 2');
+assert.match(bad.stdout, /^not-compared\t/m);
+console.log('  ok: an earlier state that cannot be read says so and exits 2');
 
-assert.equal(said.length, 1, `expected one new loop, got ${said.length}`);
-assert.match(said[0], /src\/(orders|invoices)\.js and src\/(orders|invoices)\.js have started to depend on each other/);
-console.log('  ok: the loop added since the last visit is named');
-const expected = said[0].startsWith('Since the last visit, src/orders.js')
-  ? 'at line 3 and line 1' : 'at line 1 and line 3';
-assert.ok(said[0].includes(expected), `the import lines are wrong: ${said[0]}`);
-console.log('  ok: each file is named at the line where it imports the other');
-assert.ok(!said.some(line => /payments|refunds/.test(line)), 'the loop that was already there was reported as new');
-console.log('  ok: the loop that was already there at the last visit is not news');
-assert.ok(!said.some(line => /\d\s*%|score|grade/i.test(line)), 'a score reached the report');
-console.log('  ok: no score, grade or percentage');
-assert.equal(tree(), treeBefore, 'the read left something in the project');
-console.log('  ok: the earlier state was read from history and nothing was written into the project');
+// A path alias, as a Next.js project writes one, and a Python package, read by
+// the script's own reader.
+const other = path.join(work, 'other');
+fs.mkdirSync(path.join(other, 'src'), { recursive: true });
+fs.mkdirSync(path.join(other, 'shop'), { recursive: true });
+const g = args => execFileSync('git', args, { cwd: other, encoding: 'utf8', env: { ...process.env,
+  GIT_AUTHOR_NAME: 'R', GIT_AUTHOR_EMAIL: 'r@example.invalid', GIT_COMMITTER_NAME: 'R', GIT_COMMITTER_EMAIL: 'r@example.invalid' } }).trim();
+const w = (name, text) => fs.writeFileSync(path.join(other, name), text);
+g(['init', '-q', '-b', 'main']);
+w('tsconfig.json', '{\n  // the starter writes comments\n  "compilerOptions": { "paths": { "@/*": ["./src/*"] }, },\n}\n');
+w('src/cart.ts', "export const cart = () => 1;\n");
+w('src/price.ts', "export const price = () => 2;\n");
+w('shop/__init__.py', '');
+w('shop/orders.py', 'def place():\n    return 1\n');
+w('shop/invoices.py', 'def invoice():\n    return 2\n');
+g(['add', '-A']);
+g(['commit', '-q', '-m', 'Start']);
+const startedAt = g(['rev-parse', 'HEAD']);
+w('src/cart.ts', "import { price } from '@/price';\nexport const cart = () => price();\n");
+w('src/price.ts', "import { cart } from './cart';\nexport const price = () => cart;\n");
+w('shop/orders.py', 'from shop import invoices\n\n\ndef place():\n    return invoices.invoice()\n');
+w('shop/invoices.py', 'from .orders import place\n\n\ndef invoice():\n    return place\n');
+const both = spawnSync('python3', [quality, 'loops', '--base', startedAt, '--reader', 'builtin'], { cwd: other, encoding: 'utf8' });
+assert.equal(both.status, 1, both.stdout + both.stderr);
+const aliasLoops = [
+  'loop\tshop/invoices.py:1 imports shop/orders.py\tshop/orders.py:1 imports shop/invoices.py',
+  'loop\tsrc/cart.ts:1 imports src/price.ts\tsrc/price.ts:1 imports src/cart.ts',
+];
+assert.deepEqual(both.stdout.trim().split('\n').sort(), aliasLoops);
+console.log('  ok: the own reader follows a path alias from a commented tsconfig, and Python imports');
 
-// The next visit is recorded, and nothing changes after it.
-put('.ai-build-kit-maintenance', ['last-light-pass: 2026-09-01', 'last-full-pass: 2026-09-01']);
-git(['add', '-A']);
-git(['commit', '-q', '-m', 'Record the next visit'], '2026-09-01T10:00:00');
-const quiet = read();
-assert.deepEqual(quiet, [], `an unchanged project should produce nothing, got: ${quiet.join(' | ')}`);
-console.log('  ok: with nothing changed since the last visit, the read says nothing');
-assert.equal(tree(), '', 'the second read left something in the project');
+// The same project with a package file, as a Next.js project has, so the
+// script reaches for dependency-cruiser. The `@/` alias and the Python files
+// are still followed: a loop through either is not missed.
+w('package.json', '{"name": "shop", "private": true}\n');
+const auto = spawnSync('python3', [quality, 'loops', '--base', startedAt], { cwd: other, encoding: 'utf8' });
+assert.equal(auto.status, 1, auto.stdout + auto.stderr);
+assert.deepEqual(auto.stdout.trim().split('\n').sort(), aliasLoops,
+  `with dependency-cruiser on hand, a loop through the alias or through Python was missed (${auto.stderr.trim()})`);
+if (process.env.REHEARSAL_INSTALLED_DEPCRUISE) {
+  assert.match(auto.stderr, /reader: dependency-cruiser/, 'dependency-cruiser did not read the alias through the tsconfig');
+}
+console.log(`  ok: with dependency-cruiser on hand, the alias and the Python imports are still followed (${auto.stderr.trim()})`);
 
-console.log('\nstructure-read-rehearsal.sh: the new loop named, an unchanged project silent');
+console.log('\nstructure-read-rehearsal.sh: the loop a build added named, offered loops left out');
 NODE

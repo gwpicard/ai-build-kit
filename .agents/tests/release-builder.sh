@@ -52,14 +52,15 @@ for required in \
   .agents/skills/setup-ai-build-kit/templates/foundation/plan-refresh.sh \
   .agents/skills/setup-ai-build-kit/scripts/place-plan-helper.sh \
   .agents/skills/setup-ai-build-kit/templates/maintenance-record \
-  .agents/skills/screen-check/SKILL.md \
-  .agents/skills/setup-hosting/references/recipe-format.md \
+  .agents/skills/implement/references/screen-rules.md \
+  .agents/skills/setup-hosting/scripts/run-recipe.sh \
+  .agents/skills/setup-hosting/recipes/parts/scripts/check-lib.sh \
   .agents/skills/setup-hosting/templates/recipe.md \
   .agents/skills/maintain/VERSION \
   .claude-plugin/plugin.json \
   .claude-plugin/marketplace.json \
   agent-plugin/plugin.json \
-  agent-plugin/skills/screen-check/SKILL.md \
+  agent-plugin/skills/implement/references/screen-rules.md \
   agent-plugin/skills/setup-ai-build-kit/SKILL.md \
   agent-plugin/skills/setup-ai-build-kit/scripts/bootstrap-project.sh \
   agent-plugin/skills/setup-ai-build-kit/templates/foundation/plan-refresh.sh \
@@ -86,6 +87,7 @@ for forbidden in \
   .ai-build-kit-maintenance \
   release-manifest.txt \
   docs/MAINTAINING.md \
+  docs/RECIPES.md \
   .github/release.yml \
   .github/release-drafter.yml \
   .github/workflows/release-drafter.yml \
@@ -126,7 +128,7 @@ grep -qF '"version": "0.1.0"' "$FIRST/.claude-plugin/plugin.json" || \
   fail "Claude plugin version does not match the release"
 grep -qF '"./.claude/commands/setup-ai-build-kit.md"' "$FIRST/.claude-plugin/plugin.json" || \
   fail "Claude plugin does not load the six manual commands"
-grep -qF '"./.claude/skills/screen-check"' "$FIRST/.claude-plugin/plugin.json" || \
+grep -qF '"./.claude/skills/second-opinion"' "$FIRST/.claude-plugin/plugin.json" || \
   fail "Claude plugin does not load the internal disciplines"
 if grep -qF 'disable-model-invocation' "$FIRST/.claude/commands/setup-ai-build-kit.md"; then
   fail "Claude plugin start command still carries the retired manual-only setting"
@@ -143,14 +145,14 @@ grep -qF 'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json' \
   fail "agent plugin does not declare the open plugin standard"
 agent_plugin_skill_count=$(find "$FIRST/agent-plugin/skills" -mindepth 2 -maxdepth 2 \
   -name SKILL.md | wc -l | tr -d ' ')
-[ "$agent_plugin_skill_count" -eq 11 ] || \
-  fail "agent plugin does not expose exactly eleven installable skills"
+[ "$agent_plugin_skill_count" -eq 8 ] || \
+  fail "agent plugin does not expose exactly eight installable skills"
 [ "$(cat "$FIRST/agent-plugin/skills/maintain/VERSION")" = "v0.1.0" ] || \
   fail "agent plugin maintain skill version is wrong"
 released_skill_count=$(find "$FIRST/.agents/skills" -mindepth 2 -maxdepth 2 \
   -name SKILL.md | wc -l | tr -d ' ')
-[ "$released_skill_count" -eq 11 ] || \
-  fail "release does not expose exactly eleven installable skills"
+[ "$released_skill_count" -eq 8 ] || \
+  fail "release does not expose exactly eight installable skills"
 cmp -s "$FIRST/AGENTS.md" \
   "$FIRST/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md" || \
   fail "released root instructions differ from start's foundation template"

@@ -69,19 +69,21 @@ import re
 import shutil
 import sys
 
-# The kit's eleven skills today.
+# The kit's eight skills today.
 KIT_SKILLS = (
     "setup-ai-build-kit", "shape", "implement", "setup-hosting",
-    "maintain", "what-now", "clarify", "change-triage", "screen-check",
-    "section-builder", "second-opinion",
+    "maintain", "what-now", "clarify", "second-opinion",
 )
 
 # Every name a kit skill had before. `build` split into `shape` and
 # `implement`, `start` became `setup-ai-build-kit`, `plan` became `shape`,
 # `grilling` became `clarify`,
-# `ship` became `setup-hosting`, and `fix`, `queue` and `sync` folded into
-# `shape`, `implement` and `maintain`.
-FORMER_NAMES = ("build", "start", "plan", "grilling", "fix", "queue", "sync", "ship")
+# `ship` became `setup-hosting`, `fix`, `queue` and `sync` folded into
+# `shape`, `implement` and `maintain`, and the background skills
+# `change-triage`, `section-builder` and `screen-check` folded into `shape`
+# and `implement`.
+FORMER_NAMES = ("build", "start", "plan", "grilling", "fix", "queue", "sync", "ship",
+                "change-triage", "section-builder", "screen-check")
 
 KIT_SOURCE = "gwpicard/ai-build-kit"
 SKILL_FOLDERS = (".agents/skills", ".claude/skills")

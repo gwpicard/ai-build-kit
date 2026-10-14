@@ -211,7 +211,10 @@ for you to decide instead.
 You hear one line, such as "I took out two things this change did not need.
 They are listed on the piece.", or nothing when there was nothing to take out.
 The removals are saved as their own step, so asking for one back undoes only
-that step. A repair gets the same.
+that step. That step is refused if it changed a test, and the check on the
+pull request goes red if one ever does. A project set up before the check
+had that step is offered it at the next /maintain visit. A repair gets the
+same.
 
 If a build uncovers another piece of work, that new piece says "Found while
 building the invoice list", using the title of the piece that surfaced it.
@@ -364,19 +367,20 @@ What the agent may not do is take the notice back. Pushing back on the cost, the
 
 **Explore privately.** /setup-hosting runs no production evidence or launch procedure; it only confirms the prototype stays disposable and private, and records what would have to change to graduate.
 
-**Build and run it.** /setup-hosting runs the full evidence run, independent review, operational readiness, and the live transition. Off a recipe, readiness is a general list: a backup, a restored-backup rehearsal, a manual fallback, rollback, and a single caution if nobody receives alerts. Anything missing from it is a warning you hear once and find in the changelog, and the launch goes ahead.
+**Build and run it.** /setup-hosting runs the full evidence run, independent review, operational readiness, and the live transition. Off a recipe, the kit cannot check the launch steps: it names each of the eight it could not check, once, as a warning in the changelog, and the launch goes ahead.
 
 **Build with care.** /setup-hosting takes live everything outside a named sensitive area, does the caution it can do itself (a backup restored once, a rehearsal on a copy), and at a caution that is a person who has not looked, gives you the risk notice once. If you carry on, your acceptance is written down and that area goes live too. Where somebody outside the team is going to look, ask for the handover and /maintain prepares it.
 
-On a recipe, the recipe's own checks take the place of that list. /setup-hosting reads
-the recipe your project's AGENTS.md names and works through its eight sections
-in order, and each one gives you a plain line: preview up, live address updated,
+On a recipe, /setup-hosting reads the recipe your project's AGENTS.md names, and
+a script runs its eight checks in order. Each one gives you a plain line, in
+the same words every time: preview up, live address updated,
 rollback possible, backup present, restore works, no secret in the repo, logs
 readable, health answers. The rollback line says a rollback is possible and
 was not tried, because the kit does not roll back the live tool just to check.
 
 The kit runs the checks it can reach. Where a check runs on a server the kit
-cannot reach, you paste the result back and the kit reads it. Where only a
+cannot reach, it asks you in fixed words to paste the result back, and a
+script reads what you paste. Where only a
 person can judge, you look and the kit writes down what you said. A check that
 fails or cannot run is a warning, said once and written in the changelog, and
 the launch goes ahead. The one thing a first launch waits for is its address,
@@ -446,10 +450,10 @@ when it breaks, that is a service somebody runs and pays for, and the kit does
 not set one up." If the fit check already names who receives alerts, it does
 not repeat this caution. Explore privately gets neither check nor caution.
 
-When the tool will run on a server somebody else runs, the first launch needs
-an address, and the kit never contacts that server. So /setup-hosting writes a hosting
-request into the masterplan's "How it stays running" section and prints it for
-you.
+When the tool will run on a server somebody else runs, as on the Coolify
+recipe, the first launch needs an address, and the kit never contacts that
+server. So /setup-hosting writes a hosting request into the masterplan's "How
+it stays running" section and prints it for you.
 
 It names the repository and branch, the lane (private network or
 internet), the port, the names of the settings the tool needs, the folders that
@@ -477,7 +481,7 @@ Keys and passwords never go in a file Git tracks. On this computer they live
 in files Git ignores, such as `.env`, and the live values sit in the host's own
 settings, entered by name.
 
-After the first launch, a later /setup-hosting compares the live copy with `main` and tells you each gap in one plain line: whether the live copy runs the latest merge, whether a database change has not been applied, whether a secret or setting is missing on the host, whether health answers, and whether the backup works.
+After the first launch, a later /setup-hosting compares the live copy with `main` and tells you each gap in one plain line: whether the live copy runs the latest merge, whether it is held on an earlier version since a rollback, whether a database change has not been applied, whether a secret or setting is missing on the host, and whether health answers. It then runs the recipe's checks again, the backup and the restore included.
 
 It repairs each gap only after a yes that names it. It rechecks the build path first if reliance or consequence has grown. A warning the changelog already holds comes back as one line pointing to it, so anything given in full is new. Every later run leaves one dated entry in the changelog, even when it finds nothing to repair, with its rollback line, such as "Rollback possible, not tried". That entry arrives as a records pull request with its own merge question, and where your host builds every change, that merge is one more build. Moving to another host or recipe is a later run too: the old live copy keeps serving until the new one answers.
 
@@ -492,8 +496,9 @@ proved the preview, launch, rollback, secrets, logs and health steps on a live
 deployment. The backup and restore steps are shared and were run for real once.
 The recipe for your own server was tried on a private network and on the public
 internet. Its preview for an app without a domain ran on the server but had no
-address the person could open. Read the recipes' trial records through the
-[README's recipe links](README.md#going-live) for the results and their limits.
+address the person could open. Each recipe's trial record, with the results
+and their limits, is the `PROVEN.md` in its folder, which the
+[README's recipe links](README.md#going-live) lead to.
 
 The kit runs a rollback itself where the recipe provides a command. Otherwise
 you use the host's page and paste back the result. The host may keep only the
@@ -595,9 +600,9 @@ gives you that published release and never work nobody has released yet. When
 a newer kit is available, the agent shows the version and what changed, then
 waits for approval.
 
-An update refreshes only the eleven AI Build Kit skills and leaves your tool,
+An update refreshes only the eight AI Build Kit skills and leaves your tool,
 its records, and its own checks alone. It also adds any skill the kit has
-renamed or added since, and says if the installation is short of the eleven.
+renamed or added since, and says if the installation is short of the eight.
 When the kit has renamed a command, the update also rewrites the command list
 in your AGENTS.md, with your approval, so you are not left to edit it by hand.
 
@@ -619,23 +624,30 @@ holding an older copy, gets the current one on that visit, so the kit reads
 what is ready from that list rather than working it out by hand. A clean
 checkpoint comes first, so an interrupted update can be recovered.
 
-The one update that split the old `/build` into what are now `/shape` and
-`/implement` runs a one-time step that labels your existing pieces so they can
-still be built; it says what it changed. Any visit that finds an older
-`plan.md` list offers to move it into your project's issues, and keeps
-offering until it is moved. Any visit that finds a line in AGENTS.md
-or the masterplan pointing at a skill's file by a folder your installation may
-not have offers to name the skill instead, changing only those lines, and only
-on your yes.
+A project founded while the kit had a single `/build` command has no `ready`
+label on GitHub, so /implement would build none of its pieces. The check reads
+the project's issues rather than its installed skills, so every install route
+is covered. It labels each shaped piece `ready`, leaves a piece still waiting
+on a question for /shape, and says how many it marked. The visit also says
+once what an old command became: /build is now /shape and /implement, /start
+is now /setup-ai-build-kit, and /plan is now /shape.
 
-The first visit after the kit changed how it decides the build path offers to
-rewrite the build-path section of your masterplan to the new shape, shows the
-old text above the new, keeps every accepted risk word for word, and changes
-nothing without your approval.
+Any monthly visit that finds a `plan.md` holding the kit's old list of pieces
+says they are not picked up until they move into your project's issues, and
+offers to move them. A no is not recorded, so the next monthly visit offers
+again while the file is there. Any visit that finds a line in AGENTS.md or the
+masterplan pointing at a skill's file by a folder your installation may not
+have offers to name the skill instead, changing only those lines, and only on
+your yes.
+
+A masterplan whose build-path section still uses the fields from before the
+kit decided the path by what the work touches is offered a rewrite to today's
+shape. It shows the old section above the new one, copies each accepted risk
+word for word, and changes nothing else in the masterplan without your yes.
 
 A project installed before the kit had six commands still offers the old
 ones after its update. The first /maintain after the update says so in one
-line: /fix and /queue are now part of /shape and /implement, /sync is part of
+line: /fix and /queue are part of /shape and /implement, /sync is part of
 /maintain, and /ship is now /setup-hosting. Nothing you built changes. It
 offers to remove the old skills, to rewrite the command list in your
 AGENTS.md, and to correct the one sentence the kit itself wrote into your
@@ -718,21 +730,22 @@ Unless the project is a private exploration, it also looks for code copied
 from one place to another, code nothing uses any more, and dependencies nothing
 needs, using tools that read the project rather than the agent's impression of
 it. Each finding names the file and line, and it joins the same short list of
-at most three proposals. It finds copied code; it does not find two pieces of
-code that do the same job written differently. When it finds nothing, you hear
-nothing about it.
+at most three proposals. A finding you were offered at an earlier visit is not
+raised again. One that did not fit on the list, or that a visit could not
+check, comes back at the next visit. It finds copied code; it does not find
+two pieces of code that do the same job written differently. When it finds
+nothing, you hear nothing about it.
 
-It also compares the project's structure with the last full visit and names
-any new place where two parts have started to depend on each other in a
-circle. The earlier structure is read again from the saved history each time
-rather than kept anywhere, so it cannot go out of date. Most quarters nothing
-got worse, and you hear nothing.
+It also names any place where two parts depend on each other in a circle, the
+same way: one you were offered before is not raised again. Most quarters there
+is nothing new, and you hear nothing.
 
 It also reads all of the project's documents for bloat: a paragraph written
 out in full in two places, and a document nothing mentions any more. Each one
 comes as an offer, to keep one copy or to delete the page, and nothing changes
-without your yes. It finds copies, not two documents that say the same thing
-in different words.
+without your yes. One you were offered at an earlier visit is not raised
+again. It finds copies, not two documents that say the same thing in
+different words.
 
 /maintain also prepares a handover when you ask for one: a document for
 somebody outside the team who will look at one sensitive area, or take the

@@ -5,251 +5,309 @@ description: The everyday command for building a piece that has already been sha
 
 # Implement
 
-Use the current session for related, well-bounded work while the context
-remains clear. Start fresh after a long, confused, interrupted, or unrelated
-session, and whenever an independent review is required. The documents are
-the source of truth either way. Read masterplan.md first, build-path section
-first, then the project's pieces.
+This command builds; it does not shape. It carries a ready piece to a
+confirmed, saved change, and on the pull-request route merges it only on a yes
+that names the merge. On a live project that merge is a deploy.
+`references/merge.md` holds the first upload and the merge.
 
-This command builds; it does not shape. It takes a piece that `/shape` has
-already shaped and marked ready, and carries it to a confirmed, saved change.
-On the pull-request route it then asks the person whether to merge, and merges
-only on a yes that names the merge. On a live project that merge is a deploy,
-so this is also how a change goes live. section-builder's "Merge" step holds
-the rules, and the checks that come before the merge on a live project.
-Shaping, sizing, and settling a question all happen in `/shape`, so this command
-never has to guess what a piece means. A request that is not yet a ready piece
-belongs to `/shape` first.
+Read masterplan.md first, build-path section first. Refresh the printout with
+`sh .agents/tools/plan-refresh.sh` and read `plan.local.md`; never sort the
+pieces by hand. The `setup-ai-build-kit` skill's `references/pieces.md`
+describes the pieces, their labels, and what to do when GitHub is unreachable.
 
-`sh .agents/tools/plan-refresh.sh` prints the open issues into `plan.local.md`.
-Refresh first, then read that, and never sort the pieces by hand in its place.
-The `setup-ai-build-kit` skill's `references/pieces.md` describes how the
-pieces are kept, and what to run in a project that has no copy of the helper.
+Before taking a piece, run `python3` with the `maintain` skill's
+`scripts/upgrade-check.py` from the project root and keep only its exit code.
+Where it exits 1, say: "The kit update is not finished. /maintain finishes
+it." Then carry on.
 
-Before taking a piece, read whether a kit update is still unfinished. From
-the project root, run `python3` with the `maintain` skill's
-`scripts/upgrade-check.py`, and keep only its exit code. It reads and changes
-nothing. Where it exits 1, say one line: "The kit update is not finished.
-/maintain finishes it." Then carry on. The build does not wait for it. Any
-other exit says nothing.
+In Codex, when a Git push, fetch or remote check fails with `unable to get
+password from user`, run the installed `setup-ai-build-kit` skill's
+`templates/foundation/codex-github-check.py` with python3 and `--message`. Give
+its sentence and stop this session's work, without signing in again or
+retrying.
 
-When GitHub cannot be reached, say so, say when the printout was last written,
-and work from it. The piece already in hand carries on. Anything that would
-change what is on the plan waits, because an issue that cannot be updated is
-not a record of anything.
+## Choosing the piece
 
-In Codex, when a Git push, fetch or remote check fails with
-`unable to get password from user`, run the installed `setup-ai-build-kit`
-skill's `templates/foundation/codex-github-check.py` with python3 and `--message`.
-Give its sentence with the absolute launcher path and stop this session's work.
-Do not sign in again or retry the failed command in this session.
+Typed alone, a ready repair comes first: a piece under the printout's `Broken`
+group marked `(ready)`. Otherwise, where one ready piece under `To build` is
+free and the build path allows it, take it. Where several are, show the list
+below and let the person choose; in an unattended run take the lowest-numbered.
 
-## Typed alone
+A ready piece carries `ready`, has a `## Done when`, and waits on no question.
+A piece with open parts is a container, not a slice to build directly: take
+one of its parts.
 
-A ready repair comes first: a piece under the printout's `Broken` group marked
-`(ready)`, which the printout gives only to a repair nobody is building and
-nothing open holds up.
-Something that used to work and no longer does outranks anything new.
-section-builder builds it with the repair rules. Otherwise, where only one
-ready piece is free to start, take it: the one nothing open is holding up and
-whose class the current build path allows. Where more than one is, show them
-as "Taking on several pieces" below says, and let the person choose. In an
-unattended run nobody is there to choose, so take the lowest-numbered one.
-A ready piece is one `/shape` has finished
-shaping: it carries the `ready` label, has a `## Done when` line, and waits on no
-open question. The issue list says which are held up, so this needs no digging.
+Given an issue number, build that piece if it is ready, or send it to `/shape`
+with one line on why not. Given a request in plain words, build the ready piece
+it matches; otherwise point at `/shape`. Given a report that the live tool
+broke, follow the `setup-hosting` skill's "Rolling back" first.
 
-A piece with open parts is a container, not a slice to build directly. Skip it
-and take one of its parts, the same way you would take any other ready piece; the
-parent closes on its own when its parts all close. The issue list carries the
-sub-issue count, so a parent is known without digging, the way a blocker is.
+A piece still carrying a `needs-` label, or with no `## Done when`, is not
+ready. This command does not settle the question: say what it waits on, point
+at `/shape`, and take the next ready piece instead.
 
-Before handing an eligible piece to section-builder, confirm it's genuinely
-unblocked, confirm the current build path allows it, and identify its
-evidence and save route from the piece and the build path. Read the piece's
-subject labels rather than reclassifying it; the classification was settled in
-`/shape` and section-builder reads it rather than re-deriving it.
+A piece with `## Waiting on you` is not attempted. Say the step in the piece's
+words; in an unattended run leave it and take the next. Where you can do the
+step yourself, do it.
 
-A piece labelled `blocked` needs attention before it counts as buildable again:
-one safely prepared and stopped at a recorded condition stays skipped until that
-condition is met, or until the person carries on after the risk notice and the
-acceptance is recorded; one parked
-after repeated failure (references/running-longer.md) needs routing back to
-`/shape` first, for another look.
+A piece labelled `blocked` at a recorded condition stays skipped until the
+condition is met or the person carries on after the risk notice. One parked
+after repeated failure goes back to `/shape`. The blocked-by link decides, not
+the label: a piece whose blockers have closed is buildable, and you say the
+label looks stale. Two pieces holding each other up is a planning mistake to
+break in `/shape`. A piece assigned to somebody else is theirs: skip it, say
+who has it, and offer to take it over only if they are gone.
 
-## Taking on several pieces
+When nothing is ready, say so and name what is waiting on what.
 
-Somebody taking on several pieces at once needs to see the whole set before
-choosing. So when no ready repair is waiting, and the printout holds more than
-one piece under `To build` marked `(ready)` that the current build path
-allows, show what can be built together and what waits on what, and ask which
-to take. The same holds when the person asks for the whole list in plain
-words, such as "what can I build in parallel?", and wants no build: show it
-and stop there.
+### Taking on several pieces
 
-A ready repair comes before the list, in both cases. Where one is waiting,
-name it first, as "Typed alone" says, since something that used to work
-outranks anything new. Typed alone, build it. Asked for the list alone, name
-the repair above the two groups and still build nothing.
+Where several ready pieces are free, or the person asks what can be built in
+parallel, show two groups from the printout, after any ready repair:
 
-`/what-now` names one next step and at most three things, because somebody lost
-cannot use more. That cap stays. The whole list lives here, at the moment of
-building, and never goes back into `/what-now`.
+**Build these together now.** The count, then every ready piece. None waits on
+another.
 
-The printout is the only source. Where the project has no copy of the helper,
-the `setup-ai-build-kit` skill's `references/pieces.md` says what to run
-instead. If GitHub cannot be reached, show the printout as it stands and say
-when it was written, because an old list a person can see beats no list at
-all.
+**These wait their turn.** Each blocked piece in one line naming what releases
+it: "deposits cannot start until card payments is built".
 
-The printout has already done the sorting. A piece under `Blocked` names the
-piece holding it up, and a piece with an open blocker is never under
-`To build`, so a ready piece cannot be waiting on another ready piece. Never
-work that out again from the issues. Read the masterplan's build-path section
-too: a piece the path will not allow is not ready work however the label reads.
+Piece names, never issue numbers. Leave out pieces waiting on a question, and
+name a sized piece with no marker as one `/shape` still has to mark ready.
+Where the ready group is long, say how many a sitting can hold. Do not rank or
+choose. Showing the list builds nothing; build the chosen pieces one at a time.
 
-Two groups, in this order.
-
-**Build these together now.** Every ready piece. They have no dependency between
-them, which is what makes them safe to take on at once. Say the count first, in
-one line, then the pieces.
-
-**These wait their turn.** The blocked pieces, one line each, saying which piece
-releases it: "deposits cannot start until card payments is built". Where a chain
-runs deeper than one, put the piece that unlocks the most first and let the
-rest follow it.
-
-Piece names, never issue numbers. The person cannot follow a number, and the
-printout carries the name of the blocking piece already.
-
-A piece waiting on a question rather than on another piece is not ready and
-not blocked by work. Say which of the three questions it needs and leave it out
-of both groups. A piece with a `Waiting on you` step is named as the person's own
-to do, and you never ask for a key, a password, or a token in a message.
-
-A piece under `To build` carrying no marker at all has been sized but never
-marked ready. Name it with those, and say `/shape` is what marks it ready. This
-is the one case where a piece looks buildable in the printout and is not, and it
-matters most when that piece is the one holding another up.
-
-Where nothing is blocked, say nothing about it rather than printing an empty
-group. Where the ready group is long, say once how many pieces a sitting can
-realistically hold, since taking on eight at once is the mess this list exists
-to prevent. Do not rank the pieces and do not choose for the person.
-
-Showing the list builds nothing. Wait for the person to name what to take, then
-build those pieces one at a time, each as section-builder says.
-
-## A piece already built
+### A piece already built
 
 A piece whose pull request is open with a green check waits only for its
-merge. When the person types this command alone, or asks to put such work
-live, name each such pull request in one plain line that says what it changes,
-and ask for the yes as section-builder's "Merge" step says, after the checks
-that step makes on a live project. Their own words count only where they
-already named the merge, as in "merge both and put it live". "Put it live"
-names no merge, so ask. Never merge a pull request the person has not named
-or plainly covered.
+merge. Typed alone, or asked to put such work live, follow
+`references/merge.md` for each. "Put it live" names no merge, so ask.
 
-## When a piece waits on the person
+## Building the piece
 
-A piece carrying a `## Waiting on you` section cannot be built until that step is
-done. Do not attempt it, and do not pass it over in silence. Say what the step
-is, in the words the piece uses, and that building carries on once it is done.
+One piece per pass, always, directed by someone who judges it by behaviour.
 
-In an unattended run, name the step, leave the piece where it is, and take the
-next ready piece, so the run keeps working and the step is waiting when the
-person comes back.
+### 1. Safe start
 
-Where the step turns out to be something you can do yourself, do it and carry on
-rather than asking. A piece should never hold work up for something the agent
-could have gone and done.
+Read the piece in full, its `Under the hood` notes, the build-path section, and
+anything in the masterplan or AGENTS.md's stack section it points to. Check git
+status: uncommitted work stops the build, and /what-now owns that
+conversation. Bring `main` up to date and start from it on every save route including the checkpoint route. Where `main` cannot be reached, start from
+the local copy and say so in one line.
 
-## When the next piece is not ready
+Choose the save route before changing anything:
 
-A piece that still carries `needs-clarification`, `needs-prototype`, or
-`needs-research` has a question to settle before its code is written. An issue
-with no `## Done when` was typed by hand and never sized. Neither is ready, and
-building either one only guesses the answer.
+1. **Checkpoint route.** Private or disposable exploration, with no shared or
+   live reliance and no change to data, access, integrations, money,
+   autonomy, or operations.
+2. **Pull-request route.** Shared or live use, a behavioural change, data or
+   permissions, an outside service, an operational change, or whatever the
+   build path requires.
+3. **Flagged route.** The work touches a named sensitive area whose caution
+   is neither done nor accepted. Before building inside the area, give the
+   risk notice once, in full, as the `setup-ai-build-kit` skill's
+   `references/fit-check.md` describes. If the person carries on after it,
+   write the `Accepted:` line with their words and the date, read it back,
+   and build and save on the pull-request route, in the reply that answers
+   them, with no further question. A lock that only waits for this caution
+   opens with the acceptance unless they ask to keep it. If they do not carry
+   on, build only up to the recorded condition. In an unattended run never
+   write an acceptance: stop at the condition, which is a successful outcome
+   (step 8).
 
-This command does not settle the question. Settling it is planning, and planning
-is what `/shape` is for. Say in one sentence what the piece is waiting on, and
-point the person at `/shape` to shape it. Then take the next ready piece instead,
-so a session that asked to build still builds something. Where nothing else is
-ready, say so plainly rather than shaping the waiting piece here.
+The pull-request and flagged routes work on a short-lived branch from the
+up-to-date `main`. Where GitHub cannot be reached, build and save on the
+branch, and note the missing pull request in one plain line on the piece. A
+step a service could not do is a note, never a warning or a risk.
 
-## Given a specific piece or a request
+The project's first push waits for the person's yes, as "The first upload" in
+`references/merge.md` says.
 
-Typed alone, take the next ready piece as above.
+Run this skill's `scripts/piece-labels.sh` with `start` and the piece's number
+before changing anything. It swaps `ready` for `building` and assigns the
+piece.
 
-Given an issue number, build that piece if it is ready, and send it to `/shape`
-if it is not, saying in one line why it is not ready.
+### 2. Agree the visible result
 
-Given a report that the live tool broke, wherever it was typed, run the
-`change-triage` skill's "A live break after a recent merge" first, so the
-earlier version can come back before anything is built.
+Say back what the person will be able to do or see, what is outside it, and
+how it will be checked. Ask for a yes only when something is still ambiguous.
 
-Given a request in plain words, check whether it already matches a ready piece.
-Where it does, build that piece. Where it does not, this is new or unshaped
-work: point the person at `/shape`, which shapes a request into a piece. This
-command never shapes a typed request itself, and it never builds past an open
-question.
+### 3. Choose evidence
 
-## When the pieces contradict each other
+Pick the smallest credible evidence for every subject the piece carries. A
+piece with two subjects needs what both demand, and the stricter save route.
 
-The blocked-by link is the truth and the `blocked` label is only a hint, so read
-the link. A piece whose blockers have all closed is buildable even with the
-label still on it. Say the label looks stale, and leave taking it off to `/maintain`.
+Where a machine can check the piece, that check runs and must pass. A screen
+that looks right is never a substitute for a check that was available and skipped.
 
-When nothing is ready, because everything open is held up, still waiting on a
-question, or two pieces hold each other up, say so plainly and name what is
-waiting on what. Standing there with nothing to say is the one unhelpful answer.
-Two pieces blocking each other is a planning mistake rather than a state to wait
-out, so offer to break it in `/shape`.
+- An automated behaviour test is required for rules, calculations,
+  permissions, data changes, integrations, background behaviour, bugs, and any
+  done line a machine can judge.
+- A guided manual check is enough for copy, layout, colour, exploratory
+  interaction, usability, and throwaway prototypes.
+- An operational rehearsal is required for backups, restores, migrations,
+  rollback, alerts, deployment, and failure recovery. Adding a field takes a
+  test; changing records people already have takes a rehearsal on a copy.
+- An outside fact runs the source check in the `shape` skill's
+  `references/research.md` first.
 
-A piece assigned to somebody else is theirs. Skip it and say who has it. Where
-that person is no longer around, offer to take it over and let the person
-decide, because reassigning somebody's work is their call.
+On Build with care, offer the optional check in `references/test-strength.md`
+once the tests pass. It adds no gate.
 
-Two people building the same piece is what claiming a piece exists to prevent,
-so say it the moment you see it rather than at the end.
+### 4. Establish the baseline
 
-## Naming the next piece
+A piece labelled `broken` is a repair: load `references/repair.md` and follow
+"Building a repair" from here.
 
-When the report at the end of a build names what can be built next, read it off
-the printout section-builder has just refreshed. A repair under `Broken` marked
-`(ready)` comes first, since the printout marks one ready only when nobody is
-on it and nothing open holds it up. Otherwise, name only a piece under
-`To build` marked `(ready)`, and never the piece just built. Where neither
-group holds such a piece, say that nothing is ready to build now, say what the rest
-are waiting on, and name no piece as next. Never work the next piece out from
-the issue list or its blocked-by links by hand: the printout already keeps a
-piece with an open blocker out of `To build`, and a hand reading does not.
+Otherwise show the new check fails before the behaviour exists, or establish
+the passing baseline before a refactor, or describe the current screen before a
+visual change. Never write a meaningless test to have one. Note the commit the
+piece starts from; the trim and the structure check read from it.
+
+### 5. Build one vertical slice
+
+Build only the agreed behaviour, end to end, in the smallest reasonable change,
+with focused checks as you go. Prefer managed services and the project's
+conventions, and avoid speculative abstraction. Groundwork is allowed only as
+its own vertical slice, or an expand-then-contract sequence that keeps the checks green throughout, ordered ahead as its own piece. Stop and say so if
+the change grows past what was agreed.
+
+A build that reaches an outside service follows AGENTS.md's Secrets rule. A
+command that changes a live service's settings or data, other than saving code
+through the save route, waits for a yes that names every setting or record it
+will change, from the command's own preview where it has one, and says
+whether it can be undone. Ask before, never after. In an unattended run leave
+it unrun and say so on the piece. On a live project a build never applies a
+migration itself; /setup-hosting does that before the merge.
+
+When the piece carries `visual`, or the change touches a file that renders a
+page, view, component, template, style or native interface, load
+`references/screen-rules.md` before the guided check.
+
+Work the build uncovers becomes a new piece, filed by pieces.md's rule, with
+one line such as "Found while building the invoice list." When the person asks
+for more mid-build, ask once: this piece, or a new one? On "this piece", add it
+to `## Done when`, read it back, and build it. Never fold a request in without
+that answer.
+
+A test that passes only on a retry is unreliable evidence: repair or replace it
+before saving. Keep engineering vocabulary out of what the person sees.
+
+### 6. Hand over the behaviour
+
+Run the tests, and the type check and linter AGENTS.md's stack section names.
+Fix any failure at the root. Then, on Build and run it and Build with care, run
+the trim in `references/trim.md` and give its one line.
+
+Give the exact action to try, the expected result, any known limitation, and
+the kind of evidence behind it. Give one address: stop any preview this
+session started, use the project's recorded preview address, and where
+something else holds it, say what. Never act in a browser tab the person is
+using; use your own. Stop the previews you started once they have tried it.
+
+The person confirms behaviour wherever judgement is needed. A piece with no
+face, such as a scheduled job, is triggered against a made-up case and its
+output shown. Describe a gap as expected versus actual, and fix it at the root.
+
+### 7. Run required review
+
+Run the reach check in `references/reach-check.md` and the tests it names. On
+Build with care, compare what the change reaches with the sensitive-area map; a
+match starts the review and you say: "This change reaches <area>, so a review
+is running." Check a boundary with sentrux or dependency-cruiser where present,
+or by reading the changed imports. Update the map in the same save as any code
+move.
+
+Run `python3` with this skill's `scripts/quality.py loops --base <start
+commit>`. Exit 0: say nothing. Exit 1: say "This change added a loop between
+<part> and <part>." A boundary crossing gets "This change crossed the boundary
+around <area>." Exit 2: note it internally. Never show a score. The person may
+fix it or leave it; record the choice on the piece.
+
+When the build path, the subjects, or a sensitive area call for review, run
+second-opinion by the best independent method in the capability profile before
+saving. Where the trigger names a person, that person is the review; a
+second-opinion run or a green check is not.
+
+### 8. Save
+
+Before saving, apply the piece's `## Masterplan change` and move the
+trued-against mark as the `setup-ai-build-kit` skill's
+`references/masterplan-changes.md` says. Where its `scripts/trued-mark.sh`
+exits other than 0, leave the mark, say in one line that /maintain checks the
+whole masterplan against the code, and carry on.
+
+Checkpoint route: update the records, commit, and state the checkpoint.
+
+Pull-request route: update the records, commit, push, open a pull request
+titled after the piece with a plain summary and `Closes #<number>`, and run the
+project checks. List any unsettled finding worth stopping for under `Worth
+stopping for` in the body, and remove it once settled. Never present it as
+ready until the check is green. If it goes red, say so, read the failure
+yourself, fix it, and push again. Never merge before step 10, and never on a
+red check.
+
+Where GitHub did not start the check at all, such as for billing or Actions
+switched off, read the reason with `gh run view` and run the project check
+here. On Explore privately the local result decides: say why in one line and
+record it in CHANGELOG.md in this pull request (one line pointing to an
+existing entry is enough). On the other paths the merge waits: say what stops
+it and where the person fixes it. Never switch the check off, edit its
+workflow, or retry it in a loop. Switch it off only when the person asks in
+their own words, and record in CHANGELOG.md how to turn it back on.
+
+Flagged route without an acceptance: take the pull-request route up to the
+condition, then record the exact condition and that /maintain prepares a
+handover on request, label the piece `blocked`, name the work that can
+continue, and say plainly the flagged capability is not ready or live. That is
+a completed pass.
+
+### 9. Update the records
+
+Update the piece, a dated changelog line written from its `So that` and `Done
+when` in plain words, the masterplan through its recorded change, and AGENTS.md
+only for a lasting convention. Where the tool now reaches something new outside
+itself, update the connections picture and say what it reaches. A finished
+build leaves nothing for /maintain to correct.
+
+When naming what comes next, read it from a refreshed printout, by pieces.md's
+rule, and never name the piece just built.
+
+### 10. Merge
+
+Once the check is green and the records are in the pull request, load
+`references/merge.md` and follow it. In an unattended run nobody is there to say yes, so never merge: report the piece as ready for review.
 
 ## Typed with auto, or handed to a goal mode
 
-Auto is not an ordinary peer to normal building; it is earned, not default.
-Before enabling it, require: at least three normal pieces completed cleanly,
-no unresolved review or flagged work waiting, clean Git state, evidence a machine can
-check for every selected piece, no piece still waiting on a question
-(`needs-clarification`, `needs-prototype`, or `needs-research`), no repair
-labelled `broken`, every selected
-piece self-sufficient enough to build without a person present, meaning its
-`Under the hood` notes carry what the build needs, nothing needing
-human judgement in the batch,
-no pending build-path transition, and the user's explicit approval of the
-batch. A project has earned auto mode when its records and checks have
-repeatedly predicted successful ordinary builds; the presence of an agent
-feature called "goal" or "auto" does not itself make the project eligible.
+Auto is earned. Before it runs, require: three ordinary pieces completed
+cleanly, no unsettled review finding worth stopping for, no flagged work
+waiting, a clean tree, evidence a machine can check for every selected piece,
+no piece waiting on a question, no repair, every piece
+self-sufficient enough to build without a person present through its
+`Under the hood` notes, nothing needing human judgement in the batch, no
+pending build-path change, and the person's yes to the batch. Then load `references/running-longer.md` and follow it.
 
-Once eligible, load references/running-longer.md before starting and follow
-it. The shape, so the person knows what they are agreeing to: the plan is
-approved once, only ready pieces a machine can prove get taken, a failing piece is
-retried three times and then parked, a named sensitive area stops the run,
-and it ends through the route required by the build path: normally one pull
-request carrying a checklist of things to try before merging, or a confirmed
-checkpoint for eligible private exploration.
+## Excuses that don't hold
+
+- Urgency does not remove the need for evidence.
+- Small does not permit hidden scope.
+- Visual work does not need a fake automated test.
+- Private exploration does not need pull-request ceremony.
+- Shared or risky work is not downgraded because setup is inconvenient.
+- A review finding does not authorise unrelated cleanup, and the trim does not
+  authorise a restructure.
 
 ## Done when
 
-The route was followed, the records are true, and the piece is confirmed and saved through the required route, merged on the person's yes or left ready for review with what it waits for, safely blocked at a recorded condition, or the user knows exactly where things stopped and why.
+The route was followed and the records are true. Each piece built ends in one
+of two outcomes, both complete passes, or the person knows exactly where it
+stopped and why:
+
+- Complete: credible evidence, with any available machine check run and green,
+  the result confirmed where needed, required review satisfied, the records
+  true, and the save route complete. On the pull-request route, the pull
+  request is merged on the person's yes, or left open and ready with what it
+  waits for.
+- Safely blocked: stopped at its recorded condition, labelled `blocked`, the
+  caution recorded, unblocked work named, and no claim that the flagged
+  capability is ready or live.

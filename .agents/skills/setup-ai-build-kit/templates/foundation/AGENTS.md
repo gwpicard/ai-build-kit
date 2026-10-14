@@ -12,27 +12,24 @@ read the relevant part of the masterplan, the current piece, and the capability
 profile below. Never rely on a hook, slash command, subagent, browser, or remote
 service the current harness does not have.
 
-Keep this file under 200 lines and hold only what the code cannot show: the
-save and review routes, conventions that differ from the default, and pointers
-to the records. Never add a directory layout, dependency list, architecture
-overview, or style rule an automatic check could enforce. `/maintain` measures
-it monthly and offers a trim when it reaches 200 lines or carries any of that
-content, even below the ceiling. Cut nothing without the person's yes.
+Keep this file under 200 lines, holding only what the code cannot show: the
+save and review routes, unusual conventions, and pointers to the records. Never
+add a directory layout, dependency list, architecture overview, or style rule a
+check could enforce. `/maintain` offers a trim monthly.
 
 ## What this project is
 
 (One line, written by the setup-ai-build-kit skill.)
 ## The skills
 
-The work lives in eleven installed AI Build Kit skills. Six are commands:
+The work lives in eight installed AI Build Kit skills. Six are commands:
 start the one the user types, names, or asks for in plain words, and say which
 one you are running. Never start a command the user did not ask for. The other
-five run in the background when a command needs them.
+two run in the background when a command needs them.
 
 - Commands: `setup-ai-build-kit`, `shape`, `implement`, `setup-hosting`,
   `maintain`, `what-now`.
-- Background skills: `clarify`, `change-triage`, `screen-check`,
-  `section-builder`, `second-opinion`.
+- Background skills: `clarify`, `second-opinion`.
 
 When a skill says to run another skill, load that installed skill and follow
 it. The skills sit in `.agents/skills/`, `.claude/skills/` or a plugin's folder,
@@ -42,7 +39,7 @@ project-specific rules in this file instead of editing an installed skill. For G
 
 ## The workflow
 
-The user describes intent in plain language; change-triage chooses the route.
+The user describes intent in plain language; `/shape` chooses the route.
 Build one agreed, visible slice at a time. Do not add behaviour the slice did
 not ask for, and do not widen a fix into a tidy-up. When a written instruction
 and an automatic check disagree, trust the check and say so plainly. It tests
@@ -52,9 +49,9 @@ Every promised behaviour needs evidence: an automated check where a machine can
 judge it reliably, a guided manual check for visual or exploratory work, a
 source check for a decision that rests on an external fact, and a rehearsal for
 backup, restore, migration, rollback, or other operational claims. When a
-piece carries `visual`, or a change touches a screen file, load `screen-check`
-before the guided manual check. It reads this project's design rules first and
-never calls a screen accessible, compliant, or good.
+piece carries `visual`, or a change touches a screen file, load the `implement` skill's `references/screen-rules.md`
+before the guided manual check. They read this project's design rules first and
+never call a screen accessible, compliant, or good.
 
 ## The records
 
@@ -62,7 +59,7 @@ If it is not written down, it does not exist. When work lands, add a dated
 `CHANGELOG.md` entry in plain words and commit with a clear message. Each piece
 is one issue, shaped as the `setup-ai-build-kit` skill's `references/pieces.md`
 says. A merged pull request saying `Closes #<number>` closes its piece. Each
-piece has a subject label, set once by change-triage. `plan.local.md` prints the
+piece has a subject label, set once by `/shape`. `plan.local.md` prints the
 open issues via `.agents/tools/plan-refresh.sh`; change the issue, not the file.
 
 When one document says another will do a job, write that job into the other
@@ -121,10 +118,12 @@ other secret lives, never its value, in the masterplan's "How it stays running",
 and read it there. If none is recorded, ask once. Rotate a secret that appears
 where it should not, even one given as a reply: record it nowhere, say it is now
 in this chat, and ask for its location. A secret with no known location is never
-called absent. Never take a login another tool stores for itself, as in the
-keychain or its files, or use one on an API. Use that tool's own commands or
-the project's own keys. If you cannot, say so and ask; never then read it
-another way.
+called absent. Asked to show or read out a secret, say plainly that you will
+not, because anything shown here stays in this conversation's record, and say
+where it lives so they can open it there. Never take a login another tool
+stores for itself, as in the keychain or its files, or use one on an API. Use
+that tool's own commands or the project's own keys. If you cannot, say so and
+ask; never then read it another way.
 
 If the project works from confidential files, the setup-ai-build-kit skill
 records their folder and handling rules here. Never stage, commit, print, or
@@ -154,7 +153,7 @@ and optional harness capabilities.)
 
 ## Stack, and how to run and check it
 
-(Filled in by the setup-ai-build-kit skill: `Recipe: <file name>.md` or
+(Filled in by the setup-ai-build-kit skill: `Recipe: <recipe folder name>` or
 `Recipe: none`, then run, test, type check and lint commands, or `none for
 <language>`, and conventions that differ from the default, including
 `Design tool: <name>` or `Design tool: none recorded`. Leave dependency lists

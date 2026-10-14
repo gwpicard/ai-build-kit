@@ -33,7 +33,7 @@ if git -C "$project" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   echo "live-on-vercel.sh: $project is inside a git work tree, so it is not a fresh replay project" >&2
   exit 1
 fi
-[ -f "$project/AGENTS.md" ] && [ -f "$project/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel.md" ] || {
+[ -f "$project/AGENTS.md" ] && [ -f "$project/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/recipe.md" ] || {
   echo "live-on-vercel.sh: $project is not an installed kit with the Vercel recipe" >&2
   exit 1
 }
@@ -66,7 +66,7 @@ if start < 0:
 end = text.find("\n\n", start)
 if end < 0:
     end = len(text.rstrip("\n"))
-stack = """Recipe: nextjs-supabase-on-vercel.md
+stack = """Recipe: nextjs-supabase-on-vercel
 Run: `npm run dev`, once `npm install` has run.
 Test: `npm test`. It runs Node's own test runner and needs nothing installed.
 Type check: `npx tsc --noEmit`, run by the project check on GitHub.
@@ -94,7 +94,7 @@ write(".ai-build-kit-maintenance", """
 # writes the two pass lines, and a recipe-move-declined line when the person
 # turns down a move onto a recipe. Nothing else edits this file.
 founded|2026-09-15
-founding-menu|2026-09-15|nextjs-supabase-on-coolify.md nextjs-supabase-on-vercel.md
+founding-menu|2026-09-15|nextjs-supabase-on-coolify,nextjs-supabase-on-vercel
 last-light-pass|2026-09-15
 last-full-pass|2026-09-15
 """)

@@ -1,17 +1,17 @@
 # The hosting request
 
-Used by setup-hosting when the tool will run on a server this session cannot reach. The
-request lives in the masterplan's "How it stays running" section. The person
-carries it to whoever runs the server, and carries the answer back.
+For a tool on a server this session cannot reach, on no recipe or on one whose
+own request file does not cover it. The request lives in the masterplan's
+"How it stays running" section. The person carries it to whoever runs the
+server, and carries the answer back.
 
 ## Writing it
 
-Write the request there, filled from the project itself rather than by asking
-the person:
+Fill it from the project, not by asking the person:
 
 ```
 Hosting request
-Repo:          <url>, branch <branch>
+Repo:          <url with no sign-in in it>, branch main
 Lane:          internal (private network) | public (internet)
 Port:          <port the tool listens on>
 Env vars:      <names only>
@@ -22,31 +22,18 @@ Bind:          0.0.0.0 | reads HOST and PORT | 127.0.0.1 (not hostable yet)
 ```
 
 Take the lane from the fit check: internal unless somebody outside the team
-signs in or relies on it. Take Build from the files at the project's root,
-and Bind from the address the server listens on when it starts. The server
-builds and checks the tool from those two facts, so read them from the code
-rather than from a plan. A tool that listens only on 127.0.0.1 cannot be
-reached from outside its container: say so once, and record it. Env vars
-carry names only; values are entered on the server. Never write a value, key, password or token into the request.
+signs in or relies on it. Read Build from the files at the root and Bind from
+the address the server listens on. A tool bound to 127.0.0.1 cannot be
+reached from outside its container: say so once, and record it. Never write a
+value, key, password or token. Where the project does not say, write `none`.
 
-Where the project does not say, write `none` rather than guess. A project
-on a recipe always has a health route, because the recipe's health section
-names one, so there Healthcheck is that path and never `none`. Print the
-same block in the reply, so the person can paste it, and say once: "This
-tool needs a home. Take this request to whoever runs the server. Paste what
-they send back here, and I will record it for the next /setup-hosting."
+Print the block in the reply and say once: "This tool needs a home. Take this
+request to whoever runs the server. Paste what they send back here, and I will
+record it for the next /setup-hosting."
 
-## Recording the answer
+## The answer, and a later run
 
-Whenever the person pastes an answer, in this session or a later one,
-record its address and names under the request, and leave out any secret
-value it carries.
-
-## A later /setup-hosting
-
-On a later /setup-hosting, read the recorded hosting request back instead of asking
-again. Where no address is recorded under it, the request went out and no
-answer came back. Say so plainly, print the request again for the person to
-carry, and ask them to paste the answer here when it arrives. Where the
-project has changed a field since, update that line from the project and
-print the request again for the person to carry.
+Record the answer's address and names under the request, with no secret
+value. The first launch is not finished until an address is recorded. A later
+run reads the request back: with no address under it, say no answer came back
+and print it again; where a field has changed, update it and print it again.

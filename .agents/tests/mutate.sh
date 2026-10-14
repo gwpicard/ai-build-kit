@@ -58,17 +58,8 @@ broken-link
 stale-term
 agent-manifest-extra-field
 release-nondeterministic
-runnable-bit-lost"
-
-# The checks that guard a rule written as prose are found the way
-# validate-kit.sh finds them, by the helper they source, so this list cannot
-# fall behind the repository.
-RULE_SHAPE_CHECKS=$(grep -l 'lib/rule-shape\.sh' "$ROOT"/.agents/tests/*.sh 2>/dev/null \
-  | while IFS= read -r rs_file; do basename -- "$rs_file" .sh; done | sort)
-for rs_name in $RULE_SHAPE_CHECKS; do
-  MUTATIONS="$MUTATIONS
-rule-$rs_name"
-done
+runnable-bit-lost
+product-named"
 
 describe() {
   case "$1" in
@@ -92,7 +83,7 @@ describe() {
     agent-manifest-extra-field) echo "the agent plugin manifest carries a field the standard omits" ;;
     release-nondeterministic) echo "an untracked file inside an approved folder enters the release" ;;
     runnable-bit-lost) echo "a script that is started by path loses its saved runnable bit" ;;
-    rule-*) echo "a rule ${1#rule-} guards is quietly deleted from the document it lives in" ;;
+    product-named) echo "a skill file outside the recipes names a place a tool runs" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -103,7 +94,7 @@ checks_for() {
     gate-widened) echo "$MODE_CHECKS" ;;
     runnable-bit-lost) echo "$MODE_CHECKS" ;;
     discipline-user-invocable) echo "validate-kit" ;;
-    rule-*) echo "${1#rule-} validate-kit" ;;
+    product-named) echo "validate-kit" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -303,46 +294,13 @@ open(p, "w").write(t)
       [ -x "$target" ] || { echo "the stand-in is already not runnable" >&2; return 1; }
       chmod -x "$target"
       ;;
-    rule-*)
-      # Every check that reads a rule written as prose gets one of these. The
-      # check is asked, in the mutated tree, which rules it guards and where
-      # they live, then the first one is deleted from the document itself. So
-      # this script never keeps its own copy of a sentence that lives somewhere
-      # else, and a check written tomorrow is audited from the day it exists.
-      #
-      # Until now none of that family was exercised at all: the single
-      # hand-written rule mutation this replaces was routed to a list of checks
-      # that did not include the check built to catch it, so validate-kit caught
-      # it alone and thirteen checks were never asked.
-      rule_check=${name#rule-}
-      RS_LIST=1 sh "$tree/.agents/tests/$rule_check.sh" \
-        > "$WORK/$name.rules" 2>/dev/null || true
-      [ -s "$WORK/$name.rules" ] || {
-        echo "$rule_check listed no rules" >&2
-        return 1
-      }
-      MUTATE_RULES="$WORK/$name.rules" python3 -c '
-import os, re
-target = None
-for line in open(os.environ["MUTATE_RULES"]):
-    parts = line.rstrip("\n").split("\t")
-    if len(parts) < 2:
-        continue
-    path, pattern = parts[0], parts[1]
-    if not os.path.isfile(path):
-        continue
-    original = open(path).read()
-    # Newline to space and lower are both one character for one character, so a
-    # match found in the folded text has the same offsets in the real file.
-    folded = original.replace("\n", " ").lower()
-    found = re.search(pattern, folded)
-    if found and found.end() > found.start():
-        target = (path, original, found.start(), found.end())
-        break
-assert target, "no listed rule could be found in the document it names"
-path, original, start, end = target
-open(path, "w").write(original[:start] + original[end:])
-'
+    product-named)
+      # A skill that learned one host's commands reads wrongly on every
+      # project that runs somewhere else. The validator's product-name rule
+      # is the only thing that stops one.
+      target="$tree/.agents/skills/setup-hosting/references/evidence-run.md"
+      [ -f "$target" ] || { echo "no evidence-run reference to plant a name in" >&2; return 1; }
+      printf '\n%s\n' 'When it is ready, deploy it to Netlify.' >> "$target"
       ;;
     *)
       echo "unknown mutation: $name" >&2

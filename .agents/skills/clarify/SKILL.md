@@ -6,82 +6,39 @@ user-invocable: false
 
 # Clarify
 
-You interview people who know their work and do not know software. Your job is to surface decisions and edge cases now, while a misunderstanding costs thirty seconds instead of a build cycle.
+You interview people who know their work and do not know software. Surface decisions and edge cases now, while a misunderstanding costs thirty seconds instead of a build.
 
 ## How to ask
 
-One question at a time. Attach your best guess to each, because correcting a guess is easier than answering a blank: "When a task has no owner, my guess is it sits in a backlog until someone claims it. Right?" Plain language only, no stacked questions, no jargon.
+One question at a time, each with your best guess attached: "When a task has no owner, my guess is it sits in a backlog until someone claims it. Right?" Plain language, no stacked questions, no jargon.
 
-Match the question to the shape of its answer. When the real answers are a short and complete list, you may offer them as choices, with your best guess marked as the likely one. A question that asks the person to describe, name, explain, or narrate is asked in plain words, with the answer left open. If you cannot write the list of possible answers without adding "something else", the question is open. Most of an interview is open questions, so plain words are the normal case.
+Match the question to the shape of its answer. Where the real answers are a short and complete list, offer them as choices with your guess marked. A question that asks the person to describe, name, explain, or narrate is asked in plain words, with the answer left open. If the list would need "something else", the question is open. Most questions are open.
 
 ## What to cover
 
-Who uses it and what they do with it. The main flow, walked step by step. What happens when the flow fails or the input is wrong. Who may see and change what. What data it holds and where that data comes from. Whether any of that data is confidential working files the tool must read. What done looks like for the tool as a whole. What is out of scope, said out loud.
+Who uses it and what they do with it. The main flow, step by step. What happens when the flow fails or the input is wrong. Who may see and change what. What data it holds and where it comes from, including confidential working files the tool must read. What done looks like. What is out of scope, said out loud.
 
 ## Settling a vague or overloaded term
 
-When one word is carrying two meanings, stop and settle it before going on:
+When one word carries two meanings, stop: point out the ambiguity, propose plain alternatives, test them against a concrete case, and settle one term. For example: "You have used 'customer' for both the company paying and the person signing in. I suggest 'company' and 'user'. Does that match the real workflow?"
 
-1. point out the ambiguity;
-2. propose plain alternatives;
-3. test the alternatives against a concrete scenario;
-4. settle on one canonical term;
-5. record the settled term where the current work lives, without committing a
-   file or opening a pull request. In a founding session, that is the working
-   notes the interview keeps, and the masterplan once it exists. In a planning
-   session, that is the piece being shaped: record the term in `## Decided` and
-   put the key-terms update in `## Masterplan change`, so `/implement` writes
-   it when it builds the piece.
+Record the settled term where the current work lives, without committing a file or opening a pull request. In founding, that is the working notes, then the masterplan. In planning, it is the piece: the term in `## Decided`, and the key-terms update in `## Masterplan change`, so `/implement` writes it when it builds. Planning records and stops; writing to the masterplan is a build.
 
-   Keep that settled term on the piece when it is parked or reshaped, until it
-   reaches the masterplan or the person explicitly changes the decision. Add
-   this reason on the piece: "The term stays here
-   while this is planned; the coverage read checks it even if this piece is
-   parked."
-
-   Planning records and stops; writing to the masterplan is a build.
-
-For example: "You have used 'customer' for both the company paying and the
-person signing in. I suggest 'company' and 'user'. Does that match the real
-workflow?"
-
-Do not create CONTEXT.md, context maps, or architecture decision records to
-carry this. The settled term ends up in the masterplan, in plain language, where
-the rest of the product description already lives: written there when founding,
-or when `/implement` next builds the piece that carries it. The coverage read
-in setup-ai-build-kit/references/coverage-read.md catches a settled term left
-behind on a piece and offers to reconcile it through /maintain.
+Keep the term on the piece when it is parked or reshaped, until it reaches the masterplan or the person changes it, with this note: "The term stays here while this is planned; the coverage read checks it even if this piece is parked." Never create a separate glossary, context map or decision record for it.
 
 ## Pressure-testing a rule
 
-For each rule that matters to the product, ask at least one edge case drawn
-from what's relevant to this project: nothing entered, a duplicate action,
-two people acting at once, no permission, an external service unavailable,
-data that already exists, or an action interrupted halfway through. Only ask
-the cases that could actually happen here.
+For each rule that matters, ask at least one edge case that could really happen here: nothing entered, a duplicate action, two people at once, no permission, an outside service down, data that already exists, an action interrupted halfway.
 
 ## When conversation cannot settle it
 
-If a behavioural or visual decision cannot be settled by talking it through,
-ask whether they already have something that shows it: a sketch, a mock, a
-screenshot, the spreadsheet they use today. Where they do, load
-references/existing-artifact.md and let it settle the question. Where they do
-not, load references/decision-prototype.md. The interview pauses, the prototype
-answers the one question it exists to answer, and the decision gets written
-back into the masterplan or the request before the interview continues.
+For a behavioural or visual decision talk cannot settle, ask whether they already have something that shows it: a sketch, a mock, a screenshot, today's spreadsheet. Where they do, load references/existing-artifact.md. Where they do not, load references/decision-prototype.md. The decision goes back into the masterplan or the request before the interview continues.
 
-If an answer instead depends on an external fact, such as what a provider's
-API actually supports, load change-triage/references/source-check.md rather
-than guessing.
+An answer that depends on an outside fact runs the source check in the `shape` skill's `references/research.md`.
 
 ## When to stop
 
-When your guesses keep being right, and: the main flow is clear, failure and
-permissions are clear, the fit check's questions can be answered, and every
-remaining unknown is explicitly parked, researched, or prototyped rather than
-quietly assumed. Write what was agreed into the masterplan (founding) or into
-the request (feature), and read the key decisions back as one short list for
-a yes.
+When your guesses keep being right, the main flow, failure and permissions are clear, the fit check's questions can be answered, and every remaining unknown is parked, researched or prototyped rather than assumed. Write what was agreed into the masterplan (founding) or the request, and read the key decisions back as one short list for a yes.
 
 ## Done when
 

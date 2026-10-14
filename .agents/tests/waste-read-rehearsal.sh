@@ -1,14 +1,16 @@
 #!/usr/bin/env sh
-# waste-read-rehearsal.sh: run the quarterly waste read against a throwaway
+# waste-read-rehearsal.sh: run the shipped waste read against a throwaway
 # project with one known copy, one unused export and one unused dependency,
-# and read back that all three are named with a real file and line, that a
-# clean project produces nothing, and that nothing was written into either.
+# and read back that each is printed at a real file and line, that a visit
+# leaves out only what an earlier visit recorded as offered, that a finding
+# that did not fit comes back, that a missing engine answers 2 with the other
+# findings still printed, that a clean project prints nothing, and that the
+# read wrote nothing into any of them.
 #
-# The commands come out of the shipped reference's table, so a table naming a
-# command that does not work fails here. The findings are then checked the way
-# the reference says: each needs a real line, and a name found anywhere else in
-# the project is dropped. The project carries a decoy for that rule, an export
-# the engine calls unused that a configuration file names.
+# The project carries a decoy, an export the engine calls unused that a
+# configuration file names, which the script's second look must drop. A
+# Python project is read the same way, for code that cannot run and a
+# dependency nothing imports.
 #
 # The engines are used from PATH when present and otherwise installed into a
 # throwaway folder. A machine that can do neither fails here rather than
@@ -17,7 +19,7 @@
 set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
-READ="$ROOT/.agents/skills/maintain/references/waste-read.md"
+QUALITY="$ROOT/.agents/skills/implement/scripts/quality.py"
 
 fail() {
   echo "FAIL: $1" >&2
@@ -25,6 +27,7 @@ fail() {
 }
 
 command -v node >/dev/null 2>&1 || fail "node is needed to run this rehearsal"
+command -v python3 >/dev/null 2>&1 || fail "python3 is needed to run this rehearsal"
 
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
@@ -39,33 +42,21 @@ if ! command -v knip >/dev/null 2>&1 || ! command -v jscpd >/dev/null 2>&1; then
   export PATH
 fi
 
-node - "$READ" "$WORK" <<'NODE'
+if ! command -v vulture >/dev/null 2>&1 || ! command -v deptry >/dev/null 2>&1; then
+  echo "  vulture or deptry not on PATH, installing both into a throwaway folder"
+  python3 -m venv "$WORK/py" && "$WORK/py/bin/pip" install -q vulture deptry ||
+    fail "could not install vulture and deptry, so the read could not be rehearsed"
+  PATH="$WORK/py/bin:$PATH"
+  export PATH
+fi
+
+node - "$QUALITY" "$WORK" <<'NODE'
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { spawnSync } = require('node:child_process');
+const { execFileSync, spawnSync } = require('node:child_process');
 
-const [readFile, work] = process.argv.slice(2);
-
-// --- the commands, read from the shipped table ------------------------------
-
-const table = fs.readFileSync(readFile, 'utf8');
-function command(row) {
-  const line = table.split('\n').find(l => l.startsWith(`| ${row} |`));
-  assert.ok(line, `waste-read.md has no "${row}" row`);
-  const cell = line.split('|')[2];
-  const match = cell.match(/`([^`]+)`/);
-  assert.ok(match, `the "${row}" row names no JavaScript command`);
-  return match[1];
-}
-const copied = command('Copied code');
-const unusedCode = command('Unused code');
-const unusedDeps = command('Unused dependencies');
-console.log(`  copied code: ${copied}`);
-console.log(`  unused code: ${unusedCode}`);
-console.log(`  unused dependencies: ${unusedDeps}`);
-
-// --- the project --------------------------------------------------------------
+const [quality, work] = process.argv.slice(2);
 
 const block = name => [
   `export function ${name}(items) {`,
@@ -81,18 +72,11 @@ const block = name => [
   '}',
 ].join('\n');
 
-function write(dir, files) {
-  fs.rmSync(dir, { recursive: true, force: true });
-  for (const [name, text] of Object.entries(files)) {
-    fs.mkdirSync(path.dirname(path.join(dir, name)), { recursive: true });
-    fs.writeFileSync(path.join(dir, name), text);
-  }
-}
-
 function listing(dir) {
   const out = [];
   (function walk(d) {
     for (const entry of fs.readdirSync(d, { withFileTypes: true })) {
+      if (entry.name === '.git') continue;
       const full = path.join(d, entry.name);
       if (entry.isDirectory()) walk(full);
       else out.push(path.relative(dir, full) + ':' + fs.statSync(full).size);
@@ -101,145 +85,145 @@ function listing(dir) {
   return out.sort().join('\n');
 }
 
-const wasteful = {
+function repo(name) {
+  const dir = path.join(work, name);
+  fs.mkdirSync(dir, { recursive: true });
+  const git = (args, date) => execFileSync('git', args, { cwd: dir, encoding: 'utf8', env: { ...process.env,
+    GIT_AUTHOR_NAME: 'R', GIT_AUTHOR_EMAIL: 'r@example.invalid', GIT_COMMITTER_NAME: 'R', GIT_COMMITTER_EMAIL: 'r@example.invalid',
+    ...(date ? { GIT_AUTHOR_DATE: date, GIT_COMMITTER_DATE: date } : {}) } }).trim();
+  git(['init', '-q', '-b', 'main']);
+  const put = files => {
+    for (const [file, text] of Object.entries(files)) {
+      fs.mkdirSync(path.dirname(path.join(dir, file)), { recursive: true });
+      fs.writeFileSync(path.join(dir, file), text);
+    }
+  };
+  const save = (message, date) => { git(['add', '-A']); git(['commit', '-q', '-m', message], date); };
+  return { dir, put, save };
+}
+
+function waste(dir, args = [], env = undefined) {
+  const before = listing(dir);
+  const result = spawnSync(env ? env.python : 'python3', [quality, 'waste', ...args],
+    { cwd: dir, encoding: 'utf8', timeout: 300000, env: env ? env.vars : process.env });
+  assert.ifError(result.error);
+  const rows = result.stdout.trim().split('\n').filter(Boolean).map(l => l.split('\t'));
+  Object.defineProperty(rows, 'status', { value: result.status, enumerable: false });
+  const found = rows.filter(r => !r[0].startsWith('not-'));
+  const expected = rows.some(r => r[0] === 'not-checked') ? 2 : found.length ? 1 : 0;
+  assert.equal(result.status, expected, `the exit code does not match what was printed:\n${result.stdout}${result.stderr}`);
+  assert.equal(listing(dir), before, 'the read wrote something into the project');
+  for (const row of found) {
+    const [file, line] = row[1].split(/:(?=\d+$)/);
+    const lines = fs.readFileSync(path.join(dir, file), 'utf8').split('\n');
+    assert.ok(Number(line) >= 1 && Number(line) <= lines.length, `${file} has no line ${line}`);
+  }
+  if (rows.length) console.log(rows.map(r => `    ${r.join(' ')}`).join('\n'));
+  return rows;
+}
+
+// --- the wasteful project ------------------------------------------------------
+
+const shop = repo('project');
+shop.put({
+  '.gitignore': 'node_modules/\n',
   'package.json': JSON.stringify({
     name: 'shop', private: true, type: 'module', main: 'src/index.js',
     dependencies: { 'left-pad': '1.3.0' },
   }, null, 2) + '\n',
-  'routes.json': JSON.stringify({ '/orders': 'handleOrders' }, null, 2) + '\n',
+  'routes.json': JSON.stringify({ '/refunds': 'handleRefunds' }, null, 2) + '\n',
   'src/index.js': [
     "import { total } from './pricing.js';",
     "import { reportTotal } from './report.js';",
-    "import { handleOrders } from './handlers.js';",
-    'console.log(total([]), reportTotal([]), handleOrders);',
+    "import * as handlers from './handlers.js';",
+    'console.log(total([]), reportTotal([]), handlers);',
     '',
   ].join('\n'),
-  // The copy has different names, which is what a pasted and renamed block
-  // looks like, so only the ignore-identifiers setting can find it.
   'src/pricing.js': block('total') + '\n\nexport function discount(price) {\n  return price * 0.9;\n}\n',
-  'src/report.js': block('reportTotal')
-    .replace(/\bsum\b/g, 'running').replace(/\bitem\b/g, 'line') + '\n',
-  // Reached through routes.json by name, which no engine sees.
+  'src/report.js': block('reportTotal').replace(/\bsum\b/g, 'running').replace(/\bitem\b/g, 'line') + '\n',
   'src/handlers.js': "export function handleOrders() {\n  return 'orders';\n}\n\nexport function handleRefunds() {\n  return 'refunds';\n}\n",
-};
+});
+shop.save('Founding', '2026-06-01T10:00:00');
 
-// The clean project: no copy, nothing unused, no unused dependency.
-const clean = {
-  'package.json': JSON.stringify({
-    name: 'shop', private: true, type: 'module', main: 'src/index.js',
-  }, null, 2) + '\n',
+const all = waste(shop.dir);
+const kinds = kind => all.filter(r => r[0] === kind);
+assert.deepEqual(kinds('copy').map(r => [r[1], r[2]]), [['src/pricing.js:1', 'src/report.js:1']], 'the renamed copy was not named with both places');
+console.log('  ok: the renamed copy is named with both files and lines');
+assert.ok(kinds('unused-export').some(r => r[1] === 'src/pricing.js:13' && r[2] === 'discount'), 'the unused export was not named at its line');
+console.log('  ok: the unused export is named at its line');
+const pad = kinds('unused-dependency').find(r => r[2] === 'left-pad');
+assert.ok(pad && /^package\.json:\d+$/.test(pad[1]), 'the unused dependency was not named with its line');
+console.log('  ok: the unused dependency is named with its line in the package file');
+assert.ok(!all.some(r => r[2] === 'handleRefunds'), 'the export a configuration file names was not dropped');
+console.log('  ok: an export named in a configuration file is dropped on the second look');
+assert.ok(!all.some(r => r.join(' ').match(/\d\s*%|percent/i)), 'a percentage reached the output');
+
+assert.equal(all.status, 1);
+assert.ok(!all.some(r => r[0] === 'not-checked'), 'a part was not checked with every engine on hand');
+
+// The visit had room for two of the three, so only those two reached the
+// person and are recorded as offered. The third never did.
+shop.put({ '.ai-build-kit-maintenance': 'last-light-pass: 2026-06-01\nlast-full-pass: 2026-06-01\n' });
+shop.save('Record the visit', '2026-06-01T16:00:00');
+const named = all.filter(r => r[0] === 'copy' || r[2] === 'discount').map(r => r.join('\t'));
+const recorded = spawnSync('python3', [quality, 'offered', 'waste'], { cwd: shop.dir, encoding: 'utf8', input: named.join('\n') + '\n' });
+assert.equal(recorded.status, 0, recorded.stdout + recorded.stderr);
+const record = fs.readFileSync(path.join(shop.dir, '.ai-build-kit-maintenance'), 'utf8');
+assert.match(record, /^offered\|waste\|\d{4}-\d{2}-\d{2}\|copy\|src\/pricing\.js\|src\/report\.js$/m, 'the copy offered was not recorded');
+assert.match(record, /^offered\|waste\|\d{4}-\d{2}-\d{2}\|unused-export\|src\/pricing\.js\|discount$/m, 'the export offered was not recorded');
+assert.match(record, /^last-full-pass: 2026-06-01$/m, 'recording the offers lost the record\'s other lines');
+shop.save('Record what the visit offered', '2026-06-01T17:00:00');
+
+// Later, one more unused export arrives, and the lines above it move.
+shop.put({ 'src/pricing.js': '// Prices.\n\n' + fs.readFileSync(path.join(shop.dir, 'src/pricing.js'), 'utf8') +
+  '\nexport function surcharge(price) {\n  return price * 1.1;\n}\n' });
+shop.save('Add a surcharge', '2026-08-01T10:00:00');
+const fresh = waste(shop.dir, ['--skip-offered']);
+assert.deepEqual(fresh.map(r => [r[0], r[2]]).sort(), [['unused-dependency', 'left-pad'], ['unused-export', 'surcharge']],
+  'the next visit should leave out only what was offered, and bring back what did not fit');
+console.log('  ok: what a visit offered is left out after, even moved, and a finding that did not fit comes back');
+
+// Some engines but not all: what ran is printed, the part with no engine is
+// named, and the answer is 2.
+const some = path.join(work, 'some-engines');
+fs.mkdirSync(some);
+for (const tool of ['git', 'node', 'python3', 'knip']) {
+  fs.symlinkSync(execFileSync('sh', ['-c', `command -v ${tool}`], { encoding: 'utf8' }).trim(), path.join(some, tool));
+}
+const partial = waste(shop.dir, [], { python: path.join(some, 'python3'), vars: { PATH: some, HOME: process.env.HOME } });
+assert.equal(partial.status, 2, 'with jscpd missing the read did not exit 2');
+assert.ok(partial.some(r => r[0] === 'not-checked' && r[1] === 'copies'), 'the copy check that could not run was not named');
+assert.ok(partial.some(r => r[0] === 'unused-export' && r[2] === 'surcharge'), 'the findings from the engine that ran were not printed');
+assert.ok(partial.some(r => r[0] === 'unused-export' && r[2] === 'discount'),
+  'a finding the record names as offered was taken for a use of it, and dropped');
+console.log('  ok: with one engine missing, it prints what the others found, names the part not checked, and exits 2');
+
+// --- the clean project ---------------------------------------------------------
+
+const clean = repo('clean');
+clean.put({
+  'package.json': JSON.stringify({ name: 'shop', private: true, type: 'module', main: 'src/index.js' }, null, 2) + '\n',
   'src/index.js': "import { total } from './pricing.js';\nconsole.log(total([]));\n",
   'src/pricing.js': block('total') + '\n',
-};
+});
+clean.save('Founding');
+assert.deepEqual(waste(clean.dir), [], 'a clean project should print nothing');
+console.log('  ok: a clean project prints nothing and exits 0');
 
-// --- the read ---------------------------------------------------------------
+// --- a Python project ----------------------------------------------------------
 
-function run(dir, line) {
-  const report = path.join(work, 'jscpd-report');
-  const words = line.replace('<temporary folder>', report).split(' ');
-  const result = spawnSync(words[0], words.slice(1), { cwd: dir, encoding: 'utf8', timeout: 120000 });
-  assert.ifError(result.error);
-  if (words[0] === 'jscpd') {
-    const json = JSON.parse(fs.readFileSync(path.join(report, 'jscpd-report.json'), 'utf8'));
-    fs.rmSync(report, { recursive: true, force: true });
-    return json;
-  }
-  return JSON.parse(result.stdout);
-}
+const py = repo('python');
+py.put({
+  'pyproject.toml': '[project]\nname = "shop"\nversion = "0.1.0"\ndependencies = [\n    "requests>=2",\n]\n',
+  'shop/__init__.py': '',
+  'shop/app.py': 'def total(prices):\n    return sum(prices)\n    print("never runs")\n\n\nprint(total([1, 2]))\n',
+});
+py.save('Founding');
+const pyRows = waste(py.dir);
+assert.ok(pyRows.some(r => r[0] === 'unreachable-code' && r[1] === 'shop/app.py:3'), 'the code after a return was not named');
+assert.ok(pyRows.some(r => r[0] === 'unused-dependency' && r[2] === 'requests' && r[1] === 'pyproject.toml:5'),
+  'the Python dependency nothing imports was not named at its line');
+console.log('  ok: in a Python project, code that cannot run and an unused dependency are named at their lines');
 
-function lineOf(file, text) {
-  const lines = fs.readFileSync(file, 'utf8').split('\n');
-  const index = lines.findIndex(l => l.includes(text));
-  return index + 1;
-}
-
-// A name found anywhere other than its own definition is dropped, the rule the
-// reference calls searching the whole project for the name.
-function usedElsewhere(dir, name, definedIn) {
-  const needle = new RegExp(`\\b${name}\\b`);
-  const files = listing(dir).split('\n').map(l => l.split(':')[0]);
-  return files.some(file => {
-    if (file === definedIn) return false;
-    return needle.test(fs.readFileSync(path.join(dir, file), 'utf8'));
-  });
-}
-
-function read(dir) {
-  const findings = [];
-  for (const clone of run(dir, copied).duplicates) {
-    findings.push({
-      kind: 'copied code',
-      file: clone.firstFile.name, line: clone.firstFile.start,
-      other: `${clone.secondFile.name} at line ${clone.secondFile.start}`,
-    });
-  }
-  for (const issue of run(dir, unusedCode).issues) {
-    for (const item of issue.exports) {
-      if (usedElsewhere(dir, item.name, issue.file)) continue;
-      findings.push({ kind: 'unused export', file: issue.file, line: item.line, name: item.name });
-    }
-    for (const item of issue.files || []) {
-      findings.push({ kind: 'unused file', file: item.name || issue.file, line: 1 });
-    }
-  }
-  for (const issue of run(dir, unusedDeps).issues) {
-    for (const item of issue.dependencies) {
-      if (usedElsewhere(dir, item.name, issue.file)) continue;
-      findings.push({
-        kind: 'unused dependency', file: issue.file, name: item.name,
-        line: lineOf(path.join(dir, issue.file), `"${item.name}"`),
-      });
-    }
-  }
-  // Every finding has to point at a line that exists.
-  for (const f of findings) {
-    const lines = fs.readFileSync(path.join(dir, f.file), 'utf8').split('\n');
-    assert.ok(f.line >= 1 && f.line <= lines.length, `${f.file} has no line ${f.line}`);
-  }
-  return findings.map(f => {
-    switch (f.kind) {
-      case 'copied code': return `The same code is written twice, in ${f.file} at line ${f.line} and ${f.other}.`;
-      case 'unused export': return `${f.name} in ${f.file} at line ${f.line} is never used.`;
-      case 'unused file': return `${f.file} is never used.`;
-      default: return `The project lists ${f.name} as something it needs, at ${f.file} line ${f.line}, and nothing uses it.`;
-    }
-  });
-}
-
-// --- the wasteful project -----------------------------------------------------
-
-const project = path.join(work, 'project');
-write(project, wasteful);
-const before = listing(project);
-const said = read(project);
-console.log(said.map(s => `    ${s}`).join('\n'));
-
-assert.ok(said.some(s => /written twice, in src\/(pricing|report)\.js at line 1 and src\/(pricing|report)\.js at line 1/.test(s)),
-  'the renamed copy was not named with both places');
-console.log('  ok: the renamed copy is named with both files and lines');
-assert.ok(said.includes('discount in src/pricing.js at line 13 is never used.'),
-  'the unused export was not named at its line');
-console.log('  ok: the unused export is named at its line');
-assert.ok(said.some(s => /lists left-pad .* at package\.json line \d+, and nothing uses it/.test(s)),
-  'the unused dependency was not named with its line');
-console.log('  ok: the unused dependency is named with its line in the package file');
-assert.ok(!said.some(s => s.includes('handleOrders')), 'the export a configuration file names was not dropped');
-assert.ok(said.some(s => s.includes('handleRefunds')), 'a genuinely unused export beside the decoy was lost');
-console.log('  ok: an export named in a configuration file is dropped, its unused neighbour is kept');
-assert.ok(!said.some(s => /\d\s*%|percent/i.test(s)), 'a percentage reached the report');
-console.log('  ok: no percentage reaches the report');
-assert.equal(listing(project), before, 'the read wrote something into the project');
-console.log('  ok: nothing was written into the project');
-
-// --- the clean project ------------------------------------------------------
-
-write(project, clean);
-const cleanBefore = listing(project);
-const cleanSaid = read(project);
-assert.deepEqual(cleanSaid, [], `a clean project should produce nothing, got: ${cleanSaid.join(' | ')}`);
-console.log('  ok: a clean project produces nothing to say');
-assert.equal(listing(project), cleanBefore, 'the read wrote something into the clean project');
-console.log('  ok: nothing was written into the clean project');
-
-console.log('\nwaste-read-rehearsal.sh: all three kinds named, clean project silent');
+console.log('\nwaste-read-rehearsal.sh: all kinds named, only what was offered left out, clean project silent');
 NODE

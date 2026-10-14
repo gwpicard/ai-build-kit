@@ -14,13 +14,19 @@ deny list, mirror these entries there as mechanical enforcement:
 - `git clean -f` and `git clean -fd`
 - a forced delete of a folder, such as `rm -rf`, in the spellings listed under
   "A force push and a forced delete" below
+- a push that skips the project's own push check, `git push --no-verify`, and
+  any git command that names `core.hooksPath`, which would switch that check
+  off
+- throwing away changes nobody saved, in the spellings listed under "Unsaved
+  changes" below. A repair that needs to undo a failed attempt runs the
+  `implement` skill's `scripts/reset-attempt.sh` instead, as the
+  `implement` skill's `references/repair.md` says
+- reading a login another tool keeps for itself, as listed under "A stored
+  login" below
 
 The following restrictions do not reduce to one reliable command pattern and
 still apply:
 
-- `git checkout .` and `git restore .` are allowed only inside the repair's
-  announced reset step, in the `section-builder` skill's
-  `references/repair.md`;
 - never drop or empty a database table;
 - never migrate a production database without a backup and a rehearsal on a
   copy;
@@ -29,14 +35,15 @@ still apply:
 - never print, commit, or otherwise expose a secret;
 - never disable authentication or access control to make a check pass;
 - never bypass a red project check to ship or merge. A check GitHub never
-  started ran no step and is not red; section-builder's "A check GitHub did not
+  started ran no step and is not red; the `implement` skill's "A check GitHub did not
   start" says what happens instead;
 - never push a change directly to `main`; every change to `main` goes through a
   pull request, so shared work reaches it by merge rather than by a direct push.
   The one exception is the project's first upload: after the person's yes,
   and only when the remote lists no branch, `main` is created through the
   GitHub API at the commit the piece's branch was cut from, as
-  section-builder's "The first upload" describes. It is never written by a
+  "The first upload" in the `implement` skill's `references/merge.md`
+  describes. It is never written by a
   `git push`;
 - never force or automate a merge over a required review, and never merge a
   pull request the person has not said yes to; where the harness can ask
@@ -129,6 +136,93 @@ These are not refused, and the rule above still forbids them:
 
 When a branch needs the newest `main` after a merge conflict, merge `main` into
 the branch and push it. That needs no force.
+
+## A push the project's own check stops
+
+Founding places a Git hook at `.agents/hooks/git/pre-push` and points Git at
+it. Git runs it before every push, whichever coding agent or person pushes. It
+stops a push to `main` and a push that would replace work on the remote, in
+every spelling, since it reads what the push would change rather than the
+words of the command. A clone does not carry the setting that points Git at
+it, so founding sets it on this computer only.
+
+Founding leaves that setting alone where Git already runs other hooks for
+this project, or for every project on this computer, since pointing Git at
+the guard would stop those hooks without a word. It says in one line that the
+guard is not on.
+
+The Claude Code settings the kit installs refuse a git command that names
+`core.hooksPath`, such as `git -c core.hooksPath=/dev/null push origin main`
+or `git config --unset core.hooksPath`, since either switches the guard off.
+They miss the name written in other capitals, such as `core.HooksPath`, and
+the setting passed through an environment variable. The rule above still
+forbids both.
+
+## Unsaved changes
+
+The Claude Code settings the kit installs refuse these, since each throws away
+work nobody saved:
+
+- `git checkout .`, `git checkout HEAD .`, `git checkout -- <path>` and
+  `git checkout HEAD -- <path>`
+- `git checkout -f`, `git checkout --force`, `git switch -f`,
+  `git switch --force` and `git switch --discard-changes`, wherever the option
+  sits
+- `git restore .`, `git restore -- <path>`, and a restore with `--worktree`
+  or `-W`
+- `git clean` with `-f` or `--force` in any of its forms, such as `-fd`,
+  `-df` or `-fdx`
+- `git reset --hard`, wherever the option sits
+- `git stash drop` and `git stash clear`
+
+Any other `git restore`, such as `git restore app/page.js` or
+`git restore --staged .`, asks first, so Claude Code shows a box. The settings
+cannot tell a restore that throws work away from one that only unstages it.
+
+These are not refused, and the rule above still forbids them:
+
+- `git checkout app/page.js`, with no `--`, which Claude Code cannot tell
+  from a branch name
+- a discard from inside another shell, such as `sh -c 'git checkout .'`
+
+## A stored login
+
+A command line tool, GitHub's or a host's, keeps its login for its own use.
+That login reaches every project on the account. The Claude Code settings the
+kit installs refuse these ways of reading one:
+
+- `security find-generic-password`, `security find-internet-password` and any
+  other `security find-` command, and `security dump-keychain`
+- `gh auth token`, and `gh auth status` with `--show-token` or `-t`
+- `git credential fill`, and asking a credential helper directly, such as
+  `git credential-osxkeychain get`
+- opening the file where GitHub's tool, or a recipe's host, database or
+  container tool, keeps its login, with Claude Code's own file tools or with
+  any shell command that names the file, such as `cat` or `less`
+
+They do not refuse a script that opens those files itself without naming them
+in the command. The rule above still forbids it.
+
+## A change to a live service
+
+The Claude Code settings the kit installs ask before each of these, so Claude
+Code shows a box and the command runs only when the person clicks yes:
+
+- a recipe's commands that push database changes or settings to the live
+  database, a dry run included
+- a recipe's production deploy, rollback and promote commands
+- `gh repo archive` and `gh repo edit --visibility`
+- `gh api` with the `DELETE` method
+- `gh api` on a branch's `git/refs` address, and the GraphQL calls that
+  create, move or delete a branch, since a branch written that way never meets
+  the push guard
+
+The dry run asks too. Claude Code checks its ask rules before its allow rules,
+so no allow rule can let the dry run through while the command that applies
+the change still asks.
+
+Say in one line what the command changes, and whether it can be undone, just
+before the box appears.
 
 ## A merge
 

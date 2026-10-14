@@ -20,11 +20,26 @@ because a described flow can change shape without any name going missing.
 Documents changed longest ago, counted in commits since, come first. That order
 says where to look first and is never printed.
 
-It reads the project and writes nothing. Run it from the project root:
+With --skip-offered it leaves out each name an earlier visit offered the
+person, as --record-offered wrote it into `.ai-build-kit-maintenance`. A name
+that never reached the person, because it did not fit under the cap or the
+read failed, comes back at the next visit.
 
-    python3 <maintain skill folder>/scripts/document-claims.py
+--record-offered reads finding lines, exactly as printed, on standard input,
+and adds one `offered|document-claims|<date>|...` line for each to
+`.ai-build-kit-maintenance`, keeping every other line.
+
+Exit codes: 0 nothing to report, 1 findings printed, 2 not a project under
+Git.
+
+Apart from --record-offered, it reads the project and writes nothing. Run it
+from the project root:
+
+    python3 <maintain skill folder>/scripts/document-claims.py [--skip-offered]
+    python3 <maintain skill folder>/scripts/document-claims.py --record-offered < LINES
 """
 
+import datetime
 import functools
 import json
 import os
@@ -132,7 +147,9 @@ def path_exists(name, document):
 
 def env_named_in_code(name, documents_read):
     hits = git("grep", "-l", "-w", "-F", name).split()
-    return any(hit not in documents_read and not hit.endswith(".md") for hit in hits)
+    # The visit record names what it offered, which is not the code reading it.
+    return any(hit not in documents_read and not hit.endswith(".md") and hit != RECORD
+               for hit in hits)
 
 
 def claims(document, documents_read, scripts, targets):
@@ -174,7 +191,8 @@ def commits_since(document):
     return int(count) if count.isdigit() else 0
 
 
-def main():
+def findings():
+    saved_paths.cache_clear()
     read = documents()
     scripts, targets = package_scripts(), make_targets()
     found = []
@@ -182,9 +200,66 @@ def main():
         for number, kind, name in claims(document, read, scripts, targets):
             found.append((commits_since(document), document, number, kind, name))
     found.sort(key=lambda f: (-f[0], f[1], f[2]))
-    for _, document, number, kind, name in found:
-        print(f"{document}:{number}\t{kind}\t{name}")
+    return [f[1:] for f in found]
+
+
+RECORD = ".ai-build-kit-maintenance"
+READ_NAME = "document-claims"
+
+
+def key(document, kind, name):
+    """A finding without its line number, which moves as the document changes."""
+    return f"{document}|{kind}|{name}"
+
+
+def offered():
+    try:
+        with open(RECORD, encoding="utf-8") as handle:
+            lines = handle.read().splitlines()
+    except OSError:
+        return set()
+    return {parts[3] for parts in (line.split("|", 3) for line in lines)
+            if len(parts) == 4 and parts[0] == "offered" and parts[1] == READ_NAME}
+
+
+def record_offered(lines):
+    known = offered()
+    new = []
+    for line in lines:
+        fields = line.rstrip("\n").split("\t")
+        if len(fields) != 3 or ":" not in fields[0]:
+            continue
+        found = key(fields[0].rsplit(":", 1)[0], fields[1], fields[2])
+        if found not in known and found not in new:
+            new.append(found)
+    try:
+        with open(RECORD, encoding="utf-8") as handle:
+            text = handle.read()
+    except OSError:
+        text = ""
+    if new:
+        if text and not text.endswith("\n"):
+            text += "\n"
+        today = datetime.date.today().isoformat()
+        with open(RECORD, "w", encoding="utf-8") as handle:
+            handle.write(text + "".join(f"offered|{READ_NAME}|{today}|{k}\n" for k in new))
+    print(f"recorded\t{len(new)}")
     return 0
+
+
+def main():
+    if subprocess.run(["git", "rev-parse", "--git-dir"], capture_output=True).returncode != 0:
+        print("This folder is not a project under Git.", file=sys.stderr)
+        return 2
+    if "--record-offered" in sys.argv[1:]:
+        return record_offered(sys.stdin.readlines())
+    found = findings()
+    if "--skip-offered" in sys.argv[1:]:
+        known = offered()
+        found = [f for f in found if key(f[0], f[2], f[3]) not in known]
+    for document, number, kind, name in found:
+        print(f"{document}:{number}\t{kind}\t{name}")
+    return 1 if found else 0
 
 
 if __name__ == "__main__":

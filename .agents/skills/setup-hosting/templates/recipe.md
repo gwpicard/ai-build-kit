@@ -9,61 +9,64 @@ Last checked: YYYY-MM-DD
 
 ## Preview
 
-How it works: <what happens on this pair, in order>
-How it is checked: <the command or check and what a pass looks like, or what a person looks at>
+How it works: <what happens on this pair, in order, naming the scripts the kit runs>
+How it is checked: <what a pass means>
+Script: scripts/<check>.sh
 Who runs it: <the kit | a companion or the person, result read back | a person looking>
+Ask: <the words the person hears, where the kit does not run the check itself>
 
 ## Going live
 
-How it works: <what happens on this pair, in order>
-How it is checked: <the command or check and what a pass looks like, or what a person looks at>
+How it works: <what happens on this pair, in order, naming the scripts the kit runs>
+How it is checked: <what a pass means>
+Script: scripts/<check>.sh
 Who runs it: <the kit | a companion or the person, result read back | a person looking>
+Ask: <the words the person hears, where the kit does not run the check itself>
 
 ## Rollback
 
-How it works: <what happens on this pair, in order>
-How it is checked: <the command or check and what a pass looks like, or what a person looks at>
+How it works: <what happens on this pair, in order, naming the scripts the kit runs>
+How it is checked: <what a pass means>
+Script: scripts/<check>.sh
 Who runs it: <the kit | a companion or the person, result read back | a person looking>
+Ask: <the words the person hears, where the kit does not run the check itself>
 
 ## Backup
 
-How it works: <what happens on this pair, in order>
-How it is checked: <the command or check and what a pass looks like, or what a person looks at>
+How it works: <what happens on this pair, in order, naming the scripts the kit runs>
+How it is checked: <what a pass means>
+Script: scripts/<check>.sh
 Who runs it: <the kit | a companion or the person, result read back | a person looking>
+Ask: <the words the person hears, where the kit does not run the check itself>
 
 ## Restore
 
-How it works: <what happens on this pair, in order>
-How it is checked: <the command or check and what a pass looks like, or what a person looks at>
+How it works: <what happens on this pair, in order, naming the scripts the kit runs>
+How it is checked: <what a pass means>
+Script: scripts/<check>.sh
 Who runs it: <the kit | a companion or the person, result read back | a person looking>
+Ask: <the words the person hears, where the kit does not run the check itself>
 
 ## Secrets
 
-How it works: <what happens on this pair, in order>
-How it is checked: <the command or check and what a pass looks like, or what a person looks at>
+How it works: <what happens on this pair, in order, naming the scripts the kit runs>
+How it is checked: <what a pass means>
+Script: scripts/<check>.sh
 Who runs it: <the kit | a companion or the person, result read back | a person looking>
+Ask: <the words the person hears, where the kit does not run the check itself>
 
 ## Logs
 
-How it works: <what happens on this pair, in order>
-How it is checked: <the command or check and what a pass looks like, or what a person looks at>
+How it works: <what happens on this pair, in order, naming the scripts the kit runs>
+How it is checked: <what a pass means>
+Script: scripts/<check>.sh
 Who runs it: <the kit | a companion or the person, result read back | a person looking>
+Ask: <the words the person hears, where the kit does not run the check itself>
 
 ## Health
 
-How it works: <what happens on this pair, in order>
-How it is checked: <the command or check and what a pass looks like, or what a person looks at>
+How it works: <what happens on this pair, in order, naming the scripts the kit runs>
+How it is checked: <what a pass means>
+Script: scripts/<check>.sh
 Who runs it: <the kit | a companion or the person, result read back | a person looking>
-
-## Proven
-
-Real run: YYYY-MM-DD
-
-Preview: <what was done in the real run and what came out>
-Going live: <what was done in the real run and what came out>
-Rollback: <what was done in the real run and what came out>
-Backup: <what was done in the real run and what came out>
-Restore: <what was done in the real run and what came out>
-Secrets: <what was done in the real run and what came out>
-Logs: <what was done in the real run and what came out>
-Health: <what was done in the real run and what came out>
+Ask: <the words the person hears, where the kit does not run the check itself>

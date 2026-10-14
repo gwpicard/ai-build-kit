@@ -18,11 +18,26 @@ It compares paragraphs word for word, after ignoring case, spacing and
 punctuation, so it finds a copy and never two documents that say the same
 thing in different words.
 
-It reads the project and writes nothing. Run it from the project root:
+With --skip-offered it leaves out each finding an earlier visit offered the
+person, as --record-offered wrote it into `.ai-build-kit-maintenance`. A
+finding that never reached the person, because it did not fit under the cap
+or the read failed, comes back at the next visit.
 
-    python3 <maintain skill folder>/scripts/document-bloat.py
+--record-offered reads finding lines, exactly as printed, on standard input,
+and adds one `offered|document-bloat|<date>|...` line for each to
+`.ai-build-kit-maintenance`, keeping every other line.
+
+Exit codes: 0 nothing to report, 1 findings printed, 2 not a project under
+Git.
+
+Apart from --record-offered, it reads the project and writes nothing. Run it
+from the project root:
+
+    python3 <maintain skill folder>/scripts/document-bloat.py [--skip-offered]
+    python3 <maintain skill folder>/scripts/document-bloat.py --record-offered < LINES
 """
 
+import datetime
 import os
 import re
 import subprocess
@@ -114,12 +129,70 @@ def unreferenced(docs, files):
     return found
 
 
-def main():
+def findings():
     files = tracked()
     docs = documents(files)
-    for finding in repeated(docs) + unreferenced(docs, files):
-        print("\t".join(finding))
+    return repeated(docs) + unreferenced(docs, files)
+
+
+RECORD = ".ai-build-kit-maintenance"
+READ_NAME = "document-bloat"
+
+
+def key(finding):
+    """A finding without its line numbers, which move as the documents change."""
+    return "|".join(part.rsplit(":", 1)[0] for part in finding)
+
+
+def offered():
+    try:
+        with open(RECORD, encoding="utf-8") as handle:
+            lines = handle.read().splitlines()
+    except OSError:
+        return set()
+    return {parts[3] for parts in (line.split("|", 3) for line in lines)
+            if len(parts) == 4 and parts[0] == "offered" and parts[1] == READ_NAME}
+
+
+def record_offered(lines):
+    known = offered()
+    new = []
+    for line in lines:
+        fields = tuple(line.rstrip("\n").split("\t"))
+        if not ((fields[0] == "repeated" and len(fields) == 3)
+                or (fields[0] == "unreferenced" and len(fields) == 2)):
+            continue
+        found = key(fields)
+        if found not in known and found not in new:
+            new.append(found)
+    try:
+        with open(RECORD, encoding="utf-8") as handle:
+            text = handle.read()
+    except OSError:
+        text = ""
+    if new:
+        if text and not text.endswith("\n"):
+            text += "\n"
+        today = datetime.date.today().isoformat()
+        with open(RECORD, "w", encoding="utf-8") as handle:
+            handle.write(text + "".join(f"offered|{READ_NAME}|{today}|{k}\n" for k in new))
+    print(f"recorded\t{len(new)}")
     return 0
+
+
+def main():
+    if subprocess.run(["git", "rev-parse", "--git-dir"], capture_output=True).returncode != 0:
+        print("This folder is not a project under Git.", file=sys.stderr)
+        return 2
+    if "--record-offered" in sys.argv[1:]:
+        return record_offered(sys.stdin.readlines())
+    found = findings()
+    if "--skip-offered" in sys.argv[1:]:
+        known = offered()
+        found = [f for f in found if key(f) not in known]
+    for finding in found:
+        print("\t".join(finding))
+    return 1 if found else 0
 
 
 if __name__ == "__main__":
