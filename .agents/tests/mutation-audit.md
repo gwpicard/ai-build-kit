@@ -105,3 +105,11 @@ the builder consulting Git at all, and every check catches it.
 
 The first run was also derailed part way through by editing `mutate.sh` while it
 was executing. A shell reads a script as it goes.
+
+## The skill structure, 14 October 2026
+
+Two mutations joined when the commands were thinned. One makes a command point
+into another command's references instead of calling a background skill. The
+other grows a command past its word budget. The validator caught both, through
+`check-structure.py`, on the branch that turned that check from reporting to
+failing.
