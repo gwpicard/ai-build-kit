@@ -32,7 +32,7 @@ record `Recipe: none`, and do not raise it again. Where no recipe fits the
 shape, the script's line says so; record `Recipe: none` and set up on one
 established, conventional stack.
 
-Once a recipe is chosen, build on its `Build stack:` line and record `Recipe:
+Once a recipe is chosen, build on its fixed stack fields and record `Recipe:
 <folder name>` in AGENTS.md's stack section. Run `scripts/check-tooling.sh
 --recipe <recipe folder>` with the path `recipe-menu.sh` printed. A tool it
 reports missing becomes a setup task for before the first /setup-hosting, named
@@ -57,7 +57,9 @@ If `.github/workflows/checks.yml` is missing, copy it from
 the placeholder `Install and test` commands with the project's real ones, never
 rewriting the file from memory. Leave an older `source-kit-validation` job
 alone. Load the `quality-checks` skill's `references/check-floor.md` for the type check and linter. On
-Build with care, where an area names a boundary, load the
+either hosted database recipe, add the shared row rules script to this project check
+so it runs on every change. Keep the row rules script itself unchanged.
+On Build with care, where an area names a boundary, load the
 `quality-checks` skill's `references/boundary-rules.md` and offer once to have the check hold it.
 Explore privately needs a local check; the other paths need the remote check
 working before shared or live work. Say once: "green means the tests really

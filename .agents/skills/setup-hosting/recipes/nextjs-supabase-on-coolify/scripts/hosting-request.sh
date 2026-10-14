@@ -5,8 +5,8 @@
 # Usage: hosting-request.sh [--lane internal|public]
 #
 # `hosting-request.md` beside this folder says what each field means and how
-# the answer is recorded. Repo comes from `origin`, Env vars from
-# `.env.example`, by name only, and Build and Bind from the Dockerfile at the
+# the answer is recorded. Repo comes from `origin`, Build vars and Run vars
+# from `.env.example`, by name only, and Build and Bind from the Dockerfile at the
 # root, since the server builds and checks the tool from those two facts. The
 # lane comes from the masterplan's Access: line, as hosting-request.md says. On this recipe Port is 3000 and Healthcheck is
 # /api/health, and a value is never printed.
@@ -31,8 +31,10 @@ case "$lane" in
   internal) lane_text="internal (private network)" ;;
   public) lane_text="public (internet)" ;;
 esac
-envs=$(cl_names .env.example | paste -sd, - | sed 's/,/, /g')
-[ -n "$envs" ] || envs=none
+build_envs=$(cl_names .env.example | awk '/^NEXT_PUBLIC_/ { print }' | paste -sd, - | sed 's/,/, /g')
+run_envs=$(cl_names .env.example | awk '!/^NEXT_PUBLIC_/ { print }' | paste -sd, - | sed 's/,/, /g')
+[ -n "$build_envs" ] || build_envs=none
+[ -n "$run_envs" ] || run_envs=none
 
 hostable=yes
 if [ -f Dockerfile ]; then
@@ -57,14 +59,17 @@ fi
 
 cat <<EOF
 Hosting request
-Repo:          $repo, branch main
-Lane:          $lane_text
-Port:          3000
-Env vars:      $envs
-Persist:       none
-Healthcheck:   /api/health
-Build:         $build
-Bind:          $bind
+Repo (build):       $repo
+Branch (build):     main
+Lane (runtime):     $lane_text
+Port (runtime):     3000
+Build vars (build): $build_envs
+Run vars (runtime): $run_envs
+Persist (runtime): none
+Healthcheck (run): /api/health
+Health-check tool (run): curl
+Build (build):     $build
+Bind (runtime):    $bind
 EOF
 [ "$hostable" = yes ] ||
   cl_fail "The tool cannot be hosted yet: the server needs a Dockerfile at the root whose image has curl or wget and listens on 0.0.0.0."

@@ -69,7 +69,8 @@ runnable-bit-lost
 product-named
 command-loads-command
 command-over-budget
-background-one-caller"
+background-one-caller
+recipe-framework-major"
 
 describe() {
   case "$1" in
@@ -104,6 +105,7 @@ describe() {
     command-loads-command) echo "a command reaches into another command's references instead of calling a background skill" ;;
     command-over-budget) echo "a command grows past its word budget" ;;
     background-one-caller) echo "a background skill is left with one caller and no agent that loads it" ;;
+    recipe-framework-major) echo "a recipe accepts a framework without a pinned major version" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -119,6 +121,7 @@ checks_for() {
     command-loads-command) echo "validate-kit" ;;
     command-over-budget) echo "validate-kit" ;;
     background-one-caller) echo "validate-kit" ;;
+    recipe-framework-major) echo "recipes" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -139,6 +142,16 @@ apply() {
   name=$1
   tree=$2
   case "$name" in
+    recipe-framework-major)
+      edit "$tree/.agents/tools/check-recipes.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "if framework and not re.search("
+assert old in t, "pinned framework major check not found"
+open(p, "w").write(t.replace(old, "if False and framework and not re.search(", 1))
+'
+      ;;
     reach-route-groups)
       edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
 import os

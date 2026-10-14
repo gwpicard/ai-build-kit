@@ -87,9 +87,10 @@ rr_case 2 good set-signup.sh
 rr_case 0 good signup.sh
 rr_case 1 good RR_SIGNUP=open signup.sh
 
-# The kit's own half of going live: the table read.
-rr_case 1 bad going-live.sh --pasted "$(rr_paste good going-live)"
-rr_case 2 down going-live.sh --pasted "$(rr_paste good going-live)"
+# The row rules script is in the project check on every change. Going live
+# checks only the live deployment and its health.
+rr_case 1 good going-live.sh --pasted "$(rr_paste bad going-live)"
+rr_case 2 good going-live.sh --pasted "$(rr_paste unlabelled going-live)"
 
 # The live check: the pasted health and names, and the kit's migration read.
 rr_case 0 good live-check.sh --pasted-health "$(rr_paste good live-health)" --pasted-names "$(rr_paste good live-names)" --pasted-access "$(rr_paste good access)"
@@ -114,7 +115,11 @@ RR_ORIGIN=https://someone:token-stand-in@github.com/team/app.git
 rr_case 0 good hosting-request.sh
 RR_ORIGIN=
 rr_said no "token-stand-in"
-rr_said yes "Repo:          https://github.com/team/app.git, branch main"
+rr_said yes "Repo (build):       https://github.com/team/app.git"
+rr_said yes "Branch (build):     main"
+rr_said yes "Build vars (build): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY"
+rr_said yes "Run vars (runtime): SUPABASE_SERVICE_ROLE_KEY"
+rr_said yes "Health-check tool (run): curl"
 printf 'FROM node:22-alpine\nENV HOSTNAME=0.0.0.0 PORT=3000\nCMD ["node", "server.js"]\n' > "$RR_TMP/fixture/Dockerfile"
 
 # The shared parts this recipe names.

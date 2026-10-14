@@ -81,8 +81,29 @@ ORDER = ["Preview", "Going live", "Rollback", "Backup", "Restore", "Secrets", "L
          "Access"]
 EXTRA = "Settings the kit can read"
 WHO = ("the kit", "a companion or the person, result read back", "a person looking")
-HEADS = ["Fits", "Recommended when", "Build stack", "Deploy target", "Command-line tools",
-         "Last checked"]
+STACK = ["Language", "Framework", "Typing", "Database", "Sign-in", "Email", "Files",
+         "Jobs", "Testing", "Linting", "Starter", "Optional parts"]
+HEADS = ["Fits", "Recommended when"] + STACK + ["Deploy target", "Health-check tool",
+         "Command-line tools", "Last checked"]
+STACK_SECTIONS = ["Sign-in and roles", "Row rules", "Files", "Jobs", "Email",
+                  "Project check", "Updates"]
+FIT_CATEGORIES = {
+    "Dashboards and reporting on existing data",
+    "Admin panels and back office over an existing database",
+    "Approvals and request workflows",
+    "CRMs, contact trackers and sales tools",
+    "Light ERP: stock, orders, purchasing, assets",
+    "Client, vendor and partner portals",
+    "Project and task trackers",
+    "Document processing: upload, extract, review, export",
+    "AI assistants over team documents",
+    "HR and onboarding",
+    "Case management, tickets and incident logs",
+    "Booking and scheduling",
+    "Forms and data collection",
+    "Field, inspection and service apps",
+    "Screenless sync and automation",
+}
 bad = False
 
 
@@ -132,7 +153,9 @@ def body_check(where, base, found):
     if who and who != "the kit" and not found.get("Ask"):
         problem(where, "is not run by the kit, so it needs \"Ask:\", the words the person hears")
     script = found.get("Script", "")
-    if script and not (mode == "template" and "<" in script):
+    if script.startswith("coming in part "):
+        pass
+    elif script and not (mode == "template" and "<" in script):
         path = os.path.normpath(os.path.join(base, script))
         if not script.startswith("scripts/") or not script.endswith(".sh"):
             problem(where, "names a script outside its scripts/ folder: %s" % script)
@@ -162,12 +185,23 @@ def check_recipe(md, proven):
     for label in HEADS:
         if not re.search(r"^%s: \S" % re.escape(label), head, re.M):
             problem(where, "the opening lines lack \"%s:\"" % label)
+    if re.search(r"^Build stack:", head, re.M):
+        problem(where, "uses the old Build stack line instead of the fixed stack fields")
+    framework = re.search(r"^Framework: (.*)$", head, re.M)
+    if framework and not re.search(r"\b\d+\b", framework.group(1)) and not (mode == "template" and "<" in framework.group(1)):
+        problem(where, "Framework must name its pinned major version")
+    starter = re.search(r"^Starter: (.*)$", head, re.M)
+    if starter and "coming in part B" not in starter.group(1) and not (mode == "template" and "<" in starter.group(1)):
+        problem(where, "Starter must say it is coming in part B")
+    fits = re.search(r"^Fits: (.*)$", head, re.M)
+    if fits and not (mode == "template" and "<" in fits.group(1)):
+        categories = [value.strip() for value in fits.group(1).split(";")]
+        if not categories or any(value not in FIT_CATEGORIES for value in categories):
+            problem(where, "Fits must use the category names from the stack research")
     found = re.search(r"^Last checked: (.*)$", head, re.M)
     if found:
         datecheck(where, "Last checked", found.group(1).strip())
-    terms = re.search(r"^Plan terms:.*$", head, re.M)
-    if terms:
-        line = terms.group(0)
+    for line in re.findall(r"^Plan terms:.*$", head, re.M):
         shaped = re.match(r"^Plan terms: [^(]+ \(read (\S+) at [^)]+\)$", line)
         if not shaped:
             problem(where, "\"Plan terms:\" does not read as a sentence ending \"(read YYYY-MM-DD at <source page>)\"")
@@ -182,6 +216,23 @@ def check_recipe(md, proven):
             problem(where, "no \"## %s\" section" % name)
     if wanted != [s for s in ORDER if s in order]:
         problem(where, "the nine sections are out of order")
+    stack_line = re.search(r"^Shared stack: .*\((\.\./parts/[A-Za-z0-9_.-]+\.md)\)$", head, re.M)
+    if mode == "template" and re.search(r"^Shared stack: <", head, re.M):
+        stack_line = None
+    elif not stack_line:
+        problem(where, "does not link its shared stack part")
+    if stack_line:
+        stack_path = os.path.normpath(os.path.join(base, stack_line.group(1)))
+        if not os.path.isfile(stack_path):
+            problem(where, "links a shared stack part that does not exist")
+        else:
+            stack_order, stack_body = sections(open(stack_path).read())
+            if stack_order != STACK_SECTIONS:
+                problem(stack_path, "does not hold the seven shared stack sections in order")
+            for stack_section in STACK_SECTIONS:
+                if stack_section in stack_body:
+                    body_check("%s ## %s" % (stack_path, stack_section), os.path.dirname(stack_path),
+                               lines_of(stack_body[stack_section]))
     extra = EXTRA in order
     if extra and order.index(EXTRA) != len(order) - 1:
         problem(where, "\"## %s\" does not come after \"## Access\", at the end" % EXTRA)
@@ -224,7 +275,16 @@ def check_recipe(md, proven):
 
 
 def check_part(path):
-    body_check(path, os.path.dirname(path), lines_of(open(path).read()))
+    text = open(path).read()
+    order, body = sections(text)
+    if order:
+        if order != STACK_SECTIONS:
+            problem(path, "does not hold the seven shared stack sections in order")
+        for name in STACK_SECTIONS:
+            if name in body:
+                body_check("%s ## %s" % (path, name), os.path.dirname(path), lines_of(body[name]))
+    else:
+        body_check(path, os.path.dirname(path), lines_of(text))
 
 
 for path in paths:

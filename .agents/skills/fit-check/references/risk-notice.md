@@ -20,6 +20,15 @@ A notice says five things:
   the work goes ahead;
 - that you flag what you can recognise and will miss things.
 
+When a team opts in to sending documents to a model, give this notice at
+founding: "The people named in these documents could be exposed if the text is
+stored or used outside the company. The model provider receives the documents
+to process them. Keep plain text extraction on your own server, or choose to
+send documents to the model. I flag what I can recognise and may miss other
+risks. Do you want to opt in to model processing?" Record their acceptance in
+the build-path record before any document is sent. Without that choice, use
+plain text extraction on the team's own server.
+
 "This is risky" is not a notice. Naming a cost, a delay, or a rule of the kit's
 own is not a notice either. Say who gets hurt.
 

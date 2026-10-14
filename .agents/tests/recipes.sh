@@ -24,7 +24,16 @@ HELPER_LINE='. "$ROOT/.agents/tests/lib/recipe-rehearsal.sh"'
 GOOD="$WORK/recipes/example-pair"
 mkdir -p "$GOOD/scripts" "$WORK/recipes/parts/scripts"
 sed -e 's/YYYY-MM-DD/2024-02-29/' -e 's/^Who runs it: .*/Who runs it: a person looking/' \
-  -e 's#^Script: .*#Script: scripts/check.sh#' -e 's/<[^>]*>/filled in/g' "$BLANK" > "$GOOD/recipe.md"
+  -e 's#^Script: .*#Script: scripts/check.sh#' -e 's#^Framework: .*#Framework: Next.js 16#' \
+  -e 's#^Starter: .*#Starter: coming in part B at starters/example#' \
+  -e 's#^Fits: .*#Fits: Project and task trackers#' \
+  -e 's#^Shared stack: .*#Shared stack: [stack](../parts/stack.md)#' \
+  -e 's/<[^>]*>/filled in/g' "$BLANK" > "$GOOD/recipe.md"
+{
+  for section in "Sign-in and roles" "Row rules" Files Jobs Email "Project check" Updates; do
+    printf '## %s\nHow it works: example\nHow it is checked: example\nScript: coming in part D\nWho runs it: the kit\n\n' "$section"
+  done
+} > "$WORK/recipes/parts/stack.md"
 printf '#!/usr/bin/env sh\nexit 0\n' > "$GOOD/scripts/check.sh"
 cp "$GOOD/scripts/check.sh" "$GOOD/scripts/live-check.sh"
 chmod +x "$GOOD/scripts/check.sh" "$GOOD/scripts/live-check.sh"
@@ -40,6 +49,12 @@ chmod +x "$GOOD/scripts/check.sh" "$GOOD/scripts/live-check.sh"
 
 "$CHECKER" --template "$BLANK" >/dev/null
 ok "the blank has the shape it asks for"
+set +e
+"$CHECKER" >/dev/null 2>&1
+status=$?
+set -e
+[ "$status" -eq 2 ] || fail "the recipe shape checker did not report an unusable invocation as could not run"
+ok "the recipe shape checker reports could not run for an unusable invocation"
 
 mkdir -p "$WORK/blank/scripts"
 cp "$BLANK" "$WORK/blank/recipe.md"
@@ -52,6 +67,14 @@ ok "an unfilled blank is refused as a recipe"
 ok "a filled recipe folder passes, dated on a leap day"
 "$CHECKER" "$GOOD/recipe.md" >/dev/null
 ok "the same recipe passes when its recipe.md is named"
+
+cp "$WORK/recipes/parts/stack.md" "$WORK/stack.before"
+sed '/^## Email$/d' "$WORK/stack.before" > "$WORK/recipes/parts/stack.md"
+if "$CHECKER" "$GOOD" >/dev/null; then
+  fail "a recipe whose shared stack part is missing a required section passed"
+fi
+cp "$WORK/stack.before" "$WORK/recipes/parts/stack.md"
+ok "a shared stack missing a required section is refused"
 
 copy() {
   # copy: a fresh copy of the good recipe at $WORK/mutant, printed.
@@ -79,7 +102,9 @@ for section in Preview "Going live" Rollback Backup Restore Secrets Logs Health 
 done
 refused "no Fits line" recipe.md '/^Fits:/d'
 refused "no Recommended when line" recipe.md '/^Recommended when:/d'
-refused "no Build stack line" recipe.md '/^Build stack:/d'
+refused "no Language line" recipe.md '/^Language:/d'
+refused "Framework without a pinned major" recipe.md 's/^Framework: .*/Framework: Next.js/'
+refused "no shared stack link" recipe.md '/^Shared stack:/d'
 refused "no Deploy target line" recipe.md '/^Deploy target:/d'
 refused "no Command-line tools line" recipe.md '/^Command-line tools:/d'
 refused "no Last checked line" recipe.md '/^Last checked:/d'

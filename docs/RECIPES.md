@@ -5,11 +5,64 @@ time; it does not read this file. `.agents/tools/check-recipes.sh` enforces the
 shape described here, and the validator runs it on every recipe, every shared
 part and the blank.
 
-A recipe is one build stack paired with one place to run it, which the kit
-knows well enough to check. The shape of the tool picks the stack: a web app
-with sign-in and saved data wants a different one from a static site. The
-place to run it is where the tool lives once people use it. Each pair is its
-own recipe, so a stack that runs in two places is two recipes.
+A recipe fixes the whole stack and where the tool runs. The shape of the tool
+picks the stack; the host decides which checks the kit can run itself. Each
+stack and host pair is its own recipe.
+
+## The current set
+
+The smallest set that covers the common internal tools in the research is two
+recipes. Both use TypeScript, Next.js 16 and hosted Supabase. This keeps one
+language, database and sign-in service across the menu.
+
+1. Next.js and Supabase on Vercel. It suits dashboards, admin panels,
+   approvals, CRMs, light ERP, trackers, HR, case management, booking, forms
+   and portals. It is the work-team default because Vercel runs previews,
+   launch and rollback, and the kit can run its checks on this computer.
+2. The same stack on Coolify. It suits those tools when the team has a server,
+   needs long-running or Python document work, or must keep processing on a
+   server it chooses. Its checks need the person or a companion to read the
+   server and paste the result back.
+
+Vercel Pro and Supabase Pro are the work-team default. Free plans remain for
+private exploration. Their terms are recorded on each recipe. Supabase Free
+pauses after low activity and has no backups; Vercel Hobby is for personal,
+non-commercial use and permits one outside person through its preview gate.
+
+The recipe set comes from `.agents/tmp/stack-research/stack-research.md` when
+that note is present, and its reviewed copy in the maintainer brief. The
+research found thin evidence on category shares, so this set covers the
+well-supported common shapes rather than claiming to cover every tool.
+
+The following stay off the road:
+
+- Python-only stacks: Django with HTMX, FastAPI as the whole tool, Streamlit,
+  Reflex and NiceGUI. They would need a second set of checks, and the research
+  found weaker role or agent support for some of them.
+- Other front ends: SvelteKit 3, Remix 3, React Router 8 and TanStack Start.
+  The first three have recent breaking changes or thin agent support; TanStack
+  Start is young and worth watching.
+- Other sign-in services: Clerk, which gets expensive quickly for invitations
+  and roles; Auth.js, which is maintenance only; and Better Auth as a default.
+  Better Auth remains the route off Supabase.
+- Other databases: Neon, self-hosted Postgres and self-hosted Supabase. Neon
+  does not supply the same sign-in and file services; self-hosting leaves
+  managed backups behind.
+- Other job services: Inngest, whose server licence is SSPL and needs a second
+  account, and Trigger.dev until a real run proves it.
+- Other hosts: Netlify, which has no Python worker or free work gate;
+  Cloudflare Workers, which is least portable; Fly.io, with no free plan or
+  built-in previews; Render and Railway, with no built-in web gate found; and
+  Dokploy, whose forward-auth and SSO need a commercial licence.
+- Mobile apps that work offline. Field teams may need them, but offline sync
+  is outside this web recipe set.
+- Public sign-up and payments. Both need a risk notice and no recipe fixes
+  their checks yet.
+- Marker, because of its model licence.
+
+The Python document worker belongs as an optional part on Coolify. The
+read-only existing-data connection belongs on both recipes. Their contents
+arrive in part C.
 
 ## A recipe is a folder
 
@@ -28,13 +81,18 @@ blank `recipe.md` to copy.
 
 ## What recipe.md holds
 
-It opens with six lines.
+It opens with fixed fields. Each names a tool only, so checks can read it.
 
 - `Fits:` the shape of tool the recipe suits, in words the person would use.
 - `Recommended when:` one plain sentence saying when founding should recommend
   this recipe over another that fits the same shape.
-- `Build stack:` what the tool is built with.
+- `Language:`, `Framework:` (including the pinned major), `Typing:`,
+  `Database:`, `Sign-in:`, `Email:`, `Files:`, `Jobs:`, `Testing:` and
+  `Linting:` name the whole stack.
+- `Starter:` names the pinned starter folder, or says when it is coming.
+- `Optional parts:` names the parts the recipe accepts, or `none`.
 - `Deploy target:` where it runs once it is live.
+- `Health-check tool:` names the tool used to read the live health route.
 - `Command-line tools:` the tools the recipe's scripts run on the person's
   machine, as command names separated by commas, or `none`. The setup tooling
   check reads this line and reports each one, and a missing one never stops
@@ -50,6 +108,12 @@ person needs instead. It ends with when and where the terms were read, as
 without notice, and a restriction with no date cannot be told from a current
 one. The line never quotes a price. Founding reads it when it offers the
 recipe, and says it only to a person it applies to.
+
+The shared stack part holds sign-in and roles, row rules, files, jobs, email,
+the project check and updates. Each section carries the same four lines as a
+recipe section. The access gate stays in each recipe because it differs by
+host. The project check includes row rules on every change; the unchanged row
+rules script remains the source of that check.
 
 Then comes one section for each of the eight things a live tool needs, in this
 order: preview, going live, rollback, backup, restore, secrets, logs and

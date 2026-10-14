@@ -33,8 +33,8 @@ SAY_NONE='No recipe the kit knows fits this tool, so I will set it up on a commo
 write_recipe() {
   # write_recipe <recipes folder> <recipe> <name>: a recipe folder.
   mkdir -p "$1/$2"
-  printf '# Recipe: %s\n\nFits: a web app people use in a browser, with sign-in and saved data\nRecommended when: %s.\nDeploy target: %s\n' \
-    "$3" "the team wants $3" "the host of $3" > "$1/$2/recipe.md"
+  printf '# Recipe: %s\n\nFits: a web app people use in a browser, with sign-in and saved data\nRecommended when: %s.\nFramework: Alpha 1\nDatabase: Data store\nDeploy target: North\n' \
+    "$3" "the team wants $3" > "$1/$2/recipe.md"
 }
 
 fill_menu() {
@@ -74,14 +74,16 @@ menu_route() {
   (cd "$project" && sh "$script" --record .ai-build-kit-maintenance alpha-on-north > "$out" 2>&1) ||
     fail "$route: the script failed on a menu of one"
   said "$out" > "$WORK/said"
-  [ "$(sed -n 1p "$WORK/said")" = "$SAY_ONE" ] ||
+  [ "$(sed -n 1p "$WORK/said")" = "For a work team, the recommended recipe is Recipe 1, Alpha and Data on North, on Pro plans." ] ||
+    fail "$route: the work-team default is not named"
+  [ "$(sed -n 2p "$WORK/said")" = "$SAY_ONE" ] ||
     fail "$route: a menu of one does not open with the sentence naming one recipe"
-  [ "$(sed -n 2p "$WORK/said")" = "1. Alpha on North (recommended)" ] ||
+  [ "$(sed -n 3p "$WORK/said")" = "1. Alpha on North (recommended)" ] ||
     fail "$route: the single recipe is not shown as recommended"
-  [ "$(sed -n 3p "$WORK/said")" = "Alpha on North is the default. Founding carries on with it unless you pick another recipe, and you may bring your own stack instead." ] ||
+  [ "$(sed -n 4p "$WORK/said")" = "Alpha on North is the default. Founding carries on with it unless you pick another recipe, and you may bring your own stack instead." ] ||
     fail "$route: a menu of one is not named the default, with an own stack offered"
-  [ "$(grep -c . "$WORK/said")" -eq 3 ] ||
-    fail "$route: a menu of one says more than its three lines"
+  [ "$(grep -c . "$WORK/said")" -eq 4 ] ||
+    fail "$route: a menu of one says more than its four lines"
   grep -qxF "Recipe folder: $(CDPATH= cd -- "$1" && pwd -P)/alpha-on-north" "$out" ||
     fail "$route: the script does not give the chosen recipe's path for the tool report"
   [ "$(grep -c '^founding-menu|' "$record")" -eq 1 ] &&
@@ -113,6 +115,8 @@ menu_route() {
     fail "$route: a menu of two does not mark exactly the chosen recipe"
   grep -qxF 'Beta on South is the default. Founding carries on with it unless you pick another recipe, and you may bring your own stack instead.' "$WORK/said" ||
     fail "$route: a menu of two does not name the chosen recipe the default"
+  [ "$(grep -c '^For a work team, the recommended recipe is Recipe 1, Alpha and Data on North, on Pro plans\.$' "$WORK/said")" -eq 1 ] ||
+    fail "$route: the work-team default is missing or repeated"
   grep -qxF "founding-menu|$today|alpha-on-north,beta-on-south" "$record" ||
     fail "$route: the menu line does not list both recipes"
 
@@ -224,6 +228,19 @@ printf '%s\n' 'The menu is the files in .agents/skills/setup-hosting/recipes/.' 
 grep -qE "$PROJECT_PATH" "$WORK/setup-copy" ||
   fail "a project path planted in a copy of the skill was not noticed"
 ok "the founding skill names no project path to the recipes, and a planted one is noticed"
+
+real_out="$WORK/real-menu"
+sh "$ROOT/.agents/skills/setup-ai-build-kit/scripts/recipe-menu.sh" \
+  --recommend nextjs-supabase-on-vercel > "$real_out"
+grep -qxF 'For a work team, the recommended recipe is Recipe 1, Next.js and Supabase on Vercel, on Pro plans.' "$real_out" ||
+  fail "the real menu does not name the work-team default"
+[ "$(grep -c '^For a work team, the recommended recipe is ' "$real_out")" -eq 1 ] ||
+  fail "the real menu names the work-team default more than once"
+grep -qxF '1. Next.js 16, TypeScript and Supabase on Vercel (recommended)' "$real_out" ||
+  fail "the Vercel recipe is not the first recipe in the menu"
+[ "$(grep -c '^  Plan terms: ' "$real_out")" -eq 3 ] ||
+  fail "the menu does not show each service's free-plan terms"
+ok "the real menu names Recipe 1 once, puts it first and shows each service's plan terms"
 
 menu_runs
 

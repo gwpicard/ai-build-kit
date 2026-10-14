@@ -6,6 +6,14 @@ section.
 
 Real run: 2026-09-25
 
+Sign-in and roles: No real run yet; added 2026-10-14.
+Row rules: No real run yet; added 2026-10-14.
+Files: No real run yet; added 2026-10-14.
+Jobs: No real run yet; added 2026-10-14.
+Email: No real run yet; added 2026-10-14.
+Project check: No real run yet; added 2026-10-14.
+Updates: No real run yet; added 2026-10-14.
+
 The run used a throwaway private app on the Vercel Hobby plan and the Supabase Free plan, with Supabase CLI 2.117 and Vercel CLI 60.0.0. The Free plan allows two active projects, so previews and live shared one Supabase project on this run.
 
 Preview: A branch push built a preview, and `vercel inspect <preview address>` reported it Ready. Opened in the person's browser behind Vercel's protection, `/api/health` gave `"database":"ok"` with the branch's commit. That previews stay off the live database is not proven by this run, since previews and live shared one project. A second run the same day, on a private repository, found the three first-launch gaps the section now covers: Vercel's GitHub app could not see the repository, the new project had no framework, and linking the folder wrote to `.gitignore` and `.env.local`. A third run the same day, on a new private repository with Vercel CLI 60.0.0, ran those first-launch steps. Before the person's step, `vercel git connect --yes` failed with "Failed to connect … if it's private". GitHub asked the person to confirm with a passkey before it showed the Vercel app's settings. Once the repository was added under Only select repositories, the same command answered "Connected". `vercel project update <project> --framework nextjs --yes` set Next.js, a second run of it changed nothing, and the first build from `main` reached Ready. A pull request built its own preview, which answered 302 when not signed in. `vercel curl /api/health --deployment <preview address> --yes` created a bypass token on the project without printing it, and `/api/health` gave `"database":"ok"` with the branch's commit. Previews and live shared one Supabase project again.

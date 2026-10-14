@@ -116,6 +116,10 @@ On a public tool, the sign-in and permissions notice also says that strangers
 can reach the live address and make an account, and that a payment gateway or
 similar may need a developer.
 
+Document extraction defaults to plain text on the team's own server. A model
+does not receive documents unless the team opts in. If it does, load the risk
+notice reference and give its document-model notice at founding.
+
 Where a caution is a person, "The notice holds" in
 `references/risk-notice.md` applies. Where it is a backup,
 a copy, a rehearsal, a managed service or an approval step, it is the kit's to
