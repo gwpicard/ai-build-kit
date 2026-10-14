@@ -14,8 +14,8 @@
 #   ./mutate.sh manifest-drop   one or more by name
 #   ./mutate.sh --list          the names and what each one breaks
 #
-# The clone takes committed history only, so uncommitted work in your tree is
-# not audited. Commit a fix before asking whether it closes a hole.
+# Each clone starts with the branch history and overlays the current worktree,
+# so an uncommitted slice can be checked without touching its index.
 #
 # For anyone extending this: every mutation asserts that the text it expects is
 # there before changing it, and the runner refuses a mutation that leaves the
@@ -40,6 +40,12 @@ PUBLISH_CHECKS="release-builder release-publication validate-kit"
 MODE_CHECKS="validate-kit fake-github"
 
 MUTATIONS="reach-wide-threshold
+reach-route-groups
+reach-alias-imports
+reach-tables-types
+reach-wide-dependents
+reach-deleted-paths
+reach-wide-tables
 manifest-drop
 manifest-drop-unpaired
 humanizer-leak
@@ -67,7 +73,13 @@ background-one-caller"
 
 describe() {
   case "$1" in
-    reach-wide-threshold) echo "the reach read stops reporting wide shared files" ;;
+    reach-wide-threshold) echo "the route threshold rises so a broad route reach is no longer reported as wide" ;;
+    reach-route-groups) echo "Next route groups remain in the reported address" ;;
+    reach-alias-imports) echo "the built-in import reader stops resolving @/ aliases" ;;
+    reach-tables-types) echo "the built-in reader stops detecting Tables type references" ;;
+    reach-wide-dependents) echo "wide dependents count files a changed file imports, not files that import it" ;;
+    reach-deleted-paths) echo "deleted imports are guessed by file name instead of resolved path" ;;
+    reach-wide-tables) echo "wide database tables stop being reported" ;;
     manifest-drop) echo "a document named in both manifests is dropped from the release allowlist" ;;
     manifest-drop-unpaired) echo "a file named only in the release allowlist is dropped, with no second manifest to cross-check it" ;;
     humanizer-leak) echo "the maintainer's writing skill is put back beside the eleven and allowed into the release" ;;
@@ -98,7 +110,7 @@ describe() {
 
 checks_for() {
   case "$1" in
-    reach-wide-threshold) echo "reach-rehearsal" ;;
+    reach-wide-threshold|reach-route-groups|reach-alias-imports|reach-tables-types|reach-wide-dependents|reach-deleted-paths|reach-wide-tables) echo "reach-rehearsal" ;;
     publish-writes-a-tree) echo "$PUBLISH_CHECKS" ;;
     gate-widened) echo "$MODE_CHECKS" ;;
     runnable-bit-lost) echo "$MODE_CHECKS" ;;
@@ -127,6 +139,66 @@ apply() {
   name=$1
   tree=$2
   case "$name" in
+    reach-route-groups)
+      edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "if not part.startswith((\"(\", \"@\"))"
+assert old in t, "route group filter not found"
+open(p, "w").write(t.replace(old, "if not part.startswith(\"@\")", 1))
+'
+      ;;
+    reach-alias-imports)
+      edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "targets = [os.path.normpath(os.path.join(t, spec[len(k):])) for k, ts in alias"
+assert old in t, "alias resolver not found"
+open(p, "w").write(t.replace(old, "targets = []  # mutation disables aliases\n    # " + old, 1))
+'
+      ;;
+    reach-tables-types)
+      edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = next((line for line in t.splitlines() if line.strip().startswith("patterns = (")), None)
+assert old is not None and "Tables" in old, "Tables type reader not found"
+open(p, "w").write(t.replace(old, "    patterns = ()", 1))
+'
+      ;;
+    reach-wide-dependents)
+      edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "dependents = len(reached_from(reverse, [path]))"
+assert old in t, "reverse dependent count not found"
+open(p, "w").write(t.replace(old, "dependents = len(reached_from(graph, [path]))", 1))
+'
+      ;;
+    reach-deleted-paths)
+      edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "importers = sorted(deleted_importers.get(path, set()))"
+assert old in t, "deleted path resolution not found"
+open(p, "w").write(t.replace(old, "importers = []", 1))
+'
+      ;;
+    reach-wide-tables)
+      edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "if used_count >= WIDE_TABLE_FILES:"
+assert old in t, "wide table threshold not found"
+open(p, "w").write(t.replace(old, "if False:", 1))
+'
+      ;;
     reach-wide-threshold)
       edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
 import os
@@ -406,13 +478,48 @@ run_check() {
   fi
 }
 
+# The maintainer runs mutations before a coordinator commits the slice. Clone
+# the branch for its Git history, then copy the current worktree's changed and
+# new files over it. The source index is only read, never written.
+clone_worktree() {
+  destination=$1
+  git clone --quiet --local --no-hardlinks "$ROOT" "$destination"
+  ROOT_TO_COPY="$ROOT" DESTINATION="$destination" python3 - <<'PY'
+import os, shutil, subprocess
+source, destination = os.environ["ROOT_TO_COPY"], os.environ["DESTINATION"]
+records = subprocess.check_output(
+    ["git", "-C", source, "status", "--porcelain", "-z", "--untracked-files=all"]
+).decode().split("\0")
+for record in records:
+    if not record:
+        continue
+    relative = record[3:]
+    original = os.path.join(source, relative)
+    copied = os.path.join(destination, relative)
+    if not os.path.lexists(original):
+        if os.path.isdir(copied) and not os.path.islink(copied):
+            shutil.rmtree(copied)
+        elif os.path.lexists(copied):
+            os.unlink(copied)
+    elif os.path.islink(original):
+        os.makedirs(os.path.dirname(copied), exist_ok=True)
+        if os.path.lexists(copied):
+            os.unlink(copied)
+        os.symlink(os.readlink(original), copied)
+    elif os.path.isfile(original):
+        os.makedirs(os.path.dirname(copied), exist_ok=True)
+        shutil.copy2(original, copied)
+PY
+}
+
 # A clean baseline first. If the suite is not green before anything is broken,
 # nothing after this means anything.
 echo "Baseline: running the checks against an unmutated clone"
 BASE="$WORK/baseline"
-git clone --quiet --local --no-hardlinks "$ROOT" "$BASE"
+clone_worktree "$BASE"
 baseline_failures=""
-for check in $DEFAULT_CHECKS; do
+BASELINE_CHECKS=${MUTATE_BASELINE_CHECKS:-$DEFAULT_CHECKS}
+for check in $BASELINE_CHECKS; do
   run_check "$BASE" "$check" baseline || baseline_failures="$baseline_failures $check"
 done
 if [ -n "$baseline_failures" ]; then
@@ -429,7 +536,7 @@ for name in $wanted; do
   echo "Mutation: $name"
   echo "  breaks: $(describe "$name")"
 
-  git clone --quiet --local --no-hardlinks "$ROOT" "$tree"
+  clone_worktree "$tree"
 
   status=applied
   if ! apply "$name" "$tree" >"$WORK/$name-apply.log" 2>&1; then

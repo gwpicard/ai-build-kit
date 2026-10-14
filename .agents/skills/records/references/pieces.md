@@ -42,6 +42,8 @@ outside service before this can go live: each by name, never a value>
 <the build approach, the seams, code-level dependencies, any groundwork: the
 technical context a builder needs and the person never has to open>
 
+Reaches: <files, routes, tables and tests this piece may affect; use `new files only` if it adds source files and reaches no existing code>
+
 </details>
 ```
 
@@ -115,7 +117,8 @@ what settled it into `## Decided` before the label comes off.
 - `ready`, when the piece is shaped and waiting to be built.
 
 `/shape` adds `ready` through `mark-ready.sh`, which refuses without `## Done
-when` and, after a `needs-` label, without `## Decided`. `/implement` swaps
+when`, without a `Reaches:` line on a project with code, and, after a `needs-`
+label, without `## Decided`. `/implement` swaps
 `ready` for `building` when it starts and takes both off after the merge. A
 piece never carries `ready` and a `needs-` label together.
 

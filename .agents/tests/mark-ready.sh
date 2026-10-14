@@ -41,6 +41,11 @@ state = {
         "6": {"body": done + "\n## Decided\n\n<!-- what settled it -->\n", "labels": ["needs-research"]},
         "7": {"body": "### So that\n\nA thing.\n\n### Done when\n\n- It works.\n\nReaches: src/list.ts\n", "labels": []},
         "8": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n", "labels": []},
+        "9": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n", "labels": []},
+        "10": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n", "labels": []},
+        "11": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n\nReaches:\n\nMore notes.\n", "labels": []},
+        "12": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n\n**Reaches:** src/list.ts\n", "labels": []},
+        "13": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n\n- Reaches: src/list.ts\n", "labels": []},
     },
 }
 json.dump(state, open(sys.argv[1], "w"))
@@ -58,7 +63,8 @@ mkdir -p "$WORK/project/src"
 printf '%s\n' 'export const item = 1' > "$WORK/project/src/list.ts"
 (cd "$WORK/project" && git init -q -b main)
 printf '%s\n' 'echo refreshed >> refreshed.log' > "$WORK/project/.agents/tools/plan-refresh.sh"
-run() { (cd "$WORK/project" && PATH="$WORK/bin:$PATH" sh "$SCRIPT" "$@"); }
+run_at() { dir=$1; shift; (cd "$dir" && PATH="$WORK/bin:$PATH" sh "$SCRIPT" "$@"); }
+run() { run_at "$WORK/project" "$@"; }
 refreshes() { if [ -f "$WORK/project/refreshed.log" ]; then grep -c . "$WORK/project/refreshed.log"; else echo 0; fi; }
 
 seed
@@ -87,6 +93,30 @@ out=$(run 8) && code=0 || code=$?
 [ "$code" -eq 1 ] && [ "$(labels_of 8)" = "" ] && printf '%s' "$out" | grep -q "Reaches" \
   && pass "a code project with no Reaches line is refused" \
   || fail "a code project without Reaches was not refused: $code $out"
+
+mkdir -p "$WORK/plain" "$WORK/kit-only/.agents/skills"
+(cd "$WORK/plain" && git init -q -b main && printf 'Notes\n' > README.md)
+(cd "$WORK/kit-only" && git init -q -b main && printf 'print(1)\n' > .agents/skills/tool.py)
+out=$(run_at "$WORK/plain" 9) && code=0 || code=$?
+[ "$code" -eq 0 ] && [ "$(labels_of 9)" = "ready" ] \
+  && pass "a project with no code can be marked ready without a Reaches line" \
+  || fail "a no-code project was refused without a Reaches line: $code $out"
+seed
+out=$(run_at "$WORK/kit-only" 10) && code=0 || code=$?
+[ "$code" -eq 0 ] && [ "$(labels_of 10)" = "ready" ] \
+  && pass "kit-only Python files do not make a starter look like a code project" \
+  || fail "a kit-only tree was treated as project code: $code $out"
+
+out=$(run 11) && code=0 || code=$?
+[ "$code" -eq 1 ] && printf '%s' "$out" | grep -q "Reaches" \
+  && pass "an empty Reaches line followed by another line is refused" \
+  || fail "an empty Reaches line was accepted: $code $out"
+out=$(run 12) && code=0 || code=$?
+[ "$code" -eq 0 ] && pass "a bold Reaches label is accepted" \
+  || fail "a bold Reaches label was refused: $code $out"
+out=$(run 13) && code=0 || code=$?
+[ "$code" -eq 0 ] && pass "a list-item Reaches label is accepted" \
+  || fail "a list-item Reaches label was refused: $code $out"
 
 out=$(run 3) && code=0 || code=$?
 [ "$code" -eq 1 ] && [ "$(labels_of 3)" = "needs-clarification visual" ] && printf '%s' "$out" | grep -q "Decided" \

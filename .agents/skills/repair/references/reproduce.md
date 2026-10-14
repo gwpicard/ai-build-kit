@@ -30,8 +30,9 @@ session is no reason to start the count again.
 Where one look on this computer shows the fault (the screen, a command's
 output, or the code) and the change is a few lines, such as a typo or a wrong
 label, that look is the reproduction. A report alone is not enough: you must
-have seen it. Define the symptom as below, write the look onto the piece, mark
-it ready with the `records` skill's `scripts/mark-ready.sh`, and offer to build it
+have seen it. Define the symptom as below, run `quality.py reach --paths
+<suspected files> --run`, write the look and its reach onto the piece, mark it
+ready with the `records` skill's `scripts/mark-ready.sh`, and offer to build it
 in this session. Anything less certain is reproduced as below.
 
 Reproduce with what runs as it is: the project's tests, a command, the app in a
@@ -52,7 +53,7 @@ say what evidence is missing and carry on; never ask the person to read logs.
 A step that needs a secret reads its location from the masterplan, as
 AGENTS.md's Secrets rule says.
 
-Run `quality.py reach --base <start commit> --run` and act on its exit code,
+Run `quality.py reach --paths <suspected files> --run` and act on its exit code,
 and run the existing tests it finds before writing a new one.
 
 Find one repeatable check that catches the exact symptom, preferring in order:

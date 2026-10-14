@@ -41,9 +41,8 @@
    yes, on the clean checkpoint, open one issue per row as pieces.md says,
    with its subjects, `ready` or its question label, then remove `plan.md` and
    add a dated changelog line. A no is not recorded, so the offer returns.
-7. Re-read the capability profile's reach-check engine against what is
-   available now, by the order in the `quality-checks` skill's
-   `references/reach-check.md`, and update it.
+7. Re-read the capability profile's reach check and note whether
+   dependency-cruiser or the built-in import reader is available.
 8. Run the sensitive-area check installed at founding. Where it names a
    missing path or an unassigned folder, ask which area it belongs to, or
    `none`, and update the map on the answer.

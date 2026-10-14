@@ -24,7 +24,7 @@ Use the first of these that the project has:
 
 | Language | Type check | Lint |
 |---|---|---|
-| TypeScript | `npx next typegen && npx tsc --noEmit` | `npx eslint .` with ESLint's own recommended rules and typescript-eslint's recommended rules |
+| TypeScript | `if node -e 'const p=require("./package.json"); process.exit(Boolean(p.dependencies?.next) + Boolean(p.devDependencies?.next) ? 0 : 1)'; then npx next typegen; fi && npx tsc --noEmit` | `npx eslint .` with ESLint's own recommended rules and typescript-eslint's recommended rules |
 | JavaScript | none, unless the project already checks types | `npx eslint .` with ESLint's own recommended rules |
 | Python | `mypy .` | `ruff check .` |
 | Go | the compiler, through `go build ./...` | `go vet ./...` |
@@ -54,9 +54,12 @@ and before test, so a red tick says which one failed. Write the same commands
 in AGENTS.md's stack section, so the agent can run them locally before it hands
 work over.
 
-When the project's recipe records a local database types command, add it as a
-`Database types` step after install. It writes the generated types file, then
-compares that file with Git. A difference fails the check.
+Add a `Database types` step only after the project check starts the local
+database. It generates into a temporary file and compares that with the
+tracked types file. A difference fails the check. If the database is not
+running, or the types file is missing or untracked, print `could not run` and
+exit 2. Do not add this step to a pull request check that does not start the
+database.
 
 ## Where it applies
 

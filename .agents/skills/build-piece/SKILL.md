@@ -6,7 +6,7 @@ user-invocable: false
 
 # Build a piece
 
-One piece per pass, always, directed by someone who judges it by behaviour.
+One piece per pass.
 
 ## 1. Safe start
 
@@ -26,15 +26,11 @@ Choose the save route before changing anything:
    permissions, an outside service, an operational change, or whatever the
    build path requires.
 3. **Flagged route.** The work touches a named sensitive area whose caution
-   is neither done nor accepted. Before building inside the area, give the
-   risk notice once, in full, as the `fit-check` skill describes. If the
-   person carries on after it, write the `Accepted:` line with their words and
-   the date, read it back, and build and save on the pull-request route, in
-   the reply that answers them, with no further question. A lock that only
-   waits for this caution opens with the acceptance unless they ask to keep
-   it. If they do not carry on, build only up to the recorded condition. In an
-   unattended run never write an acceptance: stop at the condition, which is a
-   successful outcome (step 8).
+   is neither done nor accepted. Give the full risk notice first. If the person
+   accepts, record their words and the date, read it back, then continue on the
+   pull-request route in the same reply. A lock waiting only on this caution
+   opens unless they ask to keep it. Otherwise stop at the recorded condition.
+   In an unattended run, never accept for them; stop there (step 8).
 
 The pull-request and flagged routes work on a short-lived branch from the
 up-to-date `main`. Where GitHub cannot be reached, build and save on the
@@ -118,7 +114,7 @@ before saving.
 
 ## 6. Hand over the behaviour
 
-Run the tests, and the type check and linter AGENTS.md's stack section names.
+Run tests, type check and linter from AGENTS.md.
 Fix any failure at the root. Then, on Build and run it and Build with care, run
 the trim in the `quality-checks` skill's `references/trim.md` and give its
 one line.
@@ -135,8 +131,13 @@ output shown. Describe a gap as expected versus actual, and fix it at the root.
 
 ## 7. Run required review
 
-Run `quality.py reach --base <start commit> --piece <number> --run` and act on
-its exit code. Also run the boundary check and `quality.py loops --base <start commit>`.
+Run `quality.py reach --base <start commit> --piece <number> --run`. If it prints
+`undeclared`, stop and ask: "this piece, or a new one?" Name the `wide` line.
+Otherwise exit 1: fix the failing check. Exit 2: say what could not run and use
+the fallback read. If exit 0 reaches other parts and tests pass, say: "This
+change also reaches <part>, and the <count> tests that cover it passed." Say
+nothing when no other part is reached. Run the boundary check and
+`quality.py loops --base <start commit>`.
 On Build with care, compare
 what the change reaches with the sensitive-area map; a match starts the review
 and you say: "This change reaches <area>, so a review is running."

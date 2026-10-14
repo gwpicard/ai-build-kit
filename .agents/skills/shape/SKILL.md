@@ -23,8 +23,9 @@ route.
 Piece-sized and clear (one sitting, a done line you could write now) becomes a
 ready piece at once. Write it to pieces.md's shape with its subjects, and
 label it `ready` by running the `records` skill's `scripts/mark-ready.sh` on its
-number. It refuses without `## Done when`, and refreshes the printout. A new
-issue starts unassigned; `/implement` assigns it when it picks the piece up.
+number. It refuses without `## Done when` and, on a project with code,
+without a `Reaches:` line. A new issue starts unassigned; `/implement` assigns
+it when it picks the piece up.
 Then make the build offer.
 
 ## Writing the piece
@@ -45,7 +46,11 @@ or service, each by name, never a value.
 
 For `Under the hood` on a project with code, run `quality.py reach --paths
 <likely files>` and act on its exit code. Add a `Reaches:` line with the files,
-routes, tables and tests it reports.
+routes, tables and tests it reports. If the piece only adds source files, write
+`Reaches: new files only`.
+
+When the read prints `wide`, split the piece so the shared part changes first,
+or keep it whole and tell the person in one plain line what else it reaches.
 
 ## Shaping now, or filing for later
 
@@ -68,8 +73,8 @@ treated as `needs-clarification`.
 
 Run the step the label names, write what settled it into `## Decided`, then run
 the `records` skill's `scripts/mark-ready.sh` on the piece. It refuses while
-`## Decided` or `## Done when` is missing and says which: write it, then run it
-again.
+`## Decided`, `## Done when`, or a code project's `Reaches:` line is missing
+and says which: write it, then run it again.
 
 - `needs-clarification` runs the `clarify` skill. Write the result in
   pieces.md's shape and keep the person's original words underneath.

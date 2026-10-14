@@ -35,6 +35,8 @@ project_root=$(git rev-parse --show-toplevel 2>/dev/null) || {
 has_code=no
 while IFS= read -r path; do
   case "$path" in
+    .agents/*|.claude/*|.cursor/*|.gemini/*|.codex/*|.github/*|.claude-plugin/*|agent-plugin/*)
+      continue ;;
     *.js|*.jsx|*.ts|*.tsx|*.mjs|*.cjs|*.mts|*.cts|*.py|*.go|*.rs|*.java|*.rb|*.php)
       has_code=yes
       break ;;
@@ -73,7 +75,7 @@ def section(name):
 needs = [l for l in labels if l.startswith("needs-")]
 if not section("Done when"):
     print("missing Done when")
-elif has_code and not re.search(r"^\s*Reaches:\s*\S", body, re.I | re.M):
+elif has_code and not re.search(r"^[ \t]*(?:[-*][ \t]*)?(?:\*\*)?Reaches:(?:\*\*)?[ \t]*\S", body, re.I | re.M):
     print("missing Reaches")
 elif needs and not section("Decided"):
     print("missing Decided")

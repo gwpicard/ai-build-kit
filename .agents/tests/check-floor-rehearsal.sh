@@ -291,8 +291,6 @@ echo "TypeScript:"
 command -v npm >/dev/null 2>&1 || fail "npm is needed to rehearse the TypeScript row"
 
 row=$(grep '^| TypeScript |' "$FLOOR") || fail "check-floor.md has no TypeScript row"
-printf '%s\n' "$row" | grep -q 'next typegen && npx tsc --noEmit' ||
-  fail "the TypeScript check does not generate Next route types before tsc"
 type_check=$(printf '%s\n' "$row" | awk -F'|' '{print $3}' | sed -n 's/^[^`]*`\([^`]*\)`.*/\1/p')
 lint=$(printf '%s\n' "$row" | awk -F'|' '{print $4}' | sed -n 's/^[^`]*`\([^`]*\)`.*/\1/p')
 [ -n "$type_check" ] || fail "the TypeScript row names no type check command"
@@ -301,6 +299,38 @@ printf '%s\n' "$row" | grep -q "ESLint's own recommended rules and typescript-es
   fail "the TypeScript row no longer says which lint rules it starts from"
 echo "  type check: $type_check"
 echo "  lint: $lint"
+
+# Rehearse the command's decision with npx as a stand-in. A plain TypeScript
+# project must reach tsc without calling Next, while a Next project runs both.
+NO_NEXT="$WORK/no-next"
+mkdir -p "$NO_NEXT/bin" "$NO_NEXT/project"
+cat > "$NO_NEXT/project/package.json" <<'JSON'
+{"devDependencies":{"typescript":"5"}}
+JSON
+cat > "$NO_NEXT/bin/npx" <<'SH'
+#!/usr/bin/env sh
+printf '%s\n' "$*" >> "$NPX_LOG"
+SH
+chmod +x "$NO_NEXT/bin/npx"
+(
+  cd "$NO_NEXT/project"
+  NPX_LOG="$NO_NEXT/calls" PATH="$NO_NEXT/bin:$PATH" sh -c "$type_check"
+) ||
+  fail "the plain TypeScript type check did not pass"
+grep -q '^tsc --noEmit$' "$NO_NEXT/calls" || fail "tsc did not run for plain TypeScript"
+if grep -q 'next typegen' "$NO_NEXT/calls"; then fail "Next typegen ran without Next in package.json"; fi
+cat > "$NO_NEXT/project/package.json" <<'JSON'
+{"devDependencies":{"typescript":"5","next":"15"}}
+JSON
+: > "$NO_NEXT/calls"
+(
+  cd "$NO_NEXT/project"
+  NPX_LOG="$NO_NEXT/calls" PATH="$NO_NEXT/bin:$PATH" sh -c "$type_check"
+) ||
+  fail "the Next type check did not pass"
+grep -q '^next typegen$' "$NO_NEXT/calls" && grep -q '^tsc --noEmit$' "$NO_NEXT/calls" ||
+  fail "Next project did not run route generation and tsc"
+echo "  ok: the TypeScript command runs Next typegen only when Next is a dependency"
 
 PROJECT="$WORK/ts-project"
 mkdir -p "$PROJECT/.github/workflows" "$PROJECT/.agents/hooks" "$PROJECT/src"
@@ -336,10 +366,7 @@ cat > "$PROJECT/package.json" <<'JSON'
     "eslint": "^9",
     "tsx": "^4",
     "typescript": "^5",
-    "typescript-eslint": "^8",
-    "next": "^15.5",
-    "react": "^19",
-    "react-dom": "^19"
+    "typescript-eslint": "^8"
   }
 }
 JSON
@@ -383,13 +410,6 @@ test("total", () => {
 });
 TS
 
-mkdir -p "$PROJECT/app"
-cat > "$PROJECT/app/page.tsx" <<'TS'
-export default function Page() {
-  return <main>Check floor</main>;
-}
-TS
-
 # Rehearse the recipe's schema-derived type output before the JavaScript tools
 # are installed, so this check still runs in an offline environment.
 RECIPE="$ROOT/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/recipe.md"
@@ -400,9 +420,13 @@ DB_BIN="$WORK/database-bin"
 mkdir -p "$DB/supabase/migrations" "$DB/types" "$DB_BIN"
 cat > "$DB_BIN/supabase" <<'PY'
 #!/usr/bin/env python3
-import pathlib, re, sys
+import os, pathlib, re, sys
+if sys.argv[1:] == ["status"]:
+    raise SystemExit(1 if os.environ.get("SUPABASE_DOWN") else 0)
 if sys.argv[1:] != ["gen", "types", "typescript", "--local"]:
     raise SystemExit(2)
+if os.environ.get("SUPABASE_GEN_FAIL"):
+    raise SystemExit(1)
 tables = sorted({name for file in pathlib.Path("supabase/migrations").glob("*.sql")
                  for name in re.findall(r"create\s+table\s+(?:public\.)?(\w+)", file.read_text(), re.I)})
 print("export type LocalDatabase = " + " | ".join(repr(name) for name in tables) + ";")
@@ -421,6 +445,25 @@ status=0
 (cd "$DB" && PATH="$DB_BIN:$PATH" sh -c "$db_check") > "$WORK/database-drift.out" 2>&1 || status=$?
 [ "$status" -eq 1 ] || fail "database type drift returned $status"
 echo "  ok: generated database types fail when a migration changes the schema"
+mv "$DB/types/database.ts" "$DB/types/database.saved"
+status=0
+(cd "$DB" && PATH="$DB_BIN:$PATH" sh -c "$db_check") > "$WORK/database-missing.out" 2>&1 || status=$?
+[ "$status" -eq 2 ] && grep -q 'could not run' "$WORK/database-missing.out" || fail "missing database types did not report could not run"
+mv "$DB/types/database.saved" "$DB/types/database.ts"
+git -C "$DB" rm --cached -q types/database.ts
+status=0
+(cd "$DB" && PATH="$DB_BIN:$PATH" sh -c "$db_check") > "$WORK/database-untracked.out" 2>&1 || status=$?
+[ "$status" -eq 2 ] && grep -q 'could not run' "$WORK/database-untracked.out" || fail "untracked database types did not report could not run"
+echo "  ok: missing or untracked database types report could not run without overwriting the file"
+status=0
+(cd "$DB" && PATH="$DB_BIN:$PATH" SUPABASE_DOWN=1 sh -c "$db_check") > "$WORK/database-stopped.out" 2>&1 || status=$?
+[ "$status" -eq 2 ] && grep -q 'could not run' "$WORK/database-stopped.out" || fail "a stopped local database did not report could not run"
+cp "$DB/types/database.ts" "$WORK/database-before-failed-generation"
+status=0
+(cd "$DB" && PATH="$DB_BIN:$PATH" SUPABASE_GEN_FAIL=1 sh -c "$db_check") > "$WORK/database-generation-failed.out" 2>&1 || status=$?
+[ "$status" -eq 2 ] && cmp -s "$WORK/database-before-failed-generation" "$DB/types/database.ts" ||
+  fail "failed database type generation changed the tracked types file"
+echo "  ok: a stopped database or failed generation reports could not run and keeps the types file intact"
 
 echo "  installing the project's own check tools"
 (cd "$PROJECT" && npm install --no-audit --no-fund --silent) ||

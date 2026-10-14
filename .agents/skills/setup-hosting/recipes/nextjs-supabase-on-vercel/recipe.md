@@ -7,7 +7,7 @@ Deploy target: Vercel, with the project's GitHub repository connected so that ea
 Command-line tools: vercel, supabase, docker, psql, curl, git
 Last checked: 2026-09-25
 Plan terms: Vercel's free Hobby plan is for personal, non-commercial use only, and Vercel counts a tool built by a paid employee as commercial, so a work team needs the paid Pro plan (read 2026-09-28 at https://vercel.com/docs/limits/fair-use-guidelines#commercial-usage)
-Database types check: `supabase gen types typescript --local > types/database.ts && git diff --exit-code -- types/database.ts`
+Database types check: `if [ ! -f types/database.ts ] || ! git ls-files --error-unmatch types/database.ts >/dev/null 2>&1; then echo 'could not run: types/database.ts is missing or untracked'; exit 2; fi; if ! supabase status >/dev/null 2>&1; then echo 'could not run: local Supabase is not running'; exit 2; fi; tmp=$(mktemp) || exit 2; trap 'rm -f "$tmp"' EXIT; supabase gen types typescript --local > "$tmp" || { echo 'could not run: database types could not be generated'; exit 2; }; diff -u types/database.ts "$tmp"`
 
 ## Preview
 

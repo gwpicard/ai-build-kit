@@ -26,6 +26,9 @@ something of them, and never needs to read one to keep the tool working.
 | Old branches | Monthly visit | `references/stale-branches.md` |
 | Waste, structure, document bloat | Quarterly visit | `references/waste-read.md`, `references/structure-read.md`, `references/document-bloat.md` |
 
+Check a boundary with sentrux or dependency-cruiser where present, or by
+reading the changed imports.
+
 A build's structure check compares with the commit the piece started from,
 read again from Git history. A visit's reads leave out what an earlier visit
 offered, which `.ai-build-kit-maintenance` records, finding by finding. A
