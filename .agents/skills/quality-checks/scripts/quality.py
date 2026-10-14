@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Run the code-quality engines on a project and print what they find.
 
-Run it from inside the project. Four reads:
+Run it from inside the project. Five reads:
 
     quality.py trim --base COMMIT [--fetch]
         What the change since COMMIT added that nothing needs.
@@ -10,6 +10,8 @@ Run it from inside the project. Four reads:
     quality.py loops (--base COMMIT | --skip-offered) [--reader auto|builtin]
         Import loops that were not there at COMMIT, or every loop in the
         project that no earlier visit offered.
+    quality.py reach (--paths FILE... | --base COMMIT) [--piece N] [--run]
+        Files, routes, tables and covering tests reached by a change.
     quality.py strength --base COMMIT [--fetch]
         Break the code changed since COMMIT on purpose, in a throwaway copy,
         and count how often the tests notice.
@@ -21,13 +23,16 @@ what kind of line it is, and a place is always FILE:LINE. A `not-checked`
 line names a part of the read that did not run, and why. The agent reads
 that part of the code directly instead, which is the last resort.
 
-Exit codes:
+Exit codes for the existing reads:
 
     0  nothing found, and every part of the read that applies ran
     1  findings printed, and every part of the read that applies ran
     2  a part could not run: not a project under Git, a commit that does not
        exist, or a part with no engine. Findings from the parts that did run
        are still printed.
+
+For reach, the list is information. Exit 1 means a covering test failed under
+--run. Exit 2 means Git, an import graph or the test runner could not run.
 
 It writes nothing into the project, apart from `offered`. Engines are taken
 from the project's own `node_modules/.bin` or virtual environment, then from
@@ -87,12 +92,19 @@ ENGINES = {
     "knip": ("knip@6", None),
     "jscpd": ("jscpd@5", None),
     "depcruise": ("dependency-cruiser@18", None),
+    "vitest": (None, None),
     "stryker": ("@stryker-mutator/core@9", None),
     "lizard": (None, "lizard>=1.24,<2"),
     "vulture": (None, "vulture"),
     "deptry": (None, "deptry"),
     "mutmut": (None, None),
 }
+
+# A wide reach is named once here so the shape and build reads use the same
+# limits.
+WIDE_DEPENDENTS = 10
+WIDE_ROUTES = 3
+WIDE_TABLE_FILES = 5
 
 
 def is_test(path):
@@ -861,6 +873,190 @@ def loops(root, base, skip_offered, reader, engines):
     return 1 if found else 0
 
 
+# --- reach ---------------------------------------------------------------------
+
+def route_for(path):
+    """Next App Router address for a page, route handler or layout file."""
+    match = re.match(r"^(?:src/)?app/(.+?)/(?:page|route|layout)\.(?:js|jsx|ts|tsx)$", path)
+    if not match:
+        if re.match(r"^(?:src/)?app/(?:page|route|layout)\.(?:js|jsx|ts|tsx)$", path):
+            return "/"
+        return None
+    parts = [part for part in match.group(1).split("/") if not part.startswith("(")]
+    return "/" + "/".join(parts)
+
+
+def table_names(root, files):
+    """Map database table names to files that mention them."""
+    found = {}
+    patterns = (
+        re.compile(r"\.from\(\s*['\"]([\w-]+)['\"]\s*\)"),
+        re.compile(r"\bTables\s*<\s*['\"]([\w-]+)['\"]\s*>"),
+    )
+    migration = re.compile(r"\bcreate\s+table\s+(?:if\s+not\s+exists\s+)?(?:public\.)?[\"`]?([\w-]+)", re.I)
+    for path in files:
+        text = read(root, path)
+        names = set()
+        for pattern in patterns:
+            names.update(pattern.findall(text))
+        if "migrations" in path.split("/") and path.endswith(".sql"):
+            names.update(migration.findall(text))
+        for name in names:
+            found.setdefault(name, set()).add(path)
+    return found
+
+
+def reach_changed(root, base, paths):
+    if paths is not None:
+        return sorted(set(paths)), []
+    if git("rev-parse", "--verify", "-q", base + "^{commit}", cwd=root) is None:
+        return None, None
+    out = git("diff", "--name-status", "--no-renames", base, "--", ".", cwd=root)
+    if out is None:
+        return None, None
+    changed, deleted = [], []
+    for line in out.splitlines():
+        fields = line.split("\t")
+        if len(fields) < 2:
+            continue
+        path = fields[-1]
+        if fields[0] == "D":
+            deleted.append(path)
+        elif os.path.isfile(os.path.join(root, path)):
+            changed.append(path)
+    untracked = git("ls-files", "-o", "--exclude-standard", cwd=root) or ""
+    changed.extend(path for path in untracked.splitlines() if os.path.isfile(os.path.join(root, path)))
+    return sorted(set(changed)), deleted
+
+
+def reach(root, paths, base, piece, should_run, engines):
+    files = project_files(root)
+    depcruise = engines.find("depcruise") if os.path.isfile(os.path.join(root, "package.json")) else None
+    graph = depcruise_graph(root, depcruise) if depcruise else None
+    if graph is None:
+        graph = builtin_graph(root)
+    if not graph:
+        print("not-checked\tgraph\tno local imports were found")
+        return 2
+    if paths:
+        changed, deleted = reach_changed(root, None, paths)
+    else:
+        changed, deleted = reach_changed(root, base, None)
+    if changed is None:
+        print("not-checked\tgit\tGit could not read the requested base commit")
+        return 2
+    seeds = [path for path in changed if path in files]
+    if not seeds and not deleted:
+        print("not-checked\tgraph\tno changed source files were found")
+        return 2
+
+    reverse = {}
+    for source, targets in graph.items():
+        for target in targets:
+            reverse.setdefault(target, set()).add(source)
+    reached, stack = set(), list(seeds)
+    while stack:
+        target = stack.pop()
+        for source in reverse.get(target, ()):
+            if source not in reached and source not in seeds:
+                reached.add(source)
+                stack.append(source)
+
+    for path in seeds:
+        print(f"changed\t{path}")
+    for path in deleted:
+        print(f"deleted\t{path}")
+    for path in sorted(reached):
+        via = next((seed for seed in seeds if seed in reached_from(graph, [path])), "")
+        print(f"reaches\t{path}" + (f"\tvia {via}" if via else ""))
+
+    routes = sorted({route_for(path) for path in reached | set(seeds)} - {None})
+    for route in routes:
+        print(f"route\t{route}")
+    tables = table_names(root, files)
+    touched_tables = sorted(name for name, users in tables.items()
+                            if users & (reached | set(seeds)))
+    for name in touched_tables:
+        print(f"table\t{name}\tused-in {len(tables[name])} files")
+
+    importers, stack = set(), list(reached | set(seeds))
+    while stack:
+        target = stack.pop()
+        for source in reverse.get(target, ()):
+            if source not in importers:
+                importers.add(source)
+                stack.append(source)
+    tests = sorted(path for path in files if is_test(path) and path in importers)
+    for path in tests:
+        print(f"tests\t{path}")
+    wide = set()
+    for path in reached | set(seeds):
+        dependents = len(reached_from(graph, [path]))
+        if dependents >= WIDE_DEPENDENTS:
+            wide.add(path)
+            print(f"wide\t{path}\tdependents {dependents}")
+    deleted_imports = {}
+    for path in deleted:
+        stem = os.path.splitext(os.path.basename(path))[0]
+        importers = [candidate for candidate in files if candidate.endswith(SOURCE_EXT)
+                     and re.search(r"""['"][^'"]*(?:/|\.)""" + re.escape(stem) +
+                                   r"""(?:\.[cm]?[jt]sx?)?['"]""", read(root, candidate))]
+        if importers:
+            deleted_imports[path] = importers
+            print(f"wide\t{path}\tdeleted export imported in {len(importers)} files")
+    if len(routes) >= WIDE_ROUTES:
+        print(f"wide\troutes\tcount {len(routes)}")
+    for name in touched_tables:
+        if len(tables[name]) >= WIDE_TABLE_FILES:
+            print(f"wide\ttable {name}\tfiles {len(tables[name])}")
+
+    declared = None
+    declared_text = ""
+    if piece:
+        gh = shutil.which("gh")
+        if gh:
+            code, body, _ = run([gh, "issue", "view", str(piece), "--json", "body",
+                                 "--jq", ".body"], cwd=root)
+            if code == 0:
+                match = re.search(r"^\s*Reaches:\s*(.*)$", body, re.I | re.M)
+                declared_text = match.group(1) if match else ""
+                declared = set(re.findall(
+                    r"[\w./-]+\.(?:m|c)?(?:js|jsx|ts|tsx|mts|cts|py|go|rs)", declared_text
+                ))
+    if piece and declared is not None:
+        for path in sorted(wide):
+            if path not in declared:
+                print(f"undeclared\t{path}\tnot in piece {piece}'s Reaches line")
+        for path in sorted(deleted_imports):
+            if path not in declared:
+                print(f"undeclared\t{path}\tnot in piece {piece}'s Reaches line")
+        if len(routes) >= WIDE_ROUTES:
+            for route in routes:
+                if route not in declared_text:
+                    print(f"undeclared\troute {route}\tnot in piece {piece}'s Reaches line")
+        for name in touched_tables:
+            if len(tables[name]) >= WIDE_TABLE_FILES and name not in declared_text:
+                print(f"undeclared\ttable {name}\tnot in piece {piece}'s Reaches line")
+
+    if should_run:
+        runner = engines.find("vitest")
+        if not runner:
+            print("not-checked\ttests\tVitest is not installed")
+            return 2
+        targets = sorted(set(seeds) | reached)
+        code, out, err = run(runner + ["related", *targets, "--run"], cwd=root)
+        if out.strip():
+            print(out.rstrip())
+        if code == 1:
+            print("failed\ttests\tVitest related returned " + str(code))
+            return 1
+        if code != 0:
+            detail = err.strip().split("\n")[-1][:160] if err.strip() else "Vitest could not start"
+            print("not-checked\ttests\t" + detail)
+            return 2
+    return 0
+
+
 # --- strength ------------------------------------------------------------------
 
 def ranges(lines):
@@ -1071,6 +1267,12 @@ def main():
     group.add_argument("--base")
     group.add_argument("--skip-offered", action="store_true")
     p.add_argument("--reader", choices=("auto", "builtin"), default="auto")
+    p = sub.add_parser("reach")
+    group = p.add_mutually_exclusive_group(required=True)
+    group.add_argument("--paths", nargs="+")
+    group.add_argument("--base")
+    p.add_argument("--piece")
+    p.add_argument("--run", action="store_true")
     p = sub.add_parser("offered")
     p.add_argument("which", choices=("waste", "loops"))
     try:
@@ -1102,6 +1304,8 @@ def main():
         return waste(root, engines, args.skip_offered)
     if args.read == "loops":
         return loops(root, args.base, args.skip_offered, args.reader, engines)
+    if args.read == "reach":
+        return reach(root, args.paths, args.base, args.piece, args.run, engines)
     return strength(root, args.base, engines)
 
 

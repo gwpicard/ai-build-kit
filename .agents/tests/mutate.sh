@@ -35,11 +35,12 @@ REPORT="$WORK/report.tsv"
 # because it also carries checks of its own, on links, stale vocabulary and
 # adapter freshness. When reading the report, a catch by validate-kit alone
 # means only its own direct checks noticed.
-DEFAULT_CHECKS="release-builder starter-rehearsal agent-plugin session-start validate-kit"
+DEFAULT_CHECKS="release-builder starter-rehearsal agent-plugin session-start reach-rehearsal validate-kit"
 PUBLISH_CHECKS="release-builder release-publication validate-kit"
 MODE_CHECKS="validate-kit fake-github"
 
-MUTATIONS="manifest-drop
+MUTATIONS="reach-wide-threshold
+manifest-drop
 manifest-drop-unpaired
 humanizer-leak
 review-issues-leak
@@ -66,6 +67,7 @@ background-one-caller"
 
 describe() {
   case "$1" in
+    reach-wide-threshold) echo "the reach read stops reporting wide shared files" ;;
     manifest-drop) echo "a document named in both manifests is dropped from the release allowlist" ;;
     manifest-drop-unpaired) echo "a file named only in the release allowlist is dropped, with no second manifest to cross-check it" ;;
     humanizer-leak) echo "the maintainer's writing skill is put back beside the eleven and allowed into the release" ;;
@@ -96,6 +98,7 @@ describe() {
 
 checks_for() {
   case "$1" in
+    reach-wide-threshold) echo "reach-rehearsal" ;;
     publish-writes-a-tree) echo "$PUBLISH_CHECKS" ;;
     gate-widened) echo "$MODE_CHECKS" ;;
     runnable-bit-lost) echo "$MODE_CHECKS" ;;
@@ -124,6 +127,16 @@ apply() {
   name=$1
   tree=$2
   case "$name" in
+    reach-wide-threshold)
+      edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "WIDE_ROUTES = 3"
+assert old in t, "route threshold not found"
+open(p, "w").write(t.replace(old, "WIDE_ROUTES = 100", 1))
+'
+      ;;
     manifest-drop)
       grep -v '^docs/SOURCES\.md|' "$tree/release-manifest.txt" > "$tree/rm.tmp"
       mv "$tree/rm.tmp" "$tree/release-manifest.txt"
