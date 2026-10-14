@@ -43,9 +43,9 @@ it. Never apply it while shaping.
 Write `Live side needs:` only where the live copy needs a new secret, setting
 or service, each by name, never a value.
 
-For `Under the hood` on a project with code, run the reach check in the
-`quality-checks` skill's `references/reach-check.md` and name the seams and
-covering tests from it.
+For `Under the hood` on a project with code, run `quality.py reach --paths
+<likely files>` and act on its exit code. Add a `Reaches:` line with the files,
+routes, tables and tests it reports.
 
 ## Shaping now, or filing for later
 

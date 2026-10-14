@@ -52,7 +52,7 @@ say what evidence is missing and carry on; never ask the person to read logs.
 A step that needs a secret reads its location from the masterplan, as
 AGENTS.md's Secrets rule says.
 
-Run the reach check in the `quality-checks` skill's `references/reach-check.md`,
+Run `quality.py reach --base <start commit> --run` and act on its exit code,
 and run the existing tests it finds before writing a new one.
 
 Find one repeatable check that catches the exact symptom, preferring in order:

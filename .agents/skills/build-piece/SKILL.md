@@ -135,11 +135,11 @@ output shown. Describe a gap as expected versus actual, and fix it at the root.
 
 ## 7. Run required review
 
-Run the reach check, with the tests it names, the boundary check and the loops
-read, as the `quality-checks` skill's "During a build" says. On Build with
-care, compare what the change reaches with the sensitive-area map; a match
-starts the review and you say: "This change reaches <area>, so a review is
-running."
+Run `quality.py reach --base <start commit> --piece <number> --run` and act on
+its exit code. Also run the boundary check and `quality.py loops --base <start commit>`.
+On Build with care, compare
+what the change reaches with the sensitive-area map; a match starts the review
+and you say: "This change reaches <area>, so a review is running."
 
 When the build path, the subjects, or a sensitive area call for review, run
 the `second-opinion` skill by the best independent method in the capability
