@@ -46,9 +46,6 @@
       "Build one piece from the plan to a confirmed, saved change. Used by build for every piece and by fix once the cause is known. Refuses to start on top of uncommitted work. One piece per pass, always.",
       "Build one piece from the plan to a confirmed, saved change. Used by implement for every piece and by fix once the cause is known. Refuses to start on top of uncommitted work. One piece per pass, always.",
       "Build one piece from the plan to a confirmed, saved change. Used by implement for every piece, a repair included. Refuses to start on top of uncommitted work. One piece per pass, always."
-    ],
-    "screen-check": [
-      "Apply the kit's screen rules during a build or review that touches an interface. Read the project's own design system first, report what was applied and what remains for a person to try, and make no claim that the screen is accessible, compliant, or good."
     ]
   },
   "files": {
@@ -133,10 +130,6 @@
     ],
     "queue/agents/openai.yaml": [
       "a1499d95abd84475"
-    ],
-    "screen-check/SKILL.md": [
-      "9c288828035416c1",
-      "f73d58e62d8bef3e"
     ],
     "section-builder/SKILL.md": [
       "020ddf4e7e79223d",

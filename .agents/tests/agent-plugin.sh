@@ -44,8 +44,7 @@ setup-ai-build-kit
 setup-hosting
 what-now"
 
-expected_disciplines="clarify
-second-opinion"
+expected_disciplines=$(awk '$1 == "background" { print $2 }' "$ROOT/.agents/tools/kit-inventory.txt")
 
 # --- the plugin directory and its manifest -------------------------------
 [ -d "$PLUGIN" ] || fail "the release does not contain the agent-plugin folder"
@@ -167,7 +166,7 @@ done
 expected_skills=$(printf '%s\n%s\n' "$expected_commands" "$expected_disciplines" | sort)
 found_skills=$(find "$SKILLS_DIR" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sort)
 if [ "$found_skills" != "$expected_skills" ]; then
-  fail "the agent plugin does not expose exactly the eight installable skills"
+  fail "the agent plugin does not expose exactly the kit's installable skills"
 fi
 
 # An Agent Plugins update replaces the installed folder whole, and /maintain
@@ -239,15 +238,15 @@ WORDS
 for supporting in \
   setup-ai-build-kit/scripts/bootstrap-project.sh \
   setup-ai-build-kit/templates/foundation/AGENTS.md \
-  setup-ai-build-kit/references/fit-check.md \
+  fit-check/SKILL.md \
   maintain/templates/handover.md \
   setup-hosting/templates/recipe.md \
   setup-hosting/scripts/run-recipe.sh \
   implement/references/running-longer.md \
-  implement/references/merge.md \
-  implement/references/screen-rules.md \
-  shape/references/research.md \
-  shape/references/repair.md; do
+  merge/references/first-upload.md \
+  screen-check/SKILL.md \
+  research/SKILL.md \
+  repair/references/reproduce.md; do
   [ -f "$SKILLS_DIR/$supporting" ] || \
     fail "the agent plugin lost a file one of its skills needs: $supporting"
 done

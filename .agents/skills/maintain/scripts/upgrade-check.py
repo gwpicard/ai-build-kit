@@ -142,12 +142,6 @@ TEMPLATE_LINES = (
     ("masterplan.md", (OLD_SENTENCE,), (NEW_SENTENCE,)),
     ("AGENTS.md", ("The user describes intent in plain language; change-triage chooses the route.",),
      ("The user describes intent in plain language; `/shape` chooses the route.",)),
-    ("AGENTS.md", ("piece carries `visual`, or a change touches a screen file, load `screen-check`",
-                   "before the guided manual check. It reads this project's design rules first and",
-                   "never calls a screen accessible, compliant, or good."),
-     ("piece carries `visual`, or a change touches a screen file, load the `implement` skill's `references/screen-rules.md`",
-      "before the guided manual check. They read this project's design rules first and",
-      "never call a screen accessible, compliant, or good.")),
     ("AGENTS.md", ("piece has a subject label, set once by change-triage. `plan.local.md` prints the",),
      ("piece has a subject label, set once by `/shape`. `plan.local.md` prints the",)),
 )
@@ -634,9 +628,10 @@ def said_once(out, project, monthly):
 # --- the words the person hears ----------------------------------------------
 
 RETIRED_NAMES = ("fix", "queue", "sync", "ship")
-# The background skills folded into /shape and /implement after the six
-# commands. A project founded on v0.20.3 has only these to hear about.
-FOLDED = ("change-triage", "section-builder", "screen-check")
+# The background skills renamed after the six commands: `change-triage` is now
+# `triage` and `section-builder` is now `build-piece`. A project founded on
+# v0.20.3 has only these to hear about.
+FOLDED = ("change-triage", "section-builder")
 
 
 def names_skill(text, name):
@@ -754,27 +749,39 @@ def sentences(out, project):
         if any(names_retired(f[2]) for f in rewrite):
             what = "still names old commands"
         elif folded:
-            what = ("still names the background %s %s, which %s now part of /shape and "
-                    "/implement" % (plural(len(folded), "skill", "skills"), joined(folded),
-                                    plural(len(folded), "is", "are")))
+            what = ("still names the background %s %s, which the kit has since renamed"
+                    % (plural(len(folded), "skill", "skills"), joined(folded)))
         else:
             what = "still counts the skills of an older release"
         said.append(("commands", "The command list in AGENTS.md %s. I can bring it up to this "
-                     "release's six commands and two background skills, and change nothing "
-                     "else in the file. Shall I?" % what))
+                     "release's six commands and its background skills, and change "
+                     "nothing else in the file. Shall I?" % what))
     if by_hand:
         said.append(("commands", "The command list in AGENTS.md still names old commands, and it "
                      "holds words of your own, so the script leaves it. I can replace those "
                      "lines with the current list and keep your sentences. Shall I?"))
     pointers = [f for f in by.get("pointer", []) if not f[-1].startswith("left as written:")]
     kept = [f for f in by.get("pointer", []) if f[-1].startswith("left as written:")]
-    if pointers:
-        n = len(pointers)
+    # A pointer through the skills folder is one kind; a pointer that already
+    # names its skill, to a file that moved to another skill or a skill that
+    # was renamed, is the other. Each hears the sentence that is true of it.
+    by_folder = [f for f in pointers if ".agents/skills/" in f[2]]
+    moved = [f for f in pointers if ".agents/skills/" not in f[2]]
+    if by_folder:
+        n = len(by_folder)
         said.append(("pointers", "%d %s in %s %s at a kit file through a folder some "
                      "installations do not have. I can name the skill instead, and each line "
                      "keeps its sentence: %s becomes %s. Shall I?" % (
-                         n, plural(n, "line", "lines"), files_of(pointers),
-                         plural(n, "points", "point"), pointers[0][2], pointers[0][3])))
+                         n, plural(n, "line", "lines"), files_of(by_folder),
+                         plural(n, "points", "point"), by_folder[0][2], by_folder[0][3])))
+    if moved:
+        n = len(moved)
+        said.append(("pointers", "%d %s in %s %s at a kit file that has moved to another "
+                     "skill, or to a skill the kit has renamed. I can point %s at the new "
+                     "home, and each line keeps its sentence: %s becomes %s. Shall I?" % (
+                         n, plural(n, "line", "lines"), files_of(moved),
+                         plural(n, "points", "point"), plural(n, "it", "them"),
+                         moved[0][2], moved[0][3])))
     if kept:
         n = len(kept)
         said.append(("pointers", "%s left as written: %s. %s yours to change if you want." % (

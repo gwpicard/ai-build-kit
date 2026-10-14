@@ -252,7 +252,7 @@ printf '%s\n' "Read the \`setup-ai-build-kit\` skill's \`references/no-such-file
   "setup-ai-build-kit/references/no-such-file.md" ] && \
   pass "a pointer to a file the skill does not have is reported" || \
   fail "a pointer to a missing file went unreported"
-printf '%s\n' 'The rules are in `.agents/skills/setup-ai-build-kit/references/pieces.md`.' >> "$broken"
+printf '%s\n' 'The rules are in `.agents/skills/records/references/pieces.md`.' >> "$broken"
 [ -n "$(fixed_paths_in "$broken")" ] && \
   pass "a pointer at a fixed project folder is reported" || \
   fail "a pointer at a fixed project folder went unreported"
@@ -353,7 +353,7 @@ grep -q "place-plan-helper\.sh" "$ROOT/.agents/skills/maintain/scripts/upgrade-c
 
 # Where the harness cannot run the check, the helper still arrives: the
 # maintain skill names the template to copy by hand, and it is there.
-grep -q "templates/foundation/plan-refresh\.sh" "$ROOT/.agents/skills/maintain/SKILL.md" \
+grep -q "templates/foundation/plan-refresh\.sh" "$ROOT/.agents/skills/maintain/references/kit-update.md" \
   && [ -f "$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/plan-refresh.sh" ] && \
   pass "/maintain names a by-hand route to the helper" || \
   fail "/maintain has no by-hand route to the helper"

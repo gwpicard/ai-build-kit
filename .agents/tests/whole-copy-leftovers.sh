@@ -28,7 +28,7 @@ echo "Whole-copy leftovers:"
 
 # A whole copy of the last nine-command release. It carries the kit's own
 # command files for every tool and the old session-end hook, and the update has
-# just registered the eight with the installer. The person added a skill and a
+# just registered today's skills with the installer. The person added a skill and a
 # command of their own. The copy's retired skills carry the descriptions the
 # kit's releases gave them, read from the record the script uses.
 KNOWN="$ROOT/.agents/skills/maintain/scripts/kit-retired-skills.json"
@@ -39,7 +39,7 @@ kit_skill() {
 }
 P="$work/copy"
 nine="setup-ai-build-kit shape implement queue fix ship sync maintain what-now"
-eight="setup-ai-build-kit shape implement setup-hosting maintain what-now clarify second-opinion"
+eight=$(awk '$1 == "command" || $1 == "background" { print $2 }' "$ROOT/.agents/tools/kit-inventory.txt" | tr '\n' ' ')
 mkdir -p "$P/.agents/skills" "$P/.agents/hooks" "$P/.claude/commands" "$P/.cursor/commands" "$P/.gemini/commands"
 for name in $eight my-notes; do
   mkdir -p "$P/.agents/skills/$name"
@@ -98,7 +98,7 @@ python3 "$LEFTOVERS" --remove "$P"
 r=yes
 for n in queue fix ship sync; do [ ! -e "$P/.agents/skills/$n" ] || r=no; done
 for n in $eight; do [ -f "$P/.agents/skills/$n/SKILL.md" ] || r=no; done
-report "the retired folders are gone and the eight remain" "$r"
+report "the retired folders are gone and today's skills remain" "$r"
 report "every generated command file is gone, and the emptied tool folders with them" \
   "$([ ! -e "$P/.cursor" ] && [ ! -e "$P/.gemini" ] && [ "$(ls "$P/.claude/commands")" = deploy.md ] && echo yes || echo no)"
 report "the person's command file, skills and hook are untouched" \
@@ -111,13 +111,15 @@ report "a second run lists only what is never removed, which the visit then keep
   "$([ "$(python3 "$LEFTOVERS" "$P" | grep -cv '^left	')" = 0 ] \
      && python3 "$LEFTOVERS" "$P" | grep -q '^left	.agents/hooks/session-end-sync.sh	' && echo yes || echo no)"
 
-# A whole copy of the last eleven-skill release. Its three background skills
-# folded into shape and implement, and the update left their folders, with
-# the bytes that release shipped, and their generated Claude Code folders. The
-# person added a note to one copy of section-builder in a second project.
+# A whole copy of the last eleven-skill release. Two of its background skills
+# were renamed since, and the update left their folders, with the bytes that
+# release shipped, and their generated Claude Code folders. Its third,
+# screen-check, came back under its own name, so its folders are today's and
+# stay. The person added a note to one copy of section-builder in a second
+# project.
 E="$work/eleven"
 F="$ROOT/.agents/tests/fixtures/upgrade-v0.20.3/retired-skills"
-folded="change-triage screen-check section-builder"
+folded="change-triage section-builder"
 mkdir -p "$E/.agents/skills"
 for name in $eight; do
   mkdir -p "$E/.agents/skills/$name"
@@ -136,16 +138,19 @@ done
 cp -R "$E" "$work/eleven-changed"
 printf '%s\n' 'My build notes.' > "$work/eleven-changed/.agents/skills/section-builder/notes.md"
 listed=$(python3 "$LEFTOVERS" "$E")
-report "the three folded background skill folders are listed, with their generated copies" \
-  "$([ "$(printf '%s\n' "$listed" | grep -cE '^folder	\.agents/skills/(change-triage|screen-check|section-builder)$')" = 3 ] \
-     && [ "$(printf '%s\n' "$listed" | grep -cE '^adapter	\.claude/skills/(change-triage|screen-check|section-builder)$')" = 3 ] && echo yes || echo no)"
+report "the two renamed background skill folders are listed, with their generated copies" \
+  "$([ "$(printf '%s\n' "$listed" | grep -cE '^folder	\.agents/skills/(change-triage|section-builder)$')" = 2 ] \
+     && [ "$(printf '%s\n' "$listed" | grep -cE '^adapter	\.claude/skills/(change-triage|section-builder)$')" = 2 ] && echo yes || echo no)"
+report "the restored screen-check folder is never listed" \
+  "$(printf '%s\n' "$listed" | grep -q 'screen-check' && echo no || echo yes)"
 report "nothing is removed before the yes" \
   "$(for n in $folded; do [ -d "$E/.agents/skills/$n" ] && [ -d "$E/.claude/skills/$n" ] || echo gone; done | grep -q gone && echo no || echo yes)"
 python3 "$LEFTOVERS" --remove "$E"
 r=yes
 for n in $folded; do [ ! -e "$E/.agents/skills/$n" ] && [ ! -e "$E/.claude/skills/$n" ] || r=no; done
+[ -f "$E/.agents/skills/screen-check/SKILL.md" ] || r=no
 for n in $eight; do [ -f "$E/.agents/skills/$n/SKILL.md" ] || r=no; done
-report "on the yes the three folders go and the eight remain" "$r"
+report "on the yes the two folders go, and screen-check and today's skills remain" "$r"
 report "a second run finds nothing" \
   "$([ -z "$(python3 "$LEFTOVERS" "$E")" ] && echo yes || echo no)"
 changed=$(python3 "$LEFTOVERS" "$work/eleven-changed")

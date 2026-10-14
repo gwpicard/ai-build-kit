@@ -153,6 +153,6 @@ git commit -q -m "Mark the masterplan as checked against the founding checkpoint
   { echo "found-save: the mark was written but not saved"; exit 1; }
 [ "$(git rev-parse HEAD)" != "$checkpoint" ] || { echo "found-save: no records-only checkpoint was made"; exit 1; }
 
-mark=$(sh "$SKILL_ROOT/scripts/trued-mark.sh" masterplan.md) || { echo "found-save: $mark"; exit 1; }
+mark=$(sh "$SKILL_ROOT/../records/scripts/trued-mark.sh" masterplan.md) || { echo "found-save: $mark"; exit 1; }
 echo "trued	${mark#usable: }"
 exit 0

@@ -5,7 +5,7 @@ A project founded before the kit named its pointers by skill carries lines in
 its AGENTS.md and masterplan.md that name a skill's file by its place in the
 project's `.agents/skills/` folder. A project installed for Claude Code alone,
 or through a plugin, has no such folder, so those lines open nothing. The
-current form names the skill and the path inside it, the `setup-ai-build-kit`
+current form names the skill and the path inside it, the `records`
 skill's `references/pieces.md`, which a coding agent finds on every install
 route.
 
@@ -23,8 +23,8 @@ root are read. Each finding prints as one line, in one of two forms:
 Nothing prints when there is nothing to find. Only a pointer into one of the
 kit's skills, under today's name or a name it had before, is found. A pointer
 already in the named form, naming the skill and then the path inside it, is
-found only where it names a skill the kit has retired, since that skill is no longer
-installed and the pointer opens nothing. A project's
+found only where it names a skill the kit has retired, or a file that has
+moved to another skill, since the pointer then opens nothing. A project's
 own skill under the same folder, a placeholder such as `<name>`, and a mention
 of the folder itself are never found, since those are the person's words or
 still true.
@@ -44,9 +44,14 @@ kit-leftovers.py recognises the kit's folders. A folder of the person's own, or
 a name the lockfile lists under another source, keeps its pointer, listed with
 the reason.
 
+A project's own Markdown elsewhere, such as a skill of its own or a note in
+docs/, can name a kit file that has since moved. Each such pointer is listed
+as left as written, with the file's new home, and never rewritten, since the
+words are the person's.
+
 The fix skill's one file, and section-builder's repair reference, held both
-halves of a repair. Shaping a repair now sits in the `shape` skill's
-`references/repair.md`, and building one in the `implement` skill's. A pointer
+halves of a repair. Shaping a repair now sits in the `repair` skill's
+`references/reproduce.md`, and building one in its `references/fixing.md`. A pointer
 whose sentence speaks of shaping or reproducing a fault, and not of building
 one, follows the first. Every other one follows the second, which opens by
 pointing at the first.
@@ -57,11 +62,13 @@ import re
 import runpy
 import sys
 
-# The kit's eight skills. A name outside this list may be the project's own
+# The kit's skills. A name outside this list may be the project's own
 # skill, and its pointer is the person's to keep.
 KIT_SKILLS = (
-    "setup-ai-build-kit", "shape", "implement", "setup-hosting",
-    "maintain", "what-now", "clarify", "second-opinion",
+    "setup-ai-build-kit", "shape", "implement", "setup-hosting", "maintain",
+    "what-now", "clarify", "second-opinion", "records", "fit-check", "repair",
+    "merge", "screen-check", "research", "quality-checks", "live-copy",
+    "evidence-run", "triage", "build-piece",
 )
 
 # Names a kit skill had before, with the name it has now. The templates of the
@@ -70,28 +77,69 @@ KIT_SKILLS = (
 # any install route.
 FORMER_NAMES = {
     "start": "setup-ai-build-kit", "ship": "setup-hosting", "fix": "implement",
-    "queue": "implement", "sync": "maintain", "change-triage": "shape",
-    "section-builder": "implement", "screen-check": "implement",
+    "queue": "implement", "sync": "maintain", "change-triage": "triage",
+    "section-builder": "build-piece",
 }
 
 # A former skill's file that moved somewhere other than the same path in the
 # skill that took its name. The fix skill had only its SKILL.md, and its rules
-# now sit in the two repair references, which REPAIR_FILES chooses between. The routine of `sync` became the maintain skill's truing
-# reference. The handover template left `ship` for the maintain skill, which
-# now owns handovers. Change-triage's two research references became shape's
-# one, and its rules joined shape's own SKILL.md. Section-builder's repair
-# reference kept its path in implement, its rules joined implement's SKILL.md,
-# and screen-check became implement's screen rules. Section-builder's other
-# references and scripts, sync's document read and script, and the rules of
-# `queue` kept their paths or joined the SKILL.md of the skill that took the
-# name, so those need no entry here.
+# now sit in the two repair references, which REPAIR_FILES chooses between.
+# The routine of `sync` became the maintain skill's truing reference. The
+# handover template left `ship` for the maintain skill, which now owns
+# handovers. Change-triage's two research references became the research
+# skill. Section-builder's references and scripts went to the background
+# skill that now does each job; MOVED below carries them on from the name
+# that took them over.
 FORMER_FILES = {
-    ("fix", "SKILL.md"): ("implement", "references/repair.md"),
     ("sync", "SKILL.md"): ("maintain", "references/truing.md"),
     ("ship", "templates/handover.md"): ("maintain", "templates/handover.md"),
-    ("change-triage", "references/source-check.md"): ("shape", "references/research.md"),
-    ("change-triage", "references/existing-work.md"): ("shape", "references/research.md"),
-    ("screen-check", "SKILL.md"): ("implement", "references/screen-rules.md"),
+    ("change-triage", "references/source-check.md"): ("research", "SKILL.md"),
+    ("change-triage", "references/existing-work.md"): ("research", "SKILL.md"),
+    ("section-builder", "references/reach-check.md"): ("quality-checks", "references/reach-check.md"),
+    ("section-builder", "references/trim.md"): ("quality-checks", "references/trim.md"),
+    ("section-builder", "references/test-strength.md"): ("quality-checks", "references/test-strength.md"),
+    ("section-builder", "scripts/env-names-added.sh"): ("merge", "scripts/env-names-added.sh"),
+    ("sync", "references/document-read.md"): ("quality-checks", "references/document-read.md"),
+    ("sync", "scripts/document-claims.py"): ("quality-checks", "scripts/document-claims.py"),
+}
+
+# A file that left one of today's skills for a background skill, when the
+# commands were thinned and each shared rule went to the skill whose job it is.
+# A project's AGENTS.md and masterplan.md name some of these by the old place.
+MOVED = {
+    ("setup-ai-build-kit", "references/pieces.md"): ("records", "references/pieces.md"),
+    ("setup-ai-build-kit", "references/masterplan-changes.md"): ("records", "references/masterplan-changes.md"),
+    ("setup-ai-build-kit", "references/coverage-read.md"): ("records", "references/coverage-read.md"),
+    ("setup-ai-build-kit", "scripts/trued-mark.sh"): ("records", "scripts/trued-mark.sh"),
+    ("setup-ai-build-kit", "references/fit-check.md"): ("fit-check", "SKILL.md"),
+    ("setup-ai-build-kit", "references/whole-project-reads.md"): ("quality-checks", "SKILL.md"),
+    ("setup-ai-build-kit", "references/check-floor.md"): ("quality-checks", "references/check-floor.md"),
+    ("setup-ai-build-kit", "references/boundary-rules.md"): ("quality-checks", "references/boundary-rules.md"),
+    ("shape", "references/repair.md"): ("repair", "references/reproduce.md"),
+    ("shape", "references/research.md"): ("research", "SKILL.md"),
+    ("shape", "scripts/mark-ready.sh"): ("records", "scripts/mark-ready.sh"),
+    ("implement", "references/repair.md"): ("repair", "references/fixing.md"),
+    ("implement", "references/merge.md"): ("merge", "SKILL.md"),
+    ("implement", "references/screen-rules.md"): ("screen-check", "SKILL.md"),
+    ("implement", "references/reach-check.md"): ("quality-checks", "references/reach-check.md"),
+    ("implement", "references/trim.md"): ("quality-checks", "references/trim.md"),
+    ("implement", "references/test-strength.md"): ("quality-checks", "references/test-strength.md"),
+    ("implement", "scripts/quality.py"): ("quality-checks", "scripts/quality.py"),
+    ("implement", "scripts/trim-commit.sh"): ("quality-checks", "scripts/trim-commit.sh"),
+    ("implement", "scripts/piece-labels.sh"): ("records", "scripts/piece-labels.sh"),
+    ("implement", "scripts/first-upload.py"): ("merge", "scripts/first-upload.py"),
+    ("implement", "scripts/env-names-added.sh"): ("merge", "scripts/env-names-added.sh"),
+    ("implement", "scripts/save-records.sh"): ("merge", "scripts/save-records.sh"),
+    ("implement", "scripts/reset-attempt.sh"): ("repair", "scripts/reset-attempt.sh"),
+    ("setup-hosting", "references/evidence-run.md"): ("evidence-run", "SKILL.md"),
+    ("maintain", "references/document-read.md"): ("quality-checks", "references/document-read.md"),
+    ("maintain", "references/document-bloat.md"): ("quality-checks", "references/document-bloat.md"),
+    ("maintain", "references/stale-branches.md"): ("quality-checks", "references/stale-branches.md"),
+    ("maintain", "references/structure-read.md"): ("quality-checks", "references/structure-read.md"),
+    ("maintain", "references/waste-read.md"): ("quality-checks", "references/waste-read.md"),
+    ("maintain", "scripts/document-claims.py"): ("quality-checks", "scripts/document-claims.py"),
+    ("maintain", "scripts/document-bloat.py"): ("quality-checks", "scripts/document-bloat.py"),
+    ("maintain", "scripts/stale-branches.py"): ("quality-checks", "scripts/stale-branches.py"),
 }
 
 # The two files that held both halves of a repair, and the words that say a
@@ -108,9 +156,10 @@ POINTER = re.compile(
     r"\.agents/skills/(" + "|".join(re.escape(s) for s in NAMES) + r")/"
     r"([A-Za-z0-9_./-]*[A-Za-z0-9_-])"
 )
-# A pointer that already names its skill, under a name the kit has retired.
+# A pointer that already names its skill. It is found only where the skill is
+# one the kit has retired, or the file has moved to another skill.
 NAMED = re.compile(
-    r"`(" + "|".join(re.escape(s) for s in sorted(FORMER_NAMES, key=len, reverse=True)) + r")`"
+    r"`(" + "|".join(re.escape(s) for s in NAMES) + r")`"
     r" skill['\u2019]s `([A-Za-z0-9_./-]*[A-Za-z0-9_-])`"
 )
 # A code span opens and closes with the same run of backticks.
@@ -160,11 +209,13 @@ def new_home(name, path, sentence=""):
     of a repair a pointer to one of REPAIR_FILES means."""
     if (name, path) in REPAIR_FILES:
         if SHAPING.search(sentence) and not BUILDING.search(sentence):
-            return "shape", "references/repair.md"
-        return "implement", "references/repair.md"
+            return "repair", "references/reproduce.md"
+        return "repair", "references/fixing.md"
     if (name, path) in FORMER_FILES:
-        return FORMER_FILES[(name, path)]
-    return FORMER_NAMES.get(name, name), path
+        name, path = FORMER_FILES[(name, path)]
+    else:
+        name = FORMER_NAMES.get(name, name)
+    return MOVED.get((name, path), (name, path))
 
 
 def own_skills(project):
@@ -208,6 +259,9 @@ def findings(line, in_block, own=None):
     sentence = sentence_of(line)
     for match in NAMED.finditer(line):
         skill, path = new_home(match.group(1), match.group(2), sentence)
+        if (skill, path) == (match.group(1), match.group(2)):
+            # Today's skill and a file it still has: nothing to find.
+            continue
         if in_block:
             yield match.start(), match.end(), match.group(0), None, "it sits inside a code block"
             continue
@@ -296,7 +350,48 @@ def main(argv):
         if apply and changed:
             with open(path, "w", encoding="utf-8", newline="") as handle:
                 handle.writelines(lines)
+    for rel, number, old, new in own_document_pointers(project, own):
+        print("%s:%d\t%s\tleft as written: it is in a document of your own; the kit's file is "
+              "now the %s" % (rel, number, old, new))
     return 0
+
+
+# Folders a project's own documents never sit in.
+SKIP_DIRS = {".git", "node_modules", ".agents/tmp", "agent-plugin", ".claude-plugin"}
+
+
+def own_document_pointers(project, own):
+    """(file, line, old, new) for each pointer to a moved or retired kit file in
+    the project's own Markdown, outside AGENTS.md, masterplan.md and the kit's
+    own skill folders. These are only reported: the words are the person's."""
+    kit = set(KIT_SKILLS) | set(FORMER_NAMES)
+    found = []
+    for here, dirs, names in os.walk(project):
+        rel_here = os.path.relpath(here, project).replace(os.sep, "/")
+        rel_here = "" if rel_here == "." else rel_here
+        keep = []
+        for d in sorted(dirs):
+            sub = (rel_here + "/" + d).lstrip("/")
+            if sub in SKIP_DIRS or os.path.islink(os.path.join(here, d)):
+                continue
+            if rel_here in (".agents/skills", ".claude/skills") and d in kit:
+                continue
+            keep.append(d)
+        dirs[:] = keep
+        for name in sorted(names):
+            rel = (rel_here + "/" + name).lstrip("/")
+            if not name.endswith(".md") or rel in FILES:
+                continue
+            try:
+                with open(os.path.join(here, name), encoding="utf-8") as handle:
+                    lines = handle.readlines()
+            except (OSError, UnicodeDecodeError):
+                continue
+            for number, line in enumerate(lines, 1):
+                for start, end, old, new, why in findings(line, False, own):
+                    if new is not None:
+                        found.append((rel, number, old, new.replace("the `", "`", 1)))
+    return found
 
 
 if __name__ == "__main__":

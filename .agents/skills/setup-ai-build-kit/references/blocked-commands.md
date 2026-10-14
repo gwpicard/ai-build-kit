@@ -19,8 +19,8 @@ deny list, mirror these entries there as mechanical enforcement:
   off
 - throwing away changes nobody saved, in the spellings listed under "Unsaved
   changes" below. A repair that needs to undo a failed attempt runs the
-  `implement` skill's `scripts/reset-attempt.sh` instead, as the
-  `implement` skill's `references/repair.md` says
+  `repair` skill's `scripts/reset-attempt.sh` instead, as the
+  `repair` skill's `references/fixing.md` says
 - reading a login another tool keeps for itself, as listed under "A stored
   login" below
 
@@ -35,14 +35,14 @@ still apply:
 - never print, commit, or otherwise expose a secret;
 - never disable authentication or access control to make a check pass;
 - never bypass a red project check to ship or merge. A check GitHub never
-  started ran no step and is not red; the `implement` skill's "A check GitHub did not
+  started ran no step and is not red; the `merge` skill's "A check GitHub did not
   start" says what happens instead;
 - never push a change directly to `main`; every change to `main` goes through a
   pull request, so shared work reaches it by merge rather than by a direct push.
   The one exception is the project's first upload: after the person's yes,
   and only when the remote lists no branch, `main` is created through the
   GitHub API at the commit the piece's branch was cut from, as
-  "The first upload" in the `implement` skill's `references/merge.md`
+  "The first upload" in the `merge` skill's `references/first-upload.md`
   describes. It is never written by a
   `git push`;
 - never force or automate a merge over a required review, and never merge a

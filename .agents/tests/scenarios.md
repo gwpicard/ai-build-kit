@@ -390,7 +390,7 @@ reported, and it is not what decides whether the case held.
 
 - Expected result: at the end of founding, and again in a /maintain visit, the coverage read names the promises nothing would build and offers once to add them; nothing is created, edited, or closed before the person answers.
 - Visible explanation: "Everything the masterplan promises has a piece that builds it, except two. Nothing builds the weekly summary email, and nothing builds the rule that a job cannot be closed twice. Shall I add those to the plan?"
-- Hidden technique: `setup-ai-build-kit/references/coverage-read.md` compares the masterplan's promises against every piece, open and closed, matching by plain description because the records carry no reference numbers; a promise whose only piece is parked counts as a gap.
+- Hidden technique: `records/references/coverage-read.md` compares the masterplan's promises against every piece, open and closed, matching by plain description because the records carry no reference numbers; a promise whose only piece is parked counts as a gap.
 - Evidence: a guided review of the reported list confirms every promise named is on the masterplan, that a promise already built by a closed piece is not reported, that a promise whose only piece is parked is reported, and that no piece changed before the person answered.
 - Save route: unaffected; the read writes nothing, so it saves nothing of its own.
 - Review: the offer is made once. A gap the person wants built becomes a piece; a promise they decide against moves to the masterplan's out-of-scope section rather than being dropped in silence.

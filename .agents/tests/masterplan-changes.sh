@@ -13,7 +13,7 @@ pass=0
 ok() { echo "  ok: $1"; pass=$((pass + 1)); }
 fail() { echo "FAIL: $1" >&2; exit 1; }
 
-MARK="$ROOT/.agents/skills/setup-ai-build-kit/scripts/trued-mark.sh"
+MARK="$ROOT/.agents/skills/records/scripts/trued-mark.sh"
 [ -f "$MARK" ] || fail "missing file $MARK"
 repo="$WORK/repo"
 git init -q "$repo"

@@ -49,11 +49,23 @@ if ! CLAUDE_CONFIG_DIR="$CONFIG" claude plugin validate "$MARKET" --strict \
 fi
 # The first release stands in for the last nine-command release: it also
 # offers fix, queue, sync and ship. It also stands in for the last
-# eleven-skill release, with the three background skills that folded into
-# shape and implement. The update to the second release must take all of them
-# away by itself, since nothing in the project holds them on this route.
+# eleven-skill release, with the two background skills that were renamed since.
+# The update to the second release must take all of them away by itself, since
+# nothing in the project holds them on this route.
 RETIRED="fix queue sync ship"
-RETIRED_SKILLS="change-triage screen-check section-builder"
+RETIRED_SKILLS="change-triage section-builder"
+# The background skills Claude should list, read from the inventory: before the
+# update with the retired ones beside them, and after it without.
+skills_line() {
+  printf '%s\n' "$@" | sed '/^$/d' | sort | awk '
+    { names = names (NR > 1 ? ", " : "") $0 }
+    END { printf "Skills (%d)  %s\n", NR, names }'
+}
+BACKGROUND=$(awk '$1 == "background" { print $2 }' "$ROOT/.agents/tools/kit-inventory.txt")
+# shellcheck disable=SC2086
+SKILLS_BEFORE=$(skills_line $BACKGROUND $RETIRED_SKILLS)
+# shellcheck disable=SC2086
+SKILLS_AFTER=$(skills_line $BACKGROUND)
 for word in $RETIRED; do
   printf -- '---\ndescription: A retired command, %s.\n---\nRetired.\n' "$word" \
     > "$MARKET/.claude/commands/$word.md"
@@ -88,7 +100,7 @@ grep -qF '"version": "0.2.0"' "$LISTING" || \
   fail "Claude installed the wrong plugin version"
 grep -qF '"scope": "local"' "$LISTING" || \
   fail "Claude did not keep the plugin local to the project"
-grep -qF 'Skills (5)  change-triage, clarify, screen-check, second-opinion, section-builder' \
+grep -qF "$SKILLS_BEFORE" \
   "$DETAILS" || fail "Claude did not keep the plugin command and discipline boundaries separate"
 
 INSTALL_PATH=$(sed -n 's/^[[:space:]]*"installPath": "\([^"]*\)",$/\1/p' "$LISTING")
@@ -199,8 +211,8 @@ for name in $RETIRED_SKILLS; do
     fail "the plugin update kept a retired background skill: $name"
   fi
 done
-grep -qF 'Skills (2)  clarify, second-opinion' "$DETAILS" || \
-  fail "after the update Claude does not offer exactly the two background skills"
+grep -qF "$SKILLS_AFTER" "$DETAILS" || \
+  fail "after the update Claude does not offer exactly the kit's background skills"
 [ ! -e "$PROJECT/.agents/skills" ] && [ ! -e "$PROJECT/.claude/commands" ] || \
   fail "the plugin update left skills or commands in the project"
 

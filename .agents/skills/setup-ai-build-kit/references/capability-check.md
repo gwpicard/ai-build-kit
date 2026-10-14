@@ -21,9 +21,10 @@ Check:
     other computers signed in to the same account. Where none is here, use a
     headless browser, or say you could not see the page. Use a tab of your
     own, never one the person is using.
-12. An independent-review route exists: subagent, separate session, or a
-    clean chat the person opens.
-13. A reach-check engine is recorded, in the order the `implement` skill's
+12. An independent-review route exists: the reviewer agent or another
+    subagent, a headless run, a separate session, or a clean chat the person
+    opens.
+13. A reach-check engine is recorded, in the order the `quality-checks` skill's
     `references/reach-check.md` gives, or that the agent reads imports and
     callers directly.
 14. Hooks and command blocks are recorded as optional, never assumed. Record
@@ -35,6 +36,11 @@ Check:
 
 `scripts/check-tooling.sh` checks items 3, 15 and 16, and says when `origin`
 is the kit's own repository. Confirm the rest by hand.
+
+If the harness cannot run `scripts/check-tooling.sh`, work through
+`required-tools.md` beside this file by hand; its "When GitHub access fails"
+route applies to any GitHub failure. Guide a missing tool's install by
+`manual-setup.md` beside this file.
 
 A missing or signed-out GitHub tool is a required setup step: guide it by
 `manual-setup.md` before the pieces are founded. Where issues are switched

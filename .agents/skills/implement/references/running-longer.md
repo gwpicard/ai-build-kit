@@ -12,6 +12,10 @@ cap.
 
 Assume only plain sequential building, one piece after another. A harness's
 goal mode, background agents or worktrees may speed it up, never replace it.
+Where the coding agent has the `builder` agent, start it once for each piece,
+one after another, on the run's branch, so each piece is built in a fresh
+context; it loads the `build-piece` skill and reports back. Read its report
+before starting the next. Without it, build each piece here.
 
 ## Typed with auto
 
@@ -32,7 +36,7 @@ run going. Never merge, and never accept a risk on the person's behalf.
 
 The run uses one branch and ends as one pull request where the build path
 requires one, or one confirmed checkpoint for eligible private exploration.
-End with the `setup-hosting` skill's `references/evidence-run.md`, and report:
+End with the `evidence-run` skill, and report:
 what was parked and why first, then what was built and passed, what was
 skipped as eyes-only, and a checklist to try before merging, riskiest first.
 

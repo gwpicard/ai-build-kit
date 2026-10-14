@@ -42,8 +42,9 @@ run it would need, and stop.
 
 ### Build and run it
 
-1. Run the evidence run in `references/evidence-run.md`.
-2. Run second-opinion with the best independent method AGENTS.md records.
+1. Run the evidence run in the `evidence-run` skill.
+2. Run the `second-opinion` skill with the best independent method AGENTS.md
+   records.
 3. Make the two judgements the runner cannot. Does the tool record what each
    request did, one line per event with a run id, a time, a level and the
    step? Check with disposable inputs, never print what it holds, and treat a
@@ -86,33 +87,10 @@ general readiness items as one-line warnings and records them, and the kit
 checks nothing more. A server this session cannot reach gets the request in
 `references/hosting-request.md`.
 
-#### A secret a check needs
+#### Secrets and live changes
 
-Pass a secret by the location "How it stays running" records, never its
-value; the scripts read it themselves. With none recorded, ask once and record
-the answer as a location. A secret given as an answer is recorded nowhere: say
-it is now in this conversation and ask for it to be rotated. Asked to show a
-secret, say plainly that the kit does not read or show it, because anything
-shown here stays in the conversation's record, and that they can open it at
-its location. Where
-the location is unknown, the check is a warning saying so, never that the
-secret is missing.
-
-Never use a login, token or password another tool keeps for itself, in the
-keychain, a credential store or its files. Use only a tool's own commands and
-keys the tool already sends to the browser. Read a setting where the recipe
-names a script for it before asking the person; where the kit cannot, say so
-and name the page where it lives.
-
-#### A change to a live service
-
-Outside a first launch, a command that changes a live service's settings or
-data waits for a yes that names every change it makes and says whether it can
-be undone. A no leaves the service as it was, and the step is a warning.
-Changing the masterplan's `Access:` line is one: say who gains or loses the
-way in, and on the yes run the recipe's Access scripts, write the new line,
-dated unless private, and add a changelog line.
-Never write a secret key to a shared temporary folder.
+A secret a check needs, and any change to a live service, follow the
+`live-copy` skill.
 
 #### Deploying, and the records
 
@@ -120,23 +98,17 @@ Before deciding a deploy failed, read its whole output or the host's list of
 deployments. Never deploy again before checking the first did not go live: a
 second deploy replaces the rollback target, so say that in one line first.
 
-Save the run's records through the `implement` skill's save route: one branch
-and pull request for each run with its `scripts/save-records.sh`, never pushed
-to `main`, never sweeping the person's uncommitted work in, and merged on the
-pull request only after a yes that names it, asked for in the reply that
-reports the run. Where the host builds every change to `main`, say that merge
-moves the rollback target and offer to leave it open.
+Save the run's records on one branch and pull request for each run, with the
+`merge` skill's `scripts/save-records.sh`, never pushed to `main`, never
+sweeping the person's uncommitted work in, and merged on the pull request only
+after a yes that names it, asked for in the reply that reports the run. Where
+the host builds every change to `main`, say that merge moves the rollback
+target and offer to leave it open.
 
 ### Build with care
 
 Outside every named area, follow Build and run it. Inside one, take each area
-as the `setup-ai-build-kit` skill's `references/fit-check.md` says: do the
-kit's caution now and write `done` with the date, or give the risk notice once,
-in full, at the moment the area goes live. If the person carries on, write the
-`Accepted:` line, mark the area `accepted`, read it back, and go on in the same
-reply. On a recipe, an area goes live with the merge that carries it, and the
-next run of the checks reports it. Where a caution is a person and nobody can
-be asked, offer the handover in the `maintain` skill once.
+as the `fit-check` skill's "An area going live" says.
 
 ## 2. Graduation
 
@@ -146,47 +118,11 @@ and which waits.
 
 ## Rolling back
 
-Offer the earlier version back first where a live address is recorded, the
-recipe says how to roll back, the live tool broke, and a recent merge is the
-likely cause, once the changelog, the closed pieces or the person show the
-version before it worked. Say in one line what comes back and that it puts
-nothing else right. Either way, the repair is shaped in `/shape`.
-
-A rollback waits for a yes that names it, even where the recipe names the
-command. Before asking, name the version it brings back by its change and
-date, from the host's list, and say it does not undo a database addition. On
-the yes, run the recipe's rollback once, or give its words to whoever clicks
-it, and check health names the earlier version before anything else.
-
-Record it in a dated changelog line through the records route, and on the
-repair's piece. Where the host now holds the live copy, say so in the same
-reply and write a dated hold line into "How it stays running". Promote the
-repair once it has merged and its build is listed, after its own named yes,
-then remove the hold line. Off a recipe, say that whoever runs the host can
-bring back an earlier build it still keeps.
+Follow the `live-copy` skill's "Rolling back".
 
 ## A later run
 
-Rerun the fit check first if reliance, data or consequence has grown. Then
-compare, changing nothing: run the recipe's `scripts/live-check.sh` with
-`--address`, `--password-file` and `--needs` for the names on an open piece's
-`Live side needs:` line. Where its checks are pasted back, ask for the health
-answer and the setting names. Say each gap in one line.
-
-Repair each gap only after a yes that names it, saying what it changes and
-whether it can be undone. A migration is applied with the shared
-`migrate.sh --apply`, once, before the merge that needs it. A piece's
-migration not yet on `main` is applied from a temporary checkout of its
-branch, removed afterwards; then say /implement can ask for the merge.
-
-Then run `scripts/run-recipe.sh --later`, with a first launch's values and a
-`--note` for each gap repaired or left. It writes the run's one dated entry,
-gap or no gap, with its rollback line. A recorded hosting request is read
-back as the recipe's file says. Moving to another host or recipe is a later
-run too: run the
-new recipe as a first launch while the old copy keeps serving, change the
-`Recipe:` line and the address only once the new one answers, and say how to
-switch the old one off.
+Load `references/later-run.md` and follow it.
 
 ## Done when
 

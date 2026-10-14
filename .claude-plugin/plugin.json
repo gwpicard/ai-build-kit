@@ -24,7 +24,23 @@
     "./.claude/commands/what-now.md"
   ],
   "skills": [
+    "./.claude/skills/build-piece",
     "./.claude/skills/clarify",
-    "./.claude/skills/second-opinion"
+    "./.claude/skills/evidence-run",
+    "./.claude/skills/fit-check",
+    "./.claude/skills/live-copy",
+    "./.claude/skills/merge",
+    "./.claude/skills/quality-checks",
+    "./.claude/skills/records",
+    "./.claude/skills/repair",
+    "./.claude/skills/research",
+    "./.claude/skills/screen-check",
+    "./.claude/skills/second-opinion",
+    "./.claude/skills/triage"
+  ],
+  "agents": [
+    "./.claude/agents/builder.md",
+    "./.claude/agents/researcher.md",
+    "./.claude/agents/reviewer.md"
   ]
 }

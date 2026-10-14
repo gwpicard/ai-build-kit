@@ -70,7 +70,8 @@ done
 
 skill_count=$(find "$PROJECT/.agents/skills" -mindepth 2 -maxdepth 2 \
   -name SKILL.md | wc -l | tr -d ' ')
-[ "$skill_count" -eq 8 ] || fail "installed project does not contain eight skills"
+kit_skill_count=$(awk '$1 == "command" || $1 == "background"' "$ROOT/.agents/tools/kit-inventory.txt" | wc -l | tr -d ' ')
+[ "$skill_count" -eq "$kit_skill_count" ] || fail "installed project does not contain the kit's $kit_skill_count skills"
 
 grep -qF '(Project name, written by start)' "$PROJECT/README.md" || \
   fail "project foundation README is not ready for start"
@@ -153,7 +154,7 @@ mkdir -p "$MIXED/.agents" "$MIXED/.claude"
 cp -R "$PACK/.agents/skills" "$MIXED/.agents/skills"
 cp -R "$PACK/.agents/skills" "$MIXED/.claude/skills"
 printf '%s\n' "An older release." >> \
-  "$MIXED/.agents/skills/setup-ai-build-kit/references/pieces.md"
+  "$MIXED/.agents/skills/setup-ai-build-kit/references/adopting.md"
 said=$(cd "$MIXED" && \
   .claude/skills/setup-ai-build-kit/scripts/bootstrap-project.sh 2>&1 >/dev/null) || \
   fail "the bootstrap stopped founding over a second copy that differs"

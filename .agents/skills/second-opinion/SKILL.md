@@ -40,10 +40,9 @@ Secrets rule holds throughout.
 ## Axis 3: Screen
 
 During a build review, when the piece carries `visual` or the diff touches a
-screen file, load and follow the `implement` skill's
-`references/screen-rules.md`. Say which rules were applied, which could not be
-checked, and what a person still has to try. This axis does not run on a
-masterplan review or the whole-build review.
+screen file, load and follow the `screen-check` skill. Say which rules were
+applied, which could not be checked, and what a person still has to try. This
+axis does not run on a masterplan review or the whole-build review.
 
 ## On a masterplan
 
@@ -82,10 +81,20 @@ path, in those terms.
 
 ## Independence fallback
 
-Use, in order: an independent subagent, a clean separate session, or a clean
+Use, in order: the `reviewer` agent where the coding agent has one, or another
+fresh subagent told to load this skill; the same brief run headless with
+`claude -p`, `codex exec` or `gemini -p`; a clean separate session; or a clean
 chat the person opens with a prepared instruction. A same-session review is
 allowed only on Explore privately, labelled as not independent and reading only
 the written agreement and evidence.
+
+A reviewer that works in this project folder only reads. Before you start it,
+run this skill's `scripts/review-guard.sh snapshot` with the files under
+review: masterplan.md at founding, and the files the change touches for a
+piece. When it returns, run `scripts/review-guard.sh check`. Exit 1: it put
+back what the review changed and named anything else it found changed; tell
+the person in one line, and that their work is as it was. Exit 2: say in one
+line that the review could not be checked for changes.
 
 This covers a review that asks only for eyes other than the builder's. Where
 the build path or a risk notice names a person, such as the owner of a failing

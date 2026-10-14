@@ -230,18 +230,12 @@ provider_turn() {
         --permission-mode bypassPermissions \
         --output-format json \
         --model "$MODEL" > "$raw" 2>/dev/null) || return 1
-      python3 - "$raw" "$reply" <<'PY'
-import json
-import sys
-
-raw, reply = sys.argv[1:]
-try:
-    data = json.load(open(raw))
-except Exception:
-    raise SystemExit(1)
-with open(reply, "w") as handle:
-    handle.write(data.get("result") or "")
-PY
+      # The result holds only the turn's last message. A notice given earlier
+      # in the same turn is in the session file, so the reply is every text
+      # block of the turn, read from there.
+      session_file=$(find "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/projects" -maxdepth 2 \
+        -name "$PROVIDER_SESSION.jsonl" 2>/dev/null | head -1)
+      python3 "$REPLAY_DIR/turn-text.py" claude "$raw" "$session_file" "$reply" "$message" || return 1
       : > "$reply.session-started"
       ;;
     codex)
@@ -254,6 +248,8 @@ PY
         PROVIDER_SESSION=$(codex_thread_id "$raw")
         [ -n "$PROVIDER_SESSION" ] || return 1
       fi
+      # Every agent message of the turn, not only the last one written by -o.
+      python3 "$REPLAY_DIR/turn-text.py" codex "$raw" "$reply" || return 1
       ;;
   esac
 

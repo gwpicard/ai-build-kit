@@ -33,22 +33,27 @@ done
 # A shared install of the last nine-command release, for Claude Code and
 # Codex, after the update: the add command brought setup-hosting and kept the
 # four old skills listed, as the real installer did in a rehearsal. The update
-# from the last eleven-skill release keeps the three folded background skills
-# listed the same way, so they are here too. The person
+# from the last eleven-skill release keeps the two renamed background skills
+# listed the same way, so they are here too; screen-check came back, so it is
+# one of today's. The person
 # has a skill and a command file of their own, and records that mention the
 # old commands.
 P="$work/shared"
 mkdir -p "$P/.agents/skills" "$P/.claude/skills" "$P/.claude/commands"
-eight="setup-ai-build-kit shape implement setup-hosting maintain what-now clarify second-opinion"
-old="fix queue sync ship change-triage screen-check section-builder"
+kit=$(awk '$1 == "command" || $1 == "background" { print $2 }' "$ROOT/.agents/tools/kit-inventory.txt" | tr '\n' ' ')
+old="fix queue sync ship change-triage section-builder"
+# The counts and the background line the founding template carries today.
+count_skills=$(sed -n 's/^The work lives in \([a-z-]*\) installed AI Build Kit skills.*/\1/p' "$TEMPLATE")
+count_background=$(sed -n 's/^\([a-z-]*\) run in the background when a command needs them\./\1/p' "$TEMPLATE")
+background_line=$(awk '/^- Background skills:/ { on = 1 } on { printf "%s%s", sep, $0; sep = " "; if ($0 ~ /\.$/) exit }' "$TEMPLATE" | tr -s ' ')
 {
   printf '{\n  "version": 1,\n  "skills": {\n'
-  for name in $eight $old; do
+  for name in $kit $old; do
     printf '    "%s": { "source": "gwpicard/ai-build-kit", "sourceType": "github", "computedHash": "0" },\n' "$name"
   done
   printf '    "my-notes": { "source": "someone/notes", "sourceType": "github", "computedHash": "0" }\n  }\n}\n'
 } > "$P/skills-lock.json"
-for name in $eight $old my-notes build; do
+for name in $kit $old my-notes build; do
   mkdir -p "$P/.agents/skills/$name"
   printf -- '---\nname: %s\n---\n' "$name" > "$P/.agents/skills/$name/SKILL.md"
   ln -s "../../.agents/skills/$name" "$P/.claude/skills/$name"
@@ -82,18 +87,18 @@ cp "$P/AGENTS.md" "$work/before-agents"
 
 listed=$(python3 "$LEFTOVERS" "$P")
 report "each old skill the lockfile lists is named for the installer to remove" \
-  "$([ "$(printf '%s\n' "$listed" | grep -c '^installer	')" = 7 ] \
+  "$([ "$(printf '%s\n' "$listed" | grep -c '^installer	')" = 6 ] \
      && printf '%s\n' "$listed" | grep -qF 'installer	ship	npx skills remove ship' \
      && printf '%s\n' "$listed" | grep -qF 'installer	section-builder	npx skills remove section-builder' && echo yes || echo no)"
 report "the person's own skill, listed from elsewhere, is never named" \
   "$(printf '%s\n' "$listed" | grep -q 'my-notes' && echo no || echo yes)"
 report "the command list is offered as the six" \
   "$(printf '%s\n' "$listed" | grep -qF -- '- Commands: `setup-ai-build-kit`, `shape`, `implement`, `setup-hosting`, `maintain`, `what-now`.' && echo yes || echo no)"
-report "and the counts as eight, six and two" \
-  "$(printf '%s\n' "$listed" | grep -qF '	fourteen	eight' && printf '%s\n' "$listed" | grep -qF '	Nine	Six' \
-     && printf '%s\n' "$listed" | grep -qF '	five	two' && echo yes || echo no)"
-report "the background line is offered as the two" \
-  "$(printf '%s\n' "$listed" | grep -qF -- '- Background skills: `clarify`, `second-opinion`.' && echo yes || echo no)"
+report "and the counts as the template's" \
+  "$(printf '%s\n' "$listed" | grep -qF "	fourteen	$count_skills" && printf '%s\n' "$listed" | grep -qF '	Nine	Six' \
+     && printf '%s\n' "$listed" | grep -qF "	five	$count_background" && echo yes || echo no)"
+report "the background line is offered as the template's" \
+  "$(printf '%s\n' "$listed" | tr -s ' ' | grep -qF -- "$background_line" && echo yes || echo no)"
 
 python3 "$LEFTOVERS" --remove "$P"
 report "the script never removes a folder the lockfile lists" \
@@ -108,9 +113,9 @@ report "the rewrite gives the template's command line" \
   "$(grep -qF -- '- Commands: `setup-ai-build-kit`, `shape`, `implement`, `setup-hosting`,' "$P/AGENTS.md" \
      && grep -qF '  `maintain`, `what-now`.' "$P/AGENTS.md" && echo yes || echo no)"
 report "and the template's counts" \
-  "$(grep -qF 'The work lives in eight installed AI Build Kit skills. Six are commands:' "$P/AGENTS.md" \
-     && grep -qF 'two run in the background when a command needs them.' "$P/AGENTS.md" \
-     && grep -qxF -- '- Background skills: `clarify`, `second-opinion`.' "$P/AGENTS.md" && echo yes || echo no)"
+  "$(grep -qF "The work lives in $count_skills installed AI Build Kit skills. Six are commands:" "$P/AGENTS.md" \
+     && grep -qF "$count_background run in the background when a command needs them." "$P/AGENTS.md" \
+     && tr '\n' ' ' < "$P/AGENTS.md" | tr -s ' ' | grep -qF -- "$background_line" && echo yes || echo no)"
 report "and changes nothing else in the file, the person's own line included" \
   "$([ "$(grep -c '^<' "$work/agents.diff")" = 6 ] \
      && grep -qF 'Our team types /ship on Fridays, and nine is our lucky number.' "$P/AGENTS.md" && echo yes || echo no)"
@@ -129,7 +134,7 @@ python3 - "$P/skills-lock.json" <<'PY'
 import json, sys
 path = sys.argv[1]
 data = json.load(open(path))
-for name in ("fix", "queue", "sync", "change-triage", "screen-check", "section-builder"):
+for name in ("fix", "queue", "sync", "change-triage", "section-builder"):
     data["skills"].pop(name)
 data["skills"]["ship"] = {"source": "someone/my-skills", "sourceType": "github"}
 json.dump(data, open(path, "w"), indent=2)
@@ -141,8 +146,8 @@ python3 "$LEFTOVERS" --rewrite-commands "$P"
 python3 "$LEFTOVERS" --remove "$P"
 report "and a second rewrite and removal change nothing, the person's ship skill included" \
   "$(cmp -s "$P/AGENTS.md" "$work/after-agents" && diff -r "$P/.agents/skills/ship" "$work/own-ship" >/dev/null && echo yes || echo no)"
-report "the six commands and two background skills are all still installed" \
-  "$(for n in $eight; do [ -f "$P/.agents/skills/$n/SKILL.md" ] && [ -e "$P/.claude/skills/$n" ] || echo gone; done | grep -q gone && echo no || echo yes)"
+report "the six commands and every background skill are all still installed" \
+  "$(for n in $kit; do [ -f "$P/.agents/skills/$n/SKILL.md" ] && [ -e "$P/.claude/skills/$n" ] || echo gone; done | grep -q gone && echo no || echo yes)"
 report "the person's records, their skill and their command file are untouched" \
   "$(cmp -s "$P/masterplan.md" "$work/before-masterplan.md" && cmp -s "$P/CHANGELOG.md" "$work/before-CHANGELOG.md" \
      && cmp -s "$P/.claude/commands/deploy.md" "$work/before-deploy.md" && [ -f "$P/.agents/skills/my-notes/SKILL.md" ] && echo yes || echo no)"
@@ -229,7 +234,7 @@ spec.loader.exec_module(module)
 print("\n".join(sorted(module.KIT_SKILLS)))
 PY
 )
-report "the script names exactly the kit's eight skills" \
+report "the script names exactly the kit's skills" \
   "$([ "$names" = "$(ls "$ROOT/.agents/skills" | sort)" ] && echo yes || echo no)"
 
 echo

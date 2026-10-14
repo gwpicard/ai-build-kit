@@ -7,7 +7,7 @@ shell commands, and use Git. Native skill pickers, slash commands, hooks,
 subagents, and command deny lists can improve the experience, but the workflow
 does not depend on them.
 
-The eight skills use the open Agent Skills folder format. Each skill keeps its
+The kit's skills use the open Agent Skills folder format. Each skill keeps its
 own instructions and supporting files together. A command that needs a
 background skill loads it by name.
 
@@ -116,8 +116,8 @@ skills installed into the project, which is the shared installer's route.
 - There is no deny list set up for you, and nothing asks you before the agent
   merges. Codex's own approval settings do that job, and you set them
   yourself.
-- Nobody has checked whether Codex keeps the two background skills out of
-  your hands.
+- Nobody has checked whether Codex keeps the background skills out of your
+  hands.
 - GitHub access depends on the session's network permissions and the CLI's
   sign-in. See [GitHub access in Codex](#github-access-in-codex).
 
@@ -217,16 +217,18 @@ and leaves the previous printout intact.
 - There is no deny list set up for you, and nothing asks you before the agent
   merges. Where the agent has command allow and deny settings, you add the
   kit's blocked commands there yourself.
-- Nobody has checked whether these agents keep the two background skills out
-  of your hands.
+- Nobody has checked whether these agents keep the background skills out of
+  your hands.
 
 ## Choose one installation route
 
-Every route installs the same eight AI Build Kit skills. Six are commands
-you type: `setup-ai-build-kit`, `shape`, `implement`, `setup-hosting`,
-`maintain`, and `what-now`. Two run in the background when a command needs
-them: `clarify` and `second-opinion`. The routes differ in how the skills
-reach the project, not in what arrives.
+Every route installs the same AI Build Kit skills. Six are commands you
+type: `setup-ai-build-kit`, `shape`, `implement`, `setup-hosting`,
+`maintain`, and `what-now`. The others run in the background when a command
+needs them: `build-piece`, `clarify`, `evidence-run`, `fit-check`,
+`live-copy`, `merge`, `quality-checks`, `records`, `repair`, `research`,
+`screen-check`, `second-opinion` and `triage`. The routes differ in how the
+skills reach the project, not in what arrives.
 
 A Claude-only project can use the public repository as a Claude Code plugin.
 From the project folder, run:
@@ -237,8 +239,8 @@ claude plugin install ai-build-kit@ai-build-kit --scope local
 ```
 
 The plugin uses local project scope, so it does not replace the project's
-shared Claude settings. It exposes the six commands and the two
-background skills. The commands use the `ai-build-kit:` prefix, so start with
+shared Claude settings. It exposes the six commands, the background
+skills and the kit's agents. The commands use the `ai-build-kit:` prefix, so start with
 `/ai-build-kit:setup-ai-build-kit`.
 
 Use the shared skills installer when the project uses Codex, Cursor, Gemini
@@ -260,7 +262,7 @@ A coding agent that installs plugins in the open
 folder. That folder gains its skills when a numbered version is packaged, so
 take it from the release archive rather than from a clone of the repository,
 and point the agent's own plugin installer at it. It holds a `plugin.json`
-manifest and a `skills` folder with the same eight skills, each carrying its
+manifest and a `skills` folder with the same skills, each carrying its
 own supporting files. This is the newest route, and a client may skip a skill
 it judges non-standard, so prefer the shared installer when the project has a
 choice.
@@ -313,7 +315,7 @@ takes out the folder, its links and its lockfile entry. It runs that only on
 the person's yes.
 
 That command replaces the installed skill files outright. Anyone who has edited
-one of the eight skills in their own project loses that edit, without being
+one of the kit's skills in their own project loses that edit, without being
 asked and without being told. This is why `maintain` looks for local edits
 before it updates anything, and why a project rule belongs in `AGENTS.md`, which
 no update touches. The one edit the kit makes there is to the line naming the
@@ -340,7 +342,7 @@ paths are:
 | Harness | Project skill location | Standing instructions |
 |---|---|---|
 | Claude Code, shared installer | `.claude/skills/` | `CLAUDE.md` points to `AGENTS.md` |
-| Claude Code, plugin | Claude's plugin cache | the six commands use the `ai-build-kit:` prefix; the two background skills stay out of the menu |
+| Claude Code, plugin | Claude's plugin cache | the six commands use the `ai-build-kit:` prefix; the background skills stay out of the menu |
 | Codex | `.agents/skills/` | reads `AGENTS.md` |
 | Cursor | `.agents/skills/` | reads `AGENTS.md` |
 | Gemini CLI | `.agents/skills/` | `GEMINI.md` points to `AGENTS.md` |
@@ -362,8 +364,47 @@ You can type one of the six commands, name it anywhere in a message, or just
 say what you want done in your own words. The agent starts the right command
 and says which one it is running. It never starts one you did not ask for.
 
-The two background skills run when a command needs them. The kit marks them so
+The background skills run when a command needs them. The kit marks them so
 that you cannot pick one yourself, where your coding agent enforces that.
+
+## Agents
+
+Some work goes better in a fresh context that has not seen the conversation so
+far. The kit has three agents for that, and a command starts each one; you
+never type them.
+
+- `reviewer` looks at a masterplan, a piece's change or the whole build with
+  the `second-opinion` skill. It has not seen how the work was built.
+- `builder` builds one ready piece with the `build-piece` skill, one piece at
+  a time, during `/implement auto`.
+- `researcher` checks one outside fact, or looks for existing work, with the
+  `research` skill.
+
+Each agent has one brief in `.agents/agents/`. The kit generates a file for
+each coding agent that reads its own: `.claude/agents/`, which Cursor and VS
+Code also read, `.codex/agents/`, `.gemini/agents/` and `.github/agents/`.
+A whole copy of the kit and the Claude Code plugin carry them. The shared
+skills installer and the Agent Plugins folder carry skills only, so there the
+command starts an ordinary subagent and tells it which skill to load.
+
+The reviewer and the researcher only read. How firmly that holds depends on
+the coding agent:
+
+| Coding agent | What keeps a read-only agent from changing files |
+|---|---|
+| Claude Code | Its tool list has no editing tool. The reviewer keeps the command line, because a review runs commands, so a check after the review puts back anything under review that changed and tells you. |
+| Cursor | `readonly: true` in the agent's file: no edits, and no command that changes anything. |
+| Gemini CLI | Its tool list holds only reading and searching tools, with no command line. |
+| GitHub Copilot | Its tool list holds reading, searching and the web, with no editing or commands. |
+| Codex | Nothing in the agent's file. Codex keeps the session's own sandbox and approval settings for every agent, so only the agent's brief and the check after the review hold it. |
+
+VS Code reads agents from both `.github/agents/` and `.claude/agents/`, and
+Cursor from `.claude/agents/` and `.codex/agents/`. Each may list the kit's
+agents twice. They are the same agents, and either copy runs the same brief.
+
+Where a coding agent cannot start a subagent at all, the command runs the same
+brief headless, with `claude -p`, `codex exec` or `gemini -p`. Failing that,
+you open a clean chat and paste the one line the command gives you.
 
 ## Manual fallback
 
@@ -373,7 +414,7 @@ Then ask the agent:
 
 > Open `.agents/skills/setup-ai-build-kit/SKILL.md` and run the setup-ai-build-kit skill.
 
-A later manual update replaces only the eight AI Build Kit skill folders,
+A later manual update replaces only the AI Build Kit skill folders,
 after a clean checkpoint and explicit approval.
 
 ## Optional harness features
@@ -382,7 +423,7 @@ after a clean checkpoint and explicit approval.
 |---|---|---|
 | Command invocation | Ask for a skill by name | Native skill picker or slash command |
 | Background skills | Command loads the named skill | Automatic skill triggering |
-| Independent review | A clean separate chat with a prepared instruction | Subagent or separate automated session |
+| Independent review | A clean separate chat with a prepared instruction | The reviewer agent, another subagent, or a headless run |
 | Unsaved work | `what-now` says what it belongs to | Session-end reminder |
 | Check-up due | `what-now` says when a visit is overdue | Said automatically when a session opens |
 | Safety | Standing restrictions and approval gates | Mechanical command deny list |

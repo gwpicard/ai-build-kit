@@ -147,7 +147,8 @@ condition, not in the shared default.
 
 ## Changing a skill
 
-This section governs the eight canonical skills in `.agents/skills/`. A
+This section governs the canonical skills in `.agents/skills/` and the agents
+in `.agents/agents/`. A
 maintainer skill sits outside it, and `AGENTS.md` says what it does and does not
 owe.
 
@@ -157,17 +158,40 @@ answer them gets reshaped before it's considered for merge.
 
 `.agents/skills/` is the single source of truth. Edit `<name>/SKILL.md`, run
 `.agents/tools/build-adapters.sh`, and commit the canonical change together with
-the regenerated compatibility fixtures. Never hand-edit anything under
-`.claude/`, `.cursor/`, or `.gemini/`. New projects use the shared skills
+the regenerated compatibility fixtures. Never hand-edit a generated file under
+`.claude/`, `.cursor/`, `.gemini/`, `.codex/agents/` or `.github/agents/`. New projects use the shared skills
 installer, the optional Claude Code plugin, or the Agent Plugins folder. The
 Claude plugin metadata lives under `.claude-plugin/`. It explicitly
-selects the six generated command files and two generated background skills.
+selects the six generated command files, the generated background skills and
+the generated agents.
 Those thin adapters load the canonical instructions from the plugin cache. The
 Agent Plugins manifest lives under `agent-plugin/`, and its `skills`
 folder is assembled by the release allowlist rather than by
 `build-adapters.sh`, so the canonical skills stay in one place here. The
-generated files also remain as maintainer checks. There is no `.codex/` adapter tree to
-protect.
+generated files also remain as maintainer checks. Codex reads the skills from
+`.agents/skills/` directly, so its only generated folder is `.codex/agents/`.
+
+### Thin commands, background skills and agents
+
+A command routes the work: when it runs, which background skills it calls in
+what order, what it says to the person, and when it is done. It holds no
+method of its own, and keeps a reference only for work no other command does.
+A background skill has one job, owns its references and scripts, and earns its
+place by having two callers or an agent that loads it. An agent is a thin
+brief in `.agents/agents/` that names the background skills it loads, the
+access it needs and what it returns; the method stays in the skills, so the
+same words run with or without subagents. An agent never starts another one.
+
+`.agents/tools/kit-inventory.txt` lists every skill and agent with its kind.
+`build-adapters.sh` generates from it, and `check-structure.py` holds the
+shape: no skill loads a command's own references or sections, each background
+skill has its callers, and the word budgets hold. A script may still be run by
+path from any skill, since it costs the agent no attention.
+
+When a rule moves between files, it moves whole. Run the line-by-line
+comparison against the old file before committing: every sentence is either in
+its new home or is a pointer that changed. A cut is for repetition only, never
+for a safeguard.
 
 One setting says how a skill is triggered. A background skill another skill
 calls carries `user-invocable: false` in its own file. A skill without it is a
@@ -189,10 +213,10 @@ directly, so the setting has to be right in the skill itself, whatever the
 generated adapters look like.
 
 `user-invocable` is not in the written Agent Skills standard, so its reference
-checker reports the two background skills as invalid. Keep it anyway, with the
+checker reports the background skills as invalid. Keep it anyway, with the
 cost on the record: the plugin standard tells a client to skip any skill that
 fails the skill standard, so a strict Agent Plugins client would load the six
-commands and skip the two. Claude Code accepts the setting, which is why that
+commands and skip the rest. Claude Code accepts the setting, which is why that
 route works today. If the standard adopts a setting of its own, follow it and
 update the short person-facing version in `docs/COMPATIBILITY.md`.
 
@@ -209,10 +233,10 @@ part or date itself. A proposal worth keeping becomes an issue.
 
 The reason is what a shared skills installer reads. It looks in
 `.agents/skills/` and `.claude/skills/` and offers whatever it finds in either,
-merging the two by the `name` in each file's frontmatter. The eight adapters
-carry the names of the eight skills they point at, so they merge away and an
-installer finds eight. No maintainer skill shares a name with one of the
-eight, so a copy of any of them in those folders would be a ninth skill
+merging the two by the `name` in each file's frontmatter. The adapters carry
+the names of the skills they point at, so they merge away and an installer
+finds the kit's skills once each. No maintainer skill shares a name with one of
+them, so a copy of any of them in those folders would be one more skill
 offered to every project.
 
 Sitting outside both folders is what prevents that. It is also why the skill
@@ -254,8 +278,13 @@ COMPATIBILITY.md, beside this file, holds the full per-tool map.
 Every change to `.agents/skills/` or the kit's own machinery runs
 `.agents/tools/validate-kit.sh`, which checks:
 
-- the canonical skill inventory (exactly six commands and two background
-  skills, named exactly, with nothing else in the folder);
+- the canonical skill inventory: `.agents/tools/kit-inventory.txt` lists every
+  skill and agent with its kind, the six commands are named exactly, and the
+  folders hold what the list says and nothing else;
+- the shape of the skills, by `.agents/tools/check-structure.py`: no skill
+  loads a command's own references or sections, each background skill has two
+  callers or an agent that loads it, and a command's SKILL.md stays within
+  1,200 words, a background skill's within 1,500 and a reference within 2,000;
 - the maintainer skill boundary: every folder under `.agents/maintainer-skills/`
   is read off the disk rather than from a list, the vendored writing skill
   carries its licence, and no folder or command file named for any of them
@@ -469,7 +498,7 @@ maintainer's real Claude configuration.
 
 Run `.agents/tests/agent-plugin.sh` too. It builds a release and checks the
 assembled `agent-plugin` folder against the open standard: the manifest's
-permitted fields, the eight skills as immediate children of `skills`, no
+permitted fields, the kit's skills as immediate children of `skills`, no
 skill hidden deeper, no maintainer-only writing skill, and a project
 stand-up from that folder alone.
 
@@ -711,7 +740,7 @@ wherever `N` appears.
    npx skills add /private/tmp/abk-preview-N -a claude-code -a codex -s '*' -y
    ```
 
-   The first puts the eight skills in `.claude/skills/`, the second in
+   The first puts the kit's skills in `.claude/skills/`, the second in
    `.agents/skills/` with links in `.claude/skills/`. In both, `setup-hosting/recipes/`
    holds the same recipes as `ls <kit checkout>/.agents/skills/setup-hosting/recipes/`.
 
@@ -914,7 +943,7 @@ not the thing standing behind it.
 
 One word carries two meanings, and that is deliberate too. A person reads
 `/shape`, the command that turns an idea into a ready piece.
-`.agents/skills/setup-ai-build-kit/references/pieces.md` uses the bare word for
+`.agents/skills/records/references/pieces.md` uses the bare word for
 what an issue has to contain, as in "Shape is what decides". The command
 produces that shape, so the two belong together, and the slash is what tells
 them apart. Write the command with its slash every time.

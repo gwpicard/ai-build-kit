@@ -38,15 +38,33 @@ SKILLS="$ROOT/.agents/skills"
 # either one is a skill somebody installs. This folder is in neither.
 MAINTAINER_SKILLS="$ROOT/.agents/maintainer-skills"
 
-expected_commands="implement
+# The six commands are the person's whole view of the kit, so their names are
+# written here as well as in the inventory: a seventh, or a renamed one, is a
+# redesign and fails here first. Everything else is read from the inventory,
+# which build-adapters.sh reads too.
+INVENTORY="$ROOT/.agents/tools/kit-inventory.txt"
+canonical_commands="implement
 maintain
 setup-ai-build-kit
 setup-hosting
 shape
 what-now"
+inventory_names() {
+  awk -v k="$1" '$1 == k && NF == 2 { print $2 }' "$INVENTORY" 2>/dev/null | sort
+}
+expected_commands=$(inventory_names command)
+expected_disciplines=$(inventory_names background)
+expected_agents=$(inventory_names agent)
+if [ ! -f "$INVENTORY" ]; then
+  fail "$INVENTORY: missing, so nothing below knows which skills to expect"
+elif [ "$expected_commands" != "$canonical_commands" ]; then
+  fail "the inventory's commands are not the six the person types: $(printf '%s' "$expected_commands" | tr '\n' ' ')"
+fi
 
-expected_disciplines="clarify
-second-opinion"
+# The shape rules for the skills: a command never loads another command's
+# files, a background skill has two callers or an agent that loads it, and each
+# file keeps to its word budget. A breach fails the run.
+structure_strict=1
 
 # Every folder under .agents/maintainer-skills/ is a maintainer skill, and the
 # list is read off the folder rather than written out here. A written-out list
@@ -180,16 +198,39 @@ actual=$(find "$SKILLS" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | s
 expected=$(printf '%s\n%s\n' "$expected_commands" "$expected_disciplines" | sort)
 
 if [ "$actual" != "$expected" ]; then
-  fail "skill inventory does not match the canonical six commands and two disciplines"
+  fail "the folders in .agents/skills/ do not match the inventory"
   echo "  expected:" >&2
   echo "$expected" | sed 's/^/    /' >&2
   echo "  found:" >&2
   echo "$actual" | sed 's/^/    /' >&2
 else
-  pass "exactly six commands and two disciplines, named exactly"
+  pass "the six commands and $(printf '%s\n' "$expected_disciplines" | grep -c .) background skills match the inventory, named exactly"
 fi
 
-# Each of the eight has a SKILL.md. Which of them are commands and which
+# The update scripts a project runs carry their own list of the kit's skills,
+# since a project has no inventory to read. A skill missing from them is one an
+# older project is never told to install, and a folder of it is taken for the
+# person's own. So each list must hold exactly what the inventory does.
+if command -v python3 >/dev/null 2>&1; then
+  for update_script in kit-leftovers.py old-skill-pointers.py; do
+    listed_skills=$(python3 - "$SKILLS/maintain/scripts/$update_script" <<'PYEOF'
+import ast, sys
+tree = ast.parse(open(sys.argv[1]).read())
+for node in tree.body:
+    if isinstance(node, ast.Assign) and any(getattr(t, "id", "") == "KIT_SKILLS" for t in node.targets):
+        print("\n".join(sorted(ast.literal_eval(node.value))))
+PYEOF
+)
+    inventory_skills=$(printf '%s\n%s\n' "$expected_commands" "$expected_disciplines" | sort)
+    if [ "$listed_skills" != "$inventory_skills" ]; then
+      fail "maintain/scripts/$update_script: KIT_SKILLS does not hold exactly the skills the inventory lists"
+    else
+      pass "maintain/scripts/$update_script knows every skill the inventory lists"
+    fi
+  done
+fi
+
+# Each skill has a SKILL.md. Which of them are commands and which
 # are background skills is settled by one setting, and the trigger contract
 # further down checks that. Here the question is only that the file exists.
 while IFS= read -r name; do
@@ -383,7 +424,7 @@ else
   expected_skill_dirs=$(printf '%s\n' "$expected_disciplines" | sort)
   actual_skill_dirs=$(find "$ROOT/.claude/skills" -mindepth 1 -maxdepth 1 -exec basename {} \; | sort)
   if [ "$actual_skill_dirs" != "$expected_skill_dirs" ]; then
-    fail ".claude/skills/ must hold exactly the two disciplines"
+    fail ".claude/skills/ must hold exactly the background skills the inventory lists"
     echo "  expected:" >&2
     echo "$expected_skill_dirs" | sed 's/^/    /' >&2
     echo "  found:" >&2
@@ -422,6 +463,46 @@ done
 [ "$trigger_ok" -eq 1 ] && pass "background skills carry user-invocable: false and commands do not, and the generated command and skill folders all hold exactly the expected names"
 
 # ---------------------------------------------------------------------------
+echo "== Agents =="
+
+# An agent runs one or more background skills in a fresh context. Its brief has
+# one home, .agents/agents/<name>.md, and each coding agent with a native
+# format gets a generated file that points back at it. The names are anchored
+# to the inventory here, as the command folders are above, so a source mistake
+# that generates a wrong but self-consistent tree still fails. The Copilot file
+# must stay out of the person's own agent picker: the person's view is the six
+# commands.
+agents_ok=1
+expected_agent_files() {
+  printf '%s\n' "$expected_agents" | sed '/^$/d' | sed "s/\$/$1/" | sort
+}
+for agent_dir in ".agents/agents:.md" ".claude/agents:.md" ".codex/agents:.toml" \
+                 ".gemini/agents:.md" ".github/agents:.agent.md"; do
+  dir=${agent_dir%%:*}
+  ext=${agent_dir#*:}
+  actual_agent_files=$(find "$ROOT/$dir" -mindepth 1 -maxdepth 1 -type f -exec basename {} \; 2>/dev/null | sort)
+  if [ "$actual_agent_files" != "$(expected_agent_files "$ext")" ]; then
+    fail "$dir/ must hold exactly the agents the inventory lists"
+    echo "  expected:" >&2
+    expected_agent_files "$ext" | sed 's/^/    /' >&2
+    echo "  found:" >&2
+    printf '%s\n' "$actual_agent_files" | sed 's/^/    /' >&2
+    agents_ok=0
+  fi
+done
+while IFS= read -r name; do
+  [ -n "$name" ] || continue
+  copilot="$ROOT/.github/agents/$name.agent.md"
+  if [ -f "$copilot" ] && ! grep -q '^user-invocable: false$' "$copilot"; then
+    fail "$copilot: a generated Copilot agent must carry user-invocable: false"
+    agents_ok=0
+  fi
+done <<AGENTNAMES
+$expected_agents
+AGENTNAMES
+[ "$agents_ok" -eq 1 ] && pass "each agent has one canonical brief and a generated file for every coding agent that reads one"
+
+# ---------------------------------------------------------------------------
 echo "== Frontmatter =="
 
 seen_names=""
@@ -453,6 +534,36 @@ $skillfiles
 SKILLFILES
 
 pass "frontmatter checked on $(printf '%s\n' "$skillfiles" | grep -c .) SKILL.md files"
+
+# ---------------------------------------------------------------------------
+echo "== Skill structure =="
+
+# Commands route and call background skills; they hold no method of their own.
+# check-structure.py reads the shape off the files: a command loading another
+# command's references, a background skill nobody calls, a file over its word
+# budget. Its own header gives the rules. A rule sentence cannot hold this,
+# because nobody can see which sentence a cut removed.
+structure_tool="$ROOT/.agents/tools/check-structure.py"
+if [ ! -f "$structure_tool" ]; then
+  fail "$structure_tool: missing"
+elif ! command -v python3 >/dev/null 2>&1; then
+  note "python3 not available; skipped the skill structure check"
+else
+  if [ "$structure_strict" -eq 1 ]; then
+    structure_out=$(python3 "$structure_tool" --strict 2>&1) && structure_rc=0 || structure_rc=$?
+  else
+    structure_out=$(python3 "$structure_tool" 2>&1) && structure_rc=0 || structure_rc=$?
+  fi
+  if [ "$structure_rc" -ne 0 ]; then
+    fail "the skills are out of shape:"
+    printf '%s\n' "$structure_out" | sed 's/^/    /' >&2
+  elif [ -n "$structure_out" ]; then
+    note "the skills are out of shape, reported only until the check turns strict:"
+    printf '%s\n' "$structure_out" | sed 's/^/    /' >&2
+  else
+    pass "no command loads another's files, each background skill has its callers, and each file keeps its word budget"
+  fi
+fi
 
 # ---------------------------------------------------------------------------
 echo "== References =="
@@ -719,7 +830,8 @@ fi
 # ---------------------------------------------------------------------------
 echo "== Fit-check contract =="
 
-fitcheck="$SKILLS/setup-ai-build-kit/references/fit-check.md"
+fitcheck="$SKILLS/fit-check/SKILL.md"
+fitrecord="$SKILLS/fit-check/references/build-path-record.md"
 if [ ! -f "$fitcheck" ]; then
   fail "$fitcheck: missing"
 else
@@ -731,24 +843,24 @@ else
       fc_ok=0
     fi
   done
-  [ "$fc_ok" -eq 1 ] && pass "fit-check.md carries the three canonical paths and the decision-order headings"
+  [ "$fc_ok" -eq 1 ] && pass "the fit-check skill carries the three canonical paths and the decision-order headings"
 fi
 
-# The build-path block has one owner. fit-check.md defines the fields and the
+# The build-path block has one owner. The fit check's build-path record defines the fields and the
 # masterplan template carries them, so a field added to one and forgotten in the
 # other would leave a project recording something the fit check never writes, or
 # writing something the template has no room for.
 mpt="$SKILLS/setup-ai-build-kit/templates/masterplan.md"
-if [ ! -f "$mpt" ] || [ ! -f "$fitcheck" ]; then
-  fail "cannot compare the build-path block: fit-check.md or the masterplan template is missing"
+if [ ! -f "$mpt" ] || [ ! -f "$fitrecord" ]; then
+  fail "cannot compare the build-path block: the fit check's build-path record or the masterplan template is missing"
 else
   bp_ok=1
   for field in Path Why "Sensitive areas" Accepted "Recheck when" "Last checked"; do
     grep -q "^$field:" "$mpt" || { fail "$mpt: build-path block is missing '$field:'"; bp_ok=0; }
-    grep -q "^$field:" "$fitcheck" || { fail "$fitcheck: build-path block is missing '$field:'"; bp_ok=0; }
+    grep -q "^$field:" "$fitrecord" || { fail "$fitrecord: build-path block is missing '$field:'"; bp_ok=0; }
   done
   [ "$bp_ok" -eq 1 ] && \
-    pass "the masterplan template and fit-check.md agree on the build-path fields, including Accepted"
+    pass "the masterplan template and the fit check's build-path record agree on the build-path fields, including Accepted"
 fi
 
 # ---------------------------------------------------------------------------
@@ -757,7 +869,7 @@ echo "== Pieces contract =="
 # A piece's shape has one owner, pieces.md, and one form a project fills in.
 # The two are written separately and read by different audiences, so nothing
 # stops them drifting apart except this.
-pieces="$SKILLS/setup-ai-build-kit/references/pieces.md"
+pieces="$SKILLS/records/references/pieces.md"
 pieceform="$SKILLS/setup-ai-build-kit/templates/foundation/piece-issue.yml"
 if [ ! -f "$pieces" ] || [ ! -f "$pieceform" ]; then
   fail "the pieces contract is incomplete: expected $pieces and $pieceform"
@@ -894,7 +1006,7 @@ fi
 # The layered piece: a plain surface that stays comprehensive about the
 # product, a collapsed "under the hood" tier the builder reads, a self-sufficiency
 # bar before an unwatched auto run, and groundwork kept to a vertical slice.
-layer_sbfile="$SKILLS/implement/SKILL.md"
+layer_sbfile="$SKILLS/build-piece/SKILL.md"
 if [ -f "$pieces" ] && [ -f "$implementfile" ] && [ -f "$layer_sbfile" ]; then
   layer_ok=1
   grep -qF "## The two layers of a piece" "$pieces" || \
@@ -968,8 +1080,9 @@ fi
 # blocked and merged branches auto-delete; the agent opens the pull
 # request and merges it only on a yes that names the merge, made on the pull
 # request itself, and never in a run with nobody there to say it.
-sbfile="$SKILLS/implement/SKILL.md"
-mergefile="$SKILLS/implement/references/merge.md"
+sbfile="$SKILLS/build-piece/SKILL.md"
+cutfile="$SKILLS/setup-ai-build-kit/references/cut-the-plan.md"
+mergefile="$SKILLS/merge/SKILL.md"
 blocked="$SKILLS/setup-ai-build-kit/references/blocked-commands.md"
 settings="$SKILLS/setup-ai-build-kit/templates/foundation/claude-settings.json"
 startfile="$SKILLS/setup-ai-build-kit/SKILL.md"
@@ -984,14 +1097,14 @@ if [ -f "$sbfile" ] && [ -f "$mergefile" ] && [ -f "$blocked" ] && [ -f "$settin
     { fail "$blocked: does not block a direct push to main"; mech_ok=0; }
   grep -qF "git push * main" "$settings" || \
     { fail "$settings: deny list does not block a direct push to main"; mech_ok=0; }
-  grep -qF "delete_branch_on_merge" "$startfile" || \
-    { fail "$startfile: does not enable auto-deletion of merged branches"; mech_ok=0; }
+  grep -qF "delete_branch_on_merge" "$cutfile" || \
+    { fail "$cutfile: does not enable auto-deletion of merged branches"; mech_ok=0; }
   grep -qF "Merge only on a yes" "$mergefile" || \
     { fail "$mergefile: the merge step does not wait for a yes that names the merge"; mech_ok=0; }
   grep -qF "Make an approved merge on the pull request itself" "$mergefile" || \
     { fail "$mergefile: the merge step does not make the merge on the pull request itself"; mech_ok=0; }
-  grep -qF "In an unattended run nobody is there to say yes, so never merge" "$sbfile" || \
-    { fail "$sbfile: an unattended run could merge with nobody there to say yes"; mech_ok=0; }
+  grep -qF "In an unattended run nobody is there to say yes, so never merge" "$implementfile" || \
+    { fail "$implementfile: an unattended run could merge with nobody there to say yes"; mech_ok=0; }
   [ "$mech_ok" -eq 1 ] && \
     pass "pieces start from fresh main, new issues are unassigned, main is push-guarded, merged branches auto-delete, and the agent merges only on a yes that names the merge"
 fi
@@ -1003,8 +1116,8 @@ if [ -f "$sbfile" ]; then
   mc_ok=1
   grep -qF "a substitute for a check that was available and skipped" "$sbfile" || \
     { fail "$sbfile: does not forbid a softer proof standing in for an available machine check"; mc_ok=0; }
-  grep -qF "machine check run and green" "$sbfile" || \
-    { fail "$sbfile: 'Done when' does not name the available machine check as run and green"; mc_ok=0; }
+  grep -qF "machine check run and green" "$implementfile" || \
+    { fail "$implementfile: 'Done when' does not name the available machine check as run and green"; mc_ok=0; }
   [ "$mc_ok" -eq 1 ] && \
     pass "an available machine check runs and must pass before a piece is called done"
 fi
@@ -1060,17 +1173,17 @@ fi
 # Founding is the one moment they can go, because no issue exists yet to be
 # wearing one. Both halves are checked: the deletion, and the sentence that
 # keeps it from reading as a licence to remove somebody's own labels later.
-if [ -f "$startfile" ] && [ -f "$pieces" ] && [ -f "$capfile" ]; then
+if [ -f "$cutfile" ] && [ -f "$pieces" ] && [ -f "$capfile" ]; then
   gl_ok=1
   for label in bug documentation duplicate "good first issue" "help wanted" \
                invalid question wontfix enhancement; do
-    grep -qF "\`$label\`" "$startfile" || \
-      { fail "$startfile: does not name GitHub's '$label' label among the ones founding removes"; gl_ok=0; }
+    grep -qF "\`$label\`" "$cutfile" || \
+      { fail "$cutfile: does not name GitHub's '$label' label among the ones founding removes"; gl_ok=0; }
   done
-  grep -qF "delete the labels GitHub made by itself" "$startfile" || \
-    { fail "$startfile: founding does not delete the labels GitHub made by itself"; gl_ok=0; }
-  grep -qF "Say which ones went" "$startfile" || \
-    { fail "$startfile: founding removes labels without saying which"; gl_ok=0; }
+  grep -qF "delete the labels GitHub made by itself" "$cutfile" || \
+    { fail "$cutfile: founding does not delete the labels GitHub made by itself"; gl_ok=0; }
+  grep -qF "Say which ones went" "$cutfile" || \
+    { fail "$cutfile: founding removes labels without saying which"; gl_ok=0; }
   grep -qF "After founding they are somebody's to keep" "$pieces" || \
     { fail "$pieces: does not limit the label clearout to founding"; gl_ok=0; }
   grep -qF "cannot create or delete labels" "$capfile" || \
@@ -1297,8 +1410,8 @@ fi
 # The rule has to notice a name, keep each exemption narrow, and leave the
 # recipes alone, or it proves nothing. So it is run on a planted folder.
 plant=$(mktemp -d)
-mkdir -p "$plant/setup-hosting/recipes/parts" "$plant/setup-hosting/references" "$plant/implement/references"
-grep -i 'web interface guidelines' "$SKILLS/implement/references/screen-rules.md" > "$plant/implement/references/screen-rules.md" || true
+mkdir -p "$plant/setup-hosting/recipes/parts" "$plant/setup-hosting/references" "$plant/screen-check"
+grep -i 'web interface guidelines' "$SKILLS/screen-check/SKILL.md" > "$plant/screen-check/SKILL.md" || true
 mkdir -p "$plant/setup-hosting/recipes/on-vercel/scripts" "$plant/setup-hosting/recipes/parts/scripts"
 printf '%s\n' 'Runs on Vercel with a Supabase database.' > "$plant/setup-hosting/recipes/on-vercel/recipe.md"
 printf '%s\n' 'vercel env ls production' > "$plant/setup-hosting/recipes/on-vercel/scripts/secrets.sh"
@@ -1324,8 +1437,9 @@ rm -rf "$plant"
 # ---------------------------------------------------------------------------
 echo "== Codex adapter claims =="
 
-# Codex has never had a generated adapter tree; it reads .agents/skills/
-# directly. scenarios.md and MAINTAINING.md are maintainer-only and already
+# Codex has no generated skill or command tree; it reads .agents/skills/
+# directly. The one generated Codex folder is .codex/agents/, for the agents,
+# so a line naming that folder is not the stale claim. scenarios.md and MAINTAINING.md are maintainer-only and already
 # excluded by the same convention as the team.md check below.
 codex_docs=$(find "$ROOT" -name '*.md' -not -path '*/.git/*' -not -path '*/.agents/tmp/*' | sort \
   | grep -v '\.agents/tests/scenarios\.md$' \
@@ -1340,7 +1454,7 @@ codex_group_hits=$(printf '%s\n' "$codex_docs" | while IFS= read -r f; do
     { buf[NR] = $0; window = $0
       if (NR > 1) window = buf[NR-1] " " window
       if (NR > 2) window = buf[NR-2] " " window
-      if (window ~ /[.]claude\// && window ~ /[.]cursor\// && window ~ /[.]gemini\// && window ~ /[.]codex\//) {
+      if (window ~ /[.]claude\// && window ~ /[.]cursor\// && window ~ /[.]gemini\// && window ~ /[.]codex\// && window !~ /[.]codex\/agents/) {
         print FILENAME ":" NR
       }
     }
@@ -1499,7 +1613,7 @@ grep -qF '.agents/hooks/session-start.sh' "$session_settings" || \
 
 for entry in \
   "$SKILLS/setup-ai-build-kit/scripts/bootstrap-project.sh|session-start.sh|.agents/hooks/session-start.sh" \
-  "$SKILLS/setup-ai-build-kit/SKILL.md|templates/maintenance-record" \
+  "$SKILLS/setup-ai-build-kit/references/write-the-masterplan.md|templates/maintenance-record" \
   "$SKILLS/maintain/SKILL.md|.ai-build-kit-maintenance" \
   "$SKILLS/maintain/SKILL.md|last-light-pass" \
   "$SKILLS/maintain/SKILL.md|last-full-pass" \
@@ -1720,14 +1834,32 @@ for literal in \
   '"./.claude/commands/shape.md"' \
   '"./.claude/commands/setup-hosting.md"' \
   '"./.claude/commands/setup-ai-build-kit.md"' \
-  '"./.claude/commands/what-now.md"' \
-  '"./.claude/skills/clarify"' \
-  '"./.claude/skills/second-opinion"'; do
+  '"./.claude/commands/what-now.md"'; do
   if ! grep -qF "$literal" "$plugin_manifest"; then
     fail "Claude plugin manifest is missing: $literal"
     plugin_contract_ok=no
   fi
 done
+# Every background skill and every agent the inventory lists reaches the
+# plugin, read from the inventory so a new one cannot be left out of it.
+while IFS= read -r name; do
+  [ -n "$name" ] || continue
+  if ! grep -qF "\"./.claude/skills/$name\"" "$plugin_manifest"; then
+    fail "Claude plugin manifest is missing the background skill: ./.claude/skills/$name"
+    plugin_contract_ok=no
+  fi
+done <<PLUGINSKILLS
+$expected_disciplines
+PLUGINSKILLS
+while IFS= read -r name; do
+  [ -n "$name" ] || continue
+  if ! grep -qF "\"./.claude/agents/$name.md\"" "$plugin_manifest"; then
+    fail "Claude plugin manifest is missing the agent: ./.claude/agents/$name.md"
+    plugin_contract_ok=no
+  fi
+done <<PLUGINAGENTS
+$expected_agents
+PLUGINAGENTS
 for literal in \
   '"name": "ai-build-kit"' \
   '"source": "./"'; do
@@ -1736,7 +1868,7 @@ for literal in \
     plugin_contract_ok=no
   fi
 done
-maintain_skill="$ROOT/.agents/skills/maintain/SKILL.md"
+maintain_skill="$ROOT/.agents/skills/maintain/references/monthly.md"
 for literal in \
   'claude plugin marketplace update ai-build-kit' \
   'claude plugin update ai-build-kit@ai-build-kit --scope <scope>' \
@@ -1853,7 +1985,7 @@ if command -v python3 >/dev/null 2>&1; then
   fi
 fi
 if [ -n "$toml_reader" ]; then
-  tomlfiles=$(find "$ROOT/.gemini" -name '*.toml' 2>/dev/null | sort)
+  tomlfiles=$(find "$ROOT/.gemini" "$ROOT/.codex" -name '*.toml' 2>/dev/null | sort)
   while IFS= read -r tomlfile; do
     [ -n "$tomlfile" ] || continue
     if ! python3 -c "import $toml_reader as t; t.load(open('$tomlfile','rb'))" 2>/tmp/validate-kit-toml.$$; then

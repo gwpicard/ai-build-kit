@@ -19,6 +19,9 @@ before editing.
 
 - `.agents/skills/`: the six commands and the background skills. The single
   source of truth. Nothing else belongs in it.
+- `.agents/agents/`: the agents, each a thin brief that names the background
+  skills it loads. `.agents/tools/kit-inventory.txt` lists every skill and
+  agent with its kind.
 - `.agents/maintainer-skills/`: skills only maintainers use. They sit outside
   `.agents/skills/` and `.claude/skills/` so no installer offers them, and they
   get no adapter. Load one by its path: `humanizer/SKILL.md` for writing,
@@ -26,8 +29,9 @@ before editing.
   `stack-research/SKILL.md` to check the recipes against their products. Its
   note goes to `.agents/tmp/stack-research/`, which git ignores, so it never
   ships.
-- `.claude/`, `.cursor/`, `.gemini/`: generated adapters. Change the canonical
-  skill, then run `.agents/tools/build-adapters.sh`, and commit both together.
+- `.claude/`, `.cursor/`, `.gemini/`, `.codex/agents/`, `.github/agents/`:
+  generated adapters. Change the canonical skill or agent, then run
+  `.agents/tools/build-adapters.sh`, and commit both together.
 - `.claude-plugin/` and `agent-plugin/plugin.json`: plugin metadata. The
   release assembles the plugin folders, so this repository keeps one copy of
   each skill.

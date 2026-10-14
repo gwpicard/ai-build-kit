@@ -603,9 +603,9 @@ gives you that published release and never work nobody has released yet. When
 a newer kit is available, the agent shows the version and what changed, then
 waits for approval.
 
-An update refreshes only the eight AI Build Kit skills and leaves your tool,
-its records, and its own checks alone. It also adds any skill the kit has
-renamed or added since, and says if the installation is short of the eight.
+An update refreshes only the AI Build Kit skills and leaves your tool, its
+records, and its own checks alone. It also adds any skill the kit has renamed
+or added since, and says if the installation is missing one.
 When the kit has renamed a command, the update also rewrites the command list
 in your AGENTS.md, with your approval, so you are not left to edit it by hand.
 

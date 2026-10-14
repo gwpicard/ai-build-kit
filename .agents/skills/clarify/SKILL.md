@@ -34,7 +34,7 @@ For each rule that matters, ask at least one edge case that could really happen 
 
 For a behavioural or visual decision talk cannot settle, ask whether they already have something that shows it: a sketch, a mock, a screenshot, today's spreadsheet. Where they do, load references/existing-artifact.md. Where they do not, load references/decision-prototype.md. The decision goes back into the masterplan or the request before the interview continues.
 
-An answer that depends on an outside fact runs the source check in the `shape` skill's `references/research.md`.
+An answer that depends on an outside fact runs the source check in the `research` skill.
 
 ## When to stop
 

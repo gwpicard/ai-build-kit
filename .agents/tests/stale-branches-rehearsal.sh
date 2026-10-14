@@ -16,7 +16,7 @@
 set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
-SCRIPT="$ROOT/.agents/skills/maintain/scripts/stale-branches.py"
+SCRIPT="$ROOT/.agents/skills/quality-checks/scripts/stale-branches.py"
 
 fail() {
   echo "FAIL: $1" >&2

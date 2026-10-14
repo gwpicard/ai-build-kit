@@ -18,7 +18,11 @@ root, work = map(pathlib.Path, sys.argv[1:])
 source = root / '.agents/skills'
 fixture = root / '.agents/tests/fixtures/upgrade-v0.19.3'
 kit_names = [p.name for p in source.iterdir() if p.is_dir()]
-retired = ['fix', 'queue', 'sync', 'ship', 'change-triage', 'section-builder', 'screen-check']
+retired = ['fix', 'queue', 'sync', 'ship', 'change-triage', 'section-builder']
+# The counts today's founding template gives, which a rewritten list takes.
+template_text = (source/'setup-ai-build-kit/templates/foundation/AGENTS.md').read_text()
+count_skills = re.search(r'lives in ([a-z-]+) installed', template_text).group(1)
+count_background = re.search(r'\n([a-z-]+) run in the background', template_text).group(1)
 known = json.loads((source/'maintain/scripts/kit-retired-skills.json').read_text())['skills']
 
 def run(args, cwd=None, code=0):
@@ -120,8 +124,8 @@ for route in ('claude-only','shared','whole','plugin'):
     assert 'kit' in said, listed
     assert {'commands','pointer','helper','settings','template','mention'} <= set(kinds), listed
     assert kinds.count('commands')==5, listed
-    assert kinds.count('pointer')==1 and kinds.count('helper')==1 and kinds.count('template')==4,listed
-    assert kinds.count('installer') == (0 if route=='plugin' else 7), listed
+    assert kinds.count('pointer')==5 and kinds.count('helper')==1 and kinds.count('template')==3,listed
+    assert kinds.count('installer') == (0 if route=='plugin' else 6), listed
     assert ('kitcopy\t.claude-plugin' in listed)==(route=='whole'), listed
     assert ('hook\t.agents/hooks/session-end-sync.sh' in listed)==(route=='whole'), listed
     assert 'mention\tmasterplan.md:' in listed and 'We run /ship before' in listed
@@ -159,8 +163,8 @@ for route in ('claude-only','shared','whole','plugin'):
     assert 'We run /ship before the club night.' in (p/'masterplan.md').read_text()
     assert '/setup-hosting writes a hosting' in (p/'masterplan.md').read_text()
     agents=(p/'AGENTS.md').read_text()
-    assert not any(n in agents for n in ('change-triage','section-builder','screen-check')),agents
-    assert "load the `implement` skill's `references/screen-rules.md`" in agents,agents
+    assert not any(n in agents for n in ('change-triage','section-builder')),agents
+    assert "load `screen-check`" in agents,agents
     current=json.loads((p/'.claude/settings.json').read_text())
     for key,value in before.items():
         if key!='permissions': assert current[key]==value
@@ -177,7 +181,7 @@ for route in ('claude-only','shared','whole','plugin'):
     snapshot={str(f.relative_to(p)):f.read_bytes() for f in p.rglob('*') if f.is_file() and '.git' not in f.parts}
     assert check(skills,p,0)==after
     assert snapshot=={str(f.relative_to(p)):f.read_bytes() for f in p.rglob('*') if f.is_file() and '.git' not in f.parts}
-    env=skills/'implement/scripts/env-names-added.sh'
+    env=skills/'merge/scripts/env-names-added.sh'
     assert run(['sh',env,'piece','main'],p,1).splitlines()==['NEW_CLUB_SETTING','SECOND_SETTING']
     assert run(['sh',env,'main','main'],p)==''
     run(['sh',env,'unknown','main'],p,2)
@@ -272,7 +276,7 @@ assert 'commands\tAGENTS.md:3' in monthly and 'declined\tcommands' not in monthl
 replacement=original.replace('nine commands','six commands').replace(
     '`setup-ai-build-kit`, `shape`, `implement`, `queue`, `fix`, `ship`, `sync`,',
     '`setup-ai-build-kit`, `shape`, `implement`, `setup-hosting`,').replace(
-    'fourteen skills','eight skills')
+    'fourteen skills',count_skills+' skills')
 put(p/'AGENTS.md',replacement)
 finished=check(source,p,0)
 assert 'commands\t' not in finished and 'declined\tcommands' not in finished,finished
@@ -384,7 +388,7 @@ assert any(l.startswith('fitcheck\tmasterplan.md:') for l in again.splitlines())
 fit=[w for _,k,w in (l.split('\t',2) for l in again.splitlines() if l.startswith('say\t')) if k=='fitcheck']
 assert fit and 'word for word' in fit[0] and 'above the old one' in fit[0],again
 # The rewrite's rules are in a reference the skill points at; it has to open.
-assert 'references/four-paths.md' in (source/'maintain/SKILL.md').read_text()
+assert 'four-paths.md' in (source/'maintain/references/kit-update.md').read_text()
 assert (source/'maintain/references/four-paths.md').is_file()
 run([sys.executable,plugin/'maintain/scripts/upgrade-check.py','--apply','fitcheck',p],code=2)
 run([sys.executable,plugin/'maintain/scripts/upgrade-check.py','--decline','fitcheck',p])
@@ -464,14 +468,15 @@ assert pointers and 'not readable text' in pointers[0] and 'break the line' not 
 print('  ok: a pointer left in an unreadable file says why')
 
 # A project founded on v0.20.3 already has the six commands. Its update only
-# folds three background skills, so it must not hear the six-command news
-# again, and its command list is said to name old background skills, not old
-# commands. The records are the v0.20.3 templates, and the three skill
-# folders are the released copies, kept by the installer.
+# renames two background skills and adds the new ones, so it must not hear the
+# six-command news again, and its command list is said to name old background
+# skills, not old commands. The records are the v0.20.3 templates, and the two
+# renamed skill folders are the released copies, kept by the installer.
+# screen-check came back under its own name, so the update replaced it.
 p=work/'from-v0.20.3'; p.mkdir()
 v203=root/'.agents/tests/fixtures/upgrade-v0.20.3'
 copy(v203/'AGENTS.md.txt',p/'AGENTS.md'); copy(v203/'masterplan.md.txt',p/'masterplan.md')
-folded=['change-triage','section-builder','screen-check']
+folded=['change-triage','section-builder']
 shutil.copytree(source,p/'.agents/skills')
 for name in folded:
     for f in (v203/'retired-skills'/name).rglob('*.txt'):
@@ -484,14 +489,15 @@ assert not any(k=='kit' for k,_ in said),listed
 assert not any(re.search(r'/(fix|queue|sync|ship)\b',w) for _,w in said),listed
 words=[w for k,w in said if k=='commands']
 assert len(words)==1 and 'old commands' not in words[0],listed
-assert all(n in words[0] for n in folded) and '/shape and /implement' in words[0],listed
+assert all(n in words[0] for n in folded) and 'since renamed' in words[0],listed
 assert any(k=='installer' and all(n in w for n in folded) for k,w in said),listed
-assert sum(1 for l in listed.splitlines() if l.startswith('template\tAGENTS.md:'))==3,listed
+assert sum(1 for l in listed.splitlines() if l.startswith('template\tAGENTS.md:'))==2,listed
 for step in ('commands','template'): apply(source,p,step)
 agents=(p/'AGENTS.md').read_text()
 assert not any(n in agents for n in folded),agents
-assert 'eight installed' in agents and 'two run in the background' in agents,agents
-print('  ok: a v0.20.3 project hears only that three background skills folded')
+assert count_skills+' installed' in agents and count_background+' run in the background' in agents,agents
+assert 'load `screen-check`' in agents,agents
+print('  ok: a v0.20.3 project hears only that two background skills were renamed')
 
 # The three screen lines are one passage. When the person edited one of them,
 # the passage is theirs, so none of its lines is listed or rewritten.

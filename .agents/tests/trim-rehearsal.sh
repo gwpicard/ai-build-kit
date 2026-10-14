@@ -34,7 +34,7 @@
 set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
-SCRIPTS="$ROOT/.agents/skills/implement/scripts"
+SCRIPTS="$ROOT/.agents/skills/quality-checks/scripts"
 CHECK="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/check-trim.sh"
 
 fail() {

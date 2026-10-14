@@ -93,6 +93,13 @@ Results land in `~/.local/state/abk-replay/results`, outside this repository.
 Each run leaves a transcript and a graded verdict there. `run.sh` prints the
 path when it finishes, and `REPLAY_RESULTS` sends the output somewhere else.
 
+A turn in the transcript holds everything the kit wrote in it, not only its
+last message. A coding agent that works between messages writes several in one
+turn, and the headless result keeps only the last, so a notice given earlier in
+the turn once went ungraded. `turn-text.py` reads the turn back from Claude
+Code's session file, or from Codex's events, and falls back to the last message
+where neither can be read.
+
 They are kept outside the repository on purpose. A pass rewrites a couple of
 hundred files, and this project lives in a folder that a sync daemon watches.
 One such daemon removed the results directory mid-pass, and the next run cleared

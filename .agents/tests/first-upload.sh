@@ -11,7 +11,7 @@
 set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
-SCRIPT="$ROOT/.agents/skills/implement/scripts/first-upload.py"
+SCRIPT="$ROOT/.agents/skills/merge/scripts/first-upload.py"
 HOOK="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/pre-push"
 
 FAIL=0

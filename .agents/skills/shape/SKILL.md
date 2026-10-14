@@ -10,104 +10,24 @@ settles anything the piece still waits on. Shape itself never builds.
 
 You sort the request; the person never does, and the masterplan is the
 referee. Read masterplan.md first, build-path section first, then refresh the
-printout and read it. The `setup-ai-build-kit` skill's `references/pieces.md`
+printout and read it. The `records` skill's `references/pieces.md`
 is the one home for how a piece is written, its labels, the "rests on"
 clauses, and what to do when somebody acts on GitHub by hand. Follow it.
 
 ## Typed with words
 
-Work through these steps before any work happens. Say the route you chose and
-why, in one line.
-
-### 1. Understand the request
-
-Compare it with the masterplan, the open pieces, the recent changelog, and
-existing behaviour where that is cheap to check. Does it already exist under
-another name? Was it parked or rejected before? A parked idea is a closed issue
-labelled `parked`, so search closed issues too. Is it a misunderstanding or a
-setup problem rather than a gap? Does it contradict a rule in the masterplan?
-
-A report that something is broken, in whatever words, loads
-`references/repair.md` and runs its checks first. Shaping changes no file the
-project saves.
-
-### 2. Classify intent
-
-One of: repair of promised behaviour; new behaviour; copy or presentation
-change; setup or operational task; a decision that needs clarify, a prototype,
-or source research; a change to the build path or a sensitive area.
-
-### 3. Classify consequence
-
-Every consequence that applies, stored on the piece as subject labels. The
-build reads them and never reclassifies:
-
-| Consequence | Subject |
-|---|---|
-| presentation-only | visual |
-| behaviour | how it works |
-| data | data |
-| access | accounts and permissions |
-| money | finance |
-| integration or service | external service |
-| automatic action, operational reliance | background automation |
-
-An irreversible action takes the subject of what it cannot undo, usually
-`data`. Store every row that applies: a checkout is `finance` and `external
-service`. A dropped subject takes its evidence with it.
-
-Then read the titles and `## So that` lines of open pieces sharing a subject,
-and anything labelled `building`. Where one would plainly be built in the same
-place, name it and what the two share. Nothing waits; the person decides
-whether to carry on, hold this, or fold the two. Say nothing when the only
-thing in common is the project.
-
-### 4. Route
-
-Routes: a repair, shaped by reproducing it; a ready piece; clarify; a decision
-prototype; a source check; a search for existing work; a step only the person
-can do; update the masterplan first; rerun the fit check; prepare the
-handover; the risk notice.
+Run the `triage` skill before any work happens. It understands the request,
+classifies its intent and consequence, and chooses one route. Then act on the
+route.
 
 Piece-sized and clear (one sitting, a done line you could write now) becomes a
 ready piece at once. Write it to pieces.md's shape with its subjects, and
-label it `ready` by running this skill's `scripts/mark-ready.sh` on its
+label it `ready` by running the `records` skill's `scripts/mark-ready.sh` on its
 number. It refuses without `## Done when`, and refreshes the printout. A new
 issue starts unassigned; `/implement` assigns it when it picks the piece up.
 Then make the build offer.
 
-Too vague to size runs clarify. A question rather than a ready piece goes on
-the issue as its `needs-` label, so the next reader sees why it waits.
-
-Bigger than a piece goes into the masterplan first and is cut into pieces,
-order confirmed with the person. pieces.md's "Status, owner, and order" says
-when parts become sub-issues and when separate pieces are linked by
-blocked-by.
-
-A step only the person can do is written as the piece's `## Waiting on you`.
-Do it yourself where you can.
-
-A repair takes `broken` beside its subjects, and is ready once reproduced.
-
-A request that touches stored data, who can see or do what, or money updates
-the masterplan first, and you say what changed before routing further. A
-change to the shape of real data the tool already holds is flagged territory:
-a backup first, a rehearsal on a copy, then the real change.
-
-A request that changes what kind of project this is (outside users, real
-money, a promise to someone, a new kind of data about people, autonomous
-action) stops here: rerun the fit check, record the new build path, then
-route.
-
-Where that check leaves a sensitive area standing, give the risk notice
-described in the `setup-ai-build-kit` skill's `references/fit-check.md` before
-routing the flagged work, and hold it. Nothing is refused: if the person
-carries on after the notice, record the acceptance as fit-check.md says and
-route the work. The notice never quietly goes away, and pushback never lets
-you decide it no longer applies. Route the same request the same way each
-time it arrives.
-
-### Writing the piece
+## Writing the piece
 
 Write the piece in pieces.md's two layers: a plain surface that names every
 fact that could change a product decision, and `Under the hood` for build
@@ -124,8 +44,8 @@ Write `Live side needs:` only where the live copy needs a new secret, setting
 or service, each by name, never a value.
 
 For `Under the hood` on a project with code, run the reach check in the
-`implement` skill's `references/reach-check.md` and name the seams and covering
-tests from it.
+`quality-checks` skill's `references/reach-check.md` and name the seams and
+covering tests from it.
 
 ## Shaping now, or filing for later
 
@@ -146,19 +66,21 @@ A piece labelled `needs-clarification`, `needs-prototype` or `needs-research`
 is settled here. An issue with no `## Done when` was typed by hand and is
 treated as `needs-clarification`.
 
-Run the step the label names, write what settled it into `## Decided`, then
-run `scripts/mark-ready.sh` on the piece. It refuses while `## Decided` or
-`## Done when` is missing and says which: write it, then run it again.
+Run the step the label names, write what settled it into `## Decided`, then run
+the `records` skill's `scripts/mark-ready.sh` on the piece. It refuses while
+`## Decided` or `## Done when` is missing and says which: write it, then run it
+again.
 
-- `needs-clarification` runs clarify. Write the result in pieces.md's shape
-  and keep the person's original words underneath.
+- `needs-clarification` runs the `clarify` skill. Write the result in
+  pieces.md's shape and keep the person's original words underneath.
 - `needs-prototype`: where the person has a mock, sketch or anything that
   shows it, follow the `clarify` skill's `references/existing-artifact.md`.
   Otherwise run the `clarify` skill's `references/decision-prototype.md`. The
   decision goes back onto the piece in words.
-- `needs-research` runs one step of `references/research.md`: the source check
+- `needs-research` runs one step of the `research` skill: the source check
   for one external fact, the search for existing work otherwise. Say which and
-  why in one line.
+  why in one line. The `researcher` agent may run it in a fresh context where
+  the coding agent has one.
 
 An interview and a prototype need the person present; research does not.
 Never answer a person-present question yourself. With nobody there, name the

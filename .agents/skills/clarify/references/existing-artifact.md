@@ -26,8 +26,8 @@ sign-in, payments or stored personal information goes through the fit check
 and earns the risk notice exactly as the same request in words would.
 
 An artifact is a design, not production code. A coded prototype stays
-throwaway: pinned down by tests or rebuilt. Genuinely working code is the
-`setup-ai-build-kit` skill's `references/adopting.md`.
+throwaway: pinned down by tests or rebuilt. Genuinely working code is not a
+prototype: `/setup-ai-build-kit` adopts it.
 
 Never take real data or a secret out of an artifact. Real records in a
 screenshot show the shape of the data and never become fixtures, and a password

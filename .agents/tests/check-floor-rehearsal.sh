@@ -28,7 +28,7 @@ set -eu
 unset GITHUB_BASE_REF
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
-FLOOR="$ROOT/.agents/skills/setup-ai-build-kit/references/check-floor.md"
+FLOOR="$ROOT/.agents/skills/quality-checks/references/check-floor.md"
 TEMPLATE="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/checks.yml"
 SENSITIVE="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/check-sensitive-areas.sh"
 TRIM_CHECK="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/check-trim.sh"
