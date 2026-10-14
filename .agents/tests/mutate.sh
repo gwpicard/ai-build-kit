@@ -14,8 +14,8 @@
 #   ./mutate.sh manifest-drop   one or more by name
 #   ./mutate.sh --list          the names and what each one breaks
 #
-# The clone starts at HEAD and receives the tracked worktree diff, so an
-# unfinished slice can be audited without committing it first.
+# The clone takes committed history only, so uncommitted work in your tree is
+# not audited. Commit a fix before asking whether it closes a hole.
 #
 # For anyone extending this: every mutation asserts that the text it expects is
 # there before changing it, and the runner refuses a mutation that leaves the
@@ -65,7 +65,10 @@ command-over-budget
 background-one-caller
 secrets-read-guard
 redactor-top-level-only
-pre-push-reversed-range"
+pre-push-reversed-range
+scan-drops-key-shapes
+scan-drops-service-role-jwt
+redactor-drops-multiline-values"
 
 describe() {
   case "$1" in
@@ -96,6 +99,9 @@ describe() {
     secrets-read-guard) echo "the Claude read guard stops refusing environment files" ;;
     redactor-top-level-only) echo "nested Read and Grep text fields escape result redaction" ;;
     pre-push-reversed-range) echo "an existing-branch push scans the wrong commit range" ;;
+    scan-drops-key-shapes) echo "the shared scanner rules stop recognising common key shapes" ;;
+    scan-drops-service-role-jwt) echo "the scanner stops recognising service-role JWTs" ;;
+    redactor-drops-multiline-values) echo "quoted multiline environment values are no longer redacted" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -113,6 +119,7 @@ checks_for() {
     secrets-read-guard) echo "secrets-gates" ;;
     redactor-top-level-only) echo "secrets-gates" ;;
     pre-push-reversed-range) echo "push-guard" ;;
+    scan-drops-key-shapes|scan-drops-service-role-jwt|redactor-drops-multiline-values) echo "secrets-gates" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -377,6 +384,33 @@ old = "--range=$remote_sha..$local_sha"
 assert old in s
 open(p, "w").write(s.replace(old, "--range=$local_sha..$remote_sha", 1))'
       ;;
+    scan-drops-key-shapes)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/scan-secrets.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "return any(pattern.search(value) for pattern in SHAPES)"
+assert old in s
+open(p, "w").write(s.replace(old, "return False", 1))'
+      ;;
+    scan-drops-service-role-jwt)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/scan-secrets.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "if re.search(rb\x27\"role\"\\s*:\\s*\"service_role\"\x27, payload):"
+assert old in s
+open(p, "w").write(s.replace(old, "if False:", 1))'
+      ;;
+    redactor-drops-multiline-values)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/redact-secrets.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "while quote not in body and index < len(lines):"
+assert old in s
+open(p, "w").write(s.replace(old, "while False and quote not in body and index < len(lines):", 1))'
+      ;;
     command-over-budget)
       # A command grows one helpful paragraph at a time.
       target="$tree/.agents/skills/shape/SKILL.md"
@@ -431,18 +465,11 @@ run_check() {
   fi
 }
 
-clone_worktree() {
-  target=$1
-  git clone --quiet --local --no-hardlinks "$ROOT" "$target"
-  # Apply tracked working-tree changes without touching the source index.
-  git diff --binary HEAD | git -C "$target" apply
-}
-
 # A clean baseline first. If the suite is not green before anything is broken,
 # nothing after this means anything.
 echo "Baseline: running the checks against an unmutated clone"
 BASE="$WORK/baseline"
-clone_worktree "$BASE"
+git clone --quiet --local --no-hardlinks "$ROOT" "$BASE"
 baseline_failures=""
 for check in $DEFAULT_CHECKS; do
   run_check "$BASE" "$check" baseline || baseline_failures="$baseline_failures $check"
@@ -461,7 +488,7 @@ for name in $wanted; do
   echo "Mutation: $name"
   echo "  breaks: $(describe "$name")"
 
-  clone_worktree "$tree"
+  git clone --quiet --local --no-hardlinks "$ROOT" "$tree"
 
   status=applied
   if ! apply "$name" "$tree" >"$WORK/$name-apply.log" 2>&1; then

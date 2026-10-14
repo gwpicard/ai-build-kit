@@ -138,8 +138,35 @@ else
 fi
 
 pushes origin --delete sign-out && pass "deleting a piece branch is allowed" || fail "deleting a piece branch was stopped"
-git -C "$P" tag v1
+git -C "$P" tag v1 main
 pushes origin v1 && pass "a tag pushes" || fail "a tag was stopped"
+git -C "$P" checkout -q -b tag-secret main
+tag_value="AKIA$(python3 -c 'import secrets; print(secrets.token_hex(8).upper())')"
+printf '%s\n' "$tag_value" > "$P/tag-key.txt"
+git -C "$P" add tag-key.txt && git -C "$P" commit -q -m "Tag carries a key"
+git -C "$P" tag secret-key
+if git -C "$P" push origin secret-key >"$WORK/tag-secret-out" 2>&1; then
+  fail "a tag push containing a key-shaped value was allowed"
+else
+  grep -q 'secret scan found a secret' "$WORK/tag-secret-out" \
+    && ! grep -Fq -- "$tag_value" "$WORK/tag-secret-out" \
+    && pass "a tag push scans its new commits and names the secret refusal" \
+    || fail "tag scan did not give the secret refusal"
+fi
+U="$WORK/could-not-run"
+git init -q "$U"
+mkdir -p "$U/.agents/hooks/git" "$U/.agents/hooks"
+cp "$HOOK" "$U/.agents/hooks/git/pre-push"
+git -C "$U" commit -q --allow-empty -m start
+printf '#!/bin/sh\necho "Secret scan: could not run: rehearsal" >&2\nexit 2\n' > "$U/.agents/hooks/scan-secrets.sh"
+sha=$(git -C "$U" rev-parse HEAD)
+status=0
+printf 'refs/heads/topic %s refs/heads/topic %040d\n' "$sha" 0 | \
+  sh "$U/.agents/hooks/git/pre-push" >"$WORK/could-not-run-out" 2>&1 || status=$?
+[ "$status" -ne 0 ] && grep -q 'secret scan could not run' "$WORK/could-not-run-out" \
+  && ! grep -q 'found a secret' "$WORK/could-not-run-out" \
+  && pass "a scanner error has its own refusal message" \
+  || fail "could not-run scan was not distinguished from a found secret"
 git -C "$P" checkout -q main
 git -C "$P" checkout -q -b main-fix
 pushes origin main-fix && pass "a branch whose name starts with main pushes" || fail "main-fix was stopped"

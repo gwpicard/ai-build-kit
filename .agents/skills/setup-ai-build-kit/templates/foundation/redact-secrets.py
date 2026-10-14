@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 """Blank known local secret values from Claude Code tool results."""
 import json
+import importlib.util
 import os
 import re
 import sys
 
 HIDDEN_LINE = "[tool result hidden because it could not be checked]"
-SKIP_DIRS = {".git", "node_modules", ".next", "dist", "build", "coverage", "vendor"}
+spec = importlib.util.spec_from_file_location("scan_secrets", os.path.join(os.path.dirname(__file__), "scan-secrets.py"))
+rules = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(rules)
+SKIP_DIRS = rules.SKIP_DIRS
 
 
 def dotenv_values(path):
@@ -39,8 +43,7 @@ def dotenv_values(path):
             value = body
         else:
             value = re.split(r"\s+#", raw, maxsplit=1)[0].strip()
-        # NEXT_PUBLIC values are sent to every browser, so they are not secrets.
-        if len(value) >= 8 and value != "=" and not name.startswith("NEXT_PUBLIC_"):
+        if len(value) >= 8 and rules.secret_value(name, value):
             values.append((name, value))
     return values
 
@@ -53,29 +56,13 @@ def secret_values(root):
             if name == ".env.example" or not (name == ".env" or name.startswith(".env.")):
                 continue
             found.extend(dotenv_values(os.path.join(current, name)))
-    # Masterplan records the values for *_PASSWORD_FILE; never guess from a
-    # filename. Its contents are read locally and are never printed.
-    masterplan = os.path.join(root, "masterplan.md")
-    try:
-        text = open(masterplan, encoding="utf-8").read()
-    except FileNotFoundError:
-        text = ""
-    except (OSError, UnicodeError):
-        raise RuntimeError("project password record could not be read")
-    for line in text.splitlines():
-        match = re.search(r"(DB|PREVIEW_DB)_PASSWORD_FILE\s*[:=]\s*[`'\"]?([^\s`'\";,]+)", line)
-        if not match:
-            continue
-        variable, path = match.groups()
-        path = os.path.expanduser(path.rstrip(".)]"))
-        if not os.path.isabs(path):
-            path = os.path.join(root, path)
+    for path in rules.recorded_password_paths(root):
         try:
             value = open(path, encoding="utf-8").read().strip()
         except (OSError, UnicodeError):
             raise RuntimeError("a recorded password file could not be read")
         if len(value) >= 8 and value != "=":
-            found.append(("DB_PASSWORD" if variable == "DB" else "PREVIEW_DB_PASSWORD", value))
+            found.append(("DB_PASSWORD", value))
     unique = {}
     for name, value in found:
         if value and value != "=":
@@ -96,6 +83,16 @@ def hide_strings(value):
         return [hide_strings(item) for item in value]
     if isinstance(value, dict):
         return {key: hide_strings(item) for key, item in value.items()}
+    return value
+
+
+def hide_strings_keep_schema(value, key=None):
+    if isinstance(value, str):
+        return value if key in ("type", "mode", "base64", "mediaType") else HIDDEN_LINE
+    if isinstance(value, list):
+        return [hide_strings_keep_schema(item) for item in value]
+    if isinstance(value, dict):
+        return {name: hide_strings_keep_schema(item, name) for name, item in value.items()}
     return value
 
 
@@ -165,7 +162,7 @@ def failure_shape(tool, result):
             and isinstance(result.get("filenames"), list)
         )
         if not known_shape:
-            return hide_strings(result)
+            return hide_strings_keep_schema(result)
         def hide_known(value, key=None):
             if isinstance(value, str):
                 if key in ("type", "mode", "base64", "mediaType"):
@@ -211,7 +208,9 @@ try:
     if not isinstance(response, (str, dict, list)):
         raise ValueError("tool_response is missing")
     known = secret_values(os.path.abspath(os.environ.get("CLAUDE_PROJECT_DIR", os.getcwd())))
-    emit(redact_shape(tool, response, known) if known_tool_shape(tool, response) else hide_strings(response))
+    rewritten = redact_shape(tool, response, known) if known_tool_shape(tool, response) else hide_strings_keep_schema(response)
+    if rewritten != response:
+        emit(rewritten)
 except (ValueError, TypeError, AttributeError, OSError, RuntimeError, UnicodeError, json.JSONDecodeError):
     response = locals().get("response")
     tool = locals().get("tool", locals().get("tool_hint"))

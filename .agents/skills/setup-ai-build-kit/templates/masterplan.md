@@ -78,6 +78,8 @@ that changes the build path. -->
 
 ## How it stays running
 
+<!-- Password files: paths are written here by /setup-hosting when supplied. -->
+
 <!-- Optional for live tools. Services, alerts, backup, billing owner, access
 owner, and manual fallback. Do not copy credentials here. Where a secret lives
 outside the project goes here as its location only: a file path, a password

@@ -26,7 +26,7 @@ while read -r local_ref local_sha remote_ref remote_sha; do
       refused=1
       continue
       ;;
-    refs/heads/*) ;;
+    refs/heads/*|refs/tags/*) ;;
     *) continue ;;
   esac
   # A deletion sends no commits and replaces no work on another branch.
@@ -36,11 +36,23 @@ while read -r local_ref local_sha remote_ref remote_sha; do
     *[!0]*) scan_args="--range=$remote_sha..$local_sha" ;;
     *) scan_args="--new=$local_sha" ;;
   esac
-  if [ ! -f "$scanner" ] || ! sh "$scanner" "$scan_args"; then
-    echo "This push was stopped: the secret scan found a secret or could not run." >&2
+  if [ ! -f "$scanner" ]; then
+    echo "This push was stopped: the secret scan could not run." >&2
     refused=1
     continue
   fi
+  sh "$scanner" "$scan_args"
+  scan_status=$?
+  if [ "$scan_status" -eq 1 ]; then
+    echo "This push was stopped: the secret scan found a secret." >&2
+    refused=1
+    continue
+  elif [ "$scan_status" -ne 0 ]; then
+    echo "This push was stopped: the secret scan could not run." >&2
+    refused=1
+    continue
+  fi
+  case "$remote_ref" in refs/tags/*) continue ;; esac
   # A new branch, or a deleted one, replaces nothing on the remote.
   case "$remote_sha" in *[!0]*) ;; *) continue ;; esac
   case "$local_sha" in *[!0]*) ;; *) continue ;; esac

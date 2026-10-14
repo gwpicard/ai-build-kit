@@ -140,6 +140,28 @@ project = os.path.abspath(project)
 if not os.path.isdir(project):
     stop("run-recipe.sh: no project folder at %s." % project)
 
+password_files = [os.path.abspath(value) for key, value in sets.items()
+                  if key in ("DB_PASSWORD_FILE", "PREVIEW_DB_PASSWORD_FILE") and value]
+masterplan = os.path.join(project, "masterplan.md")
+if record and password_files and os.path.isfile(masterplan):
+    with open(masterplan, encoding="utf-8") as source:
+        lines = source.read().splitlines()
+    start = next((i for i, line in enumerate(lines) if line.strip() == "## How it stays running"), None)
+    if start is not None:
+        end = next((i for i in range(start + 1, len(lines)) if lines[i].startswith("## ")), len(lines))
+        existing = []
+        for line in lines[start + 1:end]:
+            match = re.match(r"\s*Password files:\s*(.*)$", line, re.I)
+            if match:
+                existing.extend(item.strip().strip("`'\"") for item in match.group(1).split(",") if item.strip())
+        paths = list(dict.fromkeys(existing + password_files))
+        record_line = "Password files: " + ", ".join(paths)
+        lines = [line for line in lines if not re.match(r"\s*Password files:\s*", line, re.I)]
+        start = next(i for i, line in enumerate(lines) if line.strip() == "## How it stays running")
+        lines.insert(start + 1, record_line)
+        with open(masterplan, "w", encoding="utf-8") as target:
+            target.write("\n".join(lines) + "\n")
+
 # --- the recipe ------------------------------------------------------------
 folder = None
 if recipe != "none":
