@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Run the code-quality engines on a project and print what they find.
 
-Run it from inside the project. Four reads:
+Run it from inside the project. Five reads:
 
     quality.py trim --base COMMIT [--fetch]
         What the change since COMMIT added that nothing needs.
@@ -13,6 +13,9 @@ Run it from inside the project. Four reads:
     quality.py strength --base COMMIT [--fetch]
         Break the code changed since COMMIT on purpose, in a throwaway copy,
         and count how often the tests notice.
+    quality.py tests --base COMMIT --piece NUMBER
+        Run the red commit's tests before the change, map promises to tests,
+        and list changed code lines that the tests did not run.
     quality.py offered (waste | loops) < LINES
         Record the finding lines on standard input as offered to the person.
 
@@ -40,7 +43,7 @@ as `offered` recorded it in `.ai-build-kit-maintenance`. A finding that never
 reached the person, because it did not fit under the cap or its read failed,
 comes back at the next visit.
 
-Which paths are tests comes from the one rule check-trim.sh holds, in the
+Which paths are tests comes from the one rule check-tests.sh holds, in the
 setup-ai-build-kit skill beside this one, so this script, trim-commit.sh and
 the project check cannot disagree.
 """
@@ -68,11 +71,11 @@ LOCKFILES = {"package-lock.json", "pnpm-lock.yaml", "yarn.lock", "bun.lockb",
              "bun.lock", "poetry.lock", "uv.lock", "Pipfile.lock"}
 RECORD = ".ai-build-kit-maintenance"
 TEST_RULE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..",
-                         "setup-ai-build-kit", "templates", "foundation", "check-trim.sh")
+                         "setup-ai-build-kit", "templates", "foundation", "check-tests.sh")
 
 
 def test_rule():
-    """The test-path rule from check-trim.sh, or None when it cannot be read."""
+    """The test-path rule from check-tests.sh, or None when it cannot be read."""
     try:
         with open(TEST_RULE, encoding="utf-8") as handle:
             match = re.search(r"^TEST_PATH='([^']+)'$", handle.read(), re.M)
@@ -1056,6 +1059,184 @@ def strength(root, base, engines):
     return 1 if missed else 0
 
 
+# --- tests that prove the change -----------------------------------------------
+
+def test_command(root):
+    """Return the project's test command, or None when there is no known runner."""
+    try:
+        package = json.loads(read(root, "package.json"))
+        script = package.get("scripts", {}).get("test", "")
+        if script:
+            return ["npm", "test", "--", "--coverage", "--run"] if "vitest" in script else ["npm", "test"]
+    except (ValueError, TypeError):
+        pass
+    if os.path.isfile(os.path.join(root, "pyproject.toml")) or \
+            os.path.isfile(os.path.join(root, "pytest.ini")):
+        return [sys.executable, "-m", "pytest", "-q"]
+    return None
+
+
+def red_commit(root, base):
+    """Newest Test: commit after BASE, or None."""
+    out = git("log", "--format=%H", "--grep=^Test:", f"{base}..HEAD", cwd=root)
+    return out.splitlines()[0] if out else None
+
+
+def done_when(root, piece):
+    """Read the piece's Done when lines from a rehearsal note or its issue."""
+    candidates = [f".agents/tmp/pieces/{piece}.md", f".agents/tmp/pieces/{piece}.txt",
+                  "tests/done-when.txt", "test/done-when.txt"]
+    for path in candidates:
+        text = read(root, path)
+        if text:
+            return text
+    code, out, _ = run(["gh", "issue", "view", str(piece), "--json", "body", "--jq", ".body"],
+                       cwd=root, timeout=30)
+    return out if code == 0 else None
+
+
+def test_read(root, base, piece):
+    if git("rev-parse", "--verify", "-q", base + "^{commit}", cwd=root) is None:
+        print(f"not-checked\ttests\t{base} is not a commit in this project")
+        return 2
+    commit = red_commit(root, base)
+    if not commit:
+        print("not-checked\ttests\tthere is no Test: commit after the start commit")
+        return 2
+    command = test_command(root)
+    if not command:
+        print("not-checked\ttests\tno supported test command was found")
+        return 2
+    changed = {p: lines for p, lines in changed_lines(root, base).items()
+               if os.path.isfile(os.path.join(root, p))}
+    test_files = [p for p in changed if is_test(p)]
+    if not test_files:
+        print("not-checked\ttests\tthe Test: commit added no test files")
+        return 2
+    notes = done_when(root, piece)
+    if notes is None:
+        print(f"not-checked\ttests\tcould not read Done when lines for piece {piece}")
+        return 2
+    missing = []
+    section = re.search(r"(?ms)^## Done when\s*\n(.*?)(?=^## |\Z)", notes)
+    done_lines = []
+    if section:
+        number = 0
+        for line in section.group(1).splitlines():
+            text = re.sub(r"^\s*(?:[-*]\s*)?(?:\[[ xX]\]\s*)?", "", line).strip()
+            text = re.sub(r"^\d+[.)-]\s*", "", text)
+            if text:
+                number += 1
+                if not text.endswith("(try it)"):
+                    done_lines.append((number, text))
+    test_text = "\n".join(read(root, p) for p in test_files)
+    active_test_text = re.sub(r"(?m)^\s*(?:test|it)\s*\.\s*(?:skip|todo)\b[^\n]*", "", test_text)
+    for number, detail in done_lines:
+        if not re.search(r"\bD" + str(number) + r"\b", active_test_text):
+            missing.append(("D" + str(number), detail))
+    if re.search(r"\b(?:test|it|describe)\s*\.\s*(?:skip|todo)\b", test_text):
+        print("skipped\tthe test files contain skipped or todo tests")
+    for source in (path for path in changed if path.endswith(SOURCE_EXT) and not is_test(path)):
+        stem = os.path.splitext(os.path.basename(source))[0]
+        if re.search(r"(?:vi|jest)\s*\.\s*mock\s*\([^\n]*" + re.escape(stem), test_text):
+            print(f"stands-in\t{source}\tis replaced by a test stand-in")
+    diff = git("diff", "--unified=0", "--no-color", base, "--", cwd=root) or ""
+    current = ""
+    old_line = 0
+    for line in diff.splitlines():
+        if line.startswith("--- "):
+            current = line[6:].removeprefix("a/") if line != "--- /dev/null" else ""
+        elif line.startswith("@@ "):
+            hunk = re.match(r"^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@", line)
+            old_line = int(hunk.group(1)) if hunk else 0
+        elif line.startswith("-") and current:
+            print(f"removed\t{current}:{old_line}")
+            old_line += 1
+    status = 0
+    with tempfile.TemporaryDirectory() as folder:
+        source = os.path.join(folder, "start")
+        copy = os.path.join(folder, "before")
+        os.makedirs(source)
+        try:
+            archive = subprocess.run(["git", "archive", base], cwd=root,
+                                     capture_output=True, check=False)
+        except OSError:
+            print("not-checked\ttests\tcould not make a copy of the start commit")
+            return 2
+        if archive.returncode != 0:
+            print("not-checked\ttests\tcould not make a copy of the start commit")
+            return 2
+        unpack = subprocess.run(["tar", "-x", "-C", source], input=archive.stdout,
+                                 capture_output=True)
+        if unpack.returncode:
+            print("not-checked\ttests\tcould not unpack the start commit")
+            return 2
+        paths = git("diff-tree", "--no-commit-id", "--name-only", "-r", commit, cwd=root) or ""
+        red_tests = [path for path in paths.splitlines() if is_test(path)]
+        if red_tests:
+            red_archive = subprocess.run(["git", "archive", commit, "--", *red_tests],
+                                         cwd=root, capture_output=True, check=False)
+            if red_archive.returncode != 0:
+                print("not-checked\ttests\tcould not copy the red commit's tests")
+                return 2
+            unpack = subprocess.run(["tar", "-x", "-C", source], input=red_archive.stdout,
+                                     capture_output=True)
+            if unpack.returncode:
+                print("not-checked\ttests\tcould not unpack the red commit's tests")
+                return 2
+        modules = os.path.join(root, "node_modules")
+        throwaway_copy(source, copy)
+        if os.path.isdir(modules):
+            os.symlink(modules, os.path.join(copy, "node_modules"))
+        before, before_out, before_err = run(command, cwd=copy, timeout=900)
+    baseline_output = before_out + "\n" + before_err
+    setup_errors = ("Cannot find module", "ModuleNotFoundError", "No module named",
+                    "command not found", "not recognized as an internal", "npm ERR!")
+    if any(item in baseline_output for item in setup_errors):
+        print("not-checked\ttests\tthe red-commit tests could not start in the start copy")
+        return 2
+    print("passes-before\t" + ("passed" if before == 0 else "failed"))
+    if before == 0:
+        print("baseline-pass\tthe red commit's tests pass on the start code")
+        status = 1
+    after, _, _ = run(command, cwd=root, timeout=900)
+    if after != 0:
+        print("not-checked\ttests\tthe red commit's tests do not pass on the current code")
+        return 2
+    for label, detail in missing:
+        print(f"untested\t{label}\t{detail}")
+        status = 1
+    # Coverage reports are written by Vitest with coverage enabled. When one
+    # is absent, the test runner ran but changed-line coverage could not be read.
+    report = os.path.join(root, "coverage", "coverage-final.json")
+    covered = set()
+    try:
+        data = json.load(open(report, encoding="utf-8"))
+        for path, item in data.items():
+            relative = os.path.relpath(os.path.realpath(path), os.path.realpath(root)) \
+                if os.path.isabs(path) else path
+            for key, count in item.get("s", {}).items():
+                line = item.get("statementMap", {}).get(key, {}).get("start", {}).get("line")
+                if line and count:
+                    covered.add((relative, line))
+    except (OSError, ValueError, TypeError):
+        print("not-checked\ttests\tcoverage/coverage-final.json is missing or unreadable")
+        return 2
+    changed_code = {(path, line) for path, lines in changed.items()
+                    if path.endswith(SOURCE_EXT) and not is_test(path)
+                    for line in lines}
+    uncovered = sorted(changed_code - covered)
+    executed = changed_code & covered
+    for path, line in uncovered:
+        print(f"uncovered\t{path}:{line}")
+    if changed_code and not executed:
+        status = 1
+    print(f"covered\t{len(executed)}")
+    if status == 0:
+        print("tests\tpassed")
+    return status
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     sub = parser.add_subparsers(dest="read", required=True)
@@ -1073,6 +1254,9 @@ def main():
     p.add_argument("--reader", choices=("auto", "builtin"), default="auto")
     p = sub.add_parser("offered")
     p.add_argument("which", choices=("waste", "loops"))
+    p = sub.add_parser("tests")
+    p.add_argument("--base", required=True)
+    p.add_argument("--piece", required=True)
     try:
         args = parser.parse_args()
     except SystemExit:
@@ -1102,6 +1286,8 @@ def main():
         return waste(root, engines, args.skip_offered)
     if args.read == "loops":
         return loops(root, args.base, args.skip_offered, args.reader, engines)
+    if args.read == "tests":
+        return test_read(root, args.base, args.piece)
     return strength(root, args.base, engines)
 
 
