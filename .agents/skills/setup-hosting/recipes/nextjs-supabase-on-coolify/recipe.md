@@ -6,7 +6,7 @@ Build stack: Next.js with TypeScript and the App Router, built into a container 
 Deploy target: Coolify on a rented server, with the Coolify GitHub App connected to the project's repository
 Command-line tools: supabase, docker, psql, curl, git
 Last checked: 2026-09-24
-Database types check: `supabase gen types typescript --local > types/database.ts && git diff --exit-code -- types/database.ts`
+Database types check: `if [ ! -f types/database.ts ] || ! git ls-files --error-unmatch types/database.ts >/dev/null 2>&1; then echo 'could not run: types/database.ts is missing or untracked'; exit 2; fi; if ! supabase status >/dev/null 2>&1; then echo 'could not run: local Supabase is not running'; exit 2; fi; tmp=$(mktemp) || exit 2; trap 'rm -f "$tmp"' EXIT; supabase gen types typescript --local > "$tmp" || { echo 'could not run: database types could not be generated'; exit 2; }; diff -u types/database.ts "$tmp"`
 
 The kit never contacts the server. The person, or a companion working with them, pastes back what only the server knows, and a script reads it.
 

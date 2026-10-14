@@ -63,6 +63,8 @@ import sys
 import tempfile
 from datetime import date
 
+from reaches_line import REACHES_LINE
+
 LIMIT = 15  # lizard's documented warning for cyclomatic complexity
 JS_EXT = (".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs", ".mts", ".cts")
 SOURCE_EXT = JS_EXT + (".py",)
@@ -880,19 +882,51 @@ def loops(root, base, skip_offered, reader, engines):
 # --- reach ---------------------------------------------------------------------
 
 def route_for(path):
-    """Next App Router address for a page, route handler or layout file."""
-    match = re.match(r"^(?:src/)?app/(.+?)/(?:page|route|layout|error|loading|template)\.(?:js|jsx|ts|tsx)$", path)
+    """Next App Router address or scoped boundary for a route file."""
+    match = re.match(r"^(?:src/)?app/(.*?)/(page|route|layout|error|loading|template)\.(?:js|jsx|ts|tsx)$", path)
     if not match:
-        if re.match(r"^(?:src/)?app/layout\.(?:js|jsx|ts|tsx)$", path):
+        if re.match(r"^(?:src/)?app/(?:layout|template|error|loading)\.(?:js|jsx|ts|tsx)$", path):
             return "all"
-        if re.match(r"^(?:src/)?app/(?:page|route|layout)\.(?:js|jsx|ts|tsx)$", path):
+        if re.match(r"^(?:src/)?app/(?:page|route)\.(?:js|jsx|ts|tsx)$", path):
             return "/"
         return None
-    parts = [part for part in match.group(1).split("/")
-             if not part.startswith(("(", "@"))]
-    if not parts and "/layout." in path:
-        return "all"
-    return "/" + "/".join(parts)
+    raw_parts = [part for part in match.group(1).split("/") if part]
+    kind = match.group(2)
+    if not raw_parts:
+        return "all" if kind in {"layout", "template", "loading", "error"} else "/"
+    parts = []
+    scoped = []
+    for part in raw_parts:
+        if part.startswith("@"):
+            scoped.append(part)
+            continue
+        if re.match(r"^\(\.\.?(?:\.?)\)", part):
+            intercepted = re.sub(r"^\(\.\.?(?:\.?)\)", "", part)
+            if intercepted:
+                parts.append(intercepted)
+            scoped.append(part)
+            continue
+        if part.startswith("(") and part.endswith(")"):
+            scoped.append(part)
+            continue
+        parts.append(part)
+    address = "/" + "/".join(parts)
+    if kind in {"layout", "template", "loading", "error"}:
+        return "scope:" + "/".join(raw_parts)
+    return address
+
+
+def routes_for(path, files):
+    """Routes reached by a route file, expanding non-root boundaries in its subtree."""
+    route = route_for(path)
+    if route is None or route == "all" or not route.startswith("scope:"):
+        return {route} if route else set()
+    boundary = path.rsplit("/", 1)[0] + "/"
+    descendants = {route_for(candidate) for candidate in files
+                   if candidate.startswith(boundary)
+                   and re.search(r"/(?:page|route)\.(?:js|jsx|ts|tsx)$", candidate)
+                   and route_for(candidate) and route_for(candidate) != "all"}
+    return descendants
 
 
 def done_names_screen(body, route):
@@ -926,10 +960,13 @@ def table_names(root, files, changed_migrations=()):
         names = set()
         for pattern in patterns:
             names.update(pattern.findall(text))
-        for match in re.finditer(r"(?P<receiver>[\w$.]+)\.from\(\s*['\"]([\w-]+)['\"]\s*\)(?P<tail>[^;\n]{0,100})", text):
+        from_re = re.compile(
+            r"(?P<receiver>[A-Za-z_$][\w$]*)\s*\.\s*from\(\s*['\"]([\w-]+)['\"]\s*\)"
+            r"(?P<tail>(?:\s*\.\s*(?:select|insert|update|delete|upsert)\b)?)", re.S)
+        for match in from_re.finditer(text):
             receiver, name, tail = match.group("receiver"), match.group(2), match.group("tail")
-            if (re.search(r"(?:client|db)(?:\.|$)", receiver, re.I)
-                    or re.match(r"\s*\.(?:select|insert|update|delete|upsert)\b", tail)):
+            known_client = receiver.lower() in {"sup" + "abase", "client", "db", "sb"} or receiver.lower().endswith("client")
+            if (known_client or re.search(r"\.\s*(?:select|insert|update|delete|upsert)\b", tail, re.I)) and receiver.lower() not in {"buffer", "array"}:
                 names.add(name)
         names.update("rpc:" + name for name in
                      re.findall(r"\.rpc\(\s*['\"]([\w-]+)['\"]", text))
@@ -977,8 +1014,15 @@ def reach(root, paths, base, piece, should_run, engines):
     if changed is None:
         print("not-checked\tgit\tGit could not read the requested base commit")
         return 2
-    changed = [os.path.normpath(p.removeprefix("./")) for p in changed]
-    deleted = [os.path.normpath(p.removeprefix("./")) for p in deleted]
+    raw_changed = changed
+    changed = [os.path.normpath(p.removeprefix("./")) for p in changed
+               if p.split("/")[0] not in KIT_DIRS]
+    deleted = [os.path.normpath(p.removeprefix("./")) for p in deleted
+               if p.split("/")[0] not in KIT_DIRS]
+    if raw_changed and not changed and not deleted and all(
+            os.path.normpath(p.removeprefix("./")).split("/")[0] in KIT_DIRS
+            for p in raw_changed):
+        return 0
     seeds = [path for path in changed if path in files]
     new_paths = [path for path in changed if path not in files and
                  os.path.splitext(path)[1] in SOURCE_EXT]
@@ -1040,7 +1084,7 @@ def reach(root, paths, base, piece, should_run, engines):
         via = next((seed for seed in seeds if seed in reached_from(graph, [path])), "")
         print(f"reaches\t{path}" + (f"\tvia {via}" if via else ""))
 
-    routes = sorted({route_for(path) for path in reached | set(seeds)} - {None})
+    routes = sorted(set().union(*(routes_for(path, files) for path in reached | set(seeds))))
     for route in routes:
         print(f"route\t{route}")
     changed_migrations = {p for p in seeds if "migrations" in p.split("/") and p.endswith(".sql")}
@@ -1105,6 +1149,7 @@ def reach(root, paths, base, piece, should_run, engines):
             print(f"wide\t{kind} {label}\tfiles {used_count}")
 
     declared = None
+    declaration_status = 0
     declared_text = ""
     piece_body = ""
     if piece:
@@ -1114,17 +1159,17 @@ def reach(root, paths, base, piece, should_run, engines):
                                  "--jq", ".body"], cwd=root)
             if code == 0:
                 piece_body = body
-                match = re.search(r"^\s*(?:[-*]\s*)?(?:\*\*)?Reaches:(?:\*\*)?[ \t]+([^\r\n]+)", body, re.I | re.M)
+                match = re.search(REACHES_LINE, body, re.I | re.M)
                 declared_text = match.group(1) if match else ""
                 declared = set(re.findall(
                     r"[\w./-]+\.(?:m|c)?(?:js|jsx|ts|tsx|mts|cts|py|go|rs)", declared_text
                 ))
             else:
                 print("not-checked\tundeclared\tGitHub could not read the piece's Reaches line")
-                return 2
+                declaration_status = 2
         else:
             print("not-checked\tundeclared\tGitHub CLI is not installed")
-            return 2
+            declaration_status = 2
     undeclared = False
     if piece and declared is not None:
         for path in sorted(wide):
@@ -1156,7 +1201,7 @@ def reach(root, paths, base, piece, should_run, engines):
         targets = sorted(set(seeds) | reached)
         test_status = 0
         if runner:
-            code, out, err = run(runner + ["related", *targets, "--run"], cwd=root)
+            code, out, err = run(runner + ["related", *targets, "--run", "--passWithNoTests"], cwd=root)
             if out.strip():
                 print("\n".join("test-output\t" + line for line in out.rstrip().splitlines()), file=sys.stderr)
             if code == 1 and re.search(r"\b(?:Test Files|Test Suites|Tests)\s+\d+", out + err, re.I):
@@ -1165,24 +1210,41 @@ def reach(root, paths, base, piece, should_run, engines):
                 print("not-checked\ttests\tVitest did not produce a test result summary")
                 test_status = 2
         else:
-            print("not-checked\ttests\tVitest is not installed")
             pytest = shutil.which("pytest")
             pytests = sorted(p for p in files if p.endswith(".py") and is_test(p) and
                              (p in set(seeds) | reached or p in importers))
+            if pytests:
+                print("not-checked\ttests\tVitest is not installed")
             if pytest and pytests:
                 code, out, err = run([pytest, *pytests], cwd=root)
                 if out.strip():
                     print("\n".join("test-output\t" + line for line in out.rstrip().splitlines()), file=sys.stderr)
                 test_status = 1 if code and re.search(r"\d+ (?:passed|failed)", out + err) else (0 if not code else 2)
+                if test_status == 2:
+                    print("not-checked\ttests\tpytest did not produce a test result")
+            elif any(path.endswith(".py") for path in seeds + sorted(reached)):
+                if pytests:
+                    print("not-checked\ttests\tpytest is not installed")
+                    test_status = 2
+                else:
+                    print("not-checked\ttests\tno covering Python test was found")
             else:
+                print("not-checked\ttests\tVitest is not installed")
                 test_status = 2
         if test_status == 0:
             playwright = engines.find("playwright")
+            screen_routes = {route for route in routes if done_names_screen(piece_body, route)}
             if playwright:
-                screen_routes = {route for route in routes if done_names_screen(piece_body, route)}
+                def has_route_tokens(path, route):
+                    if route == "/":
+                        return os.path.basename(path).lower().startswith(("home.", "index."))
+                    route_name = re.sub(r"\[[^]]+\]", "", route.lower())
+                    wanted = [token for token in re.split(r"[^a-z0-9]+", route_name) if token]
+                    actual = [token for token in re.split(r"[^a-z0-9]+", os.path.basename(path).lower()) if token]
+                    return any(actual[index:index + len(wanted)] == wanted
+                               for index in range(len(actual) - len(wanted) + 1))
                 specs = [p for p in files if p.endswith((".spec.ts", ".spec.tsx", ".spec.js"))
-                         and any(route == "/" and os.path.basename(p).lower().startswith(("home.", "index."))
-                                 or route not in ("all", "/") and route.strip("/").replace("/", "-") in p.lower()
+                         and any(route not in ("all",) and has_route_tokens(p, route)
                                  for route in screen_routes)]
                 if specs:
                     code, out, err = run(playwright + ["test", *specs], cwd=root)
@@ -1190,12 +1252,19 @@ def reach(root, paths, base, piece, should_run, engines):
                         print("\n".join("test-output\t" + line for line in out.rstrip().splitlines()), file=sys.stderr)
                     if code:
                         test_status = 1 if re.search(r"\d+ failed", out + err) else 2
+                        if test_status == 2:
+                            print("not-checked\ttests\tPlaywright did not produce a test result")
+            elif screen_routes:
+                print("not-checked\ttests\tPlaywright is not installed")
+                test_status = 2
         if test_status == 1:
             print("failed\ttests\tA covering test failed")
-            return 1
-        if test_status == 2:
-            return 2
-    return 1 if undeclared else 0
+    final_test_status = test_status if should_run else 0
+    if undeclared or final_test_status == 1:
+        return 1
+    if declaration_status == 2 or final_test_status == 2:
+        return 2
+    return 0
 
 
 # --- strength ------------------------------------------------------------------

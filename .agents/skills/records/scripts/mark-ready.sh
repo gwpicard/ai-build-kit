@@ -52,10 +52,13 @@ read_issue() {
 issue=$(read_issue) || { echo "mark-ready: could not read issue $number" >&2; exit 2; }
 
 # Prints "ok <needs-labels...>" or "missing <section>".
-verdict=$(ISSUE_BODY="$issue" HAS_CODE="$has_code" python3 - <<'PY'
-import json, os, re
+verdict=$(ISSUE_BODY="$issue" HAS_CODE="$has_code" PROJECT_ROOT="$project_root" python3 - <<'PY'
+import json, os, re, sys
 data = json.loads(os.environ["ISSUE_BODY"])
 has_code = os.environ["HAS_CODE"] == "yes"
+if has_code:
+    sys.path.insert(0, os.path.join(os.environ["PROJECT_ROOT"], ".agents", "skills", "quality-checks", "scripts"))
+    from reaches_line import REACHES_LINE
 body = data.get("body") or ""
 labels = [l["name"] if isinstance(l, dict) else l for l in data.get("labels") or []]
 
@@ -75,7 +78,7 @@ def section(name):
 needs = [l for l in labels if l.startswith("needs-")]
 if not section("Done when"):
     print("missing Done when")
-elif has_code and not re.search(r"^[ \t]*(?:[-*][ \t]*)?(?:\*\*)?Reaches:(?:\*\*)?[ \t]*\S", body, re.I | re.M):
+elif has_code and not re.search(REACHES_LINE, body, re.I | re.M):
     print("missing Reaches")
 elif needs and not section("Decided"):
     print("missing Decided")

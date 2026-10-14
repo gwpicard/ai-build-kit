@@ -46,6 +46,8 @@ state = {
         "11": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n\nReaches:\n\nMore notes.\n", "labels": []},
         "12": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n\n**Reaches:** src/list.ts\n", "labels": []},
         "13": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n\n- Reaches: src/list.ts\n", "labels": []},
+        "14": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n\n**Reaches:**\n", "labels": []},
+        "15": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n\nReaches:src/list.ts\n", "labels": []},
     },
 }
 json.dump(state, open(sys.argv[1], "w"))
@@ -59,6 +61,8 @@ labels_of() {
 # Every run is from a throwaway project, whose printout helper only notes
 # that it ran, so this repository's own helper is never called.
 mkdir -p "$WORK/project/.agents/tools"
+mkdir -p "$WORK/project/.agents/skills/quality-checks/scripts"
+cp "$ROOT/.agents/skills/quality-checks/scripts/reaches_line.py" "$WORK/project/.agents/skills/quality-checks/scripts/"
 mkdir -p "$WORK/project/src"
 printf '%s\n' 'export const item = 1' > "$WORK/project/src/list.ts"
 (cd "$WORK/project" && git init -q -b main)
@@ -117,6 +121,13 @@ out=$(run 12) && code=0 || code=$?
 out=$(run 13) && code=0 || code=$?
 [ "$code" -eq 0 ] && pass "a list-item Reaches label is accepted" \
   || fail "a list-item Reaches label was refused: $code $out"
+out=$(run 14) && code=0 || code=$?
+[ "$code" -eq 1 ] && printf '%s' "$out" | grep -q "Reaches" \
+  && pass "an empty bold Reaches label is refused" \
+  || fail "an empty bold Reaches label was accepted: $code $out"
+out=$(run 15) && code=0 || code=$?
+[ "$code" -eq 0 ] && pass "Reaches text immediately after the colon is accepted" \
+  || fail "Reaches without a space was refused: $code $out"
 
 out=$(run 3) && code=0 || code=$?
 [ "$code" -eq 1 ] && [ "$(labels_of 3)" = "needs-clarification visual" ] && printf '%s' "$out" | grep -q "Decided" \

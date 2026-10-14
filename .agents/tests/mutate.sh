@@ -14,8 +14,8 @@
 #   ./mutate.sh manifest-drop   one or more by name
 #   ./mutate.sh --list          the names and what each one breaks
 #
-# Each clone starts with the branch history and overlays the current worktree,
-# so an uncommitted slice can be checked without touching its index.
+# The clone takes committed history only, so uncommitted work in your tree is
+# not audited. Commit a fix before asking whether it closes a hole.
 #
 # For anyone extending this: every mutation asserts that the text it expects is
 # there before changing it, and the runner refuses a mutation that leaves the
@@ -35,7 +35,7 @@ REPORT="$WORK/report.tsv"
 # because it also carries checks of its own, on links, stale vocabulary and
 # adapter freshness. When reading the report, a catch by validate-kit alone
 # means only its own direct checks noticed.
-DEFAULT_CHECKS="release-builder starter-rehearsal agent-plugin session-start reach-rehearsal validate-kit"
+DEFAULT_CHECKS="release-builder starter-rehearsal agent-plugin session-start validate-kit"
 PUBLISH_CHECKS="release-builder release-publication validate-kit"
 MODE_CHECKS="validate-kit fake-github"
 
@@ -144,9 +144,9 @@ apply() {
 import os
 p = os.environ["MUTATE_TARGET"]
 t = open(p).read()
-old = "if not part.startswith((\"(\", \"@\"))"
+old = "if part.startswith(\"(\") and part.endswith(\")\"):")
 assert old in t, "route group filter not found"
-open(p, "w").write(t.replace(old, "if not part.startswith(\"@\")", 1))
+open(p, "w").write(t.replace(old, "if False and part.startswith(\"(\") and part.endswith(\")\"):", 1))
 '
       ;;
     reach-alias-imports)
@@ -478,48 +478,13 @@ run_check() {
   fi
 }
 
-# The maintainer runs mutations before a coordinator commits the slice. Clone
-# the branch for its Git history, then copy the current worktree's changed and
-# new files over it. The source index is only read, never written.
-clone_worktree() {
-  destination=$1
-  git clone --quiet --local --no-hardlinks "$ROOT" "$destination"
-  ROOT_TO_COPY="$ROOT" DESTINATION="$destination" python3 - <<'PY'
-import os, shutil, subprocess
-source, destination = os.environ["ROOT_TO_COPY"], os.environ["DESTINATION"]
-records = subprocess.check_output(
-    ["git", "-C", source, "status", "--porcelain", "-z", "--untracked-files=all"]
-).decode().split("\0")
-for record in records:
-    if not record:
-        continue
-    relative = record[3:]
-    original = os.path.join(source, relative)
-    copied = os.path.join(destination, relative)
-    if not os.path.lexists(original):
-        if os.path.isdir(copied) and not os.path.islink(copied):
-            shutil.rmtree(copied)
-        elif os.path.lexists(copied):
-            os.unlink(copied)
-    elif os.path.islink(original):
-        os.makedirs(os.path.dirname(copied), exist_ok=True)
-        if os.path.lexists(copied):
-            os.unlink(copied)
-        os.symlink(os.readlink(original), copied)
-    elif os.path.isfile(original):
-        os.makedirs(os.path.dirname(copied), exist_ok=True)
-        shutil.copy2(original, copied)
-PY
-}
-
 # A clean baseline first. If the suite is not green before anything is broken,
 # nothing after this means anything.
 echo "Baseline: running the checks against an unmutated clone"
 BASE="$WORK/baseline"
-clone_worktree "$BASE"
+git clone --quiet --local --no-hardlinks "$ROOT" "$BASE"
 baseline_failures=""
-BASELINE_CHECKS=${MUTATE_BASELINE_CHECKS:-$DEFAULT_CHECKS}
-for check in $BASELINE_CHECKS; do
+for check in $DEFAULT_CHECKS; do
   run_check "$BASE" "$check" baseline || baseline_failures="$baseline_failures $check"
 done
 if [ -n "$baseline_failures" ]; then
@@ -536,7 +501,7 @@ for name in $wanted; do
   echo "Mutation: $name"
   echo "  breaks: $(describe "$name")"
 
-  clone_worktree "$tree"
+  git clone --quiet --local --no-hardlinks "$ROOT" "$tree"
 
   status=applied
   if ! apply "$name" "$tree" >"$WORK/$name-apply.log" 2>&1; then

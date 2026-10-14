@@ -332,6 +332,27 @@ grep -q '^next typegen$' "$NO_NEXT/calls" && grep -q '^tsc --noEmit$' "$NO_NEXT/
   fail "Next project did not run route generation and tsc"
 echo "  ok: the TypeScript command runs Next typegen only when Next is a dependency"
 
+# Keep an actual Next app beside the command-shape check. Use npm's offline
+# cache so an unavailable package never turns this rehearsal into a network job.
+NEXT="$WORK/next-project"
+mkdir -p "$NEXT/app"
+cat > "$NEXT/package.json" <<'JSON'
+{"private":true,"scripts":{"typecheck":"next typegen && tsc --noEmit"},"dependencies":{"next":"15.5.0","react":"19.1.0","react-dom":"19.1.0"},"devDependencies":{"@types/node":"22.15.30","@types/react":"19.1.6","typescript":"5.8.3"}}
+JSON
+cat > "$NEXT/tsconfig.json" <<'JSON'
+{"compilerOptions":{"target":"ES2017","lib":["dom","dom.iterable","esnext"],"allowJs":true,"skipLibCheck":true,"strict":true,"noEmit":true,"esModuleInterop":true,"module":"esnext","moduleResolution":"bundler","resolveJsonModule":true,"isolatedModules":true,"jsx":"preserve","incremental":true,"plugins":[{"name":"next"}],"paths":{"@/*":["./*"]}},"include":["next-env.d.ts",".next/types/**/*.ts","**/*.ts","**/*.tsx"],"exclude":["node_modules"]}
+JSON
+cat > "$NEXT/app/page.tsx" <<'TS'
+export default function Page() { return <main>Next type generation ran.</main>; }
+TS
+if (cd "$NEXT" && npm install --offline --no-audit --no-fund --silent); then
+  (cd "$NEXT" && npx --no-install next typegen && npx --no-install tsc --noEmit) ||
+    fail "the actual Next.js project's typegen and TypeScript check did not pass"
+  echo "  ok: next typegen and tsc ran on an actual Next.js project"
+else
+  echo "  could not run: Next.js packages are not available in npm's offline cache"
+fi
+
 PROJECT="$WORK/ts-project"
 mkdir -p "$PROJECT/.github/workflows" "$PROJECT/.agents/hooks" "$PROJECT/src"
 cp "$SENSITIVE" "$PROJECT/.agents/hooks/check-sensitive-areas.sh"
@@ -465,9 +486,12 @@ status=0
   fail "failed database type generation changed the tracked types file"
 echo "  ok: a stopped database or failed generation reports could not run and keeps the types file intact"
 
-echo "  installing the project's own check tools"
-(cd "$PROJECT" && npm install --no-audit --no-fund --silent) ||
-  fail "could not install the TypeScript check tools, so the check could not be rehearsed"
+echo "  installing the project's own check tools from the local npm cache"
+if ! (cd "$PROJECT" && npm install --offline --no-audit --no-fund --silent); then
+  echo "  could not run: TypeScript check tools are not available in npm's offline cache"
+  echo "check-floor-rehearsal.sh: Python and check-shape cases passed; TypeScript runtime cases could not run"
+  exit 0
+fi
 
 in_project init -q -b main
 printf 'node_modules/\n' > "$PROJECT/.gitignore"
