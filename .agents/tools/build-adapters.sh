@@ -4,10 +4,11 @@
 # skill. End users never run it; the output is committed so a fresh clone works
 # in every tool straight away.
 #
-# Single source of truth: .agents/skills/<name>/SKILL.md
+# Single source of truth: .agents/skills/<name>/SKILL.md, and the list of
+# skills and agents in .agents/tools/kit-inventory.txt
 # Generated (thin) adapters, all pointing back at canonical:
 #   .claude/commands/<name>.md       the six commands as Claude Code slash commands
-#   .claude/skills/<discipline>/      the two disciplines as auto-triggering skills
+#   .claude/skills/<discipline>/      the background skills, hidden from the menu
 #   .cursor/commands/<name>.md        the six commands as Cursor slash commands
 #   .gemini/commands/<name>.toml      the six commands as Gemini CLI slash commands
 #
@@ -40,7 +41,7 @@ set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 SKILLS="$ROOT/.agents/skills"
-GENERATED_DIRS="commands skills"
+INVENTORY="$ROOT/.agents/tools/kit-inventory.txt"
 
 CHECK=0
 case "${1:-}" in
@@ -50,6 +51,20 @@ case "${1:-}" in
 esac
 
 [ -d "$SKILLS" ] || { echo "error: $SKILLS not found" >&2; exit 1; }
+[ -f "$INVENTORY" ] || { echo "error: $INVENTORY not found" >&2; exit 1; }
+
+# inventory <kind>: the names the inventory lists under one kind, sorted.
+inventory() {
+  awk -v k="$1" '$1 == k && NF == 2 { print $2 }' "$INVENTORY" | sort
+}
+
+# A line the inventory cannot read is a mistake, never a comment.
+bad_lines=$(awk '!/^[ \t]*(#|$)/ && !(NF == 2 && ($1 == "command" || $1 == "background" || $1 == "agent"))' "$INVENTORY")
+if [ -n "$bad_lines" ]; then
+  echo "error: $INVENTORY has a line that is not '<command|background|agent> <name>':" >&2
+  printf '%s\n' "$bad_lines" | sed 's/^/  /' >&2
+  exit 1
+fi
 
 # Read one frontmatter field from a SKILL.md file. Fold a YAML block scalar
 # into one line so portable upstream skills can supply a longer description.
@@ -97,6 +112,8 @@ generate_all() {
 
   commands=0
   disciplines=0
+  found_commands=""
+  found_disciplines=""
 
   for dir in $(find "$SKILLS" -mindepth 1 -maxdepth 1 -type d | sort); do
     name=$(basename "$dir")
@@ -131,9 +148,11 @@ generate_all() {
     if grep -q '^user-invocable:[ \t]*false' "$file"; then
       kind=discipline
       disciplines=$((disciplines + 1))
+      found_disciplines=$(printf '%s\n%s' "$found_disciplines" "$name" | sed '/^$/d' | sort)
     else
       kind=command
       commands=$((commands + 1))
+      found_commands=$(printf '%s\n%s' "$found_commands" "$name" | sed '/^$/d' | sort)
     fi
 
     claude_banner="<!-- GENERATED from .agents/skills/$name/. Do not edit here; regenerate with .agents/tools/build-adapters.sh -->"
@@ -180,8 +199,20 @@ generate_all() {
     fi
   done
 
-  if [ "$commands" -ne 6 ] || [ "$disciplines" -ne 2 ]; then
-    echo "error: expected 6 commands and 2 disciplines; found $commands and $disciplines" >&2
+  # The inventory names every skill and its kind. What the folder holds, read
+  # by the one setting above, must match it exactly, and the person's view
+  # stays at six commands whatever else grows.
+  if [ "$found_commands" != "$(inventory command)" ] || \
+     [ "$found_disciplines" != "$(inventory background)" ]; then
+    echo "error: the skills in .agents/skills/ do not match $INVENTORY" >&2
+    echo "  commands listed:    $(inventory command | tr '\n' ' ')" >&2
+    echo "  commands found:     $(printf '%s' "$found_commands" | tr '\n' ' ')" >&2
+    echo "  background listed:  $(inventory background | tr '\n' ' ')" >&2
+    echo "  background found:   $(printf '%s' "$found_disciplines" | tr '\n' ' ')" >&2
+    exit 1
+  fi
+  if [ "$commands" -ne 6 ]; then
+    echo "error: expected 6 commands; found $commands" >&2
     exit 1
   fi
 

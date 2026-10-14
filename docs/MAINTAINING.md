@@ -254,8 +254,13 @@ COMPATIBILITY.md, beside this file, holds the full per-tool map.
 Every change to `.agents/skills/` or the kit's own machinery runs
 `.agents/tools/validate-kit.sh`, which checks:
 
-- the canonical skill inventory (exactly six commands and two background
-  skills, named exactly, with nothing else in the folder);
+- the canonical skill inventory: `.agents/tools/kit-inventory.txt` lists every
+  skill and agent with its kind, the six commands are named exactly, and the
+  folders hold what the list says and nothing else;
+- the shape of the skills, by `.agents/tools/check-structure.py`: no skill
+  loads a command's own references or sections, each background skill has two
+  callers or an agent that loads it, and a command's SKILL.md stays within
+  1,200 words, a background skill's within 1,500 and a reference within 2,000;
 - the maintainer skill boundary: every folder under `.agents/maintainer-skills/`
   is read off the disk rather than from a list, the vendored writing skill
   carries its licence, and no folder or command file named for any of them

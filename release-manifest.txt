@@ -14,6 +14,7 @@
 .agents/skills/setup-ai-build-kit|
 .agents/skills/what-now|
 .agents/tools/build-adapters.sh|
+.agents/tools/kit-inventory.txt|
 .claude/commands|
 .claude/skills/clarify|
 .claude/skills/second-opinion|

@@ -66,6 +66,7 @@ for required in \
   agent-plugin/skills/setup-ai-build-kit/templates/foundation/plan-refresh.sh \
   .agents/guard/blocked-commands.md \
   .agents/tools/build-adapters.sh \
+  .agents/tools/kit-inventory.txt \
   .agents/hooks \
   .claude/settings.json \
   .github/copilot-instructions.md \

@@ -38,15 +38,34 @@ SKILLS="$ROOT/.agents/skills"
 # either one is a skill somebody installs. This folder is in neither.
 MAINTAINER_SKILLS="$ROOT/.agents/maintainer-skills"
 
-expected_commands="implement
+# The six commands are the person's whole view of the kit, so their names are
+# written here as well as in the inventory: a seventh, or a renamed one, is a
+# redesign and fails here first. Everything else is read from the inventory,
+# which build-adapters.sh reads too.
+INVENTORY="$ROOT/.agents/tools/kit-inventory.txt"
+canonical_commands="implement
 maintain
 setup-ai-build-kit
 setup-hosting
 shape
 what-now"
+inventory_names() {
+  awk -v k="$1" '$1 == k && NF == 2 { print $2 }' "$INVENTORY" 2>/dev/null | sort
+}
+expected_commands=$(inventory_names command)
+expected_disciplines=$(inventory_names background)
+expected_agents=$(inventory_names agent)
+if [ ! -f "$INVENTORY" ]; then
+  fail "$INVENTORY: missing, so nothing below knows which skills to expect"
+elif [ "$expected_commands" != "$canonical_commands" ]; then
+  fail "the inventory's commands are not the six the person types: $(printf '%s' "$expected_commands" | tr '\n' ' ')"
+fi
 
-expected_disciplines="clarify
-second-opinion"
+# The shape rules for the skills: a command never loads another command's
+# files, a background skill has two callers or an agent that loads it, and each
+# file keeps to its word budget. They report without failing until the tree
+# meets them; then this turns to 1 and a breach fails the run.
+structure_strict=0
 
 # Every folder under .agents/maintainer-skills/ is a maintainer skill, and the
 # list is read off the folder rather than written out here. A written-out list
@@ -180,16 +199,16 @@ actual=$(find "$SKILLS" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | s
 expected=$(printf '%s\n%s\n' "$expected_commands" "$expected_disciplines" | sort)
 
 if [ "$actual" != "$expected" ]; then
-  fail "skill inventory does not match the canonical six commands and two disciplines"
+  fail "the folders in .agents/skills/ do not match the inventory"
   echo "  expected:" >&2
   echo "$expected" | sed 's/^/    /' >&2
   echo "  found:" >&2
   echo "$actual" | sed 's/^/    /' >&2
 else
-  pass "exactly six commands and two disciplines, named exactly"
+  pass "the six commands and $(printf '%s\n' "$expected_disciplines" | grep -c .) background skills match the inventory, named exactly"
 fi
 
-# Each of the eight has a SKILL.md. Which of them are commands and which
+# Each skill has a SKILL.md. Which of them are commands and which
 # are background skills is settled by one setting, and the trigger contract
 # further down checks that. Here the question is only that the file exists.
 while IFS= read -r name; do
@@ -383,7 +402,7 @@ else
   expected_skill_dirs=$(printf '%s\n' "$expected_disciplines" | sort)
   actual_skill_dirs=$(find "$ROOT/.claude/skills" -mindepth 1 -maxdepth 1 -exec basename {} \; | sort)
   if [ "$actual_skill_dirs" != "$expected_skill_dirs" ]; then
-    fail ".claude/skills/ must hold exactly the two disciplines"
+    fail ".claude/skills/ must hold exactly the background skills the inventory lists"
     echo "  expected:" >&2
     echo "$expected_skill_dirs" | sed 's/^/    /' >&2
     echo "  found:" >&2
@@ -453,6 +472,36 @@ $skillfiles
 SKILLFILES
 
 pass "frontmatter checked on $(printf '%s\n' "$skillfiles" | grep -c .) SKILL.md files"
+
+# ---------------------------------------------------------------------------
+echo "== Skill structure =="
+
+# Commands route and call background skills; they hold no method of their own.
+# check-structure.py reads the shape off the files: a command loading another
+# command's references, a background skill nobody calls, a file over its word
+# budget. Its own header gives the rules. A rule sentence cannot hold this,
+# because nobody can see which sentence a cut removed.
+structure_tool="$ROOT/.agents/tools/check-structure.py"
+if [ ! -f "$structure_tool" ]; then
+  fail "$structure_tool: missing"
+elif ! command -v python3 >/dev/null 2>&1; then
+  note "python3 not available; skipped the skill structure check"
+else
+  if [ "$structure_strict" -eq 1 ]; then
+    structure_out=$(python3 "$structure_tool" --strict 2>&1) && structure_rc=0 || structure_rc=$?
+  else
+    structure_out=$(python3 "$structure_tool" 2>&1) && structure_rc=0 || structure_rc=$?
+  fi
+  if [ "$structure_rc" -ne 0 ]; then
+    fail "the skills are out of shape:"
+    printf '%s\n' "$structure_out" | sed 's/^/    /' >&2
+  elif [ -n "$structure_out" ]; then
+    note "the skills are out of shape, reported only until the check turns strict:"
+    printf '%s\n' "$structure_out" | sed 's/^/    /' >&2
+  else
+    pass "no command loads another's files, each background skill has its callers, and each file keeps its word budget"
+  fi
+fi
 
 # ---------------------------------------------------------------------------
 echo "== References =="
@@ -1720,14 +1769,32 @@ for literal in \
   '"./.claude/commands/shape.md"' \
   '"./.claude/commands/setup-hosting.md"' \
   '"./.claude/commands/setup-ai-build-kit.md"' \
-  '"./.claude/commands/what-now.md"' \
-  '"./.claude/skills/clarify"' \
-  '"./.claude/skills/second-opinion"'; do
+  '"./.claude/commands/what-now.md"'; do
   if ! grep -qF "$literal" "$plugin_manifest"; then
     fail "Claude plugin manifest is missing: $literal"
     plugin_contract_ok=no
   fi
 done
+# Every background skill and every agent the inventory lists reaches the
+# plugin, read from the inventory so a new one cannot be left out of it.
+while IFS= read -r name; do
+  [ -n "$name" ] || continue
+  if ! grep -qF "\"./.claude/skills/$name\"" "$plugin_manifest"; then
+    fail "Claude plugin manifest is missing the background skill: ./.claude/skills/$name"
+    plugin_contract_ok=no
+  fi
+done <<PLUGINSKILLS
+$expected_disciplines
+PLUGINSKILLS
+while IFS= read -r name; do
+  [ -n "$name" ] || continue
+  if ! grep -qF "\"./.claude/agents/$name.md\"" "$plugin_manifest"; then
+    fail "Claude plugin manifest is missing the agent: ./.claude/agents/$name.md"
+    plugin_contract_ok=no
+  fi
+done <<PLUGINAGENTS
+$expected_agents
+PLUGINAGENTS
 for literal in \
   '"name": "ai-build-kit"' \
   '"source": "./"'; do

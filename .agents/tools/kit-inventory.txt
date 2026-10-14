@@ -1,0 +1,21 @@
+# The kit's skills and agents, one per line as "<kind> <name>".
+#
+# command     a skill the person types. There are six, and only six.
+# background  a skill a command or an agent loads. Its SKILL.md carries
+#             `user-invocable: false`.
+# agent       a file in .agents/agents/ that runs one or more background
+#             skills in a fresh context.
+#
+# build-adapters.sh generates the adapters from this list, and validate-kit.sh
+# checks the folders against it. A skill or agent missing from the list, or
+# listed and missing from its folder, stops both.
+
+command setup-ai-build-kit
+command shape
+command implement
+command setup-hosting
+command maintain
+command what-now
+
+background clarify
+background second-opinion
