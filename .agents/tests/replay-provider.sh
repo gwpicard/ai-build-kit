@@ -362,11 +362,12 @@ cat > "$TEST_WORK/turn.jsonl" <<'JSONL'
 {"type":"assistant","message":{"content":[{"type":"text","text":"Who is exposed: your patients."},{"type":"tool_use","name":"Bash"}]}}
 {"type":"user","message":{"content":[{"type":"tool_result","content":"ok"}]}}
 {"type":"assistant","isSidechain":true,"message":{"content":[{"type":"text","text":"A subagent's note."}]}}
+{"type":"user","message":{"content":"<task-notification>the review finished</task-notification>"}}
 {"type":"assistant","message":{"content":[{"type":"text","text":"Last message."}]}}
 JSONL
-python3 "$TT" claude "$TEST_WORK/turn.json" "$TEST_WORK/turn.jsonl" "$TEST_WORK/turn-reply"
+python3 "$TT" claude "$TEST_WORK/turn.json" "$TEST_WORK/turn.jsonl" "$TEST_WORK/turn-reply" "second turn"
 [ "$(cat "$TEST_WORK/turn-reply")" = "$(printf 'Who is exposed: your patients.\n\nLast message.')" ] \
-  && pass "a Claude turn keeps every text block of the turn, without the old turn or a subagent's" \
+  && pass "a Claude turn keeps every text block from the person's message on, past a background note, without the old turn or a subagent's" \
   || fail_provider "a Claude turn kept: $(cat "$TEST_WORK/turn-reply")"
 python3 "$TT" claude "$TEST_WORK/turn.json" "" "$TEST_WORK/turn-reply"
 [ "$(cat "$TEST_WORK/turn-reply")" = "Last message." ] \

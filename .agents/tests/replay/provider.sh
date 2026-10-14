@@ -235,7 +235,7 @@ provider_turn() {
       # block of the turn, read from there.
       session_file=$(find "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/projects" -maxdepth 2 \
         -name "$PROVIDER_SESSION.jsonl" 2>/dev/null | head -1)
-      python3 "$REPLAY_DIR/turn-text.py" claude "$raw" "$session_file" "$reply" || return 1
+      python3 "$REPLAY_DIR/turn-text.py" claude "$raw" "$session_file" "$reply" "$message" || return 1
       : > "$reply.session-started"
       ;;
     codex)
