@@ -45,7 +45,7 @@ const args = process.argv.slice(2);
 const output = args.find(x => x.startsWith('--outputFile='))?.split('=')[1];
 const cov = args.find(x => x.startsWith('--coverage.reportsDirectory='))?.split('=')[1];
 const fixed = fs.readFileSync('src/rule.js', 'utf8').includes('>= 4');
-const rows = [['D1 accepts four at the limit', fixed], ['D2 accepts five', true]];
+const rows = process.env.REFRACTOR ? [] : [['D1 accepts four at the limit', fixed && !process.env.FAIL_D1_AFTER], ['D2 accepts five', true]];
 const modulePresent = fs.existsSync('src/new-module.js');
 if (fs.existsSync('tests/new-module.test.js')) rows.push(['D3 new module loads', modulePresent]);
 if (output) fs.writeFileSync(output, '<testsuites><testsuite>' + rows.map(([n, ok]) => `<testcase name="${n}">${ok ? '' : `<failure message="${n.startsWith('D3') ? 'Failed to load: Cannot find module' : 'wrong result'}">${n.startsWith('D3') ? 'Cannot find module ../src/new-module.js' : 'wrong result'}</failure>`}</testcase>`).join('') + '</testsuite></testsuites>');
@@ -188,7 +188,10 @@ EOF
 set +e; FAIL_AFTER=1 run_quality >"$WORK/after-failure.out" 2>&1; CODE=$?; set -e
 [ "$CODE" -eq 1 ] || { cat "$WORK/after-failure.out"; echo 'FAIL: after-run failure was accepted'; exit 1; }
 unset FAIL_AFTER
-echo '  ok: zero coverage, missing reports or providers, and a failed after-run are handled'
+set +e; FAIL_D1_AFTER=1 run_quality >"$WORK/d1-after-failure.out" 2>&1; CODE=$?; set -e
+[ "$CODE" -eq 1 ] || { cat "$WORK/d1-after-failure.out"; echo 'FAIL: D1 failing both before and after was accepted'; exit 1; }
+grep -q '^fails-after[[:space:]]D1$' "$WORK/d1-after-failure.out"
+echo '  ok: zero coverage, missing reports or providers, and a D failure after the build are handled'
 
 if [ -n "$VITEST_BIN" ] && [ -x "$VITEST_BIN" ]; then
   REAL="$WORK/real-vitest"
@@ -200,6 +203,7 @@ if [ -n "$VITEST_BIN" ] && [ -x "$VITEST_BIN" ]; then
   VITEST_NM=$(dirname "$VITEST_PACKAGE")
   ln -s "$VITEST_NM" "$REAL/node_modules"
   printf 'export const total = () => 1;\n' > "$REAL/src/total.js"
+  printf 'export const oldValue = () => 1;\n' > "$REAL/src/old.js"
   git -C "$REAL" add -A; git -C "$REAL" commit -qm Start
   REALBASE=$(git -C "$REAL" rev-parse HEAD)
   cat > "$REAL/src/total.test.js" <<'EOF'
@@ -224,6 +228,11 @@ import { test, expect } from 'vitest';
 import { missing } from './missing.js';
 test('D2 loads the new module', () => expect(missing()).toBe(true));
 EOF
+  cat > "$REAL/src/old.test.js" <<'EOF'
+import { test, expect } from 'vitest';
+import { oldValue } from './old.js';
+test('D3 keeps the old value', () => expect(oldValue()).toBe(1));
+EOF
   git -C "$REAL" add -A; git -C "$REAL" commit -qm 'Test: add D2 module load'
   printf 'export const missing = () => true;\n' > "$REAL/src/missing.js"
   git -C "$REAL" add -A; git -C "$REAL" commit -qm 'Build the missing module'
@@ -231,11 +240,13 @@ EOF
 ## Done when
 - The total is updated
 - The new module loads
+- The old total remains
 EOF
   set +e; REAL_OUT=$(cd "$REAL" && python3 "$QUALITY" tests --base "$REALBASE" --piece 399 2>&1); CODE=$?; set -e
-  [ "$CODE" -eq 0 ] || { printf '%s\n' "$REAL_OUT"; echo 'FAIL: JUnit-only missing-module failure was not treated as fails-before'; exit 1; }
+  [ "$CODE" -eq 1 ] || { printf '%s\n' "$REAL_OUT"; echo 'FAIL: the already-passing D3 or missing-module D2 was misclassified'; exit 1; }
   printf '%s\n' "$REAL_OUT" | grep -q '^fails-before[[:space:]]D2$'
-  echo '  ok: real Vitest missing-module failure in JUnit XML maps to fails-before'
+  printf '%s\n' "$REAL_OUT" | grep -q '^passes-before[[:space:]]D3$'
+  echo '  ok: a JUnit module failure maps only to D2 in its file; D3 in another file remains passes-before'
 fi
 
 put tests/skip.test.js <<'EOF'
@@ -278,7 +289,7 @@ cat > "$QUALITY_TEST_PIECE_FILE" <<'EOF'
 ## Under the hood
 Kind: refactor
 EOF
-OUT=$(cd "$PROJECT" && python3 "$QUALITY" tests --base "$CURRENT" --piece 4)
+OUT=$(cd "$PROJECT" && REFRACTOR=1 python3 "$QUALITY" tests --base "$CURRENT" --piece 4)
 printf '%s\n' "$OUT" | grep -q '^tests[[:space:]]passed$'
 echo '  ok: visual-only and behaviour-preserving refactor exemptions work'
 
@@ -491,5 +502,34 @@ OUT=$(cd "$CUSTOM" && python3 "$QUALITY" tests --base "$CUSTOMBASE" --piece 3 2>
 printf '%s\n' "$OUT" | grep -q '^not-checked[[:space:]]tests[[:space:]]recorded test command has no per-test report$'
 ! printf '%s\n' "$OUT" | grep -q '^untested[[:space:]]D1'
 echo '  ok: a recorded plain Python runner is not called pytest and does not claim untested D lines'
+
+# A recorded Playwright command with numbered specs takes the D-specific path.
+PW="$WORK/playwright"
+mkdir -p "$PW/tests" "$PW/node_modules/.bin" "$PW/.github/workflows"
+git -C "$PW" init -q -b main
+git -C "$PW" config user.name Rehearsal; git -C "$PW" config user.email rehearsal@example.invalid
+printf '%s\n' '{"private":true}' > "$PW/package.json"
+printf '%s\n' "export default { testDir: './tests' };" > "$PW/playwright.config.ts"
+git -C "$PW" add -A; git -C "$PW" commit -qm Start
+PWBASE=$(git -C "$PW" rev-parse HEAD)
+printf '%s\n' "import { test } from '@playwright/test';" "test('D1 accepts the rule', async () => {});" > "$PW/tests/rule.spec.ts"
+git -C "$PW" add -A; git -C "$PW" commit -qm 'Test: add D1 browser case'
+printf '%s\n' 'module.exports = true;' > "$PW/src-rule.js"
+git -C "$PW" add -A; git -C "$PW" commit -qm 'Build rule'
+printf '%s\n' 'jobs:' '  test:' '    steps:' '      - run: npx playwright test' > "$PW/.github/workflows/checks.yml"
+cat > "$PW/node_modules/.bin/playwright" <<'EOF'
+#!/bin/sh
+case "$PWD" in */before) exit 1 ;; *) exit 0 ;; esac
+EOF
+chmod +x "$PW/node_modules/.bin/playwright"
+cat > "$QUALITY_TEST_PIECE_FILE" <<'EOF'
+## Done when
+- The rule is accepted
+EOF
+set +e; OUT=$(cd "$PW" && PATH="$PW/node_modules/.bin:$PATH" python3 "$QUALITY" tests --base "$PWBASE" --piece 1 2>&1); CODE=$?; set -e
+[ "$CODE" -eq 0 ] || { printf '%s\n' "$OUT"; echo 'FAIL: numbered Playwright test did not use its D-specific path'; exit 1; }
+printf '%s\n' "$OUT" | grep -q '^fails-before[[:space:]]D1$'
+printf '%s\n' "$OUT" | grep -q '^playwright[[:space:]]D1[[:space:]]passed$'
+echo '  ok: numbered Playwright specs run their D-specific before/after check'
 
 echo 'tests-prove-change.sh: Vitest report contract, per-D output and test subject guard checked'

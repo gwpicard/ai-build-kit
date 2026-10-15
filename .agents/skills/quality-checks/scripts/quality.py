@@ -101,6 +101,8 @@ def test_file_rule():
 
 
 TEST_FILES = test_file_rule()
+QUALITY_FLOOR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
+                             "references", "check-floor.md")
 ENGINES = {
     # name: (npm package, Python package)
     "knip": ("knip@6", None),
@@ -1083,8 +1085,7 @@ def strength(root, base, engines):
 
 def test_command(root):
     """Use the check's recorded command before inferring a runner."""
-    for path in (".github/workflows/checks.yml", "checks.yml",
-                 ".agents/skills/quality-checks/references/check-floor.md"):
+    for path in (".github/workflows/checks.yml", "checks.yml", QUALITY_FLOOR):
         text = read(root, path)
         if not text:
             continue
@@ -1306,6 +1307,7 @@ def test_read(root, base, piece):
         command_text = " ".join(command)
         is_vitest = "vitest" in command_text or '"vitest"' in read(root, "package.json")
         is_pytest = "pytest" in command_text
+        is_playwright = "playwright" in command_text
         cov_before = cov_after = None
         if is_vitest:
             before_cmd += ["--reporter=junit", f"--outputFile={before_xml}"]
@@ -1330,8 +1332,27 @@ def test_read(root, base, piece):
             else:
                 print("not-checked\tcoverage\tpytest-cov (coverage.py provider) is not installed")
         else:
-            before_code, _, _ = run(before_cmd, cwd=before_root, timeout=900)
-            after_code, _, _ = run(after_cmd, cwd=root, timeout=900)
+            if is_playwright and playwright:
+                runner = os.path.join(root, "node_modules", ".bin", "playwright")
+                if not os.access(runner, os.X_OK) and not shutil.which("playwright"):
+                    print("not-checked\tplaywright\tPlaywright is not installed")
+                    return 2
+                for n in sorted(playwright):
+                    test_cmd = ["npx", "--no-install", "playwright", "test", "--grep", f"D{n}\\b"]
+                    before_code, _, _ = run(test_cmd, cwd=before_root, timeout=900)
+                    after_code, _, _ = run(test_cmd, cwd=root, timeout=900)
+                    print(f"playwright\tD{n}\t{'passed' if after_code == 0 else 'failed'}")
+                    if before_code == 0:
+                        print(f"passes-before\tD{n}")
+                        status = 1
+                    elif after_code:
+                        print(f"fails-after\tD{n}")
+                        status = 1
+                    else:
+                        print(f"fails-before\tD{n}")
+                if status == 0:
+                    print("tests\tpassed")
+                return 1 if status else 0
             print("not-checked\ttests\trecorded test command has no per-test report")
             return 2
         before_env, after_env = os.environ.copy(), os.environ.copy()
@@ -1349,6 +1370,17 @@ def test_read(root, base, piece):
         missing_module_cases = {name: case for name, case in before_cases.items()
             if failed(case) and re.search(r"Cannot find module|Failed to load|No module named|ModuleNotFoundError",
                 " ".join(case.itertext()))}
+        missing_module_d_numbers = set()
+        for name, case in missing_module_cases.items():
+            junit_path = (name + " " + case.attrib.get("classname", "")).replace("\\", "/")
+            matched_paths = [path for path in red_tests if path.replace("\\", "/") in junit_path]
+            if not matched_paths:
+                leaf = os.path.basename(junit_path.split()[-1]) if junit_path.split() else ""
+                same_leaf = [path for path in red_tests if os.path.basename(path) == leaf]
+                matched_paths = same_leaf if len(same_leaf) == 1 else []
+            for path in matched_paths:
+                missing_module_d_numbers.update(int(number) for number in re.findall(
+                    r"(?i)(?<![A-Za-z0-9])D(\d+)(?![A-Za-z0-9])", read(root, path)))
         d_results = []
         for n, detail in ([] if refactor else done_lines):
             pat = re.compile(r"(?i)(?<![A-Za-z0-9])D" + str(n) + r"(?![A-Za-z0-9])")
@@ -1356,19 +1388,18 @@ def test_read(root, base, piece):
                               if pat.search(name + " " + c.attrib.get("classname", ""))]
             after_matches = [c for name, c in after_cases.items()
                              if pat.search(name + " " + c.attrib.get("classname", ""))]
-            file_module_failure = bool(missing_module_cases and any(
-                pat.search(" ".join(read(root, path) for path in red_tests)) for path in red_tests))
+            file_module_failure = n in missing_module_d_numbers
             if not after_matches or any(c.find("skipped") is not None for c in after_matches):
                 print(f"untested\tD{n}\t{detail}")
+                status = 1
+            elif any(failed(c) for c in after_matches):
+                print(f"fails-after\tD{n}")
                 status = 1
             elif any(not failed(c) for c in before_matches):
                 print(f"passes-before\tD{n}")
                 status = 1
             elif file_module_failure or any(failed(c) for c in before_matches):
                 print(f"fails-before\tD{n}")
-            elif any(failed(c) for c in after_matches):
-                print(f"fails-after\tD{n}")
-                status = 1
             else:
                 print(f"passes-before\tD{n}")
                 status = 1

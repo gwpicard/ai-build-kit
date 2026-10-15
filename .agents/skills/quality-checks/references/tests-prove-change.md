@@ -3,7 +3,10 @@
 Run `quality.py tests --base <start commit> --piece <number>` once after the
 build. It runs the project's recorded test command on a throwaway copy of the
 start commit and on the current project. Each machine-judged Done when line
-needs a test named with its D number. A person-judged line ends `(try it)`.
+needs a test titled with its D number, such as `D1` or `D2`. Commit these
+failing tests before building, with a `Test:` subject. A test in the red
+commit stays frozen. A later `Test:` commit may add tests; changing an existing
+test needs `Test fix: <reason>`. A person-judged line ends `(try it)`.
 
 `fails-before D<n>` means its test failed on the start copy. `passes-before`
 means the test already passed there, so it does not prove the change.

@@ -6,7 +6,7 @@ user-invocable: false
 
 # Build a piece
 
-Build one piece per pass, judged by behaviour.
+One piece per pass, always, directed by someone who judges it by behaviour.
 
 ## 1. Safe start
 
@@ -64,25 +64,23 @@ that looks right is never a substitute for a check that was available and skippe
 - An automated behaviour test is required for rules, calculations,
   permissions, data changes, integrations, background behaviour, bugs, and any
   done line a machine can judge.
-- Use a guided manual check for copy, layout, colour, exploratory interaction,
-  usability and throwaway prototypes.
-- Rehearse backups, restores, migrations, rollback, alerts, deployment and
-  failure recovery. Test a new field; rehearse changes to existing records on a
-  copy.
-- Check outside facts through the `research` skill first.
+- A guided manual check is enough for copy, layout, colour, exploratory
+  interaction, usability, and throwaway prototypes.
+- An operational rehearsal is required for backups, restores, migrations,
+  rollback, alerts, deployment, and failure recovery. Adding a field takes a
+  test; changing records people already have takes a rehearsal on a copy.
+- An outside fact runs the source check in the `research` skill first.
 
-For a change inside a mapped sensitive area, run `quality.py strength --base
-<start commit>` after the tests pass. A repair runs it on the regression test.
+For a change inside a mapped sensitive area, `quality.py tests` runs the
+strength check after the tests pass. A repair runs it on the regression test.
 
 ## 4. Write the tests
 
 For a repair, load the `repair` skill's `references/fixing.md` and follow
 "Building a repair" from here.
 
-Before coding, commit each machine-judged `Done when` test as `Test:` and name
-it D1, D2, and so on. Later `Test:` commits may add tests to frozen files.
-Changing a red test needs `Test fix: <reason>`. A line ending `(try it)` stays
-for a person. Note the start commit for the post-build read.
+Before coding, follow `quality-checks/references/tests-prove-change.md`. Note
+the start commit for its post-build read.
 
 ## 5. Build one vertical slice
 
@@ -112,8 +110,8 @@ the `screen-check` skill before the guided check.
 Work the build uncovers becomes a new piece, filed by the `records` skill's
 `references/pieces.md` with its subjects from the `triage` skill, and
 one line such as "Found while building the invoice list." When the person asks
-for more mid-build, ask once: this piece, or a new one? On "this piece", add
-it to `## Done when`, read it back, and build it. Never fold a request in without
+for more mid-build, ask once: this piece, or a new one? On "this piece", add it
+to `## Done when`, read it back, and build it. Never fold a request in without
 that answer.
 
 A test that passes only on a retry is unreliable evidence: repair or replace it

@@ -373,6 +373,16 @@ git(dir, 'commit', '-q', '--amend', '-m', 'Change the risk test on purpose');
 assert.equal(sh(dir, 'sh', [checkTests, `${base}..HEAD`], true).status, 0, 'the project check refused a test change that is not a trim');
 console.log('  ok: the project check fails a trim commit that changed a test, and leaves other commits alone');
 
+write(dir, { 'test/risk.test.js': read(dir, 'test/risk.test.js') + '\n// first trim\n' });
+git(dir, 'add', '-A'); git(dir, 'commit', '-q', '-m', 'Trim: first reported edit');
+write(dir, { 'test/risk.test.js': read(dir, 'test/risk.test.js').replace('// first trim', '// second trim') });
+git(dir, 'add', '-A'); git(dir, 'commit', '-q', '-m', 'Trim: repeated reported edit');
+const repeated = sh(dir, 'sh', [checkTests, `${base}..HEAD`], true);
+assert.equal(repeated.status, 1, 'the project check passed repeated trims of a test file');
+assert.equal((repeated.stderr.match(/Test check: trim commit changed test test\/risk\.test\.js\./g) || []).length, 1,
+  'the same file and rule was reported more than once across commits');
+console.log('  ok: equal test-freeze findings are reported once across commits');
+
 // --- the three name a test path the same way ------------------------------------
 
 const tests = ['test/a.js', 'src/a.test.ts', 'src/__tests__/b.js', 'tests/test_app.py', 'app/thing_test.py',

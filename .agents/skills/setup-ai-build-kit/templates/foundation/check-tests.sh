@@ -2,7 +2,7 @@
 # Test subjects freeze existing test lines; Test fix: subjects need a reason.
 set -u
 # The broad rule protects test files, fixtures and runner configuration from a trim.
-TEST_PATH='(^|/)(tests?|__tests__|__mocks__|spec|testdata|testfixtures?|fixtures?)(/|$)|(^|/)(conftest\.py|pytest\.(ini|toml))$|(^|/)setupTests\.[^/]+$|(^|/)(jest|vitest|playwright|cypress|karma|mocha)\.config\.[^/]+$|\.test\.[^/]+$|[.-]spec\.[^/]+$|_spec\.rb$|(^|/)test_[^/]*\.py$|(^|/)tests\.py$|_test\.(py|go)$'
+TEST_PATH='(^|/)(tests?|__tests__|__mocks__|spec|e2e|cypress|testdata|testfixtures?|fixtures?)(/|$)|(^|/)(conftest\.py|pytest\.(ini|toml))$|(^|/)setupTests\.[^/]+$|(^|/)(jest|vitest|playwright|cypress|karma|mocha)\.config\.[^/]+$|\.test\.[^/]+$|[.-]spec\.[^/]+$|_spec\.rb$|(^|/)test_[^/]*\.py$|(^|/)tests\.py$|_test\.(py|go)$'
 # Only named test files are frozen by a red commit.
 TEST_FILE_PATH='(^|/)(tests?|__tests__|__mocks__|spec|e2e|cypress)/(.*/)?[^/]+\.(js|jsx|ts|tsx|mjs|cjs|mts|cts|py|rb|go)$|\.test\.[^/]+$|[.-]spec\.[^/]+$|_spec\.rb$|(^|/)test_[^/]*\.py$|(^|/)tests\.py$|_test\.(py|go)$'
 range=${1:-origin/${GITHUB_BASE_REF:-main}..HEAD}
@@ -15,8 +15,9 @@ trap 'rm -f "$reported"' EXIT HUP INT TERM
 
 report_once() {
   message=$1
-  if ! grep -Fqx "$message" "$reported"; then
-    printf '%s\n' "$message" >> "$reported"
+  key=$(printf '%s\n' "$message" | sed -E 's/[0-9a-f]{40}/<commit>/g')
+  if ! grep -Fqx "$key" "$reported"; then
+    printf '%s\n' "$key" >> "$reported"
     printf '%s\n' "$message" >&2
   fi
 }
@@ -27,7 +28,7 @@ while IFS="$(printf '\t')" read -r commit subject; do
     Trim:*)
       git diff-tree --root --no-commit-id --name-only -r "$commit" | while IFS= read -r file; do
         if printf '%s\n' "$file" | grep -Eq "$TEST_PATH"; then
-          report_once "Test check: trim commit $(printf '%.7s' "$commit") changed test $file."
+          report_once "Test check: trim commit changed test $file."
           echo fail
         fi
       done | grep -q fail && failed=1
@@ -58,7 +59,7 @@ while IFS="$(printf '\t')" read -r test_commit subject; do
           fi
           ;;
         Trim:*)
-          report_once "Test check: trim commit $(printf '%.7s' "$later") changed test $file."; failed=1
+          report_once "Test check: trim commit changed test $file."; failed=1
           ;;
         *)
           if ! git diff --quiet "$parent" "$later" -- "$file"; then

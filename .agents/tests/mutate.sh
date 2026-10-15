@@ -361,9 +361,9 @@ open(p,"w").write(s)'
       edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
 import os
 p=os.environ["MUTATE_TARGET"]
-s=open(p).read(); old="if refactor and after_code != 0:\n            print(\"fails-after\\\\trefactor tests must pass on the current code\")\n            status = 1"
-assert old in s
-open(p,"w").write(s.replace(old, "if False and after_code != 0:\n            print(\"fails-after\\\\trefactor tests must pass on the current code\")\n            status = 1", 1))'
+s=open(p).read(); old="elif any(failed(c) for c in after_matches):\n                print(f\"fails-after\\\\tD{n}\")\n                status = 1"
+assert old in s, "D test after-failure branch not found"
+open(p,"w").write(s.replace(old, "elif any(failed(c) for c in after_matches):\n                print(f\"fails-after\\\\tD{n}\")", 1))'
       ;;
     test-fix-empty-reason)
       edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/check-tests.sh" '
@@ -382,7 +382,7 @@ p = os.environ["MUTATE_TARGET"]
 s = open(p).read()
 old = """          report_once \"Test check: $file changed existing lines in $later without Test fix: reason.\"; failed=1"""
 assert old in s, "the silent-edit failure branch is missing"
-open(p, "w").write(s.replace(old, "          echo \"Test check: silent edit ignored\" >&2", 1))
+open(p, "w").write(s.replace(old, "          report_once \"Test check: $file changed existing lines in $later without Test fix: reason.\"", 1))
 '
       ;;
     background-one-caller)
