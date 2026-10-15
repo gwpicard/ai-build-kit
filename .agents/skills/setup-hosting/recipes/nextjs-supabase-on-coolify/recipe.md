@@ -1,19 +1,35 @@
-# Recipe: Next.js and hosted Supabase on Coolify
+# Recipe: Next.js 16, TypeScript and Supabase on Coolify
 
-Fits: a web app people use in a browser, with sign-in and saved data
+Fits: Dashboards and reporting on existing data; Admin panels and back office over an existing database; Approvals and request workflows; CRMs, contact trackers and sales tools; Light ERP: stock, orders, purchasing, assets; Client, vendor and partner portals; Project and task trackers; Document processing: upload, extract, review, export; AI assistants over team documents; HR and onboarding; Case management, tickets and incident logs; Booking and scheduling; Forms and data collection; Field, inspection and service apps; Screenless sync and automation
 Recommended when: the team already runs Coolify, or wants the app on a server it rents, such as a Hetzner or Hostinger VPS, rather than on a hosting platform.
-Build stack: Next.js with TypeScript and the App Router, built into a container image from a Dockerfile, with the database and sign-in in a hosted Supabase project whose tables are made by migrations
+Language: TypeScript
+Framework: Next.js 16
+Typing: TypeScript tsc
+Database: Supabase Postgres
+Sign-in: Supabase Auth
+Email: Resend
+Files: Supabase Storage
+Jobs: Supabase Cron and Queues
+Testing: Vitest and Playwright
+Linting: ESLint
+Starter: ../parts/starters/nextjs-supabase
+Optional parts: read-only existing database and Python document worker
+Work-team default: no
 Deploy target: Coolify on a rented server, with the Coolify GitHub App connected to the project's repository
 Command-line tools: supabase, docker, psql, curl, git
-Last checked: 2026-09-24
+Health-check tool: curl
+Last checked: 2026-10-14
+
+Shared stack: [Next.js, TypeScript and Supabase](../parts/nextjs-supabase-stack.md)
 Database types check: `if [ ! -f types/database.ts ] || ! git ls-files --error-unmatch types/database.ts >/dev/null 2>&1; then echo 'could not run: types/database.ts is missing or untracked'; exit 2; fi; if ! supabase status >/dev/null 2>&1; then echo 'could not run: local Supabase is not running'; exit 2; fi; tmp=$(mktemp) || exit 2; trap 'rm -f "$tmp"' EXIT; supabase gen types typescript --local > "$tmp" || { echo 'could not run: database types could not be generated'; exit 2; }; diff -u types/database.ts "$tmp"`
+Plan terms: Supabase Free pauses projects after 7 days of low activity and has no backups, so a work team should use Pro (read 2026-10-14 at https://supabase.com/docs/guides/platform/free-project-pausing and https://supabase.com/docs/guides/platform/backups)
 
 The kit never contacts the server. The person, or a companion working with them, pastes back what only the server knows, and a script reads it.
 
 ## Preview
 
-How it works: Coolify builds each pull request into its own container and removes it on close. Previews start off: the person or the companion presses Enable preview deployments on the app's Preview Deployments page. A preview has an address only when the app has a domain; without one the kit says once that nobody can open it. Its settings point at a second Supabase project, which `../parts/scripts/migrate.sh --apply <preview project ref>`, with that project's password location as `PREVIEW_DB_PASSWORD_FILE`, gives the branch's migrations. Where no second project can exist, they point at the live one: the kit says once that previews use live data, records it, and gives a preview no migrations.
-How it is checked: A finished preview deployment whose health shows the database reachable, the pull request's commit, and a project other than the live one, unless the record says previews share it.
+How it works: Coolify builds each pull request into its own container and removes it on close. Previews start off: the person or the companion presses Enable preview deployments on the app's Preview Deployments page. A preview has an address only when the app has a domain; without one the kit says once that nobody can open it. Its settings point at a second Supabase project, which `../parts/scripts/migrate.sh --apply <preview project ref>`, with that project's password location as `PREVIEW_DB_PASSWORD_FILE`, gives the branch's migrations. Without a second project, previews stay off.
+How it is checked: A finished preview deployment whose health shows the database reachable, the pull request's commit, and a project other than the live one.
 Script: scripts/preview.sh
 Who runs it: a companion or the person, result read back
 Ask: Please paste the preview deployment's status from Coolify, and the answer from the preview's /api/health, read at its address or on the server.
@@ -64,7 +80,7 @@ Shared part: [the Next.js container and its health route](../parts/nextjs-contai
 
 ## Access
 
-How it works: The masterplan's `Access:` line says private, open address with invitation only, or public. Private is the default: `../parts/scripts/set-signup.sh closed` closes sign-up, so people get in only by an invitation from the Supabase dashboard, under Authentication, then Users. The server holds the gate. Private keeps the address reachable only on the team's private network, or puts a shared password in front of it, which the browser asks for before the page loads. Coolify calls that HTTP Basic Authentication; it is in the app's General settings, under Security, then Authentication, and takes a save and a redeploy, with the password kept in the team's password manager. Open address with invitation only suits a tool whose address anyone can reach: the gate is off, and sign-up stays closed. Public takes the gate off and opens sign-up. The person or the companion makes the server's change, and the kit never sees the password. Each change waits for a yes that names its effect, and goes in the changelog.
+How it works: The masterplan's `Access:` line says private, open address with invitation only, or public. Production is protected by the tool's invite-only sign-in. Previews are off by default. Turn them on only behind Coolify Basic Authentication, and never point them at live data. Private keeps the address reachable only on the team's private network. Basic Authentication protects previews only; production has no second lock. Set it in the app's General settings, under Security, then Authentication, and keep the password in the team's password manager. Open address with invitation only leaves the gate off and sign-up closed. Public takes the gate off and opens sign-up. The person or companion makes the server's change, and the kit never sees the password. Each change waits for a yes that names its effect, and goes in the changelog.
 How it is checked: For private, a request signed in to nothing from outside the private network is refused, or cannot connect while the same request from inside is answered. For the other two it is answered. Sign-up, read by the shared `../parts/scripts/signup.sh` with an attempt that has no password and so makes no account, matches the record.
 Script: scripts/access.sh
 Who runs it: a companion or the person, result read back

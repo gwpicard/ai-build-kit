@@ -167,10 +167,10 @@ STEP_OF = {
     "adapter": "remove", "kitcopy": "remove", "hook": "remove",
     "commands": "commands", "pointer": "pointers", "helper": "helper",
     "settings": "settings", "template": "template", "fitcheck": "fitcheck",
-    "ready": "ready", "recipe": "recipe", "access": "access",
+    "ready": "ready", "recipe": "recipe", "recipe-format": "recipe-format", "access": "access",
 }
 DECLINABLE = ("installer", "missing", "remove", "commands", "pointers", "settings", "template",
-              "fitcheck", "recipe", "access")
+              "fitcheck", "recipe", "recipe-format", "access")
 # The build-path fields the kit used while it had four build paths.
 FOUR_PATHS = re.compile(r"^\s*(Required controls:|Outside help:|Path:\s*(Build with expert help|Professional-led))")
 APPLIABLE = ("helper", "ready", "remove", "commands", "pointers", "settings", "template",
@@ -269,6 +269,32 @@ def recipe_findings(project):
         if found and os.path.isfile(os.path.join(RECIPES, found.group(2), "recipe.md")):
             return [("recipe", "AGENTS.md:%d" % number, found.group(2))]
     return []
+
+
+def recipe_format_findings(project):
+    """An installed recipe is still recorded with the old Build stack field."""
+    path = os.path.join(project, "AGENTS.md")
+    try:
+        lines = open(path, encoding="utf-8").read().splitlines()
+    except (OSError, UnicodeDecodeError):
+        return []
+    if not any(re.match(r"^\s*(?:[-*]\s+)?`?(?:\*\*)?Build stack:", line) for line in lines):
+        return []
+    declined = set()
+    try:
+        for line in open(os.path.join(project, MAINTENANCE), encoding="utf-8").read().splitlines():
+            if line.startswith("recipe-move-declined|"):
+                fields = line.split("|")
+                if len(fields) > 2:
+                    declined.update(re.split(r"[,\s]+", fields[2]))
+    except (OSError, UnicodeDecodeError):
+        pass
+    out = []
+    for number, line in enumerate(lines, 1):
+        found = re.match(r"^\s*(?:[-*]\s+)?`?(?:\*\*)?Recipe:(?:\*\*)?\s*`?([A-Za-z0-9_-]+)(?:\.md)?`?\s*$", line)
+        if found and found.group(1) not in declined and os.path.isfile(os.path.join(RECIPES, found.group(1), "recipe.md")):
+            out.append(("recipe-format", "AGENTS.md:%d" % number, found.group(1)))
+    return out
 
 
 def apply_recipe(project):
@@ -518,6 +544,7 @@ def findings(project):
     found.extend(templates)
     found.extend(fitcheck_findings(project))
     found.extend(recipe_findings(project))
+    found.extend(recipe_format_findings(project))
     found.extend(access_findings(project))
     found = ready_findings(project) + found
     # A line another step already names is not a mention as well.
@@ -821,6 +848,9 @@ def sentences(out, project):
                      "Recipes are folders now, so that line would read Recipe: %s. The kit "
                      "reads either, so nothing waits on it. I can change that one line and "
                      "nothing else. Shall I?" % (name, name)))
+    if "recipe-format" in by:
+        name = by["recipe-format"][0][2]
+        said.append(("recipe-format", "Your project uses the older %s recipe format. I can offer a move to the current shared stack format, with a piece that names the changed checks and records. Shall I?" % name))
     if "access" in by:
         said.append(("access", ACCESS_WORDS))
     if "mention" in by:
@@ -980,7 +1010,11 @@ def decline(project, steps):
     still = {STEP_OF.get(f[0]) for f in found if not informational(f)}
     if "settings" in steps and "settings" in still:
         subprocess.run(python(SETTINGS, "--decline", project), check=False)
-    keep = sorted(((declined_steps(project) | set(steps)) & still) - {"settings"})
+    if "recipe-format" in steps and "recipe-format" in still:
+        name = next((f[2] for f in found if f[0] == "recipe-format"), None)
+        if name:
+            record_recipe_decline(project, name)
+    keep = sorted(((declined_steps(project) | set(steps)) & still) - {"settings", "recipe-format"})
     path = os.path.join(project, MAINTENANCE)
     try:
         with open(path, encoding="utf-8", newline="") as handle:
@@ -997,6 +1031,23 @@ def decline(project, steps):
         with open(path, "w", encoding="utf-8", newline="") as handle:
             handle.writelines(kept)
     return 0
+
+
+def record_recipe_decline(project, name):
+    path = os.path.join(project, MAINTENANCE)
+    try:
+        with open(path, encoding="utf-8", newline="") as handle:
+            lines = handle.readlines()
+    except OSError:
+        lines = []
+    recipes = sorted(folder for folder in os.listdir(RECIPES)
+                     if os.path.isfile(os.path.join(RECIPES, folder, "recipe.md")))
+    line = "recipe-move-declined|%s|%s|%s\n" % (
+        datetime.date.today().isoformat(), name, ",".join(recipes))
+    kept = [entry for entry in lines if not entry.startswith("recipe-move-declined|")]
+    kept.append(line)
+    with open(path, "w", encoding="utf-8", newline="") as handle:
+        handle.writelines(kept)
 
 
 # --- the version and the route ------------------------------------------------

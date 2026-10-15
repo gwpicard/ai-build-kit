@@ -20,6 +20,16 @@ A notice says five things:
   the work goes ahead;
 - that you flag what you can recognise and will miss things.
 
+For document work that sends a file to a model provider, say: “People named
+in these documents are exposed if a file is sent to a model provider. The
+provider receives its contents, which may include personal or confidential
+information. Normally the worker extracts text on the team's server and does
+not call a model. You can keep extraction on that server, take model
+processing out of scope, or carry on and accept that exposure. I can flag
+documents and processing I recognise, but may miss other sensitive material.”
+Give this notice at founding when model processing is chosen, and again when
+that flagged work is built if acceptance has not been recorded.
+
 "This is risky" is not a notice. Naming a cost, a delay, or a rule of the kit's
 own is not a notice either. Say who gets hurt.
 

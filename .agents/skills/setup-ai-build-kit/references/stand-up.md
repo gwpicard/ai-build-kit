@@ -32,11 +32,14 @@ record `Recipe: none`, and do not raise it again. Where no recipe fits the
 shape, the script's line says so; record `Recipe: none` and set up on one
 established, conventional stack.
 
-Once a recipe is chosen, build on its `Build stack:` line and record `Recipe:
+Once a recipe is chosen, build on its fixed stack fields and record `Recipe:
 <folder name>` in AGENTS.md's stack section. Run `scripts/check-tooling.sh
 --recipe <recipe folder>` with the path `recipe-menu.sh` printed. A tool it
 reports missing becomes a setup task for before the first /setup-hosting, named
-once; it never stops founding.
+once; it never stops founding. Run `scripts/use-starter.sh <recipe folder>`
+with that same path. Exit 1: list the clashing files and ask which ones to keep.
+Exit 2: say what could not run. For a project without a recipe, copy
+`templates/foundation/env.example` to `.env.example`.
 
 On any stack, use managed services for sign-ins, payments and files. Never
 hand-build those unless a person who does that work for a living owns a
@@ -57,7 +60,8 @@ If `.github/workflows/checks.yml` is missing, copy it from
 the placeholder `Install and test` commands with the project's real ones, never
 rewriting the file from memory. Leave an older `source-kit-validation` job
 alone. Load the `quality-checks` skill's `references/check-floor.md` for the type check and linter. On
-Build with care, where an area names a boundary, load the
+The launch check reads the live database.
+On Build with care, where an area names a boundary, load the
 `quality-checks` skill's `references/boundary-rules.md` and offer once to have the check hold it.
 Explore privately needs a local check; the other paths need the remote check
 working before shared or live work. Say once: "green means the tests really

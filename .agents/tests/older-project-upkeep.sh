@@ -383,5 +383,27 @@ gone=$(python3 "$CHECK" "$P") || true
 report "a recipe file the kit has no folder for is left to the monthly offer, not rewritten" \
   "$(printf '%s\n' "$gone" | grep -q '^recipe	' && echo no || echo yes)"
 
+# A recipe still named in AGENTS.md can use the old Build stack format even
+# though its current recipe folder is installed. Offer a move once, and a no
+# records the decline without changing the project instructions.
+P="$work/old-recipe-format"
+mkdir -p "$P"
+cp "$TEMPLATES/masterplan.md" "$P/masterplan.md"
+printf '# AGENTS.md\n\n## Stack\n\n- Recipe: nextjs-supabase-on-vercel\n- Build stack: Next.js with TypeScript\n' > "$P/AGENTS.md"
+cp "$P/AGENTS.md" "$work/format-before"
+format=$(python3 "$CHECK" "$P") || true
+report "a project on the old stack format is offered the widened recipe move" \
+  "$(printf '%s\n' "$format" | grep -qx 'recipe-format	AGENTS.md:5	nextjs-supabase-on-vercel' \
+     && printf '%s\n' "$format" | grep '^say	recipe-format	' | grep -q 'current shared stack format' && echo yes || echo no)"
+report "offering the recipe move changes no project file" \
+  "$(cmp -s "$P/AGENTS.md" "$work/format-before" && [ ! -f "$P/.ai-build-kit-maintenance" ] && echo yes || echo no)"
+python3 "$CHECK" --decline recipe-format "$P" >/dev/null
+report "a no records the recipe move decline without editing AGENTS.md" \
+  "$(grep -q '^recipe-move-declined|[0-9-]*|nextjs-supabase-on-vercel|' "$P/.ai-build-kit-maintenance" \
+     && cmp -s "$P/AGENTS.md" "$work/format-before" && echo yes || echo no)"
+format=$(python3 "$CHECK" --monthly "$P") || true
+report "a declined recipe move is not offered again on a monthly visit" \
+  "$(printf '%s\n' "$format" | grep -q '^recipe-format	' && echo no || echo yes)"
+
 echo
 echo "older-project-upkeep.sh: all $passed checks passed"

@@ -1,7 +1,6 @@
 #!/usr/bin/env sh
 # going-live.sh: check the live copy on Coolify runs main and is checked by
-# Coolify, from what was pasted back, and that no table is open to anyone
-# holding the public key, which the kit reads itself.
+# Coolify, from what was pasted back.
 #
 # Usage: going-live.sh --pasted <file>
 #   DB_PASSWORD_FILE  where the database password is kept, for the table read
@@ -12,12 +11,12 @@
 # A finished newest deployment, the first one the paste names, the check's own
 # path, port and host settings at /api/health, 3000 and 127.0.0.1, a healthy
 # container, "database":"ok" and a commit equal
-# to `git rev-parse origin/main` pass. The shared rls.sh lists the public
-# tables with row-level security off.
+# to `git rev-parse origin/main` pass. The row rules check reads the live
+# database at launch.
 #
-# Exit 0 when all of that holds, 1 when a part fails, 2 when there is no paste,
-# a part of it cannot be read, or the paste passes while the table read could
-# not run. A paste that cannot be read ends with the recipe's fixed question.
+# Exit 0 when all of that holds, 1 when a part fails, or 2 when there is no
+# paste or a part of it cannot be read. A paste that cannot be read ends with
+# the recipe's fixed question.
 
 set -u
 here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)

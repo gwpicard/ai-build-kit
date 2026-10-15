@@ -70,6 +70,14 @@ product-named
 command-loads-command
 command-over-budget
 background-one-caller
+recipe-framework-major
+recipe-worker-coolify-only
+recipe-fits-category
+recipe-starter-path
+recipe-deferred-launch-script
+starter-copy-overwrites
+read-only-db-privilege
+worker-queue-name
 secrets-read-guard
 redactor-top-level-only
 pre-push-reversed-range
@@ -124,6 +132,14 @@ describe() {
     command-loads-command) echo "a command reaches into another command's references instead of calling a background skill" ;;
     command-over-budget) echo "a command grows past its word budget" ;;
     background-one-caller) echo "a background skill is left with one caller and no agent that loads it" ;;
+    recipe-framework-major) echo "a recipe accepts a framework without a pinned major version" ;;
+    recipe-worker-coolify-only) echo "a recipe outside Coolify accepts the Python document worker" ;;
+    recipe-fits-category) echo "a recipe accepts a category outside the research list" ;;
+    recipe-starter-path) echo "a recipe accepts a starter path that does not exist" ;;
+    recipe-deferred-launch-script) echo "a launch section can defer its script to a future part" ;;
+    starter-copy-overwrites) echo "recipe starter copying replaces a project file it should refuse to touch" ;;
+    read-only-db-privilege) echo "the existing database check stops checking whether the user can insert rows" ;;
+    worker-queue-name) echo "the worker check looks for a different queue than the migration creates" ;;
     secrets-read-guard) echo "the Claude read guard stops refusing environment files" ;;
     redactor-top-level-only) echo "nested Read and Grep text fields escape result redaction" ;;
     pre-push-reversed-range) echo "an existing-branch push scans the wrong commit range" ;;
@@ -159,6 +175,10 @@ checks_for() {
     command-loads-command) echo "validate-kit" ;;
     command-over-budget) echo "validate-kit" ;;
     background-one-caller) echo "validate-kit" ;;
+    recipe-framework-major|recipe-worker-coolify-only|recipe-fits-category|recipe-starter-path|recipe-deferred-launch-script) echo "recipes" ;;
+    starter-copy-overwrites) echo "starter-copy-rehearsal" ;;
+    read-only-db-privilege) echo "read-only-database" ;;
+    worker-queue-name) echo "python-worker-check" ;;
     secrets-read-guard) echo "secrets-gates" ;;
     redactor-top-level-only) echo "secrets-gates" ;;
     pre-push-reversed-range) echo "push-guard" ;;
@@ -186,6 +206,86 @@ apply() {
   name=$1
   tree=$2
   case "$name" in
+    recipe-framework-major)
+      edit "$tree/.agents/tools/check-recipes.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = """if not re.fullmatch(r\"[A-Za-z][A-Za-z0-9 .+-]*?\\s+\\d+\", value) or re.search(r\"\\b(or|latest)\\b\", value, re.I):"""
+assert old in t, "pinned framework major check not found"
+open(p, "w").write(t.replace(old, "if False and (not re.fullmatch(r\"[A-Za-z][A-Za-z0-9 .+-]*?\\s+\\d+\", value) or re.search(r\"\\b(or|latest)\\b\", value, re.I)):", 1))
+'
+      ;;
+    recipe-worker-coolify-only)
+      edit "$tree/.agents/tools/check-recipes.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "        if \"Python document worker\" in value and (not deploy or \"Coolify\" not in deploy.group(1)):"
+assert old in t, "Coolify-only worker guard not found"
+open(p, "w").write(t.replace(old, "        if False and \"Python document worker\" in value and (not deploy or \"Coolify\" not in deploy.group(1)):", 1))
+'
+      ;;
+    recipe-fits-category)
+      edit "$tree/.agents/tools/check-recipes.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "if not categories or any(value not in FIT_CATEGORIES for value in categories):"
+assert old in t, "Fits category check not found"
+open(p, "w").write(t.replace(old, "if False and (not categories or any(value not in FIT_CATEGORIES for value in categories)):", 1))
+'
+      ;;
+    recipe-starter-path)
+      edit "$tree/.agents/tools/check-recipes.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "if value != \"coming\" and not os.path.exists(os.path.join(base, value)):"
+assert old in t, "Starter path check not found"
+open(p, "w").write(t.replace(old, "if False and value != \"coming\" and not os.path.exists(os.path.join(base, value)):", 1))
+'
+      ;;
+    recipe-deferred-launch-script)
+      edit "$tree/.agents/tools/check-recipes.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "allowed = section in COMING_SECTIONS and script in"
+assert old in t, "deferred-script section boundary not found"
+open(p, "w").write(t.replace(old, "allowed = True and script in", 1))
+'
+      ;;
+    starter-copy-overwrites)
+      edit "$tree/.agents/skills/setup-ai-build-kit/scripts/use-starter.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "if clashes:\n    print(\"refused: these starter files already exist:\", file=sys.stderr)"
+assert old in t, "starter clash refusal not found"
+open(p, "w").write(t.replace(old, "if False and clashes:\n    print(\"refused: these starter files already exist:\", file=sys.stderr)", 1))
+'
+      ;;
+    read-only-db-privilege)
+      edit "$tree/.agents/skills/setup-hosting/recipes/parts/scripts/read-only-database.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "has_table_privilege(current_user,c.oid,\x27INSERT\x27)"
+assert old in t, "INSERT privilege read not found"
+open(p, "w").write(t.replace(old, "false", 1))
+'
+      ;;
+    worker-queue-name)
+      edit "$tree/.agents/skills/setup-hosting/recipes/parts/scripts/python-worker-check.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "pgmq.q_document_jobs"
+assert old in t, "document queue name not found"
+open(p, "w").write(t.replace(old, "pgmq.q_wrong_jobs", 1))
+'
+      ;;
     reach-route-groups)
       edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
 import os

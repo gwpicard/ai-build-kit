@@ -155,7 +155,6 @@ scan-secrets.sh|.agents/hooks/scan-secrets.sh
 scan-secrets.py|.agents/hooks/scan-secrets.py
 plan-refresh.sh|.agents/tools/plan-refresh.sh
 codex-github-check.py|.agents/tools/codex-github-check.py
-env.example|.env.example
 gitignore|.gitignore
 FOUNDATION_FILES
 
@@ -201,7 +200,6 @@ scan-secrets.sh|.agents/hooks/scan-secrets.sh
 scan-secrets.py|.agents/hooks/scan-secrets.py
 plan-refresh.sh|.agents/tools/plan-refresh.sh
 codex-github-check.py|.agents/tools/codex-github-check.py
-env.example|.env.example
 gitignore|.gitignore
 FOUNDATION_FILES
 

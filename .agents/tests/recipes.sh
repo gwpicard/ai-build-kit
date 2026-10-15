@@ -24,7 +24,28 @@ HELPER_LINE='. "$ROOT/.agents/tests/lib/recipe-rehearsal.sh"'
 GOOD="$WORK/recipes/example-pair"
 mkdir -p "$GOOD/scripts" "$WORK/recipes/parts/scripts"
 sed -e 's/YYYY-MM-DD/2024-02-29/' -e 's/^Who runs it: .*/Who runs it: a person looking/' \
-  -e 's#^Script: .*#Script: scripts/check.sh#' -e 's/<[^>]*>/filled in/g' "$BLANK" > "$GOOD/recipe.md"
+  -e 's#^Script: .*#Script: scripts/check.sh#' -e 's#^Framework: .*#Framework: Next.js 16#' \
+  -e 's#^Starter: .*#Starter: coming#' \
+  -e 's#^Work-team default: .*#Work-team default: no#' \
+  -e 's#^Language: .*#Language: TypeScript#' \
+  -e 's#^Typing: .*#Typing: TypeScript tsc#' \
+  -e 's#^Database: .*#Database: Supabase Postgres#' \
+  -e 's#^Sign-in: .*#Sign-in: Supabase Auth#' \
+  -e 's#^Email: .*#Email: Resend#' \
+  -e 's#^Files: .*#Files: Supabase Storage#' \
+  -e 's#^Jobs: .*#Jobs: Supabase Cron and Queues#' \
+  -e 's#^Testing: .*#Testing: Vitest and Playwright#' \
+  -e 's#^Linting: .*#Linting: ESLint#' \
+  -e 's#^Optional parts: .*#Optional parts: none#' \
+  -e 's#^Health-check tool: .*#Health-check tool: curl#' \
+  -e 's#^Fits: .*#Fits: Project and task trackers#' \
+  -e 's#^Shared stack: .*#Shared stack: [stack](../parts/stack.md)#' \
+  -e 's/<[^>]*>/filled in/g' "$BLANK" > "$GOOD/recipe.md"
+{
+  for section in "Sign-in and roles" "Row rules" Files Jobs Email "Project check" Updates; do
+    printf '## %s\nHow it works: example\nHow it is checked: example\nScript: coming in part D\nWho runs it: the kit\n\n' "$section"
+  done
+} > "$WORK/recipes/parts/stack.md"
 printf '#!/usr/bin/env sh\nexit 0\n' > "$GOOD/scripts/check.sh"
 cp "$GOOD/scripts/check.sh" "$GOOD/scripts/live-check.sh"
 chmod +x "$GOOD/scripts/check.sh" "$GOOD/scripts/live-check.sh"
@@ -40,6 +61,12 @@ chmod +x "$GOOD/scripts/check.sh" "$GOOD/scripts/live-check.sh"
 
 "$CHECKER" --template "$BLANK" >/dev/null
 ok "the blank has the shape it asks for"
+set +e
+"$CHECKER" >/dev/null 2>&1
+status=$?
+set -e
+[ "$status" -eq 2 ] || fail "the recipe shape checker did not report an unusable invocation as could not run"
+ok "the recipe shape checker reports could not run for an unusable invocation"
 
 mkdir -p "$WORK/blank/scripts"
 cp "$BLANK" "$WORK/blank/recipe.md"
@@ -50,8 +77,36 @@ ok "an unfilled blank is refused as a recipe"
 
 "$CHECKER" "$GOOD" >/dev/null
 ok "a filled recipe folder passes, dated on a leap day"
+sed 's#^Optional parts: none$#Optional parts: read-only existing database#' "$GOOD/recipe.md" > "$WORK/optional-recipe.md"
+cp "$WORK/optional-recipe.md" "$GOOD/recipe.md"
+"$CHECKER" "$GOOD" >/dev/null || fail "a recipe naming an available optional part was refused"
+sed 's#^Optional parts: read-only existing database$#Optional parts: read-only existing database and Python document worker#' "$GOOD/recipe.md" > "$WORK/optional-recipe.md"
+cp "$WORK/optional-recipe.md" "$GOOD/recipe.md"
+if "$CHECKER" "$GOOD" >/dev/null 2>&1; then
+  fail "a non-Coolify recipe accepted the Python document worker"
+fi
+sed -e 's#^Optional parts: read-only existing database and Python document worker$#Optional parts: read-only existing database and Python document worker#' \
+  -e 's#^Deploy target: .*#Deploy target: Coolify#' "$GOOD/recipe.md" > "$WORK/optional-recipe.md"
+cp "$WORK/optional-recipe.md" "$GOOD/recipe.md"
+"$CHECKER" "$GOOD" >/dev/null || fail "a Coolify recipe naming the Python document worker was refused"
+sed 's#^Optional parts: read-only existing database and Python document worker$#Optional parts: none#' "$GOOD/recipe.md" > "$WORK/optional-recipe.md"
+cp "$WORK/optional-recipe.md" "$GOOD/recipe.md"
 "$CHECKER" "$GOOD/recipe.md" >/dev/null
 ok "the same recipe passes when its recipe.md is named"
+mkdir -p "$GOOD/starters/example"
+sed 's#^Starter: coming$#Starter: starters/example#' "$GOOD/recipe.md" > "$WORK/starter-path.md"
+cp "$WORK/starter-path.md" "$GOOD/recipe.md"
+"$CHECKER" "$GOOD" >/dev/null || fail "a Starter path that exists was refused"
+sed 's#^Starter: starters/example$#Starter: coming#' "$WORK/starter-path.md" > "$GOOD/recipe.md"
+ok "Starter accepts coming or an existing path"
+
+cp "$WORK/recipes/parts/stack.md" "$WORK/stack.before"
+sed '/^## Email$/d' "$WORK/stack.before" > "$WORK/recipes/parts/stack.md"
+if "$CHECKER" "$GOOD" >/dev/null; then
+  fail "a recipe whose shared stack part is missing a required section passed"
+fi
+cp "$WORK/stack.before" "$WORK/recipes/parts/stack.md"
+ok "a shared stack missing a required section is refused"
 
 copy() {
   # copy: a fresh copy of the good recipe at $WORK/mutant, printed.
@@ -78,8 +133,29 @@ for section in Preview "Going live" Rollback Backup Restore Secrets Logs Health 
   refused "no $section section" recipe.md "/^## $section\$/d"
 done
 refused "no Fits line" recipe.md '/^Fits:/d'
+refused "an unknown Fits category" recipe.md 's/^Fits: .*/Fits: made up category/'
 refused "no Recommended when line" recipe.md '/^Recommended when:/d'
-refused "no Build stack line" recipe.md '/^Build stack:/d'
+refused "no Work-team default line" recipe.md '/^Work-team default:/d'
+refused "no Language line" recipe.md '/^Language:/d'
+refused "a Database line that does not name one tool" recipe.md 's/^Database: .*/Database: none, use a spreadsheet/'
+refused "Framework without a pinned major" recipe.md 's/^Framework: .*/Framework: Next.js/'
+# Check the specific reason too. Otherwise the allowed-tool list can reject
+# Next.js after a broken pinned-major guard and make the mutation look caught.
+m=$(copy)
+sed 's/^Framework: .*/Framework: Next.js/' "$GOOD/recipe.md" > "$m/recipe.md"
+output=$("$CHECKER" "$m" 2>&1) && fail "an unpinned framework passed"
+case "$output" in
+  *"Framework must name one tool and one pinned major version"*) ok "an unpinned framework is refused by the pinned-major rule" ;;
+  *) fail "an unpinned framework failed for another reason: $output" ;;
+esac
+refused "Framework with an unlisted major" recipe.md 's/^Framework: .*/Framework: Next.js 15/'
+refused "Framework with alternatives" recipe.md 's/^Framework: .*/Framework: Next.js 16 or latest/'
+refused "Starter without coming or a real path" recipe.md 's#^Starter: .*#Starter: starters/missing#'
+refused "an unknown optional part" recipe.md 's/^Optional parts: .*/Optional parts: fantasy worker/'
+refused "an unknown health-check tool" recipe.md 's/^Health-check tool: .*/Health-check tool: ping/'
+refused "a legacy Build stack field" recipe.md '/^Build stack:/d; /^Language:/a\
+Build stack: old format'
+refused "no shared stack link" recipe.md '/^Shared stack:/d'
 refused "no Deploy target line" recipe.md '/^Deploy target:/d'
 refused "no Command-line tools line" recipe.md '/^Command-line tools:/d'
 refused "no Last checked line" recipe.md '/^Last checked:/d'
@@ -93,6 +169,8 @@ refused "one section that does not say how it works" recipe.md '/^## Backup$/,/^
 refused "one section that does not say what a pass means" recipe.md '/^## Health$/,/^## /{/^How it is checked:/d;}'
 refused "one section that does not say who runs it" recipe.md '/^## Secrets$/,/^## /{/^Who runs it:/d;}'
 refused "one section that names no script" recipe.md '/^## Logs$/,/^## /{/^Script:/d;}'
+refused "a launch section that defers its script" recipe.md '/^## Going live$/,/^## /s#^Script: .*#Script: coming in part D#'
+refused "Access that defers its script" recipe.md '/^## Access$/,/^## /s#^Script: .*#Script: coming in part D#'
 refused "a script that is not there" recipe.md '/^## Logs$/,/^## /s#^Script: .*#Script: scripts/missing.sh#'
 refused "a script outside its scripts folder" recipe.md '/^## Logs$/,/^## /s#^Script: .*#Script: ../check.sh#'
 refused "a section a person runs with no Ask line" recipe.md '/^## Preview$/,/^## /{/^Ask:/d;}'
@@ -194,6 +272,20 @@ printf '%s\n' 'How it works: filled in' 'How it is checked: filled in' 'Script: 
 printf '#!/usr/bin/env sh\nexit 0\n' > "$PARTS/scripts/shared.sh"
 chmod +x "$PARTS/scripts/shared.sh"
 cp "$PARTS/whole.md" "$PARTS/shared.md"
+
+# A deferred script belongs only to a named stack section, never launch or
+# access. Each case starts with the complete, otherwise valid shared part.
+for deferred in "## Project check|coming in part D" "## Files|coming in part B"; do
+  section=${deferred%%|*}; marker=${deferred#*|}
+  awk -v section="$section" -v marker="$marker" '
+    $0 == section { inside = 1 }
+    inside && /^Script:/ { $0 = "Script: " marker; inside = 0 }
+    { print }
+  ' "$WORK/recipes/parts/stack.md" > "$WORK/stack-deferred.md"
+  cp "$WORK/stack-deferred.md" "$WORK/recipes/parts/stack.md"
+  "$CHECKER" "$GOOD" >/dev/null || fail "a shared stack section may defer its script"
+done
+ok "named shared-stack sections may defer scripts for parts B to D"
 LINKED="$WORK/recipes/linked"
 cp -R "$GOOD" "$LINKED"
 # The backup section's own lines go, and a link to the part takes their place.
@@ -225,6 +317,14 @@ if "$CHECKER" "$LINKED" >/dev/null; then
   fail "a recipe linking a part with no Who runs it line passed"
 fi
 ok "a shared part missing a line is refused, on its own and through the recipe"
+
+for label in 'How it works' 'How it is checked' 'Script'; do
+  sed "/^$label:/d" "$PARTS/whole.md" > "$PARTS/shared.md"
+  if "$CHECKER" --part "$PARTS/shared.md" >/dev/null; then
+    fail "a shared part missing $label passed"
+  fi
+done
+ok "a shared part missing its explanation, outcome or script is refused"
 
 sed 's#^Script: .*#Script: scripts/absent.sh#' "$PARTS/whole.md" > "$PARTS/shared.md"
 if "$CHECKER" "$LINKED" >/dev/null; then

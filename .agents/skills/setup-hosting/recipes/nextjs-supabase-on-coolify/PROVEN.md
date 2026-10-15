@@ -6,6 +6,14 @@ section.
 
 Real run: 2026-09-25
 
+Sign-in and roles: No real run yet; added 2026-10-14.
+Row rules: No real run yet; added 2026-10-14.
+Files: No real run yet; added 2026-10-14.
+Jobs: No real run yet; added 2026-10-14.
+Email: No real run yet; added 2026-10-14.
+Project check: No real run yet; added 2026-10-14.
+Updates: No real run yet; added 2026-10-14.
+
 The run used a throwaway private app on a Hetzner cpx22 server running Coolify 4.3.23, set up by the coolify-devops 0.4.0 companion. The app had no domain. It ran on the internal lane, reached over the team's private network through a Tailscale Service that docktail registered. The Supabase Free plan had no room for a second active project, so previews and live shared one Supabase project on this run.
 
 Preview: Previews were off on the new app, and Coolify answered the first pull request with "Preview deployments disabled." The companion's tools refused the setting, and the run missed the Enable preview deployments button on the Preview Deployments page, so the operator's session on the server switched previews on through Coolify's API. A pull request then built into its own container on its own commit, which passed Coolify's health check. Read on the server, `/api/health` gave 200, `"database":"ok"` and the pull request's commit. The app has no domain, so the preview got no address, it was not registered on the private network, and the person could not open it. The companion's maintainer reads Coolify's own code as confirming both: a pull request deployment replaces the app's custom labels, and a preview address needs a domain. After the pull request closed, Coolify's delete job finished within 9 seconds, and the container was seen gone at 27 seconds. This run did not try a preview address on an app with a domain, `{{pr_id}}.{{domain}}`; the second run, below, did. That previews stay off the live database is not proven by this run, since previews and live shared one project.

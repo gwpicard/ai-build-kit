@@ -55,7 +55,17 @@ folder=$(CDPATH= cd -- "$folder" && pwd -P)
 
 # The menu is the folders directly in recipes/ that hold a recipe.md. The
 # parts folder holds none, so it is not on the menu.
-menu=$(find "$folder" -mindepth 2 -maxdepth 2 -type f -name recipe.md | sed 's#/recipe\.md$##' | while IFS= read -r d; do basename -- "$d"; done | LC_ALL=C sort)
+menu=$(find "$folder" -mindepth 2 -maxdepth 2 -type f -name recipe.md | while IFS= read -r path; do
+  basename -- "$(dirname -- "$path")"
+done | LC_ALL=C sort)
+defaults=$(for f in $menu; do
+  [ "$(sed -n 's/^Work-team default: yes (\(.*\))$/\1/p' "$folder/$f/recipe.md" | head -n 1)" ] && echo "$f"
+done || true)
+[ "$(printf '%s\n' "$defaults" | grep -c . || true)" -le 1 ] || {
+  echo "$me: more than one recipe claims the work-team default" >&2
+  exit 1
+}
+default_recipe=$defaults
 
 on_menu() {
   printf '%s\n' "$menu" | grep -qxF -- "$1"
@@ -84,7 +94,11 @@ fi
 if [ "$none" = yes ]; then
   shown=
 elif [ -n "$fits" ]; then
-  shown=$(printf '%s\n' $fits | LC_ALL=C sort -u)
+  shown=$(printf '%s\n' "$menu" | while IFS= read -r f; do
+    for fit in $fits; do
+      if [ "$f" = "$fit" ]; then echo "$f"; break; fi
+    done
+  done)
 else
   shown=$menu
 fi
@@ -143,25 +157,37 @@ printf '%s\n' "$shown" | while IFS= read -r f; do
   echo "$f"
   echo "  Name: $(name_of "$f")"
   for label in Fits 'Recommended when' 'Deploy target' 'Plan terms'; do
-    value=$(line_of "$f" "$label")
-    [ -z "$value" ] || echo "  $label: $value"
+    if [ "$label" = 'Plan terms' ]; then
+      sed -n 's/^Plan terms: /  Plan terms: /p' "$folder/$f/recipe.md"
+    else
+      value=$(line_of "$f" "$label")
+      [ -z "$value" ] || echo "  $label: $value"
+    fi
   done
 done
 
+echo
+echo "Say this in your reply, as written, before the stand-up begins:"
+if [ -n "$default_recipe" ] && printf '%s\n' "$shown" | grep -qxF "$default_recipe"; then
+  n=0
+  for f in $shown; do n=$((n + 1)); [ "$f" = "$default_recipe" ] && break; done
+  title=$(name_of "$default_recipe")
+  plans=$(sed -n 's/^Work-team default: yes (\(.*\))$/\1/p' "$folder/$default_recipe/recipe.md" | head -n 1)
+  echo "Work-team default: recipe $n, $title; needs $plans."
+fi
+
 if [ -z "$recommend" ]; then
   echo
-  echo "Several recipes fit. Choose the one whose Recommended when: line best matches the interview, or the first by name when none or several match, and run this again with --recommend <recipe>."
+  echo "Several recipes fit. Choose the one whose Recommended when: line best matches the interview, or the first recipe in the menu when none or several match, and run this again with --recommend <recipe>."
   exit 3
 fi
 
-echo
-echo "Say this in your reply, as written, before the stand-up begins:"
 if [ "$count" -eq 1 ]; then
   echo "The kit has one recipe for a tool like this: a way to build it and run it that the kit can check at launch."
 else
   echo "The kit has $count recipes for a tool like this. Each is a way to build it and run it that the kit can check at launch."
 fi
-n=0
+  n=0
 printf '%s\n' "$shown" | while IFS= read -r f; do
   n=$((n + 1))
   if [ "$f" = "$recommend" ]; then
@@ -170,4 +196,4 @@ printf '%s\n' "$shown" | while IFS= read -r f; do
     echo "$n. $(name_of "$f")"
   fi
 done
-echo "$(name_of "$recommend") is the default. Founding carries on with it unless you pick another recipe, and you may bring your own stack instead."
+echo "$(name_of "$recommend") is selected. Founding carries on with it unless you pick another recipe, and you may bring your own stack instead."

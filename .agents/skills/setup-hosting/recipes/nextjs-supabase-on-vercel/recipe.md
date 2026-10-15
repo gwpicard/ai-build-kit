@@ -1,13 +1,30 @@
-# Recipe: Next.js and hosted Supabase on Vercel
+# Recipe: Next.js 16, TypeScript and Supabase on Vercel
 
-Fits: a web app people use in a browser, with sign-in and saved data
+Fits: Dashboards and reporting on existing data; Admin panels and back office over an existing database; Approvals and request workflows; CRMs, contact trackers and sales tools; Light ERP: stock, orders, purchasing, assets; Client, vendor and partner portals; Project and task trackers; HR and onboarding; Case management, tickets and incident logs; Booking and scheduling; Forms and data collection; AI assistants over team documents
 Recommended when: the team has no server of its own and wants the host to handle previews, going live and rollback. A private tool needs each person to hold a Vercel account with access, and Hobby allows one outside person.
-Build stack: Next.js with TypeScript and the App Router, with a Dockerfile that Vercel ignores, and the database and sign-in in a hosted Supabase project whose tables are made by migrations
+Language: TypeScript
+Framework: Next.js 16
+Typing: TypeScript tsc
+Database: Supabase Postgres
+Sign-in: Supabase Auth
+Email: Resend
+Files: Supabase Storage
+Jobs: Supabase Cron and Queues
+Testing: Vitest and Playwright
+Linting: ESLint
+Starter: ../parts/starters/nextjs-supabase
+Optional parts: read-only existing database
+Work-team default: yes (Vercel Pro, Supabase Pro)
 Deploy target: Vercel, with the project's GitHub repository connected so that each push builds
 Command-line tools: vercel, supabase, docker, psql, curl, git
-Last checked: 2026-09-25
-Plan terms: Vercel's free Hobby plan is for personal, non-commercial use only, and Vercel counts a tool built by a paid employee as commercial, so a work team needs the paid Pro plan (read 2026-09-28 at https://vercel.com/docs/limits/fair-use-guidelines#commercial-usage)
+Health-check tool: curl
+Last checked: 2026-10-14
+
+Shared stack: [Next.js, TypeScript and Supabase](../parts/nextjs-supabase-stack.md)
 Database types check: `if [ ! -f types/database.ts ] || ! git ls-files --error-unmatch types/database.ts >/dev/null 2>&1; then echo 'could not run: types/database.ts is missing or untracked'; exit 2; fi; if ! supabase status >/dev/null 2>&1; then echo 'could not run: local Supabase is not running'; exit 2; fi; tmp=$(mktemp) || exit 2; trap 'rm -f "$tmp"' EXIT; supabase gen types typescript --local > "$tmp" || { echo 'could not run: database types could not be generated'; exit 2; }; diff -u types/database.ts "$tmp"`
+Plan terms: Supabase Free pauses projects after 7 days of low activity and has no backups; teams use Pro (read 2026-10-14 at https://supabase.com/docs/guides/platform/free-project-pausing and https://supabase.com/docs/guides/platform/backups)
+Plan terms: See stack for Vercel Hobby terms (read 2026-10-14 at https://vercel.com/docs/limits/fair-use-guidelines)
+Plan terms: See stack for preview terms (read 2026-10-14 at https://vercel.com/docs/deployment-protection/methods-to-protect-deployments/vercel-authentication)
 
 ## Preview
 
@@ -20,7 +37,7 @@ Ask: Open the preview address signed in to Vercel, try the change, and tell me w
 ## Going live
 
 How it works: Vercel does not run migrations, so before the build that needs them the kit applies them to the live database with `../parts/scripts/migrate.sh --apply <live project ref>`. A migration only adds, so the version still live keeps working. Before the merge, the kit runs the Health part's container check, so the build that goes live has already answered here. Vercel then builds `main` and moves the production address to the new build once it succeeds. The health route reports the commit from `VERCEL_GIT_COMMIT_SHA`.
-How it is checked: The live address answers 200 with the database reachable and the commit on `main`, and no public table is open to anyone holding the public key, beyond the ones on the record.
+How it is checked: The live address answers 200 with the database reachable and the commit on `main`, and no public table is open to anyone holding the public key beyond the ones on the record.
 Script: scripts/going-live.sh
 Who runs it: the kit
 

@@ -9,14 +9,15 @@
 #                     separated by commas
 #
 # The live address's /api/health must answer 200 with "database":"ok", and
-# its commit must equal `git rev-parse origin/main`. Behind Vercel's sign-in
+# its commit must equal `git rev-parse origin/main`. DB_PASSWORD_FILE points
+# to the database password file, and TABLES_ON_RECORD names recorded public
+# tables, separated by commas. Behind Vercel's sign-in
 # it is read as check-lib.sh's cl_live_health says. The
-# health route reports the commit from VERCEL_GIT_COMMIT_SHA. The shared
-# `rls.sh` lists public tables with row-level security off; none, or only
-# tables on the record, passes.
+# health route reports the commit from VERCEL_GIT_COMMIT_SHA. The row rules
+# check reads the live database at launch.
 #
-# Exit 0 when both pass, 1 when either fails, 2 when the live address could
-# not be read, or answered well while the table read could not run.
+# Exit 0 when the live address runs main and reaches its database, 1 when it
+# fails, or 2 when the live address could not be read.
 
 set -u
 here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
