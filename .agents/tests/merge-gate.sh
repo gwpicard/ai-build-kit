@@ -13,7 +13,9 @@ git -C "$WORK/project" init -q -b main
 git -C "$WORK/project" config user.name Rehearsal
 git -C "$WORK/project" config user.email rehearsal@example.invalid
 printf 'value = 1\n' > "$WORK/project/app/data.py"
+printf 'Path: Explore privately\n' > "$WORK/project/masterplan.md"
 git -C "$WORK/project" add app/data.py
+git -C "$WORK/project" add masterplan.md
 git -C "$WORK/project" commit -q -m base
 BASE=$(git -C "$WORK/project" rev-parse HEAD)
 git -C "$WORK" init -q --bare remote.git
@@ -78,24 +80,14 @@ check_merge() {
     || fail "settled body returned $code or did not merge: $out / $(cat "$GH_LOG")"
 }
 
-set_open_map() {
-  cat > "$WORK/project/masterplan.md" <<'EOF'
-Path: Build with care
-
-Sensitive areas:
-  Health:
-    paths: app
-EOF
-}
-set_accepted_map() {
-  cat > "$WORK/project/masterplan.md" <<'EOF'
-Path: Build with care
-
-Sensitive areas:
-  Health:
-    paths: app
-    Accepted: yes, 2026-10-14
-EOF
+set_head_map() {
+  git -C "$WORK/project" checkout -q feature
+  cat > "$WORK/project/masterplan.md"
+  git -C "$WORK/project" add masterplan.md
+  git -C "$WORK/project" commit -q --amend --no-edit
+  HEAD_SHA=$(git -C "$WORK/project" rev-parse HEAD)
+  git -C "$WORK/project" push -q -f origin feature
+  git -C "$WORK/project" checkout -q main
 }
 
 out=$(PATH="$WORK/bin:$PATH" python3 "$SCRIPT" 12 2>&1) && code=0 || code=$?
@@ -118,6 +110,10 @@ check_hold success $'## Review\n### Worth stopping for\n+ [x] Settled\n* [ ] Sti
 check_hold success $'## Worth stopping for\n- [x] Settled\n* plain finding\n## Worth knowing' 1
 check_hold success $'## Worth knowing\n- fine\n## Worth STOPPING FOR\nA paragraph finding.' 1
 check_merge $'## Worth stopping for\n- [x] settled\n  - sub-bullet\n- None'
+check_merge $'## Worth stopping for\n- [x] settled\n  - sub-bullet\n- None'
+check_merge $'## Worth stopping for\n- None.'
+check_merge $'## Worth stopping for\nNothing worth stopping for'
+check_merge $'## Worth stopping for\n- [x] Settled\n\n  This is an indented continuation note.'
 check_merge $'## Worth knowing\n```md\n## Worth stopping for\n- [ ] example\n```'
 check_hold success $'## Worth knowing\n- fine\n**WORTH STOPPING FOR**\n- [ ] later finding' 1
 check_merge $'## Worth stopping for\n- [x] Settled\n## Worth knowing\n- plain note'
@@ -136,11 +132,17 @@ out=$(run merge-fails '## Worth stopping for' 2>&1) && code=0 || code=$?
 : > "$WORK/git.trace"
 : > "$GH_LOG"
 out=$(run success '## Worth stopping for' 2>&1) && code=0 || code=$?
-[ "$code" -eq 0 ] && ! grep -q 'fetch origin ' "$WORK/git.trace" \
-  && pass "a project without a sensitive-area map skips that check" \
-  || fail "the area check ran without a map ($code): $out / $(cat "$WORK/git.trace")"
+[ "$code" -eq 0 ] && grep -q 'fetch origin ' "$WORK/git.trace" \
+  && pass "the merge reads the pull request head before deciding that no sensitive-area map applies" \
+  || fail "the pull request head was not fetched ($code): $out / $(cat "$WORK/git.trace")"
 
-set_open_map
+set_head_map <<'EOF'
+Path: Build with care
+
+Sensitive areas:
+  Health:
+    paths: app
+EOF
 : > "$GH_LOG"
 out=$(run success '## Worth stopping for' 2>&1) && code=0 || code=$?
 [ "$code" -eq 1 ] && printf '%s' "$out" | grep -q 'Health' \
@@ -148,7 +150,14 @@ out=$(run success '## Worth stopping for' 2>&1) && code=0 || code=$?
   && pass "an open Build with care area holds the merge from main" \
   || fail "an open area did not hold the merge ($code): $out / $(cat "$GH_LOG")"
 
-set_accepted_map
+set_head_map <<'EOF'
+Path: Build with care
+
+Sensitive areas:
+  Health:
+    paths: app
+    Accepted: yes, 2026-10-14
+EOF
 : > "$GH_LOG"
 out=$(run success '## Worth stopping for' 2>&1) && code=0 || code=$?
 [ "$code" -eq 0 ] && printf '%s' "$out" | grep -q 'accepted on 14 October 2026' \

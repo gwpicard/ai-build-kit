@@ -114,28 +114,45 @@ class TotalTest(unittest.TestCase):
 if __name__ == "__main__":
     unittest.main()
 PY
+cat > "$PROJECT/masterplan.md" <<'MD'
+Path: Build with care
+
+Sensitive areas:
+  Data:
+    paths: pricing.py
+    Accepted: yes, 2026-10-14
+MD
 
 # --- running the check the way the hosted runner would ----------------------
 
 # Prints the name of the first step that failed, or nothing when all passed.
 # The Install step is left to the rehearsal, which already provided the tools.
 run_check() {
+  event_name=${1:-pull_request}
   awk '
-    /^ *- name: / { sub(/^ *- name: /, ""); name = $0; next }
+    /^ *- name: / { sub(/^ *- name: /, ""); name = $0; condition = ""; next }
+    /^ *if: / { sub(/^ *if: /, ""); condition = $0; next }
     /^ *run: \|[-+]?$/ { run_indent = match($0, /[^ ]/); command = ""; block = 1; next }
     block && /^[ ]+/ {
       indent = match($0, /[^ ]/)
       if (indent > run_indent) { sub(/^[ ]+/, ""); command = command $0 "\n"; next }
-      print name "\t" command; block = 0
+      printf "%s\034%s\034%s\n", name, condition, command; block = 0
     }
-    /^ *run: /    { sub(/^ *run: /, ""); print name "\t" $0 }
-    END { if (block) print name "\t" command }
+    /^ *run: /    { sub(/^ *run: /, ""); printf "%s\034%s\034%s\n", name, condition, $0 }
+    END { if (block) printf "%s\034%s\034%s\n", name, condition, command }
   ' "$PROJECT/.github/workflows/checks.yml" > "$WORK/steps"
-  tab=$(printf '\t')
-  while IFS="$tab" read -r step command; do
+  separator=$(printf '\034')
+  while IFS="$separator" read -r step condition command; do
     [ "$step" = "Install" ] && continue
+    if [ "$condition" = "github.event_name == 'pull_request'" ] && [ "$event_name" != pull_request ]; then
+      continue
+    fi
     base_sha=$(git -C "$PROJECT" rev-parse refs/remotes/origin/main)
-    if ! (cd "$PROJECT" && PR_BASE_SHA="$base_sha" sh -c "$command") > "$WORK/last-output" 2>&1; then
+    head_sha=$(git -C "$PROJECT" rev-parse HEAD)
+    pr_base=$base_sha
+    [ "$event_name" = pull_request ] || pr_base=
+    if ! (cd "$PROJECT" && GITHUB_EVENT_NAME="$event_name" PR_BASE_SHA="$pr_base" BASE_SHA="$base_sha" \
+        HEAD_SHA="$head_sha" PUSH_BEFORE="$base_sha" PUSH_AFTER="$head_sha" sh -c "$command") > "$WORK/last-output" 2>&1; then
       printf '%s\n' "$step"
       return 0
     fi
@@ -179,6 +196,9 @@ first=$(run_check)
 finished=$(date +%s)
 [ -z "$first" ] || { cat "$WORK/last-output" >&2; fail "the new project's check was red on day one, at $first"; }
 echo "  ok: the founded project's check is green on day one ($((finished - started))s)"
+first=$(run_check push)
+[ -z "$first" ] || { cat "$WORK/last-output" >&2; fail "the push event with an empty pull request base went red at $first"; }
+echo "  ok: a push event stays green with an empty pull request base"
 
 # A type error in code no test reaches.
 cat >> "$PROJECT/pricing.py" <<'PY'
@@ -344,8 +364,8 @@ grep -q '^next typegen$' "$NO_NEXT/calls" && grep -q '^tsc --noEmit$' "$NO_NEXT/
   fail "Next project did not run route generation and tsc"
 echo "  ok: the TypeScript command runs Next typegen only when Next is a dependency"
 
-# Keep an actual Next app beside the command-shape check. Use npm's offline
-# cache so an unavailable package never turns this rehearsal into a network job.
+# Keep an actual Next app beside the command-shape check. Install it when the
+# network is available, and name the limit only when npm cannot reach it.
 NEXT="$WORK/next-project"
 mkdir -p "$NEXT/app"
 cat > "$NEXT/package.json" <<'JSON'
@@ -357,12 +377,15 @@ JSON
 cat > "$NEXT/app/page.tsx" <<'TS'
 export default function Page() { return <main>Next type generation ran.</main>; }
 TS
-if (cd "$NEXT" && npm install --offline --no-audit --no-fund --silent); then
+if (cd "$NEXT" && npm install --no-audit --no-fund --silent); then
   (cd "$NEXT" && npx --no-install next typegen && npx --no-install tsc --noEmit) ||
     fail "the actual Next.js project's typegen and TypeScript check did not pass"
   echo "  ok: next typegen and tsc ran on an actual Next.js project"
 else
-  echo "  could not run: Next.js packages are not available in npm's offline cache"
+  if npm ping --silent --fetch-retries=0 --fetch-timeout=10000 >/dev/null 2>&1; then
+    fail "npm could reach the network, but the actual Next.js packages did not install"
+  fi
+  echo "  could not run: npm could not reach its package registry"
 fi
 
 PROJECT="$WORK/ts-project"

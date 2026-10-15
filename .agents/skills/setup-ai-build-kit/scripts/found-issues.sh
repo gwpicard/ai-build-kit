@@ -38,7 +38,6 @@
 #         line and does not stop the rest.
 # Exit 5: GitHub could not be read, so nothing was changed.
 # Exit 6: origin is the kit's own repository, so nothing was changed.
-# Exit 2: GitHub could not require the project check. The line says why.
 # Exit 2: usage error.
 
 set -u
@@ -89,11 +88,18 @@ if [ "$mode" = refresh ]; then
 fi
 
 protection_status=0
+protection_could_not_run=0
 protection_output=$(python3 "$SKILL_ROOT/../merge/scripts/protect-branch.py" --defer-missing "$repo" main 2>&1) || protection_status=$?
 case "$protection_status" in
   0) printf '%s\n' "$protection_output" ;;
   4) printf 'protection\tdeferred until first upload creates main\n' ;;
-  *) printf '%s\n' "$protection_output" >&2 ;;
+  *)
+    printf '%s\n' "$protection_output" >&2
+    case "$protection_output" in
+      *"account does not have admin rights"*|*"network error"*) ;;
+      *) protection_could_not_run=1 ;;
+    esac
+    ;;
 esac
 
 # The fifteen labels the kit owns, as name|colour|description.
@@ -162,5 +168,7 @@ else
     cp "$SKILL_ROOT/templates/foundation/piece-issue.yml" .github/ISSUE_TEMPLATE/piece.yml &&
     echo "template	copied" || echo "template	not copied"
 fi
-[ "$protection_status" -eq 0 ] || [ "$protection_status" -eq 4 ] || exit 2
+# A network or permission limit is reported in one line, then setup carries
+# on because the merge script holds until the check is available.
+[ "$protection_could_not_run" -eq 0 ] || exit 2
 exit 0

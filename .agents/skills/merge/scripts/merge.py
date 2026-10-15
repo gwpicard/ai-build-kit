@@ -5,6 +5,7 @@ import json
 import re
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 
@@ -57,12 +58,12 @@ def open_review_box(body):
             continue
         if level is None:
             continue
-        if re.match(r"^\s*[-+*]\s+None\s*$", line, re.I):
+        if re.match(r"^\s*(?:[-+*]\s+)?(?:None\.?|Nothing worth stopping for)\s*$", line, re.I):
             continue
         indent = len(line) - len(line.lstrip())
-        item = re.match(r"^\s*(?:[-+*]|\d+[.)])\s+(.+?)\s*$", line)
-        if item and settled_indent is not None and indent > settled_indent:
+        if settled_indent is not None and indent > settled_indent:
             continue
+        item = re.match(r"^\s*(?:[-+*]|\d+[.)])\s+(.+?)\s*$", line)
         if item and (settled_indent is None or indent <= settled_indent):
             settled_indent = None
         if item:
@@ -95,18 +96,6 @@ def check_hold(rows):
             stop("merge: project-check is %s; the pull request stays open" % state)
 
 
-def sensitive_area_map():
-    try:
-        with open("masterplan.md", encoding="utf-8") as handle:
-            lines = handle.read().splitlines()
-    except FileNotFoundError:
-        return False
-    except (OSError, UnicodeError) as error:
-        stop("merge: could not read the sensitive-area map: " + str(error), 2)
-    return (any(line.strip() == "Path: Build with care" for line in lines)
-            and any(line.strip() == "Sensitive areas:" for line in lines))
-
-
 def kit_area_check():
     here = Path(__file__).resolve()
     for parent in here.parents:
@@ -129,9 +118,19 @@ def check_sensitive_area(base, head):
         detail = (fetch.stderr or fetch.stdout).strip()
         stop("merge: could not fetch the pull request commits" +
              (": " + detail if detail else ""), 2)
+    plan = subprocess.run(["git", "show", head + ":masterplan.md"], text=True,
+                          capture_output=True)
+    if plan.returncode != 0:
+        if "masterplan.md" in (plan.stderr or ""):
+            return
+        stop("merge: could not read the pull request's masterplan", 2)
     try:
-        result = subprocess.run(["sh", script, "--change", base, "--head", head],
-                                text=True, capture_output=True)
+        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", suffix=".md") as handle:
+            handle.write(plan.stdout)
+            handle.flush()
+            result = subprocess.run(["sh", script, "--change", base, "--head", head,
+                                     "--masterplan", handle.name],
+                                    text=True, capture_output=True)
     except OSError:
         stop("merge: could not run the sensitive-area check", 2)
     if result.stdout:
@@ -161,8 +160,7 @@ def main(argv):
     head = data["headRefOid"]
     if not data.get("baseRefOid"):
         stop("merge: GitHub returned an unreadable pull request base", 2)
-    if sensitive_area_map():
-        check_sensitive_area(data["baseRefOid"], head)
+    check_sensitive_area(data["baseRefOid"], head)
 
     checks = gh("pr", "checks", number, "--json", "name,state,bucket")
     if checks.returncode == 1 and not checks.stdout.strip() and "no checks reported" in checks.stderr:

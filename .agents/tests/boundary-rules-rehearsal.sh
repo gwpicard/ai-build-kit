@@ -138,9 +138,10 @@ for (const args of [['init', '-q', '-b', 'main'], ['add', '-A'], ['commit', '-q'
 
 // --- running the check the way the hosted runner would ----------------------
 
-function runCheck() {
+function runCheck(eventName = 'pull_request') {
   const steps = [];
   let name = null;
+  let condition = null;
   let runIndent = null;
   let contentIndent = null;
   let command = '';
@@ -156,26 +157,31 @@ function runCheck() {
         command += line.slice(contentIndent) + '\n';
         continue;
       }
-      steps.push([name, command.trimEnd()]);
+      steps.push([name, command.trimEnd(), condition]);
       runIndent = null;
       contentIndent = null;
       command = '';
+      condition = null;
     }
     const n = line.match(/^ *- name: (.+)$/);
     if (n) { name = n[1]; continue; }
+    const c = line.match(/^ *if: (.+)$/);
+    if (c) { condition = c[1]; continue; }
     const r = line.match(/^( *)run: (.*)$/);
     if (r && /^\|[+-]?$/.test(r[2])) {
       runIndent = r[1].length;
       continue;
     }
-    if (r) steps.push([name, r[2]]);
+    if (r) steps.push([name, r[2], condition]);
   }
-  if (runIndent !== null) steps.push([name, command.trimEnd()]);
+  if (runIndent !== null) steps.push([name, command.trimEnd(), condition]);
   // A pull request event gives the steps the base commit; origin/main stands in.
   const baseSha = spawnSync('git', ['rev-parse', 'refs/remotes/origin/main'], { cwd: project, encoding: 'utf8' }).stdout.trim();
-  for (const [step, command] of steps) {
+  for (const [step, command, condition] of steps) {
+    if (condition === "github.event_name == 'pull_request'" && eventName !== 'pull_request') continue;
     const result = spawnSync('sh', ['-c', command], { cwd: project, encoding: 'utf8', timeout: 120000,
-      env: { ...process.env, PR_BASE_SHA: baseSha } });
+      env: { ...process.env, GITHUB_EVENT_NAME: eventName,
+        PR_BASE_SHA: eventName === 'pull_request' ? baseSha : '' } });
     assert.ifError(result.error);
     if (result.status !== 0) return { step, output: result.stdout + result.stderr };
   }
@@ -185,6 +191,9 @@ function runCheck() {
 let result = runCheck();
 assert.equal(result.step, null, `the check was red on the day the rule was added, at ${result.step}:\n${result.output}`);
 console.log('  ok: the rule passes on the project as it stands');
+result = runCheck('push');
+assert.equal(result.step, null, `a push with no pull request base was red at ${result.step}:\n${result.output}`);
+console.log('  ok: a push event stays green with an empty pull request base');
 
 // A change reaches the ledger without going through the charge step.
 put('src/reports/sum.js', "import { ledger } from '../billing/ledger.js';\nexport const sum = () => ledger.length;\n");

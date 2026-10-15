@@ -116,14 +116,9 @@ the printout. Then follow `references/after-merge.md`.
 
 ## A check GitHub did not start
 
-Where GitHub did not start the check at all, such as for billing or Actions
-switched off, read the reason with `gh run view` and run the project check
-here. On Explore privately the local result decides: say why in one line and
-record it in CHANGELOG.md in this pull request (one line pointing to an
-existing entry is enough). On the other paths the merge waits: say what stops
-it and where the person fixes it. Never switch the check off, edit its
-workflow, or retry it in a loop. Switch it off only when the person asks in
-their own words, and record in CHANGELOG.md how to turn it back on.
+The merge waits. Say in one plain line that GitHub did not run the check, and
+that the person can turn the check back on or merge the pull request themselves
+on GitHub.
 
 ## Merge or rebase conflict
 

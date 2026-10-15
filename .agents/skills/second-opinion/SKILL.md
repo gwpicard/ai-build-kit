@@ -59,7 +59,8 @@ review /setup-hosting runs.
 
 ## Report format
 
-Write every finding under `Worth stopping for` as an unticked box. For a
+Write every finding under `Worth stopping for` as an unticked box. When there
+is no finding, write `- None`. For a
 masterplan review, put findings in the completion report. For a change or
 whole-build review, put them in the pull request body. Keep a settled finding
 as a ticked box; do not remove it.

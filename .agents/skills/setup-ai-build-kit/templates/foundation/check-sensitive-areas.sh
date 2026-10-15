@@ -90,14 +90,22 @@ def main(argv):
         fail("Sensitive-area check: run this inside the project")
         return 2
     project = root.stdout.strip()
-    plan = os.path.join(project, "masterplan.md")
+    masterplan = None
+    if "--masterplan" in argv:
+        index = argv.index("--masterplan")
+        if index + 1 >= len(argv) or not argv[index + 1]:
+            fail("usage: check-sensitive-areas.sh [--change <base> [--head <commit>]] [--masterplan <file>]")
+            return 2
+        masterplan = argv[index + 1]
+        del argv[index:index + 2]
+    plan = masterplan or os.path.join(project, "masterplan.md")
     if not os.path.isfile(plan):
         return 0
     try:
         with open(plan, encoding="utf-8") as handle:
             lines = handle.read().splitlines()
     except (OSError, UnicodeError) as error:
-        fail("Sensitive-area check: could not read masterplan.md: %s" % error)
+        fail("Sensitive-area check: could not read %s: %s" % (os.path.basename(plan), error))
         return 2
     path_value = next((line.split(":", 1)[1].strip() for line in lines if line.startswith("Path:")), "")
     if path_value != "Build with care":
@@ -108,7 +116,7 @@ def main(argv):
     if not argv:
         return validate_map(project, lines)
     if len(argv) not in (2, 4) or argv[0] != "--change" or (len(argv) == 4 and argv[2] != "--head"):
-        fail("usage: check-sensitive-areas.sh [--change <base> [--head <commit>]]")
+        fail("usage: check-sensitive-areas.sh [--change <base> [--head <commit>]] [--masterplan <file>]")
         return 2
     if not argv[1]:
         fail("Sensitive-area check: the base commit is empty")

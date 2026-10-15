@@ -28,9 +28,10 @@ Choose the save route before changing anything:
 3. **Flagged route.** The work touches a named sensitive area whose caution
    is neither done nor accepted. Before building inside the area, give the
    risk notice once, in full, as the `fit-check` skill describes. If the
-   After a yes, run `piece-labels.sh start`, write and read back `Accepted:`
-   with their words and date, then build and save by pull request in that
-   reply, with no further question. A lock that
+   person carries on after it, run the `records` skill's
+   `scripts/piece-labels.sh` with `start`, write and read back `Accepted:` with
+   their words and date, then build and save by pull request in that reply,
+   with no further question. A lock that
    only waits for this caution opens with the acceptance unless they ask to keep
    it. If they do not carry on, build only up to the recorded condition. In an
    unattended run never write an acceptance: stop at the condition, which is a
@@ -95,6 +96,8 @@ agreed.
 
 After the build, run `quality.py tests --base <start commit> --piece <number>`
 once and act on its exit code.
+Put each strength miss in the review packet. If the strength check could not
+run, say so plainly. Strength misses are reported, never a fail.
 
 A build that reaches an outside service follows AGENTS.md's Secrets rule. A
 command that changes a live service's settings or data, other than saving code
@@ -137,17 +140,12 @@ output shown. Describe a gap as expected versus actual, and fix it at the root.
 
 ## 7. Run required review
 
-Run the reach check at build, as the `quality-checks` skill's
-`references/reach-check.md` says, then the boundary check and
-`quality.py loops --base <start commit>`. On Build with care, compare what the
-change reaches with the sensitive-area map; a match starts the review and you
-say: "This change reaches <area>, so a review is running."
-
-Run the reach check, with the tests it names, the boundary check and the loops
-read, as the `quality-checks` skill's "During a build" says. On Build with
-care, run `check-sensitive-areas.sh --change <base>` and say one line for each
-area it names. Exit 1 means an area is still open and the project check will
-hold the pull request.
+Run the reach check, with the tests it names, as the `quality-checks` skill's
+`references/reach-check.md` says. Run the boundary check and the loops read as
+its "During a build" section says. On Build with care, run
+`check-sensitive-areas.sh --change <base>` and say one line for each area it
+names. Exit 1 means an area is still open and the project check will hold the
+pull request.
 
 When the build path, the subjects, or a sensitive area call for review, run
 the `second-opinion` skill by the best independent method in the capability
@@ -173,8 +171,9 @@ ready until the check is green. If it goes red, say so, read the failure
 yourself, fix it, and push again. Never merge in this skill, and never on a red
 check: the merge is the caller's next step, by the `merge` skill.
 
-Where GitHub did not start the check at all, follow the `merge` skill's "A
-check GitHub did not start".
+If GitHub did not start the check, the merge waits. Say in one plain line that
+GitHub did not run the check, and that the person can turn it back on or merge
+the pull request themselves on GitHub.
 
 Flagged route without an acceptance: take the pull-request route up to the
 condition, then record the exact condition and that /maintain prepares a

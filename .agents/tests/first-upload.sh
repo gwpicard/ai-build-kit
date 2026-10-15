@@ -100,7 +100,7 @@ out=$(run --approved) && code=0 || code=$?
 grep -q 'repos/someone/kit-log/git/refs -f ref=refs/heads/main' "$STANDIN_GH_LOG" \
   && grep -q 'repo edit someone/kit-log --default-branch main' "$STANDIN_GH_LOG" \
   && grep -q 'repos/someone/kit-log/branches/main/protection --input -' "$STANDIN_GH_LOG" \
-  && python3 -c 'import json,sys; p=json.load(open(sys.argv[1])); assert p["protection"]["required_status_checks"]["contexts"]==["project-check"] and p["protection"]["enforce_admins"] and all(k in p["protection"] for k in ("required_status_checks","enforce_admins","required_pull_request_reviews","restrictions"))' "$STANDIN_GH_STATE" \
+  && python3 -c 'import json,sys; p=json.load(open(sys.argv[1])); assert p["protection"]["required_status_checks"]=={"contexts":["project-check"],"strict":False} and p["protection"]["enforce_admins"] and all(k in p["protection"] for k in ("required_status_checks","enforce_admins","required_pull_request_reviews","restrictions"))' "$STANDIN_GH_STATE" \
   && pass "main is written through the API and made the default branch, with the push guard on" \
   || fail "main was not created through the API: $(cat "$STANDIN_GH_LOG")"
 
@@ -225,7 +225,11 @@ for reason in plan admin network; do
       && pass "a GitHub Free plan restriction leaves the upload complete and says the kit holds merges" \
       || fail "the plan restriction did not explain the merge hold: $out"
   else
-    printf '%s\n' "$out" | grep -q 'protection could not be set' \
+    case "$reason" in
+      admin) expected_line="Branch protection could not be set because this account does not have admin rights." ;;
+      network) expected_line="Branch protection could not be set because of a network error." ;;
+    esac
+    printf '%s\n' "$out" | grep -Fxq "$expected_line" \
       && pass "$reason protection failure leaves the upload complete with a reason" \
       || fail "$reason protection failure had no explanation: $out"
   fi

@@ -4,10 +4,9 @@ For a change inside a mapped sensitive area, run `python3` with this skill's
 `scripts/quality.py`, passing `strength --base <start commit>`. For a repair,
 run it on the regression test only when that test touches a mapped area.
 `quality.py tests` triggers this read itself for changed lines in mapped areas
-and reports its misses as `strength` lines. Act on its exit code: 0 means the
-changed code was checked and no breakage was missed, 1 lists breakages the tests
-missed, and 2 means part of the check could not run. Never report exit 2 as a
-pass.
+and reports its misses as `strength` lines. Misses are reported, never a fail;
+could not run is said plainly. Put misses in the review packet. If it could not
+run, say so plainly there. Never report a check that could not run as a pass.
 
 Never invent a runner or use a hosted service. The strength run uses a
 throwaway copy with no real records, live access or real `.env` files.

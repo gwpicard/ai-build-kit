@@ -1236,13 +1236,11 @@ def reach(root, paths, base, piece, should_run, engines):
                 print("not-checked\ttests\tVitest did not produce a test result summary")
                 test_status = 2
         else:
-            pytest = shutil.which("pytest")
+            pytest = [sys.executable, "-m", "pytest"]
             pytests = sorted(p for p in files if p.endswith(".py") and is_test(p) and
                              (p in set(seeds) | reached or p in importers))
             if pytests:
-                print("not-checked\ttests\tVitest is not installed")
-            if pytest and pytests:
-                code, out, err = run([pytest, *pytests], cwd=root)
+                code, out, err = run([*pytest, *pytests], cwd=root)
                 if out.strip():
                     print("\n".join("test-output\t" + line for line in out.rstrip().splitlines()), file=sys.stderr)
                 test_status = 1 if code and re.search(r"\d+ (?:passed|failed)", out + err) else (0 if not code else 2)
@@ -1919,8 +1917,10 @@ def test_read(root, base, piece):
                 result = subprocess.run([sys.executable, os.path.abspath(__file__), "strength", "--base", base],
                                         cwd=root, capture_output=True, text=True)
                 for line in result.stdout.splitlines():
-                    if line.startswith("missed\t") or line.startswith("not-checked\tstrength"):
+                    if line.startswith("missed\t"):
                         print("strength\t" + line.split("\t", 1)[-1])
+                    elif line.startswith("not-checked\tstrength\t"):
+                        print("not-checked\tstrength\t" + line.split("\t", 2)[-1])
     if status == 0 and not unavailable:
         print("tests\tpassed")
     if status == 1:

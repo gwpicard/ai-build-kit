@@ -111,7 +111,7 @@ out=$(PATH="$WORK/bin:$PATH" STANDIN_GH_STATE="$STANDIN_GH_STATE" python3 "$ROOT
   || fail "a missing branch returned $code: $out"
 
 state someone/kit-log PRIVATE '{}' '[]' false '["main"]'
-out=$(printf '%s' '{"required_status_checks":{"strict":true,"contexts":["project-check"]}}' | PATH="$WORK/bin:$PATH" gh api -X PUT repos/someone/kit-log/branches/main/protection --input - 2>&1) && code=0 || code=$?
+out=$(printf '%s' '{"required_status_checks":{"strict":false,"contexts":["project-check"]}}' | PATH="$WORK/bin:$PATH" gh api -X PUT repos/someone/kit-log/branches/main/protection --input - 2>&1) && code=0 || code=$?
 [ "$code" -ne 0 ] && printf '%s' "$out" | grep -q 'HTTP 422: missing required branch protection keys' \
   && pass "the GitHub stand-in rejects a protection body missing required keys" \
   || fail "the stand-in accepted an incomplete body: $out"
@@ -119,7 +119,7 @@ out=$(printf '%s' '{"required_status_checks":{"strict":true,"contexts":["project
 state someone/kit-log PRIVATE '{}' '[]' false '["main"]'
 out=$(run prepare) && code=0 || code=$?
 [ "$code" -eq 0 ] \
-  && [ "$(get protection)" = '{"enforce_admins": true, "required_pull_request_reviews": null, "required_status_checks": {"contexts": ["project-check"], "strict": true}, "restrictions": null}' ] \
+  && [ "$(get protection)" = '{"enforce_admins": true, "required_pull_request_reviews": null, "required_status_checks": {"contexts": ["project-check"], "strict": false}, "restrictions": null}' ] \
   && grep -q '^api -X PUT repos/someone/kit-log/branches/main/protection --input -' "$STANDIN_GH_LOG" \
   && pass "an existing main gets the complete four-key protection body" \
   || fail "full branch protection was not required: $(get protection) / $out"
@@ -181,9 +181,20 @@ p, status = sys.argv[1:]
 s = json.load(open(p)); s["protection_status"] = status; json.dump(s, open(p, "w"))
 PY
   out=$(run prepare 2>&1) && code=0 || code=$?
-  [ "$code" -eq 2 ] && printf '%s\n' "$out" | grep -Fq "$expected" \
-    && pass "${status} protection failure has its own plain line and exits 2" \
-    || fail "${status} protection failure returned $code: $out"
+  if [ "$status" = 422 ]; then
+    [ "$code" -eq 2 ] && printf '%s\n' "$out" | grep -Fq "$expected" \
+      && pass "a rejected protection setting is reported with exit 2" \
+      || fail "422 protection failure returned $code: $out"
+  else
+    case "$status" in
+      admin) expected_line="Branch protection could not be set because this account does not have admin rights." ;;
+      network) expected_line="Branch protection could not be set because of a network error." ;;
+    esac
+    [ "$code" -eq 0 ] && printf '%s\n' "$out" | grep -Fxq "$expected_line" \
+      && printf '%s\n' "$out" | grep -Eq '^template\t(copied|kept)$' \
+      && pass "${status} protection failure is reported and founding continues" \
+      || fail "${status} protection failure returned $code or stopped founding: $out"
+  fi
 done
 
 printf 'mine\n' > "$WORK/p/.github/ISSUE_TEMPLATE/piece.yml"

@@ -45,7 +45,8 @@ def main(argv):
     code, detail = api("GET", prefix + "/protection")
     if code and ("404" in detail or "Not Found" in detail):
         body = {
-            "required_status_checks": {"strict": True, "contexts": ["project-check"]},
+            # Two pieces may merge from the same base; merge.py still holds on red or pending checks.
+            "required_status_checks": {"strict": False, "contexts": ["project-check"]},
             "enforce_admins": True,
             "required_pull_request_reviews": None,
             "restrictions": None,

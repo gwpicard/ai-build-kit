@@ -31,6 +31,13 @@ EOF
 put .gitignore <<'EOF'
 node_modules/
 EOF
+put masterplan.md <<'EOF'
+Path: Build with care
+
+Sensitive areas:
+  Data:
+    paths: src
+EOF
 put src/rule.js <<'EOF'
 module.exports = value => value > 4;
 EOF
@@ -114,6 +121,7 @@ printf '%s\n' "$OUT" | grep -q '^passes-before[[:space:]]D2$'
 printf '%s\n' "$OUT" | grep -q '^covered[[:space:]]1$'
 printf '%s\n' "$OUT" | grep -q '^uncovered[[:space:]]src/my tests/space.js:'
 ! printf '%s\n' "$OUT" | grep -q '^skipped[[:space:]]tests/legacy.test.js'
+printf '%s\n' "$OUT" | grep -q '^not-checked[[:space:]]strength[[:space:]]StrykerJS is not installed$'
 echo '  ok: per-D results distinguish D1 failing before from D2 passing before'
 echo '  ok: paths with spaces are parsed and an old skip in an untouched test is ignored'
 set +e; (cd "$PROJECT" && python3 "$QUALITY" tests --base missing-commit --piece 1) >"$WORK/cannot-run.out" 2>&1; CODE=$?; set -e

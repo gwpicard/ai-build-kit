@@ -114,7 +114,9 @@ app, using Claude Code. The tool is already live and a change is ready to merge.
 > "Email me a sign-in link", which is right. Merge it and put it live.
 >
 > **Agent:** All four tests and the project check pass. I've added a dated
-> changelog line. The review boxes are clear, so I'm merging it now.
+> changelog line. The review has no unresolved concern, so I'm asking Claude
+> Code to merge it. Claude Code will show you a confirmation box before the
+> merge runs.
 
 After the merge, the agent reads the live page:
 
