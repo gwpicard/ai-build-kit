@@ -136,7 +136,7 @@ mkdir -p "$WORK/bin"
 cat > "$WORK/bin/gh" <<'SH'
 #!/usr/bin/env sh
 case "$*" in
-  "pr view --json body --jq .body") printf '%s\n' '## Worth stopping for' '- None' ;;
+  "pr view 9 --json body --jq .body") printf '%s\n' '## Worth stopping for' '- None' ;;
   *) echo "unexpected gh call: $*" >&2; exit 2 ;;
 esac
 SH
@@ -165,7 +165,7 @@ run_check() {
     head_sha=$(git -C "$PROJECT" rev-parse HEAD)
     pr_base=$base_sha
     [ "$event_name" = pull_request ] || pr_base=
-    if ! (cd "$PROJECT" && PATH="$WORK/bin:$PATH" GITHUB_EVENT_NAME="$event_name" PR_BASE_SHA="$pr_base" BASE_SHA="$base_sha" \
+    if ! (cd "$PROJECT" && PATH="$WORK/bin:$PATH" PR_NUMBER=9 GITHUB_EVENT_NAME="$event_name" PR_BASE_SHA="$pr_base" BASE_SHA="$base_sha" \
         HEAD_SHA="$head_sha" PUSH_BEFORE="$base_sha" PUSH_AFTER="$head_sha" sh -c "$command") > "$WORK/last-output" 2>&1; then
       printf '%s\n' "$step"
       return 0

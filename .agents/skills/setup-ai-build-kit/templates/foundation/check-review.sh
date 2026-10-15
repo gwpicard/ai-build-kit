@@ -8,7 +8,11 @@ ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || {
 }
 PARSER="$ROOT/.agents/skills/merge/scripts/review_boxes.py"
 [ -r "$PARSER" ] || { echo "Review check: shared review-box reader is missing" >&2; exit 2; }
-if ! body=$(gh pr view --json body --jq .body); then
+PR_NUMBER=${PR_NUMBER:-}
+case "$PR_NUMBER" in
+  ''|*[!0-9]*) echo "Review check: pull request number is missing" >&2; exit 2 ;;
+esac
+if ! body=$(gh pr view "$PR_NUMBER" --json body --jq .body); then
   echo "Review check: could not read the pull request" >&2
   exit 2
 fi

@@ -10,6 +10,8 @@ Run `gate.py brief --base <start commit> --piece <number>` and act on its exit
 code. Review the packet it writes. It is the
 full brief for this review, including the change and the available evidence.
 Gemini reviewers have no shell, so include the packet text in the prompt.
+Exit 2 means an input is missing. Continue the review and carry the packet's
+`Review limits` into the result.
 
 Ask only:
 
@@ -43,4 +45,5 @@ evidence. Mark whether each supported finding is worth stopping for.
 For each finding marked worth stopping for, ask a second fresh reviewer to try
 to refute it. Mark a refuted finding `refuted` in the JSON. Then run
 `gate.py record --pr <number>` with the findings and act on its exit code.
-Say in one line what was reviewed and the result.
+Exit 1 means stopping findings were recorded as open boxes; exit 0 means none
+remain. Say in one line what was reviewed and the result.

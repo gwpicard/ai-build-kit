@@ -24,6 +24,8 @@ git -C "$PROJECT" commit -qam change
 cat > "$WORK/quality.py" <<'PY'
 import sys
 print("quality evidence")
+if len(sys.argv) > 1 and sys.argv[1] == "tests":
+    print("strength\t1 mutant missed")
 raise SystemExit(0)
 PY
 cat > "$WORK/bin/gh" <<'SH'
@@ -39,7 +41,7 @@ case "$*" in
   "pr checks --json name,state,bucket") printf '%s\n' '[{"name":"project-check","state":"SUCCESS","bucket":"pass"},{"name":"type-check","state":"SUCCESS","bucket":"pass"},{"name":"lint","state":"SUCCESS","bucket":"pass"}]' ;;
   "pr view 9 --json title,body") printf '%s\n' '{"title":"Example pull request","body":"Summary"}' ;;
   "pr edit 9 --body "*) printf '%s\n' "$*" >> "$GH_EDIT_FILE" ;;
-  "pr view --json body --jq .body")
+  "pr view 9 --json body --jq .body")
     [ "${GH_VIEW_FAIL:-0}" = 0 ] || { echo "could not read pull request" >&2; exit 1; }
     printf '%s\n' "${REVIEW_BODY:-## Worth stopping for\n- None\n}"
     ;;
@@ -57,6 +59,11 @@ pass() { echo "ok: $1"; }
 
 out=$(cd "$PROJECT" && PATH="$WORK/bin:$PATH" GATE_QUALITY_SCRIPT="$WORK/quality.py" GH_EDIT_FILE="$WORK/edits" python3 "$GATE" brief --base "$BASE" --piece 7 2>&1) && code=0 || code=$?
 [ "$code" -eq 0 ] && grep -q '## Full change' "$PROJECT/.git/review-packet.md" \
+  && grep -q '## Piece' "$PROJECT/.git/review-packet.md" \
+  && grep -q '## So that' "$PROJECT/.git/review-packet.md" \
+  && grep -q '## Done when' "$PROJECT/.git/review-packet.md" \
+  && grep -q '## Type and lint results' "$PROJECT/.git/review-packet.md" \
+  && grep -q '## Test strength' "$PROJECT/.git/review-packet.md" \
   && grep -q 'value = 1' "$PROJECT/.git/review-packet.md" \
   && grep -q '## Review limits' "$PROJECT/.git/review-packet.md" \
   && pass "brief writes a complete packet and exits 0" || fail "brief clean returned $code: $out"
@@ -73,6 +80,7 @@ JSON
 [ "$code" -eq 1 ] && grep -q '\- \[ \] The save fails' "$WORK/edits" \
   && grep -q 'finding(s) dropped' "$WORK/edits" \
   && grep -q 'The refuter disproved this' "$WORK/edits" \
+  && grep -A4 '## Worth knowing' "$WORK/edits" | grep -q 'The refuter disproved this' \
   && ! grep -q 'Maybe bad' "$WORK/edits" \
   && pass "record keeps evidence, drops unsupported findings and exits 1 for open boxes" || fail "record returned $code: $out"
 
@@ -91,7 +99,7 @@ JSON
 run_check() {
   body=$1
   view_fail=${2:-0}
-  (cd "$PROJECT" && PATH="$WORK/bin:$PATH" REVIEW_BODY="$body" GH_VIEW_FAIL="$view_fail" sh "$CHECK")
+  (cd "$PROJECT" && PATH="$WORK/bin:$PATH" PR_NUMBER=9 REVIEW_BODY="$body" GH_VIEW_FAIL="$view_fail" sh "$CHECK")
 }
 out=$(run_check '## Worth stopping for
 - None' 0 2>&1) && code=0 || code=$?

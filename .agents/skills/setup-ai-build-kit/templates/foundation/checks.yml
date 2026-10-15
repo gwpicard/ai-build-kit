@@ -14,6 +14,9 @@ jobs:
         run: sh .agents/hooks/check-tests.sh
       - name: Check review findings
         if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: sh .agents/hooks/check-review.sh
       - name: Check sensitive-area map
         run: sh .agents/hooks/check-sensitive-areas.sh
