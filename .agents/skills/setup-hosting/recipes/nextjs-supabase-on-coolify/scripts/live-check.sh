@@ -11,6 +11,7 @@
 #
 #   commit     the live copy runs the latest merge on main: the pasted health
 #              answer's commit against `git rev-parse origin/main`
+#              A recorded `Deploys on merge: no` says who redeploys when behind.
 #   hold       Coolify keeps no hold after a rollback, since a later deploy of
 #              main rolls forward, so only a hold line in the masterplan counts
 #   migration  main holds no migration the live database lacks, read with
@@ -71,6 +72,8 @@ if wanted commit; then
     unreadable "Live copy against main: could not be read, since this computer does not know main's latest commit on GitHub."
   elif [ "$commit" = "$main" ]; then
     say "Live copy against main: the live copy runs the latest merge on main."
+  elif [ -f masterplan.md ] && grep -Eq '^[[:space:]]*Deploys on merge:[[:space:]]*no([[:space:]]|$)' masterplan.md; then
+    gapped "Live copy against main: the health route shows an older commit, and the recorded address says merges do not deploy. Redeploy with /host \"redeploy <name>\" or Coolify's Redeploy button."
   else
     gapped "Live copy against main: the live copy runs an older commit than the latest merge on main."
   fi
