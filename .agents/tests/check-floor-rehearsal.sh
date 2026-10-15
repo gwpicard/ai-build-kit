@@ -545,7 +545,7 @@ echo "  installing the project's own check tools from the local npm cache"
 if ! (cd "$PROJECT" && npm install --offline --no-audit --no-fund --silent); then
   echo "  could not run: TypeScript check tools are not available in npm's offline cache"
   echo "check-floor-rehearsal.sh: Python and check-shape cases passed; TypeScript runtime cases could not run"
-  exit 0
+  exit 2
 fi
 
 in_project init -q -b main

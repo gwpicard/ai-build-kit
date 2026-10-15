@@ -97,7 +97,13 @@ tests-untested-status
 tests-zero-coverage-pass
 tests-missing-coverage-pass
 tests-after-failure-pass
-test-fix-empty-reason"
+test-fix-empty-reason
+runner-fails-green
+migration-misses-ready
+mark-ready-skips-done-when
+first-upload-ignores-shared-history
+strength-config-lost
+review-gate-leaves-draft-edited"
 
 describe() {
   case "$1" in
@@ -160,6 +166,12 @@ describe() {
     tests-missing-coverage-pass) echo "a missing coverage report can go unreported" ;;
     tests-after-failure-pass) echo "a failed after-run can be treated as fine" ;;
     test-fix-empty-reason) echo "an empty Test fix reason can edit a frozen test" ;;
+    runner-fails-green) echo "the runner returns success after a rehearsal fails" ;;
+    migration-misses-ready) echo "the upgrade check misses open pieces that need the ready label" ;;
+    mark-ready-skips-done-when) echo "a piece without Done when can be marked ready" ;;
+    first-upload-ignores-shared-history) echo "a repository with unrelated work is treated as a first upload" ;;
+    strength-config-lost) echo "the Python mutation check no longer tells mutmut which code to break" ;;
+    review-gate-leaves-draft-edited) echo "the review gate leaves an edited draft in place" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -186,6 +198,12 @@ checks_for() {
     merge-missing-check) echo "merge-gate" ;;
     merge-pending-bucket-only|merge-skipping-project-pass|merge-first-box-only|merge-any-check-name|merge-area-call-skipped|merge-area-open-ignored) echo "merge-gate" ;;
     test-freeze-removed|tests-untested-status|tests-zero-coverage-pass|tests-missing-coverage-pass|tests-after-failure-pass|test-fix-empty-reason) echo "tests-prove-change" ;;
+    runner-fails-green) echo "rehearsal-runner" ;;
+    migration-misses-ready) echo "upgrade-rehearsal" ;;
+    mark-ready-skips-done-when) echo "mark-ready" ;;
+    first-upload-ignores-shared-history) echo "first-upload" ;;
+    strength-config-lost) echo "test-strength-rehearsal" ;;
+    review-gate-leaves-draft-edited) echo "review-guard" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -768,6 +786,60 @@ old = "if result.returncode == 1:"
 new = "if False and result.returncode == 1:"
 assert old in s
 open(p, "w").write(s.replace(old, new, 1))'
+      ;;
+    runner-fails-green)
+      edit "$tree/.agents/tests/run-all.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "if [ \"$failed_count\" -gt 0 ]; then"
+assert old in s, "runner failure exit guard not found"
+open(p, "w").write(s.replace(old, "if False; then", 1))'
+      ;;
+    migration-misses-ready)
+      edit "$tree/.agents/skills/maintain/scripts/upgrade-check.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "if DONE_WHEN.search(issue.get(\"body\") or \"\"):\n            shaped.append(issue.get(\"number\"))"
+assert old in s, "ready migration discovery not found"
+open(p, "w").write(s.replace(old, "if False and DONE_WHEN.search(issue.get(\"body\") or \"\"):\n            shaped.append(issue.get(\"number\"))", 1))'
+      ;;
+    mark-ready-skips-done-when)
+      edit "$tree/.agents/skills/records/scripts/mark-ready.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "if not section(\"Done when\"):"
+assert old in s, "Done when refusal not found"
+open(p, "w").write(s.replace(old, "if False and not section(\"Done when\"):", 1))'
+      ;;
+    first-upload-ignores-shared-history)
+      edit "$tree/.agents/skills/merge/scripts/first-upload.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "if not shared_refs(project, main):"
+assert old in s, "shared history check not found"
+open(p, "w").write(s.replace(old, "if False and not shared_refs(project, main):", 1))'
+      ;;
+    strength-config-lost)
+      edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "paths_to_mutate = "
+assert old in s, "mutmut v3 source path setting not found"
+open(p, "w").write(s.replace(old, "mutate_paths = ", 1))'
+      ;;
+    review-gate-leaves-draft-edited)
+      edit "$tree/.agents/skills/second-opinion/scripts/review-guard.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "cp -p \"$GUARD/files/$file\" \"$file\" || exit 2"
+assert old in s, "review draft restoration not found"
+open(p, "w").write(s.replace(old, ": # mutation leaves the review edit", 1))'
       ;;
     *)
       echo "unknown mutation: $name" >&2
