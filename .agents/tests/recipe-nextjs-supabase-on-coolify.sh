@@ -115,23 +115,44 @@ RR_ORIGIN=https://someone:token-stand-in@github.com/team/app.git
 rr_case 0 good hosting-request.sh
 RR_ORIGIN=
 rr_said no "token-stand-in"
-rr_said yes "Repo:                https://github.com/team/app.git"
-rr_said yes "Repo (build):       https://github.com/team/app.git"
+rr_said yes "Repo:                https://github.com/team/app.git, branch main"
 rr_said yes "Env vars:            NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY"
-rr_said yes "Branch (build):     main"
-rr_said yes "Build vars (build): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY"
-rr_said yes "Run vars (runtime): SUPABASE_SERVICE_ROLE_KEY"
-rr_said yes "Health-check tool (runtime): wget"
+rr_said yes "Build vars:          NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY"
+rr_said yes "Previews:            no"
+rr_said no "Repo (build):"
+rr_said no "Branch (build):"
+rr_said no "Run vars"
+rr_said no "Health-check tool"
+rr_fields=$(sed -n '/^Repo:/,/^Previews:/s/:.*//p' "$RR_TMP/out" | paste -sd, - | sed 's/,/, /g')
+rr_report "request fields match the companion format plus Build vars and Previews" \
+  "$([ "$rr_fields" = 'Repo, Lane, Port, Env vars, Build vars, Persist, Healthcheck, Build, Bind, Previews' ] && echo yes || echo no)"
 cp "$RR_TMP/fixture/.env.example" "$RR_TMP/env-example"
 printf '\n# build\nSENTRY_AUTH_TOKEN=\n' >> "$RR_TMP/fixture/.env.example"
 rr_case 0 good hosting-request.sh
-rr_said yes "Build vars (build): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SENTRY_AUTH_TOKEN"
-rr_said yes "Run vars (runtime): SUPABASE_SERVICE_ROLE_KEY"
+rr_said yes "Build vars:          NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SENTRY_AUTH_TOKEN"
+rr_said no "Run vars"
 cp "$RR_TMP/env-example" "$RR_TMP/fixture/.env.example"
 printf 'FROM gcr.io/distroless/nodejs22\nENV HOSTNAME=0.0.0.0 PORT=3000\n' > "$RR_TMP/fixture/Dockerfile"
 rr_case 1 good hosting-request.sh
-rr_said yes "Health-check tool (runtime): none"
+rr_said yes "Build:               neither yet"
 printf 'FROM node:22-alpine\nENV HOSTNAME=0.0.0.0 PORT=3000\nCMD ["node", "server.js"]\n' > "$RR_TMP/fixture/Dockerfile"
+
+# The documented companion listing returns image tags. The script reads the
+# current and earlier tag without contacting Coolify.
+rr_main=$(cat "$RR_STATE/main")
+printf '{"images":[{"tag":"app:%s"},{"tag":"app:ab12cd3"}]}\n' "$rr_main" > "$RR_TMP/pasted/companion-rollback"
+rr_case 0 good rollback.sh --pasted "$RR_TMP/pasted/companion-rollback"
+
+# The recorded address decides what a stale health commit means after merge.
+rr_main=$(cat "$RR_STATE/main")
+sed "s/\"commit\":\"$rr_main\"/\"commit\":\"0000000\"/" \
+  "$(rr_paste good live-health)" > "$RR_TMP/pasted/stale-live-health"
+printf '## How it stays running\n\nAccess: private\nDeploys on merge: yes, a merge redeploys.\n' > "$RR_TMP/fixture/masterplan.md"
+rr_case 1 good live-check.sh --only commit --pasted-health "$RR_TMP/pasted/stale-live-health"
+rr_said yes "older commit than the latest merge"
+printf '## How it stays running\n\nAccess: private\nDeploys on merge: no (redeploy by hand).\n' > "$RR_TMP/fixture/masterplan.md"
+rr_case 1 good live-check.sh --only commit --pasted-health "$RR_TMP/pasted/stale-live-health"
+rr_said yes '/host "redeploy <name>" or Coolify'
 
 # The shared parts this recipe names.
 rr_case 0 good migrate.sh

@@ -28,7 +28,7 @@ The kit never contacts the server. The person, or a companion working with them,
 
 ## Preview
 
-How it works: Coolify builds each pull request into its own container and removes it on close. Previews start off: the person or the companion presses Enable preview deployments on the app's Preview Deployments page. A preview has an address only when the app has a domain; without one the kit says once that nobody can open it. Its settings point at a second Supabase project, which `../parts/scripts/migrate.sh --apply <preview project ref>`, with that project's password location as `PREVIEW_DB_PASSWORD_FILE`, gives the branch's migrations. Without a second project, previews stay off.
+How it works: Coolify builds each pull request into its own container and removes it on close. Previews start off. When the person wants them, use a second Supabase project and put Basic Authentication in front of the preview. The companion switches previews on through its tools and reads the setting back. It does not set Basic Authentication yet, so the person or companion adds it. Without a companion, use Enable preview deployments on the app's Preview Deployments page. A preview has an address only when the app has a domain; without one the kit says once that nobody can open it. Its settings point at the second Supabase project, which `../parts/scripts/migrate.sh --apply <preview project ref>`, with that project's password location as `PREVIEW_DB_PASSWORD_FILE`, gives the branch's migrations. Without a second project, previews stay off.
 How it is checked: A finished preview deployment whose health shows the database reachable, the pull request's commit, and a project other than the live one.
 Script: scripts/preview.sh
 Who runs it: a companion or the person, result read back
@@ -44,11 +44,11 @@ Ask: Please paste the deployment's status, the app's health check settings and t
 
 ## Rollback
 
-How it works: Coolify keeps earlier images until its nightly cleanup, which leaves the two newest. After a yes that names it, the person or the companion clicks Roll Back To This Image on the app's Rollback page, under Operations; nothing the kit can call does it. The old container serves for about half a minute, so the kit asks for a second health read. A later deploy of `main` rolls forward. A rollback does not undo a migration.
+How it works: Coolify keeps earlier images until its nightly cleanup, which leaves the two newest. After a yes that names it, the person can click Roll Back To This Image on the app's Rollback page, under Operations, or the companion can use `/host` rollback via the kept images. The companion route has not yet been proven in a real run. The old container serves for about half a minute, so the kit asks for a second health read. A later deploy of `main` rolls forward. A rollback does not undo a migration.
 How it is checked: An earlier image is still kept, so a rollback is possible. It is not tried, since that would change the live tool.
 Script: scripts/rollback.sh
 Who runs it: a companion or the person, result read back
-Ask: Please paste the list of kept images from the app's Rollback page in Coolify, under Operations.
+Ask: Please paste the list of kept images from the app's Rollback page in Coolify, under Operations, or the `deployment rollback_images` listing from `/host`.
 
 ## Backup
 
@@ -60,7 +60,7 @@ Shared part: [restore on hosted Supabase](../parts/supabase-restore.md)
 
 ## Secrets
 
-How it works: The hosting request carries setting names, never a value. The person or the companion enters each value in Coolify, available at build time where Next.js needs it. The Supabase address and public key carry the `NEXT_PUBLIC_` prefix and reach the browser by design; row-level security keeps them harmless. The service role key never carries that prefix. No value goes into the repository or the Dockerfile.
+How it works: The hosting request carries setting names, never a value. Set every name under `Build vars` at build time as well. The companion creates hand-set secrets as runtime-only (`is_buildtime: false`). The Supabase address and public key carry the `NEXT_PUBLIC_` prefix and reach the browser by design; row-level security keeps them harmless. The service role key never carries that prefix. No value goes into the repository or the Dockerfile.
 How it is checked: Coolify holds every name in `.env.example`, no public name carries a secret, and git ignores `supabase/.temp`.
 Script: scripts/secrets.sh
 Who runs it: a companion or the person, result read back

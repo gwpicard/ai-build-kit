@@ -5,11 +5,11 @@
 # Usage: hosting-request.sh [--lane internal|public]
 #
 # `hosting-request.md` beside this folder says what each field means and how
-# the answer is recorded. Repo comes from `origin`, Build vars and Run vars
-# from `.env.example`, by name only, and Build and Bind from the Dockerfile at the
-# root, since the server builds and checks the tool from those two facts. The
-# lane comes from the masterplan's Access: line, as hosting-request.md says. On this recipe Port is 3000 and Healthcheck is
-# /api/health, and a value is never printed.
+# the answer is recorded. Repo comes from `origin`, Env vars and Build vars
+# from `.env.example`, by name only, and Build and Bind from the Dockerfile at
+# the root. The lane comes from the masterplan's Access: line, as
+# hosting-request.md says. On this recipe Port is 3000 and Healthcheck is
+# /api/health. Previews default to no. A value is never printed.
 #
 # Exit 0 when the request is complete, 1 when the tool cannot be hosted yet,
 # such as a server bound to 127.0.0.1 or no Dockerfile, 2 when it could not
@@ -40,31 +40,30 @@ build_names=$(awk '
   }
   { marked = 0 }
 ' .env.example)
-run_names=$(printf '%s\n' "$env_names" | while IFS= read -r name; do
-  [ -z "$name" ] && continue
-  printf '%s\n' "$build_names" | grep -qxF "$name" || echo "$name"
-done)
 env_names=$(printf '%s\n' "$env_names" | paste -sd, - | sed 's/,/, /g')
 build_envs=$(printf '%s\n' "$build_names" | paste -sd, - | sed 's/,/, /g')
-run_envs=$(printf '%s\n' "$run_names" | paste -sd, - | sed 's/,/, /g')
 [ -n "$build_envs" ] || build_envs=none
-[ -n "$run_envs" ] || run_envs=none
 [ -n "$env_names" ] || env_names=none
 
 hostable=yes
-health_tool=none
 if [ -f Dockerfile ]; then
   if grep -Eqi '^FROM[[:space:]]+[^[:space:]]*slim' Dockerfile; then
     build="neither yet"
     hostable=no
   else
     if grep -Eqi '(apk|apt(-get)?)[[:space:]].*(add|install)[[:space:]].*curl|curl.*(apk|apt(-get)?)[[:space:]].*(add|install)' Dockerfile; then
-      health_tool=curl
+      has_health_tool=yes
     elif grep -Eqi '^FROM[[:space:]]+[^[:space:]]*alpine|(^|[[:space:]])wget([[:space:]]|$)' Dockerfile; then
-      health_tool=wget
+      has_health_tool=yes
+    else
+      has_health_tool=no
     fi
-    build="Dockerfile at root, image has $health_tool"
-    [ "$health_tool" != none ] || hostable=no
+    if [ "$has_health_tool" = yes ]; then
+      build="Dockerfile at root, image has curl or wget"
+    else
+      build="neither yet"
+      hostable=no
+    fi
   fi
   # HOSTNAME=0.0.0.0, quoted or not, or the older form HOSTNAME 0.0.0.0.
   if grep -Eq "(^|[[:space:]])HOSTNAME([[:space:]]+|=)[\"']?0\\.0\\.0\\.0[\"']?([[:space:]]|\$)" Dockerfile; then
@@ -81,19 +80,16 @@ fi
 
 cat <<EOF
 Hosting request
-Repo:                $repo
-Repo (build):       $repo
-Branch (build):     main
-Lane (runtime):     $lane_text
-Port (runtime):     3000
+Repo:                $repo, branch main
+Lane:               $lane_text
+Port:               3000
 Env vars:            $env_names
-Build vars (build): $build_envs
-Run vars (runtime): $run_envs
-Persist (runtime): none
-Healthcheck (runtime): /api/health
-Health-check tool (runtime): $health_tool
-Build (build):     $build
-Bind (runtime):    $bind
+Build vars:          $build_envs
+Persist:             none
+Healthcheck:         /api/health
+Build:               $build
+Bind:                $bind
+Previews:            no
 EOF
 [ "$hostable" = yes ] ||
   cl_fail "The tool cannot be hosted yet: the server needs a Dockerfile at the root whose image has curl or wget and listens on 0.0.0.0."

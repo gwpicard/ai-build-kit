@@ -20,7 +20,10 @@ the recipe reads its checks from a paste, ask in one sentence for the health
 answer and setting names. Say its lines as printed, and nothing more about a
 read that matches. Exit 0 no gap, 1 a gap, 2 a read that could not be made. Off
 a recipe, say in one line that the kit cannot compare the live copy. Without a
-live address, say nothing.
+live address, say nothing. If an address block says
+`Deploys on merge: no`, its live check reads the health route's commit and says
+to run `/host "redeploy <name>"` or press the host's Redeploy button when a
+merge is not live. The companion checks the commit after redeploying.
 
 ## A secret a check needs
 

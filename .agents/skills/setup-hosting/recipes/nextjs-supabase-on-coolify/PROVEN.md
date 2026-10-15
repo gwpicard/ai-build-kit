@@ -6,6 +6,8 @@ section.
 
 Real run: 2026-09-25
 
+The newer companion paths for previews, rollback and redeploy are not yet proven in a real run.
+
 Sign-in and roles: No real run yet; added 2026-10-14.
 Row rules: No real run yet; added 2026-10-14.
 Files: No real run yet; added 2026-10-14.
