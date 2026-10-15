@@ -27,6 +27,9 @@ For a chosen recipe, use its fixed stack fields and record its folder name in
 AGENTS.md. Run `scripts/check-tooling.sh --recipe <folder>` and
 `scripts/use-starter.sh <folder>` using the path printed by the menu. Missing
 tools become setup tasks before `/setup-hosting`, never a reason to stop.
+If the harness refuses a starter command, say so in one plain line and ask
+whether to build the starter another way. Wait for yes before writing
+replacement starter files.
 Starter exit 1: list clashing files and ask which to keep. Exit 2: say what
 could not run. With no recipe, copy `templates/foundation/env.example` to
 `.env.example`.
