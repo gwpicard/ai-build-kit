@@ -461,9 +461,15 @@ EOF
   set +e; REALPY_OUT=$(cd "$REALPY" && "$PYTHON_BIN" "$QUALITY" tests --base "$REALPYBASE" --piece 400 2>&1); CODE=$?; set -e
   [ "$CODE" -eq 0 ] || { printf '%s\n' "$REALPY_OUT"; echo 'FAIL: real pytest with pytest-cov did not prove the change'; exit 1; }
   printf '%s\n' "$REALPY_OUT" | grep -q '^fails-before[[:space:]]D1$'
-  printf '%s\n' "$REALPY_OUT" | grep -q '^covered[[:space:]]1$'
-  [ ! -e "$REALPY/.coverage" ] || { echo 'FAIL: pytest-cov wrote .coverage into the project'; exit 1; }
-  echo '  ok: real pytest with pytest-cov proves D1 and keeps .coverage temporary'
+  # An older pytest-cov has no JSON report; then coverage is one not-checked line.
+  if printf '%s\n' "$REALPY_OUT" | grep -q '^not-checked[[:space:]]coverage[[:space:]]installed pytest-cov does not support JSON output$'; then
+    if printf '%s\n' "$REALPY_OUT" | grep -q '^covered'; then echo 'FAIL: coverage was claimed without a JSON report'; exit 1; fi
+    echo '  ok: real pytest with an older pytest-cov proves D1 and says coverage was not checked'
+  else
+    printf '%s\n' "$REALPY_OUT" | grep -q '^covered[[:space:]]1$' || { printf '%s\n' "$REALPY_OUT"; echo 'FAIL: real pytest-cov coverage was not read'; exit 1; }
+    [ ! -e "$REALPY/.coverage" ] || { echo 'FAIL: pytest-cov wrote .coverage into the project'; exit 1; }
+    echo '  ok: real pytest with pytest-cov proves D1 and keeps .coverage temporary'
+  fi
 fi
 
 if [ -n "$PYTEST_NOCOV_BIN" ] && (ulimit -c 0; sh -c "$PYTEST_NOCOV_BIN --help" >/dev/null 2>&1); then

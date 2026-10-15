@@ -1337,7 +1337,9 @@ def test_read(root, base, piece):
             after_cmd += [f"--junitxml={after_xml}"]
             cov_available = run([*command, "--help"], cwd=before_root, timeout=30)[0] == 0
             help_text = run([*command, "--help"], cwd=before_root, timeout=30)[1] if cov_available else ""
-            if "--cov-report" in help_text and re.search(r"\bjson\b", help_text):
+            # Read json only from the --cov-report option's own help, not anywhere in pytest's help.
+            cov_help = re.search(r"--cov-report[\s\S]*?(?=\n\s{0,4}--|\Z)", help_text)
+            if cov_help and re.search(r"\bjson\b", cov_help.group(0)):
                 cov_before, cov_after = os.path.join(folder, "coverage-before.json"), os.path.join(folder, "coverage-after.json")
                 before_cmd += ["--cov", f"--cov-report=json:{cov_before}"]
                 after_cmd += ["--cov", f"--cov-report=json:{cov_after}"]

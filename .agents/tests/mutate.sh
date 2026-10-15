@@ -363,7 +363,7 @@ import os,re
 p=os.environ["MUTATE_TARGET"]
 s=open(p).read()
 pattern=r"(^[ \t]+elif any\(failed\(c\) for c in after_matches\):\n[ \t]+print\(f.*\n)[ \t]+status = 1"
-s,n=re.subn(pattern, r'\1', s, count=1, flags=re.M)
+s,n=re.subn(pattern, r"\1", s, count=1, flags=re.M)
 assert n == 1, "D test after-failure status line not found"
 open(p,"w").write(s)'
       ;;
