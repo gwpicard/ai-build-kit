@@ -176,7 +176,11 @@ out=$(run success '## Worth stopping for' 2>&1) && code=0 || code=$?
   && pass "an accepted sensitive area reports its line and allows the checked head to merge" \
   || fail "an accepted area did not merge its head ($code): $out / $(cat "$GH_LOG")"
 
-out=$(cd "$WORK/project" && PATH="/usr/bin:/bin" python3 "$SCRIPT" --approved 12 2>&1) && code=0 || code=$?
+# A folder with python3 and git only, since a runner may have gh in /usr/bin.
+mkdir -p "$WORK/nogh"
+ln -s "$(command -v python3)" "$WORK/nogh/python3"
+ln -s "$(command -v git)" "$WORK/nogh/git"
+out=$(cd "$WORK/project" && PATH="$WORK/nogh" "$WORK/nogh/python3" "$SCRIPT" --approved 12 2>&1) && code=0 || code=$?
 [ "$code" -eq 2 ] && printf '%s' "$out" | grep -q 'GitHub CLI (gh) is not installed' \
   && pass "a missing gh exits 2 without a traceback" || fail "missing gh returned $code: $out"
 
