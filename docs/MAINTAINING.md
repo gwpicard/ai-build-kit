@@ -451,6 +451,14 @@ in its `PROVEN.md`, move the folder into `.agents/skills/setup-hosting/recipes/`
 `git mv`. The rehearsal finds it on the menu from then on, and fails if a copy
 is left in both places. `docs/RECIPES.md` gives the whole format.
 
+Each quarter, run `stack-research` against every recipe and part. Its ignored
+note records upstream changes and proposals. Carry agreed changes into the
+recipe and this guide, with the versions and date checked. A recipe taken off
+the menu keeps its route to a current recipe in
+`maintain/references/recipe-move.md` for `/maintain` to offer on a yes.
+The 2026-10-16 read found that new Supabase projects use a publishable key;
+the recipe now names it and records the legacy anon setting for `/maintain`.
+
 ## When a release is cut
 
 Ask first what an existing user must do to upgrade. The kit has had real users

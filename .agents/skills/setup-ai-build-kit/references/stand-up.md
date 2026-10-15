@@ -1,7 +1,7 @@
 # Stand the project up
 
 Ask whether the team uses a browser and needs the tool when this computer is
-off, unless already answered. Describe its shape in one plain sentence.
+off, unless answered. Describe it in one plain sentence.
 
 Read `recipe.md` files in the installed `setup-hosting/recipes/`. Keep recipes
 whose `Fits:` line matches. Run `scripts/recipe-menu.sh` from this installed
@@ -11,21 +11,20 @@ match, or the first by name, then rerun with `--recommend <recipe>`. Exit 4:
 correct an invalid name. Exit 0: use its printed lines. Handle other exits by
 these rules.
 
-Include the menu lines word for word in the reply that closes the interview.
-After its numbered list, say what launch checks cover for each recipe, which
-accounts the person owns, and whether it runs on a hosting platform or rented
-server. Use product names from the recipe and do not quote prices. For work or
-paid use, include `Plan terms:` once beside the recipe. For personal use omit
-it; if unclear, state the condition. End the reply with the menu question, then
-continue with the recommendation unless they choose another recipe.
+Copy menu lines word for word into the interview-closing reply. After its list,
+explain each recipe's launch checks, account ownership, and hosting platform or
+rented server. Use recipe product names, not prices. For work or paid use,
+include `Plan terms:` once beside the recipe. Omit it for personal use; if
+unclear, state the condition. End with the menu question, then recommend unless
+they choose another recipe.
 
-If they choose another stack, record `Recipe: none`, say what the kit cannot
-check, and do not raise it again. If no recipe fits, record none and use an
-established stack.
+If they choose another stack, record `Recipe: none`, explain what the kit
+cannot check, and do not raise it again. If no recipe fits, record none and
+use an established stack.
 
-For a chosen recipe, use its fixed stack fields and record its folder name in
+For a chosen recipe, use its fixed stack fields; record its folder name in
 AGENTS.md. Run `scripts/check-tooling.sh --recipe <folder>` and
-`scripts/use-starter.sh <folder>` using the path printed by the menu. Missing
+`scripts/use-starter.sh <folder>` using the menu's path. Missing
 tools become setup tasks before `/setup-hosting`, never a reason to stop.
 If the harness refuses a starter command, say so in one plain line and ask
 whether to build the starter another way. Wait for yes before writing

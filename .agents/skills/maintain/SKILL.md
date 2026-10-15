@@ -21,6 +21,9 @@ its sentence and stop.
 1. Load `references/truing.md` and follow it. Keep the person's uncommitted
    work out of every commit. Report it and point to `/what-now`; clean-checkpoint
    steps wait, while read-only steps continue.
+   Read the project's recipe with `scripts/recipe-freshness.py`. If it reports
+   a stale or superseded recipe, say its one-line finding and offer to open a
+   piece to move to a current recommendation. On a no, change no project files.
 2. Compare the live copy with `main` using the `live-copy` skill. Do not change
    the live service or changelog. Offer `/setup-hosting` for backups, restores,
    previews or recipe checks, and name any gap.

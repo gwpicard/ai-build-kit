@@ -117,7 +117,7 @@ RR_ORIGIN=
 rr_said no "token-stand-in"
 rr_said yes "Repo:                https://github.com/team/app.git, branch main"
 rr_said yes "Env vars:            SUPABASE_SERVICE_ROLE_KEY"
-rr_said yes "Build vars:          NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY"
+rr_said yes "Build vars:          NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"
 rr_said no "Env vars:            NEXT_PUBLIC_SUPABASE_URL"
 rr_said yes "Previews:            no"
 rr_said no "Repo (build):"
@@ -130,7 +130,7 @@ rr_report "request fields match the companion format plus Build vars and Preview
 cp "$RR_TMP/fixture/.env.example" "$RR_TMP/env-example"
 printf '\n# build\nSENTRY_AUTH_TOKEN=\n' >> "$RR_TMP/fixture/.env.example"
 rr_case 0 good hosting-request.sh
-rr_said yes "Build vars:          NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SENTRY_AUTH_TOKEN"
+rr_said yes "Build vars:          NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, SENTRY_AUTH_TOKEN"
 rr_said yes "Env vars:            SUPABASE_SERVICE_ROLE_KEY"
 rr_said no "Run vars"
 cp "$RR_TMP/env-example" "$RR_TMP/fixture/.env.example"

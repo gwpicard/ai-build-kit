@@ -117,7 +117,9 @@ merge-behind-main
 promises-list-stale
 build-nothing-mark
 founding-starter-refusal
-prelaunch-migration-route"
+prelaunch-migration-route
+recipe-freshness-date
+"
 
 describe() {
   case "$1" in
@@ -200,6 +202,7 @@ describe() {
     build-nothing-mark) echo "a build leaves the masterplan mark behind when its change says nothing" ;;
     founding-starter-refusal) echo "founding writes a replacement starter before asking after a command refusal" ;;
     prelaunch-migration-route) echo "a pre-launch piece chooses its own database migration route" ;;
+    recipe-freshness-date) echo "a recipe can lose its 90-day stale warning" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -237,6 +240,7 @@ checks_for() {
     merge-behind-main) echo "merge-gate" ;;
     promises-list-stale) echo "promises-list-rehearsal" ;;
     build-nothing-mark|founding-starter-refusal|prelaunch-migration-route) echo "$DEFAULT_CHECKS" ;;
+    recipe-freshness-date) echo "recipe-freshness-rehearsal" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -257,6 +261,16 @@ apply() {
   name=$1
   tree=$2
   case "$name" in
+    recipe-freshness-date)
+      edit "$tree/.agents/skills/maintain/scripts/recipe-freshness.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "stale = (datetime.date.today() - checked_date).days > 90"
+assert old in t, "recipe freshness age check not found"
+open(p, "w").write(t.replace(old, "stale = False", 1))
+'
+      ;;
     recipe-framework-major)
       edit "$tree/.agents/tools/check-recipes.sh" '
 import os

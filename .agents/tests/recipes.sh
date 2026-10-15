@@ -38,6 +38,9 @@ sed -e 's/YYYY-MM-DD/2024-02-29/' -e 's/^Who runs it: .*/Who runs it: a person l
   -e 's#^Linting: .*#Linting: ESLint#' \
   -e 's#^Optional parts: .*#Optional parts: none#' \
   -e 's#^Health-check tool: .*#Health-check tool: curl#' \
+  -e 's#^Last proven: .*#Last proven: 2024-03-01#' \
+  -e 's#^Proven on: .*#Proven on: Next.js 16; Supabase CLI 2.117#' \
+  -e 's#^Superseded settings: .*#Superseded settings: none#' \
   -e 's#^Fits: .*#Fits: Project and task trackers#' \
   -e 's#^Shared stack: .*#Shared stack: [stack](../parts/stack.md)#' \
   -e 's/<[^>]*>/filled in/g' "$BLANK" > "$GOOD/recipe.md"
@@ -53,6 +56,8 @@ chmod +x "$GOOD/scripts/check.sh" "$GOOD/scripts/live-check.sh"
   echo "# Proven: example"
   echo
   echo "Real run: 2024-03-01"
+  echo "Last proven: 2024-03-01"
+  echo "Versions: Next.js 16; Supabase CLI 2.117"
   echo
   for section in Preview "Going live" Rollback Backup Restore Secrets Logs Health Access; do
     echo "$section: filled in"

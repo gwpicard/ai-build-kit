@@ -19,6 +19,9 @@ Deploy target: Vercel, with the project's GitHub repository connected so that ea
 Command-line tools: vercel, supabase, docker, psql, curl, git
 Health-check tool: curl
 Last checked: 2026-10-14
+Last proven: 2026-09-25
+Proven on: Next.js 16; Supabase CLI 2.117; Vercel CLI 60.0.0
+Superseded settings: NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 Shared stack: [Next.js, TypeScript and Supabase](../parts/nextjs-supabase-stack.md)
 Database types check: `if [ ! -f types/database.ts ] || ! git ls-files --error-unmatch types/database.ts >/dev/null 2>&1; then echo 'could not run: types/database.ts is missing or untracked'; exit 2; fi; if ! supabase status >/dev/null 2>&1; then echo 'could not run: local Supabase is not running'; exit 2; fi; tmp=$(mktemp) || exit 2; trap 'rm -f "$tmp"' EXIT; supabase gen types typescript --local > "$tmp" || { echo 'could not run: database types could not be generated'; exit 2; }; diff -u types/database.ts "$tmp"`
@@ -37,7 +40,7 @@ Ask: Open the preview address signed in to Vercel, try the change, and tell me w
 ## Going live
 
 How it works: Vercel does not run migrations, so before the build that needs them the kit applies them to the live database with `../parts/scripts/migrate.sh --apply <live project ref>`. A migration only adds, so the version still live keeps working. Before the merge, the kit runs the Health part's container check, so the build that goes live has already answered here. Vercel then builds `main` and moves the production address to the new build once it succeeds. The health route reports the commit from `VERCEL_GIT_COMMIT_SHA`.
-How it is checked: The live address answers 200 with the database reachable and the commit on `main`, and no public table is open to anyone holding the public key beyond the ones on the record.
+How it is checked: The live address answers 200 with the database reachable and the commit on `main`, and no public table is open to anyone holding the publishable key beyond the ones on the record.
 Script: scripts/going-live.sh
 Who runs it: the kit
 
@@ -58,7 +61,7 @@ Shared part: [restore on hosted Supabase](../parts/supabase-restore.md)
 
 ## Secrets
 
-How it works: The person gives each value, and `scripts/add-secret.sh <NAME>` hands it to Vercel on standard input, so it never sits on a command line. The Supabase address and public key carry the `NEXT_PUBLIC_` prefix and reach the browser by design; row-level security keeps them harmless. The service role key never carries that prefix. The kit never pulls production values and never writes a value into the repository.
+How it works: Use `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`; the legacy `NEXT_PUBLIC_SUPABASE_ANON_KEY` still works.  The person gives each value, and `scripts/add-secret.sh <NAME>` hands it to Vercel on standard input, so it never sits on a command line. The Supabase address and publishable key carry the `NEXT_PUBLIC_` prefix and reach the browser by design; row-level security keeps them harmless. The service role key never carries that prefix. The kit never pulls production values and never writes a value into the repository.
 How it is checked: Vercel holds every name in `.env.example`, no public name carries a secret, and git ignores `supabase/.temp`, `.vercel` and `.env.local` while `.env.example` can still be committed.
 Script: scripts/secrets.sh
 Who runs it: the kit

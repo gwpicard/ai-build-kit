@@ -162,17 +162,16 @@ rr_case 2 good RR_SIGNUP=open RR_DISAGREE=1 signup.sh
 rr_case 2 down signup.sh
 rr_case 1 good RR_SIGNUP=open settings.sh
 rr_case 2 good RR_SETTINGS=odd settings.sh
-cp "$RR_TMP/fixture/.env.local" "$RR_TMP/env-anon"
-printf 'NEXT_PUBLIC_SUPABASE_URL=https://liveref.supabase.co\nNEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_stand-in\n' > "$RR_TMP/fixture/.env.local"
+cp "$RR_TMP/fixture/.env.local" "$RR_TMP/env-publishable"
 rr_case 0 good settings.sh
 rr_called "curl -fsS -H apikey: sb_publishable_stand-in https://liveref.supabase.co/auth/v1/settings"
 rr_case 0 good signup.sh
-cp "$RR_TMP/env-anon" "$RR_TMP/fixture/.env.local"
+printf 'NEXT_PUBLIC_SUPABASE_URL=https://liveref.supabase.co\nNEXT_PUBLIC_SUPABASE_ANON_KEY=legacy-anon-stand-in\n' > "$RR_TMP/fixture/.env.local"
 rr_case 0 good settings.sh
-rr_called "curl -fsS -H apikey: public-stand-in https://liveref.supabase.co/auth/v1/settings"
+rr_called "curl -fsS -H apikey: legacy-anon-stand-in https://liveref.supabase.co/auth/v1/settings"
 printf 'NEXT_PUBLIC_SUPABASE_URL=https://liveref.supabase.co\n' > "$RR_TMP/fixture/.env.local"
 rr_case 2 good settings.sh
-cp "$RR_TMP/env-anon" "$RR_TMP/fixture/.env.local"
+cp "$RR_TMP/env-publishable" "$RR_TMP/fixture/.env.local"
 
 # The shared parts this recipe names.
 rr_case 0 good migrate.sh

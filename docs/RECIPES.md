@@ -11,9 +11,12 @@ stack and host pair is its own recipe.
 
 ## The current set
 
-The smallest set that covers the common internal tools in the research is two
-recipes. Both use TypeScript, Next.js 16 and hosted Supabase. This keeps one
-language, database and sign-in service across the menu.
+The pinned menu has two recipes and two optional parts. A recipe must fit the
+tools the kit can check and use a stack the team can prove on every run. Both
+recipes use strict TypeScript, Next.js 16 and hosted Supabase, on Vercel or
+Coolify. The Python document worker is for Coolify only. The read-only link to
+an existing database works with either recipe. This keeps one language,
+database and sign-in service across the menu.
 
 1. Next.js and Supabase on Vercel. It suits dashboards, admin panels,
    approvals, CRMs, light ERP, trackers, HR, case management, booking, forms
@@ -60,9 +63,8 @@ The following stay off the road:
   their checks yet.
 - Marker, because of its model licence.
 
-The Python document worker belongs as an optional part on Coolify. The
-read-only existing-data connection belongs on both recipes. Their contents
-arrive in part C.
+The Python document worker belongs only on Coolify. The read-only existing
+database part belongs on both recipes.
 
 ## A recipe is a folder
 
@@ -103,6 +105,10 @@ It opens with fixed fields. Each names a tool only, so checks can read it.
 - `Last checked:` a date, written YYYY-MM-DD, when somebody last read the
   recipe against the current documentation of everything it names. The date
   moves only when somebody did that.
+- `Last proven:` the date of the latest real run, which matches `PROVEN.md`.
+- `Proven on:` the tool versions recorded for that run.
+- `Superseded settings:` environment variable names a script can check in a
+  project's settings files, or `none`.
 
 A seventh line may follow. `Plan terms:` says, in one plain sentence, who a
 free or entry plan the recipe relies on is not for, and which plan such a
@@ -227,6 +233,10 @@ there. Its `PROVEN.md` says `Real run: awaiting the first real run`, and the
 shape check must fail on that line alone. Once the run is recorded, move the
 folder into the recipes folder with `git mv`. There is no draft state, because
 a draft on the menu would be offered.
+
+When a recipe leaves the menu, keep its name and the route to a current recipe
+in `maintain/references/recipe-move.md`. `/maintain` reads that route for a
+project that still records the retired recipe and offers a move on a yes.
 
 A change to what a section does, in `recipe.md`, a part or a script, needs a
 new real run before the next release. Moving a command from prose into a
