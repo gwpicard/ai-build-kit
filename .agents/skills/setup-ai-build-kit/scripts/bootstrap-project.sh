@@ -149,7 +149,6 @@ check-trim.sh|.agents/hooks/check-trim.sh
 pre-push|.agents/hooks/git/pre-push
 plan-refresh.sh|.agents/tools/plan-refresh.sh
 codex-github-check.py|.agents/tools/codex-github-check.py
-env.example|.env.example
 gitignore|.gitignore
 FOUNDATION_FILES
 
@@ -189,7 +188,6 @@ check-trim.sh|.agents/hooks/check-trim.sh
 pre-push|.agents/hooks/git/pre-push
 plan-refresh.sh|.agents/tools/plan-refresh.sh
 codex-github-check.py|.agents/tools/codex-github-check.py
-env.example|.env.example
 gitignore|.gitignore
 FOUNDATION_FILES
 

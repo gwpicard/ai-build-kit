@@ -1,0 +1,16 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      nextjs-security:
+        applies-to: security-updates
+        patterns:
+          - next
+          - eslint-config-next
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch

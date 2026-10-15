@@ -12,7 +12,7 @@ Files: Supabase Storage
 Jobs: Supabase Cron and Queues
 Testing: Vitest and Playwright
 Linting: ESLint
-Starter: coming
+Starter: ../parts/starters/nextjs-supabase
 Optional parts: read-only existing database and Python document worker (coming in part C)
 Work-team default: no
 Deploy target: Coolify on a rented server, with the Coolify GitHub App connected to the project's repository
