@@ -67,7 +67,11 @@ export GH_LOG
 fail() { echo "FAIL: $1" >&2; exit 1; }
 pass() { echo "ok: $1"; }
 run() {
-  (cd "$WORK/project" && PATH="$WORK/bin:$PATH" GH_CASE="$1" PR_BODY="$2" \
+  review_body=$2
+  if [ "${3:-yes}" = yes ]; then
+    review_body=$(printf '%s\n\n## Worth knowing\n- None\nReview record: reviewed=quality review; tried=1; open=0' "$2")
+  fi
+  (cd "$WORK/project" && PATH="$WORK/bin:$PATH" GH_CASE="$1" PR_BODY="$review_body" \
     PR_HEAD_OID="$HEAD_SHA" PR_BASE_OID="$BASE" GIT_TRACE="$WORK/git.trace" \
     EXPECTED_GH="$WORK/bin/gh" sh -c '
       [ "$(command -v gh)" = "$EXPECTED_GH" ] || exit 99
@@ -75,13 +79,14 @@ run() {
     ' sh "$SCRIPT")
 }
 run_auto() {
-  (cd "$WORK/project" && PATH="$WORK/bin:$PATH" GH_CASE="$1" PR_BODY="$2" \
+  review_body=$(printf '%s\n\n## Worth knowing\n- None\nReview record: reviewed=quality review; tried=1; open=0' "$2")
+  (cd "$WORK/project" && PATH="$WORK/bin:$PATH" GH_CASE="$1" PR_BODY="$review_body" \
     PR_HEAD_OID="$HEAD_SHA" PR_BASE_OID="$BASE" sh -c 'exec python3 "$1" --auto 12' sh "$SCRIPT")
 }
 check_hold() {
   case_name=$1 body=$2 expected=$3
   : > "$GH_LOG"
-  out=$(run "$case_name" "$body" 2>&1) && code=0 || code=$?
+  out=$(run "$case_name" "$body" "${4:-yes}" 2>&1) && code=0 || code=$?
   [ "$code" -eq "$expected" ] && ! grep -q '^pr merge ' "$GH_LOG" \
     && pass "$case_name holds the merge with exit $expected" \
     || fail "$case_name returned $code or reached merge: $out / $(cat "$GH_LOG")"
@@ -129,6 +134,7 @@ for case_name in red pending pending-other failed-other canceled skipping-projec
 done
 check_hold no-checks '## Worth stopping for' 1
 check_hold denied '## Worth stopping for' 2
+check_hold success "$(printf '%b' '## Worth stopping for\n- None')" 1 no
 : > "$GH_LOG"
 out=$(run neutral-other "$(printf '%b' '## Worth stopping for\n- [x] Settled')" 2>&1) && code=0 || code=$?
 [ "$code" -eq 0 ] && grep -Fq "pr merge 12 --merge --match-head-commit $HEAD_SHA" "$GH_LOG" \
@@ -153,6 +159,9 @@ out=$(run success '## Worth stopping for' 2>&1) && code=0 || code=$?
 [ "$code" -eq 0 ] && grep -Fq "pr merge 12 --merge --match-head-commit $HEAD_SHA" "$GH_LOG" \
   && pass "passed checks and a yes merge the checked commit" \
   || fail "success returned $code: $out / $(cat "$GH_LOG")"
+git -C "$WORK/project" notes --ref=refs/notes/ai-build-kit-approved-merges list | grep -q . \
+  && pass "an approved merge writes its named-yes ledger record" \
+  || fail "an approved merge did not record its approval"
 
 out=$(run merge-fails '## Worth stopping for' 2>&1) && code=0 || code=$?
 [ "$code" -eq 2 ] && printf '%s' "$out" | grep -q 'no longer mergeable' \
@@ -211,9 +220,99 @@ git -C "$WORK/project" push -q origin main
 BASE=$(git -C "$WORK/project" rev-parse HEAD)
 : > "$GH_LOG"
 out=$(run success '## Worth stopping for' 2>&1) && code=0 || code=$?
-expected='This change is behind the newest version. Bring it up to date and settle any conflicts first, then the checks run again.'
-[ "$code" -eq 1 ] && [ "$out" = "$expected" ] && ! grep -q '^pr checks ' "$GH_LOG" \
-  && pass "an approved merge refuses a branch behind main with the required sentence" \
+ [ "$code" -eq 1 ] && printf '%s' "$out" | grep -Eqi 'behind|up to date' \
+  && ! grep -q '^pr merge ' "$GH_LOG" && ! grep -q '^pr checks ' "$GH_LOG" \
+  && pass "an approved merge holds a branch behind main before checks and merge" \
   || fail "a behind branch returned $code or ran checks: $out / $(cat "$GH_LOG")"
+
+# Exercise the automatic-merge holds directly with controlled GitHub and Git results.
+(cd "$WORK/project" && python3 - "$SCRIPT" <<'PY'
+import importlib.util, json, sys, subprocess
+REAL_RUN = subprocess.run
+sys.dont_write_bytecode = True
+spec = importlib.util.spec_from_file_location("merge", sys.argv[1])
+merge = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(merge)
+class Hold(Exception):
+    pass
+merge.stop = lambda message, code=1: (_ for _ in ()).throw(Hold(str(code) + ":" + message))
+setting = 'Path: Build and run it\nRuns on its own: merge (decided 2026-10-15, "merge when ready")\n'
+state = {"paths": [], "issue": {"title": "Ordinary piece", "body": "## Done when\n- Works\n", "labels": []}, "env": 0, "head_plan": setting}
+real_auto_setting = merge.auto_setting
+merge.auto_setting = lambda main: "setting"
+merge.touched_paths = lambda base, head: state["paths"]
+def fake_git(*args):
+    if args[0] == "show":
+        return subprocess.CompletedProcess(args, 0, state["head_plan"] if args[1].startswith("HEADSHA:") else setting, "")
+    return subprocess.CompletedProcess(args, 0, "", "")
+merge.git = fake_git
+merge.gh = lambda *args: subprocess.CompletedProcess(args, 0, json.dumps(state["issue"]), "")
+merge.subprocess.run = lambda *args, **kwargs: subprocess.CompletedProcess(args[0], state["env"], "", "")
+def held(name, *, paths=None, issue=None, env=0, body=None, expected=None):
+    state.update(paths=paths or [], issue=issue or {"title":"Ordinary piece", "body":"## Done when\n- Works\n", "labels":[]}, env=env, head_plan=setting)
+    data = {"baseRefOid":"BASE", "body":body if body is not None else "## Worth stopping for\n- None\n## Worth knowing\n- None\nReview record: reviewed=quality; tried=1; open=0", "closingIssuesReferences":[{"number":7}]}
+    try:
+        merge.auto_holds(data, "MAIN", "HEADSHA:feature")
+    except Hold as error:
+        message = str(error)
+        assert expected and expected in message, f"{name}: unexpected hold: {message}"
+        print("ok: automatic hold for " + name)
+        return
+    raise AssertionError(name + " did not hold")
+held("migration", paths=["db/migrations/001.sql"], expected="migration")
+for path in [".github/workflows/extra.yml", ".claude/settings.local.json", ".agents/hooks/extra.sh", "package.json", "pnpm-lock.yaml", "Cargo.lock", "requirements/dev.txt"]:
+    held("protected path " + path, paths=[path], expected="setting")
+held("open review finding", body="## Worth stopping for\n- [ ] Fix access\nReview record: reviewed=quality; tried=1; open=0", expected="finding")
+held("missing review record", body="## Worth stopping for\n- None\n", expected="review record")
+held("repair", issue={"title":"Repair broken save", "body":"## Done when\n- Works\n", "labels":[]}, expected="repair")
+held("live side need", issue={"title":"Piece", "body":"Live side needs: MAIL_KEY\n## Done when\n- Works\n", "labels":[]}, expected="live setting")
+held("try-it item", issue={"title":"Piece", "body":"## Done when\n- Person confirms the result (try it)\n", "labels":[]}, expected="person to try it")
+held("new setting", env=1, expected="adds a setting")
+state.update(paths=[], issue={"title":"Ordinary piece", "body":"## Done when\n- Works\n", "labels":[]}, env=0, head_plan=setting.replace('merge (', 'off ('))
+data={"baseRefOid":"BASE", "body":"## Worth stopping for\n- None\n## Worth knowing\n- None\nReview record: reviewed=quality; tried=1; open=0", "closingIssuesReferences":[{"number":7}]}
+try:
+    merge.auto_holds(data, "MAIN", "HEADSHA:feature")
+except Hold as error:
+    assert "changes its own-merge setting" in str(error)
+    print("ok: automatic hold for a changed main setting")
+else: raise AssertionError("changed setting did not hold")
+# Earning auto mode uses records written by merge.py, not GitHub's review API.
+merge.git = lambda *args: subprocess.CompletedProcess(args, 0, setting if args[0] == "show" else "", "")
+merge.auto_setting = real_auto_setting
+try: merge.auto_setting("MAIN")
+except Hold as error:
+    assert "three named-yes merges" in str(error)
+    print("ok: automatic merge waits for three recorded approved merges")
+else: raise AssertionError("empty merge ledger earned automatic merge")
+# Pending checks are polled; they may settle, or time out without merging.
+clock = iter([0, 0, 1, 1, 2])
+merge.time.monotonic = lambda: next(clock)
+merge.time.sleep = lambda _seconds: None
+calls = iter([[{"name":"project-check", "bucket":"pending"}], [{"name":"project-check", "bucket":"pass"}]])
+merge.gh = lambda *args: subprocess.CompletedProcess(args, 0, json.dumps(next(calls)), "")
+rows = merge.wait_for_auto_checks("12", [{"name":"project-check", "bucket":"pending"}], timeout=5)
+assert rows[0]["bucket"] == "pass"
+print("ok: automatic merge waits for a pending check to settle")
+# A red check on main writes a pause shared by linked worktrees.
+merge.subprocess.run = REAL_RUN
+merge.git = lambda *args: subprocess.run(["git", *args], text=True, capture_output=True)
+merge.gh = lambda *args: subprocess.CompletedProcess(args, 0, '[{"status":"completed","conclusion":"failure","name":"project-check"}]', "")
+try: merge.check_main_health()
+except Hold as error: assert "paused" in str(error)
+else: raise AssertionError("red main check did not pause automatic merge")
+assert merge.pause_file().is_file()
+linked = merge.Path.cwd().with_name("project-linked")
+subprocess.run(["git", "worktree", "add", "-q", "--detach", str(linked), "HEAD"], check=True)
+probe = '''import importlib.util, sys; sys.dont_write_bytecode=True; s=importlib.util.spec_from_file_location("m", sys.argv[1]); m=importlib.util.module_from_spec(s); s.loader.exec_module(m); print(m.pause_file().is_file())'''
+shared = subprocess.run([sys.executable, "-c", probe, sys.argv[1]], cwd=linked,
+                        text=True, capture_output=True, check=True)
+assert shared.stdout.strip() == "True", "linked worktree did not see automatic pause"
+try: merge.check_main_health()
+except Hold as error: assert "paused" in str(error)
+else: raise AssertionError("saved automatic pause was ignored")
+merge.pause_file().unlink()
+print("ok: red main pauses automatic merge across linked worktrees")
+PY
+) || fail "automatic-merge holds did not behave as expected"
 
 echo "merge-gate.sh: all checks passed"

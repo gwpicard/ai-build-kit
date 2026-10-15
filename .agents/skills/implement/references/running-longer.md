@@ -43,7 +43,8 @@ named yes. Every other gate still holds. The script reads the setting from
 `main`. A pending check waits up to 15 minutes. A red, missing or still-pending
 check holds the merge.
 
-After an automatic merge, say which piece merged. If a check on `main` or the
+An unattended run merges only through `--auto` when the setting is on. It never
+merges unattended through another route. After an automatic merge, say which piece merged. If a check on `main` or the
 live check fails, pause automatic merging and tell the person what failed.
 Keep it paused until the person turns it on again. A person can turn any
 option off in their own words.

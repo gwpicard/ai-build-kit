@@ -6,6 +6,12 @@ forced push or delete. Also, never push a change directly to `main`, skip the
 project's check, or disable its Git hook. Never discard unsaved work or
 read a stored login. The installed settings hold the command spellings.
 
+The exact blocked spellings include `git checkout .`, `git restore .`,
+`git clean -f`, `git reset --hard`, `git stash drop`, `rm -rf`, and shell-wrapped
+forms of these; Python `shutil.rmtree`, `find -delete`, `gh auth token`,
+`git credential`, and `security find-*` also protect unsaved work or stored
+logins. Do not vary their spelling to get around a guard.
+
 These boundaries need judgement and always apply:
 
 - Never drop or empty a database table, migrate production data without a

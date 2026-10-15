@@ -17,7 +17,8 @@ mechanical enforcement:
 When you change this file, update `.claude/settings.json` to match. A founded
 project's settings refuse more: the full list is the setup-ai-build-kit
 skill's `references/blocked-commands.md`.
-Database drops are too varied to pattern-match, so they remain
+For exact command spellings, shell-wrapped forms and stored-login commands,
+see setup-ai-build-kit's `references/blocked-commands.md`. Database drops are too varied to pattern-match, so they remain
 instruction-only along with the standing-restriction entries below, none of
 which reduce to a single shell pattern.
 

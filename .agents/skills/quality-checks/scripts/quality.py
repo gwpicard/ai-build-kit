@@ -1507,38 +1507,44 @@ def strength(root, base, engines):
 
 def test_command(root):
     """Use the check's recorded command before inferring a runner."""
+    agents = read(root, "AGENTS.md")
+    recorded = re.search(r"(?im)^\s*(?:[-*]\s*)?\*{0,2}(?:test(?:\s+command)?|tests)\*{0,2}\s*:\s*`?([^`\n]+)`?\s*$", agents)
+    if recorded:
+        return shlex.split(recorded.group(1).strip())
+    recipe_project = bool(re.search(r"(?im)^\s*Recipe:\s*\S+", agents))
     # AGENTS.md records the project's stack. Prefer its test command so local
     # quality reads use the same runner as the person.
-    for path in ("AGENTS.md", ".github/workflows/checks.yml", "checks.yml", QUALITY_FLOOR):
+    for path in (".github/workflows/checks.yml", "checks.yml", QUALITY_FLOOR):
         text = read(root, path)
         if not text:
             continue
         commands = []
         in_run = False
         run_indent = 0
+        recipe_only = False
         for line in text.splitlines():
+            if re.match(r"^\s*- name:", line):
+                recipe_only = False
+            if re.match(r"^\s*if:\s*steps\.recipe\.outputs\.selected\s*==\s*'true'", line):
+                recipe_only = True
             match = re.match(r"^(\s*)(?:-\s*)?run:\s*(.*)$", line)
             if match:
                 in_run = True
                 run_indent = len(match.group(1))
-                if match.group(2).strip() and match.group(2).strip() != "|":
+                if not (recipe_only and not recipe_project) and match.group(2).strip() and match.group(2).strip() != "|":
                     commands.append(match.group(2).strip().strip("'\""))
                 continue
             if in_run:
                 indent = len(line) - len(line.lstrip())
                 if line.strip() and indent <= run_indent:
                     in_run = False
-                elif line.strip():
+                elif line.strip() and not (recipe_only and not recipe_project):
                     commands.append(line.strip())
         for command in commands:
             if re.search(r"\bpytest\b", command):
                 return shlex.split(command)
             if re.search(r"\b(?:vitest|playwright)\b", command):
                 return shlex.split(command)
-    agents = read(root, "AGENTS.md")
-    match = re.search(r"(?im)^\s*(?:[-*]\s*)?\*{0,2}(?:test(?:\s+command)?|tests)\*{0,2}\s*:\s*`?([^`\n]+)`?\s*$", agents)
-    if match:
-        return shlex.split(match.group(1).strip())
     try:
         package = json.loads(read(root, "package.json"))
         script = package.get("scripts", {}).get("test", "")

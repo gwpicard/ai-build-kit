@@ -5,18 +5,22 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 GATE="$ROOT/.agents/skills/quality-checks/scripts/gate.py"
 CHECK="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/check-review.sh"
-PARSER="$ROOT/.agents/skills/merge/scripts/review_boxes.py"
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT INT TERM
 export GH_EDIT_FILE="$WORK/edits"
 PROJECT="$WORK/project"
-mkdir -p "$PROJECT/.agents/skills/merge/scripts" "$WORK/bin"
-cp "$PARSER" "$PROJECT/.agents/skills/merge/scripts/review_boxes.py"
+mkdir -p "$PROJECT/.agents/skills" "$WORK/bin"
+ln -s "$ROOT/.agents/skills/setup-ai-build-kit" "$PROJECT/.agents/skills/setup-ai-build-kit"
+sh "$ROOT/.agents/skills/setup-ai-build-kit/scripts/bootstrap-project.sh" "$PROJECT" >/dev/null
 git -C "$PROJECT" init -q -b main
 git -C "$PROJECT" config user.name Rehearsal
 git -C "$PROJECT" config user.email rehearsal@example.invalid
 printf 'value = 1\n' > "$PROJECT/app.py"
+printf 'Path: Build and run it\nTests: pytest -q\n' > "$PROJECT/AGENTS.md"
+printf 'Path: Build and run it\n' > "$PROJECT/masterplan.md"
 git -C "$PROJECT" add app.py
+git -C "$PROJECT" add AGENTS.md
+git -C "$PROJECT" add masterplan.md
 git -C "$PROJECT" commit -qm base
 BASE=$(git -C "$PROJECT" rev-parse HEAD)
 printf 'value = 2\n' > "$PROJECT/app.py"
@@ -125,15 +129,23 @@ JSON
 run_check() {
   body=$1
   view_fail=${2:-0}
-  (cd "$PROJECT" && PATH="$WORK/bin:$PATH" PR_NUMBER=9 REVIEW_BODY="$body" GH_VIEW_FAIL="$view_fail" sh "$CHECK")
+  (cd "$PROJECT" && PATH="$WORK/bin:$PATH" PR_NUMBER=9 PR_BASE_SHA="$BASE" REVIEW_BODY="$body" GH_VIEW_FAIL="$view_fail" sh "$CHECK")
 }
-printf 'Path: Build with care\n' > "$PROJECT/masterplan.md"
 out=$(run_check '' 0 2>&1) && code=0 || code=$?
-[ "$code" -eq 1 ] && printf '%s' "$out" | grep -q 'no review recorded yet' && pass "Build with care holds when no review was recorded" || fail "missing review returned $code: $out"
+[ "$code" -eq 1 ] && printf '%s' "$out" | grep -q 'no review recorded yet' && pass "Build and run it holds when no review was recorded" || fail "missing review returned $code: $out"
 printf 'Path: Explore privately\n' > "$PROJECT/masterplan.md"
+git -C "$PROJECT" add masterplan.md
+git -C "$PROJECT" commit -qm explore
+BASE=$(git -C "$PROJECT" rev-parse HEAD)
 out=$(run_check '' 0 2>&1) && code=0 || code=$?
-[ "$code" -eq 0 ] && pass "a path that needs no review passes without a review record" || fail "unneeded review returned $code: $out"
+[ "$code" -eq 0 ] && pass "Explore privately passes without a review record" || fail "unneeded review returned $code: $out"
 printf 'Path: Build with care\n' > "$PROJECT/masterplan.md"
+git -C "$PROJECT" add masterplan.md
+git -C "$PROJECT" commit -qm care
+BASE=$(git -C "$PROJECT" rev-parse HEAD)
+out=$(run_check '' 0 2>&1) && code=0 || code=$?
+[ "$code" -eq 1 ] && printf '%s' "$out" | grep -q 'no review recorded yet' \
+  && pass "Build with care also holds when no review was recorded" || fail "missing careful-path review returned $code: $out"
 out=$(run_check '## Worth stopping for
 - None
 ## Worth knowing

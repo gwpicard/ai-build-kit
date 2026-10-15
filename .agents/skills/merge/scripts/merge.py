@@ -9,7 +9,21 @@ import tempfile
 import time
 from pathlib import Path
 
-from review_boxes import open_review_box
+def shared_review_reader():
+    candidates = [Path.cwd() / ".agents" / "hooks" / "review_boxes.py",
+                  Path(__file__).parents[2] / "setup-ai-build-kit" / "templates" /
+                  "foundation" / "review_boxes.py"]
+    for candidate in candidates:
+        if candidate.is_file():
+            import importlib.util
+            spec = importlib.util.spec_from_file_location("review_boxes", candidate)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module.open_review_box
+    raise ImportError("shared review-box reader is missing")
+
+
+open_review_box = shared_review_reader()
 
 
 def gh(*args):
@@ -74,10 +88,13 @@ def newest_main(head):
 
 
 def pause_file():
-    result = git("rev-parse", "--git-path", "ai-build-kit-auto-paused")
+    result = git("rev-parse", "--git-common-dir")
     if result.returncode:
         stop("merge: could not locate the local automatic-merge pause", 2)
-    return Path(result.stdout.strip())
+    common = Path(result.stdout.strip())
+    if not common.is_absolute():
+        common = Path.cwd() / common
+    return common / "ai-build-kit-auto-paused"
 
 
 def pause_auto(reason):
@@ -120,6 +137,21 @@ def check_main_health():
         stop("merge: " + reason + "; automatic merging is paused")
 
 
+def wait_for_auto_checks(number, rows, timeout=15 * 60):
+    deadline = time.monotonic() + timeout
+    while any(row.get("bucket") == "pending" for row in rows) and time.monotonic() < deadline:
+        time.sleep(min(15, max(0, deadline - time.monotonic())))
+        checks = gh("pr", "checks", number, "--json", "name,state,bucket")
+        if checks.returncode != 0:
+            stop("merge: GitHub could not reread pending checks", 2)
+        rows = read_json(checks, "pending pull request checks")
+        if not isinstance(rows, list) or any(not isinstance(row, dict) for row in rows):
+            stop("merge: GitHub returned unreadable pending pull request checks", 2)
+    if any(row.get("bucket") == "pending" for row in rows):
+        stop("merge: a check stayed pending for 15 minutes; the pull request stays open")
+    return rows
+
+
 def auto_setting(main):
     result = git("show", main + ":masterplan.md")
     if result.returncode:
@@ -131,19 +163,10 @@ def auto_setting(main):
     if not line:
         stop("merge: main has no Runs on its own setting for merge")
     words = line.group(0)
-    merged = gh("pr", "list", "--state", "merged", "--limit", "100", "--json", "reviews")
-    if merged.returncode != 0:
+    notes = git("notes", "--ref=refs/notes/ai-build-kit-approved-merges", "list")
+    if notes.returncode != 0:
         stop("merge: could not count earlier named-yes merges", 2)
-    rows = read_json(merged, "merged pull requests")
-    if not isinstance(rows, list):
-        stop("merge: GitHub returned unreadable merged pull requests", 2)
-    earned = 0
-    for row in rows:
-        reviews = row.get("reviews") if isinstance(row, dict) else None
-        if isinstance(reviews, list) and any(
-                isinstance(review, dict) and review.get("state") == "APPROVED"
-                for review in reviews):
-            earned += 1
+    earned = len([line for line in notes.stdout.splitlines() if line.strip()])
     if earned < 3:
         stop("merge: three named-yes merges are required before automatic merge")
     return words
@@ -161,7 +184,18 @@ def auto_holds(data, main, head):
     paths = touched_paths(data["baseRefOid"], head)
     if any(re.search(r"(^|/)(migrations?|alembic|versions?)(/|$)|\.(sql)$", p, re.I) for p in paths):
         stop("merge: this piece changes a migration; it waits for a named yes")
-    if any(p in (".env.example", "checks.yml", "checks.yaml", "pyproject.toml", "package.json") for p in paths):
+    def is_setting(path):
+        name = Path(path).name.casefold()
+        return (path.startswith((".github/", ".claude/", ".agents/")) or
+                name in {".env.example", "checks.yml", "checks.yaml", "pyproject.toml",
+                         "package.json", "package-lock.json", "npm-shrinkwrap.json",
+                         "pnpm-lock.yaml", "yarn.lock", "uv.lock", "poetry.lock",
+                         "pipfile", "pipfile.lock", "cargo.toml", "cargo.lock",
+                         "composer.json", "composer.lock", "go.mod", "go.sum",
+                         "gemfile", "gemfile.lock", "requirements.txt"} or
+                name.startswith("requirements") and name.endswith(".txt") or
+                "/requirements/" in ("/" + path.casefold() + "/"))
+    if any(is_setting(path) for path in paths):
         stop("merge: this piece changes a setting; it waits for a named yes")
     if open_review_box(data.get("body") or ""):
         stop("merge: a finding under Worth stopping for is open; the pull request stays open")
@@ -188,7 +222,8 @@ def auto_holds(data, main, head):
         stop("merge: a repair waits for a named yes")
     if re.search(r"(?im)^Live side needs:\s*\S+", piece_body):
         stop("merge: this piece needs a live setting; it waits for a named yes")
-    if re.search(r"(?im)^.*Done when.*\(try it\)\s*$", piece_body):
+    done = re.search(r"(?ims)^##+\s+Done when\s*\n(.*?)(?=^##+\s|\Z)", piece_body)
+    if done and any("(try it)" in line.casefold() for line in done.group(1).splitlines()):
         stop("merge: a Done when item needs a person to try it")
     env_script = Path(__file__).with_name("env-names-added.sh")
     try:
@@ -292,6 +327,15 @@ def main(argv):
     if not data.get("baseRefOid"):
         stop("merge: GitHub returned an unreadable pull request base", 2)
     main = newest_main(head)
+    base_plan = git("show", data["baseRefOid"] + ":masterplan.md")
+    if base_plan.returncode:
+        stop("merge: could not read the build path from the pull request base", 2)
+    base_path = re.search(r"(?m)^Path:\s*(.+?)\s*$", base_plan.stdout)
+    if not base_path:
+        stop("merge: the pull request base has no readable build path", 2)
+    requires_review = bool(base_path and base_path.group(1) != "Explore privately")
+    if requires_review and not re.search(r"(?m)^Review record: reviewed=.+; tried=\d+; open=0$", data.get("body") or ""):
+        stop("merge: the pull request has no completed review record")
     if mode == "--auto":
         auto_holds(data, main, head)
         check_main_health()
@@ -307,15 +351,7 @@ def main(argv):
     if not isinstance(rows, list) or any(not isinstance(row, dict) for row in rows):
         stop("merge: GitHub returned unreadable pull request checks", 2)
     if mode == "--auto":
-        deadline = time.monotonic() + 15 * 60
-        while any(row.get("bucket") == "pending" for row in rows) and time.monotonic() < deadline:
-            time.sleep(min(15, max(0, deadline - time.monotonic())))
-            checks = gh("pr", "checks", number, "--json", "name,state,bucket")
-            if checks.returncode != 0:
-                stop("merge: GitHub could not reread pending checks")
-            rows = read_json(checks, "pull request checks")
-        if any(row.get("bucket") == "pending" for row in rows):
-            stop("merge: a check stayed pending for 15 minutes; the pull request stays open")
+        rows = wait_for_auto_checks(number, rows)
     check_hold(rows)
 
     if open_review_box(data.get("body") or ""):
@@ -327,6 +363,16 @@ def main(argv):
         stop("merge: GitHub did not merge the pull request" + (": " + detail if detail else ""), 2)
     if merged.stdout:
         sys.stdout.write(merged.stdout)
+    if mode == "--approved":
+        noted = git("notes", "--ref=refs/notes/ai-build-kit-approved-merges",
+                    "add", "-f", "-m", "approved merge " + number, head)
+        if noted.returncode:
+            stop("merge: merged, but could not record this named-yes merge", 2)
+        remotes = git("remote")
+        if remotes.returncode == 0 and "origin" in remotes.stdout.splitlines():
+            pushed = git("push", "origin", "refs/notes/ai-build-kit-approved-merges")
+            if pushed.returncode:
+                stop("merge: merged, but could not publish the named-yes merge record", 2)
 
 
 if __name__ == "__main__":

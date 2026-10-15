@@ -52,7 +52,7 @@ if ! command -v knip >/dev/null 2>&1 || ! command -v jscpd >/dev/null 2>&1; then
   echo "  knip or jscpd not on PATH, installing both into a throwaway folder"
   mkdir -p "$WORK/engines"
   printf '{"name":"engines","private":true}\n' > "$WORK/engines/package.json"
-  (cd "$WORK/engines" && npm install --no-audit --no-fund --silent knip@6 jscpd@5) ||
+  (cd "$WORK/engines" && npm_config_cache="$WORK/npm-cache" npm install --no-audit --no-fund --silent knip@6 jscpd@5) ||
     fail "could not install knip and jscpd, so the trim could not be rehearsed"
   PATH="$WORK/engines/node_modules/.bin:$PATH"
   export PATH

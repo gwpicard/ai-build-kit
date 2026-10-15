@@ -2221,10 +2221,10 @@ Bash(rm -rf:*)"
 # changes flowing through a pull request. This maintainer repository's own
 # settings deliberately do not carry that entry, so the two sets differ here.
 expected_deny_project="$expected_deny
-Write(.claude/settings.json)
-Edit(.claude/settings.json)
-Write(.claude/settings.local.json)
-Edit(.claude/settings.local.json)
+Write(**/.claude/settings.json)
+Edit(**/.claude/settings.json)
+Write(**/.claude/settings.local.json)
+Edit(**/.claude/settings.local.json)
 Bash(* > .claude/settings.json*)
 Bash(* > .claude/settings.local.json*)
 Bash(* >> .claude/settings.json*)
@@ -2320,7 +2320,7 @@ Bash(gh api *merges*)
 Bash(gh api graphql *mergePullRequest*)"
 # A project blocks direct merge commands and asks before live changes.
 expected_ask_project="Bash(*merge.py*--approved*)
-Bash(*merge.py*--auto*)
+Bash(*merge.py*--resume*)
 Bash(gh api *git/refs*)
 Bash(gh api graphql *createRef*)
 Bash(gh api graphql *updateRef*)

@@ -48,13 +48,13 @@ if ! command -v depcruise >/dev/null 2>&1; then
   export PATH
 fi
 
-node - "$RULES" "$FOUNDATION" "$WORK" <<'NODE'
+node - "$RULES" "$FOUNDATION" "$WORK" "$ROOT" <<'NODE'
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 
-const [rulesFile, foundation, work] = process.argv.slice(2);
+const [rulesFile, foundation, work, root] = process.argv.slice(2);
 const rules = fs.readFileSync(rulesFile, 'utf8');
 
 // --- what the reference ships -------------------------------------------------
@@ -124,13 +124,18 @@ const workflow = fs.readFileSync(path.join(foundation, 'checks.yml'), 'utf8')
 put('.github/workflows/checks.yml', workflow);
 put('.agents/hooks/check-sensitive-areas.sh', fs.readFileSync(path.join(foundation, 'check-sensitive-areas.sh'), 'utf8'));
 put('.agents/hooks/check-review.sh', fs.readFileSync(path.join(foundation, 'check-review.sh'), 'utf8'));
-put('.agents/skills/merge/scripts/review_boxes.py',
-  fs.readFileSync(path.join(foundation, '../../../merge/scripts/review_boxes.py'), 'utf8'));
 put('bin/gh', '#!/usr/bin/env sh\n[ "$*" = "pr view 12 --json body --jq .body" ] || exit 2\nprintf "%b\\n" "## Worth stopping for\\n- None\\n## Worth knowing\\nReview record: reviewed=quality review; tried=0; open=0"\n');
 fs.chmodSync(path.join(project, 'bin/gh'), 0o755);
 put('.agents/hooks/scan-secrets.sh', fs.readFileSync(path.join(foundation, 'scan-secrets.sh'), 'utf8'));
 put('.agents/hooks/scan-secrets.py', fs.readFileSync(path.join(foundation, 'scan-secrets.py'), 'utf8'));
 put('.agents/hooks/check-tests.sh', fs.readFileSync(path.join(foundation, 'check-tests.sh'), 'utf8'));
+
+fs.mkdirSync(path.join(project, '.agents', 'skills'), { recursive: true });
+fs.symlinkSync(path.join(root, '.agents/skills/setup-ai-build-kit'),
+  path.join(project, '.agents/skills/setup-ai-build-kit'));
+const bootstrap = spawnSync('sh', [path.join(root,
+  '.agents/skills/setup-ai-build-kit/scripts/bootstrap-project.sh'), project], { encoding: 'utf8' });
+assert.equal(bootstrap.status, 0, bootstrap.stderr || bootstrap.stdout);
 
 // The hosted check runs in a clone with the whole history, where the pull
 // request's base is origin/main. The trim step fails without it, so a local

@@ -50,7 +50,7 @@ default only when the tool's facts justify it, and record why.
 
 | Area | What counts | Default caution |
 |---|---|---|
-| Personal or sensitive data | Personal facts beyond work contact details. | Independent access review before real data. |
+| Personal or sensitive data | Health, pay, home address, identity documents or other personal facts. | Independent access review before real data. |
 | Money | Real payments or figures used as bills. | Managed service keeps card details out of the tool; owner checks first figures against a known case. |
 | Sign-in and permissions | Outside sign-in or separated access. | Managed sign-in keeps passwords out of the tool; independent access review before outside use. |
 | Automatic action | Hard-to-reverse messages, changes or actions. | Person approves until a live run proves it; provide an off switch. |

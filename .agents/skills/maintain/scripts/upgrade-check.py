@@ -192,6 +192,10 @@ GATE_FILES = {
                          ".agents/hooks/check-sensitive-areas.sh"),),
     "tests-check": (("setup-ai-build-kit/templates/foundation/check-tests.sh",
                      ".agents/hooks/check-tests.sh"),),
+    "review-check": (
+        ("setup-ai-build-kit/templates/foundation/check-review.sh", ".agents/hooks/check-review.sh"),
+        ("setup-ai-build-kit/templates/foundation/review_boxes.py", ".agents/hooks/review_boxes.py"),
+    ),
     "push-hook": (("setup-ai-build-kit/templates/foundation/pre-push",
                    ".agents/hooks/git/pre-push"),),
 }
@@ -201,10 +205,12 @@ GATE_WORDS = {
     "required-check": "the required project check in GitHub Actions",
     "sensitive-check": "the sensitive-area check",
     "tests-check": "the check that stops silent test edits",
+    "review-check": "the check that holds open review findings",
     "push-hook": "the push guard",
 }
 WORKFLOW_GATES = (
     "Check tests were not changed silently",
+    "Check review findings",
     "Check sensitive-area map",
     "Scan Git history for secrets",
     "Check changes against the pull request base",
@@ -388,7 +394,14 @@ def apply_workflow_gate(project):
         return 0
     if not os.path.exists(target):
         os.makedirs(os.path.dirname(target), exist_ok=True)
-        shutil.copy2(template, target)
+        with open(template, encoding="utf-8", newline="") as handle:
+            template_text = handle.read()
+        filtered, skipped = workflow_without_missing_scripts(project, template_text)
+        with open(target, "w", encoding="utf-8", newline="") as handle:
+            handle.write(filtered)
+        for name in skipped:
+            print("left\t%s\t%s needs a script that is not installed, so it was left out" %
+                  (relative, name))
         print("gate\trequired-check\t%s installed" % relative)
         return 0
     with open(target, encoding="utf-8", newline="") as handle:
@@ -411,6 +424,10 @@ def apply_workflow_gate(project):
             print("upgrade-check.py: installed workflow has no %s step" % name, file=sys.stderr)
             return 2
         current = shape["blocks"].get(name)
+        if not workflow_scripts_installed(project, expected[2]):
+            print("left\t%s\t%s needs a script that is not installed, so it was left alone" %
+                  (relative, name))
+            continue
         if current is None:
             missing.append(name)
         elif current[2] != expected[2]:
@@ -418,7 +435,8 @@ def apply_workflow_gate(project):
     if not missing and not changes:
         return 0
     if missing:
-        additions = "".join(template_shape["blocks"][name][2] for name in missing)
+        additions = "".join(template_shape["blocks"][name][2] for name in missing
+                             if workflow_scripts_installed(project, template_shape["blocks"][name][2]))
         install = re.search(r"(?m)^      - name: Install and test\b", shape["body"])
         at = shape["start"] + install.start() if install else shape["end"]
         changes.append((at, at, additions))
@@ -429,6 +447,29 @@ def apply_workflow_gate(project):
         handle.write(updated)
     print("gate\trequired-check\t%s refreshed gate steps" % relative)
     return 0
+
+
+def workflow_scripts_installed(project, block):
+    for script in re.findall(r"\.agents/(?:hooks|tools)/[A-Za-z0-9_./-]+", block):
+        if not os.path.isfile(os.path.join(project, script)):
+            return False
+    return True
+
+
+def workflow_without_missing_scripts(project, text):
+    shape = workflow_steps(text)
+    if shape is None:
+        return text, []
+    replacements = []
+    skipped = []
+    for name in WORKFLOW_GATES:
+        block = shape["blocks"].get(name)
+        if block and not workflow_scripts_installed(project, block[2]):
+            replacements.append((block[0], block[1]))
+            skipped.append(name)
+    for start, end in sorted(replacements, reverse=True):
+        text = text[:start] + text[end:]
+    return text, skipped
 
 
 def template_findings(project):

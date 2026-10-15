@@ -26,6 +26,7 @@ set -eu
 # the hosted run that names this repository's own base, which the throwaway
 # project does not have, so clear it.
 unset GITHUB_BASE_REF
+unset PR_BASE_SHA
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 FLOOR="$ROOT/.agents/skills/quality-checks/references/check-floor.md"
@@ -38,15 +39,23 @@ REDACT_PY="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/redact-s
 CODEX_PY="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/codex-github-check.py"
 TEST_CHECK="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/check-tests.sh"
 REVIEW_CHECK="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/check-review.sh"
-REVIEW_BOXES="$ROOT/.agents/skills/merge/scripts/review_boxes.py"
 
 fail() {
   echo "FAIL: $1" >&2
   exit 1
 }
 
+bootstrap_review_reader() {
+  mkdir -p "$1/.agents/skills"
+  ln -s "$ROOT/.agents/skills/setup-ai-build-kit" "$1/.agents/skills/setup-ai-build-kit"
+  sh "$ROOT/.agents/skills/setup-ai-build-kit/scripts/bootstrap-project.sh" "$1" >/dev/null
+}
+
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
+mkdir -p "$WORK/npm-cache"
+npm_config_cache="$WORK/npm-cache"
+export npm_config_cache
 PROJECT="$WORK/project"
 mkdir -p "$PROJECT/.github/workflows" "$PROJECT/.agents/hooks" "$PROJECT/.agents/tools"
 
@@ -81,9 +90,8 @@ cp "$GUARD_PY" "$PROJECT/.agents/hooks/guard-secrets.py"
 cp "$REDACT_PY" "$PROJECT/.agents/hooks/redact-secrets.py"
 cp "$CODEX_PY" "$PROJECT/.agents/tools/codex-github-check.py"
 cp "$TEST_CHECK" "$PROJECT/.agents/hooks/check-tests.sh"
+bootstrap_review_reader "$PROJECT"
 cp "$REVIEW_CHECK" "$PROJECT/.agents/hooks/check-review.sh"
-mkdir -p "$PROJECT/.agents/skills/merge/scripts"
-cp "$REVIEW_BOXES" "$PROJECT/.agents/skills/merge/scripts/review_boxes.py"
 
 
 # The edit founding makes: the placeholder step goes, and install, type check,
@@ -176,6 +184,8 @@ run_check() {
     [ "$event_name" = pull_request ] || pr_base=
     if ! (cd "$PROJECT" && PATH="$WORK/bin:$PATH" PR_NUMBER=9 GITHUB_EVENT_NAME="$event_name" PR_BASE_SHA="$pr_base" BASE_SHA="$base_sha" \
         HEAD_SHA="$head_sha" PUSH_BEFORE="$base_sha" PUSH_AFTER="$head_sha" sh -c "$command") > "$WORK/last-output" 2>&1; then
+      cat "$WORK/last-output" >&2
+      git -C "$PROJECT" show "$pr_base:masterplan.md" >&2 || true
       printf '%s\n' "$step"
       return 0
     fi
@@ -206,6 +216,7 @@ echo "  ok: the test check goes red, and says why, when it cannot read the commi
 
 in_project init -q -b main
 printf '__pycache__/\n.mypy_cache/\n.ruff_cache/\n' > "$PROJECT/.gitignore"
+in_project add -A -f -- masterplan.md
 in_project add -A
 in_project commit -q -m "Start"
 status=0
@@ -430,9 +441,8 @@ cp "$SENSITIVE" "$PROJECT/.agents/hooks/check-sensitive-areas.sh"
 cp "$SCAN" "$PROJECT/.agents/hooks/scan-secrets.sh"
 cp "$SCAN_PY" "$PROJECT/.agents/hooks/scan-secrets.py"
 cp "$TEST_CHECK" "$PROJECT/.agents/hooks/check-tests.sh"
+bootstrap_review_reader "$PROJECT"
 cp "$REVIEW_CHECK" "$PROJECT/.agents/hooks/check-review.sh"
-mkdir -p "$PROJECT/.agents/skills/merge/scripts"
-cp "$REVIEW_BOXES" "$PROJECT/.agents/skills/merge/scripts/review_boxes.py"
 
 awk -v tc="$type_check" -v li="$lint" '
   /- name: Install and test/ { skipping = 1 }
@@ -571,6 +581,15 @@ fi
 
 in_project init -q -b main
 printf 'node_modules/\n' > "$PROJECT/.gitignore"
+cat > "$PROJECT/masterplan.md" <<'MD'
+Path: Build with care
+
+Sensitive areas:
+  Data:
+    paths: src
+    Accepted: yes, 2026-10-14
+MD
+in_project add -A -f -- masterplan.md
 save_as_base "Start"
 
 started=$(date +%s)

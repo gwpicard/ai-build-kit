@@ -141,7 +141,7 @@ for route in ('claude-only','shared','whole','plugin'):
         assert set(json.loads((p/'skills-lock.json').read_text())['skills'])==set(kit_names)
         assert not any((p/folder/name).exists() for folder in ('.agents/skills','.claude/skills') for name in retired)
     for step in ('helper','remove','commands','pointers','settings','template',
-                 'secret-scan','hooks','required-check','sensitive-check','tests-check','push-hook'):
+                 'secret-scan','hooks','required-check','sensitive-check','tests-check','review-check','push-hook'):
         apply(skills,p,step)
     # A no changes nothing; a yes writes the line the person chose, once.
     if route=='plugin':
@@ -216,6 +216,8 @@ for source_name,target_name in (
     ('checks.yml','.github/workflows/checks.yml'),
     ('check-sensitive-areas.sh','.agents/hooks/check-sensitive-areas.sh'),
     ('check-tests.sh','.agents/hooks/check-tests.sh'),
+    ('review_boxes.py','.agents/hooks/review_boxes.py'),
+    ('check-review.sh','.agents/hooks/check-review.sh'),
     ('pre-push','.agents/hooks/git/pre-push')):
     copy(source/'setup-ai-build-kit/templates/foundation'/source_name,p/target_name)
 copy(source/'setup-ai-build-kit/templates/foundation/claude-settings.json',p/'.claude/settings.json')
@@ -248,14 +250,15 @@ sentence_pending(source)
 apply(source,p,'commands')
 assert (p/'AGENTS.md').read_text()==original
 sentence_pending(source)  # A script that cannot rewrite never finishes the step.
+apply(source,p,'review-check')
 
 # Each behavioural assertion must catch the copied script without its fix.
 mutations={
     'sentence detection': ('kit-leftovers.py',
         '    blocks = command_blocks(lines)', '    blocks = []'),
     'unfinished status': ('upgrade-check.py',
-        '    if kind == "commands" and finding[-1].startswith("left as written:"):',
-        '    if kind == "commands":\n        return True\n    if kind == "commands" and finding[-1].startswith("left as written:"):'),
+        '        return finding[-1].startswith("left as written: it is a link") or not re.search(',
+        '        return True\n        return finding[-1].startswith("left as written: it is a link") or not re.search('),
     'plain version marker': ('kit-leftovers.py',
         '    if path == MARKER:', '    if False:'),
 }
@@ -266,8 +269,17 @@ for name,(script,old,new) in mutations.items():
     text=target.read_text(); assert old in text
     target.write_text(text.replace(old,new,1))
     if name == 'unfinished status':
-        (p/'.ai-build-kit-version').unlink()
-        sentence_pending(source)
+        spec=importlib.util.spec_from_file_location('mutated_upgrade_check',target)
+        module=importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+        try:
+            assert not module.informational(
+                ('commands','AGENTS.md','This list mentions /ship in the project text',
+                 'left as written: the line contains a retired command'))
+        except AssertionError:
+            print('  ok: removing unfinished status detection is caught')
+        else:
+            raise AssertionError('removing unfinished status was not caught')
+        continue
     try:
         sentence_pending(skills)
     except AssertionError:
@@ -277,6 +289,19 @@ for name,(script,old,new) in mutations.items():
     if name == 'unfinished status':
         copy(fixture/'version-v0.10.0.txt',p/'.ai-build-kit-version')
     print('  ok: removing '+name+' is caught')
+
+# A project missing a review script must not receive a workflow step that calls it.
+upgrade=source/'maintain/scripts/upgrade-check.py'
+spec=importlib.util.spec_from_file_location('upgrade_check_workflow',upgrade)
+module=importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+missing=work/'missing-workflow-script'
+put(missing/'.agents/hooks/check-tests.sh','#!/bin/sh\nexit 0\n')
+template=(source/'setup-ai-build-kit/templates/foundation/checks.yml').read_text()
+filtered,skipped=module.workflow_without_missing_scripts(str(missing),template)
+assert 'Check tests were not changed silently' in filtered
+assert 'Check review findings' not in filtered
+assert 'Check review findings' in skipped
+print('  ok: workflow steps are left out when their scripts are not installed')
 
 # A no is retained, offered monthly, and never duplicated as a mention.
 apply(source,p,'helper')
@@ -445,6 +470,8 @@ for source_name,target_name in (
     ('checks.yml','.github/workflows/checks.yml'),
     ('check-sensitive-areas.sh','.agents/hooks/check-sensitive-areas.sh'),
     ('check-tests.sh','.agents/hooks/check-tests.sh'),
+    ('review_boxes.py','.agents/hooks/review_boxes.py'),
+    ('check-review.sh','.agents/hooks/check-review.sh'),
     ('pre-push','.agents/hooks/git/pre-push')):
     copy(source/'setup-ai-build-kit/templates/foundation'/source_name,p/target_name)
 copy(source/'setup-ai-build-kit/templates/foundation/claude-settings.json',p/'.claude/settings.json')
@@ -483,6 +510,8 @@ for source_name,target_name in (
     ('checks.yml','.github/workflows/checks.yml'),
     ('check-sensitive-areas.sh','.agents/hooks/check-sensitive-areas.sh'),
     ('check-tests.sh','.agents/hooks/check-tests.sh'),
+    ('review_boxes.py','.agents/hooks/review_boxes.py'),
+    ('check-review.sh','.agents/hooks/check-review.sh'),
     ('pre-push','.agents/hooks/git/pre-push')):
     copy(source/'setup-ai-build-kit/templates/foundation'/source_name,p/target_name)
 copy(source/'setup-ai-build-kit/templates/foundation/claude-settings.json',p/'.claude/settings.json')

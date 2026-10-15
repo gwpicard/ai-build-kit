@@ -18,15 +18,12 @@ clear; otherwise keep both sides and ask. Never force-push or rebase.
 `--auto` is available only when `Runs on its own:` on `main` records the
 person's words and date. It holds for red, missing or pending checks, open
 review findings, touched sensitive areas, migrations, new settings, live
-requirements, repairs and `(try it)` items. It requires three earlier merges
-with an approved review and a branch containing the newest `main`. The merge
-script checks that the branch is current before any merge mode proceeds.
+requirements, repairs and `(try it)` items. It requires three earlier merges made through `--approved` and a branch containing the newest `main`. The merge script checks that the branch is current before any merge mode proceeds.
 
-The person adds this Claude Code allow rule themselves:
-`Bash(python3 *merge.py --auto *)`. If a check on `main` or the live check fails
-after an automatic merge, pause with `scripts/merge.py --pause "live check
-failed"`. Wait for the person to turn it on again before
-`scripts/merge.py --resume`.
+The automatic holds and the main-only setting govern `--auto`; no extra Claude
+permission rule is needed. If a check on `main` or the live check fails after
+an automatic merge, pause with `scripts/merge.py --pause "live check failed"`.
+Only the person may clear that pause with `scripts/merge.py --resume`.
 
-An unattended run reports the piece as ready for review and leaves the merge
-to a person.
+An unattended run merges only through `--auto` when the setting is on. It never
+merges unattended through another route.

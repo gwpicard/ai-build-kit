@@ -22,7 +22,12 @@ printf '%s\n' "$setting" | grep -Eq '^Runs on its own:.*[[:space:],]loop([[:spac
   echo "attempt: the loop is off on main" >&2
   exit 1
 }
-git_dir=$(git rev-parse --git-path ai-build-kit-attempts) || exit 2
+git_dir=$(git rev-parse --git-common-dir) || exit 2
+case "$git_dir" in
+  /*) ;;
+  *) git_dir="$(git rev-parse --show-toplevel)/$git_dir" ;;
+esac
+git_dir="$git_dir/ai-build-kit-attempts"
 mkdir -p "$git_dir"
 counter="$git_dir/$piece"
 count=0
@@ -38,13 +43,15 @@ if [ "$count" -ge 3 ]; then
   fi
   exit 1
 fi
-subject=$(git log -1 --format=%s 2>/dev/null || true)
-case "$subject" in
-  "Test fix:"*)
-    echo "attempt: a Test fix commit ends the loop; ask the person to review the test change" >&2
-    exit 1
-    ;;
-esac
+start_file="$counter.start"
+if [ ! -f "$start_file" ]; then
+  git rev-parse HEAD > "$start_file" || exit 2
+fi
+start=$(cat "$start_file")
+if git log "$start..HEAD" --format=%s 2>/dev/null | grep -q '^Test fix:'; then
+  echo "attempt: a Test fix commit ends the loop; ask the person to review the test change" >&2
+  exit 1
+fi
 count=$((count + 1))
 printf '%s\n' "$count" > "$counter"
 printf 'attempt: piece %s, attempt %s of 3\n' "$piece" "$count"

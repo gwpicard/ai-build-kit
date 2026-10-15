@@ -35,8 +35,8 @@ On a live project, make these read-only checks before asking:
   `/setup-hosting` applies it from this pull request, and ask to merge only
   after it reports success.
 - Run any pre-merge local check named by the recipe. Exit 1 holds the merge;
-  exit 2 is a warning recorded once in the changelog. A repeat is only a
-  pointer. Do not ask to merge without a check that is required.
+  exit 2 means it could not run, so do not ask to merge without it. Record the
+  failure once in the changelog; a repeat is only a pointer.
 - Wait for `/setup-hosting` to confirm every `Live side needs:` item is on the
   host. Run `scripts/env-names-added.sh` on the piece's branch; exit 1 names
   new `.env.example` settings to treat the same way, exit 2 is a one-line
@@ -83,5 +83,5 @@ For queues, automatic merge, and conflicts between waiting pieces, follow `refer
 
 Read `references/automatic-merge.md` before using `--auto`.
 
-In an unattended run, report the piece as ready for review and leave the merge
-to a person.
+An unattended run merges only through `--auto` when the setting is on. It never
+merges unattended through another route.

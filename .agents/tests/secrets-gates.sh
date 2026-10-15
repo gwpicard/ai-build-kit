@@ -137,6 +137,30 @@ for command in \
   guard "$encoded" && [ ! -s "$WORK/guard-out" ] && pass "allows: $command" || fail "blocked ordinary command: $command"
 done
 
+# Claude settings writes are stopped by the PreToolUse hook even when the
+# shell spelling is not covered by a command deny pattern.
+for command in \
+  'python3 -c '\''open(".claude/settings.json","w").write("x")'\''' \
+  'sed -i s/a/b/ .claude/settings.local.json' \
+  'cp settings.json .claude/settings.json' \
+  'mv settings.json .claude/settings.local.json' \
+  'tee .claude/settings.json' \
+  'printf x>.claude/settings.json' \
+  'printf x>>.claude/settings.local.json'; do
+  encoded=$(python3 -c 'import json,sys; print(json.dumps({"tool_name":"Bash","tool_input":{"command":sys.argv[1]}}))' "$command")
+  guard "$encoded" && grep -q '"permissionDecision":"deny"' "$WORK/guard-out" \
+    || fail "Claude settings write was not denied: $command"
+done
+for tool in Write Edit; do
+  event=$(python3 -c 'import json,sys; print(json.dumps({"tool_name":sys.argv[1],"tool_input":{"file_path":sys.argv[2]}}))' "$tool" "$WORK/project/.claude/settings.json")
+  guard "$event" && grep -q '"permissionDecision":"deny"' "$WORK/guard-out" \
+    || fail "$tool to a worktree Claude settings file was not denied"
+done
+event=$(python3 -c 'import json; print(json.dumps({"tool_name":"Bash","tool_input":{"command":"cat .claude/settings.json"}}))')
+guard "$event" && ! grep -q '"permissionDecision":"deny"' "$WORK/guard-out" \
+  || fail "reading Claude settings was denied"
+echo "  ok: settings writes are denied in shell, Write and Edit while reads stay allowed"
+
 echo "== Bash guard: refused reads =="
 for command in 'cat .env' 'cat src/nested/.env.production' 'grep x .env.local' 'source .env' 'cat .env*' 'cat <.env' 'env -0' 'printenv -0' 'zsh -c env' 'bash -c env' 'echo `env`' 'echo $(env)'; do
   encoded=$(python3 -c 'import json,sys; print(json.dumps({"tool_name":"Bash","tool_input":{"command":sys.argv[1]}}))' "$command")

@@ -21,7 +21,7 @@ prompt. Use the refuter agent the same way for its separate pass.
 Ask only:
 
 - Does the change do what the title, `So that` and `Done when` agreed?
-- Did it break behaviour that worked before?
+- Did it break behaviour that worked before: can anyone now read or change records or actions they could not before, through row rules, roles, sign-in or another user's data?
 - Does the evidence prove the promised result, using real data where an
   outside service is involved?
 

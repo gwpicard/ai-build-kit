@@ -137,6 +137,7 @@ grep -q '^not-checked[[:space:]]tests[[:space:]]no Done when lines found$' "$WOR
 echo '  ok: a behaviour piece with no Done when lines fails explicitly'
 python3 - "$QUALITY" <<'PY'
 import importlib.util, sys
+sys.dont_write_bytecode = True
 import os, tempfile
 spec = importlib.util.spec_from_file_location("quality", sys.argv[1])
 quality = importlib.util.module_from_spec(spec)
@@ -154,6 +155,13 @@ with tempfile.TemporaryDirectory() as root:
     with open(os.path.join(root, ".github", "workflows", "checks.yml"), "w") as workflow:
         workflow.write("jobs:\n  check:\n    steps:\n      - run: npm test\n")
     assert quality.test_command(root) == ["bin/pytest"]
+with tempfile.TemporaryDirectory() as root:
+    with open(os.path.join(root, "AGENTS.md"), "w") as agents:
+        agents.write("Path: Build and run it\n")
+    os.makedirs(os.path.join(root, ".github", "workflows"))
+    with open(os.path.join(root, ".github", "workflows", "checks.yml"), "w") as workflow:
+        workflow.write("jobs:\n  project-check:\n    steps:\n      - name: Recipe tests\n        if: steps.recipe.outputs.selected == 'true'\n        run: |\n          npx vitest run --coverage\n      - name: Python tests\n        run: pytest -q\n")
+    assert quality.test_command(root) == ["pytest", "-q"]
     binary = os.path.join(root, "bin")
     os.makedirs(binary)
     pytest = os.path.join(binary, "pytest")

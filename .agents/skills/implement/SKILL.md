@@ -42,7 +42,7 @@ Build one piece per pass with `build-piece`, through updated records. After
 green checks and records in the pull request, use `merge`. Merge only on a yes
 naming it. Unattended, leave it ready for review.
 
-`auto` needs approval and `references/running-longer.md`. Each piece must be
+`auto` needs approval and `references/running-longer.md`. An unattended run merges only through `--auto` when the setting is on, never otherwise. Each piece must be
 self-sufficient enough to build without a person present. Load the reference
 first. In an unattended run nobody is there to say yes, so never merge or
 accept a risk for the person.

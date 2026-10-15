@@ -2,10 +2,10 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
     "deny": [
-      "Write(.claude/settings.json)",
-      "Edit(.claude/settings.json)",
-      "Write(.claude/settings.local.json)",
-      "Edit(.claude/settings.local.json)",
+      "Write(**/.claude/settings.json)",
+      "Edit(**/.claude/settings.json)",
+      "Write(**/.claude/settings.local.json)",
+      "Edit(**/.claude/settings.local.json)",
       "Bash(* > .claude/settings.json*)",
       "Bash(* >> .claude/settings.json*)",
       "Bash(* > .claude/settings.local.json*)",
@@ -108,7 +108,7 @@
     ],
     "ask": [
       "Bash(*merge.py*--approved*)",
-      "Bash(*merge.py*--auto*)",
+      "Bash(*merge.py*--resume*)",
       "Bash(gh api *git/refs*)",
       "Bash(gh api graphql *createRef*)",
       "Bash(gh api graphql *updateRef*)",
@@ -145,7 +145,7 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Read|Grep|Bash",
+        "matcher": "Read|Grep|Bash|Write|Edit",
         "hooks": [
           {
             "type": "command",

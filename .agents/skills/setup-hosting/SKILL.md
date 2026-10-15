@@ -53,6 +53,10 @@ follow `fit-check`'s “An area going live”.
 
 Before any live change, load `references/live-records.md`.
 
+Connect one service at a time, starting with harmless parts. Never print what
+the hosting request record contains. Give the live-change warning before asking
+the person to go live.
+
 When going live changes the build path or names a sensitive area, record why,
 its caution and which work continues or waits.
 

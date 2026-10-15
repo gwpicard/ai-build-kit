@@ -94,19 +94,17 @@ def brief(args):
             limits.append("project-check has no reported result")
     except (RuntimeError, ValueError, json.JSONDecodeError):
         check_line = "project-check could not be read"
+        project = []
         limits.append("project check results could not be read")
     result_lines = ["Project check: " + check_line]
     if type_checks:
         result_lines.append("Type: " + ", ".join(str(row.get("state", "unknown")) for row in type_checks))
     else:
-        result_lines.append("Type: [no separate result]")
+        result_lines.append("Type: " + (check_line if project else "[no result]"))
     if lint_checks:
         result_lines.append("Lint: " + ", ".join(str(row.get("state", "unknown")) for row in lint_checks))
     else:
-        result_lines.append("Lint: [no separate result]")
-        limits.append("separate lint result was missing; only the project-check result was available")
-    if not type_checks:
-        limits.append("separate type result was missing; only the project-check result was available")
+        result_lines.append("Lint: " + (check_line if project else "[no result]"))
     sections.extend(["", "## Type and lint results", *result_lines])
     sections.extend(["", "## Review limits", ""])
     sections.extend("- " + item for item in limits)
@@ -150,7 +148,16 @@ def supported(item):
 def test_passes(name):
     if not isinstance(name, str) or not re.fullmatch(r"[\w./:-]+", name):
         return False
-    code, _, _ = run(["pytest", "-q", name], timeout=600)
+    sys.dont_write_bytecode = True
+    import quality
+    command = quality.test_command(str(ROOT))
+    if not command:
+        return False
+    executable = os.path.basename(command[0]).casefold()
+    if executable in ("vitest", "pytest") or (executable == "npx" and "vitest" in command[1:2]):
+        command = [part for part in command if part != "--coverage"]
+        command.append(name)
+    code, _, _ = run(command, timeout=600)
     return code == 0
 
 

@@ -14,12 +14,13 @@ sh "$ROOT/.agents/skills/setup-ai-build-kit/scripts/use-starter.sh" recipes/next
 sh "$ROOT/.agents/skills/setup-ai-build-kit/scripts/bootstrap-project.sh" "$PROJECT" >/dev/null
 sed -i.bak 's/^Recipe: none$/Recipe: nextjs-supabase-on-vercel/' "$PROJECT/AGENTS.md" 2>/dev/null || \
   sed -i 's/^Recipe: none$/Recipe: nextjs-supabase-on-vercel/' "$PROJECT/AGENTS.md"
-mkdir -p "$PROJECT/.agents/skills/merge/scripts"
-cp "$ROOT/.agents/skills/merge/scripts/review_boxes.py" "$PROJECT/.agents/skills/merge/scripts/review_boxes.py"
 [ -f "$PROJECT/.agents/hooks/check-review.sh" ] || fail "founding did not install check-review.sh"
+[ -f "$PROJECT/.agents/hooks/review_boxes.py" ] || fail "founding did not install the shared review reader"
 
 ruby -ryaml -rjson -e '
 workflow = YAML.load_file(ARGV[0])
+permissions = workflow.fetch("permissions")
+raise "the pull-request token cannot read pull requests" unless permissions == {"contents"=>"read", "pull-requests"=>"read"}
 steps = workflow.fetch("jobs").fetch("project-check").fetch("steps")
 detect = steps.find { |step| step["name"] == "Detect the selected recipe" }
 test = steps.find { |step| step["name"] == "Install and test" }

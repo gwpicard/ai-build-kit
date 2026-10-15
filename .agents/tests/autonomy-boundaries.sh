@@ -43,6 +43,11 @@ out=$(cd "$WORK/project" && PATH="$WORK/bin:$PATH" sh "$ATTEMPT" 42 2>&1) && cod
 [ "$code" -eq 1 ] && printf '%s' "$out" | grep -q 'three attempts' \
   && grep -q 'issue edit 42 --add-label blocked' "$GH_LOG" \
   && pass "attempt four stops" || fail "attempt four returned $code: $out"
+git -C "$WORK/project" worktree add -q --detach "$WORK/project-linked" HEAD
+out=$(cd "$WORK/project-linked" && PATH="$WORK/bin:$PATH" sh "$ATTEMPT" 42 2>&1) && code=0 || code=$?
+[ "$code" -eq 1 ] && printf '%s' "$out" | grep -q 'three attempts' \
+  && pass "attempt count is shared across worktrees" || fail "linked worktree attempt returned $code: $out"
+out=$(cd "$WORK/project" && PATH="$WORK/bin:$PATH" sh "$ATTEMPT" 43) || fail "attempt 43 did not start: $out"
 git -C "$WORK/project" commit --allow-empty -qm 'Test fix: adjust assertion'
 out=$(cd "$WORK/project" && PATH="$WORK/bin:$PATH" sh "$ATTEMPT" 43 2>&1) && code=0 || code=$?
 [ "$code" -eq 1 ] && printf '%s' "$out" | grep -q 'Test fix commit ends the loop' \

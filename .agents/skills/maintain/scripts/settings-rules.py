@@ -69,7 +69,8 @@ FORCED_DELETE = "Bash(rm -rf:*)"
 # stood in for: skipping or switching off the push guard, throwing away
 # unsaved changes, and reading another tool's stored login.
 ALWAYS_OFFERED = (
-    "Edit(.claude/settings", "Write(.claude/settings",
+    "Edit(.claude/settings", "Edit(**/.claude/settings",
+    "Write(.claude/settings", "Write(**/.claude/settings",
     "Bash(* > .claude/settings.json*)", "Bash(* >> .claude/settings.json*)",
     "Bash(* > .claude/settings.local.json*)", "Bash(* >> .claude/settings.local.json*)",
     "Bash(tee .claude/settings.json*)", "Bash(tee .claude/settings.local.json*)",
@@ -78,7 +79,8 @@ ALWAYS_OFFERED = (
     "Bash(git clean -*", "Bash(git clean * ", "Bash(git reset * ",
     "Bash(security ", "Bash(gh auth token", "Bash(gh auth status", "Bash(git credential",
     "Bash(gh pr merge", "Bash(gh api *pulls/*/merge", "Bash(gh api *merges",
-    "Bash(gh api graphql *mergePullRequest", "Bash(*", "Read(",
+    "Bash(gh api graphql *mergePullRequest", "Bash(*merge.py*--resume*)",
+    "Bash(*", "Read(",
 )
 
 

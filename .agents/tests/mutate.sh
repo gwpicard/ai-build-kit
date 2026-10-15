@@ -89,6 +89,11 @@ merge-missing-check
 merge-pending-bucket-only
 merge-skipping-project-pass
 merge-first-box-only
+auto-migration-pass
+auto-sensitive-setting-pass
+auto-live-needs-pass
+auto-try-it-pass
+auto-repair-pass
 review-boxes-never-open
 review-brief-hides-missing-input
 review-record-keeps-unsupported
@@ -162,6 +167,11 @@ describe() {
     merge-pending-bucket-only) echo "a pending check is accepted because gh --json exits zero" ;;
     merge-skipping-project-pass) echo "a skipped project-check is accepted as passed" ;;
     merge-first-box-only) echo "the second open finding is ignored after a settled first box" ;;
+    auto-migration-pass) echo "automatic merge no longer waits for a migration" ;;
+    auto-sensitive-setting-pass) echo "automatic merge accepts a change to a setting" ;;
+    auto-live-needs-pass) echo "automatic merge skips a live setting requirement" ;;
+    auto-try-it-pass) echo "automatic merge stops waiting for a person to try the result" ;;
+    auto-repair-pass) echo "automatic merge takes a repair without a named yes" ;;
     review-boxes-never-open) echo "an unticked stopping finding no longer holds the project check" ;;
     review-brief-hides-missing-input) echo "a packet with missing agreement inputs is reported as complete" ;;
     review-record-keeps-unsupported) echo "a finding without evidence or a concrete scenario reaches the pull request" ;;
@@ -206,7 +216,7 @@ checks_for() {
     pre-push-reversed-range) echo "push-guard" ;;
     scan-drops-key-shapes|scan-drops-service-role-jwt|scan-drops-named-env-assignment|redactor-drops-multiline-values) echo "secrets-gates" ;;
     merge-missing-check) echo "merge-gate" ;;
-    merge-pending-bucket-only|merge-skipping-project-pass|merge-first-box-only|merge-any-check-name|merge-area-call-skipped|merge-area-open-ignored) echo "merge-gate" ;;
+    merge-pending-bucket-only|merge-skipping-project-pass|merge-first-box-only|merge-any-check-name|merge-area-call-skipped|merge-area-open-ignored|auto-migration-pass|auto-sensitive-setting-pass|auto-live-needs-pass|auto-try-it-pass|auto-repair-pass) echo "merge-gate" ;;
     review-boxes-never-open|review-brief-hides-missing-input|review-record-keeps-unsupported) echo "review-gate" ;;
     test-freeze-removed|tests-untested-status|tests-zero-coverage-pass|tests-missing-coverage-pass|tests-after-failure-pass|test-fix-empty-reason) echo "tests-prove-change" ;;
     runner-fails-green) echo "rehearsal-runner" ;;
@@ -770,7 +780,7 @@ assert old in s
 open(p, "w").write(s.replace(old, new, 1))'
       ;;
     merge-first-box-only)
-      edit "$tree/.agents/skills/merge/scripts/merge.py" '
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/review_boxes.py" '
 import os
 p = os.environ["MUTATE_TARGET"]
 s = open(p).read()
@@ -779,8 +789,28 @@ new = "if checkbox.group(1).lower() != \"x\":\n                    return False"
 assert old in s
 open(p, "w").write(s.replace(old, new, 1))'
       ;;
+    auto-migration-pass)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" 'import os
+p=os.environ["MUTATE_TARGET"]; s=open(p).read(); old="    if any(re.search(r\"(^|/)(migrations?|alembic|versions?)(/|$)|\\.(sql)$\", p, re.I) for p in paths):\n        stop(\"merge: this piece changes a migration; it waits for a named yes\")\n"; assert old in s; open(p,"w").write(s.replace(old,"",1))'
+      ;;
+    auto-sensitive-setting-pass)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" 'import os
+p=os.environ["MUTATE_TARGET"]; s=open(p).read(); old="    if any(is_setting(path) for path in paths):"; assert old in s; s=s.replace(old,"    if False and any(is_setting(path) for path in paths):",1); open(p,"w").write(s)'
+      ;;
+    auto-live-needs-pass)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" 'import os
+p=os.environ["MUTATE_TARGET"]; s=open(p).read(); old="if re.search(r\"(?im)^Live side needs:\\s*\\S+\", piece_body):"; assert old in s; open(p,"w").write(s.replace(old,"if False and re.search(r\"(?im)^Live side needs:\\s*\\S+\", piece_body):",1))'
+      ;;
+    auto-try-it-pass)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" 'import os
+p=os.environ["MUTATE_TARGET"]; s=open(p).read(); old="if done and any(\"(try it)\" in line.casefold() for line in done.group(1).splitlines()):"; assert old in s; open(p,"w").write(s.replace(old,"if False and done and any(\"(try it)\" in line.casefold() for line in done.group(1).splitlines()):",1))'
+      ;;
+    auto-repair-pass)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" 'import os
+p=os.environ["MUTATE_TARGET"]; s=open(p).read(); old="if \"repair\" in labels or \"broken\" in labels or \"repair\" in str(issue_data.get(\"title\", \"\")).casefold():"; assert old in s; open(p,"w").write(s.replace(old,"if False and (\"repair\" in labels or \"broken\" in labels or \"repair\" in str(issue_data.get(\"title\", \"\")).casefold()):",1))'
+      ;;
     review-boxes-never-open)
-      edit "$tree/.agents/skills/merge/scripts/review_boxes.py" '
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/review_boxes.py" '
 import os
 p = os.environ["MUTATE_TARGET"]
 s = open(p).read()
