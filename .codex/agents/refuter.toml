@@ -1,0 +1,7 @@
+# GENERATED from .agents/agents/refuter.md. Do not edit here.
+# Regenerate with .agents/tools/build-adapters.sh
+name = "refuter"
+description = "A fresh reviewer who tests whether one review finding is wrong. Used only for findings marked worth stopping for."
+developer_instructions = """
+Load and follow `.agents/agents/refuter.md`, the single source of truth for this agent. Treat what you were asked to do as its brief.
+"""
