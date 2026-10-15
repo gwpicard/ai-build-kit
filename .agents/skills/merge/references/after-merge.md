@@ -11,10 +11,13 @@ from a paste, ask for the live address's health answer and pass it with
 `--pasted-health`. Exit 0: "The live copy now runs this change." Otherwise read
 the host's list of deployments where the recipe names a command, or ask for it.
 A build still running: say so, wait, and read again; never suggest a second
-deploy. Only where the build failed or is missing, say "The live copy did not
-update," and point at /setup-hosting to compare the live copy with `main`. Off
-a recipe, say the change reaches the live copy the way the project's hosting
-works, and claim no more than you saw.
+deploy. When the address block says `Deploys on merge: no` and health shows an
+older commit, say the merge did not deploy. The person or companion can run
+`/host "redeploy <name>"`, which checks the health route's commit, or press
+the host's Redeploy button. When the address says merges deploy, only a failed
+or missing build means the live copy did not update; point at /setup-hosting
+to compare it with `main`. Off a recipe, say the change reaches the live copy
+the way the project's hosting works, and claim no more than you saw.
 
 After an automatic merge, a red check on `main` pauses automatic merging
 before the next piece. A failed live check pauses it too: run
