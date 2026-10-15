@@ -42,11 +42,17 @@ outside service before this can go live: each by name, never a value>
 <the build approach, the seams, code-level dependencies, any groundwork: the
 technical context a builder needs and the person never has to open>
 
+Reaches: <files, routes, tables and tests this piece may affect; use `new files only` if it adds source files and reaches no existing code>
+
 </details>
 ```
 
 `## Done when` holds conditions answered yes or no by trying the tool. Anything
 else belongs in `## So that`.
+
+Number the bullet items under `## Done when` by position as D1, D2, and so
+on. A wrapped continuation remains part of its bullet. End any line a person
+must judge with `(try it)`; it keeps its number and needs no automated test.
 
 `## Masterplan change` names the section and what it gains, changes or loses.
 Read each `## Done when` line against the masterplan alone, and write "nothing"
@@ -78,6 +84,8 @@ decision, so a simple read is never a false one. `Under the hood` is collapsed
 build context the person never has to open and `/implement` always reads. Most
 short pieces need none. Context reaching past one piece goes to the masterplan
 (a product decision) or AGENTS.md's stack section (a codebase convention).
+For a refactor whose behaviour does not change, write `Kind: refactor` here;
+the tests read checks that existing tests pass before and after.
 
 ## Labels
 
@@ -115,7 +123,8 @@ what settled it into `## Decided` before the label comes off.
 - `ready`, when the piece is shaped and waiting to be built.
 
 `/shape` adds `ready` through `mark-ready.sh`, which refuses without `## Done
-when` and, after a `needs-` label, without `## Decided`. `/implement` swaps
+when`, without a `Reaches:` line on a project with code, and, after a `needs-`
+label, without `## Decided`. `/implement` swaps
 `ready` for `building` when it starts and takes both off after the merge. A
 piece never carries `ready` and a `needs-` label together.
 

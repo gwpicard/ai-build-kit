@@ -23,8 +23,9 @@ route.
 Piece-sized and clear (one sitting, a done line you could write now) becomes a
 ready piece at once. Write it to pieces.md's shape with its subjects, and
 label it `ready` by running the `records` skill's `scripts/mark-ready.sh` on its
-number. It refuses without `## Done when`, and refreshes the printout. A new
-issue starts unassigned; `/implement` assigns it when it picks the piece up.
+number. It refuses without `## Done when` and, on a project with code,
+without a `Reaches:` line. A new issue starts unassigned; `/implement` assigns
+it when it picks the piece up.
 Then make the build offer.
 
 ## Writing the piece
@@ -35,6 +36,11 @@ context. A whole-product decision goes to the masterplan, a whole-codebase
 convention to AGENTS.md's stack section. Groundwork is its own vertical slice,
 ordered ahead, never a "database" or "API" layer.
 
+For a behaviour-preserving refactor, write `Kind: refactor` under `Under the hood`.
+
+Number the bullets under `## Done when` by position as D1, D2, and so on.
+End a line a person must judge with `(try it)`.
+
 Write `## Masterplan change` before marking ready, by pieces.md's test. Read it
 back in the reply that reports the piece: "When this lands, the masterplan
 gains a weekly summary email." For "nothing", say the masterplan already covers
@@ -43,9 +49,13 @@ it. Never apply it while shaping.
 Write `Live side needs:` only where the live copy needs a new secret, setting
 or service, each by name, never a value.
 
-For `Under the hood` on a project with code, run the reach check in the
-`quality-checks` skill's `references/reach-check.md` and name the seams and
-covering tests from it.
+For `Under the hood` on a project with code, run `quality.py reach --paths
+<likely files>` and act on its exit code. Add a `Reaches:` line with the files,
+routes, tables and tests it reports. If the piece only adds source files, write
+`Reaches: new files only`.
+
+When the read prints `wide`, split the piece so the shared part changes first,
+or keep it whole and tell the person in one plain line what else it reaches.
 
 ## Shaping now, or filing for later
 
@@ -68,8 +78,8 @@ treated as `needs-clarification`.
 
 Run the step the label names, write what settled it into `## Decided`, then run
 the `records` skill's `scripts/mark-ready.sh` on the piece. It refuses while
-`## Decided` or `## Done when` is missing and says which: write it, then run it
-again.
+`## Decided`, `## Done when`, or a code project's `Reaches:` line is missing
+and says which: write it, then run it again.
 
 - `needs-clarification` runs the `clarify` skill. Write the result in
   pieces.md's shape and keep the person's original words underneath.

@@ -25,6 +25,19 @@ number=${2#\#}
 case "$number" in ''|*[!0-9]*) usage ;; esac
 case "$step" in start|merged) ;; *) usage ;; esac
 
+if [ "$step" = start ]; then
+  if ! git rev-parse --show-toplevel >/dev/null 2>&1; then
+    echo "piece-labels: start must run inside the project" >&2
+    exit 2
+  fi
+  dirty=$(git status --porcelain)
+  if [ -n "$dirty" ]; then
+    echo "piece-labels: save or set aside this work before starting a piece:" >&2
+    printf '%s\n' "$dirty" >&2
+    exit 1
+  fi
+fi
+
 command -v gh >/dev/null 2>&1 || { echo "piece-labels: the GitHub command line tool is not installed" >&2; exit 2; }
 command -v python3 >/dev/null 2>&1 || { echo "piece-labels: python3 is needed to read the labels" >&2; exit 2; }
 

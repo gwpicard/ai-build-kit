@@ -24,9 +24,8 @@ Check:
 12. An independent-review route exists: the reviewer agent or another
     subagent, a headless run, a separate session, or a clean chat the person
     opens.
-13. A reach-check engine is recorded, in the order the `quality-checks` skill's
-    `references/reach-check.md` gives, or that the agent reads imports and
-    callers directly.
+13. Reach is measured by `quality.py reach`; its built-in import reader is the
+    fallback when dependency-cruiser is not installed.
 14. Hooks and command blocks are recorded as optional, never assumed. Record
     whether the harness runs anything when a session opens; where it does
     not, the check-up reminder reaches the person through `/what-now`.

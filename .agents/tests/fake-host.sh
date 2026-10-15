@@ -133,7 +133,9 @@ esac
 
 echo "== A merge builds once =="
 before=$(production_count)
-"$GH" pr merge 1 >/dev/null
+head_sha=$("$GH" pr view 1 --json headRefOid \
+  | python3 -c 'import json, sys; print(json.load(sys.stdin)["headRefOid"])')
+"$GH" pr merge 1 --merge --match-head-commit "$head_sha" >/dev/null
 merged=$(git --git-dir "$p.git" rev-parse main)
 [ "$merged" != "$first" ] \
   && pass "merging the pull request moves main on the remote" \

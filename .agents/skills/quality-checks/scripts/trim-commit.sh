@@ -16,13 +16,13 @@
 #     1  a test path changed; nothing was committed, and each path is named
 #     2  not a project under Git, or the rule for test paths could not be read
 #
-# Which paths are tests is the one rule check-trim.sh holds, read from the
+# Which paths are tests is the one rule check-tests.sh holds, read from the
 # setup-ai-build-kit skill beside this one.
 
 set -u
 
 here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
-rule="$here/../../setup-ai-build-kit/templates/foundation/check-trim.sh"
+rule="$here/../../setup-ai-build-kit/templates/foundation/check-tests.sh"
 TEST_PATH=$(sed -n "s/^TEST_PATH='\(.*\)'\$/\1/p" "$rule" 2>/dev/null)
 [ -n "$TEST_PATH" ] || {
   echo "trim-commit: the rule for which paths are tests could not be read from $rule, so nothing was committed" >&2

@@ -189,6 +189,18 @@ case "$by_number" in
   *) fail "pr view by number returned '$by_number'" ;;
 esac
 
+remote_base=$(git ls-remote origin refs/heads/main | awk '{print $1}')
+git checkout -q main
+printf 'local-only\n' > local-only.txt
+git add local-only.txt
+git -c user.name=Rehearsal -c user.email=rehearsal@example.com commit -q -m 'Move local main'
+local_base=$(git rev-parse HEAD)
+git checkout -q deposits
+pr_base=$("$GH" pr view 1 --json baseRefOid | python3 -c 'import json,sys; print(json.load(sys.stdin)["baseRefOid"])')
+[ "$pr_base" = "$remote_base" ] && [ "$pr_base" != "$local_base" ] \
+  && pass "baseRefOid stays at the remote base after local main moves" \
+  || fail "baseRefOid followed local main: remote=$remote_base local=$local_base pr=$pr_base"
+
 by_branch=$("$GH" pr view deposits --json url)
 case "$by_branch" in
   *'/pull/1'*) pass "pr view accepts a branch name" ;;
@@ -219,7 +231,8 @@ for kind in squash rebase; do
   fi
 done
 
-"$GH" pr merge 1 --merge > /dev/null \
+head=$(git rev-parse HEAD)
+"$GH" pr merge 1 --merge --match-head-commit "$head" > /dev/null \
   && pass "pr merge is accepted" \
   || fail "pr merge was refused"
 case "$("$GH" issue view 1)" in

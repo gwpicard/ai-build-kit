@@ -5,6 +5,12 @@
 
 .agents/guard|
 .agents/hooks|
+.agents/skills/setup-ai-build-kit/templates/foundation/guard-secrets.sh|.agents/hooks/guard-secrets.sh
+.agents/skills/setup-ai-build-kit/templates/foundation/guard-secrets.py|.agents/hooks/guard-secrets.py
+.agents/skills/setup-ai-build-kit/templates/foundation/redact-secrets.sh|.agents/hooks/redact-secrets.sh
+.agents/skills/setup-ai-build-kit/templates/foundation/redact-secrets.py|.agents/hooks/redact-secrets.py
+.agents/skills/setup-ai-build-kit/templates/foundation/scan-secrets.sh|.agents/hooks/scan-secrets.sh
+.agents/skills/setup-ai-build-kit/templates/foundation/scan-secrets.py|.agents/hooks/scan-secrets.py
 .agents/skills/setup-ai-build-kit|
 .agents/skills/shape|
 .agents/skills/implement|
@@ -23,7 +29,8 @@
 .agents/skills/live-copy|
 .agents/skills/evidence-run|
 .agents/skills/triage|
-.agents/skills/build-piece|
+.agents/skills/build-piece/SKILL.md|
+.agents/skills/build-piece/references/build-limits.md|
 .agents/tools/build-adapters.sh|
 .agents/tools/kit-inventory.txt|
 .agents/agents|
@@ -49,6 +56,7 @@
 .gemini/commands|
 .github/copilot-instructions.md|
 .agents/skills/setup-ai-build-kit/templates/foundation/checks.yml|.github/workflows/checks.yml
+.agents/skills/setup-ai-build-kit/templates/foundation/check-tests.sh|
 .agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json|.claude/settings.json
 .env.example|
 .gitignore|
@@ -84,4 +92,5 @@ agent-plugin|
 .agents/skills/live-copy|agent-plugin/skills/live-copy
 .agents/skills/evidence-run|agent-plugin/skills/evidence-run
 .agents/skills/triage|agent-plugin/skills/triage
-.agents/skills/build-piece|agent-plugin/skills/build-piece
+.agents/skills/build-piece/SKILL.md|agent-plugin/skills/build-piece/SKILL.md
+.agents/skills/build-piece/references/build-limits.md|agent-plugin/skills/build-piece/references/build-limits.md

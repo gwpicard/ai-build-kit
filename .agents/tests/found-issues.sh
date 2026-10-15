@@ -24,29 +24,38 @@ ln -s "$ROOT/.agents/tests/lib/stand-in-gh" "$WORK/bin/gh"
 STANDIN_GH_STATE="$WORK/state.json"
 STANDIN_GH_LOG="$WORK/gh.log"
 export STANDIN_GH_STATE STANDIN_GH_LOG
+tab=$(printf '\t')
 
 DEFAULTS='["bug", "documentation", "duplicate", "enhancement", "good first issue", "help wanted", "invalid", "question", "wontfix"]'
 
 project() {
   rm -rf "$WORK/p"
   mkdir -p "$WORK/p/.agents/tools"
-  git -C "$WORK/p" init -q
+  git -C "$WORK/p" init -q -b main
   git -C "$WORK/p" remote add origin "$1"
   printf '#!/bin/sh\necho "plan printed"\n' > "$WORK/p/.agents/tools/plan-refresh.sh"
 }
 state() {
-  # state <repo> <visibility> <issues json> [refused labels json] [view fails]
-  python3 - "$STANDIN_GH_STATE" "$1" "$2" "$3" "${4:-[]}" "${5:-false}" "$DEFAULTS" <<'PY'
+  # state <repo> <visibility> <issues json> [refused labels json] [view fails] [branches json]
+  python3 - "$STANDIN_GH_STATE" "$1" "$2" "$3" "${4:-[]}" "${5:-false}" "$DEFAULTS" "${6:-[]}" <<'PY'
 import json, sys
-path, repo, visibility, issues, refuse, fails, defaults = sys.argv[1:]
+path, repo, visibility, issues, refuse, fails, defaults, branches = sys.argv[1:]
 json.dump({"repo": repo, "visibility": visibility, "issues": json.loads(issues),
            "labels": json.loads(defaults), "refuse": json.loads(refuse),
-           "view_fails": fails == "true"}, open(path, "w"))
+           "view_fails": fails == "true", "branches": json.loads(branches)}, open(path, "w"))
 PY
   : > "$STANDIN_GH_LOG"
 }
 get() { python3 -c 'import json,sys; v=json.load(open(sys.argv[1])).get(sys.argv[2]); print(json.dumps(v, sort_keys=True))' "$STANDIN_GH_STATE" "$1"; }
-run() { (cd "$WORK/p" && PATH="$WORK/bin:$PATH" sh "$SCRIPT" "$@"); }
+run() {
+  (
+    cd "$WORK/p" || exit 1
+    PATH="$WORK/bin:$PATH"
+    export PATH
+    [ "$(command -v gh)" = "$WORK/bin/gh" ] || exit 99
+    sh "$SCRIPT" "$@"
+  )
+}
 changed() { grep -E '^(label|api|issue edit|repo edit)' "$STANDIN_GH_LOG" || true; }
 
 echo "== The kit's own repository =="
@@ -95,8 +104,108 @@ printf '%s\n' "$out" | grep -q '^removed	bug, documentation' \
 [ "$(get settings)" = '{"allow_rebase_merge": "false", "allow_squash_merge": "false", "delete_branch_on_merge": "true"}' ] \
   && pass "merged branches go, and squash and rebase merges are off" \
   || fail "the settings were $(get settings)"
+[ "$(get protection)" = null ] && printf '%s\n' "$out" | grep -Fqx "protection${tab}deferred until first upload creates main" \
+  && ! grep -q 'branches/main/protection' "$STANDIN_GH_LOG" \
+  && pass "protection waits until the first upload creates main" \
+  || fail "protection ran before main existed: $(get protection) / $out"
+
+body='{"required_status_checks":{"strict":true,"contexts":["project-check"]},"enforce_admins":true,"required_pull_request_reviews":null,"restrictions":null}'
+out=$(printf '%s' "$body" | PATH="$WORK/bin:$PATH" gh api -X PUT repos/someone/kit-log/branches/main/protection --input - 2>&1) && code=0 || code=$?
+[ "$code" -ne 0 ] && printf '%s' "$out" | grep -q 'HTTP 404: Branch not found' \
+  && pass "the GitHub stand-in rejects protection for a branch that does not exist" \
+  || fail "the stand-in accepted a missing branch: $out"
+out=$(PATH="$WORK/bin:$PATH" STANDIN_GH_STATE="$STANDIN_GH_STATE" python3 "$ROOT/.agents/skills/merge/scripts/protect-branch.py" someone/kit-log main 2>&1) && code=0 || code=$?
+[ "$code" -eq 2 ] && printf '%s' "$out" | grep -q 'main does not exist' \
+  && pass "a missing branch has its own protection error and exits 2" \
+  || fail "a missing branch returned $code: $out"
+
+state someone/kit-log PRIVATE '{}' '[]' false '["main"]'
+out=$(printf '%s' '{"required_status_checks":{"strict":false,"contexts":["project-check"]}}' | PATH="$WORK/bin:$PATH" gh api -X PUT repos/someone/kit-log/branches/main/protection --input - 2>&1) && code=0 || code=$?
+[ "$code" -ne 0 ] && printf '%s' "$out" | grep -q 'HTTP 422: missing required branch protection keys' \
+  && pass "the GitHub stand-in rejects a protection body missing required keys" \
+  || fail "the stand-in accepted an incomplete body: $out"
+
+state someone/kit-log PRIVATE '{}' '[]' false '["main"]'
+out=$(run prepare) && code=0 || code=$?
+[ "$code" -eq 0 ] \
+  && [ "$(get protection)" = '{"enforce_admins": true, "required_pull_request_reviews": null, "required_status_checks": {"contexts": ["project-check"], "strict": false}, "restrictions": null}' ] \
+  && grep -q '^api -X PUT repos/someone/kit-log/branches/main/protection --input -' "$STANDIN_GH_LOG" \
+  && pass "an existing main gets the complete four-key protection body" \
+  || fail "full branch protection was not required: $(get protection) / $out"
+
+python3 - "$STANDIN_GH_STATE" <<'PY'
+import json, sys
+p = sys.argv[1]
+s = json.load(open(p))
+s["protection"] = {"required_status_checks": {"strict": False, "contexts": ["other-check"]},
+                   "enforce_admins": False, "required_pull_request_reviews": {"required_approving_review_count": 2},
+                   "restrictions": None, "other_setting": "kept"}
+json.dump(s, open(p, "w"))
+PY
+: > "$STANDIN_GH_LOG"
+out=$(run prepare) && code=0 || code=$?
+[ "$code" -eq 0 ] \
+  && [ "$(get protection)" = '{"enforce_admins": true, "other_setting": "kept", "required_pull_request_reviews": {"required_approving_review_count": 2}, "required_status_checks": {"contexts": ["other-check", "project-check"], "strict": false}, "restrictions": null}' ] \
+  && grep -q 'POST repos/someone/kit-log/branches/main/protection/required_status_checks/contexts' "$STANDIN_GH_LOG" \
+  && grep -q 'POST repos/someone/kit-log/branches/main/protection/enforce_admins' "$STANDIN_GH_LOG" \
+  && ! grep -q 'api -X PUT' "$STANDIN_GH_LOG" \
+  && pass "existing protection is preserved while the check and admins are added" \
+  || fail "existing protection was replaced or not updated: $(get protection) / $out"
+
+python3 - "$STANDIN_GH_STATE" <<'PY'
+import json, sys
+p = sys.argv[1]
+s = json.load(open(p))
+s["protection"] = {"required_status_checks": {"strict": False, "contexts": []},
+                   "enforce_admins": False, "required_pull_request_reviews": {"required_approving_review_count": 2},
+                   "restrictions": None, "other_setting": "kept"}
+json.dump(s, open(p, "w"))
+PY
+: > "$STANDIN_GH_LOG"
+out=$(run prepare) && code=0 || code=$?
+[ "$code" -eq 0 ] \
+  && [ "$(get protection)" = '{"enforce_admins": true, "other_setting": "kept", "required_pull_request_reviews": {"required_approving_review_count": 2}, "required_status_checks": {"contexts": ["project-check"], "strict": false}, "restrictions": null}' ] \
+  && grep -q 'POST repos/someone/kit-log/branches/main/protection/required_status_checks/contexts' "$STANDIN_GH_LOG" \
+  && grep -q 'PATCH repos/someone/kit-log/branches/main/protection/required_status_checks --input -' "$STANDIN_GH_LOG" \
+  && pass "an empty required-check list uses PATCH and preserves the other protection" \
+  || fail "the empty required-check fallback failed: $(get protection) / $out / $(cat "$STANDIN_GH_LOG")"
 cmp -s "$SKILL/templates/foundation/piece-issue.yml" "$WORK/p/.github/ISSUE_TEMPLATE/piece.yml" \
   && pass "the piece template is copied into the project" || fail "the piece template was not copied"
+
+state someone/kit-log PRIVATE '{}' '[]' false '["main"]'
+python3 -c 'import json,sys; p=sys.argv[1]; s=json.load(open(p)); s["protection_status"]="plan"; json.dump(s,open(p,"w"))' "$STANDIN_GH_STATE"
+out=$(run prepare 2>&1) && code=0 || code=$?
+[ "$code" -eq 0 ] && printf '%s\n' "$out" | grep -q 'hold the merge itself' \
+  && grep -q '^label create ' "$STANDIN_GH_LOG" \
+  && pass "a plan restriction names the script hold and founding carries on" \
+  || fail "a plan restriction did not carry on with founding ($code): $out"
+
+for status_line in 'admin|admin rights' '422|422' 'network|network error'; do
+  status=${status_line%%|*}
+  expected=${status_line#*|}
+  state someone/kit-log PRIVATE '{}' '[]' false '["main"]'
+  python3 - "$STANDIN_GH_STATE" "$status" <<'PY'
+import json, sys
+p, status = sys.argv[1:]
+s = json.load(open(p)); s["protection_status"] = status; json.dump(s, open(p, "w"))
+PY
+  out=$(run prepare 2>&1) && code=0 || code=$?
+  if [ "$status" = 422 ]; then
+    [ "$code" -eq 2 ] && printf '%s\n' "$out" | grep -Fq "$expected" \
+      && pass "a rejected protection setting is reported with exit 2" \
+      || fail "422 protection failure returned $code: $out"
+  else
+    case "$status" in
+      admin) expected_line="Branch protection could not be set because this account does not have admin rights." ;;
+      network) expected_line="Branch protection could not be set because of a network error." ;;
+    esac
+    [ "$code" -eq 2 ] && printf '%s\n' "$out" | grep -Fxq "$expected_line" \
+      && printf '%s\n' "$out" | grep -Eq "^template${tab}(copied|kept)$" \
+      && grep -q '^label create ' "$STANDIN_GH_LOG" \
+      && pass "${status} protection failure exits 2 after founding continues" \
+      || fail "${status} protection failure returned $code or stopped founding: $out"
+  fi
+done
 
 printf 'mine\n' > "$WORK/p/.github/ISSUE_TEMPLATE/piece.yml"
 state someone/kit-log PRIVATE '{"1": {"body": "", "labels": ["bug"]}}' '["wontfix"]'

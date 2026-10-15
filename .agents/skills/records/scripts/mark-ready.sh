@@ -27,6 +27,25 @@ case "$number" in ''|*[!0-9]*) echo "usage: mark-ready.sh <issue number>" >&2; e
 
 command -v gh >/dev/null 2>&1 || { echo "mark-ready: the GitHub command line tool is not installed" >&2; exit 2; }
 command -v python3 >/dev/null 2>&1 || { echo "mark-ready: python3 is needed to read the issue" >&2; exit 2; }
+command -v git >/dev/null 2>&1 || { echo "mark-ready: Git is needed to check the project" >&2; exit 2; }
+# The Reaches parser lives beside the quality read, in this kit's own skills.
+parser_dir=$(CDPATH= cd -- "$(dirname -- "$0")/../../quality-checks/scripts" 2>/dev/null && pwd) || parser_dir=
+project_root=$(git rev-parse --show-toplevel 2>/dev/null) || {
+  echo "mark-ready: could not find the project under Git" >&2
+  exit 2
+}
+has_code=no
+while IFS= read -r path; do
+  case "$path" in
+    .agents/*|.claude/*|.cursor/*|.gemini/*|.codex/*|.github/*|.claude-plugin/*|agent-plugin/*)
+      continue ;;
+    *.js|*.jsx|*.ts|*.tsx|*.mjs|*.cjs|*.mts|*.cts|*.py|*.go|*.rs|*.java|*.rb|*.php)
+      has_code=yes
+      break ;;
+  esac
+done <<EOF
+$(git -C "$project_root" ls-files -co --exclude-standard)
+EOF
 
 read_issue() {
   gh issue view "$number" --json body,labels
@@ -35,9 +54,13 @@ read_issue() {
 issue=$(read_issue) || { echo "mark-ready: could not read issue $number" >&2; exit 2; }
 
 # Prints "ok <needs-labels...>" or "missing <section>".
-verdict=$(printf '%s' "$issue" | python3 -c '
-import json, re, sys
-data = json.load(sys.stdin)
+verdict=$(ISSUE_BODY="$issue" HAS_CODE="$has_code" PARSER_DIR="$parser_dir" python3 - <<'PY'
+import json, os, re, sys
+data = json.loads(os.environ["ISSUE_BODY"])
+has_code = os.environ["HAS_CODE"] == "yes"
+if has_code:
+    sys.path.insert(0, os.environ["PARSER_DIR"])
+    from reaches_line import REACHES_LINE
 body = data.get("body") or ""
 labels = [l["name"] if isinstance(l, dict) else l for l in data.get("labels") or []]
 
@@ -57,15 +80,21 @@ def section(name):
 needs = [l for l in labels if l.startswith("needs-")]
 if not section("Done when"):
     print("missing Done when")
+elif has_code and not re.search(REACHES_LINE, body, re.I | re.M):
+    print("missing Reaches")
 elif needs and not section("Decided"):
     print("missing Decided")
 else:
     print(" ".join(["ok"] + needs))
-') || { echo "mark-ready: could not read issue $number" >&2; exit 2; }
+PY
+) || { echo "mark-ready: could not read issue $number" >&2; exit 2; }
 
 case "$verdict" in
   "missing Done when")
     echo "not ready: issue $number has no Done when section, so it has not been sized"
+    exit 1 ;;
+  "missing Reaches")
+    echo "not ready: issue $number has no Reaches line for the code it may touch"
     exit 1 ;;
   "missing Decided")
     echo "not ready: issue $number waits on a question, and its Decided section does not say what settled it"

@@ -19,22 +19,27 @@ something of them, and never needs to read one to keep the tool working.
 | Sensitive-area map and boundary rules | Project check on every pull request | `check-sensitive-areas.sh`, `references/boundary-rules.md` |
 | Trim | Every build, before the person tries it | `references/trim.md` |
 | A trim left the tests alone | Every trim commit, and the project check on every pull request | `trim-commit.sh`, `check-trim.sh`; `place-trim-check.py` brings the step to an older project |
+| Reach | Shape and every build | `quality.py reach`; act on its exit code |
+| Tests stay frozen | Every project check on a pull request | `check-tests.sh` in the project template |
+| Tests prove the change | Every build, after behaviour is built | `quality.py tests --base --piece` |
 | Structure, one change | Every build, before the save | `quality.py loops --base`, as "During a build" says |
-| Tests notice a breakage | Offered on a Build with care build; too slow for the project check | `references/test-strength.md` |
+| Tests notice a breakage | Build with care changes inside a mapped sensitive area | `quality.py strength --base`; repairs include the regression test |
 | Stale document names | Every `/maintain` visit | `references/document-read.md` |
 | Old branches | Monthly visit | `references/stale-branches.md` |
 | Waste, structure, document bloat | Quarterly visit | `references/waste-read.md`, `references/structure-read.md`, `references/document-bloat.md` |
+
+Check a boundary with sentrux or dependency-cruiser where present, or by
+reading the changed imports.
 
 A build's structure check compares with the commit the piece started from,
 read again from Git history. A visit's reads leave out what an earlier visit
 offered, which `.ai-build-kit-maintenance` records, finding by finding. A
 finding that never reached the person comes back.
 
-## During a build
+The tests read runs once after the build. See
+`references/tests-prove-change.md` for its report lines and exit codes.
 
-Run the reach check in `references/reach-check.md` and the tests it names.
-Check a boundary with sentrux or dependency-cruiser where present, or by
-reading the changed imports.
+## During a build
 
 Run `python3` with this skill's `scripts/quality.py`, passing `loops --base
 <start commit>`. Exit 0: say nothing. Exit 1: say "This change added a loop

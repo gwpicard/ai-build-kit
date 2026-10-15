@@ -10,13 +10,13 @@ deny list reduces automation, it does not remove the rule. Where a tool
 supports a command deny list, this list is also mirrored there as stronger,
 mechanical enforcement:
 
-- Claude Code: `.claude/settings.json` → `permissions.deny` (shipped, mirrors this list), and `permissions.ask`, which asks the person before every merge.
+- Claude Code: `.claude/settings.json` → `permissions.deny` (shipped, mirrors this list), with direct merge commands blocked in a founded project.
 - Codex: set `approval_policy`/sandbox in `~/.codex/config.toml` so shell writes need approval.
 - Cursor: add the same patterns under Cursor's command allow/deny settings.
 
 When you change this file, update `.claude/settings.json` to match. A founded
-project's settings refuse more: the full list, with the commands it asks
-about first, is the setup-ai-build-kit skill's `references/blocked-commands.md`.
+project's settings refuse more: the full list is the setup-ai-build-kit
+skill's `references/blocked-commands.md`.
 Database drops are too varied to pattern-match, so they remain
 instruction-only along with the standing-restriction entries below, none of
 which reduce to a single shell pattern.
