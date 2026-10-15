@@ -51,6 +51,10 @@ case "$1 $2" in
     esac
     ;;
   "pr merge")
+    [ "$*" = "pr merge 12 --merge --match-head-commit $PR_HEAD_OID" ] || {
+      echo "unexpected merge arguments: $*" >&2
+      exit 2
+    }
     [ "$GH_CASE" != merge-fails ] || { echo "Pull request is no longer mergeable" >&2; exit 1; }
     exit 0
     ;;
@@ -62,7 +66,14 @@ GH_LOG="$WORK/gh.log"
 export GH_LOG
 fail() { echo "FAIL: $1" >&2; exit 1; }
 pass() { echo "ok: $1"; }
-run() { (cd "$WORK/project" && PATH="$WORK/bin:$PATH" GH_CASE="$1" PR_BODY="$2" PR_HEAD_OID="$HEAD_SHA" PR_BASE_OID="$BASE" GIT_TRACE="$WORK/git.trace" python3 "$SCRIPT" --approved 12); }
+run() {
+  (cd "$WORK/project" && PATH="$WORK/bin:$PATH" GH_CASE="$1" PR_BODY="$2" \
+    PR_HEAD_OID="$HEAD_SHA" PR_BASE_OID="$BASE" GIT_TRACE="$WORK/git.trace" \
+    EXPECTED_GH="$WORK/bin/gh" sh -c '
+      [ "$(command -v gh)" = "$EXPECTED_GH" ] || exit 99
+      exec python3 "$1" --approved 12
+    ' sh "$SCRIPT")
+}
 check_hold() {
   case_name=$1 body=$2 expected=$3
   : > "$GH_LOG"
@@ -101,23 +112,23 @@ done
 check_hold no-checks '## Worth stopping for' 1
 check_hold denied '## Worth stopping for' 2
 : > "$GH_LOG"
-out=$(run neutral-other $'## Worth stopping for\n- [x] Settled' 2>&1) && code=0 || code=$?
+out=$(run neutral-other "$(printf '%b' '## Worth stopping for\n- [x] Settled')" 2>&1) && code=0 || code=$?
 [ "$code" -eq 0 ] && grep -Fq "pr merge 12 --merge --match-head-commit $HEAD_SHA" "$GH_LOG" \
   && pass "skipping checks other than project-check do not hold the merge" \
   || fail "a skipped optional check blocked the merge or returned $code: $out"
-check_hold success $'### Worth stopping for:\n  1. [ ] An open finding\n#### details\n- [x] nested item\n### Worth knowing\n- plain note' 1
-check_hold success $'## Review\n### Worth stopping for\n+ [x] Settled\n* [ ] Still open\n## Worth knowing' 1
-check_hold success $'## Worth stopping for\n- [x] Settled\n* plain finding\n## Worth knowing' 1
-check_hold success $'## Worth knowing\n- fine\n## Worth STOPPING FOR\nA paragraph finding.' 1
-check_merge $'## Worth stopping for\n- [x] settled\n  - sub-bullet\n- None'
-check_merge $'## Worth stopping for\n- [x] settled\n  - sub-bullet\n- None'
-check_merge $'## Worth stopping for\n- None.'
-check_merge $'## Worth stopping for\nNothing worth stopping for'
-check_merge $'## Worth stopping for\n- [x] Settled\n\n  This is an indented continuation note.'
-check_merge $'## Worth knowing\n```md\n## Worth stopping for\n- [ ] example\n```'
-check_hold success $'## Worth knowing\n- fine\n**WORTH STOPPING FOR**\n- [ ] later finding' 1
-check_merge $'## Worth stopping for\n- [x] Settled\n## Worth knowing\n- plain note'
-check_merge $'## Review\n- ordinary note'
+check_hold success "$(printf '%b' '### Worth stopping for:\n  1. [ ] An open finding\n#### details\n- [x] nested item\n### Worth knowing\n- plain note')" 1
+check_hold success "$(printf '%b' '## Review\n### Worth stopping for\n+ [x] Settled\n* [ ] Still open\n## Worth knowing')" 1
+check_hold success "$(printf '%b' '## Worth stopping for\n- [x] Settled\n* plain finding\n## Worth knowing')" 1
+check_hold success "$(printf '%b' '## Worth knowing\n- fine\n## Worth STOPPING FOR\nA paragraph finding.')" 1
+check_merge "$(printf '%b' '## Worth stopping for\n- [x] settled\n  - sub-bullet\n- None')"
+check_merge "$(printf '%b' '## Worth stopping for\n- [x] settled\n  - sub-bullet\n- None')"
+check_merge "$(printf '%b' '## Worth stopping for\n- None.')"
+check_merge "$(printf '%b' '## Worth stopping for\nNothing worth stopping for')"
+check_merge "$(printf '%b' '## Worth stopping for\n- [x] Settled\n\n  This is an indented continuation note.')"
+check_merge "$(printf '%b' '## Worth knowing\n```md\n## Worth stopping for\n- [ ] example\n```')"
+check_hold success "$(printf '%b' '## Worth knowing\n- fine\n**WORTH STOPPING FOR**\n- [ ] later finding')" 1
+check_merge "$(printf '%b' '## Worth stopping for\n- [x] Settled\n## Worth knowing\n- plain note')"
+check_merge "$(printf '%b' '## Review\n- ordinary note')"
 
 : > "$GH_LOG"
 out=$(run success '## Worth stopping for' 2>&1) && code=0 || code=$?
@@ -165,7 +176,11 @@ out=$(run success '## Worth stopping for' 2>&1) && code=0 || code=$?
   && pass "an accepted sensitive area reports its line and allows the checked head to merge" \
   || fail "an accepted area did not merge its head ($code): $out / $(cat "$GH_LOG")"
 
-out=$(cd "$WORK/project" && PATH="/usr/bin:/bin" python3 "$SCRIPT" --approved 12 2>&1) && code=0 || code=$?
+# A folder with python3 and git only, since a runner may have gh in /usr/bin.
+mkdir -p "$WORK/nogh"
+ln -s "$(command -v python3)" "$WORK/nogh/python3"
+ln -s "$(command -v git)" "$WORK/nogh/git"
+out=$(cd "$WORK/project" && PATH="$WORK/nogh" "$WORK/nogh/python3" "$SCRIPT" --approved 12 2>&1) && code=0 || code=$?
 [ "$code" -eq 2 ] && printf '%s' "$out" | grep -q 'GitHub CLI (gh) is not installed' \
   && pass "a missing gh exits 2 without a traceback" || fail "missing gh returned $code: $out"
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Refuse reads of recorded local secret files and environment dumps."""
-import json
 import importlib.util
+import json
 import os
 import re
 import shlex

@@ -24,13 +24,14 @@ ln -s "$ROOT/.agents/tests/lib/stand-in-gh" "$WORK/bin/gh"
 STANDIN_GH_STATE="$WORK/state.json"
 STANDIN_GH_LOG="$WORK/gh.log"
 export STANDIN_GH_STATE STANDIN_GH_LOG
+tab=$(printf '\t')
 
 DEFAULTS='["bug", "documentation", "duplicate", "enhancement", "good first issue", "help wanted", "invalid", "question", "wontfix"]'
 
 project() {
   rm -rf "$WORK/p"
   mkdir -p "$WORK/p/.agents/tools"
-  git -C "$WORK/p" init -q
+  git -C "$WORK/p" init -q -b main
   git -C "$WORK/p" remote add origin "$1"
   printf '#!/bin/sh\necho "plan printed"\n' > "$WORK/p/.agents/tools/plan-refresh.sh"
 }
@@ -46,7 +47,15 @@ PY
   : > "$STANDIN_GH_LOG"
 }
 get() { python3 -c 'import json,sys; v=json.load(open(sys.argv[1])).get(sys.argv[2]); print(json.dumps(v, sort_keys=True))' "$STANDIN_GH_STATE" "$1"; }
-run() { (cd "$WORK/p" && PATH="$WORK/bin:$PATH" sh "$SCRIPT" "$@"); }
+run() {
+  (
+    cd "$WORK/p" || exit 1
+    PATH="$WORK/bin:$PATH"
+    export PATH
+    [ "$(command -v gh)" = "$WORK/bin/gh" ] || exit 99
+    sh "$SCRIPT" "$@"
+  )
+}
 changed() { grep -E '^(label|api|issue edit|repo edit)' "$STANDIN_GH_LOG" || true; }
 
 echo "== The kit's own repository =="
@@ -95,7 +104,7 @@ printf '%s\n' "$out" | grep -q '^removed	bug, documentation' \
 [ "$(get settings)" = '{"allow_rebase_merge": "false", "allow_squash_merge": "false", "delete_branch_on_merge": "true"}' ] \
   && pass "merged branches go, and squash and rebase merges are off" \
   || fail "the settings were $(get settings)"
-[ "$(get protection)" = null ] && printf '%s\n' "$out" | grep -qx 'protection\tdeferred until first upload creates main' \
+[ "$(get protection)" = null ] && printf '%s\n' "$out" | grep -Fqx "protection${tab}deferred until first upload creates main" \
   && ! grep -q 'branches/main/protection' "$STANDIN_GH_LOG" \
   && pass "protection waits until the first upload creates main" \
   || fail "protection ran before main existed: $(get protection) / $out"
@@ -190,9 +199,10 @@ PY
       admin) expected_line="Branch protection could not be set because this account does not have admin rights." ;;
       network) expected_line="Branch protection could not be set because of a network error." ;;
     esac
-    [ "$code" -eq 0 ] && printf '%s\n' "$out" | grep -Fxq "$expected_line" \
-      && printf '%s\n' "$out" | grep -Eq '^template\t(copied|kept)$' \
-      && pass "${status} protection failure is reported and founding continues" \
+    [ "$code" -eq 2 ] && printf '%s\n' "$out" | grep -Fxq "$expected_line" \
+      && printf '%s\n' "$out" | grep -Eq "^template${tab}(copied|kept)$" \
+      && grep -q '^label create ' "$STANDIN_GH_LOG" \
+      && pass "${status} protection failure exits 2 after founding continues" \
       || fail "${status} protection failure returned $code or stopped founding: $out"
   fi
 done

@@ -33,6 +33,9 @@ TEMPLATE="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/checks.ym
 SENSITIVE="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/check-sensitive-areas.sh"
 SCAN="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/scan-secrets.sh"
 SCAN_PY="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/scan-secrets.py"
+GUARD_PY="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/guard-secrets.py"
+REDACT_PY="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/redact-secrets.py"
+CODEX_PY="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/codex-github-check.py"
 TEST_CHECK="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/check-tests.sh"
 REVIEW_CHECK="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/check-review.sh"
 REVIEW_BOXES="$ROOT/.agents/skills/merge/scripts/review_boxes.py"
@@ -45,7 +48,7 @@ fail() {
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 PROJECT="$WORK/project"
-mkdir -p "$PROJECT/.github/workflows" "$PROJECT/.agents/hooks"
+mkdir -p "$PROJECT/.github/workflows" "$PROJECT/.agents/hooks" "$PROJECT/.agents/tools"
 
 # --- the commands, read from the shipped table ------------------------------
 
@@ -74,10 +77,14 @@ fi
 cp "$SENSITIVE" "$PROJECT/.agents/hooks/check-sensitive-areas.sh"
 cp "$SCAN" "$PROJECT/.agents/hooks/scan-secrets.sh"
 cp "$SCAN_PY" "$PROJECT/.agents/hooks/scan-secrets.py"
+cp "$GUARD_PY" "$PROJECT/.agents/hooks/guard-secrets.py"
+cp "$REDACT_PY" "$PROJECT/.agents/hooks/redact-secrets.py"
+cp "$CODEX_PY" "$PROJECT/.agents/tools/codex-github-check.py"
 cp "$TEST_CHECK" "$PROJECT/.agents/hooks/check-tests.sh"
 cp "$REVIEW_CHECK" "$PROJECT/.agents/hooks/check-review.sh"
 mkdir -p "$PROJECT/.agents/skills/merge/scripts"
 cp "$REVIEW_BOXES" "$PROJECT/.agents/skills/merge/scripts/review_boxes.py"
+
 
 # The edit founding makes: the placeholder step goes, and install, type check,
 # lint and test go in its place, each as its own named step.
@@ -249,6 +256,16 @@ echo "  ok: the check goes red at Lint on an unused import"
 # pull request's base is stood in for by a local origin/main.
 sed '1d' "$PROJECT/pricing.py" > "$WORK/unlinted"
 mv "$WORK/unlinted" "$PROJECT/pricing.py"
+for kit_dir in .agents .claude .codex .cursor .gemini; do
+  mkdir -p "$PROJECT/$kit_dir"
+  printf 'import os\n' > "$PROJECT/$kit_dir/lint_probe.py"
+done
+first=$(run_check)
+[ -z "$first" ] || { cat "$WORK/last-output" >&2; fail "the project's lint step checked a kit folder, at $first"; }
+echo "  ok: the project's lint step leaves the kit's folders alone"
+rm -f "$PROJECT"/.agents/lint_probe.py "$PROJECT"/.claude/lint_probe.py \
+  "$PROJECT"/.codex/lint_probe.py "$PROJECT"/.cursor/lint_probe.py \
+  "$PROJECT"/.gemini/lint_probe.py
 save_as_base "The checked code"
 first=$(run_check)
 [ -z "$first" ] || { cat "$WORK/last-output" >&2; fail "the check was red before the trim, at $first"; }
