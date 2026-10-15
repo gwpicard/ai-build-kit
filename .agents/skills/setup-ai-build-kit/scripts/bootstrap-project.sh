@@ -147,6 +147,12 @@ session-start.sh|.agents/hooks/session-start.sh
 check-sensitive-areas.sh|.agents/hooks/check-sensitive-areas.sh
 check-trim.sh|.agents/hooks/check-trim.sh
 pre-push|.agents/hooks/git/pre-push
+guard-secrets.sh|.agents/hooks/guard-secrets.sh
+guard-secrets.py|.agents/hooks/guard-secrets.py
+redact-secrets.sh|.agents/hooks/redact-secrets.sh
+redact-secrets.py|.agents/hooks/redact-secrets.py
+scan-secrets.sh|.agents/hooks/scan-secrets.sh
+scan-secrets.py|.agents/hooks/scan-secrets.py
 plan-refresh.sh|.agents/tools/plan-refresh.sh
 codex-github-check.py|.agents/tools/codex-github-check.py
 env.example|.env.example
@@ -187,6 +193,12 @@ session-start.sh|.agents/hooks/session-start.sh
 check-sensitive-areas.sh|.agents/hooks/check-sensitive-areas.sh
 check-trim.sh|.agents/hooks/check-trim.sh
 pre-push|.agents/hooks/git/pre-push
+guard-secrets.sh|.agents/hooks/guard-secrets.sh
+guard-secrets.py|.agents/hooks/guard-secrets.py
+redact-secrets.sh|.agents/hooks/redact-secrets.sh
+redact-secrets.py|.agents/hooks/redact-secrets.py
+scan-secrets.sh|.agents/hooks/scan-secrets.sh
+scan-secrets.py|.agents/hooks/scan-secrets.py
 plan-refresh.sh|.agents/tools/plan-refresh.sh
 codex-github-check.py|.agents/tools/codex-github-check.py
 env.example|.env.example

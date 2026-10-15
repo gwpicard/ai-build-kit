@@ -3,7 +3,7 @@
 
 Founding copies the kit's Claude Code settings into `.claude/settings.json`
 once, and no update touches that file again. A later release can refuse more
-ways of writing a dangerous command, and ask before a merge, and a project
+ways of writing a dangerous command, and ask before a risky command, and a project
 founded earlier keeps the older rules. This script compares the project's
 `permissions.deny` and `permissions.ask` lists with the installed founding
 template, so the comparison never rests on memory or on a hand edit of JSON.
@@ -19,7 +19,7 @@ PROJECT defaults to the current folder. Each line has fields separated by
 tabs:
 
     deny       RULE     a refusal the template holds and the project lacks
-    ask        RULE     a question before a merge the project lacks
+    ask        RULE     a question the project lacks
     declined   LIST  RULE
                         a rule the person said no to; the no stands
     left       .claude/settings.json  WHY

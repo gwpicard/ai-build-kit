@@ -13,6 +13,14 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 SKILL="$ROOT/.agents/skills/setup-ai-build-kit"
 HOOK="$SKILL/templates/foundation/pre-push"
+SCAN="$SKILL/templates/foundation/scan-secrets.sh"
+SCAN_PY="$SKILL/templates/foundation/scan-secrets.py"
+
+copy_scan() {
+  project=$1
+  cp "$SCAN" "$project/.agents/hooks/scan-secrets.sh"
+  cp "$SCAN_PY" "$project/.agents/hooks/scan-secrets.py"
+}
 USE="$SKILL/scripts/use-push-guard.sh"
 
 FAIL=0
@@ -34,6 +42,7 @@ git init -q --bare "$R"
 git init -q "$P"
 mkdir -p "$P/.agents/hooks/git"
 cp "$HOOK" "$P/.agents/hooks/git/pre-push"
+copy_scan "$P"
 git -C "$P" remote add origin "$R"
 git -C "$P" commit -q --allow-empty -m first
 # main reaches the remote before the guard is on, as the first upload's API
@@ -75,9 +84,35 @@ fi
 git -C "$P" checkout -q sign-out
 [ "$(remote_main)" = "$before" ] && pass "main on the remote never moved" || fail "main on the remote moved"
 
+# Feed Git's hook the deletion record directly. A bare remote also refuses a
+# main deletion, so a real push alone would not prove this guard did it.
+main_sha=$(remote_main)
+if printf 'refs/heads/main %040d refs/heads/main %s\n' 0 "$main_sha" | \
+  sh "$P/.agents/hooks/git/pre-push" >"$WORK/delete-main-out" 2>&1; then
+  fail "pre-push accepted Git's main deletion input"
+else
+  grep -q 'would change main directly' "$WORK/delete-main-out" \
+    && pass "the hook itself refuses deleting main" \
+    || fail "main deletion failed for a reason other than the hook's main rule"
+fi
+
 pushes -u origin sign-out && pass "a piece branch pushes" || fail "a piece branch was stopped"
 git -C "$P" commit -q --allow-empty -m "Sign it back in"
 pushes origin sign-out && pass "a piece branch that only moves forward pushes again" || fail "a fast-forward push was stopped"
+
+# Existing branches must scan only the commits after the remote SHA. Reversing
+# that range would let this newly added key-shaped value through.
+push_value="ghp_$(python3 -c 'import secrets; print(secrets.token_hex(24))')"
+printf '%s\n' "$push_value" > "$P/push-key.txt"
+git -C "$P" add push-key.txt
+git -C "$P" commit -q -m "Test existing branch range"
+if pushes origin sign-out >"$WORK/secret-push-out" 2>&1; then
+  fail "an existing-branch push containing a key-shaped value was allowed"
+else
+  ! grep -Fq -- "$push_value" "$WORK/secret-push-out" \
+    && pass "an existing-branch push scans only its new commits and hides the value" \
+    || fail "the existing-branch scan printed the test value"
+fi
 
 git -C "$P" reset -q --soft HEAD~1
 git -C "$P" commit -q --allow-empty -m "Sign it back in, rewritten"
@@ -103,8 +138,36 @@ else
 fi
 
 pushes origin --delete sign-out && pass "deleting a piece branch is allowed" || fail "deleting a piece branch was stopped"
-git -C "$P" tag v1
+git -C "$P" tag v1 main
 pushes origin v1 && pass "a tag pushes" || fail "a tag was stopped"
+git -C "$P" checkout -q -b tag-secret main
+tag_value="AKIA$(python3 -c 'import secrets; print(secrets.token_hex(8).upper())')"
+printf '%s\n' "$tag_value" > "$P/tag-key.txt"
+git -C "$P" add tag-key.txt && git -C "$P" commit -q -m "Tag carries a key"
+git -C "$P" tag secret-key
+if git -C "$P" push origin secret-key >"$WORK/tag-secret-out" 2>&1; then
+  fail "a tag push containing a key-shaped value was allowed"
+else
+  grep -q 'secret scan found a secret' "$WORK/tag-secret-out" \
+    && ! grep -Fq -- "$tag_value" "$WORK/tag-secret-out" \
+    && pass "a tag push scans its new commits and names the secret refusal" \
+    || fail "tag scan did not give the secret refusal"
+fi
+U="$WORK/could-not-run"
+git init -q "$U"
+mkdir -p "$U/.agents/hooks/git" "$U/.agents/hooks"
+cp "$HOOK" "$U/.agents/hooks/git/pre-push"
+git -C "$U" commit -q --allow-empty -m start
+printf '#!/bin/sh\necho "Secret scan: could not run: rehearsal" >&2\nexit 2\n' > "$U/.agents/hooks/scan-secrets.sh"
+sha=$(git -C "$U" rev-parse HEAD)
+status=0
+printf 'refs/heads/topic %s refs/heads/topic %040d\n' "$sha" 0 | \
+  sh "$U/.agents/hooks/git/pre-push" >"$WORK/could-not-run-out" 2>&1 || status=$?
+[ "$status" -ne 0 ] && grep -q 'secret scan could not run' "$WORK/could-not-run-out" \
+  && ! grep -q 'found a secret' "$WORK/could-not-run-out" \
+  && pass "a scanner error has its own refusal message" \
+  || fail "could not-run scan was not distinguished from a found secret"
+git -C "$P" checkout -q main
 git -C "$P" checkout -q -b main-fix
 pushes origin main-fix && pass "a branch whose name starts with main pushes" || fail "main-fix was stopped"
 
@@ -122,6 +185,7 @@ Q="$WORK/husky"
 git init -q "$Q"
 mkdir -p "$Q/.agents/hooks/git"
 cp "$HOOK" "$Q/.agents/hooks/git/pre-push"
+copy_scan "$Q"
 git -C "$Q" config core.hooksPath .husky
 out=$(sh "$USE" "$Q" 2>&1) && code=0 || code=$?
 [ "$code" -eq 1 ] && [ "$(git -C "$Q" config core.hooksPath)" = .husky ] && printf '%s' "$out" | grep -q '.husky' \
@@ -129,6 +193,9 @@ out=$(sh "$USE" "$Q" 2>&1) && code=0 || code=$?
   || fail "an existing hooks path was replaced or not reported: $code $out"
 mkdir -p "$Q/sub/.agents/hooks/git"
 cp "$HOOK" "$Q/sub/.agents/hooks/git/pre-push"
+mkdir -p "$Q/sub/.agents/hooks"
+cp "$SCAN" "$Q/sub/.agents/hooks/scan-secrets.sh"
+cp "$SCAN_PY" "$Q/sub/.agents/hooks/scan-secrets.py"
 out=$(sh "$USE" "$Q/sub" 2>&1) && code=0 || code=$?
 [ "$code" -eq 1 ] && pass "a folder inside a larger repository is not switched on" || fail "a nested folder returned $code"
 mkdir -p "$WORK/plain"
@@ -140,6 +207,7 @@ H="$WORK/lefthook"
 git init -q "$H"
 mkdir -p "$H/.agents/hooks/git"
 cp "$HOOK" "$H/.agents/hooks/git/pre-push"
+copy_scan "$H"
 printf '#!/bin/sh\nexit 0\n' > "$H/.git/hooks/pre-commit"
 chmod +x "$H/.git/hooks/pre-commit"
 out=$(sh "$USE" "$H" 2>&1) && code=0 || code=$?
@@ -157,6 +225,7 @@ G="$WORK/global"
 git init -q "$G"
 mkdir -p "$G/.agents/hooks/git"
 cp "$HOOK" "$G/.agents/hooks/git/pre-push"
+copy_scan "$G"
 git config --global core.hooksPath "$HOME/.githooks"
 out=$(sh "$USE" "$G" 2>&1) && code=0 || code=$?
 [ "$code" -eq 1 ] && [ -z "$(git -C "$G" config --local --get core.hooksPath || true)" ] \
@@ -170,6 +239,7 @@ X="$WORK/noexec"
 git init -q "$X"
 mkdir -p "$X/.agents/hooks/git"
 cp "$HOOK" "$X/.agents/hooks/git/pre-push"
+copy_scan "$X"
 chmod a-x "$X/.agents/hooks/git/pre-push"
 sh "$USE" "$X" >/dev/null 2>&1 && code=0 || code=$?
 [ "$code" -eq 0 ] && [ -x "$X/.agents/hooks/git/pre-push" ] \

@@ -5,6 +5,12 @@
 
 .agents/guard|
 .agents/hooks|
+.agents/skills/setup-ai-build-kit/templates/foundation/guard-secrets.sh|.agents/hooks/guard-secrets.sh
+.agents/skills/setup-ai-build-kit/templates/foundation/guard-secrets.py|.agents/hooks/guard-secrets.py
+.agents/skills/setup-ai-build-kit/templates/foundation/redact-secrets.sh|.agents/hooks/redact-secrets.sh
+.agents/skills/setup-ai-build-kit/templates/foundation/redact-secrets.py|.agents/hooks/redact-secrets.py
+.agents/skills/setup-ai-build-kit/templates/foundation/scan-secrets.sh|.agents/hooks/scan-secrets.sh
+.agents/skills/setup-ai-build-kit/templates/foundation/scan-secrets.py|.agents/hooks/scan-secrets.py
 .agents/skills/setup-ai-build-kit|
 .agents/skills/shape|
 .agents/skills/implement|

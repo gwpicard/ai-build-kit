@@ -35,7 +35,7 @@ REPORT="$WORK/report.tsv"
 # because it also carries checks of its own, on links, stale vocabulary and
 # adapter freshness. When reading the report, a catch by validate-kit alone
 # means only its own direct checks noticed.
-DEFAULT_CHECKS="release-builder starter-rehearsal agent-plugin session-start validate-kit"
+DEFAULT_CHECKS="release-builder starter-rehearsal agent-plugin session-start secrets-gates validate-kit"
 PUBLISH_CHECKS="release-builder release-publication validate-kit"
 MODE_CHECKS="validate-kit fake-github"
 
@@ -69,7 +69,13 @@ runnable-bit-lost
 product-named
 command-loads-command
 command-over-budget
-background-one-caller"
+background-one-caller
+secrets-read-guard
+redactor-top-level-only
+pre-push-reversed-range
+scan-drops-key-shapes
+scan-drops-service-role-jwt
+redactor-drops-multiline-values"
 
 describe() {
   case "$1" in
@@ -104,6 +110,12 @@ describe() {
     command-loads-command) echo "a command reaches into another command's references instead of calling a background skill" ;;
     command-over-budget) echo "a command grows past its word budget" ;;
     background-one-caller) echo "a background skill is left with one caller and no agent that loads it" ;;
+    secrets-read-guard) echo "the Claude read guard stops refusing environment files" ;;
+    redactor-top-level-only) echo "nested Read and Grep text fields escape result redaction" ;;
+    pre-push-reversed-range) echo "an existing-branch push scans the wrong commit range" ;;
+    scan-drops-key-shapes) echo "the shared scanner rules stop recognising common key shapes" ;;
+    scan-drops-service-role-jwt) echo "the scanner stops recognising service-role JWTs" ;;
+    redactor-drops-multiline-values) echo "quoted multiline environment values are no longer redacted" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -119,6 +131,10 @@ checks_for() {
     command-loads-command) echo "validate-kit" ;;
     command-over-budget) echo "validate-kit" ;;
     background-one-caller) echo "validate-kit" ;;
+    secrets-read-guard) echo "secrets-gates" ;;
+    redactor-top-level-only) echo "secrets-gates" ;;
+    pre-push-reversed-range) echo "push-guard" ;;
+    scan-drops-key-shapes|scan-drops-service-role-jwt|redactor-drops-multiline-values) echo "secrets-gates" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -423,6 +439,62 @@ t = re.sub(r"(skills: \[[^]]*?), screen-check", r"\1", s)
 assert t != s
 open(p, "w").write(t)'
       done
+      ;;
+    secrets-read-guard)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/guard-secrets.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "return (name == \".env\" or name.startswith(\".env.\")) and name != \".env.example\""
+assert old in t, "secret environment-file rule not found"
+open(p, "w").write(t.replace(old, "return False", 1))
+'
+      ;;
+    redactor-top-level-only)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/redact-secrets.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "else redact_shape(tool, item, known))"
+assert old in s
+new = "else (replace_text(item, known) if isinstance(item, str) else item))"
+open(p, "w").write(s.replace(old, new, 1))'
+      ;;
+    pre-push-reversed-range)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/pre-push" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "--range=$remote_sha..$local_sha"
+assert old in s
+open(p, "w").write(s.replace(old, "--range=$local_sha..$remote_sha", 1))'
+      ;;
+    scan-drops-key-shapes)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/scan-secrets.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "return any(pattern.search(value) for pattern in SHAPES)"
+assert old in s
+open(p, "w").write(s.replace(old, "return False", 1))'
+      ;;
+    scan-drops-service-role-jwt)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/scan-secrets.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "if re.search(rb\x27\"role\"\\s*:\\s*\"service_role\"\x27, payload):"
+assert old in s
+open(p, "w").write(s.replace(old, "if False:", 1))'
+      ;;
+    redactor-drops-multiline-values)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/redact-secrets.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "while quote not in body and index < len(lines):"
+assert old in s
+open(p, "w").write(s.replace(old, "while False and quote not in body and index < len(lines):", 1))'
       ;;
     command-over-budget)
       # A command grows one helpful paragraph at a time.

@@ -32,6 +32,8 @@ FLOOR="$ROOT/.agents/skills/quality-checks/references/check-floor.md"
 TEMPLATE="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/checks.yml"
 SENSITIVE="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/check-sensitive-areas.sh"
 TRIM_CHECK="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/check-trim.sh"
+SCAN="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/scan-secrets.sh"
+SCAN_PY="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/scan-secrets.py"
 
 fail() {
   echo "FAIL: $1" >&2
@@ -69,6 +71,8 @@ fi
 
 cp "$SENSITIVE" "$PROJECT/.agents/hooks/check-sensitive-areas.sh"
 cp "$TRIM_CHECK" "$PROJECT/.agents/hooks/check-trim.sh"
+cp "$SCAN" "$PROJECT/.agents/hooks/scan-secrets.sh"
+cp "$SCAN_PY" "$PROJECT/.agents/hooks/scan-secrets.py"
 
 # The edit founding makes: the placeholder step goes, and install, type check,
 # lint and test go in its place, each as its own named step.
@@ -357,6 +361,8 @@ PROJECT="$WORK/ts-project"
 mkdir -p "$PROJECT/.github/workflows" "$PROJECT/.agents/hooks" "$PROJECT/src"
 cp "$SENSITIVE" "$PROJECT/.agents/hooks/check-sensitive-areas.sh"
 cp "$TRIM_CHECK" "$PROJECT/.agents/hooks/check-trim.sh"
+cp "$SCAN" "$PROJECT/.agents/hooks/scan-secrets.sh"
+cp "$SCAN_PY" "$PROJECT/.agents/hooks/scan-secrets.py"
 
 awk -v tc="$type_check" -v li="$lint" '
   /- name: Install and test/ { skipping = 1 }

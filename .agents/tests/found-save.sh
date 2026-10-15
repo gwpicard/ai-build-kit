@@ -28,6 +28,8 @@ new_project() {
   mkdir -p "$p/.agents/hooks/git"
   cp "$SKILL/templates/masterplan.md" "$p/masterplan.md"
   cp "$SKILL/templates/foundation/pre-push" "$p/.agents/hooks/git/pre-push"
+  cp "$SKILL/templates/foundation/scan-secrets.sh" "$p/.agents/hooks/scan-secrets.sh"
+  cp "$SKILL/templates/foundation/scan-secrets.py" "$p/.agents/hooks/scan-secrets.py"
   printf 'hello\n' > "$p/index.html"
   echo "$p"
 }

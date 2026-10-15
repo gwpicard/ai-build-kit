@@ -111,6 +111,7 @@ skills installed into the project, which is the shared installer's route.
   behaves.
 - The kit ships no Codex command files. Codex finds the skills in
   `.agents/skills/`, and you start a command by naming it.
+- Codex has no result redaction either.
 - Nothing reminds you of a check-up when a session opens. `what-now` says when
   a visit is overdue.
 - There is no deny list set up for you, and nothing asks you before the agent
@@ -214,6 +215,11 @@ and leaves the previous printout intact.
   either agent follows that pointer.
 - Nothing reminds you of a check-up when a session opens. `what-now` says when
   a visit is overdue.
+- Gemini CLI can hide a result, but cannot keep its original form. Unless
+  Gemini is set up to hide it, a secret printed by a tool reaches the agent.
+  Cursor cannot replace built-in Bash, Read or Grep results, so a secret they
+  print reaches the agent. See the [Cursor hooks reference](https://cursor.com/docs/hooks)
+  and [Gemini CLI hooks reference](https://geminicli.com/docs/hooks/reference/).
 - There is no deny list set up for you, and nothing asks you before the agent
   merges. Where the agent has command allow and deny settings, you add the
   kit's blocked commands there yourself.
