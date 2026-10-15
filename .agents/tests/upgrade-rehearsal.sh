@@ -140,7 +140,9 @@ for route in ('claude-only','shared','whole','plugin'):
         run([npx,'skills','remove',*retired,'-y'],p)
         assert set(json.loads((p/'skills-lock.json').read_text())['skills'])==set(kit_names)
         assert not any((p/folder/name).exists() for folder in ('.agents/skills','.claude/skills') for name in retired)
-    for step in ('helper','remove','commands','pointers','settings','template'): apply(skills,p,step)
+    for step in ('helper','remove','commands','pointers','settings','template',
+                 'secret-scan','hooks','required-check','sensitive-check','tests-check','push-hook'):
+        apply(skills,p,step)
     # A no changes nothing; a yes writes the line the person chose, once.
     if route=='plugin':
         plan_before=(p/'masterplan.md').read_bytes()
@@ -204,6 +206,19 @@ else: print(json.dumps([{"number":1,"title":"Reminder emails","html_url":"https:
 p=work/'sentence-list'; p.mkdir()
 copy(source/'setup-ai-build-kit/templates/masterplan.md',p/'masterplan.md')
 copy(source/'setup-ai-build-kit/templates/foundation/plan-refresh.sh',p/'.agents/tools/plan-refresh.sh')
+for source_name,target_name in (
+    ('scan-secrets.sh','.agents/hooks/scan-secrets.sh'),
+    ('scan-secrets.py','.agents/hooks/scan-secrets.py'),
+    ('guard-secrets.sh','.agents/hooks/guard-secrets.sh'),
+    ('guard-secrets.py','.agents/hooks/guard-secrets.py'),
+    ('redact-secrets.sh','.agents/hooks/redact-secrets.sh'),
+    ('redact-secrets.py','.agents/hooks/redact-secrets.py'),
+    ('checks.yml','.github/workflows/checks.yml'),
+    ('check-sensitive-areas.sh','.agents/hooks/check-sensitive-areas.sh'),
+    ('check-tests.sh','.agents/hooks/check-tests.sh'),
+    ('pre-push','.agents/hooks/git/pre-push')):
+    copy(source/'setup-ai-build-kit/templates/foundation'/source_name,p/target_name)
+copy(source/'setup-ai-build-kit/templates/foundation/claude-settings.json',p/'.claude/settings.json')
 copy(fixture/'sentence-AGENTS.md.txt',p/'AGENTS.md')
 copy(fixture/'version-v0.10.0.txt',p/'.ai-build-kit-version')
 put(p/'CHANGELOG.md','We once used /fix, /queue, /sync and /ship.\n')
@@ -420,6 +435,19 @@ print('  ok: the /build, /start and /plan renames and a missing skill are said')
 p=work/'said-once'; p.mkdir()
 copy(source/'setup-ai-build-kit/templates/masterplan.md',p/'masterplan.md')
 copy(source/'setup-ai-build-kit/templates/foundation/plan-refresh.sh',p/'.agents/tools/plan-refresh.sh')
+for source_name,target_name in (
+    ('scan-secrets.sh','.agents/hooks/scan-secrets.sh'),
+    ('scan-secrets.py','.agents/hooks/scan-secrets.py'),
+    ('guard-secrets.sh','.agents/hooks/guard-secrets.sh'),
+    ('guard-secrets.py','.agents/hooks/guard-secrets.py'),
+    ('redact-secrets.sh','.agents/hooks/redact-secrets.sh'),
+    ('redact-secrets.py','.agents/hooks/redact-secrets.py'),
+    ('checks.yml','.github/workflows/checks.yml'),
+    ('check-sensitive-areas.sh','.agents/hooks/check-sensitive-areas.sh'),
+    ('check-tests.sh','.agents/hooks/check-tests.sh'),
+    ('pre-push','.agents/hooks/git/pre-push')):
+    copy(source/'setup-ai-build-kit/templates/foundation'/source_name,p/target_name)
+copy(source/'setup-ai-build-kit/templates/foundation/claude-settings.json',p/'.claude/settings.json')
 apply(source,p,'helper')
 with (p/'masterplan.md').open('a') as f: f.write('\nWe run /ship before the club night.\n')
 put(p/'CHANGELOG.md','Launched with /ship.\n')
@@ -445,6 +473,19 @@ print('  ok: a line already named is not named again')
 p=work/'secrets'; p.mkdir()
 copy(source/'setup-ai-build-kit/templates/masterplan.md',p/'masterplan.md')
 copy(source/'setup-ai-build-kit/templates/foundation/plan-refresh.sh',p/'.agents/tools/plan-refresh.sh')
+for source_name,target_name in (
+    ('scan-secrets.sh','.agents/hooks/scan-secrets.sh'),
+    ('scan-secrets.py','.agents/hooks/scan-secrets.py'),
+    ('guard-secrets.sh','.agents/hooks/guard-secrets.sh'),
+    ('guard-secrets.py','.agents/hooks/guard-secrets.py'),
+    ('redact-secrets.sh','.agents/hooks/redact-secrets.sh'),
+    ('redact-secrets.py','.agents/hooks/redact-secrets.py'),
+    ('checks.yml','.github/workflows/checks.yml'),
+    ('check-sensitive-areas.sh','.agents/hooks/check-sensitive-areas.sh'),
+    ('check-tests.sh','.agents/hooks/check-tests.sh'),
+    ('pre-push','.agents/hooks/git/pre-push')):
+    copy(source/'setup-ai-build-kit/templates/foundation'/source_name,p/target_name)
+copy(source/'setup-ai-build-kit/templates/foundation/claude-settings.json',p/'.claude/settings.json')
 apply(source,p,'helper')
 copy(source/'setup-ai-build-kit/templates/foundation/AGENTS.md',p/'AGENTS.md')
 assert 'secrets' not in set(sayings([])) and 'secrets\t' not in check(source,p,0)
