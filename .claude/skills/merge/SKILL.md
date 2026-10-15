@@ -1,6 +1,6 @@
 ---
 name: merge
-description: Take a finished piece to main. The first upload waits for the person's yes, and a merge waits for a yes that names it. Used by implement, setup-hosting, maintain and founding.
+description: Take a finished piece to main. The first upload and each merge wait for a yes. Used by implement, setup-hosting, maintain and founding.
 user-invocable: false
 ---
 <!-- GENERATED from .agents/skills/merge/. Do not edit here; regenerate with .agents/tools/build-adapters.sh -->
