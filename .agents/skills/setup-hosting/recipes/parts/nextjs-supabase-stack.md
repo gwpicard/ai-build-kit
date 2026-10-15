@@ -33,8 +33,8 @@ Script: coming in part B
 Who runs it: the kit
 
 ## Project check
-How it works: One project check runs database types, type checks, lint, tests and the container check on every change. Part D adds the row rules check against migrations and a local database.
-How it is checked: The project check is green, including database types and row rules against the local database.
+How it works: Every change checks database types, type checks, lint, Vitest with coverage, and Playwright against `next start`. CI starts local Supabase and applies the migrations before the tests.
+How it is checked: The project check is green, including database types and tests against local Supabase.
 Script: coming in part D
 Who runs it: the kit
 

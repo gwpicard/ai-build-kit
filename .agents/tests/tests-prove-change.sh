@@ -148,6 +148,12 @@ with tempfile.TemporaryDirectory() as root:
     with open(os.path.join(root, "tests", "screen.spec.ts"), "w") as spec_file:
         spec_file.write("test('D9 screen renders', () => {});\n")
     assert quality.playwright_specs(root, ["tests/screen.spec.ts"]) == {9: ["tests/screen.spec.ts"]}
+    with open(os.path.join(root, "AGENTS.md"), "w") as agents:
+        agents.write("## Stack, and how to run and check it\nTests: bin/pytest\n")
+    os.makedirs(os.path.join(root, ".github", "workflows"))
+    with open(os.path.join(root, ".github", "workflows", "checks.yml"), "w") as workflow:
+        workflow.write("jobs:\n  check:\n    steps:\n      - run: npm test\n")
+    assert quality.test_command(root) == ["bin/pytest"]
     binary = os.path.join(root, "bin")
     os.makedirs(binary)
     pytest = os.path.join(binary, "pytest")
