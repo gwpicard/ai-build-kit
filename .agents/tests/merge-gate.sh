@@ -51,6 +51,10 @@ case "$1 $2" in
     esac
     ;;
   "pr merge")
+    [ "$*" = "pr merge 12 --merge --match-head-commit $PR_HEAD_OID" ] || {
+      echo "unexpected merge arguments: $*" >&2
+      exit 2
+    }
     [ "$GH_CASE" != merge-fails ] || { echo "Pull request is no longer mergeable" >&2; exit 1; }
     exit 0
     ;;
@@ -62,7 +66,14 @@ GH_LOG="$WORK/gh.log"
 export GH_LOG
 fail() { echo "FAIL: $1" >&2; exit 1; }
 pass() { echo "ok: $1"; }
-run() { (cd "$WORK/project" && PATH="$WORK/bin:$PATH" GH_CASE="$1" PR_BODY="$2" PR_HEAD_OID="$HEAD_SHA" PR_BASE_OID="$BASE" GIT_TRACE="$WORK/git.trace" python3 "$SCRIPT" --approved 12); }
+run() {
+  (cd "$WORK/project" && PATH="$WORK/bin:$PATH" GH_CASE="$1" PR_BODY="$2" \
+    PR_HEAD_OID="$HEAD_SHA" PR_BASE_OID="$BASE" GIT_TRACE="$WORK/git.trace" \
+    EXPECTED_GH="$WORK/bin/gh" sh -c '
+      [ "$(command -v gh)" = "$EXPECTED_GH" ] || exit 99
+      exec python3 "$1" --approved 12
+    ' sh "$SCRIPT")
+}
 check_hold() {
   case_name=$1 body=$2 expected=$3
   : > "$GH_LOG"

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Blank known local secret values from Claude Code tool results."""
-import json
 import importlib.util
+import json
 import os
 import re
 import sys
@@ -16,7 +16,8 @@ SKIP_DIRS = rules.SKIP_DIRS
 def dotenv_values(path):
     values = []
     try:
-        lines = open(path, encoding="utf-8").read().splitlines()
+        with open(path, encoding="utf-8") as handle:
+            lines = handle.read().splitlines()
     except (OSError, UnicodeError):
         raise RuntimeError("local secret files could not be read")
     index = 0
@@ -58,7 +59,8 @@ def secret_values(root):
             found.extend(dotenv_values(os.path.join(current, name)))
     for path in rules.recorded_password_paths(root):
         try:
-            value = open(path, encoding="utf-8").read().strip()
+            with open(path, encoding="utf-8") as handle:
+                value = handle.read().strip()
         except (OSError, UnicodeError):
             raise RuntimeError("a recorded password file could not be read")
         if len(value) >= 8 and value != "=":

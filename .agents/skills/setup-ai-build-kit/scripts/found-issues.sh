@@ -38,7 +38,7 @@
 #         line and does not stop the rest.
 # Exit 5: GitHub could not be read, so nothing was changed.
 # Exit 6: origin is the kit's own repository, so nothing was changed.
-# Exit 2: usage error.
+# Exit 2: usage error, or branch protection could not be set. Founding still finishes.
 
 set -u
 
@@ -95,10 +95,7 @@ case "$protection_status" in
   4) printf 'protection\tdeferred until first upload creates main\n' ;;
   *)
     printf '%s\n' "$protection_output" >&2
-    case "$protection_output" in
-      *"account does not have admin rights"*|*"network error"*) ;;
-      *) protection_could_not_run=1 ;;
-    esac
+    protection_could_not_run=1
     ;;
 esac
 

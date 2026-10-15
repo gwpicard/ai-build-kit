@@ -5,8 +5,9 @@ import os
 import re
 import subprocess
 import sys
+
 SKIP_DIRS = {".git", ".venv", "venv", "target", "node_modules", ".next", "dist", "build", "coverage", "vendor"}
-NAME_PARTS = re.compile(r"(?:KEY|SECRET|TOKEN|PASSWORD|PASSWD|PWD|PRIVATE|CREDENTIAL|AUTH|DSN|SERVICE_ROLE)", re.I)
+NAME_PARTS = re.compile(r"(?:KEY|SECRET|TOKEN|PASSWORD|PASSWD|PWD|PRIVATE|CREDENTIAL|AUTH|DSN|SERVICE_ROLE)", re.IGNORECASE)
 SHAPES = [
     re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
     re.compile(r"\bsk-ant-[A-Za-z0-9_-]{20,}"),
@@ -24,7 +25,7 @@ def secret_name(name):
     return bool(NAME_PARTS.search(name) or name.upper() == "DATABASE_URL")
 
 def known_shape(value):
-    return any(pattern.search(value) for pattern in SHAPES) or bool(re.search(r"https?://[^\s/:@]+:[^\s/@]+@", value, re.I))
+    return any(pattern.search(value) for pattern in SHAPES) or bool(re.search(r"https?://[^\s/:@]+:[^\s/@]+@", value, re.IGNORECASE))
 
 def secret_value(name, value):
     value = value.strip()
@@ -36,11 +37,12 @@ def recorded_password_paths(root):
     paths = set()
     for record in ("masterplan.md", "AGENTS.md"):
         try:
-            content = open(os.path.join(root, record), encoding="utf-8").read()
+            with open(os.path.join(root, record), encoding="utf-8") as handle:
+                content = handle.read()
         except (OSError, UnicodeError):
             continue
         for line in content.splitlines():
-            match = re.match(r"\s*Password files:\s*(.*)$", line, re.I)
+            match = re.match(r"\s*Password files:\s*(.*)$", line, re.IGNORECASE)
             if match:
                 paths.update(os.path.abspath(os.path.join(root, os.path.expanduser(path.strip().strip("`'\""))))
                              for path in match.group(1).split(",") if path.strip())
@@ -104,17 +106,18 @@ def exact_values():
             if name == ".env.example" or not (name == ".env" or name.startswith(".env.")):
                 continue
             try:
-                for line in open(os.path.join(current, name), encoding="utf-8"):
-                    value = env_value(line)
-                    if value:
-                        found.add(value)
+                with open(os.path.join(current, name), encoding="utf-8") as handle:
+                    for line in handle:
+                        value = env_value(line)
+                        if value:
+                            found.add(value)
             except (OSError, UnicodeError):
                 raise RuntimeError("local secret files could not be read")
     return found
 
 
 def git(args):
-    return subprocess.run(["git", *args], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
+    return subprocess.run(["git", *args], capture_output=True, check=False)
 
 
 def scan_range(spec):
