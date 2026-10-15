@@ -226,11 +226,12 @@ before the box appears.
 
 ## A merge
 
-A person decides whether to merge, always. The Claude Code settings the kit
-installs ask before every merge the agent runs: `gh pr merge`, and the same
-merge through `gh api`. Claude Code then shows a box, and the merge runs only
-when the person clicks yes. Say in one line what the merge does just before the
-box appears. A merge the person makes on GitHub's own site is not affected.
+A person decides whether to merge, always. A confirmation box appears before
+`merge.py` runs. The Claude Code settings block `gh pr merge` and merge API
+calls. After the person says yes, the `merge` skill runs `merge.py`, which
+checks the project check and review boxes before it merges. GitHub Free cannot
+require branch protection on a private repository, so the kit holds the merge
+itself.
 
 Other coding agents have no such box, so there the written rule is the only
 guard.

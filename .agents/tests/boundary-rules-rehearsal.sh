@@ -141,14 +141,41 @@ for (const args of [['init', '-q', '-b', 'main'], ['add', '-A'], ['commit', '-q'
 function runCheck() {
   const steps = [];
   let name = null;
+  let runIndent = null;
+  let contentIndent = null;
+  let command = '';
   for (const line of fs.readFileSync(path.join(project, '.github/workflows/checks.yml'), 'utf8').split('\n')) {
+    if (runIndent !== null) {
+      if (!line.trim()) {
+        command += '\n';
+        continue;
+      }
+      const indent = line.match(/^ */)[0].length;
+      if (indent > runIndent) {
+        contentIndent ??= indent;
+        command += line.slice(contentIndent) + '\n';
+        continue;
+      }
+      steps.push([name, command.trimEnd()]);
+      runIndent = null;
+      contentIndent = null;
+      command = '';
+    }
     const n = line.match(/^ *- name: (.+)$/);
     if (n) { name = n[1]; continue; }
-    const r = line.match(/^ *run: (.+)$/);
-    if (r) steps.push([name, r[1]]);
+    const r = line.match(/^( *)run: (.*)$/);
+    if (r && /^\|[+-]?$/.test(r[2])) {
+      runIndent = r[1].length;
+      continue;
+    }
+    if (r) steps.push([name, r[2]]);
   }
+  if (runIndent !== null) steps.push([name, command.trimEnd()]);
+  // A pull request event gives the steps the base commit; origin/main stands in.
+  const baseSha = spawnSync('git', ['rev-parse', 'refs/remotes/origin/main'], { cwd: project, encoding: 'utf8' }).stdout.trim();
   for (const [step, command] of steps) {
-    const result = spawnSync('sh', ['-c', command], { cwd: project, encoding: 'utf8', timeout: 120000 });
+    const result = spawnSync('sh', ['-c', command], { cwd: project, encoding: 'utf8', timeout: 120000,
+      env: { ...process.env, PR_BASE_SHA: baseSha } });
     assert.ifError(result.error);
     if (result.status !== 0) return { step, output: result.stdout + result.stderr };
   }

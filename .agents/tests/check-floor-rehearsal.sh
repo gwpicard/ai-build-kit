@@ -122,12 +122,20 @@ PY
 run_check() {
   awk '
     /^ *- name: / { sub(/^ *- name: /, ""); name = $0; next }
+    /^ *run: \|[-+]?$/ { run_indent = match($0, /[^ ]/); command = ""; block = 1; next }
+    block && /^[ ]+/ {
+      indent = match($0, /[^ ]/)
+      if (indent > run_indent) { sub(/^[ ]+/, ""); command = command $0 "\n"; next }
+      print name "\t" command; block = 0
+    }
     /^ *run: /    { sub(/^ *run: /, ""); print name "\t" $0 }
+    END { if (block) print name "\t" command }
   ' "$PROJECT/.github/workflows/checks.yml" > "$WORK/steps"
   tab=$(printf '\t')
   while IFS="$tab" read -r step command; do
     [ "$step" = "Install" ] && continue
-    if ! (cd "$PROJECT" && sh -c "$command") > "$WORK/last-output" 2>&1; then
+    base_sha=$(git -C "$PROJECT" rev-parse refs/remotes/origin/main)
+    if ! (cd "$PROJECT" && PR_BASE_SHA="$base_sha" sh -c "$command") > "$WORK/last-output" 2>&1; then
       printf '%s\n' "$step"
       return 0
     fi

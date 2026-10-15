@@ -27,9 +27,11 @@ whose preview section gives one, or how to try it on this computer. Where step
 6 left their own check outstanding, ask for the merge only after they say it
 behaves.
 
-**A sensitive area first, on any project.** Where the piece touches a named
-sensitive area, ask for the merge only when its caution is done or accepted on
-the record. A piece stopped at its condition is never offered for a merge.
+**A sensitive area first, on any project.** Run
+`check-sensitive-areas.sh --change <base>` and say one line for each area it
+names. For an accepted area, say: "This changes <area>, which you accepted on
+<date>." Use the plain date the script gives you. Exit 1 means the area is
+open and the project check and merge hold.
 
 **Before asking, on a live project.** Where "How it stays running" records a
 live address, the merge puts this change live. Check these first, read-only:
@@ -84,10 +86,10 @@ that none of the checks above holds the merge for, such as a project check
 still running the setup placeholder, is said in one line and offered as a
 piece; it never takes back a yes the person already gave. A yes to building,
 saving, uploading, going live or a hosting step, or to any question asked
-before the merge was named, does not cover it. A red or missing required
-check, or an unsettled finding worth stopping for, always holds the merge,
-whatever was said. A no leaves the pull request open and the live tool as it
-was.
+before the merge was named, does not cover it. A red, pending or missing
+project check, or an unticked box under `Worth stopping for`, always holds
+the merge, whatever was said. A no leaves the pull request open and the live
+tool as it was.
 
 Where several pieces wait, name each pull request on its own line. A yes
 covers only those it names, or all where it plainly says so, as in "merge
@@ -98,17 +100,12 @@ deployment settings or a named sensitive area, takes a new yes that names it.
 Once `main` is in, run the check and "Before asking, on a live project" again
 for that piece, and merge it once both pass, saying so.
 
-**Merging.** Make an approved merge on the pull request itself, always with
-`gh pr merge --merge`, never `--squash` or `--rebase`, so the masterplan's mark
-stays on `main`. Never merge on this computer and push `main`. Where GitHub
-cannot be reached, the merge waits, and the person can merge it on GitHub.
-
-In Claude Code, run `python3` with the `maintain` skill's
-`scripts/settings-rules.py` with `--merge-box` first. Exit 0 means a
-confirmation box will ask them to allow the merge: say so in one line. Any
-other exit means no box: say the merge runs on their yes in this chat, and that
-/maintain can add the question. Under another coding agent, say nothing about a
-box.
+**Merging.** Make an approved merge on the pull request itself through
+`python3` with this skill's `scripts/merge.py --approved <pull request
+number>`. Claude Code asks before this command runs. Exit 0 means it merged.
+Exit 1 means a check, review box or sensitive area holds it. Exit 2 means a
+required read or check could not run, or GitHub refused the merge. Say what
+stopped it and leave the pull request open.
 
 In an unattended run, report the piece as ready for review and leave the merge
 to a person.

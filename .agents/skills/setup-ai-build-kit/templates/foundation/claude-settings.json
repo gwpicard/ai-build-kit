@@ -72,6 +72,10 @@
       "Bash(security find-*)",
       "Bash(security dump-keychain:*)",
       "Bash(gh auth token:*)",
+      "Bash(gh pr merge:*)",
+      "Bash(gh api *pulls/*/merge*)",
+      "Bash(gh api *merges*)",
+      "Bash(gh api graphql *mergePullRequest*)",
       "Bash(gh auth status*-t*)",
       "Bash(git credential fill*)",
       "Bash(git credential-*)",
@@ -93,10 +97,7 @@
       "Read(//**/.docker/config.json)"
     ],
     "ask": [
-      "Bash(gh pr merge:*)",
-      "Bash(gh api *pulls/*/merge*)",
-      "Bash(gh api *merges*)",
-      "Bash(gh api graphql *mergePullRequest*)",
+      "Bash(*merge.py*--approved*)",
       "Bash(gh api *git/refs*)",
       "Bash(gh api graphql *createRef*)",
       "Bash(gh api graphql *updateRef*)",

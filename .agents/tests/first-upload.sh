@@ -99,6 +99,8 @@ out=$(run --approved) && code=0 || code=$?
   || fail "main on the remote is $(git -C "$R" rev-parse main), not $base"
 grep -q 'repos/someone/kit-log/git/refs -f ref=refs/heads/main' "$STANDIN_GH_LOG" \
   && grep -q 'repo edit someone/kit-log --default-branch main' "$STANDIN_GH_LOG" \
+  && grep -q 'repos/someone/kit-log/branches/main/protection --input -' "$STANDIN_GH_LOG" \
+  && python3 -c 'import json,sys; p=json.load(open(sys.argv[1])); assert p["protection"]["required_status_checks"]["contexts"]==["project-check"] and p["protection"]["enforce_admins"] and all(k in p["protection"] for k in ("required_status_checks","enforce_admins","required_pull_request_reviews","restrictions"))' "$STANDIN_GH_STATE" \
   && pass "main is written through the API and made the default branch, with the push guard on" \
   || fail "main was not created through the API: $(cat "$STANDIN_GH_LOG")"
 
@@ -210,6 +212,24 @@ out=$(run --approved 2>&1) && code=0 || code=$?
   || fail "creating the missing main returned $code with heads '$(heads)': $out"
 out=$(run) && code=0 || code=$?
 [ "$code" -eq 0 ] && pass "after that the code is online" || fail "after creating main the state read $code: $out"
+
+echo "== Protection can be unavailable after a successful upload =="
+for reason in plan admin network; do
+  setup
+  set_state protection_status "\"$reason\""
+  out=$(run --approved 2>&1) && code=0 || code=$?
+  [ "$code" -eq 0 ] && [ "$(heads)" = "main sign-out " ] \
+    || fail "$reason protection failure treated the upload as failed ($code): $out"
+  if [ "$reason" = plan ]; then
+    printf '%s\n' "$out" | grep -q 'kit will hold the merge itself' \
+      && pass "a GitHub Free plan restriction leaves the upload complete and says the kit holds merges" \
+      || fail "the plan restriction did not explain the merge hold: $out"
+  else
+    printf '%s\n' "$out" | grep -q 'protection could not be set' \
+      && pass "$reason protection failure leaves the upload complete with a reason" \
+      || fail "$reason protection failure had no explanation: $out"
+  fi
+done
 
 [ "$FAIL" -eq 0 ] || exit 1
 echo "first-upload.sh: all checks passed"

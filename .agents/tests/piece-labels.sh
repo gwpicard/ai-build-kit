@@ -20,6 +20,13 @@ WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT INT TERM
 mkdir -p "$WORK/bin"
 ln -s "$ROOT/.agents/tests/lib/stand-in-gh" "$WORK/bin/gh"
+mkdir -p "$WORK/project"
+git -C "$WORK/project" init -q
+git -C "$WORK/project" config user.name "Test User"
+git -C "$WORK/project" config user.email "test@example.invalid"
+printf 'saved\n' > "$WORK/project/file.txt"
+git -C "$WORK/project" add file.txt
+git -C "$WORK/project" commit -qm baseline
 STANDIN_GH_STATE="$WORK/state.json"
 STANDIN_GH_LOG="$WORK/gh.log"
 export STANDIN_GH_STATE STANDIN_GH_LOG
@@ -39,7 +46,16 @@ PY
 field() {
   python3 -c 'import json,sys; print(" ".join(json.load(open(sys.argv[1]))["issues"]["1"][sys.argv[2]]))' "$STANDIN_GH_STATE" "$1"
 }
-run() { PATH="$WORK/bin:$PATH" sh "$SCRIPT" "$@"; }
+run() { (cd "$WORK/project" && PATH="$WORK/bin:$PATH" sh "$SCRIPT" "$@"); }
+
+printf 'unsaved\n' > "$WORK/project/unsaved.txt"
+seed 0
+: > "$STANDIN_GH_LOG"
+out=$(run start 1 2>&1) && code=0 || code=$?
+[ "$code" -eq 1 ] && printf '%s\n' "$out" | grep -q 'unsaved.txt' && [ ! -s "$STANDIN_GH_LOG" ] \
+  && pass "start names unsaved work and makes no GitHub call" \
+  || fail "start changed the labels or missed unsaved work, exit $code: $out"
+rm "$WORK/project/unsaved.txt"
 
 seed 0
 out=$(run start 1) && code=0 || code=$?

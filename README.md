@@ -114,9 +114,9 @@ app, using Claude Code. The tool is already live and a change is ready to merge.
 > "Email me a sign-in link", which is right. Merge it and put it live.
 >
 > **Agent:** All four tests and the project check pass. I've added a dated
-> changelog line. The confirmation box will ask you to allow the merge.
+> changelog line. The review boxes are clear, so I'm merging it now.
 
-After the person allows the merge, the agent merges and reads the live page:
+After the merge, the agent reads the live page:
 
 > **Agent:** The sign-in button at the live address now says "Email me a
 > sign-in link". The live copy runs this change. This read only checks the button text.
@@ -201,6 +201,8 @@ repository and whether it is public or private.
 
 Every merge waits for your yes. Changes to live settings or data need a yes
 that names them; a launch request authorises the commands its recipe names.
+Where GitHub cannot require the check, a person with permission can still merge
+by hand on GitHub. The kit's merge script holds merges made through the kit.
 Secrets stay out of files Git tracks. Claude Code's project settings block
 direct pushes to the main branch, force pushes and forced deletes. Existing
 settings are preserved, and `/maintain` offers missing rules. Other agents

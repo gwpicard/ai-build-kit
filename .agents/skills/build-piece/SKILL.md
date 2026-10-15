@@ -28,10 +28,10 @@ Choose the save route before changing anything:
 3. **Flagged route.** The work touches a named sensitive area whose caution
    is neither done nor accepted. Before building inside the area, give the
    risk notice once, in full, as the `fit-check` skill describes. If the
-   person carries on after it, write the `Accepted:` line with their words and
-   the date, read it back, and build and save on the pull-request route, in
-   the reply that answers them, with no further question. A lock that only
-   waits for this caution opens with the acceptance unless they ask to keep
+   After a yes, run `piece-labels.sh start`, write and read back `Accepted:`
+   with their words and date, then build and save by pull request in that
+   reply, with no further question. A lock that
+   only waits for this caution opens with the acceptance unless they ask to keep
    it. If they do not carry on, build only up to the recorded condition. In an
    unattended run never write an acceptance: stop at the condition, which is a
    successful outcome (step 8).
@@ -41,12 +41,11 @@ up-to-date `main`. Where GitHub cannot be reached, build and save on the
 branch, and note the missing pull request in one plain line on the piece. A
 step a service could not do is a note, never a warning or a risk.
 
-The project's first push waits for the person's yes, as "The first upload" in
-the `merge` skill's `references/first-upload.md` says.
+The first push waits for the person's yes, as the `merge` skill's
+`references/first-upload.md` says.
 
-Run the `records` skill's `scripts/piece-labels.sh` with `start` and the piece's
-number before changing anything. It swaps `ready` for `building` and assigns the
-piece.
+Elsewhere, run `scripts/piece-labels.sh start <number>` before changing
+anything. It swaps `ready` for `building` and assigns the piece.
 
 ## 2. Agree the visible result
 
@@ -141,6 +140,12 @@ Run the reach check at build, as the `quality-checks` skill's
 change reaches with the sensitive-area map; a match starts the review and you
 say: "This change reaches <area>, so a review is running."
 
+Run the reach check, with the tests it names, the boundary check and the loops
+read, as the `quality-checks` skill's "During a build" says. On Build with
+care, run `check-sensitive-areas.sh --change <base>` and say one line for each
+area it names. Exit 1 means an area is still open and the project check will
+hold the pull request.
+
 When the build path, the subjects, or a sensitive area call for review, run
 the `second-opinion` skill by the best independent method in the capability
 profile before saving. Where the trigger names a person, that person is the
@@ -158,8 +163,9 @@ Checkpoint route: update the records, commit, and state the checkpoint.
 
 Pull-request route: update the records, commit, push, open a pull request
 titled after the piece with a plain summary and `Closes #<number>`, and run the
-project checks. List any unsettled finding worth stopping for under `Worth
-stopping for` in the body, and remove it once settled. Never present it as
+project checks. Put each unsettled finding worth stopping for under `Worth
+stopping for` in the pull request body as an unticked `- [ ]` box. Keep settled
+findings and tick their boxes. Never present it as
 ready until the check is green. If it goes red, say so, read the failure
 yourself, fix it, and push again. Never merge in this skill, and never on a red
 check: the merge is the caller's next step, by the `merge` skill.
@@ -177,12 +183,4 @@ a completed pass.
 
 Update the records as the `records` skill's "After a build" says.
 
-## Excuses that don't hold
-
-- Urgency does not remove the need for evidence.
-- Small does not permit hidden scope.
-- Visual work does not need a fake automated test.
-- Private exploration does not need pull-request ceremony.
-- Shared or risky work is not downgraded because setup is inconvenient.
-- A review finding does not authorise unrelated cleanup, and the trim does not
-  authorise a restructure.
+Keep these limits in view: see `references/build-limits.md`.

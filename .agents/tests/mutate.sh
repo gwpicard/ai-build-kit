@@ -75,7 +75,14 @@ redactor-top-level-only
 pre-push-reversed-range
 scan-drops-key-shapes
 scan-drops-service-role-jwt
-redactor-drops-multiline-values"
+redactor-drops-multiline-values
+merge-missing-check
+merge-pending-bucket-only
+merge-skipping-project-pass
+merge-first-box-only
+merge-any-check-name
+merge-area-call-skipped
+merge-area-open-ignored"
 
 describe() {
   case "$1" in
@@ -116,6 +123,13 @@ describe() {
     scan-drops-key-shapes) echo "the shared scanner rules stop recognising common key shapes" ;;
     scan-drops-service-role-jwt) echo "the scanner stops recognising service-role JWTs" ;;
     redactor-drops-multiline-values) echo "quoted multiline environment values are no longer redacted" ;;
+    merge-missing-check) echo "the merge route proceeds without the required project check" ;;
+    merge-pending-bucket-only) echo "a pending check is accepted because gh --json exits zero" ;;
+    merge-skipping-project-pass) echo "a skipped project-check is accepted as passed" ;;
+    merge-first-box-only) echo "the second open finding is ignored after a settled first box" ;;
+    merge-any-check-name) echo "a different passing check stands in for project-check" ;;
+    merge-area-call-skipped) echo "an open sensitive area is not checked before merge" ;;
+    merge-area-open-ignored) echo "an open sensitive area is reported but does not hold merge" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -135,6 +149,8 @@ checks_for() {
     redactor-top-level-only) echo "secrets-gates" ;;
     pre-push-reversed-range) echo "push-guard" ;;
     scan-drops-key-shapes|scan-drops-service-role-jwt|redactor-drops-multiline-values) echo "secrets-gates" ;;
+    merge-missing-check) echo "merge-gate" ;;
+    merge-pending-bucket-only|merge-skipping-project-pass|merge-first-box-only|merge-any-check-name|merge-area-call-skipped|merge-area-open-ignored) echo "merge-gate" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -501,6 +517,77 @@ open(p, "w").write(s.replace(old, "while False and quote not in body and index <
       target="$tree/.agents/skills/shape/SKILL.md"
       [ -f "$target" ] || return 1
       python3 -c "import sys; open(sys.argv[1], 'a').write('\n' + ' '.join(['word'] * 400) + '\n')" "$target"
+      ;;
+    merge-missing-check)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "if not projects:"
+new = "if False:"
+assert old in t, "required project-check guard not found"
+open(p, "w").write(t.replace(old, new, 1))
+'
+      ;;
+    merge-pending-bucket-only)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "if bucket in (\"fail\", \"cancel\") or bucket == \"pending\":"
+new = "if bucket in (\"fail\", \"cancel\"):"
+assert old in s
+open(p, "w").write(s.replace(old, new, 1))'
+      ;;
+    merge-skipping-project-pass)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "if name == \"project-check\" and bucket != \"pass\":"
+new = "if name == \"project-check\" and bucket not in (\"pass\", \"skipping\"):"
+assert old in s
+open(p, "w").write(s.replace(old, new, 1))'
+      ;;
+    merge-first-box-only)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "if checkbox.group(1).lower() != \"x\":\n                    return True"
+new = "if checkbox.group(1).lower() != \"x\":\n                    return False"
+assert old in s
+open(p, "w").write(s.replace(old, new, 1))'
+      ;;
+    merge-any-check-name)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "projects = [row for row in rows if row.get(\"name\") == \"project-check\"]"
+new = "projects = [row for row in rows if row.get(\"name\")]"
+assert old in s
+open(p, "w").write(s.replace(old, new, 1))'
+      ;;
+    merge-area-call-skipped)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "if sensitive_area_map():"
+new = "if False and sensitive_area_map():"
+assert old in s
+open(p, "w").write(s.replace(old, new, 1))'
+      ;;
+    merge-area-open-ignored)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "if result.returncode == 1:"
+new = "if False and result.returncode == 1:"
+assert old in s
+open(p, "w").write(s.replace(old, new, 1))'
       ;;
     *)
       echo "unknown mutation: $name" >&2

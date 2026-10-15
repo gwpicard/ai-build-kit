@@ -29,7 +29,8 @@
 .agents/skills/live-copy|
 .agents/skills/evidence-run|
 .agents/skills/triage|
-.agents/skills/build-piece|
+.agents/skills/build-piece/SKILL.md|
+.agents/skills/build-piece/references/build-limits.md|
 .agents/tools/build-adapters.sh|
 .agents/tools/kit-inventory.txt|
 .agents/agents|
@@ -90,4 +91,5 @@ agent-plugin|
 .agents/skills/live-copy|agent-plugin/skills/live-copy
 .agents/skills/evidence-run|agent-plugin/skills/evidence-run
 .agents/skills/triage|agent-plugin/skills/triage
-.agents/skills/build-piece|agent-plugin/skills/build-piece
+.agents/skills/build-piece/SKILL.md|agent-plugin/skills/build-piece/SKILL.md
+.agents/skills/build-piece/references/build-limits.md|agent-plugin/skills/build-piece/references/build-limits.md

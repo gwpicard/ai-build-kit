@@ -261,22 +261,20 @@ Scenario 52 marks its yes to the merge the same way, and scenario 57 its yes
 to a migration. The harness writes the same turn lines into the host's log, so
 a change to the live database can be placed against the yes as a push can.
 
-## The box before a merge
+## Confirmation before a merge
 
-A founded project's Claude Code settings list every way of merging under
-`permissions.ask`, so Claude Code shows the person a box before a merge. That
-box stops the call even with `--permission-mode bypassPermissions`, and a
-replay has nobody to click it. A kit that merged after the person's yes would
-be refused, and the run would measure the harness.
+A founded project's Claude Code settings ask before running `merge.py`, so
+Claude Code shows the person a box before each merge. That box stops the call
+even with `--permission-mode bypassPermissions`, and a replay has nobody to
+click it.
 
-So a case where the kit may reach a merge names `# merge-box: answered`, and
-the harness takes the `ask` list, and nothing else, out of the project's
-settings before the first commit. A real Claude Code session proved the box
-itself. A replay measures something else: whether the kit merges only on a yes,
-and here the yes is a scripted line. The GitHub stand-in still logs every merge,
-so the grader and the state check see a merge made without one. Scenario 48
-keeps the box, because its /maintain visit would otherwise find the rules
-missing.
+A case where the kit may reach a merge names `# merge-box: answered`. The
+harness removes only the `merge.py` ask rule before the first commit, standing
+in for the person's confirmation. A real Claude Code session proved the box
+itself. A replay measures whether the kit calls the script only after a yes,
+which here is a scripted line. The GitHub stand-in logs every merge, so the
+grader and state check see a merge made without one. Scenario 48 keeps the
+rule, because its `/maintain` visit would otherwise find it missing.
 `../gated-turns.sh` holds all of this.
 
 ## A starting state the harness prepares
