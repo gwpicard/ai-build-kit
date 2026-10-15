@@ -1,6 +1,7 @@
 name: checks
 on:
   pull_request:
+    types: [opened, synchronize, reopened, edited]
   push:
 jobs:
   project-check:
@@ -11,6 +12,9 @@ jobs:
           fetch-depth: 0
       - name: Check tests were not changed silently
         run: sh .agents/hooks/check-tests.sh
+      - name: Check review findings
+        if: github.event_name == 'pull_request'
+        run: sh .agents/hooks/check-review.sh
       - name: Check sensitive-area map
         run: sh .agents/hooks/check-sensitive-areas.sh
       - name: Scan Git history for secrets

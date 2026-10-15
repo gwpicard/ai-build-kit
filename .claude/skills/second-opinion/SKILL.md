@@ -1,6 +1,6 @@
 ---
 name: second-opinion
-description: Review work using the best independent method available to the current harness and build path. Used on a drafted masterplan during setup-ai-build-kit, on the diff of any change the build path or the change's consequence flags for review during a build, and on the whole build during setup-hosting when the current build path calls for a launch review. Report first, in plain behavioural language, sorted into worth-stopping-for and worth-knowing; change nothing without approval.
+description: Review a piece from its review packet in a fresh context. Judge the agreed result, what the change may have broken, and whether the evidence is real.
 user-invocable: false
 ---
 <!-- GENERATED from .agents/skills/second-opinion/. Do not edit here; regenerate with .agents/tools/build-adapters.sh -->

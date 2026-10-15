@@ -148,10 +148,9 @@ its "During a build" section says. On Build with care, run
 names. Exit 1 means an area is still open and the project check will hold the
 pull request.
 
-When the build path, the subjects, or a sensitive area call for review, run
-the `second-opinion` skill by the best independent method in the capability
-profile before saving. Where the trigger names a person, that person is the
-review; a second-opinion run or a green check is not.
+Every piece on the pull-request route gets a fresh code review. Where a
+recorded caution names a person, that person still gives that review; an agent
+review or a green check does not replace them.
 
 ## 8. Save
 
@@ -165,9 +164,11 @@ Checkpoint route: update the records, commit, and state the checkpoint.
 
 Pull-request route: update the records, commit, push, open a pull request
 titled after the piece with a plain summary and `Closes #<number>`, and run the
-project checks. Put each unsettled finding worth stopping for under `Worth
-stopping for` in the pull request body as an unticked `- [ ]` box. Keep settled
-findings and tick their boxes. Never present it as
+project checks. Run `gate.py brief`, send its packet to
+`.agents/agents/reviewer.md` in a fresh context, ask
+`.agents/agents/refuter.md` to refute each stopping finding, then run
+`gate.py record` with the findings. The script writes the boxes and drops
+findings without evidence. Never present it as
 ready until the check is green. If it goes red, say so, read the failure
 yourself, fix it, and push again. Never merge in this skill, and never on a red
 check: the merge is the caller's next step, by the `merge` skill.

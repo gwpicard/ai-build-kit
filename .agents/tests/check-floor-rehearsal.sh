@@ -34,6 +34,8 @@ SENSITIVE="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/check-se
 SCAN="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/scan-secrets.sh"
 SCAN_PY="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/scan-secrets.py"
 TEST_CHECK="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/check-tests.sh"
+REVIEW_CHECK="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/check-review.sh"
+REVIEW_BOXES="$ROOT/.agents/skills/merge/scripts/review_boxes.py"
 
 fail() {
   echo "FAIL: $1" >&2
@@ -73,6 +75,9 @@ cp "$SENSITIVE" "$PROJECT/.agents/hooks/check-sensitive-areas.sh"
 cp "$SCAN" "$PROJECT/.agents/hooks/scan-secrets.sh"
 cp "$SCAN_PY" "$PROJECT/.agents/hooks/scan-secrets.py"
 cp "$TEST_CHECK" "$PROJECT/.agents/hooks/check-tests.sh"
+cp "$REVIEW_CHECK" "$PROJECT/.agents/hooks/check-review.sh"
+mkdir -p "$PROJECT/.agents/skills/merge/scripts"
+cp "$REVIEW_BOXES" "$PROJECT/.agents/skills/merge/scripts/review_boxes.py"
 
 # The edit founding makes: the placeholder step goes, and install, type check,
 # lint and test go in its place, each as its own named step.
@@ -127,6 +132,15 @@ MD
 
 # Prints the name of the first step that failed, or nothing when all passed.
 # The Install step is left to the rehearsal, which already provided the tools.
+mkdir -p "$WORK/bin"
+cat > "$WORK/bin/gh" <<'SH'
+#!/usr/bin/env sh
+case "$*" in
+  "pr view --json body --jq .body") printf '%s\n' '## Worth stopping for' '- None' ;;
+  *) echo "unexpected gh call: $*" >&2; exit 2 ;;
+esac
+SH
+chmod +x "$WORK/bin/gh"
 run_check() {
   event_name=${1:-pull_request}
   awk '
@@ -151,7 +165,7 @@ run_check() {
     head_sha=$(git -C "$PROJECT" rev-parse HEAD)
     pr_base=$base_sha
     [ "$event_name" = pull_request ] || pr_base=
-    if ! (cd "$PROJECT" && GITHUB_EVENT_NAME="$event_name" PR_BASE_SHA="$pr_base" BASE_SHA="$base_sha" \
+    if ! (cd "$PROJECT" && PATH="$WORK/bin:$PATH" GITHUB_EVENT_NAME="$event_name" PR_BASE_SHA="$pr_base" BASE_SHA="$base_sha" \
         HEAD_SHA="$head_sha" PUSH_BEFORE="$base_sha" PUSH_AFTER="$head_sha" sh -c "$command") > "$WORK/last-output" 2>&1; then
       printf '%s\n' "$step"
       return 0
@@ -395,6 +409,9 @@ cp "$SENSITIVE" "$PROJECT/.agents/hooks/check-sensitive-areas.sh"
 cp "$SCAN" "$PROJECT/.agents/hooks/scan-secrets.sh"
 cp "$SCAN_PY" "$PROJECT/.agents/hooks/scan-secrets.py"
 cp "$TEST_CHECK" "$PROJECT/.agents/hooks/check-tests.sh"
+cp "$REVIEW_CHECK" "$PROJECT/.agents/hooks/check-review.sh"
+mkdir -p "$PROJECT/.agents/skills/merge/scripts"
+cp "$REVIEW_BOXES" "$PROJECT/.agents/skills/merge/scripts/review_boxes.py"
 
 awk -v tc="$type_check" -v li="$lint" '
   /- name: Install and test/ { skipping = 1 }
