@@ -1223,7 +1223,11 @@ def reach(root, paths, base, piece, should_run, engines):
                 print(f"undeclared\ttable {name}\tnot in piece {piece}'s Reaches line")
 
     if should_run:
-        runner = engines.find("vitest")
+        recorded_command = test_command(root)
+        recorded_text = " ".join(recorded_command or []).lower()
+        package_text = read(root, "package.json").lower()
+        uses_vitest = "vitest" in recorded_text or "vitest" in package_text
+        runner = engines.find("vitest") if uses_vitest or not recorded_command else None
         targets = sorted(set(seeds) | reached)
         test_status = 0
         if runner:
@@ -1235,7 +1239,7 @@ def reach(root, paths, base, piece, should_run, engines):
             elif code != 0:
                 print("not-checked\ttests\tVitest did not produce a test result summary")
                 test_status = 2
-        else:
+        elif not recorded_command or "pytest" in recorded_text:
             pytest = [sys.executable, "-m", "pytest"]
             pytests = sorted(p for p in files if p.endswith(".py") and is_test(p) and
                              (p in set(seeds) | reached or p in importers))
@@ -1255,6 +1259,9 @@ def reach(root, paths, base, piece, should_run, engines):
             else:
                 print("not-checked\ttests\tVitest is not installed")
                 test_status = 2
+        else:
+            print("not-checked\ttests\tThe recorded test runner is not supported by reach")
+            test_status = 2
         if test_status == 0:
             playwright = engines.find("playwright")
             screen_routes = {route for route in routes if done_names_screen(piece_body, route)}
@@ -1415,13 +1422,19 @@ def strength_py(root, changed, engines):
         text = re.sub(r"(?ms)^\[tool\.mutmut\].*?(?=^\[|\Z)", "", text)
         folders = sorted({p.split("/")[0] if "/" in p else p for p in targets})
         with open(config, "w", encoding="utf-8") as handle:
-            handle.write(text + "\n[tool.mutmut]\nsource_paths = " + json.dumps(folders) + "\n")
-        code, _, _ = run(cmd + ["run", *[name + "__mutmut_*" for name in sorted(wanted)]],
-                         cwd=copy, timeout=3600)
+            paths = json.dumps(folders)
+            # mutmut 3 renamed paths_to_mutate to source_paths. Keep both
+            # while the check accepts every minor release in the 3.x line.
+            handle.write(text + "\n[tool.mutmut]\nsource_paths = " + paths +
+                         "\npaths_to_mutate = " + paths + "\n")
+        code, out, err = run(cmd + ["run", *[name + "__mutmut_*" for name in sorted(wanted)]],
+                             cwd=copy, timeout=3600)
         if code != 0:
             # mutmut first runs the tests on the unbroken code. When that run
             # fails, nothing was tried, and no result below means anything.
-            return None, "the tests failed before any code was broken, so nothing was tried"
+            detail = (err or out).strip().splitlines()
+            suffix = ": " + detail[-1][:160] if detail else ""
+            return None, "the tests failed before any code was broken, so nothing was tried" + suffix
         code, out, err = run(cmd + ["results", "--all", "true"], cwd=copy)
         if code != 0:
             return None, "mutmut did not finish"
@@ -1490,7 +1503,9 @@ def strength(root, base, engines):
 
 def test_command(root):
     """Use the check's recorded command before inferring a runner."""
-    for path in (".github/workflows/checks.yml", "checks.yml", QUALITY_FLOOR):
+    # AGENTS.md records the project's stack. Prefer its test command so local
+    # quality reads use the same runner as the person.
+    for path in ("AGENTS.md", ".github/workflows/checks.yml", "checks.yml", QUALITY_FLOOR):
         text = read(root, path)
         if not text:
             continue
