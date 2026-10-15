@@ -113,7 +113,10 @@ first-upload-ignores-shared-history
 strength-config-lost
 review-gate-leaves-draft-edited
 attempt-cap
-merge-behind-main"
+merge-behind-main
+build-nothing-mark
+founding-starter-refusal
+prelaunch-migration-route"
 
 describe() {
   case "$1" in
@@ -192,6 +195,9 @@ describe() {
     review-gate-leaves-draft-edited) echo "the review gate leaves an edited draft in place" ;;
     attempt-cap) echo "the piece attempt cap rises, so a fourth attempt is allowed" ;;
     merge-behind-main) echo "merge accepts a pull request branch behind main" ;;
+    build-nothing-mark) echo "a build leaves the masterplan mark behind when its change says nothing" ;;
+    founding-starter-refusal) echo "founding writes a replacement starter before asking after a command refusal" ;;
+    prelaunch-migration-route) echo "a pre-launch piece chooses its own database migration route" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -227,6 +233,7 @@ checks_for() {
     review-gate-leaves-draft-edited) echo "review-guard" ;;
     attempt-cap) echo "autonomy-boundaries" ;;
     merge-behind-main) echo "merge-gate" ;;
+    build-nothing-mark|founding-starter-refusal|prelaunch-migration-route) echo "$DEFAULT_CHECKS" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -928,6 +935,36 @@ t = open(p).read()
 old = "if base.stdout.strip() != main.stdout.strip():"
 assert old in t, "behind-main check not found"
 open(p, "w").write(t.replace(old, "if False and base.stdout.strip() != main.stdout.strip():", 1))
+'
+      ;;
+    build-nothing-mark)
+      edit "$tree/.agents/skills/build-piece/references/build-limits.md" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "even when the piece says `nothing` and the page stays as it is."
+assert old in t, "nothing-change mark instruction not found"
+open(p, "w").write(t.replace(old, "only when the page prose changes.", 1))
+'
+      ;;
+    founding-starter-refusal)
+      edit "$tree/.agents/skills/setup-ai-build-kit/references/stand-up.md" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "Wait for yes before writing\nreplacement starter files."
+assert old in t, "starter approval boundary not found"
+open(p, "w").write(t.replace(old, "Write replacement starter files at once.", 1))
+'
+      ;;
+    prelaunch-migration-route)
+      edit "$tree/.agents/skills/build-piece/SKILL.md" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "Use this route for every piece, even if\n`/setup-hosting` has not run before."
+assert old in t, "pre-launch migration route instruction not found"
+open(p, "w").write(t.replace(old, "Let each piece choose its own migration route.", 1))
 '
       ;;
     *)

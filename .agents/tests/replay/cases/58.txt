@@ -1,0 +1,9 @@
+# setup: blank
+# Scenario 58: founding reaches a refused starter command. The harness refuses
+# the command before it writes anything. The person expects one plain sentence
+# and a question, with no replacement files until they answer yes.
+/setup-ai-build-kit
+---
+I want a small app to keep ratings for the wines four friends bring to dinner. Nothing exists yet. We do not need sign-in or hosting, and the data can be thrown away while we try it.
+---
+The harness refused the Next.js starter command. Do not retry it. What do you do now?

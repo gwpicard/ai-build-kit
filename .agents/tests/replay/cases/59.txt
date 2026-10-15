@@ -1,0 +1,6 @@
+# setup: fixture
+# Scenario 59: a not-yet-live project adds a table in a piece. The person asks
+# where it will be applied before first launch. No hosting setup has run yet.
+/implement 1
+---
+Piece 1 is ready and adds a new table to the chosen recipe's database. The project is not live, and /setup-hosting has never run. Please build the piece. Before any database change, tell me the one route you will use and ask for my yes.
