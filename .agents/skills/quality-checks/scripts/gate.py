@@ -187,6 +187,8 @@ def record(args):
         lines.extend(["", "## Worth knowing"])
         lines.extend("- " + text for text in knowing[:3])
         lines.append("- Review limits: %d finding(s) dropped for missing evidence or a concrete scenario" % dropped)
+        lines.append("Review record: reviewed=quality review; tried=%d; open=%d" %
+                     (len(kept), len(stopping)))
         gh("pr", "edit", str(args.pr), "--body", "\n".join(lines).strip())
     except (RuntimeError, ValueError) as error:
         return stop("gate: could not update the pull request: " + str(error))

@@ -1,51 +1,49 @@
-# Running longer: auto and goal modes
+# Running longer
 
-Loaded when a run covers several pieces with nobody present between them. The
-discipline is unchanged; the conditions carry the quality and everything has a
-cap.
+Load this when the person asks to build several pieces in one sitting.
+Everything here is off unless `Runs on its own:` in `masterplan.md` records
+the person's words and date. Explore privately never uses these options.
 
-## Eligibility by build path
+## Queue
 
-- **Explore privately:** only disposable work with machine-checkable evidence.
-- **Build and run it:** once three ordinary pieces have completed cleanly.
-- **Build with care:** only pieces entirely outside every named sensitive area.
+With `queue` recorded, after each merge take the next ready, unblocked,
+unassigned piece from `sh .agents/tools/plan-refresh.sh --next`. Build no more
+than five pieces in one sitting. Each starts from the newest `main` and gets
+its own pull request. Without `merge`, stop when an open pull request blocks
+the next piece and name the piece it waits for.
 
-Assume only plain sequential building, one piece after another. A harness's
-goal mode, background agents or worktrees may speed it up, never replace it.
-Where the coding agent has the `builder` agent, start it once for each piece,
-one after another, on the run's branch, so each piece is built in a fresh
-context; it loads the `build-piece` skill and reports back. Read its report
-before starting the next. Without it, build each piece here.
+## Parallel builds
 
-## Typed with auto
+With `parallel N` recorded, use one worktree and branch per piece. The default
+is two builders; never start more than three. Before starting them, run
+`quality-checks/scripts/quality.py overlap --pieces` with the
+piece numbers. A shared file, table, migration, sensitive area or project
+setting stops the pair. Each pull request still goes through the merge script.
+Before a later merge, bring in the newest `main` and run the checks again.
 
-The plan is approved once. Every piece still gets the evidence its subjects
-require and its own commit, so anything can be unwound piece by piece.
+## Short loop
 
-Take only pieces whose done line a machine can prove: it names a test or a
-command with a checkable result. Skip a piece needing human eyes and say so in
-the report. Never take a repair: its three-failure notice needs a person.
+With `loop` recorded, run `scripts/attempt.sh <piece>`
+before each build or repair attempt. It counts three attempts for the piece,
+including a repair. The fourth call stops and labels the piece `blocked`. A
+`Test fix:` commit ends the loop. Stop earlier on a failing test or project
+check, or when a finding has no failing test to prove it. A repair uses the
+same three attempts, with the person present. Never loop unattended on a
+repair or in an unaccepted sensitive area. An accepted area may use the loop,
+but automatic merge still holds it.
 
-A failing piece gets up to three attempts. After the third, label it
-`blocked` with one line on what kept failing, move on, and send it back to
-`/shape` where the failure points at a missing decision or fact.
+## Merge on its own
 
-Stop the whole run at anything that needs planning, would change the build
-path, touches a named sensitive area, or is ambiguous. Never guess to keep a
-run going. Never merge, and never accept a risk on the person's behalf.
+With `merge` recorded, use
+`merge/scripts/merge.py --auto` only when the checks and review
+record pass, and the change touches no sensitive area, migration, setting,
+live requirement or `Done when` line ending `(try it)`. Repairs wait for a
+named yes. Every other gate still holds. The script reads the setting from
+`main`, requires three earlier named-yes merges, and refuses a branch behind
+`main`. A pending check waits up to 15 minutes. A red, missing or still-pending
+check holds the merge.
 
-The run uses one branch and ends as one pull request where the build path
-requires one, or one confirmed checkpoint for eligible private exploration.
-End with the `evidence-run` skill, and report:
-what was parked and why first, then what was built and passed, what was
-skipped as eyes-only, and a checklist to try before merging, riskiest first.
-
-When a run disappoints, fix the documents, not the code by hand: sharpen the
-done lines, add the missing rule to the masterplan, and run it again.
-
-## Goal modes
-
-A tool's /goal feature is this mode under the same rules: the condition comes
-from done lines read aloud, sensitive areas stay stop conditions, the
-three-attempt rule holds per piece, and the result lands through the save route
-the build path requires, with the merge left to a person.
+After an automatic merge, say which piece merged. If a check on `main` or the
+live check fails, pause automatic merging and tell the person what failed.
+Keep it paused until the person turns it on again. A person can turn any
+option off in their own words.

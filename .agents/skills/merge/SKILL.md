@@ -107,6 +107,17 @@ Exit 1 means a check, review box or sensitive area holds it. Exit 2 means a
 required read or check could not run, or GitHub refused the merge. Say what
 stopped it and leave the pull request open.
 
+`--auto` is available only when `Runs on its own:` on `main` records the
+person's words and date. It still holds on every red, missing or pending check,
+review finding, touched sensitive area, migration, new setting, live
+requirement, repair or `(try it)` line. It also requires three earlier merges
+with an approved review and a branch that contains the newest `main`. The
+person adds this Claude Code allow rule themselves:
+`Bash(python3 *merge.py --auto *)`. If a check on `main` or the live check
+fails after an automatic merge, pause with
+`scripts/merge.py --pause "live check failed"` and wait for the person to turn
+it on again before using `scripts/merge.py --resume`.
+
 In an unattended run, report the piece as ready for review and leave the merge
 to a person.
 

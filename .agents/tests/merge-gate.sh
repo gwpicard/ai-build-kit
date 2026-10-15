@@ -13,7 +13,7 @@ git -C "$WORK/project" init -q -b main
 git -C "$WORK/project" config user.name Rehearsal
 git -C "$WORK/project" config user.email rehearsal@example.invalid
 printf 'value = 1\n' > "$WORK/project/app/data.py"
-printf 'Path: Explore privately\n' > "$WORK/project/masterplan.md"
+printf 'Path: Build and run it\n' > "$WORK/project/masterplan.md"
 git -C "$WORK/project" add app/data.py
 git -C "$WORK/project" add masterplan.md
 git -C "$WORK/project" commit -q -m base
@@ -74,6 +74,10 @@ run() {
       exec python3 "$1" --approved 12
     ' sh "$SCRIPT")
 }
+run_auto() {
+  (cd "$WORK/project" && PATH="$WORK/bin:$PATH" GH_CASE="$1" PR_BODY="$2" \
+    PR_HEAD_OID="$HEAD_SHA" PR_BASE_OID="$BASE" sh -c 'exec python3 "$1" --auto 12' sh "$SCRIPT")
+}
 check_hold() {
   case_name=$1 body=$2 expected=$3
   : > "$GH_LOG"
@@ -100,6 +104,20 @@ set_head_map() {
   git -C "$WORK/project" push -q -f origin feature
   git -C "$WORK/project" checkout -q main
 }
+
+set_head_map <<'EOF'
+Path: Explore privately
+Runs on its own: merge (decided 2026-10-15, "merge when everything passes")
+EOF
+: > "$GH_LOG"
+out=$(run_auto success '## Worth stopping for' 2>&1) && code=0 || code=$?
+[ "$code" -eq 1 ] && printf '%s' "$out" | grep -q 'main has no Runs on its own setting' \
+  && ! grep -q '^pr merge ' "$GH_LOG" \
+  && pass "a setting present only in the pull request cannot enable automatic merge" \
+  || fail "pull-request-only setting returned $code: $out / $(cat "$GH_LOG")"
+set_head_map <<'EOF'
+Path: Explore privately
+EOF
 
 out=$(PATH="$WORK/bin:$PATH" python3 "$SCRIPT" 12 2>&1) && code=0 || code=$?
 [ "$code" -eq 1 ] && pass "a missing yes refuses the merge" || fail "missing yes returned $code: $out"

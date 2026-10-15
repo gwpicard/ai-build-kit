@@ -16,6 +16,13 @@ update," and point at /setup-hosting to compare the live copy with `main`. Off
 a recipe, say the change reaches the live copy the way the project's hosting
 works, and claim no more than you saw.
 
+After an automatic merge, a red check on `main` pauses automatic merging
+before the next piece. A failed live check pauses it too: run
+`scripts/merge.py --pause "live check failed"` and tell
+the person what failed in one line. Keep the
+pause until the person asks to turn merging on again; then run
+`scripts/merge.py --resume`.
+
 Change nothing live after the merge: no deploy, no rollback, no second push to
 `main`. Asked to put the change out again, read the health line again and say
 what it shows; a further deploy belongs to /setup-hosting. Asked whether they

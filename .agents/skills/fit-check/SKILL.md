@@ -151,6 +151,14 @@ caution, recheck the ownership questions it affects, apply the decision order,
 and update `Recheck when` and `Last checked`, adding an `Accepted:` line if a
 risk was accepted. Run the full check when the affected area cannot be bounded.
 
+On Build and run it or Build with care, offer the four autonomy settings only
+when the person asks. Explain that merge can put a finished piece live before
+they try it. After the person chooses, write their words and the date on
+`Runs on its own:`. On Explore privately, keep the line off and do not offer
+these settings. The person adds the local Claude allow rule for `merge.py
+--auto` themselves; point them to
+`Bash(python3 *merge.py --auto *)`.
+
 ## Where the rest lives
 
 - `references/risk-notice.md`: the risk notice, why it holds, and what counts

@@ -122,6 +122,11 @@ const workflow = fs.readFileSync(path.join(foundation, 'checks.yml'), 'utf8')
   ].join('\n'));
 put('.github/workflows/checks.yml', workflow);
 put('.agents/hooks/check-sensitive-areas.sh', fs.readFileSync(path.join(foundation, 'check-sensitive-areas.sh'), 'utf8'));
+put('.agents/hooks/check-review.sh', fs.readFileSync(path.join(foundation, 'check-review.sh'), 'utf8'));
+put('.agents/skills/merge/scripts/review_boxes.py',
+  fs.readFileSync(path.join(foundation, '../../../merge/scripts/review_boxes.py'), 'utf8'));
+put('bin/gh', '#!/usr/bin/env sh\n[ "$*" = "pr view 12 --json body --jq .body" ] || exit 2\nprintf "%s\\n" "## Worth stopping for\\n- None"\n');
+fs.chmodSync(path.join(project, 'bin/gh'), 0o755);
 put('.agents/hooks/scan-secrets.sh', fs.readFileSync(path.join(foundation, 'scan-secrets.sh'), 'utf8'));
 put('.agents/hooks/scan-secrets.py', fs.readFileSync(path.join(foundation, 'scan-secrets.py'), 'utf8'));
 put('.agents/hooks/check-tests.sh', fs.readFileSync(path.join(foundation, 'check-tests.sh'), 'utf8'));
@@ -181,7 +186,9 @@ function runCheck(eventName = 'pull_request') {
     if (condition === "github.event_name == 'pull_request'" && eventName !== 'pull_request') continue;
     const result = spawnSync('sh', ['-c', command], { cwd: project, encoding: 'utf8', timeout: 120000,
       env: { ...process.env, GITHUB_EVENT_NAME: eventName,
-        PR_BASE_SHA: eventName === 'pull_request' ? baseSha : '' } });
+        PR_BASE_SHA: eventName === 'pull_request' ? baseSha : '',
+        PR_NUMBER: eventName === 'pull_request' ? '12' : '',
+        PATH: path.join(project, 'bin') + path.delimiter + process.env.PATH } });
     assert.ifError(result.error);
     if (result.status !== 0) return { step, output: result.stdout + result.stderr };
   }

@@ -2,6 +2,10 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
     "deny": [
+      "Write(.claude/settings.json)",
+      "Edit(.claude/settings.json)",
+      "Write(.claude/settings.local.json)",
+      "Edit(.claude/settings.local.json)",
       "Read(**/.env)",
       "Read(**/.env.local)",
       "Read(**/.env.*.local)",
@@ -98,6 +102,7 @@
     ],
     "ask": [
       "Bash(*merge.py*--approved*)",
+      "Bash(*merge.py*--auto*)",
       "Bash(gh api *git/refs*)",
       "Bash(gh api graphql *createRef*)",
       "Bash(gh api graphql *updateRef*)",

@@ -100,7 +100,8 @@ tests-untested-status
 tests-zero-coverage-pass
 tests-missing-coverage-pass
 tests-after-failure-pass
-test-fix-empty-reason"
+test-fix-empty-reason
+attempt-cap"
 
 describe() {
   case "$1" in
@@ -166,6 +167,7 @@ describe() {
     tests-missing-coverage-pass) echo "a missing coverage report can go unreported" ;;
     tests-after-failure-pass) echo "a failed after-run can be treated as fine" ;;
     test-fix-empty-reason) echo "an empty Test fix reason can edit a frozen test" ;;
+    attempt-cap) echo "the piece attempt cap rises, so a fourth attempt is allowed" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -193,6 +195,7 @@ checks_for() {
     merge-pending-bucket-only|merge-skipping-project-pass|merge-first-box-only|merge-any-check-name|merge-area-call-skipped|merge-area-open-ignored) echo "merge-gate" ;;
     review-boxes-never-open|review-brief-hides-missing-input|review-record-keeps-unsupported) echo "review-gate" ;;
     test-freeze-removed|tests-untested-status|tests-zero-coverage-pass|tests-missing-coverage-pass|tests-after-failure-pass|test-fix-empty-reason) echo "tests-prove-change" ;;
+    attempt-cap) echo "autonomy-boundaries" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -612,6 +615,15 @@ old = """          report_once \"Test check: $file changed existing lines in $la
 assert old in s, "the silent-edit failure branch is missing"
 open(p, "w").write(s.replace(old, "          report_once \"Test check: $file changed existing lines in $later without Test fix: reason.\"", 1))
 '
+      ;;
+    attempt-cap)
+      edit "$tree/.agents/skills/implement/scripts/attempt.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "if [ \"$count\" -ge 3 ]; then"
+assert old in s, "three-attempt cap not found"
+open(p, "w").write(s.replace(old, "if [ \"$count\" -ge 99 ]; then", 1))'
       ;;
     background-one-caller)
       # A rule folded back into one caller leaves its background skill with a

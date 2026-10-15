@@ -79,6 +79,7 @@ JSON
 ) && code=0 || code=$?
 [ "$code" -eq 1 ] && grep -q '\- \[ \] The save fails' "$WORK/edits" \
   && grep -q 'finding(s) dropped' "$WORK/edits" \
+  && grep -q 'Review record: reviewed=quality review; tried=3; open=1' "$WORK/edits" \
   && grep -q 'The refuter disproved this' "$WORK/edits" \
   && grep -A4 '## Worth knowing' "$WORK/edits" | grep -q 'The refuter disproved this' \
   && ! grep -q 'Maybe bad' "$WORK/edits" \
