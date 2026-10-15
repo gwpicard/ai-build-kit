@@ -89,6 +89,9 @@ merge-missing-check
 merge-pending-bucket-only
 merge-skipping-project-pass
 merge-first-box-only
+review-boxes-never-open
+review-brief-hides-missing-input
+review-record-keeps-unsupported
 merge-any-check-name
 merge-area-call-skipped
 merge-area-open-ignored
@@ -151,6 +154,9 @@ describe() {
     merge-pending-bucket-only) echo "a pending check is accepted because gh --json exits zero" ;;
     merge-skipping-project-pass) echo "a skipped project-check is accepted as passed" ;;
     merge-first-box-only) echo "the second open finding is ignored after a settled first box" ;;
+    review-boxes-never-open) echo "an unticked stopping finding no longer holds the project check" ;;
+    review-brief-hides-missing-input) echo "a packet with missing agreement inputs is reported as complete" ;;
+    review-record-keeps-unsupported) echo "a finding without evidence or a concrete scenario reaches the pull request" ;;
     merge-any-check-name) echo "a different passing check stands in for project-check" ;;
     merge-area-call-skipped) echo "an open sensitive area is not checked before merge" ;;
     merge-area-open-ignored) echo "an open sensitive area is reported but does not hold merge" ;;
@@ -185,6 +191,7 @@ checks_for() {
     scan-drops-key-shapes|scan-drops-service-role-jwt|scan-drops-named-env-assignment|redactor-drops-multiline-values) echo "secrets-gates" ;;
     merge-missing-check) echo "merge-gate" ;;
     merge-pending-bucket-only|merge-skipping-project-pass|merge-first-box-only|merge-any-check-name|merge-area-call-skipped|merge-area-open-ignored) echo "merge-gate" ;;
+    review-boxes-never-open|review-brief-hides-missing-input|review-record-keeps-unsupported) echo "review-gate" ;;
     test-freeze-removed|tests-untested-status|tests-zero-coverage-pass|tests-missing-coverage-pass|tests-after-failure-pass|test-fix-empty-reason) echo "tests-prove-change" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
@@ -738,6 +745,33 @@ old = "if checkbox.group(1).lower() != \"x\":\n                    return True"
 new = "if checkbox.group(1).lower() != \"x\":\n                    return False"
 assert old in s
 open(p, "w").write(s.replace(old, new, 1))'
+      ;;
+    review-boxes-never-open)
+      edit "$tree/.agents/skills/merge/scripts/review_boxes.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "def open_review_box(body):\n"
+assert old in s, "review box reader not found"
+open(p, "w").write(s.replace(old, old + "    return False  # mutation ignores all review boxes\n", 1))'
+      ;;
+    review-brief-hides-missing-input)
+      edit "$tree/.agents/skills/quality-checks/scripts/gate.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "    if limits:\n        print(\"Review limits: \" + \"; \".join(limits))\n        return 2\n"
+assert old in s, "brief missing-input status not found"
+open(p, "w").write(s.replace(old, old.replace("if limits:", "if limits and False:"), 1))'
+      ;;
+    review-record-keeps-unsupported)
+      edit "$tree/.agents/skills/quality-checks/scripts/gate.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "        if not supported(row):\n            dropped += 1\n            continue\n"
+assert old in s, "unsupported finding filter not found"
+open(p, "w").write(s.replace(old, "        if False and not supported(row):\n            dropped += 1\n            continue\n", 1))'
       ;;
     merge-any-check-name)
       edit "$tree/.agents/skills/merge/scripts/merge.py" '

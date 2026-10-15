@@ -41,6 +41,7 @@
   "agents": [
     "./.claude/agents/builder.md",
     "./.claude/agents/researcher.md",
-    "./.claude/agents/reviewer.md"
+    "./.claude/agents/reviewer.md",
+    "./.claude/agents/refuter.md"
   ]
 }

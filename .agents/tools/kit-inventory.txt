@@ -32,5 +32,6 @@ background triage
 background build-piece
 
 agent reviewer
+agent refuter
 agent builder
 agent researcher
