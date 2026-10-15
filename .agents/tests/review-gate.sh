@@ -153,7 +153,9 @@ out=$(run_check '## Worth stopping for
 Review record: reviewed=quality review; tried=0; open=0' 0 2>&1) && code=0 || code=$?
 [ "$code" -eq 0 ] && pass "check-review passes after findings are cleared" || fail "check-review clean returned $code: $out"
 out=$(run_check '## Worth stopping for
-- [ ] Broken save' 0 2>&1) && code=0 || code=$?
-[ "$code" -eq 1 ] && pass "check-review holds an unticked finding" || fail "check-review open returned $code: $out"
+- [ ] Broken save
+Review record: reviewed=quality review; tried=1; open=1' 0 2>&1) && code=0 || code=$?
+[ "$code" -eq 1 ] && printf '%s' "$out" | grep -q 'a finding under Worth stopping for is unticked' \
+  && pass "check-review holds an unticked finding" || fail "check-review open returned $code: $out"
 out=$(run_check '' 1 2>&1) && code=0 || code=$?
 [ "$code" -eq 2 ] && pass "check-review reports unreadable pull-request state as exit 2" || fail "check-review unavailable returned $code: $out"
