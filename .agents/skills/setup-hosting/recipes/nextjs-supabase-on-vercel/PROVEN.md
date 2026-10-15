@@ -5,6 +5,8 @@ time. It says what was tried on a real deploy and what came out, section by
 section.
 
 Real run: 2026-09-25
+Last proven: 2026-09-25
+Versions: Next.js 16; Supabase CLI 2.117; Vercel CLI 60.0.0
 
 Sign-in and roles: No real run yet; added 2026-10-14.
 Row rules: No real run yet; added 2026-10-14.

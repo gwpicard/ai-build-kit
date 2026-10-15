@@ -84,7 +84,7 @@ WHO = ("the kit", "a companion or the person, result read back", "a person looki
 STACK = ["Language", "Framework", "Typing", "Database", "Sign-in", "Email", "Files",
          "Jobs", "Testing", "Linting", "Starter", "Optional parts"]
 HEADS = ["Fits", "Recommended when"] + STACK + ["Work-team default", "Deploy target", "Health-check tool",
-         "Command-line tools", "Last checked"]
+         "Command-line tools", "Last checked", "Last proven", "Proven on", "Superseded settings"]
 STACK_SECTIONS = ["Sign-in and roles", "Row rules", "Files", "Jobs", "Email",
                   "Project check", "Updates"]
 COMING_SECTIONS = set(STACK_SECTIONS)
@@ -240,6 +240,27 @@ def check_recipe(md, proven):
     found = re.search(r"^Last checked: (.*)$", head, re.M)
     if found:
         datecheck(where, "Last checked", found.group(1).strip())
+    proven_date = re.search(r"^Last proven: (.*)$", head, re.M)
+    if proven_date:
+        datecheck(where, "Last proven", proven_date.group(1).strip())
+    versions = re.search(r"^Proven on: (.*)$", head, re.M)
+    if versions and not (mode == "template" and "<" in versions.group(1)) and not versions.group(1).strip():
+        problem(where, "Proven on must name the versions used in the real run")
+    superseded = re.search(r"^Superseded settings: (.*)$", head, re.M)
+    if superseded and not (mode == "template" and "<" in superseded.group(1)) and superseded.group(1).strip() != "none":
+        if not re.fullmatch(r"[A-Z][A-Z0-9_]*(?:, [A-Z][A-Z0-9_]*)*", superseded.group(1).strip()):
+            problem(where, "Superseded settings must be comma-separated environment variable names or none")
+    if mode != "template" and os.path.isfile(proven):
+        proof_text = open(proven).read()
+        proof_date = re.search(r"^Last proven: (.*)$", proof_text, re.M)
+        run_date = re.search(r"^Real run: (.*)$", proof_text, re.M)
+        proof_versions = re.search(r"^Versions: (.*)$", proof_text, re.M)
+        if not run_date or not proof_versions:
+            problem(proven, "must record Real run and Versions")
+        if not proof_date or not proven_date or proof_date.group(1) != proven_date.group(1):
+            problem(where, "Last proven must match PROVEN.md")
+        if proof_date:
+            datecheck(proven, "Last proven", proof_date.group(1).strip())
     for line in re.findall(r"^Plan terms:.*$", head, re.M):
         shaped = re.match(r"^Plan terms: [^(]+ \(read (\S+) at [^)]+\)$", line)
         if not shaped:
