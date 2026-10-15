@@ -166,9 +166,10 @@ cmp -s "$SKILL/templates/foundation/piece-issue.yml" "$WORK/p/.github/ISSUE_TEMP
 state someone/kit-log PRIVATE '{}' '[]' false '["main"]'
 python3 -c 'import json,sys; p=sys.argv[1]; s=json.load(open(p)); s["protection_status"]="plan"; json.dump(s,open(p,"w"))' "$STANDIN_GH_STATE"
 out=$(run prepare 2>&1) && code=0 || code=$?
-[ "$code" -eq 2 ] && printf '%s\n' "$out" | grep -q 'hold the merge itself' \
-  && pass "a plan that cannot protect a private repository names the script hold and exits 2" \
-  || fail "a refused branch protection returned $code: $out"
+[ "$code" -eq 0 ] && printf '%s\n' "$out" | grep -q 'hold the merge itself' \
+  && grep -q '^label create ' "$STANDIN_GH_LOG" \
+  && pass "a plan restriction names the script hold and founding carries on" \
+  || fail "a plan restriction did not carry on with founding ($code): $out"
 
 for status_line in 'admin|admin rights' '422|422' 'network|network error'; do
   status=${status_line%%|*}

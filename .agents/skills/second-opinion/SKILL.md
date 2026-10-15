@@ -59,8 +59,10 @@ review /setup-hosting runs.
 
 ## Report format
 
-Write every finding under `Worth stopping for` as an unticked box in the pull
-request body. Keep a settled finding and tick its box; do not remove it.
+Write every finding under `Worth stopping for` as an unticked box. For a
+masterplan review, put findings in the completion report. For a change or
+whole-build review, put them in the pull request body. Keep a settled finding
+as a ticked box; do not remove it.
 
 ```md
 ## Worth stopping for
@@ -77,10 +79,10 @@ request body. Keep a settled finding and tick its box; do not remove it.
 
 Every finding says what you tried, what happened, and whether that seems
 intended: "Someone with the link can see the board without signing in.
-Expected?" The person's decision should come down to one question: is the
-first list empty? Keep code-smell vocabulary out. Raise maintainability only
-where it affects reliability, testing, a repeated bug, ownership or the build
-path, in those terms.
+Expected?" The person's decision should come down to one question: is any box
+under `Worth stopping for` unticked? Keep code-smell vocabulary out. Raise
+maintainability only where it affects reliability, testing, a repeated bug,
+ownership or the build path, in those terms.
 
 ## Independence fallback
 

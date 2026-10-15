@@ -366,8 +366,8 @@ open(p, "w").write(t)'
 import os
 p = os.environ["MUTATE_TARGET"]
 t = open(p).read()
-old = "if not project:" + chr(10) + "        stop(" + chr(34) + "merge: project-check is missing; the pull request stays open" + chr(34) + ")"
-new = "if False:" + chr(10) + "        stop(" + chr(34) + "merge: project-check is missing; the pull request stays open" + chr(34) + ")"
+old = "if not projects:"
+new = "if False:"
 assert old in t, "required project-check guard not found"
 open(p, "w").write(t.replace(old, new, 1))
 '
@@ -397,8 +397,8 @@ open(p, "w").write(s.replace(old, new, 1))'
 import os
 p = os.environ["MUTATE_TARGET"]
 s = open(p).read()
-old = "if checkbox.group(1).lower() != \"x\":\n                return True"
-new = "if checkbox.group(1).lower() != \"x\":\n                return False"
+old = "if checkbox.group(1).lower() != \"x\":\n                    return True"
+new = "if checkbox.group(1).lower() != \"x\":\n                    return False"
 assert old in s
 open(p, "w").write(s.replace(old, new, 1))'
       ;;

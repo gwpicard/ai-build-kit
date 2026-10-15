@@ -81,7 +81,8 @@ def main(argv):
     lowered = detail.lower()
     if "upgrade to github pro" in lowered and (
             "make the repository public" in lowered or "make this repository public" in lowered):
-        return report("GitHub cannot require the check on this private repository with this plan, so the kit will hold the merge itself.")
+        print("GitHub cannot require the check on this private repository with this plan, so the kit will hold the merge itself.")
+        return 0
     if "must have admin rights" in lowered:
         return report("Branch protection could not be set because this account does not have admin rights.")
     if "404" in detail or "not found" in lowered:
