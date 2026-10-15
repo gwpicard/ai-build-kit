@@ -18,6 +18,14 @@ SCRATCH=$(mktemp -d)
 PACK="$SCRATCH/pack"
 PROJECT="$SCRATCH/project"
 PLUGIN_PROJECT="$SCRATCH/plugin-project"
+# Git must not start background upkeep in the sample projects. It can still be
+# writing when the cleanup removes the folder, and the removal then fails.
+GIT_CONFIG_COUNT=2
+GIT_CONFIG_KEY_0=gc.auto
+GIT_CONFIG_VALUE_0=0
+GIT_CONFIG_KEY_1=maintenance.auto
+GIT_CONFIG_VALUE_1=false
+export GIT_CONFIG_COUNT GIT_CONFIG_KEY_0 GIT_CONFIG_VALUE_0 GIT_CONFIG_KEY_1 GIT_CONFIG_VALUE_1
 cleanup() {
   rm -R "$SCRATCH"
 }
