@@ -12,6 +12,9 @@ full brief for this review, including the change and the available evidence.
 Gemini reviewers have no shell, so include the packet text in the prompt.
 Exit 2 means an input is missing. Continue the review and carry the packet's
 `Review limits` into the result.
+Use the reviewer agent in a fresh context. If the coding agent cannot start
+agents, run `.agents/agents/reviewer.md` headless with the packet text in its
+prompt. Use the refuter agent the same way for its separate pass.
 
 Ask only:
 
