@@ -1423,10 +1423,13 @@ def strength_py(root, changed, engines):
         folders = sorted({p.split("/")[0] if "/" in p else p for p in targets})
         with open(config, "w", encoding="utf-8") as handle:
             paths = json.dumps(folders)
-            # mutmut 3 renamed paths_to_mutate to source_paths. Keep both
-            # while the check accepts every minor release in the 3.x line.
             handle.write(text + "\n[tool.mutmut]\nsource_paths = " + paths +
                          "\npaths_to_mutate = " + paths + "\n")
+        setup_config = os.path.join(copy, "setup.cfg")
+        setup_text = read(copy, "setup.cfg")
+        setup_text = re.sub(r"(?ms)^\[mutmut\].*?(?=^\[|\Z)", "", setup_text)
+        with open(setup_config, "w", encoding="utf-8") as handle:
+            handle.write(setup_text + "\n[mutmut]\npaths_to_mutate = " + ",".join(folders) + "\n")
         code, out, err = run(cmd + ["run", *[name + "__mutmut_*" for name in sorted(wanted)]],
                              cwd=copy, timeout=3600)
         if code != 0:
