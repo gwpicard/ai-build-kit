@@ -346,6 +346,19 @@ if (cd "$PROJECT" && sh .agents/hooks/scan-secrets.sh "--range=$PROJECT/missing.
   pass "a missing base falls back to available history"
 else code=$?; [ "$code" -eq 1 ] && pass "a missing base scans available history and can find a secret" \
   || fail "missing base fallback returned $code"; fi
+printf 'APP_TOKEN=%s\n' "literal-$(python3 -c 'import secrets;print(secrets.token_hex(12))')" > "$PROJECT/.env.production"
+git -C "$PROJECT" add .env.production && git -C "$PROJECT" commit -q -m literal-env-assignment
+if (cd "$PROJECT" && sh .agents/hooks/scan-secrets.sh "--range=HEAD~1..HEAD") >"$WORK/scan-out" 2>&1; then
+  fail "scanner missed a named literal in a committed .env file"
+else code=$?; [ "$code" -eq 1 ] && grep -q 'possible secret in commit .* file .env.production' "$WORK/scan-out" \
+  && ! grep -q 'literal-' "$WORK/scan-out" \
+  && pass "scanner catches a named literal in a committed .env file without printing it" \
+  || fail "committed .env assignment returned $code"; fi
+printf 'const APP_TOKEN = process.env.APP_TOKEN;\n' > "$PROJECT/app-config.js"
+git -C "$PROJECT" add app-config.js && git -C "$PROJECT" commit -q -m env-code-expression
+(cd "$PROJECT" && sh .agents/hooks/scan-secrets.sh "--range=HEAD~1..HEAD") \
+  && pass "code expressions that read process.env are not treated as literal assignments" \
+  || fail "a process.env expression was treated as a committed secret"
 mkdir -p "$WORK/no-git"
 if (cd "$WORK/no-git" && sh "$FOUNDATION/scan-secrets.sh" --all) >"$WORK/scan-out" 2>&1; then
   fail "scanner passed without a Git repository"

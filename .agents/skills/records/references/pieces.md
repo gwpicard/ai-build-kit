@@ -50,6 +50,10 @@ Reaches: <files, routes, tables and tests this piece may affect; use `new files 
 `## Done when` holds conditions answered yes or no by trying the tool. Anything
 else belongs in `## So that`.
 
+Number the bullet items under `## Done when` by position as D1, D2, and so
+on. A wrapped continuation remains part of its bullet. End any line a person
+must judge with `(try it)`; it keeps its number and needs no automated test.
+
 `## Masterplan change` names the section and what it gains, changes or loses.
 Read each `## Done when` line against the masterplan alone, and write "nothing"
 only when the masterplan already says it. A rule the person could check, such
@@ -80,6 +84,8 @@ decision, so a simple read is never a false one. `Under the hood` is collapsed
 build context the person never has to open and `/implement` always reads. Most
 short pieces need none. Context reaching past one piece goes to the masterplan
 (a product decision) or AGENTS.md's stack section (a codebase convention).
+For a refactor whose behaviour does not change, write `Kind: refactor` here;
+the tests read checks that existing tests pass before and after.
 
 ## Labels
 

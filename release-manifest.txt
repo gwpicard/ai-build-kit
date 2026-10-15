@@ -56,6 +56,7 @@
 .gemini/commands|
 .github/copilot-instructions.md|
 .agents/skills/setup-ai-build-kit/templates/foundation/checks.yml|.github/workflows/checks.yml
+.agents/skills/setup-ai-build-kit/templates/foundation/check-tests.sh|
 .agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json|.claude/settings.json
 .env.example|
 .gitignore|

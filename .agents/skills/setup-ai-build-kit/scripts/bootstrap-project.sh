@@ -145,7 +145,7 @@ checks.yml|.github/workflows/checks.yml
 claude-settings.json|.claude/settings.json
 session-start.sh|.agents/hooks/session-start.sh
 check-sensitive-areas.sh|.agents/hooks/check-sensitive-areas.sh
-check-trim.sh|.agents/hooks/check-trim.sh
+check-tests.sh|.agents/hooks/check-tests.sh
 pre-push|.agents/hooks/git/pre-push
 guard-secrets.sh|.agents/hooks/guard-secrets.sh
 guard-secrets.py|.agents/hooks/guard-secrets.py
@@ -191,7 +191,7 @@ checks.yml|.github/workflows/checks.yml
 claude-settings.json|.claude/settings.json
 session-start.sh|.agents/hooks/session-start.sh
 check-sensitive-areas.sh|.agents/hooks/check-sensitive-areas.sh
-check-trim.sh|.agents/hooks/check-trim.sh
+check-tests.sh|.agents/hooks/check-tests.sh
 pre-push|.agents/hooks/git/pre-push
 guard-secrets.sh|.agents/hooks/guard-secrets.sh
 guard-secrets.py|.agents/hooks/guard-secrets.py

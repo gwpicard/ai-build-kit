@@ -11,7 +11,7 @@
 # The broken function has no test. That is the point of the floor: the tests
 # pass, and the type check is what turns the tick red.
 #
-# The trim step goes red on a trim commit that changed a test, and also when it
+# The test check goes red on a trim commit that changed a test, and also when it
 # cannot read the commits at all. A project founded before that step gets it
 # from place-trim-check.py, on a yes, exactly as founding writes it today.
 #
@@ -31,9 +31,9 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 FLOOR="$ROOT/.agents/skills/quality-checks/references/check-floor.md"
 TEMPLATE="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/checks.yml"
 SENSITIVE="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/check-sensitive-areas.sh"
-TRIM_CHECK="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/check-trim.sh"
 SCAN="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/scan-secrets.sh"
 SCAN_PY="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/scan-secrets.py"
+TEST_CHECK="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/check-tests.sh"
 
 fail() {
   echo "FAIL: $1" >&2
@@ -70,9 +70,9 @@ fi
 # --- founding: the project and its wired check ------------------------------
 
 cp "$SENSITIVE" "$PROJECT/.agents/hooks/check-sensitive-areas.sh"
-cp "$TRIM_CHECK" "$PROJECT/.agents/hooks/check-trim.sh"
 cp "$SCAN" "$PROJECT/.agents/hooks/scan-secrets.sh"
 cp "$SCAN_PY" "$PROJECT/.agents/hooks/scan-secrets.py"
+cp "$TEST_CHECK" "$PROJECT/.agents/hooks/check-tests.sh"
 
 # The edit founding makes: the placeholder step goes, and install, type check,
 # lint and test go in its place, each as its own named step.
@@ -155,23 +155,23 @@ save_as_base() {
   in_project update-ref refs/remotes/origin/main HEAD
 }
 
-# The trim step fails when it cannot read the pull request's commits, since a
+# The test check fails when it cannot read the pull request's commits, since a
 # trim it never read is not a trim it checked. It said "passed" once.
 mkdir -p "$WORK/no-history"
 status=0
-(cd "$WORK/no-history" && sh "$TRIM_CHECK") > "$WORK/last-output" 2>&1 || status=$?
-[ "$status" != 0 ] || fail "the trim step passed with no history to read"
-grep -q 'could not be read' "$WORK/last-output" || fail "the trim step did not say it could not read the commits"
-echo "  ok: the trim step goes red, and says why, when it cannot read the commits"
+(cd "$WORK/no-history" && sh "$TEST_CHECK") > "$WORK/last-output" 2>&1 || status=$?
+[ "$status" != 0 ] || fail "the test check passed with no history to read"
+grep -q 'could not be read' "$WORK/last-output" || fail "the test check did not say it could not read the commits"
+echo "  ok: the test check goes red, and says why, when it cannot read the commits"
 
 in_project init -q -b main
 printf '__pycache__/\n.mypy_cache/\n.ruff_cache/\n' > "$PROJECT/.gitignore"
 in_project add -A
 in_project commit -q -m "Start"
 status=0
-(cd "$PROJECT" && sh .agents/hooks/check-trim.sh) > "$WORK/last-output" 2>&1 || status=$?
-[ "$status" != 0 ] || fail "the trim step passed with no base branch to compare with"
-echo "  ok: the trim step goes red when the history holds no base branch, as a shallow checkout leaves it"
+(cd "$PROJECT" && sh .agents/hooks/check-tests.sh) > "$WORK/last-output" 2>&1 || status=$?
+[ "$status" != 0 ] || fail "the test check passed with no base branch to compare with"
+echo "  ok: the test check goes red when the history holds no base branch, as a shallow checkout leaves it"
 in_project update-ref refs/remotes/origin/main HEAD
 
 started=$(date +%s)
@@ -222,14 +222,14 @@ sed 's/total(2, 3), 6/total(1, 6), 6/' "$PROJECT/test_pricing.py" > "$WORK/test"
 mv "$WORK/test" "$PROJECT/test_pricing.py"
 in_project commit -q -am "Trim: take out what the piece did not need"
 first=$(run_check)
-[ "$first" = "Check the trim left the tests alone" ] ||
-  fail "expected the trim step to go red on a trim that changed a test, got '${first:-nothing}'"
-grep -q 'test_pricing.py' "$WORK/last-output" || fail "the trim step did not name the test"
-echo "  ok: the check goes red at the trim step when a trim commit changed a test, naming it"
+[ "$first" = "Check tests were not changed silently" ] ||
+  fail "expected the test check to go red on a trim that changed a test, got '${first:-nothing}'"
+grep -q 'test_pricing.py' "$WORK/last-output" || fail "the test check did not name the test"
+echo "  ok: the check goes red at the test check when a trim commit changed a test, naming it"
 
-# --- a project founded before the trim step ----------------------------------
+# --- a project founded before the test check ----------------------------------
 #
-# The same project as an older founding left it: no hook, no trim step, and a
+# The same project as an older founding left it: no hook, no test check, and a
 # checkout of the last commit only. /maintain's truing runs place-trim-check.py,
 # which finds all three, records a no, and on a yes puts back exactly what
 # founding writes today.
@@ -238,19 +238,19 @@ PLACE="$ROOT/.agents/skills/setup-ai-build-kit/scripts/place-trim-check.py"
 founded="$WORK/founded-checks.yml"
 cp "$PROJECT/.github/workflows/checks.yml" "$founded"
 awk '
-  /- name: Check the trim left the tests alone/ { skip = 2 }
+  /- name: Check tests were not changed silently/ { skip = 2 }
   skip > 0 { skip--; next }
   /^ *with:$/ || /^ *fetch-depth: 0$/ { next }
   { print }
 ' "$founded" > "$PROJECT/.github/workflows/checks.yml"
-rm "$PROJECT/.agents/hooks/check-trim.sh"
-grep -q 'check-trim\|fetch-depth' "$PROJECT/.github/workflows/checks.yml" && fail "the older check still has the trim step"
+rm "$PROJECT/.agents/hooks/check-tests.sh"
+grep -q 'check-tests\|fetch-depth' "$PROJECT/.github/workflows/checks.yml" && fail "the older check still has the test check"
 in_project checkout -q -b older origin/main
 save_as_base "An older founding"
 
 place() { (cd "$PROJECT" && python3 "$PLACE" "$@") > "$WORK/place-output" 2>&1; }
 status=0; place || status=$?
-[ "$status" = 1 ] || fail "an older project's missing trim step was not found (exit $status)"
+[ "$status" = 1 ] || fail "an older project's missing test check was not found (exit $status)"
 for kind in hook step history; do
   grep -q "^$kind	" "$WORK/place-output" || fail "place-trim-check.py did not name the missing $kind"
 done
@@ -261,25 +261,25 @@ status=0; place --decline || status=$?
 [ "$status" = 0 ] || fail "recording a no failed"
 status=0; place || status=$?
 [ "$status" = 0 ] && grep -qx 'declined' "$WORK/place-output" || fail "a no was not kept (exit $status)"
-grep -q '^trim-check-declined|' "$PROJECT/.ai-build-kit-maintenance" || fail "the no was not recorded"
+grep -q '^tests-check-declined|' "$PROJECT/.ai-build-kit-maintenance" || fail "the no was not recorded"
 rm "$PROJECT/.ai-build-kit-maintenance"
 echo "  ok: a no is recorded, and the offer is not made again while the kit's hook is the same"
 
 status=0; place --apply || status=$?
-[ "$status" = 0 ] || { cat "$WORK/place-output" >&2; fail "adding the trim step failed"; }
+[ "$status" = 0 ] || { cat "$WORK/place-output" >&2; fail "adding the test check failed"; }
 cmp -s "$founded" "$PROJECT/.github/workflows/checks.yml" ||
   { diff "$founded" "$PROJECT/.github/workflows/checks.yml" >&2; fail "the check is not what founding writes today"; }
-cmp -s "$TRIM_CHECK" "$PROJECT/.agents/hooks/check-trim.sh" || fail "the hook was not added"
+cmp -s "$TEST_CHECK" "$PROJECT/.agents/hooks/check-tests.sh" || fail "the hook was not added"
 status=0; place || status=$?
 [ "$status" = 0 ] && [ ! -s "$WORK/place-output" ] || fail "a second look still found something missing (exit $status)"
 echo "  ok: on a yes, the hook, the step and the whole history are added, matching a founding today, and nothing else"
 
-save_as_base "The trim step added"
+save_as_base "The test check added"
 sed 's/total(2, 3), 6/total(3, 2), 6/' "$PROJECT/test_pricing.py" > "$WORK/test"
 mv "$WORK/test" "$PROJECT/test_pricing.py"
 in_project commit -q -am "Trim: take out what the piece did not need"
 first=$(run_check)
-[ "$first" = "Check the trim left the tests alone" ] ||
+[ "$first" = "Check tests were not changed silently" ] ||
   fail "after the step was added, a trim that changed a test did not turn the check red, got '${first:-nothing}'"
 echo "  ok: once added, the older project's check goes red on a trim that changed a test"
 
@@ -368,9 +368,9 @@ fi
 PROJECT="$WORK/ts-project"
 mkdir -p "$PROJECT/.github/workflows" "$PROJECT/.agents/hooks" "$PROJECT/src"
 cp "$SENSITIVE" "$PROJECT/.agents/hooks/check-sensitive-areas.sh"
-cp "$TRIM_CHECK" "$PROJECT/.agents/hooks/check-trim.sh"
 cp "$SCAN" "$PROJECT/.agents/hooks/scan-secrets.sh"
 cp "$SCAN_PY" "$PROJECT/.agents/hooks/scan-secrets.py"
+cp "$TEST_CHECK" "$PROJECT/.agents/hooks/check-tests.sh"
 
 awk -v tc="$type_check" -v li="$lint" '
   /- name: Install and test/ { skipping = 1 }

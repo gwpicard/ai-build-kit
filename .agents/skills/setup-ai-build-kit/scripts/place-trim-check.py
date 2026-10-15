@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Bring the trim step into a founded project's check on pull requests.
+"""Bring the test check into a founded project's check on pull requests.
 
-Founding copies `check-trim.sh` into `.agents/hooks/` and a step that runs it
+Founding copies `check-tests.sh` into `.agents/hooks/` and a step that runs it
 into `.github/workflows/checks.yml`, with a checkout that fetches the whole
 history so the step can read every commit in the pull request. A project
 founded before that has neither, and an update refreshes skills only, so its
-check never fails a trim commit that changed a test. /maintain runs this in
+check never rejects a silent edit to one of its tests. /maintain runs this in
 the truing, offers what it prints once, and runs it with --apply on a yes.
 
 Usage, from the project root:
@@ -16,7 +16,7 @@ Usage, from the project root:
 
 Without an option it prints one line for each thing missing:
 
-    hook     .agents/hooks/check-trim.sh is missing or older than the kit's
+    hook     .agents/hooks/check-tests.sh is missing or older than the kit's
     step     the project check has no step that runs it
     history  the checkout fetches only the last commit
 
@@ -30,9 +30,9 @@ Exit codes:
        place the new step after, and changed nothing
 
 --apply copies the hook from this skill, sets `fetch-depth: 0` on the
-project-check job's checkout step, and adds the trim step straight after it.
+project-check job's checkout step, and adds the test check straight after it.
 It changes nothing else in the file. --decline writes
-`trim-check-declined|<date>|<fingerprint of the kit's hook>` into
+`tests-check-declined|<date>|<fingerprint of the kit's hook>` into
 `.ai-build-kit-maintenance`, keeping every other line. A later run then
 prints `declined` and exits 0, until a release changes the kit's hook.
 """
@@ -45,12 +45,12 @@ import shutil
 import sys
 
 SKILL = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-TEMPLATE = os.path.join(SKILL, "templates", "foundation", "check-trim.sh")
-HOOK = os.path.join(".agents", "hooks", "check-trim.sh")
+TEMPLATE = os.path.join(SKILL, "templates", "foundation", "check-tests.sh")
+HOOK = os.path.join(".agents", "hooks", "check-tests.sh")
 WORKFLOW = os.path.join(".github", "workflows", "checks.yml")
 RECORD = ".ai-build-kit-maintenance"
-STEP = ["- name: Check the trim left the tests alone",
-        "  run: sh .agents/hooks/check-trim.sh"]
+STEP = ["- name: Check tests were not changed silently",
+        "  run: sh .agents/hooks/check-tests.sh"]
 
 
 def read(path):
@@ -92,7 +92,7 @@ def missing(text, hook, template):
     found = []
     if hook != template:
         found.append(("hook", HOOK + " is missing or older than the kit's"))
-    if "check-trim.sh" not in text:
+    if "check-tests.sh" not in text:
         found.append(("step", "the project check has no step that runs " + HOOK))
     lines = text.split("\n")
     place = checkout_step(lines)
@@ -122,9 +122,21 @@ def apply(text):
             block.insert(with_line + 1, pad + "  fetch-depth: 0")
         else:
             block += [pad + "with:", pad + "  fetch-depth: 0"]
-    if "check-trim.sh" not in text:
-        block += [" " * dash + STEP[0], " " * dash + STEP[1]]
-    return "\n".join(lines[:first] + block + lines[last + 1:])
+    result = lines[:first] + block + lines[last + 1:]
+    result = [line.replace("Check the trim left the tests alone", STEP[0].removeprefix("- name: "))
+                  .replace("sh .agents/hooks/check-trim.sh", "sh .agents/hooks/check-tests.sh")
+              for line in result]
+    text = "\n".join(result)
+    if "check-tests.sh" not in text:
+        # Place the step after checkout, where the full history is available.
+        updated = text.split("\n")
+        place = checkout_step(updated)
+        if place is None:
+            return None
+        first, last, dash = place
+        updated[last + 1:last + 1] = [" " * dash + STEP[0], " " * dash + STEP[1]]
+        text = "\n".join(updated)
+    return text
 
 
 def fingerprint(template):
@@ -134,7 +146,9 @@ def fingerprint(template):
 def declined(template):
     """True while a recorded no covers the kit's present copy of the hook."""
     record = read(RECORD) or ""
-    match = re.search(r"^trim-check-declined\|\d{4}-\d{2}-\d{2}\|(\w+)$", record, re.M)
+    if re.search(r"^trim-check-declined\|", record, re.M):
+        return True
+    match = re.search(r"^tests-check-declined\|\d{4}-\d{2}-\d{2}\|(\w+)$", record, re.M)
     return bool(match) and match.group(1) == fingerprint(template)
 
 
@@ -145,7 +159,7 @@ def main():
         return 2
     template = read(TEMPLATE)
     if template is None:
-        print("the installed setup-ai-build-kit skill carries no check-trim.sh to copy", file=sys.stderr)
+        print("the installed setup-ai-build-kit skill carries no check-tests.sh to copy", file=sys.stderr)
         return 2
     text = read(WORKFLOW)
     if text is None:
@@ -156,8 +170,8 @@ def main():
     found = missing(text, read(HOOK), template)
 
     if option == "--decline":
-        record = [l for l in (read(RECORD) or "").splitlines() if not l.startswith("trim-check-declined|")]
-        record.append("trim-check-declined|%s|%s" % (datetime.date.today().isoformat(),
+        record = [l for l in (read(RECORD) or "").splitlines() if not l.startswith("tests-check-declined|")]
+        record.append("tests-check-declined|%s|%s" % (datetime.date.today().isoformat(),
                                                      fingerprint(template)))
         with open(RECORD, "w", encoding="utf-8") as handle:
             handle.write("\n".join(record) + "\n")
@@ -168,11 +182,15 @@ def main():
         if any(kind in ("step", "history") for kind, _ in found):
             changed = apply(text)
             if changed is None:
-                print("the project-check job has no checkout step to place the trim step after, "
+                print("the project-check job has no checkout step to place the test check after, "
                       "so nothing was changed", file=sys.stderr)
                 return 2
             with open(WORKFLOW, "w", encoding="utf-8") as handle:
                 handle.write(changed)
+        # Remove the retired trim hook so founded projects have one test-path guard.
+        old_hook = ".agents/hooks/check-trim.sh"
+        if os.path.isfile(old_hook) and not os.path.islink(old_hook):
+            os.unlink(old_hook)
         if any(kind == "hook" for kind, _ in found):
             os.makedirs(os.path.dirname(HOOK), exist_ok=True)
             shutil.copyfile(TEMPLATE, HOOK)

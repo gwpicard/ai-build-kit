@@ -70,18 +70,18 @@ that looks right is never a substitute for a check that was available and skippe
   test; changing records people already have takes a rehearsal on a copy.
 - An outside fact runs the source check in the `research` skill first.
 
-On Build with care, offer the optional check in the `quality-checks` skill's
-`references/test-strength.md` once the tests pass. It adds no gate.
+For a change inside a mapped sensitive area, `quality.py tests` runs the
+strength check after the tests pass. A repair runs it on the regression test.
 
-## 4. Establish the baseline
+## 4. Write the tests
 
-A piece labelled `broken` is a repair: load the `repair` skill's
-`references/fixing.md` and follow "Building a repair" from here.
+For a repair, load the `repair` skill's `references/fixing.md` and follow
+"Building a repair" from here.
 
-Otherwise show the new check fails before the behaviour exists, or establish
-the passing baseline before a refactor, or describe the current screen before a
-visual change. Never write a meaningless test to have one. Note the commit the
-piece starts from; the trim and the structure check read from it.
+Before coding, follow `quality-checks/references/tests-prove-change.md`: new
+tests fail on the old behaviour, and refactor tests pass before the change.
+Never write a meaningless test. For a visual change, describe the current
+screen first.
 
 ## 5. Build one vertical slice
 
@@ -92,6 +92,9 @@ its own vertical slice, or an
 expand-then-contract sequence that keeps the checks green throughout, ordered
 ahead as its own piece. Stop and say so if the change grows past what was
 agreed.
+
+After the build, run `quality.py tests --base <start commit> --piece <number>`
+once and act on its exit code.
 
 A build that reaches an outside service follows AGENTS.md's Secrets rule. A
 command that changes a live service's settings or data, other than saving code

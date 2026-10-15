@@ -182,11 +182,13 @@ def main(argv):
             continue
         line = raw[1:]
         decoded = line.decode("utf-8", "ignore")
-        assignment = ENV_RE.search(decoded)
-        public_value = bool(assignment and assignment.group(1).upper().startswith("NEXT_PUBLIC_"))
+        basename = os.path.basename(path)
+        env_file = (basename == ".env" or basename.startswith(".env.")) and basename != ".env.example"
+        assigned_value = env_value(decoded) if env_file else None
+        public_value = bool(env_file and re.match(r"\s*(?:export\s+)?NEXT_PUBLIC_", decoded))
         shaped_secret = not public_value and (any(pattern.search(line) for pattern in PATTERNS)
                                                or known_shape(decoded) or is_service_role_jwt(line))
-        if shaped_secret or any(value in line for value in exact):
+        if shaped_secret or assigned_value or any(value in line for value in exact):
             findings.append((commit, path))
     if findings:
         for found_commit, found_path in sorted(set(findings)):

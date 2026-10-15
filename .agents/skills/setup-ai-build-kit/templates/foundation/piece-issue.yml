@@ -26,7 +26,9 @@ body:
       label: Done when
       description: >
         Conditions somebody can check by trying the tool. If a line cannot be
-        answered yes or no, it belongs in "So that" instead.
+        answered yes or no, it belongs in "So that" instead. Number bullet
+        items by position as D1, D2 and so on; wrapped lines stay with the
+        bullet. End a line that needs a person's judgement with (try it).
       placeholder: |
         - A freelancer can book an item for a date range.
         - Booking the same item for overlapping dates is refused.
@@ -87,7 +89,8 @@ body:
       description: >
         The agent fills this in: the build approach, the seams, code-level
         dependencies, any groundwork. It stays collapsed, and you never have to
-        open it. Most short pieces leave it empty.
+        open it. Most short pieces leave it empty. For a behaviour-preserving
+        refactor, include Kind: refactor.
       placeholder: >
         Reuses the availability check from the calendar piece. New column on the
         bookings table; add it, migrate, then use it.
