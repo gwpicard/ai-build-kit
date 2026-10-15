@@ -2220,6 +2220,19 @@ Bash(rm -rf:*)"
 # changes flowing through a pull request. This maintainer repository's own
 # settings deliberately do not carry that entry, so the two sets differ here.
 expected_deny_project="$expected_deny
+Read(**/.env)
+Read(**/.env.local)
+Read(**/.env.*.local)
+Read(**/.env.production)
+Read(**/.env.development)
+Read(**/.env.test)
+Read(**/.env.staging)
+Read(**/.env.preview)
+Read(**/.env.production.local)
+Read(**/.env.development.local)
+Read(**/.env.test.local)
+Read(**/.env.*)
+Read(!**/.env.example)
 Bash(git push * main)
 Bash(git push * main *)
 Bash(git push * +main)
@@ -2289,14 +2302,13 @@ Read(//**/.supabase/access-token)
 Read(~/.vercel/**)
 Read(~/.supabase/**)
 Read(//**/Library/Application Support/supabase/**)
-Read(//**/.docker/config.json)"
-# A project also asks before any merge, and before a command that changes a
-# live service, so neither happens without a person's click in the box Claude
-# Code shows. This repository's own settings carry no ask list.
-expected_ask_project="Bash(gh pr merge:*)
+Read(//**/.docker/config.json)
+Bash(gh pr merge:*)
 Bash(gh api *pulls/*/merge*)
 Bash(gh api *merges*)
-Bash(gh api graphql *mergePullRequest*)
+Bash(gh api graphql *mergePullRequest*)"
+# A project blocks direct merge commands and asks before live changes.
+expected_ask_project="Bash(*merge.py*--approved*)
 Bash(gh api *git/refs*)
 Bash(gh api graphql *createRef*)
 Bash(gh api graphql *updateRef*)
@@ -2307,7 +2319,12 @@ Bash(supabase *config push*)
 Bash(vercel api *PATCH*)
 Bash(vercel api *patch*)
 Bash(vercel curl*)
+Bash(*PREVIEW_HEALTH=yes*)
+Bash(*PREVIEW_HEALTH=\"yes\"*)
+Bash(*PREVIEW_HEALTH='yes'*)
 Bash(*GATE_READ=yes*)
+Bash(*GATE_READ=\"yes\"*)
+Bash(*GATE_READ='yes'*)
 Bash(vercel project protection enable*)
 Bash(vercel project protection disable*)
 Bash(*set-access.sh*)
@@ -2371,7 +2388,7 @@ PYEOF
   rm -f /tmp/validate-kit-ask-out.$$
   rm -f "$py_script"
   [ "$deny_ok" -eq 0 ] || \
-    pass "both Claude deny lists are exactly the mechanically enforceable blocked commands, and a project asks before every merge and live-service change"
+    pass "Claude blocks match the mechanical rules, direct merge commands are denied, and live-service changes ask first"
 else
   note "python3 not available; falling back to a substring check on permissions.deny"
   while IFS= read -r deny_json; do

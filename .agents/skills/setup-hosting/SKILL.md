@@ -63,7 +63,8 @@ launch the person asked for and need no further yes. Where the recipe sends a
 hosting request to whoever runs the server, follow the file it names.
 
 Then run `scripts/run-recipe.sh <recipe>` with `--set LIVE_ADDRESS=`, the
-password's location as `--set DB_PASSWORD_FILE=`, `BACKUP_DIR` outside the
+password's location as `--set DB_PASSWORD_FILE=`. The runner records that path
+in the masterplan's "How it stays running" section. Keep `BACKUP_DIR` outside the
 repository, and the two answers above. Run it first with `--asks` and put each
 question it prints in your reply word for word. Pass what is pasted back as
 `--pasted <section>=<file>`, and what the person saw as

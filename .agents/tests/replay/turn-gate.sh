@@ -161,7 +161,12 @@ merge_open_pulls() {
     2>/dev/null || true)
   mo_done=""
   for mo_n in $mo_list; do
-    if (cd "$1" && "$GH_DIR/gh" pr merge "$mo_n" >/dev/null 2>&1); then
+    if (
+      cd "$1" \
+      && mo_head=$("$GH_DIR/gh" pr view "$mo_n" --json headRefOid \
+        | python3 -c 'import json, sys; print(json.load(sys.stdin)["headRefOid"])') \
+      && "$GH_DIR/gh" pr merge "$mo_n" --merge --match-head-commit "$mo_head" >/dev/null 2>&1
+    ); then
       mo_done="$mo_done #$mo_n"
     else
       mo_done="$mo_done #$mo_n (would not merge)"
@@ -180,23 +185,23 @@ case_prepare() {
 }
 
 # case_answers_merge_box <file>   true when the case names `# merge-box: answered`
-# A founded project's Claude Code settings list every way of merging under
-# permissions.ask, so Claude Code shows the person a box before a merge. That
-# box stops the call even in --permission-mode bypassPermissions, which the
-# harness runs with, and a replay has nobody to click it. A case where the kit
-# may merge after the scripted person's yes names this line, and the harness
-# stands in for the click.
+# A founded project's Claude Code settings ask before the merge.py command, so
+# Claude Code shows the person a box before a merge. That box stops the call
+# even in --permission-mode bypassPermissions, which the harness runs with, and
+# a replay has nobody to click it. A case where the kit may merge after the
+# scripted person's yes names this line, and the harness stands in for that
+# confirmation.
 case_answers_merge_box() {
   grep -q '^# merge-box: answered$' "$1"
 }
 
 # answer_merge_box <project>
-# Take the permissions.ask list, and nothing else, out of the project's
-# .claude/settings.json before the first commit. The box itself is proved by a
-# real Claude Code session, not here. What a replay measures is whether the kit
-# merges only on a yes, and the yes is a scripted line. The stand-in GitHub
-# logs every merge, so the grader and the state check still see a merge made
-# without one. The deny rules and the hooks stay as founding wrote them.
+# Take only the ask rule for merge.py out of the project's .claude/settings.json
+# before the first commit. The confirmation box itself is proved by a real
+# Claude Code session. A replay measures whether the kit calls merge.py only
+# after a scripted yes. The stand-in GitHub logs every merge, so the grader and
+# the state check still see a merge made without one. Other asks, deny rules
+# and hooks stay as founding wrote them.
 answer_merge_box() {
   [ -f "$1/.claude/settings.json" ] || return 0
   python3 - "$1/.claude/settings.json" <<'PY'
@@ -207,8 +212,9 @@ path = sys.argv[1]
 with open(path) as handle:
     settings = json.load(handle)
 permissions = settings.get("permissions")
-if isinstance(permissions, dict) and "ask" in permissions:
-    del permissions["ask"]
+if isinstance(permissions, dict) and isinstance(permissions.get("ask"), list):
+    rule = "Bash(*merge.py*--approved*)"
+    permissions["ask"] = [item for item in permissions["ask"] if item != rule]
     with open(path, "w") as handle:
         json.dump(settings, handle, indent=2)
         handle.write("\n")

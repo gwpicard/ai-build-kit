@@ -11,7 +11,7 @@
 # The broken function has no test. That is the point of the floor: the tests
 # pass, and the type check is what turns the tick red.
 #
-# The trim step goes red on a trim commit that changed a test, and also when it
+# The test check goes red on a trim commit that changed a test, and also when it
 # cannot read the commits at all. A project founded before that step gets it
 # from place-trim-check.py, on a yes, exactly as founding writes it today.
 #
@@ -31,7 +31,12 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 FLOOR="$ROOT/.agents/skills/quality-checks/references/check-floor.md"
 TEMPLATE="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/checks.yml"
 SENSITIVE="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/check-sensitive-areas.sh"
-TRIM_CHECK="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/check-trim.sh"
+SCAN="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/scan-secrets.sh"
+SCAN_PY="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/scan-secrets.py"
+GUARD_PY="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/guard-secrets.py"
+REDACT_PY="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/redact-secrets.py"
+CODEX_PY="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/codex-github-check.py"
+TEST_CHECK="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/check-tests.sh"
 
 fail() {
   echo "FAIL: $1" >&2
@@ -41,7 +46,7 @@ fail() {
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 PROJECT="$WORK/project"
-mkdir -p "$PROJECT/.github/workflows" "$PROJECT/.agents/hooks"
+mkdir -p "$PROJECT/.github/workflows" "$PROJECT/.agents/hooks" "$PROJECT/.agents/tools"
 
 # --- the commands, read from the shipped table ------------------------------
 
@@ -68,7 +73,13 @@ fi
 # --- founding: the project and its wired check ------------------------------
 
 cp "$SENSITIVE" "$PROJECT/.agents/hooks/check-sensitive-areas.sh"
-cp "$TRIM_CHECK" "$PROJECT/.agents/hooks/check-trim.sh"
+cp "$SCAN" "$PROJECT/.agents/hooks/scan-secrets.sh"
+cp "$SCAN_PY" "$PROJECT/.agents/hooks/scan-secrets.py"
+cp "$GUARD_PY" "$PROJECT/.agents/hooks/guard-secrets.py"
+cp "$REDACT_PY" "$PROJECT/.agents/hooks/redact-secrets.py"
+cp "$CODEX_PY" "$PROJECT/.agents/tools/codex-github-check.py"
+cp "$TEST_CHECK" "$PROJECT/.agents/hooks/check-tests.sh"
+
 
 # The edit founding makes: the placeholder step goes, and install, type check,
 # lint and test go in its place, each as its own named step.
@@ -110,20 +121,45 @@ class TotalTest(unittest.TestCase):
 if __name__ == "__main__":
     unittest.main()
 PY
+cat > "$PROJECT/masterplan.md" <<'MD'
+Path: Build with care
+
+Sensitive areas:
+  Data:
+    paths: pricing.py
+    Accepted: yes, 2026-10-14
+MD
 
 # --- running the check the way the hosted runner would ----------------------
 
 # Prints the name of the first step that failed, or nothing when all passed.
 # The Install step is left to the rehearsal, which already provided the tools.
 run_check() {
+  event_name=${1:-pull_request}
   awk '
-    /^ *- name: / { sub(/^ *- name: /, ""); name = $0; next }
-    /^ *run: /    { sub(/^ *run: /, ""); print name "\t" $0 }
+    /^ *- name: / { sub(/^ *- name: /, ""); name = $0; condition = ""; next }
+    /^ *if: / { sub(/^ *if: /, ""); condition = $0; next }
+    /^ *run: \|[-+]?$/ { run_indent = match($0, /[^ ]/); command = ""; block = 1; next }
+    block && /^[ ]+/ {
+      indent = match($0, /[^ ]/)
+      if (indent > run_indent) { sub(/^[ ]+/, ""); command = command $0 "\n"; next }
+      printf "%s\034%s\034%s\n", name, condition, command; block = 0
+    }
+    /^ *run: /    { sub(/^ *run: /, ""); printf "%s\034%s\034%s\n", name, condition, $0 }
+    END { if (block) printf "%s\034%s\034%s\n", name, condition, command }
   ' "$PROJECT/.github/workflows/checks.yml" > "$WORK/steps"
-  tab=$(printf '\t')
-  while IFS="$tab" read -r step command; do
+  separator=$(printf '\034')
+  while IFS="$separator" read -r step condition command; do
     [ "$step" = "Install" ] && continue
-    if ! (cd "$PROJECT" && sh -c "$command") > "$WORK/last-output" 2>&1; then
+    if [ "$condition" = "github.event_name == 'pull_request'" ] && [ "$event_name" != pull_request ]; then
+      continue
+    fi
+    base_sha=$(git -C "$PROJECT" rev-parse refs/remotes/origin/main)
+    head_sha=$(git -C "$PROJECT" rev-parse HEAD)
+    pr_base=$base_sha
+    [ "$event_name" = pull_request ] || pr_base=
+    if ! (cd "$PROJECT" && GITHUB_EVENT_NAME="$event_name" PR_BASE_SHA="$pr_base" BASE_SHA="$base_sha" \
+        HEAD_SHA="$head_sha" PUSH_BEFORE="$base_sha" PUSH_AFTER="$head_sha" sh -c "$command") > "$WORK/last-output" 2>&1; then
       printf '%s\n' "$step"
       return 0
     fi
@@ -143,23 +179,23 @@ save_as_base() {
   in_project update-ref refs/remotes/origin/main HEAD
 }
 
-# The trim step fails when it cannot read the pull request's commits, since a
+# The test check fails when it cannot read the pull request's commits, since a
 # trim it never read is not a trim it checked. It said "passed" once.
 mkdir -p "$WORK/no-history"
 status=0
-(cd "$WORK/no-history" && sh "$TRIM_CHECK") > "$WORK/last-output" 2>&1 || status=$?
-[ "$status" != 0 ] || fail "the trim step passed with no history to read"
-grep -q 'could not be read' "$WORK/last-output" || fail "the trim step did not say it could not read the commits"
-echo "  ok: the trim step goes red, and says why, when it cannot read the commits"
+(cd "$WORK/no-history" && sh "$TEST_CHECK") > "$WORK/last-output" 2>&1 || status=$?
+[ "$status" != 0 ] || fail "the test check passed with no history to read"
+grep -q 'could not be read' "$WORK/last-output" || fail "the test check did not say it could not read the commits"
+echo "  ok: the test check goes red, and says why, when it cannot read the commits"
 
 in_project init -q -b main
 printf '__pycache__/\n.mypy_cache/\n.ruff_cache/\n' > "$PROJECT/.gitignore"
 in_project add -A
 in_project commit -q -m "Start"
 status=0
-(cd "$PROJECT" && sh .agents/hooks/check-trim.sh) > "$WORK/last-output" 2>&1 || status=$?
-[ "$status" != 0 ] || fail "the trim step passed with no base branch to compare with"
-echo "  ok: the trim step goes red when the history holds no base branch, as a shallow checkout leaves it"
+(cd "$PROJECT" && sh .agents/hooks/check-tests.sh) > "$WORK/last-output" 2>&1 || status=$?
+[ "$status" != 0 ] || fail "the test check passed with no base branch to compare with"
+echo "  ok: the test check goes red when the history holds no base branch, as a shallow checkout leaves it"
 in_project update-ref refs/remotes/origin/main HEAD
 
 started=$(date +%s)
@@ -167,6 +203,9 @@ first=$(run_check)
 finished=$(date +%s)
 [ -z "$first" ] || { cat "$WORK/last-output" >&2; fail "the new project's check was red on day one, at $first"; }
 echo "  ok: the founded project's check is green on day one ($((finished - started))s)"
+first=$(run_check push)
+[ -z "$first" ] || { cat "$WORK/last-output" >&2; fail "the push event with an empty pull request base went red at $first"; }
+echo "  ok: a push event stays green with an empty pull request base"
 
 # A type error in code no test reaches.
 cat >> "$PROJECT/pricing.py" <<'PY'
@@ -203,6 +242,16 @@ echo "  ok: the check goes red at Lint on an unused import"
 # pull request's base is stood in for by a local origin/main.
 sed '1d' "$PROJECT/pricing.py" > "$WORK/unlinted"
 mv "$WORK/unlinted" "$PROJECT/pricing.py"
+for kit_dir in .agents .claude .codex .cursor .gemini; do
+  mkdir -p "$PROJECT/$kit_dir"
+  printf 'import os\n' > "$PROJECT/$kit_dir/lint_probe.py"
+done
+first=$(run_check)
+[ -z "$first" ] || { cat "$WORK/last-output" >&2; fail "the project's lint step checked a kit folder, at $first"; }
+echo "  ok: the project's lint step leaves the kit's folders alone"
+rm -f "$PROJECT"/.agents/lint_probe.py "$PROJECT"/.claude/lint_probe.py \
+  "$PROJECT"/.codex/lint_probe.py "$PROJECT"/.cursor/lint_probe.py \
+  "$PROJECT"/.gemini/lint_probe.py
 save_as_base "The checked code"
 first=$(run_check)
 [ -z "$first" ] || { cat "$WORK/last-output" >&2; fail "the check was red before the trim, at $first"; }
@@ -210,14 +259,14 @@ sed 's/total(2, 3), 6/total(1, 6), 6/' "$PROJECT/test_pricing.py" > "$WORK/test"
 mv "$WORK/test" "$PROJECT/test_pricing.py"
 in_project commit -q -am "Trim: take out what the piece did not need"
 first=$(run_check)
-[ "$first" = "Check the trim left the tests alone" ] ||
-  fail "expected the trim step to go red on a trim that changed a test, got '${first:-nothing}'"
-grep -q 'test_pricing.py' "$WORK/last-output" || fail "the trim step did not name the test"
-echo "  ok: the check goes red at the trim step when a trim commit changed a test, naming it"
+[ "$first" = "Check tests were not changed silently" ] ||
+  fail "expected the test check to go red on a trim that changed a test, got '${first:-nothing}'"
+grep -q 'test_pricing.py' "$WORK/last-output" || fail "the test check did not name the test"
+echo "  ok: the check goes red at the test check when a trim commit changed a test, naming it"
 
-# --- a project founded before the trim step ----------------------------------
+# --- a project founded before the test check ----------------------------------
 #
-# The same project as an older founding left it: no hook, no trim step, and a
+# The same project as an older founding left it: no hook, no test check, and a
 # checkout of the last commit only. /maintain's truing runs place-trim-check.py,
 # which finds all three, records a no, and on a yes puts back exactly what
 # founding writes today.
@@ -226,19 +275,19 @@ PLACE="$ROOT/.agents/skills/setup-ai-build-kit/scripts/place-trim-check.py"
 founded="$WORK/founded-checks.yml"
 cp "$PROJECT/.github/workflows/checks.yml" "$founded"
 awk '
-  /- name: Check the trim left the tests alone/ { skip = 2 }
+  /- name: Check tests were not changed silently/ { skip = 2 }
   skip > 0 { skip--; next }
   /^ *with:$/ || /^ *fetch-depth: 0$/ { next }
   { print }
 ' "$founded" > "$PROJECT/.github/workflows/checks.yml"
-rm "$PROJECT/.agents/hooks/check-trim.sh"
-grep -q 'check-trim\|fetch-depth' "$PROJECT/.github/workflows/checks.yml" && fail "the older check still has the trim step"
+rm "$PROJECT/.agents/hooks/check-tests.sh"
+grep -q 'check-tests\|fetch-depth' "$PROJECT/.github/workflows/checks.yml" && fail "the older check still has the test check"
 in_project checkout -q -b older origin/main
 save_as_base "An older founding"
 
 place() { (cd "$PROJECT" && python3 "$PLACE" "$@") > "$WORK/place-output" 2>&1; }
 status=0; place || status=$?
-[ "$status" = 1 ] || fail "an older project's missing trim step was not found (exit $status)"
+[ "$status" = 1 ] || fail "an older project's missing test check was not found (exit $status)"
 for kind in hook step history; do
   grep -q "^$kind	" "$WORK/place-output" || fail "place-trim-check.py did not name the missing $kind"
 done
@@ -249,25 +298,25 @@ status=0; place --decline || status=$?
 [ "$status" = 0 ] || fail "recording a no failed"
 status=0; place || status=$?
 [ "$status" = 0 ] && grep -qx 'declined' "$WORK/place-output" || fail "a no was not kept (exit $status)"
-grep -q '^trim-check-declined|' "$PROJECT/.ai-build-kit-maintenance" || fail "the no was not recorded"
+grep -q '^tests-check-declined|' "$PROJECT/.ai-build-kit-maintenance" || fail "the no was not recorded"
 rm "$PROJECT/.ai-build-kit-maintenance"
 echo "  ok: a no is recorded, and the offer is not made again while the kit's hook is the same"
 
 status=0; place --apply || status=$?
-[ "$status" = 0 ] || { cat "$WORK/place-output" >&2; fail "adding the trim step failed"; }
+[ "$status" = 0 ] || { cat "$WORK/place-output" >&2; fail "adding the test check failed"; }
 cmp -s "$founded" "$PROJECT/.github/workflows/checks.yml" ||
   { diff "$founded" "$PROJECT/.github/workflows/checks.yml" >&2; fail "the check is not what founding writes today"; }
-cmp -s "$TRIM_CHECK" "$PROJECT/.agents/hooks/check-trim.sh" || fail "the hook was not added"
+cmp -s "$TEST_CHECK" "$PROJECT/.agents/hooks/check-tests.sh" || fail "the hook was not added"
 status=0; place || status=$?
 [ "$status" = 0 ] && [ ! -s "$WORK/place-output" ] || fail "a second look still found something missing (exit $status)"
 echo "  ok: on a yes, the hook, the step and the whole history are added, matching a founding today, and nothing else"
 
-save_as_base "The trim step added"
+save_as_base "The test check added"
 sed 's/total(2, 3), 6/total(3, 2), 6/' "$PROJECT/test_pricing.py" > "$WORK/test"
 mv "$WORK/test" "$PROJECT/test_pricing.py"
 in_project commit -q -am "Trim: take out what the piece did not need"
 first=$(run_check)
-[ "$first" = "Check the trim left the tests alone" ] ||
+[ "$first" = "Check tests were not changed silently" ] ||
   fail "after the step was added, a trim that changed a test did not turn the check red, got '${first:-nothing}'"
 echo "  ok: once added, the older project's check goes red on a trim that changed a test"
 
@@ -332,8 +381,8 @@ grep -q '^next typegen$' "$NO_NEXT/calls" && grep -q '^tsc --noEmit$' "$NO_NEXT/
   fail "Next project did not run route generation and tsc"
 echo "  ok: the TypeScript command runs Next typegen only when Next is a dependency"
 
-# Keep an actual Next app beside the command-shape check. Use npm's offline
-# cache so an unavailable package never turns this rehearsal into a network job.
+# Keep an actual Next app beside the command-shape check. Install it when the
+# network is available, and name the limit only when npm cannot reach it.
 NEXT="$WORK/next-project"
 mkdir -p "$NEXT/app"
 cat > "$NEXT/package.json" <<'JSON'
@@ -345,18 +394,24 @@ JSON
 cat > "$NEXT/app/page.tsx" <<'TS'
 export default function Page() { return <main>Next type generation ran.</main>; }
 TS
-if (cd "$NEXT" && npm install --offline --no-audit --no-fund --silent); then
+if (cd "$NEXT" && npm install --no-audit --no-fund --silent); then
   (cd "$NEXT" && npx --no-install next typegen && npx --no-install tsc --noEmit) ||
     fail "the actual Next.js project's typegen and TypeScript check did not pass"
   echo "  ok: next typegen and tsc ran on an actual Next.js project"
 else
-  echo "  could not run: Next.js packages are not available in npm's offline cache"
+  if npm ping --silent --fetch-retries=0 --fetch-timeout=10000 >/dev/null 2>&1; then
+    fail "npm could reach the network, but the actual Next.js packages did not install"
+  fi
+  echo "  could not run: npm could not reach its package registry"
+  exit 2
 fi
 
 PROJECT="$WORK/ts-project"
 mkdir -p "$PROJECT/.github/workflows" "$PROJECT/.agents/hooks" "$PROJECT/src"
 cp "$SENSITIVE" "$PROJECT/.agents/hooks/check-sensitive-areas.sh"
-cp "$TRIM_CHECK" "$PROJECT/.agents/hooks/check-trim.sh"
+cp "$SCAN" "$PROJECT/.agents/hooks/scan-secrets.sh"
+cp "$SCAN_PY" "$PROJECT/.agents/hooks/scan-secrets.py"
+cp "$TEST_CHECK" "$PROJECT/.agents/hooks/check-tests.sh"
 
 awk -v tc="$type_check" -v li="$lint" '
   /- name: Install and test/ { skipping = 1 }

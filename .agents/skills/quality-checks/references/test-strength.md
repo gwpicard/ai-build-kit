@@ -1,32 +1,15 @@
 # Check whether the tests notice
 
-On Build with care only, once the ordinary tests pass, offer: "I can break
-the changed code on purpose to check the tests notice." It is optional
-evidence. A no, or a check that cannot run, holds up nothing, and no result
-from it becomes a gate. Required checks and sensitive-area cautions still
-apply.
+For a change inside a mapped sensitive area, run `python3` with this skill's
+`scripts/quality.py`, passing `strength --base <start commit>`. For a repair,
+run it on the regression test only when that test touches a mapped area.
+`quality.py tests` triggers this read itself for changed lines in mapped areas
+and reports its misses as `strength` lines. Misses are reported, never a fail;
+could not run is said plainly. Put misses in the review packet. If it could not
+run, say so plainly there. Never report a check that could not run as a pass.
 
-## Run the script
-
-On a yes, run `python3` with this skill's `scripts/quality.py` from the
-project, passing `strength --base <commit the piece started from>`. It breaks
-only the lines this piece changed, in a throwaway copy, and leaves the project
-as it was. The copy holds no real records and reaches nothing live: it leaves
-out every `.env` file but `.env.example`. In a repair, the regression test is
-among the tests it runs.
-
-Exit 2 means the check did not happen for some of the changed code, and each
-`not-checked` line says why. That includes a run that broke nothing: changed
-code with nothing tried, or tests that failed before anything was broken. A
-zero there is not a pass. Say in one line that the tests were not checked for
-that code, and never report it as "missed none". Never invent a runner or use
-a hosted service.
-
-Exit 0 or 1 means it ran on all the changed code. It prints `tried` and
-`caught` counts, then a `missed` line for each breakage the tests let
-through, at its file and line, and an `unchecked` line for any that crashed
-or timed out. Those are not counted as caught. When exit 2 comes with counts
-for the code that did run, report those counts too.
+Never invent a runner or use a hosted service. The strength run uses a
+throwaway copy with no real records, live access or real `.env` files.
 
 ## What the person hears
 

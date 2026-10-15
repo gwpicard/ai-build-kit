@@ -67,11 +67,13 @@ the project check's file in step 6.
    the commands AGENTS.md's stack section names. Leave an older separate
    source-validation job and its conditions alone.
 
-   Then run `python3 <installed setup-ai-build-kit skill>/scripts/place-trim-check.py`.
+   Then run `python3 <installed setup-ai-build-kit
+   skill>/scripts/place-trim-check.py`.
    Exit 0: say nothing. Exit 1: offer once: "Your project's check does not yet
-   go red when a tidy-up step changes a test. I can add that step, which
-   changes only the check file and adds one script beside it." On a yes run it
-   with `--apply` and save it with the corrections; on a no, `--decline`. Exit
+   reject a silent edit to a test. I can replace the old check with the new
+   one, which changes the check file and adds or replaces its test-check
+   script." On a yes run it with `--apply` and save it with the corrections; on
+   a no, `--decline`. Exit
    2: say in one line it could not be placed.
 7. A mistake the agent has made twice becomes one line in AGENTS.md. A pattern
    the person approved more than once may become a project skill. The length

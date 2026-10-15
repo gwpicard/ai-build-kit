@@ -299,7 +299,7 @@ pass "kit paths are excluded from the changed and new file lists"
 
 PYPROJECT="$WORK/python-project"
 PYBIN="$WORK/python-bin"
-mkdir -p "$PYPROJECT/app" "$PYBIN"
+mkdir -p "$PYPROJECT/app" "$PYBIN" "$PYPROJECT/fake-modules"
 cat > "$PYPROJECT/app/bramble.py" <<'PY'
 def bramble():
     return "ok"
@@ -308,21 +308,22 @@ cat > "$PYPROJECT/app/test_bramble.py" <<'PY'
 from bramble import bramble
 assert bramble() == "ok"
 PY
-cat > "$PYBIN/pytest" <<'SH'
-#!/bin/sh
-[ "${FAKE_PYTEST_START_FAIL:-0}" = 1 ] && exit 127
-printf '%s\n' "$*" > "$PYTEST_MARKER"
-echo '1 passed'
-SH
-chmod +x "$PYBIN/pytest"
+cat > "$PYPROJECT/fake-modules/pytest.py" <<'PY'
+import os, sys
+if os.environ.get("FAKE_PYTEST_START_FAIL") == "1":
+    raise SystemExit(2)
+with open(os.environ["PYTEST_MARKER"], "w") as marker:
+    marker.write("\\n".join(sys.argv[1:]))
+print("1 passed")
+PY
 ln -s "$(command -v git)" "$PYBIN/git"
 (cd "$PYPROJECT" && git init -q -b main && git add . && git -c user.name=Rehearsal -c user.email=rehearsal@example.invalid commit -qm Start)
-out=$(cd "$PYPROJECT" && PATH="$PYBIN" PYTEST_MARKER="$WORK/pytest-ran" "$PYTHON" "$QUALITY" reach --paths app/bramble.py --run 2>&1) || fail "Python pytest fallback failed: $out"
-printf '%s\n' "$out" | grep -q '^not-checked[[:space:]]tests[[:space:]]Vitest is not installed$' || fail "missing Vitest was not named: $out"
+out=$(cd "$PYPROJECT" && PATH="$PYBIN" PYTHONPATH="$PYPROJECT/fake-modules" PYTEST_MARKER="$WORK/pytest-ran" "$PYTHON" "$QUALITY" reach --paths app/bramble.py --run 2>&1) || fail "Python pytest fallback failed: $out"
+if printf '%s\n' "$out" | grep -q 'Vitest is not installed'; then fail "Python pass misleadingly named Vitest: $out"; fi
 grep -q 'app/test_bramble.py' "$WORK/pytest-ran" || fail "pytest did not receive the covering test: $out"
 pass "Python imports resolve beside the importer and pytest can cover reach without Vitest"
 status=0
-out=$(cd "$PYPROJECT" && PATH="$PYBIN" FAKE_PYTEST_START_FAIL=1 PYTEST_MARKER="$WORK/pytest-start-failed" "$PYTHON" "$QUALITY" reach --paths app/bramble.py --run 2>&1) || status=$?
+out=$(cd "$PYPROJECT" && PATH="$PYBIN" PYTHONPATH="$PYPROJECT/fake-modules" FAKE_PYTEST_START_FAIL=1 PYTEST_MARKER="$WORK/pytest-start-failed" "$PYTHON" "$QUALITY" reach --paths app/bramble.py --run 2>&1) || status=$?
 [ "$status" -eq 2 ] && printf '%s\n' "$out" | grep -q '^not-checked[[:space:]]tests[[:space:]]pytest did not produce a test result$' || fail "pytest start-up failure was silent: $status $out"
 pass "pytest start-up failure prints not-checked"
 mv "$PYPROJECT/app/test_bramble.py" "$PYPROJECT/app/not-a-test.py"

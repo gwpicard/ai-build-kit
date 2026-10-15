@@ -35,7 +35,7 @@ REPORT="$WORK/report.tsv"
 # because it also carries checks of its own, on links, stale vocabulary and
 # adapter freshness. When reading the report, a catch by validate-kit alone
 # means only its own direct checks noticed.
-DEFAULT_CHECKS="release-builder starter-rehearsal agent-plugin session-start validate-kit"
+DEFAULT_CHECKS="release-builder starter-rehearsal agent-plugin session-start secrets-gates validate-kit"
 PUBLISH_CHECKS="release-builder release-publication validate-kit"
 MODE_CHECKS="validate-kit fake-github"
 
@@ -77,7 +77,27 @@ recipe-starter-path
 recipe-deferred-launch-script
 starter-copy-overwrites
 read-only-db-privilege
-worker-queue-name"
+worker-queue-name
+secrets-read-guard
+redactor-top-level-only
+pre-push-reversed-range
+scan-drops-key-shapes
+scan-drops-service-role-jwt
+scan-drops-named-env-assignment
+redactor-drops-multiline-values
+merge-missing-check
+merge-pending-bucket-only
+merge-skipping-project-pass
+merge-first-box-only
+merge-any-check-name
+merge-area-call-skipped
+merge-area-open-ignored
+test-freeze-removed
+tests-untested-status
+tests-zero-coverage-pass
+tests-missing-coverage-pass
+tests-after-failure-pass
+test-fix-empty-reason"
 
 describe() {
   case "$1" in
@@ -120,6 +140,26 @@ describe() {
     starter-copy-overwrites) echo "recipe starter copying replaces a project file it should refuse to touch" ;;
     read-only-db-privilege) echo "the existing database check stops checking whether the user can insert rows" ;;
     worker-queue-name) echo "the worker check looks for a different queue than the migration creates" ;;
+    secrets-read-guard) echo "the Claude read guard stops refusing environment files" ;;
+    redactor-top-level-only) echo "nested Read and Grep text fields escape result redaction" ;;
+    pre-push-reversed-range) echo "an existing-branch push scans the wrong commit range" ;;
+    scan-drops-key-shapes) echo "the shared scanner rules stop recognising common key shapes" ;;
+    scan-drops-service-role-jwt) echo "the scanner stops recognising service-role JWTs" ;;
+    scan-drops-named-env-assignment) echo "the scanner stops applying secret names to literal assignments in committed .env files" ;;
+    redactor-drops-multiline-values) echo "quoted multiline environment values are no longer redacted" ;;
+    merge-missing-check) echo "the merge route proceeds without the required project check" ;;
+    merge-pending-bucket-only) echo "a pending check is accepted because gh --json exits zero" ;;
+    merge-skipping-project-pass) echo "a skipped project-check is accepted as passed" ;;
+    merge-first-box-only) echo "the second open finding is ignored after a settled first box" ;;
+    merge-any-check-name) echo "a different passing check stands in for project-check" ;;
+    merge-area-call-skipped) echo "an open sensitive area is not checked before merge" ;;
+    merge-area-open-ignored) echo "an open sensitive area is reported but does not hold merge" ;;
+    test-freeze-removed) echo "a later commit can silently edit a test from the red commit" ;;
+    tests-untested-status) echo "a D test can pass before and escape the read exit code" ;;
+    tests-zero-coverage-pass) echo "zero executed changed lines can be accepted" ;;
+    tests-missing-coverage-pass) echo "a missing coverage report can go unreported" ;;
+    tests-after-failure-pass) echo "a failed after-run can be treated as fine" ;;
+    test-fix-empty-reason) echo "an empty Test fix reason can edit a frozen test" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -139,6 +179,13 @@ checks_for() {
     starter-copy-overwrites) echo "starter-copy-rehearsal" ;;
     read-only-db-privilege) echo "read-only-database" ;;
     worker-queue-name) echo "python-worker-check" ;;
+    secrets-read-guard) echo "secrets-gates" ;;
+    redactor-top-level-only) echo "secrets-gates" ;;
+    pre-push-reversed-range) echo "push-guard" ;;
+    scan-drops-key-shapes|scan-drops-service-role-jwt|scan-drops-named-env-assignment|redactor-drops-multiline-values) echo "secrets-gates" ;;
+    merge-missing-check) echo "merge-gate" ;;
+    merge-pending-bucket-only|merge-skipping-project-pass|merge-first-box-only|merge-any-check-name|merge-area-call-skipped|merge-area-open-ignored) echo "merge-gate" ;;
+    test-freeze-removed|tests-untested-status|tests-zero-coverage-pass|tests-missing-coverage-pass|tests-after-failure-pass|test-fix-empty-reason) echo "tests-prove-change" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -504,6 +551,61 @@ open(p, "w").write(t)
       [ -f "$tree/.agents/skills/setup-hosting/references/hosting-request.md" ] || return 1
       printf '\n%s\n' "For a server, follow the \`setup-hosting\` skill's \`references/hosting-request.md\`." >> "$target"
       ;;
+    tests-untested-status)
+      edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
+import os
+p=os.environ["MUTATE_TARGET"]
+s=open(p).read(); old="print(f\"passes-before\\tD{n}\")\n                status = 1"
+assert old in s, "passes-before no longer fails the read"
+open(p,"w").write(s.replace(old, "print(f\"passes-before\\tD{n}\")", 1))'
+      ;;
+    tests-zero-coverage-pass)
+      edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
+import os
+p=os.environ["MUTATE_TARGET"]
+s=open(p).read(); old="if changed_code and not (changed_code & covered):\n                status = 1"
+assert old in s
+open(p,"w").write(s.replace(old, "if False and changed_code and not (changed_code & covered):\n                status = 1", 1))'
+      ;;
+    tests-missing-coverage-pass)
+      edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
+import os,re
+p=os.environ["MUTATE_TARGET"]
+s=open(p).read()
+s,n=re.subn(r"^\s*print\(f\"not-checked\\tcoverage\\t.* report is missing\"\)$", "", s, count=1, flags=re.M)
+assert n == 1, "coverage report-missing line not found"
+open(p,"w").write(s)'
+      ;;
+    tests-after-failure-pass)
+      edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
+import os,re
+p=os.environ["MUTATE_TARGET"]
+s=open(p).read()
+pattern=r"(^[ \t]+elif any\(failed\(c\) for c in after_matches\):\n[ \t]+print\(f.*\n)[ \t]+status = 1"
+s,n=re.subn(pattern, r"\1", s, count=1, flags=re.M)
+assert n == 1, "D test after-failure status line not found"
+open(p,"w").write(s)'
+      ;;
+    test-fix-empty-reason)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/check-tests.sh" '
+import os
+p=os.environ["MUTATE_TARGET"]
+lines=open(p).read().splitlines()
+i=next(i for i,line in enumerate(lines) if "reason=${later_subject#Test fix:}" in line)
+assert "tr -d" in lines[i+1]
+lines[i+1]=lines[i+1].replace("[ -z", "[ -n", 1)
+open(p,"w").write("\n".join(lines)+"\n")'
+      ;;
+    test-freeze-removed)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/check-tests.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = """          report_once \"Test check: $file changed existing lines in $later without Test fix: reason.\"; failed=1"""
+assert old in s, "the silent-edit failure branch is missing"
+open(p, "w").write(s.replace(old, "          report_once \"Test check: $file changed existing lines in $later without Test fix: reason.\"", 1))
+'
+      ;;
     background-one-caller)
       # A rule folded back into one caller leaves its background skill with a
       # single user, which then earns no place of its own.
@@ -524,11 +626,148 @@ assert t != s
 open(p, "w").write(t)'
       done
       ;;
+    secrets-read-guard)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/guard-secrets.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "return (name == \".env\" or name.startswith(\".env.\")) and name != \".env.example\""
+assert old in t, "secret environment-file rule not found"
+open(p, "w").write(t.replace(old, "return False", 1))
+'
+      ;;
+    redactor-top-level-only)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/redact-secrets.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "else redact_shape(tool, item, known))"
+assert old in s
+new = "else (replace_text(item, known) if isinstance(item, str) else item))"
+open(p, "w").write(s.replace(old, new, 1))'
+      ;;
+    pre-push-reversed-range)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/pre-push" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "--range=$remote_sha..$local_sha"
+assert old in s
+open(p, "w").write(s.replace(old, "--range=$local_sha..$remote_sha", 1))'
+      ;;
+    scan-drops-key-shapes)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/scan-secrets.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "return any(pattern.search(value) for pattern in SHAPES)"
+assert old in s
+open(p, "w").write(s.replace(old, "return False", 1))'
+      ;;
+    scan-drops-service-role-jwt)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/scan-secrets.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "if re.search(rb\x27\"role\"\\s*:\\s*\"service_role\"\x27, payload):"
+assert old in s
+open(p, "w").write(s.replace(old, "if False:", 1))'
+      ;;
+    redactor-drops-multiline-values)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/redact-secrets.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "while quote not in body and index < len(lines):"
+assert old in s
+open(p, "w").write(s.replace(old, "while False and quote not in body and index < len(lines):", 1))'
+      ;;
     command-over-budget)
       # A command grows one helpful paragraph at a time.
       target="$tree/.agents/skills/shape/SKILL.md"
       [ -f "$target" ] || return 1
       python3 -c "import sys; open(sys.argv[1], 'a').write('\n' + ' '.join(['word'] * 400) + '\n')" "$target"
+      ;;
+    merge-missing-check)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "if not projects:"
+new = "if False:"
+assert old in t, "required project-check guard not found"
+open(p, "w").write(t.replace(old, new, 1))
+'
+      ;;
+    scan-drops-named-env-assignment)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/scan-secrets.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "assigned_value = env_value(decoded) if env_file else None"
+assert old in s, "committed environment assignment reader not found"
+open(p, "w").write(s.replace(old, "assigned_value = None", 1))
+'
+      ;;
+    merge-pending-bucket-only)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "if bucket in (\"fail\", \"cancel\") or bucket == \"pending\":"
+new = "if bucket in (\"fail\", \"cancel\"):"
+assert old in s
+open(p, "w").write(s.replace(old, new, 1))'
+      ;;
+    merge-skipping-project-pass)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "if name == \"project-check\" and bucket != \"pass\":"
+new = "if name == \"project-check\" and bucket not in (\"pass\", \"skipping\"):"
+assert old in s
+open(p, "w").write(s.replace(old, new, 1))'
+      ;;
+    merge-first-box-only)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "if checkbox.group(1).lower() != \"x\":\n                    return True"
+new = "if checkbox.group(1).lower() != \"x\":\n                    return False"
+assert old in s
+open(p, "w").write(s.replace(old, new, 1))'
+      ;;
+    merge-any-check-name)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "projects = [row for row in rows if row.get(\"name\") == \"project-check\"]"
+new = "projects = [row for row in rows if row.get(\"name\")]"
+assert old in s
+open(p, "w").write(s.replace(old, new, 1))'
+      ;;
+    merge-area-call-skipped)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "    check_sensitive_area(data[\"baseRefOid\"], head)\n"
+new = "    pass  # sensitive-area check removed\n"
+assert old in s
+open(p, "w").write(s.replace(old, new, 1))'
+      ;;
+    merge-area-open-ignored)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "if result.returncode == 1:"
+new = "if False and result.returncode == 1:"
+assert old in s
+open(p, "w").write(s.replace(old, new, 1))'
       ;;
     *)
       echo "unknown mutation: $name" >&2

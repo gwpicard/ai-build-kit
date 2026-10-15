@@ -2,6 +2,19 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
     "deny": [
+      "Read(**/.env)",
+      "Read(**/.env.local)",
+      "Read(**/.env.*.local)",
+      "Read(**/.env.production)",
+      "Read(**/.env.development)",
+      "Read(**/.env.test)",
+      "Read(**/.env.staging)",
+      "Read(**/.env.preview)",
+      "Read(**/.env.production.local)",
+      "Read(**/.env.development.local)",
+      "Read(**/.env.test.local)",
+      "Read(**/.env.*)",
+      "Read(!**/.env.example)",
       "Bash(git reset --hard:*)",
       "Bash(git push --force:*)",
       "Bash(git push -f:*)",
@@ -59,6 +72,10 @@
       "Bash(security find-*)",
       "Bash(security dump-keychain:*)",
       "Bash(gh auth token:*)",
+      "Bash(gh pr merge:*)",
+      "Bash(gh api *pulls/*/merge*)",
+      "Bash(gh api *merges*)",
+      "Bash(gh api graphql *mergePullRequest*)",
       "Bash(gh auth status*-t*)",
       "Bash(git credential fill*)",
       "Bash(git credential-*)",
@@ -80,10 +97,7 @@
       "Read(//**/.docker/config.json)"
     ],
     "ask": [
-      "Bash(gh pr merge:*)",
-      "Bash(gh api *pulls/*/merge*)",
-      "Bash(gh api *merges*)",
-      "Bash(gh api graphql *mergePullRequest*)",
+      "Bash(*merge.py*--approved*)",
       "Bash(gh api *git/refs*)",
       "Bash(gh api graphql *createRef*)",
       "Bash(gh api graphql *updateRef*)",
@@ -95,6 +109,11 @@
       "Bash(vercel api *patch*)",
       "Bash(vercel curl*)",
       "Bash(*GATE_READ=yes*)",
+      "Bash(*GATE_READ=\"yes\"*)",
+      "Bash(*GATE_READ='yes'*)",
+      "Bash(*PREVIEW_HEALTH=yes*)",
+      "Bash(*PREVIEW_HEALTH=\"yes\"*)",
+      "Bash(*PREVIEW_HEALTH='yes'*)",
       "Bash(vercel project protection enable*)",
       "Bash(vercel project protection disable*)",
       "Bash(*set-access.sh*)",
@@ -113,6 +132,46 @@
     ]
   },
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read|Grep|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"$CLAUDE_PROJECT_DIR/.agents/hooks/guard-secrets.sh\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"$CLAUDE_PROJECT_DIR/.agents/hooks/redact-secrets.sh\" Bash"
+          }
+        ]
+      },
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"$CLAUDE_PROJECT_DIR/.agents/hooks/redact-secrets.sh\" Read"
+          }
+        ]
+      },
+      {
+        "matcher": "Grep",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"$CLAUDE_PROJECT_DIR/.agents/hooks/redact-secrets.sh\" Grep"
+          }
+        ]
+      }
+    ],
     "SessionStart": [
       {
         "hooks": [

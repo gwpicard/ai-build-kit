@@ -28,10 +28,11 @@ Choose the save route before changing anything:
 3. **Flagged route.** The work touches a named sensitive area whose caution
    is neither done nor accepted. Before building inside the area, give the
    risk notice once, in full, as the `fit-check` skill describes. If the
-   person carries on after it, write the `Accepted:` line with their words and
-   the date, read it back, and build and save on the pull-request route, in
-   the reply that answers them, with no further question. A lock that only
-   waits for this caution opens with the acceptance unless they ask to keep
+   person carries on after it, run the `records` skill's
+   `scripts/piece-labels.sh` with `start`, write and read back `Accepted:` with
+   their words and date, then build and save by pull request in that reply,
+   with no further question. A lock that
+   only waits for this caution opens with the acceptance unless they ask to keep
    it. If they do not carry on, build only up to the recorded condition. In an
    unattended run never write an acceptance: stop at the condition, which is a
    successful outcome (step 8).
@@ -41,12 +42,12 @@ up-to-date `main`. Where GitHub cannot be reached, build and save on the
 branch, and note the missing pull request in one plain line on the piece. A
 step a service could not do is a note, never a warning or a risk.
 
-The project's first push waits for the person's yes, as "The first upload" in
-the `merge` skill's `references/first-upload.md` says.
+The first push waits for the person's yes, as the `merge` skill's
+`references/first-upload.md` says.
 
-Run the `records` skill's `scripts/piece-labels.sh` with `start` and the piece's
-number before changing anything. It swaps `ready` for `building` and assigns the
-piece.
+Elsewhere, run `scripts/piece-labels.sh start <number>` before changing
+anything. The `records` skill owns this script. It swaps `ready` for `building`
+and assigns the piece.
 
 ## 2. Agree the visible result
 
@@ -71,18 +72,18 @@ that looks right is never a substitute for a check that was available and skippe
   test; changing records people already have takes a rehearsal on a copy.
 - An outside fact runs the source check in the `research` skill first.
 
-On Build with care, offer the optional check in the `quality-checks` skill's
-`references/test-strength.md` once the tests pass. It adds no gate.
+For a change inside a mapped sensitive area, `quality.py tests` runs the
+strength check after the tests pass. A repair runs it on the regression test.
 
-## 4. Establish the baseline
+## 4. Write the tests
 
-A piece labelled `broken` is a repair: load the `repair` skill's
-`references/fixing.md` and follow "Building a repair" from here.
+For a repair, load the `repair` skill's `references/fixing.md` and follow
+"Building a repair" from here.
 
-Otherwise show the new check fails before the behaviour exists, or establish
-the passing baseline before a refactor, or describe the current screen before a
-visual change. Never write a meaningless test to have one. Note the commit the
-piece starts from; the trim and the structure check read from it.
+Before coding, follow `quality-checks/references/tests-prove-change.md`: new
+tests fail on the old behaviour, and refactor tests pass before the change.
+Never write a meaningless test. For a visual change, describe the current
+screen first.
 
 ## 5. Build one vertical slice
 
@@ -93,6 +94,11 @@ its own vertical slice, or an
 expand-then-contract sequence that keeps the checks green throughout, ordered
 ahead as its own piece. Stop and say so if the change grows past what was
 agreed.
+
+After the build, run `quality.py tests --base <start commit> --piece <number>`
+once and act on its exit code.
+Put each strength miss in the review packet. If the strength check could not
+run, say so plainly. Strength misses are reported, never a fail.
 
 A build that reaches an outside service follows AGENTS.md's Secrets rule. A
 command that changes a live service's settings or data, other than saving code
@@ -135,11 +141,12 @@ output shown. Describe a gap as expected versus actual, and fix it at the root.
 
 ## 7. Run required review
 
-Run the reach check at build, as the `quality-checks` skill's
-`references/reach-check.md` says, then the boundary check and
-`quality.py loops --base <start commit>`. On Build with care, compare what the
-change reaches with the sensitive-area map; a match starts the review and you
-say: "This change reaches <area>, so a review is running."
+Run the reach check, with the tests it names, as the `quality-checks` skill's
+`references/reach-check.md` says. Run the boundary check and the loops read as
+its "During a build" section says. On Build with care, run
+`check-sensitive-areas.sh --change <base>` and say one line for each area it
+names. Exit 1 means an area is still open and the project check will hold the
+pull request.
 
 When the build path, the subjects, or a sensitive area call for review, run
 the `second-opinion` skill by the best independent method in the capability
@@ -158,14 +165,16 @@ Checkpoint route: update the records, commit, and state the checkpoint.
 
 Pull-request route: update the records, commit, push, open a pull request
 titled after the piece with a plain summary and `Closes #<number>`, and run the
-project checks. List any unsettled finding worth stopping for under `Worth
-stopping for` in the body, and remove it once settled. Never present it as
+project checks. Put each unsettled finding worth stopping for under `Worth
+stopping for` in the pull request body as an unticked `- [ ]` box. Keep settled
+findings and tick their boxes. Never present it as
 ready until the check is green. If it goes red, say so, read the failure
 yourself, fix it, and push again. Never merge in this skill, and never on a red
 check: the merge is the caller's next step, by the `merge` skill.
 
-Where GitHub did not start the check at all, follow the `merge` skill's "A
-check GitHub did not start".
+If GitHub did not start the check, the merge waits. Say in one plain line that
+GitHub did not run the check, and that the person can turn it back on or merge
+the pull request themselves on GitHub.
 
 Flagged route without an acceptance: take the pull-request route up to the
 condition, then record the exact condition and that /maintain prepares a
@@ -177,12 +186,4 @@ a completed pass.
 
 Update the records as the `records` skill's "After a build" says.
 
-## Excuses that don't hold
-
-- Urgency does not remove the need for evidence.
-- Small does not permit hidden scope.
-- Visual work does not need a fake automated test.
-- Private exploration does not need pull-request ceremony.
-- Shared or risky work is not downgraded because setup is inconvenient.
-- A review finding does not authorise unrelated cleanup, and the trim does not
-  authorise a restructure.
+Keep these limits in view: see `references/build-limits.md`.

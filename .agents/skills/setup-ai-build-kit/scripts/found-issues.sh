@@ -22,6 +22,8 @@
 #     merges, so a merge keeps a piece's commits;
 #   - copies the piece template to .github/ISSUE_TEMPLATE/piece.yml, unless a
 #     file is already there.
+#   - requires the project-check job on main, with admins included, when main
+#     exists. A first upload applies it as soon as main is created.
 #
 # Output lines have fields separated by tabs:
 #   repository  OWNER/NAME
@@ -36,7 +38,7 @@
 #         line and does not stop the rest.
 # Exit 5: GitHub could not be read, so nothing was changed.
 # Exit 6: origin is the kit's own repository, so nothing was changed.
-# Exit 2: usage error.
+# Exit 2: usage error, or branch protection could not be set. Founding still finishes.
 
 set -u
 
@@ -84,6 +86,18 @@ if [ "$mode" = refresh ]; then
   sh .agents/tools/plan-refresh.sh
   exit $?
 fi
+
+protection_status=0
+protection_could_not_run=0
+protection_output=$(python3 "$SKILL_ROOT/../merge/scripts/protect-branch.py" --defer-missing "$repo" main 2>&1) || protection_status=$?
+case "$protection_status" in
+  0) printf '%s\n' "$protection_output" ;;
+  4) printf 'protection\tdeferred until first upload creates main\n' ;;
+  *)
+    printf '%s\n' "$protection_output" >&2
+    protection_could_not_run=1
+    ;;
+esac
 
 # The fifteen labels the kit owns, as name|colour|description.
 failed=
@@ -151,4 +165,7 @@ else
     cp "$SKILL_ROOT/templates/foundation/piece-issue.yml" .github/ISSUE_TEMPLATE/piece.yml &&
     echo "template	copied" || echo "template	not copied"
 fi
+# A network or permission limit is reported in one line, then setup carries
+# on because the merge script holds until the check is available.
+[ "$protection_could_not_run" -eq 0 ] || exit 2
 exit 0

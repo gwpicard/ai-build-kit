@@ -26,7 +26,7 @@ Use the first of these that the project has:
 |---|---|---|
 | TypeScript | `if node -e 'const p=require("./package.json"); process.exit(Boolean(p.dependencies?.next) + Boolean(p.devDependencies?.next) ? 0 : 1)'; then npx next typegen; fi && npx tsc --noEmit` | `npx eslint .` with ESLint's own recommended rules and typescript-eslint's recommended rules |
 | JavaScript | none, unless the project already checks types | `npx eslint .` with ESLint's own recommended rules |
-| Python | `mypy .` | `ruff check .` |
+| Python | `mypy .` | `ruff check . --exclude .agents,.claude,.codex,.cursor,.gemini` |
 | Go | the compiler, through `go build ./...` | `go vet ./...` |
 | Rust | `cargo check` | `cargo clippy` |
 

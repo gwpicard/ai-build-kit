@@ -111,6 +111,7 @@ skills installed into the project, which is the shared installer's route.
   behaves.
 - The kit ships no Codex command files. Codex finds the skills in
   `.agents/skills/`, and you start a command by naming it.
+- Codex has no result redaction either.
 - Nothing reminds you of a check-up when a session opens. `what-now` says when
   a visit is overdue.
 - There is no deny list set up for you, and nothing asks you before the agent
@@ -214,6 +215,11 @@ and leaves the previous printout intact.
   either agent follows that pointer.
 - Nothing reminds you of a check-up when a session opens. `what-now` says when
   a visit is overdue.
+- Gemini CLI can hide a result, but cannot keep its original form. Unless
+  Gemini is set up to hide it, a secret printed by a tool reaches the agent.
+  Cursor cannot replace built-in Bash, Read or Grep results, so a secret they
+  print reaches the agent. See the [Cursor hooks reference](https://cursor.com/docs/hooks)
+  and [Gemini CLI hooks reference](https://geminicli.com/docs/hooks/reference/).
 - There is no deny list set up for you, and nothing asks you before the agent
   merges. Where the agent has command allow and deny settings, you add the
   kit's blocked commands there yourself.
@@ -427,7 +433,7 @@ after a clean checkpoint and explicit approval.
 | Unsaved work | `what-now` says what it belongs to | Session-end reminder |
 | Check-up due | `what-now` says when a visit is overdue | Said automatically when a session opens |
 | Safety | Standing restrictions and approval gates | Mechanical command deny list |
-| Merge | A merge only on a yes that names it | A confirmation box before the agent merges, in Claude Code |
+| Merge | A merge only on a yes that names it; `merge.py` holds the project check and open review boxes | Claude Code blocks raw merge commands |
 | Long runs | Normal sequential work | Native goal or orchestration mode |
 
 During `setup-ai-build-kit`, the capability check records which enhancements the current

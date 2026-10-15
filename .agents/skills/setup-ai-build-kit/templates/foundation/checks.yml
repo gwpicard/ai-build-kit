@@ -1,6 +1,7 @@
 name: checks
 on:
   pull_request:
+  push:
 jobs:
   project-check:
     runs-on: ubuntu-latest
@@ -8,10 +9,26 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - name: Check the trim left the tests alone
-        run: sh .agents/hooks/check-trim.sh
+      - name: Check tests were not changed silently
+        run: sh .agents/hooks/check-tests.sh
       - name: Check sensitive-area map
         run: sh .agents/hooks/check-sensitive-areas.sh
+      - name: Scan Git history for secrets
+        env:
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_AFTER: ${{ github.event.after }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.event.after }}
+        run: |
+          sh .agents/hooks/scan-secrets.sh "--range=$BASE_SHA..$HEAD_SHA"
+      - name: Check changes against the pull request base
+        if: github.event_name == 'pull_request'
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          version=$(sh .agents/hooks/check-sensitive-areas.sh --version)
+          [ "$version" = "sensitive-area-check-v2" ] || { echo "Sensitive-area check: installed copy does not support change checks. Update the kit copy first."; exit 2; }
+          sh .agents/hooks/check-sensitive-areas.sh --change "$PR_BASE_SHA"
       - name: Install and test
         run: |
           echo "This check is still the placeholder the kit creates, so no tests have run and nothing has been verified."
