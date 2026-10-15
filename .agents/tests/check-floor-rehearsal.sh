@@ -143,7 +143,7 @@ mkdir -p "$WORK/bin"
 cat > "$WORK/bin/gh" <<'SH'
 #!/usr/bin/env sh
 case "$*" in
-  "pr view 9 --json body --jq .body") printf '%s\n' '## Worth stopping for' '- None' ;;
+  "pr view 9 --json body --jq .body") printf '%s\n' '## Worth stopping for' '- None' '## Worth knowing' '- None' 'Review record: reviewed=quality review; tried=0; open=0' ;;
   *) echo "unexpected gh call: $*" >&2; exit 2 ;;
 esac
 SH
@@ -151,6 +151,8 @@ chmod +x "$WORK/bin/gh"
 run_check() {
   event_name=${1:-pull_request}
   awk '
+    /^ *- id: / { name = ""; condition = ""; block = 0; next }
+    /^ *- uses: / { name = ""; condition = ""; block = 0; next }
     /^ *- name: / { sub(/^ *- name: /, ""); name = $0; condition = ""; next }
     /^ *if: / { sub(/^ *if: /, ""); condition = $0; next }
     /^ *run: \|[-+]?$/ { run_indent = match($0, /[^ ]/); command = ""; block = 1; next }
@@ -318,12 +320,14 @@ echo "  ok: a no is recorded, and the offer is not made again while the kit's ho
 
 status=0; place --apply || status=$?
 [ "$status" = 0 ] || { cat "$WORK/place-output" >&2; fail "adding the test check failed"; }
-cmp -s "$founded" "$PROJECT/.github/workflows/checks.yml" ||
-  { diff "$founded" "$PROJECT/.github/workflows/checks.yml" >&2; fail "the check is not what founding writes today"; }
 cmp -s "$TEST_CHECK" "$PROJECT/.agents/hooks/check-tests.sh" || fail "the hook was not added"
+grep -q 'fetch-depth: 0' "$PROJECT/.github/workflows/checks.yml" || fail "the workflow still does not fetch full history"
+grep -q 'sh .agents/hooks/check-tests.sh' "$PROJECT/.github/workflows/checks.yml" || fail "the test-check step was not added"
+grep -q 'Detect the selected recipe' "$PROJECT/.github/workflows/checks.yml" || fail "the recipe check was lost"
+grep -q 'sh .agents/hooks/check-review.sh' "$PROJECT/.github/workflows/checks.yml" || fail "the review check was lost"
 status=0; place || status=$?
 [ "$status" = 0 ] && [ ! -s "$WORK/place-output" ] || fail "a second look still found something missing (exit $status)"
-echo "  ok: on a yes, the hook, the step and the whole history are added, matching a founding today, and nothing else"
+echo "  ok: on a yes, the hook, the step and full history are added, with the rest of the workflow kept"
 
 save_as_base "The test check added"
 sed 's/total(2, 3), 6/total(3, 2), 6/' "$PROJECT/test_pricing.py" > "$WORK/test"
@@ -558,9 +562,9 @@ status=0
   fail "failed database type generation changed the tracked types file"
 echo "  ok: a stopped database or failed generation reports could not run and keeps the types file intact"
 
-echo "  installing the project's own check tools from the local npm cache"
-if ! (cd "$PROJECT" && npm install --offline --no-audit --no-fund --silent); then
-  echo "  could not run: TypeScript check tools are not available in npm's offline cache"
+echo "  installing the project's own check tools"
+if ! (cd "$PROJECT" && npm install --no-audit --no-fund --silent); then
+  echo "  could not run: TypeScript check tools could not be installed"
   echo "check-floor-rehearsal.sh: Python and check-shape cases passed; TypeScript runtime cases could not run"
   exit 2
 fi

@@ -106,7 +106,9 @@ migration-misses-ready
 mark-ready-skips-done-when
 first-upload-ignores-shared-history
 strength-config-lost
-review-gate-leaves-draft-edited"
+review-gate-leaves-draft-edited
+attempt-cap
+merge-behind-main"
 
 describe() {
   case "$1" in
@@ -178,6 +180,8 @@ describe() {
     first-upload-ignores-shared-history) echo "a repository with unrelated work is treated as a first upload" ;;
     strength-config-lost) echo "the Python mutation check no longer tells mutmut which code to break" ;;
     review-gate-leaves-draft-edited) echo "the review gate leaves an edited draft in place" ;;
+    attempt-cap) echo "the piece attempt cap rises, so a fourth attempt is allowed" ;;
+    merge-behind-main) echo "merge accepts a pull request branch behind main" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -211,6 +215,8 @@ checks_for() {
     first-upload-ignores-shared-history) echo "first-upload" ;;
     strength-config-lost) echo "test-strength-rehearsal" ;;
     review-gate-leaves-draft-edited) echo "review-guard" ;;
+    attempt-cap) echo "autonomy-boundaries" ;;
+    merge-behind-main) echo "merge-gate" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -631,6 +637,15 @@ assert old in s, "the silent-edit failure branch is missing"
 open(p, "w").write(s.replace(old, "          report_once \"Test check: $file changed existing lines in $later without Test fix: reason.\"", 1))
 '
       ;;
+    attempt-cap)
+      edit "$tree/.agents/skills/implement/scripts/attempt.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "if [ \"$count\" -ge 3 ]; then"
+assert old in s, "three-attempt cap not found"
+open(p, "w").write(s.replace(old, "if [ \"$count\" -ge 99 ]; then", 1))'
+      ;;
     background-one-caller)
       # A rule folded back into one caller leaves its background skill with a
       # single user, which then earns no place of its own.
@@ -863,7 +878,7 @@ import os
 p = os.environ["MUTATE_TARGET"]
 s = open(p).read()
 old = "paths_to_mutate = "
-assert old in s, "mutmut v3 source path setting not found"
+assert old in s, "mutmut 3 source path setting not found"
 open(p, "w").write(s.replace(old, "mutate_paths = ", 1))'
       ;;
     review-gate-leaves-draft-edited)
@@ -874,6 +889,16 @@ s = open(p).read()
 old = "cp -p \"$GUARD/files/$file\" \"$file\" || exit 2"
 assert old in s, "review draft restoration not found"
 open(p, "w").write(s.replace(old, ": # mutation leaves the review edit", 1))'
+      ;;
+    merge-behind-main)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "if base.stdout.strip() != main.stdout.strip():"
+assert old in t, "behind-main check not found"
+open(p, "w").write(t.replace(old, "if False and base.stdout.strip() != main.stdout.strip():", 1))
+'
       ;;
     *)
       echo "unknown mutation: $name" >&2

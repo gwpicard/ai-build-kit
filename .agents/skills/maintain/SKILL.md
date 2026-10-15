@@ -5,8 +5,10 @@ description: Make the project true and healthy. Every visit checks records and t
 
 # Maintain
 
-Every visit makes the records true, compares the live copy with `main`, and
-finishes a kit update. Report findings before applying anything beyond routine
+Never offer the opt-in automatic merge or parallel-build settings during maintenance.
+
+Make the records true, compare the live copy with `main`, and finish a kit
+update. Report findings before applying anything beyond routine
 updates.
 
 In Codex, if a push, fetch or remote check fails with `unable to get password
@@ -44,7 +46,7 @@ For quarterly work, also load `references/quarterly.md`.
 
 ## Handover and retirement
 
-For a handover or retirement, load `references/handover-retirement.md`.
+For handover or retirement, load `references/handover-retirement.md`.
 
 ## Done when
 

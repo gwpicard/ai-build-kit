@@ -39,7 +39,9 @@ case "$*" in
     fi
     ;;
   "pr checks --json name,state,bucket") printf '%s\n' '[{"name":"project-check","state":"SUCCESS","bucket":"pass"},{"name":"type-check","state":"SUCCESS","bucket":"pass"},{"name":"lint","state":"SUCCESS","bucket":"pass"}]' ;;
-  "pr view 9 --json title,body") printf '%s\n' '{"title":"Example pull request","body":"Summary"}' ;;
+  "pr view 9 --json title,body")
+    BODY=${GH_PR_BODY:-Summary} python3 -c 'import json,os; print(json.dumps({"title":"Example pull request","body":os.environ["BODY"]}))'
+    ;;
   "pr edit 9 --body "*) printf '%s\n' "$*" >> "$GH_EDIT_FILE" ;;
   "pr view 9 --json body --jq .body")
     [ "${GH_VIEW_FAIL:-0}" = 0 ] || { echo "could not read pull request" >&2; exit 1; }
@@ -79,10 +81,21 @@ JSON
 ) && code=0 || code=$?
 [ "$code" -eq 1 ] && grep -q '\- \[ \] The save fails' "$WORK/edits" \
   && grep -q 'finding(s) dropped' "$WORK/edits" \
+  && grep -q 'Review record: reviewed=quality review; tried=3; open=1' "$WORK/edits" \
   && grep -q 'The refuter disproved this' "$WORK/edits" \
   && grep -A4 '## Worth knowing' "$WORK/edits" | grep -q 'The refuter disproved this' \
   && ! grep -q 'Maybe bad' "$WORK/edits" \
   && pass "record keeps evidence, drops unsupported findings and exits 1 for open boxes" || fail "record returned $code: $out"
+
+
+out=$(cd "$PROJECT" && PATH="$WORK/bin:$PATH" GH_EDIT_FILE="$WORK/edits" GH_PR_BODY=$(printf 'Summary\n\n## Worth stopping for\n- [x] Settled finding and decision\n\n## Worth knowing\n- First known\n- Second known\n- Third known') python3 "$GATE" record --pr 9 <<'JSON'
+[{"mark":"reasoned","finding":"Another supported finding","scenario":"A member clicks save and loses their work","worth_stopping_for":true},{"mark":"reasoned","finding":"Fourth known","scenario":"A user visits the page and loses saved changes","worth_stopping_for":false}]
+JSON
+) && code=0 || code=$?
+[ "$code" -eq 1 ] && grep -q '\- \[x\] Settled finding and decision' "$WORK/edits" \
+  && grep -q 'Fourth known' "$WORK/edits" \
+  && grep -q 'Worth knowing findings: 4' "$WORK/edits" \
+  && pass "record keeps settled decisions and counts every knowing finding" || fail "record overwrote review history or hid knowing findings: $out"
 
 out=$(cd "$PROJECT" && PATH="$WORK/bin:$PATH" python3 "$GATE" record --pr 9 <<'JSON'
 []
@@ -90,6 +103,19 @@ JSON
 ) && code=0 || code=$?
 [ "$code" -eq 0 ] && pass "record exits 0 when there are no stopping findings" || fail "record clean returned $code: $out"
 
+cat > "$WORK/bin/pytest" <<'SH'
+#!/usr/bin/env sh
+[ "$*" = "-q test_save" ] || exit 2
+exit "${PYTEST_RESULT:-0}"
+SH
+chmod +x "$WORK/bin/pytest"
+out=$(cd "$PROJECT" && PATH="$WORK/bin:$PATH" GH_EDIT_FILE="$WORK/edits" GH_PR_BODY=$(printf 'Summary\n\n## Worth stopping for\n- [ ] The save fails\n\n## Worth knowing\n- None\nReview record: reviewed=quality review; tried=1; open=1') python3 "$GATE" record --pr 9 <<'JSON'
+[{"mark":"reproduced","finding":"The save fails","failing_test":"test_save","worth_stopping_for":true}]
+JSON
+) && code=0 || code=$?
+[ "$code" -eq 0 ] && grep -q '\- \[x\] The save fails' "$WORK/edits" \
+  && grep -q 'Review record: reviewed=quality review; tried=2; open=0' "$WORK/edits" \
+  && pass "a passing named test settles its box while scenario findings still need a person" || fail "passing test did not settle its box: $out / $(cat "$WORK/edits")"
 out=$(cd "$PROJECT" && PATH="$WORK/bin:$PATH" python3 "$GATE" record --pr 9 <<'JSON'
 not-json
 JSON
@@ -101,8 +127,18 @@ run_check() {
   view_fail=${2:-0}
   (cd "$PROJECT" && PATH="$WORK/bin:$PATH" PR_NUMBER=9 REVIEW_BODY="$body" GH_VIEW_FAIL="$view_fail" sh "$CHECK")
 }
+printf 'Path: Build with care\n' > "$PROJECT/masterplan.md"
+out=$(run_check '' 0 2>&1) && code=0 || code=$?
+[ "$code" -eq 1 ] && printf '%s' "$out" | grep -q 'no review recorded yet' && pass "Build with care holds when no review was recorded" || fail "missing review returned $code: $out"
+printf 'Path: Explore privately\n' > "$PROJECT/masterplan.md"
+out=$(run_check '' 0 2>&1) && code=0 || code=$?
+[ "$code" -eq 0 ] && pass "a path that needs no review passes without a review record" || fail "unneeded review returned $code: $out"
+printf 'Path: Build with care\n' > "$PROJECT/masterplan.md"
 out=$(run_check '## Worth stopping for
-- None' 0 2>&1) && code=0 || code=$?
+- None
+## Worth knowing
+- none
+Review record: reviewed=quality review; tried=0; open=0' 0 2>&1) && code=0 || code=$?
 [ "$code" -eq 0 ] && pass "check-review passes after findings are cleared" || fail "check-review clean returned $code: $out"
 out=$(run_check '## Worth stopping for
 - [ ] Broken save' 0 2>&1) && code=0 || code=$?

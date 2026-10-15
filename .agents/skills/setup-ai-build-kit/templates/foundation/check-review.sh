@@ -18,15 +18,27 @@ if ! body=$(gh pr view "$PR_NUMBER" --json body --jq .body); then
 fi
 printf '%s\n' "$body" | PYTHONPATH="$(dirname "$PARSER")" python3 -c '
 import sys
+import re
 from review_boxes import open_review_box
 
 try:
-    opened = open_review_box(sys.stdin.read())
+    body = sys.stdin.read()
+    opened = open_review_box(body)
 except (OSError, UnicodeError) as error:
     print("Review check: could not read the pull request body: " + str(error), file=sys.stderr)
     raise SystemExit(2)
 if opened:
     print("Review check: a finding under Worth stopping for is unticked", file=sys.stderr)
     raise SystemExit(1)
+if not re.search(r"(?m)^## Worth stopping for\s*$", body) or not re.search(r"(?m)^Review record: reviewed=.+; tried=\d+; open=\d+\s*$", body):
+    try:
+        from pathlib import Path
+        plan = Path("masterplan.md").read_text(encoding="utf-8")
+    except (OSError, UnicodeError):
+        plan = ""
+    path = re.search(r"(?m)^Path:\s*(.+?)\s*$", plan)
+    if path and path.group(1) == "Build with care":
+        print("Review check: no review recorded yet", file=sys.stderr)
+        raise SystemExit(1)
 print("Review check: no unticked findings")
 '

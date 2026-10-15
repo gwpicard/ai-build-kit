@@ -1429,7 +1429,8 @@ def strength_py(root, changed, engines):
         setup_text = read(copy, "setup.cfg")
         setup_text = re.sub(r"(?ms)^\[mutmut\].*?(?=^\[|\Z)", "", setup_text)
         with open(setup_config, "w", encoding="utf-8") as handle:
-            handle.write(setup_text + "\n[mutmut]\npaths_to_mutate = " + ",".join(folders) + "\n")
+            handle.write(setup_text + "\n[mutmut]\nsource_paths = " + ",".join(folders) +
+                         "\npaths_to_mutate = " + ",".join(folders) + "\n")
         code, out, err = run(cmd + ["run", *[name + "__mutmut_*" for name in sorted(wanted)]],
                              cwd=copy, timeout=3600)
         if code != 0:
@@ -1945,6 +1946,99 @@ def test_read(root, base, piece):
         return 1
     return 2 if unavailable else 0
 
+
+def overlap(root, pieces):
+    """Refuse parallel pieces whose recorded reaches share work."""
+    if len(pieces) < 2 or len(pieces) > 3 or len(set(pieces)) != len(pieces):
+        print("overlap: give two or three different piece numbers", file=sys.stderr)
+        return 2
+    plan = git("show", "main:masterplan.md", cwd=root)
+    if plan is None:
+        plan = read(root, "masterplan.md")
+    else:
+        plan = plan
+    setting = re.search(r"(?m)^Runs on its own:.*$", plan)
+    path_line = re.search(r"(?m)^Path:\s*(.+?)\s*$", plan)
+    parallel = re.search(r"\bparallel\s+([23])\b", setting.group(0), re.I) if setting else None
+    if not parallel or not path_line or path_line.group(1) == "Explore privately":
+        print("overlap: parallel building is off on main", file=sys.stderr)
+        return 1
+    if len(pieces) > int(parallel.group(1)):
+        print("overlap: the setting on main allows %s parallel pieces" % parallel.group(1), file=sys.stderr)
+        return 1
+    reaches = {}
+    for number in pieces:
+        try:
+            result = subprocess.run(["gh", "issue", "view", str(number), "--json", "body"],
+                                    cwd=root, capture_output=True, text=True)
+        except OSError as error:
+            print("overlap: GitHub CLI could not run: " + str(error), file=sys.stderr)
+            return 2
+        if result.returncode:
+            print("overlap: could not read piece " + str(number), file=sys.stderr)
+            return 2
+        try:
+            body = json.loads(result.stdout)["body"]
+        except (ValueError, KeyError, TypeError):
+            print("overlap: piece " + str(number) + " has unreadable details", file=sys.stderr)
+            return 2
+        match = re.search(REACHES_LINE, body, re.M)
+        if not match or "undeclared" in match.group(1).casefold():
+            print("overlap: piece %s has no usable Reaches line" % number, file=sys.stderr)
+            return 2
+        reaches[number] = {part.strip().strip("`.,") for part in re.split(r"[,;]", match.group(1))
+                           if part.strip() and "new files only" not in part.casefold()}
+    all_files = project_files(root)
+    tables = table_names(root, all_files)
+    masterplan = read(root, "masterplan.md")
+    areas = []
+    inside = False
+    for line in masterplan.splitlines():
+        if line.strip() == "Sensitive areas:":
+            inside = True
+            continue
+        if inside and line and not line[0].isspace():
+            inside = False
+        if inside and line.strip().startswith("paths:"):
+            areas.extend(x.strip().strip("`.,") for x in line.split(":", 1)[1].split(","))
+    settings = {".env.example", "checks.yml", "checks.yaml", "package.json",
+                "pyproject.toml", "pnpm-lock.yaml", "package-lock.json", "yarn.lock", "uv.lock"}
+    bad_pairs = []
+    numbers = list(reaches)
+    for index, left in enumerate(numbers):
+        for right in numbers[index + 1:]:
+            shared = reaches[left] & reaches[right]
+            if shared:
+                bad_pairs.append((left, right, "shared file " + sorted(shared)[0]))
+                continue
+            left_migrations = {p for p in reaches[left] if "migrations/" in p and p.endswith(".sql")}
+            right_migrations = {p for p in reaches[right] if "migrations/" in p and p.endswith(".sql")}
+            if left_migrations or right_migrations:
+                bad_pairs.append((left, right, "migration work"))
+                continue
+            left_tables = {name for name, paths in tables.items() if paths & reaches[left]}
+            right_tables = {name for name, paths in tables.items() if paths & reaches[right]}
+            shared_tables = left_tables & right_tables
+            if shared_tables:
+                bad_pairs.append((left, right, "shared table " + sorted(shared_tables)[0]))
+                continue
+            if any(os.path.basename(path).casefold() in settings or
+                   path.casefold().endswith("/checks.yml") or
+                   path.casefold().endswith("/checks.yaml")
+                   for path in reaches[left] | reaches[right]):
+                bad_pairs.append((left, right, "project setting"))
+                continue
+            if any(path == pattern or path.startswith(pattern.rstrip("/") + "/")
+                   or fnmatch.fnmatchcase(path, pattern)
+                   for path in reaches[left] | reaches[right] for pattern in areas):
+                bad_pairs.append((left, right, "sensitive area"))
+    if bad_pairs:
+        for left, right, reason in bad_pairs:
+            print("overlap\t%s\t%s\t%s" % (left, right, reason))
+        return 1
+    print("overlap\tclear\t%d pieces" % len(pieces))
+    return 0
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     sub = parser.add_subparsers(dest="read", required=True)
@@ -1971,6 +2065,8 @@ def main():
     p = sub.add_parser("tests")
     p.add_argument("--base", required=True)
     p.add_argument("--piece", required=True)
+    p = sub.add_parser("overlap")
+    p.add_argument("--pieces", nargs="+", required=True, type=int)
     try:
         args = parser.parse_args()
     except SystemExit:
@@ -1984,6 +2080,8 @@ def main():
         return 2
     root = top.strip()
     os.chdir(root)
+    if args.read == "overlap":
+        return overlap(root, args.pieces)
     if args.read == "offered":
         rows = [line.rstrip("\n").split("\t") for line in sys.stdin if line.strip()]
         key = waste_key if args.which == "waste" else loop_key

@@ -3,7 +3,7 @@ name: builder
 description: Builds one ready piece in a fresh context, for an auto run of several pieces. Runs the build-piece skill on the branch it is given, never merges, and reports back. Started by implement, never by the person.
 skills: [build-piece, quality-checks, screen-check]
 access: full
-isolation: none
+isolation: worktree
 ---
 
 # Builder

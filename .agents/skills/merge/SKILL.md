@@ -74,8 +74,14 @@ merged. Exit 1 means a check, review box or sensitive area holds it; exit 2
 means a required read/check could not run or GitHub refused. Say what stopped
 it and leave the pull request open. In an unattended run, leave it for review.
 
-After merge, run the `records` skill's `scripts/piece-labels.sh` with
+After a merge, run the `records` skill's `scripts/piece-labels.sh` with
 `merged <number>`, refresh the printout and follow `references/after-merge.md`.
 
 If GitHub did not start its check, the merge waits. Say so and that the person
 can re-enable the check or merge on GitHub.
+For queues, automatic merge, and conflicts between waiting pieces, follow `references/automatic-merge.md`.
+
+Read `references/automatic-merge.md` before using `--auto`.
+
+In an unattended run, report the piece as ready for review and leave the merge
+to a person.

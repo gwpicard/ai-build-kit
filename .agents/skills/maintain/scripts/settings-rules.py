@@ -69,6 +69,10 @@ FORCED_DELETE = "Bash(rm -rf:*)"
 # stood in for: skipping or switching off the push guard, throwing away
 # unsaved changes, and reading another tool's stored login.
 ALWAYS_OFFERED = (
+    "Edit(.claude/settings", "Write(.claude/settings",
+    "Bash(* > .claude/settings.json*)", "Bash(* >> .claude/settings.json*)",
+    "Bash(* > .claude/settings.local.json*)", "Bash(* >> .claude/settings.local.json*)",
+    "Bash(tee .claude/settings.json*)", "Bash(tee .claude/settings.local.json*)",
     "Bash(git push --no-verify", "Bash(git push * --no-verify", "Bash(git *core.hooks",
     "Bash(git checkout ", "Bash(git restore ", "Bash(git stash ", "Bash(git switch ",
     "Bash(git clean -*", "Bash(git clean * ", "Bash(git reset * ",

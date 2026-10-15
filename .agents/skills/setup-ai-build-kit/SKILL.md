@@ -5,7 +5,7 @@ description: Start or resume project setup with /setup-ai-build-kit. Use /implem
 
 # Setup AI Build Kit
 
-Prepare a project from an idea without writing feature code.
+Prepare a project without writing feature code.
 
 ## Conversation contract
 
@@ -33,7 +33,7 @@ on.
 1. Load `references/resume.md`.
 2. Run `scripts/check-tooling.sh` and follow `references/capability-check.md`.
    Ask whether to adopt existing work; if yes, use `references/adopting.md`.
-3. Follow `references/need-for-software.md`, then run `clarify`. Settle terms,
+3. Follow `references/need-for-software.md`, then run the `clarify` skill. Settle terms,
    facts and visual questions with evidence or a prototype.
    Keep questions visible. Save answers in ignored `.agents/tmp/setup-notes.md`
    before the next question. Load `references/stand-up.md` before the closing
@@ -56,5 +56,5 @@ the approval required by `merge`.
 ## Done
 
 Finish when records exist, the path and review are recorded, pieces are visible,
-a check passes and a local checkpoint is saved. Report plainly. End with
+a check passes and a local checkpoint is saved. Report. End with
 `/implement` and `/shape` in a fresh chat.

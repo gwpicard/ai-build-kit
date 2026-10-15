@@ -1389,6 +1389,7 @@ fi
 # names a product.
 products_named() {
   find "$1" -type f ! -path '*/setup-hosting/recipes/*' \
+    ! -path '*/setup-ai-build-kit/templates/foundation/checks.yml' \
     ! -path '*/maintain/scripts/kit-released-copies.json' \
     ! -path '*/maintain/scripts/kit-retired-skills.json' \
     ! -path '*/templates/foundation/claude-settings.json' | sort | while IFS= read -r pn_file; do
@@ -2220,6 +2221,16 @@ Bash(rm -rf:*)"
 # changes flowing through a pull request. This maintainer repository's own
 # settings deliberately do not carry that entry, so the two sets differ here.
 expected_deny_project="$expected_deny
+Write(.claude/settings.json)
+Edit(.claude/settings.json)
+Write(.claude/settings.local.json)
+Edit(.claude/settings.local.json)
+Bash(* > .claude/settings.json*)
+Bash(* > .claude/settings.local.json*)
+Bash(* >> .claude/settings.json*)
+Bash(* >> .claude/settings.local.json*)
+Bash(tee .claude/settings.json*)
+Bash(tee .claude/settings.local.json*)
 Read(**/.env)
 Read(**/.env.local)
 Read(**/.env.*.local)
@@ -2309,6 +2320,7 @@ Bash(gh api *merges*)
 Bash(gh api graphql *mergePullRequest*)"
 # A project blocks direct merge commands and asks before live changes.
 expected_ask_project="Bash(*merge.py*--approved*)
+Bash(*merge.py*--auto*)
 Bash(gh api *git/refs*)
 Bash(gh api graphql *createRef*)
 Bash(gh api graphql *updateRef*)

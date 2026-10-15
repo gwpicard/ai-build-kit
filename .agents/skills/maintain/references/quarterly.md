@@ -8,7 +8,7 @@ up to three simplifications with the problem, change, benefit, cost and any
 outside review needed. Apply only on approval.
 
 Review project skills and offer to remove instructions that no longer pay
-their way. Run `evidence-run` for the build path and its sensitive areas.
+    their way. Run the `evidence-run` skill for the build path and its sensitive areas.
 Check whether the team can explain main flows, verify changes without code,
 find data, secrets, owners and bills, recover or use a fallback, and whether
 reliance or sensitive areas have changed.

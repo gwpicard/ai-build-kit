@@ -13,7 +13,7 @@ git -C "$WORK/project" init -q -b main
 git -C "$WORK/project" config user.name Rehearsal
 git -C "$WORK/project" config user.email rehearsal@example.invalid
 printf 'value = 1\n' > "$WORK/project/app/data.py"
-printf 'Path: Explore privately\n' > "$WORK/project/masterplan.md"
+printf 'Path: Build and run it\n' > "$WORK/project/masterplan.md"
 git -C "$WORK/project" add app/data.py
 git -C "$WORK/project" add masterplan.md
 git -C "$WORK/project" commit -q -m base
@@ -74,6 +74,10 @@ run() {
       exec python3 "$1" --approved 12
     ' sh "$SCRIPT")
 }
+run_auto() {
+  (cd "$WORK/project" && PATH="$WORK/bin:$PATH" GH_CASE="$1" PR_BODY="$2" \
+    PR_HEAD_OID="$HEAD_SHA" PR_BASE_OID="$BASE" sh -c 'exec python3 "$1" --auto 12' sh "$SCRIPT")
+}
 check_hold() {
   case_name=$1 body=$2 expected=$3
   : > "$GH_LOG"
@@ -100,6 +104,20 @@ set_head_map() {
   git -C "$WORK/project" push -q -f origin feature
   git -C "$WORK/project" checkout -q main
 }
+
+set_head_map <<'EOF'
+Path: Explore privately
+Runs on its own: merge (decided 2026-10-15, "merge when everything passes")
+EOF
+: > "$GH_LOG"
+out=$(run_auto success '## Worth stopping for' 2>&1) && code=0 || code=$?
+[ "$code" -eq 1 ] && printf '%s' "$out" | grep -q 'main has no Runs on its own setting' \
+  && ! grep -q '^pr merge ' "$GH_LOG" \
+  && pass "a setting present only in the pull request cannot enable automatic merge" \
+  || fail "pull-request-only setting returned $code: $out / $(cat "$GH_LOG")"
+set_head_map <<'EOF'
+Path: Explore privately
+EOF
 
 out=$(PATH="$WORK/bin:$PATH" python3 "$SCRIPT" 12 2>&1) && code=0 || code=$?
 [ "$code" -eq 1 ] && pass "a missing yes refuses the merge" || fail "missing yes returned $code: $out"
@@ -183,5 +201,19 @@ ln -s "$(command -v git)" "$WORK/nogh/git"
 out=$(cd "$WORK/project" && PATH="$WORK/nogh" "$WORK/nogh/python3" "$SCRIPT" --approved 12 2>&1) && code=0 || code=$?
 [ "$code" -eq 2 ] && printf '%s' "$out" | grep -q 'GitHub CLI (gh) is not installed' \
   && pass "a missing gh exits 2 without a traceback" || fail "missing gh returned $code: $out"
+
+# The pull request is behind main, so no later check or merge command runs.
+git -C "$WORK/project" checkout -q main
+printf 'new main version\n' > "$WORK/project/app/new-version.txt"
+git -C "$WORK/project" add app/new-version.txt
+git -C "$WORK/project" commit -q -m 'advance main'
+git -C "$WORK/project" push -q origin main
+BASE=$(git -C "$WORK/project" rev-parse HEAD)
+: > "$GH_LOG"
+out=$(run success '## Worth stopping for' 2>&1) && code=0 || code=$?
+expected='This change is behind the newest version. Bring it up to date and settle any conflicts first, then the checks run again.'
+[ "$code" -eq 1 ] && [ "$out" = "$expected" ] && ! grep -q '^pr checks ' "$GH_LOG" \
+  && pass "an approved merge refuses a branch behind main with the required sentence" \
+  || fail "a behind branch returned $code or ran checks: $out / $(cat "$GH_LOG")"
 
 echo "merge-gate.sh: all checks passed"

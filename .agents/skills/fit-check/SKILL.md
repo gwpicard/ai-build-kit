@@ -18,29 +18,7 @@ can sign in, or `public (decided YYYY-MM-DD)` if anyone can make an account.
 Never refuse an open setting. A live change waits for a yes naming its effect,
 then follows the recipe's access change and check and goes in the changelog.
 
-## Consequences
-
-Ask these questions one at a time, with a best guess. They decide the path:
-
-1. Will anyone outside the team sign in or rely on it?
-2. Will real money move through it or inform real decisions?
-3. Does a contract, client promise, uptime expectation or deadline depend on it?
-4. Will it hold personal or sensitive data beyond ordinary work contact details?
-5. Does it give or enforce regulated, legal, medical, financial, employment or
-   safety decisions?
-6. Will it start with data the team cannot afford to lose or corrupt?
-7. Will it act on another system, send consequential messages, change records
-   or do something difficult to reverse?
-8. If it stops or gives a wrong answer, will important work stop or harm follow?
-
-## Ownership
-
-Check for a fallback, explainable flows and access, known locations for data,
-credentials, services and bills, an owner for alerts, backups, access and
-recovery, records a new agent can follow, and manageable operations. These
-answers never change the path. Gaps become founding tasks or masterplan facts
-in “How it stays running”. Record credential locations, never values. The
-changelog says when the check ran.
+Read `references/path-questions.md` for the questions and ownership check.
 
 ## Choose the path
 
@@ -83,23 +61,21 @@ For a public tool, the sign-in notice also says strangers can reach the address
 and create accounts, and a payment service or similar may need a developer.
 For the full notice and acceptance rules, load `references/risk-notice.md`.
 
-## Redesign and later checks
+## Rechecks and going live
 
-Before naming an area, ask whether copied data, human approval, less access, a
-managed service, fallback or a narrower promise removes it. If so, check again.
-Do not drop a caution while exposure stays.
+First ask whether a redesign removes the area. Keep its caution while exposure
+remains. Run the full check at founding, after several changes, before hosting
+or handover, and quarterly. For a bounded change, check affected questions and
+update `Recheck when` and `Last checked`; if unclear, run it all.
 
-Run the full check at founding, after several changes, before hosting or
-handover, and quarterly. For one bounded change, review affected questions,
-areas and cautions; update `Recheck when` and `Last checked`. If unclear, run
-the full check. At launch, complete the caution and record `done`, or give the
-full notice. On acceptance, record the person's words and date as `Accepted:`
-and mark the area `accepted`. If a named reviewer is unavailable, `/maintain`
-offers a handover once.
+At launch, complete the caution and record `done`, or give the full notice. On
+acceptance, record the person's words and date as `Accepted:` and mark the area
+`accepted`. If a named reviewer is unavailable, `/maintain` offers a handover
+once. For live-path autonomy settings, follow `references/own-run.md`.
 
 ## References
 
-- `references/risk-notice.md`: when and how to give the notice, and record
-  acceptance. Load before flagged work proceeds.
-- `references/build-path-record.md`: record the path, areas, cautions and
-  acceptance in the masterplan.
+- `references/risk-notice.md`: notice and acceptance rules.
+- `references/build-path-record.md`: masterplan fields and area records.
+- `references/path-questions.md`: consequence and ownership questions.
+- `references/own-run.md`: opt-in automatic merge and parallel work.

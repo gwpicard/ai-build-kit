@@ -147,6 +147,13 @@ def supported(item):
     return False
 
 
+def test_passes(name):
+    if not isinstance(name, str) or not re.fullmatch(r"[\w./:-]+", name):
+        return False
+    code, _, _ = run(["pytest", "-q", name], timeout=600)
+    return code == 0
+
+
 def record(args):
     try:
         data = json.load(sys.stdin)
@@ -177,22 +184,50 @@ def record(args):
         if not isinstance(old, dict) or not isinstance(old.get("body"), str):
             raise ValueError("GitHub returned an unreadable pull request")
         pr_title = str(old.get("title") or "pull request " + str(args.pr))
-        body = old["body"].rstrip()
-        for heading in ("Worth stopping for", "Worth knowing"):
-            body = re.sub(r"(?ims)^## " + re.escape(heading) + r"\s*\n.*?(?=^## |\Z)", "", body).rstrip()
+        original = old["body"].rstrip()
+
+        def section(name):
+            match = re.search(r"(?ims)^## " + re.escape(name) + r"\s*\n(.*?)(?=^## |\Z)", original)
+            return match.group(1).strip().splitlines() if match else []
+
+        settled = section("Worth stopping for")
+        previous_open = sum(bool(re.match(r"\s*[-+*]\s+\[ \]\s+", line)) for line in settled)
+        for index, line in enumerate(settled):
+            if not re.match(r"\s*[-+*]\s+\[ \]\s+", line):
+                continue
+            text = re.sub(r"^\s*[-+*]\s+\[ \]\s+", "", line).strip()
+            source = next((row for row in data if str(row.get("finding", row.get("text", ""))).strip() == text), None)
+            if source and source.get("failing_test") and test_passes(source["failing_test"]):
+                settled[index] = re.sub(r"\[ \]", "[x]", line, count=1)
+        existing_open = [line for line in settled if re.match(r"\s*[-+*]\s+\[ \]\s+", line)]
+        existing_other = [line for line in settled if line.strip() and not re.match(r"\s*(?:[-+*]\s+)?(?:None|Nothing worth stopping for)\.?\s*$", line, re.I)]
+        stopping_lines = existing_other[:]
+        known_text = {re.sub(r"^\s*[-+*]\s+(?:\[[ xX]\]\s*)?", "", line).strip() for line in stopping_lines}
+        for text in stopping:
+            if text not in known_text:
+                stopping_lines.append("- [ ] " + text)
+                known_text.add(text)
+        open_count = sum(bool(re.match(r"\s*[-+*]\s+\[ \]\s+", line)) for line in stopping_lines)
+        knowing_lines = section("Worth knowing")
+        knowing_text = {re.sub(r"^\s*[-+*]\s+", "", line).strip() for line in knowing_lines
+                        if line.strip() and not re.match(r"\s*(?:[-+*]\s+)?(?:None|Nothing worth knowing|Review limits:|Worth knowing findings:|Review record:)", line, re.I)}
+        knowing_text.update(knowing)
+        body = re.sub(r"(?im)^Review record:.*$", "", original)
+        body = re.sub(r"(?ims)^## (?:Worth stopping for|Worth knowing)\s*\n.*?(?=^## |\Z)", "", body).rstrip()
         lines = [body, "", "## Worth stopping for"]
-        lines.extend("- [ ] " + text for text in stopping)
-        if not stopping:
-            lines.append("- None")
+        lines.extend(stopping_lines or ["- None"])
         lines.extend(["", "## Worth knowing"])
-        lines.extend("- " + text for text in knowing[:3])
+        lines.extend("- " + text for text in sorted(known for known in knowing_text if known))
         lines.append("- Review limits: %d finding(s) dropped for missing evidence or a concrete scenario" % dropped)
+        lines.append("- Worth knowing findings: %d" % len([item for item in knowing_text if item]))
+        lines.append("Review record: reviewed=quality review; tried=%d; open=%d" %
+                     (len(kept) + previous_open, open_count))
         gh("pr", "edit", str(args.pr), "--body", "\n".join(lines).strip())
     except (RuntimeError, ValueError) as error:
         return stop("gate: could not update the pull request: " + str(error))
     print("Review of %s: %d worth stopping for, %d worth knowing, %d dropped" %
-          (pr_title, len(stopping), min(len(knowing), 3), dropped))
-    return 1 if stopping else 0
+          (pr_title, len(existing_open) + len(stopping), len(knowing_text), dropped))
+    return 1 if open_count else 0
 
 
 def main():

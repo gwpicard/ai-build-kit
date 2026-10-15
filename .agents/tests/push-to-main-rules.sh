@@ -497,8 +497,9 @@ login_commands = [
 ]
 login_allowed = ["gh auth status", "gh auth status --hostname github.com", "gh auth status --active",
                  "gh auth login", "security list-keychains", "cat .env.example",
-                 "cat supabase/config.toml", "cat .vercel/project.json"]
-login_rules = [r for r in rules if r.startswith(("Read(", "Bash(security", "Bash(gh auth token",
+                 "cat supabase/config.toml", "cat .vercel/project.json",
+                 "cat .claude/settings.json", "cat .claude/settings.local.json"]
+login_rules = [r for r in rules if not r.startswith(("Bash(* > .claude/settings", "Bash(* >> .claude/settings", "Bash(tee .claude/settings")) and r.startswith(("Read(", "Bash(security", "Bash(gh auth token",
                                                  "Bash(gh auth status", "Bash(git credential",
                                                  "Bash(*")) and not r.startswith(("Read(**/.env", "Read(!**/.env"))]
 
@@ -644,9 +645,14 @@ for command in (
 # The rules added after that release reach an older project too, and only
 # through the offer: nothing in the file changes until --apply.
 template=json.loads((root/'.agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json').read_text())
-newer_deny=[r for r in template['permissions']['deny'] if r.startswith(('Read(','Bash(security','Bash(gh auth token','Bash(git checkout','Bash(git restore','Bash(git stash','Bash(git push --no-verify','Bash(git push * --no-verify','Bash(git switch','Bash(git clean -*','Bash(git clean * ','Bash(git reset * ','Bash(git *core.hooks','Bash(gh auth status','Bash(git credential','Bash(gh pr merge','Bash(gh api *pulls/*/merge','Bash(gh api *merges','Bash(gh api graphql *mergePullRequest','Bash(*')) and not r.startswith(('Read(**/.env','Read(!**/.env'))]
+newer_deny=[r for r in template['permissions']['deny'] if r.startswith(('Edit(.claude/settings','Write(.claude/settings','Read(','Bash(security','Bash(gh auth token','Bash(git checkout','Bash(git restore','Bash(git stash','Bash(git push --no-verify','Bash(git push * --no-verify','Bash(git switch','Bash(git clean -*','Bash(git clean * ','Bash(git reset * ','Bash(git *core.hooks','Bash(gh auth status','Bash(git credential','Bash(gh pr merge','Bash(gh api *pulls/*/merge','Bash(gh api *merges','Bash(gh api graphql *mergePullRequest','Bash(* > .claude/settings','Bash(* >> .claude/settings','Bash(tee .claude/settings','Bash(*')) and not r.startswith(('Read(**/.env','Read(!**/.env'))]
 newer_ask=[r for r in template['permissions']['ask'] if 'merge' not in r.lower()]
 assert len(newer_deny)>=16 and len(newer_ask)>=13,(newer_deny,newer_ask)
+assert 'Edit(.claude/settings.json)' in newer_deny
+assert 'Write(.claude/settings.json)' in newer_deny
+assert 'Edit(.claude/settings.local.json)' in newer_deny
+assert 'Write(.claude/settings.local.json)' in newer_deny
+assert not any(r.startswith(('Read(.claude/settings.json', 'Read(.claude/settings.local.json')) for r in newer_deny)
 assert 'Bash(*PREVIEW_HEALTH=yes*)' in newer_ask
 assert 'Bash(*PREVIEW_HEALTH="yes"*)' in newer_ask
 assert "Bash(*PREVIEW_HEALTH='yes'*)" in newer_ask

@@ -2,9 +2,11 @@
 """Hold a pull request until its checks, review boxes and yes are clear."""
 
 import json
+import re
 import subprocess
 import sys
 import tempfile
+import time
 from pathlib import Path
 
 from review_boxes import open_review_box
@@ -43,6 +45,176 @@ def check_hold(rows):
             stop("merge: project-check is %s; the pull request stays open" % state)
 
 
+def git(*args):
+    try:
+        return subprocess.run(["git", *args], text=True, capture_output=True)
+    except OSError:
+        stop("merge: Git could not run", 2)
+
+
+def newest_main(head):
+    remotes = git("remote")
+    if remotes.returncode:
+        stop("merge: could not read Git remotes", 2)
+    if "origin" in remotes.stdout.splitlines():
+        fetched = git("fetch", "--no-tags", "origin", "main")
+        if fetched.returncode:
+            stop("merge: could not fetch the newest main", 2)
+        main = git("rev-parse", "origin/main^{commit}")
+    else:
+        main = git("rev-parse", "main^{commit}")
+    if main.returncode:
+        stop("merge: could not read main", 2)
+    base = git("merge-base", main.stdout.strip(), head)
+    if base.returncode:
+        stop("merge: could not compare the branch with main", 2)
+    if base.stdout.strip() != main.stdout.strip():
+        stop("This change is behind the newest version. Bring it up to date and settle any conflicts first, then the checks run again.")
+    return main.stdout.strip()
+
+
+def pause_file():
+    result = git("rev-parse", "--git-path", "ai-build-kit-auto-paused")
+    if result.returncode:
+        stop("merge: could not locate the local automatic-merge pause", 2)
+    return Path(result.stdout.strip())
+
+
+def pause_auto(reason):
+    path = pause_file()
+    try:
+        path.write_text(reason.strip() + "\n", encoding="utf-8")
+    except OSError:
+        stop("merge: could not save the automatic-merge pause", 2)
+    print("merge: automatic merging is paused: " + reason.strip())
+
+
+def resume_auto():
+    path = pause_file()
+    try:
+        path.unlink(missing_ok=True)
+    except OSError:
+        stop("merge: could not clear the automatic-merge pause", 2)
+    print("merge: automatic merging is re-enabled")
+
+
+def check_main_health():
+    path = pause_file()
+    if path.exists():
+        reason = path.read_text(encoding="utf-8").strip()
+        stop("merge: automatic merging is paused: " + (reason or "a person must turn it on again"))
+    result = gh("run", "list", "--branch", "main", "--limit", "1",
+                "--json", "status,conclusion,name")
+    if result.returncode != 0:
+        stop("merge: could not read the latest check on main", 2)
+    rows = read_json(result, "latest check on main")
+    if not isinstance(rows, list) or not rows:
+        stop("merge: no check is reported on main; automatic merging waits")
+    row = rows[0]
+    if row.get("status") != "completed":
+        stop("merge: the latest check on main is still running; automatic merging waits")
+    if row.get("conclusion") != "success":
+        reason = "%s is %s" % (row.get("name") or "the latest check on main",
+                               row.get("conclusion") or row.get("status") or "unknown")
+        pause_auto(reason)
+        stop("merge: " + reason + "; automatic merging is paused")
+
+
+def auto_setting(main):
+    result = git("show", main + ":masterplan.md")
+    if result.returncode:
+        stop("merge: main has no readable masterplan; automatic merge is off")
+    path = re.search(r"(?m)^Path:\s*(.+?)\s*$", result.stdout)
+    if not path or path.group(1) == "Explore privately":
+        stop("merge: automatic merging is not available on Explore privately")
+    line = re.search(r'(?m)^Runs on its own:.*\bmerge\b.*\bdecided\s+\d{4}-\d{2}-\d{2}\b.*"[^\"]+".*$', result.stdout)
+    if not line:
+        stop("merge: main has no Runs on its own setting for merge")
+    words = line.group(0)
+    merged = gh("pr", "list", "--state", "merged", "--limit", "100", "--json", "reviews")
+    if merged.returncode != 0:
+        stop("merge: could not count earlier named-yes merges", 2)
+    rows = read_json(merged, "merged pull requests")
+    if not isinstance(rows, list):
+        stop("merge: GitHub returned unreadable merged pull requests", 2)
+    earned = 0
+    for row in rows:
+        reviews = row.get("reviews") if isinstance(row, dict) else None
+        if isinstance(reviews, list) and any(
+                isinstance(review, dict) and review.get("state") == "APPROVED"
+                for review in reviews):
+            earned += 1
+    if earned < 3:
+        stop("merge: three named-yes merges are required before automatic merge")
+    return words
+
+
+def touched_paths(base, head):
+    result = git("diff", "--name-only", base + "..." + head)
+    if result.returncode:
+        stop("merge: could not read the pull request's changed files", 2)
+    return result.stdout.splitlines()
+
+
+def auto_holds(data, main, head):
+    auto_setting(main)
+    paths = touched_paths(data["baseRefOid"], head)
+    if any(re.search(r"(^|/)(migrations?|alembic|versions?)(/|$)|\.(sql)$", p, re.I) for p in paths):
+        stop("merge: this piece changes a migration; it waits for a named yes")
+    if any(p in (".env.example", "checks.yml", "checks.yaml", "pyproject.toml", "package.json") for p in paths):
+        stop("merge: this piece changes a setting; it waits for a named yes")
+    if open_review_box(data.get("body") or ""):
+        stop("merge: a finding under Worth stopping for is open; the pull request stays open")
+    if not re.search(r"(?m)^Review record: reviewed=.+; tried=\d+; open=0$", data.get("body") or ""):
+        stop("merge: the pull request has no completed review record")
+    body = data.get("body") or ""
+    refs = data.get("closingIssuesReferences") or []
+    if not refs or not isinstance(refs, list):
+        stop("merge: the pull request has no linked piece to check")
+    issue_number = next((str(item.get("number")) for item in refs
+                         if isinstance(item, dict) and item.get("number")), None)
+    if not issue_number:
+        stop("merge: the pull request has no readable linked piece")
+    issue = gh("issue", "view", issue_number, "--json", "title,body,labels")
+    if issue.returncode != 0:
+        stop("merge: could not read the linked piece", 2)
+    issue_data = read_json(issue, "linked piece")
+    if not isinstance(issue_data, dict) or not isinstance(issue_data.get("body"), str):
+        stop("merge: the linked piece is unreadable", 2)
+    piece_body = issue_data["body"]
+    labels = {str(label.get("name", "")).casefold()
+              for label in issue_data.get("labels", []) if isinstance(label, dict)}
+    if "repair" in labels or "broken" in labels or "repair" in str(issue_data.get("title", "")).casefold():
+        stop("merge: a repair waits for a named yes")
+    if re.search(r"(?im)^Live side needs:\s*\S+", piece_body):
+        stop("merge: this piece needs a live setting; it waits for a named yes")
+    if re.search(r"(?im)^.*Done when.*\(try it\)\s*$", piece_body):
+        stop("merge: a Done when item needs a person to try it")
+    env_script = Path(__file__).with_name("env-names-added.sh")
+    try:
+        env = subprocess.run(["sh", str(env_script), head, data["baseRefOid"]],
+                             text=True, capture_output=True)
+    except OSError:
+        stop("merge: could not check for new settings", 2)
+    if env.returncode == 1:
+        stop("merge: this piece adds a setting; it waits for a named yes")
+    if env.returncode != 0:
+        stop("merge: could not check for new settings", 2)
+    auto_rule = git("show", head + ":masterplan.md")
+    if auto_rule.returncode != 0:
+        stop("merge: could not read the pull request's masterplan")
+    pr_line = re.search(r"(?m)^Runs on its own:.*$", auto_rule.stdout)
+    main_text = git("show", main + ":masterplan.md")
+    if main_text.returncode:
+        stop("merge: could not reread the setting on main", 2)
+    main_line = re.search(r"(?m)^Runs on its own:.*$", main_text.stdout)
+    if (pr_line.group(0) if pr_line else None) != (main_line.group(0) if main_line else None):
+        stop("merge: this pull request changes its own-merge setting")
+    if any("repair" in p.casefold() for p in paths):
+        stop("merge: repair changes wait for a named yes")
+    newest_main(head)
+
+
 def kit_area_check():
     here = Path(__file__).resolve()
     for parent in here.parents:
@@ -54,7 +226,7 @@ def kit_area_check():
     stop("merge: could not find the kit's sensitive-area check", 2)
 
 
-def check_sensitive_area(base, head):
+def check_sensitive_area(base, head, automatic=False):
     script = kit_area_check()
     try:
         fetch = subprocess.run(["git", "fetch", "origin", base, head], text=True,
@@ -82,6 +254,8 @@ def check_sensitive_area(base, head):
         stop("merge: could not run the sensitive-area check", 2)
     if result.stdout:
         sys.stdout.write(result.stdout)
+    if automatic and result.stdout.strip():
+        stop("merge: this piece touches a sensitive area; it waits for a named yes")
     if result.returncode == 1:
         stop("merge: the sensitive-area check is open; the pull request stays open")
     if result.returncode != 0:
@@ -91,13 +265,23 @@ def check_sensitive_area(base, head):
 
 
 def main(argv):
+    if len(argv) == 2 and argv[0] == "--pause":
+        pause_auto(argv[1])
+        return
+    if argv == ["--resume"]:
+        resume_auto()
+        return
     if len(argv) == 1 and argv[0].isdigit():
         stop("merge: a yes naming this pull request is required", 1)
-    if len(argv) != 2 or argv[0] != "--approved" or not argv[1].isdigit():
-        stop("usage: merge.py --approved <pull request number>", 2)
+    mode = argv[0] if len(argv) == 2 else ""
+    if len(argv) != 2 or mode not in ("--approved", "--auto") or not argv[1].isdigit():
+        stop("usage: merge.py [--approved|--auto] <pull request number>", 2)
     number = argv[1]
 
-    pr = gh("pr", "view", number, "--json", "body,headRefOid,baseRefOid")
+    fields = "body,headRefOid,baseRefOid"
+    if mode == "--auto":
+        fields += ",closingIssuesReferences"
+    pr = gh("pr", "view", number, "--json", fields)
     if pr.returncode != 0:
         stop("merge: GitHub could not read the pull request: " +
              (pr.stderr or pr.stdout).strip(), 2)
@@ -107,7 +291,11 @@ def main(argv):
     head = data["headRefOid"]
     if not data.get("baseRefOid"):
         stop("merge: GitHub returned an unreadable pull request base", 2)
-    check_sensitive_area(data["baseRefOid"], head)
+    main = newest_main(head)
+    if mode == "--auto":
+        auto_holds(data, main, head)
+        check_main_health()
+    check_sensitive_area(data["baseRefOid"], head, automatic=(mode == "--auto"))
 
     checks = gh("pr", "checks", number, "--json", "name,state,bucket")
     if checks.returncode == 1 and not checks.stdout.strip() and "no checks reported" in checks.stderr:
@@ -118,6 +306,16 @@ def main(argv):
     rows = read_json(checks, "pull request checks")
     if not isinstance(rows, list) or any(not isinstance(row, dict) for row in rows):
         stop("merge: GitHub returned unreadable pull request checks", 2)
+    if mode == "--auto":
+        deadline = time.monotonic() + 15 * 60
+        while any(row.get("bucket") == "pending" for row in rows) and time.monotonic() < deadline:
+            time.sleep(min(15, max(0, deadline - time.monotonic())))
+            checks = gh("pr", "checks", number, "--json", "name,state,bucket")
+            if checks.returncode != 0:
+                stop("merge: GitHub could not reread pending checks")
+            rows = read_json(checks, "pull request checks")
+        if any(row.get("bucket") == "pending" for row in rows):
+            stop("merge: a check stayed pending for 15 minutes; the pull request stays open")
     check_hold(rows)
 
     if open_review_box(data.get("body") or ""):

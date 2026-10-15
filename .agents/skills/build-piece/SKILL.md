@@ -51,7 +51,7 @@ an operational rehearsal. Adding a field needs a test; changing existing
 records needs a rehearsal on a copy. Check outside facts through `research`.
 For mapped sensitive areas, run the strength check after tests pass.
 
-For a repair, follow `repair/references/fixing.md` and run its strength check
+For a repair, follow the `repair` skill's `references/fixing.md` and run its strength check
 on the regression test. Otherwise follow
 `quality-checks/references/tests-prove-change.md`: new tests fail on old
 behaviour, and refactor tests pass before the change. Describe the current
@@ -74,7 +74,7 @@ unattended run leave it unchanged. A live build never applies a migration;
 
 For `visual` work or a change to a rendered interface, load `screen-check`
 before the guided check. File new work uncovered during the build through
-`records/references/pieces.md`, with subjects from `triage` and a short note
+`records/references/pieces.md`, with subjects from the `triage` skill and a short note
 that it was found here. If the person asks for more, ask once whether to add it
 to this piece or make a new one. On this piece, add it to `## Done when`, read
 it back and build it. Never fold it in without that answer. A test that only
