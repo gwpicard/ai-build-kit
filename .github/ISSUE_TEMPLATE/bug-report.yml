@@ -1,5 +1,5 @@
 name: Report a problem
-description: Tell us when AI Build Kit does not behave as described.
+description: Report a problem with AI Build Kit.
 title: "[Problem] "
 labels:
   - bug
@@ -11,7 +11,7 @@ body:
     id: version
     attributes:
       label: AI Build Kit version
-      description: Find this in the installed maintain skill's VERSION file or the latest release you installed.
+      description: See maintain/VERSION.
       placeholder: v0.2.0
     validations:
       required: true
@@ -23,6 +23,13 @@ body:
         - Claude Code plugin
         - Shared skills installer
         - Manual release download
+    validations:
+      required: true
+  - type: input
+    id: agent
+    attributes:
+      label: Coding agent and version
+      description: Include its version if known.
     validations:
       required: true
   - type: textarea
@@ -41,6 +48,6 @@ body:
     id: steps
     attributes:
       label: How can someone reproduce it?
-      description: Give the shortest sequence that shows the problem.
+      description: Give steps to reproduce.
     validations:
       required: true

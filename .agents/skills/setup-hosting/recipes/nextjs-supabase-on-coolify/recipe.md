@@ -1,7 +1,7 @@
 # Recipe: Next.js 16, TypeScript and Supabase on Coolify
 
 Fits: Dashboards and reporting on existing data; Admin panels and back office over an existing database; Approvals and request workflows; CRMs, contact trackers and sales tools; Light ERP: stock, orders, purchasing, assets; Client, vendor and partner portals; Project and task trackers; Document processing: upload, extract, review, export; AI assistants over team documents; HR and onboarding; Case management, tickets and incident logs; Booking and scheduling; Forms and data collection; Field, inspection and service apps; Screenless sync and automation
-Recommended when: the team already runs Coolify, or wants the app on a server it rents, such as a Hetzner or Hostinger VPS, rather than on a hosting platform.
+Recommended when: the team wants a rented Coolify server. AI Build Kit builds and checks the tool, coolify-launchpad sets up the server, and coolify-devops puts it live.
 Language: TypeScript
 Framework: Next.js 16
 Typing: TypeScript tsc
