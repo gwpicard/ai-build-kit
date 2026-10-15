@@ -654,8 +654,8 @@ open(p, "w").write(s.replace(old, new, 1))'
 import os
 p = os.environ["MUTATE_TARGET"]
 s = open(p).read()
-old = "if sensitive_area_map():"
-new = "if False and sensitive_area_map():"
+old = "    check_sensitive_area(data[\"baseRefOid\"], head)\n"
+new = "    pass  # sensitive-area check removed\n"
 assert old in s
 open(p, "w").write(s.replace(old, new, 1))'
       ;;

@@ -46,7 +46,8 @@ The first push waits for the person's yes, as the `merge` skill's
 `references/first-upload.md` says.
 
 Elsewhere, run `scripts/piece-labels.sh start <number>` before changing
-anything. It swaps `ready` for `building` and assigns the piece.
+anything. The `records` skill owns this script. It swaps `ready` for `building`
+and assigns the piece.
 
 ## 2. Agree the visible result
 

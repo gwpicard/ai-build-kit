@@ -386,6 +386,7 @@ else
     fail "npm could reach the network, but the actual Next.js packages did not install"
   fi
   echo "  could not run: npm could not reach its package registry"
+  exit 2
 fi
 
 PROJECT="$WORK/ts-project"

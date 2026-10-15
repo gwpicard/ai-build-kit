@@ -348,6 +348,7 @@ else code=$?; [ "$code" -eq 1 ] && pass "a missing base scans available history 
   || fail "missing base fallback returned $code"; fi
 printf 'APP_TOKEN=%s\n' "literal-$(python3 -c 'import secrets;print(secrets.token_hex(12))')" > "$PROJECT/.env.production"
 git -C "$PROJECT" add .env.production && git -C "$PROJECT" commit -q -m literal-env-assignment
+rm "$PROJECT/.env.production"
 if (cd "$PROJECT" && sh .agents/hooks/scan-secrets.sh "--range=HEAD~1..HEAD") >"$WORK/scan-out" 2>&1; then
   fail "scanner missed a named literal in a committed .env file"
 else code=$?; [ "$code" -eq 1 ] && grep -q 'possible secret in commit .* file .env.production' "$WORK/scan-out" \
