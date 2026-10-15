@@ -59,9 +59,15 @@ exec node "$PWD/tools/vitest-standin.js" "$@"
 EOF
 chmod +x "$WORK/bin/vitest"
 VITEST_BIN=${VITEST_BIN:-$(command -v vitest || true)}
+PYTHON_BIN=${PYTHON_BIN:-$(command -v python3 || true)}
 PYTEST_BIN=${PYTEST_BIN:-$(command -v pytest || true)}
+PYTEST_COMMAND=
 PYTEST_READY=0
-if [ -n "$PYTEST_BIN" ] && (ulimit -c 0; sh -c "$PYTEST_BIN --help" >/dev/null 2>&1); then
+if [ -n "$PYTHON_BIN" ] && (ulimit -c 0; "$PYTHON_BIN" -m pytest --help >/dev/null 2>&1); then
+  PYTEST_COMMAND="$PYTHON_BIN -m pytest"
+  PYTEST_READY=1
+elif [ -n "$PYTEST_BIN" ] && (ulimit -c 0; sh -c "$PYTEST_BIN --help" >/dev/null 2>&1); then
+  PYTEST_COMMAND="$PYTEST_BIN"
   PYTEST_READY=1
 fi
 PYTEST_NOCOV_BIN=${PYTEST_NOCOV_BIN:-}
@@ -134,8 +140,17 @@ with tempfile.TemporaryDirectory() as root:
     with open(os.path.join(root, "tests", "screen.spec.ts"), "w") as spec_file:
         spec_file.write("test('D9 screen renders', () => {});\n")
     assert quality.playwright_specs(root, ["tests/screen.spec.ts"]) == {9: ["tests/screen.spec.ts"]}
+    binary = os.path.join(root, "bin")
+    os.makedirs(binary)
+    pytest = os.path.join(binary, "pytest")
+    python = os.path.join(binary, "python3")
+    open(pytest, "w").close()
+    open(python, "w").close()
+    os.chmod(python, 0o755)
+    assert quality.pytest_module_command([pytest, "-q"]) == [python, "-m", "pytest", "-q"]
 PY
 echo '  ok: the strength trigger reads both mapped areas and finds default-folder Playwright cases'
+echo '  ok: an absolute pytest launcher uses its sibling Python module runner'
 put tests/new-module.test.js <<'EOF'
 import { test, expect } from 'vitest';
 import { createRequire } from 'node:module';
@@ -427,7 +442,7 @@ if [ "$PYTEST_READY" -eq 1 ]; then
   printf 'def value():\n    return 1\n' > "$REALPY/app.py"
   printf '[tool.pytest.ini_options]\n' > "$REALPY/pyproject.toml"
   mkdir -p "$REALPY/.github/workflows"
-  printf 'jobs:\n  project-check:\n    steps:\n      - run: %s -q\n' "$PYTEST_BIN" > "$REALPY/.github/workflows/checks.yml"
+  printf 'jobs:\n  project-check:\n    steps:\n      - run: %s -q\n' "$PYTEST_COMMAND" > "$REALPY/.github/workflows/checks.yml"
   git -C "$REALPY" add -A; git -C "$REALPY" commit -qm Start
   REALPYBASE=$(git -C "$REALPY" rev-parse HEAD)
   cat > "$REALPY/tests/test_app.py" <<'EOF'
@@ -443,7 +458,7 @@ EOF
 ## Done when
 - The value is two
 EOF
-  set +e; REALPY_OUT=$(cd "$REALPY" && python3 "$QUALITY" tests --base "$REALPYBASE" --piece 400 2>&1); CODE=$?; set -e
+  set +e; REALPY_OUT=$(cd "$REALPY" && "$PYTHON_BIN" "$QUALITY" tests --base "$REALPYBASE" --piece 400 2>&1); CODE=$?; set -e
   [ "$CODE" -eq 0 ] || { printf '%s\n' "$REALPY_OUT"; echo 'FAIL: real pytest with pytest-cov did not prove the change'; exit 1; }
   printf '%s\n' "$REALPY_OUT" | grep -q '^fails-before[[:space:]]D1$'
   printf '%s\n' "$REALPY_OUT" | grep -q '^covered[[:space:]]1$'

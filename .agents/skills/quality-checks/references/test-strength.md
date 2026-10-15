@@ -9,6 +9,9 @@ changed code was checked and no breakage was missed, 1 lists breakages the tests
 missed, and 2 means part of the check could not run. Never report exit 2 as a
 pass.
 
+The strength run uses a throwaway copy with no real records, live access or
+real `.env` files.
+
 ## What the person hears
 
 One line, with the counts it printed: "The tests were checked by breaking the

@@ -79,8 +79,8 @@ strength check after the tests pass. A repair runs it on the regression test.
 For a repair, load the `repair` skill's `references/fixing.md` and follow
 "Building a repair" from here.
 
-Before coding, follow `quality-checks/references/tests-prove-change.md`. Note
-the start commit for its post-build read.
+Before coding, follow `quality-checks/references/tests-prove-change.md`. For a
+visual change, describe the current screen first.
 
 ## 5. Build one vertical slice
 

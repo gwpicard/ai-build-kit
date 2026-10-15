@@ -1127,6 +1127,20 @@ def test_command(root):
     return None
 
 
+def pytest_module_command(command):
+    """Use the active Python environment when a project records pytest directly."""
+    if command and os.path.basename(command[0]) in ("pytest", "pytest.exe"):
+        if not os.path.isabs(command[0]) and os.path.dirname(command[0]):
+            return command
+        interpreter = sys.executable
+        if os.path.isabs(command[0]):
+            sibling = os.path.join(os.path.dirname(command[0]), "python3")
+            if os.path.isfile(sibling) and os.access(sibling, os.X_OK):
+                interpreter = sibling
+        return [interpreter, "-m", "pytest", *command[1:]]
+    return command
+
+
 def red_commits(root, base):
     """All Test: commits after BASE, identified from their subjects."""
     out = git("log", "--format=%H%x09%s", f"{base}..HEAD", cwd=root) or ""
@@ -1201,7 +1215,7 @@ def test_read(root, base, piece):
         print(f"not-checked\ttests\t{base} is not a commit in this project")
         return 2
     commits = red_commits(root, base)
-    command = test_command(root)
+    command = pytest_module_command(test_command(root))
     changed = {p: lines for p, lines in changed_lines(root, base).items()
                if os.path.isfile(os.path.join(root, p))}
     changed_tests = [p for p in changed if is_test_file(p)]

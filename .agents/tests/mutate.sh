@@ -359,11 +359,13 @@ open(p,"w").write(s)'
       ;;
     tests-after-failure-pass)
       edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
-import os
+import os,re
 p=os.environ["MUTATE_TARGET"]
-s=open(p).read(); old="elif any(failed(c) for c in after_matches):\n                print(f\"fails-after\\\\tD{n}\")\n                status = 1"
-assert old in s, "D test after-failure branch not found"
-open(p,"w").write(s.replace(old, "elif any(failed(c) for c in after_matches):\n                print(f\"fails-after\\\\tD{n}\")", 1))'
+s=open(p).read()
+pattern=r"(^[ \t]+elif any\(failed\(c\) for c in after_matches\):\n[ \t]+print\(f.*\n)[ \t]+status = 1"
+s,n=re.subn(pattern, r'\1', s, count=1, flags=re.M)
+assert n == 1, "D test after-failure status line not found"
+open(p,"w").write(s)'
       ;;
     test-fix-empty-reason)
       edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/check-tests.sh" '

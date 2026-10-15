@@ -1,8 +1,10 @@
 # Tests that prove the change
 
-Run `quality.py tests --base <start commit> --piece <number>` once after the
-build. It runs the project's recorded test command on a throwaway copy of the
-start commit and on the current project. Each machine-judged Done when line
+Note the start commit before coding. Run
+`quality.py tests --base <start commit> --piece <number>` once after the build.
+It runs the project's recorded test command on a throwaway copy of the start
+commit and on the current project.
+Each machine-judged Done when line
 needs a test titled with its D number, such as `D1` or `D2`. Commit these
 failing tests before building, with a `Test:` subject. A test in the red
 commit stays frozen. A later `Test:` commit may add tests; changing an existing
