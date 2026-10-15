@@ -14,13 +14,17 @@ for cannot join the private network, and then public with the gate the
 recipe's Access section names. Open address with invitation only, and public,
 take the public lane with no gate. Copy the block it prints into the
 masterplan and put it in the reply, followed by the script's last line, so the
-person can paste it. `Env vars` lists all setting names. `Build vars` lists
-the names the build needs; set those at build time too. The request defaults
-`Previews` to `no`. If the person wants them, write `yes, second Supabase
-project <ref>, Basic Authentication in front`. The companion switches previews
-on but does not set Basic Authentication yet, so the person or companion must
-add it. The request names settings and never carries a value, key, password or
-token.
+person can paste it. `Env vars` lists runtime names that are not build names.
+`Build vars` lists the names the build needs; those names are set at build time
+and are not repeated under `Env vars`. The request defaults `Previews` to `no`.
+If the person wants them, write `Previews: yes, second Supabase project <ref>,
+Basic Authentication in front`. Only a line starting with `yes` turns previews
+on. The companion creates each `Env vars` and `Build vars` name again for the
+second project, scoped to previews, and reports Basic Authentication as a step
+for the person. The address block's `Preview:` line records whether Basic
+Authentication is confirmed: `basic auth: set by hand, confirmed` or
+`basic auth: set by hand, not yet confirmed`. The request names settings and
+never carries a value, key, password or token.
 
 Exit 1 means the tool cannot be hosted yet, such as a server that listens only
 on 127.0.0.1. Say so once, record it, and leave the request out until the

@@ -31,7 +31,6 @@ case "$lane" in
   internal) lane_text="internal (private network)" ;;
   public) lane_text="public (internet)" ;;
 esac
-env_names=$(cl_names .env.example)
 build_names=$(awk '
   /^#/ { marked = ($0 ~ /^#[[:space:]]*build([[:space:]]|$)/); next }
   /^[A-Za-z_][A-Za-z0-9_]*=/ {
@@ -40,6 +39,8 @@ build_names=$(awk '
   }
   { marked = 0 }
 ' .env.example)
+build_filter=$(printf '%s\n' "$build_names" | paste -sd'|' -)
+env_names=$(cl_names .env.example | awk -v builds="|$build_filter|" 'index(builds, "|" $0 "|") == 0 { print }')
 env_names=$(printf '%s\n' "$env_names" | paste -sd, - | sed 's/,/, /g')
 build_envs=$(printf '%s\n' "$build_names" | paste -sd, - | sed 's/,/, /g')
 [ -n "$build_envs" ] || build_envs=none

@@ -6,7 +6,7 @@ section.
 
 Real run: 2026-09-25
 
-The newer companion paths for previews, rollback and redeploy are not yet proven in a real run.
+The coolify-devops 0.8.2 paths for build vars and previews, and the newer paths for rollback and redeploy, are not yet proven in a real run.
 
 Sign-in and roles: No real run yet; added 2026-10-14.
 Row rules: No real run yet; added 2026-10-14.
