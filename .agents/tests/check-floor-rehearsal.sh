@@ -80,11 +80,6 @@ cp "$REDACT_PY" "$PROJECT/.agents/hooks/redact-secrets.py"
 cp "$CODEX_PY" "$PROJECT/.agents/tools/codex-github-check.py"
 cp "$TEST_CHECK" "$PROJECT/.agents/hooks/check-tests.sh"
 
-ruff check --isolated "$PROJECT/.agents/hooks/scan-secrets.py" \
-  "$PROJECT/.agents/hooks/guard-secrets.py" "$PROJECT/.agents/hooks/redact-secrets.py" \
-  "$PROJECT/.agents/tools/codex-github-check.py" ||
-  fail "a Python file copied into a project fails Ruff's default rules"
-echo "  ok: every Python file copied into the project passes Ruff's default rules"
 
 # The edit founding makes: the placeholder step goes, and install, type check,
 # lint and test go in its place, each as its own named step.

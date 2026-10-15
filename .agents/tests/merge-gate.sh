@@ -112,23 +112,23 @@ done
 check_hold no-checks '## Worth stopping for' 1
 check_hold denied '## Worth stopping for' 2
 : > "$GH_LOG"
-out=$(run neutral-other $'## Worth stopping for\n- [x] Settled' 2>&1) && code=0 || code=$?
+out=$(run neutral-other "$(printf '%b' '## Worth stopping for\n- [x] Settled')" 2>&1) && code=0 || code=$?
 [ "$code" -eq 0 ] && grep -Fq "pr merge 12 --merge --match-head-commit $HEAD_SHA" "$GH_LOG" \
   && pass "skipping checks other than project-check do not hold the merge" \
   || fail "a skipped optional check blocked the merge or returned $code: $out"
-check_hold success $'### Worth stopping for:\n  1. [ ] An open finding\n#### details\n- [x] nested item\n### Worth knowing\n- plain note' 1
-check_hold success $'## Review\n### Worth stopping for\n+ [x] Settled\n* [ ] Still open\n## Worth knowing' 1
-check_hold success $'## Worth stopping for\n- [x] Settled\n* plain finding\n## Worth knowing' 1
-check_hold success $'## Worth knowing\n- fine\n## Worth STOPPING FOR\nA paragraph finding.' 1
-check_merge $'## Worth stopping for\n- [x] settled\n  - sub-bullet\n- None'
-check_merge $'## Worth stopping for\n- [x] settled\n  - sub-bullet\n- None'
-check_merge $'## Worth stopping for\n- None.'
-check_merge $'## Worth stopping for\nNothing worth stopping for'
-check_merge $'## Worth stopping for\n- [x] Settled\n\n  This is an indented continuation note.'
-check_merge $'## Worth knowing\n```md\n## Worth stopping for\n- [ ] example\n```'
-check_hold success $'## Worth knowing\n- fine\n**WORTH STOPPING FOR**\n- [ ] later finding' 1
-check_merge $'## Worth stopping for\n- [x] Settled\n## Worth knowing\n- plain note'
-check_merge $'## Review\n- ordinary note'
+check_hold success "$(printf '%b' '### Worth stopping for:\n  1. [ ] An open finding\n#### details\n- [x] nested item\n### Worth knowing\n- plain note')" 1
+check_hold success "$(printf '%b' '## Review\n### Worth stopping for\n+ [x] Settled\n* [ ] Still open\n## Worth knowing')" 1
+check_hold success "$(printf '%b' '## Worth stopping for\n- [x] Settled\n* plain finding\n## Worth knowing')" 1
+check_hold success "$(printf '%b' '## Worth knowing\n- fine\n## Worth STOPPING FOR\nA paragraph finding.')" 1
+check_merge "$(printf '%b' '## Worth stopping for\n- [x] settled\n  - sub-bullet\n- None')"
+check_merge "$(printf '%b' '## Worth stopping for\n- [x] settled\n  - sub-bullet\n- None')"
+check_merge "$(printf '%b' '## Worth stopping for\n- None.')"
+check_merge "$(printf '%b' '## Worth stopping for\nNothing worth stopping for')"
+check_merge "$(printf '%b' '## Worth stopping for\n- [x] Settled\n\n  This is an indented continuation note.')"
+check_merge "$(printf '%b' '## Worth knowing\n```md\n## Worth stopping for\n- [ ] example\n```')"
+check_hold success "$(printf '%b' '## Worth knowing\n- fine\n**WORTH STOPPING FOR**\n- [ ] later finding')" 1
+check_merge "$(printf '%b' '## Worth stopping for\n- [x] Settled\n## Worth knowing\n- plain note')"
+check_merge "$(printf '%b' '## Review\n- ordinary note')"
 
 : > "$GH_LOG"
 out=$(run success '## Worth stopping for' 2>&1) && code=0 || code=$?
