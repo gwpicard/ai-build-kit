@@ -29,12 +29,16 @@ it as a flake and move on.
 REPEATS=1 ./run.sh 5        # one run, for a quick look
 JOBS=8 ./run.sh             # more at once
 REPLAY_PROVIDER=codex REPEATS=1 ./run.sh 57
+REPLAY_PROVIDER=codex MODEL=gpt-6-luna GRADER_MODEL=gpt-6-luna REPLAY_EFFORT=high REPEATS=3 ./run.sh
 ```
 
 Claude Code is the default provider, so existing commands and recorded
 baselines keep their meaning. Set `REPLAY_PROVIDER=codex` to use Codex CLI.
 `MODEL` and `GRADER_MODEL` are optional on Codex and use the CLI default when
 left empty. Set both when a run needs to be repeatable against named models.
+`REPLAY_EFFORT` is optional on Codex. When set, it applies the selected
+reasoning effort to each conversation turn and the grader. The command above
+runs Codex only, with three repeats and high reasoning effort.
 
 The two providers keep one transcript shape and one grader format. Claude Code
 starts with a harness-chosen session id. Codex reports its thread id in JSONL,
@@ -117,6 +121,8 @@ mv ~/.local/state/abk-replay/results ~/.local/state/abk-replay/results-sonnet-20
 `./rollup.sh` prints the summary table, and `run.sh` calls it for you at the
 end. It takes a directory, so `./rollup.sh <path-to-an-archive>` rolls up an
 archived run without re-running anything.
+`./compare.sh <results-before> <results-after>` prints held and state rates
+side by side, and exits with status 1 if either rate fell for any case.
 
 A scenario's earlier results are cleared before it runs again, so the table
 always reflects one measurement rather than the remains of two. Without that,

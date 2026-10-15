@@ -34,12 +34,12 @@ Starter exit 1: list clashing files and ask which to keep. Exit 2: say what
 could not run. With no recipe, copy `templates/foundation/env.example` to
 `.env.example`.
 
-Use managed services for sign-in, payments and files. Hand-build them only if
-a professional responsible for the work owns another design on the record.
+Use managed services for sign-in, payments and files unless a responsible
+professional owns another recorded design.
 For tasks only the person can do, follow `manual-setup.md`. If hosting is
 needed, arrange a preview address using the recipe; `/setup-hosting` sets up
-the team's address later. Record run and check commands and unusual
-conventions in AGENTS.md, plus the design tool named in the interview or
+the team's address later. Record run/check commands, unusual conventions, and
+the interview's design tool in AGENTS.md. If none, record
 `Design tool: none recorded`. If confidential files came up, create and ignore
 their folder, include it in the working-copy file list, and record handling
 rules in AGENTS.md.
@@ -53,11 +53,10 @@ Explore privately needs a local check; other paths need a working remote
 check before shared or live work. Say: "green means the tests really passed;
 red means don't merge, tell /implement."
 
-Before starting the unfinished tool, explain that it will run on this
-computer to check its main page at the recorded address, nothing will be
-published, and it will then stop. Give AGENTS.md's warning about a possible
-confirmation box. Before saving, explain that a local checkpoint will be
-saved and nothing uploaded.
+Before starting the unfinished tool, say it will check the recorded main page
+on this computer, publish nothing, then stop. Give AGENTS.md's
+warning about a possible confirmation box. Before saving, say it will save a
+local checkpoint and upload nothing.
 
 Run `sh scripts/found-save.sh` from the project root. It makes the local
 checkpoint and checks its record. Any non-zero exit means no checkpoint was
@@ -65,6 +64,5 @@ made; report the script's line. If identity is `neutral`, say the checkpoint
 uses that changeable label, nothing was uploaded, and record the real identity
 as an open question. If a `left` line names unsaved work, report it.
 
-Finish with one command that proves the project starts, one passing check, a
-recorded preview or local run path, and the saved checkpoint. Follow
-`completion-report.md` for the report.
+Finish with a start command, a passing check, a recorded preview or local path,
+and the checkpoint. Follow `completion-report.md` for the report.

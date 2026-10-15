@@ -117,7 +117,8 @@ merge-behind-main
 promises-list-stale
 build-nothing-mark
 founding-starter-refusal
-prelaunch-migration-route"
+prelaunch-migration-route
+replay-effort-ignored"
 
 describe() {
   case "$1" in
@@ -200,6 +201,7 @@ describe() {
     build-nothing-mark) echo "a build leaves the masterplan mark behind when its change says nothing" ;;
     founding-starter-refusal) echo "founding writes a replacement starter before asking after a command refusal" ;;
     prelaunch-migration-route) echo "a pre-launch piece chooses its own database migration route" ;;
+    replay-effort-ignored) echo "Codex replay calls stop receiving the requested reasoning effort" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -237,6 +239,7 @@ checks_for() {
     merge-behind-main) echo "merge-gate" ;;
     promises-list-stale) echo "promises-list-rehearsal" ;;
     build-nothing-mark|founding-starter-refusal|prelaunch-migration-route) echo "$DEFAULT_CHECKS" ;;
+    replay-effort-ignored) echo "replay-provider" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -977,6 +980,16 @@ t = open(p).read()
 old = "Use this route for every piece, even if\n`/setup-hosting` has not run before."
 assert old in t, "pre-launch migration route instruction not found"
 open(p, "w").write(t.replace(old, "Let each piece choose its own migration route.", 1))
+'
+      ;;
+    replay-effort-ignored)
+      edit "$tree/.agents/tests/replay/provider.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "if [ -n \"${REPLAY_EFFORT:-}\" ]; then"
+assert t.count(old) == 3, "expected effort handling on all three Codex calls"
+open(p, "w").write(t.replace(old, "if false; then"))
 '
       ;;
     *)
