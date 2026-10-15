@@ -189,7 +189,8 @@ def auto_holds(data, main, head):
         return (path.startswith((".github/", ".claude/", ".agents/")) or
                 name in {".env.example", "checks.yml", "checks.yaml", "pyproject.toml",
                          "package.json", "package-lock.json", "npm-shrinkwrap.json",
-                         "pnpm-lock.yaml", "yarn.lock", "uv.lock", "poetry.lock",
+                         "pnpm-lock.yaml", "yarn.lock", "uv.lock", "poetry.lock", "bun.lock", "bun.lockb",
+                         "requirements.txt", "pipfile.lock", "gemfile.lock", "cargo.lock", "go.sum",
                          "pipfile", "pipfile.lock", "cargo.toml", "cargo.lock",
                          "composer.json", "composer.lock", "go.mod", "go.sum",
                          "gemfile", "gemfile.lock", "requirements.txt"} or

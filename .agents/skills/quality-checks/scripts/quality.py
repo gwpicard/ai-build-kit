@@ -1511,7 +1511,7 @@ def test_command(root):
     recorded = re.search(r"(?im)^\s*(?:[-*]\s*)?\*{0,2}(?:test(?:\s+command)?|tests)\*{0,2}\s*:\s*`?([^`\n]+)`?\s*$", agents)
     if recorded:
         return shlex.split(recorded.group(1).strip())
-    recipe_project = bool(re.search(r"(?im)^\s*Recipe:\s*\S+", agents))
+    recipe_project = bool(re.search(r"(?im)^\s*Recipe:\s*(?!none\b)\S+", agents))
     # AGENTS.md records the project's stack. Prefer its test command so local
     # quality reads use the same runner as the person.
     for path in (".github/workflows/checks.yml", "checks.yml", QUALITY_FLOOR):
