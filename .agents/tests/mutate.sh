@@ -71,10 +71,13 @@ command-loads-command
 command-over-budget
 background-one-caller
 recipe-framework-major
+recipe-worker-coolify-only
 recipe-fits-category
 recipe-starter-path
 recipe-deferred-launch-script
-starter-copy-overwrites"
+starter-copy-overwrites
+read-only-db-privilege
+worker-queue-name"
 
 describe() {
   case "$1" in
@@ -110,10 +113,13 @@ describe() {
     command-over-budget) echo "a command grows past its word budget" ;;
     background-one-caller) echo "a background skill is left with one caller and no agent that loads it" ;;
     recipe-framework-major) echo "a recipe accepts a framework without a pinned major version" ;;
+    recipe-worker-coolify-only) echo "a recipe outside Coolify accepts the Python document worker" ;;
     recipe-fits-category) echo "a recipe accepts a category outside the research list" ;;
     recipe-starter-path) echo "a recipe accepts a starter path that does not exist" ;;
     recipe-deferred-launch-script) echo "a launch section can defer its script to a future part" ;;
     starter-copy-overwrites) echo "recipe starter copying replaces a project file it should refuse to touch" ;;
+    read-only-db-privilege) echo "the existing database check stops checking whether the user can insert rows" ;;
+    worker-queue-name) echo "the worker check looks for a different queue than the migration creates" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -129,8 +135,10 @@ checks_for() {
     command-loads-command) echo "validate-kit" ;;
     command-over-budget) echo "validate-kit" ;;
     background-one-caller) echo "validate-kit" ;;
-    recipe-framework-major|recipe-fits-category|recipe-starter-path|recipe-deferred-launch-script) echo "recipes" ;;
+    recipe-framework-major|recipe-worker-coolify-only|recipe-fits-category|recipe-starter-path|recipe-deferred-launch-script) echo "recipes" ;;
     starter-copy-overwrites) echo "starter-copy-rehearsal" ;;
+    read-only-db-privilege) echo "read-only-database" ;;
+    worker-queue-name) echo "python-worker-check" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -156,9 +164,19 @@ apply() {
 import os
 p = os.environ["MUTATE_TARGET"]
 t = open(p).read()
-old = "if framework and not re.search("
+old = """if not re.fullmatch(r\"[A-Za-z][A-Za-z0-9 .+-]*?\\s+\\d+\", value) or re.search(r\"\\b(or|latest)\\b\", value, re.I):"""
 assert old in t, "pinned framework major check not found"
-open(p, "w").write(t.replace(old, "if False and framework and not re.search(", 1))
+open(p, "w").write(t.replace(old, "if False and (not re.fullmatch(r\"[A-Za-z][A-Za-z0-9 .+-]*?\\s+\\d+\", value) or re.search(r\"\\b(or|latest)\\b\", value, re.I)):", 1))
+'
+      ;;
+    recipe-worker-coolify-only)
+      edit "$tree/.agents/tools/check-recipes.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "        if \"Python document worker\" in value and (not deploy or \"Coolify\" not in deploy.group(1)):"
+assert old in t, "Coolify-only worker guard not found"
+open(p, "w").write(t.replace(old, "        if False and \"Python document worker\" in value and (not deploy or \"Coolify\" not in deploy.group(1)):", 1))
 '
       ;;
     recipe-fits-category)
@@ -199,6 +217,26 @@ t = open(p).read()
 old = "if clashes:\n    print(\"refused: these starter files already exist:\", file=sys.stderr)"
 assert old in t, "starter clash refusal not found"
 open(p, "w").write(t.replace(old, "if False and clashes:\n    print(\"refused: these starter files already exist:\", file=sys.stderr)", 1))
+'
+      ;;
+    read-only-db-privilege)
+      edit "$tree/.agents/skills/setup-hosting/recipes/parts/scripts/read-only-database.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "has_table_privilege(current_user,c.oid,\x27INSERT\x27)"
+assert old in t, "INSERT privilege read not found"
+open(p, "w").write(t.replace(old, "false", 1))
+'
+      ;;
+    worker-queue-name)
+      edit "$tree/.agents/skills/setup-hosting/recipes/parts/scripts/python-worker-check.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "pgmq.q_document_jobs"
+assert old in t, "document queue name not found"
+open(p, "w").write(t.replace(old, "pgmq.q_wrong_jobs", 1))
 '
       ;;
     reach-route-groups)

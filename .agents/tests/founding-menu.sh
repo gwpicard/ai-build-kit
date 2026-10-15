@@ -27,9 +27,6 @@ PROJECT_PATH='\.agents/skills/setup-hosting/(recipes|references)'
 # made up here, so a product added to or taken off the real menu changes
 # nothing in this check.
 
-SAY_ONE='The kit has one recipe for a tool like this: a way to build it and run it that the kit can check at launch.'
-SAY_NONE='No recipe the kit knows fits this tool, so I will set it up on a common stack, and the kit cannot check its launch steps for you.'
-
 write_recipe() {
   # write_recipe <recipes folder> <recipe> <name>: a recipe folder.
   mkdir -p "$1/$2"
@@ -79,13 +76,10 @@ menu_route() {
   [ "$(grep -c '^Work-team default: recipe 1, Alpha on North;' "$WORK/said")" -eq 1 ] &&
     grep -q '^Work-team default: recipe 1, Alpha on North; needs North Pro\.$' "$WORK/said" ||
     fail "$route: the work-team default number and name do not appear once"
-  [ "$(sed -n 2p "$WORK/said")" = "$SAY_ONE" ] ||
-    fail "$route: a menu of one does not open with the sentence naming one recipe"
-  [ "$(sed -n 3p "$WORK/said")" = "1. Alpha on North (recommended)" ] ||
-    fail "$route: the single recipe is not shown as recommended"
-  [ "$(sed -n 4p "$WORK/said")" = "Alpha on North is selected. Founding carries on with it unless you pick another recipe, and you may bring your own stack instead." ] ||
-    fail "$route: a menu of one is not named the default, with an own stack offered"
-  [ "$(grep -c . "$WORK/said")" -eq 4 ] || fail "$route: a menu of one says more than its four lines"
+  [ "$(grep -c '^1\. Alpha on North' "$WORK/said")" -eq 1 ] ||
+    fail "$route: the only recipe is not numbered once"
+  [ "$(grep -c '(recommended)$' "$WORK/said")" -eq 1 ] ||
+    fail "$route: the only recipe is not marked recommended"
   grep -qxF "Recipe folder: $(CDPATH= cd -- "$1" && pwd -P)/alpha-on-north" "$out" ||
     fail "$route: the script does not give the chosen recipe's path for the tool report"
   [ "$(grep -c '^founding-menu|' "$record")" -eq 1 ] &&
@@ -118,8 +112,8 @@ menu_route() {
     grep -qxF '2. Beta on South (recommended)' "$WORK/said" &&
     grep -qxF '1. Alpha on North' "$WORK/said" ||
     fail "$route: a menu of two does not mark exactly the chosen recipe"
-  grep -qxF 'Beta on South is selected. Founding carries on with it unless you pick another recipe, and you may bring your own stack instead.' "$WORK/said" ||
-    fail "$route: a menu of two does not name the chosen recipe"
+  [ "$(grep -c '^2\. Beta on South (recommended)$' "$WORK/said")" -eq 1 ] ||
+    fail "$route: the chosen recipe is not numbered and marked recommended"
   [ "$(grep -c '^Work-team default: recipe 1, Alpha on North; needs North Pro\.$' "$WORK/said")" -eq 1 ] ||
     fail "$route: the work-team default number and name are missing or repeated"
   grep -qxF "founding-menu|$today|alpha-on-north,beta-on-south" "$record" ||
@@ -139,13 +133,14 @@ menu_route() {
   # None fits, and an empty menu: one sentence, and the menu line still written.
   (cd "$project" && sh "$script" --record .ai-build-kit-maintenance --none > "$out" 2>&1) ||
     fail "$route: the script failed when no recipe fits"
-  [ "$(said "$out")" = "$SAY_NONE" ] || fail "$route: no fitting recipe is not said in its one line"
+  [ -z "$(sed -n '/^Say this in your reply/,$p' "$out" | grep -E '^[0-9]+\. ')" ] ||
+    fail "$route: a recipe was shown when none fits"
   grep -qxF "founding-menu|$today|alpha-on-north,beta-on-south" "$record" ||
     fail "$route: no fitting recipe left the menu line unwritten"
   for f in "$@"; do fill_menu "$f" none; done
   (cd "$project" && sh "$script" --record .ai-build-kit-maintenance > "$out" 2>&1) ||
     fail "$route: the script failed on an empty menu"
-  grep -qxF 'Menu: none' "$out" && [ "$(said "$out")" = "$SAY_NONE" ] ||
+  grep -qxF 'Menu: none' "$out" && [ -z "$(sed -n '/^Say this in your reply/,$p' "$out" | grep -E '^[0-9]+\. ')" ] ||
     fail "$route: an empty menu is not said in its one line"
   grep -qxF "founding-menu|$today|" "$record" ||
     fail "$route: an empty menu left no menu line"

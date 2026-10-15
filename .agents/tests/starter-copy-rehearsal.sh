@@ -27,9 +27,11 @@ done
 
 printf 'keep this file\n' > "$SCRATCH/clash/package.json"
 printf 'also keep this\n' > "$SCRATCH/clash/Dockerfile"
-if "$COPY" "$RECIPE" "$SCRATCH/clash" >"$SCRATCH/clash.out" 2>&1; then
-  fail "existing starter files were overwritten"
-fi
+set +e
+"$COPY" "$RECIPE" "$SCRATCH/clash" >"$SCRATCH/clash.out" 2>&1
+status=$?
+set -e
+[ "$status" -eq 1 ] || fail "starter clash returned $status instead of 1"
 grep -qF 'package.json' "$SCRATCH/clash.out" || fail "clash report omitted package.json"
 grep -qF 'Dockerfile' "$SCRATCH/clash.out" || fail "clash report omitted Dockerfile"
 [ "$(cat "$SCRATCH/clash/package.json")" = 'keep this file' ] || fail "package.json was overwritten"

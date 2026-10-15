@@ -77,6 +77,20 @@ ok "an unfilled blank is refused as a recipe"
 
 "$CHECKER" "$GOOD" >/dev/null
 ok "a filled recipe folder passes, dated on a leap day"
+sed 's#^Optional parts: none$#Optional parts: read-only existing database#' "$GOOD/recipe.md" > "$WORK/optional-recipe.md"
+cp "$WORK/optional-recipe.md" "$GOOD/recipe.md"
+"$CHECKER" "$GOOD" >/dev/null || fail "a recipe naming an available optional part was refused"
+sed 's#^Optional parts: read-only existing database$#Optional parts: read-only existing database and Python document worker#' "$GOOD/recipe.md" > "$WORK/optional-recipe.md"
+cp "$WORK/optional-recipe.md" "$GOOD/recipe.md"
+if "$CHECKER" "$GOOD" >/dev/null 2>&1; then
+  fail "a non-Coolify recipe accepted the Python document worker"
+fi
+sed -e 's#^Optional parts: read-only existing database and Python document worker$#Optional parts: read-only existing database and Python document worker#' \
+  -e 's#^Deploy target: .*#Deploy target: Coolify#' "$GOOD/recipe.md" > "$WORK/optional-recipe.md"
+cp "$WORK/optional-recipe.md" "$GOOD/recipe.md"
+"$CHECKER" "$GOOD" >/dev/null || fail "a Coolify recipe naming the Python document worker was refused"
+sed 's#^Optional parts: read-only existing database and Python document worker$#Optional parts: none#' "$GOOD/recipe.md" > "$WORK/optional-recipe.md"
+cp "$WORK/optional-recipe.md" "$GOOD/recipe.md"
 "$CHECKER" "$GOOD/recipe.md" >/dev/null
 ok "the same recipe passes when its recipe.md is named"
 mkdir -p "$GOOD/starters/example"

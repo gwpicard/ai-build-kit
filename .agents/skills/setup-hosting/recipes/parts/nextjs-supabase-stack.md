@@ -1,5 +1,7 @@
 # Shared stack: Next.js, TypeScript and Supabase
 
+Vercel plan terms: Hobby is for personal, non-commercial use. Paid employees or consultants writing the code count as commercial, and its preview gate admits one outside person. Work teams need Pro. Read 2026-10-14: [fair use](https://vercel.com/docs/limits/fair-use-guidelines) and [preview access](https://vercel.com/docs/deployment-protection/methods-to-protect-deployments/vercel-authentication).
+
 ## Sign-in and roles
 How it works: Supabase Auth keeps public sign-up off. A server call invites each person by email. A roles table and the Custom Access Token hook pass each person's role to database policies. Server route handlers and actions check access; Proxy is never the only check.
 How it is checked: The settings script confirms public sign-up is off. The role access test comes in part B.
@@ -13,7 +15,7 @@ Script: scripts/rls.sh
 Who runs it: the kit
 
 ## Files
-How it works: Supabase Storage holds files in private buckets, with policies that follow the person's role. Document extraction defaults to plain text on the team's own server. Sending documents to a model is opt-in and needs the notice in [document processing](references/document-processing.md) at founding. Database backups do not include Storage files, so the team records a separate file backup plan.
+How it works: Supabase Storage holds files in private buckets, with policies that follow the person's role. Document extraction defaults to plain text on the team's own server. Sending documents to a model is opt-in and needs the notice in [fit-check's risk notice](../../../fit-check/references/risk-notice.md) at founding. Database backups do not include Storage files, so the team records a separate file backup plan.
 How it is checked: Each bucket is private and has a policy for the roles that use it.
 Script: coming in part B
 Who runs it: the kit
