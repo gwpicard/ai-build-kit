@@ -1,5 +1,5 @@
 ---
-description: Begin a new project, or resume a beginning that was interrupted.
+description: Start or resume project setup with /setup-ai-build-kit.
 ---
 <!-- GENERATED from .agents/skills/setup-ai-build-kit/. Do not edit here; regenerate with .agents/tools/build-adapters.sh -->
 

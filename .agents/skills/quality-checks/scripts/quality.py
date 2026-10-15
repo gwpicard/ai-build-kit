@@ -1223,7 +1223,11 @@ def reach(root, paths, base, piece, should_run, engines):
                 print(f"undeclared\ttable {name}\tnot in piece {piece}'s Reaches line")
 
     if should_run:
-        runner = engines.find("vitest")
+        recorded_command = test_command(root)
+        recorded_text = " ".join(recorded_command or []).lower()
+        package_text = read(root, "package.json").lower()
+        uses_vitest = "vitest" in recorded_text or "vitest" in package_text
+        runner = engines.find("vitest") if uses_vitest or not recorded_command else None
         targets = sorted(set(seeds) | reached)
         test_status = 0
         if runner:
@@ -1235,7 +1239,7 @@ def reach(root, paths, base, piece, should_run, engines):
             elif code != 0:
                 print("not-checked\ttests\tVitest did not produce a test result summary")
                 test_status = 2
-        else:
+        elif not recorded_command or "pytest" in recorded_text:
             pytest = [sys.executable, "-m", "pytest"]
             pytests = sorted(p for p in files if p.endswith(".py") and is_test(p) and
                              (p in set(seeds) | reached or p in importers))
@@ -1255,6 +1259,9 @@ def reach(root, paths, base, piece, should_run, engines):
             else:
                 print("not-checked\ttests\tVitest is not installed")
                 test_status = 2
+        else:
+            print("not-checked\ttests\tThe recorded test runner is not supported by reach")
+            test_status = 2
         if test_status == 0:
             playwright = engines.find("playwright")
             screen_routes = {route for route in routes if done_names_screen(piece_body, route)}
@@ -1415,13 +1422,23 @@ def strength_py(root, changed, engines):
         text = re.sub(r"(?ms)^\[tool\.mutmut\].*?(?=^\[|\Z)", "", text)
         folders = sorted({p.split("/")[0] if "/" in p else p for p in targets})
         with open(config, "w", encoding="utf-8") as handle:
-            handle.write(text + "\n[tool.mutmut]\nsource_paths = " + json.dumps(folders) + "\n")
-        code, _, _ = run(cmd + ["run", *[name + "__mutmut_*" for name in sorted(wanted)]],
-                         cwd=copy, timeout=3600)
+            paths = json.dumps(folders)
+            handle.write(text + "\n[tool.mutmut]\nsource_paths = " + paths +
+                         "\npaths_to_mutate = " + paths + "\n")
+        setup_config = os.path.join(copy, "setup.cfg")
+        setup_text = read(copy, "setup.cfg")
+        setup_text = re.sub(r"(?ms)^\[mutmut\].*?(?=^\[|\Z)", "", setup_text)
+        with open(setup_config, "w", encoding="utf-8") as handle:
+            handle.write(setup_text + "\n[mutmut]\nsource_paths = " + ",".join(folders) +
+                         "\npaths_to_mutate = " + ",".join(folders) + "\n")
+        code, out, err = run(cmd + ["run", *[name + "__mutmut_*" for name in sorted(wanted)]],
+                             cwd=copy, timeout=3600)
         if code != 0:
             # mutmut first runs the tests on the unbroken code. When that run
             # fails, nothing was tried, and no result below means anything.
-            return None, "the tests failed before any code was broken, so nothing was tried"
+            detail = (err or out).strip().splitlines()
+            suffix = ": " + detail[-1][:160] if detail else ""
+            return None, "the tests failed before any code was broken, so nothing was tried" + suffix
         code, out, err = run(cmd + ["results", "--all", "true"], cwd=copy)
         if code != 0:
             return None, "mutmut did not finish"
@@ -1490,6 +1507,13 @@ def strength(root, base, engines):
 
 def test_command(root):
     """Use the check's recorded command before inferring a runner."""
+    agents = read(root, "AGENTS.md")
+    recorded = re.search(r"(?im)^\s*(?:[-*]\s*)?\*{0,2}(?:test(?:\s+command)?|tests)\*{0,2}\s*:\s*`?([^`\n]+)`?\s*$", agents)
+    if recorded:
+        return shlex.split(recorded.group(1).strip())
+    recipe_project = bool(re.search(r"(?im)^\s*Recipe:\s*(?!none\b)\S+", agents))
+    # AGENTS.md records the project's stack. Prefer its test command so local
+    # quality reads use the same runner as the person.
     for path in (".github/workflows/checks.yml", "checks.yml", QUALITY_FLOOR):
         text = read(root, path)
         if not text:
@@ -1497,29 +1521,30 @@ def test_command(root):
         commands = []
         in_run = False
         run_indent = 0
+        recipe_only = False
         for line in text.splitlines():
+            if re.match(r"^\s*- name:", line):
+                recipe_only = False
+            if re.match(r"^\s*if:\s*steps\.recipe\.outputs\.selected\s*==\s*'true'", line):
+                recipe_only = True
             match = re.match(r"^(\s*)(?:-\s*)?run:\s*(.*)$", line)
             if match:
                 in_run = True
                 run_indent = len(match.group(1))
-                if match.group(2).strip() and match.group(2).strip() != "|":
+                if not (recipe_only and not recipe_project) and match.group(2).strip() and match.group(2).strip() != "|":
                     commands.append(match.group(2).strip().strip("'\""))
                 continue
             if in_run:
                 indent = len(line) - len(line.lstrip())
                 if line.strip() and indent <= run_indent:
                     in_run = False
-                elif line.strip():
+                elif line.strip() and not (recipe_only and not recipe_project):
                     commands.append(line.strip())
         for command in commands:
             if re.search(r"\bpytest\b", command):
                 return shlex.split(command)
             if re.search(r"\b(?:vitest|playwright)\b", command):
                 return shlex.split(command)
-    agents = read(root, "AGENTS.md")
-    match = re.search(r"(?im)^\s*(?:[-*]\s*)?\*{0,2}(?:test(?:\s+command)?|tests)\*{0,2}\s*:\s*`?([^`\n]+)`?\s*$", agents)
-    if match:
-        return shlex.split(match.group(1).strip())
     try:
         package = json.loads(read(root, "package.json"))
         script = package.get("scripts", {}).get("test", "")
@@ -1927,6 +1952,99 @@ def test_read(root, base, piece):
         return 1
     return 2 if unavailable else 0
 
+
+def overlap(root, pieces):
+    """Refuse parallel pieces whose recorded reaches share work."""
+    if len(pieces) < 2 or len(pieces) > 3 or len(set(pieces)) != len(pieces):
+        print("overlap: give two or three different piece numbers", file=sys.stderr)
+        return 2
+    plan = git("show", "main:masterplan.md", cwd=root)
+    if plan is None:
+        plan = read(root, "masterplan.md")
+    else:
+        plan = plan
+    setting = re.search(r"(?m)^Runs on its own:.*$", plan)
+    path_line = re.search(r"(?m)^Path:\s*(.+?)\s*$", plan)
+    parallel = re.search(r"\bparallel\s+([23])\b", setting.group(0), re.I) if setting else None
+    if not parallel or not path_line or path_line.group(1) == "Explore privately":
+        print("overlap: parallel building is off on main", file=sys.stderr)
+        return 1
+    if len(pieces) > int(parallel.group(1)):
+        print("overlap: the setting on main allows %s parallel pieces" % parallel.group(1), file=sys.stderr)
+        return 1
+    reaches = {}
+    for number in pieces:
+        try:
+            result = subprocess.run(["gh", "issue", "view", str(number), "--json", "body"],
+                                    cwd=root, capture_output=True, text=True)
+        except OSError as error:
+            print("overlap: GitHub CLI could not run: " + str(error), file=sys.stderr)
+            return 2
+        if result.returncode:
+            print("overlap: could not read piece " + str(number), file=sys.stderr)
+            return 2
+        try:
+            body = json.loads(result.stdout)["body"]
+        except (ValueError, KeyError, TypeError):
+            print("overlap: piece " + str(number) + " has unreadable details", file=sys.stderr)
+            return 2
+        match = re.search(REACHES_LINE, body, re.M)
+        if not match or "undeclared" in match.group(1).casefold():
+            print("overlap: piece %s has no usable Reaches line" % number, file=sys.stderr)
+            return 2
+        reaches[number] = {part.strip().strip("`.,") for part in re.split(r"[,;]", match.group(1))
+                           if part.strip() and "new files only" not in part.casefold()}
+    all_files = project_files(root)
+    tables = table_names(root, all_files)
+    masterplan = read(root, "masterplan.md")
+    areas = []
+    inside = False
+    for line in masterplan.splitlines():
+        if line.strip() == "Sensitive areas:":
+            inside = True
+            continue
+        if inside and line and not line[0].isspace():
+            inside = False
+        if inside and line.strip().startswith("paths:"):
+            areas.extend(x.strip().strip("`.,") for x in line.split(":", 1)[1].split(","))
+    settings = {".env.example", "checks.yml", "checks.yaml", "package.json",
+                "pyproject.toml", "pnpm-lock.yaml", "package-lock.json", "yarn.lock", "uv.lock"}
+    bad_pairs = []
+    numbers = list(reaches)
+    for index, left in enumerate(numbers):
+        for right in numbers[index + 1:]:
+            shared = reaches[left] & reaches[right]
+            if shared:
+                bad_pairs.append((left, right, "shared file " + sorted(shared)[0]))
+                continue
+            left_migrations = {p for p in reaches[left] if "migrations/" in p and p.endswith(".sql")}
+            right_migrations = {p for p in reaches[right] if "migrations/" in p and p.endswith(".sql")}
+            if left_migrations or right_migrations:
+                bad_pairs.append((left, right, "migration work"))
+                continue
+            left_tables = {name for name, paths in tables.items() if paths & reaches[left]}
+            right_tables = {name for name, paths in tables.items() if paths & reaches[right]}
+            shared_tables = left_tables & right_tables
+            if shared_tables:
+                bad_pairs.append((left, right, "shared table " + sorted(shared_tables)[0]))
+                continue
+            if any(os.path.basename(path).casefold() in settings or
+                   path.casefold().endswith("/checks.yml") or
+                   path.casefold().endswith("/checks.yaml")
+                   for path in reaches[left] | reaches[right]):
+                bad_pairs.append((left, right, "project setting"))
+                continue
+            if any(path == pattern or path.startswith(pattern.rstrip("/") + "/")
+                   or fnmatch.fnmatchcase(path, pattern)
+                   for path in reaches[left] | reaches[right] for pattern in areas):
+                bad_pairs.append((left, right, "sensitive area"))
+    if bad_pairs:
+        for left, right, reason in bad_pairs:
+            print("overlap\t%s\t%s\t%s" % (left, right, reason))
+        return 1
+    print("overlap\tclear\t%d pieces" % len(pieces))
+    return 0
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     sub = parser.add_subparsers(dest="read", required=True)
@@ -1953,6 +2071,8 @@ def main():
     p = sub.add_parser("tests")
     p.add_argument("--base", required=True)
     p.add_argument("--piece", required=True)
+    p = sub.add_parser("overlap")
+    p.add_argument("--pieces", nargs="+", required=True, type=int)
     try:
         args = parser.parse_args()
     except SystemExit:
@@ -1966,6 +2086,8 @@ def main():
         return 2
     root = top.strip()
     os.chdir(root)
+    if args.read == "overlap":
+        return overlap(root, args.pieces)
     if args.read == "offered":
         rows = [line.rstrip("\n").split("\t") for line in sys.stdin if line.strip()]
         key = waste_key if args.which == "waste" else loop_key

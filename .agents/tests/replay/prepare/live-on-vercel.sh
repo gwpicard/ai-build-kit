@@ -472,7 +472,9 @@ state = {
         "number": 1,
         "title": "Say plainly what the sign-in button does",
         "body": "Closes #4\n\nThe sign-in button now reads \"Email me a sign-in link\" "
-                "instead of \"Continue\". The test for the sign-in wording checks the new words.\n",
+                "instead of \"Continue\". The test for the sign-in wording checks the new words.\n\n"
+                "## Worth stopping for\n- None\n\n## Worth knowing\n- None\n"
+                "Review record: reviewed=quality review; tried=0; open=0\n",
         "head": "sign-in-button-wording",
         "base": "main",
         "state": "OPEN",

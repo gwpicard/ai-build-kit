@@ -18,7 +18,25 @@
 
 set -eu
 
-OUT=${1:-plan.local.md}
+NEXT=0
+if [ "${1:-}" = "--next" ]; then
+  NEXT=1
+  OUT=plan.local.md
+else
+  OUT=${1:-plan.local.md}
+fi
+
+if [ "$NEXT" -eq 1 ]; then
+  setting=$(git show main:masterplan.md 2>/dev/null || cat masterplan.md 2>/dev/null || true)
+  printf '%s\n' "$setting" | grep -Eq '^Path: (Build and run it|Build with care)$' || {
+    echo "plan-refresh: the queue is not available on Explore privately" >&2
+    exit 1
+  }
+  printf '%s\n' "$setting" | grep -Eq '^Runs on its own:.*[[:space:],]queue([[:space:],(]|$)' || {
+    echo "plan-refresh: the queue is off on main" >&2
+    exit 1
+  }
+fi
 
 command -v gh >/dev/null 2>&1 || {
   echo "plan-refresh: the GitHub CLI is not installed, so the plan cannot be refreshed" >&2
@@ -147,10 +165,10 @@ done
 listing_file="$scratch/issues.json"
 printf '%s' "$listing" > "$listing_file"
 
-python3 - "$OUT" "$listing_file" "$blocker_map" <<'PY'
+python3 - "$OUT" "$listing_file" "$blocker_map" "$NEXT" <<'PY'
 import json, sys, subprocess
 
-out, listing_file, blocker_raw = sys.argv[1], sys.argv[2], sys.argv[3]
+out, listing_file, blocker_raw, next_only = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4] == "1"
 issues = [i for i in json.load(open(listing_file)) if not i.get("pull_request")]
 
 blockers = {}
@@ -158,6 +176,23 @@ for line in blocker_raw.splitlines():
     if "\t" in line:
         number, names = line.split("\t", 1)
         blockers[int(number)] = names.strip()
+
+if next_only:
+    candidates = []
+    for issue in issues:
+        labels = {item.get("name") for item in issue.get("labels", [])}
+        body = issue.get("body") or ""
+        number = issue.get("number")
+        if (number is not None and "ready" in labels and not issue.get("assignees")
+                and not blockers.get(number) and "## Done when" in body
+                and not (issue.get("sub_issues_summary") or {}).get("total", 0)):
+            candidates.append(issue)
+    if not candidates:
+        print("plan-refresh: no ready, unblocked, unassigned piece", file=sys.stderr)
+        raise SystemExit(1)
+    issue = min(candidates, key=lambda item: item["number"])
+    print("%s\t%s" % (issue["number"], issue["title"]))
+    raise SystemExit(0)
 
 stamp = subprocess.run(["date", "+%d %b, %H:%M"], capture_output=True,
                        text=True).stdout.strip()

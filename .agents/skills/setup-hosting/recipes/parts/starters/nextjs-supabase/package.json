@@ -9,6 +9,8 @@
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
     "check": "sh scripts/check.sh"
   },
   "dependencies": {
@@ -29,6 +31,7 @@
     "@types/node": "24.5.2",
     "@types/react": "19.1.13",
     "@types/react-dom": "19.1.9",
+    "@vitest/coverage-v8": "3.2.4",
     "eslint": "9.36.0",
     "eslint-config-next": "16.0.0",
     "tailwindcss": "4.1.14",

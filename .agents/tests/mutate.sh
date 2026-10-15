@@ -89,6 +89,14 @@ merge-missing-check
 merge-pending-bucket-only
 merge-skipping-project-pass
 merge-first-box-only
+auto-migration-pass
+auto-sensitive-setting-pass
+auto-live-needs-pass
+auto-try-it-pass
+auto-repair-pass
+review-boxes-never-open
+review-brief-hides-missing-input
+review-record-keeps-unsupported
 merge-any-check-name
 merge-area-call-skipped
 merge-area-open-ignored
@@ -97,7 +105,15 @@ tests-untested-status
 tests-zero-coverage-pass
 tests-missing-coverage-pass
 tests-after-failure-pass
-test-fix-empty-reason"
+test-fix-empty-reason
+runner-fails-green
+migration-misses-ready
+mark-ready-skips-done-when
+first-upload-ignores-shared-history
+strength-config-lost
+review-gate-leaves-draft-edited
+attempt-cap
+merge-behind-main"
 
 describe() {
   case "$1" in
@@ -151,6 +167,14 @@ describe() {
     merge-pending-bucket-only) echo "a pending check is accepted because gh --json exits zero" ;;
     merge-skipping-project-pass) echo "a skipped project-check is accepted as passed" ;;
     merge-first-box-only) echo "the second open finding is ignored after a settled first box" ;;
+    auto-migration-pass) echo "automatic merge no longer waits for a migration" ;;
+    auto-sensitive-setting-pass) echo "automatic merge accepts a change to a setting" ;;
+    auto-live-needs-pass) echo "automatic merge skips a live setting requirement" ;;
+    auto-try-it-pass) echo "automatic merge stops waiting for a person to try the result" ;;
+    auto-repair-pass) echo "automatic merge takes a repair without a named yes" ;;
+    review-boxes-never-open) echo "an unticked stopping finding no longer holds the project check" ;;
+    review-brief-hides-missing-input) echo "a packet with missing agreement inputs is reported as complete" ;;
+    review-record-keeps-unsupported) echo "a finding without evidence or a concrete scenario reaches the pull request" ;;
     merge-any-check-name) echo "a different passing check stands in for project-check" ;;
     merge-area-call-skipped) echo "an open sensitive area is not checked before merge" ;;
     merge-area-open-ignored) echo "an open sensitive area is reported but does not hold merge" ;;
@@ -160,6 +184,14 @@ describe() {
     tests-missing-coverage-pass) echo "a missing coverage report can go unreported" ;;
     tests-after-failure-pass) echo "a failed after-run can be treated as fine" ;;
     test-fix-empty-reason) echo "an empty Test fix reason can edit a frozen test" ;;
+    runner-fails-green) echo "the runner returns success after a rehearsal fails" ;;
+    migration-misses-ready) echo "the upgrade check misses open pieces that need the ready label" ;;
+    mark-ready-skips-done-when) echo "a piece without Done when can be marked ready" ;;
+    first-upload-ignores-shared-history) echo "a repository with unrelated work is treated as a first upload" ;;
+    strength-config-lost) echo "the Python mutation check no longer tells mutmut which code to break" ;;
+    review-gate-leaves-draft-edited) echo "the review gate leaves an edited draft in place" ;;
+    attempt-cap) echo "the piece attempt cap rises, so a fourth attempt is allowed" ;;
+    merge-behind-main) echo "merge accepts a pull request branch behind main" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -184,8 +216,17 @@ checks_for() {
     pre-push-reversed-range) echo "push-guard" ;;
     scan-drops-key-shapes|scan-drops-service-role-jwt|scan-drops-named-env-assignment|redactor-drops-multiline-values) echo "secrets-gates" ;;
     merge-missing-check) echo "merge-gate" ;;
-    merge-pending-bucket-only|merge-skipping-project-pass|merge-first-box-only|merge-any-check-name|merge-area-call-skipped|merge-area-open-ignored) echo "merge-gate" ;;
+    merge-pending-bucket-only|merge-skipping-project-pass|merge-first-box-only|merge-any-check-name|merge-area-call-skipped|merge-area-open-ignored|auto-migration-pass|auto-sensitive-setting-pass|auto-live-needs-pass|auto-try-it-pass|auto-repair-pass) echo "merge-gate" ;;
+    review-boxes-never-open|review-brief-hides-missing-input|review-record-keeps-unsupported) echo "review-gate" ;;
     test-freeze-removed|tests-untested-status|tests-zero-coverage-pass|tests-missing-coverage-pass|tests-after-failure-pass|test-fix-empty-reason) echo "tests-prove-change" ;;
+    runner-fails-green) echo "rehearsal-runner" ;;
+    migration-misses-ready) echo "upgrade-rehearsal" ;;
+    mark-ready-skips-done-when) echo "mark-ready" ;;
+    first-upload-ignores-shared-history) echo "first-upload" ;;
+    strength-config-lost) echo "test-strength-rehearsal" ;;
+    review-gate-leaves-draft-edited) echo "review-guard" ;;
+    attempt-cap) echo "autonomy-boundaries" ;;
+    merge-behind-main) echo "merge-gate" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -606,6 +647,15 @@ assert old in s, "the silent-edit failure branch is missing"
 open(p, "w").write(s.replace(old, "          report_once \"Test check: $file changed existing lines in $later without Test fix: reason.\"", 1))
 '
       ;;
+    attempt-cap)
+      edit "$tree/.agents/skills/implement/scripts/attempt.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "if [ \"$count\" -ge 3 ]; then"
+assert old in s, "three-attempt cap not found"
+open(p, "w").write(s.replace(old, "if [ \"$count\" -ge 99 ]; then", 1))'
+      ;;
     background-one-caller)
       # A rule folded back into one caller leaves its background skill with a
       # single user, which then earns no place of its own.
@@ -730,7 +780,7 @@ assert old in s
 open(p, "w").write(s.replace(old, new, 1))'
       ;;
     merge-first-box-only)
-      edit "$tree/.agents/skills/merge/scripts/merge.py" '
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/review_boxes.py" '
 import os
 p = os.environ["MUTATE_TARGET"]
 s = open(p).read()
@@ -738,6 +788,53 @@ old = "if checkbox.group(1).lower() != \"x\":\n                    return True"
 new = "if checkbox.group(1).lower() != \"x\":\n                    return False"
 assert old in s
 open(p, "w").write(s.replace(old, new, 1))'
+      ;;
+    auto-migration-pass)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" 'import os
+p=os.environ["MUTATE_TARGET"]; s=open(p).read(); old="    if any(re.search(r\"(^|/)(migrations?|alembic|versions?)(/|$)|\\.(sql)$\", p, re.I) for p in paths):\n        stop(\"merge: this piece changes a migration; it waits for a named yes\")\n"; assert old in s; open(p,"w").write(s.replace(old,"",1))'
+      ;;
+    auto-sensitive-setting-pass)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" 'import os
+p=os.environ["MUTATE_TARGET"]; s=open(p).read(); old="    if any(is_setting(path) for path in paths):"; assert old in s; s=s.replace(old,"    if False and any(is_setting(path) for path in paths):",1); open(p,"w").write(s)'
+      ;;
+    auto-live-needs-pass)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" 'import os
+p=os.environ["MUTATE_TARGET"]; s=open(p).read(); old="if re.search(r\"(?im)^Live side needs:\\s*\\S+\", piece_body):"; assert old in s; open(p,"w").write(s.replace(old,"if False and re.search(r\"(?im)^Live side needs:\\s*\\S+\", piece_body):",1))'
+      ;;
+    auto-try-it-pass)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" 'import os
+p=os.environ["MUTATE_TARGET"]; s=open(p).read(); old="if done and any(\"(try it)\" in line.casefold() for line in done.group(1).splitlines()):"; assert old in s; open(p,"w").write(s.replace(old,"if False and done and any(\"(try it)\" in line.casefold() for line in done.group(1).splitlines()):",1))'
+      ;;
+    auto-repair-pass)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" 'import os
+p=os.environ["MUTATE_TARGET"]; s=open(p).read(); old="if \"repair\" in labels or \"broken\" in labels or \"repair\" in str(issue_data.get(\"title\", \"\")).casefold():"; assert old in s; open(p,"w").write(s.replace(old,"if False and (\"repair\" in labels or \"broken\" in labels or \"repair\" in str(issue_data.get(\"title\", \"\")).casefold()):",1))'
+      ;;
+    review-boxes-never-open)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/review_boxes.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "def open_review_box(body):\n"
+assert old in s, "review box reader not found"
+open(p, "w").write(s.replace(old, old + "    return False  # mutation ignores all review boxes\n", 1))'
+      ;;
+    review-brief-hides-missing-input)
+      edit "$tree/.agents/skills/quality-checks/scripts/gate.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "    if limits:\n        print(\"Review limits: \" + \"; \".join(limits))\n        return 2\n"
+assert old in s, "brief missing-input status not found"
+open(p, "w").write(s.replace(old, old.replace("if limits:", "if limits and False:"), 1))'
+      ;;
+    review-record-keeps-unsupported)
+      edit "$tree/.agents/skills/quality-checks/scripts/gate.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "        if not supported(row):\n            dropped += 1\n            continue\n"
+assert old in s, "unsupported finding filter not found"
+open(p, "w").write(s.replace(old, "        if False and not supported(row):\n            dropped += 1\n            continue\n", 1))'
       ;;
     merge-any-check-name)
       edit "$tree/.agents/skills/merge/scripts/merge.py" '
@@ -768,6 +865,70 @@ old = "if result.returncode == 1:"
 new = "if False and result.returncode == 1:"
 assert old in s
 open(p, "w").write(s.replace(old, new, 1))'
+      ;;
+    runner-fails-green)
+      edit "$tree/.agents/tests/run-all.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "if [ \"$failed_count\" -gt 0 ]; then"
+assert old in s, "runner failure exit guard not found"
+open(p, "w").write(s.replace(old, "if False; then", 1))'
+      ;;
+    migration-misses-ready)
+      edit "$tree/.agents/skills/maintain/scripts/upgrade-check.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "if DONE_WHEN.search(issue.get(\"body\") or \"\"):\n            shaped.append(issue.get(\"number\"))"
+assert old in s, "ready migration discovery not found"
+open(p, "w").write(s.replace(old, "if False and DONE_WHEN.search(issue.get(\"body\") or \"\"):\n            shaped.append(issue.get(\"number\"))", 1))'
+      ;;
+    mark-ready-skips-done-when)
+      edit "$tree/.agents/skills/records/scripts/mark-ready.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "if not section(\"Done when\"):"
+assert old in s, "Done when refusal not found"
+open(p, "w").write(s.replace(old, "if False and not section(\"Done when\"):", 1))'
+      ;;
+    first-upload-ignores-shared-history)
+      edit "$tree/.agents/skills/merge/scripts/first-upload.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "if not shared_refs(project, main):"
+assert old in s, "shared history check not found"
+open(p, "w").write(s.replace(old, "if False and not shared_refs(project, main):", 1))'
+      ;;
+    strength-config-lost)
+      edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "paths_to_mutate = "
+assert old in s, "mutmut 3 source path setting not found"
+open(p, "w").write(s.replace(old, "mutate_paths = ", 1))'
+      ;;
+    review-gate-leaves-draft-edited)
+      edit "$tree/.agents/skills/second-opinion/scripts/review-guard.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "cp -p \"$GUARD/files/$file\" \"$file\" || exit 2"
+assert old in s, "review draft restoration not found"
+open(p, "w").write(s.replace(old, ": # mutation leaves the review edit", 1))'
+      ;;
+    merge-behind-main)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "if base.stdout.strip() != main.stdout.strip():"
+assert old in t, "behind-main check not found"
+open(p, "w").write(t.replace(old, "if False and base.stdout.strip() != main.stdout.strip():", 1))
+'
       ;;
     *)
       echo "unknown mutation: $name" >&2

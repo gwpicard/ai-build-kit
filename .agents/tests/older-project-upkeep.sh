@@ -405,5 +405,81 @@ format=$(python3 "$CHECK" --monthly "$P") || true
 report "a declined recipe move is not offered again on a monthly visit" \
   "$(printf '%s\n' "$format" | grep -q '^recipe-format	' && echo no || echo yes)"
 
+# --- gates added after a project was founded ---------------------------------
+
+# Each gate is named from the installed copies. Listing and declining only
+# records the person's no; applying one gate refreshes only its own files.
+P="$work/old-gates"
+mkdir -p "$P/.claude"
+cp "$TEMPLATES/masterplan.md" "$P/masterplan.md"
+printf '# AGENTS.md\n\nProject instructions.\n' > "$P/AGENTS.md"
+printf '{"permissions":{"deny":[],"ask":[]}}\n' > "$P/.claude/settings.json"
+printf 'Keep my project note.\n' > "$P/project-note.txt"
+for target in \
+  .agents/hooks/scan-secrets.sh .agents/hooks/scan-secrets.py \
+  .agents/hooks/guard-secrets.sh .agents/hooks/guard-secrets.py \
+  .agents/hooks/redact-secrets.sh .agents/hooks/redact-secrets.py \
+  .agents/hooks/check-sensitive-areas.sh .agents/hooks/check-tests.sh \
+  .agents/hooks/git/pre-push .github/workflows/checks.yml; do
+  mkdir -p "$P/$(dirname "$target")"
+  printf 'older copy\n' > "$P/$target"
+done
+python3 - "$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/checks.yml" \
+  "$P/.github/workflows/checks.yml" <<'PY'
+import re, sys
+template = open(sys.argv[1], encoding="utf-8").read()
+names = ("Check tests were not changed silently", "Check sensitive-area map",
+         "Scan Git history for secrets", "Check changes against the pull request base")
+for name in names:
+    template = re.sub(r"(?m)^      - name: " + re.escape(name) + r"\b[\s\S]*?(?=^      - (?:name:|uses:|run:)|\Z)",
+                      "", template, count=1)
+template = template.replace("      - name: Install and test\n",
+                            "      - name: Project-specific check\n        run: echo keep\n\n      - name: Install and test\n")
+open(sys.argv[2], "w", encoding="utf-8").write(template)
+PY
+cp -R "$P/.agents" "$work/gates-before-agents"
+cp "$P/.github/workflows/checks.yml" "$work/gates-before-checks"
+cp "$P/.claude/settings.json" "$work/gates-before-settings"
+listed=$(python3 "$CHECK" "$P") || true
+for gate in secret-scan hooks required-check sensitive-check tests-check push-hook; do
+  reason='older than the installed copy'
+  [ "$gate" = required-check ] && reason='missing or older gate steps'
+  report "an old project is offered the $gate gate with plain words" \
+    "$(printf '%s\n' "$listed" | grep -q "^gate[[:space:]]$gate[[:space:]].*$reason" \
+       && printf '%s\n' "$listed" | grep -q "^say[[:space:]]$gate[[:space:]]" && echo yes || echo no)"
+done
+report "the missing merge approval rule is offered with the settings rules" \
+  "$(printf '%s\n' "$listed" | grep -q '^settings[[:space:]]ask[[:space:]].*merge.py' \
+     && printf '%s\n' "$listed" | grep -q '^say[[:space:]]settings[[:space:]]' && echo yes || echo no)"
+report "offering gates changes no project files" \
+  "$(diff -qr "$P/.agents" "$work/gates-before-agents" >/dev/null \
+     && cmp -s "$P/.github/workflows/checks.yml" "$work/gates-before-checks" \
+     && cmp -s "$P/.claude/settings.json" "$work/gates-before-settings" \
+     && [ ! -e "$P/.ai-build-kit-maintenance" ] && echo yes || echo no)"
+python3 "$CHECK" --decline secret-scan,hooks,required-check,sensitive-check,tests-check,push-hook,settings "$P" >/dev/null
+declined=$(python3 "$CHECK" "$P") || true
+report "a no records every gate and the merge rule, then does not repeat their offers" \
+  "$(printf '%s\n' "$declined" | grep -q '^declined[[:space:]]secret-scan[[:space:]]gate[[:space:]]secret-scan[[:space:]]' \
+     && printf '%s\n' "$declined" | grep -q '^declined[[:space:]]hooks[[:space:]]gate[[:space:]]hooks[[:space:]]' \
+     && ! printf '%s\n' "$declined" | grep -q '^say[[:space:]]\(secret-scan\|hooks\|required-check\|sensitive-check\|tests-check\|push-hook\|settings\)[[:space:]]' \
+     && diff -qr "$P/.agents" "$work/gates-before-agents" >/dev/null \
+     && cmp -s "$P/.github/workflows/checks.yml" "$work/gates-before-checks" \
+     && cmp -s "$P/.claude/settings.json" "$work/gates-before-settings" \
+     && echo yes || echo no)"
+python3 "$CHECK" --apply tests-check "$P" >/dev/null
+report "a yes refreshes the test check and leaves other project files alone" \
+  "$(cmp -s "$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/check-tests.sh" \
+       "$P/.agents/hooks/check-tests.sh" \
+     && [ "$(cat "$P/.agents/hooks/scan-secrets.sh")" = 'older copy' ] \
+     && cmp -s "$P/.github/workflows/checks.yml" "$work/gates-before-checks" \
+     && cmp -s "$P/.claude/settings.json" "$work/gates-before-settings" \
+     && [ "$(cat "$P/project-note.txt")" = 'Keep my project note.' ] && echo yes || echo no)"
+python3 "$CHECK" --apply required-check "$P" >/dev/null
+report "the required check adds only gate steps and keeps the project's own workflow step" \
+  "$(grep -q 'Check tests were not changed silently' "$P/.github/workflows/checks.yml" \
+     && grep -q 'Scan Git history for secrets' "$P/.github/workflows/checks.yml" \
+     && grep -q 'Project-specific check' "$P/.github/workflows/checks.yml" \
+     && grep -q 'run: echo keep' "$P/.github/workflows/checks.yml" && echo yes || echo no)"
+
 echo
 echo "older-project-upkeep.sh: all $passed checks passed"

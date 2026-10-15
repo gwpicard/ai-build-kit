@@ -39,7 +39,7 @@ if ! command -v stryker >/dev/null 2>&1; then
   echo "  stryker not on PATH, installing it into a throwaway folder"
   mkdir -p "$WORK/engines"
   printf '{"name":"engines","private":true}\n' > "$WORK/engines/package.json"
-  (cd "$WORK/engines" && npm install --no-audit --no-fund --silent @stryker-mutator/core@9) ||
+  (cd "$WORK/engines" && npm_config_cache="$WORK/npm-cache" npm install --no-audit --no-fund --silent @stryker-mutator/core@9) ||
     fail "could not install StrykerJS, so the check could not be rehearsed"
   PATH="$WORK/engines/node_modules/.bin:$PATH"
   export PATH
@@ -47,7 +47,7 @@ fi
 
 if ! command -v mutmut >/dev/null 2>&1 || ! command -v pytest >/dev/null 2>&1; then
   echo "  mutmut or pytest not on PATH, installing both into a throwaway folder"
-  python3 -m venv "$WORK/py" && "$WORK/py/bin/pip" install -q 'mutmut>=3,<4' pytest ||
+  python3 -m venv "$WORK/py" && PIP_CACHE_DIR="$WORK/pip-cache" "$WORK/py/bin/pip" install -q 'mutmut>=3,<4' pytest ||
     fail "could not install mutmut, so the check could not be rehearsed"
   PATH="$WORK/py/bin:$PATH"
   export PATH

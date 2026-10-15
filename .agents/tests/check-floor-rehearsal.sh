@@ -26,6 +26,7 @@ set -eu
 # the hosted run that names this repository's own base, which the throwaway
 # project does not have, so clear it.
 unset GITHUB_BASE_REF
+unset PR_BASE_SHA
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 FLOOR="$ROOT/.agents/skills/quality-checks/references/check-floor.md"
@@ -37,14 +38,24 @@ GUARD_PY="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/guard-sec
 REDACT_PY="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/redact-secrets.py"
 CODEX_PY="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/codex-github-check.py"
 TEST_CHECK="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/check-tests.sh"
+REVIEW_CHECK="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/check-review.sh"
 
 fail() {
   echo "FAIL: $1" >&2
   exit 1
 }
 
+bootstrap_review_reader() {
+  mkdir -p "$1/.agents/skills"
+  ln -s "$ROOT/.agents/skills/setup-ai-build-kit" "$1/.agents/skills/setup-ai-build-kit"
+  sh "$ROOT/.agents/skills/setup-ai-build-kit/scripts/bootstrap-project.sh" "$1" >/dev/null
+}
+
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
+mkdir -p "$WORK/npm-cache"
+npm_config_cache="$WORK/npm-cache"
+export npm_config_cache
 PROJECT="$WORK/project"
 mkdir -p "$PROJECT/.github/workflows" "$PROJECT/.agents/hooks" "$PROJECT/.agents/tools"
 
@@ -79,6 +90,8 @@ cp "$GUARD_PY" "$PROJECT/.agents/hooks/guard-secrets.py"
 cp "$REDACT_PY" "$PROJECT/.agents/hooks/redact-secrets.py"
 cp "$CODEX_PY" "$PROJECT/.agents/tools/codex-github-check.py"
 cp "$TEST_CHECK" "$PROJECT/.agents/hooks/check-tests.sh"
+bootstrap_review_reader "$PROJECT"
+cp "$REVIEW_CHECK" "$PROJECT/.agents/hooks/check-review.sh"
 
 
 # The edit founding makes: the placeholder step goes, and install, type check,
@@ -134,9 +147,20 @@ MD
 
 # Prints the name of the first step that failed, or nothing when all passed.
 # The Install step is left to the rehearsal, which already provided the tools.
+mkdir -p "$WORK/bin"
+cat > "$WORK/bin/gh" <<'SH'
+#!/usr/bin/env sh
+case "$*" in
+  "pr view 9 --json body --jq .body") printf '%s\n' '## Worth stopping for' '- None' '## Worth knowing' '- None' 'Review record: reviewed=quality review; tried=0; open=0' ;;
+  *) echo "unexpected gh call: $*" >&2; exit 2 ;;
+esac
+SH
+chmod +x "$WORK/bin/gh"
 run_check() {
   event_name=${1:-pull_request}
   awk '
+    /^ *- id: / { name = ""; condition = ""; block = 0; next }
+    /^ *- uses: / { name = ""; condition = ""; block = 0; next }
     /^ *- name: / { sub(/^ *- name: /, ""); name = $0; condition = ""; next }
     /^ *if: / { sub(/^ *if: /, ""); condition = $0; next }
     /^ *run: \|[-+]?$/ { run_indent = match($0, /[^ ]/); command = ""; block = 1; next }
@@ -158,8 +182,10 @@ run_check() {
     head_sha=$(git -C "$PROJECT" rev-parse HEAD)
     pr_base=$base_sha
     [ "$event_name" = pull_request ] || pr_base=
-    if ! (cd "$PROJECT" && GITHUB_EVENT_NAME="$event_name" PR_BASE_SHA="$pr_base" BASE_SHA="$base_sha" \
+    if ! (cd "$PROJECT" && PATH="$WORK/bin:$PATH" PR_NUMBER=9 GITHUB_EVENT_NAME="$event_name" PR_BASE_SHA="$pr_base" BASE_SHA="$base_sha" \
         HEAD_SHA="$head_sha" PUSH_BEFORE="$base_sha" PUSH_AFTER="$head_sha" sh -c "$command") > "$WORK/last-output" 2>&1; then
+      cat "$WORK/last-output" >&2
+      git -C "$PROJECT" show "$pr_base:masterplan.md" >&2 || true
       printf '%s\n' "$step"
       return 0
     fi
@@ -190,6 +216,7 @@ echo "  ok: the test check goes red, and says why, when it cannot read the commi
 
 in_project init -q -b main
 printf '__pycache__/\n.mypy_cache/\n.ruff_cache/\n' > "$PROJECT/.gitignore"
+in_project add -A -f -- masterplan.md
 in_project add -A
 in_project commit -q -m "Start"
 status=0
@@ -304,12 +331,14 @@ echo "  ok: a no is recorded, and the offer is not made again while the kit's ho
 
 status=0; place --apply || status=$?
 [ "$status" = 0 ] || { cat "$WORK/place-output" >&2; fail "adding the test check failed"; }
-cmp -s "$founded" "$PROJECT/.github/workflows/checks.yml" ||
-  { diff "$founded" "$PROJECT/.github/workflows/checks.yml" >&2; fail "the check is not what founding writes today"; }
 cmp -s "$TEST_CHECK" "$PROJECT/.agents/hooks/check-tests.sh" || fail "the hook was not added"
+grep -q 'fetch-depth: 0' "$PROJECT/.github/workflows/checks.yml" || fail "the workflow still does not fetch full history"
+grep -q 'sh .agents/hooks/check-tests.sh' "$PROJECT/.github/workflows/checks.yml" || fail "the test-check step was not added"
+grep -q 'Detect the selected recipe' "$PROJECT/.github/workflows/checks.yml" || fail "the recipe check was lost"
+grep -q 'sh .agents/hooks/check-review.sh' "$PROJECT/.github/workflows/checks.yml" || fail "the review check was lost"
 status=0; place || status=$?
 [ "$status" = 0 ] && [ ! -s "$WORK/place-output" ] || fail "a second look still found something missing (exit $status)"
-echo "  ok: on a yes, the hook, the step and the whole history are added, matching a founding today, and nothing else"
+echo "  ok: on a yes, the hook, the step and full history are added, with the rest of the workflow kept"
 
 save_as_base "The test check added"
 sed 's/total(2, 3), 6/total(3, 2), 6/' "$PROJECT/test_pricing.py" > "$WORK/test"
@@ -412,6 +441,8 @@ cp "$SENSITIVE" "$PROJECT/.agents/hooks/check-sensitive-areas.sh"
 cp "$SCAN" "$PROJECT/.agents/hooks/scan-secrets.sh"
 cp "$SCAN_PY" "$PROJECT/.agents/hooks/scan-secrets.py"
 cp "$TEST_CHECK" "$PROJECT/.agents/hooks/check-tests.sh"
+bootstrap_review_reader "$PROJECT"
+cp "$REVIEW_CHECK" "$PROJECT/.agents/hooks/check-review.sh"
 
 awk -v tc="$type_check" -v li="$lint" '
   /- name: Install and test/ { skipping = 1 }
@@ -541,15 +572,24 @@ status=0
   fail "failed database type generation changed the tracked types file"
 echo "  ok: a stopped database or failed generation reports could not run and keeps the types file intact"
 
-echo "  installing the project's own check tools from the local npm cache"
-if ! (cd "$PROJECT" && npm install --offline --no-audit --no-fund --silent); then
-  echo "  could not run: TypeScript check tools are not available in npm's offline cache"
+echo "  installing the project's own check tools"
+if ! (cd "$PROJECT" && npm install --no-audit --no-fund --silent); then
+  echo "  could not run: TypeScript check tools could not be installed"
   echo "check-floor-rehearsal.sh: Python and check-shape cases passed; TypeScript runtime cases could not run"
-  exit 0
+  exit 2
 fi
 
 in_project init -q -b main
 printf 'node_modules/\n' > "$PROJECT/.gitignore"
+cat > "$PROJECT/masterplan.md" <<'MD'
+Path: Build with care
+
+Sensitive areas:
+  Data:
+    paths: src
+    Accepted: yes, 2026-10-14
+MD
+in_project add -A -f -- masterplan.md
 save_as_base "Start"
 
 started=$(date +%s)

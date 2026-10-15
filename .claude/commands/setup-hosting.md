@@ -1,5 +1,5 @@
 ---
-description: Set up how the tool runs live, and run it again to check or change that.
+description: Set up or check how the tool runs live, including moving it to another host or recipe.
 ---
 <!-- GENERATED from .agents/skills/setup-hosting/. Do not edit here; regenerate with .agents/tools/build-adapters.sh -->
 

@@ -42,19 +42,19 @@ if ! command -v depcruise >/dev/null 2>&1; then
   echo "  depcruise not on PATH, installing it into a throwaway folder"
   mkdir -p "$WORK/engines"
   printf '{"name":"engines","private":true}\n' > "$WORK/engines/package.json"
-  (cd "$WORK/engines" && npm install --no-audit --no-fund --silent dependency-cruiser@18) ||
+  (cd "$WORK/engines" && npm_config_cache="$WORK/npm-cache" npm install --no-audit --no-fund --silent dependency-cruiser@18) ||
     fail "could not install dependency-cruiser, so the rule could not be rehearsed"
   PATH="$WORK/engines/node_modules/.bin:$PATH"
   export PATH
 fi
 
-node - "$RULES" "$FOUNDATION" "$WORK" <<'NODE'
+node - "$RULES" "$FOUNDATION" "$WORK" "$ROOT" <<'NODE'
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 
-const [rulesFile, foundation, work] = process.argv.slice(2);
+const [rulesFile, foundation, work, root] = process.argv.slice(2);
 const rules = fs.readFileSync(rulesFile, 'utf8');
 
 // --- what the reference ships -------------------------------------------------
@@ -81,6 +81,7 @@ const put = (name, text) => {
 
 // The recorded line from the reference, pointed at this project's files.
 const boundaryLine = recorded[1].replace('src/billing/charge.ts', 'src/billing/charge.js');
+put('AGENTS.md', 'Recipe: none\n');
 put('masterplan.md', [
   '# Masterplan', '', '## Build path', '',
   'Path: Build with care',
@@ -122,9 +123,19 @@ const workflow = fs.readFileSync(path.join(foundation, 'checks.yml'), 'utf8')
   ].join('\n'));
 put('.github/workflows/checks.yml', workflow);
 put('.agents/hooks/check-sensitive-areas.sh', fs.readFileSync(path.join(foundation, 'check-sensitive-areas.sh'), 'utf8'));
+put('.agents/hooks/check-review.sh', fs.readFileSync(path.join(foundation, 'check-review.sh'), 'utf8'));
+put('bin/gh', '#!/usr/bin/env sh\n[ "$*" = "pr view 12 --json body --jq .body" ] || exit 2\nprintf "%b\\n" "## Worth stopping for\\n- None\\n## Worth knowing\\nReview record: reviewed=quality review; tried=0; open=0"\n');
+fs.chmodSync(path.join(project, 'bin/gh'), 0o755);
 put('.agents/hooks/scan-secrets.sh', fs.readFileSync(path.join(foundation, 'scan-secrets.sh'), 'utf8'));
 put('.agents/hooks/scan-secrets.py', fs.readFileSync(path.join(foundation, 'scan-secrets.py'), 'utf8'));
 put('.agents/hooks/check-tests.sh', fs.readFileSync(path.join(foundation, 'check-tests.sh'), 'utf8'));
+
+fs.mkdirSync(path.join(project, '.agents', 'skills'), { recursive: true });
+fs.symlinkSync(path.join(root, '.agents/skills/setup-ai-build-kit'),
+  path.join(project, '.agents/skills/setup-ai-build-kit'));
+const bootstrap = spawnSync('sh', [path.join(root,
+  '.agents/skills/setup-ai-build-kit/scripts/bootstrap-project.sh'), project], { encoding: 'utf8' });
+assert.equal(bootstrap.status, 0, bootstrap.stderr || bootstrap.stdout);
 
 // The hosted check runs in a clone with the whole history, where the pull
 // request's base is origin/main. The trim step fails without it, so a local
@@ -163,8 +174,10 @@ function runCheck(eventName = 'pull_request') {
       command = '';
       condition = null;
     }
+    const id = line.match(/^ *- id: (.+)$/);
+    if (id) { name = 'step ' + id[1]; condition = null; continue; }
     const n = line.match(/^ *- name: (.+)$/);
-    if (n) { name = n[1]; continue; }
+    if (n) { name = n[1]; condition = null; continue; }
     const c = line.match(/^ *if: (.+)$/);
     if (c) { condition = c[1]; continue; }
     const r = line.match(/^( *)run: (.*)$/);
@@ -180,8 +193,10 @@ function runCheck(eventName = 'pull_request') {
   for (const [step, command, condition] of steps) {
     if (condition === "github.event_name == 'pull_request'" && eventName !== 'pull_request') continue;
     const result = spawnSync('sh', ['-c', command], { cwd: project, encoding: 'utf8', timeout: 120000,
-      env: { ...process.env, GITHUB_EVENT_NAME: eventName,
-        PR_BASE_SHA: eventName === 'pull_request' ? baseSha : '' } });
+      env: { ...process.env, GITHUB_OUTPUT: path.join(work, 'github-output'), GITHUB_EVENT_NAME: eventName,
+        PR_BASE_SHA: eventName === 'pull_request' ? baseSha : '',
+        PR_NUMBER: eventName === 'pull_request' ? '12' : '',
+        PATH: path.join(project, 'bin') + path.delimiter + process.env.PATH } });
     assert.ifError(result.error);
     if (result.status !== 0) return { step, output: result.stdout + result.stderr };
   }

@@ -41,7 +41,7 @@ if ! command -v depcruise >/dev/null 2>&1; then
   printf '{"name":"engines","private":true}\n' > "$WORK/engines/package.json"
   # TypeScript comes too, as it does in a Next.js project, since that is what
   # dependency-cruiser reads TypeScript files and a tsconfig with.
-  (cd "$WORK/engines" && npm install --no-audit --no-fund --silent dependency-cruiser@18 typescript@5) ||
+  (cd "$WORK/engines" && npm_config_cache="$WORK/npm-cache" npm install --no-audit --no-fund --silent dependency-cruiser@18 typescript@5) ||
     fail "could not install dependency-cruiser, so the read could not be rehearsed"
   PATH="$WORK/engines/node_modules/.bin:$PATH"
   REHEARSAL_INSTALLED_DEPCRUISE=1

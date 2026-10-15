@@ -119,6 +119,15 @@ def bash_reads_env_file(command):
     return False
 
 
+def writes_claude_settings(command):
+    if not re.search(r"\.claude/settings(?:\.local)?\.json\b", command):
+        return False
+    return bool(re.search(
+        r"(?:>|\btee\b|\b(?:cp|mv|install|truncate)\b|\bsed\b[^\n]*\s-i(?:\s|$)|"
+        r"\bpython\w*\b[^\n]*\s-c(?:\s|$)|\b(?:write_text|write_bytes|open)\s*\(|"
+        r"\bos\.(?:rename|replace|remove|unlink)\s*\()", command, re.I))
+
+
 try:
     event = json.load(sys.stdin)
     if not isinstance(event, dict) or not isinstance(event.get("tool_input"), dict):
@@ -137,10 +146,16 @@ try:
         for path in paths:
             if isinstance(path, str) and (env_target(path) or same_recorded_path(path, recorded, root)):
                 sys.exit(deny("This read could expose a recorded secret file."))
+    elif tool in ("Write", "Edit"):
+        path = args.get("file_path")
+        if isinstance(path, str) and re.search(r"(?:^|[/\\])\.claude/settings(?:\.local)?\.json$", path):
+            sys.exit(deny("This tool cannot change Claude settings files."))
     elif tool == "Bash":
         command = args.get("command", "")
         if not isinstance(command, str):
             raise ValueError("command is not text")
+        if writes_claude_settings(command):
+            sys.exit(deny("This command could change a Claude settings file."))
         if dumps_environment(command):
             sys.exit(deny("This command could print secret environment values."))
         if bash_reads_env_file(command):
