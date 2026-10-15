@@ -113,7 +113,8 @@ first-upload-ignores-shared-history
 strength-config-lost
 review-gate-leaves-draft-edited
 attempt-cap
-merge-behind-main"
+merge-behind-main
+promises-list-stale"
 
 describe() {
   case "$1" in
@@ -192,6 +193,7 @@ describe() {
     review-gate-leaves-draft-edited) echo "the review gate leaves an edited draft in place" ;;
     attempt-cap) echo "the piece attempt cap rises, so a fourth attempt is allowed" ;;
     merge-behind-main) echo "merge accepts a pull request branch behind main" ;;
+    promises-list-stale) echo "the promise list can name a checker that does not exist" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -227,6 +229,7 @@ checks_for() {
     review-gate-leaves-draft-edited) echo "review-guard" ;;
     attempt-cap) echo "autonomy-boundaries" ;;
     merge-behind-main) echo "merge-gate" ;;
+    promises-list-stale) echo "promises-list-rehearsal" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -851,7 +854,7 @@ open(p, "w").write(s.replace(old, new, 1))'
 import os
 p = os.environ["MUTATE_TARGET"]
 s = open(p).read()
-old = "    check_sensitive_area(data[\"baseRefOid\"], head)\n"
+old = "    check_sensitive_area(data[\"baseRefOid\"], head, automatic=(mode == \"--auto\"))\n"
 new = "    pass  # sensitive-area check removed\n"
 assert old in s
 open(p, "w").write(s.replace(old, new, 1))'
@@ -907,9 +910,18 @@ open(p, "w").write(s.replace(old, "if False and not shared_refs(project, main):"
 import os
 p = os.environ["MUTATE_TARGET"]
 s = open(p).read()
-old = "paths_to_mutate = "
-assert old in s, "mutmut 3 source path setting not found"
-open(p, "w").write(s.replace(old, "mutate_paths = ", 1))'
+old = "paths = json.dumps(folders)"
+assert old in s, "mutmut source selection not found"
+open(p, "w").write(s.replace(old, "paths = json.dumps([])", 1))'
+      ;;
+    promises-list-stale)
+      edit "$tree/.agents/tests/promises-list.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "  [ -f \"$ROOT/$path\" ] || fail \"named checker is missing: $path\""
+assert old in s, "named script existence check not found"
+open(p, "w").write(s.replace(old, "  : # mutation ignores missing checkers", 1))'
       ;;
     review-gate-leaves-draft-edited)
       edit "$tree/.agents/skills/second-opinion/scripts/review-guard.sh" '

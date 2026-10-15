@@ -513,6 +513,9 @@ checked for its repository gate, per job rather than per file, because a
 file-wide check is satisfied by one gated job while a second runs beside it
 ungated.
 
+Run `.agents/tests/mutate.sh` and `.agents/tests/promises-list.sh`, then read
+`docs/PROMISES.md` to check that each promise still names what holds it.
+
 Approved folders contribute only files already tracked here, so an unexpected
 local file cannot enter a release.
 
