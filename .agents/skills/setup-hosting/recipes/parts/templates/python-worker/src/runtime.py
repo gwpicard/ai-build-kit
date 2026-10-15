@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -107,7 +108,15 @@ def poll_once() -> bool:
             poll_state["failures"] = 0
         return worked
     except Exception as error:
-        print(f"document worker poll failed: {type(error).__name__}", file=sys.stderr, flush=True)
+        message = str(error)
+        if re.search(r"(?i)\b(?:postgres(?:ql)?|postgres)://|\b(?:host|hostaddr|dbname|user|password)=\S+", message):
+            message = "[database connection details hidden]"
+        message = re.sub(
+            r"(?i)\b(password|token|secret|api[_-]?key|authorization)\s*([=:])\s*([^\s,;]+)",
+            r"\1\2[hidden]",
+            message,
+        )
+        print(f"document worker poll failed: {type(error).__name__}: {message}", file=sys.stderr, flush=True)
         with poll_state_lock:
             poll_state["failures"] += 1
         return False

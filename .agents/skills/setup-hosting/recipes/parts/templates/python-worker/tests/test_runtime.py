@@ -21,10 +21,24 @@ def test_repeated_poll_errors_make_health_unhealthy(
 
     assert runtime.health_status() == 503
     assert capsys.readouterr().err.splitlines() == [
-        "document worker poll failed: OSError",
-        "document worker poll failed: OSError",
-        "document worker poll failed: OSError",
+        "document worker poll failed: OSError: queue unavailable",
+        "document worker poll failed: OSError: queue unavailable",
+        "document worker poll failed: OSError: queue unavailable",
     ]
+
+
+def test_poll_error_hides_connection_details_and_secrets(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    def unavailable() -> bool:
+        raise OSError("postgresql://reader:fake-password@db.invalid/app token=fake-token")
+
+    monkeypatch.setattr(runtime, "consume_one", unavailable)
+    assert runtime.poll_once() is False
+    logged = capsys.readouterr().err
+    assert "[database connection details hidden]" in logged
+    assert "fake-password" not in logged
+    assert "fake-token" not in logged
 
 
 def test_successful_poll_clears_prior_failures(monkeypatch: pytest.MonkeyPatch) -> None:

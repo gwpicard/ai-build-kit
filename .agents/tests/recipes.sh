@@ -139,6 +139,15 @@ refused "no Work-team default line" recipe.md '/^Work-team default:/d'
 refused "no Language line" recipe.md '/^Language:/d'
 refused "a Database line that does not name one tool" recipe.md 's/^Database: .*/Database: none, use a spreadsheet/'
 refused "Framework without a pinned major" recipe.md 's/^Framework: .*/Framework: Next.js/'
+# Check the specific reason too. Otherwise the allowed-tool list can reject
+# Next.js after a broken pinned-major guard and make the mutation look caught.
+m=$(copy)
+sed 's/^Framework: .*/Framework: Next.js/' "$GOOD/recipe.md" > "$m/recipe.md"
+output=$("$CHECKER" "$m" 2>&1) && fail "an unpinned framework passed"
+case "$output" in
+  *"Framework must name one tool and one pinned major version"*) ok "an unpinned framework is refused by the pinned-major rule" ;;
+  *) fail "an unpinned framework failed for another reason: $output" ;;
+esac
 refused "Framework with an unlisted major" recipe.md 's/^Framework: .*/Framework: Next.js 15/'
 refused "Framework with alternatives" recipe.md 's/^Framework: .*/Framework: Next.js 16 or latest/'
 refused "Starter without coming or a real path" recipe.md 's#^Starter: .*#Starter: starters/missing#'
