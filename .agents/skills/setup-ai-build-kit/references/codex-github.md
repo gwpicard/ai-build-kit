@@ -1,107 +1,69 @@
 # GitHub access in Codex
 
-Use this only when a kit operation needs GitHub and Codex cannot reach it or
-authenticate. First report the failing command and exit status, with credentials
-masked. Keep the last plan until a refresh succeeds.
+Use when a kit operation needs GitHub and Codex cannot reach or authenticate.
+Report the failed command and exit status with credentials masked. Keep the
+last plan until refresh succeeds.
 
-On HTTP 401 or Git's `unable to get password from user`, first run this skill's
-`templates/foundation/codex-github-check.py` with python3 and `--message`. Give its
-restart sentence with the absolute installed path and stop work in this session.
-Never retry signing in to repair a working terminal login. The diagnostics
-below are for a restart that still fails, or a network or permission failure.
+On HTTP 401 or `unable to get password from user`, run this skill's
+`templates/foundation/codex-github-check.py --message` with python3. Give its
+restart sentence using the absolute installed path, then stop this session.
+Do not retry a working terminal login. Continue below only after restart or
+for a network or permission failure.
 
-## Reach GitHub
+## Check connectivity and settings
 
-Run `curl -I --connect-timeout 10 https://api.github.com` in Codex's command tool.
-A successful response proves connectivity, not sign-in. On a DNS or connection
-failure, request the client's authorised network access. If that needs a settings
-change, identify the active Codex home, profile, project settings and managed
-policy first. Back up the file and get the person's authorisation before editing.
-Keep filesystem sandboxing and the approval reviewer. Never bypass a managed
-restriction or combine the two permission systems below.
+Run `curl -I --connect-timeout 10 https://api.github.com`. Success proves
+connectivity, not sign-in. On DNS or connection failure, request the client's
+authorised network access. If settings need changing, identify the active
+Codex home, profile, project settings and managed policy. Back up the file and
+get approval before editing. Keep the sandbox and approval reviewer; never
+bypass managed restrictions or combine permission systems.
 
-For a configuration using the standard sandbox settings, the root key and table
-are:
+Network access can be set by `sandbox_mode = "workspace-write"` with
+`[sandbox_workspace_write] network_access = true`, or a named
+`default_permissions` workspace profile with network enabled. These are
+examples, not lines to append. Edit the active settings without duplicate
+keys, preserve profile restrictions, then start a new session and check its
+actual profile. See [Codex configuration](https://developers.openai.com/codex/config-reference/).
 
-```toml
-sandbox_mode = "workspace-write"
+## Check the login
 
-[sandbox_workspace_write]
-network_access = true
-```
+Compare `gh auth status --hostname github.com` in Codex and the person's
+terminal. Never show a token. Report only whether `GH_TOKEN` and
+`GITHUB_TOKEN` are present; an invalid environment token overrides a stored
+login. Compare the `gh` executable, user, `HOME`, `GH_CONFIG_DIR` and
+`XDG_CONFIG_HOME`. Do not re-authenticate a working login.
 
-For a configuration using `default_permissions`, a named workspace profile can
-provide the same access:
+If these match but only the terminal can use the stored login, offer
+`scripts/codex-with-github.py`. The person runs it with python3 from an
+ordinary terminal in the project, using its absolute installed path. They may
+pass Codex arguments after the script path. Only use it for access they
+authorised.
 
-```toml
-default_permissions = "workspace-network"
+The launcher passes an existing token to the new Codex process, or captures
+the current `gh` login in memory for that process. It writes no credential and
+does not change GitHub storage. It disables shell snapshots, uses a dedicated
+process, preserves permissions, and resets Git's GitHub helper to
+`gh auth git-credential` in that process. It changes no global file and needs
+no `gh auth setup-git`. If a custom environment policy filters variables,
+preserve the policy and ask the person to allow the session credential. Never
+put tokens in settings, files, prompts or logs, enable HTTP debug logging, or
+dump the environment. Check token presence in Codex, never its value.
 
-[permissions.workspace-network]
-extends = ":workspace"
+If the custom policy filters the token, inspect
+`shell_environment_policy.inherit`, `ignore_default_excludes` and `filters`,
+or legacy `exclude` and `include_only`. Include rules cannot undo an earlier
+exclusion. See [Codex environment filtering](https://developers.openai.com/codex/config-reference/)
+and [GitHub credential precedence](https://cli.github.com/manual/gh_help_environment).
 
-[permissions.workspace-network.network]
-enabled = true
-```
-
-These are examples, not files to append. Update the active settings without
-creating duplicate keys, and preserve any existing profile restrictions. Start
-a new session and verify its actual profile, since a client can override the
-default. See [Codex configuration](https://developers.openai.com/codex/config-reference/).
-
-## Use the current GitHub login
-
-Compare `gh auth status --hostname github.com` in Codex and the person's terminal.
-Never use `--show-token`. Report `GH_TOKEN` and `GITHUB_TOKEN` presence only; an
-invalid environment credential overrides a valid stored one. Compare the `gh`
-executable, user and effective configuration directory, including `HOME`,
-`GH_CONFIG_DIR` and `XDG_CONFIG_HOME`. Do not re-authenticate a working host login
-merely because Codex cannot read it.
-
-If those match and the terminal can use the stored login while Codex cannot,
-offer the [session launcher](../scripts/codex-with-github.py). The person runs
-it with python3 from an ordinary terminal in their project. Give them a command
-with the launcher's actual absolute installed path. A terminal in an editor is
-fine too; no editor or Orca integration is required. Pass Codex arguments after
-the script path when needed.
-
-The launcher uses an existing `GH_TOKEN` or `GITHUB_TOKEN` if present. Otherwise
-it captures the current GitHub CLI login in memory and supplies `GH_TOKEN` only
-to the new Codex process. It never writes a credential to a file or changes
-GitHub's storage. It disables shell snapshots and uses a dedicated process to
-keep the credential out of snapshots and a shared daemon. It preserves the
-configured permissions and approval reviewer. The old session gains no access.
-
-Git has its own credential helper, which can otherwise still ask the Keychain.
-The launcher appends an empty `credential.https://github.com.helper`, then
-`!gh auth git-credential`, through `GIT_CONFIG_COUNT`, `GIT_CONFIG_KEY_n` and
-`GIT_CONFIG_VALUE_n`. This resets the helper list for GitHub and sends Git to
-the same `gh` login, in the new process only. Existing process settings are
-preserved; no global file changes and no `gh auth setup-git` step is needed.
-If a custom Codex environment policy filters these variables, allow these
-session settings along with the token, preserving the rest of the policy.
-
-Offer this only for access the person authorised. The agent does not run it or
-read a stored credential itself without that authorisation. Do not put tokens
-in settings, project files, shell startup files, prompts or logs. Do not enable
-HTTP debug logging or dump the environment in the resulting session.
-
-Codex must inherit the credential. Check presence in its command tool, never its
-value. The default shell environment policy passes it through. If a custom policy
-filters it, inspect `shell_environment_policy.inherit`, `ignore_default_excludes`
-and `filters` or the legacy `exclude` and `include_only` settings. Preserve the
-policy and ask the person to allow this credential for the session rather than
-turning all filtering off. Include rules cannot restore an earlier exclusion.
-See [Codex environment filtering](https://developers.openai.com/codex/config-reference/)
-and [GitHub's credential precedence](https://cli.github.com/manual/gh_help_environment).
-
-## Verify in the new command tool
+## Verify access
 
 Run `gh api user --jq .login` and `gh repo view --json nameWithOwner` from the
-project. The first confirms the account, the second the repository. Refresh the
-plan only after they succeed. A read does not prove write permissions; a refused
-operation still needs its own repository permission. Do not create a test issue.
-A connector's separate authorisation failure is not repaired by this launcher.
+project to confirm the account and repository, then refresh the plan. These
+reads do not prove write access; handle a refused operation against that
+repository. Do not create a test issue. A connector's separate authorisation
+failure is not repaired by the launcher.
 
-Also run `git ls-remote --heads origin` on an HTTPS GitHub remote. A successful
-`gh` call alone does not prove Git access. The helper covers HTTPS GitHub;
-an SSH remote still needs its own SSH access.
+Run `git ls-remote --heads origin` for an HTTPS GitHub remote. A successful
+`gh` call does not prove Git access. The launcher covers HTTPS; SSH needs its
+own access.

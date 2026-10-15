@@ -1,8 +1,7 @@
 # Cut the plan
 
-Cut pieces sized for one sitting, in the order they unblock each other, each a
-vertical slice through the whole tool: what the person can do or see when it is
-done, its evidence, and its real dependencies. Never split one capability into
+Cut pieces sized for one sitting and ordered by dependency. Each is a vertical
+slice: what the person can do or see, its evidence, and its dependencies. Never split a capability into
 "database", "API" and "UI" pieces.
 
 Before the first issue, run `sh scripts/found-issues.sh check` from the project
@@ -40,11 +39,9 @@ will hold its own merges, and founding carries on. Exit 2 means protection
 could not be confirmed for another reason, such as missing admin rights,
 rejected settings or a network failure. Founding stops after preparation,
 which may already have created labels, settings and the issue template. Exit 5
-means GitHub could not be read or `origin` is not a GitHub repository; exit 6
-means `origin` is the kit's own repository. In either case founding stops
-without changing GitHub. Exit 2 also means the command could not run or its
-arguments were invalid. If `main` does not exist yet, protection is deferred
-until the first upload creates it.
+means GitHub could not be read or `origin` is not GitHub; exit 6 means
+`origin` is the kit's own repository. In either case stop without further
+changes. If `main` does not exist, protection is deferred until first upload.
 
 Open one issue per piece, label each shaped piece `ready` or with the `needs-`
 label for its open question, and link real dependencies with GitHub's
