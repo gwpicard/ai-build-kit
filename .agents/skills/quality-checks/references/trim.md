@@ -1,35 +1,22 @@
 # The trim
 
-Before the person tries a piece, take out what the change added that its
-behaviour does not need: an export nothing calls, a wrapper only one place
-uses. Each is free to remove now and harder once later work leans on it.
-
-The trim runs once, on Build and run it and Build with care, a repair
-included, after the tests, the type check and the linter pass. It does not run
-on Explore privately, where the work is thrown away.
+Before hand-over, remove additions the behaviour does not need, such as an
+unused export or a wrapper with one caller. Run once after checks on Build and
+run it or Build with care, repairs included. Skip Explore privately.
 
 ## Run the script
 
-1. Commit the piece as built.
-2. From the project, run `python3` with this skill's `scripts/quality.py`,
-   passing `trim --base <commit the piece started from>`.
-
-Exit 0 means there is nothing to do: say nothing. Exit 1 means it printed
-findings: act on them below. Exit 2 means some part could not run, and a
-`not-checked` line names each one, such as unused code with no engine to
-read it. Act on any findings it printed all the same. Then read the changed
-code directly for each part it names. That reading is the last resort, so say
-in the internal evidence that it was the fallback, and for which part.
+Commit the piece, then run `python3` with `scripts/quality.py trim --base
+<start commit>`. Exit 0: say nothing. Exit 1: act on findings. Exit 2: each
+unavailable check appears as `not-checked`; act on findings and read named
+code only as a fallback. Record the fallback in internal evidence.
 
 Unused imports and unused local names are the linter's, so the script leaves
 them out.
 
-The first time a `not-checked` line names a missing engine in a project, ask
-the person once whether the kit may fetch the
-missing tools for each build without adding them to the project. Write the
-answer into AGENTS.md's stack section as `Quality engines: fetch` or
-`Quality engines: local only`. With fetch, run the script again with
-`--fetch`.
+On the first missing engine, ask once whether the kit may fetch tools per
+build without adding them to the project. Record `Quality engines: fetch` or
+`Quality engines: local only` in AGENTS.md. With fetch, rerun using `--fetch`.
 
 ## Act on each line
 
@@ -40,19 +27,18 @@ answer into AGENTS.md's stack section as `Quality engines: fetch` or
   line, then remove the wrapper.
 - `report`: change nothing, and list it on the piece.
 
-Make each edit on its own. Then run the tests the reach check names, the type
-check and the linter. When any of them fails, undo that edit and record it on
-the piece as a wrong call. Never change a test to keep an edit.
+Make each edit separately. Rerun the reach-check tests, type check and linter;
+if one fails, undo the edit and record the wrong call. Never change a test.
 
-The script does not look for an option every caller sets to the same value,
-or an interface with one implementation. Look for both in the changed code.
-Fold the first; report the second.
+The script misses options every caller sets the same way and interfaces with
+one implementation. Find these in changed code: fold the first, report the
+second.
 
-The trim only removes and folds. It never renames, splits, reorders, restyles
-or adds code. Any other improvement, however clear, is a report.
+Trim only removes or folds. Renames, splits, reordering, restyling and added
+code are reports.
 
-When the edits are done, run the script once more, apply nothing it finds,
-and list anything new on the piece. Run the whole test suite. Then save with
+After edits, run the script once more, apply nothing new and list its findings
+on the piece. Run the whole suite, then save with
 this skill's `scripts/trim-commit.sh`. It commits the trim on its own, under a
 subject that starts `Trim:`, and refuses when a test changed. When it refuses,
 undo the edit that touched the test and run it again. The project check fails

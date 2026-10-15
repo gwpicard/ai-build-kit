@@ -80,9 +80,3 @@ The check names the importing file and the person's sentence. A repair reads
 it like any other failure. Describe it to the person with their own sentence:
 "This change broke your rule: nothing outside billing touches the ledger except
 through the charge step. `src/reports/sum.ts` reaches the ledger directly."
-
-## At the quarterly visit
-
-The ownership check already asks whether each named area is still accurate.
-When an area changes or comes off, its rule changes or comes off with it, with
-the person's yes.
