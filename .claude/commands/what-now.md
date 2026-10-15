@@ -1,5 +1,5 @@
 ---
-description: Orientation for a lost or returning user.
+description: Orient returners.
 ---
 <!-- GENERATED from .agents/skills/what-now/. Do not edit here; regenerate with .agents/tools/build-adapters.sh -->
 

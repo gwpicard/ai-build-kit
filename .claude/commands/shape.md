@@ -1,5 +1,5 @@
 ---
-description: The command for turning any request into a ready piece before anything is built, a new idea or something that is broken.
+description: Turn a request or fault into one well-scoped piece before building.
 ---
 <!-- GENERATED from .agents/skills/shape/. Do not edit here; regenerate with .agents/tools/build-adapters.sh -->
 
