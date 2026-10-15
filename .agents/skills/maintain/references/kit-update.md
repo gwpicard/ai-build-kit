@@ -27,6 +27,9 @@ Give its `say` lines in one reply, in order, and keep to these rules:
   only those lines on a yes.
 - A `settings` line is the offer of the kit's newer safety rules: on a yes run
   `--apply settings`. Never edit the JSON by hand.
+- A `gate` line names one project check or hook that is missing or out of date.
+  On a yes run `--apply <gate name>`. On a no run `--decline <gate name>`.
+  Each gate is offered separately, and a decline leaves its files as they are.
 - A `fitcheck` line, on a yes, loads `four-paths.md` beside this file.
 - A `recipe-format` line offers a move from `Build stack:` to the current
   recipe fields. On a yes, open a piece describing the move. On a no, run

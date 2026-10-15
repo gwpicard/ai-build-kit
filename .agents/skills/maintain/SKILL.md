@@ -30,16 +30,26 @@ its sentence, and stop this session's work.
    restores, previews and the rest of the recipe's checks belong to a later
    /setup-hosting run: offer it in one line with any gap found. Never apply a
    migration, deploy, promote or roll back from this visit.
-3. Decide what else is due from `.ai-build-kit-maintenance`. Monthly: 30 days
+3. On every visit, check whether GitHub requires `project-check` on `main`.
+   Read the branch protection for the repository named by `origin`. Report
+   whether the check is required. If it is missing, offer to run the installed
+   `merge` skill's `scripts/protect-branch.py` on a yes. Do not set protection
+   during the read. If the branch or protection cannot be read, say so.
+4. On every visit, run the installed `setup-ai-build-kit` skill's
+   `templates/foundation/scan-secrets.sh` from the project root with the
+   `--all` option. This checks the full Git history. Exit 0 means no secret was
+   found, exit 1 means one was found, and exit 2 means the scan could not run.
+   On a find, say to rotate the secret. Never show its value.
+5. Decide what else is due from `.ai-build-kit-maintenance`. Monthly: 30 days
    after `last-light-pass`, or after founding when none is recorded.
    Quarterly: 90 days after `last-full-pass`, or after founding, and whenever
    a handover is asked for. Either is due when the person asks. A
    records-only visit runs only the every-visit steps. Say in one line when a
    part not due falls due. A part that runs saves its own changes the same way
    at its end.
-4. Finish a kit update by `references/kit-update.md`, on every visit. Where
+6. Finish a kit update by `references/kit-update.md`, on every visit. Where
    the monthly part runs, its step 5 runs it instead.
-5. In Codex, offer the session-start GitHub check as
+7. In Codex, offer the session-start GitHub check as
    `references/kit-update.md`'s "The Codex start check" says.
 
 ## Monthly, when due

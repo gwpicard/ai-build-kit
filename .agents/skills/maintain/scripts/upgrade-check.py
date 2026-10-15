@@ -112,6 +112,7 @@ import json
 import runpy
 import os
 import re
+import shutil
 import subprocess
 import sys
 
@@ -168,13 +169,50 @@ STEP_OF = {
     "commands": "commands", "pointer": "pointers", "helper": "helper",
     "settings": "settings", "template": "template", "fitcheck": "fitcheck",
     "ready": "ready", "recipe": "recipe", "recipe-format": "recipe-format", "access": "access",
+    "gate": "gates",
 }
-DECLINABLE = ("installer", "missing", "remove", "commands", "pointers", "settings", "template",
-              "fitcheck", "recipe", "recipe-format", "access")
 # The build-path fields the kit used while it had four build paths.
 FOUR_PATHS = re.compile(r"^\s*(Required controls:|Outside help:|Path:\s*(Build with expert help|Professional-led))")
+
+# Files installed by founding, but refreshed only when a person accepts the
+# older-project gate offer. The names are grouped by the separate yes each
+# gate needs. Settings and branch protection have their own paths.
+GATE_FILES = {
+    "secret-scan": (
+        ("setup-ai-build-kit/templates/foundation/scan-secrets.sh", ".agents/hooks/scan-secrets.sh"),
+        ("setup-ai-build-kit/templates/foundation/scan-secrets.py", ".agents/hooks/scan-secrets.py"),
+    ),
+    "hooks": tuple(
+        ("setup-ai-build-kit/templates/foundation/" + name, ".agents/hooks/" + name)
+        for name in ("guard-secrets.sh", "guard-secrets.py", "redact-secrets.sh", "redact-secrets.py")
+    ),
+    "required-check": (("setup-ai-build-kit/templates/foundation/checks.yml",
+                        ".github/workflows/checks.yml"),),
+    "sensitive-check": (("setup-ai-build-kit/templates/foundation/check-sensitive-areas.sh",
+                         ".agents/hooks/check-sensitive-areas.sh"),),
+    "tests-check": (("setup-ai-build-kit/templates/foundation/check-tests.sh",
+                     ".agents/hooks/check-tests.sh"),),
+    "push-hook": (("setup-ai-build-kit/templates/foundation/pre-push",
+                   ".agents/hooks/git/pre-push"),),
+}
+GATE_WORDS = {
+    "secret-scan": "the whole-history secret scanner",
+    "hooks": "the secret read and redaction hooks",
+    "required-check": "the required project check in GitHub Actions",
+    "sensitive-check": "the sensitive-area check",
+    "tests-check": "the check that stops silent test edits",
+    "push-hook": "the push guard",
+}
+WORKFLOW_GATES = (
+    "Check tests were not changed silently",
+    "Check sensitive-area map",
+    "Scan Git history for secrets",
+    "Check changes against the pull request base",
+)
+DECLINABLE = ("installer", "missing", "remove", "commands", "pointers", "settings", "template",
+              "fitcheck", "recipe", "recipe-format", "access", *GATE_FILES)
 APPLIABLE = ("helper", "ready", "remove", "commands", "pointers", "settings", "template",
-             "recipe")
+             "recipe", *GATE_FILES)
 
 # A project founded before recipes became folders names its recipe by its file,
 # as in `Recipe: <name>.md`. The kit reads that as the folder of the same
@@ -236,6 +274,161 @@ def helper_finding(project):
         if not os.path.isfile(target) or open(target, "rb").read() != expected:
             return [("helper", HELPER, "GitHub recovery helper needs refreshing")]
     return []
+
+
+def gate_findings(project):
+    """Find old or missing copies of the gates added after founding."""
+    found = []
+    for gate, files in GATE_FILES.items():
+        if gate == "required-check":
+            path = os.path.join(project, ".github/workflows/checks.yml")
+            if linked_path(project, ".github/workflows/checks.yml"):
+                found.append(("left", ".github/workflows/checks.yml", "it is a link, so it was left alone"))
+            elif os.path.exists(path) and not os.path.isfile(path):
+                found.append(("left", ".github/workflows/checks.yml", "it is not a file, so it was left alone"))
+            elif not os.path.exists(path):
+                found.append(("gate", gate, ".github/workflows/checks.yml: missing"))
+            else:
+                text = read_text(path)
+                blocks = workflow_steps(text)
+                if blocks is None:
+                    found.append(("left", ".github/workflows/checks.yml",
+                                  "the project-check steps could not be found, so it was left alone"))
+                else:
+                    template = os.path.join(INSTALLED, "setup-ai-build-kit", "templates",
+                                            "foundation", "checks.yml")
+                    template_shape = workflow_steps(read_text(template))
+                    if (template_shape is None or any(
+                            name not in blocks["blocks"] or
+                            blocks["blocks"].get(name, (None, None, None))[2] !=
+                            template_shape["blocks"].get(name, (None, None, None))[2]
+                            for name in WORKFLOW_GATES)):
+                        found.append(("gate", gate,
+                                      ".github/workflows/checks.yml: missing or older gate steps"))
+            continue
+        for source, relative in files:
+            if linked_path(project, relative):
+                found.append(("left", relative, "it is a link, so it was left alone"))
+                continue
+            target = os.path.join(project, relative)
+            if os.path.exists(target) and not os.path.isfile(target):
+                found.append(("left", relative, "it is not a file, so it was left alone"))
+                continue
+            template = os.path.join(INSTALLED, source)
+            try:
+                with open(template, "rb") as handle:
+                    expected = handle.read()
+                with open(target, "rb") as handle:
+                    current = handle.read()
+            except FileNotFoundError:
+                current = None
+            except OSError:
+                found.append(("left", relative, "it could not be read, so it was left alone"))
+                continue
+            if current != expected:
+                action = "missing" if current is None else "older than the installed copy"
+                found.append(("gate", gate, "%s: %s" % (relative, action)))
+                break
+    return found
+
+
+def workflow_steps(text):
+    """Named steps in the project's project-check job, or None if its shape is unknown."""
+    match = re.search(r"(?m)^    steps:[ \t]*\r?\n", text)
+    if not match:
+        return None
+    rest = text[match.end():]
+    end = re.search(r"(?m)^(?:  [A-Za-z0-9_-]+:|[^ \t\r\n#][^:\r\n]*:)", rest)
+    body = rest[:end.start()] if end else rest
+    if not re.search(r"(?m)^      - (?:name:|uses:|run:)", body):
+        return None
+    blocks = {}
+    step = re.compile(r"(?m)^      - name: ([^\r\n]+)[ \t]*\r?\n[\s\S]*?(?=^      - (?:name:|uses:|run:)|\Z)")
+    for found in step.finditer(body):
+        blocks[found.group(1)] = (match.end() + found.start(), match.end() + found.end(), found.group(0))
+    return {"blocks": blocks, "start": match.end(), "end": match.end() + len(body), "body": body}
+
+
+def apply_gates(project, gate):
+    """Refresh only the files in the named gate after the person says yes."""
+    if gate not in GATE_FILES:
+        print("upgrade-check.py: unknown gate %s" % gate, file=sys.stderr)
+        return 2
+    if gate == "required-check":
+        return apply_workflow_gate(project)
+    for source, relative in GATE_FILES[gate]:
+        if linked_path(project, relative):
+            print("left\t%s\tit is a link, so it was left alone" % relative)
+            continue
+        target = os.path.join(project, relative)
+        if os.path.exists(target) and not os.path.isfile(target):
+            print("left\t%s\tit is not a file, so it was left alone" % relative)
+            continue
+        os.makedirs(os.path.dirname(target), exist_ok=True)
+        shutil.copy2(os.path.join(INSTALLED, source), target)
+        print("gate\t%s\t%s refreshed" % (gate, relative))
+    if gate == "push-hook":
+        setup = os.path.join(INSTALLED, "setup-ai-build-kit", "scripts", "use-push-guard.sh")
+        result = subprocess.run(["sh", setup, project], capture_output=True, text=True)
+        if result.stdout:
+            sys.stdout.write(result.stdout)
+        if result.stderr:
+            sys.stderr.write(result.stderr)
+        if result.returncode:
+            return result.returncode
+    return 0
+
+
+def apply_workflow_gate(project):
+    relative = ".github/workflows/checks.yml"
+    target = os.path.join(project, relative)
+    template = os.path.join(INSTALLED, "setup-ai-build-kit", "templates", "foundation", "checks.yml")
+    if linked_path(project, relative) or (os.path.exists(target) and not os.path.isfile(target)):
+        print("left\t%s\tit is a link or not a file, so it was left alone" % relative)
+        return 0
+    if not os.path.exists(target):
+        os.makedirs(os.path.dirname(target), exist_ok=True)
+        shutil.copy2(template, target)
+        print("gate\trequired-check\t%s installed" % relative)
+        return 0
+    with open(target, encoding="utf-8", newline="") as handle:
+        text = handle.read()
+    shape = workflow_steps(text)
+    if shape is None:
+        print("left\t%s\tthe project-check steps could not be found, so it was left alone" % relative)
+        return 0
+    with open(template, encoding="utf-8", newline="") as handle:
+        template_text = handle.read()
+    template_shape = workflow_steps(template_text)
+    if template_shape is None:
+        print("left\t%s\tthe installed gate steps could not be read, so it was left alone" % relative)
+        return 0
+    changes = []
+    missing = []
+    for name in WORKFLOW_GATES:
+        expected = template_shape["blocks"].get(name)
+        if expected is None:
+            print("upgrade-check.py: installed workflow has no %s step" % name, file=sys.stderr)
+            return 2
+        current = shape["blocks"].get(name)
+        if current is None:
+            missing.append(name)
+        elif current[2] != expected[2]:
+            changes.append((current[0], current[1], expected[2]))
+    if not missing and not changes:
+        return 0
+    if missing:
+        additions = "".join(template_shape["blocks"][name][2] for name in missing)
+        install = re.search(r"(?m)^      - name: Install and test\b", shape["body"])
+        at = shape["start"] + install.start() if install else shape["end"]
+        changes.append((at, at, additions))
+    updated = text
+    for start, end, replacement in sorted(changes, reverse=True):
+        updated = updated[:start] + replacement + updated[end:]
+    with open(target, "w", encoding="utf-8", newline="") as handle:
+        handle.write(updated)
+    print("gate\trequired-check\t%s refreshed gate steps" % relative)
+    return 0
 
 
 def template_findings(project):
@@ -546,6 +739,7 @@ def findings(project):
     found.extend(recipe_findings(project))
     found.extend(recipe_format_findings(project))
     found.extend(access_findings(project))
+    found.extend(gate_findings(project))
     found = ready_findings(project) + found
     # A line another step already names is not a mention as well.
     skip = {f[1] for f in found if f[0] in ("commands", "pointer", "template")}
@@ -603,9 +797,9 @@ def listing(project, monthly):
     left = False
     out = []
     for finding in found:
-        if not informational(finding) and STEP_OF.get(finding[0]) in declined \
+        if not informational(finding) and step_of(finding) in declined \
                 and finding[0] != "settings":
-            out.append(("declined", STEP_OF[finding[0]]) + finding)
+            out.append(("declined", step_of(finding)) + finding)
             continue
         if not informational(finding):
             left = True
@@ -615,6 +809,10 @@ def listing(project, monthly):
     for step, sentence in sentences(said_once(out, project, monthly), project):
         print("say\t%s\t%s" % (step, sentence))
     return 1 if left else 0
+
+
+def step_of(finding):
+    return finding[1] if finding[0] == "gate" else STEP_OF.get(finding[0])
 
 
 def read_text(path):
@@ -827,6 +1025,11 @@ def sentences(out, project):
                      "The setup-ai-build-kit skill's references/blocked-commands.md lists what "
                      "the rules still cannot catch. Shall I add them?" % (
                          n, plural(n, "rule", "rules"), joined(stops))))
+    for finding in by.get("gate", []):
+        gate = finding[1]
+        said.append((gate, "Your project is missing or has an older copy of %s. I can "
+                     "refresh %s after your yes; this only changes those project files. "
+                     "Shall I?" % (GATE_WORDS[gate], GATE_WORDS[gate])))
     if "template" in by:
         n = len(by["template"])
         files = sorted({f[1].split(":")[0] for f in by["template"]})
@@ -993,6 +1196,8 @@ def apply(project, step):
         return subprocess.run(python(POINTERS, "--apply", project)).returncode
     if step == "settings":
         return subprocess.run(python(SETTINGS, "--apply", project)).returncode
+    if step in GATE_FILES:
+        return apply_gates(project, step)
     if step == "template":
         return apply_template(project)
     if step == "recipe":
@@ -1007,7 +1212,7 @@ def decline(project, steps):
         print("left\t%s\tit is a link, so it was left alone" % MAINTENANCE)
         return 0
     found = findings(project)
-    still = {STEP_OF.get(f[0]) for f in found if not informational(f)}
+    still = {step_of(f) for f in found if not informational(f)}
     if "settings" in steps and "settings" in still:
         subprocess.run(python(SETTINGS, "--decline", project), check=False)
     if "recipe-format" in steps and "recipe-format" in still:
