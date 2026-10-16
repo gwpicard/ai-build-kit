@@ -10,8 +10,8 @@ whether it can be undone. A migration is applied with the shared
 migration not yet on `main` is applied from a temporary checkout of its
 branch, removed afterwards; then say /implement can ask for the merge.
 
-Then run `scripts/run-recipe.sh --later`, with a first launch's values and a
-`--note` for each gap repaired or left. It writes the run's one dated entry,
+Then run `.agents/skills/setup-hosting/scripts/run-recipe.sh --later <recipe
+from AGENTS.md>`, with a first launch's values and a `--note` for each gap repaired or left. It writes the run's one dated entry,
 gap or no gap, with its rollback line. A recorded hosting request is read
 back as the recipe's file says. Moving to another host or recipe is a later
 run too: run the
