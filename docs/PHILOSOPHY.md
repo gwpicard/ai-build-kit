@@ -51,12 +51,13 @@ code: a team lead, an operations person, an analyst, a product manager, a
 founder. They can create accounts and follow setup steps, and they want a tool
 that still works next quarter. A developer new to agent-led work fits too.
 
-They learn four ideas, at the moment each one first appears:
+They learn five ideas, at the moment each one first appears:
 
 1. Accounts: GitHub, a host, and a database service, created once.
 2. A repository: where the project and its history live.
-3. A pull request: a proposed change. They try it, then say yes to merge it.
-4. Going live: after a merge, the host puts the change in front of users.
+3. Issues: tasks they agree to do, kept with the project on GitHub.
+4. A pull request: a proposed change. They try it, then say yes to merge it.
+5. Going live: after a merge, the host puts the change in front of users.
 
 The focus is a simple way to build and run internal tools, with access for
 people the owner names, such as a team, a club, a family or invited clients.

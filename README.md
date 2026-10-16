@@ -27,9 +27,10 @@ Three things make the road:
 - Risk boundaries. For personal data, money, sign-in or automatic actions,
   the kit names who could be hurt and records your decision.
 
-The kit is designed for coding agents generally and tested on Claude Code and
-Codex. Other agents are supported. If one gives you trouble, report it in the
-[issue tracker](https://github.com/gwpicard/ai-build-kit/issues).
+The kit is designed for coding agents generally. Recorded runs cover Claude
+Code. Codex checks use a stand-in without a model, so they do not show how the
+kit behaves in Codex. Other agents are supported. If one gives you trouble,
+report it in the [issue tracker](https://github.com/gwpicard/ai-build-kit/issues).
 
 ## What you need to know
 

@@ -16,8 +16,12 @@ def main():
     if not match or match.group(1) == "none":
         return 0
     name = match.group(1).removesuffix(".md")
-    recipe = root / ".agents/skills/setup-hosting/recipes" / name / "recipe.md"
-    if not recipe.is_file():
+    recipes = (
+        root / ".agents/skills/setup-hosting/recipes" / name / "recipe.md",
+        root / ".claude/skills/setup-hosting/recipes" / name / "recipe.md",
+    )
+    recipe = next((path for path in recipes if path.is_file()), None)
+    if recipe is None:
         print("Recipe superseded: %s has left the menu; /maintain can offer a move to a current recipe." % name)
         return 1
     text = recipe.read_text()

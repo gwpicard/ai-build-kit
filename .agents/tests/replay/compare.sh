@@ -37,6 +37,10 @@ for case in sorted(set(before) | set(after), key=lambda value: (not value.isdigi
     old_state = old["state"] if old else None
     new_state = new["state"] if new else None
     labels = []
+    if old_held and not new_held:
+        labels.append("held missing")
+    if old_state and not new_state:
+        labels.append("state missing")
     if old_held and new_held and old_held[0] / old_held[1] > new_held[0] / new_held[1]:
         labels.append("held fell")
     if old_state and new_state and old_state[0] / old_state[1] > new_state[0] / new_state[1]:

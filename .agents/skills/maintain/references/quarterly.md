@@ -1,8 +1,9 @@
 # Quarterly upkeep
 
-Run `stack-research` against every recipe and part. Keep its dated note in the
-ignored folder. Carry agreed changes into the recipe and this guide. Move
-`Last checked` only when every product was read.
+Read the official documentation and changelog for every product named in each
+recipe and part. Keep a dated note in the ignored folder. Carry agreed changes
+into the recipe and this guide. Move `Last checked` only when every product
+was read.
 
 Run the monthly routine first. Review hot spots: repeated changes or bugs,
 weak evidence, edits that touch many files, failing integrations and records

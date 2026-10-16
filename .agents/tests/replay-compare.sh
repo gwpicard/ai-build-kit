@@ -60,3 +60,15 @@ if grep -q 'FALL:' "$WORK/steady.out"; then
   exit 1
 fi
 echo "ok: a non-falling comparison returns success"
+
+mkdir -p "$WORK/missing-after"
+if "$COMPARE" "$WORK/steady-before" "$WORK/missing-after" > "$WORK/missing.out"; then
+  echo "FAIL: a missing after scenario returned success" >&2
+  exit 1
+fi
+grep -q '7 .*FALL: held missing, state missing' "$WORK/missing.out" || {
+  echo "FAIL: a missing after scenario was not reported" >&2
+  cat "$WORK/missing.out" >&2
+  exit 1
+}
+echo "ok: a missing after scenario fails the comparison"
