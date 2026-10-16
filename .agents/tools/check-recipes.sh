@@ -213,10 +213,24 @@ def check_recipe(md, proven):
     optional = re.search(r"^Optional parts: (.*)$", head, re.M)
     if optional and not (mode == "template" and "<" in optional.group(1)):
         value = optional.group(1).strip()
-        available_parts = {"read-only existing database", "Python document worker",
-                           "read-only existing database and Python document worker"}
+        part_files = {
+            "read-only existing database": "read-only-existing-database.md",
+            "Python document worker": "python-document-worker.md",
+        }
+        parts_dir = os.path.join(base, "..", "parts")
+        available_parts = {
+            name for name, filename in part_files.items()
+            if os.path.isfile(os.path.join(parts_dir, filename))
+        }
+        choices = {"none"}
+        if "read-only existing database" in available_parts:
+            choices.add("read-only existing database")
+        if "Python document worker" in available_parts:
+            choices.add("Python document worker")
+        if available_parts == {"read-only existing database", "Python document worker"}:
+            choices.add("read-only existing database and Python document worker")
         coming = re.fullmatch(r"[A-Za-z0-9 ,&-]+ \(coming in part [BCD]\)", value)
-        if value != "none" and value not in available_parts and not coming:
+        if value not in choices and not coming:
             problem(where, "Optional parts must name the parts the recipe accepts, or none")
         deploy = re.search(r"^Deploy target: (.*)$", head, re.M)
         if "Python document worker" in value and (not deploy or "Coolify" not in deploy.group(1)):

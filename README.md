@@ -170,6 +170,7 @@ On both, a tool starts private, and changing who can get in waits for your yes.
 Each recipe's folder holds the record of its real run, in `PROVEN.md`. Check
 each recipe's plan terms before choosing. Any other stack or host works too,
 but the kit cannot check its launch steps, and says so once for each.
+Python document work and a read-only link to an existing database are not offered yet.
 [Going live in WORKFLOW.md](WORKFLOW.md#9-going-live) covers previews, backups
 and rollback, which means returning to an earlier live version.
 

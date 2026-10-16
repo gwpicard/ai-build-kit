@@ -82,9 +82,16 @@ ok "an unfilled blank is refused as a recipe"
 
 "$CHECKER" "$GOOD" >/dev/null
 ok "a filled recipe folder passes, dated on a leap day"
+mkdir -p "$WORK/recipes/parts"
+printf '# Shared part: read-only connection to an existing database\n' > "$WORK/recipes/parts/read-only-existing-database.md"
 sed 's#^Optional parts: none$#Optional parts: read-only existing database#' "$GOOD/recipe.md" > "$WORK/optional-recipe.md"
 cp "$WORK/optional-recipe.md" "$GOOD/recipe.md"
 "$CHECKER" "$GOOD" >/dev/null || fail "a recipe naming an available optional part was refused"
+rm "$WORK/recipes/parts/read-only-existing-database.md"
+if "$CHECKER" "$GOOD" >/dev/null 2>&1; then
+  fail "a recipe named an optional part that exists only in the awaiting-run folder"
+fi
+printf '# Shared part: read-only connection to an existing database\n' > "$WORK/recipes/parts/read-only-existing-database.md"
 sed 's#^Optional parts: read-only existing database$#Optional parts: read-only existing database and Python document worker#' "$GOOD/recipe.md" > "$WORK/optional-recipe.md"
 cp "$WORK/optional-recipe.md" "$GOOD/recipe.md"
 if "$CHECKER" "$GOOD" >/dev/null 2>&1; then
@@ -93,7 +100,9 @@ fi
 sed -e 's#^Optional parts: read-only existing database and Python document worker$#Optional parts: read-only existing database and Python document worker#' \
   -e 's#^Deploy target: .*#Deploy target: Coolify#' "$GOOD/recipe.md" > "$WORK/optional-recipe.md"
 cp "$WORK/optional-recipe.md" "$GOOD/recipe.md"
+printf '# Shared part: Python document worker\n' > "$WORK/recipes/parts/python-document-worker.md"
 "$CHECKER" "$GOOD" >/dev/null || fail "a Coolify recipe naming the Python document worker was refused"
+rm "$WORK/recipes/parts/python-document-worker.md"
 sed 's#^Optional parts: read-only existing database and Python document worker$#Optional parts: none#' "$GOOD/recipe.md" > "$WORK/optional-recipe.md"
 cp "$WORK/optional-recipe.md" "$GOOD/recipe.md"
 "$CHECKER" "$GOOD/recipe.md" >/dev/null

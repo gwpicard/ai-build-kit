@@ -456,8 +456,8 @@ note records upstream changes and proposals. Carry agreed changes into the
 recipe and this guide, with the versions and date checked. A recipe taken off
 the menu keeps its route to a current recipe in
 `maintain/references/recipe-move.md` for `/maintain` to offer on a yes.
-The 2026-10-16 read found that new Supabase projects use a publishable key;
-the recipe now names it and records the legacy anon setting for `/maintain`.
+The 2026-10-16 read confirmed Supabase recommends publishable keys for client
+code and treats `anon` as their legacy equivalent ([API keys](https://supabase.com/docs/guides/getting-started/api-keys)); whether new projects default to one is [CHECK]. The recipe now names the publishable key and records the legacy anon setting for `/maintain`.
 
 ## When a release is cut
 
