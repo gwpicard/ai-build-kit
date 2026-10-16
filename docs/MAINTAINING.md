@@ -457,7 +457,12 @@ recipe and this guide, with the versions and date checked. A recipe taken off
 the menu keeps its route to a current recipe in
 `maintain/references/recipe-move.md` for `/maintain` to offer on a yes.
 The 2026-10-16 read confirmed Supabase recommends publishable keys for client
-code and treats `anon` as their legacy equivalent ([API keys](https://supabase.com/docs/guides/getting-started/api-keys)); whether new projects default to one is [CHECK]. The recipe now names the publishable key and records the legacy anon setting for `/maintain`.
+code and treats `anon` as their legacy equivalent, to be deprecated by the end
+of 2026 ([API keys](https://supabase.com/docs/guides/getting-started/api-keys)).
+The same page says to create a publishable key if a project has none, so whether
+a new project holds one by default is [CHECK]: make a throwaway project in the
+real run and record which keys it has. The recipe names the publishable key and
+records the legacy anon setting for `/maintain`.
 
 ## When a release is cut
 
