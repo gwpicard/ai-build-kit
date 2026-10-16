@@ -120,7 +120,8 @@ founding-starter-refusal
 prelaunch-migration-route
 recipe-freshness-date
 maintain-settings-not-restored
-replay-effort-ignored"
+replay-effort-ignored
+replay-helper-worktree-source"
 
 describe() {
   case "$1" in
@@ -206,6 +207,7 @@ describe() {
     recipe-freshness-date) echo "a recipe can lose its 90-day stale warning" ;;
     maintain-settings-not-restored) echo "a drifted project's missing safety settings are never written back" ;;
     replay-effort-ignored) echo "Codex replay calls stop receiving the requested reasoning effort" ;;
+    replay-helper-worktree-source) echo "replay projects take the GitHub readiness helper from the worktree instead of the assembled kit" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -246,6 +248,7 @@ checks_for() {
     recipe-freshness-date) echo "recipe-freshness-rehearsal" ;;
     maintain-settings-not-restored) echo "maintain-drift-rehearsal" ;;
     replay-effort-ignored) echo "replay-provider" ;;
+    replay-helper-worktree-source) echo "replay-project-helper" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -1018,6 +1021,17 @@ assert t.count(old) == 3, "expected effort handling on all three Codex calls"
 open(p, "w").write(t.replace(old, "if false; then"))
 '
       ;;
+    replay-helper-worktree-source)
+      edit "$tree/.agents/tests/replay/prepare/install-project-helper.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "source=\"$kit/.agents/skills/setup-ai-build-kit/templates/foundation/codex-github-check.py\""
+assert old in t, "assembled-kit helper source not found"
+new = "source=\"$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/codex-github-check.py\""
+open(p, "w").write(t.replace(old, new, 1))
+'
+      ;;
     *)
       echo "unknown mutation: $name" >&2
       return 1
@@ -1104,6 +1118,24 @@ for name in $wanted; do
     [ "$status" = NOT-APPLIED ] && echo "  see $WORK/$name-apply.log"
     printf '%s\t%s\t%s\t%s\n' "$name" "$status" "$(echo $checks | tr ' ' ',')" \
       "$(describe "$name")" >> "$REPORT"
+    echo
+    continue
+  fi
+
+  # These behaviour promises are owned by named replay cases. The shell suite
+  # checks that the cases remain present and named in mutation-audit.md, but it
+  # cannot measure the conversation, so do not call them holes or pretend a
+  # shell check caught the mutation.
+  case "$name" in
+    build-nothing-mark) replay_owner=45 ;;
+    founding-starter-refusal) replay_owner=58 ;;
+    prelaunch-migration-route) replay_owner=59 ;;
+    *) replay_owner= ;;
+  esac
+  if [ -n "$replay_owner" ]; then
+    echo "  owned by replay case $replay_owner"
+    printf '%s\t%s\t%s\t%s\n' "$name" "replay:$replay_owner" \
+      "replay-case-$replay_owner" "$(describe "$name")" >> "$REPORT"
     echo
     continue
   fi
