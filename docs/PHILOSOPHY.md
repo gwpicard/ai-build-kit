@@ -18,9 +18,7 @@ them.
 
 ## What the kit is
 
-The kit is a paved road from an idea to a real tool. "Paved road" is a term
-from platform engineering: a route that someone has already made safe, so the
-people who use it do not decide everything again each time.
+The kit takes an idea to a real tool without asking the person to read code.
 
 On the road you build fast, without reading code, and the result is real
 software in your own accounts. Three things carry it.
@@ -60,13 +58,12 @@ They learn four ideas, at the moment each one first appears:
 3. A pull request: a proposed change. They try it, then say yes to merge it.
 4. Going live: after a merge, the host puts the change in front of users.
 
-The focus is a simple way to build and run internal tools, with control over
-who gets access: people the owner can name, such as a team, a club, a family
-or invited clients. That focus allows a boring, proven stack, and a tool that
-is private by default. Only invited people get in, and a recipe check proves
-it. Public-facing features are possible. Public is a setting on the running
-tool that the person asks for. They hear its risks once, and the choice is
-recorded. A tool that takes money from strangers is a public tool.
+The focus is a simple way to build and run internal tools, with access for
+people the owner names, such as a team, a club, a family or invited clients.
+The proven stack keeps each tool private by default. A recipe check proves
+that only invited people can get in. Public-facing features are possible. The
+person asks for that setting, hears its risks once, and records the choice. A
+tool that takes money from strangers is a public tool.
 
 The kit is not for someone who wants an app in ten minutes and never wants to
 see GitHub. A hosted builder serves them better, and the README says so.
@@ -184,6 +181,10 @@ dashboards, no stored records anywhere but the person's project. A kit that
 installs into a folder cannot run those honestly, and claiming otherwise is the
 kind of unbacked claim it exists to stop. Where a project needs one, the fit
 check names it as a caution.
+
+`/maintain` is the reset. It brings the project's kit setup back to the kit's
+defaults and gives the next session a fresh starting point. It cannot repair
+badly written code.
 
 A recipe is the one place that names services somebody else runs, because the
 person's tool will run on them. The kit still runs none of them, and the person
