@@ -108,7 +108,8 @@ It opens with fixed fields. Each names a tool only, so checks can read it.
 - `Last proven:` the date of the latest real run, which matches `PROVEN.md`.
 - `Proven on:` the tool versions recorded for that run.
 - `Superseded settings:` environment variable names a script can check in a
-  project's settings files, or `none`.
+  project's settings files, or `none`. `/maintain` offers to move a project
+  that still records one of these names.
 
 A seventh line may follow. `Plan terms:` says, in one plain sentence, who a
 free or entry plan the recipe relies on is not for, and which plan such a
@@ -182,6 +183,12 @@ the script reads that shape, so the kit never judges it by eye.
 `/maintain` visit make: the live copy against `main`, a hold since a rollback,
 a migration not applied, setting names on the host, health and access. It changes
 nothing. Exit 0 means no gap, 1 a gap, and 2 that a read could not be made.
+
+The Vercel recipe's `get-supabase-keys.sh` writes the publishable and secret
+keys to private files. `add-secret.sh` reads one file on standard input, checks
+Supabase key shapes, and removes an existing production setting only after a
+valid value when `--replace` is given. A Vercel setting change needs a new
+build before production uses it: `vercel redeploy <production deployment URL>`.
 
 `setup-hosting/scripts/run-recipe.sh` runs a recipe's nine checks in its
 order, prints one line for each, and writes the run's dated changelog entry. A

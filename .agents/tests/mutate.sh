@@ -120,6 +120,7 @@ founding-starter-refusal
 prelaunch-migration-route
 recipe-freshness-date
 maintain-settings-not-restored
+vercel-secret-shape
 replay-effort-ignored
 replay-helper-worktree-source"
 
@@ -206,6 +207,7 @@ describe() {
     prelaunch-migration-route) echo "a pre-launch piece chooses its own database migration route" ;;
     recipe-freshness-date) echo "a recipe can lose its 90-day stale warning" ;;
     maintain-settings-not-restored) echo "a drifted project's missing safety settings are never written back" ;;
+    vercel-secret-shape) echo "Vercel accepts a value that does not look like a Supabase secret key" ;;
     replay-effort-ignored) echo "Codex replay calls stop receiving the requested reasoning effort" ;;
     replay-helper-worktree-source) echo "replay projects take the GitHub readiness helper from the worktree instead of the assembled kit" ;;
     *) echo "unknown mutation" ;;
@@ -247,6 +249,7 @@ checks_for() {
     build-nothing-mark|founding-starter-refusal|prelaunch-migration-route) echo "$DEFAULT_CHECKS" ;;
     recipe-freshness-date) echo "recipe-freshness-rehearsal" ;;
     maintain-settings-not-restored) echo "maintain-drift-rehearsal" ;;
+    vercel-secret-shape) echo "recipe-nextjs-supabase-on-vercel" ;;
     replay-effort-ignored) echo "replay-provider" ;;
     replay-helper-worktree-source) echo "replay-project-helper" ;;
     *) echo "$DEFAULT_CHECKS" ;;
@@ -288,6 +291,15 @@ old = "    with open(path, \"w\", encoding=\"utf-8\", newline=\"\") as handle:\n
 assert old in t, "settings restore write not found"
 open(p, "w").write(t.replace(old, "    # mutation skips persistence", 1))
 '
+      ;;
+    vercel-secret-shape)
+      edit "$tree/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/add-secret.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "sb_secret_*|eyJ*"
+assert old in s, "Supabase secret-key shape check not found"
+open(p, "w").write(s.replace(old, "*", 1))'
       ;;
     recipe-framework-major)
       edit "$tree/.agents/tools/check-recipes.sh" '

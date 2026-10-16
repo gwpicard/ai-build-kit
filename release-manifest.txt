@@ -32,6 +32,7 @@
 .agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/add-secret.sh|
 .agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/connect.sh|
 .agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/going-live.sh|
+.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/get-supabase-keys.sh|
 .agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/live-check.sh|
 .agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/logs.sh|
 .agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/preview.sh|
@@ -94,6 +95,7 @@
 .agents/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/src/components/ui/button.tsx|
 .agents/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/src/lib/roles.test.ts|
 .agents/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/src/lib/roles.ts|
+.agents/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/src/lib/supabase/admin.test.ts|
 .agents/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/src/lib/supabase/admin.ts|
 .agents/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/src/lib/supabase/authorize.ts|
 .agents/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/src/lib/supabase/client.ts|
@@ -185,6 +187,7 @@ agent-plugin|
 .agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/add-secret.sh|agent-plugin/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/add-secret.sh
 .agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/connect.sh|agent-plugin/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/connect.sh
 .agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/going-live.sh|agent-plugin/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/going-live.sh
+.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/get-supabase-keys.sh|agent-plugin/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/get-supabase-keys.sh
 .agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/live-check.sh|agent-plugin/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/live-check.sh
 .agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/logs.sh|agent-plugin/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/logs.sh
 .agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/preview.sh|agent-plugin/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/preview.sh
@@ -235,6 +238,7 @@ agent-plugin|
 .agents/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/src/components/ui/button.tsx|agent-plugin/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/src/components/ui/button.tsx
 .agents/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/src/lib/roles.test.ts|agent-plugin/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/src/lib/roles.test.ts
 .agents/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/src/lib/roles.ts|agent-plugin/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/src/lib/roles.ts
+.agents/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/src/lib/supabase/admin.test.ts|agent-plugin/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/src/lib/supabase/admin.test.ts
 .agents/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/src/lib/supabase/admin.ts|agent-plugin/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/src/lib/supabase/admin.ts
 .agents/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/src/lib/supabase/authorize.ts|agent-plugin/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/src/lib/supabase/authorize.ts
 .agents/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/src/lib/supabase/client.ts|agent-plugin/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/src/lib/supabase/client.ts

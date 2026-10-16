@@ -61,9 +61,37 @@ rr_case 1 bad secrets.sh
 rr_case 2 down secrets.sh
 printf 'a-value\n' > "$RR_TMP/value"
 RR_STDIN="$RR_TMP/value"
-rr_case 0 good add-secret.sh SUPABASE_SERVICE_ROLE_KEY
 rr_case 0 good add-secret.sh NEXT_PUBLIC_SUPABASE_URL
-rr_case 1 bad add-secret.sh SUPABASE_SERVICE_ROLE_KEY
+printf 'sb_secret_abcdef123456\n' > "$RR_TMP/value"
+rr_case 0 good add-secret.sh SUPABASE_SECRET_KEY
+rr_case 0 good add-secret.sh --replace SUPABASE_SECRET_KEY
+rr_called "vercel env rm SUPABASE_SECRET_KEY production --yes"
+printf 'supabase projects api-keys --project-ref ref\n' > "$RR_TMP/value"
+rr_case 2 good add-secret.sh --replace SUPABASE_SECRET_KEY
+if tail -n "+$((rr_mark + 1))" "$RR_CALLS" | grep -Eq '^vercel env (rm|add) '; then
+  rr_fail "add-secret.sh changed Vercel before rejecting command text"
+fi
+printf 'not-a-supabase-key\n' > "$RR_TMP/value"
+rr_case 2 good add-secret.sh --replace SUPABASE_SECRET_KEY
+if tail -n "+$((rr_mark + 1))" "$RR_CALLS" | grep -Eq '^vercel env (rm|add) '; then
+  rr_fail "add-secret.sh changed Vercel before rejecting a wrong key shape"
+fi
+printf 'token with spaces\n' > "$RR_TMP/value"
+rr_case 2 good add-secret.sh API_TOKEN
+printf '\n' > "$RR_TMP/value"
+rr_case 2 good add-secret.sh API_KEY
+printf 'sb_publishable_abcdef123456\n' > "$RR_TMP/value"
+rr_case 0 good get-supabase-keys.sh standin "$RR_TMP/key-files"
+rr_called "supabase projects api-keys --project-ref standin -o json"
+rr_said yes "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_abcdef"
+rr_said yes "SUPABASE_SECRET_KEY: sb_secret_ghijkl"
+[ "$(stat -f '%Lp' "$RR_TMP/key-files/NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY")" = 600 ] || rr_fail "the publishable key file is not mode 600"
+[ "$(stat -f '%Lp' "$RR_TMP/key-files/SUPABASE_SECRET_KEY")" = 600 ] || rr_fail "the secret key file is not mode 600"
+[ "$(cat "$RR_TMP/key-files/NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY")" = sb_publishable_abcdef123456 ] || rr_fail "the publishable key file has the wrong value"
+if grep -q 'sb_publishable_abcdef123456\|sb_secret_ghijkl123456' "$RR_TMP/out"; then rr_fail "the key fetch printed a full key"; fi
+rr_case 2 down get-supabase-keys.sh standin "$RR_TMP/key-files-down"
+printf 'sb_secret_abcdef123456\n' > "$RR_TMP/value"
+rr_case 1 bad add-secret.sh SUPABASE_SECRET_KEY
 rr_case 2 good add-secret.sh
 RR_STDIN=
 
@@ -180,6 +208,12 @@ rr_case 2 down migrate.sh
 rr_case 2 good DB_PASSWORD_FILE= migrate.sh
 rr_case 1 bad RR_DRY=colour LC_ALL=C migrate.sh
 rr_said yes "20260101000000_pinned.sql"
+printf 'supabase db push --apply\n' > "$RR_TMP/bad-password"
+rr_case 2 good DB_PASSWORD_FILE="$RR_TMP/bad-password" migrate.sh
+rr_said yes "the password file does not look like a password"
+if tail -n "+$((rr_mark + 1))" "$RR_CALLS" | grep -q '^supabase link '; then
+  rr_fail "migrate.sh connected before checking the password file"
+fi
 rr_case 2 good RR_DRY=nameless migrate.sh
 rr_case 0 good migrate.sh --apply liveref
 rr_case 1 bad migrate.sh --apply liveref

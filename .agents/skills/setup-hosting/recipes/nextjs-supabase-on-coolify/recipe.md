@@ -21,7 +21,7 @@ Health-check tool: curl
 Last checked: 2026-10-14
 Last proven: 2026-09-27
 Proven on: Next.js 16; Supabase CLI 2.117; Coolify 4.3.23; coolify-devops 0.4.0
-Superseded settings: NEXT_PUBLIC_SUPABASE_ANON_KEY
+Superseded settings: NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
 
 Shared stack: [Next.js, TypeScript and Supabase](../parts/nextjs-supabase-stack.md)
 Database types check: `if [ ! -f types/database.ts ] || ! git ls-files --error-unmatch types/database.ts >/dev/null 2>&1; then echo 'could not run: types/database.ts is missing or untracked'; exit 2; fi; if ! supabase status >/dev/null 2>&1; then echo 'could not run: local Supabase is not running'; exit 2; fi; tmp=$(mktemp) || exit 2; trap 'rm -f "$tmp"' EXIT; supabase gen types typescript --local > "$tmp" || { echo 'could not run: database types could not be generated'; exit 2; }; diff -u types/database.ts "$tmp"`
@@ -63,7 +63,7 @@ Shared part: [restore on hosted Supabase](../parts/supabase-restore.md)
 
 ## Secrets
 
-How it works: Use `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`; the legacy `NEXT_PUBLIC_SUPABASE_ANON_KEY` still works.  The hosting request carries setting names, never a value. With coolify-devops 0.8.2, the companion creates hand-set secrets as runtime-only (`is_buildtime: false`) with a `REPLACE_ME` placeholder, then waits for the person to fill them before deploying. Build vars are the exception: the companion creates them for build time and runtime with a `REPLACE_ME` placeholder, and waits for the person to fill them before deploying. A build var change needs a redeploy, not a restart. The Supabase address and publishable key carry the `NEXT_PUBLIC_` prefix and reach the browser by design; row-level security keeps them harmless. The service role key never carries that prefix. No value goes into the repository or the Dockerfile.
+How it works: Use `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` and `SUPABASE_SECRET_KEY`; the legacy `NEXT_PUBLIC_SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` still work. The hosting request carries setting names, never a value. With coolify-devops 0.8.2, the companion creates hand-set secrets as runtime-only (`is_buildtime: false`) with a `REPLACE_ME` placeholder, then waits for the person to fill them before deploying. Build vars are the exception: the companion creates them for build time and runtime with a `REPLACE_ME` placeholder, and waits for the person to fill them before deploying. A build var change needs a redeploy, not a restart. The publishable key reaches the browser by design; row-level security limits it. The secret key stays on the server. No value goes into the repository or the Dockerfile.
 How it is checked: Coolify holds every name in `.env.example`, no public name carries a secret, and git ignores `supabase/.temp`.
 Script: scripts/secrets.sh
 Who runs it: a companion or the person, result read back
