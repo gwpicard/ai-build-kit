@@ -11,12 +11,12 @@ stack and host pair is its own recipe.
 
 ## The current set
 
-The pinned menu has two recipes and two optional parts. A recipe must fit the
+The pinned menu has two recipes and no optional parts. A recipe must fit the
 tools the kit can check and use a stack the team can prove on every run. Both
 recipes use strict TypeScript, Next.js 16 and hosted Supabase, on Vercel or
-Coolify. The Python document worker is for Coolify only. The read-only link to
-an existing database works with either recipe. This keeps one language,
-database and sign-in service across the menu.
+Coolify. Python document work and a read-only link to an existing database
+remain drafts in `.agents/tests/recipes-awaiting-run/parts/` until their runs
+are recorded.
 
 1. Next.js and Supabase on Vercel. It suits dashboards, admin panels,
    approvals, CRMs, light ERP, trackers, HR, case management, booking, forms
@@ -63,8 +63,8 @@ The following stay off the road:
   their checks yet.
 - Marker, because of its model licence.
 
-The Python document worker belongs only on Coolify. The read-only existing
-database part belongs on both recipes.
+The Python document worker draft targets Coolify. The read-only existing
+database draft targets both recipes. Neither is offered until proven.
 
 ## A recipe is a folder
 

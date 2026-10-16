@@ -350,7 +350,7 @@ open(p, "w").write(t.replace(old, "if False and clashes:\n    print(\"refused: t
 '
       ;;
     read-only-db-privilege)
-      edit "$tree/.agents/skills/setup-hosting/recipes/parts/scripts/read-only-database.sh" '
+      edit "$tree/.agents/tests/recipes-awaiting-run/parts/scripts/read-only-database.sh" '
 import os
 p = os.environ["MUTATE_TARGET"]
 t = open(p).read()
@@ -360,7 +360,7 @@ open(p, "w").write(t.replace(old, "false", 1))
 '
       ;;
     worker-queue-name)
-      edit "$tree/.agents/skills/setup-hosting/recipes/parts/scripts/python-worker-check.sh" '
+      edit "$tree/.agents/tests/recipes-awaiting-run/parts/scripts/python-worker-check.sh" '
 import os
 p = os.environ["MUTATE_TARGET"]
 t = open(p).read()
