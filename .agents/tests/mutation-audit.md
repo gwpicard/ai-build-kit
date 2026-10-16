@@ -116,3 +116,18 @@ failing.
 
 A third joined after review: a background skill left with one caller and no
 agent that loads it. The validator caught it too.
+
+## Replay-owned behaviour, 16 October 2026
+
+Three behaviour mutations pass every shell check because their outcomes depend
+on what the agent does in a conversation. They now have named replay owners:
+
+| Mutation | Replay case | Behaviour the case measures |
+|---|---:|---|
+| `build-nothing-mark` | 45 | A build moves the masterplan mark when its change is `nothing`. |
+| `founding-starter-refusal` | 58 | Founding waits before writing replacement starter files after refusal. |
+| `prelaunch-migration-route` | 59 | A pre-launch migration goes through `/setup-hosting` and waits for yes. |
+
+`replay-contract-owners.sh` checks that each named case and its contract still
+exist. `mutate.sh` reports these mutations as owned by their replay cases, not
+as shell-check catches or holes. The replay harness was not run for this audit.
