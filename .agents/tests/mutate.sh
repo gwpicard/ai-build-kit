@@ -119,6 +119,7 @@ build-nothing-mark
 founding-starter-refusal
 prelaunch-migration-route
 recipe-freshness-date
+maintain-settings-not-restored
 replay-effort-ignored"
 
 describe() {
@@ -203,6 +204,7 @@ describe() {
     founding-starter-refusal) echo "founding writes a replacement starter before asking after a command refusal" ;;
     prelaunch-migration-route) echo "a pre-launch piece chooses its own database migration route" ;;
     recipe-freshness-date) echo "a recipe can lose its 90-day stale warning" ;;
+    maintain-settings-not-restored) echo "a drifted project's missing safety settings are never written back" ;;
     replay-effort-ignored) echo "Codex replay calls stop receiving the requested reasoning effort" ;;
     *) echo "unknown mutation" ;;
   esac
@@ -242,6 +244,7 @@ checks_for() {
     promises-list-stale) echo "promises-list-rehearsal" ;;
     build-nothing-mark|founding-starter-refusal|prelaunch-migration-route) echo "$DEFAULT_CHECKS" ;;
     recipe-freshness-date) echo "recipe-freshness-rehearsal" ;;
+    maintain-settings-not-restored) echo "maintain-drift-rehearsal" ;;
     replay-effort-ignored) echo "replay-provider" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
@@ -271,6 +274,16 @@ t = open(p).read()
 old = "stale = (datetime.date.today() - checked_date).days > 90"
 assert old in t, "recipe freshness age check not found"
 open(p, "w").write(t.replace(old, "stale = False", 1))
+'
+      ;;
+    maintain-settings-not-restored)
+      edit "$tree/.agents/skills/maintain/scripts/settings-rules.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    with open(path, \"w\", encoding=\"utf-8\", newline=\"\") as handle:\n        handle.write(new)"
+assert old in t, "settings restore write not found"
+open(p, "w").write(t.replace(old, "    # mutation skips persistence", 1))
 '
       ;;
     recipe-framework-major)

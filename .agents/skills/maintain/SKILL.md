@@ -5,7 +5,7 @@ description: Make the project true and healthy. Every visit checks records and t
 
 # Maintain
 
-Never offer the opt-in automatic merge or parallel-build settings during maintenance.
+Maintenance never offers queued, parallel, looped building or automatic merging.
 
 Make the records true, compare the live copy with `main`, and finish a kit
 update. Report findings before applying anything beyond routine
