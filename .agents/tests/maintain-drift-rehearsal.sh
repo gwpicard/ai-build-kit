@@ -41,7 +41,8 @@ pass() { echo "  ok: $1"; }
 fail() { echo "FAIL: $1" >&2; exit 1; }
 
 report=$(python3 "$PROJECT/.agents/skills/maintain/scripts/kit-leftovers.py" "$PROJECT")
-printf '%s\n' "$report" | grep -q $'^adapter\t.claude/commands/ship.md$' \
+adapter_line=$(printf 'adapter\t.claude/commands/ship.md')
+printf '%s\n' "$report" | grep -q "$adapter_line" \
   || fail "the stale generated command was not reported"
 python3 "$PROJECT/.agents/skills/maintain/scripts/kit-leftovers.py" --remove "$PROJECT" >/dev/null
 [ ! -e "$PROJECT/.claude/commands/ship.md" ] || fail "the stale generated command was not removed"
