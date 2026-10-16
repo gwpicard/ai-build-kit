@@ -96,6 +96,7 @@ mkdir -p "$WORK"
 REPLAY_PROVIDER=codex
 MODEL=codex-model
 GRADER_MODEL=codex-grader
+unset REPLAY_EFFORT
 provider_check
 provider_prepare
 provider_new_session
@@ -146,6 +147,24 @@ PY
 grep -q -- "--ephemeral.*--sandbox read-only" "$PROVIDER_LOG" \
   && pass "the Codex grader is ephemeral and read-only" \
   || fail_provider "the Codex grader did not use its restricted mode"
+if grep -qF 'model_reasoning_effort=' "$PROVIDER_LOG"; then
+  fail_provider "an unset Codex effort changed the command line"
+else
+  pass "an unset Codex effort adds no command-line setting"
+fi
+
+# The explicit setting must reach the start, resume and grader commands.
+: > "$PROVIDER_LOG"
+REPLAY_EFFORT=high
+provider_new_session
+provider_turn "$TEST_WORK/project" "effort start" "$TEST_WORK/effort-start.jsonl" \
+  "$TEST_WORK/effort-start.reply" || fail_provider "Codex start with effort failed"
+provider_turn "$TEST_WORK/project" "effort resume" "$TEST_WORK/effort-resume.jsonl" \
+  "$TEST_WORK/effort-resume.reply" || fail_provider "Codex resume with effort failed"
+provider_grade "$TEST_WORK/input" "$TEST_WORK/effort-grade.raw"
+[ "$(grep -cF 'model_reasoning_effort=high' "$PROVIDER_LOG")" -eq 3 ] \
+  && pass "Codex effort reaches the start, resume and grader commands" \
+  || fail_provider "Codex effort did not reach all three command lines"
 
 REPLAY_PROVIDER=claude
 MODEL=opus
@@ -234,9 +253,9 @@ PY
 grep -q 'REPLAY_PROVIDER=${REPLAY_PROVIDER:-claude}' "$RUNNER" \
   && pass "Claude Code remains the default provider" \
   || fail_provider "the default replay provider changed"
-grep -q 'REPLAY_PROVIDER=codex REPEATS=1' "$README" \
-  && pass "the Codex command is documented" \
-  || fail_provider "the Codex command is missing from the guide"
+grep -qF 'REPLAY_PROVIDER=codex MODEL=gpt-6-luna GRADER_MODEL=gpt-6-luna REPLAY_EFFORT=high REPEATS=3 ./run.sh' "$README" \
+  && pass "the Codex-only comparison command is documented" \
+  || fail_provider "the exact Codex-only command is missing from the guide"
 grep -q "Expected path.*recorded build path" "$GRADER" \
   && grep -q "before a build.*not a path change" "$GRADER" \
   && pass "the grader treats Expected path as a build path" \
