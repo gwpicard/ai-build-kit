@@ -339,7 +339,7 @@ echo "== Every skill names a path a project has =="
 
 # The pointer is the route. A skill naming the old tools path inside the kit,
 # or any other path, sends a project to a file it does not have.
-bad=$(grep -rn "plan-refresh\.sh" "$ROOT/.agents/skills" \
+bad=$(grep -rn --exclude-dir=__pycache__ "plan-refresh\.sh" "$ROOT/.agents/skills" \
   | grep -v "\.agents/tools/plan-refresh\.sh" \
   | grep -v "templates/foundation/plan-refresh\.sh" \
   | grep -v "^$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/plan-refresh\.sh:" \
