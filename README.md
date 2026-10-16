@@ -59,7 +59,7 @@ idea to a saved change.
 | I want something changed, new or broken | `/shape` | Turns your idea or the fault into a ready piece. Reproduces a fault first. |
 | Build what's ready | `/implement` | Builds a ready piece, shows the result and merges it on your yes. With several ready, shows what can be built together and asks which to take. |
 | I want people to use it | `/setup-hosting` | Sets up how the tool runs live, so each later merge goes live. Run it again to check or change that. |
-| It's been a while | `/maintain` | Resets the kit setup to its defaults and gives the project a fresh starting point. It cannot repair badly written code. Also checks records and the live copy, reports gaps and due upkeep, and prepares handovers or switches a tool off. |
+| It's been a while | `/maintain` | Restores the kit's records, settings and checks to their defaults. It cannot repair badly written code. Also checks the live copy, reports gaps and due upkeep, and prepares handovers or switches a tool off. |
 | I'm lost | `/what-now` | Says where the project stands and what to do next, including work a session left half done. |
 
 The masterplan (`masterplan.md`) describes what your tool does now. Your

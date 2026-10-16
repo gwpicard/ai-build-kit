@@ -220,7 +220,7 @@ pointers_resolve() {
   else
     fail "$route: founded documents found $docs_found pointers; missing: $missing; fixed paths: $fixed"
   fi
-  skill_files=$(find -L "$skills"/ -name '*.md' -o -name '*.py' | sort)
+  skill_files=$(find -L "$skills"/ -name '*.md' | sort)
   # shellcheck disable=SC2086
   skills_found=$(pointers_in $skill_files | wc -l | tr -d ' ')
   # shellcheck disable=SC2086
