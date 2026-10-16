@@ -267,12 +267,16 @@ case "$1" in
     esac ;;
   env)
     case "$2 ${3:-} ${4:-}" in
+      "rm "*" production")
+        [ "$#" -eq 5 ] && [ "$5" = --yes ] || refuse "$@"
+        echo "vercel env rm $3 production --yes" >> "$RR_CALLS"
+        down ;;
       "ls production "|"ls preview ")
         [ "$#" -eq 3 ] || refuse "$@"
         down
         echo " name                         value       environments"
-        for name in NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY SUPABASE_SERVICE_ROLE_KEY; do
-          bad && [ "$name" = SUPABASE_SERVICE_ROLE_KEY ] && continue
+        for name in NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY SUPABASE_SECRET_KEY; do
+          bad && [ "$name" = SUPABASE_SECRET_KEY ] && continue
           echo " $name   Encrypted   Production"
         done ;;
       "add "*" production"|"add "*" preview"|"add "*" production "*|"add "*" preview "*)
@@ -326,6 +330,15 @@ password() {
   esac
 }
 case "$*" in
+  "projects api-keys --project-ref "*" -o json")
+    down
+    cat <<'JSON'
+[
+  {"name":"publishable","api_key":"sb_publishable_abcdef123456"},
+  {"name":"secret","api_key":"sb_secret_ghijkl123456"}
+]
+JSON
+    ;;
   "--workdir "*" config diff --project-ref "*" --exit-code")
     # Read-only. RR_OLD_CLI is a tool from before config diff existed, and
     # RR_DIFF=extra one that would also send a default it filled in itself.
@@ -599,9 +612,9 @@ rr_project() {
   mkdir -p "$1/supabase/.temp" "$1/supabase/migrations"
   (
     cd "$1"
-    printf 'NEXT_PUBLIC_SUPABASE_URL=\nNEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=\nSUPABASE_SERVICE_ROLE_KEY=\n' > .env.example
+    printf 'NEXT_PUBLIC_SUPABASE_URL=\nNEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=\nSUPABASE_SECRET_KEY=\n' > .env.example
     printf 'NEXT_PUBLIC_SUPABASE_URL=https://liveref.supabase.co\nNEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_stand-in\n' > .env.local
-    printf 'NEXT_PUBLIC_SUPABASE_URL=https://liveref.supabase.co\nNEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_stand-in\nSUPABASE_SERVICE_ROLE_KEY=service-role-stand-in\n' > .env.container
+    printf 'NEXT_PUBLIC_SUPABASE_URL=https://liveref.supabase.co\nNEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_stand-in\nSUPABASE_SECRET_KEY=sb_secret_stand-in\n' > .env.container
     printf 'FROM node:22-alpine\nENV HOSTNAME=0.0.0.0 PORT=3000\nCMD ["node", "server.js"]\n' > Dockerfile
     # What linking and keep-out-of-git.sh leave, as a launched project has it.
     printf '.vercel\n.env*\n!.env.example\nsupabase/.temp\n' > .gitignore
@@ -657,7 +670,7 @@ rr_paste_files() {
   printf 'Images kept:\napp:%s  live  2026-01-02 10:00\n' "$rr_main" > "$rr_p/bad-rollback"
   # Hexadecimal runs with nothing to say they are images.
   printf 'Build log deadbee, then cafe123\n' > "$rr_p/untagged-rollback"
-  printf 'NEXT_PUBLIC_SUPABASE_URL\nNEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY\nSUPABASE_SERVICE_ROLE_KEY\n' > "$rr_p/good-secrets"
+  printf 'NEXT_PUBLIC_SUPABASE_URL\nNEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY\nSUPABASE_SECRET_KEY\n' > "$rr_p/good-secrets"
   printf 'NEXT_PUBLIC_SUPABASE_URL\nNEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY\n' > "$rr_p/bad-secrets"
   printf 'NEXT_PUBLIC_SUPABASE_URL=https://liveref.supabase.co\n' > "$rr_p/value-secrets"
   printf 'Coolify: build helper container missing\nready on port 3000\n' > "$rr_p/good-logs"

@@ -14,9 +14,9 @@ stack and host pair is its own recipe.
 The pinned menu has two recipes and no optional parts. A recipe must fit the
 tools the kit can check and use a stack the team can prove on every run. Both
 recipes use strict TypeScript, Next.js 16 and hosted Supabase, on Vercel or
-Coolify. Python document work and a read-only link to an existing database
-remain drafts in `.agents/tests/recipes-awaiting-run/parts/` until their runs
-are recorded.
+Coolify. The shared starter pins `next` and `eslint-config-next` to 16.4.2.
+Python document work and a read-only link to an existing database remain drafts
+in `.agents/tests/recipes-awaiting-run/parts/` until their runs are recorded.
 
 1. Next.js and Supabase on Vercel. It suits dashboards, admin panels,
    approvals, CRMs, light ERP, trackers, HR, case management, booking, forms
@@ -108,7 +108,8 @@ It opens with fixed fields. Each names a tool only, so checks can read it.
 - `Last proven:` the date of the latest real run, which matches `PROVEN.md`.
 - `Proven on:` the tool versions recorded for that run.
 - `Superseded settings:` environment variable names a script can check in a
-  project's settings files, or `none`.
+  project's settings files, or `none`. `/maintain` offers to move a project
+  that still records one of these names.
 
 A seventh line may follow. `Plan terms:` says, in one plain sentence, who a
 free or entry plan the recipe relies on is not for, and which plan such a
@@ -182,6 +183,12 @@ the script reads that shape, so the kit never judges it by eye.
 `/maintain` visit make: the live copy against `main`, a hold since a rollback,
 a migration not applied, setting names on the host, health and access. It changes
 nothing. Exit 0 means no gap, 1 a gap, and 2 that a read could not be made.
+
+The Vercel recipe's `get-supabase-keys.sh` writes the publishable and secret
+keys to private files. `add-secret.sh` reads one file on standard input, checks
+Supabase key shapes, and removes an existing production setting only after a
+valid value when `--replace` is given. A Vercel setting change needs a new
+build before production uses it: `vercel redeploy <production deployment URL>`.
 
 `setup-hosting/scripts/run-recipe.sh` runs a recipe's nine checks in its
 order, prints one line for each, and writes the run's dated changelog entry. A
