@@ -14,9 +14,9 @@ stack and host pair is its own recipe.
 The pinned menu has two recipes and no optional parts. A recipe must fit the
 tools the kit can check and use a stack the team can prove on every run. Both
 recipes use strict TypeScript, Next.js 16 and hosted Supabase, on Vercel or
-Coolify. Python document work and a read-only link to an existing database
-remain drafts in `.agents/tests/recipes-awaiting-run/parts/` until their runs
-are recorded.
+Coolify. The shared starter pins `next` and `eslint-config-next` to 16.4.2.
+Python document work and a read-only link to an existing database remain drafts
+in `.agents/tests/recipes-awaiting-run/parts/` until their runs are recorded.
 
 1. Next.js and Supabase on Vercel. It suits dashboards, admin panels,
    approvals, CRMs, light ERP, trackers, HR, case management, booking, forms
