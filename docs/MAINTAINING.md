@@ -139,11 +139,106 @@ sub-issue, and never sends a reminder.
 ## Adaptive process is a contract
 
 Every rule declares where it applies (always, on named paths or changes, or
-only inside a named sensitive area), the way PHILOSOPHY.md requires; do not add
-a strict step to the default workflow merely because it is good engineering
-practice. When changing a skill, check all three build paths: a change that
-improves Build with care but burdens private exploration belongs behind a path
-condition, not in the shared default.
+only to a piece that touches a named risk area), the way PHILOSOPHY.md
+requires. Do not add a strict step to the default workflow merely because it is
+good engineering practice. A change that improves care for one risk area but
+burdens ordinary work belongs behind a risk-area condition, not in the shared
+default.
+
+## The backbone and its mechanisms
+
+PHILOSOPHY.md names seven promises that hold in every project. This section is
+the one list of what holds each. A promise whose mechanism says "none yet" is
+not a guarantee. The kit may not claim it, and the piece that closes the gap is
+named beside it.
+
+| Promise | Mechanism today | Gap |
+|---|---|---|
+| A person approves each merge, unless they chose auto-merge with its limits. | `merge.py` and `.agents/tests/merge-gate.sh`; the autonomy limits in `.agents/tests/autonomy-boundaries.sh`; branch protection set at setup | Branch protection can fail without stopping setup. Closed by the backbone-gaps piece. |
+| Nothing goes online without a yes. | Claude Code permission rules, checked by `.agents/tests/push-to-main-rules.sh`; `.agents/tests/first-upload.sh` | Words only for other agents. There is no single gate for every online change. Closed by the backbone-gaps piece. |
+| Secrets are never shown. | `.agents/tests/secrets-gates.sh` and `.agents/tests/push-guard.sh` | Held for commits and command output. The kit's own saved records are not covered. Closed by the backbone-gaps piece. |
+| Checks pass before a merge. | The project checks workflow, read by `merge.py`; `.agents/tests/merge-gate.sh` | None known. |
+| A review matches the code it read. | None yet. `.agents/tests/review-gate.sh` reads the review boxes in the pull request text, which a later push or an edit leaves unchanged. | The review record carries no commit. Closed by the backbone-gaps piece. |
+| Every launch has a way back and a backup. | Each recipe must carry rollback, backup and restore sections, checked by `.agents/tools/check-recipes.sh` | A missing one is reported and does not hold the launch. Closed by the backbone-gaps piece. |
+| Records say "accepted", never "done". | Replay scenarios 2 and 46 | Words only. |
+
+Each mechanism needs a check that fails when the mechanism is removed. The
+mutation run breaks each one in turn.
+
+### Two kinds of check
+
+An integrity check protects one of the seven promises. It may stop the work,
+and it stops it even if the person insists. A judgement risk belongs to one
+piece of work. The kit warns once, records the person's words and the date, and
+then builds. It does not refuse, ask again or hold the work back.
+
+When the two seem to meet, ask who can judge. If the person can judge the harm
+from where they sit, it is a judgement risk. If the harm is invisible to them,
+such as a review of old code or a launch with no backup, it is an integrity
+check.
+
+### Results
+
+Every check reports one of five results: `PASS`, `FAIL`, `NOT_RUN`,
+`INCONCLUSIVE` or `NOT_APPLICABLE`. A missing runner, a crashed tool or a check
+that never started is `NOT_RUN`. It is never shown as `PASS`. One table in one
+place says which results stop a merge, which ask for a review and which only
+inform. A test the harness breaks is "could not run", never a pass or a fail.
+
+### Rollout states
+
+A check that a project cannot yet run is in one of three states: `off`,
+`report-only` or `enforced`. A project starts at `report-only` when it lacks
+what the check needs, such as a second identity for a review. A report-only
+check says so in plain words and never shows a false pass. The move to
+`enforced` is a decision, recorded with the date.
+
+A review that the kit cannot verify, because the agent and the reviewer share
+one login, is recorded as unverified. The hand-over never calls it an
+independent review.
+
+### The risk record
+
+The record lives in the masterplan, under a heading for risk. The project
+instructions point to it. It holds:
+
+- who is exposed if the tool fails;
+- what data the tool holds;
+- what a wrong answer does;
+- how the person recovers;
+- the named risk areas the project touches, each with the person's words and
+  the date once they accepted it.
+
+Setup asks three questions to fill it: who is exposed if this fails, what data
+does it hold, and how would you recover from a failure. The agent writes the
+record with the person and checks it again whenever the project changes. A
+piece carries a "Risk areas" field naming the areas it touches. The notice
+comes once per piece. The acceptance is saved with the person's words and the
+date.
+
+The named risk areas are the ones PHILOSOPHY.md lists: personal data, money,
+sign-in, automatic actions, data that cannot be replaced, and a regulated
+decision.
+
+### Working conditions
+
+Setup does not complete until a script confirms them: a repository with issues
+switched on, an agent session that can read and write issues, branch protection
+that can be set, and host and database access. The script reports each as
+present, missing or could not check. A missing condition stops setup with the
+one step the person takes. The person creates the accounts.
+
+### Settled points
+
+- Hosting is offered on proven recipes only. Outside one, the kit says plainly
+  that it guarantees nothing and still helps.
+- The kit never deletes the person's unfinished work. It explains how to
+  recover it.
+- "Fix the live error, no more yeses" still needs one named yes.
+- When the person gives too little detail at setup, the kit asks only for the
+  three questions, records any gap as an assumption, and goes on.
+- When a recipe record is missing at a first launch, the launch stops until the
+  record names the rollback and the backup.
 
 ## Changing a skill
 
