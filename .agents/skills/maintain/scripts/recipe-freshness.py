@@ -34,6 +34,9 @@ def main():
     except ValueError:
         print("could not run: recipe Last checked date is invalid")
         return 2
+    if checked_date > datetime.date.today():
+        print("could not run: recipe Last checked date is in the future")
+        return 2
     stale = (datetime.date.today() - checked_date).days > 90
     old = []
     names = re.search(r"^Superseded settings: (.+)$", text, re.M)

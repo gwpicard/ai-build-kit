@@ -273,6 +273,9 @@ def check_recipe(md, proven):
             problem(proven, "must record Real run and Versions")
         if not proof_date or not proven_date or proof_date.group(1) != proven_date.group(1):
             problem(where, "Last proven must match PROVEN.md")
+        recipe_versions = re.search(r"^Proven on: (.*)$", head, re.M)
+        if proof_versions and (not recipe_versions or proof_versions.group(1).strip() != recipe_versions.group(1).strip()):
+            problem(where, "Proven on must match Versions in PROVEN.md")
         if proof_date:
             datecheck(proven, "Last proven", proof_date.group(1).strip())
     for line in re.findall(r"^Plan terms:.*$", head, re.M):

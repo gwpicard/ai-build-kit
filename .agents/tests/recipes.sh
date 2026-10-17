@@ -82,6 +82,15 @@ ok "an unfilled blank is refused as a recipe"
 
 "$CHECKER" "$GOOD" >/dev/null
 ok "a filled recipe folder passes, dated on a leap day"
+sed 's/^Proven on: Next.js 16; Supabase CLI 2.117$/Proven on: Next.js 0.0.1/' "$GOOD/recipe.md" > "$WORK/version-mismatch.md"
+cp "$WORK/version-mismatch.md" "$GOOD/recipe.md"
+if "$CHECKER" "$GOOD" >/dev/null 2>&1; then
+  fail "a recipe claimed versions different from its real run"
+fi
+sed 's/^Proven on: Next.js 0.0.1$/Proven on: Next.js 16; Supabase CLI 2.117/' "$GOOD/recipe.md" > "$WORK/version-match.md"
+cp "$WORK/version-match.md" "$GOOD/recipe.md"
+"$CHECKER" "$GOOD" >/dev/null || fail "the recipe with matching proven versions was refused"
+ok "Proven on must match the versions in PROVEN.md"
 mkdir -p "$WORK/recipes/parts"
 printf '# Shared part: read-only connection to an existing database\n' > "$WORK/recipes/parts/read-only-existing-database.md"
 sed 's#^Optional parts: none$#Optional parts: read-only existing database#' "$GOOD/recipe.md" > "$WORK/optional-recipe.md"

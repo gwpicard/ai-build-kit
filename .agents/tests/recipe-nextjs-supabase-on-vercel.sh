@@ -66,6 +66,25 @@ printf 'sb_secret_abcdef123456\n' > "$RR_TMP/value"
 rr_case 0 good add-secret.sh SUPABASE_SECRET_KEY
 rr_case 0 good add-secret.sh --replace SUPABASE_SECRET_KEY
 rr_called "vercel env rm SUPABASE_SECRET_KEY production --yes"
+mkdir -p "$RR_TMP/failing-bin"
+cat > "$RR_TMP/failing-bin/vercel" <<'SH'
+#!/usr/bin/env sh
+echo "$*" >> "$RR_TMP/failing-calls"
+case "$1 $2" in
+  "env add") exit 1 ;;
+  "env rm") exit 0 ;;
+esac
+exit 64
+SH
+chmod +x "$RR_TMP/failing-bin/vercel"
+set +e
+printf 'sb_secret_abcdef123456\n' | RR_TMP="$RR_TMP" PATH="$RR_TMP/failing-bin:$PATH" "$RR_RECIPE/scripts/add-secret.sh" --replace SUPABASE_SECRET_KEY >/dev/null 2>&1
+rr_status=$?
+set -e
+[ "$rr_status" -eq 1 ] || rr_fail "failed replacement did not report Vercel refusing the new value"
+[ "$(cat "$RR_TMP/failing-calls")" = "env add SUPABASE_SECRET_KEY production --yes" ] ||
+  rr_fail "failed replacement removed the existing production setting first"
+rr_ok "a failed replacement leaves the existing production setting in place"
 printf 'supabase projects api-keys --project-ref ref\n' > "$RR_TMP/value"
 rr_case 2 good add-secret.sh --replace SUPABASE_SECRET_KEY
 if tail -n "+$((rr_mark + 1))" "$RR_CALLS" | grep -Eq '^vercel env (rm|add) '; then

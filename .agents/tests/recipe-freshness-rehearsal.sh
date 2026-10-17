@@ -44,3 +44,11 @@ set -e
 [ "$status" -eq 1 ] || { echo "FAIL: old check date returned $status"; exit 1; }
 case "$output" in *"last checked 2026-01-01"*) ;; *) echo "FAIL: old check date was not named"; exit 1 ;; esac
 echo "ok: reports a recipe whose upstream check is over 90 days old"
+sed -i.bak 's/2026-01-01/2099-01-01/' "$WORK/.agents/skills/setup-hosting/recipes/demo/recipe.md"
+set +e
+output=$(python3 "$SCRIPT" "$WORK")
+status=$?
+set -e
+[ "$status" -eq 2 ] || { echo "FAIL: future check date returned $status"; exit 1; }
+case "$output" in *"Last checked date is in the future"*) ;; *) echo "FAIL: future check date was not rejected"; exit 1 ;; esac
+echo "ok: refuses a recipe check date in the future"

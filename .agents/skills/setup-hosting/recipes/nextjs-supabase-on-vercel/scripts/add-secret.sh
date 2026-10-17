@@ -45,13 +45,13 @@ case "$name" in
     case "$value" in sb_secret_*|eyJ*) ;; *) cl_cannot "$name does not start with sb_secret_ or eyJ, so it does not look like a Supabase key." ;; esac ;;
 esac
 
-if [ "$replace" = yes ]; then
-  vercel env rm "$name" production --yes >&2 ||
-    cl_fail "Vercel could not remove the production setting $name, so it was not replaced."
-fi
-
 case "$name" in
   NEXT_PUBLIC_*) vercel env add "$name" production --type config --yes < "$tmp" >&2 ;;
   *) vercel env add "$name" production --yes < "$tmp" >&2 ;;
 esac || cl_fail "Vercel did not take the setting $name."
+
+if [ "$replace" = yes ]; then
+  vercel env rm "$name" production --yes >&2 ||
+    cl_fail "Vercel could not remove the previous production setting $name. The new value was added."
+fi
 cl_pass "Vercel holds $name for production."
