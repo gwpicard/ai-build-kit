@@ -122,7 +122,13 @@ recipe-freshness-date
 maintain-settings-not-restored
 vercel-secret-shape
 replay-effort-ignored
-replay-helper-worktree-source"
+replay-helper-worktree-source
+replay-kit-src-ignored
+replay-skill-size-total
+replay-rollup-counts-controls
+replay-compare-chance-rule
+replay-state-assertion-skipped
+fake-gh-loses-check-status"
 
 describe() {
   case "$1" in
@@ -210,6 +216,12 @@ describe() {
     vercel-secret-shape) echo "Vercel accepts a value that does not look like a Supabase secret key" ;;
     replay-effort-ignored) echo "Codex replay calls stop receiving the requested reasoning effort" ;;
     replay-helper-worktree-source) echo "replay projects take the GitHub readiness helper from the worktree instead of the assembled kit" ;;
+    replay-kit-src-ignored) echo "run.sh assembles the kit from its harness tree instead of KIT_SRC" ;;
+    replay-skill-size-total) echo "skill-size.sh stops reporting a total for the selected Git ref" ;;
+    replay-rollup-counts-controls) echo "no-notice controls enter the held rate instead of reporting false alarms" ;;
+    replay-compare-chance-rule) echo "a small-sample dip is reported as a regression without a chance check" ;;
+    replay-state-assertion-skipped) echo "the returning-work state check stops noticing a cleared failure" ;;
+    fake-gh-loses-check-status) echo "a prepared failed project check is reported as passing by the GitHub stand-in" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -252,6 +264,12 @@ checks_for() {
     vercel-secret-shape) echo "recipe-nextjs-supabase-on-vercel" ;;
     replay-effort-ignored) echo "replay-provider" ;;
     replay-helper-worktree-source) echo "replay-project-helper" ;;
+    replay-kit-src-ignored) echo "replay-kit-source" ;;
+    replay-skill-size-total) echo "skill-size-rehearsal" ;;
+    replay-rollup-counts-controls) echo "replay-rollup" ;;
+    replay-compare-chance-rule) echo "replay-compare" ;;
+    replay-state-assertion-skipped) echo "replay-case-states" ;;
+    fake-gh-loses-check-status) echo "fake-github" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -1042,6 +1060,72 @@ old = "source=\"$kit/.agents/skills/setup-ai-build-kit/templates/foundation/code
 assert old in t, "assembled-kit helper source not found"
 new = "source=\"$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/codex-github-check.py\""
 open(p, "w").write(t.replace(old, new, 1))
+'
+      ;;
+    replay-kit-src-ignored)
+      edit "$tree/.agents/tests/replay/run.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "\"$KIT_SRC/.agents/tools/build-release.sh\" \"$VERSION\" \"$KIT\""
+assert old in t, "KIT_SRC release-builder invocation not found"
+new = "\"$ROOT/.agents/tools/build-release.sh\" \"$VERSION\" \"$KIT\""
+open(p, "w").write(t.replace(old, new, 1))
+'
+      ;;
+    replay-skill-size-total)
+      edit "$tree/.agents/tests/replay/skill-size.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "TOTAL                            "
+assert old in t, "skill word total output not found"
+open(p, "w").write(t.replace(old, "SUM                              ", 1))
+'
+      ;;
+    replay-rollup-counts-controls)
+      edit "$tree/.agents/tests/replay/rollup.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "due = contracts.get(int(scenario), False)"
+assert old in t, "notice-due classification not found"
+open(p, "w").write(t.replace(old, "due = True", 1))
+'
+      ;;
+    replay-compare-chance-rule)
+      edit "$tree/.agents/tests/replay/compare.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "lower_tail_fisher(old, new) <= 0.10"
+assert old in t, "chance threshold not found"
+open(p, "w").write(t.replace(old, "lower_tail_fisher(old, new) <= 1.0", 1))
+'
+      ;;
+    replay-state-assertion-skipped)
+      edit "$tree/.agents/tests/replay/scenario-state-check.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "[ ! -f \"$project/.replay-returning-state\" ]"
+assert old in t, "returning-work marker assertion not found"
+new = "[ ! -f \"$project/never-written-marker\" ]"
+open(p, "w").write(t.replace(old, new, 1))
+'
+      ;;
+    fake-gh-loses-check-status)
+      edit "$tree/.agents/tests/replay/fake-github/gh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "\"statusCheckRollup\": pr.get(\"statusCheckRollup\", [{"
+assert old in t, "prepared check status support not found"
+t = t.replace(old, "\"statusCheckRollup\": [{", 1)
+old_end = "        }]),"
+assert old_end in t, "default status result end not found"
+t = t.replace(old_end, "        }],", 1)
+open(p, "w").write(t)
 '
       ;;
     *)

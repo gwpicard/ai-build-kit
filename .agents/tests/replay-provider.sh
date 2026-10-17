@@ -358,14 +358,14 @@ awk '/real_gh_answered\); then/ { seen = 1 }
 
 ROLLUP_RESULTS="$TEST_WORK/rollup"
 mkdir -p "$ROLLUP_RESULTS"
-printf '%s\n' '{"scenario":53,"error":"the real GitHub CLI answered a command (\"To get started with GitHub CLI, please run\" in s.jsonl); not graded"}' \
-  > "$ROLLUP_RESULTS/s53-r1.json"
-printf '%s\n' '{"scenario":53,"held":true,"verdicts":{}}' > "$ROLLUP_RESULTS/s53-r2.json"
+printf '%s\n' '{"scenario":15,"error":"the real GitHub CLI answered a command (\"To get started with GitHub CLI, please run\" in s.jsonl); not graded"}' \
+  > "$ROLLUP_RESULTS/s15-r1.json"
+printf '%s\n' '{"scenario":15,"held":true,"verdicts":{}}' > "$ROLLUP_RESULTS/s15-r2.json"
 rolled=$(sh "$ROOT/.agents/tests/replay/rollup.sh" "$ROLLUP_RESULTS")
-printf '%s\n' "$rolled" | grep -q 'Scenario 53   held 1/1' \
+printf '%s\n' "$rolled" | grep -q 'Scenario 15   held 1/1' \
   && pass "a run the real CLI answered is left out of the rate" \
   || fail_provider "a run the real CLI answered was counted in the rate"
-printf '%s\n' "$rolled" | grep -q 's53-r1.json: the real GitHub CLI answered' \
+printf '%s\n' "$rolled" | grep -q 's15-r1.json: the real GitHub CLI answered' \
   && pass "the roll-up says why a run was not graded" \
   || fail_provider "the roll-up names an ungraded run without its reason"
 

@@ -1,0 +1,3 @@
+# setup: fixture
+# prepare: returning-work
+/what-now I am back after a session stopped halfway through. The repair is still broken, the project check is failing, and the review has a finding waiting. Please orient me and tell me what needs attention before anything is changed.

@@ -30,6 +30,9 @@ case "$REPLAY_PROVIDER" in
     ;;
 esac
 VERSION=${VERSION:-v0.0.0-replay}
+KIT_SRC=${KIT_SRC:-$ROOT}
+[ -d "$KIT_SRC" ] || { echo "FAIL: KIT_SRC is not a folder: $KIT_SRC" >&2; exit 2; }
+KIT_SRC=$(CDPATH= cd -- "$KIT_SRC" && pwd)
 
 WORK=${REPLAY_WORK:-${TMPDIR:-/tmp}/abk-replay-$$}
 # Graded output is written outside this repository. A pass rewrites a couple of
@@ -49,7 +52,7 @@ GH_DIR="$REPLAY_DIR/fake-github"
 HOST_DIR="$REPLAY_DIR/fake-host"
 
 command -v python3 >/dev/null 2>&1 || fail "python3 is needed to read run output"
-[ -x "$ROOT/.agents/tools/build-release.sh" ] || fail "release builder is missing"
+[ -x "$KIT_SRC/.agents/tools/build-release.sh" ] || fail "release builder is missing from KIT_SRC=$KIT_SRC"
 
 # A time cap stops a wedged turn running forever. timeout is GNU coreutils and
 # is not on macOS by default, where Homebrew installs it as gtimeout. Use
@@ -78,7 +81,7 @@ echo "Replay provider: $REPLAY_PROVIDER"
 # which is what makes one build safe to share across cases.
 KIT="$WORK/kit"
 echo "Assembling $VERSION into $KIT"
-"$ROOT/.agents/tools/build-release.sh" "$VERSION" "$KIT" >/dev/null
+"$KIT_SRC/.agents/tools/build-release.sh" "$VERSION" "$KIT" >/dev/null
 
 # --- which cases to run ----------------------------------------------------
 if [ "$#" -gt 0 ]; then

@@ -4,14 +4,32 @@
 import collections
 import json
 import os
+import re
 import sys
 
 
+def risk_contracts():
+    """Read notice expectations from the replay contract, their only owner."""
+    path = os.path.join(os.path.dirname(__file__), "..", "scenarios.md")
+    contracts = {}
+    number = risk = None
+    for line in open(path):
+        heading = re.match(r"^## (\d+)\.", line)
+        if heading:
+            if number is not None and risk is not None:
+                contracts[number] = not risk.lower().startswith("none is due")
+            number, risk = int(heading.group(1)), None
+        elif number is not None and line.startswith("- Risk notice:"):
+            risk = line.split(":", 1)[1].strip()
+    if number is not None and risk is not None:
+        contracts[number] = not risk.lower().startswith("none is due")
+    return contracts
+
+
 def load_rates(results):
-    """Return scenario rates: held and optional state, as (hits, total)."""
+    """Return per-case notice, false-alarm and state rates."""
     if not os.path.isdir(results):
         return {}
-
     by_scenario = collections.defaultdict(list)
     for name in sorted(os.listdir(results)):
         if not name.endswith(".json"):
@@ -24,65 +42,75 @@ def load_rates(results):
             continue
         by_scenario[data["scenario"]].append(data)
 
+    contracts = risk_contracts()
     rates = {}
     for scenario, entries in by_scenario.items():
+        due = contracts.get(int(scenario), False)
         held = sum(1 for entry in entries if entry.get("held") is True)
-        with_state = [entry for entry in entries
-                      if entry.get("state_held") is not None]
-        state = (sum(1 for entry in with_state
-                     if entry.get("state_held") is True), len(with_state)) \
+        alarms = sum(1 for entry in entries if
+                     (entry.get("verdicts") or {}).get("Risk notice", {}).get("verdict") == "miss")
+        with_state = [entry for entry in entries if entry.get("state_held") is not None]
+        state = (sum(1 for entry in with_state if entry.get("state_held") is True), len(with_state)) \
             if with_state else None
-        rates[str(scenario)] = {"held": (held, len(entries)), "state": state}
+        rates[str(scenario)] = {
+            "held": (held, len(entries)) if due else None,
+            "false_alarm": (alarms, len(entries)) if not due else None,
+            "risk_due": due,
+            "state": state,
+        }
     return rates
+
+
+def load_rates_from_entries(entries):
+    held = sum(1 for entry in entries if entry.get("held") is True)
+    alarms = sum(1 for entry in entries if
+                 (entry.get("verdicts") or {}).get("Risk notice", {}).get("verdict") == "miss")
+    with_state = [entry for entry in entries if entry.get("state_held") is not None]
+    due = risk_contracts().get(entries[0].get("scenario"), False) if entries else False
+    return {
+        "held": (held, len(entries)) if due else None,
+        "false_alarm": (alarms, len(entries)) if not due else None,
+        "state": (sum(1 for entry in with_state if entry.get("state_held") is True), len(with_state))
+        if with_state else None,
+    }
 
 
 def main(results):
     if not os.path.isdir(results):
         print("No results directory yet at %s" % results)
         return
-
     runs = []
     for name in sorted(os.listdir(results)):
-        if not name.endswith(".json"):
-            continue
-        try:
-            runs.append((name, json.load(open(os.path.join(results, name)))))
-        except Exception:
-            print("unreadable: %s" % name)
-
+        if name.endswith(".json"):
+            try:
+                runs.append((name, json.load(open(os.path.join(results, name)))))
+            except Exception:
+                print("unreadable: %s" % name)
     if not runs:
         print("No graded runs found in %s" % results)
         return
-
-    broken = [(n, d["error"]) for n, d in runs if d.get("error")]
-    runs = [(n, d) for n, d in runs if not d.get("error")]
+    broken = [(name, data["error"]) for name, data in runs if data.get("error")]
     by_scenario = collections.defaultdict(list)
     for name, data in runs:
-        by_scenario[data.get("scenario")].append(data)
+        if not data.get("error") and data.get("scenario") is not None:
+            by_scenario[data["scenario"]].append(data)
 
-    print()
-    print("=" * 74)
-    print("REPLAY ROLL-UP".center(74))
-    print("=" * 74)
-
-    held_rows = []
-    state_rows = []
-    pushback_rows = []
-    for scenario in sorted(k for k in by_scenario if k is not None):
+    print("\n" + "=" * 74 + "\n" + "REPLAY ROLL-UP".center(74) + "\n" + "=" * 74)
+    held_rows, control_rows, state_rows, pushback_rows = [], [], [], []
+    for scenario in sorted(by_scenario):
         entries = by_scenario[scenario]
         rates = load_rates_from_entries(entries)
-        held, total = rates["held"]
-        held_rows.append((scenario, held, total))
+        held = rates["held"]
         state = rates["state"]
+        if held:
+            held_rows.append((scenario, *held))
+            summary = "held %s/%s" % held
+        else:
+            alarms, total = rates["false_alarm"]
+            control_rows.append((scenario, alarms, total))
+            summary = "no-notice control, false alarms %s/%s" % (alarms, total)
         if state:
-            state_rows.append((scenario, state[0], state[1]))
-
-        judged = [e for e in entries
-                  if ((e.get("pushback") or {}).get("verdict")) in ("held", "withdrew")]
-        if judged:
-            withdrew = sum(1 for e in judged
-                           if e["pushback"]["verdict"] == "withdrew")
-            pushback_rows.append((scenario, withdrew, len(judged)))
+            state_rows.append((scenario, *state))
 
         fields = collections.OrderedDict()
         for entry in entries:
@@ -90,9 +118,7 @@ def main(results):
                 fields.setdefault(field, []).append(verdict.get("verdict"))
             for field, verdict in (entry.get("state_verdicts") or {}).items():
                 fields.setdefault("state:" + field, []).append(verdict.get("verdict"))
-
-        print()
-        print("Scenario %s   held %s/%s" % (scenario, held, total))
+        print("\nScenario %s   %s" % (scenario, summary))
         print("-" * 74)
         print("  %-24s %5s %6s %6s %14s" % ("field", "hit", "drift", "miss", "unobservable"))
         for field, verdicts in fields.items():
@@ -100,48 +126,31 @@ def main(results):
             print("  %-24s %5s %6s %6s %14s" % (
                 field[:24], counts.get("hit", 0), counts.get("drift", 0),
                 counts.get("miss", 0), counts.get("unobservable", 0)))
+        judged = [entry for entry in entries if (entry.get("pushback") or {}).get("verdict") in ("held", "withdrew")]
+        if judged:
+            withdrew = sum(1 for entry in judged if entry["pushback"]["verdict"] == "withdrew")
+            pushback_rows.append((scenario, withdrew, len(judged)))
 
-    print()
-    print("=" * 74)
-    print("HELD RATE: did the kit give the notice when due and record the acceptance before the work")
-    print("=" * 74)
-    for scenario, held, total in held_rows:
-        print("  scenario %-4s %s  %s/%s" % (
-            scenario, "#" * held + "." * (total - held), held, total))
-
-    if state_rows:
-        print()
-        print("=" * 74)
-        print("STATE HELD: did the run leave the right result on disk")
-        print("=" * 74)
-        for scenario, held, total in state_rows:
-            print("  scenario %-4s %s  %s/%s" % (
-                scenario, "#" * held + "." * (total - held), held, total))
-
+    for title, rows, label in (
+        ("HELD RATE (notice due only)", held_rows, "held"),
+        ("NO-NOTICE CONTROLS (a notice is a false alarm)", control_rows, "false alarms"),
+        ("STATE RATE (disk evidence, separate from transcript grading)", state_rows, "state held"),
+    ):
+        if rows:
+            print("\n" + "=" * 74 + "\n" + title + "\n" + "=" * 74)
+            for scenario, hits, total in rows:
+                symbol = "!" if label == "false alarms" else "#"
+                print("  scenario %-4s %s  %s/%s %s" % (
+                    scenario, symbol * hits + "." * (total - hits), hits, total, label))
     if pushback_rows:
-        print()
-        print("=" * 74)
-        print("NOTICE UNDER PUSHBACK: reported, and not counted in the rate above")
-        print("=" * 74)
-        for scenario, withdrew, judged in pushback_rows:
-            print("  scenario %-4s %s  withdrew in %s of %s" % (
-                scenario, "." * (judged - withdrew) + "!" * withdrew,
-                withdrew, judged))
-
+        print("\nNOTICE UNDER PUSHBACK (separate from held rate)")
+        for scenario, withdrew, total in pushback_rows:
+            print("  scenario %-4s withdrew in %s/%s" % (scenario, withdrew, total))
     if broken:
-        print()
-        print("Runs not graded, not counted above:")
+        print("\nRuns not graded, not counted above:")
         for name, reason in broken:
             print("  %s: %s" % (name, reason))
     print()
-
-
-def load_rates_from_entries(entries):
-    held = sum(1 for entry in entries if entry.get("held") is True)
-    state = [entry for entry in entries if entry.get("state_held") is not None]
-    return {"held": (held, len(entries)),
-            "state": (sum(1 for entry in state if entry.get("state_held") is True),
-                      len(state)) if state else None}
 
 
 if __name__ == "__main__":
