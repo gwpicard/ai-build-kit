@@ -37,7 +37,7 @@ Risk boundaries keep it honest. At the start, and again when the project
 changes, the kit names anything that could hurt people: personal data, money,
 sign-in, automatic actions, data that cannot be replaced, a regulated decision.
 The person hears the risk once, in plain words, and decides. Their decision is
-recorded with the date.
+recorded with their words and the date.
 
 The tool belongs to the person from the first day. The code is in their
 repository, it runs on their host account, and the data is in their database
@@ -112,7 +112,8 @@ Every capability that passes also answers these, in writing:
 - Can it be said in one sentence at that moment?
 - What does the person do when it goes wrong, without reading anything
   technical?
-- Where does it apply: always, on one build path, or inside one sensitive area?
+- Where does it apply: always, or only to a piece that touches a named risk
+  area?
 
 A capability with no answer to the last question becomes ceremony for
 everybody.
@@ -134,38 +135,76 @@ Two kinds of test do:
 A cut that keeps the replay rate is a good cut. A cut that lowers it comes
 back, or the rule moves into a mechanism.
 
-## Rigour follows the project
+## The kit builds deployable, shared tools
 
-A private experiment and a tool that handles payroll do not carry the same
-consequences, so they do not get the same process. Each project has one build
-path:
+Every project is a tool that can go live and that a team can share. The kit has
+no private-only mode and no throwaway track. A repository, issues switched on,
+an agent session that can read and write those issues, and access to the host
+and the database are conditions of starting, and a script checks them. If one
+is missing, setup stops and says which step to take. The person creates the
+accounts. The kit never does.
 
-| Path | When |
-|---|---|
-| Explore privately | Trying an idea with data you can throw away |
-| Build and run it | An internal tool with a manual fallback |
-| Build with care | Some of the work touches a sensitive area |
+Hosting follows the same reasoning. The kit offers it only on a proven recipe,
+because a recipe is what makes the guarantees below hold. Outside a recipe the
+kit says plainly that it guarantees nothing, and it still helps.
 
-The path decides which checks, reviews, and launch conditions apply. It can
-move either way as the project changes. Build with care applies to the named
-sensitive areas, and everything outside them is built the ordinary way.
+## The backbone
+
+Some promises hold in every project, so they do not depend on what the person
+asks for. Each one needs a mechanism, which is a machine that makes it true,
+and a check that fails when the mechanism is removed. `docs/MAINTAINING.md`
+lists each promise with its mechanism, or says "none yet".
+
+1. A person approves each merge, unless they chose auto-merge with its limits.
+2. Nothing goes online without a yes.
+3. Secrets are never shown.
+4. Checks pass before a merge.
+5. A review matches the code it read. A review the kit cannot verify is
+   recorded as unverified, in plain words.
+6. Every launch has a way back and a backup.
+7. Records say "accepted", never "done".
+
+Two kinds of check follow from this. An integrity check protects the backbone.
+It can stop the work, and it stops it even if the person insists, because the
+person cannot judge from the outside whether it holds. A judgement risk is
+different. It belongs to one piece of work, and the person is the one who can
+judge it. The kit warns once, and the person decides.
+
+A check has more than two outcomes. It passed, it failed, it did not run, it
+could not decide, or it does not apply. A check that did not run is never shown
+as a pass.
+
+## The risk concept
+
+The project carries a short record of what failure would cost. It holds who is
+exposed if the tool fails, what data it holds, what a wrong answer does, how the
+person recovers, and which named risk areas the project touches. Setup asks
+three plain questions to fill it. They are: who is exposed if this fails, what
+data does it hold, and how would you recover from a failure. The record lives
+in the masterplan, with a pointer from the project instructions. The agent
+writes it with the person at setup and checks it again when the project
+changes.
+
+Each piece of work then carries a "Risk areas" field, naming the areas it
+touches. A piece with no area gets no notice. A piece with one gets the notice
+once.
 
 ## Warn, then respect the decision
 
 Where the person can judge a risk, the kit warns and does not block. A step
 they could skip is offered with what it costs, once.
 
-For a sensitive area the kit gives a risk notice: who is exposed, and what
-would normally prevent the harm. The person can have that caution done, take
-the work out, or carry on. If they carry on, the kit records their acceptance
-with the date and their words, and builds. The area stays named, because the
-exposure is still there.
+For a risk area the kit gives a risk notice: who is exposed, and what would
+normally prevent the harm. The person can have that caution done, take the work
+out, or carry on. If they carry on, the kit records their acceptance with the
+date and their words, and builds. The area stays named, because the exposure is
+still there. After the acceptance the kit does not refuse, ask again, or hold
+the work back.
 
 Two limits hold whatever the person says. The kit does not withdraw a notice
 because somebody pushes back. And where a caution names a person, such as a
 reviewer who knows the law, no agent session stands in for them. A run with
-nobody present stops at a sensitive area and never accepts on the person's
-behalf.
+nobody present stops at a risk area and never accepts on the person's behalf.
 
 A gate that nobody can get past or understand is worse than one they walked
 through knowingly, because people work around the first by starting again
