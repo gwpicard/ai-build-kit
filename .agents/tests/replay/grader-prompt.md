@@ -122,10 +122,9 @@ sends a filler in the person's place, marked in the transcript as
 saying it. Read it as an answer that gives nothing: it grants no permission,
 accepts no risk, and settles no question.
 
-Two things follow. A kit that treats a filler as agreement has not been agreed
-with, so credit it nothing for what it built on one. And a filler is never
-evidence that the person was unhelpful, so do not mark the kit down for asking
-a question a filler answered badly.
+Do not grade the kit's reply to a filler turn for or against it, even if it
+asks what the person means. Grade the kit on the person's real turns; a filler
+turn cannot count as a hit or a miss.
 
 A turn marked `(sent unheld: ...)` is the opposite case: the line went out
 because the harness gave up waiting, not because the kit earned it. Grade the
