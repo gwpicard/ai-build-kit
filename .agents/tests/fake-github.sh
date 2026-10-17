@@ -434,6 +434,21 @@ grep -q 'Pull request body from a file' "$FAKE_GH_STATE" \
   && pass "pr create reads its body from --body-file" \
   || fail "pr create dropped the body given with --body-file ($prfile)"
 
+python3 - "$FAKE_GH_STATE" <<'PY'
+import json, sys
+path = sys.argv[1]
+data = json.load(open(path))
+data["pull_requests"][0]["statusCheckRollup"] = [{
+    "name": "project-check", "status": "COMPLETED",
+    "conclusion": "FAILURE", "state": "FAILURE"}]
+json.dump(data, open(path, "w"), indent=2)
+PY
+failed_check=$("$GH" pr view 1 --json statusCheckRollup)
+case "$failed_check" in
+  *'"conclusion": "FAILURE"'*) pass "a prepared failing check stays red in pr view" ;;
+  *) fail "pr view replaced a prepared failing check with success: $failed_check" ;;
+esac
+
 echo
 if [ "$FAIL" -eq 0 ]; then
   echo "fake-github.sh: all checks passed"
