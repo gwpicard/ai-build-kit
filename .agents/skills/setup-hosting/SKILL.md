@@ -20,6 +20,7 @@ Read the `Recipe:` line in AGENTS.md's stack section and the matching folder's
 `Recipe: none`, a missing line or folder means off-recipe; say so once. If a
 live address is recorded, follow `references/later-run.md`. Leave open pull
 requests open; say `/implement` merges one after a yes, which puts it live.
+Python document work and a read-only link to an existing database are not offered yet.
 
 ## Follow the build path
 

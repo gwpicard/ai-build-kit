@@ -3,7 +3,7 @@
 # If this breaks, a user that can write to an existing database may be called read-only.
 set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
-SCRIPT="$ROOT/.agents/skills/setup-hosting/recipes/parts/scripts/read-only-database.sh"
+SCRIPT="$ROOT/.agents/tests/recipes-awaiting-run/parts/scripts/read-only-database.sh"
 WORK=$(mktemp -d)
 DATA="$WORK/data"
 cleanup() {

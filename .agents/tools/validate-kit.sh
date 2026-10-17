@@ -1687,8 +1687,8 @@ fi
 # A named list of scripts goes stale the moment somebody adds one, which is how
 # three files under .agents/tests/ came to be run by path while saved as
 # ordinary text. Every tracked file that opens with a shebang is asked instead.
-# A file this repository only ever sources, or only ever hands to sh, is invoked
-# a different way and does not need the bit.
+# A file this repository only ever sources, hands to a shell, or passes to
+# Python is invoked a different way and does not need the bit.
 mode_ok=1
 git -C "$ROOT" ls-files -s | while read -r saved _ _ script; do
   [ -f "$ROOT/$script" ] || continue
@@ -1700,6 +1700,10 @@ git -C "$ROOT" ls-files -s | while read -r saved _ _ script; do
   fi
   if git -C "$ROOT" grep -qE \
     "(^|[[:space:];&|(])(sh|bash|dash|zsh)[[:space:]]+[^[:space:];)]*$base" -- . 2>/dev/null; then
+    continue
+  fi
+  if git -C "$ROOT" grep -qE \
+    "(^|[[:space:];&|(])(python|python3)[[:space:]].*$base" -- . 2>/dev/null; then
     continue
   fi
   [ "$saved" = "100755" ] || \

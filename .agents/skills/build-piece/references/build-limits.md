@@ -15,7 +15,9 @@ the caution remains open and holds the pull request. Each pull-request piece
 gets a fresh review; a person named by a caution must review it.
 
 Apply `## Masterplan change` and update the comparison mark using
-`records/references/masterplan-changes.md`. If `trued-mark.sh` does not exit 0,
+`records/references/masterplan-changes.md`. Move the mark to the saved build
+even when the piece says `nothing` and the page stays as it is. If
+`trued-mark.sh` does not exit 0,
 leave the mark, say `/maintain` checks the masterplan against the code, and
 continue.
 

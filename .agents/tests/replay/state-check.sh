@@ -1299,7 +1299,8 @@ baseline="$REPLAY_DIR/fixture/issues.json"
 # rollup.sh can show it. state_held is a conjunction over the assertions: any
 # miss fails it, the same reading the transcript's held uses. The two file paths
 # feed the issue-invariants assertion; the rest are field, verdict, note triples.
-STATE_OWED="$owed" python3 - "$number" "$endstate" "$baseline" \
+STATE_OWED="$owed" SCENARIO_STATE_CHECK="$REPLAY_DIR/scenario-state-check.sh" \
+  python3 - "$number" "$endstate" "$baseline" \
   acceptance-record "$acc_verdict" "$acc_note" \
   save-route "$sr_verdict" "$sr_note" \
   accepted-not-done "$and_verdict" "$and_note" \
@@ -1475,6 +1476,18 @@ verdicts["split"] = {"verdict": split_verdict, "note": split_note}
 
 import os
 owed = os.environ.get("STATE_OWED", "").split()
+scenario_number = int(number)
+if scenario_number in (60, 61, 62, 63):
+    project = endstate_path[:-len(".gh.json")] if endstate_path.endswith(".gh.json") else endstate_path
+    checker = os.environ["SCENARIO_STATE_CHECK"]
+    import subprocess
+    checked = subprocess.run([checker, str(scenario_number), project],
+                             capture_output=True, text=True)
+    if checked.returncode == 0 and "|" in checked.stdout:
+        result, detail = checked.stdout.strip().split("|", 1)
+    else:
+        result, detail = "miss", "the stable scenario state check could not run"
+    verdicts["scenario-stable"] = {"verdict": result, "note": detail}
 held = all(v["verdict"] != "miss" for v in verdicts.values()) and \
     not any(verdicts.get(name, {}).get("verdict") == "unobservable" for name in owed)
 print(json.dumps({

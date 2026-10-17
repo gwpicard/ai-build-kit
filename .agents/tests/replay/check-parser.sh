@@ -24,6 +24,8 @@ echo "Scenarios found: $count"
 # the risk pair, checked separately below, because a scenario that is not about
 # risk carries neither.
 REQUIRED_LABELS="Visible explanation
+Risk notice
+Acceptance
 Hidden technique
 Evidence
 Save route
@@ -86,12 +88,8 @@ for number in $replayed; do
     value=$(scenario_field "$number" "$required")
     [ -n "$value" ] || fail "replayed scenario $number has an empty '$required'"
   done
-  # Risk notice and Acceptance are the risk pair. A scenario about a risk carries
-  # both, and scenario 31 carries them as "none is due" to say plainly that none
-  # applies. A scenario that is not about risk at all, such as the /setup
-  # interview scenarios, carries neither. Require them together, so a risk
-  # scenario cannot quietly drop one, without forcing the pair onto a scenario it
-  # does not belong to.
+  # Every replay contract states whether a notice is due and what kind of yes,
+  # if any, the work needs. A no-risk case says none is due explicitly.
   if printf '%s\n' "$labels" | grep -qxF "Risk notice"; then has_risk=yes; else has_risk=no; fi
   if printf '%s\n' "$labels" | grep -qxF "Acceptance"; then has_acc=yes; else has_acc=no; fi
   if [ "$has_risk" != "$has_acc" ]; then

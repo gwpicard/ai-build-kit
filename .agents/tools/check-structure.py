@@ -38,7 +38,7 @@ import os
 import re
 import sys
 
-BUDGET = {"command": 1200, "background": 1500, "reference": 2000}
+BUDGET = {"command": 400, "background": 800, "reference": 600}
 # A command's references or a named section of it, reached from another skill.
 # The name may sit in backticks or not, and the line may break after "skill's".
 LOAD = re.compile(

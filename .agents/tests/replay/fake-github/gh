@@ -242,12 +242,12 @@ def pr_fields(state, pr, names):
         "baseRefOid": heads.get(pr.get("base", "main"), ""),
         "mergeable": "MERGEABLE",
         "isDraft": False,
-        "statusCheckRollup": [{
+        "statusCheckRollup": pr.get("statusCheckRollup", [{
             "name": "project-check",
             "status": "COMPLETED",
             "conclusion": "SUCCESS",
             "state": "SUCCESS",
-        }],
+        }]),
     }
     unknown = [n for n in names if n not in available]
     return {n: available[n] for n in names if n in available}, unknown

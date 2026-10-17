@@ -1,4 +1,4 @@
-# setup:
+# setup: blank
 # Founding an ordinary internal tool from scratch. The project is a meeting-room
 # booker for one office of about twenty people: internal staff only, names and
 # room-and-time bookings, no money, no outside users, no regulated data, nothing

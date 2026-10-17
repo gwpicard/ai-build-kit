@@ -50,6 +50,10 @@ if [ -n "$live" ] && [ "$ref" != "$live" ]; then
   trap 'rm -rf supabase/.temp; [ ! -d "$saved/temp" ] || cp -R "$saved/temp" supabase/.temp; rm -f "$out"; rm -rf "$saved"' EXIT
 fi
 cl_password
+case "$SUPABASE_DB_PASSWORD" in
+  ''|*[[:space:]]*|supabase|supabase\ *|vercel|vercel\ *|curl|curl\ *|npm|npm\ *|npx|npx\ *|git|git\ *|psql|psql\ *|node|node\ *|bash|bash\ *|sh|sh\ *|echo|echo\ *|printf|printf\ *|export|export\ *|cat|cat\ *|rm|rm\ *|pwd|pwd\ *|ls|ls\ *)
+    cl_cannot "the password file does not look like a password" ;;
+esac
 
 supabase link --project-ref "$ref" >"$out" 2>&1 ||
   { cat "$out" >&2; cl_cannot "The folder could not be linked to the database project, so the migrations could not be read."; }

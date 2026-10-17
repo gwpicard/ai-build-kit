@@ -30,6 +30,9 @@ case "$REPLAY_PROVIDER" in
     ;;
 esac
 VERSION=${VERSION:-v0.0.0-replay}
+KIT_SRC=${KIT_SRC:-$ROOT}
+[ -d "$KIT_SRC" ] || { echo "FAIL: KIT_SRC is not a folder: $KIT_SRC" >&2; exit 2; }
+KIT_SRC=$(CDPATH= cd -- "$KIT_SRC" && pwd)
 
 WORK=${REPLAY_WORK:-${TMPDIR:-/tmp}/abk-replay-$$}
 # Graded output is written outside this repository. A pass rewrites a couple of
@@ -49,7 +52,7 @@ GH_DIR="$REPLAY_DIR/fake-github"
 HOST_DIR="$REPLAY_DIR/fake-host"
 
 command -v python3 >/dev/null 2>&1 || fail "python3 is needed to read run output"
-[ -x "$ROOT/.agents/tools/build-release.sh" ] || fail "release builder is missing"
+[ -x "$KIT_SRC/.agents/tools/build-release.sh" ] || fail "release builder is missing from KIT_SRC=$KIT_SRC"
 
 # A time cap stops a wedged turn running forever. timeout is GNU coreutils and
 # is not on macOS by default, where Homebrew installs it as gtimeout. Use
@@ -78,7 +81,7 @@ echo "Replay provider: $REPLAY_PROVIDER"
 # which is what makes one build safe to share across cases.
 KIT="$WORK/kit"
 echo "Assembling $VERSION into $KIT"
-"$ROOT/.agents/tools/build-release.sh" "$VERSION" "$KIT" >/dev/null
+"$KIT_SRC/.agents/tools/build-release.sh" "$VERSION" "$KIT" >/dev/null
 
 # --- which cases to run ----------------------------------------------------
 if [ "$#" -gt 0 ]; then
@@ -114,6 +117,15 @@ run_once() {
   mkdir -p "$project"
   cp -R "$KIT/." "$project/"
   setup=$(case_setup "$casefile")
+  # The release carries the foundation AGENTS.md as the file bootstrap copies
+  # into a founded project. A genuinely blank project does not have it yet: its
+  # startup check comes from the installed skill's template until bootstrap
+  # writes the project copy. Leaving this template at the root would require a
+  # helper that the blank project cannot have yet and stop founding at turn 1.
+  prepare=$(case_prepare "$casefile")
+  if [ "$setup" = "blank" ] && [ -z "$prepare" ]; then
+    rm -f "$project/AGENTS.md"
+  fi
   if [ "$setup" = "fixture" ]; then
     cp "$REPLAY_DIR/fixture/masterplan.md" "$project/masterplan.md"
     cp "$REPLAY_DIR/fixture/CHANGELOG.md" "$project/CHANGELOG.md"
@@ -128,10 +140,19 @@ run_once() {
   fi
   # A starting state no conversation should build, such as instructions past
   # their ceiling, is written by the harness before the first commit.
-  prepare=$(case_prepare "$casefile")
   if [ -n "$prepare" ]; then
     sh "$REPLAY_DIR/prepare/$prepare.sh" "$project" || {
       echo "  preparation '$prepare' failed for scenario $number" >&2
+      return 1
+    }
+  fi
+
+  # A prepared project represents one that has already been founded. Give it
+  # the helper bootstrap installed, copied from this run's assembled release.
+  # Blank founding cases receive it when setup-ai-build-kit runs bootstrap.
+  if [ "$setup" = "fixture" ] || [ -n "$prepare" ]; then
+    sh "$REPLAY_DIR/prepare/install-project-helper.sh" "$project" "$KIT" || {
+      echo "  could not install the release helper for scenario $number" >&2
       return 1
     }
   fi

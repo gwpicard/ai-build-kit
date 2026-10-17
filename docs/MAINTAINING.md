@@ -451,6 +451,20 @@ in its `PROVEN.md`, move the folder into `.agents/skills/setup-hosting/recipes/`
 `git mv`. The rehearsal finds it on the menu from then on, and fails if a copy
 is left in both places. `docs/RECIPES.md` gives the whole format.
 
+Before each release, run `stack-research` against every recipe and part. It
+runs `npm audit` on each starter using current advisory data; that network check
+does not run in CI. Its ignored note records upstream changes and proposals.
+Carry agreed changes into the recipe and this guide, with the versions and date
+checked. A recipe taken off the menu keeps its route to a current recipe in
+`maintain/references/recipe-move.md` for `/maintain` to offer on a yes.
+The 2026-10-16 read confirmed Supabase recommends publishable keys for client
+code and treats `anon` as their legacy equivalent, to be deprecated by the end
+of 2026 ([API keys](https://supabase.com/docs/guides/getting-started/api-keys)).
+The same page says to create a publishable key if a project has none, so whether
+a new project holds one by default is [CHECK]: make a throwaway project in the
+real run and record which keys it has. The recipe names the publishable key and
+records the legacy anon setting for `/maintain`.
+
 ## When a release is cut
 
 Ask first what an existing user must do to upgrade. The kit has had real users
@@ -512,6 +526,9 @@ workflows that edit a Release may write at all. Every job in the folder is
 checked for its repository gate, per job rather than per file, because a
 file-wide check is satisfied by one gated job while a second runs beside it
 ungated.
+
+Run `.agents/tests/mutate.sh` and `.agents/tests/promises-list.sh`, then read
+`docs/PROMISES.md` to check that each promise still names what holds it.
 
 Approved folders contribute only files already tracked here, so an unexpected
 local file cannot enter a release.

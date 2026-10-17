@@ -84,7 +84,7 @@ WHO = ("the kit", "a companion or the person, result read back", "a person looki
 STACK = ["Language", "Framework", "Typing", "Database", "Sign-in", "Email", "Files",
          "Jobs", "Testing", "Linting", "Starter", "Optional parts"]
 HEADS = ["Fits", "Recommended when"] + STACK + ["Work-team default", "Deploy target", "Health-check tool",
-         "Command-line tools", "Last checked"]
+         "Command-line tools", "Last checked", "Last proven", "Proven on", "Superseded settings"]
 STACK_SECTIONS = ["Sign-in and roles", "Row rules", "Files", "Jobs", "Email",
                   "Project check", "Updates"]
 COMING_SECTIONS = set(STACK_SECTIONS)
@@ -213,10 +213,24 @@ def check_recipe(md, proven):
     optional = re.search(r"^Optional parts: (.*)$", head, re.M)
     if optional and not (mode == "template" and "<" in optional.group(1)):
         value = optional.group(1).strip()
-        available_parts = {"read-only existing database", "Python document worker",
-                           "read-only existing database and Python document worker"}
+        part_files = {
+            "read-only existing database": "read-only-existing-database.md",
+            "Python document worker": "python-document-worker.md",
+        }
+        parts_dir = os.path.join(base, "..", "parts")
+        available_parts = {
+            name for name, filename in part_files.items()
+            if os.path.isfile(os.path.join(parts_dir, filename))
+        }
+        choices = {"none"}
+        if "read-only existing database" in available_parts:
+            choices.add("read-only existing database")
+        if "Python document worker" in available_parts:
+            choices.add("Python document worker")
+        if available_parts == {"read-only existing database", "Python document worker"}:
+            choices.add("read-only existing database and Python document worker")
         coming = re.fullmatch(r"[A-Za-z0-9 ,&-]+ \(coming in part [BCD]\)", value)
-        if value != "none" and value not in available_parts and not coming:
+        if value not in choices and not coming:
             problem(where, "Optional parts must name the parts the recipe accepts, or none")
         deploy = re.search(r"^Deploy target: (.*)$", head, re.M)
         if "Python document worker" in value and (not deploy or "Coolify" not in deploy.group(1)):
@@ -240,6 +254,30 @@ def check_recipe(md, proven):
     found = re.search(r"^Last checked: (.*)$", head, re.M)
     if found:
         datecheck(where, "Last checked", found.group(1).strip())
+    proven_date = re.search(r"^Last proven: (.*)$", head, re.M)
+    if proven_date:
+        datecheck(where, "Last proven", proven_date.group(1).strip())
+    versions = re.search(r"^Proven on: (.*)$", head, re.M)
+    if versions and not (mode == "template" and "<" in versions.group(1)) and not versions.group(1).strip():
+        problem(where, "Proven on must name the versions used in the real run")
+    superseded = re.search(r"^Superseded settings: (.*)$", head, re.M)
+    if superseded and not (mode == "template" and "<" in superseded.group(1)) and superseded.group(1).strip() != "none":
+        if not re.fullmatch(r"[A-Z][A-Z0-9_]*(?:, [A-Z][A-Z0-9_]*)*", superseded.group(1).strip()):
+            problem(where, "Superseded settings must be comma-separated environment variable names or none")
+    if mode != "template" and os.path.isfile(proven):
+        proof_text = open(proven).read()
+        proof_date = re.search(r"^Last proven: (.*)$", proof_text, re.M)
+        run_date = re.search(r"^Real run: (.*)$", proof_text, re.M)
+        proof_versions = re.search(r"^Versions: (.*)$", proof_text, re.M)
+        if not run_date or not proof_versions:
+            problem(proven, "must record Real run and Versions")
+        if not proof_date or not proven_date or proof_date.group(1) != proven_date.group(1):
+            problem(where, "Last proven must match PROVEN.md")
+        recipe_versions = re.search(r"^Proven on: (.*)$", head, re.M)
+        if proof_versions and (not recipe_versions or proof_versions.group(1).strip() != recipe_versions.group(1).strip()):
+            problem(where, "Proven on must match Versions in PROVEN.md")
+        if proof_date:
+            datecheck(proven, "Last proven", proof_date.group(1).strip())
     for line in re.findall(r"^Plan terms:.*$", head, re.M):
         shaped = re.match(r"^Plan terms: [^(]+ \(read (\S+) at [^)]+\)$", line)
         if not shaped:

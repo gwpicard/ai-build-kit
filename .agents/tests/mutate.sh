@@ -113,7 +113,22 @@ first-upload-ignores-shared-history
 strength-config-lost
 review-gate-leaves-draft-edited
 attempt-cap
-merge-behind-main"
+merge-behind-main
+promises-list-stale
+build-nothing-mark
+founding-starter-refusal
+prelaunch-migration-route
+recipe-freshness-date
+maintain-settings-not-restored
+vercel-secret-shape
+replay-effort-ignored
+replay-helper-worktree-source
+replay-kit-src-ignored
+replay-skill-size-total
+replay-rollup-counts-controls
+replay-compare-chance-rule
+replay-state-assertion-skipped
+fake-gh-loses-check-status"
 
 describe() {
   case "$1" in
@@ -192,6 +207,21 @@ describe() {
     review-gate-leaves-draft-edited) echo "the review gate leaves an edited draft in place" ;;
     attempt-cap) echo "the piece attempt cap rises, so a fourth attempt is allowed" ;;
     merge-behind-main) echo "merge accepts a pull request branch behind main" ;;
+    promises-list-stale) echo "the promise list can name a checker that does not exist" ;;
+    build-nothing-mark) echo "a build leaves the masterplan mark behind when its change says nothing" ;;
+    founding-starter-refusal) echo "founding writes a replacement starter before asking after a command refusal" ;;
+    prelaunch-migration-route) echo "a pre-launch piece chooses its own database migration route" ;;
+    recipe-freshness-date) echo "a recipe can lose its 90-day stale warning" ;;
+    maintain-settings-not-restored) echo "a drifted project's missing safety settings are never written back" ;;
+    vercel-secret-shape) echo "Vercel accepts a value that does not look like a Supabase secret key" ;;
+    replay-effort-ignored) echo "Codex replay calls stop receiving the requested reasoning effort" ;;
+    replay-helper-worktree-source) echo "replay projects take the GitHub readiness helper from the worktree instead of the assembled kit" ;;
+    replay-kit-src-ignored) echo "run.sh assembles the kit from its harness tree instead of KIT_SRC" ;;
+    replay-skill-size-total) echo "skill-size.sh stops reporting a total for the selected Git ref" ;;
+    replay-rollup-counts-controls) echo "no-notice controls enter the held rate instead of reporting false alarms" ;;
+    replay-compare-chance-rule) echo "a small-sample dip is reported as a regression without a chance check" ;;
+    replay-state-assertion-skipped) echo "the returning-work state check stops noticing a cleared failure" ;;
+    fake-gh-loses-check-status) echo "a prepared failed project check is reported as passing by the GitHub stand-in" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -227,6 +257,19 @@ checks_for() {
     review-gate-leaves-draft-edited) echo "review-guard" ;;
     attempt-cap) echo "autonomy-boundaries" ;;
     merge-behind-main) echo "merge-gate" ;;
+    promises-list-stale) echo "promises-list-rehearsal" ;;
+    build-nothing-mark|founding-starter-refusal|prelaunch-migration-route) echo "$DEFAULT_CHECKS" ;;
+    recipe-freshness-date) echo "recipe-freshness-rehearsal" ;;
+    maintain-settings-not-restored) echo "maintain-drift-rehearsal" ;;
+    vercel-secret-shape) echo "recipe-nextjs-supabase-on-vercel" ;;
+    replay-effort-ignored) echo "replay-provider" ;;
+    replay-helper-worktree-source) echo "replay-project-helper" ;;
+    replay-kit-src-ignored) echo "replay-kit-source" ;;
+    replay-skill-size-total) echo "skill-size-rehearsal" ;;
+    replay-rollup-counts-controls) echo "replay-rollup" ;;
+    replay-compare-chance-rule) echo "replay-compare" ;;
+    replay-state-assertion-skipped) echo "replay-case-states" ;;
+    fake-gh-loses-check-status) echo "fake-github" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -247,6 +290,35 @@ apply() {
   name=$1
   tree=$2
   case "$name" in
+    recipe-freshness-date)
+      edit "$tree/.agents/skills/maintain/scripts/recipe-freshness.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "stale = (datetime.date.today() - checked_date).days > 90"
+assert old in t, "recipe freshness age check not found"
+open(p, "w").write(t.replace(old, "stale = False", 1))
+'
+      ;;
+    maintain-settings-not-restored)
+      edit "$tree/.agents/skills/maintain/scripts/settings-rules.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    with open(path, \"w\", encoding=\"utf-8\", newline=\"\") as handle:\n        handle.write(new)"
+assert old in t, "settings restore write not found"
+open(p, "w").write(t.replace(old, "    # mutation skips persistence", 1))
+'
+      ;;
+    vercel-secret-shape)
+      edit "$tree/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/add-secret.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "sb_secret_*|eyJ*"
+assert old in s, "Supabase secret-key shape check not found"
+open(p, "w").write(s.replace(old, "*", 1))'
+      ;;
     recipe-framework-major)
       edit "$tree/.agents/tools/check-recipes.sh" '
 import os
@@ -308,7 +380,7 @@ open(p, "w").write(t.replace(old, "if False and clashes:\n    print(\"refused: t
 '
       ;;
     read-only-db-privilege)
-      edit "$tree/.agents/skills/setup-hosting/recipes/parts/scripts/read-only-database.sh" '
+      edit "$tree/.agents/tests/recipes-awaiting-run/parts/scripts/read-only-database.sh" '
 import os
 p = os.environ["MUTATE_TARGET"]
 t = open(p).read()
@@ -318,7 +390,7 @@ open(p, "w").write(t.replace(old, "false", 1))
 '
       ;;
     worker-queue-name)
-      edit "$tree/.agents/skills/setup-hosting/recipes/parts/scripts/python-worker-check.sh" '
+      edit "$tree/.agents/tests/recipes-awaiting-run/parts/scripts/python-worker-check.sh" '
 import os
 p = os.environ["MUTATE_TARGET"]
 t = open(p).read()
@@ -851,7 +923,7 @@ open(p, "w").write(s.replace(old, new, 1))'
 import os
 p = os.environ["MUTATE_TARGET"]
 s = open(p).read()
-old = "    check_sensitive_area(data[\"baseRefOid\"], head)\n"
+old = "    check_sensitive_area(data[\"baseRefOid\"], head, automatic=(mode == \"--auto\"))\n"
 new = "    pass  # sensitive-area check removed\n"
 assert old in s
 open(p, "w").write(s.replace(old, new, 1))'
@@ -907,9 +979,18 @@ open(p, "w").write(s.replace(old, "if False and not shared_refs(project, main):"
 import os
 p = os.environ["MUTATE_TARGET"]
 s = open(p).read()
-old = "paths_to_mutate = "
-assert old in s, "mutmut 3 source path setting not found"
-open(p, "w").write(s.replace(old, "mutate_paths = ", 1))'
+old = "paths = json.dumps(folders)"
+assert old in s, "mutmut source selection not found"
+open(p, "w").write(s.replace(old, "paths = json.dumps([])", 1))'
+      ;;
+    promises-list-stale)
+      edit "$tree/.agents/tests/promises-list.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "  [ -f \"$ROOT/$path\" ] || fail \"named checker is missing: $path\""
+assert old in s, "named script existence check not found"
+open(p, "w").write(s.replace(old, "  : # mutation ignores missing checkers", 1))'
       ;;
     review-gate-leaves-draft-edited)
       edit "$tree/.agents/skills/second-opinion/scripts/review-guard.sh" '
@@ -928,6 +1009,123 @@ t = open(p).read()
 old = "if base.stdout.strip() != main.stdout.strip():"
 assert old in t, "behind-main check not found"
 open(p, "w").write(t.replace(old, "if False and base.stdout.strip() != main.stdout.strip():", 1))
+'
+      ;;
+    build-nothing-mark)
+      edit "$tree/.agents/skills/build-piece/references/build-limits.md" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "even when the piece says `nothing` and the page stays as it is."
+assert old in t, "nothing-change mark instruction not found"
+open(p, "w").write(t.replace(old, "only when the page prose changes.", 1))
+'
+      ;;
+    founding-starter-refusal)
+      edit "$tree/.agents/skills/setup-ai-build-kit/references/stand-up.md" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "Wait for yes before writing\nreplacement starter files."
+assert old in t, "starter approval boundary not found"
+open(p, "w").write(t.replace(old, "Write replacement starter files at once.", 1))
+'
+      ;;
+    prelaunch-migration-route)
+      edit "$tree/.agents/skills/build-piece/SKILL.md" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "Use this route for every piece, even if\n`/setup-hosting` has not run before."
+assert old in t, "pre-launch migration route instruction not found"
+open(p, "w").write(t.replace(old, "Let each piece choose its own migration route.", 1))
+'
+      ;;
+    replay-effort-ignored)
+      edit "$tree/.agents/tests/replay/provider.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "if [ -n \"${REPLAY_EFFORT:-}\" ]; then"
+assert t.count(old) == 3, "expected effort handling on all three Codex calls"
+open(p, "w").write(t.replace(old, "if false; then"))
+'
+      ;;
+    replay-helper-worktree-source)
+      edit "$tree/.agents/tests/replay/prepare/install-project-helper.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "source=\"$kit/.agents/skills/setup-ai-build-kit/templates/foundation/codex-github-check.py\""
+assert old in t, "assembled-kit helper source not found"
+new = "source=\"$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/codex-github-check.py\""
+open(p, "w").write(t.replace(old, new, 1))
+'
+      ;;
+    replay-kit-src-ignored)
+      edit "$tree/.agents/tests/replay/run.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "\"$KIT_SRC/.agents/tools/build-release.sh\" \"$VERSION\" \"$KIT\""
+assert old in t, "KIT_SRC release-builder invocation not found"
+new = "\"$ROOT/.agents/tools/build-release.sh\" \"$VERSION\" \"$KIT\""
+open(p, "w").write(t.replace(old, new, 1))
+'
+      ;;
+    replay-skill-size-total)
+      edit "$tree/.agents/tests/replay/skill-size.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "TOTAL                            "
+assert old in t, "skill word total output not found"
+open(p, "w").write(t.replace(old, "SUM                              ", 1))
+'
+      ;;
+    replay-rollup-counts-controls)
+      edit "$tree/.agents/tests/replay/rollup.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "due = contracts.get(int(scenario), False)"
+assert old in t, "notice-due classification not found"
+open(p, "w").write(t.replace(old, "due = True", 1))
+'
+      ;;
+    replay-compare-chance-rule)
+      edit "$tree/.agents/tests/replay/compare.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "lower_tail_fisher(old, new) <= 0.10"
+assert old in t, "chance threshold not found"
+open(p, "w").write(t.replace(old, "lower_tail_fisher(old, new) <= 1.0", 1))
+'
+      ;;
+    replay-state-assertion-skipped)
+      edit "$tree/.agents/tests/replay/scenario-state-check.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "[ ! -f \"$project/.replay-returning-state\" ]"
+assert old in t, "returning-work marker assertion not found"
+new = "[ ! -f \"$project/never-written-marker\" ]"
+open(p, "w").write(t.replace(old, new, 1))
+'
+      ;;
+    fake-gh-loses-check-status)
+      edit "$tree/.agents/tests/replay/fake-github/gh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "\"statusCheckRollup\": pr.get(\"statusCheckRollup\", [{"
+assert old in t, "prepared check status support not found"
+t = t.replace(old, "\"statusCheckRollup\": [{", 1)
+old_end = "        }]),"
+assert old_end in t, "default status result end not found"
+t = t.replace(old_end, "        }],", 1)
+open(p, "w").write(t)
 '
       ;;
     *)
@@ -1016,6 +1214,24 @@ for name in $wanted; do
     [ "$status" = NOT-APPLIED ] && echo "  see $WORK/$name-apply.log"
     printf '%s\t%s\t%s\t%s\n' "$name" "$status" "$(echo $checks | tr ' ' ',')" \
       "$(describe "$name")" >> "$REPORT"
+    echo
+    continue
+  fi
+
+  # These behaviour promises are owned by named replay cases. The shell suite
+  # checks that the cases remain present and named in mutation-audit.md, but it
+  # cannot measure the conversation, so do not call them holes or pretend a
+  # shell check caught the mutation.
+  case "$name" in
+    build-nothing-mark) replay_owner=45 ;;
+    founding-starter-refusal) replay_owner=58 ;;
+    prelaunch-migration-route) replay_owner=59 ;;
+    *) replay_owner= ;;
+  esac
+  if [ -n "$replay_owner" ]; then
+    echo "  owned by replay case $replay_owner"
+    printf '%s\t%s\t%s\t%s\n' "$name" "replay:$replay_owner" \
+      "replay-case-$replay_owner" "$(describe "$name")" >> "$REPORT"
     echo
     continue
   fi

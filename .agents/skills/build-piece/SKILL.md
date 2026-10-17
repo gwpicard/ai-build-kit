@@ -72,6 +72,10 @@ each change and says whether it can be undone. Ask before acting. In an
 unattended run leave it unchanged. A live build never applies a migration;
 `/setup-hosting` does that before merge.
 
+Before first launch, `/setup-hosting` applies each piece's migration to the
+chosen database before launch. Use this route for every piece, even if
+`/setup-hosting` has not run before.
+
 For `visual` work or a change to a rendered interface, load `screen-check`
 before the guided check. File new work uncovered during the build through
 `records/references/pieces.md`, with subjects from the `triage` skill and a short note

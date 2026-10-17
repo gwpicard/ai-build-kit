@@ -1,7 +1,7 @@
 # Recipe: Next.js 16, TypeScript and Supabase on Coolify
 
 Fits: Dashboards and reporting on existing data; Admin panels and back office over an existing database; Approvals and request workflows; CRMs, contact trackers and sales tools; Light ERP: stock, orders, purchasing, assets; Client, vendor and partner portals; Project and task trackers; Document processing: upload, extract, review, export; AI assistants over team documents; HR and onboarding; Case management, tickets and incident logs; Booking and scheduling; Forms and data collection; Field, inspection and service apps; Screenless sync and automation
-Recommended when: the team already runs Coolify, or wants the app on a server it rents, such as a Hetzner or Hostinger VPS, rather than on a hosting platform.
+Recommended when: the team wants a rented Coolify server. AI Build Kit builds and checks the tool, coolify-launchpad sets up the server, and coolify-devops puts it live.
 Language: TypeScript
 Framework: Next.js 16
 Typing: TypeScript tsc
@@ -13,12 +13,15 @@ Jobs: Supabase Cron and Queues
 Testing: Vitest and Playwright
 Linting: ESLint
 Starter: ../parts/starters/nextjs-supabase
-Optional parts: read-only existing database and Python document worker
+Optional parts: none
 Work-team default: no
 Deploy target: Coolify on a rented server, with the Coolify GitHub App connected to the project's repository
 Command-line tools: supabase, docker, psql, curl, git
 Health-check tool: curl
 Last checked: 2026-10-14
+Last proven: 2026-09-27
+Proven on: Next.js 16; Supabase CLI 2.117; Coolify 4.3.23; coolify-devops 0.4.0
+Superseded settings: NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
 
 Shared stack: [Next.js, TypeScript and Supabase](../parts/nextjs-supabase-stack.md)
 Database types check: `if [ ! -f types/database.ts ] || ! git ls-files --error-unmatch types/database.ts >/dev/null 2>&1; then echo 'could not run: types/database.ts is missing or untracked'; exit 2; fi; if ! supabase status >/dev/null 2>&1; then echo 'could not run: local Supabase is not running'; exit 2; fi; tmp=$(mktemp) || exit 2; trap 'rm -f "$tmp"' EXIT; supabase gen types typescript --local > "$tmp" || { echo 'could not run: database types could not be generated'; exit 2; }; diff -u types/database.ts "$tmp"`
@@ -37,7 +40,7 @@ Ask: Please paste the preview deployment's status from Coolify, and the answer f
 ## Going live
 
 How it works: Coolify does not run migrations, so before the build that needs them the kit applies them with `../parts/scripts/migrate.sh --apply <live project ref>`. A migration only adds, so the container still live keeps working. Before the merge, the kit runs the Health part's container check. Before the first launch, the person or the companion switches on Coolify's health check, off by default, with path `/api/health`, port 3000 and host `127.0.0.1`. The health route reports the commit from `SOURCE_COMMIT`. After a merge, Coolify builds `main` and swaps the new container in once its check passes, which needs no published host port and no custom container name. On a first launch `scripts/hosting-request.sh` prints the request for whoever runs the server, as `hosting-request.md` says, and the address comes from its answer.
-How it is checked: A finished deployment, Coolify's health check on as above and passing, a health answer with the database reachable and the commit on `main`, and no public table open to anyone holding the public key.
+How it is checked: A finished deployment, Coolify's health check on as above and passing, a health answer with the database reachable and the commit on `main`, and no public table open to anyone holding the publishable key.
 Script: scripts/going-live.sh
 Who runs it: a companion or the person, result read back
 Ask: Please paste the deployment's status, the app's health check settings and the container's health status from Coolify, and the answer from the live address's /api/health.
@@ -60,7 +63,7 @@ Shared part: [restore on hosted Supabase](../parts/supabase-restore.md)
 
 ## Secrets
 
-How it works: The hosting request carries setting names, never a value. With coolify-devops 0.8.2, the companion creates hand-set secrets as runtime-only (`is_buildtime: false`) with a `REPLACE_ME` placeholder, then waits for the person to fill them before deploying. Build vars are the exception: the companion creates them for build time and runtime with a `REPLACE_ME` placeholder, and waits for the person to fill them before deploying. A build var change needs a redeploy, not a restart. The Supabase address and public key carry the `NEXT_PUBLIC_` prefix and reach the browser by design; row-level security keeps them harmless. The service role key never carries that prefix. No value goes into the repository or the Dockerfile.
+How it works: Use `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` and `SUPABASE_SECRET_KEY`; the legacy `NEXT_PUBLIC_SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` still work. The hosting request carries setting names, never a value. With coolify-devops 0.8.2, the companion creates hand-set secrets as runtime-only (`is_buildtime: false`) with a `REPLACE_ME` placeholder, then waits for the person to fill them before deploying. Build vars are the exception: the companion creates them for build time and runtime with a `REPLACE_ME` placeholder, and waits for the person to fill them before deploying. A build var change needs a redeploy, not a restart. The publishable key reaches the browser by design; row-level security limits it. The secret key stays on the server. No value goes into the repository or the Dockerfile.
 How it is checked: Coolify holds every name in `.env.example`, no public name carries a secret, and git ignores `supabase/.temp`.
 Script: scripts/secrets.sh
 Who runs it: a companion or the person, result read back
