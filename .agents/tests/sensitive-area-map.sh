@@ -66,6 +66,22 @@ check "a changed open area fails: $(cat "$tmp/out")" "$open"
 grep -Fq 'This changes money, which still needs your decision.' "$tmp/out" && named=yes || named=no
 check "the open area and decision are named" "$named"
 
+# A date on the area line is not an acceptance. The record needs the person's words.
+sed 's/caution: checked; not yet done/caution: waiting; accepted 2026-09-18/' "$project/masterplan.md" > "$tmp/masterplan"
+cp "$tmp/masterplan" "$project/masterplan.md"
+printf '%s\n' 'Accepted: none' >> "$project/masterplan.md"
+git -C "$project" add -A
+git -C "$project" commit -qm 'Date without words'
+if run_check --change "$base" > "$tmp/out" 2>&1; then
+  unrecorded=no
+else
+  unrecorded=yes
+fi
+check "a dated area with no recorded words still holds" "$unrecorded"
+grep -Fq 'still needs your decision' "$tmp/out" && named=yes || named=no
+check "the unrecorded acceptance is reported as open" "$named"
+git -C "$project" reset -q --hard HEAD~1
+
 sed 's/caution: checked; not yet done/caution: waiting; accepted 2026-09-18/' "$project/masterplan.md" > "$tmp/masterplan"
 cp "$tmp/masterplan" "$project/masterplan.md"
 printf '%s\n' '    Accepted: I accept this exposure on 2026-09-18' >> "$project/masterplan.md"

@@ -21,10 +21,34 @@ def git(*args, cwd=None):
     return subprocess.run(["git", *args], cwd=cwd, text=True, capture_output=True)
 
 
+def recorded_words(lines):
+    """Text of every Accepted: record in the risk record, wrapped lines joined."""
+    records = []
+    inside = False
+    open_record = None
+    for line in lines:
+        if line.strip() == "Risk areas:":
+            inside = True
+        if inside and line.startswith("## "):
+            break
+        if not inside and not re.match(r"^\s*Accepted:", line):
+            continue
+        match = re.match(r"^\s*Accepted:\s*(.*)$", line)
+        if match:
+            open_record = [match.group(1)]
+            records.append(open_record)
+        elif open_record is not None and line.strip() and not re.match(r"^\s*[A-Za-z][^:]*:", line):
+            open_record.append(line.strip())
+        else:
+            open_record = None
+    return [" ".join(r).strip() for r in records if " ".join(r).strip().lower() not in ("", "none")]
+
+
 def parse_areas(lines):
     areas = []
     inside = False
     current = None
+    words = recorded_words(lines)
     for line in lines:
         if line.strip() == "Risk areas:":
             inside = True
@@ -39,7 +63,7 @@ def parse_areas(lines):
                 areas.append(finish(current))
             current = {"name": match.group(1).strip(), "paths": [], "decision": "open"}
             accepted = re.search(r";\s*accepted\s+(\d{4}-\d{2}-\d{2})\s*$", line, re.I)
-            if accepted:
+            if accepted and any(accepted.group(1) in record for record in words):
                 current["decision"] = "accepted " + accepted.group(1)
             caution = re.search(r"caution:\s*([^;]+)(?:;\s*(.*))?$", line)
             if caution:

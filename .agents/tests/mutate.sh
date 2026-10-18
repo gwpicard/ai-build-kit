@@ -161,6 +161,7 @@ seeded-report-hides-failure
 review-optional-by-record
 area-accepted-still-holds
 area-open-passes
+area-date-without-words
 mark-ready-skips-risk-areas
 merge-review-skipped"
 
@@ -288,6 +289,7 @@ describe() {
     review-optional-by-record) echo "the project check lets a pull request through with no review record" ;;
     area-accepted-still-holds) echo "the risk-area check keeps holding a piece after the person accepted the area" ;;
     area-open-passes) echo "the risk-area check lets a change to an open area through with no notice" ;;
+    area-date-without-words) echo "a date on the area line counts as an acceptance with no recorded words" ;;
     mark-ready-skips-risk-areas) echo "a piece that names no risk areas can be marked ready" ;;
     merge-review-skipped) echo "the merge no longer asks for a review record on every pull request" ;;
     *) echo "unknown mutation" ;;
@@ -360,7 +362,7 @@ checks_for() {
     protection-plan-carries-on) echo "check-tooling found-issues first-upload" ;;
     unreadable-repository-is-missing) echo "check-tooling" ;;
     review-optional-by-record) echo "review-gate" ;;
-    area-accepted-still-holds|area-open-passes) echo "sensitive-area-map" ;;
+    area-accepted-still-holds|area-open-passes|area-date-without-words) echo "sensitive-area-map" ;;
     mark-ready-skips-risk-areas) echo "mark-ready" ;;
     merge-review-skipped) echo "merge-gate" ;;
     seeded-missed-as-flagged|seeded-harness-break-as-pass|seeded-twin-hold-ignored|seeded-key-copied|seeded-rollup-counts-broken-runs|seeded-refusal-counts-as-find|seeded-report-hides-failure) echo "seeded-scoring" ;;
@@ -1095,6 +1097,15 @@ s = open(p).read()
 old = "print(\"This changes %s, which still needs your decision.\" % name)\n                failed = True"
 assert old in s, "open area hold not found"
 open(p, "w").write(s.replace(old, "print(\"This changes %s, which still needs your decision.\" % name)", 1))'
+      ;;
+    area-date-without-words)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/check-sensitive-areas.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "if accepted and any(accepted.group(1) in record for record in words):"
+assert old in s, "recorded-words test not found"
+open(p, "w").write(s.replace(old, "if accepted:", 1))'
       ;;
     mark-ready-skips-done-when)
       edit "$tree/.agents/skills/records/scripts/mark-ready.sh" '
