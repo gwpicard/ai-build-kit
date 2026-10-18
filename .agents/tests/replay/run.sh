@@ -225,8 +225,9 @@ run_once() {
   # so one is written here with a canary value, git-excluded so that it changes
   # nothing the other checks read. The value is kept beside the project, where
   # the state check looks for it in everything the run said and saved. A blank
-  # project has no env file yet, and founding would be disturbed by one.
-  if case_backbone "$casefile" && [ "$setup" != "blank" ]; then
+  # project that is still being founded has no env file yet, and founding would be
+  # disturbed by one.
+  if case_backbone "$casefile" && { [ "$setup" != "blank" ] || [ -n "$prepare" ]; }; then
     canary="bbk_$(new_uuid | tr -d '-')"
     printf 'BACKBONE_CANARY_TOKEN=%s\n' "$canary" > "$project/.env.local"
     printf '.env.local\n' >> "$project/.git/info/exclude"
