@@ -163,7 +163,12 @@ area-accepted-still-holds
 area-open-passes
 area-date-without-words
 mark-ready-skips-risk-areas
-merge-review-skipped"
+merge-review-skipped
+risk-move-drops-acceptance
+risk-move-acceptance-done
+risk-move-misses-path
+risk-move-show-writes
+risk-move-hides-report-only"
 
 describe() {
   case "$1" in
@@ -292,6 +297,11 @@ describe() {
     area-date-without-words) echo "a date on the area line counts as an acceptance with no recorded words" ;;
     mark-ready-skips-risk-areas) echo "a piece that names no risk areas can be marked ready" ;;
     merge-review-skipped) echo "the merge no longer asks for a review record on every pull request" ;;
+    risk-move-drops-acceptance) echo "the move to the risk record drops the person's recorded acceptances" ;;
+    risk-move-acceptance-done) echo "the move to the risk record turns an accepted area into a finished caution" ;;
+    risk-move-misses-path) echo "the upgrade check no longer finds the three path values in an older record" ;;
+    risk-move-show-writes) echo "showing the move to the risk record writes it before the person says yes" ;;
+    risk-move-hides-report-only) echo "the move to the risk record leaves out the checks the project cannot yet run" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -365,6 +375,7 @@ checks_for() {
     area-accepted-still-holds|area-open-passes|area-date-without-words) echo "sensitive-area-map" ;;
     mark-ready-skips-risk-areas) echo "mark-ready" ;;
     merge-review-skipped) echo "merge-gate" ;;
+    risk-move-drops-acceptance|risk-move-acceptance-done|risk-move-misses-path|risk-move-show-writes|risk-move-hides-report-only) echo "risk-move-rehearsal" ;;
     seeded-missed-as-flagged|seeded-harness-break-as-pass|seeded-twin-hold-ignored|seeded-key-copied|seeded-rollup-counts-broken-runs|seeded-refusal-counts-as-find|seeded-report-hides-failure) echo "seeded-scoring" ;;
     seeded-repro-accepts-swallow) echo "seeded-reproductions" ;;
     *) echo "$DEFAULT_CHECKS" ;;
@@ -1061,6 +1072,52 @@ s = open(p).read()
 old = "    review_held(data.get(\"body\") or \"\", head)\n"
 assert old in s, "review hold not found"
 open(p, "w").write(s.replace(old, "    pass  # review hold removed\n", 1))'
+      ;;
+    risk-move-drops-acceptance)
+      edit "$tree/.agents/skills/maintain/scripts/risk_move.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "    out += field_lines(plan, \"Accepted\", \"none\")\n"
+assert old in s, "acceptance copy not found"
+open(p, "w").write(s.replace(old, "    out += [\"Accepted: none\"]\n", 1))'
+      ;;
+    risk-move-acceptance-done)
+      edit "$tree/.agents/skills/maintain/scripts/risk_move.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "        out += plan[\"area_lines\"]\n"
+assert old in s, "area lines copy not found"
+open(p, "w").write(s.replace(old, "        out += [l.replace(\"; accepted \", \"; done \") for l in plan[\"area_lines\"]]\n", 1))'
+      ;;
+    risk-move-misses-path)
+      edit "$tree/.agents/skills/maintain/scripts/risk_move.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+start = s.index("OLD_PATHS = (")
+stop = s.index("\"Build with expert help\"", start)
+assert start < stop, "path values not found"
+open(p, "w").write(s[:start] + "OLD_PATHS = (" + s[stop:])'
+      ;;
+    risk-move-show-writes)
+      edit "$tree/.agents/skills/maintain/scripts/risk_move.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "return apply(project) if applying else show(project)"
+assert old in s, "show or apply choice not found"
+open(p, "w").write(s.replace(old, "return apply(project)", 1))'
+      ;;
+    risk-move-hides-report-only)
+      edit "$tree/.agents/skills/maintain/scripts/risk_move.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "def report_only_line(plan, pieces, today):\n    parts = []"
+assert old in s, "report-only line not found"
+open(p, "w").write(s.replace(old, "def report_only_line(plan, pieces, today):\n    return \"\"\n    parts = []", 1))'
       ;;
     mark-ready-skips-risk-areas)
       edit "$tree/.agents/skills/records/scripts/mark-ready.sh" '

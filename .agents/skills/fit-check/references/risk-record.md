@@ -54,5 +54,10 @@ An acceptance drops a caution. It does not remove the area, since the exposure
 is still there; the area's line says `accepted 2026-08-12`. An area leaves the
 record only when the fit check runs again after a redesign has removed it.
 
+A project moved from an older path record may also carry `Earlier path:` and
+`Earlier why:` as history, and a `Report-only:` line naming the checks it
+cannot yet run. Leave all three as they are. Moving a check to enforced is the
+person's decision, saved with the date.
+
 A piece names the areas it touches on its own `Risk areas:` line, or `none`.
 The notice rules are in `risk-notice.md`.

@@ -25,6 +25,7 @@
 | A project's first upload waits for a yes and recognises shared history. | `.agents/tests/first-upload.sh` | Every agent |
 | A release draft can be prepared without publishing it or pushing a tree. | `.agents/tests/release-publication.sh` | Every agent |
 | A release upgrade carries existing project work forward. | `.agents/tests/upgrade-rehearsal.sh` | Every agent |
+| An older path record moves to the risk record on a yes, keeps every risk area, acceptance, date and word, and a no changes nothing. | `.agents/tests/risk-move-rehearsal.sh` | Every agent |
 | A project check uses its shared review-box reader. | `.agents/tests/review-gate.sh`; `.agents/tests/merge-gate.sh` | Every agent |
 | The Claude Code read guard refuses environment files. | `.agents/tests/secrets-gates.sh`; `.claude/settings.json` | Claude Code only |
 | Claude Code reads its project settings and session hook. | `.agents/tests/session-start.sh`; `.agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json` | Claude Code only |
