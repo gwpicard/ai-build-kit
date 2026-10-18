@@ -467,7 +467,13 @@ def changelog_line(plan, pieces, done, report_only):
     return line
 
 
+def check_changelog(project):
+    if os.path.islink(os.path.join(project, "CHANGELOG.md")):
+        raise RuntimeError("CHANGELOG.md is a link, so it was left alone")
+
+
 def add_changelog(project, today, line):
+    check_changelog(project)
     path = os.path.join(project, "CHANGELOG.md")
     try:
         with open(path, encoding="utf-8", newline="") as handle:
@@ -563,6 +569,7 @@ def apply(project):
         print("risk_move.py: %s holds no old path record" % project, file=sys.stderr)
         return 1
     plan, areas, pieces = built
+    check_changelog(project)
     done = []
     for number, value, body in pieces["set"]:
         if write_piece(project, number, with_line(body, value)):

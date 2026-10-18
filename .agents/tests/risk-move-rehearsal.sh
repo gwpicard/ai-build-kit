@@ -287,10 +287,18 @@ target.write_text((p / 'masterplan.md').read_text())
 before = target.read_text()
 run([sys.executable, move, '--apply', p], code=2)
 assert target.read_text() == before and (p / 'masterplan.md').is_symlink()
+p = project('changelog-link', 'explore')
+target = work / 'outside-changelog.md'
+target.write_text('outside\n')
+(p / 'CHANGELOG.md').unlink(missing_ok=True)
+(p / 'CHANGELOG.md').symlink_to(target)
+before = tree(p)
+run([sys.executable, move, '--apply', p], code=2)
+assert tree(p) == before and target.read_text() == 'outside\n'
 p = project('headingless', 'headingless')
 before = tree(p)
 run([sys.executable, move, '--apply', p], code=2)
 assert tree(p) == before
-print('  ok: Windows line endings stay, and a link or a headingless record is never half written')
+print('  ok: Windows line endings stay, and a linked masterplan or changelog, or a headingless record, is never half written')
 PY
 echo "risk-move-rehearsal.sh: all checks passed"
