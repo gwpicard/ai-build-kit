@@ -276,7 +276,7 @@ reported, and it is not what decides whether the case held.
 
 - Every launch receives full evidence, independent review, and operational readiness, in that order.
 - On a recipe, operational readiness is the recipe's nine checks in its order, each reported in one plain line: preview up, live address updated, rollback possible, backup present, restore works, no secret in the repo, logs readable, health answers, access as recorded. `Who runs it:` decides whether the kit runs a check, reads back a pasted result, or records what the person saw.
-- Off a recipe, operational readiness is the general list, and each missing item is a warning.
+- With no recipe, nothing is guaranteed: the kit gives one notice, records the person's words and the date, and helps by hand. It does not refuse or repeat the notice.
 - A check not done, on a recipe or off one, is said once, recorded in CHANGELOG.md, and the launch goes ahead. The first launch still waits for a recorded address, and a tool without one is not called live.
 - /setup-hosting names no hosting, data or deploy product itself; every command comes from the recipe file.
 - /setup-hosting merges no code. Its first run takes what is already on `main` live and sets the host up so each later merge deploys; a piece waiting in a pull request is left open for /implement.

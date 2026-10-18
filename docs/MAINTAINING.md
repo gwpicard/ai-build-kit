@@ -159,7 +159,7 @@ named beside it.
 | Secrets are never shown. | `.agents/tests/secrets-gates.sh` and `.agents/tests/push-guard.sh` for commits and command output; `.agents/tests/record-secrets.sh` for the saved records: the pull request body `gate.py` writes, the changelog and masterplan `run-recipe.sh` writes, and what Claude Code writes into a record file or a GitHub body | Closed for the kit's scripts and Claude Code. Another agent writing a record by hand is caught when the record is pushed. |
 | Checks pass before a merge. | The project checks workflow, read by `merge.py`; `.agents/tests/merge-gate.sh`. Every check reports a result from `quality-checks/scripts/results.py`; `.agents/tests/result-vocabulary.sh` | None known. |
 | A review matches the code it read. | The review record names the commit the review read and carries a seal over itself and the stopping findings. `check-review.sh` and `merge.py` hold a record for another commit, a hand-edited one, and an older one with no commit. A review no second login approved is recorded as unverified. `.agents/tests/review-gate.sh`, `.agents/tests/merge-gate.sh` | The seal stops a hand edit, and anyone who runs the kit's code can still write a record. A review counts as verified only when a second GitHub login approved that commit. |
-| Every launch has a way back and a backup. | Each recipe must carry rollback, backup and restore sections, checked by `.agents/tools/check-recipes.sh`. `run-recipe.sh` holds a live tool whose backup is not confirmed, whose recipe names no rollback, or, on a later run, with no earlier build to go back to. Off a recipe the masterplan must say how to go back and where the backup is. `.agents/tests/run-recipe.sh` | A first launch has no earlier build, so its way back is the recipe's rollback step, untried. |
+| Every launch has a way back and a backup. | Each recipe must carry rollback, backup and restore sections, checked by `.agents/tools/check-recipes.sh`. `run-recipe.sh` holds a live tool whose backup is not confirmed, whose recipe names no rollback, or, on a later run, with no earlier build to go back to. Hosting is recipe-only. With no recipe, `run-recipe.sh none` gives one notice that nothing is guaranteed, records the person's words and the date, holds nothing and checks nothing. `.agents/tests/run-recipe.sh` | A first launch has no earlier build, so its way back is the recipe's rollback step, untried. Off a recipe the promise does not hold, and the kit says so. |
 | Records say "accepted", never "done". | `.agents/tests/replay/state-check.sh` reads the end state a replay leaves and fails when an area is marked done on the date of an acceptance; `.agents/tests/replay-state.sh` proves that assertion. The project check reports an accepted area as accepted, and `.agents/tests/sensitive-area-map.sh` proves it. The move from an older path record keeps each acceptance as accepted, and `.agents/tests/risk-move-rehearsal.sh` proves it | The replay check measures the kit; it does not run in a project. Nothing stops an agent writing "done" by hand there. |
 
 Each mechanism needs a check that fails when the mechanism is removed. The
@@ -276,8 +276,9 @@ and the reviewer share one GitHub login. That is a report, never a stop.
 - "Fix the live error, no more yeses" still needs one named yes.
 - When the person gives too little detail at setup, the kit asks only for the
   three questions, records any gap as an assumption, and goes on.
-- When a recipe record is missing at a first launch, the launch stops until the
-  record names the rollback and the backup.
+- A recipe launch with no confirmed backup or no named rollback stops. With no
+  recipe, nothing is checked and nothing stops: the kit gives one notice,
+  records the person's words and the date, and helps by hand.
 
 ## Changing a skill
 

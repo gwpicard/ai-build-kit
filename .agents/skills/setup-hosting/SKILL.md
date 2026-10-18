@@ -17,9 +17,9 @@ stop if it disagrees.
 
 Read the `Recipe:` line in AGENTS.md's stack section and the matching folder's
 `recipe.md`, not `PROVEN.md`. An old `.md` recipe name means its folder.
-`Recipe: none`, a missing line or folder means off-recipe; say so once. If a
-live address is recorded, follow `references/later-run.md`. Leave open pull
-requests open; say `/implement` merges one after a yes, which puts it live.
+`Recipe: none`, a missing line or folder means no recipe: hosting is offered
+only on a recipe. If a live address is recorded, follow
+`references/later-run.md`. Leave open pull requests open; say `/implement` merges one after a yes, which puts it live.
 Python document work and a read-only link to an existing database are not offered yet.
 
 ## Launch
@@ -31,10 +31,11 @@ Load `references/build-run.md`.
 Follow `recipe.md` in order, run its action scripts from the project root and
 follow any hosting request it names. Then load `references/recipe-launch.md`.
 
-### Off a recipe
+### On no recipe
 
-Load `references/recipe-launch.md`. For a server this session
-cannot reach, use `references/hosting-request.md`.
+Load `references/recipe-launch.md`: one notice, the choice recorded, no
+refusal. Then help by hand. For a server this session cannot reach, use
+`references/hosting-request.md`.
 
 For a risk area, follow `fit-check`'s "Rechecks and going live".
 

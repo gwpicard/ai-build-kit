@@ -138,6 +138,8 @@ result-unstarted-check-passes
 launch-no-backup-goes-ahead
 launch-no-way-back-goes-ahead
 launch-off-recipe-unrecorded
+launch-off-recipe-notice-repeats
+launch-off-recipe-choice-before-notice
 approval-merge-skipped
 approval-recipe-skipped
 approval-yes-reused
@@ -268,7 +270,9 @@ describe() {
     record-secret-github-body) echo "Claude Code writes a key into an issue or pull request body" ;;
     launch-no-backup-goes-ahead) echo "a live launch with no confirmed backup goes ahead" ;;
     launch-no-way-back-goes-ahead) echo "a later launch with no earlier build to go back to goes ahead" ;;
-    launch-off-recipe-unrecorded) echo "a launch off a recipe goes ahead with no recorded way back or backup" ;;
+    launch-off-recipe-unrecorded) echo "a launch off a recipe goes ahead with no notice and no recorded choice" ;;
+    launch-off-recipe-notice-repeats) echo "a run off a recipe forgets the recorded choice and gives the notice again" ;;
+    launch-off-recipe-choice-before-notice) echo "a choice made before the notice is recorded as consent" ;;
     approval-merge-skipped) echo "an approved merge goes ahead with no recorded yes" ;;
     approval-recipe-skipped) echo "a recipe step that changes something live goes ahead with no recorded yes" ;;
     approval-yes-reused) echo "one recorded yes opens the same change again and again" ;;
@@ -357,6 +361,8 @@ checks_for() {
     launch-no-backup-goes-ahead) echo "run-recipe" ;;
     launch-no-way-back-goes-ahead) echo "run-recipe" ;;
     launch-off-recipe-unrecorded) echo "run-recipe" ;;
+    launch-off-recipe-notice-repeats) echo "run-recipe" ;;
+    launch-off-recipe-choice-before-notice) echo "run-recipe" ;;
     approval-merge-skipped) echo "merge-gate" ;;
     approval-recipe-skipped) echo "recipe-nextjs-supabase-on-vercel" ;;
     approval-yes-reused) echo "approval-gate merge-gate" ;;
@@ -1413,9 +1419,27 @@ open(p, "w").write(t.replace(old, "    if False and later and code:", 1))'
 import os
 p = os.environ["MUTATE_TARGET"]
 t = open(p).read()
-old = "        if missing:\n            held_lines.append("
+old = "    if prior_choice is None and not (chose and os.path.isfile(marker)):"
 assert old in t, "launch-off-recipe-unrecorded: text not found"
-open(p, "w").write(t.replace(old, "        if False:\n            held_lines.append(", 1))'
+open(p, "w").write(t.replace(old, "    if False:", 1))'
+      ;;
+    launch-off-recipe-notice-repeats)
+      edit "$tree/.agents/skills/setup-hosting/scripts/run-recipe.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "            prior_choice = found.group(1)"
+assert old in t, "launch-off-recipe-notice-repeats: text not found"
+open(p, "w").write(t.replace(old, "            prior_choice = None", 1))'
+      ;;
+    launch-off-recipe-choice-before-notice)
+      edit "$tree/.agents/skills/setup-hosting/scripts/run-recipe.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "not (chose and os.path.isfile(marker))"
+assert old in t, "launch-off-recipe-choice-before-notice: text not found"
+open(p, "w").write(t.replace(old, "not chose", 1))'
       ;;
     approval-merge-skipped)
       edit "$tree/.agents/skills/merge/scripts/merge.py" '
