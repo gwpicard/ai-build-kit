@@ -100,7 +100,7 @@ rm "$FOUNDATION/AGENTS.md"
 cp "$REPLAY/fixture/masterplan.md" "$WORK/masterplan.md"
 python3 "$REPLAY/prepare/legacy-masterplan.py" "$WORK/masterplan.md"
 grep -q '^## Build path' "$WORK/masterplan.md" && ! grep -q '^## Risk record' "$WORK/masterplan.md" \
-  && grep -q '^Path: Build and run it' "$WORK/masterplan.md" \
+  && grep -q '^Sensitive areas: none' "$WORK/masterplan.md" \
   && grep -q '^## What it does, and for whom' "$WORK/masterplan.md" \
   || fail "the build-path section was not written from the risk record"
 printf '# Masterplan\n\n## What it does\n' > "$WORK/bare.md"
