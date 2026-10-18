@@ -274,6 +274,21 @@ def auto_holds(data, main, head):
     newest_main(head)
 
 
+def approved_yes(change):
+    """The one gate before an online change: the person's recorded yes for it."""
+    gate = Path(__file__).resolve().parents[2] / "records" / "scripts" / "approval.py"
+    try:
+        done = subprocess.run([sys.executable, str(gate), "use", change], text=True,
+                              capture_output=True)
+    except OSError:
+        stop("merge: the approval gate could not run", 2)
+    if done.returncode == 1:
+        stop("merge: " + (done.stderr.strip() or "no recorded yes for " + change), 1)
+    if done.returncode:
+        stop("merge: the approval gate could not run: " + (done.stderr or done.stdout).strip(), 2)
+    sys.stdout.write(done.stdout)
+
+
 def kit_area_check():
     here = Path(__file__).resolve()
     for parent in here.parents:
@@ -381,6 +396,8 @@ def main(argv):
     if open_review_box(data.get("body") or ""):
         stop("merge: a finding under Worth stopping for is open; the pull request stays open")
 
+    if mode == "--approved":
+        approved_yes("merge pull request " + number)
     merged = gh("pr", "merge", number, "--merge", "--match-head-commit", head)
     if merged.returncode != 0:
         detail = (merged.stderr or merged.stdout).strip()

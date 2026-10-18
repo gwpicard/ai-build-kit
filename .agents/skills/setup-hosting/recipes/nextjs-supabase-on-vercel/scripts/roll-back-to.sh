@@ -31,6 +31,7 @@ want=${2:-}
   cl_cannot "No earlier build and commit were named, so nothing was rolled back."
 [ -n "${LIVE_ADDRESS:-}" ] || cl_cannot "No live address is recorded, so nothing was rolled back."
 cl_need vercel curl
+cl_approved
 
 vercel rollback "$deployment" --yes >&2 ||
   cl_fail "Vercel did not roll back. The live address still serves the version it served before."

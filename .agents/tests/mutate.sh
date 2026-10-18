@@ -134,7 +134,14 @@ review-record-unsealed
 review-record-old-format-passes
 review-unverified-called-verified
 result-crash-passes
-result-unstarted-check-passes"
+result-unstarted-check-passes
+launch-no-backup-goes-ahead
+launch-no-way-back-goes-ahead
+launch-off-recipe-unrecorded
+approval-merge-skipped
+approval-recipe-skipped
+approval-yes-reused
+approval-ask-rule-dropped"
 
 describe() {
   case "$1" in
@@ -228,6 +235,13 @@ describe() {
     replay-compare-chance-rule) echo "a small-sample dip is reported as a regression without a chance check" ;;
     replay-state-assertion-skipped) echo "the returning-work state check stops noticing a cleared failure" ;;
     fake-gh-loses-check-status) echo "a prepared failed project check is reported as passing by the GitHub stand-in" ;;
+    launch-no-backup-goes-ahead) echo "a live launch with no confirmed backup goes ahead" ;;
+    launch-no-way-back-goes-ahead) echo "a later launch with no earlier build to go back to goes ahead" ;;
+    launch-off-recipe-unrecorded) echo "a launch off a recipe goes ahead with no recorded way back or backup" ;;
+    approval-merge-skipped) echo "an approved merge goes ahead with no recorded yes" ;;
+    approval-recipe-skipped) echo "a recipe step that changes something live goes ahead with no recorded yes" ;;
+    approval-yes-reused) echo "one recorded yes opens the same change again and again" ;;
+    approval-ask-rule-dropped) echo "Claude Code records a yes with no box for the person to click" ;;
     review-record-any-head) echo "a review record passes for a commit it never read" ;;
     review-record-unsealed) echo "a hand-edited review record passes" ;;
     review-record-old-format-passes) echo "an older record with no commit passes as current" ;;
@@ -282,6 +296,13 @@ checks_for() {
     replay-compare-chance-rule) echo "replay-compare" ;;
     replay-state-assertion-skipped) echo "replay-case-states" ;;
     fake-gh-loses-check-status) echo "fake-github" ;;
+    launch-no-backup-goes-ahead) echo "run-recipe" ;;
+    launch-no-way-back-goes-ahead) echo "run-recipe" ;;
+    launch-off-recipe-unrecorded) echo "run-recipe" ;;
+    approval-merge-skipped) echo "merge-gate" ;;
+    approval-recipe-skipped) echo "recipe-nextjs-supabase-on-vercel" ;;
+    approval-yes-reused) echo "approval-gate merge-gate" ;;
+    approval-ask-rule-dropped) echo "push-to-main-rules" ;;
     review-record-any-head) echo "review-gate merge-gate" ;;
     review-record-unsealed) echo "review-gate merge-gate" ;;
     review-record-old-format-passes) echo "review-gate merge-gate" ;;
@@ -1199,6 +1220,69 @@ t = open(p).read()
 old = "        return NOT_APPLICABLE\n    return NOT_RUN"
 assert old in t, "result-unstarted-check-passes: text not found"
 open(p, "w").write(t.replace(old, "        return NOT_APPLICABLE\n    return PASS", 1))'
+      ;;
+    launch-no-backup-goes-ahead)
+      edit "$tree/.agents/skills/setup-hosting/scripts/run-recipe.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    if code:\n        held_lines.append(\"Launch held: no backup"
+assert old in t, "launch-no-backup-goes-ahead: text not found"
+open(p, "w").write(t.replace(old, "    if False:\n        held_lines.append(\"Launch held: no backup", 1))'
+      ;;
+    launch-no-way-back-goes-ahead)
+      edit "$tree/.agents/skills/setup-hosting/scripts/run-recipe.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    if later and code:"
+assert old in t, "launch-no-way-back-goes-ahead: text not found"
+open(p, "w").write(t.replace(old, "    if False and later and code:", 1))'
+      ;;
+    launch-off-recipe-unrecorded)
+      edit "$tree/.agents/skills/setup-hosting/scripts/run-recipe.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "        if missing:\n            held_lines.append("
+assert old in t, "launch-off-recipe-unrecorded: text not found"
+open(p, "w").write(t.replace(old, "        if False:\n            held_lines.append(", 1))'
+      ;;
+    approval-merge-skipped)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "        approved_yes(\"merge pull request \" + number)"
+assert old in t, "approval-merge-skipped: text not found"
+open(p, "w").write(t.replace(old, "        pass", 1))'
+      ;;
+    approval-recipe-skipped)
+      edit "$tree/.agents/skills/setup-hosting/recipes/parts/scripts/check-lib.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "  python3 \"$cl_gate_script\" use \"$cl_change\" >&2 ||"
+assert old in t, "approval-recipe-skipped: text not found"
+open(p, "w").write(t.replace(old, "  true ||", 1))'
+      ;;
+    approval-yes-reused)
+      edit "$tree/.agents/skills/records/scripts/approval.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "        rows.remove(found)"
+assert old in t, "approval-yes-reused: text not found"
+open(p, "w").write(t.replace(old, "        pass", 1))'
+      ;;
+    approval-ask-rule-dropped)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "      \"Bash(*approval.py*yes*)\",\n"
+assert old in t, "approval-ask-rule-dropped: text not found"
+open(p, "w").write(t.replace(old, "", 1))'
       ;;
     *)
       echo "unknown mutation: $name" >&2

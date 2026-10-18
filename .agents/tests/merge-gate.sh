@@ -78,7 +78,9 @@ body = sys.argv[2] + "\n\n## Worth knowing\n- None"
 print(body + "\n" + boxes.record_line("quality review", 1, int(sys.argv[4]), sys.argv[3], False, body))
 ' "$BOXES" "$1" "$2" "${3:-0}"
 }
+APPROVAL="$ROOT/.agents/skills/records/scripts/approval.py"
 run() {
+  [ "${NO_YES:-0}" = 1 ] || (cd "$WORK/project" && python3 "$APPROVAL" yes "merge pull request 12" --words "merge it" >/dev/null)
   review_body=$2
   if [ "${3:-yes}" = yes ]; then
     review_body=$(sealed "$2" "$HEAD_SHA")
@@ -172,6 +174,20 @@ out=$(run success '## Worth stopping for' 2>&1) && code=0 || code=$?
   && printf '%s' "$out" | grep -q 'review of this version is unverified' \
   && pass "passed checks and a yes merge the checked commit, and an unverified review is called unverified" \
   || fail "success returned $code: $out / $(cat "$GH_LOG")"
+
+# The one approval gate: no recorded yes for this merge, no merge, and a yes is spent once used.
+rm -f "$WORK/project/.git/ai-build-kit-approvals"
+: > "$GH_LOG"
+out=$(NO_YES=1 run success '## Worth stopping for' 2>&1) && code=0 || code=$?
+[ "$code" -eq 1 ] && printf '%s' "$out" | grep -q 'no recorded yes for "merge pull request 12"' && ! grep -q '^pr merge ' "$GH_LOG" \
+  && pass "an approved merge with no recorded yes is refused before GitHub is asked" \
+  || fail "a merge with no recorded yes returned $code: $out / $(cat "$GH_LOG")"
+: > "$GH_LOG"
+out=$(run success '## Worth stopping for' 2>&1) && code=0 || code=$?
+[ "$code" -eq 0 ] && printf '%s' "$out" | grep -q 'using the yes of' \
+  && ! (cd "$WORK/project" && python3 "$APPROVAL" list | grep -q 'merge pull request 12') \
+  && pass "a recorded yes lets the named merge through once, and is spent" \
+  || fail "a recorded yes did not merge once ($code): $out"
 
 # The review record must name this head and be unedited.
 check_record_hold() {

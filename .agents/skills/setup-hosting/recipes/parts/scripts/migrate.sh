@@ -75,6 +75,7 @@ if [ "$apply" = no ]; then
 fi
 
 [ -n "$waiting" ] || cl_pass "The database already had every migration main holds, so nothing was applied."
+cl_approved
 supabase db push >"$out" 2>&1 ||
   { cat "$out" >&2; cl_fail "The migrations could not be applied: $waiting. The database is as it was before."; }
 cat "$out" >&2

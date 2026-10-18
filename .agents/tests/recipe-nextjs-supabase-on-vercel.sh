@@ -54,6 +54,23 @@ rr_case 2 good roll-back-to.sh
 rr_case 0 good promote.sh dpl_live "$rr_main"
 rr_case 1 bad promote.sh dpl_live "$rr_main"
 rr_case 2 good promote.sh
+# The one approval gate: with no recorded yes, a step that moves what is live
+# or changes a live setting refuses before it calls the host.
+# In the bad world a migration is waiting, so the apply reaches its push.
+for rr_gated in "good promote.sh dpl_live $rr_main" "good roll-back-to.sh dpl_earlier $rr_main" \
+  "bad migrate.sh --apply liveref" "good connect.sh rehearsal-app" "good set-access.sh private"; do
+  RR_NO_YES=1
+  # shellcheck disable=SC2086
+  rr_case 2 $rr_gated
+  RR_NO_YES=0
+  rr_gated=${rr_gated#* }
+  grep -q 'No yes is recorded for' "$RR_TMP/out" ||
+    rr_fail "${rr_gated%% *} without a recorded yes did not say what it waits for"
+  if tail -n "+$((rr_mark + 1))" "$RR_CALLS" | grep -Eq '^vercel (promote|rollback|project|link|git|api)|^supabase db push$'; then
+    rr_fail "${rr_gated%% *} changed something online with no recorded yes"
+  fi
+done
+rr_ok "promote, roll back, migrate, connect and set-access refuse with no recorded yes, and change nothing online"
 
 # Secrets: every name on the host, no public secret, nothing committable.
 rr_case 0 good secrets.sh
@@ -78,7 +95,8 @@ exit 64
 SH
 chmod +x "$RR_TMP/failing-bin/vercel"
 set +e
-printf 'sb_secret_abcdef123456\n' | RR_TMP="$RR_TMP" PATH="$RR_TMP/failing-bin:$PATH" "$RR_RECIPE/scripts/add-secret.sh" --replace SUPABASE_SECRET_KEY >/dev/null 2>&1
+(cd "$RR_TMP/work" && python3 "$RR_PARTS/../../../records/scripts/approval.py" yes "add-secret --replace SUPABASE_SECRET_KEY" --words "rehearsal yes" >/dev/null)
+(cd "$RR_TMP/work" && printf 'sb_secret_abcdef123456\n' | RR_TMP="$RR_TMP" PATH="$RR_TMP/failing-bin:$PATH" "$RR_RECIPE/scripts/add-secret.sh" --replace SUPABASE_SECRET_KEY >/dev/null 2>&1)
 rr_status=$?
 set -e
 [ "$rr_status" -eq 1 ] || rr_fail "failed replacement did not report Vercel refusing the new value"
