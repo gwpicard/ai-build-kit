@@ -38,7 +38,8 @@
 #         line and does not stop the rest.
 # Exit 5: GitHub could not be read, so nothing was changed.
 # Exit 6: origin is the kit's own repository, so nothing was changed.
-# Exit 2: usage error, or branch protection could not be set. Founding still finishes.
+# Exit 2: usage error, or branch protection could not be set, the plan limit
+#         included. The rest of prepare still runs, then founding stops.
 
 set -u
 
@@ -92,7 +93,7 @@ protection_could_not_run=0
 protection_output=$(python3 "$SKILL_ROOT/../merge/scripts/protect-branch.py" --defer-missing "$repo" main 2>&1) || protection_status=$?
 case "$protection_status" in
   0) printf '%s\n' "$protection_output" ;;
-  4) printf 'protection\tdeferred until first upload creates main\n' ;;
+  4|5) printf 'protection\tdeferred until first upload creates main\n' ;;
   *)
     printf '%s\n' "$protection_output" >&2
     protection_could_not_run=1
@@ -165,7 +166,7 @@ else
     cp "$SKILL_ROOT/templates/foundation/piece-issue.yml" .github/ISSUE_TEMPLATE/piece.yml &&
     echo "template	copied" || echo "template	not copied"
 fi
-# A network or permission limit is reported in one line, then setup carries
-# on because the merge script holds until the check is available.
+# A protection failure is reported in one line. The rest of prepare has run,
+# and founding stops until the working conditions check passes.
 [ "$protection_could_not_run" -eq 0 ] || exit 2
 exit 0

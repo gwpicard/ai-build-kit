@@ -175,10 +175,10 @@ cmp -s "$SKILL/templates/foundation/piece-issue.yml" "$WORK/p/.github/ISSUE_TEMP
 state someone/kit-log PRIVATE '{}' '[]' false '["main"]'
 python3 -c 'import json,sys; p=sys.argv[1]; s=json.load(open(p)); s["protection_status"]="plan"; json.dump(s,open(p,"w"))' "$STANDIN_GH_STATE"
 out=$(run prepare 2>&1) && code=0 || code=$?
-[ "$code" -eq 0 ] && printf '%s\n' "$out" | grep -q 'hold the merge itself' \
+[ "$code" -eq 2 ] && printf '%s\n' "$out" | grep -q 'GitHub Free.*Step: make the repository public' \
   && grep -q '^label create ' "$STANDIN_GH_LOG" \
-  && pass "a plan restriction names the script hold and founding carries on" \
-  || fail "a plan restriction did not carry on with founding ($code): $out"
+  && pass "a plan restriction names the plan and the step, and stops founding after prepare" \
+  || fail "a plan restriction did not stop founding with its step ($code): $out"
 
 for status_line in 'admin|admin rights' '422|422' 'network|network error'; do
   status=${status_line%%|*}

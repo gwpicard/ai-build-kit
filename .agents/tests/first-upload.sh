@@ -221,8 +221,8 @@ for reason in plan admin network; do
   [ "$code" -eq 0 ] && [ "$(heads)" = "main sign-out " ] \
     || fail "$reason protection failure treated the upload as failed ($code): $out"
   if [ "$reason" = plan ]; then
-    printf '%s\n' "$out" | grep -q 'kit will hold the merge itself' \
-      && pass "a GitHub Free plan restriction leaves the upload complete and says the kit holds merges" \
+    printf '%s\n' "$out" | grep -q 'GitHub Free.*Step:' \
+      && pass "a GitHub Free plan restriction leaves the upload complete and names the step" \
       || fail "the plan restriction did not explain the merge hold: $out"
   else
     case "$reason" in

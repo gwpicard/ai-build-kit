@@ -21,6 +21,7 @@
 | The plugin manifest and installed skills follow the published shape. | `.agents/tests/agent-plugin.sh` | Every agent |
 | Session reminders appear only when a project check-up is due. | `.agents/tests/session-start.sh` | Every agent |
 | A review finding needs evidence before it reaches the pull request. | `.agents/tests/review-gate.sh` | Every agent |
+| Setup does not finish until the working conditions hold: a repository with issues, issue write access, branch protection and the chosen recipe's tools. | `.agents/tests/check-tooling.sh` | Every agent |
 | A project's first upload waits for a yes and recognises shared history. | `.agents/tests/first-upload.sh` | Every agent |
 | A release draft can be prepared without publishing it or pushing a tree. | `.agents/tests/release-publication.sh` | Every agent |
 | A release upgrade carries existing project work forward. | `.agents/tests/upgrade-rehearsal.sh` | Every agent |

@@ -154,7 +154,7 @@ named beside it.
 
 | Promise | Mechanism today | Gap |
 |---|---|---|
-| A person approves each merge, unless they chose auto-merge with its limits. | `merge.py --approved` spends the person's recorded yes through the approval gate, `records/scripts/approval.py`; `.agents/tests/merge-gate.sh` and `.agents/tests/approval-gate.sh`; the autonomy limits in `.agents/tests/autonomy-boundaries.sh`; branch protection set at setup | Branch protection can fail without stopping setup. Closed by the founding-checks piece. |
+| A person approves each merge, unless they chose auto-merge with its limits. | `merge.py --approved` spends the person's recorded yes through the approval gate, `records/scripts/approval.py`; `.agents/tests/merge-gate.sh` and `.agents/tests/approval-gate.sh`; the autonomy limits in `.agents/tests/autonomy-boundaries.sh`; branch protection set at setup, which stops setup when it cannot be set, checked by `.agents/tests/check-tooling.sh` | None known. |
 | Nothing goes online without a yes. | One approval gate, `approval.py`, called by `merge.py --approved` and by every recipe step that moves what is live, applies a migration, adds a secret, or changes access, sign-up or the host connection: `.agents/tests/approval-gate.sh`, `.agents/tests/merge-gate.sh`, `.agents/tests/recipe-nextjs-supabase-on-vercel.sh`. Claude Code asks before a yes is recorded, checked by `.agents/tests/push-to-main-rules.sh`; `.agents/tests/first-upload.sh` | Closed for the kit's own scripts. A host's tool run directly, outside a kit script, is held only by Claude Code's rules. |
 | Secrets are never shown. | `.agents/tests/secrets-gates.sh` and `.agents/tests/push-guard.sh` for commits and command output; `.agents/tests/record-secrets.sh` for the saved records: the pull request body `gate.py` writes, the changelog and masterplan `run-recipe.sh` writes, and what Claude Code writes into a record file or a GitHub body | Closed for the kit's scripts and Claude Code. Another agent writing a record by hand is caught when the record is pushed. |
 | Checks pass before a merge. | The project checks workflow, read by `merge.py`; `.agents/tests/merge-gate.sh`. Every check reports a result from `quality-checks/scripts/results.py`; `.agents/tests/result-vocabulary.sh` | None known. |
@@ -235,6 +235,15 @@ switched on, an agent session that can read and write issues, branch protection
 that can be set, and host and database access. The script reports each as
 present, missing or could not check. A missing condition stops setup with the
 one step the person takes. The person creates the accounts.
+
+The script is `check-tooling.sh --conditions` in the setup skill, and
+`.agents/tests/check-tooling.sh` holds it. It proves issue access by opening a
+test issue, closing it and labelling it `skip`. A plan that cannot protect a
+private repository is missing, and the line names the plan. For host and
+database access it stops only on the tools the chosen recipe names. The
+recipes name no sign-in check yet, so a sign-in is could not check, like
+anything else there. It also says whether the agent
+and the reviewer share one GitHub login. That is a report, never a stop.
 
 ### Settled points
 
@@ -459,6 +468,13 @@ rather than a pass. Read its table before a release. It settles nothing on its
 own: a session with nobody in it is a lead rather than a verdict, and anything
 it turns up should be repeated by hand before it counts as a defect. Its own
 folder explains what it covers and what it cannot reach.
+
+`.agents/tests/seeded/` asks a different question: is what the kit builds sound?
+Each product plants one fault in a small project, and the run counts whether the
+kit found it before the merge, whether the fix works, and whether a healthy twin
+was wrongly held. Its keys stay out of the project the kit sees. It reports
+counts with denominators and never one score, so read it the way you read the
+replay table.
 
 ## What earns a shell test
 
