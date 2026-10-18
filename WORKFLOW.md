@@ -275,8 +275,8 @@ earlier version back first, whatever you typed. The kit names the version it
 would bring back and runs the rollback only after your yes. Then it shapes the
 repair as usual. Some hosts stop putting new changes live after a rollback
 until a newer version is put live by hand. The kit says so at the time, and
-/setup-hosting puts the repair live after your yes. Off a recipe it says what
-a rollback would need, since it cannot do one there.
+/setup-hosting puts the repair live after your yes. With no recipe, the kit
+guarantees no rollback, and says what one would need.
 
 After launch, /shape also reads the tool's own record of what each request did
 alongside your report, so it can trace the failed step. You do not need to read
@@ -364,7 +364,7 @@ What the agent may not do is take the notice back. Pushing back on the cost, the
 
 /setup-hosting is for the moment you want people to use the tool. Its first run takes what is already on `main` live and sets the host up so that each later merge to `main` reaches the team's copy. From then on a merge is a deploy, and /implement makes each merge on your yes, so /setup-hosting never merges your code. Run it again whenever you want the live copy checked against `main`, or moved to another host or recipe.
 
-/setup-hosting reads the risk record first. It runs the full evidence run, independent review, operational readiness, and the live transition. Off a recipe, the kit cannot check the launch steps: it names each of the nine it could not check, once, as a warning in the changelog, and the launch goes ahead.
+/setup-hosting reads the risk record first. It runs the full evidence run, independent review, operational readiness, and the live transition. Hosting is offered on a recipe. With no recipe, the kit says once that it guarantees no way back, backup or checked launch, records your words and the date, and still helps you set the host up by hand.
 
 For a risk area, /setup-hosting does the caution it can do itself (a backup restored once, a rehearsal on a copy), and at a caution that is a person who has not looked, gives you the risk notice once. If you carry on, your acceptance is written down and that area goes live too. Where somebody outside the team is going to look, ask for the handover and /maintain prepares it.
 
@@ -484,7 +484,7 @@ It repairs each gap only after a yes that names it. It rechecks the risk record 
 
 You can also ask /setup-hosting for a rollback outright. It reads the host's list of builds, names the version it would bring back by the change it carried and its date, and waits for a yes that names it. It runs the rollback once, or tells you where to click when the host offers nothing the kit can run, and checks that the live copy now reports the earlier version.
 
-A rollback does not undo a database addition, which is why database changes only add. Off a recipe the kit cannot roll back, and says what a rollback there would need.
+A rollback does not undo a database addition, which is why database changes only add. With no recipe the kit guarantees no rollback, and says what one would need.
 
 ### What the launch trials proved
 

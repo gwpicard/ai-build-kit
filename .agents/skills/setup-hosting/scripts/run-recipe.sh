@@ -23,6 +23,8 @@
 #   --alerts named|none    whether somebody is named to receive alerts
 #   --needs NAME,NAME      setting names an open piece says the live side needs
 #   --note <text>          a line for the entry, such as a repair made
+#   --chose <words>        the person's own words choosing to go on with no
+#                          recipe, said after the notice
 #   --later                a later run: compare the live copy with main first
 #   --asks                 print the fixed question for each section the
 #                          person or a companion runs, and nothing else
@@ -36,17 +38,21 @@
 # person can judge takes their answer from --looked.
 #
 # A check that failed or could not run is a warning: one line, written in the
-# changelog, and the launch goes on. Two are not warnings. A live tool with no
-# way back or no backup is held: the backup check must pass, a later run's
-# rollback check must pass, and a first launch's recipe must name its rollback.
-# Off a recipe, the masterplan's "How it stays running" must carry a
-# `Rollback:` and a `Backup:` line. A held launch prints a line starting
-# "Launch held:" with the one step to take, and exits 4. Where the newest changelog line for the
+# changelog, and the launch goes on. Two are not warnings. On a recipe, a live
+# tool with no way back or no backup is held: the backup check must pass, a
+# later run's rollback check must pass, and a first launch's recipe must name
+# its rollback. A held launch prints a line starting "Launch held:" with the
+# one step to take, and exits 4. Where the newest changelog line for the
 # same check says the same words, the warning is a one-line pointer to it
 # instead. The rollback line goes on a line of its own, and says "possible,
 # not tried" when an earlier build is listed, since a rollback is never tried
-# to prove it. Off a recipe, the nine section names and the general
-# readiness items are warnings, one line each, and nothing more.
+# to prove it.
+#
+# With `none` there is no recipe, so no check can run and nothing is
+# guaranteed. The first run prints one notice, writes nothing and exits 5.
+# The run that follows, with `--chose` carrying the person's words, writes
+# those words and the date in the changelog and goes on. It never holds a
+# launch. A later run finds the record and prints one pointer, not the notice.
 #
 # Where any check is a warning, the last line starts "Left:" and names the
 # checks still open, pointing to the changelog. It is the whole answer when the
@@ -54,7 +60,8 @@
 #
 # Exit 0 when every check passed, 1 when any is a warning, 3 when no live
 # address is set, so the tool is not live yet, 4 when the launch is held for
-# want of a way back or a backup, and 2 when it could not run.
+# want of a way back or a backup, 5 when there is no recipe and the notice is
+# given but not yet answered, and 2 when it could not run.
 
 here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 exec python3 - "$here" "$@" <<'PY'
@@ -73,9 +80,9 @@ ORDER = [("Preview", "preview", "Preview up"),
          ("Health", "health", "Health answers"),
          ("Access", "access", "Access as recorded")]
 IDS = {ident for _, ident, _ in ORDER}
-# What a recipe's checks stand in for. Off a recipe each is a warning.
-READINESS = ["Service and billing owner named", "Manual fallback ready",
-             "Test data removed", "Service account owner named"]
+NOTICE = ("No recipe: the kit guarantees no way back to an earlier version, no backup "
+          "and no checked launch here. It can still help you set the host up by hand. "
+          "If you go on, your words and the date are recorded.")
 
 
 def stop(message, code=2):
@@ -100,14 +107,14 @@ def unsafe_record(text, name):
 
 
 project, recipe, sets, pasted, looked = ".", None, {}, {}, {}
-request_record = alerts = needs = None
+request_record = alerts = needs = chose = None
 notes, later, asks, record = [], False, False, True
 i = 0
 while i < len(args):
     arg = args[i]
     value = args[i + 1] if i + 1 < len(args) else None
     if arg in ("--project", "--set", "--pasted", "--looked", "--request-record",
-               "--alerts", "--needs", "--note"):
+               "--alerts", "--needs", "--note", "--chose"):
         if value is None:
             stop("run-recipe.sh: %s needs a value." % arg)
         i += 2
@@ -133,6 +140,10 @@ while i < len(args):
             alerts = value
         elif arg == "--needs":
             needs = value
+        elif arg == "--chose":
+            chose = " ".join(value.split())
+            if not chose:
+                stop("run-recipe.sh: --chose needs the person's words.")
         else:
             notes.append(value)
         continue
@@ -267,8 +278,6 @@ def run(command):
 
 
 def outcome(heading, ident):
-    if folder is None:
-        return 2, "The project is on no recipe, so the kit cannot check this."
     entry = info[heading]
     who = entry.get("who", "")
     script = entry.get("script", "")
@@ -321,6 +330,13 @@ if os.path.isfile(changelog):
         decided.add(label)
         if re.match(r"warning|no\b|not checked", rest):
             held[label] = (body, date)
+prior_choice = None
+if os.path.isfile(changelog):
+    for line in open(changelog, errors="replace"):
+        found = re.match(r"^\s*(?:[-*]\s+)?Chosen without a recipe on (\d{4}-\d{2}-\d{2})", line)
+        if found:
+            prior_choice = found.group(1)
+            break
 caution_given = os.path.isfile(changelog) and \
     "monitoring caution given" in open(changelog, errors="replace").read().lower()
 
@@ -371,27 +387,38 @@ if later and folder:
 
 # --- the nine ------------------------------------------------------------------
 lines, warnings, rollback_line, codes, results_seen = [], 0, None, [], []
-for heading, ident, label in ORDER:
-    code, detail = outcome(heading, ident)
-    codes.append(code)
-    results_seen.append((code, detail))
-    text, _ = line_for(label, code, detail)
-    if code:
-        warnings += 1
-    if ident == "rollback":
-        rollback_line = text
-    else:
-        lines.append(text)
-    print(text)
-
-extra, readiness_open = [], []
+today = datetime.date.today().isoformat()
+no_recipe_open = []
 if folder is None:
-    for label in READINESS:
-        text, _ = line_for(label, 2, "The project is on no recipe, so the kit cannot check this.")
-        warnings += 1
-        readiness_open.append(label)
-        lines.append(text)
+    # No recipe, so no check runs. The notice comes once; the person's words
+    # and the date are the record. Nothing here holds a launch.
+    if prior_choice is None and not chose:
+        print(NOTICE)
+        sys.exit(5)
+    if chose:
+        text = "Chosen without a recipe on %s: %s" % (today, chose)
+    else:
+        text = ("No recipe, as chosen on %s and recorded in the changelog. "
+                "No check ran." % prior_choice)
+    warnings += 1
+    no_recipe_open.append("Launch checks")
+    lines.append(text)
+    print(text)
+else:
+    for heading, ident, label in ORDER:
+        code, detail = outcome(heading, ident)
+        codes.append(code)
+        results_seen.append((code, detail))
+        text, _ = line_for(label, code, detail)
+        if code:
+            warnings += 1
+        if ident == "rollback":
+            rollback_line = text
+        else:
+            lines.append(text)
         print(text)
+
+extra = []
 if request_record:
     if request_record == "yes":
         text, _ = line_for("Request record", 0, "The tool records what each request did.")
@@ -418,21 +445,6 @@ def way_back_and_backup():
     """The launch-held lines: a live tool needs a way back and a backup."""
     held_lines = []
     if folder is None:
-        kept = {}
-        if os.path.isfile(masterplan):
-            text = open(masterplan, encoding="utf-8", errors="replace").read()
-            part = re.search(r"(?ms)^## How it stays running\s*$(.*?)(?=^## |\Z)", text)
-            for name in ("Rollback", "Backup"):
-                found = part and re.search(r"(?m)^\s*(?:[-*]\s+)?%s:\s*\S" % name, part.group(1))
-                kept[name] = bool(found)
-        missing = [name.lower() for name in ("Rollback", "Backup") if not kept.get(name)]
-        if missing:
-            held_lines.append(
-                "Launch held: the project is on no recipe, and the masterplan does not say %s. "
-                "Write %s under \"How it stays running\", then run /setup-hosting again."
-                % (" or ".join({"rollback": "how to go back to an earlier version",
-                                "backup": "where the backup is kept"}[m] for m in missing),
-                   " and ".join("a %s: line" % m.capitalize() for m in missing)))
         return held_lines
     by_ident = {ident: (code, detail) for (_, ident, _), (code, detail) in zip(ORDER, results_seen)}
     code, detail = by_ident["backup"]
@@ -465,9 +477,9 @@ else:
 
 # --- the record -------------------------------------------------------------------
 if record:
-    today = datetime.date.today().isoformat()
     if folder is None:
-        intro = "/setup-hosting ran on no recipe, so the kit could not check the launch steps a recipe would:"
+        intro = ("/setup-hosting ran on no recipe, so no way back, backup or launch check is "
+                 "guaranteed:")
     elif later:
         intro = "/setup-hosting compared the live copy with main and ran the %s recipe's checks again:" % title
     elif live:
@@ -476,7 +488,7 @@ if record:
         intro = "Not live yet: no address is recorded. /setup-hosting ran the launch checks on the %s recipe:" % title
     block = ["## %s" % today, "", intro, ""]
     block += ["- " + l for l in compared + notes + lines + extra + launch_held]
-    block += ["", rollback_line, ""]
+    block += [""] + ([rollback_line, ""] if rollback_line else [])
     text = open(changelog).read() if os.path.isfile(changelog) else "# Changelog\n\n"
     found = re.search(r"^## ", text, re.M)
     if found:
@@ -491,7 +503,7 @@ if record:
 print(closing)
 # The one line to give when the person asks what is left. A warning they have
 # heard, or the changelog holds, is named and pointed to, and nothing more.
-still = [label for (heading, ident, label), code in zip(ORDER, codes) if code] + readiness_open
+still = [label for (heading, ident, label), code in zip(ORDER, codes) if code] + no_recipe_open
 if request_record == "no":
     still.append("Request record")
 if still:

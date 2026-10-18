@@ -192,8 +192,9 @@ build before production uses it: `vercel redeploy <production deployment URL>`.
 
 `setup-hosting/scripts/run-recipe.sh` runs a recipe's nine checks in its
 order, prints one line for each, and writes the run's dated changelog entry. A
-warning the changelog already holds comes back as a pointer. Off a recipe it
-lists the nine section names as warnings and nothing more.
+warning the changelog already holds comes back as a pointer. With no recipe it
+gives one notice that nothing is guaranteed, records the person's words and the
+date, and checks nothing.
 
 ## Shared parts
 

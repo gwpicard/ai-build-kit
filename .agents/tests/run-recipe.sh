@@ -210,36 +210,35 @@ grep -q '^Not live yet: no address is recorded\.' "$P/CHANGELOG.md" ||
   fail "a run with no live address was written up as a launch"
 ok "a run with no live address says the tool is not live, and the entry says so"
 
-# --- off a recipe: the nine names, as warnings, and nothing more -------------
+# --- off a recipe: one notice, the choice recorded, and no refusal ------------
 P="$WORK/p5"
 project "$P"
+cp "$P/CHANGELOG.md" "$WORK/before-none"
 code=0
 sh "$RUNNER" --project "$P" --set LIVE_ADDRESS=https://stub.example.test none > "$WORK/out" 2>&1 || code=$?
-[ "$code" = 4 ] && grep -qx 'Launch held: the project is on no recipe, and the masterplan does not say how to go back to an earlier version or where the backup is kept. Write a Rollback: line and a Backup: line under "How it stays running", then run /setup-hosting again.' "$WORK/out" ||
-  fail "a run off a recipe with no recorded way back or backup exited $code without holding"
-project "$P"
-printf '# Masterplan
-
-## How it stays running
-
-Rollback: redeploy the previous release from the host panel
-Backup: nightly dump to the office share
-' > "$P/masterplan.md"
+[ "$code" = 5 ] || fail "a request off a recipe exited $code, not 5, before the person answered the notice"
+[ "$(grep -c '^No recipe: the kit guarantees no way back to an earlier version, no backup and no checked launch here\.' "$WORK/out")" = 1 ] &&
+  [ "$(wc -l < "$WORK/out" | tr -d ' ')" = 1 ] || fail "a request off a recipe did not give one plain notice and nothing else"
+cmp -s "$P/CHANGELOG.md" "$WORK/before-none" || fail "the notice wrote a record before the person chose"
 code=0
-sh "$RUNNER" --project "$P" --set LIVE_ADDRESS=https://stub.example.test none > "$WORK/out" 2>&1 || code=$?
-[ "$code" = 1 ] || fail "a run off a recipe exited $code, not 1"
-[ "$(grep -c 'The project is on no recipe, so the kit cannot check this\.$' "$WORK/out")" = 13 ] ||
-  fail "a run off a recipe did not give the nine sections and four readiness items one warning line each"
-for item in 'Service and billing owner named' 'Manual fallback ready' 'Test data removed' 'Service account owner named' 'Access as recorded'; do
-  grep -q "^$item: warning, not checked\." "$WORK/out" || fail "a run off a recipe left out the readiness item: $item"
-done
-[ "$(wc -l < "$WORK/out" | tr -d ' ')" = 15 ] || fail "a run off a recipe said more than the thirteen lines, its closing and what is left"
+sh "$RUNNER" --project "$P" --set LIVE_ADDRESS=https://stub.example.test --chose "Yes, host it on Fly.io by hand" none > "$WORK/out" 2>&1 || code=$?
+[ "$code" = 1 ] || fail "a run off a recipe after a choice exited $code, not 1"
+! grep -q '^Launch held' "$WORK/out" || fail "a run off a recipe was held"
+! grep -q '^No recipe: the kit guarantees' "$WORK/out" || fail "the notice came a second time after the person chose"
+grep -q "^Chosen without a recipe on $(date +%Y-%m-%d): Yes, host it on Fly.io by hand\$" "$WORK/out" ||
+  fail "the choice was not said with the person's words and the date"
+grep -q "^- Chosen without a recipe on $(date +%Y-%m-%d): Yes, host it on Fly.io by hand\$" "$P/CHANGELOG.md" ||
+  fail "the choice was not recorded with the person's words and the date"
 grep -q '^/setup-hosting ran on no recipe' "$P/CHANGELOG.md" || fail "the entry off a recipe does not say so"
+grep -qiE '^- (Preview|Backup|Restore|Health|Logs)' "$P/CHANGELOG.md" && fail "a run off a recipe wrote a check line for a check that could not run"
 code=0
 sh "$RUNNER" --project "$P" --set LIVE_ADDRESS=https://stub.example.test none > "$WORK/out" 2>&1 || code=$?
-[ "$(grep -c 'still a warning\|still no' "$WORK/out")" = 13 ] ||
-  fail "a second run off a recipe repeated the warnings in full"
-ok "off a recipe the nine section names and four readiness items are one-line warnings, and pointers the next time"
+[ "$code" = 1 ] || fail "a later run off a recipe exited $code, not 1"
+! grep -q '^No recipe: the kit guarantees' "$WORK/out" || fail "a later run gave the notice a second time"
+grep -q "^No recipe, as chosen on $(date +%Y-%m-%d) and recorded in the changelog\." "$WORK/out" ||
+  fail "a later run off a recipe did not point to the recorded choice"
+[ "$(grep -c 'Chosen without a recipe on' "$P/CHANGELOG.md")" = 1 ] || fail "a later run wrote the choice again"
+ok "off a recipe the notice comes once, the person's words and the date are recorded, and nothing is held"
 
 # --- a later run compares first, and keeps the notes ---------------------------
 P="$WORK/p6"

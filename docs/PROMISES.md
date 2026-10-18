@@ -13,7 +13,8 @@
 | A review record holds only for the commit it read, and a hand edit to it holds the merge. | `.agents/tests/review-gate.sh`; `.agents/tests/merge-gate.sh` | Every agent |
 | A review no second login approved is labelled unverified. | `.agents/tests/review-gate.sh`; `.agents/tests/merge-gate.sh` | Every agent |
 | A check that never ran, lost its runner or crashed reports `NOT_RUN`, never `PASS`. | `.agents/tests/result-vocabulary.sh` | Every agent |
-| A live launch with no way back or no backup is held. | `.agents/tests/run-recipe.sh` | Every agent |
+| A live recipe launch with no way back or no backup is held. | `.agents/tests/run-recipe.sh` | Every agent |
+| With no recipe the kit gives one notice that nothing is guaranteed, records the person's words and the date, and never refuses. | `.agents/tests/run-recipe.sh` | Every agent |
 | A changed test cannot weaken the test that caught the fault. | `.agents/tests/tests-prove-change.sh` | Every agent |
 | A quality check that tried nothing reports that it could not run. | `.agents/tests/test-strength-rehearsal.sh` | Every agent |
 | A starter release contains only the declared files. | `.agents/tests/release-builder.sh`; `.agents/tools/validate-kit.sh` | Every agent |
