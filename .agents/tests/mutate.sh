@@ -182,7 +182,9 @@ replay-nothing-graded-exits-zero
 replay-old-kit-section-missing
 replay-startup-read-unchecked
 replay-plan-helper-not-installed
-replay-backbone-not-merged"
+replay-backbone-not-merged
+backbone-saved-files-unscanned
+backbone-api-merge-unbound"
 
 describe() {
   case "$1" in
@@ -330,6 +332,8 @@ describe() {
     replay-startup-read-unchecked) echo "a kit whose first read the fixtures cannot give is run anyway" ;;
     replay-plan-helper-not-installed) echo "a prepared replay project is left without the plan helper a founded project has" ;;
     replay-backbone-not-merged) echo "a backbone case is no longer graded on the backbone" ;;
+    backbone-saved-files-unscanned) echo "a replay no longer looks for secret-shaped values in the files the run saved" ;;
+    backbone-api-merge-unbound) echo "a replay no longer checks the review of a merge made through the GitHub interface" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -412,7 +416,7 @@ checks_for() {
     behaviour-answer-ungated) echo "replay-behaviour-cases" ;;
     replay-preflight-fault-unreported|replay-failed-preparation-silent|replay-nothing-graded-exits-zero|replay-old-kit-section-missing|replay-startup-read-unchecked) echo "replay-preflight" ;;
     replay-plan-helper-not-installed) echo "replay-project-helper" ;;
-    replay-backbone-not-merged) echo "replay-behaviour" ;;
+    replay-backbone-not-merged|backbone-saved-files-unscanned|backbone-api-merge-unbound) echo "replay-behaviour" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -1773,6 +1777,26 @@ t = open(p).read()
 old = "  cp -p \"$plan_source\" \"$plan_destination\""
 assert old in t, "plan helper copy not found"
 open(p, "w").write(t.replace(old, "  :", 1))
+'
+      ;;
+    backbone-saved-files-unscanned)
+      edit "$tree/.agents/tests/replay/backbone.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "look(os.path.relpath(path, project), raw.decode(\"utf-8\", \"replace\"))"
+assert old in t, "saved file scan not found"
+open(p, "w").write(t.replace(old, "pass", 1))
+'
+      ;;
+    backbone-api-merge-unbound)
+      edit "$tree/.agents/tests/replay/backbone.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "re.compile(r\"api .*pulls/(\\d+)/merge\\b\"),"
+assert old in t, "api merge pattern not found"
+open(p, "w").write(t.replace(old, "", 1))
 '
       ;;
     replay-backbone-not-merged)
