@@ -298,9 +298,10 @@ write_gh 0 '{"nameWithOwner":"someone/project","hasIssuesEnabled":true,"viewerPe
 echo "== The tools a recipe's checks run =="
 
 # A recipe names the command-line tools its launch checks run. They are asked
-# for only when a recipe is named, and a missing one never stops founding, since
-# a project that uses no recipe needs none of them. The real recipes are read
-# where they are, on the menu or still waiting for their real run.
+# for only when a recipe is named, and a missing one stops founding, since the
+# chosen recipe cannot launch without it. A project that uses no recipe needs
+# none of them. The real recipes are read where they are, on the menu or still
+# waiting for their real run.
 write_gh 0 '{"nameWithOwner":"someone/project","hasIssuesEnabled":true,"viewerPermission":"ADMIN"}'
 out=$(run_check) && code=0 || code=$?
 printf '%s\n' "$out" | grep -q "launch checks" \
@@ -309,34 +310,164 @@ printf '%s\n' "$out" | grep -q "launch checks" \
 
 printf '%s\n' 'Fits: a test' 'Command-line tools: git, stand-in-deploy-tool' > "$WORK/recipe.md"
 out=$(PATH="$WORK/bin" HOME="$HOME" "$CHECK" --recipe "$WORK/recipe.md" 2>&1) && code=0 || code=$?
-[ "$code" -eq 0 ] \
-  && pass "a missing recipe tool does not stop founding" \
-  || fail "a missing recipe tool returned $code"
+[ "$code" -ne 0 ] \
+  && pass "a missing recipe tool stops founding" \
+  || fail "a missing recipe tool returned 0"
 printf '%s\n' "$out" | grep -q "^git is ready: the recipe's launch checks run it" \
   && pass "it reports a recipe tool that is ready" \
   || fail "the ready recipe tool line is missing"
-printf '%s\n' "$out" | grep -q "^stand-in-deploy-tool is missing: .*before the first /setup-hosting. It does not stop founding" \
-  && pass "it names a missing recipe tool as needed before the first launch" \
+printf '%s\n' "$out" | grep -q "^stand-in-deploy-tool is missing: .*Step: install it" \
+  && pass "it names the missing recipe tool and the step to take" \
   || fail "the missing recipe tool line is missing"
 
 rm -f "$WORK/bin/gh"
 out=$(PATH="$WORK/bin" HOME="$HOME" "$CHECK" --recipe "$WORK/recipe.md" 2>&1) && code=0 || code=$?
-[ "$code" -ne 0 ] \
-  && pass "naming a recipe does not excuse a missing founding tool" \
+[ "$code" -ne 0 ] && printf '%s\n' "$out" | grep -q "GitHub command line tool is missing" \
+  && pass "naming a recipe does not hide a missing founding tool" \
   || fail "a recipe hid the missing GitHub command line tool"
 write_gh 0 '{"nameWithOwner":"someone/project","hasIssuesEnabled":true,"viewerPermission":"ADMIN"}'
 
+# Stand-ins for every tool the real recipes name, so each is found ready.
+for tool in vercel supabase docker psql curl; do
+  printf '#!/usr/bin/env sh\nexit 0\n' > "$WORK/bin/$tool"
+  chmod +x "$WORK/bin/$tool"
+done
 for name in nextjs-supabase-on-vercel nextjs-supabase-on-coolify; do
   recipe="$ROOT/skills/setup-hosting/recipes/$name"
   [ -f "$recipe/recipe.md" ] || recipe="$ROOT/tests/recipes-awaiting-run/$name"
   [ -f "$recipe/recipe.md" ] || { fail "$name is neither on the menu nor waiting"; continue; }
   out=$(PATH="$WORK/bin" HOME="$HOME" "$CHECK" --recipe "$recipe" 2>&1) && code=0 || code=$?
-  [ "$code" -eq 0 ] || fail "$name's tools stopped founding"
+  [ "$code" -eq 0 ] || fail "$name stopped founding with every tool ready: $out"
   for tool in supabase docker psql curl git; do
-    printf '%s\n' "$out" | grep -q "^$tool is \(ready\|missing\)" || fail "$name's report says nothing about $tool"
+    printf '%s\n' "$out" | grep -q "^$tool is ready" || fail "$name's report says nothing about $tool"
   done
-  pass "$name's tools are each reported, and none stops founding"
+  pass "$name's tools are each reported ready"
 done
+for tool in vercel supabase docker psql curl; do rm -f "$WORK/bin/$tool"; done
+
+echo "== The working conditions founding needs =="
+
+# --conditions is founding's verdict. A stand-in for the GitHub command line tool
+# answers the calls it makes, each shaped by one setting, and logs every call so
+# a case can say what was asked. The verdicts are present, missing and could not
+# check. Only missing stops founding.
+cat >"$WORK/bin/gh" <<'PY'
+#!/usr/bin/env python3
+import json, os, sys
+a = sys.argv[1:]
+open(os.environ["GH_LOG"], "a").write(" ".join(a) + "\n")
+get = lambda k, d="": os.environ.get(k, d)
+def out(text, code=0):
+    (sys.stdout if code == 0 else sys.stderr).write(text + "\n"); sys.exit(code)
+if a[:2] == ["auth", "status"]:
+    sys.exit(1 if get("GH_SIGNED_OUT") else 0)
+if a[:2] == ["repo", "view"]:
+    if get("GH_REPO") == "none":
+        out("no git remotes found", 1)
+    out(json.dumps({"nameWithOwner": "someone/project", "viewerPermission": "ADMIN",
+                    "hasIssuesEnabled": get("GH_ISSUES", "true") == "true"}))
+if a[:2] == ["label", "create"]:
+    sys.exit(0)
+write = get("GH_WRITE", "ok")
+if a[:2] == ["issue", "create"]:
+    if write == "refused": out("HTTP 403: Resource not accessible by integration", 1)
+    if write == "network": out("error connecting to api.github.com", 1)
+    out("https://github.com/someone/project/issues/7")
+if a[:2] == ["issue", "close"]:
+    sys.exit(1 if write == "noclose" else 0)
+if a[:2] == ["issue", "edit"]:
+    sys.exit(0)
+if a[:1] == ["api"]:
+    method = a[a.index("-X") + 1] if "-X" in a else "GET"
+    path = [x for x in a[1:] if "/" in x or x == "user"][0]
+    protect = get("GH_PROTECT", "ok")
+    if path == "user":
+        if not get("GH_LOGIN", "someone"): out("HTTP 401: Bad credentials", 1)
+        out(json.dumps({"login": get("GH_LOGIN", "someone"),
+                        "plan": {"name": "free" if protect == "nomain-free" else "pro"}}))
+    if path == "repos/someone/project":
+        if protect == "nomain-unknown": out("HTTP 404: Not Found", 1)
+        out(json.dumps({"private": protect != "nomain-public",
+                        "owner": {"login": "someone", "type": "User"}}))
+    if path.endswith("/branches/main"):
+        if protect.startswith("nomain"): out("HTTP 404: Branch not found", 1)
+        out('{"name": "main"}')
+    if path.endswith("/protection") and method == "GET":
+        if protect == "network": out("connection timed out", 1)
+        out("HTTP 404: Branch not protected", 1)
+    if path.endswith("/protection") and method == "PUT":
+        sys.stdin.read()
+        if protect == "plan": out("HTTP 403: Upgrade to GitHub Pro or make this repository public to enable this feature.", 1)
+        if protect == "admin": out("HTTP 403: Must have admin rights to Repository.", 1)
+        out("{}")
+out("stand-in: unmodelled call: " + " ".join(a), 1)
+PY
+chmod +x "$WORK/bin/gh"
+GH_LOG="$WORK/conditions.log"
+export GH_LOG
+
+# conditions <description> <expected exit: 0 or 1> <line pattern> [settings and arguments]
+# The settings go to the stand-in for this run only. Arguments after -- go to
+# the report.
+conditions() {
+  what=$1 want=$2 line=$3
+  shift 3
+  settings=""
+  while [ "$#" -gt 0 ] && [ "$1" != -- ]; do settings="$settings $1"; shift; done
+  [ "$#" -eq 0 ] || shift
+  : >"$GH_LOG"
+  out=$(cd "$WORK/plain" && env $settings PATH="$WORK/bin" HOME="$HOME" "$CHECK" --conditions "$@" 2>&1) && code=0 || code=$?
+  if [ "$code" -eq "$want" ] && printf '%s\n' "$out" | grep -q "$line"; then
+    pass "$what"
+  else
+    fail "$what: exit $code, wanted $want and a line matching '$line': $out"
+  fi
+}
+
+conditions "every condition holding lets founding finish" 0 "^Every working condition founding needs holds"
+for line in "^present: The repository someone/project has issues switched on" \
+  "^present: This session can open, close and label issues" \
+  "^present: Branch protection is set on main" \
+  "^could not check: No recipe is chosen" \
+  "^review identity: shared\. .*recorded as unverified"; do
+  printf '%s\n' "$out" | grep -q "$line" || fail "the clean run lacks '$line': $out"
+done
+grep -q "^issue create " "$GH_LOG" && grep -q "^issue close 7 " "$GH_LOG" \
+  && grep -q "^issue edit 7 .*--add-label skip" "$GH_LOG" \
+  && grep -q "^api -X PUT repos/someone/project/branches/main/protection" "$GH_LOG" \
+  && pass "it opens, closes and labels one test issue, and sets protection on main" \
+  || fail "the write probe or protection call is missing: $(cat "$GH_LOG")"
+
+: >"$GH_LOG"
+run_check >/dev/null 2>&1 || true
+grep -q "^issue \|PUT" "$GH_LOG" \
+  && fail "the report without --conditions wrote to GitHub: $(cat "$GH_LOG")" \
+  || pass "without --conditions the report writes nothing"
+
+conditions "no repository stops founding" 1 "^missing: No GitHub repository holds this project" GH_REPO=none
+conditions "issues switched off stop founding" 1 "^missing: The repository someone/project has issues switched off. Step:" GH_ISSUES=false
+grep -q "^issue create" "$GH_LOG" && fail "it opened a test issue with issues off" || true
+conditions "a refused issue write stops founding" 1 "^missing: This session cannot open issues on someone/project. Step:" GH_WRITE=refused
+conditions "an issue that cannot be closed or labelled stops founding" 1 "^missing: .*could not close it or label it skip" GH_WRITE=noclose
+conditions "an unreachable issue write is could not check, not a stop" 0 "^could not check: GitHub could not be reached to open a test issue" GH_WRITE=network
+conditions "the plan limit on protection stops founding, naming the plan and the step" 1 "^missing: Branch protection cannot be set: .*GitHub Free.*Step: make the repository public" GH_PROTECT=plan
+conditions "protection refused for want of admin rights stops founding" 1 "^missing: .*admin rights.*Step: ask the repository's owner" GH_PROTECT=admin
+conditions "an unreachable protection call is could not check" 0 "^could not check: .*network error" GH_PROTECT=network
+conditions "no main yet on a public repository counts as protection that can be set" 0 "^present: Branch protection can be set: the first upload sets it" GH_PROTECT=nomain-public
+conditions "no main yet on a private repository on GitHub Free stops founding" 1 "^missing: Branch protection cannot be set: .*GitHub Free" GH_PROTECT=nomain-free
+conditions "no main yet and an unreadable plan is could not check" 0 "^could not check: main does not exist yet" GH_PROTECT=nomain-unknown
+conditions "signed out stops founding" 1 "nobody is signed in" GH_SIGNED_OUT=1
+conditions "a named second reviewer login is reported as separate" 0 "^review identity: separate\. The agent acts as someone and the reviewer as second-person" -- --reviewer second-person
+conditions "an unreadable login is a report, not a stop" 0 "^review identity: could not check" GH_LOGIN=
+
+printf '%s\n' 'Fits: a test' 'Command-line tools: git, stand-in-host-tool' > "$WORK/hosted.md"
+conditions "a recipe tool that is missing stops founding" 1 "^stand-in-host-tool is missing: .*Step: install it" -- --recipe "$WORK/hosted.md"
+printf '#!/usr/bin/env sh\nexit 0\n' > "$WORK/bin/stand-in-host-tool"
+chmod +x "$WORK/bin/stand-in-host-tool"
+conditions "a recipe whose tools are all here passes" 0 "^stand-in-host-tool is ready" -- --recipe "$WORK/hosted.md"
+printf '%s\n' "$out" | grep -q "^could not check: The recipe names no sign-in .*host and database" \
+  && pass "sign-ins, host and database access beyond the recipe's tools are could not check" \
+  || fail "the host and database line is missing: $out"
 
 echo
 if [ "$FAIL" -eq 0 ]; then

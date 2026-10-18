@@ -10,8 +10,8 @@ need, so a missing one is caught early:
 
 A recipe's launch checks need more tools, named on its `Command-line tools:`
 line. `check-tooling.sh --recipe <recipe folder>` reports each as ready or
-needed before the first `/setup-hosting`. That never stops founding, and nor
-does the line saying `origin` is still the kit's own repository.
+missing. A missing one stops founding. The line saying `origin` is still the
+kit's own repository stops only the closing `--conditions` run.
 
 A missing tool is installed step by step by `manual-setup.md`. Keep this list
 and the script in step.

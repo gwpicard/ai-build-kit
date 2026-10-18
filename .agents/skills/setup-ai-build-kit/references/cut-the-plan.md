@@ -33,11 +33,10 @@ delete the labels GitHub made by itself (`bug`, `documentation`, `duplicate`,
 squash and rebase merges, and copy the issue template. Say which ones went,
 from its `removed` and `kept` lines, and that merged branches are now removed.
 A label it could not remove stays and founding carries on. For `prepare`,
-exit 0 means protection is set, deferred because `main` does not exist, or
-unavailable under the account plan; in the plan case the output says the kit
-will hold its own merges, and founding carries on. Exit 2 means protection
-could not be confirmed for another reason, such as missing admin rights,
-rejected settings or a network failure. Founding stops after preparation,
+exit 0 means protection is set, or deferred because `main` does not exist.
+Exit 2 means protection could not be set, for example under the account's
+plan, without admin rights, or after a network failure; its line names the
+step. Founding stops after preparation,
 which may already have created labels, settings and the issue template. Exit 5
 means GitHub could not be read or `origin` is not GitHub; exit 6 means
 `origin` is the kit's own repository. In either case stop without further

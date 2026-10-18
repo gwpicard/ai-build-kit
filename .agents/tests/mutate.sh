@@ -128,7 +128,9 @@ replay-skill-size-total
 replay-rollup-counts-controls
 replay-compare-chance-rule
 replay-state-assertion-skipped
-fake-gh-loses-check-status"
+fake-gh-loses-check-status
+conditions-missing-passes
+protection-plan-carries-on"
 
 describe() {
   case "$1" in
@@ -222,6 +224,8 @@ describe() {
     replay-compare-chance-rule) echo "a small-sample dip is reported as a regression without a chance check" ;;
     replay-state-assertion-skipped) echo "the returning-work state check stops noticing a cleared failure" ;;
     fake-gh-loses-check-status) echo "a prepared failed project check is reported as passing by the GitHub stand-in" ;;
+    conditions-missing-passes) echo "a missing working condition no longer stops founding" ;;
+    protection-plan-carries-on) echo "a plan that cannot protect a private repository lets setup carry on" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -270,6 +274,8 @@ checks_for() {
     replay-compare-chance-rule) echo "replay-compare" ;;
     replay-state-assertion-skipped) echo "replay-case-states" ;;
     fake-gh-loses-check-status) echo "fake-github" ;;
+    conditions-missing-passes) echo "check-tooling" ;;
+    protection-plan-carries-on) echo "check-tooling found-issues first-upload" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -1126,6 +1132,26 @@ old_end = "        }]),"
 assert old_end in t, "default status result end not found"
 t = t.replace(old_end, "        }],", 1)
 open(p, "w").write(t)
+'
+      ;;
+    conditions-missing-passes)
+      edit "$tree/.agents/skills/setup-ai-build-kit/scripts/check-tooling.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "[ \"$1\" != missing ] || blocked=1"
+assert old in t, "the missing condition stop not found"
+open(p, "w").write(t.replace(old, "true", 1))
+'
+      ;;
+    protection-plan-carries-on)
+      edit "$tree/.agents/skills/merge/scripts/protect-branch.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "then run setup again.\")\n    return 3"
+assert old in t, "the plan limit stop not found"
+open(p, "w").write(t.replace(old, "then run setup again.\")\n    return 0", 1))
 '
       ;;
     *)

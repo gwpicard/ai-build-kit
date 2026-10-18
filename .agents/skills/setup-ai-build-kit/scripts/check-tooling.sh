@@ -9,26 +9,59 @@
 # that blocks founding is missing, so a gap is caught here rather than at the
 # later step that creates the issues.
 #
-# It changes nothing. It reaches no further than the sign-in and repository
-# lookups the report needs.
+# Without --conditions it changes nothing. It reaches no further than the
+# sign-in and repository lookups the report needs.
 #
 # jq is not required. The kit filters JSON with python3 on purpose, which is
 # also what lets the test harness stand in for the GitHub command line tool.
 #
 # Run from anywhere inside the project. With --recipe <recipe folder>, it also
-# reports the command-line tools that recipe's launch checks run. Those never
-# stop founding. The recipe's recipe.md, named itself, does as well.
+# checks the command-line tools that recipe's launch checks run, and a missing
+# one stops founding. The recipe's recipe.md, named itself, does as well.
+#
+# With --conditions it gives founding's verdict on the working conditions, each
+# as present, missing or could not check. Only a missing one stops founding:
+#   - a repository for the project, with issues switched on;
+#   - this session can write issues: it opens one test issue, closes it and
+#     labels it skip;
+#   - branch protection on main, set through merge/scripts/protect-branch.py,
+#     the same call founding's prepare step makes;
+#   - with a recipe, the tools its "Command-line tools:" line names. The
+#     recipes name no sign-in check, so sign-ins and other host and database
+#     access are could not check, never a stop.
+# It also says whether the agent and the reviewer share one GitHub login
+# (--reviewer <login> names the reviewer's). That is a report, never a stop.
 
 set -eu
 
 recipe=""
-if [ "${1:-}" = "--recipe" ]; then
-  recipe=${2:-}
-  [ -n "$recipe" ] || { echo "usage: check-tooling.sh [--recipe <recipe folder>]" >&2; exit 2; }
-  [ ! -f "$recipe/recipe.md" ] || recipe="$recipe/recipe.md"
-fi
+conditions=no
+reviewer=""
+usage="usage: check-tooling.sh [--conditions] [--recipe <recipe folder>] [--reviewer <login>]"
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --recipe) recipe=${2:-}; [ -n "$recipe" ] || { echo "$usage" >&2; exit 2; }; shift 2 ;;
+    --reviewer) reviewer=${2:-}; [ -n "$reviewer" ] || { echo "$usage" >&2; exit 2; }; shift 2 ;;
+    --conditions) conditions=yes; shift ;;
+    *) echo "$usage" >&2; exit 2 ;;
+  esac
+done
+[ -z "$recipe" ] || [ ! -f "$recipe/recipe.md" ] || recipe="$recipe/recipe.md"
 
 blocked=0
+
+# condition <present|missing|could not check> <message>: one verdict line. Only
+# missing stops founding.
+condition() {
+  echo "$1: $2"
+  [ "$1" != missing ] || blocked=1
+}
+is_network() {
+  case "$1" in
+    *"error connecting"* | *"Could not resolve host"* | *"dial tcp"* | *"timed out"* | *"timeout"*) return 0 ;;
+  esac
+  return 1
+}
 
 # 1. The tools the kit's own scripts run.
 if command -v git >/dev/null 2>&1; then
@@ -138,10 +171,15 @@ if [ "$gh_ready" = yes ] && command -v python3 >/dev/null 2>&1 && [ "$kit_origin
     issues_on=$(read_field hasIssuesEnabled)
     perm=$(read_field viewerPermission)
 
-    if [ "$issues_on" = "True" ]; then
+    repo=$(read_field nameWithOwner)
+    if [ "$conditions" = no ] && [ "$issues_on" = "True" ]; then
       echo "Issues are switched on for this repository."
-    else
+    elif [ "$conditions" = no ]; then
       echo "Issues are switched off for this repository: say so and offer to switch them on, and do not switch them on yourself."
+    elif [ "$issues_on" = "True" ]; then
+      condition present "The repository $repo has issues switched on."
+    else
+      condition missing "The repository $repo has issues switched off. Step: switch on Issues in the repository's settings on GitHub, then run setup again."
     fi
 
     case "$perm" in
@@ -150,19 +188,76 @@ if [ "$gh_ready" = yes ] && command -v python3 >/dev/null 2>&1 && [ "$kit_origin
       *)
         echo "Labels cannot be put in order: the signed-in account cannot create or delete labels here. Say which labels could not be made; a missing label costs a little clarity, it stops nothing." ;;
     esac
+  elif [ "$conditions" = yes ] && [ "$kit_origin" = no ]; then
+    if is_network "$repo_answer"; then
+      condition "could not check" "GitHub could not be reached to read the repository. Step: allow GitHub access in this session, then run setup again."
+    else
+      condition missing "No GitHub repository holds this project yet. Step: create one on GitHub, point origin at it, then run setup again."
+    fi
   else
     echo "No GitHub repository is set up yet, so the issue and label checks wait until one exists."
+  fi
+
+  # The conditions that write: one test issue, then branch protection.
+  if [ "$conditions" = yes ] && [ "$kit_origin" = no ] && [ -n "$repo_json" ] && [ "${issues_on:-}" = "True" ]; then
+    gh label create skip --repo "$repo" --color ededed --force \
+      --description "Not a piece: setup's check that issues can be written" >/dev/null 2>&1 || true
+    if created=$(gh issue create --repo "$repo" --title "Setup check: issues can be written" \
+        --body "Setup opened this issue to prove it can write issues, then closed it. It is not a piece." 2>&1); then
+      number=${created##*/}
+      case "$number" in
+        "" | *[!0-9]*) condition "could not check" "GitHub did not say which test issue it opened. Step: run setup again." ;;
+        *)
+          if gh issue close "$number" --repo "$repo" >/dev/null 2>&1 &&
+             gh issue edit "$number" --repo "$repo" --add-label skip >/dev/null 2>&1; then
+            condition present "This session can open, close and label issues on $repo."
+          else
+            condition missing "This session opened a test issue but could not close it or label it skip. Step: give the signed-in account write access to $repo, then run setup again."
+          fi ;;
+      esac
+    elif is_network "$created"; then
+      condition "could not check" "GitHub could not be reached to open a test issue. Step: allow GitHub access in this session, then run setup again."
+    else
+      condition missing "This session cannot open issues on $repo. Step: give the signed-in account write access to it, then run setup again."
+    fi
+
+    skill_root=$(CDPATH= cd -- "${0%/*}/.." && pwd -P)
+    protection=$(python3 "$skill_root/../merge/scripts/protect-branch.py" --defer-missing "$repo" main 2>&1) &&
+      protected=0 || protected=$?
+    case "$protected:$protection" in
+      0:*) condition present "Branch protection is set on main: a merge needs the project check." ;;
+      4:*) condition present "Branch protection can be set: the first upload sets it when it creates main." ;;
+      5:*) condition "could not check" "main does not exist yet and GitHub's plan for $repo could not be read. The first upload sets protection when it creates main." ;;
+      3:*) condition missing "$protection" ;;
+      *"network error"*) condition "could not check" "$protection Step: allow GitHub access in this session, then run setup again." ;;
+      *"admin rights"*) condition missing "$protection Step: ask the repository's owner for admin rights, then run setup again." ;;
+      *) condition missing "$protection Step: fix this on GitHub, then run setup again." ;;
+    esac
+  fi
+
+  # Whether the agent and the reviewer act as one GitHub login. A report only.
+  if [ "$conditions" = yes ]; then
+    login=$(gh api user 2>/dev/null | python3 -c "import json,sys; print(json.load(sys.stdin).get('login',''))" 2>/dev/null || true)
+    if [ -z "$login" ]; then
+      echo "review identity: could not check. GitHub did not say which login this session uses."
+    elif [ -n "$reviewer" ] && ! python3 -c "import sys; sys.exit(sys.argv[1].lower() != sys.argv[2].lower())" "$reviewer" "$login"; then
+      echo "review identity: separate. The agent acts as $login and the reviewer as $reviewer."
+    else
+      echo "review identity: shared. The agent and the reviewer both act as $login, so later reviews are recorded as unverified. This does not stop founding."
+    fi
   fi
 fi
 
 if [ "$kit_origin" = yes ]; then
   echo "This project still points at the kit's own repository, $KIT_REPOSITORY: no piece is opened there and nothing is pushed there. Ask for the person's own repository, or carry on with none."
+  [ "$conditions" = no ] ||
+    condition missing "The project has no repository of its own. Step: create one on GitHub, point origin at it, then run setup again."
 fi
 
 # 4. The tools a recipe's checks run, only when a recipe is named. A recipe
-# lists them on its "Command-line tools:" line. They are needed before the
-# first launch, not before founding, so a missing one never sets blocked: a
-# project that uses no recipe needs none of them.
+# lists them on its "Command-line tools:" line. A missing one stops founding,
+# since the chosen recipe cannot launch without it. A project that uses no
+# recipe needs none of them.
 if [ -n "$recipe" ]; then
   if [ -f "$recipe" ]; then
     # Read with the shell alone, so the report needs nothing beyond the tools
@@ -184,21 +279,35 @@ if [ -n "$recipe" ]; then
         none) continue ;;
         *[!a-z0-9-]*) echo "The recipe names a tool this report cannot read, $tool, so it was skipped."; continue ;;
       esac
-      if command -v "$tool" >/dev/null 2>&1; then
-        echo "$tool is ready: the recipe's launch checks run it."
-      else
-        echo "$tool is missing: the recipe's launch checks run it, so install it before the first /setup-hosting. It does not stop founding."
+      if ! command -v "$tool" >/dev/null 2>&1; then
+        echo "$tool is missing: the recipe's launch checks run it. Step: install it, see manual-setup.md, then run setup again."
+        blocked=1
+        continue
       fi
+      echo "$tool is ready: the recipe's launch checks run it."
     done
   else
     echo "The recipe $recipe was not found, so the tools its checks run were not looked for."
+    [ "$conditions" = no ] ||
+      condition missing "The chosen recipe was not found, so its tools were not checked. Step: name the recipe folder again."
+  fi
+fi
+if [ "$conditions" = yes ]; then
+  if [ -n "$recipe" ]; then
+    condition "could not check" "The recipe names no sign-in this script can read, so sign-ins and access to the host and database are read by /setup-hosting before the first launch."
+  else
+    condition "could not check" "No recipe is chosen, so host and database access were not checked."
   fi
 fi
 
 if [ "$blocked" -ne 0 ]; then
-  echo "A tool the kit needs to found your pieces is not ready. Set it up before going on." >&2
+  echo "Something founding needs is not ready. Take the step named above, then run this check again." >&2
   exit 1
 fi
 
-echo "Every tool the kit needs to found your pieces is ready."
+if [ "$conditions" = yes ]; then
+  echo "Every working condition founding needs holds."
+else
+  echo "Every tool the kit needs to found your pieces is ready."
+fi
 exit 0

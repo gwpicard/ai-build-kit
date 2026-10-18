@@ -17,9 +17,8 @@ Translate internal facts:
 - A named recipe: name its product and whether launch checks can test its
   steps. Say which accounts the person owns and where the tool runs. `Recipe:
   none` means the kit cannot check recipe launch steps.
-- Missing recipe tools: name each tool and say it is a setup task before the
-  first `/setup-hosting`. A tool report with none missing means the computer
-  has what the checks need.
+- A `review identity: shared` line: say later reviews are recorded as
+  unverified, because the agent and the reviewer use one GitHub login.
 
 Include only relevant sections, with no placeholders. Read the checkpoint back
 and use its reference at the very end. If there is no checkpoint beyond the
