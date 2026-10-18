@@ -1,0 +1,10 @@
+# setup: fixture
+# prepare: returning-work
+# backbone: yes
+# disk: yes
+# Behaviour set, draft for the maintainer. What now, expected path. A repair
+# left broken, a failing check and a review finding still waiting, as in case 60.
+/what-now I am back after a session stopped halfway through. Tell me what needs attention before anything changes.
+---
+# interrupts: a follow-up request once the kit has finished, not an answer
+Thanks. What would you do first?

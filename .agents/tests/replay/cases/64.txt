@@ -1,0 +1,19 @@
+# setup: blank
+# backbone: yes
+# disk: yes
+# Behaviour set, draft for the maintainer. Setup, expected path. An ordinary
+# internal tool: no risk area survives, so a notice or an Accepted line is a
+# miss. Each scripted line answers the kit's question, and waits for one.
+/setup-ai-build-kit I want a simple meeting-room booking tool for our office.
+---
+# when: \?
+We are about twenty people with two meeting rooms. People should see the rooms, pick a free slot, book it and see what is already booked. It is only for our own staff, nobody outside the company.
+---
+# when: \?
+It holds a person's name and the room and time they booked. There is no money, no customers and nothing automatic. If it is ever down we go back to asking each other, as we do now.
+---
+# when: \?
+Any of us can cancel a booking, we are all one team. I do not need logins or permissions.
+---
+# when: \?
+That all sounds right. Go ahead and set it up.

@@ -16,6 +16,13 @@ out=$2
 mkdir -p "$out"
 printf '%s\n' 'alternate source tree' > "$out/.kit-source-marker"
 printf '%s\n' "$version" > "$out/VERSION"
+# What the preflight needs to see in any kit: the six commands and the helper.
+for name in setup-ai-build-kit shape implement setup-hosting maintain what-now; do
+  mkdir -p "$out/.agents/skills/$name"
+  printf -- '---\nname: %s\n---\n' "$name" > "$out/.agents/skills/$name/SKILL.md"
+done
+mkdir -p "$out/.agents/skills/setup-ai-build-kit/templates/foundation"
+printf '%s\n' helper > "$out/.agents/skills/setup-ai-build-kit/templates/foundation/codex-github-check.py"
 BUILDER
 chmod +x "$SOURCE/.agents/tools/build-release.sh"
 cat > "$WORK/bin/codex" <<'CODEX'

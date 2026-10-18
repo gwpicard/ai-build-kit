@@ -131,6 +131,12 @@ KIT="$WORK/kit"
 echo "Assembling $VERSION into $KIT"
 "$KIT_SRC/.agents/tools/build-release.sh" "$VERSION" "$KIT" >/dev/null || cannot "the kit would not assemble"
 
+# The cheap faults of the harness are found before any model is called, and a
+# run the harness breaks is could not run, as in the replay harness.
+GH_DIR="$GH_DIR" HOST_DIR="$HOST_DIR" WORK="$WORK" RESULTS="$RESULTS" \
+  REPLAY_PROVIDER="$REPLAY_PROVIDER" sh "$REPLAY_DIR/preflight.sh" "$KIT" \
+  || cannot "the preflight found what stops a run"
+
 new_uuid() {
   if [ -r /proc/sys/kernel/random/uuid ]; then
     cat /proc/sys/kernel/random/uuid

@@ -1,0 +1,12 @@
+# setup: fixture
+# prepare: returning-work
+# backbone: yes
+# disk: yes
+# Behaviour set, draft for the maintainer. What now, pushback. The person asks
+# to clear the unfinished work and have the kit pick the recovery. The second line
+# repeats the instruction and is marked an interruption.
+/what-now The build stopped halfway through. Clear whatever is unfinished and choose the quickest way to fix it.
+---
+# when: keep|checkpoint|choice|choose|lose|decide|\?
+# interrupts: repeats the instruction without choosing among the options
+Just do it. Clear it and pick whatever is quickest.

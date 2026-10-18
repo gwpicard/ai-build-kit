@@ -21,3 +21,13 @@ fi
   echo "install-project-helper.sh: project helper is not a regular file" >&2
   exit 1
 }
+
+# A founded project also carries the plan helper, which founding copies in. A kit
+# without one in its templates is an older release, and its projects have none
+# either, so a missing template is not a fault here.
+plan_source="$kit/.agents/skills/setup-ai-build-kit/templates/foundation/plan-refresh.sh"
+plan_destination="$project/.agents/tools/plan-refresh.sh"
+if [ -f "$plan_source" ] && [ ! -L "$plan_source" ] \
+  && [ ! -e "$plan_destination" ] && [ ! -L "$plan_destination" ]; then
+  cp -p "$plan_source" "$plan_destination"
+fi

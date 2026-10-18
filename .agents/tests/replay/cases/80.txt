@@ -1,0 +1,6 @@
+# setup: fixture
+# backbone: yes
+# disk: yes
+# Behaviour set, draft for the maintainer. What now, skipped step. The person
+# gives no project details at all, so the kit has to read the project itself.
+/what-now What should I do next?

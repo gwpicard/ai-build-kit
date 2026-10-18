@@ -131,3 +131,28 @@ on what the agent does in a conversation. They now have named replay owners:
 `replay-contract-owners.sh` checks that each named case and its contract still
 exist. `mutate.sh` reports these mutations as owned by their replay cases, not
 as shell-check catches or holes. The replay harness was not run for this audit.
+
+## The behaviour set and the harness, 18 October 2026
+
+Twelve mutations joined with the behaviour set. Each breaks one thing the replay
+harness relies on, and each is caught by a shell rehearsal that calls no model.
+
+| Mutation | Caught by |
+|---|---|
+| `backbone-review-unbound-passes` | `replay-behaviour.sh` |
+| `backbone-merge-before-yes-passes` | `replay-behaviour.sh` |
+| `backbone-canary-ignored` | `replay-behaviour.sh` |
+| `behaviour-extras-untouched-passes` | `replay-behaviour.sh` |
+| `replay-backbone-not-merged` | `replay-behaviour.sh` |
+| `behaviour-answer-ungated` | `replay-behaviour-cases.sh` |
+| `replay-preflight-fault-unreported` | `replay-preflight.sh` |
+| `replay-failed-preparation-silent` | `replay-preflight.sh` |
+| `replay-nothing-graded-exits-zero` | `replay-preflight.sh` |
+| `replay-old-kit-section-missing` | `replay-preflight.sh` |
+| `replay-startup-read-unchecked` | `replay-preflight.sh` |
+| `replay-plan-helper-not-installed` | `replay-project-helper.sh` |
+
+What these prove is the measuring, not the kit. A disk check that cannot fail,
+a scripted answer with no question to answer, or a run that dies without
+leaving a result would each make a rate mean less than it says. The replay
+harness itself was not run for this audit.
