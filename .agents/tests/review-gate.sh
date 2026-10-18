@@ -1,5 +1,6 @@
 #!/usr/bin/env sh
-# review-gate.sh: prove the review packet, record and pull-request hold decisions.
+# review-gate.sh: prove the review packet, record and pull-request hold decisions,
+# and that a review record holds only for the commit it read and only unedited.
 
 set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
@@ -43,13 +44,13 @@ case "$*" in
     fi
     ;;
   "pr checks --json name,state,bucket") printf '%s\n' '[{"name":"project-check","state":"SUCCESS","bucket":"pass"},{"name":"type-check","state":"SUCCESS","bucket":"pass"},{"name":"lint","state":"SUCCESS","bucket":"pass"}]' ;;
-  "pr view 9 --json title,body")
-    BODY=${GH_PR_BODY:-Summary} python3 -c 'import json,os; print(json.dumps({"title":"Example pull request","body":os.environ["BODY"]}))'
+  "pr view 9 --json title,body,headRefOid,author,reviews")
+    BODY=${GH_PR_BODY:-Summary} python3 -c 'import json,os; print(json.dumps({"title":"Example pull request","body":os.environ["BODY"],"headRefOid":os.environ.get("PR_HEAD",""),"author":{"login":"agent"},"reviews":json.loads(os.environ.get("GH_REVIEWS") or "[]")}))'
     ;;
-  "pr edit 9 --body "*) printf '%s\n' "$*" >> "$GH_EDIT_FILE" ;;
-  "pr view 9 --json body --jq .body")
+  "pr edit 9 --body "*) printf '%s\n' "$*" >> "$GH_EDIT_FILE"; printf '%s' "$5" > "$GH_EDIT_FILE.last" ;;
+  "pr view 9 --json body,headRefOid")
     [ "${GH_VIEW_FAIL:-0}" = 0 ] || { echo "could not read pull request" >&2; exit 1; }
-    printf '%s\n' "${REVIEW_BODY:-## Worth stopping for\n- None\n}"
+    python3 -c 'import json,os; print(json.dumps({"body":os.environ.get("REVIEW_BODY") or "## Worth stopping for\n- None\n","headRefOid":os.environ.get("PR_HEAD","")}))'
     ;;
   *) echo "unexpected gh call: $*" >&2; exit 2 ;;
 esac
@@ -62,6 +63,8 @@ SH
 chmod +x "$WORK/bin/python3-quality"
 fail() { echo "FAIL: $1" >&2; exit 1; }
 pass() { echo "ok: $1"; }
+PR_HEAD=$(git -C "$PROJECT" rev-parse HEAD)
+export PR_HEAD
 
 out=$(cd "$PROJECT" && PATH="$WORK/bin:$PATH" GATE_QUALITY_SCRIPT="$WORK/quality.py" GH_EDIT_FILE="$WORK/edits" python3 "$GATE" brief --base "$BASE" --piece 7 2>&1) && code=0 || code=$?
 [ "$code" -eq 0 ] && grep -q '## Full change' "$PROJECT/.git/review-packet.md" \
@@ -72,7 +75,9 @@ out=$(cd "$PROJECT" && PATH="$WORK/bin:$PATH" GATE_QUALITY_SCRIPT="$WORK/quality
   && grep -q '## Test strength' "$PROJECT/.git/review-packet.md" \
   && grep -q 'value = 1' "$PROJECT/.git/review-packet.md" \
   && grep -q '## Review limits' "$PROJECT/.git/review-packet.md" \
-  && pass "brief writes a complete packet and exits 0" || fail "brief clean returned $code: $out"
+  && grep -A1 '## Head commit' "$PROJECT/.git/review-packet.md" | grep -qx "$PR_HEAD" \
+  && grep -q '^Result: PASS$' "$PROJECT/.git/review-packet.md" \
+  && pass "brief writes a complete packet, names the commit it read and exits 0" || fail "brief clean returned $code: $out"
 
 out=$(cd "$PROJECT" && PATH="$WORK/bin:$PATH" PIECE_CASE=missing GATE_QUALITY_SCRIPT="$WORK/quality.py" python3 "$GATE" brief --base "$BASE" --piece 7 2>&1) && code=0 || code=$?
 [ "$code" -eq 2 ] && grep -q 'Done when' "$PROJECT/.git/review-packet.md" \
@@ -85,7 +90,7 @@ JSON
 ) && code=0 || code=$?
 [ "$code" -eq 1 ] && grep -q '\- \[ \] The save fails' "$WORK/edits" \
   && grep -q 'finding(s) dropped' "$WORK/edits" \
-  && grep -q 'Review record: reviewed=quality review; tried=3; open=1' "$WORK/edits" \
+  && grep -q "Review record: reviewed=quality review; tried=3; open=1; head=$PR_HEAD; verified=no; seal=" "$WORK/edits" \
   && grep -q 'The refuter disproved this' "$WORK/edits" \
   && grep -A4 '## Worth knowing' "$WORK/edits" | grep -q 'The refuter disproved this' \
   && ! grep -q 'Maybe bad' "$WORK/edits" \
@@ -118,7 +123,7 @@ out=$(cd "$PROJECT" && PATH="$WORK/bin:$PATH" GH_EDIT_FILE="$WORK/edits" GH_PR_B
 JSON
 ) && code=0 || code=$?
 [ "$code" -eq 0 ] && grep -q '\- \[x\] The save fails' "$WORK/edits" \
-  && grep -q 'Review record: reviewed=quality review; tried=2; open=0' "$WORK/edits" \
+  && grep -q "Review record: reviewed=quality review; tried=2; open=0; head=$PR_HEAD" "$WORK/edits" \
   && pass "a passing named test settles its box while scenario findings still need a person" || fail "passing test did not settle its box: $out / $(cat "$WORK/edits")"
 out=$(cd "$PROJECT" && PATH="$WORK/bin:$PATH" python3 "$GATE" record --pr 9 <<'JSON'
 not-json
@@ -133,6 +138,53 @@ run_check() {
 }
 out=$(run_check '' 0 2>&1) && code=0 || code=$?
 [ "$code" -eq 1 ] && printf '%s' "$out" | grep -q 'no review recorded yet' && pass "Build and run it holds when no review was recorded" || fail "missing review returned $code: $out"
+
+# A whole record for this head passes, and the same record fails once the
+# pull request moves on, is edited by hand, or comes from an older kit.
+(cd "$PROJECT" && PATH="$WORK/bin:$PATH" python3 "$GATE" record --pr 9 <<'JSON'
+[]
+JSON
+) >/dev/null 2>&1 || fail "a clean record did not exit 0"
+CURRENT=$(cat "$WORK/edits.last")
+out=$(run_check "$CURRENT" 0 2>&1) && code=0 || code=$?
+[ "$code" -eq 0 ] && printf '%s' "$out" | grep -q 'unverified' \
+  && pass "a current review passes, and is labelled unverified when one login did everything" \
+  || fail "current review returned $code: $out"
+out=$(PR_HEAD=0123456789abcdef0123456789abcdef01234567 run_check "$CURRENT" 0 2>&1) && code=0 || code=$?
+[ "$code" -eq 1 ] && printf '%s' "$out" | grep -q 'earlier version' \
+  && pass "a push after the review holds the check" || fail "a push after the review returned $code: $out"
+(cd "$PROJECT" && PATH="$WORK/bin:$PATH" GH_PR_BODY=Summary python3 "$GATE" record --pr 9 <<'JSON'
+[{"mark":"reproduced","finding":"The save fails","command":"python3 app.py","output":"Traceback","worth_stopping_for":true}]
+JSON
+) >/dev/null 2>&1 && fail "an open finding did not exit 1" || true
+OPEN_BODY=$(cat "$WORK/edits.last")
+EDITED=$(printf '%s' "$OPEN_BODY" | sed -e 's/- \[ \] The save fails/- [x] The save fails/' -e 's/open=1;/open=0;/')
+out=$(run_check "$EDITED" 0 2>&1) && code=0 || code=$?
+[ "$code" -eq 1 ] && printf '%s' "$out" | grep -q 'changed by hand' \
+  && pass "a body edited to open=0 without a matching record holds the check" || fail "edited body returned $code: $out"
+REMOVED=$(printf '%s' "$OPEN_BODY" | sed -e '/- \[ \] The save fails/d' -e 's/open=1;/open=0;/')
+out=$(run_check "$REMOVED" 0 2>&1) && code=0 || code=$?
+[ "$code" -eq 1 ] && printf '%s' "$out" | grep -q 'changed by hand' \
+  && pass "a finding taken out of the body by hand holds the check" || fail "removed finding returned $code: $out"
+out=$(run_check '## Worth stopping for
+- None
+## Worth knowing
+- none
+Review record: reviewed=quality review; tried=0; open=0' 0 2>&1) && code=0 || code=$?
+[ "$code" -eq 1 ] && printf '%s' "$out" | grep -q 'older kit' \
+  && pass "an older record with no commit is held as stale" || fail "old-format record returned $code: $out"
+out=$(cd "$PROJECT" && PATH="$WORK/bin:$PATH" GH_REVIEWS="[{\"author\":{\"login\":\"second-person\"},\"state\":\"APPROVED\",\"commit\":{\"oid\":\"$PR_HEAD\"}}]" python3 "$GATE" record --pr 9 2>&1 <<'JSON'
+[]
+JSON
+) && code=0 || code=$?
+[ "$code" -eq 0 ] && grep -q 'verified=yes' "$WORK/edits.last" && grep -q 'second-person approved' "$WORK/edits.last" \
+  && pass "a second login's approval of this version records a verified review" || fail "verified review returned $code: $out"
+out=$(cd "$PROJECT" && PATH="$WORK/bin:$PATH" PR_HEAD=0123456789abcdef0123456789abcdef01234567 python3 "$GATE" record --pr 9 2>&1 <<'JSON'
+[]
+JSON
+) && code=0 || code=$?
+[ "$code" -eq 1 ] && printf '%s' "$out" | grep -q 'pushed after the review' \
+  && pass "recording a review of a version that has since moved on holds" || fail "moved record returned $code: $out"
 printf 'Path: Explore privately\n' > "$PROJECT/masterplan.md"
 git -C "$PROJECT" add masterplan.md
 git -C "$PROJECT" commit -qm explore
@@ -146,11 +198,7 @@ BASE=$(git -C "$PROJECT" rev-parse HEAD)
 out=$(run_check '' 0 2>&1) && code=0 || code=$?
 [ "$code" -eq 1 ] && printf '%s' "$out" | grep -q 'no review recorded yet' \
   && pass "Build with care also holds when no review was recorded" || fail "missing careful-path review returned $code: $out"
-out=$(run_check '## Worth stopping for
-- None
-## Worth knowing
-- none
-Review record: reviewed=quality review; tried=0; open=0' 0 2>&1) && code=0 || code=$?
+out=$(run_check "$CURRENT" 0 2>&1) && code=0 || code=$?
 [ "$code" -eq 0 ] && pass "check-review passes after findings are cleared" || fail "check-review clean returned $code: $out"
 out=$(run_check '## Worth stopping for
 - [ ] Broken save

@@ -12,6 +12,24 @@ from pathlib import Path
 
 ROOT = Path.cwd()
 QUALITY = Path(os.environ.get("GATE_QUALITY_SCRIPT", Path(__file__).with_name("quality.py")))
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(Path(__file__).parent))
+import results  # noqa: E402
+
+
+def review_reader():
+    """The shared review reader: the project's copy when it knows the record, else the kit's."""
+    import importlib.util
+    for candidate in (ROOT / ".agents" / "hooks" / "review_boxes.py",
+                      Path(__file__).resolve().parents[2] / "setup-ai-build-kit" / "templates" /
+                      "foundation" / "review_boxes.py"):
+        if candidate.is_file():
+            spec = importlib.util.spec_from_file_location("review_boxes", candidate)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            if hasattr(module, "record_line"):
+                return module
+    raise ImportError("shared review reader is missing")
 
 
 def run(args, *, cwd=ROOT, timeout=90):
@@ -62,6 +80,10 @@ def brief(args):
         limits.append("piece agreement could not be read: " + str(error))
         sections.extend(["# Review packet", "", "## Piece", title])
 
+    head_code, head, _ = run(["git", "rev-parse", "HEAD"])
+    sections.extend(["", "## Head commit", head.strip() if head_code == 0 else "[unavailable]"])
+    if head_code:
+        limits.append("the commit under review could not be read")
     code, diff, error = run(["git", "diff", "--find-renames", "--binary", args.base + "...HEAD"])
     sections.extend(["", "## Full change", diff if code == 0 and diff else "[unavailable]"])
     if code or not diff:
@@ -73,10 +95,11 @@ def brief(args):
     test_output = ""
     for label, command in reads:
         status, out, err = run(command, timeout=600)
-        sections.extend(["", "## " + label, out.strip() or "[no output]"])
+        result = results.from_exit(status)
+        sections.extend(["", "## " + label, "Result: " + result, out.strip() or "[no output]"])
         if label == "Tests read":
             test_output = out
-        if status == 2:
+        if result == results.NOT_RUN:
             limits.append(label.lower() + " read could not run" + (": " + err.strip() if err else ""))
         elif status == 1 and not out.strip():
             limits.append(label.lower() + " read returned a finding without output")
@@ -187,9 +210,15 @@ def record(args):
     stopping = [text for is_stopping, text in kept if is_stopping]
     knowing = [text for is_stopping, text in kept if not is_stopping]
     try:
-        old = json.loads(gh("pr", "view", str(args.pr), "--json", "title,body"))
+        reader = review_reader()
+    except ImportError as error:
+        return stop("gate: " + str(error))
+    read_head = packet_head()
+    try:
+        old = json.loads(gh("pr", "view", str(args.pr), "--json", "title,body,headRefOid,author,reviews"))
         if not isinstance(old, dict) or not isinstance(old.get("body"), str):
             raise ValueError("GitHub returned an unreadable pull request")
+        verified, independence = independent_review(old, read_head)
         pr_title = str(old.get("title") or "pull request " + str(args.pr))
         original = old["body"].rstrip()
 
@@ -217,7 +246,7 @@ def record(args):
         open_count = sum(bool(re.match(r"\s*[-+*]\s+\[ \]\s+", line)) for line in stopping_lines)
         knowing_lines = section("Worth knowing")
         knowing_text = {re.sub(r"^\s*[-+*]\s+", "", line).strip() for line in knowing_lines
-                        if line.strip() and not re.match(r"\s*(?:[-+*]\s+)?(?:None|Nothing worth knowing|Review limits:|Worth knowing findings:|Review record:)", line, re.I)}
+                        if line.strip() and not re.match(r"\s*(?:[-+*]\s+)?(?:None|Nothing worth knowing|Review limits:|Worth knowing findings:|Review record:|Review independence:)", line, re.I)}
         knowing_text.update(knowing)
         body = re.sub(r"(?im)^Review record:.*$", "", original)
         body = re.sub(r"(?ims)^## (?:Worth stopping for|Worth knowing)\s*\n.*?(?=^## |\Z)", "", body).rstrip()
@@ -227,14 +256,53 @@ def record(args):
         lines.extend("- " + text for text in sorted(known for known in knowing_text if known))
         lines.append("- Review limits: %d finding(s) dropped for missing evidence or a concrete scenario" % dropped)
         lines.append("- Worth knowing findings: %d" % len([item for item in knowing_text if item]))
-        lines.append("Review record: reviewed=quality review; tried=%d; open=%d" %
-                     (len(kept) + previous_open, open_count))
-        gh("pr", "edit", str(args.pr), "--body", "\n".join(lines).strip())
+        lines.append("- Review independence: " + independence)
+        text = "\n".join(lines).strip()
+        text += "\n" + reader.record_line("quality review", len(kept) + previous_open, open_count,
+                                          read_head or "unknown", verified, text)
+        gh("pr", "edit", str(args.pr), "--body", text)
     except (RuntimeError, ValueError) as error:
         return stop("gate: could not update the pull request: " + str(error))
     print("Review of %s: %d worth stopping for, %d worth knowing, %d dropped" %
           (pr_title, len(existing_open) + len(stopping), len(knowing_text), dropped))
+    print("Review independence: " + independence)
+    current = str(old.get("headRefOid") or "")
+    if not read_head:
+        print("gate: the review packet names no commit, so this record holds the merge. "
+              "Run gate.py brief, review again, then record.", file=sys.stderr)
+        return 1
+    if current and current != read_head:
+        print("gate: new work was pushed after the review read this change, so this record "
+              "holds the merge. Run the review again.", file=sys.stderr)
+        return 1
     return 1 if open_count else 0
+
+
+def packet_head():
+    """The commit the review packet was written from, or None."""
+    code, path, _ = run(["git", "rev-parse", "--git-path", "review-packet.md"])
+    if code:
+        return None
+    try:
+        text = (ROOT / path.strip()).read_text(encoding="utf-8")
+    except OSError:
+        return None
+    match = re.search(r"(?m)^## Head commit\s*\n([0-9a-f]{40})\s*$", text)
+    return match.group(1) if match else None
+
+
+def independent_review(pr, head):
+    """Whether someone other than the author approved the version the review read."""
+    author = str(((pr.get("author") or {}).get("login")) or "")
+    for review in pr.get("reviews") or []:
+        if not isinstance(review, dict):
+            continue
+        login = str((review.get("author") or {}).get("login") or "")
+        oid = str((review.get("commit") or {}).get("oid") or "")
+        if review.get("state") == "APPROVED" and login and login != author and head and oid == head:
+            return True, "verified. %s approved this version on GitHub." % login
+    return False, ("unverified. The agent and the reviewer share one login, so the kit "
+                   "cannot confirm that a second person read this version.")
 
 
 def main():

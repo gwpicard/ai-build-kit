@@ -70,7 +70,8 @@ it as a piece.
 
 Make an approved merge on the pull request itself with
 `scripts/merge.py --approved <number>`. Exit 0
-merged. Exit 1 means a check, review box or sensitive area holds it; exit 2
+merged. Exit 1 means a check, review box, a review of an earlier version or
+a sensitive area holds it; exit 2
 means a required read/check could not run or GitHub refused. Say what stopped
 it and leave the pull request open. In an unattended run, leave it for review.
 

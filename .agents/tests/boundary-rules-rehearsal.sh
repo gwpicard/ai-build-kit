@@ -124,7 +124,19 @@ const workflow = fs.readFileSync(path.join(foundation, 'checks.yml'), 'utf8')
 put('.github/workflows/checks.yml', workflow);
 put('.agents/hooks/check-sensitive-areas.sh', fs.readFileSync(path.join(foundation, 'check-sensitive-areas.sh'), 'utf8'));
 put('.agents/hooks/check-review.sh', fs.readFileSync(path.join(foundation, 'check-review.sh'), 'utf8'));
-put('bin/gh', '#!/usr/bin/env sh\n[ "$*" = "pr view 12 --json body --jq .body" ] || exit 2\nprintf "%b\\n" "## Worth stopping for\\n- None\\n## Worth knowing\\nReview record: reviewed=quality review; tried=0; open=0"\n');
+// A settled review record for the head the stand-in reports, sealed by the
+// shared reader the way gate.py seals it.
+const sealedView = spawnSync('python3', ['-c', [
+  'import importlib.util, json, sys',
+  'spec = importlib.util.spec_from_file_location("b", sys.argv[1])',
+  'b = importlib.util.module_from_spec(spec); spec.loader.exec_module(b)',
+  'head = "0" * 40',
+  'body = "## Worth stopping for\\n- None\\n## Worth knowing\\n- None"',
+  'print(json.dumps({"body": body + "\\n" + b.record_line("quality review", 0, 0, head, False, body), "headRefOid": head}))',
+].join('\n'), path.join(foundation, 'review_boxes.py')], { encoding: 'utf8' });
+assert.equal(sealedView.status, 0, sealedView.stderr);
+fs.writeFileSync(path.join(work, 'pr-view.json'), sealedView.stdout);
+put('bin/gh', `#!/usr/bin/env sh\n[ "$*" = "pr view 12 --json body,headRefOid" ] || exit 2\ncat '${path.join(work, 'pr-view.json')}'\n`);
 fs.chmodSync(path.join(project, 'bin/gh'), 0o755);
 put('.agents/hooks/scan-secrets.sh', fs.readFileSync(path.join(foundation, 'scan-secrets.sh'), 'utf8'));
 put('.agents/hooks/scan-secrets.py', fs.readFileSync(path.join(foundation, 'scan-secrets.py'), 'utf8'));

@@ -133,3 +133,26 @@ state = {
 with open(project + ".host.json", "w") as handle:
     json.dump(state, handle, indent=1)
 PY
+
+# The open pull request's review record names the branch's head, as gate.py
+# writes it once the review has read that commit. The record needs the commit,
+# so the GitHub state with it goes beside the project, where run.sh takes it.
+kit=$(CDPATH= cd -- "$(dirname -- "$0")/../../../.." && pwd)
+python3 - "$project" "$branch" "$kit" <<'PY'
+import importlib.util, json, os, re, sys
+
+project, branch, kit = sys.argv[1:4]
+reader = "setup-ai-build-kit/templates/foundation/review_boxes.py"
+found = [path for path in (project + "/.agents/hooks/review_boxes.py",
+                           project + "/.agents/skills/" + reader,
+                           kit + "/.agents/skills/" + reader) if os.path.isfile(path)]
+spec = importlib.util.spec_from_file_location("review_boxes", found[0])
+boxes = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(boxes)
+state = json.load(open(project + "/.gh-fixture.json"))
+pr = state["pull_requests"][0]
+body = re.sub(r"(?m)^Review record:.*\n?", "", pr["body"]).rstrip("\n")
+pr["body"] = body + "\n" + boxes.record_line("quality review", 0, 0, branch, False, body) + "\n"
+with open(project + ".gh-start.json", "w") as handle:
+    json.dump(state, handle, indent=1)
+PY
