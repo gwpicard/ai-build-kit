@@ -83,6 +83,17 @@ body:
       required: false
 
   - type: textarea
+    id: risk-areas
+    attributes:
+      label: Risk areas
+      description: >
+        The risk areas from the masterplan's risk record that this piece
+        touches, or "none". The agent fills this in.
+      placeholder: none
+    validations:
+      required: false
+
+  - type: textarea
     id: under-the-hood
     attributes:
       label: Under the hood

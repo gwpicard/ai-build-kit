@@ -21,8 +21,8 @@ Load the reference the step needs:
 Each decides by its exit code, and changes only what it names.
 
 - `scripts/mark-ready.sh <number>` labels a piece `ready`. It refuses while
-  `## Done when` or a code project's `Reaches:` line is missing, or `## Decided`
-  after a `needs-` label, and says which; write it, then run it again. It
+  `## Done when`, a code project's `Reaches:` line or the `Risk areas:` line is
+  missing, or `## Decided` after a `needs-` label, and says which; write it, then run it again. It
   refreshes the printout.
 - `scripts/piece-labels.sh start <number>` swaps `ready` for `building` and
   assigns the piece; `merged <number>` takes both off after the merge.
