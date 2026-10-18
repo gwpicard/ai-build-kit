@@ -9,6 +9,8 @@
 # label is the only sign the question was ever open, so it never comes off
 # before that record exists.
 #
+# A piece also names the risk areas it touches, or says none.
+#
 # The script reads the issue, refuses when either section is missing or empty,
 # and otherwise takes every needs- label off and puts ready on in one change.
 # It then reads the labels back, so a piece never carries ready and a needs-
@@ -77,11 +79,19 @@ def section(name):
             return content not in ("", "_No response_")
     return False
 
+def names_risk_areas():
+    # A "Risk areas:" line with text after it, or a "Risk areas" section with
+    # content. "none" is an answer; saying nothing is not.
+    line = r"^[ \t]*(?:[-*][ \t]*)?(?:\*\*Risk areas:\*\*|Risk areas:)[ \t]*\S"
+    return bool(re.search(line, body, re.I | re.M)) or section("Risk areas")
+
 needs = [l for l in labels if l.startswith("needs-")]
 if not section("Done when"):
     print("missing Done when")
 elif has_code and not re.search(REACHES_LINE, body, re.I | re.M):
     print("missing Reaches")
+elif not names_risk_areas():
+    print("missing Risk areas")
 elif needs and not section("Decided"):
     print("missing Decided")
 else:
@@ -95,6 +105,9 @@ case "$verdict" in
     exit 1 ;;
   "missing Reaches")
     echo "not ready: issue $number has no Reaches line for the code it may touch"
+    exit 1 ;;
+  "missing Risk areas")
+    echo "not ready: issue $number has no Risk areas line, so it does not say whether it touches a risk area (write none if it does not)"
     exit 1 ;;
   "missing Decided")
     echo "not ready: issue $number waits on a question, and its Decided section does not say what settled it"

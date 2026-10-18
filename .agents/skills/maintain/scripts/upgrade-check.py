@@ -49,7 +49,7 @@ the step that settles it:
     settings   deny|ask  RULE  a missing Claude Code safety rule      settings
     template   FILE:LINE  NEW  the kit's own sentence naming a retired
                                command or skill                       template
-    fitcheck   FILE:LINE  OLD  a build-path section with four-path
+    fitcheck   FILE:LINE  OLD  a fit-check section with four-path
                                fields, rewritten as the maintain
                                skill's references/four-paths.md says  fitcheck
     recipe     FILE:LINE  NAME AGENTS.md naming its recipe by file,
@@ -171,7 +171,7 @@ STEP_OF = {
     "ready": "ready", "recipe": "recipe", "recipe-format": "recipe-format", "access": "access",
     "gate": "gates",
 }
-# The build-path fields the kit used while it had four build paths.
+# The fit-check fields the kit used while it had four paths.
 FOUR_PATHS = re.compile(r"^\s*(Required controls:|Outside help:|Path:\s*(Build with expert help|Professional-led))")
 
 # Files installed by founding, but refreshed only when a person accepts the
@@ -586,7 +586,7 @@ ACCESS_WORDS = ("This release makes every tool private by default: only people y
 
 
 def access_findings(project):
-    """The masterplan's build path with no Access: line, as every project
+    """The masterplan's fit-check section with no Access: line, as every project
     founded before the kit made tools private by default has it."""
     if linked_path(project, "masterplan.md"):
         return []
@@ -597,9 +597,9 @@ def access_findings(project):
 
 
 def apply_access(project, choice):
-    """Write the Access: line the person chose into the build-path section:
-    before its Sensitive areas: line, or after its Path: line, or under its
-    heading. Nothing live changes."""
+    """Write the Access: line the person chose into the fit-check section:
+    before its Sensitive areas: or Risk areas: line, or after its Path: line,
+    or under its heading. Nothing live changes."""
     if choice not in ACCESS_CHOICES:
         print("upgrade-check.py: the access step takes %s" % ", ".join(
             "access=" + c for c in ACCESS_CHOICES), file=sys.stderr)
@@ -613,12 +613,12 @@ def apply_access(project, choice):
     with open(path, encoding="utf-8", newline="") as handle:
         lines = handle.readlines()
     ending = "\r\n" if lines and lines[0].endswith("\r\n") else "\n"
-    start = next((i for i, l in enumerate(lines) if re.match(r"^##\s+Build path\b", l)), None)
+    start = next((i for i, l in enumerate(lines) if re.match(r"^##\s+(Build path|Risk record)\b", l)), None)
     if start is None:
-        print("left\tmasterplan.md\tit has no build-path section, so the access line was not written")
+        print("left\tmasterplan.md\tit has no fit-check section, so the access line was not written")
         return 1
     end = next((i for i in range(start + 1, len(lines)) if lines[i].startswith("## ")), len(lines))
-    at = next((i for i in range(start + 1, end) if lines[i].startswith("Sensitive areas:")), None)
+    at = next((i for i in range(start + 1, end) if lines[i].startswith(("Sensitive areas:", "Risk areas:"))), None)
     if at is None:
         path_line = next((i for i in range(start + 1, end) if lines[i].startswith("Path:")), None)
         at = path_line + 1 if path_line is not None else start + 1
@@ -1080,10 +1080,10 @@ def sentences(out, project):
                          plural(n, "passage", "passages"), plural(n, "names", "name"),
                          plural(n, "that passage", "those passages"))))
     if "fitcheck" in by:
-        said.append(("fitcheck", "Your masterplan's build-path section was written when the kit "
-                     "had four build paths. It now has three, and the path follows what the "
-                     "work touches rather than who owns the build. I can rewrite the section "
-                     "to the new shape and show it to you above the old one first. Each "
+        said.append(("fitcheck", "Your masterplan's fit-check section was written when the kit "
+                     "had four paths. Each risk area now carries one caution, and the kit "
+                     "no longer has paths. I can rewrite the old control fields to the new "
+                     "shape and show it to you above the old one first. Each "
                      "accepted risk is copied word for word, and nothing else in the "
                      "masterplan changes. Shall I?"))
     if "recipe" in by:
@@ -1130,7 +1130,7 @@ STEP_WORDS = {
     "installer": "the old skills installed", "missing": "the missing skills out",
     "remove": "the older kit files in place", "commands": "the command list as it is",
     "pointers": "the old pointers as they are", "template": "the kit's old lines as they are",
-    "fitcheck": "the build-path section as it is",
+    "fitcheck": "the fit-check section as it is",
     "recipe": "the recipe line as it is",
     "access": "the access setting unrecorded",
 }
