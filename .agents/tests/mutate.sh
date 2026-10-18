@@ -129,6 +129,9 @@ replay-rollup-counts-controls
 replay-compare-chance-rule
 replay-state-assertion-skipped
 fake-gh-loses-check-status
+conditions-missing-passes
+protection-plan-carries-on
+unreadable-repository-is-missing
 seeded-missed-as-flagged
 seeded-harness-break-as-pass
 seeded-twin-hold-ignored
@@ -230,6 +233,9 @@ describe() {
     replay-compare-chance-rule) echo "a small-sample dip is reported as a regression without a chance check" ;;
     replay-state-assertion-skipped) echo "the returning-work state check stops noticing a cleared failure" ;;
     fake-gh-loses-check-status) echo "a prepared failed project check is reported as passing by the GitHub stand-in" ;;
+    conditions-missing-passes) echo "a missing working condition no longer stops founding" ;;
+    protection-plan-carries-on) echo "a plan that cannot protect a private repository lets setup carry on" ;;
+    unreadable-repository-is-missing) echo "a refused repository read is reported as no repository and stops founding" ;;
     seeded-missed-as-flagged) echo "a seeded fault that merged unnamed is scored as named first" ;;
     seeded-harness-break-as-pass) echo "a run the harness broke is scored as a fix" ;;
     seeded-twin-hold-ignored) echo "a healthy twin left open after the yes is scored as fine" ;;
@@ -286,6 +292,9 @@ checks_for() {
     replay-compare-chance-rule) echo "replay-compare" ;;
     replay-state-assertion-skipped) echo "replay-case-states" ;;
     fake-gh-loses-check-status) echo "fake-github" ;;
+    conditions-missing-passes) echo "check-tooling" ;;
+    protection-plan-carries-on) echo "check-tooling found-issues first-upload" ;;
+    unreadable-repository-is-missing) echo "check-tooling" ;;
     seeded-missed-as-flagged|seeded-harness-break-as-pass|seeded-twin-hold-ignored|seeded-key-copied|seeded-rollup-counts-broken-runs|seeded-refusal-counts-as-find|seeded-report-hides-failure) echo "seeded-scoring" ;;
     seeded-repro-accepts-swallow) echo "seeded-reproductions" ;;
     *) echo "$DEFAULT_CHECKS" ;;
@@ -1144,6 +1153,36 @@ old_end = "        }]),"
 assert old_end in t, "default status result end not found"
 t = t.replace(old_end, "        }],", 1)
 open(p, "w").write(t)
+'
+      ;;
+    conditions-missing-passes)
+      edit "$tree/.agents/skills/setup-ai-build-kit/scripts/check-tooling.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "[ \"$1\" != missing ] || blocked=1"
+assert old in t, "the missing condition stop not found"
+open(p, "w").write(t.replace(old, "true", 1))
+'
+      ;;
+    protection-plan-carries-on)
+      edit "$tree/.agents/skills/merge/scripts/protect-branch.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "then run setup again.\")\n    return 3"
+assert old in t, "the plan limit stop not found"
+open(p, "w").write(t.replace(old, "then run setup again.\")\n    return 0", 1))
+'
+      ;;
+    unreadable-repository-is-missing)
+      edit "$tree/.agents/skills/setup-ai-build-kit/scripts/check-tooling.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "*\"no git remotes\"* | *\"not a git repository\"*"
+assert old in t, "the missing repository patterns not found"
+open(p, "w").write(t.replace(old, "* | *\"not a git repository\"*", 1))
 '
       ;;
     seeded-missed-as-flagged)
