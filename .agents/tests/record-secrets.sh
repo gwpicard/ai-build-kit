@@ -52,6 +52,7 @@ JSON
 
 # --- the changelog entry run-recipe.sh writes --------------------------------
 cp "$PROJECT/CHANGELOG.md" "$WORK/changelog-before"
+sh "$RUNNER" --project "$PROJECT" none >/dev/null 2>&1 || true
 out=$(sh "$RUNNER" --project "$PROJECT" --chose "Go on without a recipe" --note "Set the token to $KEY" none 2>&1) && code=0 || code=$?
 [ "$code" -eq 2 ] && cmp -s "$WORK/changelog-before" "$PROJECT/CHANGELOG.md" \
   && printf '%s' "$out" | grep -q 'possible secret in CHANGELOG.md' && ! printf '%s' "$out" | grep -qF "$KEY" \

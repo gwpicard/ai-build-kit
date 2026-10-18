@@ -215,6 +215,11 @@ P="$WORK/p5"
 project "$P"
 cp "$P/CHANGELOG.md" "$WORK/before-none"
 code=0
+sh "$RUNNER" --project "$P" --set LIVE_ADDRESS=https://stub.example.test --chose "Skip the notice" none > "$WORK/out" 2>&1 || code=$?
+[ "$code" = 5 ] && grep -q '^No recipe: the kit guarantees' "$WORK/out" || fail "a choice before the notice was taken as consent (exit $code)"
+cmp -s "$P/CHANGELOG.md" "$WORK/before-none" || fail "a choice before the notice was recorded"
+rm -rf "$P/.agents/tmp"
+code=0
 sh "$RUNNER" --project "$P" --set LIVE_ADDRESS=https://stub.example.test none > "$WORK/out" 2>&1 || code=$?
 [ "$code" = 5 ] || fail "a request off a recipe exited $code, not 5, before the person answered the notice"
 [ "$(grep -c '^No recipe: the kit guarantees no way back to an earlier version, no backup and no checked launch here\.' "$WORK/out")" = 1 ] &&

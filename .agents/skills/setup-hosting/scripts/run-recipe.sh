@@ -49,8 +49,10 @@
 # to prove it.
 #
 # With `none` there is no recipe, so no check can run and nothing is
-# guaranteed. The first run prints one notice, writes nothing and exits 5.
-# The run that follows, with `--chose` carrying the person's words, writes
+# guaranteed. The first run prints one notice, leaves a marker that it was
+# given, writes nothing else and exits 5. `--chose` without that marker prints
+# the notice instead. The run that follows, with `--chose` carrying the
+# person's words, writes
 # those words and the date in the changelog and goes on. It never holds a
 # launch. A later run finds the record and prints one pointer, not the notice.
 #
@@ -392,8 +394,14 @@ no_recipe_open = []
 if folder is None:
     # No recipe, so no check runs. The notice comes once; the person's words
     # and the date are the record. Nothing here holds a launch.
-    if prior_choice is None and not chose:
+    marker = os.path.join(project, ".agents", "tmp", "no-recipe-notice-given")
+    if prior_choice is None and not (chose and os.path.isfile(marker)):
         print(NOTICE)
+        try:
+            os.makedirs(os.path.dirname(marker), exist_ok=True)
+            open(marker, "w").close()
+        except OSError:
+            pass
         sys.exit(5)
     if chose:
         text = "Chosen without a recipe on %s: %s" % (today, chose)
