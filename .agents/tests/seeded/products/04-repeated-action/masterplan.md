@@ -7,7 +7,8 @@ Why: An internal till screen for one cafe of five staff. The tool only records
 credit that the cafe's own card terminal has already taken, nobody outside the
 cafe uses it, and the owner can explain and operate it.
 Access: private
-Sensitive areas: none
+Sensitive areas:
+  money: each regular's prepaid credit balance, which the cafe honours at the till; caution: the owner checks the first balances against the index cards; not yet done
 Accepted: none
 Recheck when: customers use it themselves; it takes card payments itself; it
 starts holding anything personal.

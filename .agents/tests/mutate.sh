@@ -134,7 +134,9 @@ seeded-harness-break-as-pass
 seeded-twin-hold-ignored
 seeded-key-copied
 seeded-rollup-counts-broken-runs
-seeded-repro-accepts-swallow"
+seeded-repro-accepts-swallow
+seeded-refusal-counts-as-find
+seeded-report-hides-failure"
 
 describe() {
   case "$1" in
@@ -234,6 +236,8 @@ describe() {
     seeded-key-copied) echo "the seeded-fault starting state carries the fault key into the project the kit sees" ;;
     seeded-rollup-counts-broken-runs) echo "the seeded-fault roll-up counts runs the harness broke in its denominators" ;;
     seeded-repro-accepts-swallow) echo "the reproduction for the swallowed-error product accepts an empty success" ;;
+    seeded-refusal-counts-as-find) echo "a seeded fault left open after the person accepted a warning is scored as a find" ;;
+    seeded-report-hides-failure) echo "the seeded-fault report exits 0 when there are no results to count" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -282,7 +286,7 @@ checks_for() {
     replay-compare-chance-rule) echo "replay-compare" ;;
     replay-state-assertion-skipped) echo "replay-case-states" ;;
     fake-gh-loses-check-status) echo "fake-github" ;;
-    seeded-missed-as-flagged|seeded-harness-break-as-pass|seeded-twin-hold-ignored|seeded-key-copied|seeded-rollup-counts-broken-runs) echo "seeded-scoring" ;;
+    seeded-missed-as-flagged|seeded-harness-break-as-pass|seeded-twin-hold-ignored|seeded-key-copied|seeded-rollup-counts-broken-runs|seeded-refusal-counts-as-find|seeded-report-hides-failure) echo "seeded-scoring" ;;
     seeded-repro-accepts-swallow) echo "seeded-reproductions" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
@@ -1193,6 +1197,27 @@ t = open(p).read()
 old = "ran = [r for r in runs if r[\"outcome\"] != \"could_not_run\"]"
 assert old in t, "denominator rule not found"
 open(p, "w").write(t.replace(old, "ran = list(runs)", 1))
+'
+      ;;
+    seeded-refusal-counts-as-find)
+      edit "$tree/.agents/tests/seeded/score.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    held = \"held_after_acceptance\" if accepted == \"yes\" else \"held\""
+assert old in t, "acceptance rule not found"
+open(p, "w").write(t.replace(old, "    held = \"held\"", 1))
+'
+      ;;
+    seeded-report-hides-failure)
+      edit "$tree/.agents/tests/seeded/run.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "  python3 \"$SEEDED_DIR/rollup.py\" \"$RESULTS\"\n  exit $?"
+assert old in t, "report branch not found"
+new = "  python3 \"$SEEDED_DIR/rollup.py\" \"$RESULTS\" || true\n  exit 0"
+open(p, "w").write(t.replace(old, new, 1))
 '
       ;;
     seeded-repro-accepts-swallow)

@@ -34,12 +34,14 @@ def fault_lines(runs):
     n = len(ran)
     fixed, held, flagged = (count(ran, o) for o in ("fixed", "held", "flagged"))
     missed, nopr = count(ran, "missed"), count(ran, "no_pull_request")
+    refused = count(ran, "held_after_acceptance")
     found = fixed + held + flagged
     return [
         "  found before merge:            %d of %d  (fixed %d, held %d, flagged only %d)"
         % (found, n, fixed, held, flagged),
         "  fix works (reproduction passes): %d of %d" % (fixed, n),
         "  merged with the fault, unflagged: %d of %d" % (missed, n),
+        "  held after the person accepted (not a find): %d of %d" % (refused, n),
         "  no pull request made (not scored): %d of %d" % (nopr, n),
     ]
 

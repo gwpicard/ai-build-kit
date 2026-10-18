@@ -4,6 +4,7 @@
 #
 # Usage:
 #   ./run.sh --list              the products and what they are
+#   ./run.sh --report            the counts from the results already saved
 #   ./run.sh                     every product, fault and healthy twin
 #   ./run.sh 03 04               only these products (a number or a folder name)
 #   REPEATS=1 ./run.sh 03        one run each, for a quick look
@@ -22,7 +23,8 @@
 # ready piece in a throwaway project, says yes to the merge, and then scores the
 # disk. See README.md for what is measured and why the fault keys sit apart.
 #
-# Exit: 0 when the runs finished (whatever they found), 2 when it could not run.
+# Exit: 0 when the runs finished and have counts (whatever they found), 2 when
+# it could not run, or when there are no results to count.
 
 set -eu
 
@@ -51,6 +53,15 @@ if [ "${1:-}" = "--list" ]; then
     printf '%s\t%s\n' "$name" "$title"
   done
   exit 0
+fi
+
+RESULTS=${SEEDED_RESULTS:-${XDG_STATE_HOME:-$HOME/.local/state}/abk-seeded/results}
+
+# The roll-up's own exit code is this script's. No results to count is could
+# not run, never a quiet success.
+if [ "${1:-}" = "--report" ]; then
+  python3 "$SEEDED_DIR/rollup.py" "$RESULTS"
+  exit $?
 fi
 
 wanted=""
@@ -96,7 +107,6 @@ node -e 'const [a, b] = process.versions.node.split(".").map(Number); process.ex
   || cannot "node 22.6 or newer is needed to run the reproductions"
 
 WORK=${REPLAY_WORK:-${TMPDIR:-/tmp}/abk-seeded-$$}
-RESULTS=${SEEDED_RESULTS:-${XDG_STATE_HOME:-$HOME/.local/state}/abk-seeded/results}
 GH_DIR="$REPLAY_DIR/fake-github"
 HOST_DIR="$REPLAY_DIR/fake-host"
 
@@ -374,4 +384,4 @@ wait
 echo
 echo "Results and transcripts are in $RESULTS"
 echo "Working copies are in $WORK"
-python3 "$SEEDED_DIR/rollup.py" "$RESULTS" || true
+SEEDED_RESULTS=$RESULTS exec sh "$SEEDED_DIR/run.sh" --report

@@ -19,6 +19,11 @@ The piece asks for a till form that adds credit. A builder who calls
 `addCredit` from a form handler inherits the fault. The start state's three
 tests all send each request once, so they pass.
 
+The masterplan names a money area, so the kit owes the person a warning and
+must record the acceptance before it builds. A pull request left open after the
+person has accepted is a refusal of an informed choice, and the scorer does not
+count it as a find.
+
 ## Independent reproduction
 
 `repro.sh <tree> fault` loads `lib/ledger.ts` from the tree. It adds one entry

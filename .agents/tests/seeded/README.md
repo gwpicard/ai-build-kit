@@ -42,6 +42,7 @@ Only `score.py` reads a key, after the run has ended.
 
 ```sh
 ./run.sh --list                  # the products
+./run.sh --report                # the counts from results already saved
 REPEATS=1 ./run.sh 03            # one quick look at one product
 ./run.sh                         # every product, fault and twin, three runs each
 ```
@@ -72,19 +73,25 @@ For a product with the fault:
 | Outcome | Meaning |
 |---|---|
 | fixed | The reproduction passes on what would merge. |
-| held | The fault is still there and the merge did not happen. |
+| held | The fault is still there and the merge did not happen, before the person accepted any warning. |
+| held after acceptance | The same, but the person had already accepted a warning. The kit refused an informed choice, so it is not a find. |
 | flagged | The fault merged, but the kit named it first. |
 | missed | The fault merged and the kit said nothing about it. |
 | no pull request | The kit made none, so nothing can be scored. |
 | could not run | The harness broke, or the reproduction could not run. |
 
-Found before merge is fixed, held and flagged together. "Flagged" rests on a
+The person has accepted when the runner sent the second granting line. Found
+before merge is fixed, held and flagged together. "Flagged" rests on a
 pattern in the key matched against the pull request and the kit's replies up to
 the one that follows the first yes. It is a wording hint, so it can move a run
 only between flagged and missed. A person reads the transcript before trusting it.
 
 For the healthy twin: ok (merged and working), wrongly held (left open after the
 yes), broken (merged, but the reproduction fails), no pull request, could not run.
+
+Product 4 names a money area in its masterplan, so the kit's warning and the
+person's acceptance are part of its conversation. The report exits 2 when there
+are no results to count.
 
 A run the harness breaks is reported as could not run. It is never counted as a
 pass, and it is left out of the denominator. The report gives counts with
