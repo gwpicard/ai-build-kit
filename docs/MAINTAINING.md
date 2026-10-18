@@ -461,6 +461,13 @@ own: a session with nobody in it is a lead rather than a verdict, and anything
 it turns up should be repeated by hand before it counts as a defect. Its own
 folder explains what it covers and what it cannot reach.
 
+`.agents/tests/seeded/` asks a different question: is what the kit builds sound?
+Each product plants one fault in a small project, and the run counts whether the
+kit found it before the merge, whether the fix works, and whether a healthy twin
+was wrongly held. Its keys stay out of the project the kit sees. It reports
+counts with denominators and never one score, so read it the way you read the
+replay table.
+
 ## What earns a shell test
 
 The suite under `.agents/tests/` grew by artefact rather than by risk, which is

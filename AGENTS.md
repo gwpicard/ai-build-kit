@@ -69,6 +69,9 @@ plainly that the two disagree.
   each one that failed. Each check says what it guards on its second line.
 - `.agents/tests/replay/` holds conversations replayed against the kit and
   graded on behaviour. Its README says how to run them and what they cost.
+- `.agents/tests/seeded/` holds small products that each carry one planted
+  fault. It runs the kit on them and counts what the kit catches. Its README
+  says how to run it, and why the fault keys stay out of sight.
 - `.agents/tests/mutate.sh` breaks one promise at a time and reports which
   checks noticed.
 - `.agents/tools/rehearse-merged-tree.sh` runs the validator and the suite on
