@@ -5,7 +5,7 @@ description: Build ready pieces. Typed alone, take one free or ask which. Given 
 
 # Implement
 
-Read `masterplan.md` (build path first) and refresh the plan with
+Read `masterplan.md` (risk record first) and refresh the plan with
 `sh .agents/tools/plan-refresh.sh`. See `records/references/pieces.md`.
 Run `maintain/scripts/upgrade-check.py` from the project root and keep
 only its exit code. Exit 1 means `/maintain` must finish the update; say so
@@ -17,8 +17,7 @@ skill's `templates/foundation/codex-github-check.py` with python3 and
 
 ## Choose work
 
-A ready repair comes first. Otherwise take the only free ready piece allowed
-by the build path. If several are ready, show them and their blockers, then
+A ready repair comes first. Otherwise take the only free ready piece. If several are ready, show them and their blockers, then
 ask which to take. Unattended, take the lowest-numbered.
 
 A piece must be ready, have `## Done when`, and wait on no question. A piece with open parts is a container; build its parts. Send an unready piece to

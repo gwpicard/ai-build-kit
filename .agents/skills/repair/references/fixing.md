@@ -38,14 +38,13 @@ Watch it pass, rerun the original unminimised case, and run
 `quality.py tests --base <start commit> --piece <number>` once after the fix.
 If no credible automated boundary exists, record a maintainability finding
 and use the strongest manual or operational evidence available. For a test in
-a mapped sensitive area, also run `quality.py strength --base <start commit>`
+a mapped risk area, also run `quality.py strength --base <start commit>`
 and act on its exit code. Exit 2 means part of the changed code was not checked.
 
 ## Finish
 
 Name and remove every temporary log or harness, then rerun the evidence
-without them. Clear this piece's shaping files from `.agents/tmp/`. On Build
-and run or Build with care, apply the `quality-checks` skill's
+without them. Clear this piece's shaping files from `.agents/tmp/`. Apply the `quality-checks` skill's
 `references/trim.md`. Confirm the original symptom is gone, record its cause
 in the changelog, update the other records and use the build-piece save and
 review route. Report what was removed and that the evidence still passed.

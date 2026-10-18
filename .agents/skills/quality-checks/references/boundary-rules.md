@@ -1,6 +1,6 @@
 # Boundary rules
 
-A sensitive area in the masterplan may name one boundary it must not cross.
+A risk area in the masterplan may name one boundary it must not cross.
 On its own that line is a description: a build that crosses it gets one
 sentence, and the person may leave it. A boundary rule turns the line into part
 of the project check, so a change that crosses it turns the tick red, and the
@@ -10,7 +10,7 @@ This is a whole-project read, so the rules in the `quality-checks` skill apply.
 
 ## Where it applies
 
-On Build with care, for an area that already has a `boundary:` line. Offer it,
+For an area that already has a `boundary:` line. Offer it,
 never impose it. It is offered at two moments: during founding, once the map is
 written, and at the quarterly visit, for an area named or given a boundary
 since the last one. Never invent a boundary the masterplan does not name.

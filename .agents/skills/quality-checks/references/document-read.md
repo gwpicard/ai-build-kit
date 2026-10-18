@@ -3,7 +3,7 @@
 A README or a setup guide can go on naming a file, a command or a setting long
 after the project stopped having it, and someone who does not read code cannot
 tell. This read finds those names. It runs at every `/maintain` visit, on
-every build path, in the truing, and it is the visit's one read for stale
+every project, in the truing, and it is the visit's one read for stale
 names.
 
 ## Run the script

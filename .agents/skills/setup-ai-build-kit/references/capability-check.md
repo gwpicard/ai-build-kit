@@ -53,5 +53,5 @@ previous commit's author is never the current person's identity.
 
 Write the result into AGENTS.md under Capability profile. For each missing
 capability, choose one: a safe fallback, a setup task, less automation, or a
-stop because the build path requires it. Never claim "works in this harness"
+stop because the working conditions require it. Never claim "works in this harness"
 because an adapter folder exists.

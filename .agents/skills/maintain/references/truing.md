@@ -29,19 +29,19 @@ large or ambiguous corrections. Step 6 may also change the project check.
    back on. Turn it on only on a yes.
 3. Correct the masterplan using `records/references/masterplan-changes.md`,
    reading from the older of the saved mark and last changelog entry. Never
-   rewrite its build-path section; rerun `fit-check` if the project's
+   rewrite its risk record; rerun `fit-check` if the project's
    character changed. Re-read each `rests on` clause using
    `records/references/pieces.md`; report unsupported decisions and ask what
    should settle them.
 4. Load `records/references/coverage-read.md` and compare promises with
-   pieces. Above 1,000 words in the core sections (excluding build path, key
+   pieces. Above 1,000 words in the core sections (excluding the risk record, key
    terms, live-running notes, headings, comments and diagram source), ask
    whether to move piece detail onto pieces. Move only on a yes, preserving
    promises and decisions. Run `quality-checks/references/document-read.md`
    for stale names. Kit-update handles retired-command guidance.
 5. Name anything left open: a recheck trigger, flagged work waiting,
    interrupted manual setup. Where flagged work was built in the period and
-   the build-path section has no `Accepted:` line for it, say so, and never
+   the risk record has no `Accepted:` line for it, say so, and never
    write one after the fact.
 6. Keep `.github/workflows/checks.yml` aligned with AGENTS.md's install and
    test commands: change only `jobs.project-check`, not a separate source

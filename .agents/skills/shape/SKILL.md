@@ -10,7 +10,7 @@ Shape itself never builds.
 Run `triage` before acting. It chooses the route and says why. Follow the
 named skill; the person does not sort work or answer what the agent can settle.
 
-Read `masterplan.md` first, starting with the build path. Refresh and read the
+Read `masterplan.md` first, starting with the risk record. Refresh and read the
 local plan with `sh .agents/tools/plan-refresh.sh`. `records/references/pieces.md`
 holds the issue format, labels and plan rules.
 
@@ -19,7 +19,8 @@ holds the issue format, labels and plan rules.
 Follow `records/references/pieces.md` for the issue. Preserve the person's
 original words underneath a refinement. Include the masterplan change and read it back;
 never apply it while shaping. On code projects, run `quality.py reach
---paths` for likely files and record `Reaches:` or `Reaches: new files only`.
+--paths` for likely files and record `Reaches:` or `Reaches: new files only`. Name the piece's risk areas
+on its `Risk areas:` line, or `none`.
 
 label it `ready` with `records/scripts/mark-ready.sh`. A clear,
 sized request is ready at once; a note without `Done when` remains a request.

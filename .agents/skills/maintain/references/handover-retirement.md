@@ -3,7 +3,7 @@
 Prepare a handover only on a yes. Use the `maintain` skill's
 `templates/handover.md`, say where
 access is granted, and state what the handover excludes. If it changes the
-build path or adds an area, record why, the caution, and what continues or
+risk record or adds an area, record why, the caution, and what continues or
 waits.
 
 Before retirement, export the data and read it back, then tell users. Handle

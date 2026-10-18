@@ -1,12 +1,12 @@
 # Handover
 
-<!-- What somebody outside the project needs in order to look at one sensitive
+<!-- What somebody outside the project needs in order to look at one risk
 area, or to take the whole build on. Written for them, in plain words. Never
 include secrets. -->
 
 ## What the tool does
 
-## Current build path and sensitive areas
+## Current risk record and risk areas
 
 ## Why this is being handed over
 

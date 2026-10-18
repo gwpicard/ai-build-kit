@@ -6,7 +6,7 @@ in order, then reproduce the fault. `/implement` builds it by
 
 ## Check the report
 
-1. Read the masterplan's build-path section. Repair only behaviour it promised;
+1. Read the masterplan's risk record. Repair only behaviour it promised;
    route unpromised behaviour as new work.
 2. If the live tool broke after a recent merge, follow the `live-copy` skill's
    "Rolling back" first, then shape the repair.
@@ -28,7 +28,7 @@ logging in source waits for the build.
 
 Record exact steps, expected and actual results, error text verbatim,
 environment, and whether it is intermittent. Read the project's own request
-record after launch on Build and run or Build with care to find the failed
+record after launch to find the failed
 step. If it is missing, name the missing evidence and continue; do not ask the
 person to read logs. If a step needs a secret, use its location in the
 masterplan. Run `quality.py reach --paths <suspected files> --run` and the

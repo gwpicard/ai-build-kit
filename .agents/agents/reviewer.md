@@ -25,5 +25,4 @@ file and the same brief: `claude -p`, `codex exec` or `gemini -p`, in its own
 worktree of the branch where the work is saved on one, otherwise in the project
 folder. Where that cannot run either, the person opens a clean chat in the
 project and pastes one line naming this file and the brief. A same-session
-review is allowed only on Explore privately, as the `second-opinion` skill
-says.
+review is not independent, and the record says so.

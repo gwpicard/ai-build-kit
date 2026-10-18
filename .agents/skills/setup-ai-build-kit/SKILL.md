@@ -39,10 +39,10 @@ on.
    before the next question. Load `references/stand-up.md` before the closing
    reply and include its menu.
    Python document work and a read-only link to an existing database are not offered yet.
-4. Run `fit-check`. Record access, path, sensitive areas, cautions, and
-   recheck triggers. Consider redesigns first. Give the risk notice before
+4. Run `fit-check`: its three questions, then access, risk areas, cautions
+   and recheck triggers. Consider redesigns first. Give the risk notice before
    flagged work and record acceptance. An ownership no becomes a task.
-5. Follow `references/write-the-masterplan.md`. On Build with care, run
+5. Follow `references/write-the-masterplan.md`. If a risk area is named, run
    `second-opinion` before flagged work. Record findings and gaps; apply a
    stopping finding only with approval. Otherwise record why review was
    skipped. Check ownership.
@@ -56,7 +56,7 @@ the approval required by `merge`.
 
 ## Done
 
-Finish when `scripts/check-tooling.sh --conditions` exits 0, records exist, the
-path and review are recorded, pieces are visible, a check passes and a local
-checkpoint is saved. Report. End with
+Finish when `scripts/check-tooling.sh --conditions` exits 0, the records,
+risk record and review exist, pieces are visible, a check passes and
+a local checkpoint is saved. Report. End with
 `/implement` and `/shape` in a fresh chat.
