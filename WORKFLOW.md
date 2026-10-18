@@ -68,7 +68,7 @@ current project's installed skill, so a later project uses its own launcher.
 
 | Record | Purpose |
 |---|---|
-| masterplan.md | What the tool is, in the present tense. Its first part, the build-path section, records how careful this project needs to be. |
+| masterplan.md | What the tool is, in the present tense. Its first part, the risk record, says who is exposed if the tool fails, what data it holds and how you would recover. |
 | the project's issues | What's left to build: one issue per piece, each with what done looks like, its evidence, and what it needs. `/what-now` reads them for you. |
 | CHANGELOG.md | What happened, dated, in plain language, when work actually landed. |
 
@@ -107,21 +107,19 @@ Four labels say where a piece stands instead: `building` when somebody is on it,
 
 Three more say it is waiting on a question rather than on a person: `needs-clarification` (talking it through settles it), `needs-prototype` (a throwaway is needed first to see what it should look like), and `needs-research` (a fact from outside the project is needed). Anything you jot down starts at `needs-clarification`; `/shape` settles it and marks the piece `ready`, and `/implement` builds only ready pieces. What settled it is written onto the piece before the label changes, so a month later you can see what was decided rather than only that something was.
 
-## 3. The build path
+## 3. The risk record
 
-Every project has exactly one build path at a time, set by the fit check and rechecked as the project changes character.
+Every project carries a short risk record at the top of its masterplan. Setup fills it from three plain questions: who is exposed if this fails, what data does it hold, and how would you recover from a failure. The fit check rechecks it as the project changes character.
 
-**Explore privately.** Nobody depends on it yet, data is disposable, and nothing it does is hard to undo. Manual checks are fine for visual and exploratory work, and a confirmed checkpoint commit is enough to save it.
+The care is the same everywhere. Every change goes through a pull request, the project check and an independent review, and nothing merges without your yes. What differs from piece to piece is the risk areas it touches.
 
-**Build and run it.** The team's own tool, with a manual fallback and consequences that are limited and recoverable. Promised behaviour gets evidence, shared or behavioural changes go through a pull request, and named risky areas get an independent review before they go live.
+The record names the risk areas the project touches: personal data, money, sign-in by outsiders, automatic action on people or other systems, irreplaceable live data, or a regulated decision. It names each in your tool's own words, with the one caution that goes with it. Each piece carries a `Risk areas:` line naming the areas it touches, or `none`. A piece with `none` is built the ordinary way. A piece in a named area gets one risk notice, and the caution happens before that part goes live, or you accept skipping it on the record.
 
-**Build with care.** Some of the work touches a sensitive area: personal data, money, sign-in by outsiders, automatic action on people or other systems, irreplaceable live data, or a regulated decision. The masterplan names each area in your tool's own words, with the one caution that goes with it. The kit builds everything else the ordinary way, and in a named area the caution happens before that part goes live, or you accept skipping it on the record.
-
-Each sensitive area also says where it lives in the tool. A check keeps that
+Each risk area also says where it lives in the tool. A check keeps that
 list true: a moved place or a new part with no area stops the check and asks
 you where it belongs. When a change reaches one of those places, the review
 starts from what the change touched rather than from what the piece expected
-to touch. The map exists only on Build with care.
+to touch. The map exists once a risk area is named.
 
 An area can also name one boundary, such as "the ledger is only reached through
 the charge step". At founding, and at the quarterly visit for a newly named
@@ -130,14 +128,14 @@ in your own words, and a change that crosses it turns the tick red with your
 sentence beside it. Nothing is added or taken away without your yes, and a
 language with no tool for it is told plainly that it has none.
 
-Separate from the path, the masterplan's `Access:` line says who can get in:
+The risk record's `Access:` line says who can get in:
 private by default, and checked on each launch and each /maintain visit.
 
-None of these paths is the kit refusing to build. Build with care is where it says plainly what would normally prevent the harm, and you decide. That is the risk notice, in section 8.
+None of this is the kit refusing to build. Where a risk area is named, it says plainly what would normally prevent the harm, and you decide. That is the risk notice, in section 8.
 
 ## 4. Day one
 
-Type /setup-ai-build-kit. It checks what the current tool can actually do, then tries to talk you out of building if something simpler would do the job. It makes that case once. If you still want the tool, that is your call, and it records the cheaper option and gets on with founding rather than asking again. It interviews you, one question at a time with its best guess attached, and runs the fit check to set the project's build path.
+Type /setup-ai-build-kit. It checks what the current tool can actually do, then tries to talk you out of building if something simpler would do the job. It makes that case once. If you still want the tool, that is your call, and it records the cheaper option and gets on with founding rather than asking again. It interviews you, one question at a time with its best guess attached, and runs the fit check, which fills the project's risk record.
 
 From those answers it writes the masterplan and cuts the work into pieces. Each piece becomes an issue in your GitHub repository, which can be private.
 
@@ -234,7 +232,7 @@ and what still needs your eyes. It never claims the screen is accessible,
 compliant, or good, and a piece with no screen sees none of this. If the result
 is wrong, describe what happened and type /shape.
 
-If the change touched an area the build path flags, the best independent method available reviews it first. It reports in plain language, sorted into what's worth stopping for and what's worth knowing.
+The best independent method available reviews every change before it merges. It reports in plain language, sorted into what's worth stopping for and what's worth knowing.
 
 When more than one piece is ready, /implement shows you the whole set before it builds anything, and asks which to take. It comes back with two lists. The first is everything ready, and those are safe to take on together, because a piece waiting on another piece is never in it. The second is what is waiting, each line saying which piece has to land first: "deposits cannot start until card payments is built". Nothing is built until you choose.
 
@@ -262,7 +260,7 @@ Show a mock of what you want and it settles the question instead, with no throwa
 
 Anything touching data, access, or money gets written into the masterplan first. If another piece already open would be built in the same place, /shape names it before the work starts, so you can decide whether to carry on, wait, or fold the two together.
 
-If the request would change what kind of project this is, by bringing in outside users or real money or a promise to someone, the agent re-runs the fit check with you before building. A different build path needs different care before people rely on it.
+If the request would change what kind of project this is, by bringing in outside users or real money or a promise to someone, the agent re-runs the fit check with you before building. A change in who relies on it needs different care before they do.
 
 When something that should work doesn't, tell /shape: "/shape the board duplicates cards when I drag them". Paste the whole error if there is one. A bug is a piece like any other. /shape first checks that the behaviour was promised, since a new wish is new work rather than a repair. Then it makes the problem repeat reliably, cuts it down to the smallest case that still fails, and writes that case into the piece as its done line.
 
@@ -296,7 +294,7 @@ one is written. When there is a known time the behaviour worked, it searches
 the saved changes for where it broke, then removes every temporary log before
 the repair is saved.
 
-If the same fault survives three attempts, it stops patching and routes by what the failures revealed. That may mean another interview, a rebuild from the masterplan, a stop for missing access, or naming the area as sensitive so somebody who does that work for a living looks at it. In the same reply you get the risk notice: whoever relies on that behaviour is still getting wrong results. If you carry on after it, the next attempt goes ahead and your acceptance is recorded.
+If the same fault survives three attempts, it stops patching and routes by what the failures revealed. That may mean another interview, a rebuild from the masterplan, a stop for missing access, or naming the area as a risk area so somebody who does that work for a living looks at it. In the same reply you get the risk notice: whoever relies on that behaviour is still getting wrong results. If you carry on after it, the next attempt goes ahead and your acceptance is recorded.
 
 ## 6. Evidence
 
@@ -309,24 +307,24 @@ Every promised behaviour gets evidence, in one of four forms:
 
 The agent chooses the form the change actually needs; the report says what was proved and what remains a judgement call.
 
-On Build with care, /implement can offer to break the changed code on purpose
+Where a change touches a mapped risk area, /implement can offer to break the changed code on purpose
 to check whether its tests notice. A repair gets the same offer for the test
 that keeps a repaired fault from returning. It runs locally when the language
 has a suitable tool, covers only the changed code, and is optional.
 
 You get one line: "The tests were checked by breaking the code on purpose 40
 times. They caught 37. The three they missed are listed on the piece." Misses
-in a named sensitive area are worth stopping for; the rest are worth knowing.
+in a named risk area are worth stopping for; the rest are worth knowing.
 You decide whether they matter. The kit records that choice, and only adds a
 test to protect promised behaviour, never just to raise the count.
 
 ## 7. Saving work
 
-Every piece saves through one of three routes. The checkpoint route commits, and that commit may stay local, so private, disposable exploration can be saved without pushing. The pull-request route pushes and opens a pull request, for shared, live, behavioural, data, access, integration, service, or operational changes.
+Every piece saves through a pull request: the agent pushes a short-lived branch and opens it, and you decide whether to merge.
 
-The flagged route does the same, and also attaches the condition the touched area requires; a piece that stops there, plan marked blocked and the condition on record, counts as finished until that condition is met or you carry on after the risk notice and your acceptance is recorded. When you are there and carry on at the notice, the piece is built and saved like any other.
+A piece in a risk area whose caution is neither done nor accepted takes the flagged route. It does the same, and also attaches the condition the touched area requires; a piece that stops there, plan marked blocked and the condition on record, counts as finished until that condition is met or you carry on after the risk notice and your acceptance is recorded. When you are there and carry on at the notice, the piece is built and saved like any other.
 
-On either route, the first time anything pushes your project's code online, the agent asks you first, naming the repository and whether it is public or private. It asks once for each project: once the code is on GitHub, it does not ask again.
+The first time anything pushes your project's code online, the agent asks you first, naming the repository and whether it is public or private. It asks once for each project: once the code is on GitHub, it does not ask again.
 
 If you say no, or nobody is there to answer, the piece is still built and checked, and it waits on its own branch on your computer until you say yes. If the repository already holds something that is not your project, or still points at the kit's own repository, nothing is pushed and the agent asks you what to do.
 
@@ -336,7 +334,7 @@ Green means the checks that exist really passed, which is a smaller promise than
 
 A human decides whether to merge, always. Once the check is green, /implement tells you what to try and where, such as the preview address, then names the pull request in one plain line and asks for a yes that names the merge. Saying "put it live" or "save it" before any merge was named is not that yes, so it asks again; saying "merge it" is, and it does not ask twice.
 
-It makes the merge on the pull request itself, never by merging on your computer and pushing `main`, and in Claude Code a box asks you to allow it first, where your project's settings carry that question. A project founded before the kit added it gets no box until /maintain adds it, and /implement says so rather than promising one. If GitHub cannot be reached, the merge waits, and you can merge it on GitHub yourself. With nobody there to answer, nothing is merged and the pull request waits for you. After a merge, everyone pulls main. Flagged areas also get the review the build path names before the pull request is offered as ready.
+It makes the merge on the pull request itself, never by merging on your computer and pushing `main`, and in Claude Code a box asks you to allow it first, where your project's settings carry that question. A project founded before the kit added it gets no box until /maintain adds it, and /implement says so rather than promising one. If GitHub cannot be reached, the merge waits, and you can merge it on GitHub yourself. With nobody there to answer, nothing is merged and the pull request waits for you. After a merge, everyone pulls main. Every pull request gets its review before it is offered as ready, and a flagged area also gets the review its caution names.
 
 Once the tool is live, a merge is a deploy: the host builds `main` and the team's copy follows.
 
@@ -346,33 +344,29 @@ Where your recipe runs a check on this computer before the merge, a check that r
 
 After the merge, /implement reads one line from the live copy: "The live copy now runs this change", or "The live copy did not update" with the next step. It changes nothing live, so if you ask it to put the change out again, it checks first and leaves any further deploy to /setup-hosting. A direct push to `main` is forbidden, and in Claude Code the project settings refuse the usual ways of writing one, so every change reaches it through a pull request. Each piece starts from an up-to-date `main`.
 
-## 8. Sensitive areas, and the risk notice
+## 8. Risk areas, and the risk notice
 
-Six areas count as sensitive, and the list is fixed: personal or sensitive data, money, sign-in and permissions, automatic action on people or other systems, irreplaceable live data, and regulated decisions.
+Six areas count as risk areas, and the list is fixed: personal or sensitive data, money, sign-in and permissions, automatic action on people or other systems, irreplaceable live data, and regulated decisions.
 
 Each carries a default caution, which is what would normally prevent the harm: a person who did not build the tool reviews who can see what; a managed payment or sign-in service so the tool never holds card details or passwords; a person approves each automatic action until a live run has shown it right; a backup restored once and the change rehearsed on a copy; somebody qualified signs off a regulated rule.
 
-The build path's section names each area in your tool's own words, its caution, and whether the caution is done. Where the caution is a backup, a copy or a managed service, the kit does it. Where it is a person, the kit tells you so once, in the risk notice below, and the choice of whether to wait for them is yours. It keeps building everywhere else either way.
+The risk record names each area in your tool's own words, its caution, and whether the caution is done. Each piece lists the areas it touches, and the notice comes once for that piece. Where the caution is a backup, a copy or a managed service, the kit does it. Where it is a person, the kit tells you so once, in the risk notice below, and the choice of whether to wait for them is yours. It keeps building everywhere else either way.
 
 Before work in a named area goes ahead, you get a risk notice. It comes once, in full, in one reply. It says who is exposed, what happens to them if it goes wrong, what would normally prevent that, what you can do, and that the kit flags what it can recognise and will miss things. It names people rather than saying something is risky, because the exposure a tool creates usually lands on somebody else.
 
 Then it is your call. You can have the caution done first, take the thing out of scope so the risk goes away, or carry on. Carrying on is accepting the risk: say go ahead in any words and the work goes ahead. You are not asked a second time, and nothing the notice named stays switched off waiting for the check you chose to skip. Saying nothing is not carrying on, and neither is asking a question. Nothing is refused and nothing stops you.
 
-When you carry on, an acceptance is written into the build-path section before the work starts, as a dated line saying what was skipped, in your own words, with your name. It says the risk was accepted, never that the caution was done. Making a project less careful is a decision you record, not something the agent does on its own, and the accumulated lines are the honest answer to "what did we knowingly skip?" when somebody asks in six months.
+When you carry on, an acceptance is written into the risk record before the work starts, as a dated line saying what was skipped, in your own words, with your name. It says the risk was accepted, never that the caution was done. Making a project less careful is a decision you record, not something the agent does on its own, and the accumulated lines are the honest answer to "what did we knowingly skip?" when somebody asks in six months.
 
-What the agent may not do is take the notice back. Pushing back on the cost, the wait, or the fuss changes what you decide and changes nothing about who is exposed, so the notice stays put however many times it comes up. A named check cannot be quietly turned into something the agent does itself either: where the build path asks for another person's eyes, the agent reading its own work does not count, and neither does a passing test.
+What the agent may not do is take the notice back. Pushing back on the cost, the wait, or the fuss changes what you decide and changes nothing about who is exposed, so the notice stays put however many times it comes up. A named check cannot be quietly turned into something the agent does itself either: where a caution asks for another person's eyes, the agent reading its own work does not count, and neither does a passing test.
 
 ## 9. Going live
 
 /setup-hosting is for the moment you want people to use the tool. Its first run takes what is already on `main` live and sets the host up so that each later merge to `main` reaches the team's copy. From then on a merge is a deploy, and /implement makes each merge on your yes, so /setup-hosting never merges your code. Run it again whenever you want the live copy checked against `main`, or moved to another host or recipe.
 
-/setup-hosting reads the build path first, and each path gets only the process it needs, not a shared ceremony trimmed after the fact.
+/setup-hosting reads the risk record first. It runs the full evidence run, independent review, operational readiness, and the live transition. Off a recipe, the kit cannot check the launch steps: it names each of the nine it could not check, once, as a warning in the changelog, and the launch goes ahead.
 
-**Explore privately.** /setup-hosting runs no production evidence or launch procedure; it only confirms the prototype stays disposable and private, and records what would have to change to graduate.
-
-**Build and run it.** /setup-hosting runs the full evidence run, independent review, operational readiness, and the live transition. Off a recipe, the kit cannot check the launch steps: it names each of the nine it could not check, once, as a warning in the changelog, and the launch goes ahead.
-
-**Build with care.** /setup-hosting takes live everything outside a named sensitive area, does the caution it can do itself (a backup restored once, a rehearsal on a copy), and at a caution that is a person who has not looked, gives you the risk notice once. If you carry on, your acceptance is written down and that area goes live too. Where somebody outside the team is going to look, ask for the handover and /maintain prepares it.
+For a risk area, /setup-hosting does the caution it can do itself (a backup restored once, a rehearsal on a copy), and at a caution that is a person who has not looked, gives you the risk notice once. If you carry on, your acceptance is written down and that area goes live too. Where somebody outside the team is going to look, ask for the handover and /maintain prepares it.
 
 On a recipe, /setup-hosting reads the recipe your project's AGENTS.md names, and
 a script runs its nine checks in order. Each one gives you a plain line, in
@@ -439,7 +433,7 @@ section. A later /setup-hosting reads that line before the backup, restore or da
 check. If nothing is recorded, it asks you once. If you cannot say, the warning
 says the kit does not know where the secret is kept, and never that it is gone.
 
-On both live paths, /setup-hosting checks that the tool keeps a plain record of what each
+On every launch, /setup-hosting checks that the tool keeps a plain record of what each
 request did, without personal data, secrets or confidential file contents. If
 it does not, you hear once: "The tool keeps no record of what each request did,
 so a fault reported after launch cannot be traced. I have noted that in the
@@ -451,7 +445,7 @@ It also tells you once: "Once real people use this, the only record of what
 went wrong will be the record the tool writes. If you want somebody to be told
 when it breaks, that is a service somebody runs and pays for, and the kit does
 not set one up." If the fit check already names who receives alerts, it does
-not repeat this caution. Explore privately gets neither check nor caution.
+not repeat this caution.
 
 When the tool will run on a server somebody else runs, as on the Coolify
 recipe, the first launch needs an address, and the kit never contacts that
@@ -486,7 +480,7 @@ settings, entered by name.
 
 After the first launch, a later /setup-hosting compares the live copy with `main` and tells you each gap in one plain line: whether the live copy runs the latest merge, whether it is held on an earlier version since a rollback, whether a database change has not been applied, whether a secret or setting is missing on the host, and whether health answers. It then runs the recipe's checks again, the backup and the restore included.
 
-It repairs each gap only after a yes that names it. It rechecks the build path first if reliance or consequence has grown. A warning the changelog already holds comes back as one line pointing to it, so anything given in full is new. Every later run leaves one dated entry in the changelog, even when it finds nothing to repair, with its rollback line, such as "Rollback possible, not tried". That entry arrives as a records pull request with its own merge question, and where your host builds every change, that merge is one more build. Moving to another host or recipe is a later run too: the old live copy keeps serving until the new one answers.
+It repairs each gap only after a yes that names it. It rechecks the risk record first if reliance or consequence has grown. A warning the changelog already holds comes back as one line pointing to it, so anything given in full is new. Every later run leaves one dated entry in the changelog, even when it finds nothing to repair, with its rollback line, such as "Rollback possible, not tried". That entry arrives as a records pull request with its own merge question, and where your host builds every change, that merge is one more build. Moving to another host or recipe is a later run too: the old live copy keeps serving until the new one answers.
 
 You can also ask /setup-hosting for a rollback outright. It reads the host's list of builds, names the version it would bring back by the change it carried and its date, and waits for a yes that names it. It runs the rollback once, or tells you where to click when the host offers nothing the kit can run, and checks that the live copy now reports the earlier version.
 
@@ -514,11 +508,11 @@ launch checks do not try one on a working live tool.
 
 Autonomy is earned. Once a project has three normal pieces built cleanly, no open review finding, and a plan made of ready pieces a machine can prove done, "/implement auto" can build several of them in a row without you between them. You approve the plan once, then it runs; the trade is that you check a batch at the end instead of each piece as it lands.
 
-The run only picks up pieces whose done line names a check a machine can judge. Pieces that need your eyes stay in the plan for you. Every piece still gets its own evidence and its own saved snapshot. A piece that fails three attempts gets parked with a note on what it revealed, and the run moves on rather than grinding on it; anything touching a named sensitive area stops the run entirely.
+The run only picks up pieces whose done line names a check a machine can judge. Pieces that need your eyes stay in the plan for you. Every piece still gets its own evidence and its own saved snapshot. A piece that fails three attempts gets parked with a note on what it revealed, and the run moves on rather than grinding on it; anything touching a named risk area stops the run entirely.
 
-You come back to a report of what was built, what got parked and why, and a checklist of things to try, riskiest first. Where the build path requires a pull request, that's how the batch arrives; work the checklist, then say yes to the merge. The run itself never merges. If the run disappointed you, improve the documents rather than the code. Sharpen the done lines, add the missing rule to the masterplan, and run it again.
+You come back to a report of what was built, what got parked and why, and a checklist of things to try, riskiest first. The batch arrives as pull requests; work the checklist, then say yes to the merge. The run itself never merges. If the run disappointed you, improve the documents rather than the code. Sharpen the done lines, add the missing rule to the masterplan, and run it again.
 
-Some harnesses provide goal or long-run modes, such as Claude Code's `/goal`: "keep going until this condition holds". Same run, same rules: take the condition from a done line, a named sensitive area still stops it, and the result still lands through the save route the build path requires.
+Some harnesses provide goal or long-run modes, such as Claude Code's `/goal`: "keep going until this condition holds". Same run, same rules: take the condition from a done line, a named risk area still stops it, and the result still lands through a pull request.
 
 ## 11. Working as a team
 
@@ -549,9 +543,8 @@ to the records without a skill deciding to.
 
 If a session stopped part-way, start with /what-now. It says what the leftover
 work belongs to and offers to continue it, save it or clear it. /maintain's
-corrections are saved the way a piece is saved, through the route your build
-path requires, so on a shared project they arrive as a pull request you decide
-to merge, and uncommitted work it finds on arrival is reported and left alone.
+corrections are saved the way a piece is saved, so they arrive as a pull
+request you decide to merge, and uncommitted work it finds on arrival is reported and left alone.
 That work stays out of every save the visit makes, and the kit update waits
 until it is dealt with.
 
@@ -643,9 +636,8 @@ masterplan pointing at a skill's file by a folder your installation may not
 have offers to name the skill instead, changing only those lines, and only on
 your yes.
 
-A masterplan whose build-path section still uses the fields from before the
-kit decided the path by what the work touches is offered a rewrite to today's
-shape. It shows the old section above the new one, copies each accepted risk
+A masterplan whose fit-check section still uses the fields from the kit's
+four-path days is offered a rewrite to today's shape. It shows the old section above the new one, copies each accepted risk
 word for word, and changes nothing else in the masterplan without your yes.
 
 A project installed before the kit had six commands still offers the old
@@ -725,11 +717,11 @@ Nothing is blocked and nothing changes without a command. If you ask a visit to
 leave kit updates alone, it does not add that reminder either, and says so.
 
 The quarterly visit is fuller, with a hot-spot tidy-up and an ownership check
-that can name a new sensitive area or, after a genuine redesign, take one off.
+that can name a new risk area or, after a genuine redesign, take one off.
 Its hot-spot read counts how widely the quarter's saved changes spread instead
 of guessing from memory.
 
-Unless the project is a private exploration, it also looks for code copied
+It also looks for code copied
 from one place to another, code nothing uses any more, and dependencies nothing
 needs, using tools that read the project rather than the agent's impression of
 it. Each finding names the file and line, and it joins the same short list of
@@ -751,7 +743,7 @@ again. It finds copies, not two documents that say the same thing in
 different words.
 
 /maintain also prepares a handover when you ask for one: a document for
-somebody outside the team who will look at one sensitive area, or take the
+somebody outside the team who will look at one risk area, or take the
 whole build on. It holds no secrets, says where access is granted, and says
 what it does not cover. Everything outside that area carries on either way.
 
@@ -767,7 +759,7 @@ whether it can be undone.
 |---|---|
 | Project rules the agent must follow | Your project's `AGENTS.md` |
 | Keys, passwords and tokens | Files Git ignores, such as `.env`, made from `.env.example`; live values belong in the host's settings |
-| The build path and accepted risks | The build-path section of `masterplan.md` |
+| The risk record and accepted risks | The risk record in `masterplan.md` |
 | The recipe the project runs on | The `Recipe:` line in the stack section of `AGENTS.md` |
 | Commands the agent may not run | The kit's [blocked-command list](.agents/guard/blocked-commands.md) and your agent's own settings |
 

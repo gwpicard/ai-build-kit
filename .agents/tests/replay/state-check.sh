@@ -222,7 +222,7 @@ esac
 # that date, is a miss. With no dated acceptance or no area lines there is
 # nothing to compare, which is not a failure.
 and_verdict=unobservable
-and_note="no dated acceptance and sensitive-area line to compare"
+and_note="no dated acceptance and risk-area line to compare"
 if [ -f "$masterplan" ]; then
   and_result=$(python3 - "$masterplan" <<'PY'
 import re, sys
@@ -240,7 +240,7 @@ for line in text:
         continue
     if section == "Accepted":
         accepted[-1] += " " + line.strip()
-    elif section == "Sensitive areas" and line.startswith("  ") and not line.startswith("    "):
+    elif section == "Risk areas" and line.startswith("  ") and not line.startswith("    "):
         areas.append(line.strip())
 dates = set()
 for value in accepted:

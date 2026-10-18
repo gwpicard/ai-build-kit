@@ -8,30 +8,31 @@ never has to read a hash. -->
 
 <!-- What the tool is now. Present tense. Keep the core readable in roughly
 one to two pages. Optional sections appear only when they carry real decisions.
-On every build path, key terms and decided lines may carry an optional one-line
-"rests on" clause in plain words, naming the evidence behind the decision.
-Follow the decision rules in
-the `records` skill's `references/pieces.md`. -->
+Key terms and decided lines may carry an optional one-line "rests on" clause in
+plain words, naming the evidence behind the decision. Follow the decision rules
+in the `records` skill's `references/pieces.md`. -->
 
-## Build path
+## Risk record
 
 <!-- Rewritten only by re-running the fit check, which is the
 `fit-check` skill. The agent reads this section first, every session. -->
 
-Path:
-Why:
+Exposed:
+Data:
+Wrong answer:
+Recovery:
 Access: private
 <!-- Who can get in. `private`: only invited people. `open address,
 invitation only (decided YYYY-MM-DD)`: anyone can reach the address, and
 sign-up stays closed. `public (decided YYYY-MM-DD)`: anyone can make an
 account. The recipe's access check reads this line. -->
 
-Sensitive areas:
-<!-- Build with care only. Under each area, add an indented `paths:` line and
-at most one `boundary:` line. List every other top-level source folder on an
-indented `none:` line. Update the map in the same save as a code move. Omit the
-map on Explore privately and Build and run it. -->
-Accepted:
+Risk areas: none
+<!-- When the tool touches a risk area, replace `none` with one indented line
+per area. Under each, add an indented `paths:` line and at most one `boundary:`
+line. List every other top-level source folder on an indented `none:` line.
+Update the map in the same save as a code move. -->
+Accepted: none
 Runs on its own: off
 Recheck when:
 Last checked:
@@ -75,7 +76,7 @@ against work the team knows. -->
 ## What happens when it fails
 
 <!-- User-facing errors, manual fallback, recovery owner, and any consequence
-that changes the build path. -->
+that changes the risk record. -->
 
 ## How it stays running
 

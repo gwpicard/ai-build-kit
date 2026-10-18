@@ -1,6 +1,6 @@
 # Check whether the tests notice
 
-For a change inside a mapped sensitive area, run `python3` with this skill's
+For a change inside a mapped risk area, run `python3` with this skill's
 `scripts/quality.py`, passing `strength --base <start commit>`. For a repair,
 run it on the regression test only when that test touches a mapped area.
 `quality.py tests` triggers this read itself for changed lines in mapped areas
@@ -21,7 +21,7 @@ missed none." when there are none. Keep the engine's name and the word
 
 On the piece, describe each miss in plain words: what changed, what the tests
 let through, and which promised behaviour that could affect. Compare its place
-with the masterplan's sensitive-area map. A miss inside a named area goes under
+with the masterplan's risk-area map. A miss inside a named area goes under
 "Worth stopping for", with the area named; any other miss goes under "Worth
 knowing". The person decides whether a miss matters; record that on the piece.
 

@@ -184,7 +184,7 @@ rr_said yes "site_url"
 rr_case 2 good RR_OLD_CLI=1 set-signup.sh open
 rr_case 2 good set-signup.sh
 # Public, by the record: the gate off the live address and sign-up open.
-printf '# Masterplan\n\n## Build path\n\nAccess: public (decided 2026-10-14)\n' > "$RR_TMP/fixture/masterplan.md"
+printf '# Masterplan\n\n## Risk record\n\nAccess: public (decided 2026-10-14)\n' > "$RR_TMP/fixture/masterplan.md"
 rr_case 0 good RR_SSO=standard RR_SIGNUP=open access.sh
 rr_case 1 good RR_SIGNUP=open access.sh
 rr_case 1 good RR_SSO=standard access.sh
@@ -192,7 +192,7 @@ rr_case 1 good RR_SSO=standard RR_GATE=gated RR_SIGNUP=open access.sh
 rr_said yes "asks for Vercel's sign-in"
 rr_case 1 good settings.sh
 # Open address, invitation only: the gate off the live address, sign-up closed.
-printf '# Masterplan\n\n## Build path\n\nAccess: open address, invitation only (decided 2026-10-14)\n' > "$RR_TMP/fixture/masterplan.md"
+printf '# Masterplan\n\n## Risk record\n\nAccess: open address, invitation only (decided 2026-10-14)\n' > "$RR_TMP/fixture/masterplan.md"
 rr_case 0 good RR_SSO=standard access.sh
 rr_said yes "Open address, invitation only, as recorded"
 rr_case 1 good access.sh
@@ -209,7 +209,7 @@ rr_case 0 good live-check.sh --only access
 rr_said yes "Access: not recorded, by your choice."
 rr_case 0 good access.sh
 rm -f "$RR_TMP/fixture/.ai-build-kit-maintenance"
-printf '# Masterplan\n\n## Build path\n\nPath: Build and run it\nAccess: private\n' > "$RR_TMP/fixture/masterplan.md"
+printf '# Masterplan\n\n## Risk record\n\nAccess: private\n' > "$RR_TMP/fixture/masterplan.md"
 
 # Sign-up and the sign-in settings, read with either public key Supabase
 # issues: the publishable key a project made today shows, or the anon key.

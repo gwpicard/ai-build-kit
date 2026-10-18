@@ -12,7 +12,7 @@ replacing it. The danger is changing behaviour nobody ever wrote down.
    gap becomes a piece (it should do X and does not) or a recorded wart (it
    does Y, which is wrong, but people rely on it for now).
 3. Run the full fit check. A tool with outside users or real data arrives with
-   the build path that reflects it.
+   the risk areas that reflect it.
 4. Write the masterplan for the present, warts included: "Uploads over 10MB
    fail silently" belongs there if that is what it does today.
 5. Pin down before changing. Code that is going to change gets tests that
@@ -40,7 +40,7 @@ the manual fallback.
 
 Clean up structure only where a current change is blocked by it, repeated bugs
 point at the same place, the change can be verified through existing
-behaviour, and the build path allows it.
+behaviour, and no risk area's caution forbids it.
 
 ## What to tell the person
 

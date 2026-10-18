@@ -44,10 +44,9 @@ rules in AGENTS.md.
 If `.github/workflows/checks.yml` is missing, copy the foundation template and
 edit only `jobs.project-check` with install and test commands. Preserve
 `source-kit-validation`. Follow `quality-checks/references/check-floor.md` for
-type checks and linting. On Build with care, use
-`boundary-rules.md` and offer once to have the check hold the named boundary.
-Explore privately needs a local check; other paths need a working remote
-check before shared or live work. Say: "green means the tests passed;
+type checks and linting. If a risk area names a boundary, use
+`boundary-rules.md` and offer once to have the check hold it. A working remote
+check is needed before shared or live work. Say: "green means the tests passed;
 red means don't merge, tell /implement."
 
 Before starting the unfinished tool, say it will check the recorded main page

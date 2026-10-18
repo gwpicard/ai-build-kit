@@ -28,10 +28,6 @@ fi
 
 if [ "$NEXT" -eq 1 ]; then
   setting=$(git show main:masterplan.md 2>/dev/null || cat masterplan.md 2>/dev/null || true)
-  printf '%s\n' "$setting" | grep -Eq '^Path: (Build and run it|Build with care)$' || {
-    echo "plan-refresh: the queue is not available on Explore privately" >&2
-    exit 1
-  }
   printf '%s\n' "$setting" | grep -Eq '^Runs on its own:.*[[:space:],]queue([[:space:],(]|$)' || {
     echo "plan-refresh: the queue is off on main" >&2
     exit 1

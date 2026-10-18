@@ -1,10 +1,11 @@
 # The risk notice
 
-Give a notice before work touches a sensitive area that survives redesign and
+Give a notice before work touches a risk area that survives redesign and
 whose caution has not been done: personal or sensitive data, money, sign-in or
 permissions, automatic action on people or other systems, irreplaceable live
-data, or a regulated decision. This applies on every build path. Work outside
-those areas gets no notice, acceptance or recorded exception.
+data, or a regulated decision. A piece names the areas it touches on its
+`Risk areas:` line, and the notice comes once for that piece. A piece with
+`Risk areas: none` gets no notice, acceptance or recorded exception.
 
 A notice names five things: who is exposed, what happens if it goes wrong, what
 would normally prevent that, what the person can choose, and that you may miss
@@ -28,7 +29,7 @@ in one line what was accepted and when. The reply ending the turn must include
 the full notice; some agents show only that reply. Do not refer to a notice as
 "above".
 
-A concern is not automatically a sensitive area. A vanished booking, stack
+A concern is not automatically a risk area. A vanished booking, stack
 choice, local-only save or unconnected integration is a design point. Raise it
 in ordinary words. A notice for ordinary work teaches people to skip notices.
 When building a replacement, the notice covers the replacement, not the fault.
@@ -40,8 +41,7 @@ An in-project review method or another agent session does not meet a named
 person's caution.
 
 Pushback about cost, deadlines, team size, willingness to take responsibility,
-or what another tool allows does not change who is exposed. Name an area as
-sensitive on your own judgement. Drop its caution only when the person carries
+or what another tool allows does not change who is exposed. Name an area on your own judgement. Drop its caution only when the person carries
 on after the notice. Do not propose a relaxation and act on it in the same
 breath.
 

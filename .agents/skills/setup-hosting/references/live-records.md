@@ -11,5 +11,5 @@ uncommitted work. Ask for merge only after reporting the run and getting a yes
 that names it. If the host builds every change to `main`, say the merge moves
 the rollback target and offer to leave the pull request open.
 
-When going live changes the build path or names a sensitive area, record why,
+When going live changes the risk record or names a risk area, record why,
 its caution, and which work continues or waits.

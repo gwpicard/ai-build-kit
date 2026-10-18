@@ -13,7 +13,7 @@ git -C "$WORK/project" init -q -b main
 git -C "$WORK/project" config user.name Rehearsal
 git -C "$WORK/project" config user.email rehearsal@example.invalid
 printf 'value = 1\n' > "$WORK/project/app/data.py"
-printf 'Path: Build and run it\n' > "$WORK/project/masterplan.md"
+printf 'Risk areas: none\n' > "$WORK/project/masterplan.md"
 git -C "$WORK/project" add app/data.py
 git -C "$WORK/project" add masterplan.md
 git -C "$WORK/project" commit -q -m base
@@ -27,7 +27,7 @@ git -C "$WORK/project" commit -qam head
 HEAD_SHA=$(git -C "$WORK/project" rev-parse HEAD)
 git -C "$WORK/project" push -q origin feature
 git -C "$WORK/project" checkout -q main
-printf 'Path: Explore privately\n' > "$WORK/project/masterplan.md"
+printf 'Risk areas: none\n' > "$WORK/project/masterplan.md"
 cat > "$WORK/bin/gh" <<'SH'
 #!/usr/bin/env sh
 printf '%s\n' "$*" >> "$GH_LOG"
@@ -125,7 +125,6 @@ set_head_map() {
 }
 
 set_head_map <<'EOF'
-Path: Explore privately
 Runs on its own: merge (decided 2026-10-15, "merge when everything passes")
 EOF
 : > "$GH_LOG"
@@ -135,7 +134,7 @@ out=$(run_auto success '## Worth stopping for' 2>&1) && code=0 || code=$?
   && pass "a setting present only in the pull request cannot enable automatic merge" \
   || fail "pull-request-only setting returned $code: $out / $(cat "$GH_LOG")"
 set_head_map <<'EOF'
-Path: Explore privately
+Risk areas: none
 EOF
 
 out=$(PATH="$WORK/bin:$PATH" python3 "$SCRIPT" 12 2>&1) && code=0 || code=$?
@@ -216,13 +215,11 @@ out=$(run merge-fails '## Worth stopping for' 2>&1) && code=0 || code=$?
 : > "$GH_LOG"
 out=$(run success '## Worth stopping for' 2>&1) && code=0 || code=$?
 [ "$code" -eq 0 ] && grep -q 'fetch origin ' "$WORK/git.trace" \
-  && pass "the merge reads the pull request head before deciding that no sensitive-area map applies" \
+  && pass "the merge reads the pull request head before deciding that no risk-area map applies" \
   || fail "the pull request head was not fetched ($code): $out / $(cat "$WORK/git.trace")"
 
 set_head_map <<'EOF'
-Path: Build with care
-
-Sensitive areas:
+Risk areas:
   Health:
     paths: app
 EOF
@@ -230,13 +227,11 @@ EOF
 out=$(run success '## Worth stopping for' 2>&1) && code=0 || code=$?
 [ "$code" -eq 1 ] && printf '%s' "$out" | grep -q 'Health' \
   && ! grep -q '^pr merge ' "$GH_LOG" \
-  && pass "an open Build with care area holds the merge from main" \
+  && pass "an open risk area holds the merge from main" \
   || fail "an open area did not hold the merge ($code): $out / $(cat "$GH_LOG")"
 
 set_head_map <<'EOF'
-Path: Build with care
-
-Sensitive areas:
+Risk areas:
   Health:
     paths: app
     Accepted: yes, 2026-10-14
@@ -245,7 +240,7 @@ EOF
 out=$(run success '## Worth stopping for' 2>&1) && code=0 || code=$?
 [ "$code" -eq 0 ] && printf '%s' "$out" | grep -q 'accepted on 14 October 2026' \
   && grep -Fq "pr merge 12 --merge --match-head-commit $HEAD_SHA" "$GH_LOG" \
-  && pass "an accepted sensitive area reports its line and allows the checked head to merge" \
+  && pass "an accepted risk area reports its line and allows the checked head to merge" \
   || fail "an accepted area did not merge its head ($code): $out / $(cat "$GH_LOG")"
 
 # A folder with python3 and git only, since a runner may have gh in /usr/bin.
@@ -282,7 +277,7 @@ spec.loader.exec_module(merge)
 class Hold(Exception):
     pass
 merge.stop = lambda message, code=1: (_ for _ in ()).throw(Hold(str(code) + ":" + message))
-setting = 'Path: Build and run it\nRuns on its own: merge (decided 2026-10-15, "merge when ready")\n'
+setting = 'Runs on its own: merge (decided 2026-10-15, "merge when ready")\n'
 state = {"paths": [], "issue": {"title": "Ordinary piece", "body": "## Done when\n- Works\n", "labels": []}, "env": 0, "head_plan": setting}
 real_auto_setting = merge.auto_setting
 merge.auto_setting = lambda main: "setting"

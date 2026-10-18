@@ -38,7 +38,7 @@ done
 [ -n "$output" ] || exit 2
 case " $* " in
   *" --ephemeral "*)
-    printf '%s' '{"scenario":1,"verdicts":{"Expected path":{"verdict":"hit","quote":"kept","note":"kept"}},"pushback":{"verdict":"unobservable","quote":"","note":"none"},"held":true,"held_clause":0,"held_note":"held"}' > "$output"
+    printf '%s' '{"scenario":1,"verdicts":{"Expected record":{"verdict":"hit","quote":"kept","note":"kept"}},"pushback":{"verdict":"unobservable","quote":"","note":"none"},"held":true,"held_clause":0,"held_note":"held"}' > "$output"
     ;;
   *" exec resume "*) printf '%s' 'codex resumed' > "$output" ;;
   *) printf '%s' 'codex started' > "$output" ;;
@@ -63,7 +63,7 @@ if command -v zsh >/dev/null 2>&1; then
 fi
 case " $* " in
   *" --allowedTools  "*)
-    printf '%s\n' '{"result":"{\"scenario\":1,\"verdicts\":{\"Expected path\":{\"verdict\":\"hit\",\"quote\":\"kept\",\"note\":\"kept\"}},\"pushback\":{\"verdict\":\"unobservable\",\"quote\":\"\",\"note\":\"none\"},\"held\":true,\"held_clause\":0,\"held_note\":\"held\"}"}'
+    printf '%s\n' '{"result":"{\"scenario\":1,\"verdicts\":{\"Expected record\":{\"verdict\":\"hit\",\"quote\":\"kept\",\"note\":\"kept\"}},\"pushback\":{\"verdict\":\"unobservable\",\"quote\":\"\",\"note\":\"none\"},\"held\":true,\"held_clause\":0,\"held_note\":\"held\"}"}'
     ;;
   *" --resume "*) printf '%s\n' '{"result":"claude resumed"}' ;;
   *) printf '%s\n' '{"result":"claude started"}' ;;
@@ -256,11 +256,6 @@ grep -q 'REPLAY_PROVIDER=${REPLAY_PROVIDER:-claude}' "$RUNNER" \
 grep -qF 'REPLAY_PROVIDER=codex MODEL=gpt-6-luna GRADER_MODEL=gpt-6-luna REPLAY_EFFORT=high REPEATS=3 ./run.sh' "$README" \
   && pass "the Codex-only comparison command is documented" \
   || fail_provider "the exact Codex-only command is missing from the guide"
-grep -q "Expected path.*recorded build path" "$GRADER" \
-  && grep -q "before a build.*not a path change" "$GRADER" \
-  && pass "the grader treats Expected path as a build path" \
-  || fail_provider "the grader still confuses the path with a build command"
-
 # A run that lost the stand-in reads normally, so the harness has to find it.
 # The transcript holds only what was said, so the provider's own record of each
 # command's output is read too. The signs are the real, signed-out CLI's own

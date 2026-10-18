@@ -467,7 +467,7 @@ with user configuration and project rules ignored. A Codex grader can still
 read files if it goes looking for them; inspect its event file if a verdict
 appears to rely on anything outside the supplied transcript.
 
-Each field is graded on its own, because a session can hold its expected path
+Each field is graded on its own, because a session can hold its expected record
 and still fail its evidence, and one combined verdict would hide that. A verdict
 of `hit` must quote the line from the transcript that earns it. Without a
 quotation the verdict cannot be `hit`, which is most of what keeps the grader

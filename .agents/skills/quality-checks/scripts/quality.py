@@ -1635,7 +1635,7 @@ def playwright_specs(root, files):
 
 
 def mapped_paths(masterplan):
-    """Every inline paths list in the sensitive-area map."""
+    """Every inline paths list in the risk-area map."""
     paths = []
     for line in masterplan.splitlines():
         match = re.match(r"^\s+paths:\s*(.*)$", line)
@@ -1939,17 +1939,16 @@ def test_read(root, base, piece):
                         status = 1
     if git("show", f"{base}:masterplan.md", cwd=root) is not None:
         masterplan = read(root, "masterplan.md")
-        if re.search(r"(?m)^Path:\s*Build with care\s*$", masterplan):
-            mapped = mapped_paths(masterplan)
-            if any(path == item or path.startswith(item.rstrip("/") + "/")
-                   for path in changed for item in mapped):
-                result = subprocess.run([sys.executable, os.path.abspath(__file__), "strength", "--base", base],
-                                        cwd=root, capture_output=True, text=True)
-                for line in result.stdout.splitlines():
-                    if line.startswith("missed\t"):
-                        print("strength\t" + line.split("\t", 1)[-1])
-                    elif line.startswith("not-checked\tstrength\t"):
-                        print("not-checked\tstrength\t" + line.split("\t", 2)[-1])
+        mapped = mapped_paths(masterplan)
+        if any(path == item or path.startswith(item.rstrip("/") + "/")
+               for path in changed for item in mapped):
+            result = subprocess.run([sys.executable, os.path.abspath(__file__), "strength", "--base", base],
+                                    cwd=root, capture_output=True, text=True)
+            for line in result.stdout.splitlines():
+                if line.startswith("missed\t"):
+                    print("strength\t" + line.split("\t", 1)[-1])
+                elif line.startswith("not-checked\tstrength\t"):
+                    print("not-checked\tstrength\t" + line.split("\t", 2)[-1])
     if status == 0 and not unavailable:
         print("tests\tpassed")
     if status == 1:
@@ -1968,9 +1967,8 @@ def overlap(root, pieces):
     else:
         plan = plan
     setting = re.search(r"(?m)^Runs on its own:.*$", plan)
-    path_line = re.search(r"(?m)^Path:\s*(.+?)\s*$", plan)
     parallel = re.search(r"\bparallel\s+([23])\b", setting.group(0), re.I) if setting else None
-    if not parallel or not path_line or path_line.group(1) == "Explore privately":
+    if not parallel:
         print("overlap: parallel building is off on main", file=sys.stderr)
         return 1
     if len(pieces) > int(parallel.group(1)):
@@ -2004,7 +2002,7 @@ def overlap(root, pieces):
     areas = []
     inside = False
     for line in masterplan.splitlines():
-        if line.strip() == "Sensitive areas:":
+        if line.strip() == "Risk areas:":
             inside = True
             continue
         if inside and line and not line[0].isspace():
@@ -2041,7 +2039,7 @@ def overlap(root, pieces):
             if any(path == pattern or path.startswith(pattern.rstrip("/") + "/")
                    or fnmatch.fnmatchcase(path, pattern)
                    for path in reaches[left] | reaches[right] for pattern in areas):
-                bad_pairs.append((left, right, "sensitive area"))
+                bad_pairs.append((left, right, "risk area"))
     if bad_pairs:
         for left, right, reason in bad_pairs:
             print("overlap\t%s\t%s\t%s" % (left, right, reason))

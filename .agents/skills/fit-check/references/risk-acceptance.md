@@ -12,9 +12,9 @@ An instruction about work outside the named area does not accept the risk for
 that area. If no notice was due, there is nothing to accept or record.
 
 Before flagged work starts, add an `Accepted:` line to the masterplan's
-build-path section. Include the date and the person's own words after hearing
+risk record. Include the date and the person's own words after hearing
 who is exposed. Change the area's own line to `accepted` with the date. Read
-the build-path section back; do not start until the acceptance appears there.
+the risk record back; do not start until the acceptance appears there.
 An acceptance recorded after the work starts is too late.
 
 Do this in the reply that answers the person carrying on: write the line, read
@@ -31,3 +31,6 @@ did not happen.
 
 Do not infer acceptance from a reply that does not request the work. The notice
 remains in force until the person carries on after hearing it.
+
+Once the acceptance is recorded, nothing holds the piece back: the project check
+reports the area in one line and passes.

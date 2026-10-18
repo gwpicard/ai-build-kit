@@ -1,6 +1,6 @@
 # Keeping the masterplan current
 
-These rules apply on every build path. Each piece carries its change to the
+Each piece carries its change to the
 masterplan as [pieces.md](pieces.md) describes. The masterplan keeps its
 sections and describes the present.
 
@@ -46,7 +46,7 @@ mark. Read the mark with `scripts/trued-mark.sh`. Count later landed code
 changes along the first-parent history, each merge once, leaving out
 records-only commits and unmerged work. Count how many touched the subjects of
 the masterplan's data, permissions or connections sections, following renamed
-paths and using the sensitive-area map where one exists.
+paths and using the risk-area map where one exists.
 
 When any count is above zero, say one line with the total and the subjects
 touched, then check the page: "Eleven changes have landed since the masterplan

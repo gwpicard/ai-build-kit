@@ -16,7 +16,7 @@
    add a dated changelog line. A no is not recorded, so the offer returns.
 3. Re-read the reach check and note whether
    dependency-cruiser or the built-in import reader is available.
-4. Run the sensitive-area check installed at founding. Where it names a
+4. Run the risk-area check installed at founding. Where it names a
    missing path or an unassigned folder, ask which area it belongs to, or
    `none`, and update the map on the answer.
 5. Update dependencies and check for known vulnerabilities. Report what
@@ -39,7 +39,7 @@
     have reached 240 lines, and 30 of them describe the folder layout the code
     already shows. Shall I trim them?" Never invent removable content. Cut
     nothing without a yes. Otherwise say nothing.
-10. Unless the project explores privately, run "Offering a move onto a
+10. Run "Offering a move onto a
     recipe" in `recipe-move.md` beside this file.
 11. Load the `quality-checks` skill's `references/stale-branches.md` and run its script. Never remove a
     branch.

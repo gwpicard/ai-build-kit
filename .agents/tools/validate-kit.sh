@@ -2,7 +2,7 @@
 # validate-kit.sh: repository self-validation for ai-build-kit itself.
 #
 # Checks the kit's own machinery: the skill inventory, frontmatter, internal
-# references, build-path vocabulary, generated adapters, shell and config
+# references, retired path vocabulary, generated adapters, shell and config
 # syntax, and a set of stale claims this kit has made before and should never
 # make again. Run from anywhere; it locates the repository root itself.
 #
@@ -831,36 +831,35 @@ fi
 echo "== Fit-check contract =="
 
 fitcheck="$SKILLS/fit-check/SKILL.md"
-fitrecord="$SKILLS/fit-check/references/build-path-record.md"
+fitrecord="$SKILLS/fit-check/references/risk-record.md"
 if [ ! -f "$fitcheck" ]; then
   fail "$fitcheck: missing"
 else
   fc_ok=1
-  for needle in "Explore privately" "Build and run it" "Build with care" \
-    "### 1. Build with care" "### 2. Build and run it" "### 3. Explore privately"; do
+  for needle in "## The three questions" "## Risk areas" "## Rechecks and going live"; do
     if ! grep -qF "$needle" "$fitcheck"; then
-      fail "$fitcheck: missing expected text '$needle'"
+      fail "$fitcheck: missing expected heading '$needle'"
       fc_ok=0
     fi
   done
-  [ "$fc_ok" -eq 1 ] && pass "the fit-check skill carries the three canonical paths and the decision-order headings"
+  [ "$fc_ok" -eq 1 ] && pass "the fit-check skill asks the three questions and names the risk areas"
 fi
 
-# The build-path block has one owner. The fit check's build-path record defines the fields and the
-# masterplan template carries them, so a field added to one and forgotten in the
-# other would leave a project recording something the fit check never writes, or
-# writing something the template has no room for.
+# The risk record has one owner. The fit check's risk record defines the fields
+# and the masterplan template carries them, so a field added to one and
+# forgotten in the other would leave a project recording something the fit
+# check never writes, or writing something the template has no room for.
 mpt="$SKILLS/setup-ai-build-kit/templates/masterplan.md"
 if [ ! -f "$mpt" ] || [ ! -f "$fitrecord" ]; then
-  fail "cannot compare the build-path block: the fit check's build-path record or the masterplan template is missing"
+  fail "cannot compare the risk record: the fit check's risk record or the masterplan template is missing"
 else
   bp_ok=1
-  for field in Path Why "Sensitive areas" Accepted "Recheck when" "Last checked"; do
-    grep -q "^$field:" "$mpt" || { fail "$mpt: build-path block is missing '$field:'"; bp_ok=0; }
-    grep -q "^$field:" "$fitrecord" || { fail "$fitrecord: build-path block is missing '$field:'"; bp_ok=0; }
+  for field in Exposed Data "Wrong answer" Recovery Access "Risk areas" Accepted "Runs on its own" "Recheck when" "Last checked"; do
+    grep -q "^$field:" "$mpt" || { fail "$mpt: risk record is missing '$field:'"; bp_ok=0; }
+    grep -q "^$field:" "$fitrecord" || { fail "$fitrecord: risk record is missing '$field:'"; bp_ok=0; }
   done
   [ "$bp_ok" -eq 1 ] && \
-    pass "the masterplan template and the fit check's build-path record agree on the build-path fields, including Accepted"
+    pass "the masterplan template and the fit check's risk record agree on the risk fields, including Accepted"
 fi
 
 # ---------------------------------------------------------------------------
@@ -882,6 +881,12 @@ else
     grep -qF "label: $section" "$pieceform" || \
       { fail "$pieceform: has no field for '$section'"; pc_ok=0; }
   done
+  # The Risk areas field, which mark-ready requires, is defined in the piece
+  # shape and has a field in the form.
+  grep -qF "Risk areas:" "$pieces" || \
+    { fail "$pieces: does not define the 'Risk areas:' line"; pc_ok=0; }
+  grep -qF "label: Risk areas" "$pieceform" || \
+    { fail "$pieceform: has no field for 'Risk areas'"; pc_ok=0; }
   # The subject labels, which decide evidence and save route, so a label the
   # skills do not know about is worse than a missing one. Matched on the table
   # row rather than the whole file: each label is also named in the prose that
@@ -1009,8 +1014,6 @@ fi
 layer_sbfile="$SKILLS/build-piece/SKILL.md"
 if [ -f "$pieces" ] && [ -f "$implementfile" ] && [ -f "$layer_sbfile" ]; then
   layer_ok=1
-  grep -qF "## The two layers of a piece" "$pieces" || \
-    { fail "$pieces: does not describe the surface / under-the-hood layers"; layer_ok=0; }
   grep -qF "<details><summary>Under the hood</summary>" "$pieces" || \
     { fail "$pieces: the piece template has no collapsed under-the-hood section"; layer_ok=0; }
   grep -qF "self-sufficient enough to build without a person present" "$implementfile" || \
@@ -1089,7 +1092,7 @@ startfile="$SKILLS/setup-ai-build-kit/SKILL.md"
 shapefile="$SKILLS/shape/SKILL.md"
 if [ -f "$sbfile" ] && [ -f "$mergefile" ] && [ -f "$blocked" ] && [ -f "$settings" ] && [ -f "$startfile" ] && [ -f "$shapefile" ]; then
   mech_ok=1
-  grep -qF "save route including the checkpoint route" "$sbfile" || \
+  grep -qF 'Start from up-to-date `main`' "$sbfile" || \
     { fail "$sbfile: does not start every piece from up-to-date main"; mech_ok=0; }
   grep -qF "starts unassigned" "$shapefile" || \
     { fail "$shapefile: does not say a new issue starts unassigned"; mech_ok=0; }
@@ -1320,42 +1323,23 @@ done
 # ---------------------------------------------------------------------------
 echo "== Setup-hosting control-flow contract =="
 
-# Operational readiness and go-live belong inside the path branches that use
-# them (Build and run it, Build with care), never as a shared section after
-# all three branches; that shape is what let Explore privately be read as
-# reaching launch instructions despite its own branch saying to stop. The
-# anchor is the last branch heading, so a rename of that heading without a
-# matching change here would let the check pass on nothing.
+# The recipe's checks move work to a live address, so they sit under the launch
+# section, after the evidence run and the review it loads. The anchor is the
+# launch heading, so a rename without a matching change here would let the
+# check pass on nothing.
 hostingfile="$SKILLS/setup-hosting/SKILL.md"
 if [ ! -f "$hostingfile" ]; then
   fail "$hostingfile: missing"
 else
-  leaked=$(awk '
-    /^### Build with care/ { seen=1; next }
-    seen && /^## [^#]/ {
-      low = tolower($0)
-      if (low ~ /go live/ || low ~ /operational readiness/) print NR ": " $0
-    }
-  ' "$hostingfile")
-  if [ -n "$leaked" ]; then
-    fail "$hostingfile: a go-live or operational-readiness heading appears after all three path branches, so every path reaches it: $leaked"
-  else
-    pass "setup-hosting/SKILL.md keeps go-live and operational-readiness steps inside their path branches"
-  fi
-
-  # The recipe's checks move work to a live address, so they sit inside Build
-  # and run it, which Build with care follows for everything outside its
-  # areas. Placed after the last branch, they would be a shared step that
-  # Explore privately could be read as reaching.
   recipe_at=$(awk '
-    /^### Build and run it/ { inrun=1; next }
-    /^### / { inrun=0 }
-    /^#+ On a recipe/ { print (inrun ? "inside" : "outside"); exit }
+    /^## Launch/ { inlaunch=1; next }
+    /^## / { inlaunch=0 }
+    /^#+ On a recipe/ { print (inlaunch ? "inside" : "outside"); exit }
   ' "$hostingfile")
   if [ "$recipe_at" = inside ]; then
-    pass "setup-hosting/SKILL.md keeps the recipe's checks inside Build and run it"
+    pass "setup-hosting/SKILL.md keeps the recipe's checks inside its launch section"
   else
-    fail "$hostingfile: the 'On a recipe' checks are ${recipe_at:-missing}, not inside Build and run it"
+    fail "$hostingfile: the 'On a recipe' checks are ${recipe_at:-missing}, not inside the launch section"
   fi
 fi
 
@@ -1487,40 +1471,30 @@ if [ -z "$codex_group_hits" ] && [ -z "$codex_active_hits" ]; then
 fi
 
 # ---------------------------------------------------------------------------
-echo "== Build-path vocabulary =="
+echo "== Retired path vocabulary =="
 
-canonical_paths="Explore privately
-Build and run it
-Build with care"
-
-# Checked per file, with the lineno:content split done by parameter
-# expansion rather than `read`, because `read` silently drops a trailing
-# field delimiter (a line that is exactly "Path:" would otherwise lose its
-# colon and misparse as the value "Path").
-pathfiles=$(grep -rlE --include='*.md' -- '^Path:' \
-  "$ROOT/.agents" "$ROOT/AGENTS.md" 2>/dev/null || true)
-while IFS= read -r pf; do
-  [ -n "$pf" ] || continue
-  matches=$(grep -nE '^Path:' "$pf")
-  while IFS= read -r entry; do
-    [ -n "$entry" ] || continue
-    lineno=${entry%%:*}
-    content=${entry#*:}
-    value=${content#Path:}
-    # trim leading spaces/tabs
-    while [ "${value# }" != "$value" ]; do value=${value# }; done
-    while [ "${value#	}" != "$value" ]; do value=${value#	}; done
-    [ -n "$value" ] || continue
-    if ! printf '%s\n' "$canonical_paths" | grep -qx "$value" \
-      && ! printf '%s' "$value" | grep -qE '^<.*>$'; then
-      fail "$pf:$lineno: non-canonical build path value '$value'"
-    fi
-  done <<MATCHES
-$matches
-MATCHES
-done <<PATHFILES
-$pathfiles
-PATHFILES
+# The kit has no project-wide switch. A project carries a risk record, and each piece
+# carries a Risk areas line. A path name or a Path: field anywhere in the
+# source, the tests or the documents would describe a switch that no longer
+# exists. Frozen upgrade fixtures, which model released projects, and the
+# release notes keep the old names on purpose. The patterns are split so that a
+# search of the tree finds only real uses.
+path_hits=$(grep -rIlE -e 'Explore p''rivately' -e 'Build and r''un it' -e 'Build with c''are' \
+  -e 'build p''ath' -e '^P''ath:' \
+  "$ROOT/.agents" "$ROOT/docs" "$ROOT/README.md" "$ROOT/WORKFLOW.md" "$ROOT/AGENTS.md" \
+  "$ROOT/CONTRIBUTING.md" "$ROOT/llms.txt" "$ROOT/.claude" "$ROOT/.cursor" "$ROOT/.gemini" \
+  "$ROOT/.github" "$ROOT/agent-plugin" "$ROOT/.claude-plugin" 2>/dev/null \
+  | grep -v '/\.git/' \
+  | grep -v '/\.agents/tmp/' \
+  | grep -v '/\.agents/tests/fixtures/upgrade-' \
+  | grep -v '/docs/release-notes/' \
+  | grep -v '/\.agents/skills/maintain/scripts/kit-retired-skills\.json$' \
+  || true)
+if [ -n "$path_hits" ]; then
+  fail "a retired path name or a Path: field is still in: $(printf '%s' "$path_hits" | tr '\n' ' ')"
+else
+  pass "no retired path name or Path: field remains outside the frozen fixtures and the release notes"
+fi
 
 # The gate names went with the redesign that made the kit stop refusing. What
 # it does now is give a risk notice the person can accept on the record, so a
@@ -1542,7 +1516,6 @@ Required controls:
 Outside help:
 help level
 expert brief
-four build paths
 levels of outside help"
 had_stale=0
 while IFS= read -r term; do
@@ -1564,7 +1537,7 @@ while IFS= read -r term; do
 done <<STALETERMS
 $stale_terms
 STALETERMS
-[ "$had_stale" -eq 1 ] || pass "only canonical build-path names appear"
+[ "$had_stale" -eq 1 ] || pass "no retired vocabulary appears"
 
 # ---------------------------------------------------------------------------
 echo "== Adapter generation =="

@@ -17,11 +17,8 @@ if ! view=$(gh pr view "$PR_NUMBER" --json body,headRefOid); then
   echo "Review check: could not read the pull request" >&2
   exit 2
 fi
-base=${PR_BASE_SHA:-main}
-plan=$(git -C "$ROOT" show "$base:masterplan.md" 2>/dev/null || true)
-printf '%s\n' "$view" | REVIEW_PLAN="$plan" PYTHONPATH="$(dirname "$PARSER")" python3 -c '
+printf '%s\n' "$view" | PYTHONPATH="$(dirname "$PARSER")" python3 -c '
 import json
-import os
 import re
 import sys
 import review_boxes
@@ -37,25 +34,19 @@ except (OSError, UnicodeError, ValueError, AttributeError) as error:
 if opened:
     print("Review check: a finding under Worth stopping for is unticked", file=sys.stderr)
     raise SystemExit(1)
-plan = os.environ.get("REVIEW_PLAN", "")
-path = re.search(r"(?m)^Path:\s*(.+?)\s*$", plan)
-if not path:
-    print("Review check: build path is missing from the pull-request base", file=sys.stderr)
+if not hasattr(review_boxes, "review_hold"):
+    print("Review check: the shared review reader is out of date. Update the kit copy.", file=sys.stderr)
     raise SystemExit(2)
-if path.group(1) != "Explore privately":
-    if not hasattr(review_boxes, "review_hold"):
-        print("Review check: the shared review reader is out of date. Update the kit copy.", file=sys.stderr)
-        raise SystemExit(2)
-    if not head:
-        print("Review check: the pull request names no head commit", file=sys.stderr)
-        raise SystemExit(2)
-    reason = review_boxes.review_hold(body, head)
-    if not re.search(r"(?m)^## Worth stopping for[ \t]*\r?$", body):
-        reason = "no review recorded yet"
-    if reason:
-        print("Review check: " + reason, file=sys.stderr)
-        raise SystemExit(1)
-    if not review_boxes.review_verified(body):
-        print("Review check: the review is unverified. The kit could not confirm that a second person read this version.")
+if not head:
+    print("Review check: the pull request names no head commit", file=sys.stderr)
+    raise SystemExit(2)
+reason = review_boxes.review_hold(body, head)
+if not re.search(r"(?m)^## Worth stopping for[ \t]*\r?$", body):
+    reason = "no review recorded yet"
+if reason:
+    print("Review check: " + reason, file=sys.stderr)
+    raise SystemExit(1)
+if not review_boxes.review_verified(body):
+    print("Review check: the review is unverified. The kit could not confirm that a second person read this version.")
 print("Review check: no unticked findings")
 '

@@ -1,6 +1,6 @@
 ---
 name: fit-check
-description: Choose the project's build path, name each sensitive area with its caution, and give the risk notice where one is due. Used at founding, when a request changes the project, before hosting, at the quarterly visit, and when a repair stalls.
+description: Fill the project's risk record, name each risk area with its caution, and give the risk notice where one is due. Used at founding, when a request changes the project, before hosting, at the quarterly visit, and when a repair stalls.
 user-invocable: false
 ---
 <!-- GENERATED from .agents/skills/fit-check/. Do not edit here; regenerate with .agents/tools/build-adapters.sh -->

@@ -14,10 +14,6 @@ git rev-parse --is-inside-work-tree >/dev/null 2>&1 || {
 piece=$1
 case "$piece" in *[!0-9]*|'') echo "attempt: piece must be a number" >&2; exit 2 ;; esac
 setting=$(git show main:masterplan.md 2>/dev/null || cat masterplan.md 2>/dev/null || true)
-printf '%s\n' "$setting" | grep -Eq '^Path: (Build and run it|Build with care)$' || {
-  echo "attempt: unattended autonomy is not available on Explore privately" >&2
-  exit 1
-}
 printf '%s\n' "$setting" | grep -Eq '^Runs on its own:.*[[:space:],]loop([[:space:],(]|$)' || {
   echo "attempt: the loop is off on main" >&2
   exit 1

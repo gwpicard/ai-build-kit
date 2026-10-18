@@ -180,9 +180,6 @@ def auto_setting(main):
     result = git("show", main + ":masterplan.md")
     if result.returncode:
         stop("merge: main has no readable masterplan; automatic merge is off")
-    path = re.search(r"(?m)^Path:\s*(.+?)\s*$", result.stdout)
-    if not path or path.group(1) == "Explore privately":
-        stop("merge: automatic merging is not available on Explore privately")
     line = re.search(r'(?m)^Runs on its own:.*\bmerge\b.*\bdecided\s+\d{4}-\d{2}-\d{2}\b.*"[^\"]+".*$', result.stdout)
     if not line:
         stop("merge: main has no Runs on its own setting for merge")
@@ -297,7 +294,7 @@ def kit_area_check():
                 parent / "skills" / "setup-ai-build-kit" / "templates" / "foundation" / "check-sensitive-areas.sh"):
             if candidate.is_file():
                 return str(candidate)
-    stop("merge: could not find the kit's sensitive-area check", 2)
+    stop("merge: could not find the kit's risk-area check", 2)
 
 
 def check_sensitive_area(base, head, automatic=False):
@@ -325,16 +322,16 @@ def check_sensitive_area(base, head, automatic=False):
                                      "--masterplan", handle.name],
                                     text=True, capture_output=True)
     except OSError:
-        stop("merge: could not run the sensitive-area check", 2)
+        stop("merge: could not run the risk-area check", 2)
     if result.stdout:
         sys.stdout.write(result.stdout)
     if automatic and result.stdout.strip():
-        stop("merge: this piece touches a sensitive area; it waits for a named yes")
+        stop("merge: this piece touches a risk area; it waits for a named yes")
     if result.returncode == 1:
-        stop("merge: the sensitive-area check is open; the pull request stays open")
+        stop("merge: the risk-area check is open; the pull request stays open")
     if result.returncode != 0:
         detail = (result.stderr or result.stdout).strip()
-        stop("merge: could not run the sensitive-area check" +
+        stop("merge: could not run the risk-area check" +
              (": " + detail if detail else ""), 2)
 
 
@@ -366,15 +363,7 @@ def main(argv):
     if not data.get("baseRefOid"):
         stop("merge: GitHub returned an unreadable pull request base", 2)
     main = newest_main(head)
-    base_plan = git("show", data["baseRefOid"] + ":masterplan.md")
-    if base_plan.returncode:
-        stop("merge: could not read the build path from the pull request base", 2)
-    base_path = re.search(r"(?m)^Path:\s*(.+?)\s*$", base_plan.stdout)
-    if not base_path:
-        stop("merge: the pull request base has no readable build path", 2)
-    requires_review = bool(base_path and base_path.group(1) != "Explore privately")
-    if requires_review:
-        review_held(data.get("body") or "", head)
+    review_held(data.get("body") or "", head)
     if mode == "--auto":
         auto_holds(data, main, head)
         check_main_health()
@@ -404,12 +393,11 @@ def main(argv):
         stop("merge: GitHub did not merge the pull request" + (": " + detail if detail else ""), 2)
     if merged.stdout:
         sys.stdout.write(merged.stdout)
-    if requires_review or mode == "--auto":
-        if reviews.review_verified(data.get("body") or ""):
-            print("merge: the review of this version is verified: a second login approved it")
-        else:
-            print("merge: the review of this version is unverified: the kit could not confirm "
-                  "that a second person read it")
+    if reviews.review_verified(data.get("body") or ""):
+        print("merge: the review of this version is verified: a second login approved it")
+    else:
+        print("merge: the review of this version is unverified: the kit could not confirm "
+              "that a second person read it")
     if mode == "--approved":
         noted = git("notes", "--ref=refs/notes/ai-build-kit-approved-merges",
                     "add", "-f", "-m", "approved merge " + number, head)

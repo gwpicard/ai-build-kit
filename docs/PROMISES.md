@@ -7,7 +7,7 @@
 | Adapters match the canonical skills. | `.agents/tools/validate-kit.sh` | Every agent |
 | Project bootstrap does not overwrite existing files or follow links outside the project. | `.agents/tests/starter-rehearsal.sh` | Every agent |
 | A project check holds while a stopping finding is unticked. | `.agents/tests/review-gate.sh`; `.agents/tests/merge-gate.sh` | Every agent |
-| Merge waits for project checks, a settled review, and an accepted sensitive area. | `.agents/tests/merge-gate.sh` | Every agent |
+| Merge waits for project checks, a settled review, and an accepted risk area. | `.agents/tests/merge-gate.sh` | Every agent |
 | Secrets stay out of committed files, command output, and logs. | `.agents/tests/secrets-gates.sh`; `.agents/tests/push-guard.sh` | Every agent |
 | A secret never reaches the kit's saved records, and the refusal names the record, never the value. | `.agents/tests/record-secrets.sh` | Every agent for the kit's scripts; Claude Code for records it writes by hand |
 | A review record holds only for the commit it read, and a hand edit to it holds the merge. | `.agents/tests/review-gate.sh`; `.agents/tests/merge-gate.sh` | Every agent |
@@ -28,7 +28,7 @@
 | A project check uses its shared review-box reader. | `.agents/tests/review-gate.sh`; `.agents/tests/merge-gate.sh` | Every agent |
 | The Claude Code read guard refuses environment files. | `.agents/tests/secrets-gates.sh`; `.claude/settings.json` | Claude Code only |
 | Claude Code reads its project settings and session hook. | `.agents/tests/session-start.sh`; `.agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json` | Claude Code only |
-| The kit names risks before sensitive work and records the person's choice. | `.agents/tests/scenarios.md`, replay scenarios 3, 4, 5 and 6 | Every agent |
+| The kit names risks before work in a risk area and records the person's choice. | `.agents/tests/scenarios.md`, replay scenarios 3, 4, 5 and 6 | Every agent |
 | The agent asks only for answers that change the result. | `.agents/tests/scenarios.md`, replay scenarios 9 and 10 | Every agent |
 | The agent does not claim a review or result that did not happen. | `.agents/tests/scenarios.md`, replay scenarios 2 and 46 | Every agent |
 | The agent asks before changing a live service or online access. | `.agents/tests/approval-gate.sh`, `.agents/tests/merge-gate.sh` and `.agents/tests/recipe-nextjs-supabase-on-vercel.sh` prove the kit's scripts refuse without the person's recorded yes; `.agents/tests/push-to-main-rules.sh` checks Claude Code settings | Every agent for the kit's scripts; Claude Code for other commands |
