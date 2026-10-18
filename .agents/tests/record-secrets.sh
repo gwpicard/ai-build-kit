@@ -52,12 +52,12 @@ JSON
 
 # --- the changelog entry run-recipe.sh writes --------------------------------
 cp "$PROJECT/CHANGELOG.md" "$WORK/changelog-before"
-out=$(sh "$RUNNER" --project "$PROJECT" --note "Set the token to $KEY" none 2>&1) && code=0 || code=$?
+out=$(sh "$RUNNER" --project "$PROJECT" --chose "Go on without a recipe" --note "Set the token to $KEY" none 2>&1) && code=0 || code=$?
 [ "$code" -eq 2 ] && cmp -s "$WORK/changelog-before" "$PROJECT/CHANGELOG.md" \
   && printf '%s' "$out" | grep -q 'possible secret in CHANGELOG.md' && ! printf '%s' "$out" | grep -qF "$KEY" \
   && pass "a changelog entry carrying a key is not written, and the refusal names CHANGELOG.md only" \
   || fail "a key reached the changelog or was printed ($code): $out"
-out=$(sh "$RUNNER" --project "$PROJECT" --note "Set the token from the team vault" none 2>&1) && code=0 || code=$?
+out=$(sh "$RUNNER" --project "$PROJECT" --chose "Go on without a recipe" --note "Set the token from the team vault" none 2>&1) && code=0 || code=$?
 grep -q 'Set the token from the team vault' "$PROJECT/CHANGELOG.md" \
   && pass "an entry that names only where a secret is kept is written" || fail "a clean entry was not written ($code): $out"
 
