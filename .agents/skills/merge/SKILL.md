@@ -68,9 +68,9 @@ data, migration, deployment setting or sensitive area; ask again. A yes given
 before a non-blocking issue is noticed still stands; report the issue and offer
 it as a piece.
 
-Record the yes with the `records` skill's `scripts/approval.py yes "merge pull
-request <number>" --words "<their words>"`, then make the merge on the pull
-request itself with `scripts/merge.py --approved <number>`. Exit 0
+Make an approved merge on the pull request itself. Record the yes with the
+`records` skill's `scripts/approval.py yes "merge pull request <number>"
+--words "<their words>"`, then run `scripts/merge.py --approved <number>`. Exit 0
 merged. Exit 1 means a check, review box, a review of an earlier version or
 a sensitive area holds it; exit 2
 means a required read/check could not run or GitHub refused. Say what stopped
