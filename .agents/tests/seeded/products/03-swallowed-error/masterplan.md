@@ -1,13 +1,15 @@
 # Masterplan
 
-## Build path
+## Risk record
 
-Path: Build and run it
-Why: An internal screen for one bicycle repair shop of six people. Nothing it
-holds is irreplaceable, nobody outside the shop uses it, and the owner can
-explain and operate it.
+Exposed: The six people at one bicycle repair shop. Nobody outside the shop
+uses the tool.
+Data: Supplier stock counts. Nothing it holds is irreplaceable.
+Wrong answer: A wrong count sends a customer away or makes the shop order a
+part it does not need.
+Recovery: The owner phones the supplier, as the shop did before the tool.
 Access: private
-Sensitive areas: none
+Risk areas: none
 Accepted: none
 Recheck when: customers start using it; it takes payments; it starts holding
 anything personal.

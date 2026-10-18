@@ -1,13 +1,16 @@
 # Masterplan
 
-## Build path
+## Risk record
 
-Path: Build and run it
-Why: An internal till screen for one cafe of five staff. The tool only records
-credit that the cafe's own card terminal has already taken, nobody outside the
-cafe uses it, and the owner can explain and operate it.
+Exposed: The five staff of one cafe, and the regulars whose prepaid credit it
+records. Nobody outside the cafe uses the tool.
+Data: Each regular's prepaid credit balance, which the cafe honours at the till.
+Wrong answer: A wrong balance gives away credit or refuses a regular what they
+paid for.
+Recovery: The owner checks the balances against the index cards the cafe kept
+before the tool.
 Access: private
-Sensitive areas:
+Risk areas:
   money: each regular's prepaid credit balance, which the cafe honours at the till; caution: the owner checks the first balances against the index cards; not yet done
 Accepted: none
 Recheck when: customers use it themselves; it takes card payments itself; it

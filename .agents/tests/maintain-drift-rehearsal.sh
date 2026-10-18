@@ -32,7 +32,6 @@ cat > "$PROJECT/AGENTS.md" <<'EOF'
 Recipe: retired-recipe
 EOF
 cat > "$PROJECT/masterplan.md" <<'EOF'
-Path: Build and run it
 Runs on its own: queue, parallel 2, loop (decided 2026-10-15, "rehearsal")
 EOF
 mkdir -p "$PROJECT/.agents/skills/setup-hosting/recipes"

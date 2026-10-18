@@ -1,13 +1,14 @@
 # Masterplan
 
-## Build path
+## Risk record
 
-Path: Build and run it
-Why: A private tool for one flat of four friends. Nothing it holds is
-irreplaceable, nobody outside the flat uses it, and one of them can explain and
-operate it.
+Exposed: The four friends who share one flat. Nobody outside the flat uses
+the tool.
+Data: Shared bills. Nothing it holds is irreplaceable.
+Wrong answer: A wrong split leaves one friend paying too much.
+Recovery: They work the split out by hand, as they did before the tool.
 Access: private
-Sensitive areas: none
+Risk areas: none
 Accepted: none
 Recheck when: people outside the flat use it; it moves money itself; it starts
 holding anything personal.

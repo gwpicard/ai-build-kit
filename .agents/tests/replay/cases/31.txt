@@ -2,12 +2,12 @@
 # Founding an ordinary internal tool from scratch. The project is a meeting-room
 # booker for one office of about twenty people: internal staff only, names and
 # room-and-time bookings, no money, no outside users, no regulated data, nothing
-# automated. No sensitive area survives, so the fit check should settle on
-# Build and run it and the founding should carry no risk notice and no
+# automated. No risk area survives, so the fit check should record
+# `Risk areas: none` and the founding should carry no risk notice and no
 # acceptance ceremony. A notice invented for this ordinary work, or an Accepted
 # line written against it, is the failure this scenario exists to catch.
 #
-# The founder never mentions the fit check, the build path, or a risk notice. A
+# The founder never mentions the fit check, the risk record, or a risk notice. A
 # person founding a tool does not know those are the questions, and a case that
 # points at the answer measures nothing.
 /setup-ai-build-kit

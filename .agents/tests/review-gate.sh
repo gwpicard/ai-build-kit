@@ -17,8 +17,8 @@ git -C "$PROJECT" init -q -b main
 git -C "$PROJECT" config user.name Rehearsal
 git -C "$PROJECT" config user.email rehearsal@example.invalid
 printf 'value = 1\n' > "$PROJECT/app.py"
-printf 'Path: Build and run it\nTests: pytest -q\n' > "$PROJECT/AGENTS.md"
-printf 'Path: Build and run it\n' > "$PROJECT/masterplan.md"
+printf 'Tests: pytest -q\n' > "$PROJECT/AGENTS.md"
+printf 'Risk areas: none\n' > "$PROJECT/masterplan.md"
 git -C "$PROJECT" add app.py
 git -C "$PROJECT" add AGENTS.md
 git -C "$PROJECT" add masterplan.md
@@ -134,10 +134,10 @@ JSON
 run_check() {
   body=$1
   view_fail=${2:-0}
-  (cd "$PROJECT" && PATH="$WORK/bin:$PATH" PR_NUMBER=9 PR_BASE_SHA="$BASE" REVIEW_BODY="$body" GH_VIEW_FAIL="$view_fail" sh "$CHECK")
+  (cd "$PROJECT" && PATH="$WORK/bin:$PATH" PR_NUMBER=9 REVIEW_BODY="$body" GH_VIEW_FAIL="$view_fail" sh "$CHECK")
 }
 out=$(run_check '' 0 2>&1) && code=0 || code=$?
-[ "$code" -eq 1 ] && printf '%s' "$out" | grep -q 'no review recorded yet' && pass "Build and run it holds when no review was recorded" || fail "missing review returned $code: $out"
+[ "$code" -eq 1 ] && printf '%s' "$out" | grep -q 'no review recorded yet' && pass "a pull request with no review record is held" || fail "missing review returned $code: $out"
 
 # A whole record for this head passes, and the same record fails once the
 # pull request moves on, is edited by hand, or comes from an older kit.
@@ -185,19 +185,21 @@ JSON
 ) && code=0 || code=$?
 [ "$code" -eq 1 ] && printf '%s' "$out" | grep -q 'pushed after the review' \
   && pass "recording a review of a version that has since moved on holds" || fail "moved record returned $code: $out"
-printf 'Path: Explore privately\n' > "$PROJECT/masterplan.md"
-git -C "$PROJECT" add masterplan.md
-git -C "$PROJECT" commit -qm explore
+# The review is required whatever the masterplan says: with no risk record at
+# all, or with a risk area named, a missing review record still holds.
+git -C "$PROJECT" rm -q masterplan.md
+git -C "$PROJECT" commit -qm 'no masterplan'
 BASE=$(git -C "$PROJECT" rev-parse HEAD)
 out=$(run_check '' 0 2>&1) && code=0 || code=$?
-[ "$code" -eq 0 ] && pass "Explore privately passes without a review record" || fail "unneeded review returned $code: $out"
-printf 'Path: Build with care\n' > "$PROJECT/masterplan.md"
+[ "$code" -eq 1 ] && printf '%s' "$out" | grep -q 'no review recorded yet' \
+  && pass "a project with no risk record still needs a review" || fail "missing masterplan review returned $code: $out"
+printf 'Risk areas:\n  money: the refund button; caution: owner checks first figures; not yet done\n    paths: app.py\n' > "$PROJECT/masterplan.md"
 git -C "$PROJECT" add masterplan.md
 git -C "$PROJECT" commit -qm care
 BASE=$(git -C "$PROJECT" rev-parse HEAD)
 out=$(run_check '' 0 2>&1) && code=0 || code=$?
 [ "$code" -eq 1 ] && printf '%s' "$out" | grep -q 'no review recorded yet' \
-  && pass "Build with care also holds when no review was recorded" || fail "missing careful-path review returned $code: $out"
+  && pass "a project with a named risk area also holds when no review was recorded" || fail "missing review with a risk area returned $code: $out"
 out=$(run_check "$CURRENT" 0 2>&1) && code=0 || code=$?
 [ "$code" -eq 0 ] && pass "check-review passes after findings are cleared" || fail "check-review clean returned $code: $out"
 out=$(run_check '## Worth stopping for

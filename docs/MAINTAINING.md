@@ -138,7 +138,7 @@ sub-issue, and never sends a reminder.
 
 ## Adaptive process is a contract
 
-Every rule declares where it applies (always, on named paths or changes, or
+Every rule declares where it applies (always, on named changes, or
 only to a piece that touches a named risk area), the way PHILOSOPHY.md
 requires. Do not add a strict step to the default workflow merely because it is
 good engineering practice. A change that improves care for one risk area but
@@ -160,7 +160,7 @@ named beside it.
 | Checks pass before a merge. | The project checks workflow, read by `merge.py`; `.agents/tests/merge-gate.sh`. Every check reports a result from `quality-checks/scripts/results.py`; `.agents/tests/result-vocabulary.sh` | None known. |
 | A review matches the code it read. | The review record names the commit the review read and carries a seal over itself and the stopping findings. `check-review.sh` and `merge.py` hold a record for another commit, a hand-edited one, and an older one with no commit. A review no second login approved is recorded as unverified. `.agents/tests/review-gate.sh`, `.agents/tests/merge-gate.sh` | The seal stops a hand edit, and anyone who runs the kit's code can still write a record. A review counts as verified only when a second GitHub login approved that commit. |
 | Every launch has a way back and a backup. | Each recipe must carry rollback, backup and restore sections, checked by `.agents/tools/check-recipes.sh`. `run-recipe.sh` holds a live tool whose backup is not confirmed, whose recipe names no rollback, or, on a later run, with no earlier build to go back to. Off a recipe the masterplan must say how to go back and where the backup is. `.agents/tests/run-recipe.sh` | A first launch has no earlier build, so its way back is the recipe's rollback step, untried. |
-| Records say "accepted", never "done". | Replay scenarios 2 and 46 | Words only. |
+| Records say "accepted", never "done". | `.agents/tests/replay/state-check.sh` reads the end state a replay leaves and fails when an area is marked done on the date of an acceptance; `.agents/tests/replay-state.sh` proves that assertion. The project check reports an accepted area as accepted, and `.agents/tests/sensitive-area-map.sh` proves it | The replay check measures the kit; it does not run in a project. Nothing stops an agent writing "done" by hand there. |
 
 Each mechanism needs a check that fails when the mechanism is removed. The
 mutation run breaks each one in turn.
@@ -222,7 +222,10 @@ does it hold, and how would you recover from a failure. The agent writes the
 record with the person and checks it again whenever the project changes. A
 piece carries a "Risk areas" field naming the areas it touches. The notice
 comes once per piece. The acceptance is saved with the person's words and the
-date.
+date, and after it the project check reports the area and passes. `mark-ready.sh`
+refuses a piece that has no `Risk areas:` line, and
+`.agents/tests/sensitive-area-map.sh` holds an open area and passes an accepted
+one.
 
 The named risk areas are the ones PHILOSOPHY.md lists: personal data, money,
 sign-in, automatic actions, data that cannot be replaced, and a regulated
@@ -415,17 +418,15 @@ Every change to `.agents/skills/` or the kit's own machinery runs
   those out of a commit message, is saved as a runnable file;
 - that every local Markdown link and every skill, reference, or template path
   named in another file resolves;
-- the fit check's structure: all three canonical build paths and their
-  decision-order headings are present, and the masterplan template carries the
-  same build-path fields as the fit check, `Sensitive areas` among them;
-- that the plan template carries the `Subjects` column, that only the three
-  canonical build-path names appear as path values, and that `team.md` is
-  referenced nowhere;
+- the fit check's structure: the three questions and the risk-area table are
+  present, and the masterplan template carries the same risk-record fields as
+  the fit check, `Risk areas` among them;
+- that the plan template carries the `Subjects` column, that no retired path
+  name or `Path:` field appears outside the frozen fixtures, and that
+  `team.md` is referenced nowhere;
 - that clarify says which questions may be offered as choices and which are
   asked in plain words, with the matching maintainer scenario present;
-- that `/setup-hosting` keeps its go-live and operational-readiness steps inside the
-  path branches that use them, never as a shared section reachable from all
-  three;
+- that `/setup-hosting` keeps the recipe's checks inside its launch section;
 - that the generated adapters match what `.agents/skills/` produces, with no
   stale adapter folder left behind;
 - shell syntax on every script, and that config files (JSON, TOML, YAML)
@@ -457,7 +458,7 @@ placeholder with the project's real commands during stand-up.
 ## Scenario review
 
 Before a release, work through `.agents/tests/scenarios.md` and confirm each
-scenario still resolves to the path, evidence, and route it names. It is a
+scenario still resolves to the risk record, evidence, and route it names. It is a
 maintainer contract: nothing there is shown to someone building a project
 with the kit.
 

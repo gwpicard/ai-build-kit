@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
-# boundary-rules-rehearsal.sh: found a throwaway Build with care project with a
-# named area, hold its boundary in the project check, and watch the check go
+# boundary-rules-rehearsal.sh: found a throwaway project with a
+# named risk area, hold its boundary in the project check, and watch the check go
 # red on an import that crosses it and green once the import is gone.
 #
 # Everything the rule is made from comes out of shipped files. The boundary
@@ -83,9 +83,8 @@ const put = (name, text) => {
 const boundaryLine = recorded[1].replace('src/billing/charge.ts', 'src/billing/charge.js');
 put('AGENTS.md', 'Recipe: none\n');
 put('masterplan.md', [
-  '# Masterplan', '', '## Build path', '',
-  'Path: Build with care',
-  'Sensitive areas:',
+  '# Masterplan', '', '## Risk record', '',
+  'Risk areas:',
   '  money: the refund button; caution: the owner checks the first refunds; not yet done',
   '    paths: src/billing/',
   boundaryLine,

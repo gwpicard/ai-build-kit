@@ -102,7 +102,7 @@ for number in $replayed; do
     done
   fi
 
-  # Each also names an expected path, route, result, or fallback.
+  # Each also names an expected record, route, result, or fallback.
   printf '%s\n' "$labels" | grep -q '^Expected ' || \
     fail "replayed scenario $number names no expected outcome"
   echo "  $number  complete"

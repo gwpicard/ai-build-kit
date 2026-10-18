@@ -209,11 +209,11 @@ person lands between two runs is not something a validator can see.
 
 ## The contract for scenario 5 changed on 17 September
 
-The build path that scenario 5 was measured against no longer exists. The kit
-went from four paths to three, and the medical case now expects Build with
-care, with regulated decisions named as the sensitive area and a clinician's
-sign-off as its caution. An acceptance drops the caution and leaves the area
-named rather than moving the path.
+The route that scenario 5 was measured against no longer exists. The kit
+went from four paths to three, and the medical case now expects regulated
+decisions named as the risk area and a clinician's sign-off as its caution. An
+acceptance drops the caution and leaves the area named. The kit has since
+dropped paths altogether, and the scenario expects the same record.
 
 The rows for scenario 5 above measure the old contract. A later run of it is
 graded against the new one, so a change in its rate cannot be read as the kit
@@ -290,7 +290,7 @@ only when the person asked.
 
 Scenario 31 carries the stand-in's answers for founding and the reworded
 contract. The save route hit in all three runs. The remaining drift is that
-the transcript does not show the build path being written, which a grader
+the transcript does not show the risk record being written, which a grader
 reading a transcript cannot see.
 
 This is a spot check on three cases, not a whole-suite pass, and it replaces
@@ -986,7 +986,7 @@ checked against the code, and did not show the mark it moved.
 The maintain skill lost its release-specific migration text. The upgrade check
 now prints the sentence the person hears for each finding, sends a project set
 up before v0.20 to v0.20.3 first, and offers the fit check again for the old
-build-path fields. Scenario 48 is a records-only visit, so every visit runs
+fit-check fields. Scenario 48 is a records-only visit, so every visit runs
 that check. It ran three times at `63af726`, driven and graded by `opus`.
 
 | Scenario | Commit | Held | State | Contract misses |

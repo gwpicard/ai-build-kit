@@ -622,7 +622,7 @@ rr_project() {
     printf 'postgresql://postgres.liveref@pooler.example.test:5432/postgres\n' > supabase/.temp/pooler-url
     printf '17.4\n' > supabase/.temp/postgres-version
     printf '# Changelog\n\nNewest first.\n' > CHANGELOG.md
-    printf '# Masterplan\n\n## Build path\n\nPath: Build and run it\nAccess: private\n' > masterplan.md
+    printf '# Masterplan\n\n## Risk record\n\nAccess: private\n' > masterplan.md
     mkdir -p .vercel
     printf '{"projectId":"prj_standin","orgId":"team_standin"}\n' > .vercel/project.json
     "$rr_real_git" init -q -b main

@@ -135,9 +135,7 @@ if __name__ == "__main__":
     unittest.main()
 PY
 cat > "$PROJECT/masterplan.md" <<'MD'
-Path: Build with care
-
-Sensitive areas:
+Risk areas:
   Data:
     paths: pricing.py
     Accepted: yes, 2026-10-14
@@ -594,9 +592,7 @@ fi
 in_project init -q -b main
 printf 'node_modules/\n' > "$PROJECT/.gitignore"
 cat > "$PROJECT/masterplan.md" <<'MD'
-Path: Build with care
-
-Sensitive areas:
+Risk areas:
   Data:
     paths: src
     Accepted: yes, 2026-10-14

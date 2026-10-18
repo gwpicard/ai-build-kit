@@ -1,11 +1,13 @@
 # Masterplan
 
-## Build path
+## Risk record
 
-Path: Build and run it
-Why: An internal tool for one team of nine. Nothing it holds is irreplaceable,
-nobody outside the company signs in, and the team can explain and operate it.
-Sensitive areas: none
+Exposed: The nine people on the events team. Nobody outside the company signs
+in.
+Data: Equipment loans. Nothing it holds is irreplaceable.
+Wrong answer: A wrong loan record sends the team looking for an item.
+Recovery: The team goes back to the spreadsheet they used before the tool.
+Risk areas: none
 Accepted: none
 Recheck when: someone outside the company needs to sign in; money moves through
 it; it starts holding the only copy of anything; another team comes to depend

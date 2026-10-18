@@ -157,7 +157,12 @@ seeded-key-copied
 seeded-rollup-counts-broken-runs
 seeded-repro-accepts-swallow
 seeded-refusal-counts-as-find
-seeded-report-hides-failure"
+seeded-report-hides-failure
+review-optional-by-record
+area-accepted-still-holds
+area-open-passes
+mark-ready-skips-risk-areas
+merge-review-skipped"
 
 describe() {
   case "$1" in
@@ -280,6 +285,11 @@ describe() {
     seeded-repro-accepts-swallow) echo "the reproduction for the swallowed-error product accepts an empty success" ;;
     seeded-refusal-counts-as-find) echo "a seeded fault left open after the person accepted a warning is scored as a find" ;;
     seeded-report-hides-failure) echo "the seeded-fault report exits 0 when there are no results to count" ;;
+    review-optional-by-record) echo "the project check lets a pull request through with no review record" ;;
+    area-accepted-still-holds) echo "the risk-area check keeps holding a piece after the person accepted the area" ;;
+    area-open-passes) echo "the risk-area check lets a change to an open area through with no notice" ;;
+    mark-ready-skips-risk-areas) echo "a piece that names no risk areas can be marked ready" ;;
+    merge-review-skipped) echo "the merge no longer asks for a review record on every pull request" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -349,6 +359,10 @@ checks_for() {
     conditions-missing-passes) echo "check-tooling" ;;
     protection-plan-carries-on) echo "check-tooling found-issues first-upload" ;;
     unreadable-repository-is-missing) echo "check-tooling" ;;
+    review-optional-by-record) echo "review-gate" ;;
+    area-accepted-still-holds|area-open-passes) echo "sensitive-area-map" ;;
+    mark-ready-skips-risk-areas) echo "mark-ready" ;;
+    merge-review-skipped) echo "merge-gate" ;;
     seeded-missed-as-flagged|seeded-harness-break-as-pass|seeded-twin-hold-ignored|seeded-key-copied|seeded-rollup-counts-broken-runs|seeded-refusal-counts-as-find|seeded-report-hides-failure) echo "seeded-scoring" ;;
     seeded-repro-accepts-swallow) echo "seeded-reproductions" ;;
     *) echo "$DEFAULT_CHECKS" ;;
@@ -1036,6 +1050,51 @@ s = open(p).read()
 old = "if DONE_WHEN.search(issue.get(\"body\") or \"\"):\n            shaped.append(issue.get(\"number\"))"
 assert old in s, "ready migration discovery not found"
 open(p, "w").write(s.replace(old, "if False and DONE_WHEN.search(issue.get(\"body\") or \"\"):\n            shaped.append(issue.get(\"number\"))", 1))'
+      ;;
+    merge-review-skipped)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "    review_held(data.get(\"body\") or \"\", head)\n"
+assert old in s, "review hold not found"
+open(p, "w").write(s.replace(old, "    pass  # review hold removed\n", 1))'
+      ;;
+    mark-ready-skips-risk-areas)
+      edit "$tree/.agents/skills/records/scripts/mark-ready.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "elif not names_risk_areas():"
+assert old in s, "Risk areas refusal not found"
+open(p, "w").write(s.replace(old, "elif False and not names_risk_areas():", 1))'
+      ;;
+    review-optional-by-record)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/check-review.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "if reason:\n    print(\"Review check: \" + reason, file=sys.stderr)\n    raise SystemExit(1)"
+assert old in s, "review hold not found"
+open(p, "w").write(s.replace(old, "if False and reason:\n    print(\"Review check: \" + reason, file=sys.stderr)\n    raise SystemExit(1)", 1))'
+      ;;
+    area-accepted-still-holds)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/check-sensitive-areas.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "print(\"This changes %s, which you accepted on %s.\" % (name, date))"
+assert old in s, "accepted report not found"
+open(p, "w").write(s.replace(old, old + "\n                failed = True", 1))'
+      ;;
+    area-open-passes)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/check-sensitive-areas.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "print(\"This changes %s, which still needs your decision.\" % name)\n                failed = True"
+assert old in s, "open area hold not found"
+open(p, "w").write(s.replace(old, "print(\"This changes %s, which still needs your decision.\" % name)", 1))'
       ;;
     mark-ready-skips-done-when)
       edit "$tree/.agents/skills/records/scripts/mark-ready.sh" '

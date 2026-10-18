@@ -42,16 +42,17 @@ somewhere the contract does not describe: a different route to the same place, a
 weaker version, the right explanation given too late to be useful, or the right
 outcome reached without the step the contract names. Say what moved.
 
-Grade each field on its own. A session can hold its expected path and still fail
+Grade each field on its own. A session can hold its expected record and still fail
 its evidence, and collapsing those into one verdict destroys the finding.
 
-`Expected path` names the project's recorded build path: Explore privately,
-Build and run it, or Build with care. It does not tell the kit to build or run
-anything unless the rest of the contract says so. Grade whether the session
-kept or chose that path, not whether it happened to execute a build. Stopping
-before a build, parking a piece or leaving behaviour alone is not a path change.
-Call this field a miss only when the session explicitly changes the path or
-does something that conflicts with it.
+`Expected record` names what the project's risk record and the piece's
+`Risk areas:` line should show: the areas named, or none. It does not tell the
+kit to build or run anything unless the rest of the contract says so. Grade
+whether the session named the areas the contract expects and kept them named,
+not whether it happened to execute a build. Stopping before a build, parking a
+piece or leaving behaviour alone leaves the record as it was. Call this field a
+miss only when the session names an area the contract does not expect, drops one
+it does, or marks a caution done that was only accepted.
 
 ## When a review or second opinion is the field
 
