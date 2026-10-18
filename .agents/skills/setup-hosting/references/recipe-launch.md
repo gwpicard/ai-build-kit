@@ -2,12 +2,11 @@
 
 ## No recipe
 
-Run `scripts/run-recipe.sh none`. It prints one notice and exits 5. Give the
-notice in plain words and ask whether to go on. On a yes, run it again with
-`--chose "<their words>"`, the request record and alert answers and the address
-the person gives. It records their words and the date, holds nothing and checks
-nothing. Later runs print a pointer, not the notice. Then help by hand. Never
-call anything it set up guaranteed.
+Run `scripts/run-recipe.sh none`. It prints one notice and exits 5. Say the
+notice plainly and ask whether to go on. On a yes, run it again with
+`--chose "<their words>"`, the usual answers and the address. It records their
+words and the date and holds nothing. A later run gives no second notice. Then
+help by hand, and call nothing guaranteed.
 
 ## On a recipe
 
