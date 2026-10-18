@@ -88,6 +88,17 @@ echo "Assembling $VERSION into $KIT"
   exit 2
 }
 
+# An older release starts every session by reading a build-path section at the top
+# of the masterplan, where this checkout's fixtures carry a risk record. Every run
+# of that release once stopped at its own startup check and measured nothing. So a
+# kit whose startup instruction names the build-path section is given that section,
+# written from the same facts, in each project that has a masterplan.
+KIT_READS_BUILD_PATH=no
+if grep -q 'build-path section' "$KIT/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md" 2>/dev/null; then
+  KIT_READS_BUILD_PATH=yes
+  echo "This kit reads a build-path section, so each project's risk record is also written as one"
+fi
+
 # --- which cases to run ----------------------------------------------------
 if [ "$#" -gt 0 ]; then
   cases=$*
@@ -176,6 +187,13 @@ run_once() {
   if case_answers_merge_box "$casefile"; then
     answer_merge_box "$project" || {
       echo "  could not stand in for the merge box in scenario $number" >&2
+      return 1
+    }
+  fi
+
+  if [ "$KIT_READS_BUILD_PATH" = yes ] && [ -f "$project/masterplan.md" ]; then
+    python3 "$REPLAY_DIR/prepare/legacy-masterplan.py" "$project/masterplan.md" || {
+      echo "  could not write the build-path section the kit reads for scenario $number" >&2
       return 1
     }
   fi

@@ -178,7 +178,11 @@ behaviour-extras-untouched-passes
 behaviour-answer-ungated
 replay-preflight-fault-unreported
 replay-failed-preparation-silent
-replay-nothing-graded-exits-zero"
+replay-nothing-graded-exits-zero
+replay-old-kit-section-missing
+replay-startup-read-unchecked
+replay-plan-helper-not-installed
+replay-backbone-not-merged"
 
 describe() {
   case "$1" in
@@ -322,6 +326,10 @@ describe() {
     replay-preflight-fault-unreported) echo "the preflight finds a fault in the harness and lets the run start" ;;
     replay-failed-preparation-silent) echo "a run whose project cannot be prepared leaves no result at all" ;;
     replay-nothing-graded-exits-zero) echo "a replay pass in which nothing was graded exits 0" ;;
+    replay-old-kit-section-missing) echo "a kit that reads a build-path section is run on a project that has none" ;;
+    replay-startup-read-unchecked) echo "a kit whose first read the fixtures cannot give is run anyway" ;;
+    replay-plan-helper-not-installed) echo "a prepared replay project is left without the plan helper a founded project has" ;;
+    replay-backbone-not-merged) echo "a backbone case is no longer graded on the backbone" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -402,7 +410,9 @@ checks_for() {
     seeded-repro-accepts-swallow) echo "seeded-reproductions" ;;
     backbone-review-unbound-passes|backbone-merge-before-yes-passes|backbone-canary-ignored|behaviour-extras-untouched-passes) echo "replay-behaviour" ;;
     behaviour-answer-ungated) echo "replay-behaviour-cases" ;;
-    replay-preflight-fault-unreported|replay-failed-preparation-silent|replay-nothing-graded-exits-zero) echo "replay-preflight" ;;
+    replay-preflight-fault-unreported|replay-failed-preparation-silent|replay-nothing-graded-exits-zero|replay-old-kit-section-missing|replay-startup-read-unchecked) echo "replay-preflight" ;;
+    replay-plan-helper-not-installed) echo "replay-project-helper" ;;
+    replay-backbone-not-merged) echo "replay-behaviour" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -1733,6 +1743,46 @@ t = open(p).read()
 old = "sys.exit(0 if graded else 2)"
 assert old in t, "graded count exit not found"
 open(p, "w").write(t.replace(old, "sys.exit(0)", 1))
+'
+      ;;
+    replay-old-kit-section-missing)
+      edit "$tree/.agents/tests/replay/run.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "if [ \"$KIT_READS_BUILD_PATH\" = yes ] && [ -f \"$project/masterplan.md\" ]; then"
+assert old in t, "build-path section step not found"
+open(p, "w").write(t.replace(old, "if false; then", 1))
+'
+      ;;
+    replay-startup-read-unchecked)
+      edit "$tree/.agents/tests/replay/preflight.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    *) problem \"the kit starts by reading the $startup"
+assert old in t, "unknown startup read not found"
+open(p, "w").write(t.replace(old, "    *) : \"the kit starts by reading the $startup", 1))
+'
+      ;;
+    replay-plan-helper-not-installed)
+      edit "$tree/.agents/tests/replay/prepare/install-project-helper.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "  cp -p \"$plan_source\" \"$plan_destination\""
+assert old in t, "plan helper copy not found"
+open(p, "w").write(t.replace(old, "  :", 1))
+'
+      ;;
+    replay-backbone-not-merged)
+      edit "$tree/.agents/tests/replay/state-check.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "if \"\\n# backbone: yes\\n\" in case_text:"
+assert old in t, "backbone condition not found"
+open(p, "w").write(t.replace(old, "if False:", 1))
 '
       ;;
     *)

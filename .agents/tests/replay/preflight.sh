@@ -51,6 +51,28 @@ else
     || problem "the assembled kit has no foundation helper, so a prepared project would stop at its startup check"
 fi
 
+# The kit's first instruction names what to read at the top of the masterplan.
+# The fixtures carry a risk record, and prepare/legacy-masterplan.py writes the
+# build-path section an older release reads. Any other first read is a section the
+# fixtures cannot give, and every run would stop at the kit's own startup check.
+if [ -f "$kit/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md" ]; then
+  startup=$(sed -n 's/.*[Rr]ead the \([^`]*\) at the top of `masterplan.md`.*/\1/p' \
+    "$kit/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md" | head -n 1)
+  case "$startup" in
+    "risk record") : ;;
+    "build-path section")
+      probe="${TMPDIR:-/tmp}/preflight-masterplan-$$"
+      cp "$REPLAY_DIR/fixture/masterplan.md" "$probe"
+      python3 "$REPLAY_DIR/prepare/legacy-masterplan.py" "$probe" >/dev/null 2>&1 \
+        && grep -q '^## Build path' "$probe" \
+        || problem "the kit reads a build-path section, and the fixture cannot be given one"
+      rm -f "$probe"
+      ;;
+    "") problem "the kit's foundation instructions name no section of the masterplan to read first" ;;
+    *) problem "the kit starts by reading the $startup of the masterplan, which the replay fixture does not provide" ;;
+  esac
+fi
+
 # The GitHub stand-in has to be the command a login shell finds first, and it
 # has to answer as a stand-in. The real command answers as a signed-out tool,
 # and the kit then works without pull requests or issues.

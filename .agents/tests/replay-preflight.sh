@@ -73,6 +73,42 @@ code=0
   || { cat "$WORK/out" >&2; fail "a gh found before the stand-in was not caught (exit $code)"; }
 pass "a gh found before the stand-in is could not run"
 
+# The kit's first instruction decides what the masterplan must hold. This kit reads
+# a risk record, which the fixtures carry. An older kit reads a build-path section,
+# which the harness writes from the same facts. Anything else cannot be given.
+FOUNDATION="$KIT/.agents/skills/setup-ai-build-kit/templates/foundation"
+cp "$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md" "$FOUNDATION/AGENTS.md"
+code=0
+preflight "$kit" 64 >"$WORK/out" 2>&1 || code=$?
+[ "$code" -eq 0 ] || { cat "$WORK/out" >&2; fail "this kit's own startup instruction was refused (exit $code)"; }
+sed 's/read the risk record at the top/read the build-path section at the top/' \
+  "$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md" > "$FOUNDATION/AGENTS.md"
+grep -q 'build-path section at the top' "$FOUNDATION/AGENTS.md" || fail "the older startup instruction was not written"
+code=0
+preflight "$kit" 64 >"$WORK/out" 2>&1 || code=$?
+[ "$code" -eq 0 ] || { cat "$WORK/out" >&2; fail "an older kit that reads a build-path section was refused (exit $code)"; }
+sed 's/read the risk record at the top/read the launch checklist at the top/' \
+  "$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md" > "$FOUNDATION/AGENTS.md"
+code=0
+preflight "$kit" 64 >"$WORK/out" 2>&1 || code=$?
+[ "$code" -eq 2 ] && grep -q 'launch checklist' "$WORK/out" \
+  || { cat "$WORK/out" >&2; fail "a startup read the fixtures cannot give was not caught (exit $code)"; }
+pass "a kit whose first read the fixtures cannot give is could not run, and an older one is given its section"
+rm "$FOUNDATION/AGENTS.md"
+
+# The section the older kit reads is written from the risk record and leaves the rest alone.
+cp "$REPLAY/fixture/masterplan.md" "$WORK/masterplan.md"
+python3 "$REPLAY/prepare/legacy-masterplan.py" "$WORK/masterplan.md"
+grep -q '^## Build path' "$WORK/masterplan.md" && ! grep -q '^## Risk record' "$WORK/masterplan.md" \
+  && grep -q '^Path: Build and run it' "$WORK/masterplan.md" \
+  && grep -q '^## What it does, and for whom' "$WORK/masterplan.md" \
+  || fail "the build-path section was not written from the risk record"
+printf '# Masterplan\n\n## What it does\n' > "$WORK/bare.md"
+code=0
+python3 "$REPLAY/prepare/legacy-masterplan.py" "$WORK/bare.md" || code=$?
+[ "$code" -eq 1 ] || fail "a masterplan with neither section was not refused"
+pass "the build-path section is written from the risk record and the rest is left alone"
+
 # A kit without the foundation helper stops every prepared project at its startup check.
 rm "$KIT/.agents/skills/setup-ai-build-kit/templates/foundation/codex-github-check.py"
 code=0
@@ -134,6 +170,38 @@ grep -q 'could not run' "$WORK/results/s80-r1.json" 2>/dev/null \
 grep -q 'Runs graded: 0. Runs that could not run: 1' "$WORK/out" \
   || { cat "$WORK/out" >&2; fail "the pass did not say how many runs could not run"; }
 pass "a run whose preparation fails is written as could not run, and a pass with nothing graded exits 2"
+
+# A kit that reads a build-path section is given one in its project. The probe
+# preparation copies the masterplan out after the first commit and then fails, so
+# the run ends as could not run and the copy is what the kit would have been shown.
+OLDKIT="$WORK/oldkit"
+git clone -q "$ROOT" "$OLDKIT"
+git -C "$OLDKIT" checkout -q "$(git -C "$ROOT" rev-parse HEAD)"
+sed -i.bak 's/read the risk record at the top/read the build-path section at the top/' \
+  "$OLDKIT/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md"
+rm -f "$OLDKIT/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md.bak"
+git -C "$OLDKIT" -c user.name=Rehearsal -c user.email=rehearsal@example.invalid commit -qam "An older startup instruction"
+printf '#!/bin/sh\nexit 0\n' > "$TREE/.agents/tests/replay/prepare/probe.sh"
+printf '#!/bin/sh\ncp "$1/masterplan.md" "$1.probe"\nexit 1\n' > "$TREE/.agents/tests/replay/prepare/probe.after-commit.sh"
+{
+  printf '# setup: fixture\n# prepare: probe\n'
+  grep -v '^# setup:' "$REPLAY/cases/80.txt" | grep -v '^# prepare:'
+} > "$TREE/.agents/tests/replay/cases/80.txt"
+code=0
+PATH="$BIN:$PATH" KIT_SRC="$OLDKIT" REPEATS=1 JOBS=1 \
+  REPLAY_WORK="$WORK/pass2" REPLAY_RESULTS="$WORK/results2" \
+  sh "$TREE/.agents/tests/replay/run.sh" 80 >"$WORK/out2" 2>&1 || code=$?
+[ "$code" -eq 2 ] || { cat "$WORK/out2" >&2; fail "the older-kit probe run did not end as could not run (exit $code)"; }
+grep -q '^## Build path' "$WORK/pass2/s80-r1.probe" 2>/dev/null \
+  || { cat "$WORK/out2" >&2; fail "a kit that reads a build-path section was not given one"; }
+code=0
+PATH="$BIN:$PATH" KIT_SRC="$ROOT" REPEATS=1 JOBS=1 \
+  REPLAY_WORK="$WORK/pass3" REPLAY_RESULTS="$WORK/results3" \
+  sh "$TREE/.agents/tests/replay/run.sh" 80 >"$WORK/out3" 2>&1 || code=$?
+[ "$code" -eq 2 ] && grep -q '^## Risk record' "$WORK/pass3/s80-r1.probe" 2>/dev/null \
+  && ! grep -q '^## Build path' "$WORK/pass3/s80-r1.probe" \
+  || { cat "$WORK/out3" >&2; fail "this kit's own project was changed to a build-path section it does not read"; }
+pass "a kit that reads a build-path section is given one, and this kit is not"
 
 # And the roll-up keeps such a run out of the rate.
 mkdir -p "$WORK/roll"
