@@ -14,5 +14,8 @@ and `--looked`.
 Report runner lines as printed. Exit 0 passes. Exit 1 records warnings but
 does not hold launch; a repeated warning is only a pointer. When asked what
 remains, give its `Left:` line alone. Exit 3 means no live address is recorded.
+Exit 4 means no way back or no backup: give its `Launch held:` line and its one
+step, do not record the address, and stop. Off-recipe, the masterplan's
+`Rollback:` and `Backup:` lines under "How it stays running" release it.
 Record the address and say once that each merge made by `/implement` puts its
 change live.

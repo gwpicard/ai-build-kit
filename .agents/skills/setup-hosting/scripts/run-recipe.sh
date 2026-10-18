@@ -36,7 +36,12 @@
 # person can judge takes their answer from --looked.
 #
 # A check that failed or could not run is a warning: one line, written in the
-# changelog, and the launch goes on. Where the newest changelog line for the
+# changelog, and the launch goes on. Two are not warnings. A live tool with no
+# way back or no backup is held: the backup check must pass, a later run's
+# rollback check must pass, and a first launch's recipe must name its rollback.
+# Off a recipe, the masterplan's "How it stays running" must carry a
+# `Rollback:` and a `Backup:` line. A held launch prints a line starting
+# "Launch held:" with the one step to take, and exits 4. Where the newest changelog line for the
 # same check says the same words, the warning is a one-line pointer to it
 # instead. The rollback line goes on a line of its own, and says "possible,
 # not tried" when an earlier build is listed, since a rollback is never tried
@@ -48,7 +53,8 @@
 # person asks what is left.
 #
 # Exit 0 when every check passed, 1 when any is a warning, 3 when no live
-# address is set, so the tool is not live yet, and 2 when it could not run.
+# address is set, so the tool is not live yet, 4 when the launch is held for
+# want of a way back or a backup, and 2 when it could not run.
 
 here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 exec python3 - "$here" "$@" <<'PY'
@@ -347,10 +353,11 @@ if later and folder:
         print()
 
 # --- the nine ------------------------------------------------------------------
-lines, warnings, rollback_line, codes = [], 0, None, []
+lines, warnings, rollback_line, codes, results_seen = [], 0, None, [], []
 for heading, ident, label in ORDER:
     code, detail = outcome(heading, ident)
     codes.append(code)
+    results_seen.append((code, detail))
     text, _ = line_for(label, code, detail)
     if code:
         warnings += 1
@@ -388,8 +395,52 @@ if alerts == "none" and not caution_given:
     print(text)
 
 live = bool(sets.get("LIVE_ADDRESS") or env.get("LIVE_ADDRESS"))
+
+
+def way_back_and_backup():
+    """The launch-held lines: a live tool needs a way back and a backup."""
+    held_lines = []
+    if folder is None:
+        kept = {}
+        if os.path.isfile(masterplan):
+            text = open(masterplan, encoding="utf-8", errors="replace").read()
+            part = re.search(r"(?ms)^## How it stays running\s*$(.*?)(?=^## |\Z)", text)
+            for name in ("Rollback", "Backup"):
+                found = part and re.search(r"(?m)^\s*(?:[-*]\s+)?%s:\s*\S" % name, part.group(1))
+                kept[name] = bool(found)
+        missing = [name.lower() for name in ("Rollback", "Backup") if not kept.get(name)]
+        if missing:
+            held_lines.append(
+                "Launch held: the project is on no recipe, and the masterplan does not say %s. "
+                "Write %s under \"How it stays running\", then run /setup-hosting again."
+                % (" or ".join({"rollback": "how to go back to an earlier version",
+                                "backup": "where the backup is kept"}[m] for m in missing),
+                   " and ".join("a %s: line" % m.capitalize() for m in missing)))
+        return held_lines
+    by_ident = {ident: (code, detail) for (_, ident, _), (code, detail) in zip(ORDER, results_seen)}
+    code, detail = by_ident["backup"]
+    if code:
+        held_lines.append("Launch held: no backup was confirmed. %s Take the recipe's backup step, "
+                          "then run /setup-hosting again." % detail)
+    code, detail = by_ident["rollback"]
+    if later and code:
+        held_lines.append("Launch held: no way back to an earlier version was confirmed. %s Make sure "
+                          "an earlier working build is listed on the host, then run /setup-hosting "
+                          "again." % detail)
+    elif not info.get("Rollback", {}).get("script"):
+        held_lines.append("Launch held: the recipe names no way back to an earlier version. "
+                          "Choose a recipe that does, then run /setup-hosting again.")
+    return held_lines
+
+
+launch_held = way_back_and_backup() if live else []
+for text in launch_held:
+    print(text)
 if not live:
     closing = "The tool is not live yet: no live address is recorded."
+elif launch_held:
+    closing = ("The launch is held until it has a way back and a backup. "
+               "Do not record the live address yet.")
 elif warnings:
     closing = "Each warning is written in CHANGELOG.md, and none of them holds the launch."
 else:
@@ -407,7 +458,7 @@ if record:
     else:
         intro = "Not live yet: no address is recorded. /setup-hosting ran the launch checks on the %s recipe:" % title
     block = ["## %s" % today, "", intro, ""]
-    block += ["- " + l for l in compared + notes + lines + extra]
+    block += ["- " + l for l in compared + notes + lines + extra + launch_held]
     block += ["", rollback_line, ""]
     text = open(changelog).read() if os.path.isfile(changelog) else "# Changelog\n\n"
     found = re.search(r"^## ", text, re.M)
@@ -431,5 +482,7 @@ if still:
     print("Left: the checks still open are written in CHANGELOG.md: %s." % listed)
 if not live:
     sys.exit(3)
+if launch_held:
+    sys.exit(4)
 sys.exit(1 if warnings else 0)
 PY

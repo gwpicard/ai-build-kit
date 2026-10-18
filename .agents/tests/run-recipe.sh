@@ -1,9 +1,9 @@
 #!/usr/bin/env sh
-# run-recipe.sh: drive the shipped runner over made-up recipes and read what it
-# printed and what it wrote into the changelog.
+# run-recipe.sh: drive the shipped runner over made-up recipes and read what it printed and wrote, and that a live tool with no way back or no backup is held.
 #
-# If this breaks, a launch check that failed or could not run could hold the
-# launch, go unrecorded, or be said again in full on every run although the
+# If this breaks, a launch with no backup or no way back could go ahead, an
+# ordinary launch check that failed or could not run could hold the launch, go
+# unrecorded, or be said again in full on every run although the
 # changelog already holds it. A tool with no record of its requests could go
 # live with nobody told once, or be told again on every run. A run with no live
 # address could be written up as a launch, and a rollback could be called
@@ -153,6 +153,39 @@ grep -qx 'Backup present: warning. The Backup stub failed.' "$WORK/out" ||
   fail "a warning that came back after a pass was given as a pointer"
 ok "a warning is said in full when its reason changed, or when it passed in between"
 
+# --- no backup or no way back holds the launch --------------------------------
+P="$WORK/p9"
+project "$P"
+STUB_BACKUP=1 run "$P" --looked preview=yes --pasted logs="$WORK/paste-good"
+[ "$code" = 4 ] || fail "a launch with no backup exited $code, not 4"
+grep -qx "Launch held: no backup was confirmed. The Backup stub failed. Take the recipe's backup step, then run /setup-hosting again." "$WORK/out" ||
+  fail "a launch with no backup did not say it is held and the one step to take"
+grep -q 'none of them holds the launch' "$WORK/out" && fail "a held launch said nothing holds it"
+grep -q '^- Launch held: no backup was confirmed\.' "$P/CHANGELOG.md" || fail "the held launch is not in the changelog"
+STUB_BACKUP=2 run "$P" --looked preview=yes --pasted logs="$WORK/paste-good"
+[ "$code" = 4 ] || fail "a launch whose backup could not be checked exited $code, not 4"
+ok "a launch with no backup, or one that could not be checked, is held with the step to take"
+
+P="$WORK/p10"
+project "$P"
+STUB_BACKUP=0 STUB_ROLLBACK=1 run "$P" --later --looked preview=yes --pasted logs="$WORK/paste-good"
+[ "$code" = 4 ] && grep -q '^Launch held: no way back to an earlier version was confirmed\.' "$WORK/out" ||
+  fail "a later run with no earlier build to go back to exited $code without holding"
+STUB_ROLLBACK=1 run "$P" --looked preview=yes --pasted logs="$WORK/paste-good"
+[ "$code" = 1 ] && ! grep -q '^Launch held' "$WORK/out" ||
+  fail "a first launch, which has no earlier build yet, was held ($code)"
+STUB_ROLLBACK=0
+grep -v '^Script: scripts/rollback.sh$' "$R/recipe.md" > "$WORK/no-rollback.md"
+mkdir -p "$WORK/recipes/no-way-back/scripts"
+cp "$WORK/no-rollback.md" "$WORK/recipes/no-way-back/recipe.md"
+cp "$R"/scripts/*.sh "$WORK/recipes/no-way-back/scripts/"
+code=0
+sh "$RUNNER" --project "$P" --set LIVE_ADDRESS=https://stub.example.test --looked preview=yes \
+  --pasted logs="$WORK/paste-good" "$WORK/recipes/no-way-back" > "$WORK/out" 2>&1 || code=$?
+[ "$code" = 4 ] && grep -q '^Launch held: the recipe names no way back' "$WORK/out" ||
+  fail "a first launch on a recipe that names no rollback exited $code without holding"
+ok "a later run with no way back is held, a first launch needs only the recipe to name one"
+
 # --- the rollback line never claims more than was seen ----------------------
 P="$WORK/p3"
 project "$P"
@@ -180,6 +213,18 @@ ok "a run with no live address says the tool is not live, and the entry says so"
 # --- off a recipe: the nine names, as warnings, and nothing more -------------
 P="$WORK/p5"
 project "$P"
+code=0
+sh "$RUNNER" --project "$P" --set LIVE_ADDRESS=https://stub.example.test none > "$WORK/out" 2>&1 || code=$?
+[ "$code" = 4 ] && grep -qx 'Launch held: the project is on no recipe, and the masterplan does not say how to go back to an earlier version or where the backup is kept. Write a Rollback: line and a Backup: line under "How it stays running", then run /setup-hosting again.' "$WORK/out" ||
+  fail "a run off a recipe with no recorded way back or backup exited $code without holding"
+project "$P"
+printf '# Masterplan
+
+## How it stays running
+
+Rollback: redeploy the previous release from the host panel
+Backup: nightly dump to the office share
+' > "$P/masterplan.md"
 code=0
 sh "$RUNNER" --project "$P" --set LIVE_ADDRESS=https://stub.example.test none > "$WORK/out" 2>&1 || code=$?
 [ "$code" = 1 ] || fail "a run off a recipe exited $code, not 1"
