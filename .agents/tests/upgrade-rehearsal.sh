@@ -422,18 +422,18 @@ assert len(json.loads(state.read_text())['calls'])==calls
 os.environ['PATH']=oldpath
 print('  ok: pieces shaped before the ready label are marked ready on any install route')
 
-# The old build-path fields get the rewrite in four-paths.md, which keeps
-# every accepted risk word for word, and the offer can be declined.
+# An old path record is offered the move to the risk record, shown before the
+# yes. The move itself is rehearsed in risk-move-rehearsal.sh.
 assert any(l.startswith('fitcheck\tmasterplan.md:') for l in again.splitlines()),again
 fit=[w for _,k,w in (l.split('\t',2) for l in again.splitlines() if l.startswith('say\t')) if k=='fitcheck']
-assert fit and 'word for word' in fit[0] and 'above the old one' in fit[0],again
-# The rewrite's rules are in a reference the skill points at; it has to open.
-assert 'four-paths.md' in (source/'maintain/references/kit-update.md').read_text()
-assert (source/'maintain/references/four-paths.md').is_file()
-run([sys.executable,plugin/'maintain/scripts/upgrade-check.py','--apply','fitcheck',p],code=2)
+assert fit,again
+# The move's rules are in a reference the skill points at; it has to open.
+assert 'risk-move.md' in (source/'maintain/references/kit-update.md').read_text()
+assert (source/'maintain/references/risk-move.md').is_file()
+assert (source/'maintain/scripts/risk_move.py').is_file()
 run([sys.executable,plugin/'maintain/scripts/upgrade-check.py','--decline','fitcheck',p])
 assert 'declined\tfitcheck\tfitcheck\t' in check(plugin,p,1)
-print('  ok: old build-path fields are offered the rewrite, which keeps accepted risks')
+print('  ok: an old path record is offered the move to the risk record, and a no is remembered')
 
 # The renames before the six commands are said to the person, once each,
 # and a missing skill is offered with a question.

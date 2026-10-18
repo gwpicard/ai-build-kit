@@ -1476,8 +1476,9 @@ echo "== Retired path vocabulary =="
 # The kit has no project-wide switch. A project carries a risk record, and each piece
 # carries a Risk areas line. A path name or a Path: field anywhere in the
 # source, the tests or the documents would describe a switch that no longer
-# exists. Frozen upgrade fixtures, which model released projects, and the
-# release notes keep the old names on purpose. The patterns are split so that a
+# exists. Frozen upgrade fixtures, which model released projects, the release
+# notes, and the script that moves an old record to the risk record keep the old
+# names on purpose. The patterns are split so that a
 # search of the tree finds only real uses.
 path_hits=$(grep -rIlE -e 'Explore p''rivately' -e 'Build and r''un it' -e 'Build with c''are' \
   -e 'build p''ath' -e '^P''ath:' \
@@ -1489,6 +1490,7 @@ path_hits=$(grep -rIlE -e 'Explore p''rivately' -e 'Build and r''un it' -e 'Buil
   | grep -v '/\.agents/tests/fixtures/upgrade-' \
   | grep -v '/docs/release-notes/' \
   | grep -v '/\.agents/skills/maintain/scripts/kit-retired-skills\.json$' \
+  | grep -v '/\.agents/skills/maintain/scripts/risk_move\.py$' \
   || true)
 if [ -n "$path_hits" ]; then
   fail "a retired path name or a Path: field is still in: $(printf '%s' "$path_hits" | tr '\n' ' ')"

@@ -160,7 +160,7 @@ named beside it.
 | Checks pass before a merge. | The project checks workflow, read by `merge.py`; `.agents/tests/merge-gate.sh`. Every check reports a result from `quality-checks/scripts/results.py`; `.agents/tests/result-vocabulary.sh` | None known. |
 | A review matches the code it read. | The review record names the commit the review read and carries a seal over itself and the stopping findings. `check-review.sh` and `merge.py` hold a record for another commit, a hand-edited one, and an older one with no commit. A review no second login approved is recorded as unverified. `.agents/tests/review-gate.sh`, `.agents/tests/merge-gate.sh` | The seal stops a hand edit, and anyone who runs the kit's code can still write a record. A review counts as verified only when a second GitHub login approved that commit. |
 | Every launch has a way back and a backup. | Each recipe must carry rollback, backup and restore sections, checked by `.agents/tools/check-recipes.sh`. `run-recipe.sh` holds a live tool whose backup is not confirmed, whose recipe names no rollback, or, on a later run, with no earlier build to go back to. Off a recipe the masterplan must say how to go back and where the backup is. `.agents/tests/run-recipe.sh` | A first launch has no earlier build, so its way back is the recipe's rollback step, untried. |
-| Records say "accepted", never "done". | `.agents/tests/replay/state-check.sh` reads the end state a replay leaves and fails when an area is marked done on the date of an acceptance; `.agents/tests/replay-state.sh` proves that assertion. The project check reports an accepted area as accepted, and `.agents/tests/sensitive-area-map.sh` proves it | The replay check measures the kit; it does not run in a project. Nothing stops an agent writing "done" by hand there. |
+| Records say "accepted", never "done". | `.agents/tests/replay/state-check.sh` reads the end state a replay leaves and fails when an area is marked done on the date of an acceptance; `.agents/tests/replay-state.sh` proves that assertion. The project check reports an accepted area as accepted, and `.agents/tests/sensitive-area-map.sh` proves it. The move from an older path record keeps each acceptance as accepted, and `.agents/tests/risk-move-rehearsal.sh` proves it | The replay check measures the kit; it does not run in a project. Nothing stops an agent writing "done" by hand there. |
 
 Each mechanism needs a check that fails when the mechanism is removed. The
 mutation run breaks each one in turn.
@@ -205,6 +205,12 @@ one login, is recorded as unverified: the record says `verified=no`, and the
 pull request and the merge say so in plain words. The hand-over never calls it
 an independent review.
 
+A project moved from an older path record lists the checks it cannot yet run on
+a `Report-only:` line of its risk record, with the date. The line names areas
+that have no `paths:` line, because the project check cannot hold changes to
+them, and open pieces that name no risk area. Nothing on that line is shown as
+passed.
+
 ### The risk record
 
 The record lives in the masterplan, under a heading for risk. The project
@@ -230,6 +236,19 @@ one.
 The named risk areas are the ones PHILOSOPHY.md lists: personal data, money,
 sign-in, automatic actions, data that cannot be replaced, and a regulated
 decision.
+
+An older project moves from its path record on a yes. `/maintain` shows the old
+section and the proposed record in one reply, before the yes. The first visit
+that finds a path record offers the move, and each monthly visit offers it
+again after a no. A no changes nothing in the project's records; the only write
+is the kit's own note in `.ai-build-kit-maintenance` that the offer was
+declined. A project that was private only gets the same offer and is told what
+the kit now expects. On a yes, every risk area, acceptance date and word moves
+as written, and the earlier path and why stay as history. An acceptance is never
+turned into a finished caution. The open pieces get a `Risk areas:` line where
+the piece's reach says which area it touches, and a changelog entry records the
+move. `.agents/tests/risk-move-rehearsal.sh` rehearses each path value and the
+four-path fields.
 
 ### Working conditions
 
@@ -595,7 +614,8 @@ new precondition. For each, there must be a path that carries an existing projec
 across without losing its work, and the person must be told about it in a place
 they will see. A migration lives in the maintain skill's scripts, chiefly
 `upgrade-check.py`, which runs on every `/maintain` visit and is idempotent. The
-script finds what is left, prints the sentence the person hears, and applies the
+move from a path record to the risk record is `risk_move.py`, which
+`upgrade-check.py` runs on a yes. The script finds what is left, prints the sentence the person hears, and applies the
 change on a yes, so the skill's own text keeps only the ask. The visible change
 is named in the release notes. A migration stays in the scripts for as long
 as a project could still need it. Each update route brings the latest

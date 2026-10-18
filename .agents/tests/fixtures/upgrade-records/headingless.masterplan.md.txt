@@ -1,0 +1,4 @@
+# Masterplan
+
+Path: Build and run it
+Why: Because.

@@ -1,0 +1,26 @@
+# Masterplan
+
+## Build path
+
+Path: Explore privately
+Why: A weekend experiment to see whether the allotment rota can live in one
+page. Nobody relies on it, the data can be thrown away, and nothing it does
+is hard to undo.
+Access: private
+Sensitive areas: none
+Accepted: none
+Recheck when: anyone else asks to use it; it holds anything we would miss.
+Last checked: 2026-09-30
+
+## What it does, and for whom
+
+Plot Rota shows who waters the shared allotment on which day. Four neighbours
+use it. Before it, they shared a message thread that nobody could search.
+
+## What happens when it fails
+
+If it stops, the thread is still there. Nothing is lost.
+
+## Out of scope
+
+Seed ordering and money. Neither is part of the experiment.

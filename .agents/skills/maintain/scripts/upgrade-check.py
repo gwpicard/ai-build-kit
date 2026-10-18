@@ -49,9 +49,10 @@ the step that settles it:
     settings   deny|ask  RULE  a missing Claude Code safety rule      settings
     template   FILE:LINE  NEW  the kit's own sentence naming a retired
                                command or skill                       template
-    fitcheck   FILE:LINE  OLD  a fit-check section with four-path
-                               fields, rewritten as the maintain
-                               skill's references/four-paths.md says  fitcheck
+    fitcheck   FILE:LINE  OLD  a masterplan that still records a
+                               path or the four-path control fields,
+                               moved to the risk record by risk_move.py,
+                               as references/risk-move.md says        fitcheck
     recipe     FILE:LINE  NAME AGENTS.md naming its recipe by file,
                                as NAME.md, before recipes were
                                folders                                recipe
@@ -100,9 +101,9 @@ runs `kit-leftovers.py --remove`, `commands` runs `kit-leftovers.py
 sentence, `recipe` names the recipe by its folder in AGENTS.md and in the
 check-up record's menu lines, and `access=private`, `access=open-address`
 or `access=public` writes the masterplan's `Access:` line the person
-chose. It changes nothing live. `--apply helper` and `--apply ready` also print a `say` line with
-what changed. The installer's own steps, `installer` and `missing`, and the
-`fitcheck` step, which the agent carries out, are never run from here. `--decline` writes `upgrade-declined|<date>|<steps>` into
+chose, and `fitcheck` runs `risk_move.py --apply`: the risk record, the open
+pieces' risk areas and a changelog entry. It changes nothing live. `--apply helper` and `--apply ready` also print a `say` line with
+what changed. The installer's own steps, `installer` and `missing`, are never run from here. `--decline` writes `upgrade-declined|<date>|<steps>` into
 `.ai-build-kit-maintenance`, keeping only steps that still have something
 left, and passes a declined `settings` to `settings-rules.py --decline`.
 """
@@ -117,6 +118,10 @@ import subprocess
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+sys.dont_write_bytecode = True  # a compiled copy would sit in the installed skill folder
+import risk_move  # noqa: E402  (beside this script; it reads the old path record)
+
 INSTALLED = os.path.dirname(os.path.dirname(HERE))
 LEFTOVERS = os.path.join(HERE, "kit-leftovers.py")
 POINTERS = os.path.join(HERE, "old-skill-pointers.py")
@@ -124,6 +129,7 @@ SETTINGS = os.path.join(HERE, "settings-rules.py")
 SETUP = os.path.join(INSTALLED, "setup-ai-build-kit")
 HELPER_TEMPLATE = os.path.join(SETUP, *"templates/foundation/plan-refresh.sh".split("/"))
 PLACE_HELPER = os.path.join(SETUP, "scripts", "place-plan-helper.sh")
+RISK_MOVE = os.path.join(HERE, "risk_move.py")
 HELPER = ".agents/tools/plan-refresh.sh"
 MAINTENANCE = ".ai-build-kit-maintenance"
 DECLINED = "upgrade-declined|"
@@ -171,8 +177,6 @@ STEP_OF = {
     "ready": "ready", "recipe": "recipe", "recipe-format": "recipe-format", "access": "access",
     "gate": "gates",
 }
-# The fit-check fields the kit used while it had four paths.
-FOUR_PATHS = re.compile(r"^\s*(Required controls:|Outside help:|Path:\s*(Build with expert help|Professional-led))")
 
 # Files installed by founding, but refreshed only when a person accepts the
 # older-project gate offer. The names are grouped by the separate yes each
@@ -218,7 +222,7 @@ WORKFLOW_GATES = (
 DECLINABLE = ("installer", "missing", "remove", "commands", "pointers", "settings", "template",
               "fitcheck", "recipe", "recipe-format", "access", *GATE_FILES)
 APPLIABLE = ("helper", "ready", "remove", "commands", "pointers", "settings", "template",
-             "recipe", *GATE_FILES)
+             "recipe", "fitcheck", *GATE_FILES)
 
 # A project founded before recipes became folders names its recipe by its file,
 # as in `Recipe: <name>.md`. The kit reads that as the folder of the same
@@ -632,15 +636,9 @@ def apply_access(project, choice):
 
 
 def fitcheck_findings(project):
-    try:
-        with open(os.path.join(project, "masterplan.md"), encoding="utf-8", errors="replace") as handle:
-            lines = handle.read().splitlines()
-    except OSError:
-        return []
-    for number, line in enumerate(lines, 1):
-        if FOUR_PATHS.match(line):
-            return [("fitcheck", "masterplan.md:%d" % number, line.strip())]
-    return []
+    """A masterplan that still records a path, or the four-path control fields."""
+    found = None if linked_path(project, "masterplan.md") else risk_move.has_old_record(project)
+    return [("fitcheck", "masterplan.md:%d" % found[0], found[1])] if found else []
 
 
 def origin_repo(project):
@@ -1080,12 +1078,11 @@ def sentences(out, project):
                          plural(n, "passage", "passages"), plural(n, "names", "name"),
                          plural(n, "that passage", "those passages"))))
     if "fitcheck" in by:
-        said.append(("fitcheck", "Your masterplan's fit-check section was written when the kit "
-                     "had four paths. Each risk area now carries one caution, and the kit "
-                     "no longer has paths. I can rewrite the old control fields to the new "
-                     "shape and show it to you above the old one first. Each "
-                     "accepted risk is copied word for word, and nothing else in the "
-                     "masterplan changes. Shall I?"))
+        said.append(("fitcheck", "Your masterplan still records a path. The kit now keeps a risk "
+                     "record instead, with each risk area and its caution. Your old section and "
+                     "the new record are shown side by side. Every risk area, acceptance date and "
+                     "word of yours is kept, and I name risk areas on your open pieces. Nothing "
+                     "changes until you say yes. Shall I move it?"))
     if "recipe" in by:
         name = by["recipe"][0][2]
         said.append(("recipe", "AGENTS.md names its recipe the old way, as the file %s.md. "
@@ -1243,6 +1240,8 @@ def apply(project, step):
         return apply_template(project)
     if step == "recipe":
         return apply_recipe(project)
+    if step == "fitcheck":
+        return subprocess.run(python(RISK_MOVE, "--apply", project)).returncode
     if step.startswith("access="):
         return apply_access(project, step[len("access="):])
     return 2
@@ -1487,7 +1486,7 @@ def main(argv):
         if want_route and route(project) == 4:
             return 4
         return code
-    for script in (LEFTOVERS, POINTERS, SETTINGS):
+    for script in (LEFTOVERS, POINTERS, SETTINGS, RISK_MOVE):
         if not os.path.isfile(script):
             print("upgrade-check.py: %s is missing beside it" % os.path.basename(script), file=sys.stderr)
             return 2
@@ -1496,7 +1495,7 @@ def main(argv):
             if apply_step not in APPLIABLE and not apply_step.startswith("access="):
                 if apply_step == "access":
                     return usage("say which: access=private, access=open-address or access=public")
-                if apply_step in ("installer", "missing", "fitcheck"):
+                if apply_step in ("installer", "missing"):
                     return usage("that step is not run from here: its say line says who carries it out")
                 return usage("unknown step %s" % apply_step)
             return apply(project, apply_step)

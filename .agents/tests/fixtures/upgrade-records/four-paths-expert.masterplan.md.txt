@@ -1,0 +1,23 @@
+# Masterplan
+
+## Build path
+
+Path: Build with expert help
+Why: A booking tool for a physiotherapy practice. It holds client records and
+sends appointment reminders, so somebody who knows the rules looks at it.
+Required controls: secrets stay out of the code, a backup restored once before
+real records go in, a review of who can see what.
+Outside help: scoped review, for client records
+Accepted: 2026-08-12, professional-led recommendation declined, no clinical sign-off, accepted by Sam, path moved to Build with expert help
+Recheck when: a second practice uses it; reminders start going to people who
+did not ask for them.
+Last checked: 2026-08-12
+
+## What it does, and for whom
+
+Four physiotherapists book sessions and see their day. Clients get a reminder
+the day before.
+
+## What happens when it fails
+
+The practice falls back to the paper diary. Sam owns recovery.
