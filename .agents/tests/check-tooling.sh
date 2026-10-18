@@ -364,6 +364,10 @@ if a[:2] == ["auth", "status"]:
 if a[:2] == ["repo", "view"]:
     if get("GH_REPO") == "none":
         out("no git remotes found", 1)
+    if get("GH_REPO") == "refused":
+        out("HTTP 403: Resource not accessible by integration", 1)
+    if get("GH_REPO") == "network":
+        out("error connecting to api.github.com", 1)
     out(json.dumps({"nameWithOwner": "someone/project", "viewerPermission": "ADMIN",
                     "hasIssuesEnabled": get("GH_ISSUES", "true") == "true"}))
 if a[:2] == ["label", "create"]:
@@ -445,6 +449,9 @@ grep -q "^issue \|PUT" "$GH_LOG" \
   || pass "without --conditions the report writes nothing"
 
 conditions "no repository stops founding" 1 "^missing: No GitHub repository holds this project" GH_REPO=none
+conditions "a refused repository read is could not check, not a missing repository" 0 "^could not check: GitHub did not let this session read the repository" GH_REPO=refused
+printf '%s\n' "$out" | grep -q "No GitHub repository holds" && fail "a refused read was reported as no repository: $out" || true
+conditions "an unreachable repository read is could not check" 0 "^could not check: GitHub could not be reached to read the repository" GH_REPO=network
 conditions "issues switched off stop founding" 1 "^missing: The repository someone/project has issues switched off. Step:" GH_ISSUES=false
 grep -q "^issue create" "$GH_LOG" && fail "it opened a test issue with issues off" || true
 conditions "a refused issue write stops founding" 1 "^missing: This session cannot open issues on someone/project. Step:" GH_WRITE=refused

@@ -189,11 +189,19 @@ if [ "$gh_ready" = yes ] && command -v python3 >/dev/null 2>&1 && [ "$kit_origin
         echo "Labels cannot be put in order: the signed-in account cannot create or delete labels here. Say which labels could not be made; a missing label costs a little clarity, it stops nothing." ;;
     esac
   elif [ "$conditions" = yes ] && [ "$kit_origin" = no ]; then
-    if is_network "$repo_answer"; then
-      condition "could not check" "GitHub could not be reached to read the repository. Step: allow GitHub access in this session, then run setup again."
-    else
-      condition missing "No GitHub repository holds this project yet. Step: create one on GitHub, point origin at it, then run setup again."
-    fi
+    # Only GitHub's own words for "there is no such repository" prove a
+    # missing one. Any other failure leaves the question open.
+    case "$repo_answer" in
+      *"no git remotes"* | *"not a git repository"* | *"Could not resolve to a Repository"* | \
+      *"unable to determine base repo"* | *"none of the git remotes"* | *"HTTP 404"*)
+        condition missing "No GitHub repository holds this project yet. Step: create one on GitHub, point origin at it, then run setup again." ;;
+      *)
+        if is_network "$repo_answer"; then
+          condition "could not check" "GitHub could not be reached to read the repository. Step: allow GitHub access in this session, then run setup again."
+        else
+          condition "could not check" "GitHub did not let this session read the repository. Step: check the signed-in account's access, then run setup again."
+        fi ;;
+    esac
   else
     echo "No GitHub repository is set up yet, so the issue and label checks wait until one exists."
   fi

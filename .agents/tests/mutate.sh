@@ -130,7 +130,8 @@ replay-compare-chance-rule
 replay-state-assertion-skipped
 fake-gh-loses-check-status
 conditions-missing-passes
-protection-plan-carries-on"
+protection-plan-carries-on
+unreadable-repository-is-missing"
 
 describe() {
   case "$1" in
@@ -226,6 +227,7 @@ describe() {
     fake-gh-loses-check-status) echo "a prepared failed project check is reported as passing by the GitHub stand-in" ;;
     conditions-missing-passes) echo "a missing working condition no longer stops founding" ;;
     protection-plan-carries-on) echo "a plan that cannot protect a private repository lets setup carry on" ;;
+    unreadable-repository-is-missing) echo "a refused repository read is reported as no repository and stops founding" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -276,6 +278,7 @@ checks_for() {
     fake-gh-loses-check-status) echo "fake-github" ;;
     conditions-missing-passes) echo "check-tooling" ;;
     protection-plan-carries-on) echo "check-tooling found-issues first-upload" ;;
+    unreadable-repository-is-missing) echo "check-tooling" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -1152,6 +1155,16 @@ t = open(p).read()
 old = "then run setup again.\")\n    return 3"
 assert old in t, "the plan limit stop not found"
 open(p, "w").write(t.replace(old, "then run setup again.\")\n    return 0", 1))
+'
+      ;;
+    unreadable-repository-is-missing)
+      edit "$tree/.agents/skills/setup-ai-build-kit/scripts/check-tooling.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "*\"no git remotes\"* | *\"not a git repository\"*"
+assert old in t, "the missing repository patterns not found"
+open(p, "w").write(t.replace(old, "* | *\"not a git repository\"*", 1))
 '
       ;;
     *)
