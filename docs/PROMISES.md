@@ -15,6 +15,8 @@
 | A check that never ran, lost its runner or crashed reports `NOT_RUN`, never `PASS`. | `.agents/tests/result-vocabulary.sh` | Every agent |
 | A live recipe launch with no way back or no backup is held. | `.agents/tests/run-recipe.sh` | Every agent |
 | With no recipe the kit gives one notice that nothing is guaranteed, records the person's words and the date, and never refuses. | `.agents/tests/run-recipe.sh` | Every agent |
+| Each command is tested by what it should do, and each test reads its result from disk as well as from the transcript. | `.agents/tests/replay-behaviour.sh`; `.agents/tests/replay-behaviour-cases.sh`; `.agents/tests/scenarios.md`, replay scenarios 64 to 81 | Every agent |
+| A replay run the harness breaks counts as could not run, never as a pass or a fail. | `.agents/tests/replay-preflight.sh` | Every agent |
 | A changed test cannot weaken the test that caught the fault. | `.agents/tests/tests-prove-change.sh` | Every agent |
 | A quality check that tried nothing reports that it could not run. | `.agents/tests/test-strength-rehearsal.sh` | Every agent |
 | A starter release contains only the declared files. | `.agents/tests/release-builder.sh`; `.agents/tools/validate-kit.sh` | Every agent |

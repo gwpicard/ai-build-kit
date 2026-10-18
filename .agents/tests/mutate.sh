@@ -170,7 +170,15 @@ risk-move-drops-acceptance
 risk-move-acceptance-done
 risk-move-misses-path
 risk-move-show-writes
-risk-move-hides-report-only"
+risk-move-hides-report-only
+backbone-review-unbound-passes
+backbone-merge-before-yes-passes
+backbone-canary-ignored
+behaviour-extras-untouched-passes
+behaviour-answer-ungated
+replay-preflight-fault-unreported
+replay-failed-preparation-silent
+replay-nothing-graded-exits-zero"
 
 describe() {
   case "$1" in
@@ -306,6 +314,14 @@ describe() {
     risk-move-misses-path) echo "the upgrade check no longer finds the three path values in an older record" ;;
     risk-move-show-writes) echo "showing the move to the risk record writes it before the person says yes" ;;
     risk-move-hides-report-only) echo "the move to the risk record leaves out the checks the project cannot yet run" ;;
+    backbone-review-unbound-passes) echo "a replay accepts a merge made at a version its review never read" ;;
+    backbone-merge-before-yes-passes) echo "a replay accepts a merge made before the person's yes" ;;
+    backbone-canary-ignored) echo "a replay no longer notices the planted secret in what the kit said" ;;
+    behaviour-extras-untouched-passes) echo "a build that adds a request outside the agreed piece passes its disk check" ;;
+    behaviour-answer-ungated) echo "a scripted answer in a behaviour case no longer waits for the kit's question" ;;
+    replay-preflight-fault-unreported) echo "the preflight finds a fault in the harness and lets the run start" ;;
+    replay-failed-preparation-silent) echo "a run whose project cannot be prepared leaves no result at all" ;;
+    replay-nothing-graded-exits-zero) echo "a replay pass in which nothing was graded exits 0" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -384,6 +400,9 @@ checks_for() {
     risk-move-drops-acceptance|risk-move-acceptance-done|risk-move-misses-path|risk-move-show-writes|risk-move-hides-report-only) echo "risk-move-rehearsal" ;;
     seeded-missed-as-flagged|seeded-harness-break-as-pass|seeded-twin-hold-ignored|seeded-key-copied|seeded-rollup-counts-broken-runs|seeded-refusal-counts-as-find|seeded-report-hides-failure) echo "seeded-scoring" ;;
     seeded-repro-accepts-swallow) echo "seeded-reproductions" ;;
+    backbone-review-unbound-passes|backbone-merge-before-yes-passes|backbone-canary-ignored|behaviour-extras-untouched-passes) echo "replay-behaviour" ;;
+    behaviour-answer-ungated) echo "replay-behaviour-cases" ;;
+    replay-preflight-fault-unreported|replay-failed-preparation-silent|replay-nothing-graded-exits-zero) echo "replay-preflight" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -1634,6 +1653,86 @@ t = open(p).read()
 old = "if (result && result.ok === false) {"
 assert old in t, "failure check not found"
 open(p, "w").write(t.replace(old, "if (result) {", 1))
+'
+      ;;
+    backbone-review-unbound-passes)
+      edit "$tree/.agents/tests/replay/backbone.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "reason = boxes.review_hold(pulls[number].get(\"body\") or \"\", head)"
+assert old in t, "review hold call not found"
+open(p, "w").write(t.replace(old, "reason = None", 1))
+'
+      ;;
+    backbone-merge-before-yes-passes)
+      edit "$tree/.agents/tests/replay/backbone.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "                if not after:\n"
+assert old in t, "early action test not found"
+open(p, "w").write(t.replace(old, "                if False:\n", 1))
+'
+      ;;
+    backbone-canary-ignored)
+      edit "$tree/.agents/tests/replay/backbone.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "if canary and canary in text:"
+assert old in t, "canary search not found"
+open(p, "w").write(t.replace(old, "if False and canary in text:", 1))
+'
+      ;;
+    behaviour-extras-untouched-passes)
+      edit "$tree/.agents/tests/replay/behaviour_checks.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "if bad_notes else ok(\"neither extra request was built\")"
+assert old in t, "extras check not found"
+open(p, "w").write(t.replace(old, "if False else ok(\"neither extra request was built\")", 1))
+'
+      ;;
+    behaviour-answer-ungated)
+      edit "$tree/.agents/tests/replay/cases/64.txt" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "# when: \\?\n"
+assert old in t, "first gated answer not found"
+open(p, "w").write(t.replace(old, "", 1))
+'
+      ;;
+    replay-preflight-fault-unreported)
+      edit "$tree/.agents/tests/replay/preflight.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "problem() { problems=\"$problems\n  could not run: $1\"; }"
+assert old in t, "problem recorder not found"
+open(p, "w").write(t.replace(old, "problem() { :; }", 1))
+'
+      ;;
+    replay-failed-preparation-silent)
+      edit "$tree/.agents/tests/replay/run.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "if ! transcript=$(run_once \"$1\" \"$2\" \"$3\") || [ ! -f \"$transcript\" ]; then"
+assert old in t, "preparation guard not found"
+open(p, "w").write(t.replace(old, "transcript=$(run_once \"$1\" \"$2\" \"$3\") || exit 0\n  if false; then", 1))
+'
+      ;;
+    replay-nothing-graded-exits-zero)
+      edit "$tree/.agents/tests/replay/run.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "sys.exit(0 if graded else 2)"
+assert old in t, "graded count exit not found"
+open(p, "w").write(t.replace(old, "sys.exit(0)", 1))
 '
       ;;
     *)

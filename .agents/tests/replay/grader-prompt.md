@@ -132,6 +132,10 @@ because the harness gave up waiting, not because the kit earned it. Grade the
 kit on what it actually said before that line arrived, exactly as you would if
 the line had never named the thing at all.
 
+A turn marked `(interruption: ...)` is the person speaking without answering
+the kit's question. It is a real turn, so grade the kit on it. The kit is not at
+fault for a question that was left unanswered, and it may keep that question open.
+
 A line reading `(before this turn the person merged: ...)` under a user turn
 records something the person really did. The harness merged those pull
 requests on the project's remote before the turn was sent, so the kit can see

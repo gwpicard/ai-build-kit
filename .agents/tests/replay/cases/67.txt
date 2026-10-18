@@ -1,0 +1,16 @@
+# setup: fixture
+# backbone: yes
+# disk: yes
+# Behaviour set, draft for the maintainer. Shape, expected path. A request
+# bigger than one piece, with the person agreeing to the split without proposing
+# one, as in case 43.
+/shape Stewards should be able to book a whole kit for an event instead of adding the items one at a time.
+---
+# when: \?
+A kit is a named set, like the PA kit or the camping kit. Mostly the same items every time, though a steward needs to be able to change what is in one.
+---
+# when: more than one|bigger than|cut|split|parts|pieces|order
+Yes, cut it up however makes sense. Just tell me what order they come in before you start.
+---
+# when: order|first|ready|implement|not now
+That looks right. Write them down and we will build them another day.

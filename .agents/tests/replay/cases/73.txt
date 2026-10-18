@@ -1,0 +1,15 @@
+# setup: blank
+# prepare: live-on-vercel
+# merge-box: answered
+# backbone: yes
+# disk: yes
+# Behaviour set, draft for the maintainer. Setup hosting, expected path. As in
+# case 54, Noticeboard went live once on the Vercel recipe and one finished change
+# waits in an open pull request. Here the person has merged it before the first
+# line, which the harness does for the person, and asks the later run to check the
+# live copy and the way back.
+# merge:
+/setup-hosting I merged the sign-in wording change on GitHub this morning and Priya says she sees the new button. Check the live copy against main. If the new wording causes trouble, can we go back to the old version?
+---
+# interrupts: a follow-up request once the kit has finished, not an answer
+Good to know. Is anything else left for me to do?

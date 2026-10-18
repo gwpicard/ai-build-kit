@@ -1300,6 +1300,9 @@ baseline="$REPLAY_DIR/fixture/issues.json"
 # miss fails it, the same reading the transcript's held uses. The two file paths
 # feed the issue-invariants assertion; the rest are field, verdict, note triples.
 STATE_OWED="$owed" SCENARIO_STATE_CHECK="$REPLAY_DIR/scenario-state-check.sh" \
+  STATE_PROJECT="$project" BACKBONE_CHECK="$REPLAY_DIR/backbone.py" \
+  BEHAVIOUR_CHECKS="$REPLAY_DIR/behaviour_checks.py" \
+  CASE_FILE="$REPLAY_DIR/cases/$(printf '%02d' "$number").txt" \
   python3 - "$number" "$endstate" "$baseline" \
   acceptance-record "$acc_verdict" "$acc_note" \
   save-route "$sr_verdict" "$sr_note" \
@@ -1475,12 +1478,12 @@ if base and end and end.get("repo") == base.get("repo"):
 verdicts["split"] = {"verdict": split_verdict, "note": split_note}
 
 import os
+import subprocess
 owed = os.environ.get("STATE_OWED", "").split()
 scenario_number = int(number)
 if scenario_number in (60, 61, 62, 63):
     project = endstate_path[:-len(".gh.json")] if endstate_path.endswith(".gh.json") else endstate_path
     checker = os.environ["SCENARIO_STATE_CHECK"]
-    import subprocess
     checked = subprocess.run([checker, str(scenario_number), project],
                              capture_output=True, text=True)
     if checked.returncode == 0 and "|" in checked.stdout:
@@ -1488,6 +1491,41 @@ if scenario_number in (60, 61, 62, 63):
     else:
         result, detail = "miss", "the stable scenario state check could not run"
     verdicts["scenario-stable"] = {"verdict": result, "note": detail}
+# A case marked `# backbone: yes` is graded on the promises that hold in every
+# project, and a case from the behaviour set on its own disk checks. When either
+# script cannot run, the case is not held: a check that did not run is never a pass.
+import json as _json
+
+
+def run_script(script, *args):
+    ran = subprocess.run([sys.executable, script, *args], capture_output=True, text=True)
+    try:
+        return _json.loads(ran.stdout)
+    except Exception:
+        return None
+
+
+try:
+    case_text = "\n" + open(os.environ["CASE_FILE"]).read()
+except OSError:
+    case_text = ""
+if "\n# backbone: yes\n" in case_text:
+    found = run_script(os.environ["BACKBONE_CHECK"], number, os.environ["STATE_PROJECT"])
+    if found is None:
+        verdicts["backbone-check"] = {"verdict": "unobservable",
+                                      "note": "the backbone check could not run"}
+        owed.append("backbone-check")
+    else:
+        for name, value in found["backbone"].items():
+            verdicts["backbone-" + name] = value
+if "\n# disk: yes\n" in case_text:
+    found = run_script(os.environ["BEHAVIOUR_CHECKS"], number, os.environ["STATE_PROJECT"])
+    if found is None:
+        verdicts["disk-checks"] = {"verdict": "unobservable", "note": "the disk checks could not run"}
+        owed.append("disk-checks")
+    else:
+        for name, value in found["disk"].items():
+            verdicts[name] = value
 held = all(v["verdict"] != "miss" for v in verdicts.values()) and \
     not any(verdicts.get(name, {}).get("verdict") == "unobservable" for name in owed)
 print(json.dumps({

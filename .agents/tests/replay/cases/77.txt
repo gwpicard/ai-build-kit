@@ -1,0 +1,11 @@
+# setup: blank
+# prepare: live-on-vercel
+# backbone: yes
+# disk: yes
+# Behaviour set, draft for the maintainer. Maintain, skipped step. A live tool
+# and a request for only one part of a visit. The kit still has to read the live
+# copy and say what it could not check.
+/maintain Just check whether the records have drifted.
+---
+# interrupts: a follow-up request once the kit has finished, not an answer
+Thanks. What did you not get to check, and when is the next visit due?

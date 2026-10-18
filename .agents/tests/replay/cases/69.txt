@@ -1,0 +1,18 @@
+# setup: fixture
+# backbone: yes
+# disk: yes
+# Behaviour set, draft for the maintainer. Shape, pushback. The claim about
+# the text-message service cannot be settled from what the person knows. The
+# second line pushes on without answering the kit's question and is marked an
+# interruption. The last line carries on after the kit names the unchecked fact.
+/shape Send the overdue list to each steward by text message instead of email. Just assume the service I named can do it.
+---
+# when: \?
+# interrupts: pushes on with the assumption instead of answering
+Twilio. It is the only one I know. Just assume it can text our members' mobile numbers, I do not want to wait while you check.
+---
+# when: check|document|their (own )?(pages|docs)|source|unverified|unchecked|assum
+I would rather not wait. Please do not check, just carry on and build the plan on it.
+---
+# when: unchecked|unverified|assum|record|accept|your words
+Yes, I understand it is unchecked and I accept that. Write that down in my words and carry on.

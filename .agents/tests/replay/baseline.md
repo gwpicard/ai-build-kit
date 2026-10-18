@@ -1220,3 +1220,35 @@ driven and graded by `opus`.
 |---|---|---|---|---|
 | 5 | `6c987f2` | 5/5 | 5/5 | Evidence in four, as before; save route in one |
 | 8 | `6c987f2` | 3/3 | 3/3 | none |
+
+## Why case 54 held in only one run of three, 18 October 2026
+
+The tracking note counts one run in three. The last pass of 54 that was kept
+on this computer, on 17 October, held in two runs of three by the transcript
+grader and in two by the disk check, and the other fields missed in every run.
+The run that did not hold never merged the pull request, so nothing went live
+and the disk check found no new build and no rollback line. The cause is in the
+recipe, not in the case.
+
+The Vercel recipe says the kit runs the Health part's container check before the
+merge. The replay gives every run a Docker with no engine, as a stand-in for a
+computer where Docker is stopped, so the check exits 2: it could not run. The
+recipe never said what exit 2 means. One run reported "the container health
+check couldn't run" in one line and merged on the person's first words, and a
+second merged without mentioning the check. The third treated it as a stop. It
+asked leave to fetch two public Supabase values and prepare the settings file,
+and the scripted line that came next was a filler, which asks and grants
+nothing, so the question was never answered. The pull request stayed open, and
+the later lines, which assume a merge, answered nothing.
+
+Earlier passes failed 54 for other reasons that are now fixed on the kit side: a
+missing review record and a missing changelog entry held the merge. This one is
+different because the one recipe sentence was read two ways. Two runs also said
+the first launch's database and backup warning again in full, where the contract
+wants a one-line pointer to the changelog. That is a separate fault, and this
+change does not touch it.
+
+The fix is one sentence in each recipe that names the check: exit 2 is said in
+one line and the merge goes on with the person's yes, and only exit 1 holds it.
+It has not been replayed. The final stage runs 54 again, and the cause is proved
+only if the three runs then merge.
