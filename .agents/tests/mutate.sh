@@ -128,7 +128,13 @@ replay-skill-size-total
 replay-rollup-counts-controls
 replay-compare-chance-rule
 replay-state-assertion-skipped
-fake-gh-loses-check-status"
+fake-gh-loses-check-status
+seeded-missed-as-flagged
+seeded-harness-break-as-pass
+seeded-twin-hold-ignored
+seeded-key-copied
+seeded-rollup-counts-broken-runs
+seeded-repro-accepts-swallow"
 
 describe() {
   case "$1" in
@@ -222,6 +228,12 @@ describe() {
     replay-compare-chance-rule) echo "a small-sample dip is reported as a regression without a chance check" ;;
     replay-state-assertion-skipped) echo "the returning-work state check stops noticing a cleared failure" ;;
     fake-gh-loses-check-status) echo "a prepared failed project check is reported as passing by the GitHub stand-in" ;;
+    seeded-missed-as-flagged) echo "a seeded fault that merged unnamed is scored as named first" ;;
+    seeded-harness-break-as-pass) echo "a run the harness broke is scored as a fix" ;;
+    seeded-twin-hold-ignored) echo "a healthy twin left open after the yes is scored as fine" ;;
+    seeded-key-copied) echo "the seeded-fault starting state carries the fault key into the project the kit sees" ;;
+    seeded-rollup-counts-broken-runs) echo "the seeded-fault roll-up counts runs the harness broke in its denominators" ;;
+    seeded-repro-accepts-swallow) echo "the reproduction for the swallowed-error product accepts an empty success" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -270,6 +282,8 @@ checks_for() {
     replay-compare-chance-rule) echo "replay-compare" ;;
     replay-state-assertion-skipped) echo "replay-case-states" ;;
     fake-gh-loses-check-status) echo "fake-github" ;;
+    seeded-missed-as-flagged|seeded-harness-break-as-pass|seeded-twin-hold-ignored|seeded-key-copied|seeded-rollup-counts-broken-runs) echo "seeded-scoring" ;;
+    seeded-repro-accepts-swallow) echo "seeded-reproductions" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -1126,6 +1140,69 @@ old_end = "        }]),"
 assert old_end in t, "default status result end not found"
 t = t.replace(old_end, "        }],", 1)
 open(p, "w").write(t)
+'
+      ;;
+    seeded-missed-as-flagged)
+      edit "$tree/.agents/tests/seeded/score.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "return \"flagged\" if flagged == \"yes\" else \"missed\""
+assert old in t, "missed-or-flagged rule not found"
+open(p, "w").write(t.replace(old, "return \"flagged\"", 1))
+'
+      ;;
+    seeded-harness-break-as-pass)
+      edit "$tree/.agents/tests/seeded/score.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    if harness != \"ok\":\n        return \"could_not_run\"\n    if variant == \"fault\":"
+assert old in t, "harness-break rule not found"
+new = "    if harness != \"ok\":\n        return \"fixed\"\n    if variant == \"fault\":"
+open(p, "w").write(t.replace(old, new, 1))
+'
+      ;;
+    seeded-twin-hold-ignored)
+      edit "$tree/.agents/tests/seeded/score.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    if pr == \"open\":\n        return \"twin_wrongly_held\""
+assert old in t, "twin hold rule not found"
+new = "    if pr == \"open\":\n        return \"twin_ok\""
+open(p, "w").write(t.replace(old, new, 1))
+'
+      ;;
+    seeded-key-copied)
+      edit "$tree/.agents/tests/seeded/seed-project.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "echo \"seeded $(basename \"$product\") ($variant)\""
+assert old in t, "seed-project closing line not found"
+new = "cp -R \"$here/keys\" \"$project/keys\"\n" + old
+open(p, "w").write(t.replace(old, new, 1))
+'
+      ;;
+    seeded-rollup-counts-broken-runs)
+      edit "$tree/.agents/tests/seeded/rollup.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "ran = [r for r in runs if r[\"outcome\"] != \"could_not_run\"]"
+assert old in t, "denominator rule not found"
+open(p, "w").write(t.replace(old, "ran = list(runs)", 1))
+'
+      ;;
+    seeded-repro-accepts-swallow)
+      edit "$tree/.agents/tests/seeded/keys/03-swallowed-error/repro.mjs" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "if (result && result.ok === false) {"
+assert old in t, "failure check not found"
+open(p, "w").write(t.replace(old, "if (result) {", 1))
 '
       ;;
     *)
