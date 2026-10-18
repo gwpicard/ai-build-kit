@@ -179,15 +179,18 @@ check.
 
 ### Results
 
-Every check reports one of five results: `PASS`, `FAIL`, `NOT_RUN`,
-`INCONCLUSIVE` or `NOT_APPLICABLE`. A missing runner, a crashed tool or a check
-that never started is `NOT_RUN`. It is never shown as `PASS`. One table, in
+Every check that gates a merge reports one of five results: `PASS`, `FAIL`,
+`NOT_RUN`, `INCONCLUSIVE` or `NOT_APPLICABLE`. A missing runner, a crashed tool
+or a check that never started is `NOT_RUN`. It is never shown as `PASS`. One table, in
 `.agents/skills/quality-checks/scripts/results.py`, says which results stop a
 merge, which ask for a review and which only inform. `FAIL` and `NOT_RUN` stop
 it, `INCONCLUSIVE` asks for a review, and the other two inform. `quality.py`,
 `gate.py` and `merge.py` keep their own exit codes and map them onto these
 names where they report. A test the harness breaks is "could not run", never a
 pass or a fail.
+
+The hosting recipe checks are the exception. They report in plain words, as
+warnings the person can accept, and a check that did not run says "not checked".
 
 ### Rollout states
 

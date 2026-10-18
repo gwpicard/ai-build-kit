@@ -17,6 +17,9 @@ Usage, from inside the project:
     approval.py list
         Print the yeses not yet spent.
 
+Two callers at once cannot spend the same yes: every call holds a lock on the
+record from the read to the write.
+
 The record is local to the project and never committed: a file in the Git
 folder, shared by linked worktrees. A change name is the script's name and its
 arguments, such as `merge pull request 12` or `promote dpl_abc 1a2b3c4`. The
@@ -26,6 +29,7 @@ Exit 0 done, 1 refused, 2 could not run.
 """
 
 import datetime
+import fcntl
 import os
 import subprocess
 import sys
@@ -74,6 +78,11 @@ def main(argv):
     path = record_file()
     if not path:
         return stop("this is not inside a project under Git, so no yes can be read or kept", 2)
+    try:
+        lock = open(path + ".lock", "a")
+        fcntl.flock(lock, fcntl.LOCK_EX)
+    except OSError as error:
+        return stop("the record of yeses could not be locked: " + str(error), 2)
     try:
         rows = read(path)
     except (OSError, UnicodeError) as error:

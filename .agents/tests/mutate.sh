@@ -141,6 +141,7 @@ launch-off-recipe-unrecorded
 approval-merge-skipped
 approval-recipe-skipped
 approval-yes-reused
+approval-yes-raced
 approval-ask-rule-dropped
 record-secret-pr-body
 record-secret-changelog
@@ -249,6 +250,7 @@ describe() {
     approval-merge-skipped) echo "an approved merge goes ahead with no recorded yes" ;;
     approval-recipe-skipped) echo "a recipe step that changes something live goes ahead with no recorded yes" ;;
     approval-yes-reused) echo "one recorded yes opens the same change again and again" ;;
+    approval-yes-raced) echo "two callers at once both spend the same yes" ;;
     approval-ask-rule-dropped) echo "Claude Code records a yes with no box for the person to click" ;;
     review-record-any-head) echo "a review record passes for a commit it never read" ;;
     review-record-unsealed) echo "a hand-edited review record passes" ;;
@@ -314,6 +316,7 @@ checks_for() {
     approval-merge-skipped) echo "merge-gate" ;;
     approval-recipe-skipped) echo "recipe-nextjs-supabase-on-vercel" ;;
     approval-yes-reused) echo "approval-gate merge-gate" ;;
+    approval-yes-raced) echo "approval-gate" ;;
     approval-ask-rule-dropped) echo "push-to-main-rules" ;;
     review-record-any-head) echo "review-gate merge-gate" ;;
     review-record-unsealed) echo "review-gate merge-gate" ;;
@@ -1285,6 +1288,15 @@ p = os.environ["MUTATE_TARGET"]
 t = open(p).read()
 old = "        rows.remove(found)"
 assert old in t, "approval-yes-reused: text not found"
+open(p, "w").write(t.replace(old, "        pass", 1))'
+      ;;
+    approval-yes-raced)
+      edit "$tree/.agents/skills/records/scripts/approval.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "        fcntl.flock(lock, fcntl.LOCK_EX)"
+assert old in t, "approval-yes-raced: text not found"
 open(p, "w").write(t.replace(old, "        pass", 1))'
       ;;
     approval-ask-rule-dropped)
