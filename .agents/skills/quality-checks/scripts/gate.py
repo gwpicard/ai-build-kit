@@ -117,7 +117,7 @@ def brief(args):
             limits.append("project-check has no reported result")
     except (RuntimeError, ValueError, json.JSONDecodeError):
         check_line = "project-check could not be read"
-        project = []
+        project, type_checks, lint_checks = [], [], []
         limits.append("project check results could not be read")
     result_lines = ["Project check: " + check_line]
     if type_checks:

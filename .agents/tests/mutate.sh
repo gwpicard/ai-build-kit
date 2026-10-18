@@ -128,7 +128,13 @@ replay-skill-size-total
 replay-rollup-counts-controls
 replay-compare-chance-rule
 replay-state-assertion-skipped
-fake-gh-loses-check-status"
+fake-gh-loses-check-status
+review-record-any-head
+review-record-unsealed
+review-record-old-format-passes
+review-unverified-called-verified
+result-crash-passes
+result-unstarted-check-passes"
 
 describe() {
   case "$1" in
@@ -222,6 +228,12 @@ describe() {
     replay-compare-chance-rule) echo "a small-sample dip is reported as a regression without a chance check" ;;
     replay-state-assertion-skipped) echo "the returning-work state check stops noticing a cleared failure" ;;
     fake-gh-loses-check-status) echo "a prepared failed project check is reported as passing by the GitHub stand-in" ;;
+    review-record-any-head) echo "a review record passes for a commit it never read" ;;
+    review-record-unsealed) echo "a hand-edited review record passes" ;;
+    review-record-old-format-passes) echo "an older record with no commit passes as current" ;;
+    review-unverified-called-verified) echo "a review by one login is recorded as verified" ;;
+    result-crash-passes) echo "a quality read that crashes is reported as a pass" ;;
+    result-unstarted-check-passes) echo "a GitHub check that has not finished maps to PASS" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -270,6 +282,12 @@ checks_for() {
     replay-compare-chance-rule) echo "replay-compare" ;;
     replay-state-assertion-skipped) echo "replay-case-states" ;;
     fake-gh-loses-check-status) echo "fake-github" ;;
+    review-record-any-head) echo "review-gate merge-gate" ;;
+    review-record-unsealed) echo "review-gate merge-gate" ;;
+    review-record-old-format-passes) echo "review-gate merge-gate" ;;
+    review-unverified-called-verified) echo "review-gate merge-gate" ;;
+    result-crash-passes) echo "result-vocabulary" ;;
+    result-unstarted-check-passes) echo "result-vocabulary merge-gate" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -1127,6 +1145,60 @@ assert old_end in t, "default status result end not found"
 t = t.replace(old_end, "        }],", 1)
 open(p, "w").write(t)
 '
+      ;;
+    review-record-any-head)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/review_boxes.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    if fields[\"head\"] != head:"
+assert old in t, "review-record-any-head: text not found"
+open(p, "w").write(t.replace(old, "    if False and fields[\"head\"] != head:", 1))'
+      ;;
+    review-record-unsealed)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/review_boxes.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    if fields[\"seal\"] != review_seal(fields, body):"
+assert old in t, "review-record-unsealed: text not found"
+open(p, "w").write(t.replace(old, "    if False and fields[\"seal\"] != review_seal(fields, body):", 1))'
+      ;;
+    review-record-old-format-passes)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/review_boxes.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    if not fields.get(\"head\") or not fields.get(\"seal\"):\n        return ("
+assert old in t, "review-record-old-format-passes: text not found"
+open(p, "w").write(t.replace(old, "    if not fields.get(\"head\") or not fields.get(\"seal\"):\n        return None and (", 1))'
+      ;;
+    review-unverified-called-verified)
+      edit "$tree/.agents/skills/quality-checks/scripts/gate.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    return False, (\"unverified."
+assert old in t, "review-unverified-called-verified: text not found"
+open(p, "w").write(t.replace(old, "    return True, (\"unverified.", 1))'
+      ;;
+    result-crash-passes)
+      edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "        code = 2\n    print(\"Result: \""
+assert old in t, "result-crash-passes: text not found"
+open(p, "w").write(t.replace(old, "        code = 0\n    print(\"Result: \"", 1))'
+      ;;
+    result-unstarted-check-passes)
+      edit "$tree/.agents/skills/quality-checks/scripts/results.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "        return NOT_APPLICABLE\n    return NOT_RUN"
+assert old in t, "result-unstarted-check-passes: text not found"
+open(p, "w").write(t.replace(old, "        return NOT_APPLICABLE\n    return PASS", 1))'
       ;;
     *)
       echo "unknown mutation: $name" >&2

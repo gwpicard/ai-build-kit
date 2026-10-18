@@ -26,6 +26,10 @@ what kind of line it is, and a place is always FILE:LINE. A `not-checked`
 line names a part of the read that did not run, and why. The agent reads
 that part of the code directly instead, which is the last resort.
 
+Each read ends with one line on standard error, `Result: ` and a name from
+results.py beside this script: PASS for exit 0, FAIL for 1, NOT_RUN for 2.
+A read that crashes prints a `not-checked` line and is NOT_RUN.
+
 Exit codes for the existing reads:
 
     0  nothing found, and every part of the read that applies ran
@@ -2111,5 +2115,22 @@ def main():
     return strength(root, args.base, engines)
 
 
+def reported():
+    """Run a read and name its result from the shared set, on standard error.
+
+    A read that crashes did not run, so it is NOT_RUN and exits 2, never a pass.
+    """
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import results
+    try:
+        code = main()
+    except Exception as error:  # a crashed read is a read that did not run
+        print("not-checked\tall\tthe read stopped with %s: %s" % (type(error).__name__, error))
+        code = 2
+    print("Result: " + results.from_exit(code), file=sys.stderr)
+    return code
+
+
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.dont_write_bytecode = True
+    sys.exit(reported())
