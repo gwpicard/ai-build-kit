@@ -83,6 +83,22 @@ def stop(message, code=2):
     sys.exit(code)
 
 
+SCANNER = os.path.join(os.path.dirname(os.path.dirname(here)), "setup-ai-build-kit", "templates",
+                       "foundation", "scan-secrets.py")
+
+
+def unsafe_record(text, name):
+    """Stop before a saved record takes a secret. Names the file, never the value."""
+    try:
+        done = subprocess.run([sys.executable, SCANNER, "--text", name], input=text,
+                              capture_output=True, text=True, cwd=project)
+    except OSError:
+        stop("run-recipe.sh: the secret check could not run, so %s was not written." % name)
+    if done.returncode:
+        stop(done.stderr.strip() or
+             "run-recipe.sh: the secret check could not run, so %s was not written." % name)
+
+
 project, recipe, sets, pasted, looked = ".", None, {}, {}, {}
 request_record = alerts = needs = None
 notes, later, asks, record = [], False, False, True
@@ -165,6 +181,7 @@ if record and password_files and os.path.isfile(masterplan):
         lines = [line for line in lines if not re.match(r"\s*Password files:\s*", line, re.I)]
         start = next(i for i, line in enumerate(lines) if line.strip() == "## How it stays running")
         lines.insert(start + 1, record_line)
+        unsafe_record("\n".join(lines), "masterplan.md")
         with open(masterplan, "w", encoding="utf-8") as target:
             target.write("\n".join(lines) + "\n")
 
@@ -466,6 +483,7 @@ if record:
         text = text[:found.start()] + "\n".join(block) + "\n" + text[found.start():]
     else:
         text = text.rstrip("\n") + "\n\n" + "\n".join(block)
+    unsafe_record("\n".join(block), "CHANGELOG.md")
     with open(changelog, "w") as handle:
         handle.write(text)
     closing += " The entry is in CHANGELOG.md."

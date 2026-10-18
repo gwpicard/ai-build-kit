@@ -141,7 +141,11 @@ launch-off-recipe-unrecorded
 approval-merge-skipped
 approval-recipe-skipped
 approval-yes-reused
-approval-ask-rule-dropped"
+approval-ask-rule-dropped
+record-secret-pr-body
+record-secret-changelog
+record-secret-claude-write
+record-secret-github-body"
 
 describe() {
   case "$1" in
@@ -235,6 +239,10 @@ describe() {
     replay-compare-chance-rule) echo "a small-sample dip is reported as a regression without a chance check" ;;
     replay-state-assertion-skipped) echo "the returning-work state check stops noticing a cleared failure" ;;
     fake-gh-loses-check-status) echo "a prepared failed project check is reported as passing by the GitHub stand-in" ;;
+    record-secret-pr-body) echo "a review record carrying a key is written to the pull request" ;;
+    record-secret-changelog) echo "run-recipe writes a key into the changelog" ;;
+    record-secret-claude-write) echo "Claude Code writes a key into the masterplan or changelog" ;;
+    record-secret-github-body) echo "Claude Code writes a key into an issue or pull request body" ;;
     launch-no-backup-goes-ahead) echo "a live launch with no confirmed backup goes ahead" ;;
     launch-no-way-back-goes-ahead) echo "a later launch with no earlier build to go back to goes ahead" ;;
     launch-off-recipe-unrecorded) echo "a launch off a recipe goes ahead with no recorded way back or backup" ;;
@@ -296,6 +304,10 @@ checks_for() {
     replay-compare-chance-rule) echo "replay-compare" ;;
     replay-state-assertion-skipped) echo "replay-case-states" ;;
     fake-gh-loses-check-status) echo "fake-github" ;;
+    record-secret-pr-body) echo "record-secrets" ;;
+    record-secret-changelog) echo "record-secrets" ;;
+    record-secret-claude-write) echo "record-secrets" ;;
+    record-secret-github-body) echo "record-secrets" ;;
     launch-no-backup-goes-ahead) echo "run-recipe" ;;
     launch-no-way-back-goes-ahead) echo "run-recipe" ;;
     launch-off-recipe-unrecorded) echo "run-recipe" ;;
@@ -1283,6 +1295,42 @@ t = open(p).read()
 old = "      \"Bash(*approval.py*yes*)\",\n"
 assert old in t, "approval-ask-rule-dropped: text not found"
 open(p, "w").write(t.replace(old, "", 1))'
+      ;;
+    record-secret-pr-body)
+      edit "$tree/.agents/skills/quality-checks/scripts/gate.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "        if holds_secret(text, \"pull request %s body\" % args.pr):"
+assert old in t, "record-secret-pr-body: text not found"
+open(p, "w").write(t.replace(old, "        if False:", 1))'
+      ;;
+    record-secret-changelog)
+      edit "$tree/.agents/skills/setup-hosting/scripts/run-recipe.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    unsafe_record(\"\\n\".join(block), \"CHANGELOG.md\")\n"
+assert old in t, "record-secret-changelog: text not found"
+open(p, "w").write(t.replace(old, "", 1))'
+      ;;
+    record-secret-claude-write)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/guard-secrets.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "        record = record_write_secret(tool, args)"
+assert old in t, "record-secret-claude-write: text not found"
+open(p, "w").write(t.replace(old, "        record = None", 1))'
+      ;;
+    record-secret-github-body)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/guard-secrets.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "        record = github_record_secret(command, root)"
+assert old in t, "record-secret-github-body: text not found"
+open(p, "w").write(t.replace(old, "        record = None", 1))'
       ;;
     *)
       echo "unknown mutation: $name" >&2

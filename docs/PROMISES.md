@@ -9,6 +9,11 @@
 | A project check holds while a stopping finding is unticked. | `.agents/tests/review-gate.sh`; `.agents/tests/merge-gate.sh` | Every agent |
 | Merge waits for project checks, a settled review, and an accepted sensitive area. | `.agents/tests/merge-gate.sh` | Every agent |
 | Secrets stay out of committed files, command output, and logs. | `.agents/tests/secrets-gates.sh`; `.agents/tests/push-guard.sh` | Every agent |
+| A secret never reaches the kit's saved records, and the refusal names the record, never the value. | `.agents/tests/record-secrets.sh` | Every agent for the kit's scripts; Claude Code for records it writes by hand |
+| A review record holds only for the commit it read, and a hand edit to it holds the merge. | `.agents/tests/review-gate.sh`; `.agents/tests/merge-gate.sh` | Every agent |
+| A review no second login approved is labelled unverified. | `.agents/tests/review-gate.sh`; `.agents/tests/merge-gate.sh` | Every agent |
+| A check that never ran, lost its runner or crashed reports `NOT_RUN`, never `PASS`. | `.agents/tests/result-vocabulary.sh` | Every agent |
+| A live launch with no way back or no backup is held. | `.agents/tests/run-recipe.sh` | Every agent |
 | A changed test cannot weaken the test that caught the fault. | `.agents/tests/tests-prove-change.sh` | Every agent |
 | A quality check that tried nothing reports that it could not run. | `.agents/tests/test-strength-rehearsal.sh` | Every agent |
 | A starter release contains only the declared files. | `.agents/tests/release-builder.sh`; `.agents/tools/validate-kit.sh` | Every agent |
@@ -25,6 +30,6 @@
 | The kit names risks before sensitive work and records the person's choice. | `.agents/tests/scenarios.md`, replay scenarios 3, 4, 5 and 6 | Every agent |
 | The agent asks only for answers that change the result. | `.agents/tests/scenarios.md`, replay scenarios 9 and 10 | Every agent |
 | The agent does not claim a review or result that did not happen. | `.agents/tests/scenarios.md`, replay scenarios 2 and 46 | Every agent |
-| The agent asks before changing a live service or online access. | `.agents/tests/push-to-main-rules.sh` checks Claude Code settings; words only for other agents, could be a script for named operations | Every agent; Claude Code checked |
+| The agent asks before changing a live service or online access. | `.agents/tests/approval-gate.sh`, `.agents/tests/merge-gate.sh` and `.agents/tests/recipe-nextjs-supabase-on-vercel.sh` prove the kit's scripts refuse without the person's recorded yes; `.agents/tests/push-to-main-rules.sh` checks Claude Code settings | Every agent for the kit's scripts; Claude Code for other commands |
 | The agent makes the work understandable without asking the person to read code. | Words only; needs judgement | Every agent |
 | The agent says when a command runs and does not start one the person did not ask for. | `.agents/tests/scenarios.md`, replay scenario 44 | Every agent |

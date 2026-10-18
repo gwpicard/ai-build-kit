@@ -154,12 +154,12 @@ named beside it.
 
 | Promise | Mechanism today | Gap |
 |---|---|---|
-| A person approves each merge, unless they chose auto-merge with its limits. | `merge.py` and `.agents/tests/merge-gate.sh`; the autonomy limits in `.agents/tests/autonomy-boundaries.sh`; branch protection set at setup | Branch protection can fail without stopping setup. Closed by the backbone-gaps piece. |
-| Nothing goes online without a yes. | Claude Code permission rules, checked by `.agents/tests/push-to-main-rules.sh`; `.agents/tests/first-upload.sh` | Words only for other agents. There is no single gate for every online change. Closed by the backbone-gaps piece. |
-| Secrets are never shown. | `.agents/tests/secrets-gates.sh` and `.agents/tests/push-guard.sh` | Held for commits and command output. The kit's own saved records are not covered. Closed by the backbone-gaps piece. |
-| Checks pass before a merge. | The project checks workflow, read by `merge.py`; `.agents/tests/merge-gate.sh` | None known. |
-| A review matches the code it read. | None yet. `.agents/tests/review-gate.sh` reads the review boxes in the pull request text, which a later push or an edit leaves unchanged. | The review record carries no commit. Closed by the backbone-gaps piece. |
-| Every launch has a way back and a backup. | Each recipe must carry rollback, backup and restore sections, checked by `.agents/tools/check-recipes.sh` | A missing one is reported and does not hold the launch. Closed by the backbone-gaps piece. |
+| A person approves each merge, unless they chose auto-merge with its limits. | `merge.py --approved` spends the person's recorded yes through the approval gate, `records/scripts/approval.py`; `.agents/tests/merge-gate.sh` and `.agents/tests/approval-gate.sh`; the autonomy limits in `.agents/tests/autonomy-boundaries.sh`; branch protection set at setup | Branch protection can fail without stopping setup. Closed by the founding-checks piece. |
+| Nothing goes online without a yes. | One approval gate, `approval.py`, called by `merge.py --approved` and by every recipe step that moves what is live, applies a migration, adds a secret, or changes access, sign-up or the host connection: `.agents/tests/approval-gate.sh`, `.agents/tests/merge-gate.sh`, `.agents/tests/recipe-nextjs-supabase-on-vercel.sh`. Claude Code asks before a yes is recorded, checked by `.agents/tests/push-to-main-rules.sh`; `.agents/tests/first-upload.sh` | Closed for the kit's own scripts. A host's tool run directly, outside a kit script, is held only by Claude Code's rules. |
+| Secrets are never shown. | `.agents/tests/secrets-gates.sh` and `.agents/tests/push-guard.sh` for commits and command output; `.agents/tests/record-secrets.sh` for the saved records: the pull request body `gate.py` writes, the changelog and masterplan `run-recipe.sh` writes, and what Claude Code writes into a record file or a GitHub body | Closed for the kit's scripts and Claude Code. Another agent writing a record by hand is caught when the record is pushed. |
+| Checks pass before a merge. | The project checks workflow, read by `merge.py`; `.agents/tests/merge-gate.sh`. Every check reports a result from `quality-checks/scripts/results.py`; `.agents/tests/result-vocabulary.sh` | None known. |
+| A review matches the code it read. | The review record names the commit the review read and carries a seal over itself and the stopping findings. `check-review.sh` and `merge.py` hold a record for another commit, a hand-edited one, and an older one with no commit. A review no second login approved is recorded as unverified. `.agents/tests/review-gate.sh`, `.agents/tests/merge-gate.sh` | The seal stops a hand edit, and anyone who runs the kit's code can still write a record. A review counts as verified only when a second GitHub login approved that commit. |
+| Every launch has a way back and a backup. | Each recipe must carry rollback, backup and restore sections, checked by `.agents/tools/check-recipes.sh`. `run-recipe.sh` holds a live tool whose backup is not confirmed, whose recipe names no rollback, or, on a later run, with no earlier build to go back to. Off a recipe the masterplan must say how to go back and where the backup is. `.agents/tests/run-recipe.sh` | A first launch has no earlier build, so its way back is the recipe's rollback step, untried. |
 | Records say "accepted", never "done". | Replay scenarios 2 and 46 | Words only. |
 
 Each mechanism needs a check that fails when the mechanism is removed. The
@@ -181,9 +181,13 @@ check.
 
 Every check reports one of five results: `PASS`, `FAIL`, `NOT_RUN`,
 `INCONCLUSIVE` or `NOT_APPLICABLE`. A missing runner, a crashed tool or a check
-that never started is `NOT_RUN`. It is never shown as `PASS`. One table in one
-place says which results stop a merge, which ask for a review and which only
-inform. A test the harness breaks is "could not run", never a pass or a fail.
+that never started is `NOT_RUN`. It is never shown as `PASS`. One table, in
+`.agents/skills/quality-checks/scripts/results.py`, says which results stop a
+merge, which ask for a review and which only inform. `FAIL` and `NOT_RUN` stop
+it, `INCONCLUSIVE` asks for a review, and the other two inform. `quality.py`,
+`gate.py` and `merge.py` keep their own exit codes and map them onto these
+names where they report. A test the harness breaks is "could not run", never a
+pass or a fail.
 
 ### Rollout states
 
@@ -194,8 +198,9 @@ check says so in plain words and never shows a false pass. The move to
 `enforced` is a decision, recorded with the date.
 
 A review that the kit cannot verify, because the agent and the reviewer share
-one login, is recorded as unverified. The hand-over never calls it an
-independent review.
+one login, is recorded as unverified: the record says `verified=no`, and the
+pull request and the merge say so in plain words. The hand-over never calls it
+an independent review.
 
 ### The risk record
 

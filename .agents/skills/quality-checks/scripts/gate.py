@@ -260,6 +260,8 @@ def record(args):
         text = "\n".join(lines).strip()
         text += "\n" + reader.record_line("quality review", len(kept) + previous_open, open_count,
                                           read_head or "unknown", verified, text)
+        if holds_secret(text, "pull request %s body" % args.pr):
+            return 2
         gh("pr", "edit", str(args.pr), "--body", text)
     except (RuntimeError, ValueError) as error:
         return stop("gate: could not update the pull request: " + str(error))
@@ -276,6 +278,23 @@ def record(args):
               "holds the merge. Run the review again.", file=sys.stderr)
         return 1
     return 1 if open_count else 0
+
+
+def holds_secret(text, label):
+    """Check a record before it is saved. Names the record, never the value."""
+    scanner = (Path(__file__).resolve().parents[2] / "setup-ai-build-kit" / "templates" /
+               "foundation" / "scan-secrets.py")
+    try:
+        done = subprocess.run([sys.executable, str(scanner), "--text", label], input=text,
+                              text=True, capture_output=True, timeout=120)
+    except (OSError, subprocess.TimeoutExpired):
+        print("gate: the secret check could not run, so %s was not written" % label, file=sys.stderr)
+        return True
+    if done.returncode:
+        print(done.stderr.strip() or "gate: the secret check could not run, so %s was not written" % label,
+              file=sys.stderr)
+        return True
+    return False
 
 
 def packet_head():
