@@ -197,7 +197,11 @@ run_once() {
   # and for the state check alike.
   ghstate="$project.gh.json"
   rm -f "$ghstate"
-  if [ -f "$project/.gh-fixture.json" ]; then
+  # A preparation that needs a commit in the GitHub state, such as a review
+  # record naming the pull request's head, writes it beside the project.
+  if [ -f "$project.gh-start.json" ]; then
+    mv "$project.gh-start.json" "$ghstate"
+  elif [ -f "$project/.gh-fixture.json" ]; then
     cp "$project/.gh-fixture.json" "$ghstate"
   fi
 

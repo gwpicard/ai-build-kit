@@ -213,8 +213,10 @@ with open(path) as handle:
     settings = json.load(handle)
 permissions = settings.get("permissions")
 if isinstance(permissions, dict) and isinstance(permissions.get("ask"), list):
-    rule = "Bash(*merge.py*--approved*)"
-    permissions["ask"] = [item for item in permissions["ask"] if item != rule]
+    # The person's merge yes also has to be recorded through the approval
+    # gate, whose box has nobody to click here either.
+    rules = ("Bash(*merge.py*--approved*)", "Bash(*approval.py*yes*)")
+    permissions["ask"] = [item for item in permissions["ask"] if item not in rules]
     with open(path, "w") as handle:
         json.dump(settings, handle, indent=2)
         handle.write("\n")

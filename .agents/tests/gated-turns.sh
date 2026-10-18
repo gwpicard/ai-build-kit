@@ -1031,14 +1031,14 @@ answer_merge_box "$boxproj" \
   || bad "answering the merge box failed"
 python3 - "$boxproj/.claude/settings.json" \
   "$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json" <<'PY2' \
-  && ok "it takes out only the merge.py ask and leaves other rules and hooks" \
-  || bad "answering the box changed another rule or left the merge.py ask"
+  && ok "it takes out only the merge.py and recorded-yes asks and leaves other rules and hooks" \
+  || bad "answering the box changed another rule or left the merge.py or recorded-yes ask"
 import json, sys
 after = json.load(open(sys.argv[1]))
 before = json.load(open(sys.argv[2]))
-rule = "Bash(*merge.py*--approved*)"
-assert rule in before["permissions"]["ask"]
-before["permissions"]["ask"].remove(rule)
+for rule in ("Bash(*merge.py*--approved*)", "Bash(*approval.py*yes*)"):
+    assert rule in before["permissions"]["ask"]
+    before["permissions"]["ask"].remove(rule)
 assert after == before
 PY2
 mkdir -p "$WORK/box-none"

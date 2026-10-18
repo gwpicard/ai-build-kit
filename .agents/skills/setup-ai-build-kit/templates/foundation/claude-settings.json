@@ -109,6 +109,7 @@
     "ask": [
       "Bash(*merge.py*--approved*)",
       "Bash(*merge.py*--resume*)",
+      "Bash(*approval.py*yes*)",
       "Bash(gh api *git/refs*)",
       "Bash(gh api graphql *createRef*)",
       "Bash(gh api graphql *updateRef*)",

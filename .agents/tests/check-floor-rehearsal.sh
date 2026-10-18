@@ -148,10 +148,22 @@ MD
 # Prints the name of the first step that failed, or nothing when all passed.
 # The Install step is left to the rehearsal, which already provided the tools.
 mkdir -p "$WORK/bin"
+# A settled review record for the head the stand-in reports, sealed by the
+# shared reader the way gate.py seals it.
+PR_VIEW="$WORK/pr-view.json"
+export PR_VIEW
+python3 -c '
+import importlib.util, json, sys
+spec = importlib.util.spec_from_file_location("b", sys.argv[1])
+b = importlib.util.module_from_spec(spec); spec.loader.exec_module(b)
+head = "0" * 40
+body = "## Worth stopping for\n- None\n## Worth knowing\n- None"
+print(json.dumps({"body": body + "\n" + b.record_line("quality review", 0, 0, head, False, body), "headRefOid": head}))
+' "$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/review_boxes.py" > "$PR_VIEW"
 cat > "$WORK/bin/gh" <<'SH'
 #!/usr/bin/env sh
 case "$*" in
-  "pr view 9 --json body --jq .body") printf '%s\n' '## Worth stopping for' '- None' '## Worth knowing' '- None' 'Review record: reviewed=quality review; tried=0; open=0' ;;
+  "pr view 9 --json body,headRefOid") cat "$PR_VIEW" ;;
   *) echo "unexpected gh call: $*" >&2; exit 2 ;;
 esac
 SH

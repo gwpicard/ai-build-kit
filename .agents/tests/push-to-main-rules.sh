@@ -542,6 +542,9 @@ live_ask = [
     "vercel project protection disable kit-log --sso",
     "sh .agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/set-access.sh public",
     "sh .agents/skills/setup-hosting/recipes/parts/scripts/set-signup.sh open",
+    # Recording the person's yes opens every gated online step, so it asks too.
+    'python3 .agents/skills/records/scripts/approval.py yes "promote dpl_1 abc" --words "go ahead"',
+    'python3 /abs/path/.agents/skills/records/scripts/approval.py yes "merge pull request 4" --words "merge it"',
     "vercel --prod",
     "vercel --prod --yes",
     "vercel deploy --prod",
@@ -568,6 +571,7 @@ live_ask = [
     "gh api graphql -f query='mutation { deleteRef(input: {refId: \"x\"}) { clientMutationId } }'",
 ]
 live_runs = [
+    "python3 .agents/skills/records/scripts/approval.py list",
     "supabase start",
     "supabase db dump --linked -f schema.sql",
     "supabase link --project-ref abc",

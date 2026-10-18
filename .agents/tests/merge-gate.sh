@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# merge-gate.sh: merge.py honours GitHub JSON checks, review findings and the checked commit.
+# merge-gate.sh: merge.py honours GitHub JSON checks, review findings, a review record bound to the checked commit, and the checked commit.
 # The local gh stand-in follows the documented exit codes and JSON fields.
 
 set -eu
@@ -66,10 +66,24 @@ GH_LOG="$WORK/gh.log"
 export GH_LOG
 fail() { echo "FAIL: $1" >&2; exit 1; }
 pass() { echo "ok: $1"; }
+BOXES="$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/review_boxes.py"
+# sealed BODY HEAD [OPEN]: the body with the review record gate.py would write for HEAD.
+sealed() {
+  python3 -c '
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location("review_boxes", sys.argv[1])
+boxes = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(boxes)
+body = sys.argv[2] + "\n\n## Worth knowing\n- None"
+print(body + "\n" + boxes.record_line("quality review", 1, int(sys.argv[4]), sys.argv[3], False, body))
+' "$BOXES" "$1" "$2" "${3:-0}"
+}
+APPROVAL="$ROOT/.agents/skills/records/scripts/approval.py"
 run() {
+  [ "${NO_YES:-0}" = 1 ] || (cd "$WORK/project" && python3 "$APPROVAL" yes "merge pull request 12" --words "merge it" >/dev/null)
   review_body=$2
   if [ "${3:-yes}" = yes ]; then
-    review_body=$(printf '%s\n\n## Worth knowing\n- None\nReview record: reviewed=quality review; tried=1; open=0' "$2")
+    review_body=$(sealed "$2" "$HEAD_SHA")
   fi
   (cd "$WORK/project" && PATH="$WORK/bin:$PATH" GH_CASE="$1" PR_BODY="$review_body" \
     PR_HEAD_OID="$HEAD_SHA" PR_BASE_OID="$BASE" GIT_TRACE="$WORK/git.trace" \
@@ -79,7 +93,7 @@ run() {
     ' sh "$SCRIPT")
 }
 run_auto() {
-  review_body=$(printf '%s\n\n## Worth knowing\n- None\nReview record: reviewed=quality review; tried=1; open=0' "$2")
+  review_body=$(sealed "$2" "$HEAD_SHA")
   (cd "$WORK/project" && PATH="$WORK/bin:$PATH" GH_CASE="$1" PR_BODY="$review_body" \
     PR_HEAD_OID="$HEAD_SHA" PR_BASE_OID="$BASE" sh -c 'exec python3 "$1" --auto 12' sh "$SCRIPT")
 }
@@ -157,8 +171,39 @@ check_merge "$(printf '%b' '## Review\n- ordinary note')"
 : > "$GH_LOG"
 out=$(run success '## Worth stopping for' 2>&1) && code=0 || code=$?
 [ "$code" -eq 0 ] && grep -Fq "pr merge 12 --merge --match-head-commit $HEAD_SHA" "$GH_LOG" \
-  && pass "passed checks and a yes merge the checked commit" \
+  && printf '%s' "$out" | grep -q 'review of this version is unverified' \
+  && pass "passed checks and a yes merge the checked commit, and an unverified review is called unverified" \
   || fail "success returned $code: $out / $(cat "$GH_LOG")"
+
+# The one approval gate: no recorded yes for this merge, no merge, and a yes is spent once used.
+rm -f "$WORK/project/.git/ai-build-kit-approvals"
+: > "$GH_LOG"
+out=$(NO_YES=1 run success '## Worth stopping for' 2>&1) && code=0 || code=$?
+[ "$code" -eq 1 ] && printf '%s' "$out" | grep -q 'no recorded yes for "merge pull request 12"' && ! grep -q '^pr merge ' "$GH_LOG" \
+  && pass "an approved merge with no recorded yes is refused before GitHub is asked" \
+  || fail "a merge with no recorded yes returned $code: $out / $(cat "$GH_LOG")"
+: > "$GH_LOG"
+out=$(run success '## Worth stopping for' 2>&1) && code=0 || code=$?
+[ "$code" -eq 0 ] && printf '%s' "$out" | grep -q 'using the yes of' \
+  && ! (cd "$WORK/project" && python3 "$APPROVAL" list | grep -q 'merge pull request 12') \
+  && pass "a recorded yes lets the named merge through once, and is spent" \
+  || fail "a recorded yes did not merge once ($code): $out"
+
+# The review record must name this head and be unedited.
+check_record_hold() {
+  label=$1 body=$2 words=$3
+  : > "$GH_LOG"
+  out=$(run success "$body" no 2>&1) && code=0 || code=$?
+  [ "$code" -eq 1 ] && printf '%s' "$out" | grep -q "$words" && ! grep -q '^pr merge ' "$GH_LOG" \
+    && pass "$label holds the merge" || fail "$label returned $code: $out / $(cat "$GH_LOG")"
+}
+check_record_hold "a push after the review" \
+  "$(sealed '## Worth stopping for' 0123456789abcdef0123456789abcdef01234567)" 'earlier version'
+OPEN_RECORD=$(sealed "$(printf '%b' '## Worth stopping for\n- [ ] Saving loses work')" "$HEAD_SHA" 1)
+check_record_hold "a body edited to open=0 with no matching record" \
+  "$(printf '%s' "$OPEN_RECORD" | sed -e 's/- \[ \]/- [x]/' -e 's/open=1;/open=0;/')" 'changed by hand'
+check_record_hold "an older record with no commit" \
+  "$(printf '%b' '## Worth stopping for\n- None\n## Worth knowing\n- None\nReview record: reviewed=quality review; tried=1; open=0')" 'older kit'
 git -C "$WORK/project" notes --ref=refs/notes/ai-build-kit-approved-merges list | grep -q . \
   && pass "an approved merge writes its named-yes ledger record" \
   || fail "an approved merge did not record its approval"
@@ -229,6 +274,7 @@ out=$(run success '## Worth stopping for' 2>&1) && code=0 || code=$?
 (cd "$WORK/project" && python3 - "$SCRIPT" <<'PY'
 import importlib.util, json, sys, subprocess
 REAL_RUN = subprocess.run
+HEAD = "HEADSHA:feature"
 sys.dont_write_bytecode = True
 spec = importlib.util.spec_from_file_location("merge", sys.argv[1])
 merge = importlib.util.module_from_spec(spec)
@@ -248,9 +294,11 @@ def fake_git(*args):
 merge.git = fake_git
 merge.gh = lambda *args: subprocess.CompletedProcess(args, 0, json.dumps(state["issue"]), "")
 merge.subprocess.run = lambda *args, **kwargs: subprocess.CompletedProcess(args[0], state["env"], "", "")
+def sealed(body):
+    return body + "\n" + merge.reviews.record_line("quality", 1, 0, HEAD, False, body)
 def held(name, *, paths=None, issue=None, env=0, body=None, expected=None):
     state.update(paths=paths or [], issue=issue or {"title":"Ordinary piece", "body":"## Done when\n- Works\n", "labels":[]}, env=env, head_plan=setting)
-    data = {"baseRefOid":"BASE", "body":body if body is not None else "## Worth stopping for\n- None\n## Worth knowing\n- None\nReview record: reviewed=quality; tried=1; open=0", "closingIssuesReferences":[{"number":7}]}
+    data = {"baseRefOid":"BASE", "body":body if body is not None else sealed("## Worth stopping for\n- None\n## Worth knowing\n- None"), "closingIssuesReferences":[{"number":7}]}
     try:
         merge.auto_holds(data, "MAIN", "HEADSHA:feature")
     except Hold as error:
@@ -263,13 +311,14 @@ held("migration", paths=["db/migrations/001.sql"], expected="migration")
 for path in [".github/workflows/extra.yml", ".claude/settings.local.json", ".agents/hooks/extra.sh", "package.json", "pnpm-lock.yaml", "Cargo.lock", "requirements/dev.txt"]:
     held("protected path " + path, paths=[path], expected="setting")
 held("open review finding", body="## Worth stopping for\n- [ ] Fix access\nReview record: reviewed=quality; tried=1; open=0", expected="finding")
-held("missing review record", body="## Worth stopping for\n- None\n", expected="review record")
+held("missing review record", body="## Worth stopping for\n- None\n", expected="no review recorded")
+held("stale review record", body="## Worth stopping for\n- None\n## Worth knowing\nReview record: reviewed=quality; tried=1; open=0", expected="older kit")
 held("repair", issue={"title":"Repair broken save", "body":"## Done when\n- Works\n", "labels":[]}, expected="repair")
 held("live side need", issue={"title":"Piece", "body":"Live side needs: MAIL_KEY\n## Done when\n- Works\n", "labels":[]}, expected="live setting")
 held("try-it item", issue={"title":"Piece", "body":"## Done when\n- Person confirms the result (try it)\n", "labels":[]}, expected="person to try it")
 held("new setting", env=1, expected="adds a setting")
 state.update(paths=[], issue={"title":"Ordinary piece", "body":"## Done when\n- Works\n", "labels":[]}, env=0, head_plan=setting.replace('merge (', 'off ('))
-data={"baseRefOid":"BASE", "body":"## Worth stopping for\n- None\n## Worth knowing\n- None\nReview record: reviewed=quality; tried=1; open=0", "closingIssuesReferences":[{"number":7}]}
+data={"baseRefOid":"BASE", "body":sealed("## Worth stopping for\n- None\n## Worth knowing\n- None"), "closingIssuesReferences":[{"number":7}]}
 try:
     merge.auto_holds(data, "MAIN", "HEADSHA:feature")
 except Hold as error:

@@ -241,6 +241,8 @@ def pr_fields(state, pr, names):
         "headRefOid": heads.get(pr.get("head", ""), ""),
         "baseRefOid": heads.get(pr.get("base", "main"), ""),
         "mergeable": "MERGEABLE",
+        "author": {"login": pr.get("author", "rehearsal")},
+        "reviews": pr.get("reviews", []),
         "isDraft": False,
         "statusCheckRollup": pr.get("statusCheckRollup", [{
             "name": "project-check",

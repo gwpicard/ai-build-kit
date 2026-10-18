@@ -74,6 +74,7 @@ case "$others" in
   unknown) cl_cannot "The kit could not tell which settings the change would touch, so nothing was changed." ;;
   *) cl_cannot "The change would also touch other settings on the live project ($others), so nothing was changed. Update the Supabase command line tool, then try again." ;;
 esac
+cl_approved
 supabase --workdir "$folder" config push --project-ref "$ref" --yes >&2 ||
   cl_fail "Supabase did not take the change, so sign-up is as it was."
 result=$(sh "$here/signup.sh" "$want")

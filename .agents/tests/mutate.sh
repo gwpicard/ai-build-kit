@@ -129,6 +129,24 @@ replay-rollup-counts-controls
 replay-compare-chance-rule
 replay-state-assertion-skipped
 fake-gh-loses-check-status
+review-record-any-head
+review-record-unsealed
+review-record-old-format-passes
+review-unverified-called-verified
+result-crash-passes
+result-unstarted-check-passes
+launch-no-backup-goes-ahead
+launch-no-way-back-goes-ahead
+launch-off-recipe-unrecorded
+approval-merge-skipped
+approval-recipe-skipped
+approval-yes-reused
+approval-yes-raced
+approval-ask-rule-dropped
+record-secret-pr-body
+record-secret-changelog
+record-secret-claude-write
+record-secret-github-body
 conditions-missing-passes
 protection-plan-carries-on
 unreadable-repository-is-missing
@@ -233,6 +251,24 @@ describe() {
     replay-compare-chance-rule) echo "a small-sample dip is reported as a regression without a chance check" ;;
     replay-state-assertion-skipped) echo "the returning-work state check stops noticing a cleared failure" ;;
     fake-gh-loses-check-status) echo "a prepared failed project check is reported as passing by the GitHub stand-in" ;;
+    record-secret-pr-body) echo "a review record carrying a key is written to the pull request" ;;
+    record-secret-changelog) echo "run-recipe writes a key into the changelog" ;;
+    record-secret-claude-write) echo "Claude Code writes a key into the masterplan or changelog" ;;
+    record-secret-github-body) echo "Claude Code writes a key into an issue or pull request body" ;;
+    launch-no-backup-goes-ahead) echo "a live launch with no confirmed backup goes ahead" ;;
+    launch-no-way-back-goes-ahead) echo "a later launch with no earlier build to go back to goes ahead" ;;
+    launch-off-recipe-unrecorded) echo "a launch off a recipe goes ahead with no recorded way back or backup" ;;
+    approval-merge-skipped) echo "an approved merge goes ahead with no recorded yes" ;;
+    approval-recipe-skipped) echo "a recipe step that changes something live goes ahead with no recorded yes" ;;
+    approval-yes-reused) echo "one recorded yes opens the same change again and again" ;;
+    approval-yes-raced) echo "two callers at once both spend the same yes" ;;
+    approval-ask-rule-dropped) echo "Claude Code records a yes with no box for the person to click" ;;
+    review-record-any-head) echo "a review record passes for a commit it never read" ;;
+    review-record-unsealed) echo "a hand-edited review record passes" ;;
+    review-record-old-format-passes) echo "an older record with no commit passes as current" ;;
+    review-unverified-called-verified) echo "a review by one login is recorded as verified" ;;
+    result-crash-passes) echo "a quality read that crashes is reported as a pass" ;;
+    result-unstarted-check-passes) echo "a GitHub check that has not finished maps to PASS" ;;
     conditions-missing-passes) echo "a missing working condition no longer stops founding" ;;
     protection-plan-carries-on) echo "a plan that cannot protect a private repository lets setup carry on" ;;
     unreadable-repository-is-missing) echo "a refused repository read is reported as no repository and stops founding" ;;
@@ -292,6 +328,24 @@ checks_for() {
     replay-compare-chance-rule) echo "replay-compare" ;;
     replay-state-assertion-skipped) echo "replay-case-states" ;;
     fake-gh-loses-check-status) echo "fake-github" ;;
+    record-secret-pr-body) echo "record-secrets" ;;
+    record-secret-changelog) echo "record-secrets" ;;
+    record-secret-claude-write) echo "record-secrets" ;;
+    record-secret-github-body) echo "record-secrets" ;;
+    launch-no-backup-goes-ahead) echo "run-recipe" ;;
+    launch-no-way-back-goes-ahead) echo "run-recipe" ;;
+    launch-off-recipe-unrecorded) echo "run-recipe" ;;
+    approval-merge-skipped) echo "merge-gate" ;;
+    approval-recipe-skipped) echo "recipe-nextjs-supabase-on-vercel" ;;
+    approval-yes-reused) echo "approval-gate merge-gate" ;;
+    approval-yes-raced) echo "approval-gate" ;;
+    approval-ask-rule-dropped) echo "push-to-main-rules" ;;
+    review-record-any-head) echo "review-gate merge-gate" ;;
+    review-record-unsealed) echo "review-gate merge-gate" ;;
+    review-record-old-format-passes) echo "review-gate merge-gate" ;;
+    review-unverified-called-verified) echo "review-gate merge-gate" ;;
+    result-crash-passes) echo "result-vocabulary" ;;
+    result-unstarted-check-passes) echo "result-vocabulary merge-gate" ;;
     conditions-missing-passes) echo "check-tooling" ;;
     protection-plan-carries-on) echo "check-tooling found-issues first-upload" ;;
     unreadable-repository-is-missing) echo "check-tooling" ;;
@@ -1154,6 +1208,168 @@ assert old_end in t, "default status result end not found"
 t = t.replace(old_end, "        }],", 1)
 open(p, "w").write(t)
 '
+      ;;
+    review-record-any-head)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/review_boxes.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    if fields[\"head\"] != head:"
+assert old in t, "review-record-any-head: text not found"
+open(p, "w").write(t.replace(old, "    if False and fields[\"head\"] != head:", 1))'
+      ;;
+    review-record-unsealed)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/review_boxes.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    if fields[\"seal\"] != review_seal(fields, body):"
+assert old in t, "review-record-unsealed: text not found"
+open(p, "w").write(t.replace(old, "    if False and fields[\"seal\"] != review_seal(fields, body):", 1))'
+      ;;
+    review-record-old-format-passes)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/review_boxes.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    if not fields.get(\"head\") or not fields.get(\"seal\"):\n        return ("
+assert old in t, "review-record-old-format-passes: text not found"
+open(p, "w").write(t.replace(old, "    if not fields.get(\"head\") or not fields.get(\"seal\"):\n        return None and (", 1))'
+      ;;
+    review-unverified-called-verified)
+      edit "$tree/.agents/skills/quality-checks/scripts/gate.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    return False, (\"unverified."
+assert old in t, "review-unverified-called-verified: text not found"
+open(p, "w").write(t.replace(old, "    return True, (\"unverified.", 1))'
+      ;;
+    result-crash-passes)
+      edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "        code = 2\n    print(\"Result: \""
+assert old in t, "result-crash-passes: text not found"
+open(p, "w").write(t.replace(old, "        code = 0\n    print(\"Result: \"", 1))'
+      ;;
+    result-unstarted-check-passes)
+      edit "$tree/.agents/skills/quality-checks/scripts/results.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "        return NOT_APPLICABLE\n    return NOT_RUN"
+assert old in t, "result-unstarted-check-passes: text not found"
+open(p, "w").write(t.replace(old, "        return NOT_APPLICABLE\n    return PASS", 1))'
+      ;;
+    launch-no-backup-goes-ahead)
+      edit "$tree/.agents/skills/setup-hosting/scripts/run-recipe.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    if code:\n        held_lines.append(\"Launch held: no backup"
+assert old in t, "launch-no-backup-goes-ahead: text not found"
+open(p, "w").write(t.replace(old, "    if False:\n        held_lines.append(\"Launch held: no backup", 1))'
+      ;;
+    launch-no-way-back-goes-ahead)
+      edit "$tree/.agents/skills/setup-hosting/scripts/run-recipe.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    if later and code:"
+assert old in t, "launch-no-way-back-goes-ahead: text not found"
+open(p, "w").write(t.replace(old, "    if False and later and code:", 1))'
+      ;;
+    launch-off-recipe-unrecorded)
+      edit "$tree/.agents/skills/setup-hosting/scripts/run-recipe.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "        if missing:\n            held_lines.append("
+assert old in t, "launch-off-recipe-unrecorded: text not found"
+open(p, "w").write(t.replace(old, "        if False:\n            held_lines.append(", 1))'
+      ;;
+    approval-merge-skipped)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "        approved_yes(\"merge pull request \" + number)"
+assert old in t, "approval-merge-skipped: text not found"
+open(p, "w").write(t.replace(old, "        pass", 1))'
+      ;;
+    approval-recipe-skipped)
+      edit "$tree/.agents/skills/setup-hosting/recipes/parts/scripts/check-lib.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "  python3 \"$cl_gate_script\" use \"$cl_change\" >&2 ||"
+assert old in t, "approval-recipe-skipped: text not found"
+open(p, "w").write(t.replace(old, "  true ||", 1))'
+      ;;
+    approval-yes-reused)
+      edit "$tree/.agents/skills/records/scripts/approval.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "        rows.remove(found)"
+assert old in t, "approval-yes-reused: text not found"
+open(p, "w").write(t.replace(old, "        pass", 1))'
+      ;;
+    approval-yes-raced)
+      edit "$tree/.agents/skills/records/scripts/approval.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "        fcntl.flock(lock, fcntl.LOCK_EX)"
+assert old in t, "approval-yes-raced: text not found"
+open(p, "w").write(t.replace(old, "        pass", 1))'
+      ;;
+    approval-ask-rule-dropped)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "      \"Bash(*approval.py*yes*)\",\n"
+assert old in t, "approval-ask-rule-dropped: text not found"
+open(p, "w").write(t.replace(old, "", 1))'
+      ;;
+    record-secret-pr-body)
+      edit "$tree/.agents/skills/quality-checks/scripts/gate.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "        if holds_secret(text, \"pull request %s body\" % args.pr):"
+assert old in t, "record-secret-pr-body: text not found"
+open(p, "w").write(t.replace(old, "        if False:", 1))'
+      ;;
+    record-secret-changelog)
+      edit "$tree/.agents/skills/setup-hosting/scripts/run-recipe.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    unsafe_record(\"\\n\".join(block), \"CHANGELOG.md\")\n"
+assert old in t, "record-secret-changelog: text not found"
+open(p, "w").write(t.replace(old, "", 1))'
+      ;;
+    record-secret-claude-write)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/guard-secrets.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "        record = record_write_secret(tool, args)"
+assert old in t, "record-secret-claude-write: text not found"
+open(p, "w").write(t.replace(old, "        record = None", 1))'
+      ;;
+    record-secret-github-body)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/guard-secrets.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "        record = github_record_secret(command, root)"
+assert old in t, "record-secret-github-body: text not found"
+open(p, "w").write(t.replace(old, "        record = None", 1))'
       ;;
     conditions-missing-passes)
       edit "$tree/.agents/skills/setup-ai-build-kit/scripts/check-tooling.sh" '

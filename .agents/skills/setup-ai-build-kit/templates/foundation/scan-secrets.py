@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Scan only the commits a push or pull request is adding."""
+"""Scan only the commits a push or pull request is adding.
+
+With --text LABEL it reads one record the kit is about to save, such as a
+pull request body or a changelog entry, from standard input instead. It names
+LABEL when the text looks like it holds a secret, and never the value.
+"""
 import base64
 import os
 import re
@@ -158,7 +163,32 @@ def scan_range(spec):
     return result.stdout, None
 
 
+def text_has_secret(text):
+    """Whether text the kit is about to save holds a secret-shaped value."""
+    try:
+        exact = exact_values()
+    except RuntimeError:
+        exact = set()
+    for line in str(text).splitlines():
+        raw = line.encode("utf-8", "ignore")
+        if any(pattern.search(raw) for pattern in PATTERNS) or known_shape(line) or is_service_role_jwt(raw):
+            return True
+        if any(value in raw for value in exact):
+            return True
+    return False
+
+
 def main(argv):
+    if len(argv) == 2 and argv[0] == "--text":
+        try:
+            text = sys.stdin.read()
+        except (OSError, UnicodeError):
+            return fail("could not run: the text to check could not be read", 2)
+        if text_has_secret(text):
+            print("Secret scan: possible secret in " + argv[1] + ". Nothing was written. "
+                  "Take the value out and write only where it is kept.", file=sys.stderr)
+            return 1
+        return 0
     if len(argv) != 1:
         return fail("could not run: expected one scan range", 2)
     data, error = scan_range(argv[0])
