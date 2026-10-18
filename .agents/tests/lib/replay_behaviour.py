@@ -520,6 +520,8 @@ def backbone_checks(base):
            (got["review-bound"], got["online-after-yes"]), ("unobservable", "unobservable"))
     # The person's own merge, made by the harness before the turn, is not the kit's.
     w = make_backbone_world(base, 70, unrecorded=True)
+    tip = sh("git", "-C", w.remote, "rev-parse", "main")
+    w.log("gh", "PUSH\trefs/heads/main\t0\t%s\tturn=1" % tip)
     w.transcript = "### user turn 1\nhi\n(before this turn the person merged: #1)\n"
     got = run_backbone(w)
     expect("backbone: a merge the person made is not counted against the kit",
