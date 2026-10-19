@@ -1526,7 +1526,11 @@ if "\n# disk: yes\n" in case_text:
     else:
         for name, value in found["disk"].items():
             verdicts[name] = value
-held = all(v["verdict"] != "miss" for v in verdicts.values()) and \
+        # Case 69's contract lets the piece hold the acceptance, which the
+        # general acceptance check does not read. Its own disk check does.
+        if int(number) == 69 and "acceptance-in-words" in found["disk"]:
+            verdicts["acceptance-record"] = found["disk"]["acceptance-in-words"]
+held =all(v["verdict"] != "miss" for v in verdicts.values()) and \
     not any(verdicts.get(name, {}).get("verdict") == "unobservable" for name in owed)
 print(json.dumps({
     "scenario": int(number),
