@@ -124,13 +124,16 @@ try:
         if project not in hook.parents:
             stop()
         content = hook.read_text() if hook.exists() else '#!/bin/sh\n'
+        prefix = chain
+        if hook.exists() and not husky and not os.access(hook, os.X_OK):
+            prefix += '# These lines were not running before the guard was installed.\nexit 0\n'
         first, sep, rest = content.partition('\n')
         if first.startswith('#!'):
             if not shell_hook(content):
                 stop()
-            content = first + '\n' + chain + rest
+            content = first + '\n' + prefix + rest
         else:
-            content = '#!/bin/sh\n' + chain + content
+            content = '#!/bin/sh\n' + prefix + content
         hook.parent.mkdir(parents=True, exist_ok=True)
         hook.write_text(content)
         hook.chmod(hook.stat().st_mode | 0o111)

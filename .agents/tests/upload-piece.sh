@@ -131,10 +131,13 @@ os.execv(os.environ['UPLOAD_TEST_REAL_GIT'], [os.environ['UPLOAD_TEST_REAL_GIT']
     print('ok: uploads the branch with upstream, opens one pull request against main and keeps the body intact')
     before = state.read_bytes()
     online = run('git', 'rev-parse', 'piece', cwd=remote)
-    run('git', 'commit', '-q', '--allow-empty', '-m', 'Still local', cwd=p)
+    run('git', 'commit', '-q', '--allow-empty', '-m', 'Fix review finding', cwd=p)
     assert 'existing\t' in upload(p)
-    assert state.read_bytes() == before and run('git', 'rev-parse', 'piece', cwd=remote) == online
-    print('ok: an existing pull request is reported without pushing or changing it')
+    assert state.read_bytes() == before
+    assert run('git', 'rev-parse', 'piece', cwd=remote) == run('git', 'rev-parse', 'HEAD', cwd=p) != online
+    assert len([pr for pr in json.loads(state.read_text())['pull_requests']
+                if pr['head'] == 'piece' and pr['base'] == 'main']) == 1
+    print('ok: a later commit uploads to the same branch and keeps one pull request')
 
     p, remote, state = setup('arguments')
     upload(p, files=False)
@@ -168,9 +171,14 @@ os.execv(os.environ['UPLOAD_TEST_REAL_GIT'], [os.environ['UPLOAD_TEST_REAL_GIT']
     run('git', 'checkout', '-q', 'main', cwd=p)
     assert 'main cannot be uploaded' in upload(p, code=2)
     p, remote, state = setup('empty', remote_main=False)
+    run('git', 'config', '--unset', 'core.hooksPath', cwd=p)
+    hook = p / '.git/hooks/pre-push'
+    hook.write_text('#!/bin/sh\nexit 0\n')
+    hook.chmod(0o755)
     assert 'use first-upload.py' in upload(p, code=3)
+    run('sh', str(foundation.parent.parent / 'scripts/use-push-guard.sh'), '--check', str(p))
     assert not run('git', 'for-each-ref', '--format=%(refname)', cwd=remote)
-    print('ok: refuses main and sends an empty remote to first-upload without pushing')
+    print('ok: refuses main and restores the guard before handing an empty remote to first-upload')
 
     p, remote, state = setup('guard')
     run('git', 'branch', 'piece', 'main', cwd=remote)

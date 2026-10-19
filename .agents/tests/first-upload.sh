@@ -111,6 +111,57 @@ out=$(run --approved) && code=0 || code=$?
   && pass "--approved on a project already online creates nothing" \
   || fail "--approved online created something: $(cat "$STANDIN_GH_LOG")"
 
+echo "== Restoring the guard before the first upload =="
+USE="$ROOT/.agents/skills/setup-ai-build-kit/scripts/use-push-guard.sh"
+for mode in clean secret; do
+  setup
+  git -C "$P" config --unset core.hooksPath
+  printf '#!/bin/sh\nexit 0\n' > "$P/.git/hooks/pre-push"
+  chmod +x "$P/.git/hooks/pre-push"
+  sh "$USE" "$P"
+  # A hook tool replaces the hook after installation.
+  printf '#!/bin/sh\nexit 0\n' > "$P/.git/hooks/pre-push"
+  if sh "$USE" --check "$P" >/dev/null 2>&1; then
+    fail "the rewritten hook was still reported as guarded"
+  fi
+  if [ "$mode" = secret ]; then
+    python3 - "$P/key.txt" <<'PY'
+from pathlib import Path
+import sys
+Path(sys.argv[1]).write_text('ghp_' + 'a' * 40 + '\n')
+PY
+    git -C "$P" add key.txt
+    git -C "$P" commit -q -m 'Synthetic scanner canary'
+  fi
+  out=$(run --approved 2>&1) && code=0 || code=$?
+  sh "$USE" --check "$P" && pass "$mode first upload restores a rewritten hook" \
+    || fail "$mode first upload left the guard off"
+  if [ "$mode" = secret ]; then
+    [ "$code" -eq 7 ] && [ -z "$(heads)" ] && ! grep -q 'git/refs' "$STANDIN_GH_LOG" \
+      && printf '%s\n' "$out" | grep -q 'secret scan found a secret' \
+      && pass "the restored guard refuses the secret before any branch or main is created" \
+      || fail "the secret first upload returned $code or changed the remote"
+  else
+    [ "$code" -eq 0 ] && [ "$(heads)" = "main sign-out " ] \
+      && pass "the restored guard allows the approved first upload" \
+      || fail "the clean first upload returned $code"
+  fi
+  before=$(heads)
+  out=$(git -C "$P" push origin HEAD:main 2>&1) && code=0 || code=$?
+  [ "$code" -ne 0 ] && [ "$(heads)" = "$before" ] \
+    && printf '%s\n' "$out" | grep -q 'would change main directly' \
+    && pass "$mode first upload leaves direct pushes to main guarded" \
+    || fail "$mode first upload allowed a later push to main"
+done
+
+setup
+printf '#!/bin/sh\nexit 23\n' > "$P/.agents/hooks/git/pre-push"
+out=$(run --approved 2>&1) && code=0 || code=$?
+[ "$code" -eq 10 ] && [ -z "$(heads)" ] && ! grep -q 'git/refs' "$STANDIN_GH_LOG" \
+  && printf '%s\n' "$out" | grep -q 'the push guard is not on. Run use-push-guard.sh' \
+  && pass "a guard that cannot be restored stops the first upload with the shared cause" \
+  || fail "the first upload did not stop plainly with its changed guard: $code"
+
 echo "== Not the first upload =="
 setup
 other="$WORK/other"

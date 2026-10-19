@@ -102,7 +102,6 @@ def upload(args):
     body = Path(args.body_file).read_text(encoding="utf-8") if args.body_file else args.body
     if not title.strip():
         return stopped(2, "the pull request title is empty")
-    setup = Path(__file__).resolve().parents[2] / "setup-ai-build-kit"
     scanner = project / ".agents/hooks/scan-secrets.sh"
     for label, value in (("pull request title", title), ("pull request body", body)):
         scanned = run(project, "sh", str(scanner), "--text", label, input=value)
@@ -110,18 +109,13 @@ def upload(args):
             return stopped(7 if scanned.returncode == 1 else 9,
                            "the secret scan found a secret in the " + label if scanned.returncode == 1
                            else "the secret scan could not run")
+    if not first_upload.ensure_push_guard(project):
+        return 10
     remote = run(project, "git", "ls-remote", "--exit-code", "--heads", "origin", "refs/heads/main")
     if remote.returncode == 2:
         return stopped(3, "remote main is missing; use first-upload.py")
     if remote.returncode:
         return failure(project, remote)
-    guard = run(project, "sh", str(setup / "scripts/use-push-guard.sh"), "--check", str(project))
-    if guard.returncode:
-        run(project, "sh", str(setup / "scripts/use-push-guard.sh"), str(project))
-        guard = run(project, "sh", str(setup / "scripts/use-push-guard.sh"), "--check", str(project))
-    if guard.returncode:
-        return stopped(10, "the push guard is not on. Run use-push-guard.sh from the project folder to switch it on. "
-                       "If that also stops, /maintain can set it up")
     existing = run(project, "gh", "pr", "list", "--repo", name, "--head", branch,
                    "--base", "main", "--state", "open", "--json", "url")
     if existing.returncode:
@@ -130,9 +124,7 @@ def upload(args):
         pulls = json.loads(existing.stdout)
         if not isinstance(pulls, list):
             raise ValueError()
-        if pulls:
-            report(project, "existing\t" + pulls[0]["url"])
-            return 0
+        url = pulls[0]["url"] if pulls else None
     except (ValueError, KeyError, TypeError):
         return stopped(6, "GitHub's pull request answer could not be read")
     # Use a complete refspec so push.default and remote.origin.push cannot
@@ -142,6 +134,9 @@ def upload(args):
     if pushed.returncode:
         return failure(project, pushed, push=True)
     report(project, "pushed\t" + branch)
+    if pulls:
+        report(project, "existing\t" + url)
+        return 0
     with tempfile.TemporaryDirectory(prefix="kit-upload-") as folder:
         body_file = Path(folder) / "body.md"
         body_file.write_text(body, encoding="utf-8")

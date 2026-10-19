@@ -280,6 +280,30 @@ if git -C "$Q" push origin HEAD:refs/heads/husky-refuses >/dev/null 2>&1; then
 else
   pass "the person's hook can still refuse a push"
 fi
+for mode in disabled enabled; do
+  D="$WORK/$mode-hook"
+  git init -q "$D"
+  git -C "$D" commit -q --allow-empty -m first
+  git -C "$D" remote add origin "$R"
+  mkdir -p "$D/.githooks"
+  printf '#!/bin/sh\nexit 23\n' > "$D/.githooks/pre-push"
+  chmod 644 "$D/.githooks/pre-push"
+  [ "$mode" != enabled ] || chmod +x "$D/.githooks/pre-push"
+  git -C "$D" config core.hooksPath .githooks
+  sh "$USE" "$D" && sh "$USE" --check "$D" || fail "$mode hook did not install the guard"
+  cp "$D/.githooks/pre-push" "$WORK/$mode-before"
+  sh "$USE" "$D" && cmp -s "$WORK/$mode-before" "$D/.githooks/pre-push" \
+    || fail "$mode hook changed on a second installation"
+  out=$(git -C "$D" push origin "HEAD:refs/heads/$mode-hook" 2>&1) && code=0 || code=$?
+  if [ "$mode" = disabled ]; then
+    [ "$code" -eq 0 ] && tail -n 1 "$D/.githooks/pre-push" | grep -qx 'exit 23' \
+      && pass "a disabled hook keeps its lines without running them" \
+      || fail "the disabled hook stopped the branch push: $out"
+  else
+    [ "$code" -ne 0 ] && pass "an enabled hook still refuses the branch push" \
+      || fail "the enabled hook stopped running"
+  fi
+done
 # An unsupported hook cannot be changed safely; both founding stages stop.
 printf '#!/usr/bin/env python3\nraise SystemExit(0)\n' > "$Q/.husky/pre-push"
 printf 'Trued against: not yet checked\n' > "$Q/masterplan.md"
