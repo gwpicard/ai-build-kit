@@ -30,6 +30,8 @@ Title: person's outcome; put technical detail under the hood.
 
 Live side needs: <required secret, setting or service, by name>
 
+Risk areas: <the risk areas this piece touches, or "none">
+
 <details><summary>Under the hood</summary>
 <approach and dependencies>
 
@@ -37,21 +39,20 @@ Reaches: <files, routes, tables, tests, or "new files only">
 </details>
 ```
 
+Name the risk areas from the masterplan's risk record that the piece touches,
+or `none`. The `fit-check` skill's `references/risk-notice.md` gives the notice
+once.
+
 Number `Done when` conditions D1, D2, etc. End judgement with `(try it)`;
 put intent in `So that`. Name and read back the changed masterplan section;
 [masterplan-changes.md](masterplan-changes.md) applies it.
 
-Omit unused sections. Never put secrets in `Waiting on you`; name where they
+Omit unused sections. Mark an unchanged-behaviour refactor `Kind: refactor`;
+tests compare before/after. Never put secrets in `Waiting on you`; name where they
 go. Migrations need no `Live side needs:`. A decision may cite support in a
 "rests on" clause. Check before relying: missing or contradicted support no
 longer holds; unreachable is unconfirmed. Lost support alone does not reverse
 the decision.
-
-## The two layers of a piece
-
-The surface names product decisions; `Under the hood` is build context.
-Product decisions go in the masterplan, conventions in `AGENTS.md`. Mark an
-unchanged-behaviour refactor `Kind: refactor`; tests compare before/after.
 
 ## Labels
 
@@ -102,13 +103,12 @@ words.
 
 A person's action wins. Absence is not a decision. The agent says what it found.
 Assigns somebody else: skip it. Leave manual `building` alone; keep manually
-closed issues closed; reopening removes `parked`. Without `Done when`, it is a
-request. Keep personal labels and meet each subject's needs; ask `/shape` to
+closed issues closed; reopening removes `parked`. Keep personal labels and meet each subject's needs; ask `/shape` to
 classify a missing one. Puts two subject labels: meet both. Uses milestones or a project board: ignore both.
 Deletes an issue: let it go; `/maintain` names
 branches.
 
-`plan.local.md` is a git-ignored view, not a record. The issues are the only record of what is left.
+`plan.local.md` is a git-ignored view. The issues are the only record of what is left.
 Refresh with `sh .agents/tools/plan-refresh.sh`; if missing, use the installed
 setup helper and say `/maintain` adds it. Never sort by hand. Name fresh `To
 build` entries marked `(ready)`. Follow `AGENTS.md` on failure; offline, give

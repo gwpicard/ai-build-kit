@@ -13,7 +13,7 @@ spec.loader.exec_module(rules)
 SKIP_DIRS = rules.SKIP_DIRS
 
 
-def dotenv_values(path):
+def dotenv_values(path, secret_only=True):
     values = []
     try:
         with open(path, encoding="utf-8") as handle:
@@ -44,19 +44,26 @@ def dotenv_values(path):
             value = body
         else:
             value = re.split(r"\s+#", raw, maxsplit=1)[0].strip()
-        if len(value) >= 8 and rules.secret_value(name, value):
+        if len(value) >= 8 and (not secret_only or rules.secret_value(name, value)):
             values.append((name, value))
     return values
 
 
 def secret_values(root):
     found = []
+    placeholders = set()
     for current, dirs, files in os.walk(root):
         dirs[:] = [name for name in dirs if name not in SKIP_DIRS]
         for name in files:
-            if name == ".env.example" or not (name == ".env" or name.startswith(".env.")):
+            if not (name == ".env" or name.startswith(".env.")):
                 continue
-            found.extend(dotenv_values(os.path.join(current, name)))
+            example = name == ".env.example"
+            values = dotenv_values(os.path.join(current, name), secret_only=not example)
+            if example:
+                placeholders.update(value for _, value in values)
+            else:
+                found.extend(values)
+    found = [(name, value) for name, value in found if value not in placeholders]
     for path in rules.recorded_password_paths(root):
         try:
             with open(path, encoding="utf-8") as handle:

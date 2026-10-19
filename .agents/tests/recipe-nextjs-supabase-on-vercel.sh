@@ -54,6 +54,23 @@ rr_case 2 good roll-back-to.sh
 rr_case 0 good promote.sh dpl_live "$rr_main"
 rr_case 1 bad promote.sh dpl_live "$rr_main"
 rr_case 2 good promote.sh
+# The one approval gate: with no recorded yes, a step that moves what is live
+# or changes a live setting refuses before it calls the host.
+# In the bad world a migration is waiting, so the apply reaches its push.
+for rr_gated in "good promote.sh dpl_live $rr_main" "good roll-back-to.sh dpl_earlier $rr_main" \
+  "bad migrate.sh --apply liveref" "good connect.sh rehearsal-app" "good set-access.sh private"; do
+  RR_NO_YES=1
+  # shellcheck disable=SC2086
+  rr_case 2 $rr_gated
+  RR_NO_YES=0
+  rr_gated=${rr_gated#* }
+  grep -q 'No yes is recorded for' "$RR_TMP/out" ||
+    rr_fail "${rr_gated%% *} without a recorded yes did not say what it waits for"
+  if tail -n "+$((rr_mark + 1))" "$RR_CALLS" | grep -Eq '^vercel (promote|rollback|project|link|git|api)|^supabase db push$'; then
+    rr_fail "${rr_gated%% *} changed something online with no recorded yes"
+  fi
+done
+rr_ok "promote, roll back, migrate, connect and set-access refuse with no recorded yes, and change nothing online"
 
 # Secrets: every name on the host, no public secret, nothing committable.
 rr_case 0 good secrets.sh
@@ -61,9 +78,57 @@ rr_case 1 bad secrets.sh
 rr_case 2 down secrets.sh
 printf 'a-value\n' > "$RR_TMP/value"
 RR_STDIN="$RR_TMP/value"
-rr_case 0 good add-secret.sh SUPABASE_SERVICE_ROLE_KEY
 rr_case 0 good add-secret.sh NEXT_PUBLIC_SUPABASE_URL
-rr_case 1 bad add-secret.sh SUPABASE_SERVICE_ROLE_KEY
+printf 'sb_secret_abcdef123456\n' > "$RR_TMP/value"
+rr_case 0 good add-secret.sh SUPABASE_SECRET_KEY
+rr_case 0 good add-secret.sh --replace SUPABASE_SECRET_KEY
+rr_called "vercel env rm SUPABASE_SECRET_KEY production --yes"
+mkdir -p "$RR_TMP/failing-bin"
+cat > "$RR_TMP/failing-bin/vercel" <<'SH'
+#!/usr/bin/env sh
+echo "$*" >> "$RR_TMP/failing-calls"
+case "$1 $2" in
+  "env add") exit 1 ;;
+  "env rm") exit 0 ;;
+esac
+exit 64
+SH
+chmod +x "$RR_TMP/failing-bin/vercel"
+set +e
+(cd "$RR_TMP/work" && python3 "$RR_PARTS/../../../records/scripts/approval.py" yes "add-secret --replace SUPABASE_SECRET_KEY" --words "rehearsal yes" >/dev/null)
+(cd "$RR_TMP/work" && printf 'sb_secret_abcdef123456\n' | RR_TMP="$RR_TMP" PATH="$RR_TMP/failing-bin:$PATH" "$RR_RECIPE/scripts/add-secret.sh" --replace SUPABASE_SECRET_KEY >/dev/null 2>&1)
+rr_status=$?
+set -e
+[ "$rr_status" -eq 1 ] || rr_fail "failed replacement did not report Vercel refusing the new value"
+[ "$(cat "$RR_TMP/failing-calls")" = "env add SUPABASE_SECRET_KEY production --yes" ] ||
+  rr_fail "failed replacement removed the existing production setting first"
+rr_ok "a failed replacement leaves the existing production setting in place"
+printf 'supabase projects api-keys --project-ref ref\n' > "$RR_TMP/value"
+rr_case 2 good add-secret.sh --replace SUPABASE_SECRET_KEY
+if tail -n "+$((rr_mark + 1))" "$RR_CALLS" | grep -Eq '^vercel env (rm|add) '; then
+  rr_fail "add-secret.sh changed Vercel before rejecting command text"
+fi
+printf 'not-a-supabase-key\n' > "$RR_TMP/value"
+rr_case 2 good add-secret.sh --replace SUPABASE_SECRET_KEY
+if tail -n "+$((rr_mark + 1))" "$RR_CALLS" | grep -Eq '^vercel env (rm|add) '; then
+  rr_fail "add-secret.sh changed Vercel before rejecting a wrong key shape"
+fi
+printf 'token with spaces\n' > "$RR_TMP/value"
+rr_case 2 good add-secret.sh API_TOKEN
+printf '\n' > "$RR_TMP/value"
+rr_case 2 good add-secret.sh API_KEY
+printf 'sb_publishable_abcdef123456\n' > "$RR_TMP/value"
+rr_case 0 good get-supabase-keys.sh standin "$RR_TMP/key-files"
+rr_called "supabase projects api-keys --project-ref standin -o json"
+rr_said yes "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_abcdef"
+rr_said yes "SUPABASE_SECRET_KEY: sb_secret_ghijkl"
+python3 -c 'import os, stat, sys; sys.exit(0 if stat.S_IMODE(os.stat(sys.argv[1]).st_mode) == 0o600 else 1)' "$RR_TMP/key-files/NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY" || rr_fail "the publishable key file is not mode 600"
+python3 -c 'import os, stat, sys; sys.exit(0 if stat.S_IMODE(os.stat(sys.argv[1]).st_mode) == 0o600 else 1)' "$RR_TMP/key-files/SUPABASE_SECRET_KEY" || rr_fail "the secret key file is not mode 600"
+[ "$(cat "$RR_TMP/key-files/NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY")" = sb_publishable_abcdef123456 ] || rr_fail "the publishable key file has the wrong value"
+if grep -q 'sb_publishable_abcdef123456\|sb_secret_ghijkl123456' "$RR_TMP/out"; then rr_fail "the key fetch printed a full key"; fi
+rr_case 2 down get-supabase-keys.sh standin "$RR_TMP/key-files-down"
+printf 'sb_secret_abcdef123456\n' > "$RR_TMP/value"
+rr_case 1 bad add-secret.sh SUPABASE_SECRET_KEY
 rr_case 2 good add-secret.sh
 RR_STDIN=
 
@@ -119,7 +184,7 @@ rr_said yes "site_url"
 rr_case 2 good RR_OLD_CLI=1 set-signup.sh open
 rr_case 2 good set-signup.sh
 # Public, by the record: the gate off the live address and sign-up open.
-printf '# Masterplan\n\n## Build path\n\nAccess: public (decided 2026-10-14)\n' > "$RR_TMP/fixture/masterplan.md"
+printf '# Masterplan\n\n## Risk record\n\nAccess: public (decided 2026-10-14)\n' > "$RR_TMP/fixture/masterplan.md"
 rr_case 0 good RR_SSO=standard RR_SIGNUP=open access.sh
 rr_case 1 good RR_SIGNUP=open access.sh
 rr_case 1 good RR_SSO=standard access.sh
@@ -127,7 +192,7 @@ rr_case 1 good RR_SSO=standard RR_GATE=gated RR_SIGNUP=open access.sh
 rr_said yes "asks for Vercel's sign-in"
 rr_case 1 good settings.sh
 # Open address, invitation only: the gate off the live address, sign-up closed.
-printf '# Masterplan\n\n## Build path\n\nAccess: open address, invitation only (decided 2026-10-14)\n' > "$RR_TMP/fixture/masterplan.md"
+printf '# Masterplan\n\n## Risk record\n\nAccess: open address, invitation only (decided 2026-10-14)\n' > "$RR_TMP/fixture/masterplan.md"
 rr_case 0 good RR_SSO=standard access.sh
 rr_said yes "Open address, invitation only, as recorded"
 rr_case 1 good access.sh
@@ -144,7 +209,7 @@ rr_case 0 good live-check.sh --only access
 rr_said yes "Access: not recorded, by your choice."
 rr_case 0 good access.sh
 rm -f "$RR_TMP/fixture/.ai-build-kit-maintenance"
-printf '# Masterplan\n\n## Build path\n\nPath: Build and run it\nAccess: private\n' > "$RR_TMP/fixture/masterplan.md"
+printf '# Masterplan\n\n## Risk record\n\nAccess: private\n' > "$RR_TMP/fixture/masterplan.md"
 
 # Sign-up and the sign-in settings, read with either public key Supabase
 # issues: the publishable key a project made today shows, or the anon key.
@@ -162,17 +227,16 @@ rr_case 2 good RR_SIGNUP=open RR_DISAGREE=1 signup.sh
 rr_case 2 down signup.sh
 rr_case 1 good RR_SIGNUP=open settings.sh
 rr_case 2 good RR_SETTINGS=odd settings.sh
-cp "$RR_TMP/fixture/.env.local" "$RR_TMP/env-anon"
-printf 'NEXT_PUBLIC_SUPABASE_URL=https://liveref.supabase.co\nNEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_stand-in\n' > "$RR_TMP/fixture/.env.local"
+cp "$RR_TMP/fixture/.env.local" "$RR_TMP/env-publishable"
 rr_case 0 good settings.sh
 rr_called "curl -fsS -H apikey: sb_publishable_stand-in https://liveref.supabase.co/auth/v1/settings"
 rr_case 0 good signup.sh
-cp "$RR_TMP/env-anon" "$RR_TMP/fixture/.env.local"
+printf 'NEXT_PUBLIC_SUPABASE_URL=https://liveref.supabase.co\nNEXT_PUBLIC_SUPABASE_ANON_KEY=legacy-anon-stand-in\n' > "$RR_TMP/fixture/.env.local"
 rr_case 0 good settings.sh
-rr_called "curl -fsS -H apikey: public-stand-in https://liveref.supabase.co/auth/v1/settings"
+rr_called "curl -fsS -H apikey: legacy-anon-stand-in https://liveref.supabase.co/auth/v1/settings"
 printf 'NEXT_PUBLIC_SUPABASE_URL=https://liveref.supabase.co\n' > "$RR_TMP/fixture/.env.local"
 rr_case 2 good settings.sh
-cp "$RR_TMP/env-anon" "$RR_TMP/fixture/.env.local"
+cp "$RR_TMP/env-publishable" "$RR_TMP/fixture/.env.local"
 
 # The shared parts this recipe names.
 rr_case 0 good migrate.sh
@@ -181,6 +245,12 @@ rr_case 2 down migrate.sh
 rr_case 2 good DB_PASSWORD_FILE= migrate.sh
 rr_case 1 bad RR_DRY=colour LC_ALL=C migrate.sh
 rr_said yes "20260101000000_pinned.sql"
+printf 'supabase db push --apply\n' > "$RR_TMP/bad-password"
+rr_case 2 good DB_PASSWORD_FILE="$RR_TMP/bad-password" migrate.sh
+rr_said yes "the password file does not look like a password"
+if tail -n "+$((rr_mark + 1))" "$RR_CALLS" | grep -q '^supabase link '; then
+  rr_fail "migrate.sh connected before checking the password file"
+fi
 rr_case 2 good RR_DRY=nameless migrate.sh
 rr_case 0 good migrate.sh --apply liveref
 rr_case 1 bad migrate.sh --apply liveref

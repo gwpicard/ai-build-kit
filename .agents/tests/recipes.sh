@@ -38,6 +38,9 @@ sed -e 's/YYYY-MM-DD/2024-02-29/' -e 's/^Who runs it: .*/Who runs it: a person l
   -e 's#^Linting: .*#Linting: ESLint#' \
   -e 's#^Optional parts: .*#Optional parts: none#' \
   -e 's#^Health-check tool: .*#Health-check tool: curl#' \
+  -e 's#^Last proven: .*#Last proven: 2024-03-01#' \
+  -e 's#^Proven on: .*#Proven on: Next.js 16; Supabase CLI 2.117#' \
+  -e 's#^Superseded settings: .*#Superseded settings: none#' \
   -e 's#^Fits: .*#Fits: Project and task trackers#' \
   -e 's#^Shared stack: .*#Shared stack: [stack](../parts/stack.md)#' \
   -e 's/<[^>]*>/filled in/g' "$BLANK" > "$GOOD/recipe.md"
@@ -53,6 +56,8 @@ chmod +x "$GOOD/scripts/check.sh" "$GOOD/scripts/live-check.sh"
   echo "# Proven: example"
   echo
   echo "Real run: 2024-03-01"
+  echo "Last proven: 2024-03-01"
+  echo "Versions: Next.js 16; Supabase CLI 2.117"
   echo
   for section in Preview "Going live" Rollback Backup Restore Secrets Logs Health Access; do
     echo "$section: filled in"
@@ -77,18 +82,37 @@ ok "an unfilled blank is refused as a recipe"
 
 "$CHECKER" "$GOOD" >/dev/null
 ok "a filled recipe folder passes, dated on a leap day"
+sed 's/^Proven on: Next.js 16; Supabase CLI 2.117$/Proven on: Next.js 0.0.1/' "$GOOD/recipe.md" > "$WORK/version-mismatch.md"
+cp "$WORK/version-mismatch.md" "$GOOD/recipe.md"
+if "$CHECKER" "$GOOD" >/dev/null 2>&1; then
+  fail "a recipe claimed versions different from its real run"
+fi
+sed 's/^Proven on: Next.js 0.0.1$/Proven on: Next.js 16; Supabase CLI 2.117/' "$GOOD/recipe.md" > "$WORK/version-match.md"
+cp "$WORK/version-match.md" "$GOOD/recipe.md"
+"$CHECKER" "$GOOD" >/dev/null || fail "the recipe with matching proven versions was refused"
+ok "Proven on must match the versions in PROVEN.md"
+mkdir -p "$WORK/recipes/parts"
+printf '# Shared part: read-only connection to an existing database\n' > "$WORK/recipes/parts/read-only-existing-database.md"
 sed 's#^Optional parts: none$#Optional parts: read-only existing database#' "$GOOD/recipe.md" > "$WORK/optional-recipe.md"
 cp "$WORK/optional-recipe.md" "$GOOD/recipe.md"
 "$CHECKER" "$GOOD" >/dev/null || fail "a recipe naming an available optional part was refused"
+rm "$WORK/recipes/parts/read-only-existing-database.md"
+if "$CHECKER" "$GOOD" >/dev/null 2>&1; then
+  fail "a recipe named an optional part that exists only in the awaiting-run folder"
+fi
+printf '# Shared part: read-only connection to an existing database\n' > "$WORK/recipes/parts/read-only-existing-database.md"
+printf '# Shared part: Python document worker\n' > "$WORK/recipes/parts/python-document-worker.md"
 sed 's#^Optional parts: read-only existing database$#Optional parts: read-only existing database and Python document worker#' "$GOOD/recipe.md" > "$WORK/optional-recipe.md"
 cp "$WORK/optional-recipe.md" "$GOOD/recipe.md"
 if "$CHECKER" "$GOOD" >/dev/null 2>&1; then
   fail "a non-Coolify recipe accepted the Python document worker"
 fi
+ok "an available Python document worker is refused outside Coolify"
 sed -e 's#^Optional parts: read-only existing database and Python document worker$#Optional parts: read-only existing database and Python document worker#' \
   -e 's#^Deploy target: .*#Deploy target: Coolify#' "$GOOD/recipe.md" > "$WORK/optional-recipe.md"
 cp "$WORK/optional-recipe.md" "$GOOD/recipe.md"
 "$CHECKER" "$GOOD" >/dev/null || fail "a Coolify recipe naming the Python document worker was refused"
+rm "$WORK/recipes/parts/python-document-worker.md"
 sed 's#^Optional parts: read-only existing database and Python document worker$#Optional parts: none#' "$GOOD/recipe.md" > "$WORK/optional-recipe.md"
 cp "$WORK/optional-recipe.md" "$GOOD/recipe.md"
 "$CHECKER" "$GOOD/recipe.md" >/dev/null

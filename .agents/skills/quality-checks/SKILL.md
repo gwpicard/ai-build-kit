@@ -16,14 +16,14 @@ something of them, and never needs to read one to keep the tool working.
 | Check | Runs | How |
 |---|---|---|
 | Type check and lint | Project check on every pull request, and before hand-over | `references/check-floor.md` |
-| Sensitive-area map and boundary rules | Project check on every pull request | `check-sensitive-areas.sh`, `references/boundary-rules.md` |
+| Risk-area map and boundary rules | Project check on every pull request | `check-sensitive-areas.sh`, `references/boundary-rules.md` |
 | Trim | Every build, before the person tries it | `references/trim.md` |
 | A trim left the tests alone | Every trim commit, and the project check on every pull request | `trim-commit.sh`, `check-trim.sh`; `place-trim-check.py` brings the step to an older project |
 | Reach | Shape and every build | `quality.py reach`; act on its exit code |
 | Tests stay frozen | Every project check on a pull request | `check-tests.sh` in the project template |
 | Tests prove the change | Every build, after behaviour is built | `quality.py tests --base --piece` |
 | Structure, one change | Every build, before the save | `quality.py loops --base`, as "During a build" says |
-| Tests notice a breakage | Build with care changes inside a mapped sensitive area | `quality.py strength --base`; repairs include the regression test |
+| Tests notice a breakage | A change inside a mapped risk area | `quality.py strength --base`; repairs include the regression test |
 | Stale document names | Every `/maintain` visit | `references/document-read.md` |
 | Old branches | Monthly visit | `references/stale-branches.md` |
 | Waste, structure, document bloat | Quarterly visit | `references/waste-read.md`, `references/structure-read.md`, `references/document-bloat.md` |

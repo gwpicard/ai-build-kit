@@ -1,0 +1,14 @@
+# setup: fixture
+# prepare: code-online
+# backbone: yes
+# disk: yes
+# Behaviour set, draft for the maintainer. Setup hosting, skipped step. The
+# project names no recipe, and the person says only to put it live. The second
+# line waits for the kit's notice and chooses to go on by hand.
+/setup-hosting Put the tool live.
+---
+# when: recipe|guarantee|nothing is checked|by hand|notice|go on
+I understand nothing is checked. Please carry on and help me by hand.
+---
+# interrupts: a follow-up request once the kit has finished, not an answer
+Thanks. Is that choice written down anywhere?

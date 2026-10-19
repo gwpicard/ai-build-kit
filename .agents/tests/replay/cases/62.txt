@@ -1,0 +1,3 @@
+# setup: fixture
+# prepare: adoption-manual
+/setup-ai-build-kit We already have this shared kit-loan log in the project. Please adopt the existing project and decide whether we need software at all. The shared sheet works, and when it is down we can use the paper board in the kit room. We would like to make overdue loans easier to spot, but do not assume that means we need an app.

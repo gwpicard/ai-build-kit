@@ -1,6 +1,6 @@
 # Document bloat
 
-At the quarterly visit, on Build and run it and on Build with care, look for
+At the quarterly visit, look for
 documents that repeat each other or that nobody reaches any more. Two copies
 of one instruction drift apart, and a person who does not read code cannot
 tell which is current.

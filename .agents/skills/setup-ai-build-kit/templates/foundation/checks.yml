@@ -38,7 +38,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: sh .agents/hooks/check-review.sh
       - name: Check sensitive-area map
         run: sh .agents/hooks/check-sensitive-areas.sh
@@ -56,7 +55,7 @@ jobs:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           version=$(sh .agents/hooks/check-sensitive-areas.sh --version)
-          [ "$version" = "sensitive-area-check-v2" ] || { echo "Sensitive-area check: installed copy does not support change checks. Update the kit copy first."; exit 2; }
+          [ "$version" = "sensitive-area-check-v3" ] || { echo "Sensitive-area check: installed copy does not support change checks. Update the kit copy first."; exit 2; }
           sh .agents/hooks/check-sensitive-areas.sh --change "$PR_BASE_SHA"
       - name: Install and test
         if: steps.recipe.outputs.selected == 'true'

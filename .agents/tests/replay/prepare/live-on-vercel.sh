@@ -102,14 +102,14 @@ last-full-pass|2026-09-15
 write("masterplan.md", """
 # Masterplan
 
-## Build path
+## Risk record
 
-Path: Build and run it
-Why: An internal noticeboard for one office of twelve. Nothing it holds is
-irreplaceable, nobody outside the office signs in, and Priya can explain and
-operate it.
+Exposed: The twelve people in one office. Nobody outside the office signs in.
+Data: Short notices with an end date. Nothing it holds is irreplaceable.
+Wrong answer: A wrong notice misleads colleagues for a day.
+Recovery: Priya takes the notice down, or the office goes back to the cork board.
 Access: private
-Sensitive areas: none
+Risk areas: none
 Accepted: none
 Recheck when: someone outside the office needs to sign in; it starts holding
 anything personal beyond a work email; another office comes to depend on it.

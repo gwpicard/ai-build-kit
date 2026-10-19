@@ -1,15 +1,14 @@
 # setup: fixture
 # prepare: masterplan-trued
 # merge-box: answered
-# Scenario 45: a small rule the masterplan does not yet promise. The person
-# approves the result and its build, then asks to see what was saved. They never
-# invoke recovery, so the normal save has to carry the masterplan change. The
-# preparation marks the masterplan as checked against the starting code, so
-# the build has a mark to move on to the code it saves.
-/shape When I ask what is free for a date range, put the available items in alphabetical order so I can find an item quickly. Keep the existing availability rules exactly as they are.
+# Scenario 45: the masterplan already says a loan occupies every day through its return date.
+# The person approves a regression test only, so the piece says its masterplan
+# change is "nothing". Preparation marks the page against the starting code.
+# The normal save must leave its prose alone and move the mark to saved code.
+/shape Add a regression test that availability treats the return day as occupied, as the masterplan already says. Do not change the feature or masterplan text.
 ---
-Yes, alphabetical order by the item name. Plain names like Camera, Microphone and Tripod are enough for this piece. The result should be the same whatever order the item list was entered in. I do not need a new screen.
+Yes, check a loan whose return date is inside the requested range. No feature change is needed.
 ---
-That is the piece I want. Run /implement on it here. Build it, check an unsorted list and the existing booking rules, then save it through the usual route. The example can stand as my check of the result; do not merge anything.
+That is the piece I want. Run /implement on it here. Add the return-day availability test, run it and the existing checks, then save it through the usual route. The passing test is enough; do not merge anything.
 ---
-Show me the saved masterplan paragraph and say whether the checks passed. Finish any remaining save step. Leave the pull request for me to merge.
+Show me the saved masterplan paragraph, its trued-against mark, and say whether the checks passed. Finish any remaining save step. Leave the pull request for me to merge.

@@ -5,6 +5,8 @@ time. It says what was tried on a real deploy and what came out, section by
 section.
 
 Real run: 2026-09-25
+Last proven: 2026-09-27
+Versions: Next.js 16; Supabase CLI 2.117; Coolify 4.3.23; coolify-devops 0.4.0
 
 The coolify-devops 0.8.2 paths for build vars and previews, and the newer paths for rollback and redeploy, are not yet proven in a real run.
 

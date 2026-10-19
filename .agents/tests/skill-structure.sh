@@ -135,18 +135,18 @@ fi
 # 3. Word budgets: command, background skill, reference. Frontmatter is free.
 T="$WORK/words"
 plant "$T"
-printf -- '---\nname: alpha\ndescription: %s\n---\n%s\n' "$(words 300)" "$(words 1201)" \
+printf -- '---\nname: alpha\ndescription: %s\n---\n%s\n' "$(words 300)" "$(words 401)" \
   > "$T/.agents/skills/alpha/SKILL.md"
 printf -- '---\nname: beta\ndescription: A command.\n---\n%s\nLoad the `gamma` skill and the `delta` skill.\n' \
-  "$(words 1190)" > "$T/.agents/skills/beta/SKILL.md"
+  "$(words 390)" > "$T/.agents/skills/beta/SKILL.md"
 printf -- '---\nname: gamma\ndescription: x\nuser-invocable: false\n---\n%s\nCalls the `delta` skill.\n' \
-  "$(words 1501)" > "$T/.agents/skills/gamma/SKILL.md"
-words 2001 > "$T/.agents/skills/delta/references/long.md"
+  "$(words 801)" > "$T/.agents/skills/gamma/SKILL.md"
+words 601 > "$T/.agents/skills/delta/references/long.md"
 out=$(run --strict "$T") && rc=0 || rc=$?
 if [ "$rc" -eq 1 ] \
-  && printf '%s\n' "$out" | grep -q "^words	.agents/skills/alpha/SKILL.md	1201 words, over the command budget of 1200" \
-  && printf '%s\n' "$out" | grep -q "^words	.agents/skills/gamma/SKILL.md	1505 words, over the background budget of 1500" \
-  && printf '%s\n' "$out" | grep -q "^words	.agents/skills/delta/references/long.md	2001 words, over the reference budget of 2000" \
+  && printf '%s\n' "$out" | grep -q "^words	.agents/skills/alpha/SKILL.md	401 words, over the command budget of 400" \
+  && printf '%s\n' "$out" | grep -q "^words	.agents/skills/gamma/SKILL.md	805 words, over the background budget of 800" \
+  && printf '%s\n' "$out" | grep -q "^words	.agents/skills/delta/references/long.md	601 words, over the reference budget of 600" \
   && ! printf '%s\n' "$out" | grep -q "beta/SKILL.md"; then
   pass "each kind of file is held to its own budget, and frontmatter is not counted"
 else

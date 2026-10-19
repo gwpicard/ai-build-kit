@@ -43,11 +43,12 @@ owner/name, which is private. Shall I upload it?"
 
 On a yes, run the script with `--approved` from the piece's branch. It pushes
 the branch, creates `main` on GitHub at the commit the branch was cut from,
-and makes it the default branch. If GitHub Free cannot require branch
-protection on a private repository, the script says the kit will hold the
-merge itself. If protection fails for another reason, it says protection could
-not be set and gives the reason. The upload still succeeds. Protection is
-tried at founding and again at the first upload. Run the push as a command of
+and makes it the default branch. GitHub Free's private plan limit is recorded as
+`branch-protection|<repository>|main|unavailable-private-free` in
+`.ai-build-kit-maintenance`, with one explanation shared with founding.
+Upload and merge continue through the push guard and `merge.py`'s pull-request
+route. Other protection failures give their reason; the upload still succeeds.
+Protection is tried at founding and again at the first upload. Run the push as a command of
 its own, with nothing chained to it: the project's settings refuse a chained
 command that names `main`. Where a command is refused that way, run its parts one at a
 time; the yes still stands. Open the pull request, and say in one clause that

@@ -283,6 +283,19 @@ git -C "$up" remote add origin "$up.git"
 FAKE_GH_STATE="$WORK/upload.json"
 printf '{"repo": "rehearsal/upload", "next": 1, "issues": []}\n' > "$FAKE_GH_STATE"
 cd "$up"
+mkdir -p "$WORK/bin"
+ln -s "$GH" "$WORK/bin/gh"
+protect() { PATH="$WORK/bin:$PATH" python3 "$ROOT/skills/merge/scripts/protect-branch.py" "$@" rehearsal/upload main; }
+
+"$GH" api repos/rehearsal/upload/branches/main > "$WORK/answer" 2> "$WORK/error" && code=0 || code=$?
+[ "$code" -eq 1 ] && grep -q '"message": "Not Found"' "$WORK/answer" \
+  && grep -q 'Not Found (HTTP 404)' "$WORK/error" \
+  && pass "a missing branch gives GitHub's Not Found answer and exit 1" \
+  || fail "a missing branch returned $code: $(cat "$WORK/answer" "$WORK/error")"
+out=$(protect --defer-missing 2>&1) && code=0 || code=$?
+[ "$code" -eq 4 ] \
+  && pass "protection defers a missing main on the default paid private repository" \
+  || fail "protection did not defer missing main ($code): $out"
 
 set +e
 git ls-remote --exit-code --heads origin > /dev/null 2>&1
@@ -331,6 +344,27 @@ esac
 [ "$(git -C "$up.git" rev-parse refs/heads/main)" = "$base" ] \
   && pass "and main is on the remote at that commit, with no push" \
   || fail "the remote's main is not at the merge base"
+"$GH" api repos/rehearsal/upload/branches/main > "$WORK/branch.json"
+python3 - "$WORK/branch.json" "$base" <<'PY' \
+  && pass "a branch read returns its remote name and commit" \
+  || fail "the branch read did not match the remote"
+import json, sys
+branch = json.load(open(sys.argv[1]))
+assert branch["name"] == "main" and branch["commit"]["sha"] == sys.argv[2]
+PY
+"$GH" api repos/rehearsal/upload/branches/main/protection > "$WORK/answer" 2> "$WORK/error" && code=0 || code=$?
+[ "$code" -eq 1 ] && grep -q 'Branch not protected (HTTP 404)' "$WORK/error" \
+  && pass "an unprotected branch gives GitHub's protection 404" \
+  || fail "an unprotected branch returned $code: $(cat "$WORK/answer" "$WORK/error")"
+out=$(protect --defer-missing 2>&1) && code=0 || code=$?
+[ "$code" -eq 0 ] && pass "protection is set once main exists" \
+  || fail "protection was not set ($code): $out"
+out=$(protect --check 2>&1) && code=0 || code=$?
+[ "$code" -eq 0 ] && pass "the stored protection reads as present" \
+  || fail "stored protection did not read as present ($code): $out"
+out=$(protect --defer-missing 2>&1) && code=0 || code=$?
+[ "$code" -eq 0 ] && pass "an already protected main keeps its protection" \
+  || fail "an already protected main failed ($code): $out"
 git ls-remote --exit-code --heads origin > /dev/null 2>&1 \
   && pass "the branch listing then exits 0" \
   || fail "the branch listing still says the repository is empty"
@@ -433,6 +467,86 @@ prfile=$("$GH" pr create --title "Body file" --body-file "$WORK/pr.md" --base ma
 grep -q 'Pull request body from a file' "$FAKE_GH_STATE" \
   && pass "pr create reads its body from --body-file" \
   || fail "pr create dropped the body given with --body-file ($prfile)"
+
+python3 - "$FAKE_GH_STATE" <<'PY'
+import json, sys
+path = sys.argv[1]
+data = json.load(open(path))
+data["pull_requests"][0]["statusCheckRollup"] = [{
+    "name": "project-check", "status": "COMPLETED",
+    "conclusion": "FAILURE", "state": "FAILURE"}]
+json.dump(data, open(path, "w"), indent=2)
+PY
+failed_check=$("$GH" pr view 1 --json statusCheckRollup)
+case "$failed_check" in
+  *'"conclusion": "FAILURE"'*) pass "a prepared failing check stays red in pr view" ;;
+  *) fail "pr view replaced a prepared failing check with success: $failed_check" ;;
+esac
+
+echo "== Founding saves when the branch read fails, then upload retries protection =="
+found="$WORK/founding"
+mkdir -p "$found/.agents/hooks"
+git init -q -b main "$found"
+git init -q --bare -b main "$found.git"
+git -C "$found" remote add origin https://github.com/rehearsal/founding.git
+git -C "$found" config url."$found.git".insteadOf https://github.com/rehearsal/founding.git
+FAKE_GH_STATE="$WORK/founding.json"
+printf '{"repo":"rehearsal/founding","next":1,"issues":[]}\n' > "$FAKE_GH_STATE"
+rm "$WORK/bin/gh"
+cat > "$WORK/bin/gh" <<'SH'
+#!/bin/sh
+case "$*" in
+  *repos/rehearsal/founding/branches/main*)
+    if [ -f "$FAKE_GH_STATE.fail-read" ]; then
+      echo 'gh: Service unavailable (HTTP 503)' >&2
+      exit 1
+    fi ;;
+esac
+exec "$REHEARSAL_GH" "$@"
+SH
+chmod +x "$WORK/bin/gh"
+REHEARSAL_GH="$GH"
+export REHEARSAL_GH
+touch "$FAKE_GH_STATE.fail-read"
+skill="$ROOT/skills/setup-ai-build-kit"
+cp "$skill/templates/masterplan.md" "$found/masterplan.md"
+cp "$skill/templates/foundation/scan-secrets.sh" "$skill/templates/foundation/scan-secrets.py" "$found/.agents/hooks/"
+printf 'hello\n' > "$found/index.html"
+cd "$found"
+if (
+  export PATH="$WORK/bin:$PATH"
+  sh "$skill/scripts/found-issues.sh" prepare &&
+  sh "$skill/scripts/check-tooling.sh" --conditions &&
+  sh "$skill/scripts/found-save.sh"
+) > "$WORK/founding.out" 2>&1; then code=0; else code=$?; fi
+[ "$code" -eq 0 ] && [ "$(git rev-list --count HEAD 2>/dev/null)" -eq 2 ] \
+  && grep -q '^could not check: .*protection' "$WORK/founding.out" \
+  && grep -Fxq 'branch-protection|rehearsal/founding|main|could-not-check' .ai-build-kit-maintenance \
+  && [ "$(grep -c 'The first upload checks branch protection again' "$WORK/founding.out")" -eq 1 ] \
+  && [ -z "$(git ls-remote --heads origin)" ] \
+  && pass "a failed branch read is recorded, explained once and still saves the local checkpoint" \
+  || fail "founding stopped or lost its condition ($code): $(cat "$WORK/founding.out")"
+
+rm "$FAKE_GH_STATE.fail-read"
+git checkout -q -b first-piece
+printf 'piece\n' > piece.txt
+git add piece.txt
+git -c user.name=Rehearsal -c user.email=rehearsal@example.invalid -c commit.gpgsign=false commit -q -m 'First piece'
+out=$(PATH="$WORK/bin:$PATH" python3 "$ROOT/skills/merge/scripts/first-upload.py" --approved 2>&1) && code=0 || code=$?
+[ "$code" -eq 0 ] && git --git-dir="$found.git" rev-parse --verify main >/dev/null \
+  && PATH="$WORK/bin:$PATH" python3 "$ROOT/skills/merge/scripts/protect-branch.py" --check rehearsal/founding main >/dev/null \
+  && ! grep -q '^branch-protection|' .ai-build-kit-maintenance \
+  && pass "first upload checks and sets protection after founding could not check, and clears the condition" \
+  || fail "first upload did not retry protection ($code): $out"
+
+for refused in 'api repos/rehearsal/founding/branches/main/unknown' \
+               'api -X DELETE repos/rehearsal/founding/branches/main/protection'; do
+  if "$GH" $refused >/dev/null 2>&1; then
+    fail "an unmodelled branch call was accepted: $refused"
+  else
+    pass "an unmodelled branch call is refused: $refused"
+  fi
+done
 
 echo
 if [ "$FAIL" -eq 0 ]; then

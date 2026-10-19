@@ -192,9 +192,9 @@ and worth knowing.
 - It is honest about its limits, like the risk notice. It catches common, known
   weaknesses and says plainly that it will miss things. It never becomes a
   promise the code is perfect. A false sense of security is worse than none.
-- It respects the build path. It does not replace a sensitive area's caution;
-  it raises the floor for the everyday "build and run it" tool, and a finding
-  over its head is what should name an area as sensitive.
+- It respects the risk record. It does not replace a risk area's caution;
+  it raises the floor for the everyday tool, and a finding over its head is
+  what should name a risk area.
 
 Once this exists, Level 1 can measure it: seed a project with a planted
 weakness and check the review flags it in plain words.

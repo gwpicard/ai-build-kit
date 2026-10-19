@@ -13,12 +13,15 @@ Jobs: Supabase Cron and Queues
 Testing: Vitest and Playwright
 Linting: ESLint
 Starter: ../parts/starters/nextjs-supabase
-Optional parts: read-only existing database
+Optional parts: none
 Work-team default: yes (Vercel Pro, Supabase Pro)
 Deploy target: Vercel, with the project's GitHub repository connected so that each push builds
 Command-line tools: vercel, supabase, docker, psql, curl, git
 Health-check tool: curl
 Last checked: 2026-10-14
+Last proven: 2026-10-16
+Proven on: Next.js 16.4.2; Supabase CLI 2.117; Vercel CLI 60.0.0
+Superseded settings: NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
 
 Shared stack: [Next.js, TypeScript and Supabase](../parts/nextjs-supabase-stack.md)
 Database types check: `if [ ! -f types/database.ts ] || ! git ls-files --error-unmatch types/database.ts >/dev/null 2>&1; then echo 'could not run: types/database.ts is missing or untracked'; exit 2; fi; if ! supabase status >/dev/null 2>&1; then echo 'could not run: local Supabase is not running'; exit 2; fi; tmp=$(mktemp) || exit 2; trap 'rm -f "$tmp"' EXIT; supabase gen types typescript --local > "$tmp" || { echo 'could not run: database types could not be generated'; exit 2; }; diff -u types/database.ts "$tmp"`
@@ -28,7 +31,7 @@ Plan terms: See stack for preview terms (read 2026-10-14 at https://vercel.com/d
 
 ## Preview
 
-How it works: A first launch runs `scripts/connect.sh <project>` before anything is pushed, to create the Vercel project and connect the GitHub repository. Where the repository is private, only its owner can let Vercel see it, and the script's last line says how. The first push is `main`, because Vercel sends the first build it gets to production. Each later branch gets its own preview, whose settings point at a second Supabase project, never the live one. Before each preview, `../parts/scripts/migrate.sh --apply <preview project ref>`, with that project's password location as `PREVIEW_DB_PASSWORD_FILE`, gives that project the branch's migrations. Reading a preview's health through Vercel makes a lasting key on the project that gets past Vercel's sign-in, the first time, so the kit asks the person before setting `PREVIEW_HEALTH=yes`.
+How it works: A first launch runs `scripts/connect.sh <project>` before anything is pushed, to create the Vercel project and connect the GitHub repository. Where the repository is private, only its owner can let Vercel see it, and the script's last line says how. Before the first push to `main`, close sign-up with `../parts/scripts/set-signup.sh closed` and turn on Vercel sign-in with `scripts/set-access.sh private`. Until both settings are on, the address is public. Vercel sends its first build to production, so the first push is `main`. Each later branch gets its own preview, whose settings point at a second Supabase project, never the live one. Before each preview, `../parts/scripts/migrate.sh --apply <preview project ref>`, with that project's password location as `PREVIEW_DB_PASSWORD_FILE`, gives that project the branch's migrations. Reading a preview's health through Vercel makes a lasting key on the project that gets past Vercel's sign-in, the first time, so the kit asks the person before setting `PREVIEW_HEALTH=yes`.
 How it is checked: The preview is Ready, and the person opens it and tries the change. Where read, its health shows the database reachable, the branch's commit, and a project other than the live one.
 Script: scripts/preview.sh
 Who runs it: a person looking
@@ -36,8 +39,8 @@ Ask: Open the preview address signed in to Vercel, try the change, and tell me w
 
 ## Going live
 
-How it works: Vercel does not run migrations, so before the build that needs them the kit applies them to the live database with `../parts/scripts/migrate.sh --apply <live project ref>`. A migration only adds, so the version still live keeps working. Before the merge, the kit runs the Health part's container check, so the build that goes live has already answered here. Vercel then builds `main` and moves the production address to the new build once it succeeds. The health route reports the commit from `VERCEL_GIT_COMMIT_SHA`.
-How it is checked: The live address answers 200 with the database reachable and the commit on `main`, and no public table is open to anyone holding the public key beyond the ones on the record.
+How it works: Vercel does not run migrations, so before the build that needs them the kit applies them to the live database with `../parts/scripts/migrate.sh --apply <live project ref>`. A migration only adds, so the version still live keeps working. Before the merge, the kit runs the Health part's container check, so the build that goes live has already answered here. Exit 2 means the check could not run on this computer: say so in one line and go on with the merge on the person's yes. Only exit 1 holds it. Vercel then builds `main` and moves the production address to the new build once it succeeds. A changed Vercel setting reaches production only after a new build; run `vercel redeploy <production deployment URL>`. The health route reads `VERCEL_GIT_COMMIT_SHA` on Vercel. `SOURCE_COMMIT` remains a fallback for local runs and hosts that do not supply a commit.
+How it is checked: The live address answers 200 with the database reachable and the commit on `main`, and no public table is open to anyone holding the publishable key beyond the ones on the record.
 Script: scripts/going-live.sh
 Who runs it: the kit
 
@@ -58,7 +61,7 @@ Shared part: [restore on hosted Supabase](../parts/supabase-restore.md)
 
 ## Secrets
 
-How it works: The person gives each value, and `scripts/add-secret.sh <NAME>` hands it to Vercel on standard input, so it never sits on a command line. The Supabase address and public key carry the `NEXT_PUBLIC_` prefix and reach the browser by design; row-level security keeps them harmless. The service role key never carries that prefix. The kit never pulls production values and never writes a value into the repository.
+How it works: Use `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` and `SUPABASE_SECRET_KEY`; the legacy `NEXT_PUBLIC_SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` still work. Run `scripts/get-supabase-keys.sh <project ref> <folder>` to write the publishable and secret keys to private files without using the clipboard. Pass a file to `scripts/add-secret.sh <NAME>` on standard input. Use `--replace` to remove that exact production name before adding its checked value. The publishable key reaches the browser by design; row-level security limits it. The secret key stays on the server. The kit never pulls production values or writes a value into the repository.
 How it is checked: Vercel holds every name in `.env.example`, no public name carries a secret, and git ignores `supabase/.temp`, `.vercel` and `.env.local` while `.env.example` can still be committed.
 Script: scripts/secrets.sh
 Who runs it: the kit

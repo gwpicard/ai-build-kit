@@ -39,9 +39,9 @@ each approved merge puts the change in front of users. Rollback means returning
 to an earlier live version; launch checks confirm an earlier build exists
 without trying one.
 
-Safety: the build path decides how much checking a project needs. A sensitive
-area gets a risk notice and the person decides whether to carry on, with their
-acceptance recorded. A run left on its own stops at a sensitive area. Secrets
+Safety: a risk record says who is exposed if the tool fails. A risk area gets
+a risk notice and the person decides whether to carry on, with their
+acceptance recorded. A run left on its own stops at a risk area. Secrets
 stay out of files Git tracks. Agent approval settings vary; see Compatibility.
 
 Teams: one person or a small team, using pull requests. The kit does not suit

@@ -37,6 +37,7 @@ team = data.get("orgId") or ""
 print("/v9/projects/%s%s" % (data["projectId"], "?teamId=" + team if team.startswith("team_") else ""))
 ' 2>/dev/null) || cl_cannot "The Vercel link in this folder could not be read, so nothing was changed."
 
+cl_approved
 body=$(mktemp)
 trap 'rm -f "$body"' EXIT
 printf '{"ssoProtection":{"deploymentType":"%s"}}\n' "$type" > "$body"

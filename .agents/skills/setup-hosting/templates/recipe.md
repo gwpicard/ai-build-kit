@@ -19,6 +19,9 @@ Deploy target: <where it runs once it is live>
 Health-check tool: <tool the kit uses to check the live health route>
 Command-line tools: <command names separated by commas, or none>
 Last checked: YYYY-MM-DD
+Last proven: YYYY-MM-DD
+Proven on: <tool and version list>
+Superseded settings: <setting names, or none>
 Shared stack: <link to ../parts/<stack>.md>
 
 ## Preview

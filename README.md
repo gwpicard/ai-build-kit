@@ -21,32 +21,29 @@ is in your own database account. Nothing is locked inside a platform.
 Three things make the road:
 
 - Recipes. A recipe is a build stack and a place to run it, with going live,
-  backups and rollback already worked out and proven by a real run. That is
-  what makes it fast.
-- Enforced rules. In Claude Code, settings refuse the usual ways to push
-  straight to the main copy or force a change through, and a box asks you
-  before each merge. Other agents get the same rules in writing.
-- Risk boundaries. If the tool touches personal data, money, sign-in or
-  automatic actions, you hear who could be hurt, once and in plain words, and
-  you decide. Your decision is recorded.
+  backups and rollback proven by a real run.
+- Enforced rules. Claude Code settings block direct or forced pushes, and ask
+  before each merge. Other agents get the rules in writing.
+- Risk boundaries. For personal data, money, sign-in or automatic actions,
+  the kit names who could be hurt and records your decision.
 
-The kit works with Claude Code, Codex, Cursor, Gemini CLI and GitHub Copilot.
-Claude Code is tested, Codex is expected to work, and the others are
-experimental. Read the [agent grades and known
-limits](docs/COMPATIBILITY.md#how-much-has-been-proved-on-each-agent) before choosing.
+The kit is designed for coding agents generally. Recorded runs cover Claude
+Code. Codex checks use a stand-in without a model, so they do not show how the
+kit behaves in Codex. Other agents are supported. If one gives you trouble,
+report it in the [issue tracker](https://github.com/gwpicard/ai-build-kit/issues).
 
 ## What you need to know
 
-You do not read code. You do learn four ideas, and the kit explains each one
-the first time it comes up:
+You do not read code. The kit explains five ideas when they first come up:
 
 1. Accounts. You create a GitHub account, a place to run the tool (a host
    account, or a server you already run) and a database account once. The
    recipe names which ones.
 2. A repository. This is where your project and its history live on GitHub.
-3. A pull request. This is a proposed change. You try it, then say yes to
+3. Issues. These are the tasks you agree to do, kept with the project on GitHub.
+4. A pull request. This is a proposed change. You try it, then say yes to
    merge it into the main copy.
-4. Going live. After a merge, the host puts the change in front of your users.
+5. Going live. After a merge, the host puts the change in front of your users.
 
 You also install a coding agent, Git, Python 3 and the GitHub command-line
 tool, and sign in to them. If that sounds like too much, a hosted app builder
@@ -63,7 +60,7 @@ idea to a saved change.
 | I want something changed, new or broken | `/shape` | Turns your idea or the fault into a ready piece. Reproduces a fault first. |
 | Build what's ready | `/implement` | Builds a ready piece, shows the result and merges it on your yes. With several ready, shows what can be built together and asks which to take. |
 | I want people to use it | `/setup-hosting` | Sets up how the tool runs live, so each later merge goes live. Run it again to check or change that. |
-| It's been a while | `/maintain` | Makes the records true again, reads the live copy and reports gaps, plus any upkeep that is due. Also prepares handovers and switches a tool off. |
+| It's been a while | `/maintain` | Restores the kit's records, settings and checks to their defaults. It cannot repair badly written code. Also checks the live copy, reports gaps and due upkeep, and prepares handovers or switches a tool off. |
 | I'm lost | `/what-now` | Says where the project stands and what to do next, including work a session left half done. |
 
 The masterplan (`masterplan.md`) describes what your tool does now. Your
@@ -163,35 +160,38 @@ Next.js, TypeScript and hosted Supabase for data and sign-in:
 - [On Vercel](.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/recipe.md), for a team without its own server. The kit runs most launch checks itself.
 - [On your server with Coolify](.agents/skills/setup-hosting/recipes/nextjs-supabase-on-coolify/recipe.md), for a team that runs or rents a server. Whoever runs it performs the server checks and sends back the results.
 
+Running a tool on your own Coolify server takes three parts: AI Build Kit
+builds and checks the tool, [coolify-launchpad](https://github.com/gwpicard/coolify-launchpad)
+sets up the server, and [coolify-devops](https://github.com/KasperHonore/coolify-devops)
+puts the tool live and manages it there.
+
 On both, a tool starts private, and changing who can get in waits for your yes.
 
 Each recipe's folder holds the record of its real run, in `PROVEN.md`. Check
 each recipe's plan terms before choosing. Any other stack or host works too,
 but the kit cannot check its launch steps, and says so once for each.
+Python document work and a read-only link to an existing database are not offered yet.
 [Going live in WORKFLOW.md](WORKFLOW.md#9-going-live) covers previews, backups
 and rollback, which means returning to an earlier live version.
 
 ## Keeping it safe
 
-Setup chooses a build path, which decides how much checking your project
-needs. The kit rechecks it as the project changes.
+Setup asks three plain questions: who is exposed if this fails, what data it
+holds, and how you would recover. The answers go into a short risk record in
+your masterplan, and the kit rechecks it as the project changes. Each piece of
+work then names the risk areas it touches: personal data, money, outside
+sign-in, automatic action, irreplaceable data or a regulated decision.
 
-| Situation | Likely path |
-|---|---|
-| Trying an idea with disposable data | Explore privately |
-| Internal tool with a manual fallback | Build and run it |
-| Personal data, money, outside sign-in, automatic action, irreplaceable data or a regulated decision | Build with care |
-
-The agent must show evidence for what it says works. Shared, live or risky
-changes get checks on a clean machine and an independent review before
-merging. A sensitive area may need another person to review it; the agent
-cannot replace that person with its own review. [Evidence and saving rules](WORKFLOW.md#6-evidence) explain
+The agent must show evidence for what it says works. Every change gets checks
+on a clean machine and an independent review before merging. A risk area may
+need another person to review it; the agent cannot replace that person with its
+own review. [Evidence and saving rules](WORKFLOW.md#6-evidence) explain
 what applies to each change.
 
 You hear who a risk affects and what would normally prevent it. You can have
 that caution done, remove the work or carry on with your acceptance recorded.
 The kit builds when you are there to decide. A run left on its own stops at a
-sensitive area and hands it back to you. [Risk notices](WORKFLOW.md#8-sensitive-areas-and-the-risk-notice)
+risk area and hands it back to you. [Risk notices](WORKFLOW.md#8-risk-areas-and-the-risk-notice)
 explain the decision.
 
 Setup opens one GitHub issue for each piece in a repository you own, which can
@@ -205,6 +205,9 @@ Every merge waits for your yes. Changes to live settings or data need a yes
 that names them; a launch request authorises the commands its recipe names.
 Where GitHub cannot require the check, a person with permission can still merge
 by hand on GitHub. The kit's merge script holds merges made through the kit.
+A private repository on GitHub Free is supported: the push guard refuses
+changes straight to main and replacement of remote work from this computer,
+but GitHub does not enforce the project check on that plan.
 Secrets stay out of files Git tracks. Claude Code's project settings block
 direct pushes to the main branch, force pushes and forced deletes. Existing
 settings are preserved, and `/maintain` offers missing rules. Other agents
@@ -222,9 +225,6 @@ attention](docs/COMPATIBILITY.md#optional-harness-features).
 | Going live | Platform publishing | You arrange it | A proven recipe, or a general checklist |
 | Risk to people | Depends on the platform | Depends on the toolkit | Named, decided by you, and recorded |
 | After launch | Platform tools | Depends on the toolkit | Upkeep, handover and switch-off |
-
-A hosted builder is faster for a demo you will throw away. The kit is faster
-to a tool you can keep, change and hand over.
 
 ## Limits
 
@@ -250,22 +250,23 @@ which risks to accept. A developer can read every change if they wish.
 Yes. Setup reads what is already there and preserves existing files.
 
 **Who maintains the tool after launch?**
-You do, with `/maintain`. Each visit checks the records and reads the live copy
-without changing it. Upkeep is due about monthly from setup, including kit
-updates and, once live, the bills and error alerts. Updates wait for your yes.
+You do, with `/maintain`. It resets the kit setup to its defaults and gives
+the project a fresh starting point. It cannot repair badly written code. Each
+visit also checks the records and reads the live copy without changing it.
+Monthly upkeep includes kit updates and, once live, bills and error alerts.
+Updates wait for your yes.
 
 **Where does the tool run once it is built?**
-Wherever you host it; the kit does not host it. For Coolify, a companion such
-as [coolify-devops](https://github.com/KasperHonore/coolify-devops) can use the
-hosting request. It is a separate install, made by somebody else.
-
-**Can I use my design tool?**
-Yes, for early screens when your agent can reach it; browser prototypes remain
-the default. [Pencil](https://www.pen.dev/pricing) is currently free, with paid features planned. Pencil is [proprietary and requires sign-in](https://www.pen.dev/eula); its [format may change](https://docs.pencil.dev/for-developers/the-pen-format). Pencil's [`.pen` files](https://docs.pencil.dev/core-concepts/pen-files) can live in your project. [Penpot](https://penpot.app/pricing/self-host) has a free edition with designs on a server. [Sketch](https://www.sketch.com/docs/getting-started/saving-and-managing-documents/) can save local files on a Mac.
+Wherever you host it; the kit does not host it. The Coolify route is described
+above.
 
 **What does it cost?**
 The kit is free. Your coding agent subscription and hosting have their own
 prices. Check the recipe's terms for work use.
+
+**Can I use my design tool?**
+Yes, for early screens when your agent can reach it; browser prototypes remain
+the default. [Pencil](https://www.pen.dev/pricing) is currently free, with paid features planned. Pencil is [proprietary and requires sign-in](https://www.pen.dev/eula); its [format may change](https://docs.pencil.dev/for-developers/the-pen-format). Pencil's [`.pen` files](https://docs.pencil.dev/core-concepts/pen-files) can live in your project. [Penpot](https://penpot.app/pricing/self-host) has a free edition with designs on a server. [Sketch](https://www.sketch.com/docs/getting-started/saving-and-managing-documents/) can save local files on a Mac.
 
 ## Contributing, security and licence
 

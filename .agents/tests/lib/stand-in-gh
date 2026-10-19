@@ -159,8 +159,16 @@ def main(argv):
         return 0
 
     if argv[:1] == ["api"]:
-        path = next((a for a in argv[1:] if "/" in a and "=" not in a), "")
+        path = next((a for a in argv[1:] if ("/" in a or a == "user") and "=" not in a), "")
         method = (flags(argv, "-X") + flags(argv, "--method") + [""])[0].upper()
+        if method == "GET" and path == "repos/" + state["repo"]:
+            print(json.dumps({"private": state.get("visibility", "PRIVATE") == "PRIVATE",
+                              "owner": {"login": state["repo"].split("/")[0], "type": "User"}}))
+            return 0
+        if method == "GET" and path == "user":
+            print(json.dumps({"login": state["repo"].split("/")[0],
+                              "plan": {"name": state.get("plan", "pro")}}))
+            return 0
         if path.endswith("/releases/latest"):
             if "latest" not in state:
                 fail("gh: Not Found (HTTP 404)")
@@ -184,7 +192,9 @@ def main(argv):
                 fail("HTTP 403: Must have admin rights to access branch protection")
             if state.get("protection") is None:
                 fail("HTTP 404: Branch not protected")
-            print(json.dumps(state["protection"]))
+            protection = dict(state["protection"])
+            protection["enforce_admins"] = {"enabled": bool(protection.get("enforce_admins"))}
+            print(json.dumps(protection))
             return 0
         if method == "PATCH" and path == "repos/" + state["repo"]:
             settings = state.setdefault("settings", {})
@@ -199,7 +209,8 @@ def main(argv):
                         "required_pull_request_reviews", "restrictions"}
             if not required.issubset(body):
                 fail("HTTP 422: missing required branch protection keys")
-            if state.get("protection_status") == "plan":
+            if state.get("protection_status") == "plan" or (
+                    state.get("visibility", "PRIVATE") == "PRIVATE" and state.get("plan") == "free"):
                 fail("HTTP 403: Upgrade to GitHub Pro or make the repository public to use branch protection")
             if state.get("protection_status") == "admin":
                 fail("HTTP 403: Must have admin rights to access branch protection")

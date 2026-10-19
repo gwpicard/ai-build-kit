@@ -32,6 +32,11 @@ changing breaks the script. For a recipe, note which sections link a shared
 part rather than carrying their own lines, since a change to that part reaches
 every recipe that links it.
 
+For each starter under `recipes/parts/starters/`, run `npm audit` with its
+lockfile and read the report. Flag any high or critical finding affecting
+`next`; list tooling-only findings separately. This check needs npm's current
+advisory data, so it belongs in this read before a release, not in CI.
+
 Where the folder holds no recipe yet, say so at the top of the note and carry on
 with the rest of the read. The upstream sources and the default stacks are
 still worth reading, and a new recipe can still be proposed.
@@ -126,6 +131,8 @@ RECIPES
 PARTS
 <part file name>, linked from <recipe>, <recipe>
   Upstream, Proposed and Real run, the same as a recipe.
+  Security audit: for a starter, `npm audit` findings affecting `next` and any
+                   tooling-only findings. Or: not a starter.
 
 HOSTING REQUEST
   The fields coolify-devops expects against the kit's, and any that differ.

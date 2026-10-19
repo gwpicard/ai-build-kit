@@ -62,12 +62,12 @@ rr_case 2 good RR_DISAGREE=1 access.sh --pasted "$(rr_paste good access)"
 rr_case 2 down access.sh --pasted "$(rr_paste good access)"
 rr_case 0 good live-check.sh --only access --pasted-access "$(rr_paste good access)"
 rr_case 1 good live-check.sh --only access --pasted-access "$(rr_paste bad access)"
-printf '# Masterplan\n\n## Build path\n\nAccess: public (decided 2026-10-14)\n' > "$RR_TMP/fixture/masterplan.md"
+printf '# Masterplan\n\n## Risk record\n\nAccess: public (decided 2026-10-14)\n' > "$RR_TMP/fixture/masterplan.md"
 rr_case 0 good RR_SIGNUP=open access.sh --pasted "$(rr_paste bad access)"
 rr_case 1 good RR_SIGNUP=open access.sh --pasted "$(rr_paste good access)"
 rr_case 1 good access.sh --pasted "$(rr_paste bad access)"
 # Open address, invitation only: anyone reaches the address, sign-up closed.
-printf '# Masterplan\n\n## Build path\n\nAccess: open address, invitation only (decided 2026-10-14)\n' > "$RR_TMP/fixture/masterplan.md"
+printf '# Masterplan\n\n## Risk record\n\nAccess: open address, invitation only (decided 2026-10-14)\n' > "$RR_TMP/fixture/masterplan.md"
 rr_case 0 good access.sh --pasted "$(rr_paste bad access)"
 rr_said yes "Open address, invitation only, as recorded"
 rr_case 1 good RR_SIGNUP=open access.sh --pasted "$(rr_paste bad access)"
@@ -80,7 +80,7 @@ printf 'upgrade-declined|2026-10-14|access\n' > "$RR_TMP/fixture/.ai-build-kit-m
 rr_case 0 good live-check.sh --only access
 rr_said yes "Access: not recorded, by your choice."
 rm -f "$RR_TMP/fixture/.ai-build-kit-maintenance"
-printf '# Masterplan\n\n## Build path\n\nPath: Build and run it\nAccess: private\n' > "$RR_TMP/fixture/masterplan.md"
+printf '# Masterplan\n\n## Risk record\n\nAccess: private\n' > "$RR_TMP/fixture/masterplan.md"
 rr_case 0 good RR_SIGNUP=open set-signup.sh closed
 rr_case 1 bad RR_SIGNUP=open set-signup.sh closed
 rr_case 2 good set-signup.sh
@@ -116,8 +116,8 @@ rr_case 0 good hosting-request.sh
 RR_ORIGIN=
 rr_said no "token-stand-in"
 rr_said yes "Repo:                https://github.com/team/app.git, branch main"
-rr_said yes "Env vars:            SUPABASE_SERVICE_ROLE_KEY"
-rr_said yes "Build vars:          NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY"
+rr_said yes "Env vars:            SUPABASE_SECRET_KEY"
+rr_said yes "Build vars:          NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"
 rr_said no "Env vars:            NEXT_PUBLIC_SUPABASE_URL"
 rr_said yes "Previews:            no"
 rr_said no "Repo (build):"
@@ -130,8 +130,8 @@ rr_report "request fields match the companion format plus Build vars and Preview
 cp "$RR_TMP/fixture/.env.example" "$RR_TMP/env-example"
 printf '\n# build\nSENTRY_AUTH_TOKEN=\n' >> "$RR_TMP/fixture/.env.example"
 rr_case 0 good hosting-request.sh
-rr_said yes "Build vars:          NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SENTRY_AUTH_TOKEN"
-rr_said yes "Env vars:            SUPABASE_SERVICE_ROLE_KEY"
+rr_said yes "Build vars:          NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, SENTRY_AUTH_TOKEN"
+rr_said yes "Env vars:            SUPABASE_SECRET_KEY"
 rr_said no "Run vars"
 cp "$RR_TMP/env-example" "$RR_TMP/fixture/.env.example"
 printf 'FROM gcr.io/distroless/nodejs22\nENV HOSTNAME=0.0.0.0 PORT=3000\n' > "$RR_TMP/fixture/Dockerfile"

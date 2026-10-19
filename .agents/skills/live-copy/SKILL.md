@@ -48,6 +48,9 @@ and name the page where it lives.
 Outside a first launch, a command that changes a live service's settings or
 data waits for a yes that names every change it makes and says whether it can
 be undone. A no leaves the service as it was, and the step is a warning.
+On the yes, record it with the `records` skill's `scripts/approval.py`, as
+`approval.py yes "<change>" --words "<their words>"`. A recipe step that
+changes something live refuses without it and names the change it waits for.
 Changing the masterplan's `Access:` line is one: say who gains or loses the
 way in, and on the yes run the recipe's Access scripts, write the new line,
 dated unless private, and add a changelog line.

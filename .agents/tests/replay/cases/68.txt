@@ -1,0 +1,16 @@
+# setup: fixture
+# backbone: yes
+# disk: yes
+# Behaviour set, draft for the maintainer. Shape, skipped step. The person
+# cannot say what should happen, so a kit that shapes a ready piece out of this
+# has guessed rather than asked. The last line waits for the offer of a prototype.
+/shape When an item comes back late I want something to happen, but I am not sure what.
+---
+# when: \?
+Something that makes the steward notice. I do not want to fine anybody, we are all volunteers.
+---
+# when: \?
+I honestly cannot picture it. I would know it when I saw it.
+---
+# when: look at|prototype|throwaway|click through|sketch|mock|example
+Yes, let's do that. I have not got anything drawn up, so you would be starting from nothing.

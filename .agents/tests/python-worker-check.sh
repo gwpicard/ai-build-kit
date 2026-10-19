@@ -3,7 +3,7 @@
 # If this breaks, a missing queue or unhealthy worker may be treated as ready.
 set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
-SCRIPT="$ROOT/.agents/skills/setup-hosting/recipes/parts/scripts/python-worker-check.sh"
+SCRIPT="$ROOT/.agents/tests/recipes-awaiting-run/parts/scripts/python-worker-check.sh"
 WORK=$(mktemp -d)
 DATA="$WORK/data"
 SOCKET="$WORK/socket"

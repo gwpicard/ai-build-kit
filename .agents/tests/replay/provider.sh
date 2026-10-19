@@ -1,9 +1,9 @@
 #!/usr/bin/env sh
 # provider.sh: run replay turns and graders through Claude Code or Codex.
 
-# The caller sets REPLAY_PROVIDER, MODEL, GRADER_MODEL, WORK, REPLAY_DIR,
-# TIMEOUT_CMD and GH_DIR before loading this file, and HOST_DIR where it has
-# stand-ins for a host's tools.
+# The caller sets REPLAY_PROVIDER, MODEL, GRADER_MODEL, REPLAY_EFFORT, WORK,
+# REPLAY_DIR, TIMEOUT_CMD and GH_DIR before loading this file, and HOST_DIR
+# where it has stand-ins for a host's tools.
 
 provider_check() {
   case "$REPLAY_PROVIDER" in
@@ -172,39 +172,34 @@ run_codex_start() {
   message=$1
   raw=$2
   reply=$3
-  if [ -n "$MODEL" ]; then
-    ${TIMEOUT_CMD:+$TIMEOUT_CMD 1800} \
-      codex exec --json --ignore-user-config --ignore-rules \
-      -c shell_environment_policy.inherit=all \
-      --skip-git-repo-check --dangerously-bypass-approvals-and-sandbox \
-      -m "$MODEL" -o "$reply" "$message" > "$raw" 2>/dev/null
-  else
-    ${TIMEOUT_CMD:+$TIMEOUT_CMD 1800} \
-      codex exec --json --ignore-user-config --ignore-rules \
-      -c shell_environment_policy.inherit=all \
-      --skip-git-repo-check --dangerously-bypass-approvals-and-sandbox \
-      -o "$reply" "$message" > "$raw" 2>/dev/null
+  set -- codex exec --json --ignore-user-config --ignore-rules \
+    -c shell_environment_policy.inherit=all
+  if [ -n "${REPLAY_EFFORT:-}" ]; then
+    set -- "$@" -c "model_reasoning_effort=$REPLAY_EFFORT"
   fi
+  set -- "$@" --skip-git-repo-check --dangerously-bypass-approvals-and-sandbox
+  if [ -n "$MODEL" ]; then
+    set -- "$@" -m "$MODEL"
+  fi
+  set -- "$@" -o "$reply" "$message"
+  ${TIMEOUT_CMD:+$TIMEOUT_CMD 1800} "$@" > "$raw" 2>/dev/null
 }
 
 run_codex_resume() {
   message=$1
   raw=$2
   reply=$3
-  if [ -n "$MODEL" ]; then
-    ${TIMEOUT_CMD:+$TIMEOUT_CMD 1800} \
-      codex exec resume --json --ignore-user-config --ignore-rules \
-      -c shell_environment_policy.inherit=all \
-      --skip-git-repo-check --dangerously-bypass-approvals-and-sandbox \
-      -m "$MODEL" -o "$reply" "$PROVIDER_SESSION" "$message" \
-      > "$raw" 2>/dev/null
-  else
-    ${TIMEOUT_CMD:+$TIMEOUT_CMD 1800} \
-      codex exec resume --json --ignore-user-config --ignore-rules \
-      -c shell_environment_policy.inherit=all \
-      --skip-git-repo-check --dangerously-bypass-approvals-and-sandbox \
-      -o "$reply" "$PROVIDER_SESSION" "$message" > "$raw" 2>/dev/null
+  set -- codex exec resume --json --ignore-user-config --ignore-rules \
+    -c shell_environment_policy.inherit=all
+  if [ -n "${REPLAY_EFFORT:-}" ]; then
+    set -- "$@" -c "model_reasoning_effort=$REPLAY_EFFORT"
   fi
+  set -- "$@" --skip-git-repo-check --dangerously-bypass-approvals-and-sandbox
+  if [ -n "$MODEL" ]; then
+    set -- "$@" -m "$MODEL"
+  fi
+  set -- "$@" -o "$reply" "$PROVIDER_SESSION" "$message"
+  ${TIMEOUT_CMD:+$TIMEOUT_CMD 1800} "$@" > "$raw" 2>/dev/null
 }
 
 # provider_turn <project> <message> <raw-output> <last-reply>
@@ -217,6 +212,8 @@ provider_turn() {
 
   case "$REPLAY_PROVIDER" in
     claude)
+      box_config=$(python3 "$REPLAY_DIR/confirm-box.py" --config \
+        "${REPLAY_BOX_GRANTS:-/dev/null}" "$raw.boxes" "${REPLAY_TURN:-0}") || return 1
       if [ -e "$reply.session-started" ]; then
         resume_args="--resume $PROVIDER_SESSION"
       else
@@ -227,6 +224,8 @@ provider_turn() {
         ${TIMEOUT_CMD:+$TIMEOUT_CMD 1800} claude -p "$message" \
         $resume_args \
         --strict-mcp-config \
+        --mcp-config "$box_config" \
+        --permission-prompt-tool mcp__replay_box__answer \
         --permission-mode bypassPermissions \
         --output-format json \
         --model "$MODEL" > "$raw" 2>/dev/null) || return 1
@@ -260,19 +259,17 @@ run_codex_grader() {
   prompt=$1
   events=$2
   message=$3
-  if [ -n "$GRADER_MODEL" ]; then
-    ${TIMEOUT_CMD:+$TIMEOUT_CMD 600} \
-      codex exec --json --ephemeral --ignore-user-config --ignore-rules \
-      -c shell_environment_policy.inherit=all \
-      --skip-git-repo-check --sandbox read-only \
-      -m "$GRADER_MODEL" -o "$message" "$prompt" > "$events" 2>/dev/null
-  else
-    ${TIMEOUT_CMD:+$TIMEOUT_CMD 600} \
-      codex exec --json --ephemeral --ignore-user-config --ignore-rules \
-      -c shell_environment_policy.inherit=all \
-      --skip-git-repo-check --sandbox read-only \
-      -o "$message" "$prompt" > "$events" 2>/dev/null
+  set -- codex exec --json --ephemeral --ignore-user-config --ignore-rules \
+    -c shell_environment_policy.inherit=all
+  if [ -n "${REPLAY_EFFORT:-}" ]; then
+    set -- "$@" -c "model_reasoning_effort=$REPLAY_EFFORT"
   fi
+  set -- "$@" --skip-git-repo-check --sandbox read-only
+  if [ -n "$GRADER_MODEL" ]; then
+    set -- "$@" -m "$GRADER_MODEL"
+  fi
+  set -- "$@" -o "$message" "$prompt"
+  ${TIMEOUT_CMD:+$TIMEOUT_CMD 600} "$@" > "$events" 2>/dev/null
 }
 
 # provider_grade <input> <outer-json-output>

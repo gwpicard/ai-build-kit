@@ -33,7 +33,7 @@ which reduce to a single shell pattern.
 
 ## Standing restrictions
 
-These hold regardless of build path, and regardless of whether a mechanical
+These hold in every project, and regardless of whether a mechanical
 guard can express them:
 
 - no production database migration without a backup and a rehearsal on a copy;
@@ -41,9 +41,9 @@ guard can express them:
 - no printing, committing, or otherwise outputting a secret, anywhere;
 - no disabling authentication or an access control to make a test or a check pass;
 - no bypassing a red project check to ship or merge anyway;
-- no force-merging or auto-merging over a review the build path requires, and no merge the person has not said yes to;
+- no force-merging or auto-merging over a review every pull request needs, and no merge the person has not said yes to;
 - no activating a flagged capability before its recorded condition is met or the person has accepted the risk on the record;
-- no withdrawing, softening, or redefining a risk notice already given, and no treating your own work as the independent review a build path names.
+- no withdrawing, softening, or redefining a risk notice already given, and no treating your own work as the independent review a notice names.
 
 Commit before anything sweeping. If one of these ever looks necessary,
 stop, say why, and let the human decide with the reason in front of them.

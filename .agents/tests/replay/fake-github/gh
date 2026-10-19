@@ -241,13 +241,15 @@ def pr_fields(state, pr, names):
         "headRefOid": heads.get(pr.get("head", ""), ""),
         "baseRefOid": heads.get(pr.get("base", "main"), ""),
         "mergeable": "MERGEABLE",
+        "author": {"login": pr.get("author", "rehearsal")},
+        "reviews": pr.get("reviews", []),
         "isDraft": False,
-        "statusCheckRollup": [{
+        "statusCheckRollup": pr.get("statusCheckRollup", [{
             "name": "project-check",
             "status": "COMPLETED",
             "conclusion": "SUCCESS",
             "state": "SUCCESS",
-        }],
+        }]),
     }
     unknown = [n for n in names if n not in available]
     return {n: available[n] for n in names if n in available}, unknown
@@ -330,6 +332,74 @@ def api_fields(argv):
             key, _, val = value.partition("=")
             out[key] = val
     return out
+
+
+def api_error(message, status):
+    print(json.dumps({"message": message, "status": str(status)}))
+    sys.stderr.write("gh: %s (HTTP %s)\n" % (message, status))
+    sys.exit(1)
+
+
+def api_branch(argv, state, branch, rest, method):
+    """Branch reads and the protection settings the kit actually uses."""
+    if (method, rest) not in (("GET", None), ("GET", "protection"),
+                              ("PUT", "protection"),
+                              ("POST", "protection/required_status_checks/contexts"),
+                              ("PATCH", "protection/required_status_checks"),
+                              ("POST", "protection/enforce_admins")):
+        unsupported(argv, "unmodelled branch call")
+    heads = remote_heads(origin_path())
+    if branch not in heads:
+        api_error("Not Found", 404)
+    if not rest and method == "GET":
+        print_json_or_jq(argv, {"name": branch, "commit": {"sha": heads[branch]}})
+        return
+    protections = state.setdefault("protections", {})
+    protection = protections.get(branch)
+    if rest == "protection" and method == "GET":
+        if protection is None:
+            api_error("Branch not protected", 404)
+        print_json_or_jq(argv, protection)
+        return
+    if rest == "protection" and method == "PUT":
+        if flag(argv, "--input") != "-":
+            unsupported(argv, "protection needs a JSON body on standard input")
+        body = json.load(sys.stdin)
+        if set(body) != {"required_status_checks", "enforce_admins", "required_pull_request_reviews", "restrictions"}:
+            unsupported(argv, "unmodelled protection settings")
+        protection = dict(body, enforce_admins={"enabled": body["enforce_admins"]})
+        protections[branch] = protection
+        answer = protection
+    elif rest == "protection/required_status_checks/contexts" and method == "POST":
+        if protection is None or not protection.get("required_status_checks"):
+            api_error("Not Found", 404)
+        if flag(argv, "--input") != "-":
+            unsupported(argv, "contexts need a JSON body on standard input")
+        body = json.load(sys.stdin)
+        if set(body) != {"contexts"}:
+            unsupported(argv, "unmodelled status check settings")
+        contexts = protection["required_status_checks"].setdefault("contexts", [])
+        contexts.extend(c for c in body["contexts"] if c not in contexts)
+        answer = contexts
+    elif rest == "protection/required_status_checks" and method == "PATCH":
+        if protection is None:
+            api_error("Branch not protected", 404)
+        if flag(argv, "--input") != "-":
+            unsupported(argv, "status checks need a JSON body on standard input")
+        body = json.load(sys.stdin)
+        if set(body) != {"strict", "contexts"}:
+            unsupported(argv, "unmodelled status check settings")
+        protection["required_status_checks"] = body
+        answer = body
+    elif rest == "protection/enforce_admins" and method == "POST":
+        if protection is None:
+            api_error("Branch not protected", 404)
+        protection["enforce_admins"] = {"enabled": True}
+        answer = protection["enforce_admins"]
+    else:
+        unsupported(argv, "unmodelled branch call")
+    save(state)
+    print_json_or_jq(argv, answer)
 
 
 def api_refs(argv, state, repo, rest, kind="refs"):
@@ -511,9 +581,28 @@ def main():
         path = ""
         for arg in argv[1:]:
             # A field such as ref=refs/heads/main carries a slash too.
-            if not arg.startswith("-") and "/" in arg and not re.match(r"^[\w\[\]]+=", arg):
+            if not arg.startswith("-") and ("/" in arg or arg == "user") and not re.match(r"^[\w\[\]]+=", arg):
                 path = arg
                 break
+        method = flag(argv, "-X") or flag(argv, "--method") or ("POST" if api_fields(argv) else "GET")
+        owner = state["repo"].split("/")[0]
+        owner_type = state.get("owner_type", "User")
+        if method == "GET" and path in ("user", "orgs/" + owner):
+            if path.startswith("orgs/") and owner_type != "Organization":
+                unsupported(argv, "not this project's organisation")
+            print_json_or_jq(argv, {"login": owner, "plan": {"name": state.get("plan", "pro")}})
+            return
+        if method == "GET" and path == "repos/" + state["repo"]:
+            print_json_or_jq(argv, {"full_name": state["repo"],
+                                   "private": state.get("visibility", "PRIVATE") == "PRIVATE",
+                                   "owner": {"login": owner, "type": owner_type}})
+            return
+        branch = re.fullmatch(r"/?repos/([^/]+/[^/]+)/branches/([^/]+)(?:/(.*))?", path)
+        if branch:
+            if branch.group(1) != state["repo"]:
+                unsupported(argv, "not this project's repository")
+            api_branch(argv, state, branch.group(2), branch.group(3), method)
+            return
         posting = bool(re.search(r"(?:-X|--method)[= ]POST\b", " ".join(argv)))
         refs = re.fullmatch(r"/?repos/([^/]+/[^/]+)/git/(refs?)(?:/(.*))?", path)
         if refs:
@@ -811,9 +900,13 @@ def main():
             return
 
         if sub == "list":
-            print(json.dumps([pr_fields(state, pr,
-                                        ["number", "title", "state", "headRefName"])[0]
-                              for pr in pulls(state) if pr.get("state") == "OPEN"]))
+            names = (flag(argv, "--json") or "number,title,state,headRefName").split(",")
+            head = flag(argv, "--head")
+            base = flag(argv, "--base")
+            print(json.dumps([pr_fields(state, pr, names)[0]
+                              for pr in pulls(state) if pr.get("state") == "OPEN"
+                              and (not head or pr.get("head") == head)
+                              and (not base or pr.get("base") == base)]))
             return
         if sub == "status":
             print("[]")

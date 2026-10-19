@@ -38,10 +38,11 @@ on.
    Keep questions visible. Save answers in ignored `.agents/tmp/setup-notes.md`
    before the next question. Load `references/stand-up.md` before the closing
    reply and include its menu.
-4. Run `fit-check`. Record access, path, sensitive areas, cautions, and
-   recheck triggers. Consider redesigns first. Give the risk notice before
+   Python document work and a read-only link to an existing database are not offered yet.
+4. Run `fit-check`: its three questions, then access, risk areas, cautions
+   and recheck triggers. Consider redesigns first. Give the risk notice before
    flagged work and record acceptance. An ownership no becomes a task.
-5. Follow `references/write-the-masterplan.md`. On Build with care, run
+5. Follow `references/write-the-masterplan.md`. If a risk area is named, run
    `second-opinion` before flagged work. Record findings and gaps; apply a
    stopping finding only with approval. Otherwise record why review was
    skipped. Check ownership.
@@ -55,6 +56,7 @@ the approval required by `merge`.
 
 ## Done
 
-Finish when records exist, the path and review are recorded, pieces are visible,
-a check passes and a local checkpoint is saved. Report. End with
+Finish with `scripts/check-tooling.sh --conditions` at exit 0, records and
+review, visible pieces, a passing check and a saved local checkpoint.
+Record private Free limits; founding continues. End with
 `/implement` and `/shape` in a fresh chat.

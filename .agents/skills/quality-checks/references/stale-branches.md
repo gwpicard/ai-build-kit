@@ -2,7 +2,7 @@
 
 Once a branch's work has reached the default branch, the branch has done its
 job, but nothing removes it, and a long list hides the few still in use. At
-every monthly visit, on every build path, name the branches that can go and
+every monthly visit, name the branches that can go and
 the command that removes each one. Never remove a branch.
 
 ## Run the script

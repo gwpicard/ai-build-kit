@@ -40,9 +40,6 @@ P="$WORK/project"
 R="$WORK/remote.git"
 git init -q --bare "$R"
 git init -q "$P"
-mkdir -p "$P/.agents/hooks/git"
-cp "$HOOK" "$P/.agents/hooks/git/pre-push"
-copy_scan "$P"
 git -C "$P" remote add origin "$R"
 git -C "$P" commit -q --allow-empty -m first
 # main reaches the remote before the guard is on, as the first upload's API
@@ -50,14 +47,54 @@ git -C "$P" commit -q --allow-empty -m first
 git -C "$P" push -q origin main
 
 echo "== Switching the guard on =="
-sh "$USE" "$P" && code=0 || code=$?
-[ "$code" -eq 0 ] && [ "$(git -C "$P" config --local core.hooksPath)" = .agents/hooks/git ] \
-  && pass "an unset hooks path is pointed at the project's hooks" \
-  || fail "use-push-guard returned $code and set '$(git -C "$P" config --local core.hooksPath)'"
+mkdir -p "$P/.agents/skills"
+ln -s "$SKILL" "$P/.agents/skills/setup-ai-build-kit"
+sh "$SKILL/scripts/bootstrap-project.sh" "$P" && code=0 || code=$?
+[ "$code" -eq 0 ] && sh "$USE" --check "$P" \
+  && pass "founding installs a guard Git would run" \
+  || fail "founding did not enable the guard, exit $code"
 sh "$USE" "$P" && pass "running it again changes nothing" || fail "a second run failed"
 
 pushes() { git -C "$P" push "$@" >/dev/null 2>&1; }
 remote_main() { git -C "$R" rev-parse main; }
+
+echo "== Installing a missing guard =="
+M="$WORK/missing-guard"
+git init -q "$M"
+git -C "$M" remote add origin "$R"
+git -C "$M" commit -q --allow-empty -m "Older project"
+if sh "$USE" --check "$M" >"$WORK/missing-check" 2>&1; then
+  fail "a project with no guard passed the check"
+else
+  [ ! -e "$M/.agents/hooks" ] \
+    && pass "checking a missing guard leaves the project alone" || fail "checking installed files"
+fi
+sh "$USE" "$M" && sh "$USE" --check "$M" \
+  && pass "a project with no guard or hooks path gets an active guard" \
+  || fail "the missing guard could not be installed"
+if git -C "$M" push origin HEAD:main >"$WORK/missing-main" 2>&1; then
+  fail "the installed guard allowed a push to main"
+else
+  grep -q 'would change main directly' "$WORK/missing-main" \
+    && pass "the installed guard refuses main" || fail "main failed for another reason"
+fi
+git -C "$M" push origin HEAD:refs/heads/older-piece >"$WORK/missing-branch" 2>&1 \
+  && pass "the installed guard and scanner allow a piece branch" \
+  || fail "the installed guard or scanner stopped a piece branch"
+
+C="$WORK/changed-guard"
+git init -q "$C"
+mkdir -p "$C/.agents/hooks/git"
+printf '#!/bin/sh\nexit 23\n' > "$C/.agents/hooks/git/pre-push"
+cp "$C/.agents/hooks/git/pre-push" "$WORK/changed-before"
+if sh "$USE" "$C" >"$WORK/changed-out" 2>&1; then
+  fail "a changed guard was accepted"
+else
+  cmp -s "$WORK/changed-before" "$C/.agents/hooks/git/pre-push" \
+    && [ -z "$(git -C "$C" config --local --get core.hooksPath || true)" ] \
+    && pass "a changed guard stops installation and stays intact" \
+    || fail "a changed guard or its hooks path was overwritten"
+fi
 
 echo "== Pushes the guard stops =="
 git -C "$P" checkout -q -b sign-out
@@ -114,14 +151,18 @@ else
     || fail "the existing-branch scan printed the test value"
 fi
 
-git -C "$P" reset -q --soft HEAD~1
+git -C "$P" reset -q --soft HEAD~2
+git -C "$P" rm -q --cached push-key.txt
+rm "$P/push-key.txt"
 git -C "$P" commit -q --allow-empty -m "Sign it back in, rewritten"
 for spelling in "--force origin sign-out" "--force-with-lease origin sign-out" "origin +sign-out" "-uf origin sign-out"; do
   # shellcheck disable=SC2086
-  if pushes $spelling; then
+  if git -C "$P" push $spelling >"$WORK/force-out" 2>&1; then
     fail "git push $spelling replaced work on the remote"
   else
-    pass "git push $spelling is stopped"
+    grep -q 'would replace work' "$WORK/force-out" \
+      && pass "git push $spelling is stopped by the hook's work guard" \
+      || fail "git push $spelling failed for a reason other than replacing work"
   fi
 done
 
@@ -140,6 +181,31 @@ fi
 pushes origin --delete sign-out && pass "deleting a piece branch is allowed" || fail "deleting a piece branch was stopped"
 git -C "$P" tag v1 main
 pushes origin v1 && pass "a tag pushes" || fail "a tag was stopped"
+tag_before=$(git -C "$R" rev-parse refs/tags/v1)
+git -C "$P" tag -f v1 sign-out >/dev/null
+if git -C "$P" push --force origin v1 >"$WORK/tag-replace-out" 2>&1; then
+  fail "a force push replaced an existing tag"
+else
+  grep -q 'would replace work on an existing tag' "$WORK/tag-replace-out" \
+    && [ "$(git -C "$R" rev-parse refs/tags/v1)" = "$tag_before" ] \
+    && pass "an existing tag cannot be replaced by a descendant commit" || fail "tag replacement gave no guard refusal"
+fi
+pushes origin --delete v1 && pass "deleting a tag remains allowed" || fail "deleting a tag was stopped"
+git -C "$P" notes add -m "First note" main
+pushes origin refs/notes/commits && pass "new notes push" || fail "new notes were stopped"
+notes_before=$(git -C "$P" rev-parse refs/notes/commits)
+git -C "$P" notes add -m "Another note" sign-out
+pushes origin refs/notes/commits && pass "notes that move forward push" || fail "new notes were stopped"
+notes_after=$(git -C "$R" rev-parse refs/notes/commits)
+git -C "$P" update-ref refs/notes/commits "$notes_before"
+if git -C "$P" push origin +refs/notes/commits >"$WORK/notes-replace-out" 2>&1; then
+  fail "a forced push replaced existing remote notes"
+else
+  grep -q 'would replace work' "$WORK/notes-replace-out" \
+    && [ "$(git -C "$R" rev-parse refs/notes/commits)" = "$notes_after" ] \
+    && pass "the guard refuses replacing existing remote notes" || fail "notes replacement gave no guard refusal"
+fi
+pushes origin --delete refs/notes/commits && pass "deleting notes remains allowed" || fail "deleting notes was stopped"
 git -C "$P" checkout -q -b tag-secret main
 tag_value="AKIA$(python3 -c 'import secrets; print(secrets.token_hex(8).upper())')"
 printf '%s\n' "$tag_value" > "$P/tag-key.txt"
@@ -180,17 +246,178 @@ else
   fail "a push to main was stopped with the guard off, so the check proves nothing"
 fi
 
-echo "== When the guard stays off =="
+echo "== Keeping existing hooks =="
 Q="$WORK/husky"
 git init -q "$Q"
-mkdir -p "$Q/.agents/hooks/git"
-cp "$HOOK" "$Q/.agents/hooks/git/pre-push"
-copy_scan "$Q"
+mkdir -p "$Q/.agents/skills" "$Q/.husky"
+ln -s "$SKILL" "$Q/.agents/skills/setup-ai-build-kit"
+# The person's hook consumes the same input and arguments after the guard.
+printf '#!/bin/sh\ncat > own-input\nprintf "%%s\\n" "$@" > own-args\nexit 0\n' > "$Q/.husky/pre-push"
+chmod +x "$Q/.husky/pre-push"
 git -C "$Q" config core.hooksPath .husky
-out=$(sh "$USE" "$Q" 2>&1) && code=0 || code=$?
-[ "$code" -eq 1 ] && [ "$(git -C "$Q" config core.hooksPath)" = .husky ] && printf '%s' "$out" | grep -q '.husky' \
-  && pass "a project whose Git already runs its own hooks keeps them, and is told the guard is off" \
-  || fail "an existing hooks path was replaced or not reported: $code $out"
+sh "$SKILL/scripts/bootstrap-project.sh" "$Q" >/dev/null && sh "$USE" --check "$Q" \
+  && [ "$(git -C "$Q" config core.hooksPath)" = .husky ] \
+  && pass "founding chains the guard into .husky and keeps the hooks path" \
+  || fail "founding did not chain the guard into .husky"
+cp "$Q/.husky/pre-push" "$WORK/chained-before"
+sh "$USE" "$Q" && cmp -s "$WORK/chained-before" "$Q/.husky/pre-push" \
+  && pass "a second installation keeps the chain unchanged" || fail "the chain was duplicated"
+git -C "$Q" commit -q --allow-empty -m first
+git -C "$Q" remote add origin "$R"
+if git -C "$Q" push origin HEAD:main >"$WORK/husky-out" 2>&1; then
+  fail "the .husky chain allowed a push to main"
+else
+  grep -q 'would change main directly' "$WORK/husky-out" && [ ! -e "$Q/own-input" ] \
+    && pass "the .husky chain refuses main before the person's hook" || fail "the chain missed main"
+fi
+git -C "$Q" push origin HEAD:refs/heads/husky-piece >/dev/null 2>&1 \
+  && grep -q 'refs/heads/husky-piece' "$Q/own-input" && grep -qx origin "$Q/own-args" \
+  && pass "the person's hook still receives the input and arguments" || fail "the person's hook broke"
+sed 's/^exit 0$/exit 23/' "$Q/.husky/pre-push" > "$WORK/refusing-hook"
+cat "$WORK/refusing-hook" > "$Q/.husky/pre-push"
+if git -C "$Q" push origin HEAD:refs/heads/husky-refuses >/dev/null 2>&1; then
+  fail "the person's hook refusal was ignored"
+else
+  pass "the person's hook can still refuse a push"
+fi
+for mode in disabled enabled; do
+  D="$WORK/$mode-hook"
+  git init -q "$D"
+  git -C "$D" commit -q --allow-empty -m first
+  git -C "$D" remote add origin "$R"
+  mkdir -p "$D/.githooks"
+  printf '#!/bin/sh\nexit 23\n' > "$D/.githooks/pre-push"
+  chmod 644 "$D/.githooks/pre-push"
+  [ "$mode" != enabled ] || chmod +x "$D/.githooks/pre-push"
+  git -C "$D" config core.hooksPath .githooks
+  sh "$USE" "$D" && sh "$USE" --check "$D" || fail "$mode hook did not install the guard"
+  cp "$D/.githooks/pre-push" "$WORK/$mode-before"
+  sh "$USE" "$D" && cmp -s "$WORK/$mode-before" "$D/.githooks/pre-push" \
+    || fail "$mode hook changed on a second installation"
+  out=$(git -C "$D" push origin "HEAD:refs/heads/$mode-hook" 2>&1) && code=0 || code=$?
+  if [ "$mode" = disabled ]; then
+    [ "$code" -eq 0 ] && tail -n 1 "$D/.githooks/pre-push" | grep -qx 'exit 23' \
+      && pass "a disabled hook keeps its lines without running them" \
+      || fail "the disabled hook stopped the branch push: $out"
+  else
+    [ "$code" -ne 0 ] && pass "an enabled hook still refuses the branch push" \
+      || fail "the enabled hook stopped running"
+  fi
+done
+# An unsupported hook cannot be changed safely; both founding stages stop.
+printf '#!/usr/bin/env python3\nraise SystemExit(0)\n' > "$Q/.husky/pre-push"
+printf 'Trued against: not yet checked\n' > "$Q/masterplan.md"
+before=$(git -C "$Q" rev-parse HEAD)
+for installer in bootstrap-project found-save; do
+  if (cd "$Q" && sh "$SKILL/scripts/$installer.sh") >"$WORK/founding-stop" 2>&1; then
+    fail "$installer succeeded without an active guard"
+  else
+    grep -q 'push guard is not on' "$WORK/founding-stop" \
+      && [ "$(git -C "$Q" rev-parse HEAD)" = "$before" ] \
+      && pass "$installer stops plainly before saving without a guard" || fail "$installer gave no cause"
+  fi
+done
+
+# Husky's installer rewrites its dispatchers and helper on every install.
+# Keep the dispatch and shell invocation used by the upstream installer:
+# https://github.com/typicode/husky/blob/main/index.js
+# https://github.com/typicode/husky/blob/main/husky
+install_husky() {
+  git -C "$1" config core.hooksPath .husky/_
+  mkdir -p "$1/.husky/_"
+  printf '#!/usr/bin/env sh\n. "$(dirname "$0")/h"\n' > "$1/.husky/_/pre-push"
+  cat > "$1/.husky/_/h" <<'HUSKY'
+#!/usr/bin/env sh
+n=$(basename "$0")
+s=$(dirname "$(dirname "$0")")/$n
+[ ! -f "$s" ] && exit 0
+sh -e "$s" "$@"
+c=$?
+exit $c
+HUSKY
+  chmod +x "$1/.husky/_/pre-push"
+}
+for own_hook in existing absent; do
+  T="$WORK/husky-$own_hook"
+  git init -q "$T"
+  mkdir -p "$T/.agents/skills" "$T/.husky"
+  ln -s "$SKILL" "$T/.agents/skills/setup-ai-build-kit"
+  if [ "$own_hook" = existing ]; then
+    printf '#!/bin/sh\ncat > own-input\nprintf "%%s\\n" "$@" > own-args\nexit 0\n' > "$T/.husky/pre-push"
+  fi
+  install_husky "$T"
+  cp "$T/.husky/_/pre-push" "$WORK/dispatcher-before"
+  sh "$SKILL/scripts/bootstrap-project.sh" "$T" >/dev/null
+  cmp -s "$WORK/dispatcher-before" "$T/.husky/_/pre-push" \
+    && pass "the $own_hook Husky hook leaves the generated dispatcher intact" \
+    || fail "the generated Husky dispatcher was edited"
+  cp "$T/.husky/pre-push" "$WORK/owner-before"
+  install_husky "$T"
+  sh "$USE" --check "$T" && sh "$USE" "$T" \
+    && cmp -s "$WORK/owner-before" "$T/.husky/pre-push" \
+    && pass "the $own_hook Husky hook keeps one guard after reinstalling" || fail "reinstalling lost the guard"
+  git -C "$T" remote add origin "$R"
+  git -C "$T" fetch -q origin main
+  git -C "$T" reset -q --soft FETCH_HEAD
+  git -C "$T" commit -q --allow-empty -m first
+  if git -C "$T" push origin HEAD:main >"$WORK/husky-reinstalled-out" 2>&1; then
+    fail "the reinstalled Husky hook allowed HEAD:main"
+  else
+    grep -q 'would change main directly' "$WORK/husky-reinstalled-out" && [ ! -e "$T/own-input" ] \
+      && pass "the $own_hook Husky hook refuses HEAD:main after reinstalling" || fail "the reinstalled guard missed main"
+  fi
+  git -C "$T" push origin "HEAD:refs/heads/husky-$own_hook" >/dev/null 2>&1 \
+    && pass "the $own_hook Husky hook allows a piece push" || fail "the Husky guard stopped a piece"
+  if [ "$own_hook" = existing ]; then
+    grep -q "refs/heads/husky-$own_hook" "$T/own-input" && grep -qx origin "$T/own-args" \
+      && pass "Husky's own hook keeps its lines, input and arguments" || fail "Husky's own hook changed"
+  fi
+done
+
+for shebang in '#!/bin/sh -e' '#!/usr/bin/env sh'; do
+  printf '%s\nprintf ran > own-shell-ran\nexit 23\n' "$shebang" > "$Q/.husky/pre-push"
+  sh "$USE" "$Q" && sh "$USE" --check "$Q" \
+    && pass "$shebang accepts the guard" || fail "$shebang was refused"
+  if git -C "$Q" push origin HEAD:refs/heads/shell-hook >"$WORK/shell-hook-out" 2>&1; then
+    fail "$shebang lost the person's refusal"
+  else
+    [ "$(cat "$Q/own-shell-ran")" = ran ] \
+      && pass "$shebang still runs the person's refusal" || fail "$shebang skipped the person's hook"
+    rm -f "$Q/own-shell-ran"
+  fi
+  if git -C "$Q" push origin HEAD:main >"$WORK/shell-hook-out" 2>&1; then
+    fail "$shebang lost the guard"
+  else
+    grep -q 'would change main directly' "$WORK/shell-hook-out" \
+      && pass "$shebang refuses main through the guard" || fail "$shebang did not run the guard"
+  fi
+done
+
+mkdir -p "$Q/.managed-hooks"
+printf '#!/bin/sh\n# A generated report is checked here.\ncat > managed-input\nexit 0\n' > "$Q/.managed-hooks/pre-push"
+chmod +x "$Q/.managed-hooks/pre-push"
+git -C "$Q" config core.hooksPath .managed-hooks
+cp "$Q/.managed-hooks/pre-push" "$WORK/managed-before"
+tail -n 3 "$WORK/managed-before" > "$WORK/managed-lines"
+for installer in bootstrap-project found-save; do
+  (cd "$Q" && sh "$SKILL/scripts/$installer.sh") >"$WORK/managed-out" 2>&1 \
+    && sh "$USE" --check "$Q" \
+    && [ "$(git -C "$Q" config core.hooksPath)" = .managed-hooks ] \
+    && tail -n 3 "$Q/.managed-hooks/pre-push" > "$WORK/chained-lines" \
+    && cmp -s "$WORK/chained-lines" "$WORK/managed-lines" \
+    && pass "$installer chains a hook with a generated comment and keeps its lines" \
+    || fail "$installer refused or changed the hook with a generated comment"
+done
+git -C "$Q" push origin HEAD:refs/heads/comment-piece >"$WORK/managed-push" 2>&1 \
+  && grep -q refs/heads/comment-piece "$Q/managed-input" \
+  && pass "the hook with a generated comment still receives the push input" \
+  || fail "the hook with a generated comment did not run"
+if git -C "$Q" push origin HEAD:main >"$WORK/managed-main" 2>&1; then
+  fail "the hook with a generated comment allowed main"
+else
+  grep -q 'would change main directly' "$WORK/managed-main" \
+    && pass "the hook with a generated comment refuses main" || fail "the comment hook missed the guard"
+fi
 mkdir -p "$Q/sub/.agents/hooks/git"
 cp "$HOOK" "$Q/sub/.agents/hooks/git/pre-push"
 mkdir -p "$Q/sub/.agents/hooks"
@@ -210,15 +437,11 @@ cp "$HOOK" "$H/.agents/hooks/git/pre-push"
 copy_scan "$H"
 printf '#!/bin/sh\nexit 0\n' > "$H/.git/hooks/pre-commit"
 chmod +x "$H/.git/hooks/pre-commit"
-out=$(sh "$USE" "$H" 2>&1) && code=0 || code=$?
-[ "$code" -eq 1 ] && [ -z "$(git -C "$H" config --local --get core.hooksPath || true)" ] \
-  && printf '%s' "$out" | grep -q 'pre-commit' \
-  && pass "hooks already in Git's own hooks folder keep running, and the line names them" \
-  || fail "an existing pre-commit hook was switched off or not reported: $code $out"
-rm "$H/.git/hooks/pre-commit"
-sh "$USE" "$H" >/dev/null 2>&1 && [ "$(git -C "$H" config --local core.hooksPath)" = .agents/hooks/git ] \
-  && pass "Git's own sample hooks alone do not stop the guard" \
-  || fail "a hooks folder holding only samples stopped the guard"
+sh "$USE" "$H" && sh "$USE" --check "$H" \
+  && [ -z "$(git -C "$H" config --local --get core.hooksPath || true)" ] \
+  && [ -x "$H/.git/hooks/pre-commit" ] \
+  && pass "Git's existing hooks keep running alongside the guard" \
+  || fail "existing default hooks stopped the guard or were switched off"
 
 # A hooks folder set for every project on this computer.
 G="$WORK/global"
@@ -229,7 +452,7 @@ copy_scan "$G"
 git config --global core.hooksPath "$HOME/.githooks"
 out=$(sh "$USE" "$G" 2>&1) && code=0 || code=$?
 [ "$code" -eq 1 ] && [ -z "$(git -C "$G" config --local --get core.hooksPath || true)" ] \
-  && printf '%s' "$out" | grep -q '.githooks' \
+  && printf '%s' "$out" | grep -q 'push guard is not on' \
   && pass "a hooks folder set for every project is not overridden, and the line says so" \
   || fail "a user-wide hooks path was overridden or not reported: $code $out"
 git config --global --unset core.hooksPath

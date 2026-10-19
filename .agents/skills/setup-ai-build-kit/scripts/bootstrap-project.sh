@@ -220,4 +220,4 @@ fi
 # The pre-push guard runs only once Git is pointed at it. A project that is not
 # a Git repository yet gets this from the founding save instead.
 sh "$SKILL_ROOT/scripts/use-push-guard.sh" "$PROJECT_ROOT" || \
-  note "the push guard is not on, so only the coding agent's own settings stop a push to main."
+  fail "the push guard is not on; run use-push-guard.sh from the project folder before continuing"

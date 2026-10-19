@@ -1,6 +1,6 @@
 # Structure read
 
-At the quarterly visit, on Build and run it and on Build with care, name the
+At the quarterly visit, name the
 places where two or more parts depend on each other in a circle. A change to
 one part of such a loop can break the others, and none of them can be tested
 alone.

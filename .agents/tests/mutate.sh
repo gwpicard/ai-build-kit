@@ -110,10 +110,82 @@ runner-fails-green
 migration-misses-ready
 mark-ready-skips-done-when
 first-upload-ignores-shared-history
+upload-piece-skips-pull-request
 strength-config-lost
 review-gate-leaves-draft-edited
 attempt-cap
-merge-behind-main"
+merge-behind-main
+promises-list-stale
+build-nothing-mark
+founding-starter-refusal
+prelaunch-migration-route
+recipe-freshness-date
+maintain-settings-not-restored
+vercel-secret-shape
+replay-effort-ignored
+replay-helper-worktree-source
+replay-kit-src-ignored
+replay-skill-size-total
+replay-rollup-counts-controls
+replay-compare-chance-rule
+replay-state-assertion-skipped
+fake-gh-loses-check-status
+review-record-any-head
+review-record-unsealed
+review-record-old-format-passes
+review-unverified-called-verified
+result-crash-passes
+result-unstarted-check-passes
+launch-no-backup-goes-ahead
+launch-no-way-back-goes-ahead
+launch-off-recipe-unrecorded
+launch-off-recipe-notice-repeats
+launch-off-recipe-choice-before-notice
+approval-merge-skipped
+approval-recipe-skipped
+approval-yes-reused
+approval-yes-raced
+approval-ask-rule-dropped
+record-secret-pr-body
+record-secret-changelog
+record-secret-claude-write
+record-secret-github-body
+conditions-missing-passes
+protection-plan-stops
+unreadable-repository-is-missing
+seeded-missed-as-flagged
+seeded-harness-break-as-pass
+seeded-twin-hold-ignored
+seeded-key-copied
+seeded-rollup-counts-broken-runs
+seeded-repro-accepts-swallow
+seeded-refusal-counts-as-find
+seeded-report-hides-failure
+review-optional-by-record
+area-accepted-still-holds
+area-open-passes
+area-date-without-words
+mark-ready-skips-risk-areas
+merge-review-skipped
+risk-move-drops-acceptance
+risk-move-acceptance-done
+risk-move-misses-path
+risk-move-show-writes
+risk-move-hides-report-only
+backbone-review-unbound-passes
+backbone-merge-before-yes-passes
+backbone-canary-ignored
+behaviour-extras-untouched-passes
+behaviour-answer-ungated
+replay-preflight-fault-unreported
+replay-failed-preparation-silent
+replay-nothing-graded-exits-zero
+replay-old-kit-section-missing
+replay-startup-read-unchecked
+replay-plan-helper-not-installed
+replay-backbone-not-merged
+backbone-saved-files-unscanned
+backbone-api-merge-unbound"
 
 describe() {
   case "$1" in
@@ -188,10 +260,82 @@ describe() {
     migration-misses-ready) echo "the upgrade check misses open pieces that need the ready label" ;;
     mark-ready-skips-done-when) echo "a piece without Done when can be marked ready" ;;
     first-upload-ignores-shared-history) echo "a repository with unrelated work is treated as a first upload" ;;
+    upload-piece-skips-pull-request) echo "the upload script no longer opens the pull request" ;;
     strength-config-lost) echo "the Python mutation check no longer tells mutmut which code to break" ;;
     review-gate-leaves-draft-edited) echo "the review gate leaves an edited draft in place" ;;
     attempt-cap) echo "the piece attempt cap rises, so a fourth attempt is allowed" ;;
     merge-behind-main) echo "merge accepts a pull request branch behind main" ;;
+    promises-list-stale) echo "the promise list can name a checker that does not exist" ;;
+    build-nothing-mark) echo "a build leaves the masterplan mark behind when its change says nothing" ;;
+    founding-starter-refusal) echo "founding writes a replacement starter before asking after a command refusal" ;;
+    prelaunch-migration-route) echo "a pre-launch piece chooses its own database migration route" ;;
+    recipe-freshness-date) echo "a recipe can lose its 90-day stale warning" ;;
+    maintain-settings-not-restored) echo "a drifted project's missing safety settings are never written back" ;;
+    vercel-secret-shape) echo "Vercel accepts a value that does not look like a Supabase secret key" ;;
+    replay-effort-ignored) echo "Codex replay calls stop receiving the requested reasoning effort" ;;
+    replay-helper-worktree-source) echo "replay projects take the GitHub readiness helper from the worktree instead of the assembled kit" ;;
+    replay-kit-src-ignored) echo "run.sh assembles the kit from its harness tree instead of KIT_SRC" ;;
+    replay-skill-size-total) echo "skill-size.sh stops reporting a total for the selected Git ref" ;;
+    replay-rollup-counts-controls) echo "no-notice controls enter the held rate instead of reporting false alarms" ;;
+    replay-compare-chance-rule) echo "a small-sample dip is reported as a regression without a chance check" ;;
+    replay-state-assertion-skipped) echo "the returning-work state check stops noticing a cleared failure" ;;
+    fake-gh-loses-check-status) echo "a prepared failed project check is reported as passing by the GitHub stand-in" ;;
+    record-secret-pr-body) echo "a review record carrying a key is written to the pull request" ;;
+    record-secret-changelog) echo "run-recipe writes a key into the changelog" ;;
+    record-secret-claude-write) echo "Claude Code writes a key into the masterplan or changelog" ;;
+    record-secret-github-body) echo "Claude Code writes a key into an issue or pull request body" ;;
+    launch-no-backup-goes-ahead) echo "a live launch with no confirmed backup goes ahead" ;;
+    launch-no-way-back-goes-ahead) echo "a later launch with no earlier build to go back to goes ahead" ;;
+    launch-off-recipe-unrecorded) echo "a launch off a recipe goes ahead with no notice and no recorded choice" ;;
+    launch-off-recipe-notice-repeats) echo "a run off a recipe forgets the recorded choice and gives the notice again" ;;
+    launch-off-recipe-choice-before-notice) echo "a choice made before the notice is recorded as consent" ;;
+    approval-merge-skipped) echo "an approved merge goes ahead with no recorded yes" ;;
+    approval-recipe-skipped) echo "a recipe step that changes something live goes ahead with no recorded yes" ;;
+    approval-yes-reused) echo "one recorded yes opens the same change again and again" ;;
+    approval-yes-raced) echo "two callers at once both spend the same yes" ;;
+    approval-ask-rule-dropped) echo "Claude Code records a yes with no box for the person to click" ;;
+    review-record-any-head) echo "a review record passes for a commit it never read" ;;
+    review-record-unsealed) echo "a hand-edited review record passes" ;;
+    review-record-old-format-passes) echo "an older record with no commit passes as current" ;;
+    review-unverified-called-verified) echo "a review by one login is recorded as verified" ;;
+    result-crash-passes) echo "a quality read that crashes is reported as a pass" ;;
+    result-unstarted-check-passes) echo "a GitHub check that has not finished maps to PASS" ;;
+    conditions-missing-passes) echo "a missing working condition no longer stops founding" ;;
+    protection-plan-stops) echo "a private Free plan limit stops setup instead of being recorded" ;;
+    unreadable-repository-is-missing) echo "a refused repository read is reported as no repository and stops founding" ;;
+    seeded-missed-as-flagged) echo "a seeded fault that merged unnamed is scored as named first" ;;
+    seeded-harness-break-as-pass) echo "a run the harness broke is scored as a fix" ;;
+    seeded-twin-hold-ignored) echo "a healthy twin left open after the yes is scored as fine" ;;
+    seeded-key-copied) echo "the seeded-fault starting state carries the fault key into the project the kit sees" ;;
+    seeded-rollup-counts-broken-runs) echo "the seeded-fault roll-up counts runs the harness broke in its denominators" ;;
+    seeded-repro-accepts-swallow) echo "the reproduction for the swallowed-error product accepts an empty success" ;;
+    seeded-refusal-counts-as-find) echo "a seeded fault left open after the person accepted a warning is scored as a find" ;;
+    seeded-report-hides-failure) echo "the seeded-fault report exits 0 when there are no results to count" ;;
+    review-optional-by-record) echo "the project check lets a pull request through with no review record" ;;
+    area-accepted-still-holds) echo "the risk-area check keeps holding a piece after the person accepted the area" ;;
+    area-open-passes) echo "the risk-area check lets a change to an open area through with no notice" ;;
+    area-date-without-words) echo "a date on the area line counts as an acceptance with no recorded words" ;;
+    mark-ready-skips-risk-areas) echo "a piece that names no risk areas can be marked ready" ;;
+    merge-review-skipped) echo "the merge no longer asks for a review record on every pull request" ;;
+    risk-move-drops-acceptance) echo "the move to the risk record drops the person's recorded acceptances" ;;
+    risk-move-acceptance-done) echo "the move to the risk record turns an accepted area into a finished caution" ;;
+    risk-move-misses-path) echo "the upgrade check no longer finds the three path values in an older record" ;;
+    risk-move-show-writes) echo "showing the move to the risk record writes it before the person says yes" ;;
+    risk-move-hides-report-only) echo "the move to the risk record leaves out the checks the project cannot yet run" ;;
+    backbone-review-unbound-passes) echo "a replay accepts a merge made at a version its review never read" ;;
+    backbone-merge-before-yes-passes) echo "a replay accepts a merge made before the person's yes" ;;
+    backbone-canary-ignored) echo "a replay no longer notices the planted secret in what the kit said" ;;
+    behaviour-extras-untouched-passes) echo "a build that adds a request outside the agreed piece passes its disk check" ;;
+    behaviour-answer-ungated) echo "a scripted answer in a behaviour case no longer waits for the kit's question" ;;
+    replay-preflight-fault-unreported) echo "the preflight finds a fault in the harness and lets the run start" ;;
+    replay-failed-preparation-silent) echo "a run whose project cannot be prepared leaves no result at all" ;;
+    replay-nothing-graded-exits-zero) echo "a replay pass in which nothing was graded exits 0" ;;
+    replay-old-kit-section-missing) echo "a kit that reads a build-path section is run on a project that has none" ;;
+    replay-startup-read-unchecked) echo "a kit whose first read the fixtures cannot give is run anyway" ;;
+    replay-plan-helper-not-installed) echo "a prepared replay project is left without the plan helper a founded project has" ;;
+    replay-backbone-not-merged) echo "a backbone case is no longer graded on the backbone" ;;
+    backbone-saved-files-unscanned) echo "a replay no longer looks for secret-shaped values in the files the run saved" ;;
+    backbone-api-merge-unbound) echo "a replay no longer checks the review of a merge made through the GitHub interface" ;;
     *) echo "unknown mutation" ;;
   esac
 }
@@ -223,10 +367,59 @@ checks_for() {
     migration-misses-ready) echo "upgrade-rehearsal" ;;
     mark-ready-skips-done-when) echo "mark-ready" ;;
     first-upload-ignores-shared-history) echo "first-upload" ;;
+    upload-piece-skips-pull-request) echo "upload-piece" ;;
     strength-config-lost) echo "test-strength-rehearsal" ;;
     review-gate-leaves-draft-edited) echo "review-guard" ;;
     attempt-cap) echo "autonomy-boundaries" ;;
     merge-behind-main) echo "merge-gate" ;;
+    promises-list-stale) echo "promises-list-rehearsal" ;;
+    build-nothing-mark|founding-starter-refusal|prelaunch-migration-route) echo "$DEFAULT_CHECKS" ;;
+    recipe-freshness-date) echo "recipe-freshness-rehearsal" ;;
+    maintain-settings-not-restored) echo "maintain-drift-rehearsal" ;;
+    vercel-secret-shape) echo "recipe-nextjs-supabase-on-vercel" ;;
+    replay-effort-ignored) echo "replay-provider" ;;
+    replay-helper-worktree-source) echo "replay-project-helper" ;;
+    replay-kit-src-ignored) echo "replay-kit-source" ;;
+    replay-skill-size-total) echo "skill-size-rehearsal" ;;
+    replay-rollup-counts-controls) echo "replay-rollup" ;;
+    replay-compare-chance-rule) echo "replay-compare" ;;
+    replay-state-assertion-skipped) echo "replay-case-states" ;;
+    fake-gh-loses-check-status) echo "fake-github" ;;
+    record-secret-pr-body) echo "record-secrets" ;;
+    record-secret-changelog) echo "record-secrets" ;;
+    record-secret-claude-write) echo "record-secrets" ;;
+    record-secret-github-body) echo "record-secrets" ;;
+    launch-no-backup-goes-ahead) echo "run-recipe" ;;
+    launch-no-way-back-goes-ahead) echo "run-recipe" ;;
+    launch-off-recipe-unrecorded) echo "run-recipe" ;;
+    launch-off-recipe-notice-repeats) echo "run-recipe" ;;
+    launch-off-recipe-choice-before-notice) echo "run-recipe" ;;
+    approval-merge-skipped) echo "merge-gate" ;;
+    approval-recipe-skipped) echo "recipe-nextjs-supabase-on-vercel" ;;
+    approval-yes-reused) echo "approval-gate merge-gate" ;;
+    approval-yes-raced) echo "approval-gate" ;;
+    approval-ask-rule-dropped) echo "push-to-main-rules" ;;
+    review-record-any-head) echo "review-gate merge-gate" ;;
+    review-record-unsealed) echo "review-gate merge-gate" ;;
+    review-record-old-format-passes) echo "review-gate merge-gate" ;;
+    review-unverified-called-verified) echo "review-gate merge-gate" ;;
+    result-crash-passes) echo "result-vocabulary" ;;
+    result-unstarted-check-passes) echo "result-vocabulary merge-gate" ;;
+    conditions-missing-passes) echo "check-tooling" ;;
+    protection-plan-stops) echo "check-tooling found-issues first-upload" ;;
+    unreadable-repository-is-missing) echo "check-tooling" ;;
+    review-optional-by-record) echo "review-gate" ;;
+    area-accepted-still-holds|area-open-passes|area-date-without-words) echo "sensitive-area-map" ;;
+    mark-ready-skips-risk-areas) echo "mark-ready" ;;
+    merge-review-skipped) echo "merge-gate" ;;
+    risk-move-drops-acceptance|risk-move-acceptance-done|risk-move-misses-path|risk-move-show-writes|risk-move-hides-report-only) echo "risk-move-rehearsal" ;;
+    seeded-missed-as-flagged|seeded-harness-break-as-pass|seeded-twin-hold-ignored|seeded-key-copied|seeded-rollup-counts-broken-runs|seeded-refusal-counts-as-find|seeded-report-hides-failure) echo "seeded-scoring" ;;
+    seeded-repro-accepts-swallow) echo "seeded-reproductions" ;;
+    backbone-review-unbound-passes|backbone-merge-before-yes-passes|backbone-canary-ignored|behaviour-extras-untouched-passes) echo "replay-behaviour" ;;
+    behaviour-answer-ungated) echo "replay-behaviour-cases" ;;
+    replay-preflight-fault-unreported|replay-failed-preparation-silent|replay-nothing-graded-exits-zero|replay-old-kit-section-missing|replay-startup-read-unchecked) echo "replay-preflight" ;;
+    replay-plan-helper-not-installed) echo "replay-project-helper" ;;
+    replay-backbone-not-merged|backbone-saved-files-unscanned|backbone-api-merge-unbound) echo "replay-behaviour" ;;
     *) echo "$DEFAULT_CHECKS" ;;
   esac
 }
@@ -247,6 +440,35 @@ apply() {
   name=$1
   tree=$2
   case "$name" in
+    recipe-freshness-date)
+      edit "$tree/.agents/skills/maintain/scripts/recipe-freshness.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "stale = (datetime.date.today() - checked_date).days > 90"
+assert old in t, "recipe freshness age check not found"
+open(p, "w").write(t.replace(old, "stale = False", 1))
+'
+      ;;
+    maintain-settings-not-restored)
+      edit "$tree/.agents/skills/maintain/scripts/settings-rules.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    with open(path, \"w\", encoding=\"utf-8\", newline=\"\") as handle:\n        handle.write(new)"
+assert old in t, "settings restore write not found"
+open(p, "w").write(t.replace(old, "    # mutation skips persistence", 1))
+'
+      ;;
+    vercel-secret-shape)
+      edit "$tree/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/add-secret.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "sb_secret_*|eyJ*"
+assert old in s, "Supabase secret-key shape check not found"
+open(p, "w").write(s.replace(old, "*", 1))'
+      ;;
     recipe-framework-major)
       edit "$tree/.agents/tools/check-recipes.sh" '
 import os
@@ -308,7 +530,7 @@ open(p, "w").write(t.replace(old, "if False and clashes:\n    print(\"refused: t
 '
       ;;
     read-only-db-privilege)
-      edit "$tree/.agents/skills/setup-hosting/recipes/parts/scripts/read-only-database.sh" '
+      edit "$tree/.agents/tests/recipes-awaiting-run/parts/scripts/read-only-database.sh" '
 import os
 p = os.environ["MUTATE_TARGET"]
 t = open(p).read()
@@ -318,7 +540,7 @@ open(p, "w").write(t.replace(old, "false", 1))
 '
       ;;
     worker-queue-name)
-      edit "$tree/.agents/skills/setup-hosting/recipes/parts/scripts/python-worker-check.sh" '
+      edit "$tree/.agents/tests/recipes-awaiting-run/parts/scripts/python-worker-check.sh" '
 import os
 p = os.environ["MUTATE_TARGET"]
 t = open(p).read()
@@ -760,13 +982,13 @@ open(p, "w").write(s.replace(old, "assigned_value = None", 1))
 '
       ;;
     merge-pending-bucket-only)
-      edit "$tree/.agents/skills/merge/scripts/merge.py" '
+      edit "$tree/.agents/skills/quality-checks/scripts/results.py" '
 import os
 p = os.environ["MUTATE_TARGET"]
 s = open(p).read()
-old = "if bucket in (\"fail\", \"cancel\") or bucket == \"pending\":"
-new = "if bucket in (\"fail\", \"cancel\"):"
-assert old in s
+old = "if bucket == \"pass\":"
+new = "if bucket in (\"pass\", \"pending\"):"
+assert old in s, "GitHub check result mapping not found"
 open(p, "w").write(s.replace(old, new, 1))'
       ;;
     merge-skipping-project-pass)
@@ -774,9 +996,9 @@ open(p, "w").write(s.replace(old, new, 1))'
 import os
 p = os.environ["MUTATE_TARGET"]
 s = open(p).read()
-old = "if name == \"project-check\" and bucket != \"pass\":"
-new = "if name == \"project-check\" and bucket not in (\"pass\", \"skipping\"):"
-assert old in s
+old = "if name == \"project-check\" and result != results.PASS:"
+new = "if name == \"project-check\" and result not in (results.PASS, results.NOT_APPLICABLE):"
+assert old in s, "required project-check result guard not found"
 open(p, "w").write(s.replace(old, new, 1))'
       ;;
     merge-first-box-only)
@@ -851,7 +1073,7 @@ open(p, "w").write(s.replace(old, new, 1))'
 import os
 p = os.environ["MUTATE_TARGET"]
 s = open(p).read()
-old = "    check_sensitive_area(data[\"baseRefOid\"], head)\n"
+old = "    check_sensitive_area(data[\"baseRefOid\"], head, automatic=(mode == \"--auto\"))\n"
 new = "    pass  # sensitive-area check removed\n"
 assert old in s
 open(p, "w").write(s.replace(old, new, 1))'
@@ -884,6 +1106,106 @@ old = "if DONE_WHEN.search(issue.get(\"body\") or \"\"):\n            shaped.app
 assert old in s, "ready migration discovery not found"
 open(p, "w").write(s.replace(old, "if False and DONE_WHEN.search(issue.get(\"body\") or \"\"):\n            shaped.append(issue.get(\"number\"))", 1))'
       ;;
+    merge-review-skipped)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "    review_held(data.get(\"body\") or \"\", head)\n"
+assert old in s, "review hold not found"
+open(p, "w").write(s.replace(old, "    pass  # review hold removed\n", 1))'
+      ;;
+    risk-move-drops-acceptance)
+      edit "$tree/.agents/skills/maintain/scripts/risk_move.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "    out += field_lines(plan, \"Accepted\", \"none\")\n"
+assert old in s, "acceptance copy not found"
+open(p, "w").write(s.replace(old, "    out += [\"Accepted: none\"]\n", 1))'
+      ;;
+    risk-move-acceptance-done)
+      edit "$tree/.agents/skills/maintain/scripts/risk_move.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "        out += plan[\"area_lines\"]\n"
+assert old in s, "area lines copy not found"
+open(p, "w").write(s.replace(old, "        out += [l.replace(\"; accepted \", \"; done \") for l in plan[\"area_lines\"]]\n", 1))'
+      ;;
+    risk-move-misses-path)
+      edit "$tree/.agents/skills/maintain/scripts/risk_move.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+start = s.index("OLD_PATHS = (")
+stop = s.index("\"Build with expert help\"", start)
+assert start < stop, "path values not found"
+open(p, "w").write(s[:start] + "OLD_PATHS = (" + s[stop:])'
+      ;;
+    risk-move-show-writes)
+      edit "$tree/.agents/skills/maintain/scripts/risk_move.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "return apply(project) if applying else show(project)"
+assert old in s, "show or apply choice not found"
+open(p, "w").write(s.replace(old, "return apply(project)", 1))'
+      ;;
+    risk-move-hides-report-only)
+      edit "$tree/.agents/skills/maintain/scripts/risk_move.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "def report_only_line(plan, pieces, today):\n    parts = []"
+assert old in s, "report-only line not found"
+open(p, "w").write(s.replace(old, "def report_only_line(plan, pieces, today):\n    return \"\"\n    parts = []", 1))'
+      ;;
+    mark-ready-skips-risk-areas)
+      edit "$tree/.agents/skills/records/scripts/mark-ready.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "elif not names_risk_areas():"
+assert old in s, "Risk areas refusal not found"
+open(p, "w").write(s.replace(old, "elif False and not names_risk_areas():", 1))'
+      ;;
+    review-optional-by-record)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/check-review.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "if reason:\n    print(\"Review check: \" + reason, file=sys.stderr)\n    raise SystemExit(1)"
+assert old in s, "review hold not found"
+open(p, "w").write(s.replace(old, "if False and reason:\n    print(\"Review check: \" + reason, file=sys.stderr)\n    raise SystemExit(1)", 1))'
+      ;;
+    area-accepted-still-holds)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/check-sensitive-areas.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "print(\"This changes %s, which you accepted on %s.\" % (name, date))"
+assert old in s, "accepted report not found"
+open(p, "w").write(s.replace(old, old + "\n                failed = True", 1))'
+      ;;
+    area-open-passes)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/check-sensitive-areas.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "print(\"This changes %s, which still needs your decision.\" % name)\n                failed = True"
+assert old in s, "open area hold not found"
+open(p, "w").write(s.replace(old, "print(\"This changes %s, which still needs your decision.\" % name)", 1))'
+      ;;
+    area-date-without-words)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/check-sensitive-areas.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "if accepted and any(accepted.group(1) in record for record in words):"
+assert old in s, "recorded-words test not found"
+open(p, "w").write(s.replace(old, "if accepted:", 1))'
+      ;;
     mark-ready-skips-done-when)
       edit "$tree/.agents/skills/records/scripts/mark-ready.sh" '
 import os
@@ -902,14 +1224,32 @@ old = "if not shared_refs(project, main):"
 assert old in s, "shared history check not found"
 open(p, "w").write(s.replace(old, "if False and not shared_refs(project, main):", 1))'
       ;;
+    upload-piece-skips-pull-request)
+      edit "$tree/.agents/skills/merge/scripts/upload-piece.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "\"gh\", \"pr\", \"create\""
+assert old in s, "pull request creation not found"
+open(p, "w").write(s.replace(old, "\"gh\", \"pr\", \"status\"", 1))'
+      ;;
     strength-config-lost)
       edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
 import os
 p = os.environ["MUTATE_TARGET"]
 s = open(p).read()
-old = "paths_to_mutate = "
-assert old in s, "mutmut 3 source path setting not found"
-open(p, "w").write(s.replace(old, "mutate_paths = ", 1))'
+old = "paths = json.dumps(folders)"
+assert old in s, "mutmut source selection not found"
+open(p, "w").write(s.replace(old, "paths = json.dumps([])", 1))'
+      ;;
+    promises-list-stale)
+      edit "$tree/.agents/tests/promises-list.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "  [ -f \"$ROOT/$path\" ] || fail \"named checker is missing: $path\""
+assert old in s, "named script existence check not found"
+open(p, "w").write(s.replace(old, "  : # mutation ignores missing checkers", 1))'
       ;;
     review-gate-leaves-draft-edited)
       edit "$tree/.agents/skills/second-opinion/scripts/review-guard.sh" '
@@ -928,6 +1268,557 @@ t = open(p).read()
 old = "if base.stdout.strip() != main.stdout.strip():"
 assert old in t, "behind-main check not found"
 open(p, "w").write(t.replace(old, "if False and base.stdout.strip() != main.stdout.strip():", 1))
+'
+      ;;
+    build-nothing-mark)
+      edit "$tree/.agents/skills/build-piece/references/build-limits.md" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "even when the piece says `nothing` and the page stays as it is."
+assert old in t, "nothing-change mark instruction not found"
+open(p, "w").write(t.replace(old, "only when the page prose changes.", 1))
+'
+      ;;
+    founding-starter-refusal)
+      edit "$tree/.agents/skills/setup-ai-build-kit/references/stand-up.md" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "Wait for yes before writing\nreplacement starter files."
+assert old in t, "starter approval boundary not found"
+open(p, "w").write(t.replace(old, "Write replacement starter files at once.", 1))
+'
+      ;;
+    prelaunch-migration-route)
+      edit "$tree/.agents/skills/build-piece/SKILL.md" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "Use this route for every piece, even if\n`/setup-hosting` has not run before."
+assert old in t, "pre-launch migration route instruction not found"
+open(p, "w").write(t.replace(old, "Let each piece choose its own migration route.", 1))
+'
+      ;;
+    replay-effort-ignored)
+      edit "$tree/.agents/tests/replay/provider.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "if [ -n \"${REPLAY_EFFORT:-}\" ]; then"
+assert t.count(old) == 3, "expected effort handling on all three Codex calls"
+open(p, "w").write(t.replace(old, "if false; then"))
+'
+      ;;
+    replay-helper-worktree-source)
+      edit "$tree/.agents/tests/replay/prepare/install-project-helper.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "source=\"$kit/.agents/skills/setup-ai-build-kit/templates/foundation/codex-github-check.py\""
+assert old in t, "assembled-kit helper source not found"
+new = "source=\"$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/codex-github-check.py\""
+open(p, "w").write(t.replace(old, new, 1))
+'
+      ;;
+    replay-kit-src-ignored)
+      edit "$tree/.agents/tests/replay/run.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "\"$KIT_SRC/.agents/tools/build-release.sh\" \"$VERSION\" \"$KIT\""
+assert old in t, "KIT_SRC release-builder invocation not found"
+new = "\"$ROOT/.agents/tools/build-release.sh\" \"$VERSION\" \"$KIT\""
+open(p, "w").write(t.replace(old, new, 1))
+'
+      ;;
+    replay-skill-size-total)
+      edit "$tree/.agents/tests/replay/skill-size.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "TOTAL                            "
+assert old in t, "skill word total output not found"
+open(p, "w").write(t.replace(old, "SUM                              ", 1))
+'
+      ;;
+    replay-rollup-counts-controls)
+      edit "$tree/.agents/tests/replay/rollup.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "due = contracts.get(int(scenario), False)"
+assert old in t, "notice-due classification not found"
+open(p, "w").write(t.replace(old, "due = True", 1))
+'
+      ;;
+    replay-compare-chance-rule)
+      edit "$tree/.agents/tests/replay/compare.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "lower_tail_fisher(old, new) <= 0.10"
+assert old in t, "chance threshold not found"
+open(p, "w").write(t.replace(old, "lower_tail_fisher(old, new) <= 1.0", 1))
+'
+      ;;
+    replay-state-assertion-skipped)
+      edit "$tree/.agents/tests/replay/scenario-state-check.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "[ ! -f \"$project/.replay-returning-state\" ]"
+assert old in t, "returning-work marker assertion not found"
+new = "[ ! -f \"$project/never-written-marker\" ]"
+open(p, "w").write(t.replace(old, new, 1))
+'
+      ;;
+    fake-gh-loses-check-status)
+      edit "$tree/.agents/tests/replay/fake-github/gh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "\"statusCheckRollup\": pr.get(\"statusCheckRollup\", [{"
+assert old in t, "prepared check status support not found"
+t = t.replace(old, "\"statusCheckRollup\": [{", 1)
+old_end = "        }]),"
+assert old_end in t, "default status result end not found"
+t = t.replace(old_end, "        }],", 1)
+open(p, "w").write(t)
+'
+      ;;
+    review-record-any-head)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/review_boxes.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    if fields[\"head\"] != head:"
+assert old in t, "review-record-any-head: text not found"
+open(p, "w").write(t.replace(old, "    if False and fields[\"head\"] != head:", 1))'
+      ;;
+    review-record-unsealed)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/review_boxes.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    if fields[\"seal\"] != review_seal(fields, body):"
+assert old in t, "review-record-unsealed: text not found"
+open(p, "w").write(t.replace(old, "    if False and fields[\"seal\"] != review_seal(fields, body):", 1))'
+      ;;
+    review-record-old-format-passes)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/review_boxes.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    if not fields.get(\"head\") or not fields.get(\"seal\"):\n        return ("
+assert old in t, "review-record-old-format-passes: text not found"
+open(p, "w").write(t.replace(old, "    if not fields.get(\"head\") or not fields.get(\"seal\"):\n        return None and (", 1))'
+      ;;
+    review-unverified-called-verified)
+      edit "$tree/.agents/skills/quality-checks/scripts/gate.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    return False, (\"unverified."
+assert old in t, "review-unverified-called-verified: text not found"
+open(p, "w").write(t.replace(old, "    return True, (\"unverified.", 1))'
+      ;;
+    result-crash-passes)
+      edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "        code = 2\n    print(\"Result: \""
+assert old in t, "result-crash-passes: text not found"
+open(p, "w").write(t.replace(old, "        code = 0\n    print(\"Result: \"", 1))'
+      ;;
+    result-unstarted-check-passes)
+      edit "$tree/.agents/skills/quality-checks/scripts/results.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "        return NOT_APPLICABLE\n    return NOT_RUN"
+assert old in t, "result-unstarted-check-passes: text not found"
+open(p, "w").write(t.replace(old, "        return NOT_APPLICABLE\n    return PASS", 1))'
+      ;;
+    launch-no-backup-goes-ahead)
+      edit "$tree/.agents/skills/setup-hosting/scripts/run-recipe.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    if code:\n        held_lines.append(\"Launch held: no backup"
+assert old in t, "launch-no-backup-goes-ahead: text not found"
+open(p, "w").write(t.replace(old, "    if False:\n        held_lines.append(\"Launch held: no backup", 1))'
+      ;;
+    launch-no-way-back-goes-ahead)
+      edit "$tree/.agents/skills/setup-hosting/scripts/run-recipe.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    if later and code:"
+assert old in t, "launch-no-way-back-goes-ahead: text not found"
+open(p, "w").write(t.replace(old, "    if False and later and code:", 1))'
+      ;;
+    launch-off-recipe-unrecorded)
+      edit "$tree/.agents/skills/setup-hosting/scripts/run-recipe.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    if prior_choice is None and not (chose and os.path.isfile(marker)):"
+assert old in t, "launch-off-recipe-unrecorded: text not found"
+open(p, "w").write(t.replace(old, "    if False:", 1))'
+      ;;
+    launch-off-recipe-notice-repeats)
+      edit "$tree/.agents/skills/setup-hosting/scripts/run-recipe.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "            prior_choice = found.group(1)"
+assert old in t, "launch-off-recipe-notice-repeats: text not found"
+open(p, "w").write(t.replace(old, "            prior_choice = None", 1))'
+      ;;
+    launch-off-recipe-choice-before-notice)
+      edit "$tree/.agents/skills/setup-hosting/scripts/run-recipe.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "not (chose and os.path.isfile(marker))"
+assert old in t, "launch-off-recipe-choice-before-notice: text not found"
+open(p, "w").write(t.replace(old, "not chose", 1))'
+      ;;
+    approval-merge-skipped)
+      edit "$tree/.agents/skills/merge/scripts/merge.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "        approved_yes(\"merge pull request \" + number)"
+assert old in t, "approval-merge-skipped: text not found"
+open(p, "w").write(t.replace(old, "        pass", 1))'
+      ;;
+    approval-recipe-skipped)
+      edit "$tree/.agents/skills/setup-hosting/recipes/parts/scripts/check-lib.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "  python3 \"$cl_gate_script\" use \"$cl_change\" >&2 ||"
+assert old in t, "approval-recipe-skipped: text not found"
+open(p, "w").write(t.replace(old, "  true ||", 1))'
+      ;;
+    approval-yes-reused)
+      edit "$tree/.agents/skills/records/scripts/approval.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "        rows.remove(found)"
+assert old in t, "approval-yes-reused: text not found"
+open(p, "w").write(t.replace(old, "        pass", 1))'
+      ;;
+    approval-yes-raced)
+      edit "$tree/.agents/skills/records/scripts/approval.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "        fcntl.flock(lock, fcntl.LOCK_EX)"
+assert old in t, "approval-yes-raced: text not found"
+open(p, "w").write(t.replace(old, "        pass", 1))'
+      ;;
+    approval-ask-rule-dropped)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "      \"Bash(*approval.py*yes*)\",\n"
+assert old in t, "approval-ask-rule-dropped: text not found"
+open(p, "w").write(t.replace(old, "", 1))'
+      ;;
+    record-secret-pr-body)
+      edit "$tree/.agents/skills/quality-checks/scripts/gate.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "        if holds_secret(text, \"pull request %s body\" % args.pr):"
+assert old in t, "record-secret-pr-body: text not found"
+open(p, "w").write(t.replace(old, "        if False:", 1))'
+      ;;
+    record-secret-changelog)
+      edit "$tree/.agents/skills/setup-hosting/scripts/run-recipe.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    unsafe_record(\"\\n\".join(block), \"CHANGELOG.md\")\n"
+assert old in t, "record-secret-changelog: text not found"
+open(p, "w").write(t.replace(old, "", 1))'
+      ;;
+    record-secret-claude-write)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/guard-secrets.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "        record = record_write_secret(tool, args)"
+assert old in t, "record-secret-claude-write: text not found"
+open(p, "w").write(t.replace(old, "        record = None", 1))'
+      ;;
+    record-secret-github-body)
+      edit "$tree/.agents/skills/setup-ai-build-kit/templates/foundation/guard-secrets.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "        record = github_record_secret(command, root)"
+assert old in t, "record-secret-github-body: text not found"
+open(p, "w").write(t.replace(old, "        record = None", 1))'
+      ;;
+    conditions-missing-passes)
+      edit "$tree/.agents/skills/setup-ai-build-kit/scripts/check-tooling.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "[ \"$1\" != missing ] || blocked=1"
+assert old in t, "the missing condition stop not found"
+open(p, "w").write(t.replace(old, "true", 1))
+'
+      ;;
+    protection-plan-stops)
+      edit "$tree/.agents/skills/merge/scripts/protect-branch.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    return 3\n\n\ndef main(argv):"
+assert old in t, "the supported plan condition not found"
+open(p, "w").write(t.replace(old, "    return 2\n\n\ndef main(argv):", 1))
+'
+      ;;
+    unreadable-repository-is-missing)
+      edit "$tree/.agents/skills/setup-ai-build-kit/scripts/check-tooling.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "*\"no git remotes\"* | *\"not a git repository\"*"
+assert old in t, "the missing repository patterns not found"
+open(p, "w").write(t.replace(old, "* | *\"not a git repository\"*", 1))
+'
+      ;;
+    seeded-missed-as-flagged)
+      edit "$tree/.agents/tests/seeded/score.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "return \"flagged\" if flagged == \"yes\" else \"missed\""
+assert old in t, "missed-or-flagged rule not found"
+open(p, "w").write(t.replace(old, "return \"flagged\"", 1))
+'
+      ;;
+    seeded-harness-break-as-pass)
+      edit "$tree/.agents/tests/seeded/score.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    if harness != \"ok\":\n        return \"could_not_run\"\n"
+assert old in t, "harness-break rule not found"
+new = "    if harness != \"ok\":\n        return \"fixed\"\n"
+open(p, "w").write(t.replace(old, new, 1))
+'
+      ;;
+    seeded-twin-hold-ignored)
+      edit "$tree/.agents/tests/seeded/score.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    if pr == \"open\":\n        return \"twin_wrongly_held\""
+assert old in t, "twin hold rule not found"
+new = "    if pr == \"open\":\n        return \"twin_ok\""
+open(p, "w").write(t.replace(old, new, 1))
+'
+      ;;
+    seeded-key-copied)
+      edit "$tree/.agents/tests/seeded/seed-project.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "echo \"seeded $(basename \"$product\") ($variant)\""
+assert old in t, "seed-project closing line not found"
+new = "cp -R \"$here/keys\" \"$project/keys\"\n" + old
+open(p, "w").write(t.replace(old, new, 1))
+'
+      ;;
+    seeded-rollup-counts-broken-runs)
+      edit "$tree/.agents/tests/seeded/rollup.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "ran = [r for r in runs if r[\"outcome\"] != \"could_not_run\"]"
+assert old in t, "denominator rule not found"
+open(p, "w").write(t.replace(old, "ran = list(runs)", 1))
+'
+      ;;
+    seeded-refusal-counts-as-find)
+      edit "$tree/.agents/tests/seeded/score.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    held = \"held_after_acceptance\" if accepted == \"yes\" else \"held\""
+assert old in t, "acceptance rule not found"
+open(p, "w").write(t.replace(old, "    held = \"held\"", 1))
+'
+      ;;
+    seeded-report-hides-failure)
+      edit "$tree/.agents/tests/seeded/run.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "  python3 \"$SEEDED_DIR/rollup.py\" \"$RESULTS\"\n  exit $?"
+assert old in t, "report branch not found"
+new = "  python3 \"$SEEDED_DIR/rollup.py\" \"$RESULTS\" || true\n  exit 0"
+open(p, "w").write(t.replace(old, new, 1))
+'
+      ;;
+    seeded-repro-accepts-swallow)
+      edit "$tree/.agents/tests/seeded/keys/03-swallowed-error/repro.mjs" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "if (result && result.ok === false) {"
+assert old in t, "failure check not found"
+open(p, "w").write(t.replace(old, "if (result) {", 1))
+'
+      ;;
+    backbone-review-unbound-passes)
+      edit "$tree/.agents/tests/replay/backbone.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "reason = boxes.review_hold(pulls[number].get(\"body\") or \"\", head)"
+assert old in t, "review hold call not found"
+open(p, "w").write(t.replace(old, "reason = None", 1))
+'
+      ;;
+    backbone-merge-before-yes-passes)
+      edit "$tree/.agents/tests/replay/backbone.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "                if not after:\n"
+assert old in t, "early action test not found"
+open(p, "w").write(t.replace(old, "                if False:\n", 1))
+'
+      ;;
+    backbone-canary-ignored)
+      edit "$tree/.agents/tests/replay/backbone.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "if canary and canary in text:"
+assert old in t, "canary search not found"
+open(p, "w").write(t.replace(old, "if False and canary in text:", 1))
+'
+      ;;
+    behaviour-extras-untouched-passes)
+      edit "$tree/.agents/tests/replay/behaviour_checks.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "if bad_notes else ok(\"neither extra request was built\")"
+assert old in t, "extras check not found"
+open(p, "w").write(t.replace(old, "if False else ok(\"neither extra request was built\")", 1))
+'
+      ;;
+    behaviour-answer-ungated)
+      edit "$tree/.agents/tests/replay/cases/64.txt" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "# when: \\?\n"
+assert old in t, "first gated answer not found"
+open(p, "w").write(t.replace(old, "", 1))
+'
+      ;;
+    replay-preflight-fault-unreported)
+      edit "$tree/.agents/tests/replay/preflight.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "problem() { problems=\"$problems\n  could not run: $1\"; }"
+assert old in t, "problem recorder not found"
+open(p, "w").write(t.replace(old, "problem() { :; }", 1))
+'
+      ;;
+    replay-failed-preparation-silent)
+      edit "$tree/.agents/tests/replay/run.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "if ! transcript=$(run_once \"$1\" \"$2\" \"$3\") || [ ! -f \"$transcript\" ]; then"
+assert old in t, "preparation guard not found"
+open(p, "w").write(t.replace(old, "transcript=$(run_once \"$1\" \"$2\" \"$3\") || exit 0\n  if false; then", 1))
+'
+      ;;
+    replay-nothing-graded-exits-zero)
+      edit "$tree/.agents/tests/replay/run.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "sys.exit(0 if graded else 2)"
+assert old in t, "graded count exit not found"
+open(p, "w").write(t.replace(old, "sys.exit(0)", 1))
+'
+      ;;
+    replay-old-kit-section-missing)
+      edit "$tree/.agents/tests/replay/run.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "if [ \"$KIT_READS_BUILD_PATH\" = yes ] && [ -f \"$project/masterplan.md\" ]; then"
+assert old in t, "build-path section step not found"
+open(p, "w").write(t.replace(old, "if false; then", 1))
+'
+      ;;
+    replay-startup-read-unchecked)
+      edit "$tree/.agents/tests/replay/preflight.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "    *) problem \"the kit starts by reading the $startup"
+assert old in t, "unknown startup read not found"
+open(p, "w").write(t.replace(old, "    *) : \"the kit starts by reading the $startup", 1))
+'
+      ;;
+    replay-plan-helper-not-installed)
+      edit "$tree/.agents/tests/replay/prepare/install-project-helper.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "  cp -p \"$plan_source\" \"$plan_destination\""
+assert old in t, "plan helper copy not found"
+open(p, "w").write(t.replace(old, "  :", 1))
+'
+      ;;
+    backbone-saved-files-unscanned)
+      edit "$tree/.agents/tests/replay/backbone.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "look(os.path.relpath(path, project), raw.decode(\"utf-8\", \"replace\"))"
+assert old in t, "saved file scan not found"
+open(p, "w").write(t.replace(old, "pass", 1))
+'
+      ;;
+    backbone-api-merge-unbound)
+      edit "$tree/.agents/tests/replay/backbone.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "re.compile(r\"api .*pulls/(\\d+)/merge\\b\"),"
+assert old in t, "api merge pattern not found"
+open(p, "w").write(t.replace(old, "", 1))
+'
+      ;;
+    replay-backbone-not-merged)
+      edit "$tree/.agents/tests/replay/state-check.sh" '
+import os
+p = os.environ["MUTATE_TARGET"]
+t = open(p).read()
+old = "if \"\\n# backbone: yes\\n\" in case_text:"
+assert old in t, "backbone condition not found"
+open(p, "w").write(t.replace(old, "if False:", 1))
 '
       ;;
     *)
@@ -1016,6 +1907,24 @@ for name in $wanted; do
     [ "$status" = NOT-APPLIED ] && echo "  see $WORK/$name-apply.log"
     printf '%s\t%s\t%s\t%s\n' "$name" "$status" "$(echo $checks | tr ' ' ',')" \
       "$(describe "$name")" >> "$REPORT"
+    echo
+    continue
+  fi
+
+  # These behaviour promises are owned by named replay cases. The shell suite
+  # checks that the cases remain present and named in mutation-audit.md, but it
+  # cannot measure the conversation, so do not call them holes or pretend a
+  # shell check caught the mutation.
+  case "$name" in
+    build-nothing-mark) replay_owner=45 ;;
+    founding-starter-refusal) replay_owner=58 ;;
+    prelaunch-migration-route) replay_owner=59 ;;
+    *) replay_owner= ;;
+  esac
+  if [ -n "$replay_owner" ]; then
+    echo "  owned by replay case $replay_owner"
+    printf '%s\t%s\t%s\t%s\n' "$name" "replay:$replay_owner" \
+      "replay-case-$replay_owner" "$(describe "$name")" >> "$REPORT"
     echo
     continue
   fi

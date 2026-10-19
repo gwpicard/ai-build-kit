@@ -32,9 +32,7 @@ put .gitignore <<'EOF'
 node_modules/
 EOF
 put masterplan.md <<'EOF'
-Path: Build with care
-
-Sensitive areas:
+Risk areas:
   Data:
     paths: src
 EOF
@@ -142,7 +140,7 @@ import os, tempfile
 spec = importlib.util.spec_from_file_location("quality", sys.argv[1])
 quality = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(quality)
-plan = "Sensitive areas:\n  one: first area\n    paths: src/one/\n  two: second area\n    paths: src/two/\n"
+plan = "Risk areas:\n  one: first area\n    paths: src/one/\n  two: second area\n    paths: src/two/\n"
 assert quality.mapped_paths(plan) == ["src/one/", "src/two/"]
 with tempfile.TemporaryDirectory() as root:
     os.makedirs(os.path.join(root, "tests"))
@@ -157,7 +155,7 @@ with tempfile.TemporaryDirectory() as root:
     assert quality.test_command(root) == ["bin/pytest"]
 with tempfile.TemporaryDirectory() as root:
     with open(os.path.join(root, "AGENTS.md"), "w") as agents:
-        agents.write("Path: Build and run it\n")
+        agents.write("## Stack, and how to run and check it\n")
     os.makedirs(os.path.join(root, ".github", "workflows"))
     with open(os.path.join(root, ".github", "workflows", "checks.yml"), "w") as workflow:
         workflow.write("jobs:\n  project-check:\n    steps:\n      - name: Recipe tests\n        if: steps.recipe.outputs.selected == 'true'\n        run: |\n          npx vitest run --coverage\n      - name: Python tests\n        run: pytest -q\n")

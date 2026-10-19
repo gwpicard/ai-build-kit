@@ -50,5 +50,8 @@ evidence. Mark whether each supported finding is worth stopping for.
 For each finding marked worth stopping for, ask a second fresh reviewer to try
 to refute it. Mark a refuted finding `refuted` in the JSON. Then run
 `gate.py record --pr <number>` with the findings and act on its exit code.
-Exit 1 means stopping findings were recorded as open boxes; exit 0 means none
-remain. Say in one line what was reviewed and the result.
+Exit 1 means stopping findings were recorded as open boxes, or the pull
+request moved on after the packet; exit 0 means none remain. The record names
+the commit the packet read, so a later push needs a new review. Say in one line
+what was reviewed and the result, with the record's `Review independence`
+words. Never call an unverified review independent.

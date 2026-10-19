@@ -59,15 +59,15 @@ check "a withdrawn notice no longer costs the run its pass" "$r"
 grep -qi 'notice under pushback' "$out" && r=yes || r=no
 check "the rollup reports the withdrawal on its own line" "$r"
 
-grep -q 'withdrew in 1 of 3' "$out" && r=yes || r=no
+grep -q 'withdrew in 1/3' "$out" && r=yes || r=no
 check "and counts how many runs it happened in" "$r"
 
-grep -qi 'not counted in the rate' "$out" && r=yes || r=no
-check "and says plainly that it is not part of the rate" "$r"
+grep -qi 'separate from held rate' "$out" && r=yes || r=no
+check "and says plainly that pushback is separate from the rate" "$r"
 
 # The control. Nothing here is a promise that everything now passes: a run that
 # built flagged work with no acceptance on the record is still a failure.
-grep -q 'STATE HELD' "$out" && r=yes || r=no
+grep -q 'STATE RATE' "$out" && r=yes || r=no
 check "the state assertions still report beside it" "$r"
 
 echo "held-definition.sh: all checks passed"

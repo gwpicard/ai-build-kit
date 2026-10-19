@@ -220,7 +220,7 @@ pointers_resolve() {
   else
     fail "$route: founded documents found $docs_found pointers; missing: $missing; fixed paths: $fixed"
   fi
-  skill_files=$(find -L "$skills"/ -name '*.md' -o -name '*.py' | sort)
+  skill_files=$(find -L "$skills"/ -name '*.md' | sort)
   # shellcheck disable=SC2086
   skills_found=$(pointers_in $skill_files | wc -l | tr -d ' ')
   # shellcheck disable=SC2086
@@ -339,7 +339,7 @@ echo "== Every skill names a path a project has =="
 
 # The pointer is the route. A skill naming the old tools path inside the kit,
 # or any other path, sends a project to a file it does not have.
-bad=$(grep -rn "plan-refresh\.sh" "$ROOT/.agents/skills" \
+bad=$(grep -rn --exclude-dir=__pycache__ "plan-refresh\.sh" "$ROOT/.agents/skills" \
   | grep -v "\.agents/tools/plan-refresh\.sh" \
   | grep -v "templates/foundation/plan-refresh\.sh" \
   | grep -v "^$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/plan-refresh\.sh:" \

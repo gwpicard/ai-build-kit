@@ -138,12 +138,153 @@ sub-issue, and never sends a reminder.
 
 ## Adaptive process is a contract
 
-Every rule declares where it applies (always, on named paths or changes, or
-only inside a named sensitive area), the way PHILOSOPHY.md requires; do not add
-a strict step to the default workflow merely because it is good engineering
-practice. When changing a skill, check all three build paths: a change that
-improves Build with care but burdens private exploration belongs behind a path
-condition, not in the shared default.
+Every rule declares where it applies (always, on named changes, or
+only to a piece that touches a named risk area), the way PHILOSOPHY.md
+requires. Do not add a strict step to the default workflow merely because it is
+good engineering practice. A change that improves care for one risk area but
+burdens ordinary work belongs behind a risk-area condition, not in the shared
+default.
+
+## The backbone and its mechanisms
+
+PHILOSOPHY.md names seven promises that hold in every project. This section is
+the one list of what holds each. A promise whose mechanism says "none yet" is
+not a guarantee. The kit may not claim it, and the piece that closes the gap is
+named beside it.
+
+| Promise | Mechanism today | Gap |
+|---|---|---|
+| A person approves each merge, unless they chose auto-merge with its limits. | `merge.py --approved` spends the person's recorded yes through the approval gate, `records/scripts/approval.py`; `.agents/tests/merge-gate.sh` and `.agents/tests/approval-gate.sh`; the autonomy limits in `.agents/tests/autonomy-boundaries.sh`; the local push guard and branch protection where the plan allows it, checked by `.agents/tests/push-guard.sh` and `.agents/tests/check-tooling.sh` | A private repository on Free has no GitHub protection; a person with permission can merge by hand there. |
+| Nothing goes online without a yes. | One approval gate, `approval.py`, called by `merge.py --approved` and by every recipe step that moves what is live, applies a migration, adds a secret, or changes access, sign-up or the host connection: `.agents/tests/approval-gate.sh`, `.agents/tests/merge-gate.sh`, `.agents/tests/recipe-nextjs-supabase-on-vercel.sh`. Claude Code asks before a yes is recorded, checked by `.agents/tests/push-to-main-rules.sh`; `.agents/tests/first-upload.sh`. In the behaviour set, `.agents/tests/replay/backbone.py` fails a replay in which a merge, a push to main or a change to the host came before the person's yes | Closed for the kit's own scripts. A host's tool run directly, outside a kit script, is held only by Claude Code's rules. |
+| Secrets are never shown. | `.agents/tests/secrets-gates.sh` and `.agents/tests/push-guard.sh` for commits and command output; `.agents/tests/record-secrets.sh` for the saved records: the pull request body `gate.py` writes, the changelog and masterplan `run-recipe.sh` writes, and what Claude Code writes into a record file or a GitHub body. In the behaviour set, each replay project holds a planted canary secret in an untracked file, and `.agents/tests/replay/backbone.py` fails the replay if the canary or any secret-shaped value appears in what the run said or saved | Closed for the kit's scripts and Claude Code. Another agent writing a record by hand is caught when the record is pushed. |
+| Checks pass before a merge. | The project checks workflow, read by `merge.py`; `.agents/tests/merge-gate.sh`. Every check reports a result from `quality-checks/scripts/results.py`; `.agents/tests/result-vocabulary.sh` | None known. |
+| A review matches the code it read. | The review record names the commit the review read and carries a seal over itself and the stopping findings. `check-review.sh` and `merge.py` hold a record for another commit, a hand-edited one, and an older one with no commit. A review no second login approved is recorded as unverified. `.agents/tests/review-gate.sh`, `.agents/tests/merge-gate.sh`. In the behaviour set, `.agents/tests/replay/backbone.py` fails a replay whose merge landed a version the review did not read, and `.agents/tests/replay-behaviour.sh` proves it | The seal stops a hand edit, and anyone who runs the kit's code can still write a record. A review counts as verified only when a second GitHub login approved that commit. |
+| Every launch has a way back and a backup. | Each recipe must carry rollback, backup and restore sections, checked by `.agents/tools/check-recipes.sh`. `run-recipe.sh` holds a live tool whose backup is not confirmed, whose recipe names no rollback, or, on a later run, with no earlier build to go back to. Hosting is recipe-only. With no recipe, `run-recipe.sh none` gives one notice that nothing is guaranteed, records the person's words and the date, holds nothing and checks nothing. `.agents/tests/run-recipe.sh` | A first launch has no earlier build, so its way back is the recipe's rollback step, untried. Off a recipe the promise does not hold, and the kit says so. |
+| Records say "accepted", never "done". | `.agents/tests/replay/state-check.sh` reads the end state a replay leaves and fails when an area is marked done on the date of an acceptance; `.agents/tests/replay-state.sh` proves that assertion. The project check reports an accepted area as accepted, and `.agents/tests/sensitive-area-map.sh` proves it. The move from an older path record keeps each acceptance as accepted, and `.agents/tests/risk-move-rehearsal.sh` proves it | The replay check measures the kit; it does not run in a project. Nothing stops an agent writing "done" by hand there. |
+
+Each mechanism needs a check that fails when the mechanism is removed. The
+mutation run breaks each one in turn.
+
+### Two kinds of check
+
+An integrity check protects one of the seven promises. It may stop the work,
+and it stops it even if the person insists. A judgement risk belongs to one
+piece of work. The kit warns once, records the person's words and the date, and
+then builds. It does not refuse, ask again or hold the work back.
+
+When the two seem to meet, ask who can judge. If the person can judge the harm
+from where they sit, it is a judgement risk. If the harm is invisible to them,
+such as a review of old code or a launch with no backup, it is an integrity
+check.
+
+### Results
+
+Every check that gates a merge reports one of five results: `PASS`, `FAIL`,
+`NOT_RUN`, `INCONCLUSIVE` or `NOT_APPLICABLE`. A missing runner, a crashed tool
+or a check that never started is `NOT_RUN`. It is never shown as `PASS`. One table, in
+`.agents/skills/quality-checks/scripts/results.py`, says which results stop a
+merge, which ask for a review and which only inform. `FAIL` and `NOT_RUN` stop
+it, `INCONCLUSIVE` asks for a review, and the other two inform. `quality.py`,
+`gate.py` and `merge.py` keep their own exit codes and map them onto these
+names where they report. A test the harness breaks is "could not run", never a
+pass or a fail.
+
+The hosting recipe checks are the exception. They report in plain words, as
+warnings the person can accept, and a check that did not run says "not checked".
+
+### Rollout states
+
+A check that a project cannot yet run is in one of three states: `off`,
+`report-only` or `enforced`. A project starts at `report-only` when it lacks
+what the check needs, such as a second identity for a review. A report-only
+check says so in plain words and never shows a false pass. The move to
+`enforced` is a decision, recorded with the date.
+
+A review that the kit cannot verify, because the agent and the reviewer share
+one login, is recorded as unverified: the record says `verified=no`, and the
+pull request and the merge say so in plain words. The hand-over never calls it
+an independent review.
+
+A project moved from an older path record lists the checks it cannot yet run on
+a `Report-only:` line of its risk record, with the date. The line names areas
+that have no `paths:` line, because the project check cannot hold changes to
+them, and open pieces that name no risk area. Nothing on that line is shown as
+passed.
+
+### The risk record
+
+The record lives in the masterplan, under a heading for risk. The project
+instructions point to it. It holds:
+
+- who is exposed if the tool fails;
+- what data the tool holds;
+- what a wrong answer does;
+- how the person recovers;
+- the named risk areas the project touches, each with the person's words and
+  the date once they accepted it.
+
+Setup asks three questions to fill it: who is exposed if this fails, what data
+does it hold, and how would you recover from a failure. The agent writes the
+record with the person and checks it again whenever the project changes. A
+piece carries a "Risk areas" field naming the areas it touches. The notice
+comes once per piece. The acceptance is saved with the person's words and the
+date, and after it the project check reports the area and passes. `mark-ready.sh`
+refuses a piece that has no `Risk areas:` line, and
+`.agents/tests/sensitive-area-map.sh` holds an open area and passes an accepted
+one.
+
+The named risk areas are the ones PHILOSOPHY.md lists: personal data, money,
+sign-in, automatic actions, data that cannot be replaced, and a regulated
+decision.
+
+An older project moves from its path record on a yes. `/maintain` shows the old
+section and the proposed record in one reply, before the yes. The first visit
+that finds a path record offers the move, and each monthly visit offers it
+again after a no. A no changes nothing in the project's records; the only write
+is the kit's own note in `.ai-build-kit-maintenance` that the offer was
+declined. A project that was private only gets the same offer and is told what
+the kit now expects. On a yes, every risk area, acceptance date and word moves
+as written, and the earlier path and why stay as history. An acceptance is never
+turned into a finished caution. The open pieces get a `Risk areas:` line where
+the piece's reach says which area it touches, and a changelog entry records the
+move. `.agents/tests/risk-move-rehearsal.sh` rehearses each path value and the
+four-path fields.
+
+### Working conditions
+
+Setup does not complete until a script confirms them: a repository with issues
+switched on, an agent session that can read and write issues, branch protection
+or a recorded private Free plan limit, and host and database access. A missing
+condition stops setup with the one step the person takes. The person creates
+the accounts.
+
+The script is `check-tooling.sh --conditions` in the setup skill, and
+`.agents/tests/check-tooling.sh` holds it. It proves issue access by opening a
+test issue, closing it and labelling it `skip`. A private repository on Free
+carries on with the local push guard; `protect-branch.py` records the condition
+in `.ai-build-kit-maintenance` and explains the missing GitHub layer once.
+Maintenance offers protection when the plan later allows it. An unreadable
+protection check is recorded as `could not check` and leaves the local checkpoint
+available; first upload checks protection again. Missing admin rights still stop
+founding.
+
+For host and database access it stops only on the tools the chosen recipe names.
+The recipes name no sign-in check yet, so a sign-in is could not check, like
+anything else there. It also says whether the agent
+and the reviewer share one GitHub login. That is a report, never a stop.
+
+### Settled points
+
+- Hosting is offered on proven recipes only. Outside one, the kit says plainly
+  that it guarantees nothing and still helps.
+- The kit never deletes the person's unfinished work. It explains how to
+  recover it.
+- "Fix the live error, no more yeses" still needs one named yes.
+- When the person gives too little detail at setup, the kit asks only for the
+  three questions, records any gap as an assumption, and goes on.
+- A recipe launch with no confirmed backup or no named rollback stops. With no
+  recipe, nothing is checked and nothing stops: the kit gives one notice,
+  records the person's words and the date, and helps by hand.
 
 ## Changing a skill
 
@@ -303,17 +444,15 @@ Every change to `.agents/skills/` or the kit's own machinery runs
   those out of a commit message, is saved as a runnable file;
 - that every local Markdown link and every skill, reference, or template path
   named in another file resolves;
-- the fit check's structure: all three canonical build paths and their
-  decision-order headings are present, and the masterplan template carries the
-  same build-path fields as the fit check, `Sensitive areas` among them;
-- that the plan template carries the `Subjects` column, that only the three
-  canonical build-path names appear as path values, and that `team.md` is
-  referenced nowhere;
+- the fit check's structure: the three questions and the risk-area table are
+  present, and the masterplan template carries the same risk-record fields as
+  the fit check, `Risk areas` among them;
+- that the plan template carries the `Subjects` column, that no retired path
+  name or `Path:` field appears outside the frozen fixtures, and that
+  `team.md` is referenced nowhere;
 - that clarify says which questions may be offered as choices and which are
   asked in plain words, with the matching maintainer scenario present;
-- that `/setup-hosting` keeps its go-live and operational-readiness steps inside the
-  path branches that use them, never as a shared section reachable from all
-  three;
+- that `/setup-hosting` keeps the recipe's checks inside its launch section;
 - that the generated adapters match what `.agents/skills/` produces, with no
   stale adapter folder left behind;
 - shell syntax on every script, and that config files (JSON, TOML, YAML)
@@ -345,7 +484,7 @@ placeholder with the project's real commands during stand-up.
 ## Scenario review
 
 Before a release, work through `.agents/tests/scenarios.md` and confirm each
-scenario still resolves to the path, evidence, and route it names. It is a
+scenario still resolves to the risk record, evidence, and route it names. It is a
 maintainer contract: nothing there is shown to someone building a project
 with the kit.
 
@@ -356,6 +495,26 @@ rather than a pass. Read its table before a release. It settles nothing on its
 own: a session with nobody in it is a lead rather than a verdict, and anything
 it turns up should be repeated by hand before it counts as a defect. Its own
 folder explains what it covers and what it cannot reach.
+
+`.agents/tests/replay/behaviour.sh` runs the behaviour set. It holds scenarios 64
+to 81, three for each command: the expected path, a skipped step and pushback.
+It also runs the seeded products 03, 04 and 08 as further cases of `/implement`.
+A scenario has four to six yes or no checks. Most are read from disk by
+`behaviour_checks.py`, and a few are questions for the grader. Each scenario is
+also graded on the backbone by `backbone.py`. The scenarios are drafts until the
+maintainer has read them. To compare two kits, point `KIT_SRC` at each, run the
+six expected paths first, and compare the two result folders with `compare.sh`.
+
+Before any model is called, `preflight.sh` checks the harness itself. A run the
+harness breaks is written as could not run. It is neither a pass nor a fail, it
+is left out of every rate, and a pass in which nothing was graded exits 2.
+
+`.agents/tests/seeded/` asks a different question: is what the kit builds sound?
+Each product plants one fault in a small project, and the run counts whether the
+kit found it before the merge, whether the fix works, and whether a healthy twin
+was wrongly held. Its keys stay out of the project the kit sees. It reports
+counts with denominators and never one score, so read it the way you read the
+replay table.
 
 ## What earns a shell test
 
@@ -451,6 +610,20 @@ in its `PROVEN.md`, move the folder into `.agents/skills/setup-hosting/recipes/`
 `git mv`. The rehearsal finds it on the menu from then on, and fails if a copy
 is left in both places. `docs/RECIPES.md` gives the whole format.
 
+Before each release, run `stack-research` against every recipe and part. It
+runs `npm audit` on each starter using current advisory data; that network check
+does not run in CI. Its ignored note records upstream changes and proposals.
+Carry agreed changes into the recipe and this guide, with the versions and date
+checked. A recipe taken off the menu keeps its route to a current recipe in
+`maintain/references/recipe-move.md` for `/maintain` to offer on a yes.
+The 2026-10-16 read confirmed Supabase recommends publishable keys for client
+code and treats `anon` as their legacy equivalent, to be deprecated by the end
+of 2026 ([API keys](https://supabase.com/docs/guides/getting-started/api-keys)).
+The same page says to create a publishable key if a project has none, so whether
+a new project holds one by default is [CHECK]: make a throwaway project in the
+real run and record which keys it has. The recipe names the publishable key and
+records the legacy anon setting for `/maintain`.
+
 ## When a release is cut
 
 Ask first what an existing user must do to upgrade. The kit has had real users
@@ -461,7 +634,8 @@ new precondition. For each, there must be a path that carries an existing projec
 across without losing its work, and the person must be told about it in a place
 they will see. A migration lives in the maintain skill's scripts, chiefly
 `upgrade-check.py`, which runs on every `/maintain` visit and is idempotent. The
-script finds what is left, prints the sentence the person hears, and applies the
+move from a path record to the risk record is `risk_move.py`, which
+`upgrade-check.py` runs on a yes. The script finds what is left, prints the sentence the person hears, and applies the
 change on a yes, so the skill's own text keeps only the ask. The visible change
 is named in the release notes. A migration stays in the scripts for as long
 as a project could still need it. Each update route brings the latest
@@ -512,6 +686,9 @@ workflows that edit a Release may write at all. Every job in the folder is
 checked for its repository gate, per job rather than per file, because a
 file-wide check is satisfied by one gated job while a second runs beside it
 ungated.
+
+Run `.agents/tests/mutate.sh` and `.agents/tests/promises-list.sh`, then read
+`docs/PROMISES.md` to check that each promise still names what holds it.
 
 Approved folders contribute only files already tracked here, so an unexpected
 local file cannot enter a release.

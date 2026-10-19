@@ -55,3 +55,70 @@ def open_review_box(body):
         elif line.strip():
             return True
     return False
+
+
+# The review record. gate.py writes one line at the foot of the pull request:
+#
+#   Review record: reviewed=...; tried=N; open=N; head=COMMIT; verified=yes|no; seal=HASH
+#
+# head is the commit the review read. The seal is a hash of the record's own
+# fields and the Worth stopping for section, so a hand edit of either, such as
+# open=1 turned into open=0 or a finding taken out, no longer matches. A record
+# from an older kit has no head and no seal, and reads as a stale review.
+
+RECORD_FIELDS = ("reviewed", "tried", "open", "head", "verified")
+
+
+def stopping_lines(body):
+    match = re.search(r"(?ims)^## Worth stopping for[ \t]*\r?\n(.*?)(?=^## |\Z)", body)
+    if not match:
+        return []
+    return [line.strip() for line in match.group(1).splitlines()
+            if line.strip() and not line.strip().startswith("Review record:")]
+
+
+def review_seal(fields, body):
+    import hashlib
+    text = "\n".join(["%s=%s" % (name, fields.get(name, "")) for name in RECORD_FIELDS]
+                     + stopping_lines(body))
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()[:20]
+
+
+def record_line(reviewed, tried, open_count, head, verified, body):
+    fields = {"reviewed": reviewed, "tried": str(tried), "open": str(open_count),
+              "head": head, "verified": "yes" if verified else "no"}
+    return ("Review record: " + "; ".join("%s=%s" % (name, fields[name]) for name in RECORD_FIELDS)
+            + "; seal=" + review_seal(fields, body))
+
+
+def read_record(body):
+    lines = re.findall(r"(?m)^Review record:[ \t]*(.+?)[ \t]*\r?$", body)
+    if not lines:
+        return None
+    fields = {}
+    for part in lines[-1].split(";"):
+        name, _, value = part.strip().partition("=")
+        if name:
+            fields[name.strip()] = value.strip()
+    return fields
+
+
+def review_hold(body, head):
+    """None when the record is whole and names this head, else a plain reason."""
+    fields = read_record(body)
+    if fields is None:
+        return "no review recorded yet"
+    if not fields.get("head") or not fields.get("seal"):
+        return ("the review record names no version of the code. An older kit wrote it, "
+                "so it counts as stale. Run the review again")
+    if fields["seal"] != review_seal(fields, body):
+        return ("the review record does not match the pull request text. The text was "
+                "changed by hand after the review. Run the review again")
+    if fields["head"] != head:
+        return ("the review read an earlier version of this change. New work was pushed "
+                "after it. Run the review again")
+    return None
+
+
+def review_verified(body):
+    return (read_record(body) or {}).get("verified") == "yes"

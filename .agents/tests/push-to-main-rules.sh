@@ -1,8 +1,8 @@
 #!/usr/bin/env sh
 # push-to-main-rules.sh: run the deny and ask rules a founded project's Claude
 # Code settings carry, and the script /maintain uses to bring them to an older
-# project. If this breaks, an agent can push straight to main, force-push over
-# someone's branch, skip the push guard, throw away unsaved changes, read
+# project. If this breaks, a safe upload can be refused, or an agent can
+# skip the push guard, throw away unsaved changes, read
 # another tool's stored login, delete a folder, or merge or change a live
 # service with no box for the person to click, or the monthly offer rewrites a
 # person's own settings.
@@ -26,7 +26,7 @@ trap 'rm -rf "$work"' EXIT
 
 echo "Push-to-main rule checks:"
 
-python3 - "$SETTINGS" > "$work/matcher.out" 2>&1 <<'PY' || {
+python3 - "$SETTINGS" "$work" > "$work/matcher.out" 2>&1 <<'PY' || {
 import json
 import re
 import sys
@@ -51,7 +51,12 @@ def matches(rule, command):
     if compiled is None:
         return False
     pattern, bare = compiled
-    return pattern.fullmatch(command) is not None or command == bare
+    # A real Claude Code run on 19 October 2026 observed that a line with
+    # a pipe is matched as a whole, including later commands and arguments.
+    if "|" in command:
+        return pattern.match(command) is not None or command == bare
+    return any(pattern.fullmatch(part) is not None or part == bare
+               for part in re.split(r"\s*(?:&&|;)\s*", command))
 
 
 def denied(rules, command):
@@ -90,119 +95,49 @@ if problems:
 print("  ok: the matcher agrees with every example in the documentation's table")
 
 
-# The spellings blocked-commands.md lists as refused, and as missed.
-refused = [
-    "git push origin main",
-    "git push -u origin main",
-    "git push -q origin main",
-    "git push --quiet --set-upstream origin main",
-    "git push --force origin main",
-    "git push -f origin main",
-    "git push origin main --force",
-    "git push origin HEAD:main",
-    "git push origin +HEAD:main",
-    "git push origin HEAD:refs/heads/main",
-    "git push origin +main",
-    "git push origin refs/heads/main",
-    "git push origin --delete main",
-]
-not_refused = [
-    "git push",
-    "git push origin",
-    "git push origin HEAD",
-    "git push origin \"main\"",
-    "git push origin 'main'",
-    "git push origin $BRANCH",
-    "git push origin heads/main",
-    "git push --all origin",
-    "git push --mirror origin",
-    "git -C . push origin main",
-    "git -c push.default=current push origin main",
-    "/usr/bin/git push origin main",
-    "sh -c 'git push origin main'",
-]
-# Flags in other orders and long forms.
-required_refused = [
-    "git push -q origin main",
-    "git push -u origin main",
-    "git push --force origin main",
-    "git push -f origin main",
-    "git push origin HEAD:refs/heads/main",
-    "git push origin +main",
-    "git push --quiet origin main",
-    "git push -q -u origin main",
-    "git push -u -q origin main",
-    "git push --force --quiet origin main",
-    "git push origin main -q",
-    "git push origin +main --force",
-    "git push origin HEAD:main -q",
-    "git push origin refs/heads/main -q",
-]
-
-must_push = [
-    "git push origin main-fix",
-    "git push -u origin main-fix",
-    "git push origin feature",
-    "git push -u origin feature",
-    "git push -q origin feature",
-    "git push origin mainline",
-    "git push origin feature:main-fix",
-    "git push origin refs/heads/main-fix",
-    "git push origin main:other",
-]
-option_value = "git push -o main origin feature"
-
-
-def evaluate(rules):
-    found = []
-    for command in refused + required_refused + [option_value]:
-        if not denied(rules, command):
-            found.append("%r is not refused" % command)
-    for command in not_refused + must_push:
-        if denied(rules, command):
-            found.append("%r is refused" % command)
-    return found
-
-
 rules = json.load(open(settings_path)).get("permissions", {}).get("deny", [])
-for command in dict.fromkeys(refused + required_refused + [option_value] + not_refused + must_push):
-    print("  %-7s %s" % ("denied" if denied(rules, command) else "allowed", command))
+old_rules = [
+    "Bash(git push --force:*)", "Bash(git push -f:*)",
+    "Bash(git push * main)", "Bash(git push * main *)",
+    "Bash(git push * +main)", "Bash(git push * +main *)",
+    "Bash(git push *:main)", "Bash(git push *:main *)",
+    "Bash(git push *refs/heads/main)", "Bash(git push *refs/heads/main *)",
+    "Bash(git push --force*)", "Bash(git push -f*)",
+    "Bash(git push * --force*)", "Bash(git push * -f)",
+    "Bash(git push * -f *)", "Bash(git push * +*)",
+]
+with open(sys.argv[2] + '/retired.json', 'w') as handle:
+    json.dump(old_rules, handle)
+observed = [
+    ('git push -u origin feat 2>&1 | tail -2 && echo pr --base main', True),
+    ('git push -u origin feat 2>&1 | tail -2 && gh pr create --base main --head feat --title "Title" --body "a\\nb"', True),
+    ('git push -u origin feat && echo pr --base main', False),
+    ('git push -u origin feat 2>&1 | tail -2; echo pr --base other', False),
+    ('git push -u origin feat 2>&1 | tail -2', False),
+    ('git push -u origin feat 2>&1 | tail -2 && echo "a + b"', True),
+    ('git push -u origin feat 2>&1 | tail -2 && echo x -f y', True),
+    ('git push -u origin feat 2>&1 | tail -2 && echo --force', True),
+    ('git push -u origin feat 2>&1 | cat; echo done --base main', True),
+    ('git push origin main', True),
+]
+for command, was_denied in observed:
+    assert denied(old_rules, command) == was_denied, command
+    if command != 'git push origin main':
+        assert not denied(rules, command), command
+# Ref safety now belongs to the hook, including spellings text rules missed.
+for command in ('git push origin main', 'git push origin HEAD:main',
+                'git -C . push origin main', 'git push --force origin feature',
+                'git push -f origin feature', 'git push origin +feature'):
+    assert not denied(rules, command), command
+print('  ok: all ten observed old-rule outcomes match; new rules allow every safe upload')
 
-problems += evaluate(rules)
-if problems:
-    print("\n".join(problems))
-    sys.exit(1)
-print("  ok: every refused spelling is denied, and every known gap and ordinary branch is allowed")
-
-# Each push rule is needed.
-push_rules = [r for r in rules if r.startswith("Bash(git push") and "main" in r]
-if len(push_rules) < 2:
-    print("the settings hold fewer than two rules naming a push to main")
-    sys.exit(1)
-for rule in push_rules:
-    if not evaluate([r for r in push_rules if r != rule]):
-        print("taking out %s changes nothing, so the check does not need it" % rule)
-        sys.exit(1)
-print("  ok: taking out any one of the %d push rules is caught" % len(push_rules))
-
-# A force push and a forced delete, refused wherever the option sits.
+# Forced deletes retain their text rules.
 force_refused = [
-    "git push --force origin feature",
-    "git push --force-with-lease origin feature",
-    "git push origin feature --force",
-    "git push origin feature --force-with-lease",
-    "git push -f origin feature",
-    "git push origin feature -f",
-    "git push origin -f feature",
-    "git push -fu origin feature",
-    "git push origin +feature",
     "rm -rf build", "rm -fr build", "rm -Rf build", "rm -fR build",
     "rm -r -f build", "rm -f -r build", "rm -R -f build", "rm -f -R build",
     "rm --recursive --force build", "rm --force --recursive build",
 ]
 force_missed = [
-    "git push -uf origin feature",
-    "sh -c 'git push --force origin feature'",
     "rm -r build",
 ]
 force_allowed = force_missed + [
@@ -232,20 +167,17 @@ problems += force_problems(rules)
 if problems:
     print("\n".join(problems))
     sys.exit(1)
-print("  ok: every force-push and forced-delete spelling listed as refused is denied, and the listed gaps and ordinary commands are not")
+print("  ok: every forced-delete spelling listed as refused is denied, and the listed gaps and ordinary commands are not")
 
-kept_for_parity = {"Bash(git push --force:*)", "Bash(git push -f:*)", "Bash(rm -rf:*)"}
-force_rules = [r for r in rules if r not in push_rules and r not in kept_for_parity
-               and "--no-verify" not in r
-               and (r.startswith("Bash(git push") or r.startswith("Bash(rm "))]
+force_rules = [r for r in rules if r.startswith("Bash(rm ") and r != "Bash(rm -rf:*)"]
 if len(force_rules) < 5:
-    print("the settings hold fewer than five newer force-push or forced-delete rules")
+    print("the settings hold fewer than five newer forced-delete rules")
     sys.exit(1)
 for rule in force_rules:
     if not force_problems([r for r in rules if r != rule]):
         print("taking out %s changes nothing, so the check does not need it" % rule)
         sys.exit(1)
-print("  ok: taking out any one of the %d newer force-push and forced-delete rules is caught" % len(force_rules))
+print("  ok: taking out any one of the %d newer forced-delete rules is caught" % len(force_rules))
 if not force_problems(rules + ["Bash(rm -*f*)"]):
     print("an over-broad rule that refuses rm -f notes.txt went unnoticed")
     sys.exit(1)
@@ -280,21 +212,6 @@ for rule in merge_rules:
         sys.exit(1)
 print("  ok: each merge denial covers a distinct route")
 ask = json.load(open(settings_path)).get("permissions", {}).get("ask", [])
-# The first rules miss the spelling from the real run.
-first_rules = ["Bash(git push origin main:*)", "Bash(git push -u origin main:*)",
-               "Bash(git push origin HEAD:main:*)"]
-if denied(first_rules, "git push -q origin main"):
-    print("the first rules already refuse 'git push -q origin main', so the check proves nothing")
-    sys.exit(1)
-print("  ok: the first three rules miss 'git push -q origin main', and the check says so")
-
-# A rule broad enough to stop a piece branch is caught.
-if not any("main-fix" in p or "feature" in p for p in evaluate(rules + ["Bash(git push *main*)"])):
-    print("an over-broad rule that refuses main-fix went unnoticed")
-    sys.exit(1)
-print("  ok: an over-broad rule that refuses a branch named main-fix is caught")
-
-
 def leave_out_each(group, check, label):
     """Every rule in the group is needed: taking it out must break the check."""
     for rule in group:
@@ -542,6 +459,9 @@ live_ask = [
     "vercel project protection disable kit-log --sso",
     "sh .agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/set-access.sh public",
     "sh .agents/skills/setup-hosting/recipes/parts/scripts/set-signup.sh open",
+    # Recording the person's yes opens every gated online step, so it asks too.
+    'python3 .agents/skills/records/scripts/approval.py yes "promote dpl_1 abc" --words "go ahead"',
+    'python3 /abs/path/.agents/skills/records/scripts/approval.py yes "merge pull request 4" --words "merge it"',
     "vercel --prod",
     "vercel --prod --yes",
     "vercel deploy --prod",
@@ -568,6 +488,7 @@ live_ask = [
     "gh api graphql -f query='mutation { deleteRef(input: {refId: \"x\"}) { clientMutationId } }'",
 ]
 live_runs = [
+    "python3 .agents/skills/records/scripts/approval.py list",
     "supabase start",
     "supabase db dump --linked -f schema.sql",
     "supabase link --project-ref abc",
@@ -624,14 +545,50 @@ p=work/'settings-project'; (p/'.claude').mkdir(parents=True)
 settings=p/'.claude/settings.json'
 shutil.copy2(root/'.agents/tests/fixtures/upgrade-v0.19.3/claude-settings.json',settings)
 old=json.loads(settings.read_text()); old['my-setting']={'keep':True}
+retired=set(json.loads((work/'retired.json').read_text()))
+# Every retired rule is exercised, including projects founded after the frozen fixture.
+old['permissions']['deny'] += sorted(retired - set(old['permissions']['deny']))
+old['permissions']['deny'] += ['Bash(git push origin personal-main)', 'Bash(my own command:*)']
 settings.write_text(json.dumps(old,indent=2)+'\n')
 def run(flag=None,code=0):
     command=[sys.executable,str(script)]+([flag] if flag else [])+[str(p)]
     result=subprocess.run(command,capture_output=True,text=True)
     assert result.returncode==code,(command,result.returncode,result.stdout,result.stderr)
     return result.stdout
+# The whole retired set stays while the guard is off, including on apply.
+offer=run(code=1)
+assert 'remove-deny' not in offer and 'guard must be switched on' in offer
+subprocess.run(['git', 'init', '-q', str(p)], check=True)
+setup=root/'.agents/skills/setup-ai-build-kit'
+(p/'.agents/hooks/git').mkdir(parents=True)
+shutil.copy2(setup/'templates/foundation/pre-push', p/'.agents/hooks/git/pre-push')
+subprocess.run(['sh', str(setup/'scripts/use-push-guard.sh'), str(p)], check=True)
+# Inactive files, unrelated executable hooks and a .husky chain are distinguished.
+for mode in ('missing', 'not-executable', 'unrelated'):
+    hook=p/'.agents/hooks/git/pre-push'
+    original=hook.read_bytes()
+    if mode=='missing': hook.unlink()
+    elif mode=='not-executable': hook.chmod(0o644)
+    else: hook.write_text('#!/bin/sh\nexit 0\n')
+    assert 'remove-deny' not in run(code=1)
+    run('--apply')
+    assert retired.issubset(json.loads(settings.read_text())['permissions']['deny'])
+    settings.write_text(json.dumps(old,indent=2)+'\n')
+    hook.write_bytes(original); hook.chmod(0o755)
+subprocess.run(['git', '-C', str(p), 'config', 'core.hooksPath', '.husky'], check=True)
+assert 'remove-deny' not in run(code=1)
+subprocess.run(['sh', str(setup/'scripts/use-push-guard.sh'), str(p)], check=True)
+# A single matching personal rule stays even with an active guard.
+single=json.loads(settings.read_text())
+single['permissions']['deny']=[r for r in single['permissions']['deny'] if r not in retired]+['Bash(git push * main)']
+settings.write_text(json.dumps(single))
+assert 'remove-deny' not in run(code=1)
+run('--apply')
+assert 'Bash(git push * main)' in json.loads(settings.read_text())['permissions']['deny']
+settings.write_text(json.dumps(old,indent=2)+'\n')
 first_offer='\n'+run(code=1)
 assert '\ndeny\tBash(gh pr merge:*)' in first_offer
+for rule in retired: assert '\nremove-deny\t'+rule+'\n' in first_offer+'\n'
 assert '\nask\tBash(*merge.py*--approved*)' in first_offer
 assert '\nask\tBash(*merge.py*--resume*)' in first_offer
 import fnmatch
@@ -672,14 +629,17 @@ run(code=1)
 run('--apply'); current=json.loads(settings.read_text())
 assert current['my-setting']==old['my-setting']
 for key,value in old['permissions'].items():
-    if key in ('ask','deny'): assert current['permissions'][key][:len(value)]==value
+    if key in ('ask','deny'):
+        kept=[r for r in value if key!='deny' or r not in retired]
+        assert current['permissions'][key][:len(kept)]==kept
+        if key=='deny': assert not retired.intersection(current['permissions'][key])
     else: assert current['permissions'][key]==value
 assert not run()
 assert all(r in current['permissions']['deny'] for r in newer_deny)
 assert all(r in current['permissions']['ask'] for r in newer_ask)
 assert 'Bash(*merge.py*--resume*)' in current['permissions']['ask']
 second=settings.read_bytes(); run('--apply'); assert second==settings.read_bytes()
-# Removed broad force/delete rules stay removed; asks and main rules still offered.
+# Removed broad force/delete rules stay removed; asks and hook rules still offered.
 old['permissions']['deny']=[r for r in old['permissions']['deny'] if r not in ('Bash(git push --force:*)','Bash(rm -rf:*)')]
 settings.write_text(json.dumps(old))
 (p/'.ai-build-kit-maintenance').unlink()

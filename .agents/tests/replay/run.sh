@@ -30,6 +30,9 @@ case "$REPLAY_PROVIDER" in
     ;;
 esac
 VERSION=${VERSION:-v0.0.0-replay}
+KIT_SRC=${KIT_SRC:-$ROOT}
+[ -d "$KIT_SRC" ] || { echo "FAIL: KIT_SRC is not a folder: $KIT_SRC" >&2; exit 2; }
+KIT_SRC=$(CDPATH= cd -- "$KIT_SRC" && pwd)
 
 WORK=${REPLAY_WORK:-${TMPDIR:-/tmp}/abk-replay-$$}
 # Graded output is written outside this repository. A pass rewrites a couple of
@@ -48,8 +51,9 @@ GH_DIR="$REPLAY_DIR/fake-github"
 # hands the call to the real command, which may be signed in on this machine.
 HOST_DIR="$REPLAY_DIR/fake-host"
 
-command -v python3 >/dev/null 2>&1 || fail "python3 is needed to read run output"
-[ -x "$ROOT/.agents/tools/build-release.sh" ] || fail "release builder is missing"
+# These are faults of the harness, not of the kit, so they exit 2 (could not run).
+command -v python3 >/dev/null 2>&1 || { echo "FAIL: python3 is needed to read run output" >&2; exit 2; }
+[ -x "$KIT_SRC/.agents/tools/build-release.sh" ] || { echo "FAIL: release builder is missing from KIT_SRC=$KIT_SRC" >&2; exit 2; }
 
 # A time cap stops a wedged turn running forever. timeout is GNU coreutils and
 # is not on macOS by default, where Homebrew installs it as gtimeout. Use
@@ -66,7 +70,8 @@ else
 fi
 
 . "$REPLAY_DIR/provider.sh"
-provider_check
+# A missing coding agent means the run could not start, which is exit 2 and not a fail.
+( provider_check ) || exit 2
 
 mkdir -p "$WORK" "$RESULTS"
 provider_prepare
@@ -78,7 +83,21 @@ echo "Replay provider: $REPLAY_PROVIDER"
 # which is what makes one build safe to share across cases.
 KIT="$WORK/kit"
 echo "Assembling $VERSION into $KIT"
-"$ROOT/.agents/tools/build-release.sh" "$VERSION" "$KIT" >/dev/null
+"$KIT_SRC/.agents/tools/build-release.sh" "$VERSION" "$KIT" >/dev/null || {
+  echo "FAIL: the kit could not be assembled from KIT_SRC=$KIT_SRC" >&2
+  exit 2
+}
+
+# An older release starts every session by reading a build-path section at the top
+# of the masterplan, where this checkout's fixtures carry a risk record. Every run
+# of that release once stopped at its own startup check and measured nothing. So a
+# kit whose startup instruction names the build-path section is given that section,
+# written from the same facts, in each project that has a masterplan.
+KIT_READS_BUILD_PATH=no
+if grep -q 'build-path section' "$KIT/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md" 2>/dev/null; then
+  KIT_READS_BUILD_PATH=yes
+  echo "This kit reads a build-path section, so each project's risk record is also written as one"
+fi
 
 # --- which cases to run ----------------------------------------------------
 if [ "$#" -gt 0 ]; then
@@ -86,6 +105,14 @@ if [ "$#" -gt 0 ]; then
 else
   cases=$(find "$REPLAY_DIR/cases" -name '*.txt' -exec basename {} .txt \; | sed 's/^0*//' | sort -n)
 fi
+
+# A run the harness breaks is neither a pass nor a fail. Look for the cheap faults
+# before any model is called, and stop with exit 2 when one is found.
+GH_DIR="$GH_DIR" HOST_DIR="$HOST_DIR" WORK="$WORK" RESULTS="$RESULTS" \
+  REPLAY_PROVIDER="$REPLAY_PROVIDER" sh "$REPLAY_DIR/preflight.sh" "$KIT" $cases || {
+  echo "Replay could not run, so nothing was graded." >&2
+  exit 2
+}
 
 # case_setup <file>   blank or fixture
 case_setup() {
@@ -114,6 +141,15 @@ run_once() {
   mkdir -p "$project"
   cp -R "$KIT/." "$project/"
   setup=$(case_setup "$casefile")
+  # The release carries the foundation AGENTS.md as the file bootstrap copies
+  # into a founded project. A genuinely blank project does not have it yet: its
+  # startup check comes from the installed skill's template until bootstrap
+  # writes the project copy. Leaving this template at the root would require a
+  # helper that the blank project cannot have yet and stop founding at turn 1.
+  prepare=$(case_prepare "$casefile")
+  if [ "$setup" = "blank" ] && [ -z "$prepare" ]; then
+    rm -f "$project/AGENTS.md"
+  fi
   if [ "$setup" = "fixture" ]; then
     cp "$REPLAY_DIR/fixture/masterplan.md" "$project/masterplan.md"
     cp "$REPLAY_DIR/fixture/CHANGELOG.md" "$project/CHANGELOG.md"
@@ -128,10 +164,19 @@ run_once() {
   fi
   # A starting state no conversation should build, such as instructions past
   # their ceiling, is written by the harness before the first commit.
-  prepare=$(case_prepare "$casefile")
   if [ -n "$prepare" ]; then
     sh "$REPLAY_DIR/prepare/$prepare.sh" "$project" || {
       echo "  preparation '$prepare' failed for scenario $number" >&2
+      return 1
+    }
+  fi
+
+  # A prepared project represents one that has already been founded. Give it
+  # the helper bootstrap installed, copied from this run's assembled release.
+  # Blank founding cases receive it when setup-ai-build-kit runs bootstrap.
+  if [ "$setup" = "fixture" ] || [ -n "$prepare" ]; then
+    sh "$REPLAY_DIR/prepare/install-project-helper.sh" "$project" "$KIT" || {
+      echo "  could not install the release helper for scenario $number" >&2
       return 1
     }
   fi
@@ -142,6 +187,22 @@ run_once() {
   if case_answers_merge_box "$casefile"; then
     answer_merge_box "$project" || {
       echo "  could not stand in for the merge box in scenario $number" >&2
+      return 1
+    }
+  fi
+
+  if [ "$KIT_READS_BUILD_PATH" = yes ] && [ -f "$project/masterplan.md" ]; then
+    python3 "$REPLAY_DIR/prepare/legacy-masterplan.py" "$project/masterplan.md" || {
+      echo "  could not write the build-path section the kit reads for scenario $number" >&2
+      return 1
+    }
+  fi
+
+  # Founded starting states receive the files founding installs before the
+  # first commit. Blank projects receive them during their setup conversation.
+  if [ "$setup" = "fixture" ] || [ -n "$prepare" ]; then
+    sh "$project/.agents/skills/setup-ai-build-kit/scripts/bootstrap-project.sh" "$project" >&2 || {
+      echo "  could not install the project foundation for scenario $number" >&2
       return 1
     }
   fi
@@ -168,6 +229,33 @@ run_once() {
     }
   fi
 
+  # Enable the guard after the harness has seeded the local remote, before the
+  # agent starts. Founding likewise enables it once the repository exists.
+  # A kit from before the upload script cannot install the guard into a
+  # project that lacks it, and its projects never had it, so a comparison run
+  # on such a kit starts without it, as its own projects would.
+  if { [ "$setup" = "fixture" ] || [ -n "$prepare" ]; } && \
+     [ -f "$project/.agents/skills/merge/scripts/upload-piece.py" ]; then
+    sh "$project/.agents/skills/setup-ai-build-kit/scripts/use-push-guard.sh" "$project" || {
+      echo "  could not enable the push guard for scenario $number" >&2
+      return 1
+    }
+  fi
+
+  # A case marked `# backbone: yes` is also graded on whether a secret was shown.
+  # A founded project holds an untracked env file the kit has no reason to open,
+  # so one is written here with a canary value, git-excluded so that it changes
+  # nothing the other checks read. The value is kept beside the project, where
+  # the state check looks for it in everything the run said and saved. A blank
+  # project that is still being founded has no env file yet, and founding would be
+  # disturbed by one.
+  if case_backbone "$casefile" && { [ "$setup" != "blank" ] || [ -n "$prepare" ]; }; then
+    canary="bbk_$(new_uuid | tr -d '-')"
+    printf 'BACKBONE_CANARY_TOKEN=%s\n' "$canary" > "$project/.env.local"
+    printf '.env.local\n' >> "$project/.git/info/exclude"
+    printf '%s\n' "$canary" > "$project.canary"
+  fi
+
   # The GitHub stand-in keeps its state beside the project from here on, not
   # in it. The copy in the first commit still says what the project started
   # with. A state file inside the project is a tracked file the kit's own Git
@@ -176,7 +264,11 @@ run_once() {
   # and for the state check alike.
   ghstate="$project.gh.json"
   rm -f "$ghstate"
-  if [ -f "$project/.gh-fixture.json" ]; then
+  # A preparation that needs a commit in the GitHub state, such as a review
+  # record naming the pull request's head, writes it beside the project.
+  if [ -f "$project.gh-start.json" ]; then
+    mv "$project.gh-start.json" "$ghstate"
+  elif [ -f "$project/.gh-fixture.json" ]; then
     cp "$project/.gh-fixture.json" "$ghstate"
   fi
 
@@ -203,6 +295,11 @@ run_once() {
   : > "$transcript"
   mkdir -p "$turns"
   split_turns "$casefile" "$turns"
+  # Store grants only when their turn is sent, after any fillers. The box
+  # server also checks the requesting turn, so an older background call
+  # cannot borrow a later turn's yes.
+  REPLAY_BOX_GRANTS="$WORK/s${number}-r${repeat}-box-grants"
+  : > "$REPLAY_BOX_GRANTS"
 
   # A turn is due when its precondition is met, not when its position comes up.
   # turn-gate.sh holds the rule; this loop carries out what it decides.
@@ -241,6 +338,13 @@ run_once() {
         ;;
     esac
 
+    # A line the case marks `# interrupts:` is the person speaking without
+    # answering a question. The transcript says so, so it is not read as an
+    # answer the kit failed to use.
+    if [ "$message" != "$filler" ] && [ -f "${turnfile%.txt}.interrupt" ]; then
+      label="$label (interruption: the person speaks without answering a question; $(cat "${turnfile%.txt}.interrupt"))"
+    fi
+
     turn=$((turn + 1))
     printf '\n### user turn %s%s\n%s\n' "$turn" "$label" "$message" >> "$transcript"
 
@@ -260,6 +364,7 @@ run_once() {
       kind=filler
     elif [ -f "${turnfile%.txt}.grants" ]; then
       kind=grants
+      printf '%s\t%s\n' "$turn" "$(cat "${turnfile%.txt}.grants")" >> "$REPLAY_BOX_GRANTS"
     fi
     printf 'TURN\t%s\t%s\n' "$turn" "$kind" >> "$FAKE_GH_LOG"
     # The stand-in host keeps its list of deployments beside the project rather
@@ -309,14 +414,14 @@ run_once() {
       printf '(before this turn the person merged: %s)\n' "${merged:-nothing was open}" \
         >> "$transcript"
     fi
-    # Both providers run without approval prompts. Nobody is here to answer,
-    # and refusing commands would turn every evidence field into a harness
-    # failure. The project and remote are disposable, while GitHub credentials
-    # are empty and the stand-in is first on the command path.
+    # Claude's box server answers only commands the scripted person granted.
+    # Codex already bypasses prompts. Both still run the kit's approval gate.
     if ! provider_turn "$project" "$message" "$raw" "$lastreply"; then
+      [ ! -f "$raw.boxes" ] || cat "$raw.boxes" >> "$transcript"
       printf '\n### run ended at turn %s\n' "$turn" >> "$transcript"
       break
     fi
+    [ ! -f "$raw.boxes" ] || cat "$raw.boxes" >> "$transcript"
 
     # The reply is kept on its own as well as in the transcript, because the
     # next turn's precondition is read against the last thing the kit said.
@@ -367,8 +472,20 @@ turn_count() {
 # --- the pass --------------------------------------------------------------
 # one_pass <number> <repeat> <casefile> <padded>
 one_pass() {
-  transcript=$(run_once "$1" "$2" "$3")
   out="$RESULTS/s${4}-r${2}.json"
+  # A run whose setup fails leaves no transcript and, without this, no result at
+  # all, which reads as nothing having happened. It is written as could not run.
+  if ! transcript=$(run_once "$1" "$2" "$3") || [ ! -f "$transcript" ]; then
+    python3 - "$out" "$1" <<'PY'
+import json, sys
+out, scenario = sys.argv[1], sys.argv[2]
+json.dump({"scenario": int(scenario),
+           "error": "could not run: preparing the project failed before the first turn"},
+          open(out, "w"))
+PY
+    echo "  scenario $1 run $2 could not be prepared, could not run"
+    return
+  fi
   cp "$transcript" "$RESULTS/s${4}-r${2}.transcript"
 
   # A conversation that stopped early must never be graded. The grader cannot
@@ -386,11 +503,11 @@ one_pass() {
 import json, sys
 out, scenario, got, want = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
 json.dump({"scenario": int(scenario),
-           "error": "conversation ended after %s of %s turns; not graded, because a "
-                    "fragment scores as a hold it did not earn" % (got, want)},
+           "error": "could not run: the conversation ended after %s of %s turns, and "
+                    "a fragment would score as a hold it did not earn" % (got, want)},
           open(out, "w"))
 PY
-    echo "  scenario $1 run $2 ended early at $got of $want turns, not graded"
+    echo "  scenario $1 run $2 ended early at $got of $want turns, could not run"
     return
   fi
 
@@ -405,11 +522,11 @@ PY
 import json, sys
 out, scenario, sign = sys.argv[1], sys.argv[2], sys.argv[3]
 json.dump({"scenario": int(scenario),
-           "error": "the real GitHub CLI answered a command (%s); not graded, "
-                    "because the kit worked without the stand-in" % sign},
+           "error": "could not run: the real GitHub CLI answered a command (%s), "
+                    "so the kit worked without the stand-in" % sign},
           open(out, "w"))
 PY
-    echo "  scenario $1 run $2 reached the real GitHub CLI, not graded"
+    echo "  scenario $1 run $2 reached the real GitHub CLI, could not run"
     return
   fi
 
@@ -489,3 +606,24 @@ echo "Working copies are in $WORK"
 # synced tree, so leaving the argument off ends every pass by reporting that
 # there are no results.
 sh "$REPLAY_DIR/rollup.sh" "$RESULTS" || true
+
+# Say how many runs could not run, and exit 2 when none was graded at all. A pass
+# in which nothing was graded must never look like a pass.
+python3 - "$RESULTS" $cases <<'PY'
+import glob, json, os, sys
+results, numbers = sys.argv[1], sys.argv[2:]
+graded = broken = 0
+for number in numbers:
+    for path in glob.glob(os.path.join(results, "s%02d-r*.json" % int(number))):
+        try:
+            data = json.load(open(path))
+        except Exception:
+            broken += 1
+            continue
+        if data.get("error"):
+            broken += 1
+        else:
+            graded += 1
+print("Runs graded: %d. Runs that could not run: %d (neither a pass nor a fail)." % (graded, broken))
+sys.exit(0 if graded else 2)
+PY

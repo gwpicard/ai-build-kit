@@ -38,5 +38,4 @@ directly, otherwise through the truing. A term for work still only planned
 stays on its piece.
 
 It never names a promise not on the page, never adds, edits, closes or
-relabels a piece without a yes, never asks twice, and blocks nothing. On
-Explore privately, report and stop without offering pieces.
+relabels a piece without a yes, never asks twice, and blocks nothing.
