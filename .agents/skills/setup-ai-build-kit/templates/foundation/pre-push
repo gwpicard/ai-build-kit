@@ -11,7 +11,7 @@
 # creates main through the GitHub API, which is not a push, so it is not
 # stopped here.
 #
-# Git passes one line on standard input for each branch the push would change:
+# Git passes one line on standard input for each ref the push would change:
 #   <local ref> <local commit> <remote ref> <remote commit>
 
 refused=0
@@ -26,10 +26,8 @@ while read -r local_ref local_sha remote_ref remote_sha; do
       refused=1
       continue
       ;;
-    refs/heads/*|refs/tags/*) ;;
-    *) continue ;;
   esac
-  # A deletion sends no commits and replaces no work on another branch.
+  # A deletion sends no commits and replaces no work on another ref.
   case "$local_sha" in *[!0]*) ;; *) continue ;; esac
   scanner="$(git rev-parse --show-toplevel 2>/dev/null)/.agents/hooks/scan-secrets.sh"
   case "$remote_sha" in
@@ -65,7 +63,7 @@ while read -r local_ref local_sha remote_ref remote_sha; do
       continue
       ;;
   esac
-  # A new branch, or a deleted one, replaces nothing on the remote.
+  # A new ref replaces nothing on the remote.
   case "$remote_sha" in *[!0]*) ;; *) continue ;; esac
   case "$local_sha" in *[!0]*) ;; *) continue ;; esac
   if ! git cat-file -e "$remote_sha^{commit}" 2>/dev/null ||

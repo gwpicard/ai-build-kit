@@ -22,7 +22,12 @@ with tempfile.TemporaryDirectory(prefix='kit-upload-test-') as folder:
     # raw tool errors cannot leak a credential into the upload report.
     wrapper = work / 'bin/gh'
     wrapper.write_text('''#!/usr/bin/env python3
-import os, runpy, sys
+import json, os, runpy, sys
+report = os.environ.get('UPLOAD_TEST_REPORT', '')
+if report and sys.argv[1:3] == ['pr', report]:
+    url = 'https://github.com/rehearsal/project/pull/' + os.environ['UPLOAD_TEST_CANARY']
+    print(json.dumps([{'url': url}]) if report == 'list' else url)
+    sys.exit(0)
 mode = os.environ.get('UPLOAD_TEST_FAILURE', '')
 if mode and (mode != 'create' or sys.argv[1:3] == ['pr', 'create']):
     print(('gh auth login' if mode == 'auth' else 'HTTP 503 GitHub unavailable')
@@ -124,6 +129,29 @@ os.execv(os.environ['UPLOAD_TEST_REAL_GIT'], [os.environ['UPLOAD_TEST_REAL_GIT']
     upload(p, files=False)
     assert json.loads(state.read_text())['pull_requests'][-1]['body'] == body
     print('ok: title and body arguments also pass without shell interpretation')
+
+    p, remote, state = setup('ambiguous-branch')
+    run('git', 'tag', 'piece', cwd=p)
+    assert 'pushed\tpiece' in upload(p)
+    assert run('git', 'rev-parse', 'refs/heads/piece', cwd=remote) == run('git', 'rev-parse', 'HEAD', cwd=p)
+    assert not run('git', 'for-each-ref', '--format=%(refname)', 'refs/heads/heads/piece', cwd=remote)
+    assert json.loads(state.read_text())['pull_requests'][-1]['head'] == 'piece'
+    run('git', 'checkout', '-q', 'main', cwd=p)
+    run('git', 'tag', 'main', cwd=p)
+    assert 'main cannot be uploaded' in upload(p, code=2)
+    print('ok: a tag sharing the branch name neither changes the upload branch nor hides main')
+
+    p, remote, state = setup('secret-branch')
+    branch = env['UPLOAD_TEST_CANARY']
+    run('git', 'branch', '-m', branch, cwd=p)
+    out = upload(p)
+    assert 'output hidden' in out and 'opened\t' in out
+    assert run('git', 'rev-parse', 'refs/heads/' + branch, cwd=remote) == run('git', 'rev-parse', 'HEAD', cwd=p)
+    assert json.loads(state.read_text())['pull_requests'][-1]['head'] == branch
+    for operation in ('list', 'create'):
+        p, remote, state = setup('secret-url-' + operation)
+        assert 'output hidden' in upload(p, extra={'UPLOAD_TEST_REPORT': operation})
+    print('ok: token-shaped branch names and returned pull request URLs stay out of the report')
 
     p, remote, state = setup('main')
     run('git', 'checkout', '-q', 'main', cwd=p)

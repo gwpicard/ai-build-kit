@@ -153,6 +153,21 @@ else
     && pass "an existing tag cannot be replaced by a descendant commit" || fail "tag replacement gave no guard refusal"
 fi
 pushes origin --delete v1 && pass "deleting a tag remains allowed" || fail "deleting a tag was stopped"
+git -C "$P" notes add -m "First note" main
+pushes origin refs/notes/commits && pass "new notes push" || fail "new notes were stopped"
+notes_before=$(git -C "$P" rev-parse refs/notes/commits)
+git -C "$P" notes add -m "Another note" sign-out
+pushes origin refs/notes/commits && pass "notes that move forward push" || fail "new notes were stopped"
+notes_after=$(git -C "$R" rev-parse refs/notes/commits)
+git -C "$P" update-ref refs/notes/commits "$notes_before"
+if git -C "$P" push origin +refs/notes/commits >"$WORK/notes-replace-out" 2>&1; then
+  fail "a forced push replaced existing remote notes"
+else
+  grep -q 'would replace work' "$WORK/notes-replace-out" \
+    && [ "$(git -C "$R" rev-parse refs/notes/commits)" = "$notes_after" ] \
+    && pass "the guard refuses replacing existing remote notes" || fail "notes replacement gave no guard refusal"
+fi
+pushes origin --delete refs/notes/commits && pass "deleting notes remains allowed" || fail "deleting notes was stopped"
 git -C "$P" checkout -q -b tag-secret main
 tag_value="AKIA$(python3 -c 'import secrets; print(secrets.token_hex(8).upper())')"
 printf '%s\n' "$tag_value" > "$P/tag-key.txt"
@@ -238,6 +253,97 @@ for installer in bootstrap-project found-save; do
     grep -q 'push guard is not on' "$WORK/founding-stop" \
       && [ "$(git -C "$Q" rev-parse HEAD)" = "$before" ] \
       && pass "$installer stops plainly before saving without a guard" || fail "$installer gave no cause"
+  fi
+done
+
+# Husky's installer rewrites its dispatchers and helper on every install.
+# Keep the dispatch and shell invocation used by the upstream installer:
+# https://github.com/typicode/husky/blob/main/index.js
+# https://github.com/typicode/husky/blob/main/husky
+install_husky() {
+  git -C "$1" config core.hooksPath .husky/_
+  mkdir -p "$1/.husky/_"
+  printf '#!/usr/bin/env sh\n. "$(dirname "$0")/h"\n' > "$1/.husky/_/pre-push"
+  cat > "$1/.husky/_/h" <<'HUSKY'
+#!/usr/bin/env sh
+n=$(basename "$0")
+s=$(dirname "$(dirname "$0")")/$n
+[ ! -f "$s" ] && exit 0
+sh -e "$s" "$@"
+c=$?
+exit $c
+HUSKY
+  chmod +x "$1/.husky/_/pre-push"
+}
+for own_hook in existing absent; do
+  T="$WORK/husky-$own_hook"
+  git init -q "$T"
+  mkdir -p "$T/.agents/skills" "$T/.husky"
+  ln -s "$SKILL" "$T/.agents/skills/setup-ai-build-kit"
+  if [ "$own_hook" = existing ]; then
+    printf '#!/bin/sh\ncat > own-input\nprintf "%%s\\n" "$@" > own-args\nexit 0\n' > "$T/.husky/pre-push"
+  fi
+  install_husky "$T"
+  cp "$T/.husky/_/pre-push" "$WORK/dispatcher-before"
+  sh "$SKILL/scripts/bootstrap-project.sh" "$T" >/dev/null
+  cmp -s "$WORK/dispatcher-before" "$T/.husky/_/pre-push" \
+    && pass "the $own_hook Husky hook leaves the generated dispatcher intact" \
+    || fail "the generated Husky dispatcher was edited"
+  cp "$T/.husky/pre-push" "$WORK/owner-before"
+  install_husky "$T"
+  sh "$USE" --check "$T" && sh "$USE" "$T" \
+    && cmp -s "$WORK/owner-before" "$T/.husky/pre-push" \
+    && pass "the $own_hook Husky hook keeps one guard after reinstalling" || fail "reinstalling lost the guard"
+  git -C "$T" remote add origin "$R"
+  git -C "$T" fetch -q origin main
+  git -C "$T" reset -q --soft FETCH_HEAD
+  git -C "$T" commit -q --allow-empty -m first
+  if git -C "$T" push origin HEAD:main >"$WORK/husky-reinstalled-out" 2>&1; then
+    fail "the reinstalled Husky hook allowed HEAD:main"
+  else
+    grep -q 'would change main directly' "$WORK/husky-reinstalled-out" && [ ! -e "$T/own-input" ] \
+      && pass "the $own_hook Husky hook refuses HEAD:main after reinstalling" || fail "the reinstalled guard missed main"
+  fi
+  git -C "$T" push origin "HEAD:refs/heads/husky-$own_hook" >/dev/null 2>&1 \
+    && pass "the $own_hook Husky hook allows a piece push" || fail "the Husky guard stopped a piece"
+  if [ "$own_hook" = existing ]; then
+    grep -q "refs/heads/husky-$own_hook" "$T/own-input" && grep -qx origin "$T/own-args" \
+      && pass "Husky's own hook keeps its lines, input and arguments" || fail "Husky's own hook changed"
+  fi
+done
+
+for shebang in '#!/bin/sh -e' '#!/usr/bin/env sh'; do
+  printf '%s\nprintf ran > own-shell-ran\nexit 23\n' "$shebang" > "$Q/.husky/pre-push"
+  sh "$USE" "$Q" && sh "$USE" --check "$Q" \
+    && pass "$shebang accepts the guard" || fail "$shebang was refused"
+  if git -C "$Q" push origin HEAD:refs/heads/shell-hook >"$WORK/shell-hook-out" 2>&1; then
+    fail "$shebang lost the person's refusal"
+  else
+    [ "$(cat "$Q/own-shell-ran")" = ran ] \
+      && pass "$shebang still runs the person's refusal" || fail "$shebang skipped the person's hook"
+    rm -f "$Q/own-shell-ran"
+  fi
+  if git -C "$Q" push origin HEAD:main >"$WORK/shell-hook-out" 2>&1; then
+    fail "$shebang lost the guard"
+  else
+    grep -q 'would change main directly' "$WORK/shell-hook-out" \
+      && pass "$shebang refuses main through the guard" || fail "$shebang did not run the guard"
+  fi
+done
+
+mkdir -p "$Q/.managed-hooks"
+printf '#!/bin/sh\n# Generated by a hook tool. Do not edit.\nexit 0\n' > "$Q/.managed-hooks/pre-push"
+chmod +x "$Q/.managed-hooks/pre-push"
+git -C "$Q" config core.hooksPath .managed-hooks
+cp "$Q/.managed-hooks/pre-push" "$WORK/managed-before"
+for installer in bootstrap-project found-save; do
+  if (cd "$Q" && sh "$SKILL/scripts/$installer.sh") >"$WORK/managed-stop" 2>&1; then
+    fail "$installer accepted a generated hook without a lasting place for the guard"
+  else
+    grep -q 'A tool recreates this push hook' "$WORK/managed-stop" \
+      && cmp -s "$WORK/managed-before" "$Q/.managed-hooks/pre-push" \
+      && [ "$(git -C "$Q" rev-parse HEAD)" = "$before" ] \
+      && pass "$installer leaves a generated hook intact and stops plainly" || fail "$installer changed a generated hook"
   fi
 done
 mkdir -p "$Q/sub/.agents/hooks/git"

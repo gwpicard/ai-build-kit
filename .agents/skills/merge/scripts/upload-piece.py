@@ -52,13 +52,19 @@ def stopped(code, why):
     return code
 
 
+def report(project, text):
+    scanner = project / ".agents/hooks/scan-secrets.sh"
+    scanned = run(project, "sh", str(scanner), "--text", "upload report", input=text)
+    print(text if scanned.returncode == 0 else "[output hidden: the secret check did not pass]")
+
+
 def failure(project, result, push=False):
     error = (result.stderr + result.stdout).lower()
     if "unable to get password from user" in error:
         helper = Path(__file__).resolve().parents[2] / "setup-ai-build-kit/templates/foundation/codex-github-check.py"
         message = run(project, sys.executable, str(helper), "--message")
         if message.stdout:
-            print(message.stdout.strip())
+            report(project, message.stdout.strip())
         return stopped(5, "GitHub sign-in could not be read; stop without signing in or retrying")
     if "secret scan found a secret" in error:
         return stopped(7, "the secret scan found a secret")
@@ -82,10 +88,12 @@ def failure(project, result, push=False):
 
 def upload(args):
     project = Path(args.project).resolve()
-    branch = run(project, "git", "symbolic-ref", "--short", "-q", "HEAD")
-    if branch.returncode or branch.stdout.strip() == "main":
+    branch = run(project, "git", "symbolic-ref", "-q", "HEAD")
+    if branch.returncode or not branch.stdout.strip().startswith("refs/heads/"):
         return stopped(2, "check out the piece's own branch; main cannot be uploaded here")
-    branch = branch.stdout.strip()
+    branch = branch.stdout.strip()[len("refs/heads/"):]
+    if branch == "main":
+        return stopped(2, "check out the piece's own branch; main cannot be uploaded here")
     origin = run(project, "git", "config", "--get", "remote.origin.url")
     name = first_upload.name_from_url(origin.stdout.strip())
     if not name or name.lower() == first_upload.KIT:
@@ -116,7 +124,7 @@ def upload(args):
         if not isinstance(pulls, list):
             raise ValueError()
         if pulls:
-            print("existing\t" + pulls[0]["url"])
+            report(project, "existing\t" + pulls[0]["url"])
             return 0
     except (ValueError, KeyError, TypeError):
         return stopped(6, "GitHub's pull request answer could not be read")
@@ -129,7 +137,7 @@ def upload(args):
     pushed = run(project, "git", "push", "-u", "origin", ref + ":" + ref)
     if pushed.returncode:
         return failure(project, pushed, push=True)
-    print("pushed\t" + branch)
+    report(project, "pushed\t" + branch)
     with tempfile.TemporaryDirectory(prefix="kit-upload-") as folder:
         body_file = Path(folder) / "body.md"
         body_file.write_text(body, encoding="utf-8")
@@ -137,7 +145,7 @@ def upload(args):
                       "--head", branch, "--title", title, "--body-file", str(body_file))
     if created.returncode:
         return failure(project, created)
-    print("opened\t" + created.stdout.strip())
+    report(project, "opened\t" + created.stdout.strip())
     return 0
 
 

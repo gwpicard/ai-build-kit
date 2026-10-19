@@ -6,6 +6,7 @@ SCRIPT_ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd -P)
 exec python3 - "$SCRIPT_ROOT" "$@" <<'PYTHON'
 import os
 from pathlib import Path
+import re
 import shlex
 import subprocess
 import sys
@@ -18,14 +19,24 @@ if check:
 if len(args) > 1:
     sys.exit('usage: use-push-guard.sh [--check] [project-folder]')
 
-def stop():
+def stop(reason=''):
     print("The push guard is not on. Run the kit's use-push-guard.sh from the project folder; "
-          'if it still stops, make its hooks folder writable and keep the existing hook as a shell script.',
+          'if it still stops, make its hooks folder writable and keep the existing hook as a shell script.'
+          + (' ' + reason if reason else ''),
           file=sys.stderr)
     sys.exit(1)
 
 def git(*args):
     return subprocess.run(['git', *args], capture_output=True, text=True)
+
+def shell_hook(content):
+    first = content.partition('\n')[0]
+    if not first.startswith('#!'):
+        return True
+    interpreter = shlex.split(first[2:])
+    if interpreter and Path(interpreter[0]).name == 'env':
+        interpreter = interpreter[1:]
+    return bool(interpreter and Path(interpreter[0]).name in ('sh', 'bash', 'dash', 'zsh', 'ksh'))
 
 # Both the guard and the person's hook receive the complete push input.
 chain = '''# AI Build Kit push guard
@@ -53,9 +64,29 @@ try:
     result = git('rev-parse', '--git-path', 'hooks/pre-push')
     if result.returncode:
         stop()
-    hook = Path(result.stdout.strip()).resolve()
+    git_hook = hook = Path(result.stdout.strip()).resolve()
+    husky = hook.parent.name == '_' and (hook.parent / 'h').is_file()
+
+    def husky_dispatches():
+        dispatcher = '#!/usr/bin/env sh\n. "$(dirname "$0")/h"'
+        helper = (git_hook.parent / 'h').read_text()
+        return (git_hook.is_file() and os.access(git_hook, os.X_OK)
+                and git_hook.read_text().strip() == dispatcher
+                and all(line in helper.splitlines() for line in (
+                    'n=$(basename "$0")', 's=$(dirname "$(dirname "$0")")/$n', 'sh -e "$s" "$@"')))
+
+    if husky:
+        if not husky_dispatches():
+            stop('The hook tool does not provide a lasting place for the guard.')
+        hook = (git_hook.parent.parent / 'pre-push').resolve()
+    elif hook.parent == project / '.husky/_':
+        stop('Install Husky first so its own push hook can run the guard.')
+    if hook.is_file() and re.search(r'generated|do not edit|lefthook|git[ -]lfs', hook.read_text(), re.I):
+        stop('A tool recreates this push hook. The guard needs a hook that survives reinstalling that tool.')
 
     def active():
+        if husky and not husky_dispatches():
+            return False
         if not hook.is_file() or not os.access(hook, os.X_OK):
             return False
         content = hook.read_text()
@@ -64,9 +95,7 @@ try:
         if not guard.is_file() or not os.access(guard, os.X_OK) or guard.read_bytes() != canonical:
             return False
         first, sep, rest = content.partition('\n')
-        interpreter = shlex.split(first[2:]) if first.startswith('#!') else []
-        shell = not interpreter or Path(interpreter[-1]).name in ('sh', 'bash', 'dash', 'zsh', 'ksh')
-        return shell and (rest if first.startswith('#!') else content).startswith(chain)
+        return shell_hook(content) and (rest if first.startswith('#!') else content).startswith(chain)
 
     if check:
         if not active():
@@ -92,8 +121,7 @@ try:
         content = hook.read_text() if hook.exists() else '#!/bin/sh\n'
         first, sep, rest = content.partition('\n')
         if first.startswith('#!'):
-            interpreter = shlex.split(first[2:])
-            if not interpreter or Path(interpreter[-1]).name not in ('sh', 'bash', 'dash', 'zsh', 'ksh'):
+            if not shell_hook(content):
                 stop()
             content = first + '\n' + chain + rest
         else:
