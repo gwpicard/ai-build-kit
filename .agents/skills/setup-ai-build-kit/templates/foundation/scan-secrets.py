@@ -82,7 +82,7 @@ def is_service_role_jwt(value):
     return False
 
 
-def env_value(line):
+def env_value(line, secret_only=True):
     line = line.strip()
     if line.startswith("export "):
         line = line[7:].lstrip()
@@ -100,25 +100,27 @@ def env_value(line):
             value = value[1:closing]
     else:
         value = re.split(r"\s+#", value, maxsplit=1)[0].strip()
-    return value.encode() if len(value) >= 8 and secret_value(name, value) else None
+    return value.encode() if len(value) >= 8 and (not secret_only or secret_value(name, value)) else None
 
 
 def exact_values():
     found = set()
+    placeholders = set()
     for current, dirs, files in os.walk("."):
         dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
         for name in files:
-            if name == ".env.example" or not (name == ".env" or name.startswith(".env.")):
+            if not (name == ".env" or name.startswith(".env.")):
                 continue
+            example = name == ".env.example"
             try:
                 with open(os.path.join(current, name), encoding="utf-8") as handle:
                     for line in handle:
-                        value = env_value(line)
+                        value = env_value(line, secret_only=not example)
                         if value:
-                            found.add(value)
+                            (placeholders if example else found).add(value)
             except (OSError, UnicodeError):
                 raise RuntimeError("local secret files could not be read")
-    return found
+    return found - placeholders
 
 
 def git(args):

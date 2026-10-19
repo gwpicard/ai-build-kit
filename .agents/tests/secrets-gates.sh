@@ -28,6 +28,9 @@ MULTILINE_VALUE="multi-$(python3 -c 'import secrets;print(secrets.token_hex(12))
 printf 'MULTI_TOKEN="first line\n%s\nlast line"\n' "$MULTILINE_VALUE" >> "$WORK/project/src/nested/.env.production"
 MULTILINE_FULL=$(printf 'first line\n%s\nlast line' "$MULTILINE_VALUE")
 printf 'SERVICE_TOKEN=placeholder-value\n' > "$WORK/project/.env.example"
+cp "$WORK/project/.env.example" "$WORK/project/.env"
+printf 'DISPLAY_LABEL="nested-placeholder-value" # example\n' > "$WORK/project/src/nested/.env.example"
+printf 'OTHER_TOKEN=nested-placeholder-value\n' >> "$WORK/project/.env"
 printf '%s\n' "$SECRET_TEST_VALUE" > "$WORK/project/db-password"
 cp "$ROOT/.agents/skills/setup-ai-build-kit/templates/masterplan.md" "$WORK/project/masterplan.md"
 runner_status=0
@@ -187,6 +190,14 @@ guard '{broken' && code=0 || code=$?
 [ "$code" -eq 2 ] && pass "guard reports could not run on malformed input" || fail "guard returned $code for malformed input"
 
 echo "== Claude Code result redaction =="
+placeholder_event='{"tool_name":"Bash","tool_response":{"stdout":"placeholder-value nested-placeholder-value","stderr":"","interrupted":false}}'
+if redact "$placeholder_event" && [ ! -s "$WORK/redact-out" ]; then
+  pass "values from root and nested example settings stay visible after copying to .env"
+else fail "example placeholders were redacted"; fi
+record_event='{"tool_name":"Write","tool_input":{"file_path":"masterplan.md","content":"placeholder-value nested-placeholder-value"}}'
+if (cd "$WORK/project" && guard "$record_event") && [ ! -s "$WORK/guard-out" ]; then
+  pass "the record guard allows example placeholders copied to .env"
+else fail "the record guard refused example placeholders"; fi
 # Fixture shapes copied from the installed Claude Code SDK types:
 # /Users/guillaumepicard/.nvm/versions/node/v22.14.0/lib/node_modules/@anthropic-ai/claude-code/sdk-tools.d.ts
 for tool in Bash Read Grep; do
@@ -302,6 +313,33 @@ git -C "$PROJECT" config commit.gpgsign false
 echo clean > "$PROJECT/app.txt"
 git -C "$PROJECT" add app.txt && git -C "$PROJECT" commit -q -m clean
 BASE=$(git -C "$PROJECT" rev-parse HEAD)
+mkdir -p "$PROJECT/src"
+cp "$WORK/project/.env.example" "$PROJECT/.env.example"
+cp "$WORK/project/src/nested/.env.example" "$PROJECT/src/.env.example"
+cp "$WORK/project/.env" "$PROJECT/.env"
+git -C "$PROJECT" add .env.example src/.env.example && git -C "$PROJECT" commit -q -m example-placeholders
+(cd "$PROJECT" && sh .agents/hooks/scan-secrets.sh "--range=HEAD~1..HEAD") \
+  && pass "committed example placeholders pass with their values copied to .env" \
+  || fail "scanner treated example placeholders as local secrets"
+printf 'SERVICE_TOKEN=%s\n' "$SECRET_TEST_VALUE" >> "$PROJECT/.env"
+printf '%s\n' "$SECRET_TEST_VALUE" > "$PROJECT/staged.txt"
+git -C "$PROJECT" add staged.txt
+if (cd "$PROJECT" && git diff --cached | sh .agents/hooks/scan-secrets.sh --text 'staged text') >"$WORK/scan-out" 2>&1; then
+  fail "scanner missed a local secret absent from the examples in staged text"
+else code=$?; [ "$code" -eq 1 ] && ! grep -Fq -- "$SECRET_TEST_VALUE" "$WORK/scan-out" \
+  && pass "a local secret absent from the examples is caught in staged text without printing it" \
+  || fail "staged local secret scan returned $code"; fi
+git -C "$PROJECT" commit -q -m staged-secret
+example_key="sb_secret_$(python3 -c 'import secrets;print(secrets.token_urlsafe(24))')"
+printf 'SERVICE_TOKEN=%s\n' "$example_key" >> "$PROJECT/.env.example"
+printf 'SERVICE_TOKEN=%s\n' "$example_key" >> "$PROJECT/.env"
+git -C "$PROJECT" add .env.example && git -C "$PROJECT" commit -q -m example-key-pattern
+if (cd "$PROJECT" && sh .agents/hooks/scan-secrets.sh "--range=HEAD~1..HEAD") >"$WORK/scan-out" 2>&1; then
+  fail "scanner missed a known key pattern in .env.example"
+else code=$?; [ "$code" -eq 1 ] && grep -q 'file .env.example' "$WORK/scan-out" \
+  && ! grep -Fq -- "$example_key" "$WORK/scan-out" \
+  && pass "known key patterns in .env.example are caught without printing them" \
+  || fail "example key pattern scan returned $code"; fi
 for shape in sbp sb_secret anthropic openai slack google stripe githubpat aws pem servicejwt; do
   case "$shape" in
     sbp) line="sbp_$(python3 -c 'import secrets;print(secrets.token_urlsafe(24))')";;
