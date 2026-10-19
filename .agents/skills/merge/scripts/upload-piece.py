@@ -130,7 +130,8 @@ def upload(args):
         return stopped(6, "GitHub's pull request answer could not be read")
     guard = run(project, "sh", str(setup / "scripts/use-push-guard.sh"), "--check", str(project))
     if guard.returncode:
-        return stopped(10, "the push guard is not on; run use-push-guard.sh from the project folder")
+        return stopped(10, "the push guard is not on. Run use-push-guard.sh from the project folder to switch it on. "
+                       "If that also stops, /maintain can set it up")
     # Use a complete refspec so push.default and remote.origin.push cannot
     # select main, another branch, or a set of branches.
     ref = "refs/heads/" + branch

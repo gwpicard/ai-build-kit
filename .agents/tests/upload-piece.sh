@@ -62,25 +62,28 @@ os.execv(os.environ['UPLOAD_TEST_REAL_GIT'], [os.environ['UPLOAD_TEST_REAL_GIT']
         assert result.returncode == code, (args, result.returncode, result.stdout, result.stderr)
         return result.stdout
 
-    def setup(label, remote_main=True):
+    def setup(label, remote_main=True, guard=True):
         project, remote = work / label, work / (label + '.git')
         run('git', 'init', '-q', '-b', 'main', str(project))
         run('git', 'init', '-q', '--bare', str(remote))
         for key, value in (('user.name', 'Rehearsal'), ('user.email', 'test@example.invalid'),
-                           ('commit.gpgsign', 'false'), ('core.hooksPath', '.agents/hooks/git')):
+                           ('commit.gpgsign', 'false')):
             run('git', 'config', key, value, cwd=project)
+        if guard:
+            run('git', 'config', 'core.hooksPath', '.agents/hooks/git', cwd=project)
         run('git', 'commit', '-q', '--allow-empty', '-m', 'Founding', cwd=project)
         # Seed the bare remote before the guard is installed, as the first
         # upload's API would. This test makes no change to the first upload.
         if remote_main:
             run('git', 'push', '-q', str(remote), 'main', cwd=project)
-        hooks = project / '.agents/hooks'
-        (hooks / 'git').mkdir(parents=True)
-        for source, dest in (('pre-push', hooks / 'git/pre-push'),
-                             ('scan-secrets.sh', hooks / 'scan-secrets.sh'),
-                             ('scan-secrets.py', hooks / 'scan-secrets.py')):
-            shutil.copy2(foundation / source, dest)
-        (hooks / 'git/pre-push').chmod(0o755)
+        if guard:
+            hooks = project / '.agents/hooks'
+            (hooks / 'git').mkdir(parents=True)
+            for source, dest in (('pre-push', hooks / 'git/pre-push'),
+                                 ('scan-secrets.sh', hooks / 'scan-secrets.sh'),
+                                 ('scan-secrets.py', hooks / 'scan-secrets.py')):
+                shutil.copy2(foundation / source, dest)
+            (hooks / 'git/pre-push').chmod(0o755)
         run('git', 'remote', 'add', 'origin', 'https://github.com/rehearsal/project.git', cwd=project)
         run('git', 'config', 'url.' + str(remote) + '.insteadOf',
             'https://github.com/rehearsal/project.git', cwd=project)
@@ -107,6 +110,14 @@ os.execv(os.environ['UPLOAD_TEST_REAL_GIT'], [os.environ['UPLOAD_TEST_REAL_GIT']
         assert env['UPLOAD_TEST_CANARY'] not in out
         assert 'declined' not in out.lower()
         return out
+
+    p, remote, state = setup('older-project', guard=False)
+    run('sh', str(foundation.parent.parent / 'scripts/use-push-guard.sh'), str(p))
+    assert 'opened\t' in upload(p)
+    prs = json.loads(state.read_text())['pull_requests']
+    assert len(prs) == 2 and prs[-1]['base'] == 'main' and prs[-1]['head'] == 'piece'
+    assert run('git', 'rev-parse', 'piece', cwd=remote) == run('git', 'rev-parse', 'HEAD', cwd=p)
+    print('ok: a project with no guard or hooks path can install the guard, upload and open a pull request')
 
     p, remote, state = setup('normal')
     # A personal push mapping must not redirect the upload to main.

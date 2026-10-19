@@ -58,6 +58,44 @@ sh "$USE" "$P" && pass "running it again changes nothing" || fail "a second run 
 pushes() { git -C "$P" push "$@" >/dev/null 2>&1; }
 remote_main() { git -C "$R" rev-parse main; }
 
+echo "== Installing a missing guard =="
+M="$WORK/missing-guard"
+git init -q "$M"
+git -C "$M" remote add origin "$R"
+git -C "$M" commit -q --allow-empty -m "Older project"
+if sh "$USE" --check "$M" >"$WORK/missing-check" 2>&1; then
+  fail "a project with no guard passed the check"
+else
+  [ ! -e "$M/.agents/hooks" ] \
+    && pass "checking a missing guard leaves the project alone" || fail "checking installed files"
+fi
+sh "$USE" "$M" && sh "$USE" --check "$M" \
+  && pass "a project with no guard or hooks path gets an active guard" \
+  || fail "the missing guard could not be installed"
+if git -C "$M" push origin HEAD:main >"$WORK/missing-main" 2>&1; then
+  fail "the installed guard allowed a push to main"
+else
+  grep -q 'would change main directly' "$WORK/missing-main" \
+    && pass "the installed guard refuses main" || fail "main failed for another reason"
+fi
+git -C "$M" push origin HEAD:refs/heads/older-piece >"$WORK/missing-branch" 2>&1 \
+  && pass "the installed guard and scanner allow a piece branch" \
+  || fail "the installed guard or scanner stopped a piece branch"
+
+C="$WORK/changed-guard"
+git init -q "$C"
+mkdir -p "$C/.agents/hooks/git"
+printf '#!/bin/sh\nexit 23\n' > "$C/.agents/hooks/git/pre-push"
+cp "$C/.agents/hooks/git/pre-push" "$WORK/changed-before"
+if sh "$USE" "$C" >"$WORK/changed-out" 2>&1; then
+  fail "a changed guard was accepted"
+else
+  cmp -s "$WORK/changed-before" "$C/.agents/hooks/git/pre-push" \
+    && [ -z "$(git -C "$C" config --local --get core.hooksPath || true)" ] \
+    && pass "a changed guard stops installation and stays intact" \
+    || fail "a changed guard or its hooks path was overwritten"
+fi
+
 echo "== Pushes the guard stops =="
 git -C "$P" checkout -q -b sign-out
 git -C "$P" commit -q --allow-empty -m "Sign an item out"

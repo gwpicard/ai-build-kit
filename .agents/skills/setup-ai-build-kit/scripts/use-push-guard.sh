@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import re
 import shlex
+import shutil
 import subprocess
 import sys
 
@@ -101,8 +102,15 @@ try:
         if not active():
             stop()
         sys.exit(0)
+    if not guard.exists() and not guard.is_symlink():
+        guard.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(skill / 'templates/foundation/pre-push', guard)
     if guard.read_bytes() != canonical:
         stop()
+    for name in ('scan-secrets.sh', 'scan-secrets.py'):
+        scanner = project / '.agents/hooks' / name
+        if not scanner.exists() and not scanner.is_symlink():
+            shutil.copy2(skill / 'templates/foundation' / name, scanner)
     guard.chmod(guard.stat().st_mode | 0o111)
     if active():
         sys.exit(0)

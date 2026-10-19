@@ -198,6 +198,15 @@ run_once() {
     }
   fi
 
+  # Founded starting states receive the files founding installs before the
+  # first commit. Blank projects receive them during their setup conversation.
+  if [ "$setup" = "fixture" ] || [ -n "$prepare" ]; then
+    sh "$project/.agents/skills/setup-ai-build-kit/scripts/bootstrap-project.sh" "$project" >&2 || {
+      echo "  could not install the project foundation for scenario $number" >&2
+      return 1
+    }
+  fi
+
   git -C "$project" init -q
   # A real remote, so the pull-request save route is reachable. It is a bare
   # repository next door rather than anything on GitHub: push works, nothing
@@ -216,6 +225,15 @@ run_once() {
   if [ -n "$prepare" ] && [ -f "$REPLAY_DIR/prepare/$prepare.after-commit.sh" ]; then
     sh "$REPLAY_DIR/prepare/$prepare.after-commit.sh" "$project" || {
       echo "  preparation '$prepare' failed after the first commit for scenario $number" >&2
+      return 1
+    }
+  fi
+
+  # Enable the guard after the harness has seeded the local remote, before the
+  # agent starts. Founding likewise enables it once the repository exists.
+  if [ "$setup" = "fixture" ] || [ -n "$prepare" ]; then
+    sh "$project/.agents/skills/setup-ai-build-kit/scripts/use-push-guard.sh" "$project" || {
+      echo "  could not enable the push guard for scenario $number" >&2
       return 1
     }
   fi
