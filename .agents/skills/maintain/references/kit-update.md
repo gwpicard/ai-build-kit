@@ -44,8 +44,10 @@ Give its `say` lines in one reply, in order, and keep to these rules:
   Making the live tool match is a live-service change for /setup-hosting.
 - On a no, run the check with `--decline <step>`.
 
-Run the check again after each step and at the end. Record one dated
+Rerun after each step and at the end. Record one dated
 changelog line saying what was done and what was declined.
+
+Checks reading kit files: [project-checks.md](project-checks.md).
 
 ## The Codex start check
 

@@ -505,35 +505,146 @@ AGENTNAMES
 # ---------------------------------------------------------------------------
 echo "== Frontmatter =="
 
+# Prefer a YAML parser already installed on the machine. The fallback is a
+# conservative check of scalar values, not a claim to parse all of YAML.
+fm_parser=fallback
+if command -v python3 >/dev/null 2>&1 && python3 -c 'import yaml' >/dev/null 2>&1; then
+  fm_parser=python
+elif command -v ruby >/dev/null 2>&1 && ruby -ryaml -e 'exit 0' >/dev/null 2>&1; then
+  fm_parser=ruby
+else
+  note "no YAML parser available; checking skill headers with the conservative fallback"
+fi
+parse_skill_header() {
+  case "${1:-$fm_parser}" in
+    python)
+      python3 -c '
+import sys, yaml
+try:
+    doc = yaml.safe_load(sys.stdin.read())
+    if not isinstance(doc, dict) or any(not isinstance(doc.get(k), str) or not doc[k].strip() for k in ("name", "description")):
+        raise ValueError("name and description must be non-empty strings")
+    print(doc["name"])
+except (yaml.YAMLError, ValueError) as error:
+    print(error, file=sys.stderr)
+    sys.exit(1)
+' ;;
+    ruby)
+      ruby -ryaml -e '
+begin
+  doc = YAML.safe_load(STDIN.read)
+  unless doc.is_a?(Hash) && %w[name description].all? { |key| doc[key].is_a?(String) && !doc[key].strip.empty? }
+    raise "name and description must be non-empty strings"
+  end
+  puts doc.fetch("name")
+rescue StandardError => error
+  warn error.message
+  exit 1
+end
+' ;;
+    fallback)
+      awk '
+        /^[ \t]*($|#)/ { next }
+        /^[^ \t][^:]*:/ {
+          key=$0; sub(/:.*/, "", key)
+          value=$0; sub(/^[^:]*:[ \t]*/, "", value)
+          sub(/[ \t]+#.*/, "", value); sub(/[ \t]+$/, "", value)
+          first=substr(value,1,1)
+          quoted=(first=="\"" || first==sprintf("%c",39))
+          block=(value ~ /^[|>][-+0-9]*$/)
+          if (!quoted && !block && (index(value,": ") || (first!="" && index("-?:,[]{}#&*!|>%@`",first)))) bad=1
+          if (quoted && (length(value)<2 || substr(value,length(value),1)!=first)) bad=1
+          if (key=="name" || key=="description") {
+            if (++seen[key]>1) bad=1
+            if (quoted) value=substr(value,2,length(value)-2)
+            else if (!block && (value=="" || tolower(value) ~ /^(null|~|true|false|yes|no|on|off|[-+]?\.inf|\.nan)$/ || value ~ /^[-+]?([0-9]|\.[0-9])/)) bad=1
+            if (value=="") bad=1
+            if (block) waiting=key
+            else { present[key]=1; if (key=="name") name=value }
+          } else waiting=""
+          next
+        }
+        /^[ \t]+/ { if (waiting && $0 ~ /[^ \t]/) { present[waiting]=1; if (waiting=="name") bad=1 }; next }
+        { bad=1 }
+        END { if (bad || !present["name"] || !present["description"]) exit 1; print name }
+      ' ;;
+  esac
+}
+
+# Exercise both the selected parser and the fallback against the installer
+# failure, YAML indicators and values that parse but are not strings.
+fm_selftest_ok=1
+for fm_mode in "$fm_parser" fallback; do
+  for fm_valid in 'A plain description.' '"Evidence: fresh output."' "'Evidence: fresh output.'"; do
+    if ! printf 'name: sample\ndescription: %s\n' "$fm_valid" | parse_skill_header "$fm_mode" >/dev/null 2>&1; then
+      fail "skill header self-test rejected a valid string ($fm_mode)"
+      fm_selftest_ok=0
+    fi
+  done
+  if ! printf 'name: sample\ndescription: |\n  A block description.\n' | parse_skill_header "$fm_mode" >/dev/null 2>&1; then
+    fail "skill header self-test rejected a block string ($fm_mode)"
+    fm_selftest_ok=0
+  fi
+  for fm_bad in 'Evidence: fresh output.' '[a, b]' '{a: b}' '*missing' '@invalid' '`invalid' '>bad' '|bad' 'true' 'NO' '42' '.5' '.nan' 'null' '""'; do
+    if printf 'name: sample\ndescription: %s\n' "$fm_bad" | parse_skill_header "$fm_mode" >/dev/null 2>&1; then
+      fail "skill header self-test accepted an invalid description ($fm_mode): $fm_bad"
+      fm_selftest_ok=0
+    fi
+  done
+  if [ "$fm_mode" = fallback ]; then
+    for fm_indicator in '&anchor value' '!tag value'; do
+      if printf 'name: sample\ndescription: %s\n' "$fm_indicator" | parse_skill_header fallback >/dev/null 2>&1; then
+        fail "skill header fallback accepted an unquoted YAML indicator"
+        fm_selftest_ok=0
+      fi
+    done
+  fi
+  if printf 'name: [sample]\ndescription: A string.\n' | parse_skill_header "$fm_mode" >/dev/null 2>&1; then
+    fail "skill header self-test accepted a non-string name ($fm_mode)"
+    fm_selftest_ok=0
+  fi
+done
+[ "$fm_selftest_ok" -eq 0 ] || pass "skill header self-tests reject the installer fault and non-string fields"
+
 seen_names=""
-skillfiles=$(find "$SKILLS" -mindepth 2 -maxdepth 2 -name SKILL.md | sort)
+skillfiles=$(find "$SKILLS" "$MAINTAINER_SKILLS" "$ROOT/.claude" "$ROOT/.cursor" \
+  "$ROOT/.gemini" "$ROOT/.codex" "$ROOT/.github" -type f -name SKILL.md | sort)
+fm_ok=1
 while IFS= read -r file; do
   [ -n "$file" ] || continue
   folder=$(basename "$(dirname "$file")")
-  fm_name=$(awk '/^---[ \t]*$/{fm++;next} fm==1 && /^name:[ \t]/{sub("^name:[ \t]*","");print;exit}' "$file")
-  fm_desc=$(awk '/^---[ \t]*$/{fm++;next} fm==1 && /^description:[ \t]/{sub("^description:[ \t]*","");print;exit}' "$file")
-
-  if [ -z "$fm_name" ]; then
-    fail "$file: missing frontmatter name"
-  elif [ "$fm_name" != "$folder" ]; then
+  if ! fm_header=$(awk '
+    NR==1 { if ($0 !~ /^---[ \t]*$/) exit 1; next }
+    /^---[ \t]*$/ { closed=1; exit }
+    { print }
+    END { if (!closed) exit 1 }
+  ' "$file"); then
+    fail "$file: missing or unclosed YAML front matter"
+    fm_ok=0
+    continue
+  fi
+  if ! fm_name=$(printf '%s\n' "$fm_header" | parse_skill_header); then
+    fail "$file: invalid YAML front matter; name and description must be non-empty strings"
+    fm_ok=0
+    continue
+  fi
+  if [ "$fm_name" != "$folder" ]; then
     fail "$file: frontmatter name '$fm_name' does not match folder '$folder'"
+    fm_ok=0
   fi
-
-  if [ -z "$fm_desc" ]; then
-    fail "$file: missing or empty frontmatter description"
+  # Adapters intentionally repeat canonical names. Only a second name within
+  # the same skill root is a duplicate.
+  fm_identity="$(dirname "$(dirname "$file")")/$fm_name"
+  if printf '%s\n' "$seen_names" | grep -qxF "$fm_identity"; then
+    fail "$file: duplicate skill name '$fm_name'"
+    fm_ok=0
   fi
-
-  if [ -n "$fm_name" ]; then
-    if printf '%s\n' "$seen_names" | grep -qx "$fm_name"; then
-      fail "$file: duplicate skill name '$fm_name'"
-    fi
-    seen_names=$(printf '%s\n%s' "$seen_names" "$fm_name")
-  fi
+  seen_names=$(printf '%s\n%s' "$seen_names" "$fm_identity")
 done <<SKILLFILES
 $skillfiles
 SKILLFILES
 
-pass "frontmatter checked on $(printf '%s\n' "$skillfiles" | grep -c .) SKILL.md files"
+[ "$fm_ok" -eq 0 ] || pass "frontmatter checked on $(printf '%s\n' "$skillfiles" | grep -c .) SKILL.md files ($fm_parser)"
 
 # ---------------------------------------------------------------------------
 echo "== Skill structure =="
