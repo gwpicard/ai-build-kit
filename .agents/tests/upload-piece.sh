@@ -192,14 +192,52 @@ os.execv(os.environ['UPLOAD_TEST_REAL_GIT'], [os.environ['UPLOAD_TEST_REAL_GIT']
         ('unset', lambda p: run('git', 'config', '--unset', 'core.hooksPath', cwd=p)),
         ('missing', lambda p: (p / '.agents/hooks/git/pre-push').unlink()),
         ('not-executable', lambda p: (p / '.agents/hooks/git/pre-push').chmod(0o644)),
-        ('unrelated', lambda p: (p / '.agents/hooks/git/pre-push').write_text('#!/bin/sh\nexit 0\n')),
     ):
         p, remote, state = setup(label)
         change(p)
-        assert 'push guard is not on' in upload(p, code=10)
-        assert not run('git', 'for-each-ref', '--format=%(refname)', 'refs/heads/piece', cwd=remote)
-        assert len(json.loads(state.read_text())['pull_requests']) == 1
-    print('ok: upload stops before pushing when Git would not run the kit guard')
+        assert 'opened\t' in upload(p)
+        assert run('git', 'rev-parse', 'piece', cwd=remote) == run('git', 'rev-parse', 'HEAD', cwd=p)
+    print('ok: upload restores an unset, missing or non-executable guard before pushing')
+
+    p, remote, state = setup('rewritten-hook')
+    use_guard = str(foundation.parent.parent / 'scripts/use-push-guard.sh')
+    hook = p / '.git/hooks/pre-push'
+    installer = work / 'install-hooks.py'
+    installer.write_text('''from pathlib import Path
+hook = Path('.git/hooks/pre-push')
+hook.write_text('#!/bin/sh\\ncat > own-input\\nprintf "%s\\\\n" "$@" > own-args\\nexit 0\\n')
+hook.chmod(0o755)
+''')
+    run('git', 'config', '--unset', 'core.hooksPath', cwd=p)
+    run(sys.executable, str(installer), cwd=p)
+    original = hook.read_text()
+    run('sh', use_guard, str(p))
+    run('sh', use_guard, '--check', str(p))
+    # Reinstalling a tool such as simple-git-hooks replaces the whole hook.
+    run(sys.executable, str(installer), cwd=p)
+    assert hook.read_text() == original
+    run('sh', use_guard, '--check', str(p), code=1)
+    assert 'opened\t' in upload(p)
+    assert hook.read_text().endswith(original.partition('\n')[2])
+    assert run('git', 'rev-parse', 'piece', cwd=remote) == run('git', 'rev-parse', 'HEAD', cwd=p)
+    assert 'refs/heads/piece' in (p / 'own-input').read_text()
+    assert (p / 'own-args').read_text().splitlines()[0] == 'origin'
+    assert len(json.loads(state.read_text())['pull_requests']) == 2
+    refused = subprocess.run(['git', 'push', 'origin', 'HEAD:main'], cwd=p, env=env,
+                             capture_output=True, text=True)
+    assert refused.returncode and 'would change main directly' in refused.stderr
+    assert run('git', 'rev-parse', 'main', cwd=remote) == run('git', 'rev-parse', 'main', cwd=p)
+    print('ok: upload restores a rewritten hook, keeps its work, uploads the branch and then refuses main')
+
+    p, remote, state = setup('changed-guard')
+    guard = p / '.agents/hooks/git/pre-push'
+    guard.write_text('#!/bin/sh\nexit 23\n')
+    before = guard.read_bytes()
+    assert 'push guard is not on' in upload(p, code=10)
+    assert guard.read_bytes() == before
+    assert not run('git', 'for-each-ref', '--format=%(refname)', 'refs/heads/piece', cwd=remote)
+    assert len(json.loads(state.read_text())['pull_requests']) == 1
+    print('ok: a changed guard stays intact and stops the upload before pushing')
 
     for field in ('body', 'title'):
         p, remote, state = setup('secret-' + field)

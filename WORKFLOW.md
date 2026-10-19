@@ -699,7 +699,11 @@ and it cannot tell whether somebody still plans to use one. When there are
 none, you hear nothing.
 
 The push guard founding installs stops changes straight to `main` and pushes
-that replace remote work. Claude Code's settings protect that guard, refuse
+that replace remote work.
+A tool that rewrites Git hooks can switch the guard off until the next upload
+switches it back on, and GitHub's own protection of `main` covers that gap
+where your plan allows it.
+Claude Code's settings protect that guard, refuse
 forced deletes and ask you before any merge.
 A project that already had its own Claude Code settings when it was founded
 keeps them, and the next /maintain visit offers the missing safety rules.

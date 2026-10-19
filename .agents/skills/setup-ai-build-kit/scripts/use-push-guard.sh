@@ -6,7 +6,6 @@ SCRIPT_ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd -P)
 exec python3 - "$SCRIPT_ROOT" "$@" <<'PYTHON'
 import os
 from pathlib import Path
-import re
 import shlex
 import shutil
 import subprocess
@@ -82,8 +81,6 @@ try:
         hook = (git_hook.parent.parent / 'pre-push').resolve()
     elif hook.parent == project / '.husky/_':
         stop('Install Husky first so its own push hook can run the guard.')
-    if hook.is_file() and re.search(r'generated|do not edit|lefthook|git[ -]lfs', hook.read_text(), re.I):
-        stop('A tool recreates this push hook. The guard needs a hook that survives reinstalling that tool.')
 
     def active():
         if husky and not husky_dispatches():
