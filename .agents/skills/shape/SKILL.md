@@ -20,8 +20,7 @@ holds the issue format, labels and plan rules.
 
 Follow `records/references/pieces.md` for the issue. Preserve the person's
 original words underneath a refinement. Include the masterplan change and read it back;
-leave it proposed while shaping, apart from recording risk acceptance as
-`fit-check/references/risk-acceptance.md` requires. On code projects, run
+leave it proposed while shaping. On code projects, run
 `quality.py reach --paths` for likely files and record `Reaches:` or
 `Reaches: new files only`. Name the piece's risk areas on its `Risk areas:`
 line, or `none`.
@@ -36,12 +35,13 @@ Use `clarify` to interview. For a decision best settled by seeing it, use an
 existing artifact or throwaway prototype as that skill directs. Say which
 step starts. If the person is absent, name what the piece needs; do not guess.
 
-Use `research` for outside facts or existing work; say which check and why.
+Use `research` for outside facts or existing work, including its notice for
+unchecked facts; say which check and why.
 Record what settled the question in `## Decided`, then mark ready.
 
-Record acceptance there with the date and the person's words. Keep an accepted
-unchecked fact labelled unchecked; it alone needs no masterplan `Accepted:`
-line. For a named risk area, also follow
+Record acceptance only there with the date and the person's words, naming the
+risk area or unchecked fact. Keep an accepted unchecked fact labelled unchecked.
+For a named risk area, also follow
 `fit-check/references/risk-acceptance.md`.
 
 Typed alone, take an unreproduced repair, then the lowest-numbered question,

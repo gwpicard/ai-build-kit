@@ -28,9 +28,10 @@ rules in [the risk notice](../../fit-check/references/risk-notice.md) and its
 [acceptance rules](../../fit-check/references/risk-acceptance.md).
 
 If they carry on after the notice, treat it as acceptance. Before work starts,
-record the date and their words in the masterplan's risk record, read it
-back, then make the next attempt. Do not ask again for permission. Silence,
-questions and instructions given before the notice do not count.
+record the date and their words by the acceptance rules above, read it
+back, then make the next attempt; during `/shape`, it waits for `/implement`.
+Do not ask again for permission. Silence, questions and instructions given
+before the notice do not count.
 
 For a rebuild, the notice covers the replacement. Explain that nobody who
 understands the original failure has reviewed the replacement, and that its

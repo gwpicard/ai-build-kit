@@ -5,7 +5,7 @@ Usage: upload-piece.py --title TITLE (--body TEXT | --body-file FILE) [PROJECT]
        upload-piece.py --title-file FILE (--body TEXT | --body-file FILE) [PROJECT]
 
 PROJECT defaults to the current folder. Origin names the GitHub repository.
-An open pull request to main for this branch is reported without changing anything.
+Restore the push guard before reporting an open pull request or uploading.
 The body always reaches GitHub through --body-file, without a shell.
 
 Exit codes:
@@ -115,6 +115,13 @@ def upload(args):
         return stopped(3, "remote main is missing; use first-upload.py")
     if remote.returncode:
         return failure(project, remote)
+    guard = run(project, "sh", str(setup / "scripts/use-push-guard.sh"), "--check", str(project))
+    if guard.returncode:
+        run(project, "sh", str(setup / "scripts/use-push-guard.sh"), str(project))
+        guard = run(project, "sh", str(setup / "scripts/use-push-guard.sh"), "--check", str(project))
+    if guard.returncode:
+        return stopped(10, "the push guard is not on. Run use-push-guard.sh from the project folder to switch it on. "
+                       "If that also stops, /maintain can set it up")
     existing = run(project, "gh", "pr", "list", "--repo", name, "--head", branch,
                    "--base", "main", "--state", "open", "--json", "url")
     if existing.returncode:
@@ -128,13 +135,6 @@ def upload(args):
             return 0
     except (ValueError, KeyError, TypeError):
         return stopped(6, "GitHub's pull request answer could not be read")
-    guard = run(project, "sh", str(setup / "scripts/use-push-guard.sh"), "--check", str(project))
-    if guard.returncode:
-        run(project, "sh", str(setup / "scripts/use-push-guard.sh"), str(project))
-        guard = run(project, "sh", str(setup / "scripts/use-push-guard.sh"), "--check", str(project))
-    if guard.returncode:
-        return stopped(10, "the push guard is not on. Run use-push-guard.sh from the project folder to switch it on. "
-                       "If that also stops, /maintain can set it up")
     # Use a complete refspec so push.default and remote.origin.push cannot
     # select main, another branch, or a set of branches.
     ref = "refs/heads/" + branch

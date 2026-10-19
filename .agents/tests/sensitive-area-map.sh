@@ -80,11 +80,57 @@ fi
 check "a dated area with no recorded words still holds" "$unrecorded"
 grep -Fq 'still needs your decision' "$tmp/out" && named=yes || named=no
 check "the unrecorded acceptance is reported as open" "$named"
-git -C "$project" reset -q --hard HEAD~1
-
-sed 's/caution: checked; not yet done/caution: waiting; accepted 2026-09-18/' "$project/masterplan.md" > "$tmp/masterplan"
+sed 's/caution: waiting; accepted 2026-09-18/caution: checked; not yet done/' "$project/masterplan.md" > "$tmp/masterplan"
 cp "$tmp/masterplan" "$project/masterplan.md"
-printf '%s\n' '    Accepted: I accept this exposure on 2026-09-18' >> "$project/masterplan.md"
+git -C "$project" add masterplan.md
+git -C "$project" commit -qm 'Keep the area open until acceptance is copied'
+# Shape keeps the decision on the piece, outside the project's working tree.
+mkdir -p "$tmp/bin"
+ln -s "$ROOT/.agents/tests/lib/stand-in-gh" "$tmp/bin/gh"
+export PATH="$tmp/bin:$PATH"
+export STANDIN_GH_STATE="$tmp/piece.json" STANDIN_GH_LOG="$tmp/gh.log"
+python3 - "$STANDIN_GH_STATE" <<'PY'
+import json, sys
+body = '''Risk areas: money
+## Decided
+Accepted: 2026-09-18, money; caution: owner checks first figures not done; "build it anyway"
+'''
+with open(sys.argv[1], 'w') as handle:
+    json.dump({'labels': ['ready', 'building'],
+               'issues': {'1': {'body': body, 'labels': ['ready']}}}, handle)
+PY
+[ -z "$(git -C "$project" status --porcelain)" ] && clean=yes || clean=no
+check "shape acceptance on the piece leaves the working tree clean" "$clean"
+if (cd "$project" && sh "$ROOT/.agents/skills/records/scripts/piece-labels.sh" start 1) > "$tmp/out" 2>&1; then
+  started=yes
+else
+  started=no
+fi
+check "implement can start after shape records acceptance" "$started"
+if run_check --change "$base" > "$tmp/out" 2>&1; then
+  pending=no
+else
+  pending=yes
+fi
+check "the piece's acceptance alone does not clear the project check" "$pending"
+
+# Implement copies the decision after start, before changing the flagged code.
+(cd "$project" && gh issue view 1 --json body) > "$tmp/piece-body.json"
+python3 - "$project/masterplan.md" "$tmp/piece-body.json" <<'PY'
+import json, sys
+from pathlib import Path
+plan = Path(sys.argv[1])
+body = json.loads(Path(sys.argv[2]).read_text())['body']
+acceptance = body.split('## Decided\n', 1)[1].strip()
+date = acceptance.split(': ', 1)[1].split(',', 1)[0]
+text = plan.read_text().replace('not yet done', 'accepted ' + date).replace('Accepted: none', acceptance)
+assert acceptance in text
+plan.write_text(text)
+assert date in text and '"build it anyway"' in text
+PY
+grep -Fq 'Accepted: 2026-09-18, money; caution: owner checks first figures not done; "build it anyway"' "$project/masterplan.md" \
+  && copied=yes || copied=no
+check "implement copies the original dated acceptance into the masterplan" "$copied"
 git -C "$project" add -A
 git -C "$project" commit -qm accepted
 if run_check --change "$base" > "$tmp/out" 2>&1; then

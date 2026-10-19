@@ -20,12 +20,17 @@ Choose the route before changing files:
 
 - **Pull request:** every piece.
 - **Flagged:** work inside a named risk area whose caution is neither
-  done nor accepted. Give the `fit-check` risk notice before building. On the
-  person's decision to continue during `/implement`, run `piece-labels.sh start`,
-  record their words and date with `Accepted:`, then build and save by pull request in that
-  reply. A lock waiting only on this caution opens unless they ask to keep it.
+  done nor accepted. Give the `fit-check` risk notice unless the piece already
+  records acceptance. On the person's decision to continue during `/implement`,
+  run `piece-labels.sh start`, record their words and date with `Accepted:`, then
+  build and save by pull request in that reply. A lock waiting only on this
+  caution opens unless they ask to keep it.
   Otherwise stop at the recorded condition. In an unattended run, never
   record acceptance.
+
+After `piece-labels.sh start`, copy any named-risk-area acceptance from the
+piece into the masterplan before flagged work, following
+`fit-check/references/risk-acceptance.md`.
 
 Both routes use a short-lived branch from `main`. If
 GitHub is unavailable, save on the branch and note the missing pull request

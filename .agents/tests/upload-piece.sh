@@ -223,11 +223,19 @@ hook.chmod(0o755)
     assert 'refs/heads/piece' in (p / 'own-input').read_text()
     assert (p / 'own-args').read_text().splitlines()[0] == 'origin'
     assert len(json.loads(state.read_text())['pull_requests']) == 2
+    before = state.read_bytes()
+    online = run('git', 'rev-parse', 'piece', cwd=remote)
+    run(sys.executable, str(installer), cwd=p)
+    run('sh', use_guard, '--check', str(p), code=1)
+    assert 'existing\t' in upload(p)
+    run('sh', use_guard, '--check', str(p))
+    assert hook.read_text().endswith(original.partition('\n')[2])
+    assert state.read_bytes() == before and run('git', 'rev-parse', 'piece', cwd=remote) == online
     refused = subprocess.run(['git', 'push', 'origin', 'HEAD:main'], cwd=p, env=env,
                              capture_output=True, text=True)
     assert refused.returncode and 'would change main directly' in refused.stderr
     assert run('git', 'rev-parse', 'main', cwd=remote) == run('git', 'rev-parse', 'main', cwd=p)
-    print('ok: upload restores a rewritten hook, keeps its work, uploads the branch and then refuses main')
+    print('ok: new and existing pull requests restore a rewritten hook, keep its work and refuse main')
 
     p, remote, state = setup('changed-guard')
     guard = p / '.agents/hooks/git/pre-push'
