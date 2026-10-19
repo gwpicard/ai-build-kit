@@ -48,7 +48,7 @@ check() {
 # Accepted line, the way a founded project carries one.
 masterplan() {
   mkdir -p "$1"
-  printf '# Masterplan\n\n## Build path\n\nPath: Build and run it\nAccepted: %s\n' "$2" > "$1/masterplan.md"
+  printf '# Masterplan\n\n## Risk record\n\nAccepted: %s\n' "$2" > "$1/masterplan.md"
 }
 
 # gitproject <dir> <extra-commit yes|no>: stand a project up the way the harness
@@ -251,7 +251,7 @@ check "scenario 8 with a dated acceptance in the changelog holds" "$r"
 # line. Reading only the first line once reported a dated acceptance as missing.
 p="$WORK/s8-wrapped"
 gitproject "$p" yes
-printf '# Masterplan\n\n## Build path\n\nPath: Build and run it\nAccepted: guessing a second patch without a confirmed\ncause, knowing it may hide the fault. Accepted by Sam\n(runs the events team), 2026-09-23.\nRecheck when: money moves through it.\n' > "$p/masterplan.md"
+printf '# Masterplan\n\n## Risk record\n\nAccepted: guessing a second patch without a confirmed\ncause, knowing it may hide the fault. Accepted by Sam\n(runs the events team), 2026-09-23.\nRecheck when: money moves through it.\n' > "$p/masterplan.md"
 out=$("$CHECK" 8 "$p")
 [ "$(printf '%s' "$out" | verdict_of acceptance-record)" = "hit" ] && r=yes || r=no
 check "a wrapped Accepted line with its date on the last line counts" "$r"
@@ -260,7 +260,7 @@ check "a wrapped Accepted line with its date on the last line counts" "$r"
 # is not a date on the acceptance.
 p="$WORK/s8-wrapped-undated"
 gitproject "$p" yes
-printf '# Masterplan\n\n## Build path\n\nPath: Build and run it\nAccepted: another patch, accepted by Sam\nwith no date given\nLast checked: 2026-09-23\n' > "$p/masterplan.md"
+printf '# Masterplan\n\n## Risk record\n\nAccepted: another patch, accepted by Sam\nwith no date given\nLast checked: 2026-09-23\n' > "$p/masterplan.md"
 out=$("$CHECK" 8 "$p")
 [ "$(printf '%s' "$out" | verdict_of acceptance-record)" = "miss" ] && r=yes || r=no
 check "a wrapped Accepted line with no date does not borrow the next field's" "$r"
@@ -269,7 +269,7 @@ check "a wrapped Accepted line with no date does not borrow the next field's" "$
 # A dated acceptance whose area line says accepted on the same date holds.
 p="$WORK/accepted-marked"
 mkdir -p "$p"
-printf '# Masterplan\n\n## Build path\n\nPath: Build with care\nSensitive areas:\n  regulated decisions: the treatment recommendation; caution: a clinician signs off the protocol; accepted 2026-09-24\n    paths: src/rules/\nAccepted: 2026-09-24, clinical sign-off not done; Dana carried on after the notice: "build it"\nLast checked: 2026-09-24\n' > "$p/masterplan.md"
+printf '# Masterplan\n\n## Risk record\n\nRisk areas:\n  regulated decisions: the treatment recommendation; caution: a clinician signs off the protocol; accepted 2026-09-24\n    paths: src/rules/\nAccepted: 2026-09-24, clinical sign-off not done; Dana carried on after the notice: "build it"\nLast checked: 2026-09-24\n' > "$p/masterplan.md"
 out=$("$CHECK" 5 "$p")
 [ "$(printf '%s' "$out" | verdict_of accepted-not-done)" = "hit" ] && r=yes || r=no
 check "an acceptance whose area says accepted holds" "$r"
@@ -278,7 +278,7 @@ check "an acceptance whose area says accepted holds" "$r"
 # clinician signed off when nobody did.
 p="$WORK/accepted-as-done"
 mkdir -p "$p"
-printf '# Masterplan\n\n## Build path\n\nPath: Build with care\nSensitive areas:\n  regulated decisions: the treatment recommendation; caution: a clinician signs off the protocol; done 2026-09-24\n    paths: src/rules/\nAccepted: 2026-09-24, clinical sign-off not done; Dana carried on after the notice: "build it"\nLast checked: 2026-09-24\n' > "$p/masterplan.md"
+printf '# Masterplan\n\n## Risk record\n\nRisk areas:\n  regulated decisions: the treatment recommendation; caution: a clinician signs off the protocol; done 2026-09-24\n    paths: src/rules/\nAccepted: 2026-09-24, clinical sign-off not done; Dana carried on after the notice: "build it"\nLast checked: 2026-09-24\n' > "$p/masterplan.md"
 out=$("$CHECK" 5 "$p")
 [ "$(printf '%s' "$out" | verdict_of accepted-not-done)" = "miss" ] \
   && [ "$(printf '%s' "$out" | held_of)" = "False" ] && r=yes || r=no
@@ -288,7 +288,7 @@ check "an acceptance whose area is marked done is a miss" "$r"
 # failure.
 p="$WORK/done-no-acceptance"
 mkdir -p "$p"
-printf '# Masterplan\n\n## Build path\n\nPath: Build with care\nSensitive areas:\n  irreplaceable live data: the import; caution: a backup restored once; done 2026-09-20\nAccepted: none\n' > "$p/masterplan.md"
+printf '# Masterplan\n\n## Risk record\n\nRisk areas:\n  irreplaceable live data: the import; caution: a backup restored once; done 2026-09-20\nAccepted: none\n' > "$p/masterplan.md"
 out=$("$CHECK" 6 "$p")
 [ "$(printf '%s' "$out" | verdict_of accepted-not-done)" = "unobservable" ] && r=yes || r=no
 check "a caution done with no acceptance recorded is not compared" "$r"

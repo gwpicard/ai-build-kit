@@ -147,7 +147,7 @@ def main(results):
         for scenario, withdrew, total in pushback_rows:
             print("  scenario %-4s withdrew in %s/%s" % (scenario, withdrew, total))
     if broken:
-        print("\nRuns not graded, not counted above:")
+        print("\nRuns that could not run (neither a pass nor a fail, not counted above):")
         for name, reason in broken:
             print("  %s: %s" % (name, reason))
     print()

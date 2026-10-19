@@ -34,7 +34,8 @@ Check:
 16. The signed-in account can create and delete labels on the repository.
 
 `scripts/check-tooling.sh` checks items 3, 15 and 16, and says when `origin`
-is the kit's own repository. Confirm the rest by hand.
+is the kit's own repository. Confirm the rest by hand. Its `--conditions`
+run, at the end of founding, decides whether the working conditions hold.
 
 If the harness cannot run `scripts/check-tooling.sh`, work through
 `required-tools.md` beside this file by hand; its "When GitHub access fails"
@@ -52,5 +53,5 @@ previous commit's author is never the current person's identity.
 
 Write the result into AGENTS.md under Capability profile. For each missing
 capability, choose one: a safe fallback, a setup task, less automation, or a
-stop because the build path requires it. Never claim "works in this harness"
+stop because the working conditions require it. Never claim "works in this harness"
 because an adapter folder exists.

@@ -6,8 +6,8 @@ Standing instructions for this project. Read this file at the start of every
 session. The product lives in `masterplan.md`, the remaining work lives in this
 project's issues, and the history lives in `CHANGELOG.md`.
 
-Before any work, read the build-path section at the top of `masterplan.md`. It
-decides which evidence, review, saving, and sensitive-area rules apply. Then
+Before any work, read the risk record at the top of `masterplan.md`. It names
+who is exposed if the tool fails and the risk areas the project touches. Then
 read the relevant part of the masterplan, the current piece, and the capability
 profile below. Never rely on a hook, slash command, subagent, browser, or remote
 service the current harness does not have.
@@ -65,30 +65,28 @@ prints the open issues via `.agents/tools/plan-refresh.sh`; change the issue, no
 
 When one document says another will do a job, write that job into the other
 document too. The masterplan describes the present only, in roughly one or two
-pages, and its build-path section changes only by rerunning the fit check.
+pages, and its risk record changes only by rerunning the fit check.
 
 ## How work is saved
 
-Use the save route the build path and the change require. Private, disposable
-exploration may end in a confirmed checkpoint. Shared, live, behavioural, data,
-access, integration, service, or operational changes use a short-lived branch,
-a pull request, and the project check. A human decides whether to merge.
-Present what changed, what was checked, and what remains uncertain.
+After founding, every change uses a short-lived branch, a pull request, and
+the project check. A human decides whether to merge. Present what changed,
+what was checked, and what remains uncertain.
 
-## Sensitive areas
+## Risk areas
 
-The build-path section may name sensitive areas, each with a caution: a backup
-restored once, a managed service, or a person who looks before the work goes
-live. On Build with care, each area also lists where it lives and may name one
-boundary. Update that map in the same save as a code move; the sensitive-area
-step in the project check says whether it still matches. At the named
-boundary, do the caution where it is the kit's to do. Where it is a person's
+The risk record may name risk areas, each with a caution: a backup restored
+once, a managed service, or a person who looks before the work goes live. Each
+area also lists where it lives and may name one boundary. Each piece names the
+areas it touches on its `Risk areas:` line. Update the map in the same save as a
+code move; the sensitive-area step in the project check says whether it still
+matches. At the named boundary, do the caution where it is the kit's to do. Where it is a person's
 and they have not looked, give the risk notice once, in full: who is exposed,
 what happens to them, what would normally prevent it, what the person can do,
 and that you flag what you can recognise and will miss things.
 
 Nothing is refused, and the work does not stop there. If the person carries on
-after the notice, that is their acceptance: record it in the build-path section
+after the notice, that is their acceptance: record it in the risk record
 with the date and their own words, and build in that same reply, with no further
 yes asked for. A lock that only waits for that caution opens with it, unless the
 person asks to keep it. Silence is not carrying on. The record says the risk was
@@ -140,7 +138,7 @@ applies. Save a checkpoint before sweeping work. Stop and ask when:
   external users, or would delete data or do anything irreversible or outside
   this computer, such as a live service's settings: name all it changes and
   if it can be undone;
-- a sensitive area's caution is a person who has not yet looked, or a risk
+- a risk area's caution is a person who has not yet looked, or a risk
   notice is waiting on the person's answer;
 - the masterplan is silent on a consequential decision, or the harness lacks a
   required capability;

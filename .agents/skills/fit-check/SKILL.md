@@ -1,14 +1,30 @@
 ---
 name: fit-check
-description: Choose the project's build path, name each sensitive area with its caution, and give the risk notice where one is due. Used at founding, when a request changes the project, before hosting, at the quarterly visit, and when a repair stalls.
+description: Fill the project's risk record, name each risk area with its caution, and give the risk notice where one is due. Used at founding, when a request changes the project, before hosting, at the quarterly visit, and when a repair stalls.
 user-invocable: false
 ---
 
 # The fit check
 
-Choose the path and name each sensitive area with its caution. Run at founding,
+Fill the risk record and name each risk area with its caution. Run at founding,
 when a request changes users, data, money, autonomy, promises or reliance,
 before first `/setup-hosting`, quarterly `/maintain`, and before a handover.
+
+## The three questions
+
+Ask one at a time, with a best guess:
+
+1. Who is exposed if this fails, including people outside the team or anyone
+   whose contract, promise or deadline depends on it?
+2. What data does it hold, and what can the team not afford to lose?
+3. How would you recover from a failure?
+
+The answers fill `Exposed:`, `Data:`, `Wrong answer:` and `Recovery:` in the
+risk record, by `references/risk-record.md`. Then check for a manual fallback,
+known locations for data, credentials, services and bills, owners for alerts,
+backups, access and recovery, and records a new agent can follow. Gaps become
+tasks or masterplan facts in "How it stays running". Record credential
+locations, never values.
 
 ## Access
 
@@ -18,34 +34,10 @@ can sign in, or `public (decided YYYY-MM-DD)` if anyone can make an account.
 Never refuse an open setting. A live change waits for a yes naming its effect,
 then follows the recipe's access change and check and goes in the changelog.
 
-Read `references/path-questions.md` for the questions and ownership check.
+## Risk areas
 
-## Choose the path
-
-Consider redesign first, then choose the first matching path:
-
-### 1. Build with care
-
-A yes to questions 1, 2, 4, 5, 6 or 7 leaves a
-   sensitive area after redesign. Name it and its caution in the masterplan.
-   Complete the caution before merge or activation, or record the person's
-   acceptance. Work outside named areas follows Build and run it.
-
-### 2. Build and run it
-
-People rely on the tool, no sensitive area applies,
-   consequences are recoverable and a manual fallback exists. A yes to 3 or 8
-   also requires `/setup-hosting` readiness before first live use. This is the
-   primary path.
-
-### 3. Explore privately
-
-Nobody relies on it, data can be thrown away, actions
-   are reversible, and the work is for learning or testing an idea.
-
-## Sensitive areas
-
-Name each area in the tool's own words and put its caution beside it. Change a
+Consider redesign first. Name each area the answers or the request touch that
+survives it, in the tool's own words, and put its caution beside it. Change a
 default only when the tool's facts justify it, and record why.
 
 | Area | What counts | Default caution |
@@ -63,19 +55,18 @@ For the full notice and acceptance rules, load `references/risk-notice.md`.
 
 ## Rechecks and going live
 
-First ask whether a redesign removes the area. Keep its caution while exposure
-remains. Run the full check at founding, after several changes, before hosting
-or handover, and quarterly. For a bounded change, check affected questions and
-update `Recheck when` and `Last checked`; if unclear, run it all.
+Keep an area's caution while exposure remains. Run the full check at founding,
+after several changes, before hosting or handover, and quarterly. For a bounded
+change, check affected questions and update `Recheck when` and `Last checked`;
+if unclear, run it all.
 
 At launch, complete the caution and record `done`, or give the full notice. On
 acceptance, record the person's words and date as `Accepted:` and mark the area
 `accepted`. If a named reviewer is unavailable, `/maintain` offers a handover
-once. For live-path autonomy settings, follow `references/own-run.md`.
+once. For automatic-work settings, follow `references/own-run.md`.
 
 ## References
 
 - `references/risk-notice.md`: notice and acceptance rules.
-- `references/build-path-record.md`: masterplan fields and area records.
-- `references/path-questions.md`: consequence and ownership questions.
+- `references/risk-record.md`: masterplan fields and area records.
 - `references/own-run.md`: opt-in automatic merge and parallel work.

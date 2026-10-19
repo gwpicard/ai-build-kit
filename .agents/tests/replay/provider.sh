@@ -212,6 +212,8 @@ provider_turn() {
 
   case "$REPLAY_PROVIDER" in
     claude)
+      box_config=$(python3 "$REPLAY_DIR/confirm-box.py" --config \
+        "${REPLAY_BOX_GRANTS:-/dev/null}" "$raw.boxes" "${REPLAY_TURN:-0}") || return 1
       if [ -e "$reply.session-started" ]; then
         resume_args="--resume $PROVIDER_SESSION"
       else
@@ -222,6 +224,8 @@ provider_turn() {
         ${TIMEOUT_CMD:+$TIMEOUT_CMD 1800} claude -p "$message" \
         $resume_args \
         --strict-mcp-config \
+        --mcp-config "$box_config" \
+        --permission-prompt-tool mcp__replay_box__answer \
         --permission-mode bypassPermissions \
         --output-format json \
         --model "$MODEL" > "$raw" 2>/dev/null) || return 1

@@ -24,7 +24,7 @@ EOF
 # The old safety file has a person's rule and is deliberately edited.
 cat > "$PROJECT/.claude/settings.json" <<'EOF'
 {
-  "permissions": {"deny": ["Bash(git push --force:*)"], "ask": []},
+  "permissions": {"deny": ["Bash(git push --force:*)", "Bash(personal-command:*)"], "ask": []},
   "customSetting": "keep this"
 }
 EOF
@@ -32,7 +32,6 @@ cat > "$PROJECT/AGENTS.md" <<'EOF'
 Recipe: retired-recipe
 EOF
 cat > "$PROJECT/masterplan.md" <<'EOF'
-Path: Build and run it
 Runs on its own: queue, parallel 2, loop (decided 2026-10-15, "rehearsal")
 EOF
 mkdir -p "$PROJECT/.agents/skills/setup-hosting/recipes"
@@ -57,7 +56,9 @@ data=json.load(open(sys.argv[1]))
 assert data['customSetting']=='keep this'
 deny=data['permissions']['deny']
 assert 'Bash(git push --force:*)' in deny
-assert any('main' in rule and 'git push' in rule for rule in deny)
+assert 'Bash(personal-command:*)' in deny
+assert 'Bash(git push * --no-verify*)' in deny
+assert not any('main' in rule and 'git push' in rule for rule in deny)
 PY
 pass "adds missing kit settings and keeps the person's setting"
 

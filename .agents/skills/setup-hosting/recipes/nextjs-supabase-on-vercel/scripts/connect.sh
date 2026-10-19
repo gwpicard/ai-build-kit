@@ -28,6 +28,7 @@ here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 project=${1:-}
 [ -n "$project" ] || cl_cannot "No name was given for the Vercel project, so it was not set up."
 cl_need vercel git
+cl_approved
 
 out=$(mktemp)
 trap 'rm -f "$out"' EXIT

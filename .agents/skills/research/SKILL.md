@@ -18,6 +18,13 @@ provider's own source code; official support or policy pages. Never base a
 consequential decision on a tutorial, a forum answer, marketing, or memory when
 a primary source exists.
 
+If a piece rests on an outside fact that cannot be checked or the person
+declines to check, give one notice before proceeding. Name who is affected if
+it is wrong, the harm, the usual source check and the choice to go on unchecked.
+This notice is separate from any risk-area notice. Once they carry on, record
+acceptance with the date and their words, keep the fact unchecked and continue
+without asking again.
+
 Record the question, the confirmed answer, the source, the date checked, any
 uncertainty, whether the fact can change, and the decision it affects. Store it
 where the decision lives, never in a research archive. It works inline; a

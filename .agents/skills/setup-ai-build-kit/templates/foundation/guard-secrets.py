@@ -119,6 +119,46 @@ def bash_reads_env_file(command):
     return False
 
 
+RECORDS = ("masterplan.md", "CHANGELOG.md", "AGENTS.md")
+
+
+def record_write_secret(tool, args):
+    """The record a Write or Edit would put a secret into, or None."""
+    path = args.get("file_path")
+    if not isinstance(path, str) or os.path.basename(path) not in RECORDS:
+        return None
+    text = args.get("content") if tool == "Write" else args.get("new_string")
+    check = getattr(scan_rules, "text_has_secret", None)
+    if check and isinstance(text, str) and check(text):
+        return os.path.basename(path)
+    return None
+
+
+def github_record_secret(command, root):
+    """The GitHub record a gh command would put a secret into, or None."""
+    found = re.search(r"\bgh\s+(issue|pr)\s+(create|edit|comment)\b", command)
+    if not found:
+        return None
+    label = ("issue" if found.group(1) == "issue" else "pull request") + " " + \
+        ("comment" if found.group(2) == "comment" else "body")
+    texts = [command]
+    try:
+        words = shlex.split(command)
+    except ValueError:
+        words = command.split()
+    for index, word in enumerate(words[:-1]):
+        if word in ("--body-file", "-F"):
+            path = words[index + 1]
+            full = path if os.path.isabs(path) else os.path.join(root, path)
+            try:
+                with open(full, encoding="utf-8", errors="replace") as handle:
+                    texts.append(handle.read())
+            except OSError:
+                pass
+    check = getattr(scan_rules, "text_has_secret", None)
+    return label if check and any(check(text) for text in texts) else None
+
+
 def writes_claude_settings(command):
     if not re.search(r"\.claude/settings(?:\.local)?\.json\b", command):
         return False
@@ -150,12 +190,20 @@ try:
         path = args.get("file_path")
         if isinstance(path, str) and re.search(r"(?:^|[/\\])\.claude/settings(?:\.local)?\.json$", path):
             sys.exit(deny("This tool cannot change Claude settings files."))
+        record = record_write_secret(tool, args)
+        if record:
+            sys.exit(deny("This would write what looks like a secret into %s. Write only where "
+                          "the secret is kept, never its value." % record))
     elif tool == "Bash":
         command = args.get("command", "")
         if not isinstance(command, str):
             raise ValueError("command is not text")
         if writes_claude_settings(command):
             sys.exit(deny("This command could change a Claude settings file."))
+        record = github_record_secret(command, root)
+        if record:
+            sys.exit(deny("This would write what looks like a secret into the %s. Write only "
+                          "where the secret is kept, never its value." % record))
         if dumps_environment(command):
             sys.exit(deny("This command could print secret environment values."))
         if bash_reads_env_file(command):

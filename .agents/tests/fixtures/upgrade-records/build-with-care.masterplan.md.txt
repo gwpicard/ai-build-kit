@@ -1,0 +1,37 @@
+# Masterplan
+
+## Build path
+
+<!-- Rewritten only by re-running the fit check, which is the
+`fit-check` skill. The agent reads this section first, every session. -->
+
+Path: Build with care
+Why: A clinic tool where nurses see a treatment recommendation, and it holds
+the only copy of the maintenance history.
+Access: private
+Sensitive areas:
+  regulated decisions: the treatment recommendation; caution: a clinician signs off the protocol before nurses act on it; not yet done
+    paths: src/recommendations/, src/rules/treatment.ts
+    boundary: reached only through src/rules/treatment.ts
+  irreplaceable live data: the maintenance history import; caution: a backup restored once and the import rehearsed on a copy; done 2026-08-12
+    paths: src/imports/maintenance/
+  sign-in and permissions: who can see the client notes; caution: independent access review before outside use; accepted 2026-08-12
+    paths: src/notes/
+  none: src/reporting/
+<!-- Build with care only. Under each area, add an indented `paths:` line and
+at most one `boundary:` line. -->
+Accepted: 2026-08-12, review of who can see the client notes not done; Priya carried on after the notice: "we cannot pay for a review, build it"
+Accepted: 2026-09-02, the first figures were not checked against a known case; Sam carried on after the notice: "I'll check them by hand on Friday, don't wait"
+Runs on its own: merge (decided 2026-09-10, "merge when everything passes")
+Recheck when: a second clinic uses it; the recommendation rules change; a new
+kind of record is imported.
+Last checked: 2026-09-10
+
+## What it does, and for whom
+
+Ward Notes lets nurses on one ward see the recommended treatment for each
+patient and record what they did. Eleven staff use it.
+
+## What happens when it fails
+
+Nurses fall back to the paper protocol on the ward. Priya owns recovery.

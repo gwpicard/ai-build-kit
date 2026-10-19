@@ -7,6 +7,6 @@ How it is checked: The configured user can read every table in the database and 
 Script: scripts/read-only-database.sh
 Who runs it: the kit
 
-Writing to someone else's system is off the road. If asked, point to fit-check's “build with care” path and the notice for changes that cannot be undone.
+This part never writes to the existing database. A request to write to it waits for a yes that names each change and says whether it can be undone.
 
 Outcome: No real run yet (added 2026-10-15).

@@ -27,9 +27,11 @@ its sentence and stop.
 2. Compare the live copy with `main` using the `live-copy` skill. Do not change
    the live service or changelog. Offer `/setup-hosting` for backups, restores,
    previews or recipe checks, and name any gap.
-3. Read branch protection for the repository named by `origin`. Report whether
-   `project-check` is required on `main`. If it is missing, offer to run
-   `merge/scripts/protect-branch.py` on a yes. Do not change protection here.
+3. From the project root run
+   `merge/scripts/protect-branch.py --check <origin's owner/repository> main`.
+   Exit 0 means required; 3 records the private Free limit, with one notice and
+   no offer; 4 means available, so offer to run without `--check` on a yes.
+   Report other exits. Do not change protection without that yes.
 4. Run the installed `setup-ai-build-kit` skill's
    `templates/foundation/scan-secrets.sh` from the project root with `--all`.
    Exit 0 means no secret was found, 1 means one was found, and 2 means the scan
@@ -38,7 +40,8 @@ its sentence and stop.
    `last-light-pass`, or founding if absent. Quarterly work is due 90 days
    after `last-full-pass`, at founding if absent, and when a handover is asked
    for. Either runs when requested. Say when skipped work falls due.
-6. Finish a kit update using `references/kit-update.md` on every visit. The
+6. Run `scripts/upgrade-check.py --latest --route` using `references/latest-release.md`.
+7. Finish a kit update using `references/kit-update.md` on every visit. The
    monthly routine's first step does it instead. In Codex, offer its
    session-start GitHub check.
 

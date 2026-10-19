@@ -45,6 +45,7 @@ case "$name" in
     case "$value" in sb_secret_*|eyJ*) ;; *) cl_cannot "$name does not start with sb_secret_ or eyJ, so it does not look like a Supabase key." ;; esac ;;
 esac
 
+cl_approved
 case "$name" in
   NEXT_PUBLIC_*) vercel env add "$name" production --type config --yes < "$tmp" >&2 ;;
   *) vercel env add "$name" production --yes < "$tmp" >&2 ;;

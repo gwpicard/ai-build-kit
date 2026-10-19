@@ -27,7 +27,7 @@ changes no file the project saves.
 
 One of: repair of promised behaviour; new behaviour; copy or presentation
 change; setup or operational task; a decision that needs the `clarify` skill, a
-prototype, or source research; a change to the build path or a sensitive area.
+prototype, or source research; a change to the risk record or a risk area.
 
 ## 3. Classify consequence
 
@@ -83,10 +83,10 @@ a backup first, a rehearsal on a copy, then the real change.
 
 A request that changes what kind of project this is (outside users, real
 money, a promise to someone, a new kind of data about people, autonomous
-action) stops here: rerun the fit check, record the new build path, then
+action) stops here: rerun the fit check, update the risk record, then
 route.
 
-Where that check leaves a sensitive area standing, give the risk notice
+Where that check leaves a risk area standing, give the risk notice
 described in the `fit-check` skill before
 routing the flagged work, and hold it. Nothing is refused: if the person
 carries on after the notice, record the acceptance as that skill says and

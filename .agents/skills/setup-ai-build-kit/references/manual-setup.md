@@ -24,8 +24,8 @@ and email label showing who saved it. This does not create an online account
 or upload anything." For a local project, offer to set an identity for this
 project only.
 
-Where the build path needs an online repository, ask whether the person has an
+Ask whether the person has an
 account with the repository service, access to the project repository, and
 working sign-in from here. A remote address proves none of these. Guide what is
-missing one step at a time. If they decline, record the missing capability and
-say which shared or live step cannot go ahead yet.
+missing one step at a time. If they decline, setup stops there. Say which step
+they take to carry on.

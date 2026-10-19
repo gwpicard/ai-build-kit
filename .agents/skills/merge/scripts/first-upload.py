@@ -47,14 +47,17 @@ current branch unless --branch names one) as a command of its own, creates
 main on GitHub at the commit that branch was cut from, and makes main the
 default branch. In the no-main state it pushes nothing and only creates main
 and makes it the default. It never pushes main. Exit 0 means the code is online.
-On GitHub Free, the protection line says the kit will hold the merge itself.
-Other protection failures say why protection could not be set. Exit 7 means
+A protection failure leaves the upload complete. GitHub Free's private plan
+limit is recorded, with one explanation shared with founding. Other failures
+say why protection could not be set. Exit 7 means
 the push failed and nothing was created; exit 8 means main could not be created.
+Exit 10 means Git would not run the kit's push guard.
 In any other state --approved changes nothing and exits with that state's code.
 """
 
 import json
 import os
+from pathlib import Path
 import re
 import subprocess
 import sys
@@ -165,6 +168,22 @@ def create_main(project, name, base):
     return 0
 
 
+def ensure_push_guard(project):
+    installer = Path(__file__).resolve().parents[2] / "setup-ai-build-kit/scripts/use-push-guard.sh"
+    def check():
+        return subprocess.run(["sh", str(installer), "--check", str(project)], cwd=project,
+                              capture_output=True, text=True).returncode == 0
+    if check():
+        return True
+    subprocess.run(["sh", str(installer), str(project)], cwd=project,
+                   capture_output=True, text=True)
+    if check():
+        return True
+    print("stopped\tthe push guard is not on. Run use-push-guard.sh from the project folder to switch it on. "
+          "If that also stops, /maintain can set it up")
+    return False
+
+
 def upload(project, branch, name):
     if branch == "main":
         print("refused\tthe piece's branch is main; push a branch of its own")
@@ -176,6 +195,8 @@ def upload(project, branch, name):
     if code != 0 or not base:
         print("refused\t%s shares no commit with main" % branch)
         return 2
+    if not ensure_push_guard(project):
+        return 10
     push = subprocess.run(["git", "push", "-u", "origin", branch], cwd=project,
                           capture_output=True, text=True)
     if push.returncode != 0:

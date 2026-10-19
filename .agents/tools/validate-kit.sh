@@ -2,7 +2,7 @@
 # validate-kit.sh: repository self-validation for ai-build-kit itself.
 #
 # Checks the kit's own machinery: the skill inventory, frontmatter, internal
-# references, build-path vocabulary, generated adapters, shell and config
+# references, retired path vocabulary, generated adapters, shell and config
 # syntax, and a set of stale claims this kit has made before and should never
 # make again. Run from anywhere; it locates the repository root itself.
 #
@@ -505,35 +505,146 @@ AGENTNAMES
 # ---------------------------------------------------------------------------
 echo "== Frontmatter =="
 
+# Prefer a YAML parser already installed on the machine. The fallback is a
+# conservative check of scalar values, not a claim to parse all of YAML.
+fm_parser=fallback
+if command -v python3 >/dev/null 2>&1 && python3 -c 'import yaml' >/dev/null 2>&1; then
+  fm_parser=python
+elif command -v ruby >/dev/null 2>&1 && ruby -ryaml -e 'exit 0' >/dev/null 2>&1; then
+  fm_parser=ruby
+else
+  note "no YAML parser available; checking skill headers with the conservative fallback"
+fi
+parse_skill_header() {
+  case "${1:-$fm_parser}" in
+    python)
+      python3 -c '
+import sys, yaml
+try:
+    doc = yaml.safe_load(sys.stdin.read())
+    if not isinstance(doc, dict) or any(not isinstance(doc.get(k), str) or not doc[k].strip() for k in ("name", "description")):
+        raise ValueError("name and description must be non-empty strings")
+    print(doc["name"])
+except (yaml.YAMLError, ValueError) as error:
+    print(error, file=sys.stderr)
+    sys.exit(1)
+' ;;
+    ruby)
+      ruby -ryaml -e '
+begin
+  doc = YAML.safe_load(STDIN.read)
+  unless doc.is_a?(Hash) && %w[name description].all? { |key| doc[key].is_a?(String) && !doc[key].strip.empty? }
+    raise "name and description must be non-empty strings"
+  end
+  puts doc.fetch("name")
+rescue StandardError => error
+  warn error.message
+  exit 1
+end
+' ;;
+    fallback)
+      awk '
+        /^[ \t]*($|#)/ { next }
+        /^[^ \t][^:]*:/ {
+          key=$0; sub(/:.*/, "", key)
+          value=$0; sub(/^[^:]*:[ \t]*/, "", value)
+          sub(/[ \t]+#.*/, "", value); sub(/[ \t]+$/, "", value)
+          first=substr(value,1,1)
+          quoted=(first=="\"" || first==sprintf("%c",39))
+          block=(value ~ /^[|>][-+0-9]*$/)
+          if (!quoted && !block && (index(value,": ") || (first!="" && index("-?:,[]{}#&*!|>%@`",first)))) bad=1
+          if (quoted && (length(value)<2 || substr(value,length(value),1)!=first)) bad=1
+          if (key=="name" || key=="description") {
+            if (++seen[key]>1) bad=1
+            if (quoted) value=substr(value,2,length(value)-2)
+            else if (!block && (value=="" || tolower(value) ~ /^(null|~|true|false|yes|no|on|off|[-+]?\.inf|\.nan)$/ || value ~ /^[-+]?([0-9]|\.[0-9])/)) bad=1
+            if (value=="") bad=1
+            if (block) waiting=key
+            else { present[key]=1; if (key=="name") name=value }
+          } else waiting=""
+          next
+        }
+        /^[ \t]+/ { if (waiting && $0 ~ /[^ \t]/) { present[waiting]=1; if (waiting=="name") bad=1 }; next }
+        { bad=1 }
+        END { if (bad || !present["name"] || !present["description"]) exit 1; print name }
+      ' ;;
+  esac
+}
+
+# Exercise both the selected parser and the fallback against the installer
+# failure, YAML indicators and values that parse but are not strings.
+fm_selftest_ok=1
+for fm_mode in "$fm_parser" fallback; do
+  for fm_valid in 'A plain description.' '"Evidence: fresh output."' "'Evidence: fresh output.'"; do
+    if ! printf 'name: sample\ndescription: %s\n' "$fm_valid" | parse_skill_header "$fm_mode" >/dev/null 2>&1; then
+      fail "skill header self-test rejected a valid string ($fm_mode)"
+      fm_selftest_ok=0
+    fi
+  done
+  if ! printf 'name: sample\ndescription: |\n  A block description.\n' | parse_skill_header "$fm_mode" >/dev/null 2>&1; then
+    fail "skill header self-test rejected a block string ($fm_mode)"
+    fm_selftest_ok=0
+  fi
+  for fm_bad in 'Evidence: fresh output.' '[a, b]' '{a: b}' '*missing' '@invalid' '`invalid' '>bad' '|bad' 'true' 'NO' '42' '.5' '.nan' 'null' '""'; do
+    if printf 'name: sample\ndescription: %s\n' "$fm_bad" | parse_skill_header "$fm_mode" >/dev/null 2>&1; then
+      fail "skill header self-test accepted an invalid description ($fm_mode): $fm_bad"
+      fm_selftest_ok=0
+    fi
+  done
+  if [ "$fm_mode" = fallback ]; then
+    for fm_indicator in '&anchor value' '!tag value'; do
+      if printf 'name: sample\ndescription: %s\n' "$fm_indicator" | parse_skill_header fallback >/dev/null 2>&1; then
+        fail "skill header fallback accepted an unquoted YAML indicator"
+        fm_selftest_ok=0
+      fi
+    done
+  fi
+  if printf 'name: [sample]\ndescription: A string.\n' | parse_skill_header "$fm_mode" >/dev/null 2>&1; then
+    fail "skill header self-test accepted a non-string name ($fm_mode)"
+    fm_selftest_ok=0
+  fi
+done
+[ "$fm_selftest_ok" -eq 0 ] || pass "skill header self-tests reject the installer fault and non-string fields"
+
 seen_names=""
-skillfiles=$(find "$SKILLS" -mindepth 2 -maxdepth 2 -name SKILL.md | sort)
+skillfiles=$(find "$SKILLS" "$MAINTAINER_SKILLS" "$ROOT/.claude" "$ROOT/.cursor" \
+  "$ROOT/.gemini" "$ROOT/.codex" "$ROOT/.github" -type f -name SKILL.md | sort)
+fm_ok=1
 while IFS= read -r file; do
   [ -n "$file" ] || continue
   folder=$(basename "$(dirname "$file")")
-  fm_name=$(awk '/^---[ \t]*$/{fm++;next} fm==1 && /^name:[ \t]/{sub("^name:[ \t]*","");print;exit}' "$file")
-  fm_desc=$(awk '/^---[ \t]*$/{fm++;next} fm==1 && /^description:[ \t]/{sub("^description:[ \t]*","");print;exit}' "$file")
-
-  if [ -z "$fm_name" ]; then
-    fail "$file: missing frontmatter name"
-  elif [ "$fm_name" != "$folder" ]; then
+  if ! fm_header=$(awk '
+    NR==1 { if ($0 !~ /^---[ \t]*$/) exit 1; next }
+    /^---[ \t]*$/ { closed=1; exit }
+    { print }
+    END { if (!closed) exit 1 }
+  ' "$file"); then
+    fail "$file: missing or unclosed YAML front matter"
+    fm_ok=0
+    continue
+  fi
+  if ! fm_name=$(printf '%s\n' "$fm_header" | parse_skill_header); then
+    fail "$file: invalid YAML front matter; name and description must be non-empty strings"
+    fm_ok=0
+    continue
+  fi
+  if [ "$fm_name" != "$folder" ]; then
     fail "$file: frontmatter name '$fm_name' does not match folder '$folder'"
+    fm_ok=0
   fi
-
-  if [ -z "$fm_desc" ]; then
-    fail "$file: missing or empty frontmatter description"
+  # Adapters intentionally repeat canonical names. Only a second name within
+  # the same skill root is a duplicate.
+  fm_identity="$(dirname "$(dirname "$file")")/$fm_name"
+  if printf '%s\n' "$seen_names" | grep -qxF "$fm_identity"; then
+    fail "$file: duplicate skill name '$fm_name'"
+    fm_ok=0
   fi
-
-  if [ -n "$fm_name" ]; then
-    if printf '%s\n' "$seen_names" | grep -qx "$fm_name"; then
-      fail "$file: duplicate skill name '$fm_name'"
-    fi
-    seen_names=$(printf '%s\n%s' "$seen_names" "$fm_name")
-  fi
+  seen_names=$(printf '%s\n%s' "$seen_names" "$fm_identity")
 done <<SKILLFILES
 $skillfiles
 SKILLFILES
 
-pass "frontmatter checked on $(printf '%s\n' "$skillfiles" | grep -c .) SKILL.md files"
+[ "$fm_ok" -eq 0 ] || pass "frontmatter checked on $(printf '%s\n' "$skillfiles" | grep -c .) SKILL.md files ($fm_parser)"
 
 # ---------------------------------------------------------------------------
 echo "== Skill structure =="
@@ -831,36 +942,35 @@ fi
 echo "== Fit-check contract =="
 
 fitcheck="$SKILLS/fit-check/SKILL.md"
-fitrecord="$SKILLS/fit-check/references/build-path-record.md"
+fitrecord="$SKILLS/fit-check/references/risk-record.md"
 if [ ! -f "$fitcheck" ]; then
   fail "$fitcheck: missing"
 else
   fc_ok=1
-  for needle in "Explore privately" "Build and run it" "Build with care" \
-    "### 1. Build with care" "### 2. Build and run it" "### 3. Explore privately"; do
+  for needle in "## The three questions" "## Risk areas" "## Rechecks and going live"; do
     if ! grep -qF "$needle" "$fitcheck"; then
-      fail "$fitcheck: missing expected text '$needle'"
+      fail "$fitcheck: missing expected heading '$needle'"
       fc_ok=0
     fi
   done
-  [ "$fc_ok" -eq 1 ] && pass "the fit-check skill carries the three canonical paths and the decision-order headings"
+  [ "$fc_ok" -eq 1 ] && pass "the fit-check skill asks the three questions and names the risk areas"
 fi
 
-# The build-path block has one owner. The fit check's build-path record defines the fields and the
-# masterplan template carries them, so a field added to one and forgotten in the
-# other would leave a project recording something the fit check never writes, or
-# writing something the template has no room for.
+# The risk record has one owner. The fit check's risk record defines the fields
+# and the masterplan template carries them, so a field added to one and
+# forgotten in the other would leave a project recording something the fit
+# check never writes, or writing something the template has no room for.
 mpt="$SKILLS/setup-ai-build-kit/templates/masterplan.md"
 if [ ! -f "$mpt" ] || [ ! -f "$fitrecord" ]; then
-  fail "cannot compare the build-path block: the fit check's build-path record or the masterplan template is missing"
+  fail "cannot compare the risk record: the fit check's risk record or the masterplan template is missing"
 else
   bp_ok=1
-  for field in Path Why "Sensitive areas" Accepted "Recheck when" "Last checked"; do
-    grep -q "^$field:" "$mpt" || { fail "$mpt: build-path block is missing '$field:'"; bp_ok=0; }
-    grep -q "^$field:" "$fitrecord" || { fail "$fitrecord: build-path block is missing '$field:'"; bp_ok=0; }
+  for field in Exposed Data "Wrong answer" Recovery Access "Risk areas" Accepted "Runs on its own" "Recheck when" "Last checked"; do
+    grep -q "^$field:" "$mpt" || { fail "$mpt: risk record is missing '$field:'"; bp_ok=0; }
+    grep -q "^$field:" "$fitrecord" || { fail "$fitrecord: risk record is missing '$field:'"; bp_ok=0; }
   done
   [ "$bp_ok" -eq 1 ] && \
-    pass "the masterplan template and the fit check's build-path record agree on the build-path fields, including Accepted"
+    pass "the masterplan template and the fit check's risk record agree on the risk fields, including Accepted"
 fi
 
 # ---------------------------------------------------------------------------
@@ -882,6 +992,12 @@ else
     grep -qF "label: $section" "$pieceform" || \
       { fail "$pieceform: has no field for '$section'"; pc_ok=0; }
   done
+  # The Risk areas field, which mark-ready requires, is defined in the piece
+  # shape and has a field in the form.
+  grep -qF "Risk areas:" "$pieces" || \
+    { fail "$pieces: does not define the 'Risk areas:' line"; pc_ok=0; }
+  grep -qF "label: Risk areas" "$pieceform" || \
+    { fail "$pieceform: has no field for 'Risk areas'"; pc_ok=0; }
   # The subject labels, which decide evidence and save route, so a label the
   # skills do not know about is worse than a missing one. Matched on the table
   # row rather than the whole file: each label is also named in the prose that
@@ -1009,8 +1125,6 @@ fi
 layer_sbfile="$SKILLS/build-piece/SKILL.md"
 if [ -f "$pieces" ] && [ -f "$implementfile" ] && [ -f "$layer_sbfile" ]; then
   layer_ok=1
-  grep -qF "## The two layers of a piece" "$pieces" || \
-    { fail "$pieces: does not describe the surface / under-the-hood layers"; layer_ok=0; }
   grep -qF "<details><summary>Under the hood</summary>" "$pieces" || \
     { fail "$pieces: the piece template has no collapsed under-the-hood section"; layer_ok=0; }
   grep -qF "self-sufficient enough to build without a person present" "$implementfile" || \
@@ -1089,14 +1203,20 @@ startfile="$SKILLS/setup-ai-build-kit/SKILL.md"
 shapefile="$SKILLS/shape/SKILL.md"
 if [ -f "$sbfile" ] && [ -f "$mergefile" ] && [ -f "$blocked" ] && [ -f "$settings" ] && [ -f "$startfile" ] && [ -f "$shapefile" ]; then
   mech_ok=1
-  grep -qF "save route including the checkpoint route" "$sbfile" || \
+  grep -qF 'Start from up-to-date `main`' "$sbfile" || \
     { fail "$sbfile: does not start every piece from up-to-date main"; mech_ok=0; }
   grep -qF "starts unassigned" "$shapefile" || \
     { fail "$shapefile: does not say a new issue starts unassigned"; mech_ok=0; }
   grep -qF 'never push a change directly to `main`' "$blocked" || \
     { fail "$blocked: does not block a direct push to main"; mech_ok=0; }
-  grep -qF "git push * main" "$settings" || \
-    { fail "$settings: deny list does not block a direct push to main"; mech_ok=0; }
+  if sh "$ROOT/.agents/tests/push-guard.sh" >"${TMPDIR:-/tmp}/kit-push-guard-$$.log" 2>&1; then
+    pass "founding installs the guard and Git refuses protected pushes"
+  else
+    cat "${TMPDIR:-/tmp}/kit-push-guard-$$.log"
+    fail "founding's push guard rehearsal failed"
+    mech_ok=0
+  fi
+  rm -f "${TMPDIR:-/tmp}/kit-push-guard-$$.log"
   grep -qF "delete_branch_on_merge" "$cutfile" || \
     { fail "$cutfile: does not enable auto-deletion of merged branches"; mech_ok=0; }
   grep -qF "Merge only on a yes" "$mergefile" || \
@@ -1320,42 +1440,23 @@ done
 # ---------------------------------------------------------------------------
 echo "== Setup-hosting control-flow contract =="
 
-# Operational readiness and go-live belong inside the path branches that use
-# them (Build and run it, Build with care), never as a shared section after
-# all three branches; that shape is what let Explore privately be read as
-# reaching launch instructions despite its own branch saying to stop. The
-# anchor is the last branch heading, so a rename of that heading without a
-# matching change here would let the check pass on nothing.
+# The recipe's checks move work to a live address, so they sit under the launch
+# section, after the evidence run and the review it loads. The anchor is the
+# launch heading, so a rename without a matching change here would let the
+# check pass on nothing.
 hostingfile="$SKILLS/setup-hosting/SKILL.md"
 if [ ! -f "$hostingfile" ]; then
   fail "$hostingfile: missing"
 else
-  leaked=$(awk '
-    /^### Build with care/ { seen=1; next }
-    seen && /^## [^#]/ {
-      low = tolower($0)
-      if (low ~ /go live/ || low ~ /operational readiness/) print NR ": " $0
-    }
-  ' "$hostingfile")
-  if [ -n "$leaked" ]; then
-    fail "$hostingfile: a go-live or operational-readiness heading appears after all three path branches, so every path reaches it: $leaked"
-  else
-    pass "setup-hosting/SKILL.md keeps go-live and operational-readiness steps inside their path branches"
-  fi
-
-  # The recipe's checks move work to a live address, so they sit inside Build
-  # and run it, which Build with care follows for everything outside its
-  # areas. Placed after the last branch, they would be a shared step that
-  # Explore privately could be read as reaching.
   recipe_at=$(awk '
-    /^### Build and run it/ { inrun=1; next }
-    /^### / { inrun=0 }
-    /^#+ On a recipe/ { print (inrun ? "inside" : "outside"); exit }
+    /^## Launch/ { inlaunch=1; next }
+    /^## / { inlaunch=0 }
+    /^#+ On a recipe/ { print (inlaunch ? "inside" : "outside"); exit }
   ' "$hostingfile")
   if [ "$recipe_at" = inside ]; then
-    pass "setup-hosting/SKILL.md keeps the recipe's checks inside Build and run it"
+    pass "setup-hosting/SKILL.md keeps the recipe's checks inside its launch section"
   else
-    fail "$hostingfile: the 'On a recipe' checks are ${recipe_at:-missing}, not inside Build and run it"
+    fail "$hostingfile: the 'On a recipe' checks are ${recipe_at:-missing}, not inside the launch section"
   fi
 fi
 
@@ -1487,40 +1588,34 @@ if [ -z "$codex_group_hits" ] && [ -z "$codex_active_hits" ]; then
 fi
 
 # ---------------------------------------------------------------------------
-echo "== Build-path vocabulary =="
+echo "== Retired path vocabulary =="
 
-canonical_paths="Explore privately
-Build and run it
-Build with care"
-
-# Checked per file, with the lineno:content split done by parameter
-# expansion rather than `read`, because `read` silently drops a trailing
-# field delimiter (a line that is exactly "Path:" would otherwise lose its
-# colon and misparse as the value "Path").
-pathfiles=$(grep -rlE --include='*.md' -- '^Path:' \
-  "$ROOT/.agents" "$ROOT/AGENTS.md" 2>/dev/null || true)
-while IFS= read -r pf; do
-  [ -n "$pf" ] || continue
-  matches=$(grep -nE '^Path:' "$pf")
-  while IFS= read -r entry; do
-    [ -n "$entry" ] || continue
-    lineno=${entry%%:*}
-    content=${entry#*:}
-    value=${content#Path:}
-    # trim leading spaces/tabs
-    while [ "${value# }" != "$value" ]; do value=${value# }; done
-    while [ "${value#	}" != "$value" ]; do value=${value#	}; done
-    [ -n "$value" ] || continue
-    if ! printf '%s\n' "$canonical_paths" | grep -qx "$value" \
-      && ! printf '%s' "$value" | grep -qE '^<.*>$'; then
-      fail "$pf:$lineno: non-canonical build path value '$value'"
-    fi
-  done <<MATCHES
-$matches
-MATCHES
-done <<PATHFILES
-$pathfiles
-PATHFILES
+# The kit has no project-wide switch. A project carries a risk record, and each piece
+# carries a Risk areas line. A path name or a Path: field anywhere in the
+# source, the tests or the documents would describe a switch that no longer
+# exists. Frozen upgrade fixtures, which model released projects, the release
+# notes, the script that moves an old record to the risk record, and the replay
+# script that writes the old section for a release that still reads it keep the
+# old names on purpose. The patterns are split so that a
+# search of the tree finds only real uses.
+path_hits=$(grep -rIlE -e 'Explore p''rivately' -e 'Build and r''un it' -e 'Build with c''are' \
+  -e 'build p''ath' -e '^P''ath:' \
+  "$ROOT/.agents" "$ROOT/docs" "$ROOT/README.md" "$ROOT/WORKFLOW.md" "$ROOT/AGENTS.md" \
+  "$ROOT/CONTRIBUTING.md" "$ROOT/llms.txt" "$ROOT/.claude" "$ROOT/.cursor" "$ROOT/.gemini" \
+  "$ROOT/.github" "$ROOT/agent-plugin" "$ROOT/.claude-plugin" 2>/dev/null \
+  | grep -v '/\.git/' \
+  | grep -v '/\.agents/tmp/' \
+  | grep -v '/\.agents/tests/fixtures/upgrade-' \
+  | grep -v '/docs/release-notes/' \
+  | grep -v '/\.agents/skills/maintain/scripts/kit-retired-skills\.json$' \
+  | grep -v '/\.agents/skills/maintain/scripts/risk_move\.py$' \
+  | grep -v '/\.agents/tests/replay/prepare/legacy-masterplan\.py$' \
+  || true)
+if [ -n "$path_hits" ]; then
+  fail "a retired path name or a Path: field is still in: $(printf '%s' "$path_hits" | tr '\n' ' ')"
+else
+  pass "no retired path name or Path: field remains outside the frozen fixtures and the release notes"
+fi
 
 # The gate names went with the redesign that made the kit stop refusing. What
 # it does now is give a risk notice the person can accept on the record, so a
@@ -1542,7 +1637,6 @@ Required controls:
 Outside help:
 help level
 expert brief
-four build paths
 levels of outside help"
 had_stale=0
 while IFS= read -r term; do
@@ -1564,7 +1658,7 @@ while IFS= read -r term; do
 done <<STALETERMS
 $stale_terms
 STALETERMS
-[ "$had_stale" -eq 1 ] || pass "only canonical build-path names appear"
+[ "$had_stale" -eq 1 ] || pass "no retired vocabulary appears"
 
 # ---------------------------------------------------------------------------
 echo "== Adapter generation =="
@@ -2206,13 +2300,29 @@ if [ "$fallback_ok" = "yes" ]; then
   pass "maintainer-only non-main branch validation fallback matches the contract"
 fi
 
+# Piped commands were observed matching later text as part of the push.
+if python3 - "$SKILLS/setup-ai-build-kit/templates/foundation/claude-settings.json" <<'PYRULE'
+import json, re, sys
+perms = json.load(open(sys.argv[1]))['permissions']
+bad = [r for key in ('deny', 'ask') for r in perms.get(key, [])
+       if r.startswith('Bash(git push *') and r != 'Bash(git push * --no-verify*)'
+       and re.search(r'\*[^*)]+', r[len('Bash(git push '):])]
+for rule in bad:
+    print('unsafe push text rule: ' + rule)
+sys.exit(bool(bad))
+PYRULE
+then pass "push text rules leave ref safety to the pre-push guard"
+else fail "a push text rule can match unrelated text later in a piped command"
+fi
+
 # Deny-list parity: permissions.deny must be exactly the set of entries that
 # mirror .agents/guard/blocked-commands.md's mechanically enforceable
 # patterns (git reset --hard, git push --force/-f, git clean -f/-fd, rm -rf).
 # An exact set comparison catches a missing OR an unexplained extra entry,
 # not just a missing substring. Both this repository's own Claude settings and
-# the settings start gives a project are checked; the two files differ only in
-# the session-start wiring, which a project has and this source must not.
+# the settings founding gives a project are checked. Founded projects also
+# protect hooks, stored logins and live changes, and use the pre-push guard
+# instead of push text rules.
 deny_jsonfiles="$ROOT/.claude/settings.json
 $ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json"
 expected_deny="Bash(git reset --hard:*)
@@ -2221,10 +2331,12 @@ Bash(git push -f:*)
 Bash(git clean -f:*)
 Bash(git clean -fd:*)
 Bash(rm -rf:*)"
-# A project the kit founds also blocks a direct push to main, which keeps
-# changes flowing through a pull request. This maintainer repository's own
-# settings deliberately do not carry that entry, so the two sets differ here.
-expected_deny_project="$expected_deny
+# Founded projects use the pre-push guard for main and replacing remote work.
+# Their text rules protect the guard and the other command boundaries.
+expected_deny_project="Bash(git reset --hard:*)
+Bash(git clean -f:*)
+Bash(git clean -fd:*)
+Bash(rm -rf:*)
 Write(**/.claude/settings.json)
 Edit(**/.claude/settings.json)
 Write(**/.claude/settings.local.json)
@@ -2248,20 +2360,6 @@ Read(**/.env.development.local)
 Read(**/.env.test.local)
 Read(**/.env.*)
 Read(!**/.env.example)
-Bash(git push * main)
-Bash(git push * main *)
-Bash(git push * +main)
-Bash(git push * +main *)
-Bash(git push *:main)
-Bash(git push *:main *)
-Bash(git push *refs/heads/main)
-Bash(git push *refs/heads/main *)
-Bash(git push --force*)
-Bash(git push -f*)
-Bash(git push * --force*)
-Bash(git push * -f)
-Bash(git push * -f *)
-Bash(git push * +*)
 Bash(rm -fr:*)
 Bash(rm -Rf:*)
 Bash(rm -fR:*)
@@ -2325,6 +2423,7 @@ Bash(gh api graphql *mergePullRequest*)"
 # A project blocks direct merge commands and asks before live changes.
 expected_ask_project="Bash(*merge.py*--approved*)
 Bash(*merge.py*--resume*)
+Bash(*approval.py*yes*)
 Bash(gh api *git/refs*)
 Bash(gh api graphql *createRef*)
 Bash(gh api graphql *updateRef*)

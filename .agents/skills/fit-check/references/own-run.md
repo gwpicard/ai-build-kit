@@ -1,7 +1,6 @@
 # Optional automatic work
 
-Keep autonomy off unless the person asks. Offer these options only on Build and
-run it or Build with care. On Explore privately, keep `Runs on its own:` off.
+Keep autonomy off unless the person asks.
 
 For merge, explain: “If you turn this on, a finished piece can go live before
 you try it. The check and a separate review still hold it. But nobody looks at

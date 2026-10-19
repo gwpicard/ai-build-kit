@@ -22,12 +22,12 @@ git -C "$WORK/project" init -q -b main
 git -C "$WORK/project" config user.name Rehearsal
 git -C "$WORK/project" config user.email rehearsal@example.invalid
 printf 'base\n' > "$WORK/project/file.txt"
-printf 'Path: Build and run it\nRuns on its own: queue, parallel 2, loop (decided 2026-10-15, "build several pieces")\n' \
+printf 'Runs on its own: queue, parallel 2, loop (decided 2026-10-15, "build several pieces")\n' \
   > "$WORK/project/masterplan.md"
 git -C "$WORK/project" add file.txt masterplan.md
 git -C "$WORK/project" commit -qm base
 setting_line=$(cat "$WORK/project/masterplan.md")
-printf 'Path: Build and run it\nRuns on its own: off\n' > "$WORK/project/masterplan.md"
+printf 'Runs on its own: off\n' > "$WORK/project/masterplan.md"
 git -C "$WORK/project" add masterplan.md
 git -C "$WORK/project" commit -qm 'disable loop'
 out=$(cd "$WORK/project" && sh "$ATTEMPT" 99 2>&1) && code=0 || code=$?

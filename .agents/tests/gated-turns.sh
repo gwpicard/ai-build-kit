@@ -120,6 +120,45 @@ grep -q 'when:' "$turns/turn-03.txt" \
   && bad "the precondition line was sent to the kit as part of the turn" \
   || ok "the precondition is not spoken to the kit"
 
+# --- an interruption is marked, not answered -------------------------------
+# A scripted line may be the person speaking without answering the kit's last
+# question. The case marks it, so the transcript can say so and the grader does
+# not read an unanswered question as the kit's fault. The line still fires by
+# position, or after its precondition when it has one.
+
+cat > "$WORK/case5.txt" <<'CASE'
+First line.
+---
+# interrupts: pushes on without answering
+Second line.
+---
+# when: the notice
+# interrupts: pushes again
+Third line.
+CASE
+turns5="$WORK/turns5"
+mkdir -p "$turns5"
+split_turns "$WORK/case5.txt" "$turns5"
+[ "$(cat "$turns5/turn-02.interrupt" 2>/dev/null)" = "pushes on without answering" ] \
+  && ok "an interruption is carried beside the turn it marks, with its reason" \
+  || bad "turn 2's interruption was dropped"
+[ -f "$turns5/turn-01.interrupt" ] && bad "turn 1 gained an interruption it never had" \
+  || ok "a turn without one is an ordinary answer"
+[ -f "$turns5/turn-03.interrupt" ] && [ "$(cat "$turns5/turn-03.when")" = "the notice" ] \
+  && ok "a turn may wait for the kit and still be marked an interruption" \
+  || bad "turn 3 lost its precondition or its mark"
+grep -q 'interrupts:' "$turns5/turn-02.txt" \
+  && bad "the interruption line was sent to the kit as part of the turn" \
+  || ok "the interruption line is not spoken to the kit"
+grep -q 'interruption' "$ROOT/.agents/tests/replay/grader-prompt.md" \
+  && ok "the grader is told what an interruption means" \
+  || bad "the grader is not told what an interruption means"
+printf '# setup: fixture\n# backbone: yes\nOnly line.\n' > "$WORK/case6.txt"
+case_backbone "$WORK/case6.txt" && ok "a case names the backbone it is graded on" \
+  || bad "the backbone line was not read"
+case_backbone "$WORK/case.txt" && bad "a case with no backbone line gained one" \
+  || ok "an older case is not graded on the backbone"
+
 # --- the person merges before a turn ---------------------------------------
 # A line saying "I merged your fix" must be true when it is sent, or the kit
 # rightly answers that the fix never went live. So a case marks the turn, and
@@ -1031,14 +1070,14 @@ answer_merge_box "$boxproj" \
   || bad "answering the merge box failed"
 python3 - "$boxproj/.claude/settings.json" \
   "$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json" <<'PY2' \
-  && ok "it takes out only the merge.py ask and leaves other rules and hooks" \
-  || bad "answering the box changed another rule or left the merge.py ask"
+  && ok "it takes out only the merge.py and recorded-yes asks and leaves other rules and hooks" \
+  || bad "answering the box changed another rule or left the merge.py or recorded-yes ask"
 import json, sys
 after = json.load(open(sys.argv[1]))
 before = json.load(open(sys.argv[2]))
-rule = "Bash(*merge.py*--approved*)"
-assert rule in before["permissions"]["ask"]
-before["permissions"]["ask"].remove(rule)
+for rule in ("Bash(*merge.py*--approved*)", "Bash(*approval.py*yes*)"):
+    assert rule in before["permissions"]["ask"]
+    before["permissions"]["ask"].remove(rule)
 assert after == before
 PY2
 mkdir -p "$WORK/box-none"

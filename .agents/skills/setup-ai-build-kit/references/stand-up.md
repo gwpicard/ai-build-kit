@@ -23,13 +23,11 @@ cannot check, and do not raise it again. If no recipe fits, record none and
 use an established stack.
 
 For a chosen recipe, use its fixed stack fields; record its folder name in
-AGENTS.md. Run `scripts/check-tooling.sh --recipe <folder>` and
-`scripts/use-starter.sh <folder>` with the menu's path. Make missing tools
-setup tasks before `/setup-hosting`; they are never a reason to stop.
+AGENTS.md. Run `scripts/use-starter.sh <folder>` with the menu's path.
 If the harness refuses a starter command, say so in one plain line and ask
 whether to build the starter another way. Wait for yes before writing
 replacement starter files.
-Starter exit 1: list clashing files and ask which to keep. Exit 2: say what
+Starter exit 1: list only reported clashes and ask which to keep. Exit 2: say what
 could not run. With no recipe, copy `templates/foundation/env.example` to
 `.env.example`.
 
@@ -46,16 +44,19 @@ rules in AGENTS.md.
 If `.github/workflows/checks.yml` is missing, copy the foundation template and
 edit only `jobs.project-check` with install and test commands. Preserve
 `source-kit-validation`. Follow `quality-checks/references/check-floor.md` for
-type checks and linting. On Build with care, use
-`boundary-rules.md` and offer once to have the check hold the named boundary.
-Explore privately needs a local check; other paths need a working remote
-check before shared or live work. Say: "green means the tests passed;
+type checks and linting. If a risk area names a boundary, use
+`boundary-rules.md` and offer once to have the check hold it. A working remote
+check is needed before shared or live work. Say: "green means the tests passed;
 red means don't merge, tell /implement."
 
 Before starting the unfinished tool, say it will check the recorded main page
 on this computer, publish nothing, then stop. Give AGENTS.md's
 warning about a possible confirmation box. Before saving, say it will save a
 local checkpoint and upload nothing.
+
+Then run `scripts/check-tooling.sh --conditions`, with `--recipe <folder>` for
+a chosen recipe. It opens and closes one test issue. A non-zero exit stops
+founding: give each `missing:` line and its step, and save no checkpoint.
 
 Run `sh scripts/found-save.sh` from the project root. It makes the local
 checkpoint and checks its record. Any non-zero exit means no checkpoint was

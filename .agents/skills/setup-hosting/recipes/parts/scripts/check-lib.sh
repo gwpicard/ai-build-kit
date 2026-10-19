@@ -14,6 +14,19 @@
 # script from the file the masterplan records, and passed on in the
 # environment of the one command that needs it.
 
+# The change a step makes online is named by the script and its arguments,
+# such as "promote dpl_abc 1a2b3c4". cl_approved spends the person's recorded
+# yes for it, through the one approval gate, or stops with nothing changed.
+cl_change="$(basename -- "$0" .sh)${*:+ $*}"
+
+cl_approved() {
+  cl_gate_script="$(CDPATH= cd -- "$(dirname -- "$0")/../../../.." && pwd)/records/scripts/approval.py"
+  [ -f "$cl_gate_script" ] ||
+    cl_cannot "The approval gate is missing, so nothing was changed."
+  python3 "$cl_gate_script" use "$cl_change" >&2 ||
+    cl_cannot "No yes is recorded for \"$cl_change\", so nothing was changed. Ask the person, record their words with approval.py yes, then run this again."
+}
+
 cl_pass() { printf '%s\n' "$1"; exit 0; }
 cl_fail() { printf '%s\n' "$1"; exit 1; }
 cl_cannot() { printf '%s\n' "$1"; exit 2; }

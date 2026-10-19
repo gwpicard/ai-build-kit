@@ -24,6 +24,7 @@ want=${2:-}
   cl_cannot "No build and commit were named, so nothing was promoted."
 [ -n "${LIVE_ADDRESS:-}" ] || cl_cannot "No live address is recorded, so nothing was promoted."
 cl_need vercel curl
+cl_approved
 
 vercel promote "$deployment" --yes >&2 ||
   cl_fail "Vercel did not promote the build. The live address still serves the version it served before."

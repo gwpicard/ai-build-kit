@@ -62,12 +62,12 @@ rr_case 2 good RR_DISAGREE=1 access.sh --pasted "$(rr_paste good access)"
 rr_case 2 down access.sh --pasted "$(rr_paste good access)"
 rr_case 0 good live-check.sh --only access --pasted-access "$(rr_paste good access)"
 rr_case 1 good live-check.sh --only access --pasted-access "$(rr_paste bad access)"
-printf '# Masterplan\n\n## Build path\n\nAccess: public (decided 2026-10-14)\n' > "$RR_TMP/fixture/masterplan.md"
+printf '# Masterplan\n\n## Risk record\n\nAccess: public (decided 2026-10-14)\n' > "$RR_TMP/fixture/masterplan.md"
 rr_case 0 good RR_SIGNUP=open access.sh --pasted "$(rr_paste bad access)"
 rr_case 1 good RR_SIGNUP=open access.sh --pasted "$(rr_paste good access)"
 rr_case 1 good access.sh --pasted "$(rr_paste bad access)"
 # Open address, invitation only: anyone reaches the address, sign-up closed.
-printf '# Masterplan\n\n## Build path\n\nAccess: open address, invitation only (decided 2026-10-14)\n' > "$RR_TMP/fixture/masterplan.md"
+printf '# Masterplan\n\n## Risk record\n\nAccess: open address, invitation only (decided 2026-10-14)\n' > "$RR_TMP/fixture/masterplan.md"
 rr_case 0 good access.sh --pasted "$(rr_paste bad access)"
 rr_said yes "Open address, invitation only, as recorded"
 rr_case 1 good RR_SIGNUP=open access.sh --pasted "$(rr_paste bad access)"
@@ -80,7 +80,7 @@ printf 'upgrade-declined|2026-10-14|access\n' > "$RR_TMP/fixture/.ai-build-kit-m
 rr_case 0 good live-check.sh --only access
 rr_said yes "Access: not recorded, by your choice."
 rm -f "$RR_TMP/fixture/.ai-build-kit-maintenance"
-printf '# Masterplan\n\n## Build path\n\nPath: Build and run it\nAccess: private\n' > "$RR_TMP/fixture/masterplan.md"
+printf '# Masterplan\n\n## Risk record\n\nAccess: private\n' > "$RR_TMP/fixture/masterplan.md"
 rr_case 0 good RR_SIGNUP=open set-signup.sh closed
 rr_case 1 bad RR_SIGNUP=open set-signup.sh closed
 rr_case 2 good set-signup.sh

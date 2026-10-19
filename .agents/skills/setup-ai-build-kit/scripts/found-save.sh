@@ -51,7 +51,7 @@ top=$(CDPATH= cd -- "$(git rev-parse --show-toplevel)" && pwd -P)
   exit 1
 }
 sh "$SKILL_ROOT/scripts/use-push-guard.sh" . ||
-  echo "found-save: the push guard is not on, so only the coding agent's own settings stop a push to main" >&2
+  { echo "found-save: the push guard is not on; run use-push-guard.sh from the project folder before saving" >&2; exit 1; }
 
 name=$(git config --get user.name || true)
 email=$(git config --get user.email || true)

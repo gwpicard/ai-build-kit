@@ -622,7 +622,7 @@ rr_project() {
     printf 'postgresql://postgres.liveref@pooler.example.test:5432/postgres\n' > supabase/.temp/pooler-url
     printf '17.4\n' > supabase/.temp/postgres-version
     printf '# Changelog\n\nNewest first.\n' > CHANGELOG.md
-    printf '# Masterplan\n\n## Build path\n\nPath: Build and run it\nAccess: private\n' > masterplan.md
+    printf '# Masterplan\n\n## Risk record\n\nAccess: private\n' > masterplan.md
     mkdir -p .vercel
     printf '{"projectId":"prj_standin","orgId":"team_standin"}\n' > .vercel/project.json
     "$rr_real_git" init -q -b main
@@ -725,6 +725,14 @@ rr_case() {
   "$rr_real_git" -C "$RR_TMP/work" remote set-url origin "$RR_TMP/work.git"
   rm -f "$RR_STATE/image" "$RR_STATE/sso" "$RR_STATE/signup"
   [ -z "${RR_ORIGIN:-}" ] || "$rr_real_git" -C "$RR_TMP/work" remote set-url origin "$RR_ORIGIN"
+  # A step that changes something online spends the person's recorded yes
+  # for its change, named by the script and its arguments. Each case has one,
+  # unless RR_NO_YES=1 takes it away to prove the step refuses without it.
+  if [ "${RR_NO_YES:-0}" != 1 ]; then
+    (cd "$RR_TMP/work" && python3 "$RR_PARTS/../../../records/scripts/approval.py" yes \
+      "$(basename -- "$rr_file" .sh)${*:+ $*}" --words "rehearsal yes" >/dev/null) ||
+      rr_fail "the rehearsal could not record a yes for $rr_file"
+  fi
   rr_mark=$(wc -l < "$RR_CALLS")
   rr_got=0
   # shellcheck disable=SC2086

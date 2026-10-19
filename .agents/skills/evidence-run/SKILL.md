@@ -1,6 +1,6 @@
 ---
 name: evidence-run
-description: Gather fresh evidence before the tool is relied on: promised behaviour, failure, data and access, operations, review, and an honest report. Used by setup-hosting, maintain, merge and implement auto.
+description: "Gather fresh evidence before the tool is relied on: promised behaviour, failure, data and access, operations, review, and an honest report. Used by setup-hosting, maintain, merge and implement auto."
 user-invocable: false
 ---
 
@@ -49,11 +49,11 @@ than implied.
 
 Where a review names its reviewer, check that person did it. A substitute is a
 gap, not a completed review, and it is recorded as one. Where a risk was
-accepted instead, the build-path section carries the `Accepted:` line, and the
+accepted instead, the risk record carries the `Accepted:` line, and the
 launch report says plainly which review did not happen.
 
 ## 6. Report honesty
 
 End with what passed, what failed, what was not checked at all, what
-remains a human judgement rather than a proven fact, and whether the current
-build path permits shipping this.
+remains a human judgement rather than a proven fact, and whether anything the
+risk record names still stands in the way of shipping this.

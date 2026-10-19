@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Find, and on a yes add, the Claude Code safety rules a project is missing.
+"""Offer Claude Code settings changes and apply them on a yes.
 
 Founding copies the kit's Claude Code settings into `.claude/settings.json`
 once, and no update touches that file again. A later release can refuse more
@@ -11,7 +11,7 @@ template, so the comparison never rests on memory or on a hand edit of JSON.
 Usage:
 
     settings-rules.py [PROJECT]             list the rules to offer
-    settings-rules.py --apply [PROJECT]     add them
+    settings-rules.py --apply [PROJECT]     apply the offer
     settings-rules.py --decline [PROJECT]   record a no
 
 PROJECT defaults to the current folder. Each line has fields separated by
@@ -19,31 +19,26 @@ tabs:
 
     deny       RULE     a refusal the template holds and the project lacks
     ask        RULE     a question before a live change the project lacks
+    remove-deny RULE    an exact retired kit push rule to remove
     declined   LIST  RULE
                         a rule the person said no to; the no stands
     left       .claude/settings.json  WHY
                         the file could not be read, so it was left alone
 
-Which rules are offered. A deny rule that names both `git push` and `main` is
-always offered, and so is one that stops a push skipping the push guard,
-switches the guard off, throws away unsaved changes, or reads another tool's
-stored login, since no
-earlier rule did that job. One that stops a force push is offered only while the project
-still holds `Bash(git push --force:*)`, and one that stops a forced delete only
-while it holds `Bash(rm -rf:*)`, since a person may have taken those out on
-purpose. Every ask rule is offered. Any other rule the project lacks is left
-out, for the same reason.
+Rules that protect the push guard, unsaved work and stored logins are always
+offered, as are ask rules. Forced-delete rules are offered only while the
+project still holds `Bash(rm -rf:*)`, since a person may have removed it on
+purpose. The whole retired kit push set is offered for removal only while Git
+would run the kit's push guard. A partial set and rules the person added stay.
 
 A no is the line `push-rules-declined|<date>|<rules separated by " ; ">` in
 `.ai-build-kit-maintenance`. While that line lists every rule still missing,
 the earlier no stands and the rules print as `declined`. A release that adds a
 rule the line does not list brings the offer back.
 
-`--apply` adds only the offered rules, each to the end of the list it came
-from, and changes no other character of the file where it can find those lists
-in the text; otherwise it writes the file again with the same indent. It reads
-the file back and stops with exit 3, the file untouched, if the result would not
-hold every earlier entry and setting plus the new rules.
+`--apply` adds the offered rules and removes only the named retired entries.
+It keeps other settings and entries, preserving their text where possible.
+If the result differs from that offer, exit 3 leaves the file untouched.
 
 Exit codes. List mode: 1 when a rule is offered, 0 when none is (a declined
 rule or a `left` line included), 2 on a usage error. `--apply` and `--decline`:
@@ -55,6 +50,7 @@ import json
 import os
 import re
 import sys
+import subprocess
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 INSTALLED = os.path.dirname(os.path.dirname(HERE))
@@ -63,7 +59,24 @@ TEMPLATE = os.path.join(INSTALLED, "setup-ai-build-kit", "templates", "foundatio
 SETTINGS = os.path.join(".claude", "settings.json")
 MAINTENANCE = ".ai-build-kit-maintenance"
 DECLINED = "push-rules-declined|"
-FORCE_PUSH = "Bash(git push --force:*)"
+RETIRED_PUSH_RULES = frozenset({
+    'Bash(git push --force:*)',
+    'Bash(git push -f:*)',
+    'Bash(git push --force*)',
+    'Bash(git push -f*)',
+    'Bash(git push * --force*)',
+    'Bash(git push * -f)',
+    'Bash(git push * -f *)',
+    'Bash(git push * +*)',
+    'Bash(git push * main)',
+    'Bash(git push * main *)',
+    'Bash(git push * +main)',
+    'Bash(git push * +main *)',
+    'Bash(git push *:main)',
+    'Bash(git push *:main *)',
+    'Bash(git push *refs/heads/main)',
+    'Bash(git push *refs/heads/main *)',
+})
 FORCED_DELETE = "Bash(rm -rf:*)"
 # Refusals added after the first founding settings, which no earlier rule
 # stood in for: skipping or switching off the push guard, throwing away
@@ -110,22 +123,34 @@ def lists(data):
     return out
 
 
-def offered(project_lists, template_lists):
+def guard_active(project):
+    helper = os.path.join(INSTALLED, "setup-ai-build-kit", "scripts", "use-push-guard.sh")
+    try:
+        return subprocess.run(["sh", helper, "--check", os.path.abspath(project)],
+                              capture_output=True).returncode == 0
+    except OSError:
+        return False
+
+
+def offered(project_lists, template_lists, project):
     """The rules to offer, as (key, rule) in template order."""
     have = project_lists
     out = []
     for rule in template_lists["deny"]:
         if rule in have["deny"]:
             continue
-        if ("git push" in rule and "main" in rule) or rule.startswith(ALWAYS_OFFERED):
-            out.append(("deny", rule))
-        elif rule.startswith("Bash(git push") and FORCE_PUSH in have["deny"]:
+        if rule.startswith(ALWAYS_OFFERED):
             out.append(("deny", rule))
         elif rule.startswith("Bash(rm ") and FORCED_DELETE in have["deny"]:
             out.append(("deny", rule))
     for rule in template_lists["ask"]:
         if rule not in have["ask"]:
             out.append(("ask", rule))
+    if RETIRED_PUSH_RULES.issubset(have["deny"]):
+        if guard_active(project):
+            out.extend(("remove-deny", rule) for rule in have["deny"] if rule in RETIRED_PUSH_RULES)
+        else:
+            print("left\t%s\tthe push guard must be switched on before retiring the push rules" % SETTINGS)
     return out
 
 
@@ -159,7 +184,7 @@ def read(project):
         template = json.loads(load(TEMPLATE))
     except (OSError, ValueError):
         raise ValueError("the installed founding template could not be read")
-    return text, data, offered(lists(data), lists(template))
+    return text, data, offered(lists(data), lists(template), project)
 
 
 # --- writing without disturbing the rest of the file -------------------------
@@ -291,10 +316,35 @@ def insert_in_place(text, additions):
     return out
 
 
+def remove_in_place(text, rules):
+    """Remove only exact retired deny entries, keeping the surrounding text."""
+    if not rules:
+        return text
+    try:
+        items = Spans(text).value(0)[2]["permissions"][2]["deny"][2]
+        # Re-read spans after each removal so commas stay valid.
+        for index in reversed(range(len(items))):
+            items = Spans(text).value(0)[2]["permissions"][2]["deny"][2]
+            start, end, _ = items[index]
+            if json.loads(text[start:end]) not in rules:
+                continue
+            if index:
+                start = items[index - 1][1]
+            elif len(items) > 1:
+                end = items[1][0]
+            text = text[:start] + text[end:]
+        return text
+    except (AssertionError, IndexError, KeyError, TypeError, ValueError):
+        return None
+
+
 def expected(data, additions):
     want = json.loads(json.dumps(data))
     perms = want.setdefault("permissions", {})
     for key, rule in additions:
+        if key == "remove-deny":
+            perms["deny"] = [r for r in perms["deny"] if r != rule]
+            continue
         perms.setdefault(key, [])
         perms[key].append(rule)
     return want
@@ -317,11 +367,12 @@ def apply(project):
     permissions = data.get("permissions", {})
     if not isinstance(permissions, dict) or any(
             key in permissions and not isinstance(permissions[key], list)
-            for key, _ in offers):
+            for key, _ in offers if key != "remove-deny"):
         print("left\t%s\tits permission lists have an unexpected shape" % SETTINGS)
         return 0
     want = expected(data, offers)
-    new = insert_in_place(text, offers)
+    new = remove_in_place(text, {r for k, r in offers if k == "remove-deny"})
+    new = insert_in_place(new, offers) if new is not None else None
     if new is None or json.loads(new) != want:
         match = re.search(r'\n([ \t]+)"', text)
         indent = match.group(1) if match else "  "

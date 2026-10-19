@@ -10,27 +10,29 @@ One piece per pass, always, directed by someone who judges it by behaviour.
 
 ## 1. Safe start
 
-Read the whole piece, its `Under the hood` notes, the build-path section and
-anything the masterplan or AGENTS.md's stack section points to. Uncommitted
-work stops the build; `/what-now` owns that conversation. Start from
-up-to-date `main` on every save route including the checkpoint route. If it
-cannot be reached, use the local copy and say so.
+Read the whole piece, its `Under the hood` notes, its `Risk areas:` line, the
+masterplan's risk record and anything the masterplan or AGENTS.md's stack
+section points to. Uncommitted work stops the build; `/what-now` owns that
+conversation. Start from up-to-date `main`. If it cannot be reached, use the
+local copy and say so.
 
 Choose the route before changing files:
 
-- **Checkpoint:** private or disposable work with no shared or live reliance,
-  and no change to data, access, integrations, money, autonomy or operations.
-- **Pull request:** shared or live use, behaviour, data, permissions, outside
-  services, operations, or any route the build path requires.
-- **Flagged:** work inside a named sensitive area whose caution is neither
-  done nor accepted. Give the `fit-check` risk notice before building. On the
-  person's decision to continue, run `piece-labels.sh start`, record their
-  words and date with `Accepted:`, then build and save by pull request in that
-  reply. A lock waiting only on this caution opens unless they ask to keep it.
+- **Pull request:** every piece.
+- **Flagged:** work inside a named risk area whose caution is neither
+  done nor accepted. Give the `fit-check` risk notice unless the piece already
+  records acceptance. On the person's decision to continue during `/implement`,
+  run `piece-labels.sh start`, record their words and date with `Accepted:`, then
+  build and save by pull request in that reply. A lock waiting only on this
+  caution opens unless they ask to keep it.
   Otherwise stop at the recorded condition. In an unattended run, never
   record acceptance.
 
-Pull-request and flagged routes use a short-lived branch from `main`. If
+After `piece-labels.sh start`, copy any named-risk-area acceptance from the
+piece into the masterplan before flagged work, following
+`fit-check/references/risk-acceptance.md`.
+
+Both routes use a short-lived branch from `main`. If
 GitHub is unavailable, save on the branch and note the missing pull request
 on the piece. A service step that could not run is a note, not a warning or
 risk. The first push waits for a yes, as `merge/references/first-upload.md`
@@ -49,7 +51,7 @@ colour, usability and throwaway prototypes can use a guided manual check.
 Backups, restores, migrations, rollback, alerts, deployment and recovery need
 an operational rehearsal. Adding a field needs a test; changing existing
 records needs a rehearsal on a copy. Check outside facts through `research`.
-For mapped sensitive areas, run the strength check after tests pass.
+For mapped risk areas, run the strength check after tests pass.
 
 For a repair, follow the `repair` skill's `references/fixing.md` and run its strength check
 on the regression test. Otherwise follow

@@ -1,6 +1,6 @@
 # Waste read
 
-At the quarterly visit, on Build and run it and on Build with care, gather
+At the quarterly visit, gather
 three kinds of waste before proposing anything: code copied from one place to
 another, code nothing uses, and dependencies nothing imports.
 

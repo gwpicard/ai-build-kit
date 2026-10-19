@@ -27,7 +27,7 @@ export STANDIN_GH_STATE STANDIN_GH_LOG
 seed() {
   python3 - "$STANDIN_GH_STATE" <<'PY'
 import json, sys
-done = "## So that\nPeople see who has the camera.\n\n## Done when\n- The list shows who has each item.\n\nReaches: src/list.ts (1 file)\n"
+done = "## So that\nPeople see who has the camera.\n\n## Done when\n- The list shows who has each item.\n\nReaches: src/list.ts (1 file)\nRisk areas: none\n"
 state = {
     "repo": "someone/kit-log",
     "labels": ["ready", "needs-clarification", "needs-research", "visual", "building"],
@@ -39,15 +39,18 @@ state = {
               "labels": ["needs-clarification", "needs-research", "visual"]},
         "5": {"body": "### Done when\n\n_No response_\n", "labels": []},
         "6": {"body": done + "\n## Decided\n\n<!-- what settled it -->\n", "labels": ["needs-research"]},
-        "7": {"body": "### So that\n\nA thing.\n\n### Done when\n\n- It works.\n\nReaches: src/list.ts\n", "labels": []},
+        "7": {"body": "### So that\n\nA thing.\n\n### Done when\n\n- It works.\n\nReaches: src/list.ts\n\n### Risk areas\n\nnone\n", "labels": []},
         "8": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n", "labels": []},
-        "9": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n", "labels": []},
-        "10": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n", "labels": []},
+        "9": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n\nRisk areas: none\n", "labels": []},
+        "10": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n\nRisk areas: none\n", "labels": []},
         "11": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n\nReaches:\n\nMore notes.\n", "labels": []},
-        "12": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n\n**Reaches:** src/list.ts\n", "labels": []},
-        "13": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n\n- Reaches: src/list.ts\n", "labels": []},
+        "12": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n\n**Reaches:** src/list.ts\nRisk areas: none\n", "labels": []},
+        "13": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n\n- Reaches: src/list.ts\nRisk areas: none\n", "labels": []},
         "14": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n\n**Reaches:**\n", "labels": []},
-        "15": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n\nReaches:src/list.ts\n", "labels": []},
+        "15": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n\nReaches:src/list.ts\nRisk areas: none\n", "labels": []},
+        "16": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n\nReaches: src/list.ts\n", "labels": []},
+        "17": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n\nReaches: src/list.ts\nRisk areas:\n\nMore notes.\n", "labels": []},
+        "18": {"body": "## So that\nA thing.\n\n## Done when\n- It works.\n\nReaches: src/list.ts\nRisk areas: money, sign-in and permissions\n", "labels": []},
     },
 }
 json.dump(state, open(sys.argv[1], "w"))
@@ -128,6 +131,19 @@ out=$(run 14) && code=0 || code=$?
 out=$(run 15) && code=0 || code=$?
 [ "$code" -eq 0 ] && pass "Reaches text immediately after the colon is accepted" \
   || fail "Reaches without a space was refused: $code $out"
+
+out=$(run 16) && code=0 || code=$?
+[ "$code" -eq 1 ] && [ "$(labels_of 16)" = "" ] && printf '%s' "$out" | grep -q "Risk areas" \
+  && pass "a piece that says nothing about risk areas is refused and the missing line is named" \
+  || fail "a piece with no Risk areas line was not refused: $code $out"
+out=$(run 17) && code=0 || code=$?
+[ "$code" -eq 1 ] && printf '%s' "$out" | grep -q "Risk areas" \
+  && pass "an empty Risk areas line is refused" \
+  || fail "an empty Risk areas line was accepted: $code $out"
+out=$(run 18) && code=0 || code=$?
+[ "$code" -eq 0 ] && [ "$(labels_of 18)" = "ready" ] \
+  && pass "a piece naming its risk areas is marked ready" \
+  || fail "a piece naming risk areas was not marked ready: $code $out"
 
 out=$(run 3) && code=0 || code=$?
 [ "$code" -eq 1 ] && [ "$(labels_of 3)" = "needs-clarification visual" ] && printf '%s' "$out" | grep -q "Decided" \

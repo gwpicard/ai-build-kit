@@ -1,8 +1,8 @@
 # The trim
 
 Before hand-over, remove additions the behaviour does not need, such as an
-unused export or a wrapper with one caller. Run once after checks on Build and
-run it or Build with care, repairs included. Skip Explore privately.
+unused export or a wrapper with one caller. Run once after checks,
+repairs included.
 
 ## Run the script
 

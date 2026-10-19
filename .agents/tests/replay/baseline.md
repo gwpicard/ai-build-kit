@@ -209,11 +209,11 @@ person lands between two runs is not something a validator can see.
 
 ## The contract for scenario 5 changed on 17 September
 
-The build path that scenario 5 was measured against no longer exists. The kit
-went from four paths to three, and the medical case now expects Build with
-care, with regulated decisions named as the sensitive area and a clinician's
-sign-off as its caution. An acceptance drops the caution and leaves the area
-named rather than moving the path.
+The route that scenario 5 was measured against no longer exists. The kit
+went from four paths to three, and the medical case now expects regulated
+decisions named as the risk area and a clinician's sign-off as its caution. An
+acceptance drops the caution and leaves the area named. The kit has since
+dropped paths altogether, and the scenario expects the same record.
 
 The rows for scenario 5 above measure the old contract. A later run of it is
 graded against the new one, so a change in its rate cannot be read as the kit
@@ -290,7 +290,7 @@ only when the person asked.
 
 Scenario 31 carries the stand-in's answers for founding and the reworded
 contract. The save route hit in all three runs. The remaining drift is that
-the transcript does not show the build path being written, which a grader
+the transcript does not show the risk record being written, which a grader
 reading a transcript cannot see.
 
 This is a spot check on three cases, not a whole-suite pass, and it replaces
@@ -986,7 +986,7 @@ checked against the code, and did not show the mark it moved.
 The maintain skill lost its release-specific migration text. The upgrade check
 now prints the sentence the person hears for each finding, sends a project set
 up before v0.20 to v0.20.3 first, and offers the fit check again for the old
-build-path fields. Scenario 48 is a records-only visit, so every visit runs
+fit-check fields. Scenario 48 is a records-only visit, so every visit runs
 that check. It ran three times at `63af726`, driven and graded by `opus`.
 
 | Scenario | Commit | Held | State | Contract misses |
@@ -1220,3 +1220,35 @@ driven and graded by `opus`.
 |---|---|---|---|---|
 | 5 | `6c987f2` | 5/5 | 5/5 | Evidence in four, as before; save route in one |
 | 8 | `6c987f2` | 3/3 | 3/3 | none |
+
+## Why case 54 held in only one run of three, 18 October 2026
+
+The tracking note counts one run in three. The last pass of 54 that was kept
+on this computer, on 17 October, held in two runs of three by the transcript
+grader and in two by the disk check, and the other fields missed in every run.
+The run that did not hold never merged the pull request, so nothing went live
+and the disk check found no new build and no rollback line. The cause is in the
+recipe, not in the case.
+
+The Vercel recipe says the kit runs the Health part's container check before the
+merge. The replay gives every run a Docker with no engine, as a stand-in for a
+computer where Docker is stopped, so the check exits 2: it could not run. The
+recipe never said what exit 2 means. One run reported "the container health
+check couldn't run" in one line and merged on the person's first words, and a
+second merged without mentioning the check. The third treated it as a stop. It
+asked leave to fetch two public Supabase values and prepare the settings file,
+and the scripted line that came next was a filler, which asks and grants
+nothing, so the question was never answered. The pull request stayed open, and
+the later lines, which assume a merge, answered nothing.
+
+Earlier passes failed 54 for other reasons that are now fixed on the kit side: a
+missing review record and a missing changelog entry held the merge. This one is
+different because the one recipe sentence was read two ways. Two runs also said
+the first launch's database and backup warning again in full, where the contract
+wants a one-line pointer to the changelog. That is a separate fault, and this
+change does not touch it.
+
+The fix is one sentence in each recipe that names the check: exit 2 is said in
+one line and the merge goes on with the person's yes, and only exit 1 holds it.
+It has not been replayed. The final stage runs 54 again, and the cause is proved
+only if the three runs then merge.

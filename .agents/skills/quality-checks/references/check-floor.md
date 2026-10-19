@@ -61,6 +61,5 @@ database.
 
 ## Where it applies
 
-Always, on every build path, in any language that has these tools. On Explore
-privately the remote check stays optional, as it is for tests; the commands
-still go in the stack section and still run before hand-over.
+Always, in any language that has these tools. The commands go in the stack
+section and run before hand-over.

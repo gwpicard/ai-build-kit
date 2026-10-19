@@ -5,7 +5,7 @@ description: Orient returners. Read state and name steps.
 
 # What now
 
-Read `masterplan.md` (build path first), changelog, Git status, commits, pull
+Read `masterplan.md` (risk record first), changelog, Git status, commits, pull
 requests and `AGENTS.md`. Refresh with `sh .agents/tools/plan-refresh.sh`;
 `records/references/pieces.md`
 covers the fallback. Offline, use the dated plan.

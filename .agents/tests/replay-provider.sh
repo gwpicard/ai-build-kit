@@ -38,7 +38,7 @@ done
 [ -n "$output" ] || exit 2
 case " $* " in
   *" --ephemeral "*)
-    printf '%s' '{"scenario":1,"verdicts":{"Expected path":{"verdict":"hit","quote":"kept","note":"kept"}},"pushback":{"verdict":"unobservable","quote":"","note":"none"},"held":true,"held_clause":0,"held_note":"held"}' > "$output"
+    printf '%s' '{"scenario":1,"verdicts":{"Expected record":{"verdict":"hit","quote":"kept","note":"kept"}},"pushback":{"verdict":"unobservable","quote":"","note":"none"},"held":true,"held_clause":0,"held_note":"held"}' > "$output"
     ;;
   *" exec resume "*) printf '%s' 'codex resumed' > "$output" ;;
   *) printf '%s' 'codex started' > "$output" ;;
@@ -63,7 +63,7 @@ if command -v zsh >/dev/null 2>&1; then
 fi
 case " $* " in
   *" --allowedTools  "*)
-    printf '%s\n' '{"result":"{\"scenario\":1,\"verdicts\":{\"Expected path\":{\"verdict\":\"hit\",\"quote\":\"kept\",\"note\":\"kept\"}},\"pushback\":{\"verdict\":\"unobservable\",\"quote\":\"\",\"note\":\"none\"},\"held\":true,\"held_clause\":0,\"held_note\":\"held\"}"}'
+    printf '%s\n' '{"result":"{\"scenario\":1,\"verdicts\":{\"Expected record\":{\"verdict\":\"hit\",\"quote\":\"kept\",\"note\":\"kept\"}},\"pushback\":{\"verdict\":\"unobservable\",\"quote\":\"\",\"note\":\"none\"},\"held\":true,\"held_clause\":0,\"held_note\":\"held\"}"}'
     ;;
   *" --resume "*) printf '%s\n' '{"result":"claude resumed"}' ;;
   *) printf '%s\n' '{"result":"claude started"}' ;;
@@ -239,6 +239,83 @@ grep -q -- "--resume claude-session" "$PROVIDER_LOG" \
   && pass "Claude Code still resumes the chosen session" \
   || fail_provider "Claude Code lost its resume id"
 
+# Drive the same MCP configuration Claude receives, with no model. An old
+# background call must still be refused after a later turn supplies the yes.
+python3 - "$REPLAY_DIR/confirm-box.py" "$TEST_WORK" <<'PY' \
+  && pass "confirmation boxes decline before the grant and accept on and after it" \
+  || fail_provider "confirmation boxes did not respect the scripted grant"
+import json
+from pathlib import Path
+import subprocess
+import sys
+
+server, work = sys.argv[1], Path(sys.argv[2])
+grants, log = work / "box-grants", work / "boxes.log"
+grants.write_text("4\tmigration\n")
+
+
+def request(turn, command, expected, tool="Bash", grant_file=grants):
+    config = json.loads(subprocess.check_output([
+        sys.executable, server, "--config", str(grant_file), str(log), str(turn)]))
+    mcp = config["mcpServers"]["replay_box"]
+    tool_input = {"command": command, "description": "test"}
+    messages = [
+        {"id": 1, "method": "initialize", "params": {"protocolVersion": "2024-11-05"}},
+        {"method": "notifications/initialized"},
+        {"id": 2, "method": "tools/list"},
+        {"id": 3, "method": "tools/call", "params": {"name": "answer", "arguments": {
+            "tool_name": tool, "input": tool_input, "tool_use_id": "box-test"}}},
+    ]
+    output = subprocess.check_output([mcp["command"], *mcp["args"]], text=True,
+                                     input="".join(json.dumps(m) + "\n" for m in messages))
+    replies = [json.loads(line) for line in output.splitlines()]
+    assert replies[0]["result"]["protocolVersion"] == "2024-11-05"
+    assert replies[1]["result"]["tools"][0]["name"] == "answer"
+    decision = json.loads(replies[2]["result"]["content"][0]["text"])
+    assert decision["behavior"] == expected, (turn, command, decision)
+    if expected == "allow":
+        assert decision["updatedInput"] == tool_input
+        assert not decision.get("updatedPermissions")
+
+
+commands = [
+    'python3 /kit/records/scripts/approval.py yes "migrate --apply live-ref" --words "Yes, apply that migration."',
+    'DB_PASSWORD_FILE=/private/password sh /kit/parts/scripts/migrate.sh --apply live-ref',
+    'cd /project && supabase db push --linked',
+]
+commands.append(commands[0] + " && " + commands[1])
+commands.append('python3 .agents/skills/records/scripts/approval.py yes '
+                '"Apply migration 20261005090000_pinned_notices.sql to the live Supabase database" '
+                '--words "Yes, apply that migration to the live database." && '
+                'DB_PASSWORD_FILE=/private/password .agents/skills/setup-hosting/recipes/parts/scripts/migrate.sh '
+                '--apply; echo "exit $?"')
+for command in commands:
+    for turn, expected in ((1, "deny"), (3, "deny"), (4, "allow"), (5, "allow"), (3, "deny")):
+        request(turn, command, expected)
+empty = work / "no-grants"
+empty.write_text("")
+request(5, commands[0], "deny", grant_file=empty)
+empty.write_text("4\tmerge\n")
+request(5, commands[0], "deny", grant_file=empty)
+for command in (
+    'python3 /kit/approval.py yes "set-access private" --words "yes"',
+    'python3 /kit/approval.py yes "merge pull request 12" --words "yes"',
+    'supabase config push', 'vercel --prod', 'supabase db push && vercel --prod',
+    'echo "supabase db push"', 'supabase db push; vercel --prod',
+    'SUPABASE_DB_PASSWORD="$(some-command)" supabase db push', '"unterminated',
+):
+    request(5, command, "deny")
+request(5, "supabase db push", "deny", tool="Write")
+request(0, "supabase db push", "deny")
+text = log.read_text()
+assert "answer: allow; turn: 4" in text and "answer: deny; turn: 3" in text
+assert "box-test" in text
+assert "/private/password" not in text and "some-command" not in text
+PY
+grep -q -- '--permission-prompt-tool mcp__replay_box__answer' "$PROVIDER_LOG" \
+  && pass "Claude receives the confirmation tool on its start and resume routes" \
+  || fail_provider "Claude ran without the confirmation tool"
+
 provider_grade "$TEST_WORK/input" "$TEST_WORK/claude-grade.raw"
 python3 "$REPLAY_DIR/grade-parse.py" \
   "$TEST_WORK/claude-grade.raw" "$TEST_WORK/claude-grade.json" 1
@@ -256,11 +333,6 @@ grep -q 'REPLAY_PROVIDER=${REPLAY_PROVIDER:-claude}' "$RUNNER" \
 grep -qF 'REPLAY_PROVIDER=codex MODEL=gpt-6-luna GRADER_MODEL=gpt-6-luna REPLAY_EFFORT=high REPEATS=3 ./run.sh' "$README" \
   && pass "the Codex-only comparison command is documented" \
   || fail_provider "the exact Codex-only command is missing from the guide"
-grep -q "Expected path.*recorded build path" "$GRADER" \
-  && grep -q "before a build.*not a path change" "$GRADER" \
-  && pass "the grader treats Expected path as a build path" \
-  || fail_provider "the grader still confuses the path with a build command"
-
 # A run that lost the stand-in reads normally, so the harness has to find it.
 # The transcript holds only what was said, so the provider's own record of each
 # command's output is read too. The signs are the real, signed-out CLI's own

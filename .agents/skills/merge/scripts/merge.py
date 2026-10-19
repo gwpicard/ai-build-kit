@@ -10,8 +10,9 @@ import time
 from pathlib import Path
 
 def shared_review_reader():
+    """The project's reader when it knows the review record, else the kit's own."""
     candidates = [Path.cwd() / ".agents" / "hooks" / "review_boxes.py",
-                  Path(__file__).parents[2] / "setup-ai-build-kit" / "templates" /
+                  Path(__file__).resolve().parents[2] / "setup-ai-build-kit" / "templates" /
                   "foundation" / "review_boxes.py"]
     for candidate in candidates:
         if candidate.is_file():
@@ -19,11 +20,34 @@ def shared_review_reader():
             spec = importlib.util.spec_from_file_location("review_boxes", candidate)
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
-            return module.open_review_box
+            if hasattr(module, "review_hold"):
+                return module
     raise ImportError("shared review-box reader is missing")
 
 
-open_review_box = shared_review_reader()
+def result_names():
+    import importlib.util
+    path = Path(__file__).resolve().parents[2] / "quality-checks" / "scripts" / "results.py"
+    spec = importlib.util.spec_from_file_location("results", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+sys.dont_write_bytecode = True
+reviews = shared_review_reader()
+open_review_box = reviews.open_review_box
+results = result_names()
+
+
+def review_held(body, head):
+    """Stop unless a whole review record names this head and has no open finding."""
+    reason = reviews.review_hold(body, head)
+    if reason:
+        stop("merge: %s (%s); the pull request stays open" % (reason, results.NOT_RUN))
+    if (reviews.read_record(body) or {}).get("open") != "0":
+        stop("merge: the review record still has an open finding (%s); the pull request stays open"
+             % results.FAIL)
 
 
 def gh(*args):
@@ -48,15 +72,15 @@ def read_json(result, label):
 def check_hold(rows):
     projects = [row for row in rows if row.get("name") == "project-check"]
     if not projects:
-        stop("merge: project-check is missing; the pull request stays open")
+        stop("merge: project-check is missing (%s); the pull request stays open" % results.NOT_RUN)
     for row in rows:
         name = str(row.get("name") or "unnamed check")
         state = str(row.get("state") or "unknown")
-        bucket = row.get("bucket")
-        if bucket in ("fail", "cancel") or bucket == "pending":
-            stop("merge: %s is %s; the pull request stays open" % (name, state))
-        if name == "project-check" and bucket != "pass":
-            stop("merge: project-check is %s; the pull request stays open" % state)
+        result = results.from_github(row)
+        if results.blocks(result):
+            stop("merge: %s is %s (%s); the pull request stays open" % (name, state, result))
+        if name == "project-check" and result != results.PASS:
+            stop("merge: project-check is %s (%s); the pull request stays open" % (state, result))
 
 
 def git(*args):
@@ -156,9 +180,6 @@ def auto_setting(main):
     result = git("show", main + ":masterplan.md")
     if result.returncode:
         stop("merge: main has no readable masterplan; automatic merge is off")
-    path = re.search(r"(?m)^Path:\s*(.+?)\s*$", result.stdout)
-    if not path or path.group(1) == "Explore privately":
-        stop("merge: automatic merging is not available on Explore privately")
     line = re.search(r'(?m)^Runs on its own:.*\bmerge\b.*\bdecided\s+\d{4}-\d{2}-\d{2}\b.*"[^\"]+".*$', result.stdout)
     if not line:
         stop("merge: main has no Runs on its own setting for merge")
@@ -200,8 +221,7 @@ def auto_holds(data, main, head):
         stop("merge: this piece changes a setting; it waits for a named yes")
     if open_review_box(data.get("body") or ""):
         stop("merge: a finding under Worth stopping for is open; the pull request stays open")
-    if not re.search(r"(?m)^Review record: reviewed=.+; tried=\d+; open=0$", data.get("body") or ""):
-        stop("merge: the pull request has no completed review record")
+    review_held(data.get("body") or "", head)
     body = data.get("body") or ""
     refs = data.get("closingIssuesReferences") or []
     if not refs or not isinstance(refs, list):
@@ -251,6 +271,21 @@ def auto_holds(data, main, head):
     newest_main(head)
 
 
+def approved_yes(change):
+    """The one gate before an online change: the person's recorded yes for it."""
+    gate = Path(__file__).resolve().parents[2] / "records" / "scripts" / "approval.py"
+    try:
+        done = subprocess.run([sys.executable, str(gate), "use", change], text=True,
+                              capture_output=True)
+    except OSError:
+        stop("merge: the approval gate could not run", 2)
+    if done.returncode == 1:
+        stop("merge: " + (done.stderr.strip() or "no recorded yes for " + change), 1)
+    if done.returncode:
+        stop("merge: the approval gate could not run: " + (done.stderr or done.stdout).strip(), 2)
+    sys.stdout.write(done.stdout)
+
+
 def kit_area_check():
     here = Path(__file__).resolve()
     for parent in here.parents:
@@ -259,7 +294,7 @@ def kit_area_check():
                 parent / "skills" / "setup-ai-build-kit" / "templates" / "foundation" / "check-sensitive-areas.sh"):
             if candidate.is_file():
                 return str(candidate)
-    stop("merge: could not find the kit's sensitive-area check", 2)
+    stop("merge: could not find the kit's risk-area check", 2)
 
 
 def check_sensitive_area(base, head, automatic=False):
@@ -287,16 +322,16 @@ def check_sensitive_area(base, head, automatic=False):
                                      "--masterplan", handle.name],
                                     text=True, capture_output=True)
     except OSError:
-        stop("merge: could not run the sensitive-area check", 2)
+        stop("merge: could not run the risk-area check", 2)
     if result.stdout:
         sys.stdout.write(result.stdout)
     if automatic and result.stdout.strip():
-        stop("merge: this piece touches a sensitive area; it waits for a named yes")
+        stop("merge: this piece touches a risk area; it waits for a named yes")
     if result.returncode == 1:
-        stop("merge: the sensitive-area check is open; the pull request stays open")
+        stop("merge: the risk-area check is open; the pull request stays open")
     if result.returncode != 0:
         detail = (result.stderr or result.stdout).strip()
-        stop("merge: could not run the sensitive-area check" +
+        stop("merge: could not run the risk-area check" +
              (": " + detail if detail else ""), 2)
 
 
@@ -328,15 +363,7 @@ def main(argv):
     if not data.get("baseRefOid"):
         stop("merge: GitHub returned an unreadable pull request base", 2)
     main = newest_main(head)
-    base_plan = git("show", data["baseRefOid"] + ":masterplan.md")
-    if base_plan.returncode:
-        stop("merge: could not read the build path from the pull request base", 2)
-    base_path = re.search(r"(?m)^Path:\s*(.+?)\s*$", base_plan.stdout)
-    if not base_path:
-        stop("merge: the pull request base has no readable build path", 2)
-    requires_review = bool(base_path and base_path.group(1) != "Explore privately")
-    if requires_review and not re.search(r"(?m)^Review record: reviewed=.+; tried=\d+; open=0$", data.get("body") or ""):
-        stop("merge: the pull request has no completed review record")
+    review_held(data.get("body") or "", head)
     if mode == "--auto":
         auto_holds(data, main, head)
         check_main_health()
@@ -358,12 +385,19 @@ def main(argv):
     if open_review_box(data.get("body") or ""):
         stop("merge: a finding under Worth stopping for is open; the pull request stays open")
 
+    if mode == "--approved":
+        approved_yes("merge pull request " + number)
     merged = gh("pr", "merge", number, "--merge", "--match-head-commit", head)
     if merged.returncode != 0:
         detail = (merged.stderr or merged.stdout).strip()
         stop("merge: GitHub did not merge the pull request" + (": " + detail if detail else ""), 2)
     if merged.stdout:
         sys.stdout.write(merged.stdout)
+    if reviews.review_verified(data.get("body") or ""):
+        print("merge: the review of this version is verified: a second login approved it")
+    else:
+        print("merge: the review of this version is unverified: the kit could not confirm "
+              "that a second person read it")
     if mode == "--approved":
         noted = git("notes", "--ref=refs/notes/ai-build-kit-approved-merges",
                     "add", "-f", "-m", "approved merge " + number, head)

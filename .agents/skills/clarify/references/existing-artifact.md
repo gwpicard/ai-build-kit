@@ -21,7 +21,7 @@ description or a screenshot. Never pretend to have seen it.
 
 ## What it settles, and what it never does
 
-It settles look and behaviour, never the build path. A mock showing outside
+It settles look and behaviour, never the risk record. A mock showing outside
 sign-in, payments or stored personal information goes through the fit check
 and earns the risk notice exactly as the same request in words would.
 

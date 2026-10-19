@@ -1,0 +1,16 @@
+# setup: blank
+# backbone: yes
+# disk: yes
+# Behaviour set, draft for the maintainer. Setup, skipped step. The request is
+# too vague to settle. The person answers vaguely, then says to carry on, so the
+# kit has to record assumptions and still save the project.
+/setup-ai-build-kit I want an app to make our work easier.
+---
+# when: \?
+I am not sure yet. Something to help us get things done faster.
+---
+# when: \?
+There are six of us. People keep asking each other where things are.
+---
+# when: \?
+I do not know. Please carry on with your best guess, and write down what we have not decided.

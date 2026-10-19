@@ -176,25 +176,22 @@ and rollback, which means returning to an earlier live version.
 
 ## Keeping it safe
 
-Setup chooses a build path, which decides how much checking your project
-needs. The kit rechecks it as the project changes.
+Setup asks three plain questions: who is exposed if this fails, what data it
+holds, and how you would recover. The answers go into a short risk record in
+your masterplan, and the kit rechecks it as the project changes. Each piece of
+work then names the risk areas it touches: personal data, money, outside
+sign-in, automatic action, irreplaceable data or a regulated decision.
 
-| Situation | Likely path |
-|---|---|
-| Trying an idea with disposable data | Explore privately |
-| Internal tool with a manual fallback | Build and run it |
-| Personal data, money, outside sign-in, automatic action, irreplaceable data or a regulated decision | Build with care |
-
-The agent must show evidence for what it says works. Shared, live or risky
-changes get checks on a clean machine and an independent review before
-merging. A sensitive area may need another person to review it; the agent
-cannot replace that person with its own review. [Evidence and saving rules](WORKFLOW.md#6-evidence) explain
+The agent must show evidence for what it says works. Every change gets checks
+on a clean machine and an independent review before merging. A risk area may
+need another person to review it; the agent cannot replace that person with its
+own review. [Evidence and saving rules](WORKFLOW.md#6-evidence) explain
 what applies to each change.
 
 You hear who a risk affects and what would normally prevent it. You can have
 that caution done, remove the work or carry on with your acceptance recorded.
 The kit builds when you are there to decide. A run left on its own stops at a
-sensitive area and hands it back to you. [Risk notices](WORKFLOW.md#8-sensitive-areas-and-the-risk-notice)
+risk area and hands it back to you. [Risk notices](WORKFLOW.md#8-risk-areas-and-the-risk-notice)
 explain the decision.
 
 Setup opens one GitHub issue for each piece in a repository you own, which can
@@ -208,6 +205,9 @@ Every merge waits for your yes. Changes to live settings or data need a yes
 that names them; a launch request authorises the commands its recipe names.
 Where GitHub cannot require the check, a person with permission can still merge
 by hand on GitHub. The kit's merge script holds merges made through the kit.
+A private repository on GitHub Free is supported: the push guard refuses
+changes straight to main and replacement of remote work from this computer,
+but GitHub does not enforce the project check on that plan.
 Secrets stay out of files Git tracks. Claude Code's project settings block
 direct pushes to the main branch, force pushes and forced deletes. Existing
 settings are preserved, and `/maintain` offers missing rules. Other agents

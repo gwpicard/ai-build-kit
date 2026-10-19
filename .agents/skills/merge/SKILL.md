@@ -13,6 +13,11 @@ fails with `unable to get password from user`, run the installed
 with python3 and `--message`. Give its sentence and stop without signing in
 or retrying.
 
+Upload a later piece with `python3 scripts/upload-piece.py --title "<title>"
+--body-file <file>` from the project folder. Exit 3 goes to
+`references/first-upload.md`; other stops name their cause. Report that cause;
+say the person declined only when they did.
+
 ## Merge a finished piece
 
 Merge only on a yes that names it. First say what the person can try and where:
@@ -25,9 +30,9 @@ open and holds the merge.
 
 On a live project, make these read-only checks before asking:
 
-- On Build and run it or Build with care, run `evidence-run` for the piece.
+- Run `evidence-run` for the piece.
 - For a changed area whose caution is done or accepted, check its readiness
-  using `fit-check`'s “An area going live”. Record gaps once in the changelog;
+  using `fit-check`'s “Rechecks and going live”. Record gaps once in the changelog;
   they are warnings.
 - For a database migration, check the live database using the recipe's
   `live-check.sh --only migration`, with the password location per
@@ -49,7 +54,7 @@ Keep the pull request open and state what it awaits. Read
 intentions and offer to merge the newest `main` into the branch on a yes. Never
 force-push or rebase. Resolve only when the records make the outcome clear;
 otherwise ask. Escalate conflicts involving data, migrations, deployment
-settings or sensitive areas for a fresh yes. Then rerun project checks and the
+settings or risk areas for a fresh yes. Then rerun project checks and the
 live checks above. For `UNKNOWN`, read again after a short wait.
 
 ## Ask and merge
@@ -64,13 +69,16 @@ checks and an unticked `Worth stopping for` box always hold the merge.
 
 One yes covers only named pull requests, or all when clearly asked, such as
 “merge both”. A merge does not authorise a conflict fix involving a question,
-data, migration, deployment setting or sensitive area; ask again. A yes given
+data, migration, deployment setting or risk area; ask again. A yes given
 before a non-blocking issue is noticed still stands; report the issue and offer
 it as a piece.
 
-Make an approved merge on the pull request itself with
+Make an approved merge on the pull request itself. Record the yes with the
+`records` skill's `scripts/approval.py`, as `approval.py yes "merge pull
+request <number>" --words "<their words>"`, then run
 `scripts/merge.py --approved <number>`. Exit 0
-merged. Exit 1 means a check, review box or sensitive area holds it; exit 2
+merged. Exit 1 means a check, review box, a review of an earlier version or
+a risk area holds it; exit 2
 means a required read/check could not run or GitHub refused. Say what stopped
 it and leave the pull request open. In an unattended run, leave it for review.
 

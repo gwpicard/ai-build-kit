@@ -17,6 +17,54 @@ sed -i.bak 's/^Recipe: none$/Recipe: nextjs-supabase-on-vercel/' "$PROJECT/AGENT
 [ -f "$PROJECT/.agents/hooks/check-review.sh" ] || fail "founding did not install check-review.sh"
 [ -f "$PROJECT/.agents/hooks/review_boxes.py" ] || fail "founding did not install the shared review reader"
 
+# Use real check engines for the installed-source boundary. The empty Next
+# presets isolate the starter's own exclusions from framework defaults.
+mkdir -p "$WORK/engines"
+printf '{"private":true}\n' > "$WORK/engines/package.json"
+(cd "$WORK/engines" && npm install --no-audit --no-fund --silent eslint@9.36.0 typescript@5.9.2) ||
+  fail "could not install the engines for the kit-folder boundary check"
+node - "$PROJECT" "$WORK/engines" <<'NODE'
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const { createRequire } = require('node:module');
+const { pathToFileURL } = require('node:url');
+const [project, engines] = process.argv.slice(2);
+const requireEngine = createRequire(path.join(engines, 'package.json'));
+const { ESLint } = requireEngine('eslint');
+const ts = requireEngine('typescript');
+(async () => {
+  const preset = path.join(project, 'node_modules/eslint-config-next');
+  fs.mkdirSync(preset, { recursive: true });
+  fs.writeFileSync(path.join(preset, 'package.json'), JSON.stringify({
+    type: 'module', exports: { './core-web-vitals': './empty.js', './typescript': './empty.js' },
+  }));
+  fs.writeFileSync(path.join(preset, 'empty.js'), 'export default [];');
+  for (const folder of ['.agents/skills/sample', '.claude/skills/sample', 'src']) {
+    fs.mkdirSync(path.join(project, folder), { recursive: true });
+    fs.writeFileSync(path.join(project, folder, 'lint-boundary.js'), 'missingName();');
+    fs.writeFileSync(path.join(project, folder, 'type-boundary.ts'), 'const value: string = 42;');
+  }
+  const { default: config } = await import(pathToFileURL(path.join(project, 'eslint.config.mjs')));
+  const eslint = new ESLint({ cwd: project, overrideConfigFile: true,
+    overrideConfig: [...config, { files: ['**/*.js'], rules: { 'no-undef': 'error' } }],
+  });
+  const results = await eslint.lintFiles(['.']);
+  assert.ok(results.some(result => result.filePath.endsWith('/src/lint-boundary.js') && result.errorCount > 0),
+    'ESLint stopped checking application source');
+  assert.ok(!results.some(result => /\/\.(agents|claude)\//.test(result.filePath)),
+    'ESLint read installed kit source');
+  const loaded = ts.readConfigFile(path.join(project, 'tsconfig.json'), ts.sys.readFile);
+  assert.ok(!loaded.error, 'TypeScript configuration could not be read');
+  const parsed = ts.parseJsonConfigFileContent(loaded.config, ts.sys, project);
+  assert.ok(parsed.fileNames.some(file => file.endsWith('/src/type-boundary.ts')),
+    'TypeScript stopped checking application source');
+  assert.ok(!parsed.fileNames.some(file => /\/\.(agents|claude)\//.test(file)),
+    'TypeScript read installed kit source');
+})().catch(error => { console.error(error); process.exitCode = 1; });
+NODE
+pass "real ESLint and TypeScript exclude installed kit source while checking application source"
+
 ruby -ryaml -rjson -e '
 workflow = YAML.load_file(ARGV[0])
 permissions = workflow.fetch("permissions")

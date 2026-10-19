@@ -58,6 +58,7 @@ if not files:
     stop("could not run: starter folder is empty")
 
 clashes = []
+list_files = {".gitignore", ".env.example"}
 for _, relative in files:
     target = os.path.join(project, relative)
     parent = os.path.dirname(target)
@@ -72,19 +73,55 @@ for _, relative in files:
             break
         parent = next_parent
     if os.path.lexists(target):
-        clashes.append(relative)
+        if relative not in list_files or os.path.islink(target) or not os.path.isfile(target):
+            clashes.append(relative)
 if clashes:
     print("refused: these starter files already exist:", file=sys.stderr)
     for relative in sorted(set(clashes)):
         print(relative, file=sys.stderr)
     raise SystemExit(1)
 
+def append_missing(source, target, relative):
+    with open(target, "rb") as handle:
+        original = handle.read()
+    with open(source, "rb") as handle:
+        lines = handle.read().splitlines()
+
+    def key(line):
+        if relative == ".gitignore":
+            return line
+        if b"=" in line and not line.lstrip().startswith(b"#"):
+            return line.split(b"=", 1)[0].strip()
+        return None
+
+    known = {key(line) for line in original.splitlines()}
+    added = []
+    for line in lines:
+        name = key(line)
+        if name is not None and name not in known:
+            added.append(line)
+            known.add(name)
+    if not added:
+        return False
+    with open(target, "ab") as handle:
+        if original and not original.endswith(b"\n"):
+            handle.write(b"\n")
+        handle.write(b"\n".join(added) + b"\n")
+    return True
+
+gained_lines = []
 try:
     for source, relative in files:
         target = os.path.join(project, relative)
+        if relative in list_files and os.path.isfile(target):
+            if append_missing(source, target, relative):
+                gained_lines.append(relative)
+            continue
         os.makedirs(os.path.dirname(target), exist_ok=True)
         shutil.copy2(source, target)
 except OSError as error:
     stop("could not run: a starter file could not be copied: " + str(error))
+if gained_lines:
+    print("Added starter lines to: " + ", ".join(sorted(gained_lines)))
 print("Copied the pinned starter into the project.")
 PY
