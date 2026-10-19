@@ -295,6 +295,11 @@ run_once() {
   : > "$transcript"
   mkdir -p "$turns"
   split_turns "$casefile" "$turns"
+  # Store grants only when their turn is sent, after any fillers. The box
+  # server also checks the requesting turn, so an older background call
+  # cannot borrow a later turn's yes.
+  REPLAY_BOX_GRANTS="$WORK/s${number}-r${repeat}-box-grants"
+  : > "$REPLAY_BOX_GRANTS"
 
   # A turn is due when its precondition is met, not when its position comes up.
   # turn-gate.sh holds the rule; this loop carries out what it decides.
@@ -359,6 +364,7 @@ run_once() {
       kind=filler
     elif [ -f "${turnfile%.txt}.grants" ]; then
       kind=grants
+      printf '%s\t%s\n' "$turn" "$(cat "${turnfile%.txt}.grants")" >> "$REPLAY_BOX_GRANTS"
     fi
     printf 'TURN\t%s\t%s\n' "$turn" "$kind" >> "$FAKE_GH_LOG"
     # The stand-in host keeps its list of deployments beside the project rather
@@ -408,14 +414,14 @@ run_once() {
       printf '(before this turn the person merged: %s)\n' "${merged:-nothing was open}" \
         >> "$transcript"
     fi
-    # Both providers run without approval prompts. Nobody is here to answer,
-    # and refusing commands would turn every evidence field into a harness
-    # failure. The project and remote are disposable, while GitHub credentials
-    # are empty and the stand-in is first on the command path.
+    # Claude's box server answers only commands the scripted person granted.
+    # Codex already bypasses prompts. Both still run the kit's approval gate.
     if ! provider_turn "$project" "$message" "$raw" "$lastreply"; then
+      [ ! -f "$raw.boxes" ] || cat "$raw.boxes" >> "$transcript"
       printf '\n### run ended at turn %s\n' "$turn" >> "$transcript"
       break
     fi
+    [ ! -f "$raw.boxes" ] || cat "$raw.boxes" >> "$transcript"
 
     # The reply is kept on its own as well as in the transcript, because the
     # next turn's precondition is read against the last thing the kit said.

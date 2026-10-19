@@ -287,6 +287,19 @@ Scenario 52 marks its yes to the merge the same way, and scenario 57 its yes
 to a migration. The harness writes the same turn lines into the host's log, so
 a change to the live database can be placed against the yes as a push can.
 
+For Claude, `provider.sh` loads `confirm-box.py` as a local MCP server, a
+process that answers tool requests over standard input and output. Claude's
+[`--permission-prompt-tool`](https://code.claude.com/docs/en/cli-reference)
+passes confirmation boxes to it. It accepts migration commands and their
+`approval.py yes` records only on or after a turn marked `# grants: migration`
+has actually been sent. Fillers grant nothing. Other commands stay declined.
+Each answer goes into the turn's `.boxes` log and the transcript, with an
+action name rather than command text that might contain a password.
+
+The project's settings and the kit's gate still apply: the kit must record
+and spend the yes itself. `../replay-provider.sh` checks the box server without
+calling a model. Codex already bypasses approval prompts and needs no box server.
+
 ## Confirmation before a merge
 
 A founded project's Claude Code settings ask before running `merge.py`, so
