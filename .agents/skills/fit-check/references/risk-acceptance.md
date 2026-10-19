@@ -17,8 +17,11 @@ who is exposed. Change the area's own line to `accepted` with the date. Read
 the risk record back; do not start until the acceptance appears there.
 An acceptance recorded after the work starts is too late.
 
-Do this in the reply that answers the person carrying on: write the line, read
-it back, then start the work. Do not end that reply with a second permission
+Do this in the reply that answers the person carrying on: write the line and
+read it back. During `/shape`, update only the masterplan's risk record and
+finish shaping the piece; building waits for `/implement`. No branch, commit
+or pull request is needed for this record during `/shape`. During `/implement`,
+continue the build. Do not end that reply with a second permission
 question, such as asking whether they are sure or want to wait for the caution.
 A question about scope is still valid if its answer changes what gets built.
 
@@ -32,5 +35,5 @@ did not happen.
 Do not infer acceptance from a reply that does not request the work. The notice
 remains in force until the person carries on after hearing it.
 
-Once the acceptance is recorded, nothing holds the piece back: the project check
-reports the area in one line and passes.
+Once the acceptance is recorded, that caution no longer holds the piece back:
+the project check reports the area in one line and passes.
