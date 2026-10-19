@@ -237,6 +237,7 @@ if [ "$gh_ready" = yes ] && command -v python3 >/dev/null 2>&1 && [ "$kit_origin
       4:*) condition present "Branch protection can be set: the first upload sets it when it creates main." ;;
       5:*) condition "could not check" "main does not exist yet and GitHub's plan for $repo could not be read. The first upload sets protection when it creates main." ;;
       3:*) printf '%s\n' "$protection" ;;
+      6:*) condition "could not check" "$protection" ;;
       *"network error"*) condition "could not check" "$protection Step: allow GitHub access in this session, then run setup again." ;;
       *"admin rights"*) condition missing "$protection Step: ask the repository's owner for admin rights, then run setup again." ;;
       *) condition missing "$protection Step: fix this on GitHub, then run setup again." ;;

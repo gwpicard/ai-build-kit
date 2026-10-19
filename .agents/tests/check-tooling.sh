@@ -394,11 +394,20 @@ if a[:1] == ["api"]:
         out(json.dumps({"private": protect != "nomain-public",
                         "owner": {"login": "someone", "type": "User"}}))
     if path.endswith("/branches/main"):
+        if protect == "branch-read": out("HTTP 503: Service unavailable", 1)
+        if protect == "read-admin": out("HTTP 403: Must have admin rights to Repository.", 1)
         if protect.startswith("nomain"): out("HTTP 404: Branch not found", 1)
         out('{"name": "main"}')
     if path.endswith("/protection") and method == "GET":
         if protect == "network": out("connection timed out", 1)
+        if protect == "protection-read": out("HTTP 503: Service unavailable", 1)
+        if protect == "fallback-read":
+            calls = open(os.environ["GH_LOG"]).read().count("api -X GET " + path + "\n")
+            if calls > 1: out("HTTP 503: Service unavailable", 1)
+            out('{"required_status_checks":null,"enforce_admins":{"enabled":false}}')
         out("HTTP 404: Branch not protected", 1)
+    if path.endswith("/protection/required_status_checks/contexts") and method == "POST":
+        if protect == "fallback-read": out("HTTP 404: Not Found", 1)
     if path.endswith("/protection") and method == "PUT":
         sys.stdin.read()
         if protect == "plan": out("HTTP 403: Upgrade to GitHub Pro or make this repository public to enable this feature.", 1)
@@ -462,7 +471,16 @@ grep -Fxq 'branch-protection|someone/project|main|unavailable-private-free' "$WO
   && pass "the working conditions check records the Free private condition" \
   || fail "the working conditions check left no Free private record"
 conditions "protection refused for want of admin rights stops founding" 1 "^missing: .*admin rights.*Step: ask the repository's owner" GH_PROTECT=admin
-conditions "an unreachable protection call is could not check" 0 "^could not check: .*network error" GH_PROTECT=network
+conditions "an unreachable protection call is could not check" 0 "^could not check: .*protection could not be read" GH_PROTECT=network
+conditions "an unreadable branch is could not check" 0 "^could not check: .*could not read the branch" GH_PROTECT=branch-read
+conditions "an unreadable protection answer is could not check" 0 "^could not check: .*protection could not be read" GH_PROTECT=protection-read
+conditions "an unreadable existing-check fallback is could not check" 0 "^could not check: .*existing required checks could not be read" GH_PROTECT=fallback-read
+if grep -Eq '^api -X (PUT|PATCH)' "$GH_LOG"; then
+  fail "the unreadable fallback replaced existing protection: $(cat "$GH_LOG")"
+else
+  pass "an unreadable fallback leaves existing protection alone"
+fi
+conditions "a branch read refused for want of admin rights still stops founding" 1 "^missing: .*admin rights" GH_PROTECT=read-admin
 conditions "no main yet on a public repository counts as protection that can be set" 0 "^present: Branch protection can be set: the first upload sets it" GH_PROTECT=nomain-public
 conditions "no main yet on a private repository on GitHub Free lets founding finish" 0 "^protection.*unavailable-private-free" GH_PROTECT=nomain-free
 conditions "no main yet and an unreadable plan is could not check" 0 "^could not check: main does not exist yet" GH_PROTECT=nomain-unknown

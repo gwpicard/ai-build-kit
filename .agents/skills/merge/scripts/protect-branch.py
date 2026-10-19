@@ -7,6 +7,7 @@ that does not exist yet gives 4 when the plan allows protection, 5 when the
 plan could not be read, and 3 when the plan rules it out. Exit 3 is a supported,
 recorded condition. --check reads without changing GitHub: 0 means required,
 3 means unavailable on this plan, and 4 means missing but available.
+With --defer-missing, 6 means could not check; founding can still save locally.
 """
 
 import json
@@ -60,7 +61,7 @@ def plan_blocks(repo):
     return None if plan is None else plan.lower() == "free"
 
 
-def record_condition(repo, branch, unavailable):
+def record_condition(repo, branch, unavailable, condition="unavailable-private-free"):
     top = subprocess.run(["git", "rev-parse", "--show-toplevel"],
                          text=True, capture_output=True)
     root = Path(top.stdout.strip()) if top.returncode == 0 else Path.cwd()
@@ -69,7 +70,7 @@ def record_condition(repo, branch, unavailable):
         raise OSError("the maintenance record is a link; leave it in place")
     text = path.read_text() if path.exists() else ""
     prefix = "branch-protection|%s|%s|" % (repo.lower(), branch)
-    line = prefix + "unavailable-private-free"
+    line = prefix + condition
     known = line in text.splitlines()
     if unavailable and known:
         return False
@@ -100,6 +101,18 @@ def main(argv):
         print("usage: protect-branch.py [--defer-missing | --check] OWNER/REPO BRANCH", file=sys.stderr)
         return 2
     repo, branch = args
+
+    def unreadable(message, detail=""):
+        if "admin rights" in detail.lower():
+            return report("Branch protection could not be set because this account does not have admin rights.")
+        if not defer_missing:
+            return report(message)
+        first = record_condition(repo, branch, True, "could-not-check")
+        print("protection\tcould not check\t%s" % message)
+        if first:
+            print("The first upload checks branch protection again and sets it when GitHub allows it. Work can continue to the local checkpoint.")
+        return 6
+
     prefix = "repos/%s/branches/%s" % (repo, branch)
     code, detail = api("GET", prefix)
     if code:
@@ -111,7 +124,7 @@ def main(argv):
                 print("GitHub says %s does not exist yet; branch protection is deferred." % branch)
                 return 4 if blocks is False else 5
             return report("GitHub says %s does not exist, so the check could not be required." % branch)
-        return report("GitHub could not read the branch before setting protection.")
+        return unreadable("GitHub could not read the branch before setting protection.", detail)
 
     code, detail = api("GET", prefix + "/protection")
     if check:
@@ -138,6 +151,8 @@ def main(argv):
         record_condition(repo, branch, False)
         print("protection\tmissing\tGitHub protection is available; offer to switch it on for %s." % branch)
         return 4
+    if defer_missing and code and not any(word in detail.lower() for word in ("404", "not found", "upgrade to github pro", "admin rights")):
+        return unreadable("GitHub's branch protection could not be read.", detail)
     if code and ("404" in detail or "Not Found" in detail):
         body = {
             # Two pieces may merge from the same base; merge.py still holds on red or pending checks.
@@ -159,11 +174,11 @@ def main(argv):
             # Contexts POST can return 404 when protection has no required checks.
             read_code, current_text = api("GET", prefix + "/protection")
             if read_code:
-                return report("GitHub's existing required checks could not be read.")
+                return unreadable("GitHub's existing required checks could not be read.", current_text)
             try:
                 existing = json.loads(current_text).get("required_status_checks") or {}
-            except (ValueError, TypeError):
-                return report("GitHub's existing required checks could not be read.")
+            except (ValueError, TypeError, AttributeError):
+                return unreadable("GitHub's existing required checks could not be read.")
             contexts = list(existing.get("contexts") or [])
             if "project-check" not in contexts:
                 contexts.append("project-check")
@@ -189,7 +204,7 @@ def main(argv):
     if any(word in lowered for word in (
             "timeout", "network", "connection", "resolve", "curl 6", "curl 7", "curl 28",
             "502", "503", "504")):
-        return report("Branch protection could not be set because of a network error.")
+        return unreadable("Branch protection could not be set because of a network error.")
     return report("Branch protection could not be set: %s" % (detail or "unknown error"))
 
 

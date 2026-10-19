@@ -263,9 +263,13 @@ The script is `check-tooling.sh --conditions` in the setup skill, and
 test issue, closing it and labelling it `skip`. A private repository on Free
 carries on with the local push guard; `protect-branch.py` records the condition
 in `.ai-build-kit-maintenance` and explains the missing GitHub layer once.
-Maintenance offers protection when the plan later allows it. For host and
-database access it stops only on the tools the chosen recipe names. The
-recipes name no sign-in check yet, so a sign-in is could not check, like
+Maintenance offers protection when the plan later allows it. An unreadable
+protection check is recorded as `could not check` and leaves the local checkpoint
+available; first upload checks protection again. Missing admin rights still stop
+founding.
+
+For host and database access it stops only on the tools the chosen recipe names.
+The recipes name no sign-in check yet, so a sign-in is could not check, like
 anything else there. It also says whether the agent
 and the reviewer share one GitHub login. That is a report, never a stop.
 

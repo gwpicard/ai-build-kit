@@ -206,6 +206,12 @@ PY
     [ "$code" -eq 2 ] && printf '%s\n' "$out" | grep -Fq "$expected" \
       && pass "a rejected protection setting is reported with exit 2" \
       || fail "422 protection failure returned $code: $out"
+  elif [ "$status" = network ]; then
+    [ "$code" -eq 0 ] && printf '%s\n' "$out" | grep -q 'protection.*could not check' \
+      && printf '%s\n' "$out" | grep -Eq "^template${tab}(copied|kept)$" \
+      && grep -Fxq 'branch-protection|someone/kit-log|main|could-not-check' "$WORK/p/.ai-build-kit-maintenance" \
+      && pass "an unreadable protection check is recorded and preparation completes" \
+      || fail "an unreadable protection check stopped preparation ($code): $out"
   else
     case "$status" in
       admin) expected_line="Branch protection could not be set because this account does not have admin rights." ;;

@@ -38,8 +38,8 @@
 #         line and does not stop the rest.
 # Exit 5: GitHub could not be read, so nothing was changed.
 # Exit 6: origin is the kit's own repository, so nothing was changed.
-# Exit 2: usage error, or branch protection could not be set for a reason other
-#         than the private Free plan limit. Prepare still runs, then founding stops.
+# Exit 2: usage error, missing admin rights or refused protection settings.
+#         An unreadable protection check is recorded and does not stop founding.
 
 set -u
 
@@ -92,7 +92,7 @@ protection_status=0
 protection_could_not_run=0
 protection_output=$(python3 "$SKILL_ROOT/../merge/scripts/protect-branch.py" --defer-missing "$repo" main 2>&1) || protection_status=$?
 case "$protection_status" in
-  0|3) printf '%s\n' "$protection_output" ;;
+  0|3|6) printf '%s\n' "$protection_output" ;;
   4|5) printf 'protection\tdeferred until first upload creates main\n' ;;
   *)
     printf '%s\n' "$protection_output" >&2
@@ -166,7 +166,6 @@ else
     cp "$SKILL_ROOT/templates/foundation/piece-issue.yml" .github/ISSUE_TEMPLATE/piece.yml &&
     echo "template	copied" || echo "template	not copied"
 fi
-# A protection failure is reported in one line. The rest of prepare has run,
-# and founding stops until the working conditions check passes.
+# Missing admin rights or refused settings still stop founding after prepare.
 [ "$protection_could_not_run" -eq 0 ] || exit 2
 exit 0
