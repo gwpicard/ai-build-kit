@@ -982,13 +982,13 @@ open(p, "w").write(s.replace(old, "assigned_value = None", 1))
 '
       ;;
     merge-pending-bucket-only)
-      edit "$tree/.agents/skills/merge/scripts/merge.py" '
+      edit "$tree/.agents/skills/quality-checks/scripts/results.py" '
 import os
 p = os.environ["MUTATE_TARGET"]
 s = open(p).read()
-old = "if bucket in (\"fail\", \"cancel\") or bucket == \"pending\":"
-new = "if bucket in (\"fail\", \"cancel\"):"
-assert old in s
+old = "if bucket == \"pass\":"
+new = "if bucket in (\"pass\", \"pending\"):"
+assert old in s, "GitHub check result mapping not found"
 open(p, "w").write(s.replace(old, new, 1))'
       ;;
     merge-skipping-project-pass)
@@ -996,9 +996,9 @@ open(p, "w").write(s.replace(old, new, 1))'
 import os
 p = os.environ["MUTATE_TARGET"]
 s = open(p).read()
-old = "if name == \"project-check\" and bucket != \"pass\":"
-new = "if name == \"project-check\" and bucket not in (\"pass\", \"skipping\"):"
-assert old in s
+old = "if name == \"project-check\" and result != results.PASS:"
+new = "if name == \"project-check\" and result not in (results.PASS, results.NOT_APPLICABLE):"
+assert old in s, "required project-check result guard not found"
 open(p, "w").write(s.replace(old, new, 1))'
       ;;
     merge-first-box-only)
@@ -1612,9 +1612,9 @@ open(p, "w").write(t.replace(old, "return \"flagged\"", 1))
 import os
 p = os.environ["MUTATE_TARGET"]
 t = open(p).read()
-old = "    if harness != \"ok\":\n        return \"could_not_run\"\n    if variant == \"fault\":"
+old = "    if harness != \"ok\":\n        return \"could_not_run\"\n"
 assert old in t, "harness-break rule not found"
-new = "    if harness != \"ok\":\n        return \"fixed\"\n    if variant == \"fault\":"
+new = "    if harness != \"ok\":\n        return \"fixed\"\n"
 open(p, "w").write(t.replace(old, new, 1))
 '
       ;;
