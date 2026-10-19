@@ -39,10 +39,7 @@ setup() {
   git -C "$P" config user.name Rehearsal
   git -C "$P" config user.email rehearsal@example.invalid
   git -C "$P" config commit.gpgsign false
-  cp "$HOOK" "$P/.agents/hooks/git/pre-push"
-  cp "$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/scan-secrets.sh" "$P/.agents/hooks/scan-secrets.sh"
-  cp "$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/scan-secrets.py" "$P/.agents/hooks/scan-secrets.py"
-  git -C "$P" config core.hooksPath .agents/hooks/git
+  sh "$ROOT/.agents/skills/setup-ai-build-kit/scripts/use-push-guard.sh" "$P"
   printf 'founding\n' > "$P/masterplan.md"
   git -C "$P" add -A
   git -C "$P" commit -q -m "Found the project"
@@ -217,13 +214,15 @@ echo "== Protection can be unavailable after a successful upload =="
 for reason in plan admin network; do
   setup
   set_state protection_status "\"$reason\""
+  [ "$reason" != plan ] || set_state plan '"free"'
   out=$(run --approved 2>&1) && code=0 || code=$?
   [ "$code" -eq 0 ] && [ "$(heads)" = "main sign-out " ] \
     || fail "$reason protection failure treated the upload as failed ($code): $out"
   if [ "$reason" = plan ]; then
-    printf '%s\n' "$out" | grep -q 'GitHub Free.*Step:' \
-      && pass "a GitHub Free plan restriction leaves the upload complete and names the step" \
-      || fail "the plan restriction did not explain the merge hold: $out"
+    printf '%s\n' "$out" | grep -q 'The push guard still refuses changes to main' \
+      && grep -Fxq 'branch-protection|someone/kit-log|main|unavailable-private-free' "$P/.ai-build-kit-maintenance" \
+      && pass "a Free private upload completes with its recorded condition and explanation" \
+      || fail "the plan restriction had no record or explanation: $out"
   else
     case "$reason" in
       admin) expected_line="Branch protection could not be set because this account does not have admin rights." ;;
@@ -234,6 +233,52 @@ for reason in plan admin network; do
       || fail "$reason protection failure had no explanation: $out"
   fi
 done
+
+echo "== Founding's Free private condition survives upload and maintenance =="
+setup
+set_state plan '"free"'
+protect() { (cd "$P" && PATH="$WORK/bin:$PATH" python3 "${SCRIPT%/*}/protect-branch.py" "$@" someone/kit-log main); }
+out=$(protect --defer-missing 2>&1) && code=0 || code=$?
+[ "$code" -eq 3 ] && printf '%s\n' "$out" | grep -q 'A paid plan or a public repository' \
+  || fail "founding did not explain the Free private condition: $out"
+mkdir "$P/nested"
+out=$(cd "$P/nested" && PATH="$WORK/bin:$PATH" python3 "${SCRIPT%/*}/protect-branch.py" --defer-missing someone/kit-log main 2>&1) && code=0 || code=$?
+[ "$code" -eq 3 ] && ! printf '%s\n' "$out" | grep -q 'A paid plan' \
+  && [ ! -e "$P/nested/.ai-build-kit-maintenance" ] \
+  || fail "a check from a subfolder missed the project's existing condition: $out"
+out=$(run --approved 2>&1) && code=0 || code=$?
+[ "$code" -eq 0 ] && [ "$(heads)" = "main sign-out " ] \
+  && ! printf '%s\n' "$out" | grep -q 'A paid plan' \
+  && pass "first upload carries on without repeating founding's notice" \
+  || fail "first upload stopped or repeated the notice: $out"
+before=$(git -C "$R" rev-parse main)
+out=$(git -C "$P" push origin sign-out:main 2>&1) && code=0 || code=$?
+[ "$code" -ne 0 ] && [ "$(git -C "$R" rev-parse main)" = "$before" ] \
+  && printf '%s\n' "$out" | grep -q 'main' \
+  && pass "the active guard refuses a real push to unprotected main" \
+  || fail "a direct push changed unprotected main: $out"
+: > "$STANDIN_GH_LOG"
+out=$(protect --check 2>&1) && code=0 || code=$?
+[ "$code" -eq 3 ] && ! printf '%s\n' "$out" | grep -Eq 'offer|A paid plan' \
+  && ! grep -Eq 'api -X (PUT|POST|PATCH)' "$STANDIN_GH_LOG" \
+  && pass "maintenance on Free private makes no offer or online change" \
+  || fail "maintenance nagged or changed protection: $out"
+for route in paid public; do
+  if [ "$route" = paid ]; then set_state plan '"pro"'; else set_state plan '"free"'; set_state visibility '"PUBLIC"'; fi
+  : > "$STANDIN_GH_LOG"
+  out=$(protect --check 2>&1) && code=0 || code=$?
+  [ "$code" -eq 4 ] && printf '%s\n' "$out" | grep -q 'offer to switch it on' \
+    && ! grep -Eq 'api -X (PUT|POST|PATCH)' "$STANDIN_GH_LOG" \
+    && ! grep -q '^branch-protection|' "$P/.ai-build-kit-maintenance" \
+    || fail "$route did not offer protection without changing it: $out"
+done
+out=$(protect 2>&1) && code=0 || code=$?
+[ "$code" -eq 0 ] && ! grep -q '^branch-protection|' "$P/.ai-build-kit-maintenance" \
+  && pass "available protection is enabled with no stale plan condition" \
+  || fail "available protection was not enabled or its old condition remained: $out"
+out=$(protect --check 2>&1) && code=0 || code=$?
+[ "$code" -eq 0 ] && pass "maintenance recognises the required project check" \
+  || fail "maintenance did not recognise protection: $out"
 
 [ "$FAIL" -eq 0 ] || exit 1
 echo "first-upload.sh: all checks passed"

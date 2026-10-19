@@ -27,9 +27,11 @@ its sentence and stop.
 2. Compare the live copy with `main` using the `live-copy` skill. Do not change
    the live service or changelog. Offer `/setup-hosting` for backups, restores,
    previews or recipe checks, and name any gap.
-3. Read branch protection for the repository named by `origin`. Report whether
-   `project-check` is required on `main`. If it is missing, offer to run
-   `merge/scripts/protect-branch.py` on a yes. Do not change protection here.
+3. From the project root run
+   `merge/scripts/protect-branch.py --check <origin's owner/repository> main`.
+   Exit 0 means required; 3 records the private Free limit, with one notice and
+   no offer; 4 means available, so offer to run without `--check` on a yes.
+   Report other exits. Do not change protection without that yes.
 4. Run the installed `setup-ai-build-kit` skill's
    `templates/foundation/scan-secrets.sh` from the project root with `--all`.
    Exit 0 means no secret was found, 1 means one was found, and 2 means the scan

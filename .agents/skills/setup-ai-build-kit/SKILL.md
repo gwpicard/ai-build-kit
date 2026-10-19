@@ -56,7 +56,7 @@ the approval required by `merge`.
 
 ## Done
 
-Finish when `scripts/check-tooling.sh --conditions` exits 0, the records,
-risk record and review exist, pieces are visible, a check passes and
-a local checkpoint is saved. Report. End with
+Finish with `scripts/check-tooling.sh --conditions` at exit 0, records and
+review, visible pieces, a passing check and a saved local checkpoint.
+Record private Free limits; founding continues. End with
 `/implement` and `/shape` in a fresh chat.

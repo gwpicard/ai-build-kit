@@ -457,11 +457,14 @@ grep -q "^issue create" "$GH_LOG" && fail "it opened a test issue with issues of
 conditions "a refused issue write stops founding" 1 "^missing: This session cannot open issues on someone/project. Step:" GH_WRITE=refused
 conditions "an issue that cannot be closed or labelled stops founding" 1 "^missing: .*could not close it or label it skip" GH_WRITE=noclose
 conditions "an unreachable issue write is could not check, not a stop" 0 "^could not check: GitHub could not be reached to open a test issue" GH_WRITE=network
-conditions "the plan limit on protection stops founding, naming the plan and the step" 1 "^missing: Branch protection cannot be set: .*GitHub Free.*Step: make the repository public" GH_PROTECT=plan
+conditions "the plan limit on protection lets founding finish with a named condition" 0 "^protection.*unavailable-private-free" GH_PROTECT=plan
+grep -Fxq 'branch-protection|someone/project|main|unavailable-private-free' "$WORK/plain/.ai-build-kit-maintenance" \
+  && pass "the working conditions check records the Free private condition" \
+  || fail "the working conditions check left no Free private record"
 conditions "protection refused for want of admin rights stops founding" 1 "^missing: .*admin rights.*Step: ask the repository's owner" GH_PROTECT=admin
 conditions "an unreachable protection call is could not check" 0 "^could not check: .*network error" GH_PROTECT=network
 conditions "no main yet on a public repository counts as protection that can be set" 0 "^present: Branch protection can be set: the first upload sets it" GH_PROTECT=nomain-public
-conditions "no main yet on a private repository on GitHub Free stops founding" 1 "^missing: Branch protection cannot be set: .*GitHub Free" GH_PROTECT=nomain-free
+conditions "no main yet on a private repository on GitHub Free lets founding finish" 0 "^protection.*unavailable-private-free" GH_PROTECT=nomain-free
 conditions "no main yet and an unreadable plan is could not check" 0 "^could not check: main does not exist yet" GH_PROTECT=nomain-unknown
 conditions "signed out stops founding" 1 "nobody is signed in" GH_SIGNED_OUT=1
 conditions "a named second reviewer login is reported as separate" 0 "^review identity: separate\. The agent acts as someone and the reviewer as second-person" -- --reviewer second-person

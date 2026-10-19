@@ -24,8 +24,8 @@
 #   - a repository for the project, with issues switched on;
 #   - this session can write issues: it opens one test issue, closes it and
 #     labels it skip;
-#   - branch protection on main, set through merge/scripts/protect-branch.py,
-#     the same call founding's prepare step makes;
+#   - branch protection on main, or a recorded private Free plan limit,
+#     through merge/scripts/protect-branch.py;
 #   - with a recipe, the tools its "Command-line tools:" line names. The
 #     recipes name no sign-in check, so sign-ins and other host and database
 #     access are could not check, never a stop.
@@ -236,7 +236,7 @@ if [ "$gh_ready" = yes ] && command -v python3 >/dev/null 2>&1 && [ "$kit_origin
       0:*) condition present "Branch protection is set on main: a merge needs the project check." ;;
       4:*) condition present "Branch protection can be set: the first upload sets it when it creates main." ;;
       5:*) condition "could not check" "main does not exist yet and GitHub's plan for $repo could not be read. The first upload sets protection when it creates main." ;;
-      3:*) condition missing "$protection" ;;
+      3:*) printf '%s\n' "$protection" ;;
       *"network error"*) condition "could not check" "$protection Step: allow GitHub access in this session, then run setup again." ;;
       *"admin rights"*) condition missing "$protection Step: ask the repository's owner for admin rights, then run setup again." ;;
       *) condition missing "$protection Step: fix this on GitHub, then run setup again." ;;
