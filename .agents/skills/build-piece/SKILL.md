@@ -21,8 +21,8 @@ Choose the route before changing files:
 - **Pull request:** every piece.
 - **Flagged:** work inside a named risk area whose caution is neither
   done nor accepted. Give the `fit-check` risk notice before building. On the
-  person's decision to continue, run `piece-labels.sh start`, record their
-  words and date with `Accepted:`, then build and save by pull request in that
+  person's decision to continue during `/implement`, run `piece-labels.sh start`,
+  record their words and date with `Accepted:`, then build and save by pull request in that
   reply. A lock waiting only on this caution opens unless they ask to keep it.
   Otherwise stop at the recorded condition. In an unattended run, never
   record acceptance.
