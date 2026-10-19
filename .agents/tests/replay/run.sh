@@ -231,7 +231,11 @@ run_once() {
 
   # Enable the guard after the harness has seeded the local remote, before the
   # agent starts. Founding likewise enables it once the repository exists.
-  if [ "$setup" = "fixture" ] || [ -n "$prepare" ]; then
+  # A kit from before the upload script cannot install the guard into a
+  # project that lacks it, and its projects never had it, so a comparison run
+  # on such a kit starts without it, as its own projects would.
+  if { [ "$setup" = "fixture" ] || [ -n "$prepare" ]; } && \
+     [ -f "$project/.agents/skills/merge/scripts/upload-piece.py" ]; then
     sh "$project/.agents/skills/setup-ai-build-kit/scripts/use-push-guard.sh" "$project" || {
       echo "  could not enable the push guard for scenario $number" >&2
       return 1
