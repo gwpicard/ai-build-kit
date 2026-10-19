@@ -171,7 +171,11 @@ for route in ('claude-only','shared','whole','plugin'):
     for key,value in before.items():
         if key!='permissions': assert current[key]==value
     for key,value in before['permissions'].items():
-        if key in ('ask','deny'): assert current['permissions'][key][:len(value)]==value
+        if key in ('ask','deny'):
+            removed={line.split('\t')[2] for line in listed.splitlines()
+                     if line.startswith('settings\tremove-deny\t')}
+            kept=[r for r in value if key!='deny' or r not in removed]
+            assert current['permissions'][key][:len(kept)]==kept
         else: assert current['permissions'][key]==value
     assert (p/'.agents/tools/plan-refresh.sh').read_bytes()==(source/'setup-ai-build-kit/templates/foundation/plan-refresh.sh').read_bytes()
     if route=='whole':

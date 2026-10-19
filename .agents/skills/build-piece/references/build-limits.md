@@ -20,8 +20,10 @@ even when the piece says `nothing` and the page stays as it is. If
 leave the mark, say `/maintain` checks the masterplan against the code, and
 continue.
 
-- **Pull request:** update records, commit, push, open a pull request titled
-  after the piece with a plain summary and `Closes #<number>`, then run project
+- **Pull request:** update records, commit, then run `merge/scripts/upload-piece.py`
+  with the piece's title in `--title` and `--body-file` holding a plain summary and
+  `Closes #<number>`. If stopped, report the script's cause; say the person
+  declined only when they did. Then run project
   checks. Use `gate.py brief`, send its packet for fresh review, refute each
   stopping finding and record findings with `gate.py record`. It writes review
   boxes and drops findings without evidence. Do not call it ready before checks

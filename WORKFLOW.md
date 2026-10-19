@@ -342,7 +342,7 @@ So before asking, /implement checks the live side. A change that adds to the dat
 
 Where your recipe runs a check on this computer before the merge, a check that runs and fails holds the merge as a red check does, and the piece goes back to its build until it passes; a check that cannot run here is a warning you hear once, and the merge goes ahead.
 
-After the merge, /implement reads one line from the live copy: "The live copy now runs this change", or "The live copy did not update" with the next step. It changes nothing live, so if you ask it to put the change out again, it checks first and leaves any further deploy to /setup-hosting. A direct push to `main` is forbidden, and in Claude Code the project settings refuse the usual ways of writing one, so every change reaches it through a pull request. Each piece starts from an up-to-date `main`.
+After the merge, /implement reads one line from the live copy: "The live copy now runs this change", or "The live copy did not update" with the next step. It changes nothing live, so if you ask it to put the change out again, it checks first and leaves any further deploy to /setup-hosting. The project's push guard refuses changes straight to `main` and pushes that replace remote work, whichever coding agent runs them. Each piece starts from an up-to-date `main` and reaches it through a pull request.
 
 ## 8. Risk areas, and the risk notice
 
@@ -698,17 +698,18 @@ changes into one, which Git cannot check. It never removes a branch itself,
 and it cannot tell whether somebody still plans to use one. When there are
 none, you hear nothing.
 
-In Claude Code, the settings founding gave your project refuse a direct push
-to `main`, a force push and a forced delete, and ask you before any merge.
+The push guard founding installs stops changes straight to `main` and pushes
+that replace remote work. Claude Code's settings protect that guard, refuse
+forced deletes and ask you before any merge.
 A project that already had its own Claude Code settings when it was founded
-keeps them, and the next /maintain visit offers the missing push and merge
-rules.
+keeps them, and the next /maintain visit offers the missing safety rules.
 
 When a later release catches more ways of writing one of those, the
 next visit names the new rules and offers to add them to
-`.claude/settings.json`, once. It adds nothing without your yes and leaves the
-rest of the file as it is. A no is recorded, and the offer comes back only
-when a release adds another rule.
+`.claude/settings.json`, once. The same offer removes the kit's retired push
+text rules, which can stop a safe upload; the push guard still protects main
+and remote work. Nothing changes without your yes, and your own rules stay.
+A no is recorded, and the offer comes back only when a release changes it.
 
 /maintain writes the date of each visit into the project. When more than a month
 has gone by, opening a session says so and names /maintain. A tool that cannot

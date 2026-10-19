@@ -40,9 +40,6 @@ P="$WORK/project"
 R="$WORK/remote.git"
 git init -q --bare "$R"
 git init -q "$P"
-mkdir -p "$P/.agents/hooks/git"
-cp "$HOOK" "$P/.agents/hooks/git/pre-push"
-copy_scan "$P"
 git -C "$P" remote add origin "$R"
 git -C "$P" commit -q --allow-empty -m first
 # main reaches the remote before the guard is on, as the first upload's API
@@ -50,10 +47,12 @@ git -C "$P" commit -q --allow-empty -m first
 git -C "$P" push -q origin main
 
 echo "== Switching the guard on =="
-sh "$USE" "$P" && code=0 || code=$?
-[ "$code" -eq 0 ] && [ "$(git -C "$P" config --local core.hooksPath)" = .agents/hooks/git ] \
-  && pass "an unset hooks path is pointed at the project's hooks" \
-  || fail "use-push-guard returned $code and set '$(git -C "$P" config --local core.hooksPath)'"
+mkdir -p "$P/.agents/skills"
+ln -s "$SKILL" "$P/.agents/skills/setup-ai-build-kit"
+sh "$SKILL/scripts/bootstrap-project.sh" "$P" && code=0 || code=$?
+[ "$code" -eq 0 ] && sh "$USE" --check "$P" \
+  && pass "founding installs a guard Git would run" \
+  || fail "founding did not enable the guard, exit $code"
 sh "$USE" "$P" && pass "running it again changes nothing" || fail "a second run failed"
 
 pushes() { git -C "$P" push "$@" >/dev/null 2>&1; }
@@ -114,14 +113,18 @@ else
     || fail "the existing-branch scan printed the test value"
 fi
 
-git -C "$P" reset -q --soft HEAD~1
+git -C "$P" reset -q --soft HEAD~2
+git -C "$P" rm -q --cached push-key.txt
+rm "$P/push-key.txt"
 git -C "$P" commit -q --allow-empty -m "Sign it back in, rewritten"
 for spelling in "--force origin sign-out" "--force-with-lease origin sign-out" "origin +sign-out" "-uf origin sign-out"; do
   # shellcheck disable=SC2086
-  if pushes $spelling; then
+  if git -C "$P" push $spelling >"$WORK/force-out" 2>&1; then
     fail "git push $spelling replaced work on the remote"
   else
-    pass "git push $spelling is stopped"
+    grep -q 'would replace work' "$WORK/force-out" \
+      && pass "git push $spelling is stopped by the hook's work guard" \
+      || fail "git push $spelling failed for a reason other than replacing work"
   fi
 done
 
@@ -140,6 +143,16 @@ fi
 pushes origin --delete sign-out && pass "deleting a piece branch is allowed" || fail "deleting a piece branch was stopped"
 git -C "$P" tag v1 main
 pushes origin v1 && pass "a tag pushes" || fail "a tag was stopped"
+tag_before=$(git -C "$R" rev-parse refs/tags/v1)
+git -C "$P" tag -f v1 sign-out >/dev/null
+if git -C "$P" push --force origin v1 >"$WORK/tag-replace-out" 2>&1; then
+  fail "a force push replaced an existing tag"
+else
+  grep -q 'would replace work on an existing tag' "$WORK/tag-replace-out" \
+    && [ "$(git -C "$R" rev-parse refs/tags/v1)" = "$tag_before" ] \
+    && pass "an existing tag cannot be replaced by a descendant commit" || fail "tag replacement gave no guard refusal"
+fi
+pushes origin --delete v1 && pass "deleting a tag remains allowed" || fail "deleting a tag was stopped"
 git -C "$P" checkout -q -b tag-secret main
 tag_value="AKIA$(python3 -c 'import secrets; print(secrets.token_hex(8).upper())')"
 printf '%s\n' "$tag_value" > "$P/tag-key.txt"
@@ -180,17 +193,53 @@ else
   fail "a push to main was stopped with the guard off, so the check proves nothing"
 fi
 
-echo "== When the guard stays off =="
+echo "== Keeping existing hooks =="
 Q="$WORK/husky"
 git init -q "$Q"
-mkdir -p "$Q/.agents/hooks/git"
-cp "$HOOK" "$Q/.agents/hooks/git/pre-push"
-copy_scan "$Q"
+mkdir -p "$Q/.agents/skills" "$Q/.husky"
+ln -s "$SKILL" "$Q/.agents/skills/setup-ai-build-kit"
+# The person's hook consumes the same input and arguments after the guard.
+printf '#!/bin/sh\ncat > own-input\nprintf "%%s\\n" "$@" > own-args\nexit 0\n' > "$Q/.husky/pre-push"
+chmod +x "$Q/.husky/pre-push"
 git -C "$Q" config core.hooksPath .husky
-out=$(sh "$USE" "$Q" 2>&1) && code=0 || code=$?
-[ "$code" -eq 1 ] && [ "$(git -C "$Q" config core.hooksPath)" = .husky ] && printf '%s' "$out" | grep -q '.husky' \
-  && pass "a project whose Git already runs its own hooks keeps them, and is told the guard is off" \
-  || fail "an existing hooks path was replaced or not reported: $code $out"
+sh "$SKILL/scripts/bootstrap-project.sh" "$Q" >/dev/null && sh "$USE" --check "$Q" \
+  && [ "$(git -C "$Q" config core.hooksPath)" = .husky ] \
+  && pass "founding chains the guard into .husky and keeps the hooks path" \
+  || fail "founding did not chain the guard into .husky"
+cp "$Q/.husky/pre-push" "$WORK/chained-before"
+sh "$USE" "$Q" && cmp -s "$WORK/chained-before" "$Q/.husky/pre-push" \
+  && pass "a second installation keeps the chain unchanged" || fail "the chain was duplicated"
+git -C "$Q" commit -q --allow-empty -m first
+git -C "$Q" remote add origin "$R"
+if git -C "$Q" push origin HEAD:main >"$WORK/husky-out" 2>&1; then
+  fail "the .husky chain allowed a push to main"
+else
+  grep -q 'would change main directly' "$WORK/husky-out" && [ ! -e "$Q/own-input" ] \
+    && pass "the .husky chain refuses main before the person's hook" || fail "the chain missed main"
+fi
+git -C "$Q" push origin HEAD:refs/heads/husky-piece >/dev/null 2>&1 \
+  && grep -q 'refs/heads/husky-piece' "$Q/own-input" && grep -qx origin "$Q/own-args" \
+  && pass "the person's hook still receives the input and arguments" || fail "the person's hook broke"
+sed 's/^exit 0$/exit 23/' "$Q/.husky/pre-push" > "$WORK/refusing-hook"
+cat "$WORK/refusing-hook" > "$Q/.husky/pre-push"
+if git -C "$Q" push origin HEAD:refs/heads/husky-refuses >/dev/null 2>&1; then
+  fail "the person's hook refusal was ignored"
+else
+  pass "the person's hook can still refuse a push"
+fi
+# An unsupported hook cannot be changed safely; both founding stages stop.
+printf '#!/usr/bin/env python3\nraise SystemExit(0)\n' > "$Q/.husky/pre-push"
+printf 'Trued against: not yet checked\n' > "$Q/masterplan.md"
+before=$(git -C "$Q" rev-parse HEAD)
+for installer in bootstrap-project found-save; do
+  if (cd "$Q" && sh "$SKILL/scripts/$installer.sh") >"$WORK/founding-stop" 2>&1; then
+    fail "$installer succeeded without an active guard"
+  else
+    grep -q 'push guard is not on' "$WORK/founding-stop" \
+      && [ "$(git -C "$Q" rev-parse HEAD)" = "$before" ] \
+      && pass "$installer stops plainly before saving without a guard" || fail "$installer gave no cause"
+  fi
+done
 mkdir -p "$Q/sub/.agents/hooks/git"
 cp "$HOOK" "$Q/sub/.agents/hooks/git/pre-push"
 mkdir -p "$Q/sub/.agents/hooks"
@@ -210,15 +259,11 @@ cp "$HOOK" "$H/.agents/hooks/git/pre-push"
 copy_scan "$H"
 printf '#!/bin/sh\nexit 0\n' > "$H/.git/hooks/pre-commit"
 chmod +x "$H/.git/hooks/pre-commit"
-out=$(sh "$USE" "$H" 2>&1) && code=0 || code=$?
-[ "$code" -eq 1 ] && [ -z "$(git -C "$H" config --local --get core.hooksPath || true)" ] \
-  && printf '%s' "$out" | grep -q 'pre-commit' \
-  && pass "hooks already in Git's own hooks folder keep running, and the line names them" \
-  || fail "an existing pre-commit hook was switched off or not reported: $code $out"
-rm "$H/.git/hooks/pre-commit"
-sh "$USE" "$H" >/dev/null 2>&1 && [ "$(git -C "$H" config --local core.hooksPath)" = .agents/hooks/git ] \
-  && pass "Git's own sample hooks alone do not stop the guard" \
-  || fail "a hooks folder holding only samples stopped the guard"
+sh "$USE" "$H" && sh "$USE" --check "$H" \
+  && [ -z "$(git -C "$H" config --local --get core.hooksPath || true)" ] \
+  && [ -x "$H/.git/hooks/pre-commit" ] \
+  && pass "Git's existing hooks keep running alongside the guard" \
+  || fail "existing default hooks stopped the guard or were switched off"
 
 # A hooks folder set for every project on this computer.
 G="$WORK/global"
@@ -229,7 +274,7 @@ copy_scan "$G"
 git config --global core.hooksPath "$HOME/.githooks"
 out=$(sh "$USE" "$G" 2>&1) && code=0 || code=$?
 [ "$code" -eq 1 ] && [ -z "$(git -C "$G" config --local --get core.hooksPath || true)" ] \
-  && printf '%s' "$out" | grep -q '.githooks' \
+  && printf '%s' "$out" | grep -q 'push guard is not on' \
   && pass "a hooks folder set for every project is not overridden, and the line says so" \
   || fail "a user-wide hooks path was overridden or not reported: $code $out"
 git config --global --unset core.hooksPath

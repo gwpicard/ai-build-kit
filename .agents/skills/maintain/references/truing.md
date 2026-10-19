@@ -55,8 +55,9 @@ large or ambiguous corrections. Step 6 may also change the project check.
 8. Save corrections before the visit changes other files. On a checkpoint
    route, commit on the current branch. On a pull-request route, use
    `merge/scripts/save-records.sh` on a short-lived branch from current `main`,
-   including only changed files. Open a pull request with step 9's paragraph
-   and run the project check. Keep uncommitted work out. Never merge, delete
+   including only changed files. Run `merge/scripts/upload-piece.py` with
+   `--title` naming the corrections and `--body-file` holding step 9's paragraph,
+   then run the project check. Keep uncommitted work out. Never merge, delete
    the branch, commit to `main` or leave corrections uncommitted. The first
    upload needs a yes. If GitHub is unreachable, save the branch and report
    the missing step. A GitHub label change needs no branch.

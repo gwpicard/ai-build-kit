@@ -813,9 +813,13 @@ def main():
             return
 
         if sub == "list":
-            print(json.dumps([pr_fields(state, pr,
-                                        ["number", "title", "state", "headRefName"])[0]
-                              for pr in pulls(state) if pr.get("state") == "OPEN"]))
+            names = (flag(argv, "--json") or "number,title,state,headRefName").split(",")
+            head = flag(argv, "--head")
+            base = flag(argv, "--base")
+            print(json.dumps([pr_fields(state, pr, names)[0]
+                              for pr in pulls(state) if pr.get("state") == "OPEN"
+                              and (not head or pr.get("head") == head)
+                              and (not base or pr.get("base") == base)]))
             return
         if sub == "status":
             print("[]")

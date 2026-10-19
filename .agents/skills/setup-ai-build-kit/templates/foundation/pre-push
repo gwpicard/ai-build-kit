@@ -52,7 +52,19 @@ while read -r local_ref local_sha remote_ref remote_sha; do
     refused=1
     continue
   fi
-  case "$remote_ref" in refs/tags/*) continue ;; esac
+  case "$remote_ref" in
+    refs/tags/*)
+      case "$remote_sha" in
+        *[!0]*)
+          if [ "$remote_sha" != "$local_sha" ]; then
+            echo "This push was stopped: it would replace work on an existing tag." >&2
+            refused=1
+          fi
+          ;;
+      esac
+      continue
+      ;;
+  esac
   # A new branch, or a deleted one, replaces nothing on the remote.
   case "$remote_sha" in *[!0]*) ;; *) continue ;; esac
   case "$local_sha" in *[!0]*) ;; *) continue ;; esac

@@ -1,75 +1,108 @@
 #!/usr/bin/env sh
-# use-push-guard.sh: point Git at the project's own hooks, so the pre-push
-# guard runs on every push.
-#
-# Usage: sh use-push-guard.sh [project-folder]   (default: the current folder)
-#
-# Git reads core.hooksPath from this copy's own settings, which a clone does
-# not carry. So founding runs this, and the founding save runs it again once
-# the project is a Git repository.
-#
-# It sets core.hooksPath to .agents/hooks/git only when nothing is set, here or
-# for every project on this computer, and Git's own hooks folder holds no hook
-# of its own. Pointing Git elsewhere would stop those hooks running, with
-# nothing to say so, so in each of those cases the project keeps them and the
-# script says in one line that the guard is not on.
-#
-# Exit 0: the guard is on, or there is no Git repository yet.
-# Exit 1: the guard could not be switched on; the line printed says why.
+# Enable the project's push guard, keeping any existing shell hook in place.
+# --check only checks whether Git would run the guard. Exit 1 means it would not.
+# Installation waits for found-save when the folder is not a repository yet.
+SCRIPT_ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd -P)
+exec python3 - "$SCRIPT_ROOT" "$@" <<'PYTHON'
+import os
+from pathlib import Path
+import shlex
+import subprocess
+import sys
 
-set -u
+skill = Path(sys.argv[1])
+args = sys.argv[2:]
+check = bool(args and args[0] == '--check')
+if check:
+    args.pop(0)
+if len(args) > 1:
+    sys.exit('usage: use-push-guard.sh [--check] [project-folder]')
 
-project=${1:-.}
-cd "$project" 2>/dev/null || { echo "push guard: no such folder: $project" >&2; exit 1; }
+def stop():
+    print("The push guard is not on. Run the kit's use-push-guard.sh from the project folder; "
+          'if it still stops, make its hooks folder writable and keep the existing hook as a shell script.',
+          file=sys.stderr)
+    sys.exit(1)
 
-git rev-parse --is-inside-work-tree >/dev/null 2>&1 || exit 0
+def git(*args):
+    return subprocess.run(['git', *args], capture_output=True, text=True)
 
-top=$(git rev-parse --show-toplevel 2>/dev/null)
-here=$(pwd -P)
-top=$(CDPATH= cd -- "$top" 2>/dev/null && pwd -P)
-if [ "$top" != "$here" ]; then
-  echo "push guard: not switched on, because this folder sits inside a larger Git repository" >&2
-  exit 1
-fi
+# Both the guard and the person's hook receive the complete push input.
+chain = '''# AI Build Kit push guard
+kit_push_input=$(mktemp) || exit 1
+cat > "$kit_push_input" || { rm -f "$kit_push_input"; exit 1; }
+sh "$(git rev-parse --show-toplevel)/.agents/hooks/git/pre-push" "$@" < "$kit_push_input" || { rm -f "$kit_push_input"; exit 1; }
+exec 0< "$kit_push_input"
+rm -f "$kit_push_input"
+unset kit_push_input
+# End AI Build Kit push guard
+'''
 
-hook=.agents/hooks/git/pre-push
-if [ ! -f "$hook" ]; then
-  echo "push guard: not switched on, because $hook is missing" >&2
-  exit 1
-fi
-# Git skips a hook it cannot run.
-[ -x "$hook" ] || chmod +x "$hook" 2>/dev/null
-if [ ! -x "$hook" ]; then
-  echo "push guard: not switched on, because $hook could not be made runnable" >&2
-  exit 1
-fi
+try:
+    os.chdir(args[0] if args else '.')
+    top = git('rev-parse', '--show-toplevel')
+    if top.returncode:
+        if check:
+            stop()
+        sys.exit(0)
+    project = Path.cwd().resolve()
+    if Path(top.stdout.strip()).resolve() != project:
+        stop()
+    guard = project / '.agents/hooks/git/pre-push'
+    canonical = (skill / 'templates/foundation/pre-push').read_bytes()
+    result = git('rev-parse', '--git-path', 'hooks/pre-push')
+    if result.returncode:
+        stop()
+    hook = Path(result.stdout.strip()).resolve()
 
-current=$(git config --local --get core.hooksPath 2>/dev/null || true)
-case "$current" in
-  "")
-    wide=$(git config --get core.hooksPath 2>/dev/null || true)
-    if [ -n "$wide" ]; then
-      echo "push guard: not switched on, because Git runs hooks from $wide for every project on this computer, and the guard would stop them here" >&2
-      exit 1
-    fi
-    own=$(git rev-parse --git-common-dir 2>/dev/null)/hooks
-    found=
-    for file in "$own"/*; do
-      [ -f "$file" ] && [ -x "$file" ] || continue
-      case "$file" in *.sample) continue ;; esac
-      found="$found${found:+, }${file##*/}"
-    done
-    if [ -n "$found" ]; then
-      echo "push guard: not switched on, because Git already runs this project's own hooks ($found), and the guard would stop them" >&2
-      exit 1
-    fi
-    git config --local core.hooksPath .agents/hooks/git
-    ;;
-  .agents/hooks/git | .agents/hooks/git/ | "$here/.agents/hooks/git" | "$here/.agents/hooks/git/")
-    ;;
-  *)
-    echo "push guard: not switched on, because Git already runs this project's hooks from $current" >&2
-    exit 1
-    ;;
-esac
-exit 0
+    def active():
+        if not hook.is_file() or not os.access(hook, os.X_OK):
+            return False
+        content = hook.read_text()
+        if content == canonical.decode():
+            return True
+        if not guard.is_file() or not os.access(guard, os.X_OK) or guard.read_bytes() != canonical:
+            return False
+        first, sep, rest = content.partition('\n')
+        interpreter = shlex.split(first[2:]) if first.startswith('#!') else []
+        shell = not interpreter or Path(interpreter[-1]).name in ('sh', 'bash', 'dash', 'zsh', 'ksh')
+        return shell and (rest if first.startswith('#!') else content).startswith(chain)
+
+    if check:
+        if not active():
+            stop()
+        sys.exit(0)
+    if guard.read_bytes() != canonical:
+        stop()
+    guard.chmod(guard.stat().st_mode | 0o111)
+    if active():
+        sys.exit(0)
+    current = git('config', '--get', 'core.hooksPath').stdout.strip()
+    own = Path(git('rev-parse', '--git-common-dir').stdout.strip()) / 'hooks'
+    others = any(p.is_file() and os.access(p, os.X_OK) and not p.name.endswith('.sample')
+                 for p in own.glob('*'))
+    if not current and not others:
+        if git('config', '--local', 'core.hooksPath', '.agents/hooks/git').returncode:
+            stop()
+        hook = guard
+    elif hook != guard:
+        # A shared or redirected folder can affect other projects. Leave it alone.
+        if project not in hook.parents:
+            stop()
+        content = hook.read_text() if hook.exists() else '#!/bin/sh\n'
+        first, sep, rest = content.partition('\n')
+        if first.startswith('#!'):
+            interpreter = shlex.split(first[2:])
+            if not interpreter or Path(interpreter[-1]).name not in ('sh', 'bash', 'dash', 'zsh', 'ksh'):
+                stop()
+            content = first + '\n' + chain + rest
+        else:
+            content = '#!/bin/sh\n' + chain + content
+        hook.parent.mkdir(parents=True, exist_ok=True)
+        hook.write_text(content)
+        hook.chmod(hook.stat().st_mode | 0o111)
+    if not active():
+        stop()
+except (OSError, UnicodeError, ValueError):
+    stop()
+PYTHON

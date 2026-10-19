@@ -13,6 +13,11 @@ fails with `unable to get password from user`, run the installed
 with python3 and `--message`. Give its sentence and stop without signing in
 or retrying.
 
+Upload a later piece with `python3 scripts/upload-piece.py --title "<title>"
+--body-file <file>` from the project folder. Exit 3 goes to
+`references/first-upload.md`; other stops name their cause. Report that cause;
+say the person declined only when they did.
+
 ## Merge a finished piece
 
 Merge only on a yes that names it. First say what the person can try and where:

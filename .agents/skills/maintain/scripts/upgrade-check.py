@@ -934,6 +934,8 @@ def joined(items):
 
 def rule_words(key, rule):
     """What one safety rule stops, in plain words."""
+    if key == "remove-deny":
+        return "retired push text rules that can stop a safe upload"
     if key == "ask":
         if "merge" in rule.lower():
             return "a merge with no click from you"
@@ -1054,16 +1056,23 @@ def sentences(out, project):
             plural(n, "It is", "They are"))))
     if "settings" in by:
         stops = []
-        for f in by["settings"]:
+        additions = [f for f in by["settings"] if f[1] != "remove-deny"]
+        removals = [f for f in by["settings"] if f[1] == "remove-deny"]
+        for f in additions:
             words = rule_words(f[1], f[2])
             if words not in stops:
                 stops.append(words)
-        n = len(by["settings"])
-        said.append(("settings", "Your Claude Code settings are missing %d newer safety %s. "
-                     "They stop %s. I add only those lines and change nothing else in the file. "
-                     "The setup-ai-build-kit skill's references/blocked-commands.md lists what "
-                     "the rules still cannot catch. Shall I add them?" % (
-                         n, plural(n, "rule", "rules"), joined(stops))))
+        parts = []
+        if additions:
+            parts.append("Your Claude Code settings are missing %d newer safety %s. They stop %s."
+                         % (len(additions), plural(len(additions), "rule", "rules"), joined(stops)))
+        if removals:
+            parts.append("I can remove %d retired kit push rules that can stop a safe upload. "
+                         "The push guard still stops changes to main and replacing remote work."
+                         % len(removals))
+        parts.append("Only these settings lines change, on this computer. Your own rules stay. "
+                     "Without this update, the current settings remain. Shall I apply it?")
+        said.append(("settings", " ".join(parts)))
     for finding in by.get("gate", []):
         gate = finding[1]
         said.append((gate, "Your project is missing or has an older copy of %s. I can "

@@ -1098,8 +1098,14 @@ if [ -f "$sbfile" ] && [ -f "$mergefile" ] && [ -f "$blocked" ] && [ -f "$settin
     { fail "$shapefile: does not say a new issue starts unassigned"; mech_ok=0; }
   grep -qF 'never push a change directly to `main`' "$blocked" || \
     { fail "$blocked: does not block a direct push to main"; mech_ok=0; }
-  grep -qF "git push * main" "$settings" || \
-    { fail "$settings: deny list does not block a direct push to main"; mech_ok=0; }
+  if sh "$ROOT/.agents/tests/push-guard.sh" >"${TMPDIR:-/tmp}/kit-push-guard-$$.log" 2>&1; then
+    pass "founding installs the guard and Git refuses protected pushes"
+  else
+    cat "${TMPDIR:-/tmp}/kit-push-guard-$$.log"
+    fail "founding's push guard rehearsal failed"
+    mech_ok=0
+  fi
+  rm -f "${TMPDIR:-/tmp}/kit-push-guard-$$.log"
   grep -qF "delete_branch_on_merge" "$cutfile" || \
     { fail "$cutfile: does not enable auto-deletion of merged branches"; mech_ok=0; }
   grep -qF "Merge only on a yes" "$mergefile" || \
@@ -2183,13 +2189,29 @@ if [ "$fallback_ok" = "yes" ]; then
   pass "maintainer-only non-main branch validation fallback matches the contract"
 fi
 
+# Piped commands were observed matching later text as part of the push.
+if python3 - "$SKILLS/setup-ai-build-kit/templates/foundation/claude-settings.json" <<'PYRULE'
+import json, re, sys
+perms = json.load(open(sys.argv[1]))['permissions']
+bad = [r for key in ('deny', 'ask') for r in perms.get(key, [])
+       if r.startswith('Bash(git push *') and r != 'Bash(git push * --no-verify*)'
+       and re.search(r'\*[^*)]+', r[len('Bash(git push '):])]
+for rule in bad:
+    print('unsafe push text rule: ' + rule)
+sys.exit(bool(bad))
+PYRULE
+then pass "push text rules leave ref safety to the pre-push guard"
+else fail "a push text rule can match unrelated text later in a piped command"
+fi
+
 # Deny-list parity: permissions.deny must be exactly the set of entries that
 # mirror .agents/guard/blocked-commands.md's mechanically enforceable
 # patterns (git reset --hard, git push --force/-f, git clean -f/-fd, rm -rf).
 # An exact set comparison catches a missing OR an unexplained extra entry,
 # not just a missing substring. Both this repository's own Claude settings and
-# the settings start gives a project are checked; the two files differ only in
-# the session-start wiring, which a project has and this source must not.
+# the settings founding gives a project are checked. Founded projects also
+# protect hooks, stored logins and live changes, and use the pre-push guard
+# instead of push text rules.
 deny_jsonfiles="$ROOT/.claude/settings.json
 $ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json"
 expected_deny="Bash(git reset --hard:*)
@@ -2198,10 +2220,12 @@ Bash(git push -f:*)
 Bash(git clean -f:*)
 Bash(git clean -fd:*)
 Bash(rm -rf:*)"
-# A project the kit founds also blocks a direct push to main, which keeps
-# changes flowing through a pull request. This maintainer repository's own
-# settings deliberately do not carry that entry, so the two sets differ here.
-expected_deny_project="$expected_deny
+# Founded projects use the pre-push guard for main and replacing remote work.
+# Their text rules protect the guard and the other command boundaries.
+expected_deny_project="Bash(git reset --hard:*)
+Bash(git clean -f:*)
+Bash(git clean -fd:*)
+Bash(rm -rf:*)
 Write(**/.claude/settings.json)
 Edit(**/.claude/settings.json)
 Write(**/.claude/settings.local.json)
@@ -2225,20 +2249,6 @@ Read(**/.env.development.local)
 Read(**/.env.test.local)
 Read(**/.env.*)
 Read(!**/.env.example)
-Bash(git push * main)
-Bash(git push * main *)
-Bash(git push * +main)
-Bash(git push * +main *)
-Bash(git push *:main)
-Bash(git push *:main *)
-Bash(git push *refs/heads/main)
-Bash(git push *refs/heads/main *)
-Bash(git push --force*)
-Bash(git push -f*)
-Bash(git push * --force*)
-Bash(git push * -f)
-Bash(git push * -f *)
-Bash(git push * +*)
 Bash(rm -fr:*)
 Bash(rm -Rf:*)
 Bash(rm -fR:*)

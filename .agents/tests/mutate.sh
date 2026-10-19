@@ -110,6 +110,7 @@ runner-fails-green
 migration-misses-ready
 mark-ready-skips-done-when
 first-upload-ignores-shared-history
+upload-piece-skips-pull-request
 strength-config-lost
 review-gate-leaves-draft-edited
 attempt-cap
@@ -259,6 +260,7 @@ describe() {
     migration-misses-ready) echo "the upgrade check misses open pieces that need the ready label" ;;
     mark-ready-skips-done-when) echo "a piece without Done when can be marked ready" ;;
     first-upload-ignores-shared-history) echo "a repository with unrelated work is treated as a first upload" ;;
+    upload-piece-skips-pull-request) echo "the upload script no longer opens the pull request" ;;
     strength-config-lost) echo "the Python mutation check no longer tells mutmut which code to break" ;;
     review-gate-leaves-draft-edited) echo "the review gate leaves an edited draft in place" ;;
     attempt-cap) echo "the piece attempt cap rises, so a fourth attempt is allowed" ;;
@@ -365,6 +367,7 @@ checks_for() {
     migration-misses-ready) echo "upgrade-rehearsal" ;;
     mark-ready-skips-done-when) echo "mark-ready" ;;
     first-upload-ignores-shared-history) echo "first-upload" ;;
+    upload-piece-skips-pull-request) echo "upload-piece" ;;
     strength-config-lost) echo "test-strength-rehearsal" ;;
     review-gate-leaves-draft-edited) echo "review-guard" ;;
     attempt-cap) echo "autonomy-boundaries" ;;
@@ -1220,6 +1223,15 @@ s = open(p).read()
 old = "if not shared_refs(project, main):"
 assert old in s, "shared history check not found"
 open(p, "w").write(s.replace(old, "if False and not shared_refs(project, main):", 1))'
+      ;;
+    upload-piece-skips-pull-request)
+      edit "$tree/.agents/skills/merge/scripts/upload-piece.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "\"gh\", \"pr\", \"create\""
+assert old in s, "pull request creation not found"
+open(p, "w").write(s.replace(old, "\"gh\", \"pr\", \"status\"", 1))'
       ;;
     strength-config-lost)
       edit "$tree/.agents/skills/quality-checks/scripts/quality.py" '
