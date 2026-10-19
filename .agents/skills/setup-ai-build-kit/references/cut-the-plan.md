@@ -33,14 +33,17 @@ delete the labels GitHub made by itself (`bug`, `documentation`, `duplicate`,
 squash and rebase merges, and copy the issue template. Say which ones went,
 from its `removed` and `kept` lines, and that merged branches are now removed.
 A label it could not remove stays and founding carries on. For `prepare`,
-exit 0 means protection is set, or deferred because `main` does not exist.
-Exit 2 means protection could not be set, for example under the account's
-plan, without admin rights, or after a network failure; its line names the
-step. Founding stops after preparation,
+exit 0 means protection is set, deferred because `main` does not exist, or
+unavailable on a private Free plan. That plan limit is recorded as
+[the first-upload reference describes](../../merge/references/first-upload.md),
+and founding continues. Give the script's explanation only when new.
+Exit 2 means protection could not be set, for example without admin rights or
+after a network failure; its line names the cause. Founding stops after preparation,
 which may already have created labels, settings and the issue template. Exit 5
 means GitHub could not be read or `origin` is not GitHub; exit 6 means
 `origin` is the kit's own repository. In either case stop without further
-changes. If `main` does not exist, protection is deferred until first upload.
+changes. Where the plan allows it, first upload sets protection when it creates
+`main`.
 
 Open one issue per piece, label each shaped piece `ready` or with the `needs-`
 label for its open question, and link real dependencies with GitHub's

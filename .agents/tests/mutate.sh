@@ -151,7 +151,7 @@ record-secret-changelog
 record-secret-claude-write
 record-secret-github-body
 conditions-missing-passes
-protection-plan-carries-on
+protection-plan-stops
 unreadable-repository-is-missing
 seeded-missed-as-flagged
 seeded-harness-break-as-pass
@@ -301,7 +301,7 @@ describe() {
     result-crash-passes) echo "a quality read that crashes is reported as a pass" ;;
     result-unstarted-check-passes) echo "a GitHub check that has not finished maps to PASS" ;;
     conditions-missing-passes) echo "a missing working condition no longer stops founding" ;;
-    protection-plan-carries-on) echo "a plan that cannot protect a private repository lets setup carry on" ;;
+    protection-plan-stops) echo "a private Free plan limit stops setup instead of being recorded" ;;
     unreadable-repository-is-missing) echo "a refused repository read is reported as no repository and stops founding" ;;
     seeded-missed-as-flagged) echo "a seeded fault that merged unnamed is scored as named first" ;;
     seeded-harness-break-as-pass) echo "a run the harness broke is scored as a fix" ;;
@@ -406,7 +406,7 @@ checks_for() {
     result-crash-passes) echo "result-vocabulary" ;;
     result-unstarted-check-passes) echo "result-vocabulary merge-gate" ;;
     conditions-missing-passes) echo "check-tooling" ;;
-    protection-plan-carries-on) echo "check-tooling found-issues first-upload" ;;
+    protection-plan-stops) echo "check-tooling found-issues first-upload" ;;
     unreadable-repository-is-missing) echo "check-tooling" ;;
     review-optional-by-record) echo "review-gate" ;;
     area-accepted-still-holds|area-open-passes|area-date-without-words) echo "sensitive-area-map" ;;
@@ -1577,14 +1577,14 @@ assert old in t, "the missing condition stop not found"
 open(p, "w").write(t.replace(old, "true", 1))
 '
       ;;
-    protection-plan-carries-on)
+    protection-plan-stops)
       edit "$tree/.agents/skills/merge/scripts/protect-branch.py" '
 import os
 p = os.environ["MUTATE_TARGET"]
 t = open(p).read()
-old = "then run setup again.\")\n    return 3"
-assert old in t, "the plan limit stop not found"
-open(p, "w").write(t.replace(old, "then run setup again.\")\n    return 0", 1))
+old = "    return 3\n\n\ndef main(argv):"
+assert old in t, "the supported plan condition not found"
+open(p, "w").write(t.replace(old, "    return 2\n\n\ndef main(argv):", 1))
 '
       ;;
     unreadable-repository-is-missing)

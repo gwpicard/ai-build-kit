@@ -154,7 +154,7 @@ named beside it.
 
 | Promise | Mechanism today | Gap |
 |---|---|---|
-| A person approves each merge, unless they chose auto-merge with its limits. | `merge.py --approved` spends the person's recorded yes through the approval gate, `records/scripts/approval.py`; `.agents/tests/merge-gate.sh` and `.agents/tests/approval-gate.sh`; the autonomy limits in `.agents/tests/autonomy-boundaries.sh`; branch protection set at setup, which stops setup when it cannot be set, checked by `.agents/tests/check-tooling.sh` | None known. |
+| A person approves each merge, unless they chose auto-merge with its limits. | `merge.py --approved` spends the person's recorded yes through the approval gate, `records/scripts/approval.py`; `.agents/tests/merge-gate.sh` and `.agents/tests/approval-gate.sh`; the autonomy limits in `.agents/tests/autonomy-boundaries.sh`; the local push guard and branch protection where the plan allows it, checked by `.agents/tests/push-guard.sh` and `.agents/tests/check-tooling.sh` | A private repository on Free has no GitHub protection; a person with permission can merge by hand there. |
 | Nothing goes online without a yes. | One approval gate, `approval.py`, called by `merge.py --approved` and by every recipe step that moves what is live, applies a migration, adds a secret, or changes access, sign-up or the host connection: `.agents/tests/approval-gate.sh`, `.agents/tests/merge-gate.sh`, `.agents/tests/recipe-nextjs-supabase-on-vercel.sh`. Claude Code asks before a yes is recorded, checked by `.agents/tests/push-to-main-rules.sh`; `.agents/tests/first-upload.sh`. In the behaviour set, `.agents/tests/replay/backbone.py` fails a replay in which a merge, a push to main or a change to the host came before the person's yes | Closed for the kit's own scripts. A host's tool run directly, outside a kit script, is held only by Claude Code's rules. |
 | Secrets are never shown. | `.agents/tests/secrets-gates.sh` and `.agents/tests/push-guard.sh` for commits and command output; `.agents/tests/record-secrets.sh` for the saved records: the pull request body `gate.py` writes, the changelog and masterplan `run-recipe.sh` writes, and what Claude Code writes into a record file or a GitHub body. In the behaviour set, each replay project holds a planted canary secret in an untracked file, and `.agents/tests/replay/backbone.py` fails the replay if the canary or any secret-shaped value appears in what the run said or saved | Closed for the kit's scripts and Claude Code. Another agent writing a record by hand is caught when the record is pushed. |
 | Checks pass before a merge. | The project checks workflow, read by `merge.py`; `.agents/tests/merge-gate.sh`. Every check reports a result from `quality-checks/scripts/results.py`; `.agents/tests/result-vocabulary.sh` | None known. |
@@ -254,14 +254,16 @@ four-path fields.
 
 Setup does not complete until a script confirms them: a repository with issues
 switched on, an agent session that can read and write issues, branch protection
-that can be set, and host and database access. The script reports each as
-present, missing or could not check. A missing condition stops setup with the
-one step the person takes. The person creates the accounts.
+or a recorded private Free plan limit, and host and database access. A missing
+condition stops setup with the one step the person takes. The person creates
+the accounts.
 
 The script is `check-tooling.sh --conditions` in the setup skill, and
 `.agents/tests/check-tooling.sh` holds it. It proves issue access by opening a
-test issue, closing it and labelling it `skip`. A plan that cannot protect a
-private repository is missing, and the line names the plan. For host and
+test issue, closing it and labelling it `skip`. A private repository on Free
+carries on with the local push guard; `protect-branch.py` records the condition
+in `.ai-build-kit-maintenance` and explains the missing GitHub layer once.
+Maintenance offers protection when the plan later allows it. For host and
 database access it stops only on the tools the chosen recipe names. The
 recipes name no sign-in check yet, so a sign-in is could not check, like
 anything else there. It also says whether the agent

@@ -172,13 +172,25 @@ out=$(run prepare) && code=0 || code=$?
 cmp -s "$SKILL/templates/foundation/piece-issue.yml" "$WORK/p/.github/ISSUE_TEMPLATE/piece.yml" \
   && pass "the piece template is copied into the project" || fail "the piece template was not copied"
 
-state someone/kit-log PRIVATE '{}' '[]' false '["main"]'
-python3 -c 'import json,sys; p=sys.argv[1]; s=json.load(open(p)); s["protection_status"]="plan"; json.dump(s,open(p,"w"))' "$STANDIN_GH_STATE"
-out=$(run prepare 2>&1) && code=0 || code=$?
-[ "$code" -eq 2 ] && printf '%s\n' "$out" | grep -q 'GitHub Free.*Step: make the repository public' \
-  && grep -q '^label create ' "$STANDIN_GH_LOG" \
-  && pass "a plan restriction names the plan and the step, and stops founding after prepare" \
-  || fail "a plan restriction did not stop founding with its step ($code): $out"
+for branches in '[]' '["main"]'; do
+  project https://github.com/someone/kit-log.git
+  printf 'last-light-pass|2026-10-01\n' > "$WORK/p/.ai-build-kit-maintenance"
+  state someone/kit-log PRIVATE '{}' '[]' false "$branches"
+  python3 -c 'import json,sys; p=sys.argv[1]; s=json.load(open(p)); s["plan"]="free"; json.dump(s,open(p,"w"))' "$STANDIN_GH_STATE"
+  out=$(run prepare 2>&1) && code=0 || code=$?
+  [ "$code" -eq 0 ] && [ "$(get protection)" = null ] \
+    && grep -Fxq 'branch-protection|someone/kit-log|main|unavailable-private-free' "$WORK/p/.ai-build-kit-maintenance" \
+    && grep -Fxq 'last-light-pass|2026-10-01' "$WORK/p/.ai-build-kit-maintenance" \
+    && printf '%s\n' "$out" | grep -q 'The push guard still refuses changes to main' \
+    && grep -q '^label create ' "$STANDIN_GH_LOG" \
+    && pass "Free private founding completes and records the condition with branches $branches" \
+    || fail "Free private founding did not complete with its record ($code): $out"
+  out=$(run prepare 2>&1) && code=0 || code=$?
+  [ "$code" -eq 0 ] && ! printf '%s\n' "$out" | grep -q 'A paid plan' \
+    && [ "$(grep -c '^branch-protection|' "$WORK/p/.ai-build-kit-maintenance")" -eq 1 ] \
+    && pass "repeating founding keeps one condition and gives no second notice" \
+    || fail "repeating founding repeated the notice or record: $out"
+done
 
 for status_line in 'admin|admin rights' '422|422' 'network|network error'; do
   status=${status_line%%|*}

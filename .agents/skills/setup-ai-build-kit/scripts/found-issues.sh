@@ -38,8 +38,8 @@
 #         line and does not stop the rest.
 # Exit 5: GitHub could not be read, so nothing was changed.
 # Exit 6: origin is the kit's own repository, so nothing was changed.
-# Exit 2: usage error, or branch protection could not be set, the plan limit
-#         included. The rest of prepare still runs, then founding stops.
+# Exit 2: usage error, or branch protection could not be set for a reason other
+#         than the private Free plan limit. Prepare still runs, then founding stops.
 
 set -u
 
@@ -92,7 +92,7 @@ protection_status=0
 protection_could_not_run=0
 protection_output=$(python3 "$SKILL_ROOT/../merge/scripts/protect-branch.py" --defer-missing "$repo" main 2>&1) || protection_status=$?
 case "$protection_status" in
-  0) printf '%s\n' "$protection_output" ;;
+  0|3) printf '%s\n' "$protection_output" ;;
   4|5) printf 'protection\tdeferred until first upload creates main\n' ;;
   *)
     printf '%s\n' "$protection_output" >&2
