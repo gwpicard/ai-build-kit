@@ -40,7 +40,8 @@ its sentence and stop.
    `last-light-pass`, or founding if absent. Quarterly work is due 90 days
    after `last-full-pass`, at founding if absent, and when a handover is asked
    for. Either runs when requested. Say when skipped work falls due.
-6. Finish a kit update using `references/kit-update.md` on every visit. The
+6. Run `scripts/upgrade-check.py --latest --route` using `references/latest-release.md`.
+7. Finish a kit update using `references/kit-update.md` on every visit. The
    monthly routine's first step does it instead. In Codex, offer its
    session-start GitHub check.
 
