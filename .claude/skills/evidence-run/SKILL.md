@@ -1,6 +1,6 @@
 ---
 name: evidence-run
-description: Gather fresh evidence before the tool is relied on: promised behaviour, failure, data and access, operations, review, and an honest report. Used by setup-hosting, maintain, merge and implement auto.
+description: "Gather fresh evidence before the tool is relied on: promised behaviour, failure, data and access, operations, review, and an honest report. Used by setup-hosting, maintain, merge and implement auto."
 user-invocable: false
 ---
 <!-- GENERATED from .agents/skills/evidence-run/. Do not edit here; regenerate with .agents/tools/build-adapters.sh -->
