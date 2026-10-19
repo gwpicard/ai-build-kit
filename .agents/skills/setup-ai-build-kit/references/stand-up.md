@@ -27,7 +27,7 @@ AGENTS.md. Run `scripts/use-starter.sh <folder>` with the menu's path.
 If the harness refuses a starter command, say so in one plain line and ask
 whether to build the starter another way. Wait for yes before writing
 replacement starter files.
-Starter exit 1: list clashing files and ask which to keep. Exit 2: say what
+Starter exit 1: list only reported clashes and ask which to keep. Exit 2: say what
 could not run. With no recipe, copy `templates/foundation/env.example` to
 `.env.example`.
 
