@@ -1,6 +1,6 @@
 # AI Build Kit
 
-> AI Build Kit helps people without a software background and small teams plan, build and run tools with an AI coding agent, without requiring them to read code. It installs eight skills: six commands the person types and two background skills the commands call.
+> AI Build Kit helps people without a software background and small teams plan, build and run tools with an AI coding agent, without requiring them to read code. It installs 19 skills: 6 commands the person types and 13 background skills the commands call.
 
 The person explains what should happen, tries the result and decides on risk.
 The kit suits internal tools with a manual fallback.

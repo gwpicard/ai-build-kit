@@ -179,6 +179,9 @@ echo "== Stray copies =="
 strays=$(find "$ROOT" \
   -path "$ROOT/.git" -prune -o \
   -path "$ROOT/node_modules" -prune -o \
+  -path "$ROOT/site/node_modules" -prune -o \
+  -path "$ROOT/site/dist" -prune -o \
+  -path "$ROOT/site/.astro" -prune -o \
   -path "$ROOT/.agents/tests/replay/results" -prune -o \
   \( -type f -o -type d \) \
   \( -name "* [0-9]" -o -name "* [0-9].*" -o -name "* copy" -o -name "* copy.*" \) \
@@ -680,7 +683,13 @@ fi
 echo "== References =="
 
 # Every local Markdown link resolves.
-mdfiles=$(find "$ROOT" -name '*.md' -not -path '*/.git/*' -not -path '*/.agents/tmp/*' | sort)
+mdfiles=$(find "$ROOT" \
+  -path "$ROOT/.git" -prune -o \
+  -path "$ROOT/site/node_modules" -prune -o \
+  -path "$ROOT/site/dist" -prune -o \
+  -path "$ROOT/site/.astro" -prune -o \
+  -path "$ROOT/.agents/tmp" -prune -o \
+  -name '*.md' -print | sort)
 while IFS= read -r mdfile; do
   [ -n "$mdfile" ] || continue
   # The public README lives one level down in the maintainer source, then moves
@@ -1543,7 +1552,13 @@ echo "== Codex adapter claims =="
 # directly. The one generated Codex folder is .codex/agents/, for the agents,
 # so a line naming that folder is not the stale claim. scenarios.md and MAINTAINING.md are maintainer-only and already
 # excluded by the same convention as the team.md check below.
-codex_docs=$(find "$ROOT" -name '*.md' -not -path '*/.git/*' -not -path '*/.agents/tmp/*' | sort \
+codex_docs=$(find "$ROOT" \
+  -path "$ROOT/.git" -prune -o \
+  -path "$ROOT/site/node_modules" -prune -o \
+  -path "$ROOT/site/dist" -prune -o \
+  -path "$ROOT/site/.astro" -prune -o \
+  -path "$ROOT/.agents/tmp" -prune -o \
+  -name '*.md' -print | sort \
   | grep -v '\.agents/tests/scenarios\.md$' \
   | grep -v 'docs/MAINTAINING\.md$' || true)
 

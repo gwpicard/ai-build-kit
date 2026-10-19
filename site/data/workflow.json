@@ -1,0 +1,105 @@
+[
+  {
+    "id": "found",
+    "title": "Found a project",
+    "command": "/setup-ai-build-kit",
+    "skills": ["clarify", "fit-check", "second-opinion", "records", "merge"],
+    "checks": [
+      {
+        "script": "scripts/check-tooling.sh",
+        "path": ".agents/skills/setup-ai-build-kit/scripts/check-tooling.sh",
+        "exits": {
+          "0": "Every tool the kit needs to found your pieces is ready.",
+          "1": "Something founding needs is not ready.",
+          "2": "The command line options are not valid."
+        }
+      }
+    ],
+    "person_decides": "The person answers the interview questions and decides whether to adopt existing work.",
+    "source": ".agents/skills/setup-ai-build-kit/SKILL.md"
+  },
+  {
+    "id": "shape",
+    "title": "Shape a piece",
+    "command": "/shape",
+    "skills": ["triage", "records", "clarify", "research", "fit-check"],
+    "checks": [],
+    "person_decides": "The person settles questions that need their judgement, then decides whether to offer the ready piece to /implement.",
+    "source": ".agents/skills/shape/SKILL.md"
+  },
+  {
+    "id": "implement",
+    "title": "Implement a piece",
+    "command": "/implement",
+    "skills": ["build-piece", "records", "quality-checks", "repair", "live-copy", "evidence-run", "screen-check"],
+    "checks": [
+      {
+        "script": "quality.py loops --base <start commit>",
+        "path": ".agents/skills/quality-checks/scripts/quality.py",
+        "exits": {
+          "0": "Nothing to say about the structure check.",
+          "1": "The change added a loop or crossed a boundary.",
+          "2": "The check could not run; note this internally."
+        }
+      }
+    ],
+    "person_decides": "The person tries the result and decides whether to merge the named pull request.",
+    "source": ".agents/skills/implement/SKILL.md"
+  },
+  {
+    "id": "review",
+    "title": "Review the change",
+    "command": null,
+    "skills": ["second-opinion", "quality-checks"],
+    "checks": [],
+    "person_decides": "A person decides whether a review finding is worth stopping for.",
+    "source": ".agents/skills/second-opinion/SKILL.md"
+  },
+  {
+    "id": "merge",
+    "title": "Merge the change",
+    "command": null,
+    "skills": ["merge", "records", "evidence-run", "live-copy", "fit-check"],
+    "checks": [
+      {
+        "script": "scripts/merge.py --approved <number>",
+        "path": ".agents/skills/merge/scripts/merge.py",
+        "exits": {
+          "0": "The pull request merged.",
+          "1": "A check, review box, review version or risk area holds the merge.",
+          "2": "The merge could not run."
+        }
+      }
+    ],
+    "person_decides": "The person gives a yes that names the pull request to merge.",
+    "source": ".agents/skills/merge/SKILL.md"
+  },
+  {
+    "id": "live",
+    "title": "Set up or check the live tool",
+    "command": "/setup-hosting",
+    "skills": ["fit-check", "evidence-run", "live-copy", "merge"],
+    "checks": [],
+    "person_decides": "The person decides whether to go live after hearing the live-change warning.",
+    "source": ".agents/skills/setup-hosting/SKILL.md"
+  },
+  {
+    "id": "maintain",
+    "title": "Maintain the project",
+    "command": "/maintain",
+    "skills": ["live-copy", "quality-checks", "records", "merge", "what-now"],
+    "checks": [
+      {
+        "script": "scripts/standing-lines.sh",
+        "path": ".agents/skills/maintain/scripts/standing-lines.sh",
+        "exits": {
+          "0": "The standing instructions file has fewer than 200 lines.",
+          "1": "The file has 200 lines or more; the monthly visit offers a trim.",
+          "2": "The file could not be read."
+        }
+      }
+    ],
+    "person_decides": "The person decides whether to apply changes beyond routine updates.",
+    "source": ".agents/skills/maintain/SKILL.md"
+  }
+]
