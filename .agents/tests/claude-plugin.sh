@@ -39,7 +39,12 @@ CLAUDE_CONFIG_DIR="$CONFIG" claude plugin validate "$MARKET" >/dev/null \
   || fail "the assembled plugin does not validate"
 if ! CLAUDE_CONFIG_DIR="$CONFIG" claude plugin validate "$MARKET" --strict \
     > "$SCRATCH/validate.txt" 2>&1; then
-  grep -E '❯|^ *> ' "$SCRATCH/validate.txt" > "$SCRATCH/warnings.txt" \
+  # Newer Claude Code versions add advisory plugin directory checks, such as a
+  # missing listing icon, after the validation result. They say they do not
+  # change the result, so only the warnings above that section are counted.
+  awk '/^Plugin directory checks/ { exit } /❯|^ *> / { print }' \
+    "$SCRATCH/validate.txt" > "$SCRATCH/warnings.txt"
+  [ -s "$SCRATCH/warnings.txt" ] \
     || fail "strict validation failed with no warning named"
   if grep -v 'CLAUDE.md at the plugin root is not loaded as project context' \
       "$SCRATCH/warnings.txt" >/dev/null; then
