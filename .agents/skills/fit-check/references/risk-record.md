@@ -18,6 +18,10 @@ Recheck when: <specific triggers>
 Last checked: YYYY-MM-DD
 ```
 
+For `merge`, the line follows the order the merge script reads: `merge`, then
+`decided YYYY-MM-DD`, then the person's words in double quotes. For example:
+`Runs on its own: merge, decided 2026-10-20, "merge on your own once checks pass"`.
+
 Each area gets its own line under `Risk areas:`, indented two spaces: the
 area, what in this tool touches it, its caution, and where the caution stands
 (`not yet done`, `done` with the date, or `accepted` with the date of the

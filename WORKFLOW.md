@@ -439,8 +439,8 @@ says the kit does not know where the secret is kept, and never that it is gone.
 On every launch, /setup-hosting checks that the tool keeps a plain record of what each
 request did, without personal data, secrets or confidential file contents. If
 it does not, you hear once: "The tool keeps no record of what each request did,
-so a fault reported after launch cannot be traced. I have noted that in the
-changelog, and adding the record is one piece whenever you want it." The
+so a fault reported after launch cannot be traced. Adding the record is one
+piece whenever you want it." The
 launch does not wait for it. A record that holds personal data, secrets or
 confidential contents still gets repaired.
 
@@ -464,8 +464,8 @@ because the server builds and checks it from those two facts.
 It holds
 names only, never a password or key. You take it to whoever runs the server,
 and paste back what they send. On a later launch /setup-hosting reads the request back
-rather than asking again. The README names a hosting companion that can turn the
-request into a running address.
+rather than asking again. A recipe's `recipe.md` names the hosting companion
+that can turn the request into a running address.
 
 Some launch checks reach your data. On a recipe, the restore check copies the
 live database onto this computer and stops the local database while it runs.
@@ -473,9 +473,9 @@ Where the database plan keeps no backups of its own, the kit takes one after
 each launch into a dated folder outside the repository. Each pull request's
 preview is meant to use a separate database kept for previews. Where the plan
 has no room for a second one, a recipe may point previews at the live data
-instead, and the kit says so once. The recorded recipe trials shared one
-database between previews and the live copy, so they have not proved that
-separate preview data stays separate.
+instead, and the kit says so once. The Coolify trials shared one database
+between previews and the live copy, so they have not proved that separate
+preview data stays separate. The Vercel trial did not try previews.
 
 Keys and passwords never go in a file Git tracks. On this computer they live
 in files Git ignores, such as `.env`, and the live values sit in the host's own
@@ -502,7 +502,7 @@ private network and on the public internet. Its preview for an app without a
 domain ran on the server but had no address the person could open. Each
 recipe's trial record, with the results and their limits, is the `PROVEN.md`
 in its folder, which the
-[README's recipe links](README.md#going-live) lead to.
+[recipes page](https://gwpicard.github.io/ai-build-kit/recipes/) links to.
 
 The kit runs a rollback itself where the recipe provides a command. Otherwise
 you use the host's page and paste back the result. The host may keep only the

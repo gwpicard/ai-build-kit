@@ -27,8 +27,8 @@ continue.
   checks. Use `gate.py brief`, send its packet for fresh review, refute each
   stopping finding and record findings with `gate.py record`. It writes review
   boxes and drops findings without evidence. Do not call it ready before checks
-  pass. Read and fix a red check before pushing again. `/merge` handles the
-  merge. If GitHub did not start checks, say so and that the person can enable
+  pass. Read and fix a red check before pushing again. the `merge` skill handles
+  the merge. If GitHub did not start checks, say so and that the person can enable
   them or merge on GitHub.
 - **Flagged without acceptance:** take the pull-request route to the recorded
   condition, record it and that `/maintain` prepares a handover on request,

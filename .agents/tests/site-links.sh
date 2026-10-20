@@ -1,9 +1,26 @@
 #!/usr/bin/env sh
-# site-links.sh: checks the site's source links point to real repository paths and each stage link finds its heading.
+# site-links.sh: checks the site's source links point to real repository paths, each stage link finds its heading, and the built pages link to no .md file.
 
 set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 cd "$ROOT"
+
+# The built site is checked too. Build it when it is missing or older than its
+# sources; say so and skip that part when it cannot be built here.
+BUILD=skip
+dist="$ROOT/site/dist"
+if [ ! -f "$dist/index.html" ] ||
+   [ -n "$(find "$ROOT/site/src" "$ROOT/site/data" "$ROOT/site/scripts" "$ROOT/site/astro.config.mjs" "$ROOT/docs" "$ROOT/llms.txt" "$ROOT/WORKFLOW.md" -newer "$dist/index.html" -type f 2>/dev/null | head -n 1)" ]; then
+  if [ -d "$ROOT/site/node_modules" ] && command -v npm >/dev/null 2>&1 &&
+     (cd "$ROOT/site" && npm run build >/dev/null 2>&1); then
+    BUILD=built
+  else
+    echo "site links: the built site is missing or stale and could not be built here, so the built-page check is skipped" >&2
+  fi
+else
+  BUILD=present
+fi
+export BUILD
 
 python3 - <<'PY'
 import json
@@ -114,6 +131,20 @@ for stage in stages:
     mapped_paths = {check.get("path") for check in stage.get("checks", [])}
     if listed_paths != mapped_paths:
         fail(f"stage {stage_id} checks differ between the page and workflow map")
+
+import os
+if os.environ.get("BUILD") in {"built", "present"}:
+    href = re.compile(r"""href=(?:"([^"]*)"|'([^']*)')""")
+    built = 0
+    for page_path in (root / "site/dist").rglob("*.html"):
+        built += 1
+        for match in href.finditer(page_path.read_text(encoding="utf-8", errors="replace")):
+            target = match.group(1) if match.group(1) is not None else match.group(2)
+            if re.match(r"^(https?:)?//", target) or target.startswith(("mailto:", "#")):
+                continue
+            if re.search(r"\.md(#[^\s]*)?$", target.split("?")[0]):
+                fail(f"{page_path.relative_to(root).as_posix()} has an internal link to {target}, which ends in .md")
+    print(f"site links: {built} built pages checked for .md links")
 
 print(f"site links: {link_count} links checked")
 PY

@@ -706,6 +706,9 @@ while IFS= read -r mdfile; do
     path="${inside%)}"
     case "$path" in
       http://*|https://*|mailto:*|"#"*|"") continue ;;
+      # A site page links to another site page by its address; site-links.sh
+      # checks those against the built pages.
+      /ai-build-kit/*) case "$mdfile" in "$ROOT"/site/src/content/docs/*) continue ;; esac ;;
     esac
     path_noanchor="${path%%#*}"
     [ -n "$path_noanchor" ] || continue

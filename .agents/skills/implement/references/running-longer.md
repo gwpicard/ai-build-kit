@@ -2,7 +2,9 @@
 
 Load this when the person asks to build several pieces in one sitting.
 Everything here is off unless `Runs on its own:` in `masterplan.md` records
-the person's words and date.
+the person's words and date. For `merge` the line must name `merge`, then
+`decided YYYY-MM-DD`, then the words in double quotes, for example
+`Runs on its own: merge, decided 2026-10-20, "merge on your own once checks pass"`.
 
 ## Queue
 

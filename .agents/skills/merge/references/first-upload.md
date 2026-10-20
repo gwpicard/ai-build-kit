@@ -8,7 +8,7 @@ points at the kit's repository, and ask for their own.
 Run `python3` with this skill's `scripts/first-upload.py` from the project
 root. Its `state` line and exit code give the answer:
 
-- Exit 2: the repository has no branch. Nothing is online yet, and this push
+- Exit 3: the repository has no branch. Nothing is online yet, and this push
   is the first upload.
 - Exit 0 with a remote branch sharing history with local `main` (after `git
   fetch origin`, `git merge-base` finds a shared commit): the code is already
