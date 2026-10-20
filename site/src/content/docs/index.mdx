@@ -1,0 +1,25 @@
+---
+title: Home
+description: Who AI Build Kit is for and what it does.
+draft: false
+tableOfContents: false
+---
+
+AI Build Kit helps people who do not write code build tools with a coding agent, a program that reads and changes project files. It is intended for people who can create accounts and follow technical setup instructions.
+
+You describe the tool, and the agent builds one agreed piece of work at a time. A piece is a change small enough to build in one session. You try each change and decide whether to merge it into the main branch, the project’s main line of development. A branch is a separate line of work; merging incorporates its changes into another branch.
+
+## What happens
+
+1. You describe the tool. A setup script checks that Git and Python 3 are available and that you are signed in to GitHub. The agent checks access to your repository, where the project files and their history are stored.
+2. You agree on a piece, and the agent records its acceptance criteria under “Done when”. These describe the result you will use to judge the work.
+3. The agent builds the piece, scripts check the change, and a reviewer agent assesses the result.
+4. You try the change and approve the pull request, a proposal to merge it into the main branch. Before merging, the merge script checks the recorded approval and the project check result.
+5. To put the tool live, you choose a [hosting recipe](/ai-build-kit/recipes/): a fixed stack and host with set steps for previewing, launching, backing up, restoring and rolling back, which returns the tool to an earlier version. On a recipe, the launch script requires a confirmed backup and a defined rollback step.
+
+The checks provide evidence about the tool, but they do not establish that it is safe for every purpose. Some work may still need a developer. Read [the design principles](/ai-build-kit/design/) and [what the kit checks](/ai-build-kit/what-it-checks/).
+
+## Choose a next step
+
+- [Install the kit](/ai-build-kit/install/)
+- [Read how it is designed](/ai-build-kit/design/)

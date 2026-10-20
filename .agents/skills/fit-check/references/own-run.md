@@ -11,6 +11,7 @@ own’ at any time.”
 For parallel work, explain: “Two pieces are built at once. Each waits for you
 as usual. Before the second one merges, it is checked again against the first
 one.” Explain queue and loop briefly. Record the person's words and date on
-`Runs on its own:`. They add the local Claude rule themselves:
-`Bash(python3 *merge.py --auto *)`. When autonomy is turned off, update the line
-on the next records save and tell them to remove the local rule.
+`Runs on its own:`. No extra Claude permission rule is needed for `--auto`:
+the project settings ask before `--approved` merges, while the automatic route
+is limited by its recorded setting and the merge script's checks. When
+autonomy is turned off, update the line on the next records save.

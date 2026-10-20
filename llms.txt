@@ -1,64 +1,37 @@
 # AI Build Kit
 
-> AI Build Kit helps people without a software background and small teams plan, build and run tools with an AI coding agent, without requiring them to read code. It installs eight skills: six commands the person types and two background skills the commands call.
+> AI Build Kit helps people without a software background and small teams plan, build and run internal tools with an AI coding agent. It installs 19 skills: 6 commands the person types and 13 background skills the commands call.
 
-The person explains what should happen, tries the result and decides on risk.
-The kit suits internal tools with a manual fallback.
+The person explains what should happen, tries the result and decides on risk. The kit suits internal tools with a manual fallback. The project keeps its code and records in accounts the owner controls. The kit does not host tools or store project records.
 
-Works with: Claude Code is tested. Codex is expected to work. Cursor, Gemini CLI,
-GitHub Copilot and other agents are experimental. The Compatibility page gives
-the grades and known limits. An agent must read and edit files, run shell
-commands and use Git.
+Install one route per project:
 
-Install (shared installer): `npx skills add gwpicard/ai-build-kit`
-Install (Claude Code terminal app only): `claude plugin marketplace add gwpicard/ai-build-kit`
-then `claude plugin install ai-build-kit@ai-build-kit --scope local`
-Use one route per project. Ask the agent to run the setup-ai-build-kit skill;
-on the Claude plugin route, type `/ai-build-kit:setup-ai-build-kit`.
-Compatibility also explains manual installation and Agent Plugins.
+- Shared installer: `npx skills add gwpicard/ai-build-kit`, then choose agents and install all skills. Ask the agent to run `setup-ai-build-kit`.
+- Claude Code terminal app: `claude plugin marketplace add gwpicard/ai-build-kit`, then `claude plugin install ai-build-kit@ai-build-kit --scope local`. Run `/ai-build-kit:setup-ai-build-kit`.
 
 Commands:
 
-- `/setup-ai-build-kit` interviews the person and prepares the project once.
-- `/shape` turns an idea or a reproduced fault into a ready piece, one task with a checkable result.
-- `/implement` builds a ready piece, shows the result and merges on the person's yes. With several ready, it shows what can be built together and asks which to take.
-- `/setup-hosting` sets up how the tool runs live and checks or changes that later.
-- `/maintain` makes the records true again, reads the live copy and reports gaps, and runs upkeep when due. It also prepares handovers and switches a tool off.
+- `/setup-ai-build-kit` prepares a project.
+- `/shape` turns an idea or fault into a ready piece of work.
+- `/implement` builds a ready piece and asks before merging by default.
+- `/setup-hosting` sets up or checks how the tool runs live.
+- `/maintain` checks the records and live copy, and runs upkeep when due.
 - `/what-now` says where the project stands and what to do next.
 
-Records: `masterplan.md` describes the tool now, GitHub issues hold work still to
-do, and `CHANGELOG.md` records what happened. A checkpoint is a saved snapshot.
-Setup opens issues in a named repository the person owns, with a warning if
-public. Code stays local until the first piece that uploads it asks permission.
-Every merge needs the person's yes.
+Automatic merging is off by default. The masterplan records the choice and its
+limits under `Runs on its own:`.
 
-Going live: two recipes pair tools for building a web app with a place to run
-it. The README names them and links their plan terms and trial records. Other
-stacks get no launch checks, and the kit says so once for each. Once live,
-each approved merge puts the change in front of users. Rollback means returning
-to an earlier live version; launch checks confirm an earlier build exists
-without trying one.
+The kit cannot replace a professional developer or provide legal, medical, financial or security advice. Passing checks do not prove that software is safe or right for a purpose.
 
-Safety: a risk record says who is exposed if the tool fails. A risk area gets
-a risk notice and the person decides whether to carry on, with their
-acceptance recorded. A run left on its own stops at a risk area. Secrets
-stay out of files Git tracks. Agent approval settings vary; see Compatibility.
+## Site
 
-Teams: one person or a small team, using pull requests. The kit does not suit
-large teams or many agents building at once. It adds steps; a hosted builder is
-faster for a quick throwaway demo.
-
-Cost and limits: the kit is free under the MIT licence, without warranty. Agent
-subscriptions and hosting have their own prices. Risk notices miss things and
-passing checks only cover what somebody thought to check. The kit cannot
-replace a professional developer or provide legal, medical, financial or
-security advice.
+- [AI Build Kit site](https://gwpicard.github.io/ai-build-kit/): workflow, worked example, concepts, installation, supported agents, principles and design, releases and sources.
 
 ## Docs
 
-- [README](https://github.com/gwpicard/ai-build-kit/blob/main/README.md): what the kit is, how to install it, the six commands, comparison and FAQ
+- [README](https://github.com/gwpicard/ai-build-kit/blob/main/README.md): what the kit is and how to install it
 - [WORKFLOW](https://github.com/gwpicard/ai-build-kit/blob/main/WORKFLOW.md): the day-to-day manual for all six commands
-- [Compatibility](https://github.com/gwpicard/ai-build-kit/blob/main/docs/COMPATIBILITY.md): the installation routes and what each coding agent supports
+- [Compatibility](https://github.com/gwpicard/ai-build-kit/blob/main/docs/COMPATIBILITY.md): installation routes and agent support
 - [Philosophy](https://github.com/gwpicard/ai-build-kit/blob/main/docs/PHILOSOPHY.md): why the kit is shaped the way it is
 - [Sources](https://github.com/gwpicard/ai-build-kit/blob/main/docs/SOURCES.md): the borrowed ideas and who they came from
 - [Licence](https://github.com/gwpicard/ai-build-kit/blob/main/LICENSE): MIT

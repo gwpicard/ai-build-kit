@@ -13,12 +13,13 @@
 
 set -eu
 
-ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
+ROOT=${RELEASE_PUBLICATION_ROOT:-$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)}
 BUILDER="$ROOT/.agents/tools/build-release.sh"
 DRAFT_FINISHER="$ROOT/.agents/tools/finish-release-draft.sh"
 PREPARE_WORKFLOW="$ROOT/.github/workflows/prepare-release.yml"
 VERIFY_WORKFLOW="$ROOT/.github/workflows/verify-release.yml"
 DRAFT_WORKFLOW="$ROOT/.github/workflows/release-drafter.yml"
+PAGES_WORKFLOW="$ROOT/.github/workflows/pages.yml"
 DRAFT_CONFIG="$ROOT/.github/release-drafter.yml"
 GATE="github.repository == 'gwpicard/ai-build-kit'"
 
@@ -34,6 +35,7 @@ fail() {
 [ ! -e "$ROOT/.github/release.yml" ] || \
   fail "native generated-note configuration can expose private pull request numbers"
 [ -f "$DRAFT_WORKFLOW" ] || fail "merge-driven release draft workflow is missing"
+[ -f "$PAGES_WORKFLOW" ] || fail "GitHub Pages workflow is missing"
 [ -f "$DRAFT_CONFIG" ] || fail "merge-driven release draft configuration is missing"
 
 SCRATCH=$(mktemp -d)
@@ -319,6 +321,58 @@ fi
 if grep -RqE 'create-github-app-token|STARTER_APP_|x-access-token' "$ROOT/.github/workflows"; then
   fail "a workflow can mint a credential that writes outside the run's own token"
 fi
+# Each permission pattern accepts a quoted value and a trailing comment, so
+# neither form slips a write past these checks.
+# GitHub Pages needs an OIDC token. That credential is allowed only in the
+# deploy job of pages.yml, with Pages write and no repository write.
+for workflow in "$ROOT"/.github/workflows/*.yml "$ROOT"/.github/workflows/*.yaml; do
+  [ -f "$workflow" ] || continue
+  if grep -qE '^[[:space:]]+id-token:[[:space:]]*["'\'']?write["'\'']?[[:space:]]*(#.*)?$' "$workflow"; then
+    [ "${workflow##*/}" = pages.yml ] || \
+      fail "${workflow##*/} can mint an OIDC credential"
+  fi
+done
+grep -qx 'permissions: {}' "$PAGES_WORKFLOW" || \
+  fail "pages.yml must deny permissions at workflow level"
+[ "$(grep -cE '^[[:space:]]+id-token:[[:space:]]*["'\'']?write["'\'']?[[:space:]]*(#.*)?$' "$PAGES_WORKFLOW" || true)" -eq 1 ] || \
+  fail "pages.yml must give OIDC write to one job only"
+[ "$(grep -cE '^[[:space:]]+pages:[[:space:]]*["'\'']?write["'\'']?[[:space:]]*(#.*)?$' "$PAGES_WORKFLOW" || true)" -eq 1 ] || \
+  fail "pages.yml must give Pages write to one job only"
+[ "$(grep -cE '^[[:space:]]+contents:[[:space:]]*["'\'']?read["'\'']?[[:space:]]*(#.*)?$' "$PAGES_WORKFLOW" || true)" -eq 1 ] || \
+  fail "pages.yml build job must have contents read"
+[ "$(grep -cE '^[[:space:]]+[A-Za-z-]+:[[:space:]]*["'\'']?write["'\'']?[[:space:]]*(#.*)?$' "$PAGES_WORKFLOW" || true)" -eq 2 ] || \
+  fail "pages.yml has a write permission beyond Pages and OIDC"
+[ "$(grep -cE '^[[:space:]]+[A-Za-z-]+:[[:space:]]*["'\'']?(read|write|none)["'\'']?[[:space:]]*(#.*)?$' "$PAGES_WORKFLOW" || true)" -eq 3 ] || \
+  fail "pages.yml has a permission beyond contents read, Pages write and OIDC write"
+grep -qF 'workflows: ["verify release"]' "$PAGES_WORKFLOW" || \
+  fail "pages.yml does not follow release verification"
+grep -qF 'types: [completed]' "$PAGES_WORKFLOW" || \
+  fail "pages.yml does not wait for a completed verification run"
+grep -qF "github.event.workflow_run.conclusion == 'success'" "$PAGES_WORKFLOW" || \
+  fail "pages.yml can run after a failed verification"
+grep -qF 'workflow_dispatch:' "$PAGES_WORKFLOW" || \
+  fail "pages.yml cannot be started by hand"
+grep -qF 'ref: stable' "$PAGES_WORKFLOW" || \
+  fail "pages.yml does not build the stable branch"
+build_job=$(sed -n '/^  build:/,/^  deploy:/p' "$PAGES_WORKFLOW")
+deploy_job=$(sed -n '/^  deploy:/,$p' "$PAGES_WORKFLOW")
+jobs_block=$(sed -n '/^jobs:/,$p' "$PAGES_WORKFLOW")
+[ "$(printf '%s\n' "$jobs_block" | grep -cE '^  [a-z][a-z-]*:$' || true)" -eq 2 ] || \
+  fail "pages.yml must have one build job and one deploy job"
+printf '%s\n' "$build_job" | grep -qF "$GATE" || \
+  fail "pages.yml build job has no repository gate"
+printf '%s\n' "$deploy_job" | grep -qF "$GATE" || \
+  fail "pages.yml deploy job has no repository gate"
+printf '%s\n' "$build_job" | grep -qE '^      contents: read$' || \
+  fail "pages.yml does not scope contents read to the build job"
+printf '%s\n' "$build_job" | grep -qE '^      pages:|^      id-token:' && \
+  fail "pages.yml gives the build job a deploy permission"
+printf '%s\n' "$deploy_job" | grep -qE '^      pages: write$' || \
+  fail "pages.yml does not scope Pages write to the deploy job"
+printf '%s\n' "$deploy_job" | grep -qE '^      id-token:[[:space:]]*["'\'']?write["'\'']?[[:space:]]*(#.*)?$' || \
+  fail "pages.yml does not scope OIDC write to the deploy job"
+printf '%s\n' "$deploy_job" | grep -qE '^      contents:' && \
+  fail "pages.yml gives the deploy job a repository permission"
 # GitHub accepts .yaml as readily as .yml, so both are swept. A guard that reads
 # the folder is only as good as its idea of what a workflow file is called.
 # Only the two workflows that edit a Release, and the one job that moves
@@ -401,6 +455,79 @@ else
     grep -qF "$GATE" "$workflow" || \
       fail "${workflow##*/} has no repository gate, so it would run in a fork"
   done
+fi
+
+# Run the Pages policy against isolated copies with one fault at a time. This
+# keeps the regression cases independent of the caller's checkout.
+if [ "${RELEASE_PUBLICATION_SKIP_MUTATIONS:-0}" != 1 ]; then
+  MUTATION_ROOT=$(mktemp -d)
+  cleanup_mutations() {
+    rm -R "$MUTATION_ROOT"
+  }
+  trap 'cleanup; cleanup_mutations' EXIT
+  mkdir -p "$MUTATION_ROOT/.agents/tests" "$MUTATION_ROOT/.agents/tools" \
+    "$MUTATION_ROOT/.github/workflows"
+  cp "$ROOT/.agents/tests/release-publication.sh" "$MUTATION_ROOT/.agents/tests/"
+  cp "$ROOT/.agents/tools/build-release.sh" "$ROOT/.agents/tools/finish-release-draft.sh" \
+    "$MUTATION_ROOT/.agents/tools/"
+  cp "$ROOT/.github/workflows/"*.yml "$MUTATION_ROOT/.github/workflows/"
+  cp "$DRAFT_CONFIG" "$MUTATION_ROOT/.github/release-drafter.yml"
+  mutation_script="$MUTATION_ROOT/.agents/tests/release-publication.sh"
+  expect_rejected() {
+    if RELEASE_PUBLICATION_ROOT="$MUTATION_ROOT" RELEASE_PUBLICATION_SKIP_MUTATIONS=1 \
+      "$mutation_script" >/dev/null 2>&1; then
+      fail "$1 was not rejected by the release publication check"
+    fi
+    echo "ok: $1 was rejected"
+  }
+
+  cat > "$MUTATION_ROOT/.github/workflows/second-token.yml" <<'SECOND_TOKEN'
+name: second token
+on: workflow_dispatch
+jobs:
+  token:
+    if: github.repository == 'gwpicard/ai-build-kit'
+    permissions:
+      id-token: write
+    runs-on: ubuntu-latest
+    steps: []
+SECOND_TOKEN
+  expect_rejected "a second workflow with id-token: write"
+  rm "$MUTATION_ROOT/.github/workflows/second-token.yml"
+
+  cat > "$MUTATION_ROOT/.github/workflows/second-token.yml" <<'SECOND_TOKEN'
+name: second token
+on: workflow_dispatch
+jobs:
+  token:
+    if: github.repository == 'gwpicard/ai-build-kit'
+    permissions:
+      id-token: 'write' # needed for a deploy
+    runs-on: ubuntu-latest
+    steps: []
+SECOND_TOKEN
+  expect_rejected "a second workflow with a quoted, commented id-token write"
+  rm "$MUTATION_ROOT/.github/workflows/second-token.yml"
+
+  sed '/^      id-token: write$/a\
+      contents: write # temporary' "$PAGES_WORKFLOW" > "$MUTATION_ROOT/.github/workflows/pages.yml"
+  expect_rejected "pages.yml with a commented contents: write"
+  cp "$PAGES_WORKFLOW" "$MUTATION_ROOT/.github/workflows/pages.yml"
+
+  sed '/^      id-token: write$/a\
+      contents: write' "$PAGES_WORKFLOW" > "$MUTATION_ROOT/.github/workflows/pages.yml"
+  expect_rejected "pages.yml with contents: write"
+  cp "$PAGES_WORKFLOW" "$MUTATION_ROOT/.github/workflows/pages.yml"
+
+  sed '/^      - uses: actions\/upload-pages-artifact/i\
+      - name: forbidden push\n        run: git push' "$PAGES_WORKFLOW" \
+    > "$MUTATION_ROOT/.github/workflows/pages.yml"
+  expect_rejected "pages.yml that runs git push"
+  cp "$PAGES_WORKFLOW" "$MUTATION_ROOT/.github/workflows/pages.yml"
+
+  sed '/^    if: github.repository ==/d' "$PAGES_WORKFLOW" \
+    > "$MUTATION_ROOT/.github/workflows/pages.yml"
+  expect_rejected "pages.yml without the repository gate"
 fi
 
 echo "release-publication.sh: all checks passed"

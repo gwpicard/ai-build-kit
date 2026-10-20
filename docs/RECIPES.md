@@ -27,8 +27,8 @@ in `.agents/tests/recipes-awaiting-run/parts/` until their runs are recorded.
    server it chooses. Its checks need the person or a companion to read the
    server and paste the result back.
 
-Vercel Pro and Supabase Pro are the work-team default. Free plans remain for
-private exploration. Their terms are recorded on each recipe. Supabase Free
+Vercel Pro and Supabase Pro are the work-team default. Free plans remain
+available. Their terms are recorded on each recipe. Supabase Free
 pauses after low activity and has no backups; Vercel Hobby is for personal,
 non-commercial use and permits one outside person through its preview gate.
 
@@ -71,8 +71,8 @@ database draft targets both recipes. Neither is offered until proven.
 Recipes live in `.agents/skills/setup-hosting/recipes/`, one folder each, named
 for the pair in lower case with hyphens. The folder holds three things:
 
-- `recipe.md`, which the kit reads at run time. It stays short, around 700
-  words, because every word competes for the agent's attention.
+- `recipe.md`, which the kit reads at run time. Keep it concise because every
+  word competes for the agent's attention.
 - `scripts/`, one script for each check the kit can run on this computer,
   each action a section names, and `live-check.sh`.
 - `PROVEN.md`, the record of the real run. The kit never loads it.
@@ -86,6 +86,7 @@ blank `recipe.md` to copy.
 It opens with fixed fields. Each names a tool only, so checks can read it.
 
 - `Fits:` the shape of tool the recipe suits, in words the person would use.
+- `Work-team default:` whether this is the default for a team.
 - `Recommended when:` one plain sentence saying when founding should recommend
   this recipe over another that fits the same shape.
 - `Language:`, `Framework:` (including the pinned major), `Typing:`,
@@ -111,8 +112,8 @@ It opens with fixed fields. Each names a tool only, so checks can read it.
   project's settings files, or `none`. `/maintain` offers to move a project
   that still records one of these names.
 
-A seventh line may follow. `Plan terms:` says, in one plain sentence, who a
-free or entry plan the recipe relies on is not for, and which plan such a
+One or more `Plan terms:` lines may follow. Each says, in one plain sentence,
+who a free or entry plan the recipe relies on is not for, and which plan such a
 person needs instead. It ends with when and where the terms were read, as
 `(read YYYY-MM-DD at <source page>)`, from the service's own page. Terms change
 without notice, and a restriction with no date cannot be told from a current
@@ -223,9 +224,12 @@ A recipe joins the menu only when two things are true. A rehearsal named
 `.agents/tests/recipe-<name>.sh` runs every script it names against stand-ins
 for its tools, to a pass and to something else, and then runs the whole recipe
 through the runner. And one real deploy has been run from an empty project to
-a live address and through all nine sections, with the maintainer's approval
-and accounts, and written down. A shared part proven once, in another recipe's
-real run, counts for every recipe that links it, and its outcome line says so.
+a live address, with the maintainer's approval and accounts, and written down.
+The goal is a real run through all nine sections. That goal is not yet met.
+The `PROVEN.md` of each current recipe lists which sections a real run covered
+and which are still untried, and it is the only record of what is proven. A
+shared part proven once, in another recipe's real run, counts for every recipe
+that links it, and its outcome line says so.
 
 A section added after the real run is marked unproven: its outcome line says
 `No real run yet` after the section's name, and gives the date it was added.

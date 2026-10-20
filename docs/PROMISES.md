@@ -34,7 +34,7 @@
 | Claude Code reads its project settings and session hook. | `.agents/tests/session-start.sh`; `.agents/skills/setup-ai-build-kit/templates/foundation/claude-settings.json` | Claude Code only |
 | The kit names risks before work in a risk area and records the person's choice. | `.agents/tests/scenarios.md`, replay scenarios 3, 4, 5 and 6 | Every agent |
 | The agent asks only for answers that change the result. | `.agents/tests/scenarios.md`, replay scenarios 9 and 10 | Every agent |
-| The agent does not claim a review or result that did not happen. | `.agents/tests/scenarios.md`, replay scenarios 2 and 46 | Every agent |
+| The agent checks a decision against the test it rests on before relying on it. | `.agents/tests/scenarios.md`, replay scenario 46 checks that a removed supporting test is noticed before the decision is reused | Every agent |
 | The agent asks before changing a live service or online access. | `.agents/tests/approval-gate.sh`, `.agents/tests/merge-gate.sh` and `.agents/tests/recipe-nextjs-supabase-on-vercel.sh` prove the kit's scripts refuse without the person's recorded yes; `.agents/tests/push-to-main-rules.sh` checks Claude Code settings | Every agent for the kit's scripts; Claude Code for other commands |
 | The agent makes the work understandable without asking the person to read code. | Words only; needs judgement | Every agent |
 | The agent says when a command runs and does not start one the person did not ask for. | `.agents/tests/scenarios.md`, replay scenario 44 | Every agent |

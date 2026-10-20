@@ -1,0 +1,281 @@
+[
+  {
+    "id": "found",
+    "title": "Set up a project",
+    "checks_anchor": "set-up-a-project",
+    "summary": "Setup checks the tools and access needed to prepare the project.",
+    "command": "/setup-ai-build-kit",
+    "skills": [
+      "clarify",
+      "fit-check",
+      "second-opinion",
+      "records",
+      "merge"
+    ],
+    "checks": [
+      {
+        "script": "check-tooling.sh",
+        "path": ".agents/skills/setup-ai-build-kit/scripts/check-tooling.sh",
+        "description": "The tooling check reports whether required tools and GitHub access are available before building begins."
+      },
+      {
+        "script": "use-push-guard.sh",
+        "path": ".agents/skills/setup-ai-build-kit/scripts/use-push-guard.sh",
+        "description": "The agent enables Git’s pre-push hook, which blocks direct pushes to the main branch."
+      },
+      {
+        "script": "protect-branch.py",
+        "path": ".agents/skills/merge/scripts/protect-branch.py",
+        "description": "Branch protection requires the project check to pass on GitHub where your plan supports it."
+      },
+      {
+        "script": "first-upload.py",
+        "path": ".agents/skills/merge/scripts/first-upload.py",
+        "description": "The first upload requires your approval."
+      },
+      {
+        "script": "checks.yml",
+        "path": ".agents/skills/setup-ai-build-kit/templates/foundation/checks.yml",
+        "description": "The initial project check deliberately fails until the placeholder is replaced with real project tests."
+      }
+    ],
+    "person_decides": "You answer the interview questions and decide whether to use existing work.",
+    "source": ".agents/skills/setup-ai-build-kit/SKILL.md"
+  },
+  {
+    "id": "shape",
+    "title": "Shape a piece",
+    "checks_anchor": "shape-a-piece",
+    "summary": "The agent defines one piece of work and records the decisions it needs.",
+    "command": "/shape",
+    "skills": [
+      "triage",
+      "records",
+      "clarify",
+      "research",
+      "fit-check"
+    ],
+    "checks": [
+      {
+        "script": "mark-ready.sh",
+        "path": ".agents/skills/records/scripts/mark-ready.sh",
+        "description": "The readiness script adds the ready label only when the piece has acceptance criteria under “Done when”, records its risk areas and records decisions for any open-question labels. Projects with code also require a Reaches line describing the proposed scope."
+      },
+      {
+        "script": "quality.py",
+        "path": ".agents/skills/quality-checks/scripts/quality.py",
+        "description": "The reach check identifies the files the piece may affect."
+      },
+      {
+        "script": "SKILL.md",
+        "path": ".agents/skills/fit-check/SKILL.md",
+        "description": "The agent gives a risk notice for work touching a risk area whose precaution has not been completed and whose risk has not been accepted, and records your decision and the date."
+      }
+    ],
+    "person_decides": "You resolve questions that need your judgement, then decide whether to ask /implement to build the ready piece.",
+    "source": ".agents/skills/shape/SKILL.md"
+  },
+  {
+    "id": "implement",
+    "title": "Implement a piece",
+    "checks_anchor": "implement-a-piece",
+    "summary": "The agent builds one ready piece, then scripts and a reviewer agent assess the change.",
+    "command": "/implement",
+    "skills": [
+      "build-piece",
+      "records",
+      "quality-checks",
+      "repair",
+      "live-copy",
+      "evidence-run",
+      "screen-check"
+    ],
+    "checks": [
+      {
+        "script": "check-tests.sh",
+        "path": ".agents/skills/setup-ai-build-kit/templates/foundation/check-tests.sh",
+        "description": "The test protection check rejects unexplained edits to tests frozen by a Test: commit."
+      },
+      {
+        "script": "quality.py",
+        "path": ".agents/skills/quality-checks/scripts/quality.py",
+        "description": "The test evidence check reports tests for the change that already passed beforehand and acceptance criteria without matching tests. Criteria marked for you to try are excluded from the automated test mapping."
+      },
+      {
+        "script": "quality.py",
+        "path": ".agents/skills/quality-checks/scripts/quality.py",
+        "description": "The structure script reports new circular dependencies, where parts of the code depend on each other in a loop. Boundary crossings are checked separately, using the project’s tools or an examination of the changed dependencies."
+      },
+      {
+        "script": "trim-commit.sh",
+        "path": ".agents/skills/quality-checks/scripts/trim-commit.sh",
+        "description": "The clean-up script refuses to save a clean-up that changes tests or their supporting files."
+      },
+      {
+        "script": "guard-secrets.sh",
+        "path": ".agents/skills/setup-ai-build-kit/templates/foundation/guard-secrets.sh",
+        "description": "In Claude Code, secret protection hooks block commands that match their secret-detection rules."
+      },
+      {
+        "script": "reset-attempt.sh",
+        "path": ".agents/skills/repair/scripts/reset-attempt.sh",
+        "description": "The repair reset script removes a failed repair before the next attempt, so failed fixes do not accumulate."
+      }
+    ],
+    "person_decides": "By default, you try the result and decide whether to merge the named pull request. Automatic merging requires your explicit decision and recorded limits.",
+    "source": ".agents/skills/implement/SKILL.md"
+  },
+  {
+    "id": "review",
+    "title": "Review the change",
+    "checks_anchor": "review-the-change",
+    "summary": "A reviewer agent assesses the change and its evidence in a separate session.",
+    "command": null,
+    "skills": [
+      "second-opinion",
+      "quality-checks"
+    ],
+    "checks": [
+      {
+        "script": "gate.py",
+        "path": ".agents/skills/quality-checks/scripts/gate.py",
+        "description": "The review packet contains the change and supporting evidence. The review record identifies the version reviewed."
+      },
+      {
+        "script": "review-guard.sh",
+        "path": ".agents/skills/second-opinion/scripts/review-guard.sh",
+        "description": "The review protection script restores changed or deleted files that it copied before the review; it reports other changes without restoring them."
+      },
+      {
+        "script": "check-review.sh",
+        "path": ".agents/skills/setup-ai-build-kit/templates/foundation/check-review.sh",
+        "description": "The review check fails the project check while a blocking finding remains unresolved or the review record identifies a different version."
+      }
+    ],
+    "person_decides": "You can ask the agent to explain a finding. The reviewer agent classifies findings as blocking or non-blocking.",
+    "source": ".agents/skills/second-opinion/SKILL.md"
+  },
+  {
+    "id": "merge",
+    "title": "Merge the change",
+    "checks_anchor": "merge-the-change",
+    "summary": "Before merging, the merge script verifies your approval for the named change and the project check results.",
+    "command": null,
+    "skills": [
+      "merge",
+      "records",
+      "evidence-run",
+      "live-copy",
+      "fit-check"
+    ],
+    "checks": [
+      {
+        "script": "merge.py",
+        "path": ".agents/skills/merge/scripts/merge.py",
+        "description": "The merge script requires your recorded approval unless you have enabled automatic merging. It merges only the version that was checked."
+      },
+      {
+        "script": "check-sensitive-areas.sh",
+        "path": ".agents/skills/setup-ai-build-kit/templates/foundation/check-sensitive-areas.sh",
+        "description": "The risk-area check reports the areas affected by the change and blocks merging while a risk decision remains unresolved."
+      },
+      {
+        "script": "env-names-added.sh",
+        "path": ".agents/skills/merge/scripts/env-names-added.sh",
+        "description": "For a live project, the settings script identifies new settings in .env.example. The agent waits for hosting setup to confirm them before requesting a merge."
+      }
+    ],
+    "person_decides": "By default, you approve the named pull request. Automatic merging requires your explicit decision and recorded limits.",
+    "source": ".agents/skills/merge/SKILL.md"
+  },
+  {
+    "id": "live",
+    "title": "Set up or check the live tool",
+    "checks_anchor": "set-up-or-check-the-live-tool",
+    "summary": "On a supported recipe, a launch script checks the backup and rollback steps.",
+    "command": "/setup-hosting",
+    "skills": [
+      "fit-check",
+      "evidence-run",
+      "live-copy",
+      "merge"
+    ],
+    "checks": [
+      {
+        "script": "run-recipe.sh",
+        "path": ".agents/skills/setup-hosting/scripts/run-recipe.sh",
+        "description": "On a supported recipe, the launch script requires a confirmed backup. Later launches also require a confirmed earlier build for rollback; a first launch requires a defined rollback step. With no recipe, the script gives a one-time notice that it cannot run the recipe checks."
+      },
+      {
+        "script": "approval.py",
+        "path": ".agents/skills/records/scripts/approval.py",
+        "description": "Before a live change, the approval script verifies that an unused approval names that exact change."
+      },
+      {
+        "script": "live-check.sh",
+        "path": ".agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/live-check.sh",
+        "description": "The live check compares the live version with the main branch on Vercel or Coolify without changing the live tool."
+      },
+      {
+        "script": "check-recipes.sh",
+        "path": ".agents/tools/check-recipes.sh",
+        "description": "The recipe validator rejects recipes missing a rollback, backup or restore section."
+      },
+      {
+        "script": "live-check.sh",
+        "path": ".agents/skills/setup-hosting/recipes/nextjs-supabase-on-coolify/scripts/live-check.sh",
+        "description": "The live check compares the live version with the main branch without changing the live tool."
+      }
+    ],
+    "person_decides": "You decide whether to launch after the agent explains the proposed live change.",
+    "source": ".agents/skills/setup-hosting/SKILL.md"
+  },
+  {
+    "id": "maintain",
+    "title": "Maintain the project",
+    "checks_anchor": "maintain-the-project",
+    "summary": "The agent checks project records and the live tool, then handles upkeep that is due.",
+    "command": "/maintain",
+    "skills": [
+      "live-copy",
+      "quality-checks",
+      "records",
+      "merge",
+      "what-now"
+    ],
+    "checks": [
+      {
+        "script": "live-check.sh",
+        "path": ".agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/live-check.sh",
+        "description": "The live check runs at every maintenance visit."
+      },
+      {
+        "script": "upgrade-check.py",
+        "path": ".agents/skills/maintain/scripts/upgrade-check.py",
+        "description": "The update check lists the follow-up work that maintenance needs to complete after a kit update."
+      },
+      {
+        "script": "recipe-freshness.py",
+        "path": ".agents/skills/maintain/scripts/recipe-freshness.py",
+        "description": "The recipe freshness check reports recipes missing from the current menu, recipes last checked more than 90 days ago, and superseded settings still used by the project."
+      },
+      {
+        "script": "stale-branches.py",
+        "path": ".agents/skills/quality-checks/scripts/stale-branches.py",
+        "description": "The branch report lists branches whose work has already been merged into the main branch. It deletes nothing."
+      },
+      {
+        "script": "standing-lines.sh",
+        "path": ".agents/skills/maintain/scripts/standing-lines.sh",
+        "description": "The instruction length check reports when the standing instructions reach 200 lines."
+      },
+      {
+        "script": "settings-rules.py",
+        "path": ".agents/skills/maintain/scripts/settings-rules.py",
+        "description": "The Claude Code settings script offers updated safety rules and applies them only with your approval."
+      }
+    ],
+    "person_decides": "You decide whether to apply changes beyond routine updates.",
+    "source": ".agents/skills/maintain/SKILL.md"
+  }
+]

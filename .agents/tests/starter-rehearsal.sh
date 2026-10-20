@@ -81,7 +81,7 @@ skill_count=$(find "$PROJECT/.agents/skills" -mindepth 2 -maxdepth 2 \
 kit_skill_count=$(awk '$1 == "command" || $1 == "background"' "$ROOT/.agents/tools/kit-inventory.txt" | wc -l | tr -d ' ')
 [ "$skill_count" -eq "$kit_skill_count" ] || fail "installed project does not contain the kit's $kit_skill_count skills"
 
-grep -qF '(Project name, written by start)' "$PROJECT/README.md" || \
+grep -qF '(Project name, written by setup-ai-build-kit)' "$PROJECT/README.md" || \
   fail "project foundation README is not ready for start"
 grep -qF '(One line, written by the setup-ai-build-kit skill.)' "$PROJECT/AGENTS.md" || \
   fail "starter instructions are not ready for the founding workflow"

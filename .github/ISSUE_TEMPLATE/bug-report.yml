@@ -11,8 +11,8 @@ body:
     id: version
     attributes:
       label: AI Build Kit version
-      description: See maintain/VERSION.
-      placeholder: v0.2.0
+      description: See the VERSION file in the installed maintain skill folder.
+      placeholder: v1.0.0
     validations:
       required: true
   - type: dropdown

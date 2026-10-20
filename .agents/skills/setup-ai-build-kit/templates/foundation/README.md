@@ -1,6 +1,6 @@
-# (Project name, written by start)
+# (Project name, written by setup-ai-build-kit)
 
-(One-sentence purpose, written by start.)
+(One-sentence purpose, written by setup-ai-build-kit.)
 
 ## Working with this project
 

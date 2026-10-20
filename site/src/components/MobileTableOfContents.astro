@@ -1,0 +1,60 @@
+---
+import InlineTocList from './InlineTocList.astro';
+const { toc } = Astro.locals.starlightRoute;
+---
+
+{toc && (
+	<mobile-starlight-toc data-min-h={toc.minHeadingLevel} data-max-h={toc.maxHeadingLevel}>
+		<nav aria-labelledby="starlight__on-this-page--inline">
+			<details>
+				<summary id="starlight__on-this-page--inline">
+					<span>On this page <i aria-hidden="true" /></span>
+				</summary>
+				<div class="dropdown"><InlineTocList toc={toc.items} /></div>
+			</details>
+		</nav>
+	</mobile-starlight-toc>
+)}
+
+<style>
+	@layer starlight.core {
+		mobile-starlight-toc {
+			display: block;
+			margin-block: 1rem 1.5rem;
+			font-size: var(--sl-text-sm);
+		}
+		summary {
+			width: fit-content;
+			max-width: 100%;
+			padding: 0.5rem 0.75rem;
+			border: 1px solid var(--sl-color-gray-5);
+			border-radius: 0.5rem;
+			color: var(--sl-color-white);
+			cursor: pointer;
+			list-style: none;
+		}
+		summary::-webkit-details-marker { display: none; }
+		summary span { display: flex; align-items: center; gap: 0.75rem; }
+		summary i { width: 0.5rem; height: 0.5rem; border-right: 1px solid currentColor; border-bottom: 1px solid currentColor; transform: rotate(45deg) translateY(-0.15rem); }
+		details[open] summary { border-color: var(--sl-color-accent); }
+		details[open] summary i { transform: rotate(225deg) translateY(-0.15rem); }
+		.dropdown {
+			max-height: 60vh;
+			margin-top: 0.5rem;
+			padding: 0.75rem 1rem;
+			overflow-y: auto;
+			border: 1px solid var(--sl-color-gray-5);
+			border-radius: 0.5rem;
+			background: var(--sl-color-bg-sidebar);
+		}
+	}
+</style>
+
+<script>
+	document.querySelectorAll('mobile-starlight-toc details a').forEach((link) => {
+		link.addEventListener('click', () => {
+			const details = link.closest('details');
+			if (details) details.open = false;
+		});
+	});
+</script>

@@ -25,8 +25,8 @@ Rules:
 2. A background skill is called by at least two other skills, or an agent's
    `skills:` line names it. A call is written as the skill's name in backticks
    followed by "skill", as in "the `records` skill".
-3. A command's SKILL.md holds at most 1,200 words, a background skill's at most
-   1,500, and any file under a `references/` folder at most 2,000. Frontmatter
+3. A command's SKILL.md holds at most 400 words, a background skill's at most
+   800, and any file under a `references/` folder at most 600. Frontmatter
    is not counted.
 
 Without --strict it prints what it finds and exits 0, so a slice can land the

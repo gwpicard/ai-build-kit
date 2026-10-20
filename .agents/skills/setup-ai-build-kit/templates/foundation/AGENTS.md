@@ -70,7 +70,8 @@ pages, and its risk record changes only by rerunning the fit check.
 ## How work is saved
 
 After founding, every change uses a short-lived branch, a pull request, and
-the project check. A human decides whether to merge. Present what changed,
+the project check. A human decides whether to merge by default. Automatic
+merging is an opt-in recorded in `Runs on its own:`. Present what changed,
 what was checked, and what remains uncertain.
 
 ## Risk areas
@@ -79,7 +80,7 @@ The risk record may name risk areas, each with a caution: a backup restored
 once, a managed service, or a person who looks before the work goes live. Each
 area also lists where it lives and may name one boundary. Each piece names the
 areas it touches on its `Risk areas:` line. Update the map in the same save as a
-code move; the sensitive-area step in the project check says whether it still
+code move; the risk-area check says whether it still
 matches. At the named boundary, do the caution where it is the kit's to do. Where it is a person's
 and they have not looked, give the risk notice once, in full: who is exposed,
 what happens to them, what would normally prevent it, what the person can do,

@@ -1,0 +1,49 @@
+---
+title: Design
+description: Why the kit builds and checks one agreed change at a time.
+draft: false
+---
+
+## Why the kit exists
+
+A coding agent can produce a working tool quickly, but a prototype becomes hard to maintain when nobody knows where its data lives or how to recover from a failure. AI Build Kit gives the owner a process for building and maintaining the tool without reading code.
+
+The kit suits internal tools for a team, club, family or invited clients. If you want an app in minutes and do not want to use GitHub, a hosted builder may be a better choice. The kit does not teach programming or replace a developer where one is needed.
+
+## Design choices
+
+### Agree on one piece at a time
+
+Before building, you and the agent agree on a piece’s acceptance criteria under “Done when”. Keeping each piece small gives you a defined change to try. See the [shape step](/ai-build-kit/how-it-works/#shape-a-piece). Each capability must explain what you will see, when you will see it and what to do if it goes wrong ([philosophy](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/PHILOSOPHY.md#what-earns-a-place)).
+
+### Use machine checks where the rules can be tested
+
+Scripts and hooks, which run automatically at particular events, check rules with testable conditions. Written instructions guide decisions that require a person’s or an agent’s judgement ([philosophy](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/PHILOSOPHY.md#what-earns-a-place)).
+
+### Keep instructions short
+
+Every instruction competes for the agent’s attention, so adding rules can make important ones less likely to be followed. The kit retains rules only when a machine enforces them, measurements support them or they require judgement ([philosophy](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/PHILOSOPHY.md#small-is-a-reliability-feature)).
+
+### Warn once when you can judge the risk
+
+For risks you can judge, the agent explains who could be affected and what would normally prevent harm. You decide whether to take that precaution or accept the risk, and the agent records your words and the date. These risk decisions belong to the piece that creates the exposure ([risk design](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/PHILOSOPHY.md#the-risk-concept)).
+
+### Keep the tool in your accounts
+
+Your code repository, hosting and database are in accounts you control, so you can change coding agent, host or developer without losing ownership of the tool ([philosophy](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/PHILOSOPHY.md#what-the-kit-is)).
+
+### Host only on recipes that have been tried
+
+The kit offers hosting only on a [recipe](/ai-build-kit/recipes/): a fixed stack and host that has been run on real accounts, with a backup and a way back defined for every launch. The recipes use well-known, well-supported stacks, so that each guarantee can be checked and tried rather than assumed. Outside a recipe the kit still helps, but states that it guarantees nothing ([philosophy](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/PHILOSOPHY.md#what-the-kit-is)).
+
+### Test outcomes
+
+Tests assess behaviour rather than the presence of a particular sentence. Shell checks, run as command-line scripts, test the kit’s boundaries and scripts. Replays run scripted conversations and grade what the agent did and saved in the project ([testing](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/PHILOSOPHY.md#testing-the-kit)). The results provide evidence about the kit without proving that every tool built with it is safe for every purpose.
+
+## Further reading
+
+Read [the workflow](/ai-build-kit/how-it-works/), [project records, risk and hosting](/ai-build-kit/records/), [hosting recipes](/ai-build-kit/recipes/), [rules and checks](/ai-build-kit/what-it-checks/), then [how the kit compares](/ai-build-kit/how-it-differs/).
+
+## For maintainers
+
+[Read the full philosophy](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/PHILOSOPHY.md).
