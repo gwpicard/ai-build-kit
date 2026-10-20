@@ -3,7 +3,7 @@
 [![Licence: MIT](https://img.shields.io/github/license/gwpicard/ai-build-kit)](LICENSE)
 [![Latest release](https://img.shields.io/github/v/release/gwpicard/ai-build-kit)](https://github.com/gwpicard/ai-build-kit/releases/latest)
 
-**[Site](https://gwpicard.github.io/ai-build-kit/)** · [Worked example](https://gwpicard.github.io/ai-build-kit/worked-example/) · [Releases](https://github.com/gwpicard/ai-build-kit/releases)
+**[Site](https://gwpicard.github.io/ai-build-kit/)** · [Releases](https://github.com/gwpicard/ai-build-kit/releases)
 
 AI Build Kit helps people who do not write code build and run tools with a
 coding agent. It suits team leads, operations staff, analysts, product
@@ -55,12 +55,30 @@ Agent Plugins](docs/COMPATIBILITY.md#choose-one-installation-route) are also
 available.
 
 [Read the AI Build Kit site](https://gwpicard.github.io/ai-build-kit/) for the
-workflow, worked example, concepts, supported agents, principles and design,
-releases and sources.
+workflow, the rules and checks, supported agents, design, releases and sources.
 
 ## A sample session
 
-[Read the worked example on the site](https://gwpicard.github.io/ai-build-kit/worked-example/).
+This shortened example comes from a replayed session on an office noticeboard
+app, using Claude Code. The tool is already live and a change is ready to merge.
+
+> **Person:** `/implement` I opened the preview and the sign-in button says
+> "Email me a sign-in link", which is right. Merge it and put it live.
+>
+> **Agent:** All four tests and the project check pass. I've added a dated
+> changelog line. The review has no unresolved concern, so I'm asking Claude
+> Code to merge it. Claude Code will show you a confirmation box before the
+> merge runs.
+
+After the merge, the agent reads the live page:
+
+> **Agent:** The sign-in button at the live address now says "Email me a
+> sign-in link". The live copy runs this change. This read only checks the button text.
+>
+> **Person:** Priya still sees the old "Continue" button. Can you put it out again?
+>
+> **Agent:** The live page already shows the new button. Try a full refresh
+> in Priya's browser. I have not deployed it again.
 
 ## Contributing and licence
 
