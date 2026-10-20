@@ -7,6 +7,11 @@ export default defineConfig({
   integrations: [starlight({
     title: 'AI Build Kit',
     description: 'A guide to building and running tools with AI Build Kit.',
+    sidebar: [
+      { label: 'Start here', items: ['index', 'how-it-works', 'worked-example', 'install'] },
+      { label: 'Understand', items: ['concepts', 'agents'] },
+      { label: 'Behind the kit', items: ['design', 'sources', 'releases'] },
+    ],
     social: [{
       icon: 'github',
       label: 'GitHub',

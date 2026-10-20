@@ -2,46 +2,55 @@
   {
     "file": "founding",
     "title": "Start the kit log",
-    "decision": "The person chooses a private sign-out log for the team and asks the kit to begin setup."
+    "happened": "The team chose a private sign-out log for its shared camera and sound kit. Setup prepared the project and recorded how the team would use it.",
+    "decision": "You chose to start setup for a private team log."
   },
   {
     "file": "shape",
     "title": "Name the people in a loan",
-    "decision": "The person settles the names borrower and booking steward, then parks the piece."
+    "happened": "The team settled two names: the borrower uses an item, and the booking steward enters the loan. The piece was parked without changing the tool.",
+    "decision": "You chose those names and parked the piece."
   },
   {
     "file": "unproven-fact",
     "title": "Carry on with an unchecked fact",
-    "decision": "The person declines the outside check, accepts that the fact is unchecked and asks the kit to record that choice."
+    "happened": "The person asked to send overdue lists by text. The kit recorded that the service had not been checked and described the risks before the person accepted them.",
+    "decision": "You chose to continue with the unchecked fact and record your acceptance of the risks."
   },
   {
     "file": "ready-piece",
     "title": "Build one ready piece",
-    "decision": "The person asks the kit to build the overdue-days change, run checks and save it. They say not to merge it."
+    "happened": "The agent added the number of overdue days, ran the available checks and saved the change for review.",
+    "decision": "You asked for the change and its checks, then chose to leave it unmerged."
   },
   {
     "file": "more-mid-build",
     "title": "Keep extra requests out of the build",
-    "decision": "The person asks what will happen to the payroll and download requests while keeping this build within the agreed piece."
+    "happened": "The request did not match a ready piece, so the agent stopped before editing and sent it to shaping.",
+    "decision": "You asked about extra requests while keeping the build within the agreed piece."
   },
   {
     "file": "merge-live",
     "title": "Merge after trying the preview",
-    "decision": "The person confirms the preview looks right, then asks the kit to merge and put the change live."
+    "happened": "After the person tried the preview, the kit checked the change, reviewed it, merged it and put the new sign-in wording live.",
+    "decision": "You confirmed the preview looked right and asked to merge the change."
   },
   {
     "file": "live-copy",
     "title": "Compare the live copy with main",
-    "decision": "The person asks for a live check and asks whether the old version can be restored if the wording causes trouble."
+    "happened": "The kit found that the live tool matched the project and explained that an earlier version could be restored. It changed nothing live.",
+    "decision": "You asked for a live check and whether the old version could be restored."
   },
   {
     "file": "maintain",
     "title": "Check the project records",
-    "decision": "The person asks whether the records have drifted."
+    "happened": "The record check found that most records matched. It named two records that had drifted and made no changes.",
+    "decision": "You asked the kit to check the records without making changes."
   },
   {
     "file": "return-after-stop",
     "title": "Return after a stopped session",
-    "decision": "The person asks what needs attention before anything changes."
+    "happened": "The session had stopped during a repair. The kit reported what needed attention and changed nothing.",
+    "decision": "You asked what needed attention before anything changed."
   }
 ]

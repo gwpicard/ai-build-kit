@@ -61,41 +61,45 @@ const sourceUrl = (path: string) => `https://github.com/gwpicard/ai-build-kit/bl
           data-stage-panel
         >
           <h2 id={`workflow-heading-${stage.id}`}>{stage.title}</h2>
-          {stage.command && (
-            <div class="detail">
-              <h3>Command</h3>
-              <code>{stage.command}</code>
-            </div>
-          )}
-          <div class="detail">
-            <h3>Background skills</h3>
-            <ul class="skill-list">
-              {stage.skills.map((skill) => <li><code>{skill}</code></li>)}
-            </ul>
-          </div>
-          {stage.checks.length > 0 && (
-            <div class="detail">
-              <h3>Checks</h3>
-              {stage.checks.map((check) => (
-                <div class="check">
-                  <p><code>{check.script}</code></p>
-                  <dl>
-                    {Object.entries(check.exits).map(([code, meaning]) => (
-                      <div class="exit-meaning">
-                        <dt>Exit {code}</dt>
-                        <dd>{meaning}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                </div>
-              ))}
-            </div>
-          )}
+          <p class="stage-summary">{stage.summary}</p>
           <div class="detail decision">
-            <h3>What the person decides</h3>
+            <h3>What you decide</h3>
             <p>{stage.person_decides}</p>
           </div>
-          <a class="source-link" href={sourceUrl(stage.source)}>Read the source skill</a>
+          <details class="technical-details">
+            <summary>How the kit checks this step</summary>
+            {stage.command && (
+              <div class="detail">
+                <h3>Command</h3>
+                <code>{stage.command}</code>
+              </div>
+            )}
+            <div class="detail">
+              <h3>Background skills</h3>
+              <ul class="skill-list">
+                {stage.skills.map((skill) => <li><code>{skill}</code></li>)}
+              </ul>
+            </div>
+            {stage.checks.length > 0 && (
+              <div class="detail">
+                <h3>Checks</h3>
+                {stage.checks.map((check) => (
+                  <div class="check">
+                    <p><code>{check.script}</code></p>
+                    <dl>
+                      {Object.entries(check.exits).map(([code, meaning]) => (
+                        <div class="exit-meaning">
+                          <dt>Exit {code}</dt>
+                          <dd>{meaning}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </div>
+                ))}
+              </div>
+            )}
+            <a class="source-link" href={sourceUrl(stage.source)}>Source skill (for maintainers)</a>
+          </details>
         </section>
       );
     })}
@@ -232,6 +236,9 @@ const sourceUrl = (path: string) => `https://github.com/gwpicard/ai-build-kit/bl
   }
 
   .stage-panel h2 { margin-top: 0; }
+  .stage-summary { margin: 0.75rem 0 0; }
+  .technical-details { margin-top: 1.25rem; }
+  .technical-details > summary { cursor: pointer; font-weight: 650; }
   .detail { margin-top: 1.25rem; }
   .detail h3 { margin-bottom: 0.4rem; font-size: 1rem; }
   .detail p { margin: 0; }

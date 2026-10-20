@@ -38,31 +38,34 @@ const gradeLabel = (grade: { hit: number; drift: number; miss: number; unobserva
         <div class="step-copy">
           <p class="step-number">Step {String(index + 1).padStart(2, '0')}</p>
           <h2 id={`step-${index}`}>{step.title}</h2>
-          <p class="replay-note">Replay case {run.replayCase}, run {run.replayRun}. Recorded run of the 1.0 candidate.</p>
-          <p class="grade-note">Held: {gradeLabel(run.grade)}{run.grade.unobservable ? `, ${run.grade.unobservable} not observable` : ''}.</p>
-          <p>{step.decision}</p>
+          <p>{step.happened}</p>
+          <p class="person-choice"><strong>Your decision:</strong> {step.decision}</p>
 
-          {stage && <div class="workflow-facts">
-            <h3>Workflow stage: {stage.title}</h3>
-            <p class="fact-label">Skills in this stage</p>
-            <ul class="skill-list">
-              {run.skills.map((skill) => <li><a href={sourceUrl(`.agents/skills/${skill}/SKILL.md`)}>{skill}</a></li>)}
-            </ul>
-            <p class="fact-label">Checks in this stage</p>
-            {run.checks.length ? (
-              <ul class="check-list">
-                {run.checks.map((check) => (
-                  <li>
-                    <code>{check.script}</code>
-                    <ul>
-                      {Object.entries(check.exits).map(([code, meaning]) => <li><code>{code}</code>: {meaning}</li>)}
-                    </ul>
-                  </li>
-                ))}
+          <details class="workflow-facts">
+            <summary>Run details and checks</summary>
+            <p class="replay-note">Replay case {run.replayCase}, run {run.replayRun}. Recorded run of the 1.0 candidate.</p>
+            <p class="grade-note">Grade: {gradeLabel(run.grade)}{run.grade.unobservable ? `, ${run.grade.unobservable} not observable` : ''}.</p>
+            {stage && <>
+              <h3>Workflow stage: {stage.title}</h3>
+              <p class="fact-label">Skills in this stage</p>
+              <ul class="skill-list">
+                {run.skills.map((skill) => <li><a href={sourceUrl(`.agents/skills/${skill}/SKILL.md`)}>{skill}</a></li>)}
               </ul>
-            ) : <p>No check is listed for this stage in the workflow map.</p>}
-            <p class="person-choice"><strong>Person decides:</strong> {stage.person_decides}</p>
-          </div>}
+              <p class="fact-label">Checks in this stage</p>
+              {run.checks.length ? (
+                <ul class="check-list">
+                  {run.checks.map((check) => (
+                    <li>
+                      <code>{check.script}</code>
+                      <ul>
+                        {Object.entries(check.exits).map(([code, meaning]) => <li><code>{code}</code>: {meaning}</li>)}
+                      </ul>
+                    </li>
+                  ))}
+                </ul>
+              ) : <p>No check is listed for this stage in the workflow map.</p>}
+            </>}
+          </details>
         </div>
         <div class="step-terminal">
           <Terminal id={`terminal-${step.file}`} label={`${run.replayCase} recorded conversation`} turns={run.turns} />
@@ -79,7 +82,8 @@ const gradeLabel = (grade: { hit: number; drift: number; miss: number; unobserva
   .step-number { margin: 0; color: var(--sl-color-green-high); font: 700 0.75rem/1.2 var(--sl-font-system-mono); letter-spacing: 0.09em; }
   .replay-note, .grade-note { margin: 0.25rem 0; color: var(--sl-color-gray-2); font-size: 0.82rem; }
   .workflow-facts { margin-top: 1.25rem; padding: 1rem; border-left: 3px solid var(--sl-color-green); background: var(--sl-color-bg-nav); }
-  .workflow-facts h3 { margin: 0 0 0.75rem; font-size: 0.95rem; }
+  .workflow-facts > summary { cursor: pointer; font-weight: 650; }
+  .workflow-facts h3 { margin: 0.75rem 0; font-size: 0.95rem; }
   .fact-label { margin: 0.75rem 0 0.25rem; font-size: 0.77rem; font-weight: 700; }
   .skill-list { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0; margin: 0; list-style: none; }
   .skill-list li { padding: 0.25rem 0.5rem; border: 1px solid var(--sl-color-gray-5); border-radius: 0.2rem; font: 0.72rem/1.5 var(--sl-font-system-mono); }

@@ -22,7 +22,7 @@ The kit cannot replace a professional developer or provide legal, medical, finan
 
 ## Site
 
-- [AI Build Kit site](https://gwpicard.github.io/ai-build-kit/): workflow, worked example, concepts, installation, compatibility, design, releases and sources.
+- [AI Build Kit site](https://gwpicard.github.io/ai-build-kit/): workflow, worked example, concepts, installation, supported agents, design, releases and sources.
 
 ## Docs
 

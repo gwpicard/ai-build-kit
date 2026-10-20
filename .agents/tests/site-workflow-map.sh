@@ -27,6 +27,9 @@ except (OSError, json.JSONDecodeError) as error:
 
 placed = set()
 for stage in stages:
+    summary = stage.get("summary")
+    if not isinstance(summary, str) or not summary.strip():
+        fail(f"stage {stage.get('id', '(missing)')} has no plain summary")
     command = stage.get("command")
     if command and command.startswith("/"):
         placed.add(command[1:])

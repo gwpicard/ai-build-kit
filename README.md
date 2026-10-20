@@ -52,7 +52,7 @@ Agent Plugins](docs/COMPATIBILITY.md#choose-one-installation-route) are also
 available.
 
 [Read the AI Build Kit site](https://gwpicard.github.io/ai-build-kit/) for the
-workflow, worked example, concepts, compatibility, design and approach,
+workflow, worked example, concepts, supported agents, design and approach,
 releases and sources.
 
 ## A sample session
