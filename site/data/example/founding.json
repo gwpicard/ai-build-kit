@@ -1,0 +1,101 @@
+{
+  "replayCase": "s50",
+  "replayRun": "r2",
+  "candidate": "1.0",
+  "held": true,
+  "grade": {
+    "hit": 4,
+    "drift": 2,
+    "miss": 2,
+    "unobservable": 1
+  },
+  "workflowStage": "found",
+  "skills": [
+    "clarify",
+    "fit-check",
+    "second-opinion",
+    "records",
+    "merge"
+  ],
+  "checks": [
+    {
+      "script": "scripts/check-tooling.sh",
+      "path": ".agents/skills/setup-ai-build-kit/scripts/check-tooling.sh",
+      "exits": {
+        "0": "Every tool the kit needs to found your pieces is ready.",
+        "1": "Something founding needs is not ready.",
+        "2": "The command line options are not valid."
+      }
+    }
+  ],
+  "turns": [
+    {
+      "who": "person",
+      "text": "/setup-ai-build-kit"
+    },
+    {
+      "who": "kit",
+      "text": "Not the kit's own source, so this is an installation waiting for a project. I run the bootstrap step and the tooling check.\n\nI am starting the project setup. Here is how it works:\n\n- I work only on this computer. Each stage ends with a local save, so you can return to it.\n- I publish or upload nothing until you approve it.\n- I write no feature code now. First I learn what you need. Then I write a short plan and cut it into small pieces.\n\nI checked this folder. It holds only the kit files, not existing project work, so we start from new. The tools are ready: Git, Python, and the GitHub tool, which is signed in with issues and labels available. I also added seven missing standard files, for example `AGENTS.md`. I did not save them yet.\n\nNow I will ask you questions, one at a…"
+    },
+    {
+      "who": "person",
+      "text": "I want a simple sign-out log for the shared camera and sound kit in our video team. There are six of us. Someone takes a camera out for a shoot, and a week later nobody knows who has it. People should see what kit we have, sign an item out, sign it back in, and see who has what right now. Nothing exists yet, we would be starting fresh."
+    },
+    {
+      "who": "kit",
+      "text": "Thank you. That is clear. I recorded it.\n\nOne honest note first. For six people, a shared spreadsheet could do this job. It needs one row for each item, with a \"Who has it\" column and a \"Since\" date. A short form can add to the spreadsheet when someone signs an item out. It costs nothing and you can start it today. A custom tool helps more if you want a fixed rule, for example \"you cannot sign out an item that someone already has\", or a clean history that nobody can change by accident. If you want the custom tool, I continue with it. I wrote the spreadsheet option in the notes and will not ask about it again.\n\n**Question 2:** When someone signs an item out, how does the tool know who that person is?\n\nMy guess: there is no password. Each person picks their name from a list of the six team…"
+    },
+    {
+      "who": "person",
+      "text": "It is only for the six of us, nobody outside the team. Each person should sign in with their work email, so the log shows who took what. It keeps names, work emails and the list of kit, nothing else. There is no money, no customers, no health or personal data, and nothing happens automatically. If it is down for a day we go back to the whiteboard in the kit room."
+    },
+    {
+      "who": "kit",
+      "text": "Good. I recorded this: six people only, sign-in with work email, and the tool keeps only names, work emails and the kit list. There is no money, no customer data and no automatic action. If the tool stops for a day, the team uses the whiteboard. This tells me the risk is low.\n\n**Question 3:** Who may add new kit to the list, change an item, or remove an item, for example a camera that broke or was sold?\n\nMy guess: any of the six can add or change an item. You do not need one person in charge of the list. Is that right?"
+    },
+    {
+      "who": "person",
+      "text": "Anyone can sign any item out or back in, and anyone can add new kit to the list. We are one small team, so that is fine."
+    },
+    {
+      "who": "kit",
+      "text": "Recorded. Anyone of the six can sign any item out or back in, also an item that another person took out. Anyone can add new kit.\n\n**Question 4:** What happens when an item leaves the team for good, for example a microphone that broke or was sold?\n\nMy guess: anyone can mark the item as \"retired\". It then goes off the main list, but its past sign-outs stay in the history. This way the record of who had it does not go away. Is that right?"
+    },
+    {
+      "who": "person",
+      "text": "We would open it in a web browser, on laptops and on our phones, and it has to work when my laptop is off. We have no server of our own and nobody who looks after one. I am happy to own any accounts it needs."
+    },
+    {
+      "who": "kit",
+      "text": "Thank you. I recorded this: the team opens the tool in a web browser on laptops and phones. It must run on a hosted service, not on your laptop. You will own the accounts.\n\nYou did not answer Question 4 about retiring an item, so I use my guess for now: anyone can mark an item \"retired\", it goes off the main list, and its history stays. You can change this later.\n\n**Question 5:** Which service gives your team its work email? Sign-in with work email works through this service.\n\n- **Google Workspace** (Gmail with your company name) ← my guess\n- **Microsoft 365** (Outlook with your company name)\n- I do not know\n\n### user turn 6 (filler: turn 6 waits for the kit to say something matching /Coolify/)\nI am not sure about that one."
+    },
+    {
+      "who": "kit",
+      "text": "No problem. I parked it with my guess, Google Workspace. You can find the answer easily. Look at the page where you read your work email. If it says Gmail, it is Google. If it says Outlook, it is Microsoft. We must know before we build the sign-in, but not now.\n\n**Question 6:** What happens when someone tries to sign out a camera that another person already has?\n\nMy guess: the tool stops the sign-out and shows \"Sam has this since Tuesday\". If Sam gave the camera back but forgot to sign it in, the person can sign it in for Sam first, then sign it out. Is that right?\n\n### user turn 7 (filler: turn 6 waits for the kit to say something matching /Coolify/)\nI am not sure about that one."
+    },
+    {
+      "who": "kit",
+      "text": "That is fine. I parked it with my guess: the tool stops the second sign-out and shows who has the item. Anyone can sign it back in first. You can try it when the first version is ready and change it then.\n\n**Question 7:** When someone signs an item out, what must the log keep?\n\nMy guess: only who took it and when. A short note, for example \"Smith wedding shoot\", is optional. There is no \"expected return date\". Is that right?\n\n### user turn 8 (sent unheld: nothing the kit said matched /Coolify/ within 2 fillers)\nIt only needs to keep the kit list and let the six of us sign in, nothing else. The rest looks right to me."
+    },
+    {
+      "who": "kit",
+      "text": "Recorded. A sign-out keeps only who took the item and when. I have enough to stop the questions. Here is what we agreed. Please check it.\n\n**Summary**\n\n1. The tool is a sign-out log for the team's shared camera and sound kit.\n2. The users are the six people on the team, and nobody else. Each person signs in with their work email.\n3. Anyone can see the kit list, add new kit, sign any item out, and sign any item back in.\n4. A sign-out keeps only who took the item and when.\n5. The main page shows who has what now.\n6. The tool keeps only names, work emails and the kit list. It handles no money and no customer data, and it does no automatic actions.\n7. If the tool stops for a day, the team goes back to the whiteboard.\n8. People use it in a web browser on laptops and phones. It must run when…"
+    },
+    {
+      "who": "person",
+      "text": "Yes, that is fine. Go ahead with whatever setup still needs doing."
+    },
+    {
+      "who": "kit",
+      "text": "I am writing the plan now: the risk record, the masterplan, and the pieces of work. I will report back when I need you or when setup is saved.\n\nThe starter project is in place. Now I install its parts and write the masterplan.\n\nI wrote the masterplan. The parts installed. Now I check the risk map and fill in the project files.\n\nThe records are filled in. Now a fresh reviewer checks the plan, and I run the project check at the same time.\n\nI have opened the five pieces as issues. Now I link the order between them.\n\nEverything is written. I now save the local checkpoint. I upload nothing.\n\n# Your kit sign-out log is ready to build\n\nThe setup is finished. I wrote no feature code.\n\n## What is ready\n\n- **The plan:** `masterplan.md` records the purpose, the six users, who can do what, and the…"
+    },
+    {
+      "who": "person",
+      "text": "Thanks. Is there anything else you need from me before we start building?"
+    },
+    {
+      "who": "kit",
+      "text": "Yes. I need two answers before I can build step 1, the log-in step ([number]):\n\n1. **Who invites and removes people?** The account owner invites the other five people. When a person leaves the team, must the account owner remove them in the tool? My guess is yes.\n2. **Must the project check show a warning when someone changes the log-in and access rules?** These rules are in the database settings. With a warning, nobody can change who gets in without someone noticing. My guess is yes.\n\nYou can reply \"yes to both\", or tell me what is different.\n\nThere is also one small thing to decide. The starter added some lines to `.env.example`, and that change is not saved yet. This file holds only setting names, not secrets. Do you want me to save it? My guess is yes.\n\nYou do not need to do anything…"
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+[
+  {
+    "file": "founding",
+    "title": "Start the kit log",
+    "decision": "The person chooses a private sign-out log for the team and asks the kit to begin setup."
+  },
+  {
+    "file": "shape",
+    "title": "Name the people in a loan",
+    "decision": "The person settles the names borrower and booking steward, then parks the piece."
+  },
+  {
+    "file": "unproven-fact",
+    "title": "Carry on with an unchecked fact",
+    "decision": "The person declines the outside check, accepts that the fact is unchecked and asks the kit to record that choice."
+  },
+  {
+    "file": "ready-piece",
+    "title": "Build one ready piece",
+    "decision": "The person asks the kit to build the overdue-days change, run checks and save it. They say not to merge it."
+  },
+  {
+    "file": "more-mid-build",
+    "title": "Keep extra requests out of the build",
+    "decision": "The person asks what will happen to the payroll and download requests while keeping this build within the agreed piece."
+  },
+  {
+    "file": "merge-live",
+    "title": "Merge after trying the preview",
+    "decision": "The person confirms the preview looks right, then asks the kit to merge and put the change live."
+  },
+  {
+    "file": "live-copy",
+    "title": "Compare the live copy with main",
+    "decision": "The person asks for a live check and asks whether the old version can be restored if the wording causes trouble."
+  },
+  {
+    "file": "maintain",
+    "title": "Check the project records",
+    "decision": "The person asks whether the records have drifted."
+  },
+  {
+    "file": "return-after-stop",
+    "title": "Return after a stopped session",
+    "decision": "The person asks what needs attention before anything changes."
+  }
+]

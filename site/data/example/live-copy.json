@@ -1,0 +1,34 @@
+{
+  "replayCase": "s73",
+  "replayRun": "r1",
+  "candidate": "1.0",
+  "held": true,
+  "grade": {
+    "hit": 5,
+    "drift": 3,
+    "miss": 1,
+    "unobservable": 1
+  },
+  "workflowStage": "live",
+  "skills": [
+    "fit-check",
+    "evidence-run",
+    "live-copy",
+    "merge"
+  ],
+  "checks": [],
+  "turns": [
+    {
+      "who": "person",
+      "text": "/setup-hosting I merged the sign-in wording change on GitHub this morning and Priya says she sees the new button. Check the live copy against main. If the new wording causes trouble, can we go back to the old version?\n(before this turn the person merged: [number])"
+    },
+    {
+      "who": "kit",
+      "text": "I'm reading the project records and the hosting steps. Next I will compare the live copy with `main`.\n\nThe live copy matches `main`. Now I am writing the dated record of this check.\n\nI ran `/setup-hosting` and compared the live copy with `main`. The live noticeboard runs your merge from this morning, so Priya sees the correct new button: **\"Email me a sign-in link\"**.\n\n**What the comparison found:**\n- **Same as `main`:** yes. The live copy runs the newest merge.\n- **Health:** the live address answers, and it can reach its database.\n- **Settings on Vercel:** Vercel has every setting name that the tool needs.\n- **Logs:** no errors in the last hour.\n- **New merges go live by themselves:** yes. Nothing is held on an older version.\n\n**What I could not check.** These items are not new. Most…"
+    },
+    {
+      "who": "kit",
+      "text": "There is one thing to do, and some optional items.\n\n**To do**\n- **Decide about pull request [number].** It adds only today's check to the project history. Open https://github.com/office-tools/noticeboard/pull/2 and merge it if you agree. It changes no code and nothing live.\n\n**Nothing else is required for the button change.** The piece for this change, issue [number], is already closed.\n\n**Optional: the checks that are still open.** None of them stops the noticeboard from working. Each one needs Priya, because she holds the accounts:\n- **Backup and restore.** The database is on Supabase's Free plan. Supabase says the Free plan keeps no backups. It also pauses a project after 7 days of low activity. Your risk record says that nothing on the board is irreplaceable and that the cork board is…"
+    }
+  ]
+}

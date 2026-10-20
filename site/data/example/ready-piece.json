@@ -1,0 +1,51 @@
+{
+  "replayCase": "s70",
+  "replayRun": "r1",
+  "candidate": "1.0",
+  "held": true,
+  "grade": {
+    "hit": 6,
+    "drift": 4,
+    "miss": 0,
+    "unobservable": 0
+  },
+  "workflowStage": "implement",
+  "skills": [
+    "build-piece",
+    "records",
+    "quality-checks",
+    "repair",
+    "live-copy",
+    "evidence-run",
+    "screen-check"
+  ],
+  "checks": [
+    {
+      "script": "quality.py loops --base <start commit>",
+      "path": ".agents/skills/quality-checks/scripts/quality.py",
+      "exits": {
+        "0": "Nothing to say about the structure check.",
+        "1": "The change added a loop or crossed a boundary.",
+        "2": "The check could not run; note this internally."
+      }
+    }
+  ],
+  "turns": [
+    {
+      "who": "person",
+      "text": "/implement Build the ready piece that shows the days late beside each overdue loan. Run the checks and save it. Do not merge it."
+    },
+    {
+      "who": "kit",
+      "text": "I'm building piece [number] (\"Show how late each overdue loan is\"). It is the only ready piece. One side note: the kit's update check says `/maintain` must finish an update. I will carry on.\n\nNext, I add the check first and confirm that it fails on the old code.\n\nThe new check fails on the old code, as expected. Now the change:\n\nThe kit wants the new check named after its Done-when line (D1), and committed on its own, failing, before the code. I will redo the order properly.\n\nThe stand-in GitHub tool ignores the body filter. The quality script accepts a local copy of the piece in `.agents/tmp/pieces/`, so I will put the piece text there. Then I redo the red-first order.\n\nThat command was declined. I will do the same proof inside the project's own ignored scratch folder. I will not delete…"
+    },
+    {
+      "who": "kit",
+      "text": "Here is each check, with its result.\n\n**Checks that ran and passed**\n1. **The project's own checks** (`python3 app/test_bramble.py`). All 7 passed. Six of them were already there. The seventh is new: \"D1 each overdue loan shows how many days late it is\".\n2. **Before-and-after proof for the new check.** I ran it on the version that had the new check but not the new code. It failed, as it should, because the old code cannot calculate days late. On the finished version it passes. I did this by hand because the kit's own step for it could not run (see below).\n3. **A made-up example.** It gave 16 days late for an item due on 3 October and 1 day late for an item due on 18 October. A returned item did not appear. This is the result I expected.\n4. **The online project check** on pull request…"
+    },
+    {
+      "who": "kit",
+      "text": "Understood. I will not merge pull request [number]. It is ready for you on GitHub.\n\nWhen you merge it, `Closes [number]` closes the piece automatically. Piece [number] will still have its \"building\" label after that. The next `/maintain` or `/what-now` run will clear it, or you can remove it on GitHub."
+    }
+  ]
+}

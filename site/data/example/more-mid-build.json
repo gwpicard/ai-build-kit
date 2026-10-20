@@ -1,0 +1,43 @@
+{
+  "replayCase": "s63",
+  "replayRun": "r1",
+  "candidate": "1.0",
+  "held": true,
+  "grade": {
+    "hit": 4,
+    "drift": 3,
+    "miss": 2,
+    "unobservable": 0
+  },
+  "workflowStage": "implement",
+  "skills": [
+    "build-piece",
+    "records",
+    "quality-checks",
+    "repair",
+    "live-copy",
+    "evidence-run",
+    "screen-check"
+  ],
+  "checks": [
+    {
+      "script": "quality.py loops --base <start commit>",
+      "path": ".agents/skills/quality-checks/scripts/quality.py",
+      "exits": {
+        "0": "Nothing to say about the structure check.",
+        "1": "The change added a loop or crossed a boundary.",
+        "2": "The check could not run; note this internally."
+      }
+    }
+  ],
+  "turns": [
+    {
+      "who": "person",
+      "text": "/implement The agreed piece is to show the number of days late beside each item on the overdue list. While you are in there, also change the existing payroll export to include borrower details and add a bulk download button. Keep the build within the agreed piece and tell me what happens to those extra requests."
+    },
+    {
+      "who": "kit",
+      "text": "I ran `/implement`. I did not build anything and I changed no files. The reason is below.\n\n**The days-late piece is not ready to build yet**\n\n- I looked through all of the project's issues. None of them says \"show the number of days late beside each item on the overdue list.\"\n- The overdue list itself is issue [number], and it is closed. Its \"Done when\" covers only the order of the list, oldest first.\n- `/implement` builds only a piece that is written down and ready, with a \"Done when\" line. A request that matches no piece goes to `/shape` first. Without that, nothing records what \"done\" means or what evidence would show it.\n- This piece is small and clear. The code already has a helper that counts the days late, in `app/overdue.py`. So `/shape` should be quick. Type `/shape` with the…"
+    }
+  ]
+}

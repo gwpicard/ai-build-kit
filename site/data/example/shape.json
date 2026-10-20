@@ -1,0 +1,63 @@
+{
+  "replayCase": "s48",
+  "replayRun": "r1",
+  "candidate": "1.0",
+  "held": true,
+  "grade": {
+    "hit": 7,
+    "drift": 0,
+    "miss": 0,
+    "unobservable": 2
+  },
+  "workflowStage": "shape",
+  "skills": [
+    "triage",
+    "records",
+    "clarify",
+    "research",
+    "fit-check"
+  ],
+  "checks": [],
+  "turns": [
+    {
+      "who": "person",
+      "text": "/shape Let a steward see who has each item from the overdue list. We keep calling both the person using an item and the steward who made the booking its \"owner\". Help me settle those names as part of shaping this piece, then stop before building it."
+    },
+    {
+      "who": "kit",
+      "text": "I'm running the `shape` command.\n\nI'm running **shape**. Shaping only records the work. It changes no code, and building waits for `/implement`.\n\n**Route:** clarify first, because one word (\"owner\") has two meanings. After that, this becomes one ready piece.\n\n## What I found\n\n- **There is no \"owner\" in the tool.** Bramble keeps one name for each loan. The code calls it the **borrower**. The masterplan says the same thing in different words: \"one item going out to one person.\"\n- **Bramble does not keep the name of the person who made the booking.** So the overdue list can show who has an item now. It cannot show who booked it unless we start to keep that name. Keeping it would mean storing new data, so it would be a bigger change.\n- **Two open pieces cover similar ground:**\n  - [number]…"
+    },
+    {
+      "who": "person",
+      "text": "A borrower is the person using an item. A booking steward is the teammate who entered the loan. Either can be the same person. Keep those names on the piece you are shaping; do not change the masterplan or build anything yet."
+    },
+    {
+      "who": "kit",
+      "text": "The names are settled, and I wrote them on the piece. I did not change the masterplan or any code.\n\n**Piece:** [number] \"Show who has each item on the overdue list\"\nhttps://github.com/bramble-team/bramble/issues/13\n\n## What the piece records\n\n- **The names, in your words, dated 2026-10-19:** \"A borrower is the person using an item. A booking steward is the teammate who entered the loan. Either can be the same person.\" The piece also says that we no longer call either person the \"owner\".\n- **One note I added:** the masterplan uses \"steward\" for the two people who can cancel loans and edit the item list. A booking steward can be any teammate who entered the loan. The piece says this so that nobody mixes up the two meanings.\n- **Masterplan change (proposed only):** two sentences for \"Key…"
+    },
+    {
+      "who": "person",
+      "text": "Park the piece we just shaped. We can keep asking across the room for now. The names we settled still describe the people using the existing tool, so keep that decision on the parked piece."
+    },
+    {
+      "who": "kit",
+      "text": "I parked [number] and closed it. The names you settled are still on it.\n\nhttps://github.com/bramble-team/bramble/issues/13\n\n## What I changed on the piece\n\n- **New \"Parked\" section:** it gives your reason in your own words and the date: \"We can keep asking across the room for now.\"\n- **Names kept:** \"Decided\" still has the borrower and booking steward names, in your words. It also has your new sentence that these names describe the people who use the tool today. The piece says that the names stay there until they go into the masterplan or you change them.\n- **Labels:** I removed \"needs a few questions\" and added \"parked\". GitHub now shows the piece as closed.\n- **The open question** is still on the piece: show only the borrower, or the booking steward too. It is marked as a question to…"
+    },
+    {
+      "who": "person",
+      "text": "/maintain Only check the records today, including what we settled while planning. Do not build or reopen the parked piece. Leave any proposed record correction for me to answer."
+    },
+    {
+      "who": "kit",
+      "text": "I'm running **maintain**. You asked me to check only the records. I read the masterplan, the changelog, the pieces on GitHub and the code. I changed nothing.\n\n## What is not saved\n\n- `app/bramble.py` has a weekly summary for the steward that somebody started on 12 October and did not finish. It is not saved, and no piece asks for it.\n- `notes/kit-room-rota.md` holds a kit room rota. It is not saved.\n\nBoth look like a teammate's work, not mine. I did not touch them. `/what-now` can help you continue them, save them, or clear them.\n\n## What you need to answer\n\n1. **The names from the parked piece are not in the masterplan.** \"Borrower\" and \"booking steward\" are only on [number], which is parked. You said these names describe the people who use the tool today, so I suggest we put them in the…"
+    },
+    {
+      "who": "person",
+      "text": "Yes, put the agreed meanings of borrower and booking steward into the masterplan. Keep the piece parked and leave the tool's behaviour alone."
+    },
+    {
+      "who": "kit",
+      "text": "I added the two names to the masterplan. I saved the change on a separate branch, `records/loan-names`, and I did not upload it yet.\n\n## What changed\n\n- **Masterplan, \"Key terms\":** the agreed meanings are now under the sentence about a loan:\n\n  > The **borrower** is the person who uses the item. The **booking steward** is the teammate who entered the loan. Any teammate can be the booking steward, not only one of the two stewards. The borrower and the booking steward can be the same person. Bramble keeps the borrower's name. It does not keep the booking steward's name. Nobody calls either of them the \"owner\".\n\n- **Changelog:** a new line for 2026-10-19 says that the masterplan now names the two people on a loan. It also says that the tool did not change.\n\n## What did not change\n\n- The…"
+    }
+  ]
+}
