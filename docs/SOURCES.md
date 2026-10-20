@@ -13,7 +13,7 @@ This list names ideas used in the kit and where they appear.
 - [Alex Lavaee, from RPI to QRSPI](https://alexlavaee.me/blog/from-rpi-to-qrspi/).
   - **Contributed:** build vertical slices instead of layers. **In the kit:** one-sitting pieces and shaping, `.agents/skills/records/references/pieces.md`, `.agents/skills/shape/SKILL.md`.
 - [Dex Horthy, Advanced Context Engineering for Agents](https://www.youtube.com/watch?v=VvkhYWFWaKI).
-  - **Contributed:** a workflow should not depend on special phrasing. **In the kit:** shaping names the piece and its next step, `.agents/skills/shape/SKILL.md`. The link to this specific idea needs maintainer confirmation.
+  - **Contributed:** build each piece through the whole tool, not one layer at a time. **In the kit:** one-sitting pieces, `.agents/skills/records/references/pieces.md`, `.agents/skills/shape/SKILL.md`.
 - [Matt Pocock's skills](https://github.com/mattpocock/skills).
   - **Contributed:** attach a best guess to each question; use a small prototype to settle a choice. **In the kit:** interview and prototype steps, `.agents/skills/clarify/SKILL.md`, `.agents/skills/clarify/references/decision-prototype.md`.
   - **Contributed:** reproduce a fault before repair and route work by question type. **In the kit:** `.agents/skills/repair/references/reproduce.md`, `.agents/skills/triage/SKILL.md`.
@@ -40,8 +40,8 @@ This list names ideas used in the kit and where they appear.
   - **Contributed:** put a short path list beside the rule it applies to. **In the kit:** the risk-area map, `.agents/skills/setup-ai-build-kit/templates/foundation/check-sensitive-areas.sh`.
 - [CCPM](https://github.com/automazeio/ccpm).
   - **Contributed:** use GitHub issues as the task record. **In the kit:** pieces are GitHub issues, `.agents/skills/records/references/pieces.md`.
-- [Martin Fowler, architecture decision records](https://martinfowler.com/articles/architecture-decision-records.html) and [O'Reilly, "Coding agents love decision records"](https://www.oreilly.com/radar/coding-agents-love-decision-records/).
-  - **Contributed:** record the reason for a settled choice. **In the kit:** the `## Decided` section on a piece, `.agents/skills/records/references/pieces.md`. The source link needs maintainer confirmation.
+- [Architecture decision records](https://martinfowler.com/articles/architecture-decision-records.html), as described by Martin Fowler.
+  - **Contributed:** record each settled choice with its reason, so a later session does not reopen it. **In the kit:** the `## Decided` section on a piece, `.agents/skills/records/references/pieces.md`.
 - [arc42](https://arc42.org/) and [C4 model](https://c4model.com/).
   - **Contributed:** show the tool and the systems it reaches. **In the kit:** the connections picture in the masterplan, `.agents/skills/setup-ai-build-kit/templates/masterplan.md`, `.agents/skills/records/SKILL.md`.
 
@@ -55,10 +55,8 @@ This list names ideas used in the kit and where they appear.
   - **Contributed:** keep review findings few and check each finding again. **In the kit:** `.agents/agents/refuter.md`.
 - [Claude Code subagents](https://code.claude.com/docs/en/sub-agents).
   - **Contributed:** define an agent in a short file with its tools and skills. **In the kit:** `.agents/agents/*.md`.
-- [Anthropic's Claude Code review plugin and Code Review docs](https://code.claude.com/docs/en/code-review).
-  - **Contributed:** use narrow review passes, a confidence filter and repository review rules. **In the kit:** review design, `.agents/skills/second-opinion/SKILL.md`. The link to this specific influence needs maintainer confirmation.
 - ["How we vibe code at a FAANG"](https://www.reddit.com/r/vibecoding/comments/1myakhd/how_we_vibe_code_at_a_faang/).
-  - **Contributed:** read a plan closely before building. **In the kit:** shaping and the coverage read, `.agents/skills/shape/SKILL.md`, `.agents/skills/records/references/coverage-read.md`. The link to this specific influence needs maintainer confirmation.
+  - **Contributed:** read a plan closely before building. **In the kit:** shaping and the coverage read, `.agents/skills/shape/SKILL.md`, `.agents/skills/records/references/coverage-read.md`.
 
 ## Checks and evidence
 
@@ -83,9 +81,9 @@ This list names ideas used in the kit and where they appear.
 - [Agentless](https://dl.acm.org/doi/full/10.1145/3715754), [LLM-guided bisection](https://arxiv.org/abs/2511.18854), [Cursor Debug Mode](https://cursor.com/blog/debug-mode), and [SWE-Doctor](https://arxiv.org/abs/2607.00990).
   - **Contributed:** reproduce a fault, find the saved change that caused it, and remove temporary instrumentation. **In the kit:** `.agents/skills/repair/references/reproduce.md`, `.agents/skills/repair/references/fixing.md`.
 - [OneUptime's structured logging guide](https://oneuptime.com/blog/post/2026-01-25-structured-logging-best-practices/view).
-  - **Contributed:** use evidence from a running tool to reproduce a fault. **In the kit:** `.agents/skills/repair/references/reproduce.md` reads the project's request record. A shared request identifier is not confirmed, so this credit needs maintainer review.
+  - **Contributed:** record what each request did, in one consistent form, without sensitive contents. **In the kit:** the request record check before a tool goes live, `.agents/skills/setup-hosting/scripts/run-recipe.sh`; `.agents/skills/repair/references/reproduce.md` reads that record.
 - [ImpossibleBench](https://arxiv.org/abs/2510.20270) and [tests written after code inherit its flaws](https://arxiv.org/abs/2410.21136).
-  - **Contributed:** keep existing tests fixed; explain why a test changes. **In the kit:** `.agents/skills/setup-ai-build-kit/templates/foundation/check-tests.sh`. The ImpossibleBench link needs maintainer confirmation.
+  - **Contributed:** keep existing tests fixed; explain why a test changes. **In the kit:** `.agents/skills/setup-ai-build-kit/templates/foundation/check-tests.sh`.
 - [Martin Fowler and Birgitta Boeckeler, Harness Engineering for Coding Agent Users](https://martinfowler.com/articles/exploring-gen-ai/harness-engineering.html).
   - **Contributed:** use machine checks for rules a machine can judge, and prose for human judgement. **In the kit:** `docs/PHILOSOPHY.md`, `.agents/skills/quality-checks/SKILL.md`.
 ## Skills and standing instructions
