@@ -3,6 +3,8 @@
 [![Licence: MIT](https://img.shields.io/github/license/gwpicard/ai-build-kit)](LICENSE)
 [![Latest release](https://img.shields.io/github/v/release/gwpicard/ai-build-kit)](https://github.com/gwpicard/ai-build-kit/releases/latest)
 
+**[Site](https://gwpicard.github.io/ai-build-kit/)** · [Worked example](https://gwpicard.github.io/ai-build-kit/worked-example/) · [Releases](https://github.com/gwpicard/ai-build-kit/releases)
+
 AI Build Kit helps people who do not write code build and run tools with a
 coding agent. It suits team leads, operations staff, analysts, product
 managers and founders who are comfortable with technology. Developers new to
