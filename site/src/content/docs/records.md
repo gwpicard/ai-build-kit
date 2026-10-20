@@ -18,6 +18,6 @@ For a risk you can judge, the agent explains who could be affected and what woul
 
 ## Hosting recipes and recovery
 
-A hosting recipe specifies the services that run the tool and the steps for deployment, backup and restoration. You create and control the service accounts. On a supported recipe, the launch script requires a confirmed backup and a defined rollback step, which returns the tool to an earlier version. Later launches also require confirmation that an earlier build is available. Outside a supported recipe, the kit states that it provides no guarantees.
+The tool goes live through a [hosting recipe](./recipes.md), which fixes the services that run it and the steps for deployment, backup, restoration and rollback. You create and control the service accounts. Outside a recipe, the kit states that it provides no guarantees.
 
 [Read the rules that apply in every project](./what-it-checks.md).

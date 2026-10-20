@@ -99,4 +99,8 @@ This list identifies ideas used in the kit and the files that implement them.
 |---|---|---|
 | [Vercel Web Interface Guidelines](https://github.com/vercel-labs/web-interface-guidelines/blob/main/AGENTS.md), [Impeccable craft floor](https://github.com/pbakaus/impeccable/blob/main/skill/reference/craft-floor.md), [GOV.UK Design System](https://design-system.service.gov.uk/), [Nielsen Norman Group](https://www.nngroup.com/articles/ten-usability-heuristics/), [Carbon](https://carbondesignsystem.com/), [Shopify Polaris](https://polaris.shopify.com/), and [WCAG 2.2](https://www.w3.org/WAI/WCAG22/quickref/) | Interface rules for visible labels, errors, keyboard focus, spacing and empty states. | `.agents/skills/screen-check/SKILL.md`. |
 
+### Licence notice
+
+The screen-check skill adapts some interface rules from W3C's "How to Meet WCAG" quick reference, and W3C's licence requires this notice.
+
 Copyright © 2023 W3C®. This software or document includes material copied from or derived from [How to Meet WCAG, Quick Reference](https://www.w3.org/WAI/WCAG22/quickref/).

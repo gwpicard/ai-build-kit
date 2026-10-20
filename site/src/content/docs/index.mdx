@@ -15,7 +15,7 @@ You describe the tool, and the agent builds one agreed piece of work at a time. 
 2. You agree on a piece, and the agent records its acceptance criteria under “Done when”. These describe the result you will use to judge the work.
 3. The agent builds the piece, scripts check the change, and a reviewer agent assesses the result.
 4. You try the change and approve the pull request, a proposal to merge it into the main branch. Before merging, the merge script checks the recorded approval and the project check result.
-5. If you use a supported hosting recipe, the launch script checks its backup and rollback steps. A recipe specifies the services and instructions for deploying, backing up and restoring the tool; a rollback returns it to an earlier version.
+5. To put the tool live, you choose a [hosting recipe](/ai-build-kit/recipes/): a fixed stack and host with set steps for previewing, launching, backing up, restoring and rolling back, which returns the tool to an earlier version. On a recipe, the launch script requires a confirmed backup and a defined rollback step.
 
 The checks provide evidence about the tool, but they do not establish that it is safe for every purpose. Some work may still need a developer. Read [the design principles](/ai-build-kit/design/) and [what the kit checks](/ai-build-kit/what-it-checks/).
 

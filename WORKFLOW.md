@@ -491,13 +491,17 @@ A rollback does not undo a database addition, which is why database changes only
 
 ### What the launch trials proved
 
-Each recipe was tried on a throwaway app before it joined the menu. Both trials
-proved the preview, launch, rollback, secrets, logs and health steps on a live
-deployment. The backup and restore steps are shared and were run for real once.
-The recipe for your own server was tried on a private network and on the public
-internet. Its preview for an app without a domain ran on the server but had no
-address the person could open. Each recipe's trial record, with the results
-and their limits, is the `PROVEN.md` in its folder, which the
+Each recipe was tried on a throwaway app before it joined the menu. The two
+trials covered different steps. The Vercel trial recorded going live, a health
+check and two database migrations. Its preview, rollback, backup, restore,
+secrets, logs and access steps are recorded as not tried. The Coolify trial
+recorded preview, launch, rollback, secrets, logs and health. Its rollback was
+pressed by hand in Coolify, because no script could press it. Backup and
+restore were not run on it. The recipe for your own server was tried on a
+private network and on the public internet. Its preview for an app without a
+domain ran on the server but had no address the person could open. Each
+recipe's trial record, with the results and their limits, is the `PROVEN.md`
+in its folder, which the
 [README's recipe links](README.md#going-live) lead to.
 
 The kit runs a rollback itself where the recipe provides a command. Otherwise

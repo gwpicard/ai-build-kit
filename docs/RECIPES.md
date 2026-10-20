@@ -224,9 +224,12 @@ A recipe joins the menu only when two things are true. A rehearsal named
 `.agents/tests/recipe-<name>.sh` runs every script it names against stand-ins
 for its tools, to a pass and to something else, and then runs the whole recipe
 through the runner. And one real deploy has been run from an empty project to
-a live address and through all nine sections, with the maintainer's approval
-and accounts, and written down. A shared part proven once, in another recipe's
-real run, counts for every recipe that links it, and its outcome line says so.
+a live address, with the maintainer's approval and accounts, and written down.
+The goal is a real run through all nine sections. That goal is not yet met.
+The `PROVEN.md` of each current recipe lists which sections a real run covered
+and which are still untried, and it is the only record of what is proven. A
+shared part proven once, in another recipe's real run, counts for every recipe
+that links it, and its outcome line says so.
 
 A section added after the real run is marked unproven: its outcome line says
 `No real run yet` after the section's name, and gives the date it was added.

@@ -2698,6 +2698,8 @@ check_claim "sensitive-area step" "sensitive-area step"
 check_claim "absolute merge yes claim" "nothing merges without your yes"
 check_claim "absolute merge wait claim" "every merge waits for your yes"
 check_claim "absolute merge need claim" "every merge needs the person's yes"
+# WORKFLOW.md once said both recipe trials proved every step. The PROVEN.md records do not support that.
+check_claim "both recipe trials proved all steps" "Both trials proved the preview, launch, rollback, secrets, logs and health steps"
 check_claim "absolute human merge claim" "a human decides whether to merge, always"
 check_claim "human always decides merge" "A human decides whether to merge."
 check_claim "merge only after a named yes" "Merge only on a yes that names it."

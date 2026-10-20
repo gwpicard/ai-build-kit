@@ -15,7 +15,7 @@ This page compares AI Build Kit with three kinds of tool:
 
 AI Build Kit belongs to the skills group. It is designed for people who do not read code and includes steps for setting up and maintaining a live tool.
 
-The kit combines agent instructions with scripts for merging changes and checking supported launches. It also provides a risk record, hosting recipes and /maintain. Its two recipes use the same software stack, Next.js and Supabase, with hosting on Vercel or Coolify. Every project requires GitHub.
+The kit combines agent instructions with scripts for merging changes and checking supported launches. It also provides a risk record, hosting recipes and /maintain. Its two recipes use the same software stack, Next.js and Supabase, with hosting on Vercel or Coolify ([hosting recipes](./recipes.md)). Every project requires GitHub.
 
 ### Choose AI Build Kit if
 

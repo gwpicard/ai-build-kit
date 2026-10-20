@@ -26,7 +26,7 @@ software in your own accounts. Three things carry it.
 Recipes make it fast. A recipe pairs a build stack with a place to run it,
 and settles in advance how the tool goes live, how it is backed up, and how it
 rolls back to an earlier version. A recipe joins the menu only after a recorded
-real run. The person does not make those decisions, so they cannot get them
+real run, and its record says which parts that run covered. The person does not make those decisions, so they cannot get them
 wrong.
 
 Mechanisms make it reliable. A rule that a machine can check is a hook, a
@@ -61,8 +61,9 @@ They learn these ideas, at the moment each one first appears:
 
 The focus is a simple way to build and run internal tools, with access for
 people the owner names, such as a team, a club, a family or invited clients.
-The proven stack keeps each tool private by default. A recipe check proves
-that only invited people can get in. Public-facing features are possible. The
+The proven stack keeps each tool private by default. A recipe check is meant
+to show that only invited people can get in. Neither recipe's access step has
+had a real run yet. Public-facing features are possible. The
 person asks for that setting, hears its risks once, and records the choice. A
 tool that takes money from strangers is a public tool.
 

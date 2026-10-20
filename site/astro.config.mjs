@@ -16,7 +16,7 @@ export default defineConfig({
     customCss: ['./src/styles/site.css'],
     sidebar: [
       { label: 'Get started', items: ['index', 'install'] },
-      { label: 'Design and workflow', items: ['design', { slug: 'how-it-works', label: 'Workflow' }, 'records', 'what-it-checks', 'how-it-differs'] },
+      { label: 'Design and workflow', items: ['design', { slug: 'how-it-works', label: 'Workflow' }, 'records', 'recipes', 'what-it-checks', 'how-it-differs'] },
       { label: 'Reference', items: ['agents', 'sources', 'releases'] },
     ],
     social: [{
