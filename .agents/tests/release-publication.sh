@@ -321,26 +321,28 @@ fi
 if grep -RqE 'create-github-app-token|STARTER_APP_|x-access-token' "$ROOT/.github/workflows"; then
   fail "a workflow can mint a credential that writes outside the run's own token"
 fi
+# Each permission pattern accepts a quoted value and a trailing comment, so
+# neither form slips a write past these checks.
 # GitHub Pages needs an OIDC token. That credential is allowed only in the
 # deploy job of pages.yml, with Pages write and no repository write.
 for workflow in "$ROOT"/.github/workflows/*.yml "$ROOT"/.github/workflows/*.yaml; do
   [ -f "$workflow" ] || continue
-  if grep -qE '^[[:space:]]+id-token:[[:space:]]*write[[:space:]]*$' "$workflow"; then
+  if grep -qE '^[[:space:]]+id-token:[[:space:]]*["'\'']?write["'\'']?[[:space:]]*(#.*)?$' "$workflow"; then
     [ "${workflow##*/}" = pages.yml ] || \
       fail "${workflow##*/} can mint an OIDC credential"
   fi
 done
 grep -qx 'permissions: {}' "$PAGES_WORKFLOW" || \
   fail "pages.yml must deny permissions at workflow level"
-[ "$(grep -cE '^[[:space:]]+id-token:[[:space:]]*write[[:space:]]*$' "$PAGES_WORKFLOW" || true)" -eq 1 ] || \
+[ "$(grep -cE '^[[:space:]]+id-token:[[:space:]]*["'\'']?write["'\'']?[[:space:]]*(#.*)?$' "$PAGES_WORKFLOW" || true)" -eq 1 ] || \
   fail "pages.yml must give OIDC write to one job only"
-[ "$(grep -cE '^[[:space:]]+pages:[[:space:]]*write[[:space:]]*$' "$PAGES_WORKFLOW" || true)" -eq 1 ] || \
+[ "$(grep -cE '^[[:space:]]+pages:[[:space:]]*["'\'']?write["'\'']?[[:space:]]*(#.*)?$' "$PAGES_WORKFLOW" || true)" -eq 1 ] || \
   fail "pages.yml must give Pages write to one job only"
-[ "$(grep -cE '^[[:space:]]+contents:[[:space:]]*read[[:space:]]*$' "$PAGES_WORKFLOW" || true)" -eq 1 ] || \
+[ "$(grep -cE '^[[:space:]]+contents:[[:space:]]*["'\'']?read["'\'']?[[:space:]]*(#.*)?$' "$PAGES_WORKFLOW" || true)" -eq 1 ] || \
   fail "pages.yml build job must have contents read"
-[ "$(grep -cE '^[[:space:]]+[A-Za-z-]+:[[:space:]]*write[[:space:]]*$' "$PAGES_WORKFLOW" || true)" -eq 2 ] || \
+[ "$(grep -cE '^[[:space:]]+[A-Za-z-]+:[[:space:]]*["'\'']?write["'\'']?[[:space:]]*(#.*)?$' "$PAGES_WORKFLOW" || true)" -eq 2 ] || \
   fail "pages.yml has a write permission beyond Pages and OIDC"
-[ "$(grep -cE '^[[:space:]]+[A-Za-z-]+:[[:space:]]*(read|write|none)[[:space:]]*$' "$PAGES_WORKFLOW" || true)" -eq 3 ] || \
+[ "$(grep -cE '^[[:space:]]+[A-Za-z-]+:[[:space:]]*["'\'']?(read|write|none)["'\'']?[[:space:]]*(#.*)?$' "$PAGES_WORKFLOW" || true)" -eq 3 ] || \
   fail "pages.yml has a permission beyond contents read, Pages write and OIDC write"
 grep -qF 'workflows: ["verify release"]' "$PAGES_WORKFLOW" || \
   fail "pages.yml does not follow release verification"
@@ -367,7 +369,7 @@ printf '%s\n' "$build_job" | grep -qE '^      pages:|^      id-token:' && \
   fail "pages.yml gives the build job a deploy permission"
 printf '%s\n' "$deploy_job" | grep -qE '^      pages: write$' || \
   fail "pages.yml does not scope Pages write to the deploy job"
-printf '%s\n' "$deploy_job" | grep -qE '^      id-token: write$' || \
+printf '%s\n' "$deploy_job" | grep -qE '^      id-token:[[:space:]]*["'\'']?write["'\'']?[[:space:]]*(#.*)?$' || \
   fail "pages.yml does not scope OIDC write to the deploy job"
 printf '%s\n' "$deploy_job" | grep -qE '^      contents:' && \
   fail "pages.yml gives the deploy job a repository permission"
@@ -492,6 +494,25 @@ jobs:
 SECOND_TOKEN
   expect_rejected "a second workflow with id-token: write"
   rm "$MUTATION_ROOT/.github/workflows/second-token.yml"
+
+  cat > "$MUTATION_ROOT/.github/workflows/second-token.yml" <<'SECOND_TOKEN'
+name: second token
+on: workflow_dispatch
+jobs:
+  token:
+    if: github.repository == 'gwpicard/ai-build-kit'
+    permissions:
+      id-token: 'write' # needed for a deploy
+    runs-on: ubuntu-latest
+    steps: []
+SECOND_TOKEN
+  expect_rejected "a second workflow with a quoted, commented id-token write"
+  rm "$MUTATION_ROOT/.github/workflows/second-token.yml"
+
+  sed '/^      id-token: write$/a\
+      contents: write # temporary' "$PAGES_WORKFLOW" > "$MUTATION_ROOT/.github/workflows/pages.yml"
+  expect_rejected "pages.yml with a commented contents: write"
+  cp "$PAGES_WORKFLOW" "$MUTATION_ROOT/.github/workflows/pages.yml"
 
   sed '/^      id-token: write$/a\
       contents: write' "$PAGES_WORKFLOW" > "$MUTATION_ROOT/.github/workflows/pages.yml"
