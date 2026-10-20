@@ -2166,8 +2166,8 @@ errors = []
 
 source_doc = yaml.safe_load(open(sys.argv[1]))
 source_jobs = source_doc.get("jobs") or {}
-if set(source_jobs.keys()) != {"source-kit-validation", "rehearsal"}:
-    errors.append("source workflow must contain source-kit-validation and rehearsal")
+if set(source_jobs.keys()) != {"source-kit-validation", "rehearsal", "site-build"}:
+    errors.append("source workflow must contain source-kit-validation, rehearsal and site-build")
 sk = source_jobs.get("source-kit-validation") or {}
 if sk.get("if") != "github.repository == 'gwpicard/ai-build-kit'":
     errors.append("source-kit-validation.if is wrong: %r" % sk.get("if"))
@@ -2187,6 +2187,17 @@ if rehearsal.get("if") != "github.repository == 'gwpicard/ai-build-kit'":
 rehearsal_runs = " ".join(step.get("run", "") for step in (rehearsal.get("steps") or []) if isinstance(step, dict))
 if ".agents/tests/run-all.sh" not in rehearsal_runs:
     errors.append("rehearsal does not run .agents/tests/run-all.sh")
+
+# The publish workflow builds the site from a clean install on GitHub's own
+# system. A pull request builds it the same way first, so a lockfile that
+# leaves out a package that system needs fails here, not at publication.
+site_build = source_jobs.get("site-build") or {}
+if site_build.get("if") != "github.repository == 'gwpicard/ai-build-kit'":
+    errors.append("site-build.if is wrong: %r" % site_build.get("if"))
+site_runs = " ".join(step.get("run", "") for step in (site_build.get("steps") or []) if isinstance(step, dict))
+for needed in ("npm ci", "npm run build", ".agents/tests/site-links.sh"):
+    if needed not in site_runs:
+        errors.append("site-build does not run %s" % needed)
 
 tests_dir = sys.argv[3]
 runner = os.path.join(tests_dir, "run-all.sh")
@@ -2253,7 +2264,9 @@ WORKFLOWFILES
   # against the longer one and guard nothing.
   for literal in "source-kit-validation:" \
     "rehearsal:" \
+    "site-build:" \
     ".agents/tests/run-all.sh" \
+    ".agents/tests/site-links.sh" \
     "if: github.repository == 'gwpicard/ai-build-kit'"; do
     if ! grep -qF "$literal" "$source_checks"; then
       fail "source checks: missing expected line '$literal' (no PyYAML available)"
