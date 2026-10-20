@@ -1,5 +1,7 @@
 # Evaluation system design
 
+> Historical design record, 21 August 2026. This describes the harness as assessed on that date and is kept for history, not as a description of the current kit. See [MAINTAINING.md](../MAINTAINING.md) and [the replay test guide](../../.agents/tests/replay/README.md) for current practice.
+
 This is the written design the epic asks for before any of it is built. It names
 the Level 1 dimensions, the two tiers, the metric, the state-assertion redesign
 of the replay harness, the Level 2 code-health review, and the deterministic CI

@@ -46,7 +46,7 @@
         }
       }
     ],
-    "person_decides": "You try the result and decide whether to merge the named pull request.",
+    "person_decides": "By default, you try the result and decide whether to merge the named pull request. Automatic merging is an opt-in recorded with limits.",
     "source": ".agents/skills/implement/SKILL.md"
   },
   {
@@ -76,7 +76,7 @@
         }
       }
     ],
-    "person_decides": "You give a yes that names the pull request to merge.",
+    "person_decides": "By default, you give a yes that names the pull request to merge. Automatic merging is an opt-in recorded with limits.",
     "source": ".agents/skills/merge/SKILL.md"
   },
   {

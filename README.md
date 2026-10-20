@@ -14,10 +14,13 @@ The six commands are:
 
 - `/setup-ai-build-kit` prepares a project.
 - `/shape` turns an idea or fault into a ready piece of work.
-- `/implement` builds a ready piece and asks before it merges.
+- `/implement` builds a ready piece and asks before merging by default.
 - `/setup-hosting` sets up or checks how the tool runs live.
 - `/maintain` checks the records and live copy, and runs upkeep when due.
 - `/what-now` says where the project stands and what to do next.
+
+Automatic merging is off by default. The masterplan records the choice and its
+limits under `Runs on its own:`.
 
 The kit does not host tools or store project records. It is for internal tools
 with a manual fallback. Passing checks do not prove that software is safe or

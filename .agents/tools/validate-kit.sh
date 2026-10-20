@@ -33,7 +33,7 @@ pass() {
 
 SKILLS="$ROOT/.agents/skills"
 # A skill only the kit's own maintainers use lives here rather than beside the
-# eight. A shared skills installer reads .agents/skills/ and .claude/skills/
+# installable skills. A shared skills installer reads .agents/skills/ and .claude/skills/
 # and merges what it finds by the name in its frontmatter, so a folder in
 # either one is a skill somebody installs. This folder is in neither.
 MAINTAINER_SKILLS="$ROOT/.agents/maintainer-skills"
@@ -2588,19 +2588,32 @@ COMMANDLISTS
 # ---------------------------------------------------------------------------
 echo "== Stale-claim checks =="
 
-# docs/MAINTAINING.md is deliberately excluded: it is maintainer-only and the
-# release allowlist keeps it out of the starter. It legitimately quotes these
-# exact banned phrases while documenting this script's own rules.
-project_docs="$ROOT/README.md
-$ROOT/WORKFLOW.md
-$ROOT/AGENTS.md
-$ROOT/README.md
-$ROOT/.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md
-$ROOT/docs/PHILOSOPHY.md
-$ROOT/docs/COMPATIBILITY.md
-$ROOT/docs/SOURCES.md"
-project_docs="$project_docs
-$(find "$SKILLS" -name '*.md' | sort)"
+# The manifest supplies the source files that ship, including templates. The
+# public site is separate from the kit archive, so include its pages and data
+# explicitly. Dated maintainer records and release notes retain historical
+# descriptions of retired terms and are not part of this current-claims scan.
+# The retired-skill and released-copy data files hold old names on purpose, so
+# /maintain can recognise them, and are left out as retired-names.sh does.
+project_docs="$(
+  {
+  awk -F'|' 'NF && $1 !~ /^[[:space:]]*#/ { print $1 }' "$ROOT/release-manifest.txt" |
+    while IFS= read -r source; do
+      [ -n "$source" ] || continue
+      path="$ROOT/$source"
+      if [ -f "$path" ]; then
+        printf '%s\n' "$path" | grep -Eq '\.(md|txt|yml|yaml|json)$' && printf '%s\n' "$path"
+      elif [ -d "$path" ]; then
+        find "$path" -type f \( -name '*.md' -o -name '*.txt' -o -name '*.yml' -o -name '*.yaml' -o -name '*.json' \) -print
+      fi
+    done
+  for path in "$ROOT/README.md" "$ROOT/WORKFLOW.md" "$ROOT/llms.txt" \
+    "$ROOT/CONTRIBUTING.md" "$ROOT/SECURITY.md"; do
+    [ ! -f "$path" ] || printf '%s\n' "$path"
+  done
+  find "$ROOT/site/src/content/docs" -type f \( -name '*.md' -o -name '*.mdx' -o -name '*.json' \) -print 2>/dev/null
+  [ ! -f "$ROOT/site/data/workflow.json" ] || printf '%s\n' "$ROOT/site/data/workflow.json"
+  } | sort -u | grep -v -e '/kit-retired-skills\.json$' -e '/kit-released-copies\.json$'
+)"
 
 check_claim() {
   # $1 = human label, $2 = fixed string to search for, $3 = optional file to
@@ -2673,6 +2686,25 @@ check_claim "the other commands called words" "six words"
 # described rather than counted, so none of the counting phrases above matched.
 check_claim "the ceiling counted in words" "how many words"
 check_claim "an ability arriving inside a word" "a word that already exists"
+# Phrases retired for 1.0. The scan covers release-manifest prose and templates
+# as well as the separate site, so the terms cannot return in either surface.
+check_claim "private exploration" "private exploration"
+check_claim "four-path" "four-path"
+check_claim "written by start" "written by start"
+check_claim "Build these together now" "Build these together now"
+check_claim "sensitive-area step" "sensitive-area step"
+# Keep merge claims specific so the builder agent's true "never merges" brief
+# remains valid. Every merge waits for approval only by default.
+check_claim "absolute merge yes claim" "nothing merges without your yes"
+check_claim "absolute merge wait claim" "every merge waits for your yes"
+check_claim "absolute merge need claim" "every merge needs the person's yes"
+check_claim "absolute human merge claim" "a human decides whether to merge, always"
+check_claim "human always decides merge" "A human decides whether to merge."
+check_claim "merge only after a named yes" "Merge only on a yes that names it."
+check_claim "implement requires a named yes" "Merge only on a yes naming it."
+check_claim "first upload and each merge need a yes" "The first upload and each merge wait for a yes."
+check_claim "blocked commands merge yes claim" "Never merge without the person's yes or force a merge past a required review."
+check_claim "unattended merge always waits" "never merge or accept a risk for the person"
 
 [ "$FAIL" -eq 0 ] && echo "ok: no stale claims found"
 

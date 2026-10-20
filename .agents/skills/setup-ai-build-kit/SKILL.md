@@ -38,7 +38,8 @@ on.
    Keep questions visible. Save answers in ignored `.agents/tmp/setup-notes.md`
    before the next question. Load `references/stand-up.md` before the closing
    reply and include its menu.
-   Python document work and a read-only link to an existing database are not offered yet.
+   Python document-worker and existing-database recipe parts are not offered
+   yet; `Fits:` lists tool shapes.
 4. Run `fit-check`: its three questions, then access, risk areas, cautions
    and recheck triggers. Consider redesigns first. Give the risk notice before
    flagged work and record acceptance. An ownership no becomes a task.

@@ -17,10 +17,13 @@ stop if it disagrees.
 
 Read the `Recipe:` line in AGENTS.md's stack section and the matching folder's
 `recipe.md`, not `PROVEN.md`. An old `.md` recipe name means its folder.
-`Recipe: none`, a missing line or folder means no recipe: hosting is offered
-only on a recipe. If a live address is recorded, follow
+`Recipe: none`, a missing line or folder means no recipe. The recipe launch
+checks do not apply; follow "On no recipe" below for help by hand. If a live
+address is recorded, follow
 `references/later-run.md`. Leave open pull requests open; say `/implement` merges one after a yes, which puts it live.
-Python document work and a read-only link to an existing database are not offered yet.
+The Python document-worker and read-only existing-database recipe parts are
+not offered yet. The recipes' `Fits:` lines describe tool shapes, not those
+unavailable parts.
 
 ## Launch
 

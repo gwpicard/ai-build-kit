@@ -51,7 +51,7 @@ code: a team lead, an operations person, an analyst, a product manager, a
 founder. They can create accounts and follow setup steps, and they want a tool
 that still works next quarter. A developer new to agent-led work fits too.
 
-They learn five ideas, at the moment each one first appears:
+They learn these ideas, at the moment each one first appears:
 
 1. Accounts: GitHub, a host, and a database service, created once.
 2. A repository: where the project and its history live.
@@ -161,7 +161,7 @@ lists each promise with its mechanism, or says "none yet".
 4. Checks pass before a merge.
 5. A review matches the code it read. A review the kit cannot verify is
    recorded as unverified, in plain words.
-6. Every launch has a way back and a backup.
+6. On a proven recipe, every launch has a way back and a backup.
 7. Records say "accepted", never "done".
 
 Two kinds of check follow from this. An integrity check protects the backbone.

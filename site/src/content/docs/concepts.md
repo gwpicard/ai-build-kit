@@ -18,7 +18,7 @@ A risk area is a kind of harm a tool could cause, such as exposing personal data
 
 ## Review
 
-A review checks whether a change meets its agreed goal, whether it breaks something that worked before, and whether the evidence supports the result. A person decides whether a finding should stop the work. You decide whether to approve the change for merge.
+A review checks whether a change meets its agreed goal, whether it breaks something that worked before, and whether the evidence supports the result. A person decides whether a finding should stop the work. By default, you decide whether to approve the change for merge; automatic merging is an opt-in recorded with limits.
 
 <a href="https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/second-opinion/SKILL.md">Source (for maintainers)</a>
 
@@ -30,7 +30,7 @@ A check can pass, fail, or be unable to decide. Pass means it found no problem i
 
 ## Merge
 
-A merge puts an approved change into the project's main version. You try the change first, then give a clear yes to merge it. On a hosted project, a merge can put the change live.
+A merge puts a change into the project's main version. By default, you try the change first, then give a clear yes to merge it. Automatic merging is an opt-in recorded with limits. On a hosted project, a merge can put the change live.
 
 <a href="https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/merge/SKILL.md">Source (for maintainers)</a>
 
@@ -48,7 +48,7 @@ The live copy is the version of the tool that people can use. The kit compares i
 
 ## Autonomy
 
-Autonomy lets the kit build several ready pieces without a person present, when the project has enabled it. You set that option. An unattended run cannot accept a risk or merge a change for you.
+Autonomy lets the kit build several ready pieces without a person present, when the project has enabled it. All options are off by default and recorded in `Runs on its own:`. The automatic merge option needs three earlier merges with a named yes and holds for checks, review findings, repairs and named risk areas.
 
 <a href="https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/implement/SKILL.md">Source (for maintainers)</a>
 

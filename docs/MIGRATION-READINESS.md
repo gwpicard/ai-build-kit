@@ -1,5 +1,7 @@
 # What is entangled between the two repositories
 
+> Historical record, 23 August 2026. This records migration readiness as assessed on that date. It is kept for history and does not describe the current kit. See [MAINTAINING.md](MAINTAINING.md) and [release-manifest.txt](../release-manifest.txt) for current maintenance and release boundaries.
+
 Preparation for retiring this repository and making `gwpicard/ai-build-kit` the
 single source.
 

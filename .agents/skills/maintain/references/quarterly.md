@@ -1,9 +1,9 @@
 # Quarterly upkeep
 
-Read the official documentation and changelog for every product named in each
-recipe and part. Keep a dated note in the ignored folder. Carry agreed changes
-into the recipe and this guide. Move `Last checked` only when every product
-was read.
+Compare the products the project uses with their official documentation and
+changelogs. Keep a dated note in the ignored folder with anything that affects
+the project. Recipe files and their `Last checked` dates are maintained with
+the kit, not in a project.
 
 Run the monthly routine first. Review hot spots: repeated changes or bugs,
 weak evidence, edits that touch many files, failing integrations and records

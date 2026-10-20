@@ -20,13 +20,13 @@ Command names say when to use them.
 | It's been a while | /maintain |
 | I'm lost | /what-now |
 
-Two of them carry the day-to-day work. /shape decides what to change next, a new idea or something broken, and turns it into a ready piece, without touching the tool yet. /implement builds a ready piece, whether it makes the tool do something new or brings it back to doing what it already should. It shows you the result and merges it on your yes, and once the tool is live that merge is the release.
+Two of them carry the day-to-day work. /shape decides what to change next, a new idea or something broken, and turns it into a ready piece, without touching the tool yet. /implement builds a ready piece, whether it makes the tool do something new or brings it back to doing what it already should. It shows you the result and, by default, waits for your yes before merging. Automatic merging is an opt-in. Once the tool is live, a merge is the release.
 
 The other four sit around those two. /setup-ai-build-kit founds the project once. /setup-hosting sets up how the tool runs live, and checks it later. /maintain makes the records true again and checks the live copy against your project, runs the upkeep when it is due, prepares a handover, and switches a tool off at the end. /what-now tells you where things stand when you are lost.
 
 You run /setup-ai-build-kit once. After that, start wherever you actually are. You can open a session with /shape as readily as with /implement, and neither needs the other to have run first. If you pick the wrong one it costs you nothing, because each checks what you typed against the masterplan and sends it down the right route.
 
-You never choose the method either. The agent decides whether the request needs an interview, a prototype, research, a test, a review, or a person to look at one area.
+The agent decides whether the request needs an interview, a prototype, research, a test, a review, or a person to look at one area. You can also opt in to queue, parallel builds, a short loop or automatic merging, recorded with its limits in `Runs on its own:`.
 
 ## 2. The three records
 
@@ -111,7 +111,7 @@ Three more say it is waiting on a question rather than on a person: `needs-clari
 
 Every project carries a short risk record at the top of its masterplan. Setup fills it from three plain questions: who is exposed if this fails, what data does it hold, and how would you recover from a failure. The fit check rechecks it as the project changes character.
 
-The care is the same everywhere. Every change goes through a pull request, the project check and an independent review, and nothing merges without your yes. What differs from piece to piece is the risk areas it touches.
+The care is the same everywhere. Every change goes through a pull request, the project check and an independent review. By default, a person says yes to each merge. Automatic merging is an opt-in recorded in `Runs on its own:`. What differs from piece to piece is the risk areas it touches.
 
 The record names the risk areas the project touches: personal data, money, sign-in by outsiders, automatic action on people or other systems, irreplaceable live data, or a regulated decision. It names each in your tool's own words, with the one caution that goes with it. Each piece carries a `Risk areas:` line naming the areas it touches, or `none`. A piece with `none` is built the ordinary way. A piece in a named area gets one risk notice, and the caution happens before that part goes live, or you accept skipping it on the record.
 
@@ -188,7 +188,7 @@ If the tool needs confidential files to work from, say so during the interview. 
 
 ## 5. Day to day
 
-Typed alone, /implement takes the next ready piece from the plan. It agrees with you in one sentence what the piece should do, chooses the evidence that piece needs, builds until that evidence holds, then stops so you can try it. Nothing is saved until you confirm it behaves, and the merge is asked for only after you have tried it. You get one address to try it on, the agent checks the page in a tab of its own rather than yours, and it stops its previews once you are done. If you ask for more while it builds, it first asks whether that belongs in this piece, which then says so, or in a new one. A piece that is not ready yet, still waiting on a question, goes to /shape first; /implement builds, it does not shape.
+Typed alone, /implement takes the next ready piece from the plan. It agrees with you in one sentence what the piece should do, chooses the evidence that piece needs, builds until that evidence holds, then stops so you can try it. Nothing is saved until you confirm it behaves, and the merge is asked for only after you have tried it, unless you have opted in to automatic merging. You get one address to try it on, the agent checks the page in a tab of its own rather than yours, and it stops its previews once you are done. If you ask for more while it builds, it first asks whether that belongs in this piece, which then says so, or in a new one. A piece that is not ready yet, still waiting on a question, goes to /shape first; /implement builds, it does not shape.
 
 Before saving, the kit checks what else the change touches and runs the tests
 that already cover those parts first. If it reaches another part of the tool,
@@ -234,7 +234,7 @@ is wrong, describe what happened and type /shape.
 
 The best independent method available reviews every change before it merges. It reports in plain language, sorted into what's worth stopping for and what's worth knowing.
 
-When more than one piece is ready, /implement shows you the whole set before it builds anything, and asks which to take. It comes back with two lists. The first is everything ready, and those are safe to take on together, because a piece waiting on another piece is never in it. The second is what is waiting, each line saying which piece has to land first: "deposits cannot start until card payments is built". Nothing is built until you choose.
+When more than one piece is ready, /implement shows you the whole set before it builds anything, and asks which to take. It comes back with two lists. The first is everything ready, and those are safe to take on together, because a piece waiting on another piece is never in it. The second is what is waiting, each line saying which piece has to land first: "deposits cannot start until card payments is built". Nothing is built until you choose, unless you have opted in to queue or parallel builds.
 
 A repair that is ready comes first, above both lists, since something that used to work outranks anything new. To see the lists without building, ask for them in your own words, such as "what can I build in parallel?". If the list looks out of date, type /implement again, since it is printed fresh from your project's issues every time. /what-now still names at most three things, so the whole list lives here.
 
@@ -320,7 +320,7 @@ test to protect promised behaviour, never just to raise the count.
 
 ## 7. Saving work
 
-Every piece saves through a pull request: the agent pushes a short-lived branch and opens it, and you decide whether to merge.
+Every piece saves through a pull request: the agent pushes a short-lived branch and opens it, and by default you decide whether to merge.
 
 A piece in a risk area whose caution is neither done nor accepted takes the flagged route. It does the same, and also attaches the condition the touched area requires; a piece that stops there, plan marked blocked and the condition on record, counts as finished until that condition is met or you carry on after the risk notice and your acceptance is recorded. When you are there and carry on at the notice, the piece is built and saved like any other.
 
@@ -330,17 +330,17 @@ If you say no, or nobody is there to answer, the piece is still built and checke
 
 Next to the merge button sits a check. It re-runs the project's real commands on a clean machine, so the pull request's claims get verified rather than trusted. Those commands include the mechanical checks your project's language offers, a type check and a linter wherever it has them, which catch a whole class of mistakes before anyone tries the tool. They use each tool's own default rules, so a red tick points at a real mistake rather than a matter of taste. The agent runs the same checks before it hands any work over.
 
-Green means the checks that exist really passed, which is a smaller promise than nothing being wrong: it covers the behaviour somebody thought to check and nothing else. Red means don't merge; say it to /implement, which takes that piece's build back up, and the agent reads what failed itself. You never read the machine's logs, and you never merge over a red check. Sometimes GitHub will not start the check at all, for example when the account's billing stops it. That is not red. The agent runs the same checks on your computer instead and tells you once. On a private exploration that is enough to merge; on the other paths the merge waits until GitHub runs it. The check is switched off only if you ask, and /maintain reminds you while it stays off.
+Green means the checks that exist really passed, which is a smaller promise than nothing being wrong: it covers the behaviour somebody thought to check and nothing else. Red means don't merge; say it to /implement, which takes that piece's build back up, and the agent reads what failed itself. You never read the machine's logs, and you never merge over a red check. Sometimes GitHub will not start the check at all, for example when the account's billing stops it. That is not red. The merge waits until GitHub runs the check. You can re-enable the check or merge on GitHub yourself. The check is switched off only if you ask, and /maintain reminds you while it stays off.
 
-A human decides whether to merge, always. Once the check is green, /implement tells you what to try and where, such as the preview address, then names the pull request in one plain line and asks for a yes that names the merge. Saying "put it live" or "save it" before any merge was named is not that yes, so it asks again; saying "merge it" is, and it does not ask twice.
+A human decides whether to merge by default. Automatic merging is an opt-in. When it is off, once the check is green, /implement tells you what to try and where, such as the preview address, then names the pull request in one plain line and asks for a yes that names the merge. Saying "put it live" or "save it" before any merge was named is not that yes, so it asks again; saying "merge it" is, and it does not ask twice.
 
-It makes the merge on the pull request itself, never by merging on your computer and pushing `main`, and in Claude Code a box asks you to allow it first, where your project's settings carry that question. A project founded before the kit added it gets no box until /maintain adds it, and /implement says so rather than promising one. If GitHub cannot be reached, the merge waits, and you can merge it on GitHub yourself. With nobody there to answer, nothing is merged and the pull request waits for you. After a merge, everyone pulls main. Every pull request gets its review before it is offered as ready, and a flagged area also gets the review its caution names.
+It makes an approved merge on the pull request itself, never by merging on your computer and pushing `main`. In Claude Code a box asks before a named approval merge, where the project's settings carry that question. A project founded before the kit added it gets no box until /maintain adds it, and /implement says so rather than promising one. If GitHub cannot be reached, the merge waits, and you can merge it on GitHub yourself. With automatic merging off, nobody there to answer means the pull request waits. After a merge, everyone pulls main. Every pull request gets its review before it is offered as ready, and a flagged area also gets the review its caution names.
 
 Once the tool is live, a merge is a deploy: the host builds `main` and the team's copy follows.
 
-So before asking, /implement checks the live side. A change that adds to the database waits until /setup-hosting has applied that addition, which only adds, so the version live now keeps working. A piece whose `Live side needs:` line names a new secret or service waits until /setup-hosting reports it present. So does a piece whose branch adds a setting to `.env.example`, even with no such line, since a piece shaped before the line existed has none. A piece in a sensitive area waits until its caution is done or your acceptance is recorded.
+So before asking, /implement checks the live side. A change that adds to the database waits until /setup-hosting has applied that addition, which only adds, so the version live now keeps working. A piece whose `Live side needs:` line names a new secret or service waits until /setup-hosting reports it present. So does a piece whose branch adds a setting to `.env.example`, even with no such line, since a piece shaped before the line existed has none. A piece in a risk area waits until its caution is done or your acceptance is recorded.
 
-Where your recipe runs a check on this computer before the merge, a check that runs and fails holds the merge as a red check does, and the piece goes back to its build until it passes; a check that cannot run here is a warning you hear once, and the merge goes ahead.
+Where your recipe runs a check on this computer before the merge, a check that runs and fails holds the merge as a red check does, and the piece goes back to its build until it passes. A required check that cannot run also holds the merge.
 
 After the merge, /implement reads one line from the live copy: "The live copy now runs this change", or "The live copy did not update" with the next step. It changes nothing live, so if you ask it to put the change out again, it checks first and leaves any further deploy to /setup-hosting. The project's push guard refuses changes straight to `main` and pushes that replace remote work, whichever coding agent runs them. Each piece starts from an up-to-date `main` and reaches it through a pull request.
 
@@ -362,9 +362,9 @@ What the agent may not do is take the notice back. Pushing back on the cost, the
 
 ## 9. Going live
 
-/setup-hosting is for the moment you want people to use the tool. Its first run takes what is already on `main` live and sets the host up so that each later merge to `main` reaches the team's copy. From then on a merge is a deploy, and /implement makes each merge on your yes, so /setup-hosting never merges your code. Run it again whenever you want the live copy checked against `main`, or moved to another host or recipe.
+/setup-hosting is for the moment you want people to use the tool. Its first run takes what is already on `main` live and sets the host up so that each later merge to `main` reaches the team's copy. From then on a merge is a deploy, and /implement waits for your yes by default, unless automatic merging is on, so /setup-hosting never merges your code. Run it again whenever you want the live copy checked against `main`, or moved to another host or recipe.
 
-/setup-hosting reads the risk record first. It runs the full evidence run, independent review, operational readiness, and the live transition. Hosting is offered on a recipe. With no recipe, the kit says once that it guarantees no way back, backup or checked launch, records your words and the date, and still helps you set the host up by hand.
+/setup-hosting reads the risk record first. It runs the full evidence run, independent review, operational readiness, and the live transition. With a recipe, hosting follows its checks. With no recipe, the kit says once that it guarantees no way back, backup or checked launch, records your words and the date, and still helps you set the host up by hand.
 
 For a risk area, /setup-hosting does the caution it can do itself (a backup restored once, a rehearsal on a copy), and at a caution that is a person who has not looked, gives you the risk notice once. If you carry on, your acceptance is written down and that area goes live too. Where somebody outside the team is going to look, ask for the handover and /maintain prepares it.
 
@@ -378,10 +378,13 @@ was not tried, because the kit does not roll back the live tool just to check.
 The kit runs the checks it can reach. Where a check runs on a server the kit
 cannot reach, it asks you in fixed words to paste the result back, and a
 script reads what you paste. Where only a
-person can judge, you look and the kit writes down what you said. A check that
-fails or cannot run is a warning, said once and written in the changelog, and
-the launch goes ahead. The one thing a first launch waits for is its address,
-because a tool with no recorded address is not live.
+person can judge, you look and the kit writes down what you said. On a recipe,
+a live launch is held if the backup check does not pass, if the recipe names
+no rollback on a first launch, or if a later launch cannot confirm an earlier
+build to return to. Other checks that fail or cannot run are reported as
+warnings. A first launch also waits for its address, because a tool with no
+recorded address is not live. With no recipe, the kit gives one notice that it
+guarantees nothing, records the person's choice and helps with setup by hand.
 
 Before the launch review asks you to look up a setting, the kit reads it itself
 where it can: from an address the service answers in public, with the key your
@@ -504,15 +507,13 @@ rollback until you approve putting the repair live. The recipe says which
 applies. Confirming an earlier build exists does not prove a rollback works;
 launch checks do not try one on a working live tool.
 
-## 10. Autonomy: /implement auto and goal modes
+## 10. Autonomy
 
-Autonomy is earned. Once a project has three normal pieces built cleanly, no open review finding, and a plan made of ready pieces a machine can prove done, "/implement auto" can build several of them in a row without you between them. You approve the plan once, then it runs; the trade is that you check a batch at the end instead of each piece as it lands.
+The longer-running options are off by default. To turn one on, record the person's words, date and chosen options in `Runs on its own:` in the masterplan. `/implement auto` also needs the person's approval before it starts.
 
-The run only picks up pieces whose done line names a check a machine can judge. Pieces that need your eyes stay in the plan for you. Every piece still gets its own evidence and its own saved snapshot. A piece that fails three attempts gets parked with a note on what it revealed, and the run moves on rather than grinding on it; anything touching a named risk area stops the run entirely.
+The options are `queue`, `parallel N`, `loop` and `merge`. Queue takes the next ready, unblocked and unassigned piece after each merge, up to five pieces in one sitting. Without the `merge` option, it stops when an open pull request blocks the next piece. Parallel builds use one worktree per piece, default to two builders and never exceed three; a shared file, table, migration, risk area or project setting holds the parallel pair. The short loop counts three attempts per piece, including a repair. A fourth attempt marks the piece `blocked`; a repair or an unaccepted risk area cannot loop unattended. Automatic merging requires three earlier merges through `--approved`, a branch up to date with `main`, passing checks and review, and no repair, risk area, migration, setting, live requirement or `(try it)` item. A pending check waits up to 15 minutes; any red, missing or still-pending check holds the merge.
 
-You come back to a report of what was built, what got parked and why, and a checklist of things to try, riskiest first. The batch arrives as pull requests; work the checklist, then say yes to the merge. The run itself never merges. If the run disappointed you, improve the documents rather than the code. Sharpen the done lines, add the missing rule to the masterplan, and run it again.
-
-Some harnesses provide goal or long-run modes, such as Claude Code's `/goal`: "keep going until this condition holds". Same run, same rules: take the condition from a done line, a named risk area still stops it, and the result still lands through a pull request.
+At the end, the evidence-run report gives what passed, failed or was not checked, the remaining human judgements, and whether anything in the risk record still blocks shipping. Automatic merges name each piece merged. If the main or live check fails after one, automatic merging pauses and reports the failure. It stays paused until you resume it. A person can turn any option off in their own words.
 
 ## 11. Working as a team
 
@@ -522,13 +523,13 @@ Nothing else changes when a second person arrives: naming a piece before startin
 
 When you shape a request, /shape names any other open piece that would be built in the same place, before the work starts. You can carry on, wait, or fold the two together. Open pull requests show work in progress.
 
-On a shared project, each piece starts from an up-to-date `main` and arrives as its own pull request, and a person decides each merge. When two pieces change the same lines, GitHub shows a merge conflict on the pull request that came second.
+On a shared project, each piece starts from an up-to-date `main` and arrives as its own pull request, and by default a person decides each merge. When two pieces change the same lines, GitHub shows a merge conflict on the pull request that came second.
 
 Before /implement asks for that merge, it reads whether GitHub can make it. On a conflict it says so in one line, and offers to resolve it the ordinary way: merge the newest `main` into that piece's branch, settle the conflict, and push the branch again, never with a force push. It does that only on your yes, then runs the check again before asking for the merge.
 
 Once a merge is under way on your computer, /what-now explains a conflict it finds and says which two intentions collided. It settles the conflict itself only when the records make the right outcome plain. Otherwise it keeps both sides and asks you. A conflict that touches data or how the tool goes live is never guessed through. You never have to read Git's own state to follow any of this.
 
-The kit is built for one person or a small team. It is not optimised for large teams, or for many agents building the same project in parallel: each session builds one piece at a time, and the person merging is the one place the work comes together.
+The kit is built for one person or a small team. It is not optimised for large teams or many agents building the same project in parallel. By default, each session builds one piece at a time. Parallel builds are an opt-in, and a person decides each merge by default.
 
 ## 12. Maintenance
 
@@ -636,8 +637,8 @@ masterplan pointing at a skill's file by a folder your installation may not
 have offers to name the skill instead, changing only those lines, and only on
 your yes.
 
-A masterplan whose fit-check section still uses the fields from the kit's
-four-path days is offered a rewrite to today's shape. It shows the old section above the new one, copies each accepted risk
+A masterplan whose fit-check section still uses the fields from before the risk
+record is offered a rewrite to today's shape. It shows the old section above the new one, copies each accepted risk
 word for word, and changes nothing else in the masterplan without your yes.
 
 A project installed before the kit had six commands still offers the old

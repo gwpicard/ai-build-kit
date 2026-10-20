@@ -1,6 +1,6 @@
 ---
 name: merge
-description: Take a finished piece to main. The first upload and each merge wait for a yes. Used by implement, setup-hosting, maintain and founding.
+description: Take a finished piece to main. The first upload and, by default, each merge wait for a yes. Used by implement, setup-hosting, maintain and founding.
 user-invocable: false
 ---
 
@@ -20,7 +20,8 @@ say the person declined only when they did.
 
 ## Merge a finished piece
 
-Merge only on a yes that names it. First say what the person can try and where:
+Merge only on a yes that names it, unless automatic merge is recorded and
+the script finds its conditions hold. First say what the person can try and where:
 the recipe's preview address or how to try it locally. If their check from
 build step 6 is outstanding, ask for merge only after they confirm the result.
 

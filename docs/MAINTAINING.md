@@ -247,8 +247,8 @@ the kit now expects. On a yes, every risk area, acceptance date and word moves
 as written, and the earlier path and why stay as history. An acceptance is never
 turned into a finished caution. The open pieces get a `Risk areas:` line where
 the piece's reach says which area it touches, and a changelog entry records the
-move. `.agents/tests/risk-move-rehearsal.sh` rehearses each path value and the
-four-path fields.
+move. `.agents/tests/risk-move-rehearsal.sh` rehearses each old path value and
+the old path fields.
 
 ### Working conditions
 
@@ -296,6 +296,10 @@ owe.
 Start with PHILOSOPHY.md, beside this file. Its four questions get answered in
 the pull request description before the skill changes. A change that cannot
 answer them gets reshaped before it's considered for merge.
+
+A change that retires a term, mode or behaviour adds its old phrases to the
+stale-claim list in the same pull request. A number owned by a check belongs in
+the check, not repeated in prose.
 
 `.agents/skills/` is the single source of truth. Edit `<name>/SKILL.md`, run
 `.agents/tools/build-adapters.sh`, and commit the canonical change together with
@@ -425,7 +429,7 @@ Every change to `.agents/skills/` or the kit's own machinery runs
 - the shape of the skills, by `.agents/tools/check-structure.py`: no skill
   loads a command's own references or sections, each background skill has two
   callers or an agent that loads it, and a command's SKILL.md stays within
-  1,200 words, a background skill's within 1,500 and a reference within 2,000;
+  the word budgets set in `.agents/tools/check-structure.py`;
 - the maintainer skill boundary: every folder under `.agents/maintainer-skills/`
   is read off the disk rather than from a list, the vendored writing skill
   carries its licence, and no folder or command file named for any of them
@@ -625,6 +629,9 @@ real run and record which keys it has. The recipe names the publishable key and
 records the legacy anon setting for `/maintain`.
 
 ## When a release is cut
+
+Before release, run `.agents/maintainer-skills/review-public-docs/SKILL.md`.
+Wait until every finding is fixed or the maintainer accepts it.
 
 Ask first what an existing user must do to upgrade. The kit has had real users
 since v0.5, so a release is an upgrade for them as much as a first install for a

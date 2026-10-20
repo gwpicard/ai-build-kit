@@ -61,8 +61,9 @@ and [GitHub credential precedence](https://cli.github.com/manual/gh_help_environ
 Run `gh api user --jq .login` and `gh repo view --json nameWithOwner` from the
 project to confirm the account and repository, then refresh the plan. These
 reads do not prove write access; handle a refused operation against that
-repository. Do not create a test issue. A connector's separate authorisation
-failure is not repaired by the launcher.
+repository. Do not create a test issue for this access check. The founding
+`--conditions` run described in `stand-up.md` is the exception. A connector's
+separate authorisation failure is not repaired by the launcher.
 
 Run `git ls-remote --heads origin` for an HTTPS GitHub remote. A successful
 `gh` call does not prove Git access. The launcher covers HTTPS; SSH needs its

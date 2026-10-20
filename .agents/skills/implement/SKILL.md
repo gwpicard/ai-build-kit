@@ -30,20 +30,21 @@ another person's assignment or a recorded block. Say why; take the next
 eligible piece. Closed blockers make `blocked` stale; say so. Mutual blockers
 go to `/shape`.
 
-For several ready pieces, show **Build these together now** and **These wait
-their turn**, counts and dependencies. Omit questions; an unmarked piece needs
+For several ready pieces, show **Ready now** and **Waiting**, counts and dependencies. Omit questions; an unmarked piece needs
 `/shape`. Showing a list builds nothing. A green pull request waits for merge;
 follow `merge` only when asked. Ask which merge when told only "put it live".
 
 ## Build and save
 
 Build one piece per pass with `build-piece`, through updated records. After
-green checks and records in the pull request, use `merge`. Merge only on a yes
-naming it. Unattended, leave it ready for review.
+green checks and records in the pull request, use `merge`. By default, a named
+yes is required to merge. Unattended, leave it ready for review unless the
+automatic merge option is on.
 
 `auto` needs approval and `references/running-longer.md`. An unattended run merges only through `--auto` when the setting is on, never otherwise. Each piece must be
 self-sufficient enough to build without a person present. Load the reference
-first. In an unattended run nobody is there to say yes, so never merge or
+first. In an unattended run nobody is there to say yes, so never merge except
+through `--auto` when its recorded option and every hold allow it, and never
 accept a risk for the person.
 
 ## Done when

@@ -376,7 +376,7 @@ that you cannot pick one yourself, where your coding agent enforces that.
 ## Agents
 
 Some work goes better in a fresh context that has not seen the conversation so
-far. The kit has three agents for that, and a command starts each one; you
+far. The kit has four agents for that, and a command starts each one; you
 never type them.
 
 - `reviewer` looks at a masterplan, a piece's change or the whole build with
@@ -385,6 +385,8 @@ never type them.
   a time, during `/implement auto`.
 - `researcher` checks one outside fact, or looks for existing work, with the
   `research` skill.
+- `refuter` checks whether a review finding is wrong, with the `second-opinion`
+  skill.
 
 Each agent has one brief in `.agents/agents/`. The kit generates a file for
 each coding agent that reads its own: `.claude/agents/`, which Cursor and VS
@@ -393,12 +395,12 @@ A whole copy of the kit and the Claude Code plugin carry them. The shared
 skills installer and the Agent Plugins folder carry skills only, so there the
 command starts an ordinary subagent and tells it which skill to load.
 
-The reviewer and the researcher only read. How firmly that holds depends on
+The reviewer, refuter and researcher only read. How firmly that holds depends on
 the coding agent:
 
 | Coding agent | What keeps a read-only agent from changing files |
 |---|---|
-| Claude Code | Its tool list has no editing tool. The reviewer keeps the command line, because a review runs commands, so a check after the review puts back anything under review that changed and tells you. |
+| Claude Code | Its tool list has no editing tool. A review agent keeps the command line, because a review runs commands, so a check after the review puts back anything under review that changed and tells you. |
 | Cursor | `readonly: true` in the agent's file: no edits, and no command that changes anything. |
 | Gemini CLI | Its tool list holds only reading and searching tools, with no command line. |
 | GitHub Copilot | Its tool list holds reading, searching and the web, with no editing or commands. |
@@ -433,12 +435,13 @@ after a clean checkpoint and explicit approval.
 | Unsaved work | `what-now` says what it belongs to | Session-end reminder |
 | Check-up due | `what-now` says when a visit is overdue | Said automatically when a session opens |
 | Safety | Standing restrictions and approval gates | Mechanical command deny list |
-| Merge | A merge only on a yes that names it; `merge.py` holds the project check and open review boxes | Claude Code blocks raw merge commands |
+| Merge | By default, a yes that names the merge; recorded automatic merging is available with its limits. `merge.py` holds the project check and open review boxes | Claude Code blocks raw merge commands |
 | Long runs | Normal sequential work | Native goal or orchestration mode |
 
 During `setup-ai-build-kit`, the capability check records which enhancements the current
 harness provides and selects a fallback for anything absent. Missing optional
-automation reduces convenience rather than changing the workflow's rules.
+automation reduces convenience. Autonomy remains off unless it is recorded in
+the project's `Runs on its own:` setting and the harness can enforce its limits.
 
 `setup-ai-build-kit` writes the session-start wiring only into a Claude settings file it
 creates itself, and never into one that already exists. A project whose Claude
