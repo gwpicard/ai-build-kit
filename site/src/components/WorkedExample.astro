@@ -43,7 +43,7 @@ const gradeLabel = (grade: { hit: number; drift: number; miss: number; unobserva
 
           <details class="workflow-facts">
             <summary>Run details and checks</summary>
-            <p class="replay-note">Replay case {run.replayCase}, run {run.replayRun}. Recorded run of the 1.0 candidate.</p>
+            <p class="replay-note">Recorded test conversation. Kit version 1.0.</p>
             <p class="grade-note">Grade: {gradeLabel(run.grade)}{run.grade.unobservable ? `, ${run.grade.unobservable} not observable` : ''}.</p>
             {stage && <>
               <h3>Workflow stage: {stage.title}</h3>
@@ -51,7 +51,7 @@ const gradeLabel = (grade: { hit: number; drift: number; miss: number; unobserva
               <ul class="skill-list">
                 {run.skills.map((skill) => <li><a href={sourceUrl(`.agents/skills/${skill}/SKILL.md`)}>{skill}</a></li>)}
               </ul>
-              <p class="fact-label">Checks in this stage</p>
+              <p class="fact-label">Checks listed in this run record</p>
               {run.checks.length ? (
                 <ul class="check-list">
                   {run.checks.map((check) => (
@@ -63,7 +63,7 @@ const gradeLabel = (grade: { hit: number; drift: number; miss: number; unobserva
                     </li>
                   ))}
                 </ul>
-              ) : <p>No check is listed for this stage in the workflow map.</p>}
+              ) : <p>The run record lists no script check for this step.</p>}
             </>}
           </details>
         </div>

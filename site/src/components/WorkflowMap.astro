@@ -67,10 +67,10 @@ const sourceUrl = (path: string) => `https://github.com/gwpicard/ai-build-kit/bl
             <p>{stage.person_decides}</p>
           </div>
           {stage.checks_anchor && (
-            <p class="checks-link"><a href={`${import.meta.env.BASE_URL.replace(/\/?$/, '/')}what-it-checks/#${stage.checks_anchor}`}>See what the kit checks at this step</a></p>
+            <p class="checks-link"><a href={`#${stage.checks_anchor}`}>Jump to what is checked at this step</a></p>
           )}
           <details class="technical-details">
-            <summary>How the kit checks this step</summary>
+            <summary>Checks and source details</summary>
             {stage.command && (
               <div class="detail">
                 <h3>Command</h3>
@@ -88,15 +88,7 @@ const sourceUrl = (path: string) => `https://github.com/gwpicard/ai-build-kit/bl
                 <h3>Checks</h3>
                 {stage.checks.map((check) => (
                   <div class="check">
-                    <p><code>{check.script}</code></p>
-                    <dl>
-                      {Object.entries(check.exits).map(([code, meaning]) => (
-                        <div class="exit-meaning">
-                          <dt>Exit {code}</dt>
-                          <dd>{meaning}</dd>
-                        </div>
-                      ))}
-                    </dl>
+                    <p><code>{check.script}</code>: {check.description}</p>
                   </div>
                 ))}
               </div>

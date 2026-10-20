@@ -4,6 +4,7 @@ import starlight from '@astrojs/starlight';
 export default defineConfig({
   site: 'https://gwpicard.github.io',
   base: '/ai-build-kit',
+  redirects: { '/concepts/': '/ai-build-kit/records/' },
   integrations: [starlight({
     title: 'AI Build Kit',
     description: 'A guide to building and running tools with AI Build Kit.',
@@ -14,9 +15,9 @@ export default defineConfig({
     },
     customCss: ['./src/styles/site.css'],
     sidebar: [
-      { label: 'Start here', items: ['index', 'how-it-differs', 'how-it-works', 'worked-example', 'install'] },
-      { label: 'Understand', items: ['what-it-checks', 'concepts', 'agents'] },
-      { label: 'Behind the kit', items: ['design', 'sources', 'releases'] },
+      { label: 'Get started', items: ['index', 'worked-example', 'install'] },
+      { label: 'How it is designed', items: ['design', 'how-it-works', 'records', 'what-it-checks', 'how-it-differs'] },
+      { label: 'Reference', items: ['agents', 'sources', 'releases'] },
     ],
     social: [{
       icon: 'github',

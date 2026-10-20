@@ -32,10 +32,10 @@ function tocFrontmatter(markdown) {
   const headings = markdown.match(/^#{1,6}\s/gm) ?? [];
   return headings.length < 3 ? 'tableOfContents: false\n' : '';
 }
-const agentsIntro = 'The table shows how much evidence exists for each coding agent. A grade describes the evidence for the agent, not whether a tool built with the kit is safe.';
+const agentsIntro = 'The table says how far the kit has been tried on each coding agent. A coding agent is a program that writes code. The grade says how much we tried. It does not say a tool built with the kit is safe.';
 const agentsLimits = `
 
-Tested means recorded conversations have run on the agent. Expected to work means it reads the same skill files as a tested agent, but nobody has recorded a run. Experimental means the needed files are included, but their use has not been confirmed.
+Tested means maintainers replayed recorded conversations on the agent and graded what it did. Expected to work means it reads the same skill files as a tested agent, but nobody has recorded a run. Experimental means the kit includes files for the agent, but nobody has checked that the agent loads them.
 
 ## Known limits
 
@@ -54,7 +54,19 @@ await writeFile(path.join(generatedDir, 'agents.md'), `---\ntitle: Supported age
 const themesStart = sources.indexOf('\n## ');
 const sourceThemes = themesStart < 0 ? '' : sources.slice(themesStart).trim();
 const sourcesIntro = sources.slice(0, themesStart < 0 ? undefined : themesStart).replace(/^# .*\n+/, '').trim();
-const sourcesBody = `${sourcesIntro}\n\n${sourceThemes}`;
+function wrapTables(markdown) {
+  const lines = markdown.split('\n');
+  const output = [];
+  for (let index = 0; index < lines.length;) {
+    if (lines[index].startsWith('|')) {
+      const table = [];
+      while (index < lines.length && lines[index].startsWith('|')) table.push(lines[index++]);
+      output.push('<div class="comparison-table-wrap" role="region" aria-label="Sources and contributions" tabindex="0">', '', ...table, '', '</div>');
+    } else output.push(lines[index++]);
+  }
+  return output.join('\n');
+}
+const sourcesBody = `${sourcesIntro}\n\n${wrapTables(sourceThemes)}`;
 await writeFile(path.join(generatedDir, 'sources.md'), `---\ntitle: Sources\nslug: sources\ndraft: false\n${tocFrontmatter(sourcesBody)}---\n\n${sourcesBody}\n`);
 
 await writeFile(path.join(siteRoot, 'public/llms.txt'), llms);

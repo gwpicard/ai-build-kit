@@ -1,14 +1,123 @@
 ---
-title: How it works
-description: Follow the stages from founding a project to maintaining it.
+title: The steps of a run
+description: What happens, what is checked, and who decides at each step.
 draft: false
-tableOfContents: false
 ---
 
 import WorkflowMap from '../../components/WorkflowMap.astro';
 
-The kit guides work from an idea to a tool that runs in your accounts. Choose a stage to see what happens and what you decide.
-
-The kit calls each task with a result you can check a piece.
+The stages repeat for each piece of work. Founding prepares the project. You then shape, build, review and merge each piece. You set up hosting once and maintain the project over time.
 
 <WorkflowMap />
+
+## Step by step
+
+### Found a project
+
+**What happens:** You describe the tool and answer setup questions. The agent prepares the project.
+
+**What is checked, and by what:**
+
+- The [tooling check](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-ai-build-kit/scripts/check-tooling.sh) says which tool is not ready before the kit builds anything.
+- The agent enables Git’s pre-push check with [this script](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-ai-build-kit/scripts/use-push-guard.sh). Git refuses a direct push to the main branch.
+- The [branch rule](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/merge/scripts/protect-branch.py) requires the project check on GitHub, where your plan allows it.
+- The [first upload](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/merge/scripts/first-upload.py) waits for your yes.
+- The [project check](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-ai-build-kit/templates/foundation/checks.yml) starts as a placeholder that fails. It cannot show a pass until the project has real tests.
+
+**What you decide:** You answer the setup questions and decide whether to use existing work.
+
+**Why:** The project needs the tools and accounts that the setup scripts check before work starts. ([design reasons](/ai-build-kit/design/)).
+
+### Shape a piece
+
+**What happens:** You turn a request into one task with a result you can check.
+
+**What is checked, and by what:**
+
+- The [ready mark](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/records/scripts/mark-ready.sh) goes on only when the piece has a "Done when" section, waits on no question, and names its risk areas.
+- The [reach check](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/quality-checks/scripts/quality.py) lists the files the piece is likely to touch.
+- The [risk warning](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/fit-check/SKILL.md) comes once. The kit records your answer and the date.
+
+**What you decide:** You settle questions that need your judgement and decide whether to mark the piece ready.
+
+**Why:** The person agrees on the result and questions before an agent builds the piece. ([design reasons](/ai-build-kit/design/)).
+
+### Implement a piece
+
+**What happens:** The agent builds one ready piece on its own branch.
+
+**What is checked, and by what:**
+
+- The [test freeze](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-ai-build-kit/templates/foundation/check-tests.sh) fails a change that edits an existing test without a stated reason.
+- The [tests check](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/quality-checks/scripts/quality.py) reports a test that already passed before the change, and a "Done when" line with no test.
+- The [structure check](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/quality-checks/scripts/quality.py) reports a new loop between parts, or a crossed boundary.
+- The [trim commit](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/quality-checks/scripts/trim-commit.sh) refuses a clean-up that touched a test.
+- The [secret check](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-ai-build-kit/templates/foundation/guard-secrets.sh) stops a command that would show a secret.
+- The [repair reset](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/repair/scripts/reset-attempt.sh) undoes a failed repair before the next one, so failed fixes do not stack.
+
+**What you decide:** By default, you try the result and approve the named change. Automatic merge is off until enabled; it needs three earlier named approvals and a `Runs on its own:` line in the masterplan.
+
+**Why:** Scripts check rules they can judge. Instructions cover judgements that need a person or agent ([design reasons](/ai-build-kit/design/)).
+
+### Review the change
+
+**What happens:** A reviewer agent in a fresh context checks the change and its evidence.
+
+**What is checked, and by what:**
+
+- The [review packet](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/quality-checks/scripts/gate.py) gives the reviewer the change and the evidence. The review record names the version it read.
+- The [review script](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/second-opinion/scripts/review-guard.sh) restores any file the reviewer changed.
+- The [review check](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-ai-build-kit/templates/foundation/check-review.sh) fails the project check while a finding is open or the record names another version.
+- A review that no second person approved is marked "unverified" in the pull request.
+
+**What you decide:** You can ask the agent to explain a finding. The reviewer agent marks whether a finding should stop the merge.
+
+**Why:** The review gives you evidence about the change without asking you to read its code. Each report says what the agent tried and what happened ([design reasons](/ai-build-kit/design/)).
+
+### Merge the change
+
+**What happens:** The agent asks you to approve the named pull request. A merge script then merges that change.
+
+**What is checked, and by what:**
+
+- The [merge script](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/merge/scripts/merge.py) needs your recorded yes, unless you turned on automatic merge. It merges only the version that was checked.
+- It stops when the project check is missing, failed or did not run.
+- It stops when a review finding is open, or when the review names another version.
+- The [risk-area check](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-ai-build-kit/templates/foundation/check-sensitive-areas.sh) reports each risk area the change touches and stops the merge while a decision is open.
+- On a live project, the [settings check](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/merge/scripts/env-names-added.sh) stops the merge until the host has each new setting.
+
+**What you decide:** You type yes to the named change. One yes covers one merge, once.
+
+**Why:** The person decides whether the change joins the project. The merge script checks the recorded approval and project results. ([design reasons](/ai-build-kit/design/)).
+
+### Set up or check the live tool
+
+**What happens:** The agent sets up hosting or checks the live tool.
+
+**What is checked, and by what:**
+
+- The [launch script](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-hosting/scripts/run-recipe.sh) stops a launch if the backup or rollback step is not confirmed. With no recipe, it says once that nothing is checked.
+- The [approval step](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/records/scripts/approval.py) asks for your yes before each live change.
+- The live check compares the live tool with the main project, on [Vercel](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/live-check.sh) or [Coolify](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-coolify/scripts/live-check.sh). It changes nothing.
+- The [recipe check](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/tools/check-recipes.sh) fails a recipe with no rollback, backup or restore section.
+
+**What you decide:** You decide whether to launch after the agent explains the live change.
+
+**Why:** Hosting stays on supported recipes because those recipes define the launch, backup and rollback steps. ([design reasons](/ai-build-kit/design/)).
+
+### Maintain the project
+
+**What happens:** The agent checks project records and the live tool, then handles upkeep that is due.
+
+**What is checked, and by what:**
+
+- The [live check](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/live-check.sh) runs again at each visit.
+- The [update check](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/maintain/scripts/upgrade-check.py) lists what a kit update left for the visit to finish.
+- The [recipe age check](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/maintain/scripts/recipe-freshness.py) reports a recipe that is old or has an old name.
+- The [branch list](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/quality-checks/scripts/stale-branches.py) names branches whose work already reached the main project. It removes nothing.
+- The [instruction length check](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/maintain/scripts/standing-lines.sh) reports when the standing instructions grow too long.
+- The [safety rules check](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/maintain/scripts/settings-rules.py) offers newer safety rules and applies them only on your yes.
+
+**What you decide:** You decide whether to apply changes beyond routine updates.
+
+**Why:** The project records and live tool can change, so the agent checks them again over time. ([design reasons](/ai-build-kit/design/)).

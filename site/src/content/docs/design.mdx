@@ -1,71 +1,45 @@
 ---
-title: Principles and design
-description: The principles behind AI Build Kit and how it works.
+title: Design
+description: Why the kit works in small checked steps.
 draft: false
 ---
 
-AI Build Kit helps a person build and run a tool with a coding agent without needing to read code. It is for people who are comfortable with technology but do not write code. A developer who is new to agent-led work may use it too.
-
-## Principles
-
-**One agreed piece at a time.** Each piece has a result the person can check. The person agrees to that result before an agent builds it.
-
-Where it holds: [shape skill](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/shape/SKILL.md).
-
-**The person decides, and the kit explains.** By default, the person tries the result and decides whether to approve the change for merge. Automatic merging is an option with recorded limits.
-
-Where it holds: [merge skill](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/merge/SKILL.md).
-
-**A machine holds a rule wherever it can.** Hooks, settings and scripts apply rules each time. Prose explains only the judgements a machine cannot make.
-
-Where it holds: [what the kit always holds](/ai-build-kit/what-it-checks/#what-the-kit-always-holds) and [maintaining guide, backbone and mechanisms](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/MAINTAINING.md#the-backbone-and-its-mechanisms).
-
-**A sentence earns its place only if a machine enforces it, a replay shows it changes the outcome, or it carries a judgement.** Rules based on one failed run remain hypotheses until a measurement backs them.
-
-Where it holds: a judgement, not a check.
-
-**Small is a reliability feature.** Every instruction competes for the agent's attention. A rule that does not help makes the important rules less likely to be followed.
-
-Where it holds: [the size check](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/tools/check-structure.py), which fails a skill or reference that grows past its word limit.
-
-**Warn once, then respect the decision.** The kit names a risk and explains who could be exposed and what would normally prevent harm. The person chooses what to do, and the kit records their words and the date.
-
-Where it holds: [fit-check skill](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/fit-check/SKILL.md).
-
-**Build tools the owner can run and share.** Each project can go live and be shared with a team. Its repository, host and database accounts belong to the owner.
-
-Where it holds: [setup skill](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-ai-build-kit/SKILL.md) and [hosting recipes](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-hosting/SKILL.md).
-
-**Test what the kit does, not what it says.** Shell checks test boundaries and scripts. Replays check what the agent did and what it left in the project.
-
-Where it holds: [kit tests](https://github.com/gwpicard/ai-build-kit/tree/stable/.agents/tests).
-
 ## Why the kit exists
 
-A coding agent can make a working tool quickly. Many such tools are prototypes. Six weeks later, nobody may know how to change one safely, where its data lives, or what to do when it fails.
+People can use a coding agent to make a working tool quickly. A prototype can become hard to change when nobody knows where its data lives or what to do when it fails. AI Build Kit gives the owner a way to build and maintain a tool without reading code.
 
-A hosted app builder can be fast, but the tool stays on that platform. A developer's kit can make work reliable, but it expects the person to read code. AI Build Kit is designed for the space between those options. The person can change coding agent, host or developer later.
+The kit suits internal tools for a team, club, family or invited clients. It does not suit someone who wants an app in minutes and does not want to use GitHub. A hosted builder may suit that need better. The kit does not teach programming or replace a developer when one is needed.
 
-The kit suits internal tools used by people the owner names, such as a team, a club, a family or invited clients. Its proven setup keeps each tool private by default. Public features are possible when the person asks for them, hears the risks and records the choice. A tool that takes money from strangers is public-facing.
+## Design choices
 
-The kit does not suit someone who wants an app in ten minutes and never wants to use GitHub. A hosted builder may suit them better. The kit does not teach programming or replace a developer when one is needed. It runs no service of its own and keeps no project records outside the person's project. A project may need a professional for work that calls for one.
+### Agree one piece at a time
 
-## How the work is controlled
+You agree on a result that you can check before the agent builds it. A small task gives you a clear result to try. See the [shape step](/ai-build-kit/how-it-works/#shape-a-piece). This follows the rule that each capability must say what you see, when you see it, and what you do if it goes wrong ([philosophy](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/PHILOSOPHY.md#what-earns-a-place)).
 
-The person creates and owns the accounts. The kit does not create them. A recipe names any service the tool uses, and the owner holds those accounts.
+### Use checks for rules a machine can judge
 
-At setup, the kit records what failure could cost. It asks who could be affected, what data the tool holds and how the owner could recover. It also names the kinds of risk that apply. Each piece then names the risk areas it touches. Some rules protect every project and cannot be waived.
+Scripts and hooks check rules that a machine can decide. Instructions cover judgements that need a person or agent. This keeps each rule with the method that can check it ([philosophy](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/PHILOSOPHY.md#what-earns-a-place)).
 
-## How the kit is checked
+### Keep instructions short
 
-The mutation run breaks one promise at a time. It reports which checks notice the broken promise.
+Each instruction uses the agent's attention. Extra rules can make the important rules less likely to be followed. The kit keeps only rules that machines enforce, measurements support or a person must judge ([philosophy](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/PHILOSOPHY.md#small-is-a-reliability-feature)).
 
-Release verification builds the release again and compares it with the version prepared for publication. This checks that the files ready to ship match the reviewed release.
+### Warn once when you can judge the risk
 
-These checks give evidence about the kit. They do not prove that every tool built with it is safe or right for every purpose. A check that did not run never counts as a pass.
+The kit explains who may be exposed and what would normally prevent harm. You decide whether to address the risk or accept it. The kit records your words and the date. A judgement risk belongs to the piece that touches it ([risk design](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/PHILOSOPHY.md#the-risk-concept)).
 
-[See how the kit tests itself](/ai-build-kit/what-it-checks/#how-the-kit-tests-itself).
+### Keep the tool in your accounts
+
+The code, host and data use accounts that you control. You can change coding agent, host or developer later without losing ownership of the tool ([philosophy](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/PHILOSOPHY.md#what-the-kit-is)).
+
+### Test outcomes
+
+A test checks what happened, not whether a sentence appears. Shell checks test boundaries and scripts. Replays grade what the agent did and what it left in the project ([testing](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/PHILOSOPHY.md#testing-the-kit)). These results are evidence about the kit. They do not prove that every tool is safe for every purpose.
+
+## Read the design
+
+Read [the steps of a run](/ai-build-kit/how-it-works/), [records, risk and the live copy](/ai-build-kit/records/), [rules and checks](/ai-build-kit/what-it-checks/), then [how the kit compares](/ai-build-kit/how-it-differs/).
 
 ## For maintainers
 
-[Read the full philosophy for maintainers](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/PHILOSOPHY.md).
+[Read the full philosophy](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/PHILOSOPHY.md).

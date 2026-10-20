@@ -3,18 +3,40 @@
     "id": "found",
     "title": "Found a project",
     "checks_anchor": "found-a-project",
-    "summary": "The kit checks what you have and helps prepare the project and its records.",
+    "summary": "A script checks the tools and access needed to prepare the project.",
     "command": "/setup-ai-build-kit",
-    "skills": ["clarify", "fit-check", "second-opinion", "records", "merge"],
+    "skills": [
+      "clarify",
+      "fit-check",
+      "second-opinion",
+      "records",
+      "merge"
+    ],
     "checks": [
       {
-        "script": "scripts/check-tooling.sh",
+        "script": "check-tooling.sh",
         "path": ".agents/skills/setup-ai-build-kit/scripts/check-tooling.sh",
-        "exits": {
-          "0": "Every tool the kit needs to found your pieces is ready.",
-          "1": "Something founding needs is not ready.",
-          "2": "The command line options are not valid."
-        }
+        "description": "The [tooling check] says which tool is not ready before the kit builds anything."
+      },
+      {
+        "script": "use-push-guard.sh",
+        "path": ".agents/skills/setup-ai-build-kit/scripts/use-push-guard.sh",
+        "description": "The [push guard] is turned on, so no push goes straight to the main project."
+      },
+      {
+        "script": "protect-branch.py",
+        "path": ".agents/skills/merge/scripts/protect-branch.py",
+        "description": "The [branch rule] requires the project check on GitHub, where your plan allows it."
+      },
+      {
+        "script": "first-upload.py",
+        "path": ".agents/skills/merge/scripts/first-upload.py",
+        "description": "The [first upload] waits for your yes."
+      },
+      {
+        "script": "checks.yml",
+        "path": ".agents/skills/setup-ai-build-kit/templates/foundation/checks.yml",
+        "description": "The [project check] starts as a placeholder that fails. It cannot show a pass until the project has real tests."
       }
     ],
     "person_decides": "You answer the interview questions and decide whether to use existing work.",
@@ -24,10 +46,32 @@
     "id": "shape",
     "title": "Shape a piece",
     "checks_anchor": "shape-a-piece",
-    "summary": "The kit turns a request into one clear task and records what must be decided before work begins.",
+    "summary": "The agent turns a request into one task and records what must be decided.",
     "command": "/shape",
-    "skills": ["triage", "records", "clarify", "research", "fit-check"],
-    "checks": [],
+    "skills": [
+      "triage",
+      "records",
+      "clarify",
+      "research",
+      "fit-check"
+    ],
+    "checks": [
+      {
+        "script": "mark-ready.sh",
+        "path": ".agents/skills/records/scripts/mark-ready.sh",
+        "description": "The [ready mark] goes on only when the piece has a \"Done when\" section, waits on no question, and names its risk areas."
+      },
+      {
+        "script": "quality.py",
+        "path": ".agents/skills/quality-checks/scripts/quality.py",
+        "description": "The [reach check] lists the files the piece is likely to touch."
+      },
+      {
+        "script": "SKILL.md",
+        "path": ".agents/skills/fit-check/SKILL.md",
+        "description": "The [risk warning] comes once. The kit records your answer and the date."
+      }
+    ],
     "person_decides": "You settle questions that need your judgement, then decide whether to offer the ready piece to /implement.",
     "source": ".agents/skills/shape/SKILL.md"
   },
@@ -35,18 +79,47 @@
     "id": "implement",
     "title": "Implement a piece",
     "checks_anchor": "implement-a-piece",
-    "summary": "The agent builds one ready task, checks the change and saves it for review.",
+    "summary": "The agent builds one ready task, then scripts and a reviewer agent check the change.",
     "command": "/implement",
-    "skills": ["build-piece", "records", "quality-checks", "repair", "live-copy", "evidence-run", "screen-check"],
+    "skills": [
+      "build-piece",
+      "records",
+      "quality-checks",
+      "repair",
+      "live-copy",
+      "evidence-run",
+      "screen-check"
+    ],
     "checks": [
       {
-        "script": "quality.py loops --base <start commit>",
+        "script": "check-tests.sh",
+        "path": ".agents/skills/setup-ai-build-kit/templates/foundation/check-tests.sh",
+        "description": "The [test freeze] fails a change that edits an existing test without a stated reason."
+      },
+      {
+        "script": "quality.py",
         "path": ".agents/skills/quality-checks/scripts/quality.py",
-        "exits": {
-          "0": "Nothing to say about the structure check.",
-          "1": "The change added a loop or crossed a boundary.",
-          "2": "The check could not run; note this internally."
-        }
+        "description": "The [tests check] reports a test that already passed before the change, and a \"Done when\" line with no test."
+      },
+      {
+        "script": "quality.py",
+        "path": ".agents/skills/quality-checks/scripts/quality.py",
+        "description": "The [structure check] reports a new loop between parts, or a crossed boundary."
+      },
+      {
+        "script": "trim-commit.sh",
+        "path": ".agents/skills/quality-checks/scripts/trim-commit.sh",
+        "description": "The [trim commit] refuses a clean-up that touched a test."
+      },
+      {
+        "script": "guard-secrets.sh",
+        "path": ".agents/skills/setup-ai-build-kit/templates/foundation/guard-secrets.sh",
+        "description": "The [secret guards] stop a command that would show a secret."
+      },
+      {
+        "script": "reset-attempt.sh",
+        "path": ".agents/skills/repair/scripts/reset-attempt.sh",
+        "description": "The [repair reset] undoes a failed repair before the next one, so failed fixes do not stack."
       }
     ],
     "person_decides": "By default, you try the result and decide whether to merge the named pull request. Automatic merging is an opt-in recorded with limits.",
@@ -56,10 +129,29 @@
     "id": "review",
     "title": "Review the change",
     "checks_anchor": "review-the-change",
-    "summary": "A reviewer checks whether the saved change meets its goal and whether the evidence supports it.",
+    "summary": "A reviewer agent in a fresh context checks the change and its evidence.",
     "command": null,
-    "skills": ["second-opinion", "quality-checks"],
-    "checks": [],
+    "skills": [
+      "second-opinion",
+      "quality-checks"
+    ],
+    "checks": [
+      {
+        "script": "gate.py",
+        "path": ".agents/skills/quality-checks/scripts/gate.py",
+        "description": "The [review packet] gives the reviewer the change and the evidence. The review record names the version it read."
+      },
+      {
+        "script": "review-guard.sh",
+        "path": ".agents/skills/second-opinion/scripts/review-guard.sh",
+        "description": "The [review guard] puts back any file the reviewer changed."
+      },
+      {
+        "script": "check-review.sh",
+        "path": ".agents/skills/setup-ai-build-kit/templates/foundation/check-review.sh",
+        "description": "The [review check] holds the project check while a finding is open, or while the record names another version."
+      }
+    ],
     "person_decides": "You decide whether a review finding is worth stopping for.",
     "source": ".agents/skills/second-opinion/SKILL.md"
   },
@@ -67,18 +159,30 @@
     "id": "merge",
     "title": "Merge the change",
     "checks_anchor": "merge-the-change",
-    "summary": "The kit checks the approval and merges the change you named.",
+    "summary": "A script checks your named approval and project results before it merges.",
     "command": null,
-    "skills": ["merge", "records", "evidence-run", "live-copy", "fit-check"],
+    "skills": [
+      "merge",
+      "records",
+      "evidence-run",
+      "live-copy",
+      "fit-check"
+    ],
     "checks": [
       {
-        "script": "scripts/merge.py --approved <number>",
+        "script": "merge.py",
         "path": ".agents/skills/merge/scripts/merge.py",
-        "exits": {
-          "0": "The pull request merged.",
-          "1": "A check, review box, review version or risk area holds the merge.",
-          "2": "The merge could not run."
-        }
+        "description": "The [merge script] needs your recorded yes, unless you turned on automatic merge. It merges only the version that was checked."
+      },
+      {
+        "script": "check-sensitive-areas.sh",
+        "path": ".agents/skills/setup-ai-build-kit/templates/foundation/check-sensitive-areas.sh",
+        "description": "The [risk-area check] reports each risk area the change touches, and holds while a decision is open."
+      },
+      {
+        "script": "env-names-added.sh",
+        "path": ".agents/skills/merge/scripts/env-names-added.sh",
+        "description": "On a live project, the [settings check] holds the merge until the host has each new setting."
       }
     ],
     "person_decides": "By default, you give a yes that names the pull request to merge. Automatic merging is an opt-in recorded with limits.",
@@ -88,10 +192,41 @@
     "id": "live",
     "title": "Set up or check the live tool",
     "checks_anchor": "set-up-or-check-the-live-tool",
-    "summary": "The kit sets up hosting or checks the live tool against the project.",
+    "summary": "On a supported recipe, a launch script checks the backup and rollback steps.",
     "command": "/setup-hosting",
-    "skills": ["fit-check", "evidence-run", "live-copy", "merge"],
-    "checks": [],
+    "skills": [
+      "fit-check",
+      "evidence-run",
+      "live-copy",
+      "merge"
+    ],
+    "checks": [
+      {
+        "script": "run-recipe.sh",
+        "path": ".agents/skills/setup-hosting/scripts/run-recipe.sh",
+        "description": "The [launch script] holds a launch with no confirmed backup or no way back. With no recipe, it says once that nothing is checked."
+      },
+      {
+        "script": "approval.py",
+        "path": ".agents/skills/records/scripts/approval.py",
+        "description": "The [approval step] asks for your yes before each live change."
+      },
+      {
+        "script": "live-check.sh",
+        "path": ".agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/live-check.sh",
+        "description": "The live check compares the live tool with the main project, on [Vercel] or [Coolify]. It changes nothing."
+      },
+      {
+        "script": "check-recipes.sh",
+        "path": ".agents/tools/check-recipes.sh",
+        "description": "The [recipe check] fails a recipe with no rollback, backup or restore section."
+      },
+      {
+        "script": "live-check.sh",
+        "path": ".agents/skills/setup-hosting/recipes/nextjs-supabase-on-coolify/scripts/live-check.sh",
+        "description": "The live check compares the live tool with the main project. It changes nothing."
+      }
+    ],
     "person_decides": "You decide whether to go live after hearing the warning about live changes.",
     "source": ".agents/skills/setup-hosting/SKILL.md"
   },
@@ -99,18 +234,45 @@
     "id": "maintain",
     "title": "Maintain the project",
     "checks_anchor": "maintain-the-project",
-    "summary": "The kit checks project records, compares the live tool with the project and handles due upkeep.",
+    "summary": "The agent checks project records and the live tool, then handles upkeep that is due.",
     "command": "/maintain",
-    "skills": ["live-copy", "quality-checks", "records", "merge", "what-now"],
+    "skills": [
+      "live-copy",
+      "quality-checks",
+      "records",
+      "merge",
+      "what-now"
+    ],
     "checks": [
       {
-        "script": "scripts/standing-lines.sh",
+        "script": "live-check.sh",
+        "path": ".agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/scripts/live-check.sh",
+        "description": "The [live check] runs again at each visit."
+      },
+      {
+        "script": "upgrade-check.py",
+        "path": ".agents/skills/maintain/scripts/upgrade-check.py",
+        "description": "The [update check] lists what a kit update left for the visit to finish."
+      },
+      {
+        "script": "recipe-freshness.py",
+        "path": ".agents/skills/maintain/scripts/recipe-freshness.py",
+        "description": "The [recipe age check] reports a recipe that is old or has an old name."
+      },
+      {
+        "script": "stale-branches.py",
+        "path": ".agents/skills/quality-checks/scripts/stale-branches.py",
+        "description": "The [branch list] names branches whose work already reached the main project. It removes nothing."
+      },
+      {
+        "script": "standing-lines.sh",
         "path": ".agents/skills/maintain/scripts/standing-lines.sh",
-        "exits": {
-          "0": "The standing instructions file has fewer than 200 lines.",
-          "1": "The file has 200 lines or more; the monthly visit offers a trim.",
-          "2": "The file could not be read."
-        }
+        "description": "The [instruction length check] reports when the standing instructions grow too long."
+      },
+      {
+        "script": "settings-rules.py",
+        "path": ".agents/skills/maintain/scripts/settings-rules.py",
+        "description": "The [safety rules check] offers newer safety rules and applies them only on your yes."
       }
     ],
     "person_decides": "You decide whether to apply changes beyond routine updates.",
