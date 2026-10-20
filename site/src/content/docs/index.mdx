@@ -5,19 +5,19 @@ draft: false
 tableOfContents: false
 ---
 
-AI Build Kit helps people who do not write code build tools with a coding agent, a program that reads and changes project files. It suits people who can create accounts and follow technical setup steps.
+AI Build Kit helps people who do not write code build tools with a coding agent, a program that reads and changes project files. It is intended for people who can create accounts and follow technical setup instructions.
 
-You describe the tool. The agent builds one agreed change at a time. You try each change and decide whether it can join the main version of the project.
+You describe the tool, and the agent builds one agreed piece of work at a time. A piece is a change small enough to build in one session. You try each change and decide whether to merge it into the main branch, the project’s main line of development. A branch is a separate line of work; merging incorporates its changes into another branch.
 
 ## What happens
 
-1. You describe the tool. A script checks Git, Python 3 and your GitHub sign-in. The agent checks access to your project repository.
-2. You agree on one task. The agent records what result will count as success.
-3. The agent builds the task. Scripts check the change, and a reviewer agent checks the result.
-4. You try the change and approve it by name. A merge script checks the approval and project checks before it merges.
-5. If you host the tool on a supported recipe, a launch script checks the backup and rollback steps.
+1. You describe the tool. A setup script checks that Git and Python 3 are available and that you are signed in to GitHub. The agent checks access to your repository, where the project files and their history are stored.
+2. You agree on a piece, and the agent records its acceptance criteria under “Done when”. These describe the result you will use to judge the work.
+3. The agent builds the piece, scripts check the change, and a reviewer agent assesses the result.
+4. You try the change and approve the pull request, a proposal to merge it into the main branch. Before merging, the merge script checks the recorded approval and the project check result.
+5. If you use a supported hosting recipe, the launch script checks its backup and rollback steps. A recipe specifies the services and instructions for deploying, backing up and restoring the tool; a rollback returns it to an earlier version.
 
-The checks give evidence. They do not prove that a tool is safe for every purpose. Some work may need a developer. Read [the design principles](/ai-build-kit/design/) and [what the kit checks](/ai-build-kit/what-it-checks/).
+The checks provide evidence about the tool, but they do not establish that it is safe for every purpose. Some work may still need a developer. Read [the design principles](/ai-build-kit/design/) and [what the kit checks](/ai-build-kit/what-it-checks/).
 
 ## Choose a next step
 

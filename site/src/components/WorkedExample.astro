@@ -26,7 +26,7 @@ const recordings = {
 const stageFor = (id: string) => workflow.find((stage) => stage.id === id);
 const sourceUrl = (path: string) => `https://github.com/gwpicard/ai-build-kit/blob/stable/${path}`;
 const gradeLabel = (grade: { hit: number; drift: number; miss: number; unobservable: number }) =>
-  `${grade.hit} hit, ${grade.drift} drift, ${grade.miss} miss`;
+  [`${grade.hit} ${grade.hit === 1 ? "hit" : "hits"}`, `${grade.drift} drift`, `${grade.miss} ${grade.miss === 1 ? "miss" : "misses"}`].join(", ");
 ---
 
 <div class="story-list">
@@ -43,11 +43,11 @@ const gradeLabel = (grade: { hit: number; drift: number; miss: number; unobserva
 
           <details class="workflow-facts">
             <summary>Run details and checks</summary>
-            <p class="replay-note">Recorded test conversation. Kit version 1.0.</p>
-            <p class="grade-note">Grade: {gradeLabel(run.grade)}{run.grade.unobservable ? `, ${run.grade.unobservable} not observable` : ''}.</p>
+            <p class="replay-note">Excerpts from a recorded test conversation.</p>
+            <p class="grade-note">Grade: {gradeLabel(run.grade)}{run.grade.unobservable ? `, ${run.grade.unobservable} unobservable` : ''}.</p>
             {stage && <>
               <h3>Workflow stage: {stage.title}</h3>
-              <p class="fact-label">Skills in this stage</p>
+              <p class="fact-label">Skills listed for this stage (instructions for the agent)</p>
               <ul class="skill-list">
                 {run.skills.map((skill) => <li><a href={sourceUrl(`.agents/skills/${skill}/SKILL.md`)}>{skill}</a></li>)}
               </ul>
@@ -63,7 +63,7 @@ const gradeLabel = (grade: { hit: number; drift: number; miss: number; unobserva
                     </li>
                   ))}
                 </ul>
-              ) : <p>The run record lists no script check for this step.</p>}
+              ) : <p>No script checks are listed in this run record.</p>}
             </>}
           </details>
         </div>

@@ -1079,6 +1079,9 @@ belongs only where the subject and author's voice call for it.
   always available and always clearer.
 - Plain words over jargon. When a technical term is unavoidable, define it once
   in the sentence that introduces it and then use it plainly.
+- Plain does not mean elementary. Use the standard term when it is clearer
+  ("approval", not "your yes"), and join closely related ideas into one
+  sentence rather than a row of short ones.
 - Banned: leverage, robust, comprehensive, seamless, crucial, foster, enhance,
   transformative, delve, navigate as a metaphor, empower, streamline, holistic.
 - No contrastive reframes ("it's not X, it's Y"), no rhetorical triplets, no

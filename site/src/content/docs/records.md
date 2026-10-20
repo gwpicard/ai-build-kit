@@ -1,21 +1,23 @@
 ---
-title: Records, risk and the live copy
+title: Project records, risk and hosting
 description: What the project records and how the kit handles risk and hosting.
 draft: false
 ---
 
 ## Project records
 
-The agent writes project records in the project's repository. At setup, it writes a masterplan with the tool's purpose and risk record. Each piece records its result, decisions and risks. Approval records store your words and the date. The project owns these records.
+The agent keeps project records in your repository. During setup, it creates a masterplan describing the tool’s purpose and risks; each piece records its result, decisions and risk areas. Approval records retain your words and the date in a local Git file that is not committed. The records remain part of your project.
 
 ## Risk
 
-The agent asks who could be affected if the tool fails, what data it uses and how you could recover. It names the risk areas that apply. Each piece names the risk areas it touches.
+The agent asks who could be affected if the tool fails, what data it uses and how you would recover. It records the applicable risk areas, and each piece identifies those it affects.
 
-When you can judge a risk, the agent explains who could be exposed and what would normally prevent harm. You can address the caution, remove the work or continue. If you continue, the agent records your acceptance and builds. The risk remains listed.
+For a risk you can judge, the agent explains who could be affected and what would normally prevent harm. You can take that precaution, remove the affected work from scope or continue with the risk. If you continue, the agent records your acceptance and proceeds with the work; the risk remains listed.
 
-## Live tool and recipe
+<a id="live-tool-and-recipe"></a>
 
-A recipe names the services that run the tool and the steps to deploy, back up and restore it. A rollback is a written step to return to an earlier version. The person creates and controls the service accounts. A script on a supported recipe refuses to launch without a confirmed backup and a rollback step. Outside a supported recipe, the kit says it guarantees nothing.
+## Hosting recipes and recovery
+
+A hosting recipe specifies the services that run the tool and the steps for deployment, backup and restoration. You create and control the service accounts. On a supported recipe, the launch script requires a confirmed backup and a defined rollback step, which returns the tool to an earlier version. Later launches also require confirmation that an earlier build is available. Outside a supported recipe, the kit states that it provides no guarantees.
 
 [Read the rules that apply in every project](./what-it-checks.md).

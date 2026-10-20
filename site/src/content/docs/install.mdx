@@ -5,22 +5,22 @@ draft: false
 tableOfContents: false
 ---
 
-Make an empty folder for your tool. Open a terminal in that folder. A terminal is an app where you type commands for your computer. Choose your coding agent below and run its commands.
+Create an empty folder for your tool and open a terminal in it. A terminal lets you run commands on your computer. Choose your coding agent below and follow its installation steps.
 
 ## Before you start
 
-You need Git, Python 3 and the GitHub CLI (`gh`) signed in. If you use an `npx` installation route, you also need Node.js. The setup script checks Git, Python 3 and your GitHub sign-in. It then checks access to the project repository and its issues.
+You need Git, Python 3 and the GitHub CLI (`gh`), the command-line tool for GitHub. Sign in to `gh` before setup. Installation routes that use `npx` also require Node.js. The setup script checks Git, Python 3 and your GitHub sign-in, then checks access to the project repository and its issues, which hold the work list.
 
-You use six commands: `/setup-ai-build-kit`, `/shape`, `/implement`, `/setup-hosting`, `/maintain` and `/what-now`. Read [supported agents](/ai-build-kit/agents/) to see how much the kit has been tried on each agent.
+The kit has six commands: `/setup-ai-build-kit`, `/shape`, `/implement`, `/setup-hosting`, `/maintain` and `/what-now`. See [supported agents](/ai-build-kit/agents/) for the evidence behind each agent’s support grade.
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 <Tabs>
   <TabItem label="Claude Code">
-    In a terminal opened in your project folder, run `claude plugin marketplace add gwpicard/ai-build-kit`, then `claude plugin install ai-build-kit@ai-build-kit --scope local`. Start Claude Code and run `/ai-build-kit:setup-ai-build-kit`.
+    In a terminal opened in your project folder, run `claude plugin marketplace add gwpicard/ai-build-kit`, then `claude plugin install ai-build-kit@ai-build-kit --scope local`. The `--scope local` option installs the kit for this project only. Start Claude Code and run `/ai-build-kit:setup-ai-build-kit`.
   </TabItem>
   <TabItem label="Codex">
-    In a terminal opened in your project folder, run `npx skills add gwpicard/ai-build-kit` and select Codex. Then ask Codex to run `setup-ai-build-kit`. The `--scope local` option in the Claude command installs the kit for this project only.
+    In a terminal opened in your project folder, run `npx skills add gwpicard/ai-build-kit` and select Codex. Then ask Codex to run `setup-ai-build-kit`.
   </TabItem>
   <TabItem label="Cursor">
     In a terminal opened in your project folder, run `npx skills add gwpicard/ai-build-kit`, select Cursor and install all the kit's skills. Then ask your agent to run `setup-ai-build-kit`.
@@ -40,4 +40,4 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 The [full installation routes](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/COMPATIBILITY.md#choose-one-installation-route) explain manual setup and the Claude Code plugin.
 
-If Codex on a Mac reports `unable to get password from user`, run this command in your project folder and start Codex from it: `python3 .agents/skills/setup-ai-build-kit/scripts/codex-with-github.py`. The [Codex setup notes](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-ai-build-kit/references/codex-github.md) explain when to use it.
+If Codex on a Mac reports `unable to get password from user`, run `python3 .agents/skills/setup-ai-build-kit/scripts/codex-with-github.py` in your project folder to start a new Codex session with GitHub access. The [Codex setup notes](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-ai-build-kit/references/codex-github.md) explain when to use this launcher.

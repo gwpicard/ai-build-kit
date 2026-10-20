@@ -32,19 +32,19 @@ function tocFrontmatter(markdown) {
   const headings = markdown.match(/^#{1,6}\s/gm) ?? [];
   return headings.length < 3 ? 'tableOfContents: false\n' : '';
 }
-const agentsIntro = 'The table says how far the kit has been tried on each coding agent. A coding agent is a program that writes code. The grade says how much we tried. It does not say a tool built with the kit is safe.';
+const agentsIntro = 'The table summarises the evidence for using AI Build Kit with each coding agent. A coding agent reads and changes project files. Its support grade reflects how the kit has been tested on that agent, not whether a tool built with it is safe.';
 const agentsLimits = `
 
-Tested means maintainers replayed recorded conversations on the agent and graded what it did. Expected to work means it reads the same skill files as a tested agent, but nobody has recorded a run. Experimental means the kit includes files for the agent, but nobody has checked that the agent loads them.
+Tested means maintainers have run scripted test conversations on the agent and graded its behaviour. Expected to work means the agent reads the same skill files as a tested agent, but no behavioural test run has been recorded. Experimental means the required files are included, but their checks establish only that the files are well formed.
 
 ## Known limits
 
-- Claude Code: recorded conversations run without a person present. They do not show what happens in a session with a person.
-- Codex: nobody has recorded a full run. Start a command by naming it; the kit has no Codex command files.
-- Cursor: nobody has recorded a run. Its command and background skill loading have not been confirmed.
-- Gemini CLI: nobody has recorded a run. Its command and background skill loading have not been confirmed. Unless Gemini is set up to hide tool results, a secret printed by a tool reaches the agent.
-- GitHub Copilot: nobody has recorded a run. The agent's use of the setup instructions has not been confirmed.
-- Other agents: each agent needs its own evidence. The kit has not recorded a run on them.
+- Claude Code: the recorded test conversations run without a person present, so they do not demonstrate how the kit behaves in an interactive session. No test rate yet describes an installable release, and the plugin route cannot be replayed in those unattended sessions.
+- Codex: no full behavioural test run has been recorded. Start a command by naming it; the kit does not provide Codex command files.
+- Cursor: no behavioural test run has been recorded, and command and background-skill loading remain unconfirmed.
+- Gemini CLI: no behavioural test run has been recorded, and command and background-skill loading remain unconfirmed. Unless Gemini is configured to hide tool results, any secret printed by a tool reaches the agent.
+- GitHub Copilot: no behavioural test run has been recorded, and it remains unconfirmed whether the agent follows the setup instructions.
+- Other agents: no behavioural test runs have been recorded. Support requires evidence from each agent.
 
 [Read the full agent support notes](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/COMPATIBILITY.md).
 `;
@@ -81,10 +81,10 @@ try {
   const releases = await response.json();
   const entries = releases.filter((release) => !release.draft && !release.prerelease);
   releasesMarkdown = entries.length
-    ? `| Version | Published | Notes |\n|---|---|---|\n${entries.map((release) => `| [${release.tag_name}](${release.html_url}) | ${release.published_at?.slice(0, 10) ?? 'Date unavailable'} | [Read notes](${release.html_url}) |`).join('\n')}`
-    : 'No published releases were returned by GitHub.';
+    ? `| Version | Published | Notes |\n|---|---|---|\n${entries.map((release) => `| [${release.tag_name}](${release.html_url}) | ${release.published_at?.slice(0, 10) ?? 'Date unavailable'} | [Read release notes](${release.html_url}) |`).join('\n')}`
+    : 'GitHub returned no published releases.';
 } catch {
-  releasesMarkdown = `GitHub could not provide the release list during this build. [Open the releases page](${releasesUrl}).`;
+  releasesMarkdown = `The release list could not be retrieved during this site build. [Open the releases page](${releasesUrl}).`;
 }
-const releasesBody = `The table lists published versions and their notes.\n\n${releasesMarkdown}`;
+const releasesBody = `Published releases and release notes are listed below when available.\n\n${releasesMarkdown}`;
 await writeFile(path.join(generatedDir, 'releases.md'), `---\ntitle: Releases\nslug: releases\ndraft: false\n${tocFrontmatter(releasesBody)}---\n\n${releasesBody}\n`);

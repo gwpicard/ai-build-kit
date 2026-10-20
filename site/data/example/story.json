@@ -7,15 +7,15 @@
   },
   {
     "file": "shape",
-    "title": "Name the people in a loan",
-    "happened": "The team settled two names: the borrower uses an item, and the booking steward enters the loan. The piece was parked without changing the tool.",
-    "decision": "You chose those names and parked the piece."
+    "title": "Distinguish borrowers from booking stewards",
+    "happened": "The team agreed that a borrower uses an item and a booking steward records the loan, then deferred the piece without changing the tool.",
+    "decision": "You agreed on those names and deferred the piece."
   },
   {
     "file": "unproven-fact",
-    "title": "Carry on with an unchecked fact",
-    "happened": "The person asked to send overdue lists by text. The kit recorded that the service had not been checked and described the risks before the person accepted them.",
-    "decision": "You chose to continue with the unchecked fact and record your acceptance of the risks."
+    "title": "Proceed with an unverified service capability",
+    "happened": "The person requested overdue lists by text message. The agent recorded that the service’s capability had not been verified and explained the risks before the person accepted them.",
+    "decision": "You chose to proceed without verifying the service capability and to record your acceptance of the risks."
   },
   {
     "file": "ready-piece",
@@ -37,14 +37,14 @@
   },
   {
     "file": "live-copy",
-    "title": "Compare the live copy with main",
+    "title": "Compare the live version with the main branch",
     "happened": "The kit found that the live tool matched the project and explained that an earlier version could be restored. It changed nothing live.",
     "decision": "You asked for a live check and whether the old version could be restored."
   },
   {
     "file": "maintain",
     "title": "Check the project records",
-    "happened": "The record check found that most records matched. It named two records that had drifted and made no changes.",
+    "happened": "The records review found two discrepancies, reported them and made no changes. Most records were consistent.",
     "decision": "You asked the kit to check the records without making changes."
   },
   {

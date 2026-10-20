@@ -20,15 +20,15 @@ const { id, label, turns } = Astro.props;
     <span class="terminal-count">{turns.length} turns</span>
   </header>
   <div class="terminal-controls" data-controls hidden>
-    <button type="button" data-play>Play turns</button>
-    <button type="button" data-pause disabled>Pause turns</button>
-    <button type="button" data-show-all>Show all turns</button>
+    <button type="button" data-play>Play conversation</button>
+    <button type="button" data-pause disabled>Pause</button>
+    <button type="button" data-show-all>Show full excerpt</button>
     <span class="sr-only" data-status aria-live="polite"></span>
   </div>
   <div class="terminal-output" data-output role="log" aria-label={`${label} transcript`}>
     {turns.map((turn, index) => (
       <article class:list={['turn', `turn-${turn.who}`]} data-turn data-index={index}>
-        <h3>{turn.who === 'person' ? 'Person' : 'Kit'}</h3>
+        <h3>{turn.who === 'person' ? 'Person' : 'Agent'}</h3>
         <pre>{turn.text}</pre>
       </article>
     ))}

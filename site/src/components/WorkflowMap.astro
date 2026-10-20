@@ -67,7 +67,7 @@ const sourceUrl = (path: string) => `https://github.com/gwpicard/ai-build-kit/bl
             <p>{stage.person_decides}</p>
           </div>
           {stage.checks_anchor && (
-            <p class="checks-link"><a href={`#${stage.checks_anchor}`}>Jump to what is checked at this step</a></p>
+            <p class="checks-link"><a href={`#${stage.checks_anchor}`}>See checks for this step</a></p>
           )}
           <details class="technical-details">
             <summary>Checks and source details</summary>
@@ -78,7 +78,7 @@ const sourceUrl = (path: string) => `https://github.com/gwpicard/ai-build-kit/bl
               </div>
             )}
             <div class="detail">
-              <h3>Background skills</h3>
+              <h3>Supporting skills (instructions for the agent)</h3>
               <ul class="skill-list">
                 {stage.skills.map((skill) => <li><code>{skill}</code></li>)}
               </ul>
@@ -101,7 +101,7 @@ const sourceUrl = (path: string) => `https://github.com/gwpicard/ai-build-kit/bl
   </div>
 
   <section class="stage-text" aria-labelledby="stage-list-heading">
-    <h2 id="stage-list-heading">Stages in order</h2>
+    <h2 id="stage-list-heading">Workflow stages</h2>
     <ol>
       {stages.map((stage) => <li>{stage.title}</li>)}
     </ol>
