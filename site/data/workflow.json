@@ -72,7 +72,7 @@
         "description": "The agent gives a risk notice for work touching a risk area whose precaution has not been completed and whose risk has not been accepted, and records your decision and the date."
       }
     ],
-    "person_decides": "You resolve questions that need your judgement, then decide whether to ask /implement to build the ready piece.",
+    "person_decides": "You settle the questions that need your judgement, then decide whether to ask /implement to build the ready piece.",
     "source": ".agents/skills/shape/SKILL.md"
   },
   {

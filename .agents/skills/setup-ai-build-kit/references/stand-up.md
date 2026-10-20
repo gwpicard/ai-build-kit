@@ -55,7 +55,8 @@ warning about a possible confirmation box. Before saving, say it will save a
 local checkpoint and upload nothing.
 
 Then run `scripts/check-tooling.sh --conditions`, with `--recipe <folder>` for
-a chosen recipe. It opens and closes one test issue. A non-zero exit stops
+a chosen recipe. It opens and closes one test issue and protects an existing
+`main`. A non-zero exit stops
 founding: give each `missing:` line and its step, and save no checkpoint.
 
 Run `sh scripts/found-save.sh` from the project root. It makes the local

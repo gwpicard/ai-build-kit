@@ -105,13 +105,14 @@ skills installed into the project, which is the shared installer's route.
 
 ### Known limits of Codex
 
-- Nobody has recorded a run. A check proves the harness can start, resume and
-  grade a Codex conversation, against a stand-in for Codex and without a model.
-  That proves the harness wiring, and says nothing yet about how the kit
-  behaves.
+- No graded replay run is recorded. A check proves the harness can start, resume
+  and grade a Codex conversation, against a stand-in for Codex and without a
+  model. That proves the harness wiring, and says nothing yet about how the kit
+  behaves in a graded run. The founding and first-upload run described under
+  GitHub access in Codex is recorded, and it was not graded.
 - The kit ships no Codex command files. Codex finds the skills in
   `.agents/skills/`, and you start a command by naming it.
-- Codex has no result redaction either.
+- Codex has no result redaction, so a secret that a tool prints reaches the agent.
 - Nothing reminds you of a check-up when a session opens. `what-now` says when
   a visit is overdue.
 - There is no deny list set up for you, and nothing asks you before the agent

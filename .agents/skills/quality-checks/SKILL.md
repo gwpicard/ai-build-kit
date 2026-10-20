@@ -18,7 +18,7 @@ something of them, and never needs to read one to keep the tool working.
 | Type check and lint | Project check on every pull request, and before hand-over | `references/check-floor.md` |
 | Risk-area map and boundary rules | Project check on every pull request | `check-sensitive-areas.sh`, `references/boundary-rules.md` |
 | Trim | Every build, before the person tries it | `references/trim.md` |
-| A trim left the tests alone | Every trim commit, and the project check on every pull request | `trim-commit.sh`, `check-trim.sh`; `place-trim-check.py` brings the step to an older project |
+| A trim left the tests alone | Every trim commit, and the project check on every pull request | `trim-commit.sh`, `check-tests.sh`; `place-trim-check.py` brings the step to an older project |
 | Reach | Shape and every build | `quality.py reach`; act on its exit code |
 | Tests stay frozen | Every project check on a pull request | `check-tests.sh` in the project template |
 | Tests prove the change | Every build, after behaviour is built | `quality.py tests --base --piece` |

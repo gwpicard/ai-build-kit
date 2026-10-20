@@ -15,3 +15,10 @@ one.” Explain queue and loop briefly. Record the person's words and date on
 the project settings ask before `--approved` merges, while the automatic route
 is limited by its recorded setting and the merge script's checks. When
 autonomy is turned off, update the line on the next records save.
+
+The automatic merge route reads this line from `main`. For `merge` it must sit
+on one line, start with `Runs on its own:`, name `merge`, give `decided`
+and a date as `YYYY-MM-DD`, and then give the person's words in double
+quotes, in that order. For example:
+
+    Runs on its own: merge, decided 2026-10-20, "merge on your own once checks pass"

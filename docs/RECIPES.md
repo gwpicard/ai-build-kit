@@ -23,8 +23,8 @@ in `.agents/tests/recipes-awaiting-run/parts/` until their runs are recorded.
    and portals. It is the work-team default because Vercel runs previews,
    launch and rollback, and the kit can run its checks on this computer.
 2. The same stack on Coolify. It suits those tools when the team has a server,
-   needs long-running or Python document work, or must keep processing on a
-   server it chooses. Its checks need the person or a companion to read the
+   needs long-running work, or must keep processing on a server it chooses.
+   Python document work is a draft, and no recipe offers it today. Its checks need the person or a companion to read the
    server and paste the result back.
 
 Vercel Pro and Supabase Pro are the work-team default. Free plans remain
@@ -69,13 +69,16 @@ database draft targets both recipes. Neither is offered until proven.
 ## A recipe is a folder
 
 Recipes live in `.agents/skills/setup-hosting/recipes/`, one folder each, named
-for the pair in lower case with hyphens. The folder holds three things:
+for the pair in lower case with hyphens. The folder holds three things, and a
+fourth where a host needs one:
 
 - `recipe.md`, which the kit reads at run time. Keep it concise because every
   word competes for the agent's attention.
 - `scripts/`, one script for each check the kit can run on this computer,
   each action a section names, and `live-check.sh`.
 - `PROVEN.md`, the record of the real run. The kit never loads it.
+- `hosting-request.md`, only where a host needs a request from whoever runs
+  the server. The Coolify recipe has one; the Vercel recipe does not.
 
 The recipes folder is the menu: a folder in it with a `recipe.md` is offered
 once it is there, and not before. `setup-hosting/templates/recipe.md` is the

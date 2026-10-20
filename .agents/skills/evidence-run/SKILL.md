@@ -1,13 +1,13 @@
 ---
 name: evidence-run
-description: "Gather fresh evidence before the tool is relied on: promised behaviour, failure, data and access, operations, review, and an honest report. Used by setup-hosting, maintain, merge and implement auto."
+description: "Gather fresh evidence before the tool is relied on: promised behaviour, failure, data and access, operations, review, and an honest report. Used by setup-hosting, maintain and merge."
 user-invocable: false
 ---
 
 # The evidence run
 
-Used by setup-hosting before anything goes live, and by implement auto at the end of a
-run. Findings come with fresh output; no claims from memory. Skip a section
+Used by setup-hosting before anything goes live, by merge for a piece on a live
+project, and by maintain at the quarterly visit. Findings come with fresh output; no claims from memory. Skip a section
 below only when it genuinely doesn't apply to this tool, and say so rather
 than leaving it silently blank.
 

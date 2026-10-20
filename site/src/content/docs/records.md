@@ -18,6 +18,6 @@ For a risk you can judge, the agent explains who could be affected and what woul
 
 ## Hosting recipes and recovery
 
-The tool goes live through a [hosting recipe](./recipes.md), which fixes the services that run it and the steps for deployment, backup, restoration and rollback. You create and control the service accounts. Outside a recipe, the kit states that it provides no guarantees.
+The tool goes live through a [hosting recipe](/ai-build-kit/recipes/), which fixes the services that run it and the steps for deployment, backup, restoration and rollback. You create and control the service accounts. Outside a recipe, the kit states that it provides no guarantees.
 
-[Read the rules that apply in every project](./what-it-checks.md).
+[Read the rules that apply in every project](/ai-build-kit/what-it-checks/).

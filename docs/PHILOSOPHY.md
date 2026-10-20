@@ -68,7 +68,7 @@ person asks for that setting, hears its risks once, and records the choice. A
 tool that takes money from strangers is a public tool.
 
 The kit is not for someone who wants an app in ten minutes and never wants to
-see GitHub. A hosted builder serves them better, and the README says so.
+see GitHub. A hosted builder serves them better.
 
 ## The rule that settles arguments
 
