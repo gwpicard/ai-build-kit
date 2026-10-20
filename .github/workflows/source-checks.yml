@@ -23,6 +23,26 @@ jobs:
         run: .agents/tools/build-adapters.sh --check
       - name: Validate the kit
         run: .agents/tools/validate-kit.sh
+  # The site is built here exactly as the publish workflow builds it, on the
+  # same system and Node version. A lockfile made on another system can leave
+  # out a package this one needs, and the publish run is the first to notice.
+  site-build:
+    if: github.repository == 'gwpicard/ai-build-kit'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.22.0
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - name: Build the site
+        working-directory: site
+        run: |
+          npm ci
+          npm run build
+      - name: Check the built pages
+        run: .agents/tests/site-links.sh
   # Every rehearsal in .agents/tests/ runs here, in one job. A job for each of
   # them names a failure on the checks list, but a hosted job is billed a whole
   # minute however long it takes, and most of these finish in seconds. Twenty
