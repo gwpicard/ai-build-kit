@@ -1,0 +1,19 @@
+---
+const { toc } = Astro.props;
+---
+
+<ul>
+	{toc.map((heading) => (
+		<li>
+			<a href={`#${heading.slug}`}>{heading.text}</a>
+			{heading.children?.length > 0 && <Astro.self toc={heading.children} />}
+		</li>
+	))}
+</ul>
+
+<style>
+	ul { list-style: none; padding: 0; margin: 0; }
+	li + li { margin-top: 0.25rem; }
+	a { display: block; padding: 0.3rem 0; text-decoration: none; overflow-wrap: anywhere; }
+	ul ul { padding-left: 1rem; }
+</style>

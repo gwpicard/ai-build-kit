@@ -7,8 +7,14 @@ export default defineConfig({
   integrations: [starlight({
     title: 'AI Build Kit',
     description: 'A guide to building and running tools with AI Build Kit.',
+    components: {
+      PageSidebar: './src/components/PageSidebar.astro',
+      PageTitle: './src/components/PageTitle.astro',
+      MobileTableOfContents: './src/components/MobileTableOfContents.astro',
+    },
+    customCss: ['./src/styles/site.css'],
     sidebar: [
-      { label: 'Start here', items: ['index', 'how-it-works', 'worked-example', 'install'] },
+      { label: 'Start here', items: ['index', 'how-it-differs', 'how-it-works', 'worked-example', 'install'] },
       { label: 'Understand', items: ['concepts', 'agents'] },
       { label: 'Behind the kit', items: ['design', 'sources', 'releases'] },
     ],

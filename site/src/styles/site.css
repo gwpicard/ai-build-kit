@@ -1,0 +1,41 @@
+@media (min-width: 72rem) {
+	.right-sidebar-container {
+		display: none;
+	}
+
+	[data-has-sidebar][data-has-toc] .main-pane {
+		width: 100%;
+		margin-inline: 0;
+		--sl-content-margin-inline: auto;
+	}
+
+	:root {
+		--sl-content-width: 40rem;
+	}
+}
+
+.sl-markdown-content table {
+	width: 100%;
+	table-layout: fixed;
+}
+
+.sl-markdown-content th,
+.sl-markdown-content td {
+	padding: 0.4rem;
+	overflow-wrap: anywhere;
+}
+
+.comparison-table {
+	font-size: 0.75rem;
+}
+
+@media (max-width: 30rem) {
+	.comparison-table {
+		font-size: 0.62rem;
+	}
+
+	.comparison-table th,
+	.comparison-table td {
+		padding: 0.25rem;
+	}
+}

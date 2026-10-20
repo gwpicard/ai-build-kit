@@ -28,6 +28,10 @@ const llms = await source('llms.txt');
 const grades = section(compatibility, '## How much has been proved on each agent', '### Moving up a grade');
 const gradeRows = grades.split('\n').filter((line) => line.startsWith('|'));
 const gradeTable = gradeRows.join('\n');
+function tocFrontmatter(markdown) {
+  const headings = markdown.match(/^#{1,6}\s/gm) ?? [];
+  return headings.length < 3 ? 'tableOfContents: false\n' : '';
+}
 const agentsIntro = 'The table shows how much evidence exists for each coding agent. A grade describes the evidence for the agent, not whether a tool built with the kit is safe.';
 const agentsLimits = `
 
@@ -44,13 +48,14 @@ Tested means recorded conversations have run on the agent. Expected to work mean
 
 [Read the full agent support notes](https://github.com/gwpicard/ai-build-kit/blob/stable/docs/COMPATIBILITY.md).
 `;
-await writeFile(path.join(generatedDir, 'agents.md'), `---\ntitle: Supported agents\nslug: agents\ndraft: false\n---\n\n${agentsIntro}\n\n${gradeTable}\n${agentsLimits}`);
+const agentsBody = `${agentsIntro}\n\n${gradeTable}\n${agentsLimits}`;
+await writeFile(path.join(generatedDir, 'agents.md'), `---\ntitle: Supported agents\nslug: agents\ndraft: false\n${tocFrontmatter(agentsBody)}---\n\n${agentsBody}`);
 
-const sourceRows = sources.split('\n').filter((line) => line.startsWith('|'));
-const tableStart = sourceRows.findIndex((line) => line.includes('| Source |'));
-const sourceTable = tableStart < 0 ? '' : sourceRows.slice(tableStart).join('\n');
-const sourcesIntro = "This table names the work that informed the kit and the part each source contributed.";
-await writeFile(path.join(generatedDir, 'sources.md'), `---\ntitle: Sources\nslug: sources\ndraft: false\n---\n\n${sourcesIntro}\n\n${sourceTable}\n`);
+const themesStart = sources.indexOf('\n## ');
+const sourceThemes = themesStart < 0 ? '' : sources.slice(themesStart).trim();
+const sourcesIntro = sources.slice(0, themesStart < 0 ? undefined : themesStart).replace(/^# .*\n+/, '').trim();
+const sourcesBody = `${sourcesIntro}\n\n${sourceThemes}`;
+await writeFile(path.join(generatedDir, 'sources.md'), `---\ntitle: Sources\nslug: sources\ndraft: false\n${tocFrontmatter(sourcesBody)}---\n\n${sourcesBody}\n`);
 
 await writeFile(path.join(siteRoot, 'public/llms.txt'), llms);
 
@@ -69,4 +74,5 @@ try {
 } catch {
   releasesMarkdown = `GitHub could not provide the release list during this build. [Open the releases page](${releasesUrl}).`;
 }
-await writeFile(path.join(generatedDir, 'releases.md'), `---\ntitle: Releases\nslug: releases\ndraft: false\n---\n\nThe table lists published versions and their notes.\n\n${releasesMarkdown}\n`);
+const releasesBody = `The table lists published versions and their notes.\n\n${releasesMarkdown}`;
+await writeFile(path.join(generatedDir, 'releases.md'), `---\ntitle: Releases\nslug: releases\ndraft: false\n${tocFrontmatter(releasesBody)}---\n\n${releasesBody}\n`);
