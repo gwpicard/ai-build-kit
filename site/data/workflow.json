@@ -2,6 +2,7 @@
   {
     "id": "found",
     "title": "Found a project",
+    "checks_anchor": "found-a-project",
     "summary": "The kit checks what you have and helps prepare the project and its records.",
     "command": "/setup-ai-build-kit",
     "skills": ["clarify", "fit-check", "second-opinion", "records", "merge"],
@@ -22,6 +23,7 @@
   {
     "id": "shape",
     "title": "Shape a piece",
+    "checks_anchor": "shape-a-piece",
     "summary": "The kit turns a request into one clear task and records what must be decided before work begins.",
     "command": "/shape",
     "skills": ["triage", "records", "clarify", "research", "fit-check"],
@@ -32,6 +34,7 @@
   {
     "id": "implement",
     "title": "Implement a piece",
+    "checks_anchor": "implement-a-piece",
     "summary": "The agent builds one ready task, checks the change and saves it for review.",
     "command": "/implement",
     "skills": ["build-piece", "records", "quality-checks", "repair", "live-copy", "evidence-run", "screen-check"],
@@ -52,6 +55,7 @@
   {
     "id": "review",
     "title": "Review the change",
+    "checks_anchor": "review-the-change",
     "summary": "A reviewer checks whether the saved change meets its goal and whether the evidence supports it.",
     "command": null,
     "skills": ["second-opinion", "quality-checks"],
@@ -62,6 +66,7 @@
   {
     "id": "merge",
     "title": "Merge the change",
+    "checks_anchor": "merge-the-change",
     "summary": "The kit checks the approval and merges the change you named.",
     "command": null,
     "skills": ["merge", "records", "evidence-run", "live-copy", "fit-check"],
@@ -82,6 +87,7 @@
   {
     "id": "live",
     "title": "Set up or check the live tool",
+    "checks_anchor": "set-up-or-check-the-live-tool",
     "summary": "The kit sets up hosting or checks the live tool against the project.",
     "command": "/setup-hosting",
     "skills": ["fit-check", "evidence-run", "live-copy", "merge"],
@@ -92,6 +98,7 @@
   {
     "id": "maintain",
     "title": "Maintain the project",
+    "checks_anchor": "maintain-the-project",
     "summary": "The kit checks project records, compares the live tool with the project and handles due upkeep.",
     "command": "/maintain",
     "skills": ["live-copy", "quality-checks", "records", "merge", "what-now"],

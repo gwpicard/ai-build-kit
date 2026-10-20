@@ -24,7 +24,7 @@ A review checks whether a change meets its agreed goal, whether it breaks someth
 
 ## Checks
 
-A check can pass, fail, or be unable to decide. Pass means it found no problem in what it checked. Fail means it found a problem. Unable to decide means it could not give a result. A check that did not run is not a pass. These results can also appear as exit codes: 0 means pass, 1 means fail, and 2 means unable to decide.
+Checks report Pass, Fail, Not run, Inconclusive or Not applicable. Each result has a meaning and an effect on a merge. <a href="/ai-build-kit/what-it-checks/#what-a-result-means">See what each result means</a>.
 
 <a href="https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/quality-checks/SKILL.md">Source (for maintainers)</a>
 

@@ -15,7 +15,7 @@ export default defineConfig({
     customCss: ['./src/styles/site.css'],
     sidebar: [
       { label: 'Start here', items: ['index', 'how-it-differs', 'how-it-works', 'worked-example', 'install'] },
-      { label: 'Understand', items: ['concepts', 'agents'] },
+      { label: 'Understand', items: ['what-it-checks', 'concepts', 'agents'] },
       { label: 'Behind the kit', items: ['design', 'sources', 'releases'] },
     ],
     social: [{
