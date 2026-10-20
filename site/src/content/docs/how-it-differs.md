@@ -3,16 +3,24 @@ title: How it differs
 description: Compare AI Build Kit with six tools for AI-assisted software work.
 draft: false
 ---
+## At a glance
 
-AI Build Kit helps a person who does not read code build and run a small shared tool through GitHub. Its workflow combines model instructions with scripts that check named steps, plus hosting recipes for one software stack. It needs GitHub and is not a quick hosted app builder.
+This page compares AI Build Kit with two kinds of tool:
 
-## Choose AI Build Kit if
+- **Hosted app builders**, such as Replit, Lovable, Base44, Bolt.new and v0. These are websites. You describe an app in chat, and the builder writes it and runs it on its own platform.
+- **Skill sets and methods for coding agents**, such as Matt Pocock's skills, Spec Kit, Superpowers, Addy Osmani's agent skills and BMad Method, plus Kiro, an agentic editor. You add these to a coding agent such as Claude Code or Codex. Most are published on GitHub, and most are for developers.
+
+AI Build Kit is in the second group. It differs from the others in that group in two ways. It is for people who do not read code. It also carries the work through to a live tool and its upkeep.
+
+The kit uses instructions to the agent, plus scripts that check named steps, plus hosting recipes for one software stack. It needs GitHub. It is not a quick hosted app builder.
+
+### Choose AI Build Kit if
 
 - You can follow technical setup steps but do not read code.
 - You want to build and maintain a small tool for a team in accounts you control.
 - You want a person to approve each merge, checks at named boundaries, and a record of project risks.
 
-## Choose another tool if
+### Choose another tool if
 
 - You want flexible engineering skills that you can combine yourself. Choose [Matt Pocock's skills](https://github.com/mattpocock/skills).
 - You want a detailed written specification, plan and task list. Choose [GitHub Spec Kit](https://github.com/github/spec-kit).
@@ -80,7 +88,11 @@ The tables compare AI Build Kit with the five builders. Some details, including 
 
 [v0](https://v0.app/docs) makes code and full-stack apps, then deploys them through Vercel. When connected to [GitHub](https://v0.app/docs/github), it works on a branch, opens a pull request, shows CI status and preview deployments, and supports required human review. This is the builder in the group with the clearest review path. AI Build Kit adds a risk record, a maintenance process and hosting recipes with backup and a way back ([risks](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/fit-check/SKILL.md), [maintenance](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/maintain/SKILL.md), [hosting](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-hosting/SKILL.md)). The repository is the source of truth; databases come from marketplace integrations ([GitHub](https://v0.app/docs/github), [databases](https://v0.app/docs/databases)). Read on 20 October 2026.
 
-## Side by side
+## Skill sets and methods for coding agents
+
+These are instructions and tools for developers who use coding agents. The tables compare who each tool is for, how it guides and checks work, and what help it gives before and after launch.
+
+### Side by side
 
 Each table keeps four products beside AI Build Kit. On a narrow screen, scroll inside the table to compare the columns.
 
@@ -118,37 +130,37 @@ Each table keeps four products beside AI Build Kit. On a narrow screen, scroll i
 
 </div>
 
-## Matt Pocock's skills
+### Matt Pocock's skills
 
 [Matt Pocock's skills](https://github.com/mattpocock/skills) are engineering skills for developers, not a fixed process. They guide work from an idea to a specification, tickets and a pull request. The `tdd` skill asks for a failing test first, and two agents review changes. Most steps instruct the model. An optional Claude Code hook can block some Git commands, but it is frozen and outside the plugin. The kit adds merge gates, launch checks, risk records and `/maintain`. Combining them is untested. See the [README](https://github.com/mattpocock/skills/blob/main/README.md), [TDD skill](https://github.com/mattpocock/skills/blob/main/skills/engineering/tdd/SKILL.md) and [git guardrail](https://github.com/mattpocock/skills/blob/main/skills/misc/git-guardrails-claude-code/SKILL.md).
 
 Read on 20 October 2026 at commit `5beb35b`.
 
-## GitHub Spec Kit
+### GitHub Spec Kit
 
 [GitHub Spec Kit](https://github.com/github/spec-kit) installs a command-line tool, templates and scripts for developers. It guides work through a specification, plan, tasks and implementation. A helper script stops work when required files are missing. Tests are optional, and it has no product hosting flow. The kit adds a route for people who do not read code, merge gates, launch checks, risk records, hosting recipes and maintenance. Using both for planning and delivery is possible, but untested; their commands may overlap. See the [README](https://github.com/github/spec-kit/blob/main/README.md), [command templates](https://github.com/github/spec-kit/tree/main/templates/commands), [task instructions](https://github.com/github/spec-kit/blob/main/templates/commands/tasks.md) and [prerequisite check](https://github.com/github/spec-kit/blob/main/scripts/bash/check-prerequisites.sh).
 
 Read on 20 October 2026 at commit `f68ffca`.
 
-## Superpowers
+### Superpowers
 
 [Superpowers](https://github.com/obra/superpowers) gives developers skills for design, planning, test-first work and agent review. Its startup hook adds instructions but blocks no work. Two helper scripts can record a task after tests pass, if the agent runs them. The kit adds merge gates, launch checks, risk records, hosting recipes and `/maintain`. Using its debugging or test-first skill inside a kit task may work, but this has not been tried. See the [README](https://github.com/obra/superpowers/blob/main/README.md), [test-first skill](https://github.com/obra/superpowers/blob/main/skills/test-driven-development/SKILL.md), [session hook](https://github.com/obra/superpowers/blob/main/hooks/hooks.json) and [eval project](https://github.com/prime-radiant-inc/superpowers-evals).
 
 Read on 20 October 2026 at commit `bb92a77`.
 
-## Addy Osmani's agent skills
+### Addy Osmani's agent skills
 
 [Addy Osmani's agent skills](https://github.com/addyosmani/agent-skills) give developers engineering skills, commands and reviewer roles. `/ship` starts code, security and test reviews. Test-first work instructs the model. The plugin has no project merge gate; some hooks need manual setup. The kit adds merge gates, launch checks, risk records, hosting recipes and `/maintain`. Using its review skills beside the kit is untested, and their planning steps may compete. See the [README](https://github.com/addyosmani/agent-skills/blob/main/README.md), [`/ship` setup](https://github.com/addyosmani/agent-skills/blob/main/commands/ship.toml), [test-first skill](https://github.com/addyosmani/agent-skills/blob/main/skills/test-driven-development/SKILL.md) and [eval guide](https://github.com/addyosmani/agent-skills/blob/main/evals/README.md).
 
 Read on 20 October 2026 at commit `aeac41d`.
 
-## BMad Method
+### BMad Method
 
 [BMad Method](https://github.com/bmad-code-org/BMAD-METHOD) uses role-based skills for planning and delivery. It suits people who steer an agent and read its output. Its planning covers product, architecture and ticket trees; review agents inspect staged changes. These are model instructions, and the report found no gate on a user's project. The kit adds merge gates, launch checks, risk records, hosting recipes, `/maintain` and guidance for people who do not read code. BMad planning could feed a kit piece, but the workflows have not been tried together. This report read the v7 preview alpha, not stable v6. See the [README](https://github.com/bmad-code-org/BMAD-METHOD/blob/main/README.md), [build workflow](https://github.com/bmad-code-org/BMAD-METHOD/blob/main/skills/bmad-build/workflow.md), [review skill](https://github.com/bmad-code-org/BMAD-METHOD/blob/main/skills/bmad-review/SKILL.md) and [planning documents](https://github.com/bmad-code-org/BMAD-METHOD/tree/main/docs/plan).
 
 Read on 20 October 2026 at commit `61e01f8`.
 
-## Kiro
+### Kiro
 
 [Kiro](https://kiro.dev/docs/) is a proprietary development environment with an IDE, command line and other interfaces. Its specifications create requirements, design and task files, which can run in dependency-based groups. People can comment on the specification. Hooks and permissions can block tool calls, though exact exit-code behaviour is unconfirmed. The kit adds merge gates, launch checks with plain-word results, risk records, hosting recipes and `/maintain`. Kiro skills may be able to run the kit, but this has not been tried. The report found no product hosting feature or public product tests. See [specifications](https://kiro.dev/docs/specs/), [hooks](https://kiro.dev/docs/hooks/), [permissions](https://kiro.dev/docs/permissions/) and the [licence](https://kiro.dev/license/).
 
