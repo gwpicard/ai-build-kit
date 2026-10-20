@@ -10,7 +10,7 @@
 	}
 
 	:root {
-		--sl-content-width: 40rem;
+		--sl-content-width: 50rem;
 	}
 }
 
@@ -29,6 +29,29 @@
 	font-size: 0.75rem;
 }
 
+.comparison-table-wrap {
+	max-width: 100%;
+	overflow-x: auto;
+	overscroll-behavior-inline: contain;
+}
+
+.comparison-table-wrap table {
+	width: max(100%, 48rem);
+	table-layout: auto;
+	font-size: 0.78rem;
+}
+
+.comparison-table-wrap th,
+.comparison-table-wrap td {
+	min-width: 8rem;
+	vertical-align: top;
+}
+
+.comparison-table-wrap th:first-child,
+.comparison-table-wrap td:first-child {
+	min-width: 11rem;
+}
+
 @media (max-width: 30rem) {
 	.comparison-table {
 		font-size: 0.62rem;
@@ -37,5 +60,21 @@
 	.comparison-table th,
 	.comparison-table td {
 		padding: 0.25rem;
+	}
+
+	.comparison-table-wrap table {
+		font-size: 0.72rem;
+	}
+}
+
+/* On a wide screen the comparison tables use the width the inline
+   "On this page" menu freed, so they need no sideways scroll. The text
+   around them keeps its readable width. */
+@media (min-width: 72rem) {
+	.comparison-table-wrap {
+		--table-width: min(58rem, calc(100vw - var(--sl-sidebar-width) - 4rem));
+		width: var(--table-width);
+		max-width: none;
+		margin-inline: calc((100% - var(--table-width)) / 2);
 	}
 }
