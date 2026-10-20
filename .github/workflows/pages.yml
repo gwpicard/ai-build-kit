@@ -1,0 +1,49 @@
+name: publish site
+
+on:
+  workflow_run:
+    workflows: ["verify release"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  build:
+    if: github.repository == 'gwpicard/ai-build-kit' && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: stable
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.22.0
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - name: Build site
+        working-directory: site
+        run: |
+          npm ci
+          npm run build
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: site/dist
+
+  deploy:
+    if: github.repository == 'gwpicard/ai-build-kit' && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -880,6 +880,18 @@ project-owned either way.
 Only stable numbered releases update the public repository. A preview build
 stays on this computer, and the next section says how to try one.
 
+## The companion site
+
+The companion site lives in `site/`. It stays outside `release-manifest.txt`,
+so it never enters the kit release. After `verify release` succeeds, the Pages
+workflow builds the site from `stable` and deploys it. A failed site build does
+not change release preparation or verification.
+
+GitHub Pages needs `pages: write` and `id-token: write` to deploy. The
+`release-publication.sh` check allows those permissions only in the deploy job
+of `pages.yml`. The maintainer must switch the Pages source to **GitHub
+Actions** once in the repository settings.
+
 ## Trying unreleased work as a person would
 
 Do this before any release that touches founding or `/setup-hosting`. It checks what a

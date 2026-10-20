@@ -1,0 +1,32 @@
+---
+title: Install
+description: Install AI Build Kit for your coding agent.
+draft: false
+---
+
+Choose one route for each project. The shared installer supports the agents below. The Claude Code plugin is a separate route.
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+<Tabs>
+  <TabItem label="Claude Code">
+    From your project folder, run `claude plugin marketplace add gwpicard/ai-build-kit`, then `claude plugin install ai-build-kit@ai-build-kit --scope local`. Start Claude Code and run `/ai-build-kit:setup-ai-build-kit`.
+  </TabItem>
+  <TabItem label="Codex">
+    From your project folder, run `npx skills add gwpicard/ai-build-kit` and select Codex. Then ask Codex to run `setup-ai-build-kit`. On a Mac, the README also gives a session launcher for Codex with GitHub access.
+  </TabItem>
+  <TabItem label="Cursor">
+    Run `npx skills add gwpicard/ai-build-kit`, select Cursor and install all the kit's skills. Then ask your agent to run `setup-ai-build-kit`.
+  </TabItem>
+  <TabItem label="Gemini CLI">
+    Run `npx skills add gwpicard/ai-build-kit`, select Gemini CLI and install all the kit's skills. Then ask your agent to run `setup-ai-build-kit`.
+  </TabItem>
+  <TabItem label="GitHub Copilot">
+    Run `npx skills add gwpicard/ai-build-kit`, select GitHub Copilot and install all the kit's skills. Then ask your agent to run `setup-ai-build-kit`.
+  </TabItem>
+  <TabItem label="Other agents">
+    Run `npx skills add gwpicard/ai-build-kit`, select the agent you use and install all the kit's skills. Then ask your agent to run `setup-ai-build-kit`.
+  </TabItem>
+</Tabs>
+
+The site build also reads the current [installation instructions](./generated/readme-install/) and [compatibility notes](./generated/compatibility/) from the repository.
