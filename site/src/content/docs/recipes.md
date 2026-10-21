@@ -19,7 +19,7 @@ The kit has two recipes. Both use TypeScript, Next.js 16 and Supabase.
 - **Next.js and Supabase on Vercel** is the default for a work team. Vercel handles previews, going live and rollback, and the kit can run its checks on your computer. Private tools need a Vercel account for each person with access.
 - **Next.js and Supabase on Coolify** suits a team that rents its own server. It also suits long-running work. Its checks often need you, or a companion tool, to read the server and paste the result back.
 
-They suit dashboards, admin panels, approvals, customer trackers, light stock and order tools, portals, booking and forms. Each recipe records the plan terms of the services it uses, for example that a free plan is for personal use only.
+They suit dashboards, admin panels, approvals, customer trackers, light stock and order tools, portals, booking and forms. Each recipe points to the plan terms of the services it uses. You read and follow those terms yourself, and the kit does not interpret them.
 
 ## What a real run showed
 

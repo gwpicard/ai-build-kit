@@ -157,9 +157,9 @@ Then it names the kind of tool you are building and
 shows the recipes that fit, with one recommended. A recipe is one build stack
 paired with one place to run it, which the kit knows well enough to check at
 launch. For each one it says what the kit can check and what running it
-involves, such as the accounts you will hold. If the tool is for work and a
-recipe's free plan is for personal use only, it tells you once which plan a
-work team needs; a personal project does not hear it.
+involves, such as the accounts you will hold. If the tool is for work, it tells you
+once to read each service's plan terms yourself. It does not interpret them or
+say which plan you need. A personal project does not hear it.
 
 When only one recipe
 fits, you still see it the same way, recommended and named the default. You can bring

@@ -25,7 +25,10 @@ limits under `Runs on its own:`.
 The kit does not host tools or store project records. It is for internal tools
 with a manual fallback. Passing checks do not prove that software is safe or
 right for your purpose. The kit cannot replace a professional developer or
-provide legal, medical, financial or security advice.
+provide legal, medical, financial or security advice. You use it at your own
+risk. The terms of the services you run a tool on, such as a host or a database
+plan, are between you and those services, and you are responsible for reading
+and following them.
 
 ## Quick start
 

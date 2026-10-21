@@ -116,12 +116,14 @@ It opens with fixed fields. Each names a tool only, so checks can read it.
   that still records one of these names.
 
 One or more `Plan terms:` lines may follow. Each says, in one plain sentence,
-who a free or entry plan the recipe relies on is not for, and which plan such a
-person needs instead. It ends with when and where the terms were read, as
+which rule of a free or entry plan the person should read before choosing. It
+points to the service's own page and never interprets it, because what a
+service's terms mean is between the person and that service. It ends with when
+and where the terms were read, as
 `(read YYYY-MM-DD at <source page>)`, from the service's own page. Terms change
 without notice, and a restriction with no date cannot be told from a current
 one. The line never quotes a price. Founding reads it when it offers the
-recipe, and says it only to a person it applies to.
+recipe and tells the person to read the terms themselves.
 
 The shared stack part holds sign-in and roles, row rules, files, jobs, email,
 the project check and updates. Each section carries the same four lines as a

@@ -1,6 +1,6 @@
 # Shared stack: Next.js, TypeScript and Supabase
 
-Vercel plan terms: Hobby is for personal, non-commercial use. Paid employees or consultants writing the code count as commercial, and its preview gate admits one outside person. Work teams need Pro. Read 2026-10-21: [fair use](https://vercel.com/docs/limits/fair-use-guidelines) and [preview access](https://vercel.com/docs/deployment-protection/methods-to-protect-deployments/vercel-authentication).
+Vercel plan terms: Vercel sets its own rules for the Hobby plan, including what counts as commercial use and how many outside people a protected tool can admit. Read them and choose a plan yourself. Read 2026-10-21: [fair use](https://vercel.com/docs/limits/fair-use-guidelines) and [preview access](https://vercel.com/docs/deployment-protection/methods-to-protect-deployments/vercel-authentication).
 
 ## Sign-in and roles
 How it works: Supabase Auth keeps public sign-up off. A server call invites each person by email. A roles table and the Custom Access Token hook pass each person's role to database policies. Server route handlers and actions check access; Proxy is never the only check.
