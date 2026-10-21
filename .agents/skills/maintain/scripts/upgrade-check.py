@@ -1076,7 +1076,7 @@ def sentences(out, project):
     for finding in by.get("gate", []):
         gate = finding[1]
         said.append((gate, "Your project is missing or has an older copy of %s. I can "
-                     "refresh %s after your yes; this only changes those project files. "
+                     "refresh %s after your approval; this only changes those project files. "
                      "Shall I?" % (GATE_WORDS[gate], GATE_WORDS[gate])))
     if "template" in by:
         n = len(by["template"])

@@ -31,7 +31,7 @@ Plan terms: See stack for preview terms (read 2026-10-14 at https://vercel.com/d
 
 ## Preview
 
-How it works: A first launch runs `scripts/connect.sh <project>` before anything is pushed, to create the Vercel project and connect the GitHub repository. Where the repository is private, only its owner can let Vercel see it, and the script's last line says how. Before the first push to `main`, close sign-up with `../parts/scripts/set-signup.sh closed` and turn on Vercel sign-in with `scripts/set-access.sh private`. Until both settings are on, the address is public. Vercel sends its first build to production, so the first push is `main`. Each later branch gets its own preview, whose settings point at a second Supabase project, never the live one. Before each preview, `../parts/scripts/migrate.sh --apply <preview project ref>`, with that project's password location as `PREVIEW_DB_PASSWORD_FILE`, gives that project the branch's migrations. Reading a preview's health through Vercel makes a lasting key on the project that gets past Vercel's sign-in, the first time, so the kit asks the person before setting `PREVIEW_HEALTH=yes`.
+How it works: A first launch runs `scripts/connect.sh <project>` before anything is pushed, to create the Vercel project and connect the GitHub repository. Where the repository is private, only its owner can let Vercel see it, and the script's last line says how. Before the first push to `main`, close sign-up with `../parts/scripts/set-signup.sh closed` and turn on Vercel sign-in with `scripts/set-access.sh private`. Until both settings are on, the address is public. Vercel sends its first build to production, so the first push is `main`. Each later branch gets its own preview, whose settings point at a second Supabase project, never the live one. Before each preview, `../parts/scripts/migrate.sh --apply <preview project ref>`, with that project's password location as `PREVIEW_DB_PASSWORD_FILE`, applies the branch's migrations to that project. Reading a preview's health through Vercel, the first time, creates a lasting key on the project that bypasses Vercel's sign-in, so the kit asks the person before setting `PREVIEW_HEALTH=yes`.
 How it is checked: The preview is Ready, and the person opens it and tries the change. Where read, its health shows the database reachable, the branch's commit, and a project other than the live one.
 Script: scripts/preview.sh
 Who runs it: a person looking
@@ -46,8 +46,8 @@ Who runs it: the kit
 
 ## Rollback
 
-How it works: `scripts/roll-back-to.sh <earlier deployment> <its commit>` points the production address back at an earlier build in seconds, with no new build, after a yes that names it. On the Hobby plan only the build just before is eligible; on Pro, any earlier production build. After a rollback, Vercel stops moving new pushes to production until a newer build is promoted with `scripts/promote.sh <deployment> <its commit>`, which waits for its own yes. A rollback does not undo a migration, which is why a migration only adds.
-How it is checked: An earlier production build is listed, so a rollback is possible. It is not tried, since that would change the live tool.
+How it works: `scripts/roll-back-to.sh <earlier deployment> <its commit>` points the production address back at an earlier build in seconds, with no new build, after the person approves that specific rollback. On the Hobby plan only the build just before is eligible; on Pro, any earlier production build. After a rollback, Vercel stops moving new pushes to production until a newer build is promoted with `scripts/promote.sh <deployment> <its commit>`, which needs its own approval. A rollback does not undo a migration, which is why a migration only adds.
+How it is checked: The check confirms that an earlier production build is listed, which shows a rollback is possible. It does not perform one, because that would change the live tool.
 Script: scripts/rollback.sh
 Who runs it: the kit
 
@@ -69,7 +69,7 @@ Who runs it: the kit
 ## Logs
 
 How it works: What the tool writes with `console.error` lands in Vercel's logs for each deployment. The Hobby plan keeps them for one hour, so on Hobby the kit reads them within the hour after a launch.
-How it is checked: The production logs from the last hour are readable, and the kit names to the person any error from the new build.
+How it is checked: The production logs from the last hour are readable, and the kit reports to the person any error from the new build.
 Script: scripts/logs.sh
 Who runs it: the kit
 
@@ -79,8 +79,8 @@ Shared part: [the Next.js container and its health route](../parts/nextjs-contai
 
 ## Access
 
-How it works: The masterplan's `Access:` line says private, open address with invitation only, or public. Private is the default: `../parts/scripts/set-signup.sh closed` closes sign-up, so people get in only by an invitation from the Supabase dashboard, under Authentication, then Users. `scripts/set-access.sh private` puts Vercel's sign-in in front of every address, so each person also needs a Vercel account with access to the project. Pro can add people who only view, and Hobby lets in one person outside the account owner; both are to be confirmed at the real run. A larger group on Hobby cannot be kept private, and the access check names that limit and the three ways out: Pro, open address with invitation only, or the Coolify recipe. `scripts/set-access.sh public` takes the gate off the live address for the other two settings, and sign-up opens only for public. Each change waits for a yes that names its effect, and goes in the changelog. Reading through the gate waits for a yes.
-How it is checked: Sign-up, read by the shared `../parts/scripts/signup.sh` with an attempt that has no password and so makes no account, Vercel's setting, and a request signed in to nothing all match the record.
+How it works: The masterplan's `Access:` line says private, open address with invitation only, or public. Private is the default: `../parts/scripts/set-signup.sh closed` closes sign-up, so people get in only by an invitation from the Supabase dashboard, under Authentication, then Users. `scripts/set-access.sh private` puts Vercel's sign-in in front of every address, so each person also needs a Vercel account with access to the project. Pro can add people who only view, and Hobby lets in one person outside the account owner; neither limit has been confirmed in a real run. A larger group on Hobby cannot be kept private, and the access check reports that limit and the three ways out: Pro, open address with invitation only, or the Coolify recipe. `scripts/set-access.sh public` removes the gate from the live address for both open address with invitation only and public, and sign-up opens only for public. Each change needs the person's approval, given for that named effect, and goes in the changelog. Reading through the gate also needs the person's approval.
+How it is checked: Three readings must match the record: sign-up, read by the shared `../parts/scripts/signup.sh` with an attempt that has no password and so creates no account; Vercel's setting; and a request made without signing in.
 Script: scripts/access.sh
 Who runs it: the kit
 
