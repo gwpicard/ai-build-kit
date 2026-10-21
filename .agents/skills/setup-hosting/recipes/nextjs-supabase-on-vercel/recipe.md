@@ -26,8 +26,8 @@ Superseded settings: NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
 Shared stack: [Next.js, TypeScript and Supabase](../parts/nextjs-supabase-stack.md)
 Database types check: `if [ ! -f types/database.ts ] || ! git ls-files --error-unmatch types/database.ts >/dev/null 2>&1; then echo 'could not run: types/database.ts is missing or untracked'; exit 2; fi; if ! supabase status >/dev/null 2>&1; then echo 'could not run: local Supabase is not running'; exit 2; fi; tmp=$(mktemp) || exit 2; trap 'rm -f "$tmp"' EXIT; supabase gen types typescript --local > "$tmp" || { echo 'could not run: database types could not be generated'; exit 2; }; diff -u types/database.ts "$tmp"`
 Plan terms: Supabase Free pauses projects after 7 days of low activity and has no backups; teams use Pro (read 2026-10-14 at https://supabase.com/docs/guides/platform/free-project-pausing and https://supabase.com/docs/guides/platform/backups)
-Plan terms: See stack for Vercel Hobby terms (read 2026-10-14 at https://vercel.com/docs/limits/fair-use-guidelines)
-Plan terms: See stack for preview terms (read 2026-10-14 at https://vercel.com/docs/deployment-protection/methods-to-protect-deployments/vercel-authentication)
+Plan terms: Vercel Hobby is for non-commercial personal use only, and a deployment counts as commercial when anyone involved in producing it gains financially, including a paid employee or consultant writing the code, so a work team needs Pro (read 2026-10-21 at https://vercel.com/docs/limits/fair-use-guidelines)
+Plan terms: On Vercel Hobby, Vercel's sign-in gate admits only one external user per account, so a tool shared with more outside people needs Pro (read 2026-10-21 at https://vercel.com/docs/deployment-protection/methods-to-protect-deployments/vercel-authentication)
 
 ## Preview
 
