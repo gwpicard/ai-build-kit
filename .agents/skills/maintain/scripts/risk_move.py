@@ -522,7 +522,7 @@ def sentences(plan, pieces, report_only):
         said.append("These checks cannot run in this project yet, so they start report-only. They say what "
                     "they find and hold nothing: %s. Moving one to enforced is your decision, recorded with "
                     "the date." % report_only)
-    said.append("The first four lines of the record say not yet answered. After your yes I ask the three plain "
+    said.append("The first four lines of the record say not yet answered. After your approval I ask the three plain "
                 "questions that fill them: who is exposed if it fails, what data it holds, and how you would "
                 "recover.")
     return said

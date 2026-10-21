@@ -20,7 +20,7 @@ Command names say when to use them.
 | It's been a while | /maintain |
 | I'm lost | /what-now |
 
-Two of them carry the day-to-day work. /shape decides what to change next, a new idea or something broken, and turns it into a ready piece, without touching the tool yet. /implement builds a ready piece, whether it makes the tool do something new or brings it back to doing what it already should. It shows you the result and, by default, waits for your yes before merging. Automatic merging is an opt-in. Once the tool is live, a merge is the release.
+Two of them carry the day-to-day work. /shape decides what to change next, a new idea or something broken, and turns it into a ready piece, without touching the tool yet. /implement builds a ready piece, whether it makes the tool do something new or brings it back to doing what it already should. It shows you the result and, by default, waits for your approval before merging. Automatic merging is an opt-in. Once the tool is live, a merge is the release.
 
 The other four sit around those two. /setup-ai-build-kit founds the project once. /setup-hosting sets up how the tool runs live, and checks it later. /maintain makes the records true again and checks the live copy against your project, runs the upkeep when it is due, prepares a handover, and switches a tool off at the end. /what-now tells you where things stand when you are lost.
 
@@ -58,11 +58,11 @@ In Codex projects, a check at session start stays silent when GitHub works.
 When it cannot authenticate, it shows the restart sentence and starts no work.
 Codex asks you to trust the project and review the hook with `/hooks`; until
 then, the project's instructions ask the agent to run the same check first.
-`/maintain` offers to add it to an older project on your yes.
+`/maintain` offers to add it to an older project on your approval.
 
 Founding on a Mac offers once to make typing `codex` use the launcher in kit
 projects. The offer names your shell settings file and the marked block you
-can remove to undo it. Nothing changes without your yes, and a no is recorded.
+can remove to undo it. Nothing changes without your approval, and a no is recorded.
 Outside a kit project, typing `codex` works as usual. The function uses the
 current project's installed skill, so a later project uses its own launcher.
 
@@ -125,7 +125,7 @@ An area can also name one boundary, such as "the ledger is only reached through
 the charge step". At founding, and at the quarterly visit for a newly named
 area, the agent offers once to have the check hold it. Say yes and put the rule
 in your own words, and a change that crosses it turns the tick red with your
-sentence beside it. Nothing is added or taken away without your yes, and a
+sentence beside it. Nothing is added or taken away without your approval, and a
 language with no tool for it is told plainly that it has none.
 
 The risk record's `Access:` line says who can get in:
@@ -272,10 +272,10 @@ A small, clear fault, such as a typo or a wrong label, needs no long sitting.
 
 If the live tool broke just after a change went live, you are offered the
 earlier version back first, whatever you typed. The kit names the version it
-would bring back and runs the rollback only after your yes. Then it shapes the
+would bring back and runs the rollback only after your approval. Then it shapes the
 repair as usual. Some hosts stop putting new changes live after a rollback
 until a newer version is put live by hand. The kit says so at the time, and
-/setup-hosting puts the repair live after your yes. With no recipe, the kit
+/setup-hosting puts the repair live after your approval. With no recipe, the kit
 guarantees no rollback, and says what one would need.
 
 After launch, /shape also reads the tool's own record of what each request did
@@ -332,7 +332,7 @@ Next to the merge button sits a check. It re-runs the project's real commands on
 
 Green means the checks that exist really passed, which is a smaller promise than nothing being wrong: it covers the behaviour somebody thought to check and nothing else. Red means don't merge; say it to /implement, which takes that piece's build back up, and the agent reads what failed itself. You never read the machine's logs, and you never merge over a red check. Sometimes GitHub will not start the check at all, for example when the account's billing stops it. That is not red. The merge waits until GitHub runs the check. You can re-enable the check or merge on GitHub yourself. The check is switched off only if you ask, and /maintain reminds you while it stays off.
 
-A human decides whether to merge by default. Automatic merging is an opt-in. When it is off, once the check is green, /implement tells you what to try and where, such as the preview address, then names the pull request in one plain line and asks for a yes that names the merge. Saying "put it live" or "save it" before any merge was named is not that yes, so it asks again; saying "merge it" is, and it does not ask twice.
+A human decides whether to merge by default. Automatic merging is an opt-in. When it is off, once the check is green, /implement tells you what to try and where, such as the preview address, then names the pull request in one plain line and asks for an approval that names the merge. Saying "put it live" or "save it" before any merge was named is not that yes, so it asks again; saying "merge it" is, and it does not ask twice.
 
 It makes an approved merge on the pull request itself, never by merging on your computer and pushing `main`. In Claude Code a box asks before a named approval merge, where the project's settings carry that question. A project founded before the kit added it gets no box until /maintain adds it, and /implement says so rather than promising one. If GitHub cannot be reached, the merge waits, and you can merge it on GitHub yourself. With automatic merging off, nobody there to answer means the pull request waits. After a merge, everyone pulls main. Every pull request gets its review before it is offered as ready, and a flagged area also gets the review its caution names.
 
@@ -362,7 +362,7 @@ What the agent may not do is take the notice back. Pushing back on the cost, the
 
 ## 9. Going live
 
-/setup-hosting is for the moment you want people to use the tool. Its first run takes what is already on `main` live and sets the host up so that each later merge to `main` reaches the team's copy. From then on a merge is a deploy, and /implement waits for your yes by default, unless automatic merging is on, so /setup-hosting never merges your code. Run it again whenever you want the live copy checked against `main`, or moved to another host or recipe.
+/setup-hosting is for the moment you want people to use the tool. Its first run takes what is already on `main` live and sets the host up so that each later merge to `main` reaches the team's copy. From then on a merge is a deploy, and /implement waits for your approval by default, unless automatic merging is on, so /setup-hosting never merges your code. Run it again whenever you want the live copy checked against `main`, or moved to another host or recipe.
 
 /setup-hosting reads the risk record first. It runs the full evidence run, independent review, operational readiness, and the live transition. With a recipe, hosting follows its checks. With no recipe, the kit says once that it guarantees no way back, backup or checked launch, records your words and the date, and still helps you set the host up by hand.
 
@@ -399,7 +399,7 @@ not then read it some other way. It asks you, and names the page where the
 setting lives.
 
 A command that changes a live service's settings or data, other than saving
-code through the save route, waits for your yes, in /implement and in /setup-hosting
+code through the save route, waits for your approval, in /implement and in /setup-hosting
 alike. The kit first names everything the command will change, not only the
 setting it meant to change, and says whether it can be undone. A real build
 once pushed a whole settings file to change one thing, and switched off a live
@@ -485,7 +485,7 @@ After the first launch, a later /setup-hosting compares the live copy with `main
 
 It repairs each gap only after a yes that names it. It rechecks the risk record first if reliance or consequence has grown. A warning the changelog already holds comes back as one line pointing to it, so anything given in full is new. Every later run leaves one dated entry in the changelog, even when it finds nothing to repair, with its rollback line, such as "Rollback possible, not tried". That entry arrives as a records pull request with its own merge question, and where your host builds every change, that merge is one more build. Moving to another host or recipe is a later run too: the old live copy keeps serving until the new one answers.
 
-You can also ask /setup-hosting for a rollback outright. It reads the host's list of builds, names the version it would bring back by the change it carried and its date, and waits for a yes that names it. It runs the rollback once, or tells you where to click when the host offers nothing the kit can run, and checks that the live copy now reports the earlier version.
+You can also ask /setup-hosting for a rollback outright. It reads the host's list of builds, names the version it would bring back by the change it carried and its date, and waits for an approval that names it. It runs the rollback once, or tells you where to click when the host offers nothing the kit can run, and checks that the live copy now reports the earlier version.
 
 A rollback does not undo a database addition, which is why database changes only add. With no recipe the kit guarantees no rollback, and says what one would need.
 
@@ -529,7 +529,7 @@ When you shape a request, /shape names any other open piece that would be built 
 
 On a shared project, each piece starts from an up-to-date `main` and arrives as its own pull request, and by default a person decides each merge. When two pieces change the same lines, GitHub shows a merge conflict on the pull request that came second.
 
-Before /implement asks for that merge, it reads whether GitHub can make it. On a conflict it says so in one line, and offers to resolve it the ordinary way: merge the newest `main` into that piece's branch, settle the conflict, and push the branch again, never with a force push. It does that only on your yes, then runs the check again before asking for the merge.
+Before /implement asks for that merge, it reads whether GitHub can make it. On a conflict it says so in one line, and offers to resolve it the ordinary way: merge the newest `main` into that piece's branch, settle the conflict, and push the branch again, never with a force push. It does that only on your approval, then runs the check again before asking for the merge.
 
 Once a merge is under way on your computer, /what-now explains a conflict it finds and says which two intentions collided. It settles the conflict itself only when the records make the right outcome plain. Otherwise it keeps both sides and asks you. A conflict that touches data or how the tool goes live is never guessed through. You never have to read Git's own state to follow any of this.
 
@@ -578,7 +578,7 @@ what you agreed.
 
 When the core masterplan grows beyond roughly two pages, /maintain says so once
 and offers to move detail about individual pieces onto those pieces. It leaves
-the page alone without your yes, and keeps the tool's present promises and
+the page alone without your approval, and keeps the tool's present promises and
 decisions on the masterplan.
 
 Each visit also reads the project's README, and any document AGENTS.md points at,
@@ -591,7 +591,7 @@ points at something real, you hear nothing about it.
 
 /maintain names open pieces untouched for 30 days in one short list and asks once
 whether each is still wanted, should be parked, or is done. It changes nothing
-on that list without your yes. You can leave them as they are and carry on.
+on that list without your approval. You can leave them as they are and carry on.
 
 The monthly upkeep is light: AI Build Kit updates, project dependency
 updates, and, once the tool is live, anything the error alerts and the bills
@@ -639,11 +639,11 @@ offers to move them. A no is not recorded, so the next monthly visit offers
 again while the file is there. Any visit that finds a line in AGENTS.md or the
 masterplan pointing at a skill's file by a folder your installation may not
 have offers to name the skill instead, changing only those lines, and only on
-your yes.
+your approval.
 
 A masterplan whose fit-check section still uses the fields from before the risk
 record is offered a rewrite to today's shape. It shows the old section above the new one, copies each accepted risk
-word for word, and changes nothing else in the masterplan without your yes.
+word for word, and changes nothing else in the masterplan without your approval.
 
 A project installed before the kit had six commands still offers the old
 ones after its update. The first /maintain after the update says so in one
@@ -654,7 +654,7 @@ AGENTS.md, and to correct the one sentence the kit itself wrote into your
 masterplan about the hosting request. A project founded from a whole copy of
 the kit is also offered the removal of the kit's own files it carries, such
 as its WORKFLOW.md, but only where they match a released copy exactly. None of
-it happens without your yes.
+it happens without your approval.
 
 Your changelog keeps its old mentions, since it records what happened. A line
 of your own in AGENTS.md or the masterplan that names an old command, such as
@@ -663,7 +663,7 @@ rewritten. Once everything is removed and rewritten, the next visit finds
 nothing and says nothing. An offer you declined is mentioned in one line on
 each visit and offered in full again on the monthly visit. A command list
 written in your own words gets the same offer: /maintain shows the old lines
-and a replacement, keeps your own sentences, and applies it on your yes. The
+and a replacement, keeps your own sentences, and applies it on your approval. The
 update stays unfinished until the old command names are gone or you decline.
 You never need to edit the list by hand.
 
@@ -674,7 +674,7 @@ trim if the file reaches 200, or contains a folder layout, dependency list,
 architecture overview or style rule an automatic check could enforce.
 
 You see one line saying how long it is and what can go. Nothing is cut without
-your yes. A newly founded project starts well under the limit, with room left
+your approval. A newly founded project starts well under the limit, with room left
 for what founding writes into the file.
 
 A project with no recipe may still be built much like one on the menu, with
@@ -684,7 +684,7 @@ before recipes existed and one founded on its own stack. The monthly visit then
 offers the move once, and says what it gains: the launch checks /setup-hosting would run
 on that recipe. It also says what the move would change.
 
-Nothing changes without your yes. A yes becomes a piece, shaped and built like
+Nothing changes without your approval. A yes becomes a piece, shaped and built like
 any other, and the offer does not come back while that piece is open. A no is
 recorded, and the offer comes back only when the menu or your stack has
 changed since. The move is never required. When no recipe is close, you hear
@@ -717,7 +717,7 @@ When a later release catches more ways of writing one of those, the
 next visit names the new rules and offers to add them to
 `.claude/settings.json`, once. The same offer removes the kit's retired push
 text rules, which can stop a safe upload; the push guard still protects main
-and remote work. Nothing changes without your yes, and your own rules stay.
+and remote work. Nothing changes without your approval, and your own rules stay.
 A no is recorded, and the offer comes back only when a release changes it.
 
 /maintain writes the date of each visit into the project. When more than a month
@@ -748,7 +748,7 @@ is nothing new, and you hear nothing.
 It also reads all of the project's documents for bloat: a paragraph written
 out in full in two places, and a document nothing mentions any more. Each one
 comes as an offer, to keep one copy or to delete the page, and nothing changes
-without your yes. One you were offered at an earlier visit is not raised
+without your approval. One you were offered at an earlier visit is not raised
 again. It finds copies, not two documents that say the same thing in
 different words.
 
@@ -760,7 +760,7 @@ what it does not cover. Everything outside that area carries on either way.
 /maintain also owns the ending, when a tool's time is over: export the data,
 tell the team, revoke access, and switch off the services. The export is read
 back first. Each step that revokes access, deletes a credential, switches a
-service off or archives the repository waits for your yes, and says first
+service off or archives the repository waits for your approval, and says first
 whether it can be undone.
 
 ## Configuration
