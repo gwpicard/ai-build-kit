@@ -14,8 +14,8 @@ these rules.
 Include menu lines word for word in the closing reply. After the list, explain
 launch checks, account ownership, and whether the recipe runs on a platform or
 rented server. Use recipe product names, not prices. For work or paid use,
-include `Plan terms:` once; omit it for personal use. If
-unclear, state the condition. End with the menu question and continue with the
+include `Plan terms:` once, uninterpreted, for the person to read. Omit
+it for personal use. End with the menu question and continue with the
 recommendation unless they choose another recipe.
 
 If they choose another stack, record `Recipe: none`, explain what the kit
