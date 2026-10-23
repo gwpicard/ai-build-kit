@@ -22,14 +22,14 @@ sed -i.bak 's/^Recipe: none$/Recipe: nextjs-supabase-on-vercel/' "$PROJECT/AGENT
 mkdir -p "$WORK/engines"
 printf '{"private":true}\n' > "$WORK/engines/package.json"
 sdk=$(node -p 'require(process.argv[1]).dependencies["@supabase/supabase-js"]' "$PROJECT/package.json")
-(cd "$WORK/engines" && npm install --no-audit --no-fund --silent eslint@9.36.0 typescript@5.9.2 eslint-plugin-better-tailwindcss@3.8.0 tailwindcss@4.1.14 "@supabase/supabase-js@$sdk") ||
+(cd "$WORK/engines" && npm install --no-audit --no-fund --silent eslint@9.36.0 typescript@5.9.2 eslint-plugin-better-tailwindcss@4.10.0 tailwindcss@4.3.3 "@supabase/supabase-js@$sdk") ||
   fail "could not install the engines for the kit-folder boundary check"
-node - "$PROJECT" "$WORK/engines" <<'NODE'
-const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
-const { createRequire } = require('node:module');
-const { pathToFileURL } = require('node:url');
+node --input-type=module - "$PROJECT" "$WORK/engines" <<'NODE'
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { createRequire } from 'node:module';
+import { pathToFileURL } from 'node:url';
 const [project, engines] = process.argv.slice(2);
 const requireEngine = createRequire(path.join(engines, 'package.json'));
 const { ESLint } = requireEngine('eslint');

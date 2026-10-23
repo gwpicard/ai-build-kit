@@ -137,7 +137,8 @@ applies. Save a checkpoint before sweeping work. Stop and ask when:
 - the work exceeds the agreed slice, or needs a new dependency or service;
 - the request changes data, access, money, automatic actions, reliance, or
   external users, or would delete data or do anything irreversible or outside
-  this computer, such as a live service's settings: name all it changes and if it can be undone;
+  this computer, such as a live service's settings: name all it changes and
+  if it can be undone;
 - a risk area's caution is a person who has not yet looked, or a risk
   notice is waiting on the person's answer;
 - the masterplan is silent on a consequential decision, or the harness lacks a
@@ -151,7 +152,6 @@ authentication, project check, browser availability, independent-review method,
 and optional harness capabilities.)
 
 ## Stack, and how to run and check it
-
 Components live in `src/components/ui/`; add one with `npx shadcn add <name>`.
 
 (Filled in by the setup-ai-build-kit skill: `Recipe: <recipe folder name>` or

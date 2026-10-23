@@ -27,11 +27,70 @@ const interfaceConfig = {
 };
 export default interfaceConfig;
 CONFIG
+# Exercise the current form components without changing the starter's pages.
+mkdir -p src/app/field-rehearsal
+cat > src/app/field-rehearsal/page.tsx <<'TSX'
+"use client";
+
+import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+
+const schema = z.object({ email: z.string().email("Enter an email address.") });
+
+export default function FieldRehearsal() {
+  const [saved, setSaved] = useState("");
+  const form = useForm<z.infer<typeof schema>>({
+    resolver: zodResolver(schema), defaultValues: { email: "" }, mode: "onBlur",
+  });
+  return (
+    <main>
+      <h1>Form rehearsal</h1>
+      <form noValidate onSubmit={form.handleSubmit((values) => setSaved(values.email))}>
+        <Controller name="email" control={form.control} render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldLabel htmlFor="field-email">Email address</FieldLabel>
+            <Input {...field} id="field-email" type="email" aria-invalid={fieldState.invalid}
+              aria-describedby={fieldState.invalid ? "field-email-error" : undefined} />
+            {fieldState.invalid && <FieldError id="field-email-error" errors={[fieldState.error]} />}
+          </Field>
+        )} />
+        <Button type="submit">Save email</Button>
+      </form>
+      <output>{saved}</output>
+    </main>
+  );
+}
+TSX
+cat > e2e/field-rehearsal.spec.ts <<'TS'
+import { expect, test } from "@playwright/test";
+
+test("Field works with react-hook-form and zod", async ({ page }) => {
+  await page.goto("/field-rehearsal");
+  await page.getByLabel("Email address").fill("wrong");
+  await page.getByRole("button", { name: "Save email" }).click();
+  await expect(page.getByText("Enter an email address.")).toBeVisible();
+  await expect(page.getByLabel("Email address")).toHaveAttribute("aria-invalid", "true");
+  await page.getByLabel("Email address").fill("person@example.com");
+  await page.getByLabel("Email address").press("Tab");
+  await expect(page.getByText("Enter an email address.")).toHaveCount(0);
+  await page.getByRole("button", { name: "Save email" }).click();
+  await expect(page.locator("output")).toHaveText("person@example.com");
+  await expect(page.getByText("Enter an email address.")).toHaveCount(0);
+});
+TS
 npm run check > "$WORK/check.log" 2>&1 || { cat "$WORK/check.log"; fail "the clean copied starter failed scripts/check.sh"; }
 echo "ok: the clean copied starter passes scripts/check.sh"
 npx playwright install chromium > "$WORK/browser.log" 2>&1 || { cat "$WORK/browser.log"; fail "could not install Chromium"; }
 sh "$ROOT/.agents/skills/setup-hosting/recipes/parts/scripts/interface.sh" --config playwright.interface.config.ts > "$WORK/interface.log" 2>&1 || { cat "$WORK/interface.log"; fail "the clean sign-in interface check failed"; }
 echo "ok: the clean copied starter passes lint and the axe test"
+npm run test:e2e -- e2e/field-rehearsal.spec.ts --config playwright.interface.config.ts > "$WORK/field.log" 2>&1 || { cat "$WORK/field.log"; fail "Field did not work with react-hook-form and zod"; }
+echo "ok: Field shows zod errors and submits a valid value through react-hook-form"
+
 
 node --input-type=module <<'JS'
 import assert from 'node:assert/strict';
@@ -43,14 +102,18 @@ const faults = [
   ['raw select', '<select />', 'no-restricted-syntax', 'Use a component'],
   ['raw textarea', '<textarea />', 'no-restricted-syntax', 'Use a component'],
   ['palette colour', '<div className="bg-slate-900" />', 'better-tailwindcss/no-restricted-classes', 'Use a design colour'],
+  ['Tailwind 4.3 mauve palette', '<div className="bg-mauve-900" />', 'better-tailwindcss/no-restricted-classes', 'Use a design colour'],
+  ['Tailwind 4.3 olive palette', '<div className="bg-olive-900" />', 'better-tailwindcss/no-restricted-classes', 'Use a design colour'],
+  ['Tailwind 4.3 mist palette', '<div className="bg-mist-900" />', 'better-tailwindcss/no-restricted-classes', 'Use a design colour'],
+  ['Tailwind 4.3 taupe palette', '<div className="bg-taupe-900" />', 'better-tailwindcss/no-restricted-classes', 'Use a design colour'],
   ['variant palette colour', '<div className="hover:bg-slate-900/50" />', 'better-tailwindcss/no-restricted-classes', 'Use a design colour'],
   ['hex colour', '<div className="bg-[#123456]" />', 'better-tailwindcss/no-restricted-classes', 'Use a named design colour'],
   ['arbitrary property colour', '<div className="[color:red]" />', 'better-tailwindcss/no-restricted-classes', 'Use a named design colour'],
   ['arbitrary named colour', '<div className="bg-[rebeccapurple]" />', 'better-tailwindcss/no-restricted-classes', 'Use a named design colour'],
   ['arbitrary rgb colour', '<div className="text-[rgb(1,2,3)]" />', 'better-tailwindcss/no-restricted-classes', 'Use a named design colour'],
   ['inline style colour', '<div style={{ color: "red" }} />', 'no-restricted-syntax', 'Use design colour classes'],
-  ['unknown class', '<div className="made-up-class" />', 'better-tailwindcss/no-unknown-classes', 'Unregistered class'],
-  ['conflicting classes', '<div className="p-2 p-4" />', 'better-tailwindcss/no-conflicting-classes', 'conflicting'],
+  ['unknown class', '<div className="made-up-class" />', 'better-tailwindcss/no-unknown-classes', 'Unknown class'],
+  ['conflicting classes', '<div className="p-2 p-4" />', 'better-tailwindcss/no-conflicting-classes', 'Conflicting class'],
 ];
 const file = 'src/interface-fault.tsx';
 try {

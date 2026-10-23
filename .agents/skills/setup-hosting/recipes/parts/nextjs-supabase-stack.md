@@ -33,8 +33,8 @@ Script: coming in part B
 Who runs it: the kit
 
 ## User interface
-How it works: Tailwind CSS 4 and shadcn/ui on Radix supply design colours and components in src/components/ui/. react-hook-form and zod are available for forms.
-How it is checked: Lint rejects raw controls and colours outside the generated components. Playwright runs axe on sign-in and checks that its label is visible; this does not prove the screen is accessible.
+How it works: Tailwind CSS 4 and shadcn/ui on Radix supply design colours and components in src/components/ui/. Field supplies form layout for react-hook-form and zod.
+How it is checked: Lint runs no-unknown-classes and no-conflicting-classes, and rejects raw controls and colours outside the generated components. Playwright runs axe on sign-in and checks that its label is visible; this does not prove the screen is accessible.
 Script: scripts/interface.sh
 Who runs it: the kit
 

@@ -15,8 +15,6 @@
   },
   "dependencies": {
     "@hookform/resolvers": "5.2.2",
-    "@radix-ui/react-label": "2.1.7",
-    "@radix-ui/react-slot": "1.2.3",
     "@supabase/ssr": "0.7.0",
     "@supabase/supabase-js": "2.57.4",
     "class-variance-authority": "0.7.1",
@@ -38,15 +36,15 @@
   "devDependencies": {
     "@axe-core/playwright": "4.14.0",
     "@playwright/test": "1.64.1",
-    "@tailwindcss/postcss": "4.1.14",
+    "@tailwindcss/postcss": "4.3.3",
     "@types/node": "24.5.2",
     "@types/react": "19.1.13",
     "@types/react-dom": "19.1.9",
     "@vitest/coverage-v8": "5.0.5",
     "eslint": "9.36.0",
     "eslint-config-next": "16.4.2",
-    "eslint-plugin-better-tailwindcss": "3.8.0",
-    "tailwindcss": "4.1.14",
+    "eslint-plugin-better-tailwindcss": "4.10.0",
+    "tailwindcss": "4.3.3",
     "typescript": "5.9.2",
     "vitest": "5.0.5"
   }

@@ -2,37 +2,13 @@ import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTypescript from "eslint-config-next/typescript";
 import betterTailwindcss from "eslint-plugin-better-tailwindcss";
 
-function explain(rule, advice) {
-  return {
-    ...rule,
-    create(context) {
-      const explained = Object.create(context, {
-        report: { value: (report) => context.report({ ...report, message: `${report.message} ${advice}` }) },
-      });
-      return rule.create(explained);
-    },
-  };
-}
-
-// The Tailwind 4.1.14-compatible release calls unknown classes unregistered.
-const tailwindPlugin = {
-  ...betterTailwindcss,
-  rules: {
-    ...betterTailwindcss.rules,
-    "no-unknown-classes": explain(betterTailwindcss.rules["no-unregistered-classes"],
-      "Use a Tailwind utility or a design colour defined in src/app/globals.css."),
-    "no-conflicting-classes": explain(betterTailwindcss.rules["no-conflicting-classes"],
-      "Use one utility for each property and remove the conflicting class."),
-  },
-};
-
 const config = [
   ...nextVitals,
   ...nextTypescript,
   { ignores: [".next/**", "node_modules/**", "next-env.d.ts", ".agents/**", ".claude/**"] },
   {
     files: ["src/**/*.{js,jsx,ts,tsx}"],
-    plugins: { "better-tailwindcss": tailwindPlugin },
+    plugins: { "better-tailwindcss": betterTailwindcss },
     settings: { "better-tailwindcss": { entryPoint: "src/app/globals.css" } },
     rules: {
       "better-tailwindcss/no-unknown-classes": "error",
@@ -53,7 +29,7 @@ const config = [
       "better-tailwindcss/no-restricted-classes": ["error", {
         restrict: [
           {
-            pattern: "(?:^|:)!?(?:bg|text|border(?:-[trblxyse])?|ring(?:-offset)?|outline|shadow|decoration|divide|accent|caret|fill|stroke|from|via|to)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-[0-9]+(?:/.*)?!?$",
+            pattern: "(?:^|:)!?(?:bg|text|border(?:-[trblxyse])?|ring(?:-offset)?|outline|shadow|decoration|divide|accent|caret|fill|stroke|from|via|to)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|mauve|olive|mist|taupe)-[0-9]+(?:/.*)?!?$",
             message: "Use a design colour such as bg-primary or text-muted-foreground. Add a named colour in src/app/globals.css if needed.",
           },
           {
