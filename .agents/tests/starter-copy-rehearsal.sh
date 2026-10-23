@@ -27,9 +27,12 @@ for required in package.json Dockerfile .env.example public/.keep src/app/api/he
   src/components/ui/button.tsx src/components/ui/input.tsx src/components/ui/label.tsx \
   src/components/ui/card.tsx src/components/ui/table.tsx src/components/ui/dialog.tsx \
   src/components/ui/select.tsx src/components/ui/field.tsx src/components/ui/separator.tsx src/components/ui/sonner.tsx \
-  scripts/check.sh types/database.ts; do
+  .github/workflows/check.yml scripts/rls.sh scripts/check-lib.sh scripts/check.sh types/database.ts; do
   [ -f "$SCRATCH/clean/$required" ] || fail "copied starter is missing $required"
 done
+
+cmp "$SCRATCH/clean/scripts/rls.sh" "$ROOT/.agents/skills/setup-hosting/recipes/parts/scripts/rls.sh" || fail "the copied row rules check differs from the recipe"
+cmp "$SCRATCH/clean/scripts/check-lib.sh" "$ROOT/.agents/skills/setup-hosting/recipes/parts/scripts/check-lib.sh" || fail "the copied row rules helper differs from the recipe"
 
 [ ! -e "$SCRATCH/clean/src/components/ui/form.tsx" ] || fail "copied starter still ships the legacy form component"
 

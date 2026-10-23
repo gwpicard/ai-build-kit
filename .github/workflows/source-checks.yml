@@ -16,9 +16,9 @@ concurrency:
 jobs:
   source-kit-validation:
     if: github.repository == 'gwpicard/ai-build-kit'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - name: Regenerate adapters and check for drift
         run: .agents/tools/build-adapters.sh --check
       - name: Validate the kit
@@ -28,10 +28,10 @@ jobs:
   # out a package this one needs, and the publish run is the first to notice.
   site-build:
     if: github.repository == 'gwpicard/ai-build-kit'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version: 22.22.0
           cache: npm
@@ -55,13 +55,21 @@ jobs:
   # own README explains.
   rehearsal:
     if: github.repository == 'gwpicard/ai-build-kit'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # A rehearsal that waits for an answer nobody is there to give should stop
     # rather than hold the queue open.
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - name: Prepare the starter's Node.js version
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22.23.2
+      - name: Prepare the starter's database tools
+        uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
+        with:
+          version: 2.117.0
       - name: Install Claude Code
-        run: npm install --global @anthropic-ai/claude-code
+        run: npm install --global @anthropic-ai/claude-code@2.1.289
       - name: Rehearse
         run: .agents/tests/run-all.sh

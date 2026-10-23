@@ -579,11 +579,13 @@ Do not add a switch to skip the rehearsals when the hosted job runs them. Every
 expensive fault this repository has had came from a check that passed by never
 running, and the duplication costs half a minute and fails loudly.
 
-The job installs Claude Code, so the Claude plugin rehearsal and `fake-github.sh`
-run for real rather than being skipped for want of it. Nothing here reaches the
-network or uses a token, since the stand-in for the GitHub command line tool
-covers what would otherwise need an account. The replay harness stays out
-altogether: it costs money and needs a model, which its own README explains.
+The job installs Claude Code and the starter's pinned Node.js and database
+tools. The Claude plugin rehearsal and `fake-github.sh` run without a GitHub
+account, through a stand-in for its command line tool. The recipe workflow
+rehearsal installs locked packages and a browser, then starts a disposable
+local database and web server. It calls no live hosting or database service.
+The replay harness stays out altogether: it costs money and needs a model,
+which its own README explains.
 
 ## Keep it generic
 

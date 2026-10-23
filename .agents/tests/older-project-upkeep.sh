@@ -433,8 +433,8 @@ names = ("Check tests were not changed silently", "Check sensitive-area map",
 for name in names:
     template = re.sub(r"(?m)^      - name: " + re.escape(name) + r"\b[\s\S]*?(?=^      - (?:name:|uses:|run:)|\Z)",
                       "", template, count=1)
-template = template.replace("      - name: Install and test\n",
-                            "      - name: Project-specific check\n        run: echo keep\n\n      - name: Install and test\n")
+template = template.replace("      - name: Install and test placeholder\n",
+                            "      - name: Project-specific check\n        run: echo keep\n\n      - name: Install and test placeholder\n")
 open(sys.argv[2], "w", encoding="utf-8").write(template)
 PY
 cp -R "$P/.agents" "$work/gates-before-agents"

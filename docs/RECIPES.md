@@ -100,7 +100,7 @@ It opens with fixed fields. Each names a tool only, so checks can read it.
 - `Starter:` names the pinned starter folder, or says when it is coming.
 - `Optional parts:` names the parts the recipe accepts, or `none`. A part
   already in the parts folder is named without a note. A planned part may say
-  `(coming in part B)`, `(coming in part C)` or `(coming in part D)` until it
+  `(coming in part B)` or `(coming in part C)` until it
   is added.
 - `Deploy target:` where it runs once it is live.
 - `Health-check tool:` names the tool used to read the live health route.
@@ -130,8 +130,9 @@ recipe and tells the person to read the terms themselves.
 The shared stack part holds sign-in and roles, row rules, files, jobs, email,
 the user interface, the project check and updates. Each section carries the same four lines as a
 recipe section. The access gate stays in each recipe because it differs by
-host. Part D adds the per-change row rules check against migrations and a local
-database. The launch check reads the live database.
+host. The starter workflow checks row rules against a local database built
+from migrations on each pull request and push to main. The launch check reads
+the live database.
 
 Then comes one section for each of the eight things a live tool needs, in this
 order: preview, going live, rollback, backup, restore, secrets, logs and
@@ -163,7 +164,8 @@ check itself.
   migrations.
 - `How it is checked:` what a pass means, in plain words.
 - `Script:` the check, as `scripts/<name>.sh`, read from the folder of the file
-  it is written in.
+  it is written in. The shared stack's Project check names
+  `starters/nextjs-supabase/.github/workflows/check.yml` instead.
 - `Who runs it:` one of three values. `the kit` when the kit runs the check
   itself. `a companion or the person, result read back` when the check needs
   somewhere the kit cannot reach, and the script reads what is pasted back. `a
@@ -215,6 +217,20 @@ and its script sits in `recipes/parts/scripts/`. Scripts several recipes use,
 such as the migration read, sit there too, beside `check-lib.sh`, which they
 all share. The parts folder holds no `recipe.md`, so nothing reads it as a
 menu entry.
+
+When it copies a starter with a project workflow, `use-starter.sh` also copies
+the shared `rls.sh` and `check-lib.sh` into the project's `scripts/` folder.
+It refuses existing files before copying anything. The workflow can then run
+the same row rules query whichever coding agent installed the kit, including
+a plugin whose files stay outside the project. Its `--local` option reads the
+disposable database and never reads a linked database password or the live
+security advisor. The workflow uses the database container's PostgreSQL 17.6
+client, so the host needs no separate client installation.
+
+The recipe workflow reports `recipe-check`. The foundation reports
+`project-check`. Founding requires both when the recipe workflow is present,
+so a failed recipe check also blocks a merge on GitHub. Existing protection
+keeps its other required checks and settings.
 
 ## Settings the kit can read
 

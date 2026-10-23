@@ -18,3 +18,5 @@ Migration: Two migrations were applied once.
 Founding: Not tried.
 
 User interface: No real run yet; added 2026-10-23.
+
+Project check: No real run yet; CI workflow added 2026-10-23. The first green pull request still needs a real GitHub run.

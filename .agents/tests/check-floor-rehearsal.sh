@@ -97,14 +97,15 @@ cp "$REVIEW_CHECK" "$PROJECT/.agents/hooks/check-review.sh"
 # The edit founding makes: the placeholder step goes, and install, type check,
 # lint and test go in its place, each as its own named step.
 awk -v tc="$type_check" -v li="$lint" '
-  /- name: Install and test/ { skipping = 1 }
+  /- name: (Locate the recipe project check|Install and test)/ { skipping = 1 }
   skipping { next }
   { print }
   END {
     print "      - name: Install"
     print "        run: python3 -m pip install mypy ruff"
     print "      - name: Type check"
-    print "        run: " tc
+    print "        run: |"
+    print "          " tc
     print "      - name: Lint"
     print "        run: " li
     print "      - name: Test"
@@ -168,20 +169,17 @@ SH
 chmod +x "$WORK/bin/gh"
 run_check() {
   event_name=${1:-pull_request}
-  awk '
-    /^ *- id: / { name = ""; condition = ""; block = 0; next }
-    /^ *- uses: / { name = ""; condition = ""; block = 0; next }
-    /^ *- name: / { sub(/^ *- name: /, ""); name = $0; condition = ""; next }
-    /^ *if: / { sub(/^ *if: /, ""); condition = $0; next }
-    /^ *run: \|[-+]?$/ { run_indent = match($0, /[^ ]/); command = ""; block = 1; next }
-    block && /^[ ]+/ {
-      indent = match($0, /[^ ]/)
-      if (indent > run_indent) { sub(/^[ ]+/, ""); command = command $0 "\n"; next }
-      printf "%s\034%s\034%s\n", name, condition, command; block = 0
-    }
-    /^ *run: /    { sub(/^ *run: /, ""); printf "%s\034%s\034%s\n", name, condition, $0 }
-    END { if (block) printf "%s\034%s\034%s\n", name, condition, command }
-  ' "$PROJECT/.github/workflows/checks.yml" > "$WORK/steps"
+  # Keep each command in a file, so a multiline YAML block stays one step.
+  ruby -ryaml - "$PROJECT/.github/workflows/checks.yml" "$WORK" <<'RUBY' > "$WORK/steps"
+workflow, work = ARGV
+YAML.load_file(workflow).fetch("jobs").fetch("project-check").fetch("steps").each_with_index do |step, index|
+  next unless step.key?("run")
+  next if step["id"] == "recipe"
+  command = File.join(work, "step-#{index}.sh")
+  File.write(command, step.fetch("run"))
+  puts [step.fetch("name"), step.fetch("if", ""), command].join("\034")
+end
+RUBY
   separator=$(printf '\034')
   while IFS="$separator" read -r step condition command; do
     [ "$step" = "Install" ] && continue
@@ -193,7 +191,7 @@ run_check() {
     pr_base=$base_sha
     [ "$event_name" = pull_request ] || pr_base=
     if ! (cd "$PROJECT" && PATH="$WORK/bin:$PATH" PR_NUMBER=9 GITHUB_EVENT_NAME="$event_name" PR_BASE_SHA="$pr_base" BASE_SHA="$base_sha" \
-        HEAD_SHA="$head_sha" PUSH_BEFORE="$base_sha" PUSH_AFTER="$head_sha" sh -c "$command") > "$WORK/last-output" 2>&1; then
+        HEAD_SHA="$head_sha" PUSH_BEFORE="$base_sha" PUSH_AFTER="$head_sha" sh "$command") > "$WORK/last-output" 2>&1; then
       cat "$WORK/last-output" >&2
       git -C "$PROJECT" show "$pr_base:masterplan.md" >&2 || true
       printf '%s\n' "$step"
@@ -455,14 +453,15 @@ bootstrap_review_reader "$PROJECT"
 cp "$REVIEW_CHECK" "$PROJECT/.agents/hooks/check-review.sh"
 
 awk -v tc="$type_check" -v li="$lint" '
-  /- name: Install and test/ { skipping = 1 }
+  /- name: (Locate the recipe project check|Install and test)/ { skipping = 1 }
   skipping { next }
   { print }
   END {
     print "      - name: Install"
     print "        run: npm install"
     print "      - name: Type check"
-    print "        run: " tc
+    print "        run: |"
+    print "          " tc
     print "      - name: Lint"
     print "        run: " li
     print "      - name: Test"

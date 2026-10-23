@@ -15,7 +15,7 @@ Row rules: No real run yet; added 2026-10-14.
 Files: No real run yet; added 2026-10-14.
 Jobs: No real run yet; added 2026-10-14.
 Email: No real run yet; added 2026-10-14.
-Project check: No real run yet; added 2026-10-14.
+Project check: No real run yet; CI workflow added 2026-10-23. The first green pull request still needs a real GitHub run.
 Updates: No real run yet; added 2026-10-14.
 
 The run used a throwaway private app on a Hetzner cpx22 server running Coolify 4.3.23, set up by the coolify-devops 0.4.0 companion. The app had no domain. It ran on the internal lane, reached over the team's private network through a Tailscale Service that docktail registered. The Supabase Free plan had no room for a second active project, so previews and live shared one Supabase project on this run.

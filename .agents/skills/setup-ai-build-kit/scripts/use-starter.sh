@@ -57,6 +57,16 @@ for root, dirs, names in os.walk(starter, followlinks=False):
 if not files:
     stop("could not run: starter folder is empty")
 
+# Keep the project check independent of where a coding agent installs the kit.
+# These are the recipe's own scripts, copied through the same clash checks.
+if os.path.isfile(os.path.join(starter, ".github", "workflows", "check.yml")):
+    shared = os.path.join(allowed, "..", "scripts")
+    for name in ("rls.sh", "check-lib.sh"):
+        source = os.path.join(shared, name)
+        if not os.path.isfile(source) or os.path.islink(source):
+            stop("could not run: shared row rules script is missing: " + name)
+        files.append((source, os.path.join("scripts", name)))
+
 clashes = []
 list_files = {".gitignore", ".env.example"}
 for _, relative in files:

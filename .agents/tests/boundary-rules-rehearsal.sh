@@ -115,7 +115,7 @@ put('.dependency-cruiser.cjs', config + '\n');
 
 // The workflow founding writes: the placeholder goes, the boundary step comes in.
 const workflow = fs.readFileSync(path.join(foundation, 'checks.yml'), 'utf8')
-  .replace(/      - name: Install and test[\s\S]*$/, [
+  .replace(/      - name: (?:Locate the recipe project check|Install and test)[\s\S]*$/, [
     '      - name: Boundary rules',
     `        run: ${checkCommand}`,
     '',

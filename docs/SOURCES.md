@@ -122,3 +122,10 @@ sight. Passing these checks does not prove a screen is accessible.
 The screen-check skill adapts some interface rules from W3C's "How to Meet WCAG" quick reference, and W3C's licence requires this notice.
 
 Copyright © 2023 W3C®. This software or document includes material copied from or derived from [How to Meet WCAG, Quick Reference](https://www.w3.org/WAI/WCAG22/quickref/).
+
+## Project checks in CI
+
+[GitHub's branch protection guide](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches)
+warns that job names must be unique across workflows. The starter reports
+`recipe-check` beside the foundation's `project-check`, and the branch
+protection script requires both for a recipe project.

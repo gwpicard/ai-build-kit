@@ -87,8 +87,8 @@ rr_case 2 good set-signup.sh
 rr_case 0 good signup.sh
 rr_case 1 good RR_SIGNUP=open signup.sh
 
-# The launch check reads the live row rules. The project check will test
-# migrations against a local database when part D lands.
+# The launch check reads the live row rules. The project workflow checks
+# every migration against a local database.
 rr_case 1 good going-live.sh --pasted "$(rr_paste bad going-live)"
 rr_case 2 good going-live.sh --pasted "$(rr_paste unlabelled going-live)"
 
