@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Require project-check on an existing branch without replacing its rules.
+"""Require project checks on an existing branch without replacing its rules.
 
 Exit 0: set. 2: could not be set, with the reason. 3: the account's plan does
 not offer protection on this private repository. With --defer-missing, a branch
@@ -12,6 +12,7 @@ With --defer-missing, 6 means could not check; founding can still save locally.
 
 import json
 from pathlib import Path
+import re
 import subprocess
 import sys
 
@@ -101,6 +102,11 @@ def main(argv):
         print("usage: protect-branch.py [--defer-missing | --check] OWNER/REPO BRANCH", file=sys.stderr)
         return 2
     repo, branch = args
+    required_contexts = ["project-check"]
+    workflow = Path(".github/workflows/check.yml")
+    if workflow.is_file() and re.search(r"(?m)^\s+recipe-check:\s*$", workflow.read_text()):
+        required_contexts.append("recipe-check")
+    check_names = ", ".join(required_contexts)
 
     def unreadable(message, detail=""):
         if "admin rights" in detail.lower():
@@ -131,11 +137,11 @@ def main(argv):
         if not code:
             try:
                 protection = json.loads(detail)
-                required = "project-check" in ((protection.get("required_status_checks") or {}).get("contexts") or [])
+                required = set(required_contexts).issubset((protection.get("required_status_checks") or {}).get("contexts") or [])
                 admins = protection.get("enforce_admins") or {}
                 if required and admins.get("enabled"):
                     record_condition(repo, branch, False)
-                    print("protection\tproject-check required on %s, including admins" % branch)
+                    print("protection\t%s required on %s, including admins" % (check_names, branch))
                     return 0
             except (ValueError, AttributeError):
                 return report("GitHub's branch protection answer could not be read.")
@@ -156,7 +162,7 @@ def main(argv):
     if code and ("404" in detail or "Not Found" in detail):
         body = {
             # Two pieces may merge from the same base; merge.py still holds on red or pending checks.
-            "required_status_checks": {"strict": False, "contexts": ["project-check"]},
+            "required_status_checks": {"strict": False, "contexts": required_contexts},
             "enforce_admins": True,
             "required_pull_request_reviews": None,
             "restrictions": None,
@@ -164,11 +170,11 @@ def main(argv):
         code, detail = api("PUT", prefix + "/protection", body)
         if not code:
             record_condition(repo, branch, False)
-            print("protection\tproject-check required on %s, including admins" % branch)
+            print("protection\t%s required on %s, including admins" % (check_names, branch))
             return 0
     elif not code:
         code, detail = api("POST", prefix + "/protection/required_status_checks/contexts",
-                           {"contexts": ["project-check"]})
+                           {"contexts": required_contexts})
         if code and ("404" in detail or "not found" in detail.lower()):
             # GitHub REST: https://docs.github.com/rest/branches/branch-protection#update-status-check-protection
             # Contexts POST can return 404 when protection has no required checks.
@@ -180,15 +186,16 @@ def main(argv):
             except (ValueError, TypeError, AttributeError):
                 return unreadable("GitHub's existing required checks could not be read.")
             contexts = list(existing.get("contexts") or [])
-            if "project-check" not in contexts:
-                contexts.append("project-check")
+            for context in required_contexts:
+                if context not in contexts:
+                    contexts.append(context)
             code, detail = api("PATCH", prefix + "/protection/required_status_checks",
                                {"strict": existing.get("strict", True), "contexts": contexts})
         if code == 0:
             code, detail = api("POST", prefix + "/protection/enforce_admins")
         if not code:
             record_condition(repo, branch, False)
-            print("protection\tproject-check added on %s, including admins" % branch)
+            print("protection\t%s added on %s, including admins" % (check_names, branch))
             return 0
 
     lowered = detail.lower()

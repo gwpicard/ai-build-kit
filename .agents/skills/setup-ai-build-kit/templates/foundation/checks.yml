@@ -10,7 +10,7 @@ jobs:
   project-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           fetch-depth: 0
       - id: recipe
@@ -22,15 +22,6 @@ jobs:
           else
             echo 'selected=false' >> "$GITHUB_OUTPUT"
           fi
-      - uses: actions/setup-node@v6
-        if: steps.recipe.outputs.selected == 'true'
-        with:
-          node-version: 22
-          cache: npm
-      - uses: supabase/setup-cli@v1
-        if: steps.recipe.outputs.selected == 'true'
-        with:
-          version: latest
       - name: Check tests were not changed silently
         run: sh .agents/hooks/check-tests.sh
       - name: Check review findings
@@ -57,25 +48,9 @@ jobs:
           version=$(sh .agents/hooks/check-sensitive-areas.sh --version)
           [ "$version" = "sensitive-area-check-v3" ] || { echo "Sensitive-area check: installed copy does not support change checks. Update the kit copy first."; exit 2; }
           sh .agents/hooks/check-sensitive-areas.sh --change "$PR_BASE_SHA"
-      - name: Install and test
+      - name: Locate the recipe project check
         if: steps.recipe.outputs.selected == 'true'
-        run: |
-          npm ci
-          supabase start
-          supabase db reset
-          npx vitest run --coverage
-          npx next typegen && npx tsc --noEmit
-          tmp=$(mktemp)
-          trap 'rm -f "$tmp"' EXIT
-          supabase gen types typescript --local > "$tmp"
-          diff -u types/database.ts "$tmp"
-          npm run build
-          npx next start > /tmp/abk-next-start.log 2>&1 &
-          server=$!
-          trap 'kill "$server" 2>/dev/null || true; rm -f "$tmp"' EXIT
-          for attempt in {1..30}; do curl -fsS http://localhost:3000/api/health >/dev/null && break; sleep 2; done
-          npx playwright install --with-deps chromium
-          npx playwright test --grep 'D[0-9]+'
+        run: test -f .github/workflows/check.yml
       - name: Install and test placeholder
         if: steps.recipe.outputs.selected != 'true'
         run: |

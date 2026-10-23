@@ -1,0 +1,99 @@
+name: Project check
+
+"on":
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  recipe-check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      CI: "true"
+      SOURCE_COMMIT: ${{ github.sha }}
+      SUPABASE_LOCAL_DB_URL: postgresql://postgres:postgres@127.0.0.1:5432/postgres
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Read the project files
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+      - name: Prepare Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22.23.2
+          cache: npm
+      - name: Prepare Supabase
+        uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
+        with:
+          version: 2.117.0
+      - name: Check the tool versions
+        id: versions
+        run: |
+          test "$(node --version)" = v22.23.2
+          test "$(npm --version)" = 10.9.8
+          test "$(supabase --version)" = 2.117.0
+      - name: Install the locked packages
+        id: packages
+        run: npm ci
+      - name: Install the browser
+        id: browser
+        run: npx --no-install playwright install --with-deps chromium
+      - name: Start the local database and apply migrations
+        id: database
+        run: |
+          supabase start > "$RUNNER_TEMP/supabase-start.log"
+          supabase db reset --local --no-seed
+      - name: Connect the checks to the local database
+        id: connection
+        run: |
+          supabase status -o env > "$RUNNER_TEMP/supabase.env"
+          source "$RUNNER_TEMP/supabase.env"
+          project=$(sed -n 's/^project_id = "\(.*\)"$/\1/p' supabase/config.toml)
+          test "$(docker exec "supabase_db_$project" psql --version)" = 'psql (PostgreSQL) 17.6'
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL"
+            echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$ANON_KEY"
+            echo "SUPABASE_SECRET_KEY=$SERVICE_ROLE_KEY"
+            echo "SUPABASE_CONTAINER=supabase_db_$project"
+          } >> "$GITHUB_ENV"
+          mkdir -p "$RUNNER_TEMP/recipe-bin"
+          cat > "$RUNNER_TEMP/recipe-bin/psql" <<'SH'
+          #!/usr/bin/env bash
+          exec docker exec -i "$SUPABASE_CONTAINER" psql "$@"
+          SH
+          chmod +x "$RUNNER_TEMP/recipe-bin/psql"
+          echo "$RUNNER_TEMP/recipe-bin" >> "$GITHUB_PATH"
+      - name: Check database types against migrations
+        id: database-types
+        run: |
+          supabase gen types typescript --local --schema public > "$RUNNER_TEMP/database.ts"
+          diff -u types/database.ts "$RUNNER_TEMP/database.ts"
+      - name: Check TypeScript and generated route types
+        id: types
+        run: npm run typecheck
+      - name: Check the code and screen rules
+        id: lint
+        run: npm run lint
+      - name: Run unit tests with coverage
+        id: unit
+        run: npm run test:coverage
+      - name: Build the production app
+        id: build
+        run: npm run build
+      - name: Check every table has row rules
+        id: row-rules
+        run: sh scripts/rls.sh --local
+      - name: Run browser and accessibility tests against the production app
+        id: e2e
+        run: npm run test:e2e
+      - name: Stop the local database
+        id: stop
+        if: always()
+        run: supabase stop --no-backup

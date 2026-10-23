@@ -87,7 +87,7 @@ HEADS = ["Fits", "Recommended when"] + STACK + ["Work-team default", "Deploy tar
          "Command-line tools", "Last checked", "Last proven", "Proven on", "Superseded settings"]
 STACK_SECTIONS = ["Sign-in and roles", "Row rules", "Files", "Jobs", "Email",
                   "User interface", "Project check", "Updates"]
-COMING_SECTIONS = set(STACK_SECTIONS) - {"User interface"}
+COMING_SECTIONS = set(STACK_SECTIONS) - {"User interface", "Project check"}
 FIT_CATEGORIES = {
     "Dashboards and reporting on existing data",
     "Admin panels and back office over an existing database",
@@ -156,12 +156,17 @@ def body_check(where, base, found):
     script = found.get("Script", "")
     if script.startswith("coming in part "):
         section = where.rsplit(" ## ", 1)[-1]
-        allowed = section in COMING_SECTIONS and script in ("coming in part B", "coming in part C", "coming in part D")
+        allowed = section in COMING_SECTIONS and script in ("coming in part B", "coming in part C")
         if not allowed:
-            problem(where, "may defer its script only in a named shared-stack section for parts B to D")
+            problem(where, "may defer its script only in a named shared-stack section for parts B and C")
     elif script and not (mode == "template" and "<" in script):
         path = os.path.normpath(os.path.join(base, script))
-        if not script.startswith("scripts/") or not script.endswith(".sh"):
+        workflow = (where.rsplit(" ## ", 1)[-1] == "Project check" and
+                    script == "starters/nextjs-supabase/.github/workflows/check.yml")
+        if workflow:
+            if not os.path.isfile(path):
+                problem(where, "names a workflow that is not there: %s" % script)
+        elif not script.startswith("scripts/") or not script.endswith(".sh"):
             problem(where, "names a script outside its scripts/ folder: %s" % script)
         elif not os.path.isfile(path):
             problem(where, "names a script that is not there: %s" % script)
@@ -230,7 +235,7 @@ def check_recipe(md, proven):
             choices.add("Python document worker")
         if available_parts == {"read-only existing database", "Python document worker"}:
             choices.add("read-only existing database and Python document worker")
-        coming = re.fullmatch(r"[A-Za-z0-9 ,&-]+ \(coming in part [BCD]\)", value)
+        coming = re.fullmatch(r"[A-Za-z0-9 ,&-]+ \(coming in part [BC]\)", value)
         if value not in choices and not coming:
             problem(where, "Optional parts must name the parts the recipe accepts, or none")
         deploy = re.search(r"^Deploy target: (.*)$", head, re.M)

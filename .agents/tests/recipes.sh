@@ -181,6 +181,7 @@ refused "Framework with an unlisted major" recipe.md 's/^Framework: .*/Framework
 refused "Framework with alternatives" recipe.md 's/^Framework: .*/Framework: Next.js 16 or latest/'
 refused "Starter without coming or a real path" recipe.md 's#^Starter: .*#Starter: starters/missing#'
 refused "an unknown optional part" recipe.md 's/^Optional parts: .*/Optional parts: fantasy worker/'
+refused "an optional part deferred to part D" recipe.md 's/^Optional parts: .*/Optional parts: example (coming in part D)/'
 refused "an unknown health-check tool" recipe.md 's/^Health-check tool: .*/Health-check tool: ping/'
 refused "a legacy Build stack field" recipe.md '/^Build stack:/d; /^Language:/a\
 Build stack: old format'
@@ -198,8 +199,8 @@ refused "one section that does not say how it works" recipe.md '/^## Backup$/,/^
 refused "one section that does not say what a pass means" recipe.md '/^## Health$/,/^## /{/^How it is checked:/d;}'
 refused "one section that does not say who runs it" recipe.md '/^## Secrets$/,/^## /{/^Who runs it:/d;}'
 refused "one section that names no script" recipe.md '/^## Logs$/,/^## /{/^Script:/d;}'
-refused "a launch section that defers its script" recipe.md '/^## Going live$/,/^## /s#^Script: .*#Script: coming in part D#'
-refused "Access that defers its script" recipe.md '/^## Access$/,/^## /s#^Script: .*#Script: coming in part D#'
+refused "a launch section that defers its script" recipe.md '/^## Going live$/,/^## /s#^Script: .*#Script: coming in part B#'
+refused "Access that defers its script" recipe.md '/^## Access$/,/^## /s#^Script: .*#Script: coming in part B#'
 refused "a script that is not there" recipe.md '/^## Logs$/,/^## /s#^Script: .*#Script: scripts/missing.sh#'
 refused "a script outside its scripts folder" recipe.md '/^## Logs$/,/^## /s#^Script: .*#Script: ../check.sh#'
 refused "a section a person runs with no Ask line" recipe.md '/^## Preview$/,/^## /{/^Ask:/d;}'
@@ -304,7 +305,7 @@ cp "$PARTS/whole.md" "$PARTS/shared.md"
 
 # A deferred script belongs only to a named stack section, never launch or
 # access. Each case starts with the complete, otherwise valid shared part.
-for deferred in "## Project check|coming in part D" "## Files|coming in part B"; do
+for deferred in "## Jobs|coming in part C" "## Files|coming in part B"; do
   section=${deferred%%|*}; marker=${deferred#*|}
   awk -v section="$section" -v marker="$marker" '
     $0 == section { inside = 1 }
@@ -314,7 +315,29 @@ for deferred in "## Project check|coming in part D" "## Files|coming in part B";
   cp "$WORK/stack-deferred.md" "$WORK/recipes/parts/stack.md"
   "$CHECKER" "$GOOD" >/dev/null || fail "a shared stack section may defer its script"
 done
-ok "named shared-stack sections may defer scripts for parts B to D"
+ok "named shared-stack sections may defer scripts for parts B and C"
+cp "$WORK/recipes/parts/stack.md" "$WORK/stack-before-refusal.md"
+for marker in 'coming in part D' 'coming in part B'; do
+  sed "s#^Script: .*#Script: $marker#" "$WORK/stack-before-refusal.md" > "$WORK/recipes/parts/stack.md"
+  if "$CHECKER" "$GOOD" > "$WORK/deferred-result"; then
+    fail "the project check accepted a deferred script"
+  fi
+  grep -q 'Project check.*may defer' "$WORK/deferred-result" || fail "the project check failed for another reason"
+done
+cp "$WORK/stack-before-refusal.md" "$WORK/recipes/parts/stack.md"
+ok "the project check cannot defer its workflow, and part D cannot defer any script"
+# A workflow is valid only for the project check, and it must exist.
+mkdir -p "$PARTS/starters/nextjs-supabase/.github/workflows"
+printf 'name: project check\n' > "$PARTS/starters/nextjs-supabase/.github/workflows/check.yml"
+awk '/^## / { project = ($0 == "## Project check") }
+  project && /^Script:/ { $0 = "Script: starters/nextjs-supabase/.github/workflows/check.yml" }
+  { print }' "$WORK/stack-before-refusal.md" > "$PARTS/stack.md"
+"$CHECKER" "$GOOD" >/dev/null || fail "the project check refused an existing workflow"
+rm "$PARTS/starters/nextjs-supabase/.github/workflows/check.yml"
+if "$CHECKER" "$GOOD" > "$WORK/workflow-result"; then fail "a missing project workflow passed"; fi
+grep -q 'workflow that is not there' "$WORK/workflow-result" || fail "missing workflow failed for another reason"
+cp "$WORK/stack-before-refusal.md" "$PARTS/stack.md"
+ok "the project check accepts an existing workflow and refuses a missing one"
 LINKED="$WORK/recipes/linked"
 cp -R "$GOOD" "$LINKED"
 # The backup section's own lines go, and a link to the part takes their place.

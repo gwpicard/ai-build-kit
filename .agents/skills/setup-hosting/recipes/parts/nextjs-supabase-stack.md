@@ -39,10 +39,17 @@ Script: scripts/interface.sh
 Who runs it: the kit
 
 ## Project check
-How it works: Every change checks database types, type checks, lint, Vitest with coverage, and Playwright against `next start`. CI starts local Supabase and applies the migrations before the tests.
-How it is checked: The project check is green, including database types and tests against local Supabase.
-Script: coming in part D
+How it works: Each pull request and push to main installs the locked packages and browser, starts local Supabase and applies the migrations. It compares the generated database types, runs `next typegen` and the type check, lint, Vitest with coverage and the build, then checks row rules with `scripts/rls.sh --local`. Playwright starts `next start` and runs every browser test, including the accessibility test.
+How it is checked: The workflow passes. A table without row-level security or database types that differ from the migrations fails it.
+Script: starters/nextjs-supabase/.github/workflows/check.yml
 Who runs it: the kit
+
+Local rehearsal: On 2026-10-23, the workflow's shell steps took 76.450 seconds
+on this computer, an arm64 Mac running macOS 15.1 with Docker 29.8.0. The
+database started from stopped containers. Package, browser and database image
+caches were warm. This includes database shutdown and excludes the three
+GitHub setup actions and the planted fault cases. A real GitHub run has not
+been timed or proven.
 
 For hosting requests, mark each build value in `.env.example` with a `# build` comment on the line immediately above it. Names beginning `NEXT_PUBLIC_` also count as build values. Other names are runtime values.
 

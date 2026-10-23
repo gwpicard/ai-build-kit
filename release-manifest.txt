@@ -298,3 +298,6 @@ agent-plugin|
 .agents/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/src/components/ui/field.tsx|agent-plugin/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/src/components/ui/field.tsx
 .agents/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/src/components/ui/separator.tsx|agent-plugin/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/src/components/ui/separator.tsx
 .agents/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/src/components/ui/sonner.tsx|agent-plugin/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/src/components/ui/sonner.tsx
+
+.agents/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/.github/workflows/check.yml|
+.agents/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/.github/workflows/check.yml|agent-plugin/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/.github/workflows/check.yml

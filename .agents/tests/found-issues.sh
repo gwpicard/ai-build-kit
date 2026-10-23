@@ -169,6 +169,52 @@ out=$(run prepare) && code=0 || code=$?
   && grep -q 'PATCH repos/someone/kit-log/branches/main/protection/required_status_checks --input -' "$STANDIN_GH_LOG" \
   && pass "an empty required-check list uses PATCH and preserves the other protection" \
   || fail "the empty required-check fallback failed: $(get protection) / $out / $(cat "$STANDIN_GH_LOG")"
+# A recipe has a separate check, with a unique name, and both must hold.
+mkdir -p "$WORK/p/.github/workflows"
+cp "$ROOT/.agents/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/.github/workflows/check.yml" "$WORK/p/.github/workflows/check.yml"
+for route in create append empty; do
+  python3 - "$STANDIN_GH_STATE" "$route" <<'PYTHON'
+import json, sys
+p, route = sys.argv[1:]
+s = json.load(open(p))
+s.pop("protection", None)
+if route != "create":
+    s["protection"] = {"required_status_checks": {"strict": True, "contexts": ["other-check", "project-check"] if route == "append" else []}, "enforce_admins": False, "other_setting": "kept"}
+json.dump(s, open(p, "w"))
+PYTHON
+  out=$(run prepare) && code=0 || code=$?
+  [ "$code" -eq 0 ] || fail "recipe protection failed on $route: $out"
+  ruby -ryaml -rjson - "$STANDIN_GH_STATE" "$WORK/p/.github/workflows/check.yml" "$SKILL/templates/foundation/checks.yml" "$route" <<'RUBY'
+state, recipe, foundation, route = ARGV
+protection = JSON.parse(File.read(state)).fetch("protection")
+expected = [recipe, foundation].flat_map { |p| YAML.load_file(p).fetch("jobs").keys }
+raise "workflow check names collide" unless expected.uniq == expected
+checks = protection.fetch("required_status_checks")
+raise "a project check is not required" unless (expected - checks.fetch("contexts")).empty?
+if route != "create"
+  raise "existing protection was replaced" unless checks.fetch("strict") && protection.fetch("other_setting") == "kept"
+end
+raise "another check was removed" if route == "append" && !checks.fetch("contexts").include?("other-check")
+RUBY
+  pass "recipe protection requires both unique workflow checks on the $route route"
+done
+python3 - "$STANDIN_GH_STATE" <<'PYTHON'
+import json, sys
+p = sys.argv[1]
+s = json.load(open(p))
+s["protection"]["required_status_checks"]["contexts"].remove("recipe-check")
+json.dump(s, open(p, "w"))
+PYTHON
+: > "$STANDIN_GH_LOG"
+out=$(cd "$WORK/p" && PATH="$WORK/bin:$PATH" python3 "$ROOT/.agents/skills/merge/scripts/protect-branch.py" --check someone/kit-log main) && code=0 || code=$?
+[ "$code" -eq 4 ] && ! grep -Eq 'api -X (PUT|POST|PATCH)' "$STANDIN_GH_LOG" \
+  && pass "a missing recipe check is reported without changing GitHub" \
+  || fail "a missing recipe check passed or made a change: $out"
+printf 'jobs:\n  other-check:\n' > "$WORK/p/.github/workflows/check.yml"
+out=$(cd "$WORK/p" && PATH="$WORK/bin:$PATH" python3 "$ROOT/.agents/skills/merge/scripts/protect-branch.py" --check someone/kit-log main) && code=0 || code=$?
+[ "$code" -eq 0 ] && pass "an unrelated workflow adds no recipe requirement" \
+  || fail "an unrelated workflow required a recipe check: $out"
+rm "$WORK/p/.github/workflows/check.yml"
 cmp -s "$SKILL/templates/foundation/piece-issue.yml" "$WORK/p/.github/ISSUE_TEMPLATE/piece.yml" \
   && pass "the piece template is copied into the project" || fail "the piece template was not copied"
 
