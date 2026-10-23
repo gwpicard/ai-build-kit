@@ -201,7 +201,7 @@ held_modules.rename(modules)
 PY
 
 # A comparison keeps the other kit's starter and instructions. It must not
-# receive the components hint from the harness checkout.
+# receive this checkout's copies.
 OTHER="$WORK/other"
 mkdir "$OTHER"
 cp -R "$KIT/." "$OTHER/"
@@ -210,8 +210,6 @@ from pathlib import Path
 import sys
 project = Path(sys.argv[1])
 agents = project / "AGENTS.md"
-agents.write_text("\n".join(line for line in agents.read_text().splitlines()
-                            if not line.startswith("Components live in")) + "\n")
 starter = project / ".agents/skills/setup-hosting/recipes/parts/starters/nextjs-supabase"
 (starter / "public/comparison-source.txt").write_text("the comparison starter\n")
 (project / "foundation-before.txt").write_text(agents.read_text().split("## Stack, and how to run and check it")[0])
@@ -223,8 +221,7 @@ import sys
 project = Path(sys.argv[1])
 assert (project / "public/comparison-source.txt").read_text() == "the comparison starter\n"
 assert (project / "AGENTS.md").read_text().split("## Stack, and how to run and check it")[0] == (project / "foundation-before.txt").read_text()
-assert "Components live in" not in (project / "AGENTS.md").read_text()
-print("ok: case 82 uses the comparison kit's starter and leaves its absent components hint absent")
+print("ok: case 82 uses the comparison kit's starter and instructions")
 PY
 if sh "$REPLAY/prepare/request-leave.sh" "$ROOT" > "$WORK/refusal.log" 2>&1; then
   echo 'FAIL: screen preparation accepted the maintainer repository' >&2; exit 1

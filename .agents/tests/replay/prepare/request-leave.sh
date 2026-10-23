@@ -19,7 +19,7 @@ for already in masterplan.md CHANGELOG.md package.json .gh-fixture.json; do
 done
 
 # Use the installed kit, including when KIT_SRC names an older tree. Never add
-# this branch's components hint or lint rules to a comparison project's copy.
+# this branch's starter or lint rules to a comparison project's copy.
 sh "$skill/scripts/use-starter.sh" recipes/nextjs-supabase-on-vercel "$project" >&2
 python3 - "$project" <<'PY'
 import json
