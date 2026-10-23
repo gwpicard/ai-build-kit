@@ -8,7 +8,8 @@
 #
 # The paste holds the preview deployment's status in Coolify and the answer
 # from the preview's /api/health, read at its address or on the server. A
-# finished newest deployment, the first one the paste names, "database":"ok", the pull request's commit, and a
+# finished newest deployment, the first one the paste names, a reachable database,
+# the pull request's commit, and a
 # project other than the live one pass. Previews stay off when no second
 # database project is available.
 #

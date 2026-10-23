@@ -15,7 +15,7 @@
 # --yes`, which gets past it. That command is marked beta, and the first time
 # it runs it creates a protection bypass token on the project, which changes
 # who can reach previews. So it runs only with PREVIEW_HEALTH=yes, after the
-# person's yes. The health answer must show "database":"ok", the branch's
+# person's yes. The health answer must show a reachable database, the branch's
 # commit, and a project that is not the live one.
 #
 # The person still opens the preview and tries the change; this only reads

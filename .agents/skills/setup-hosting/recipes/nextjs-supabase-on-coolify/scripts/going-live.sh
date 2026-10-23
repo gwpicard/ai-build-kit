@@ -10,7 +10,7 @@
 # the container's health status, and the answer from <live address>/api/health.
 # A finished newest deployment, the first one the paste names, the check's own
 # path, port and host settings at /api/health, 3000 and 127.0.0.1, a healthy
-# container, "database":"ok" and a commit equal
+# container, a reachable database and a commit equal
 # to `git rev-parse origin/main` pass. The row rules check reads the live
 # database at launch.
 #

@@ -96,8 +96,9 @@ cl_ref() {
 
 cl_health_fields() {
   # cl_health_fields <file>: read a health answer and print four lines:
-  # status, database, commit, project. A file with no health answer in it
-  # prints nothing.
+  # status, database, commit, project. Normalise the starter's reachable
+  # database value to ok for checks that also support older health answers.
+  # A file with no health answer in it prints nothing.
   python3 - "$1" <<'PY'
 import json, re, sys
 text = open(sys.argv[1], errors="replace").read()
@@ -108,7 +109,10 @@ for found in re.finditer(r"\{[^{}]*\}", text):
         continue
     if "database" in body:
         for key in ("status", "database", "commit", "project"):
-            print(str(body.get(key, "")))
+            value = body.get(key, "")
+            if key == "database" and value == "reachable":
+                value = "ok"
+            print(str(value))
         break
 PY
 }
