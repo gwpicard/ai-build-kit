@@ -1,7 +1,7 @@
 # Proven: Next.js and Supabase on Vercel
 
 Real run: 2026-10-16
-Last proven: 2026-10-16
+Last proven: 2026-10-23
 Versions: Next.js 16.4.2; Supabase CLI 2.117; Vercel CLI 60.0.0
 
 Preview: Not tried. Preview isolation awaits a second Supabase project.
@@ -11,7 +11,7 @@ Backup: Not tried.
 Restore: Not tried.
 Secrets: Not tried.
 Logs: Not tried.
-Health: Production health returned 200.
+Health: On 2026-10-23, the existing test deployment returned HTTP 200 with `database: "reachable"`. The previous health reader rejected that answer; the repaired reader passed against the same live address. The shared container check built the supplied starter against a real local Supabase database and confirmed HTTP 200, then rebuilt it with an invalid database address and confirmed HTTP 503. The script retries requests while the container starts. This run did not redeploy the hosted app or test other hosting steps.
 Access: Not tried. Before the Access step, `/`, `/login` and `/admin/setup` returned 200 without sign-in.
 Settings the kit can read: Not tried.
 Migration: Two migrations were applied once.

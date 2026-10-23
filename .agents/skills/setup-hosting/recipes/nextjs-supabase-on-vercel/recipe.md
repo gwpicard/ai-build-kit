@@ -19,7 +19,7 @@ Deploy target: Vercel, with the project's GitHub repository connected so that ea
 Command-line tools: vercel, supabase, docker, psql, curl, git
 Health-check tool: curl
 Last checked: 2026-10-14
-Last proven: 2026-10-16
+Last proven: 2026-10-23
 Proven on: Next.js 16.4.2; Supabase CLI 2.117; Vercel CLI 60.0.0
 Superseded settings: NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
 

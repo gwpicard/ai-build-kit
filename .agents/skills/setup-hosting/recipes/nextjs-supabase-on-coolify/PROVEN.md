@@ -5,7 +5,7 @@ time. It says what was tried on a real deploy and what came out, section by
 section.
 
 Real run: 2026-09-25
-Last proven: 2026-09-27
+Last proven: 2026-10-23
 Versions: Next.js 16; Supabase CLI 2.117; Coolify 4.3.23; coolify-devops 0.4.0
 
 The coolify-devops 0.8.2 paths for build vars and previews, and the newer paths for rollback and redeploy, are not yet proven in a real run.
@@ -27,7 +27,7 @@ Backup: Not tried. Backup is a shared part, and the Vercel recipe's real run did
 Restore: Not tried. Restore is a shared part, and the Vercel recipe's real run did not try it either, so no real run has proven it yet.
 Secrets: Both names in `.env.example` were set in Coolify for build time and run time, each as a live row and a preview row, and the pasted list carried no value. No public name carries a secret, and no value is in the repository or the Dockerfile.
 Logs: The container's output since the deployment held no error lines. The build log held two routine lines from Coolify itself, a missing build helper container and an orphan container warning during the rolling update, and none from the app.
-Health: Coolify's check against `127.0.0.1:3000/api/health` passed on every deployment. Coolify's source shows the check runs `curl` and falls back to `wget`, and the `node:22-alpine` image has only `wget`. From the person's machine over the private network, `/api/health` gave 200 with `"database":"ok"`.
+Health: Coolify's check against `127.0.0.1:3000/api/health` passed on every deployment. Coolify's source shows the check runs `curl` and falls back to `wget`, and the `node:22-alpine` image has only `wget`. From the person's machine over the private network, `/api/health` gave 200 with `"database":"ok"`. On 2026-10-23, the shared container check passed against the supplied starter and real local Supabase: HTTP 200 with the database reachable, then HTTP 503 after rebuilding with an invalid database address. The shared health parser also accepted the Vercel test deployment's actual `database: "reachable"` answer through this recipe's pasted-health reader. These shared-part results count for both recipes; no new Coolify deployment was tested.
 Access: No real run yet. The section was added on 2026-10-14. Neither Coolify's password in front of the app, which it calls HTTP Basic Authentication, nor the pasted answers from outside and inside the private network have been tried, and the shared sign-up commands have had no real run in either recipe. The first run above did reach the app only over the team's private network, which is the gate private relies on there.
 Settings the kit can read: Not tried. It is a shared part, and the Vercel recipe's real run did not try it either.
 
