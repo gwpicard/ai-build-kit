@@ -67,7 +67,8 @@ masterplan says every change to `main` deploys. A clear “merge it” already
 counts; do not ask again. A yes to building, saving, uploading, going live,
 hosting, or a question asked before naming the merge does not count. A no
 leaves the pull request open and live tool unchanged. Red, pending or missing
-checks and an unticked `Worth stopping for` box always hold the merge.
+checks and an unticked `Worth stopping for` box hold the merge, except
+for billing, below.
 
 One yes covers only named pull requests, or all when clearly asked, such as
 “merge both”. A merge does not authorise a conflict fix involving a question,
@@ -87,8 +88,9 @@ it and leave the pull request open. In an unattended run, leave it for review.
 After a merge, run the `records` skill's `scripts/piece-labels.sh` with
 `merged <number>`, refresh the printout and follow `references/after-merge.md`.
 
-If GitHub did not start its check, the merge waits. Say so and that the person
-can re-enable the check or merge on GitHub.
+If billing alone stopped GitHub's project-check, `merge.py --approved` runs it
+here on a clean copy; say so before the yes and after. Any other check that
+never started holds the merge; the person can turn it on or merge on GitHub.
 For queues, automatic merge, and conflicts between waiting pieces, follow `references/automatic-merge.md`.
 
 Read `references/automatic-merge.md` before using `--auto`.
