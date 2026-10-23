@@ -59,7 +59,7 @@ answer() {
   # and return curl's status. A failed container start returns 90.
   cleanup
   docker run -d --name app-check -p "$port:3000" --env-file .env.container "$1" >/dev/null 2>&1 || return 90
-  curl -sS -o "$response" -w '%{http_code}' --retry 15 --retry-connrefused --retry-delay 2 --max-time 120 "http://localhost:$port/api/health" 2>/dev/null
+  curl -sS -o "$response" -w '%{http_code}' --retry 15 --retry-connrefused --retry-all-errors --retry-delay 2 --max-time 120 "http://localhost:$port/api/health" 2>/dev/null
 }
 
 docker build -t app-check --build-arg NEXT_PUBLIC_SUPABASE_URL --build-arg NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY . >&2 ||
@@ -67,8 +67,10 @@ docker build -t app-check --build-arg NEXT_PUBLIC_SUPABASE_URL --build-arg NEXT_
 http_status=$(answer app-check)
 status=$?
 [ "$status" -ne 90 ] || cl_fail "The app's image built, but its container would not start."
-[ "$status" -eq 0 ] && [ "$http_status" = 200 ] ||
-  cl_fail "The app's container started, but its health route did not answer 200."
+[ "$status" -eq 0 ] ||
+  cl_fail "The app's container started, but its health request failed; no HTTP 200 response was confirmed."
+[ "$http_status" = 200 ] ||
+  cl_fail "The app's container started, but its health route answered HTTP $http_status instead of 200."
 fields=$(cl_health_fields "$response")
 [ "$(printf '%s\n' "$fields" | sed -n 2p)" = ok ] ||
   cl_fail "The app's container answered 200, but its health route did not report the database reachable."

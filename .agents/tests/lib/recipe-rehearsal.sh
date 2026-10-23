@@ -460,7 +460,7 @@ while [ "$#" -gt 0 ]; do
     -X) [ "${2:-}" = POST ] || refuse "$@"; method=POST; shift 2 ;;
     -d) [ -n "${2:-}" ] || refuse "$@"; data=$2; shift 2 ;;
     --retry|--retry-delay|--max-time) [ -n "${2:-}" ] || refuse "$@"; shift 2 ;;
-    --retry-connrefused) shift ;;
+    --retry-connrefused|--retry-all-errors) shift ;;
     -H) [ -n "${2:-}" ] || refuse "$@"; headers="$headers|$2"; shift 2 ;;
     https://*|http://localhost:[1-9]*/*) [ -z "$url" ] || refuse "$@"; url=$1; shift ;;
     *) refuse "$@" ;;
