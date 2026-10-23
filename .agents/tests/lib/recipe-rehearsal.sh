@@ -450,9 +450,11 @@ out=""
 format=""
 method=GET
 data=""
+fail_http=no
 while [ "$#" -gt 0 ]; do
   case "$1" in
-    -fsS|-sS) shift ;;
+    -fsS) fail_http=yes; shift ;;
+    -sS) shift ;;
     -o) [ -n "${2:-}" ] || refuse "$@"; out=$2; shift 2 ;;
     -w) [ -n "${2:-}" ] || refuse "$@"; format=$2; shift 2 ;;
     -X) [ "${2:-}" = POST ] || refuse "$@"; method=POST; shift 2 ;;
@@ -482,10 +484,25 @@ fi
 # reply <status> <redirect> <body>: as curl gives it, to -o or stdout, with
 # what -w asks for after.
 reply() {
+  if [ "$fail_http" = yes ] && [ "$1" -ge 400 ]; then
+    [ -z "$format" ] || printf '%s' "$format" | sed -e "s#%{http_code}#$1#" -e "s#%{redirect_url}#$2#"
+    exit 22
+  fi
   if [ -n "$out" ]; then printf '%s\n' "$3" > "$out"; else printf '%s\n' "$3"; fi
   [ -z "$format" ] || printf '%s' "$format" | sed -e "s#%{http_code}#$1#" -e "s#%{redirect_url}#$2#"
   exit 0
 }
+case "$url" in
+  http://localhost:[1-9]*/api/health)
+    [ "$world" != down ] || exit 7
+    image=$(cat "$RR_STATE/image" 2>/dev/null)
+    if [ "$image" = app-check-nowhere ]; then
+      [ -z "${RR_NOWHERE_DOWN:-}" ] || exit 7
+      reply "${RR_NOWHERE_STATUS:-503}" "" '{"status":"error","database":"unavailable"}'
+    fi
+    [ "$world" != bad ] || reply 503 "" '{"status":"error","database":"unavailable"}'
+    reply 200 "" '{"status":"ok","database":"'"${RR_HEALTH_DATABASE:-ok}"'","commit":"","project":"liveref"}' ;;
+esac
 # A public key is either kind Supabase issues: the older anon key or a
 # publishable one. A secret key sent as apikey is refused.
 case "$headers" in *service-role-stand-in*|*secret-stand-in*) refuse "$url" "a secret key sent as apikey" ;; esac
@@ -551,14 +568,6 @@ case "$url" in
     elif [ "${RR_SETTINGS:-}" = odd ]; then echo '{"external":["email"],"disable_signup":true,"mailer_autoconfirm":false}'
     elif [ "$signup" = closed ]; then echo '{"external":{"email":true},"disable_signup":true,"mailer_autoconfirm":false}'
     else echo '{"external":{"email":true},"disable_signup":false,"mailer_autoconfirm":false}'; fi ;;
-  http://localhost:[1-9]*/api/health)
-    [ "$world" != down ] || exit 7
-    image=$(cat "$RR_STATE/image" 2>/dev/null)
-    case "$world:$image" in
-      *:app-check-nowhere) echo "curl: (22) The requested URL returned error: 503" >&2; exit 22 ;;
-      bad:*) echo "curl: (22) The requested URL returned error: 503" >&2; exit 22 ;;
-    esac
-    echo '{"status":"ok","database":"ok","commit":"","project":"liveref"}' ;;
   https://*/api/health)
     [ "$world" != down ] || exit 6
     [ "$gate" != gated ] || { echo "Redirecting..."; exit 0; }
@@ -590,6 +599,7 @@ case "$1" in
     # RR_PORT_BUSY: something else on this computer holds port 3000.
     [ -z "${RR_PORT_BUSY:-}" ] || [ "$6" != 3000:3000 ] ||
       { echo "docker: Error response from daemon: port is already allocated." >&2; exit 125; }
+    [ "$9" != app-check-nowhere ] || [ -z "${RR_NOWHERE_START_FAIL:-}" ] || exit 125
     printf '%s\n' "$9" > "$RR_STATE/image" ;;
   rm) [ "$#" -eq 3 ] && [ "$2" = -f ] || refuse "$@" ;;
   rmi) [ "$#" -eq 2 ] || refuse "$@" ;;
