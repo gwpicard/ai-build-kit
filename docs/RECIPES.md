@@ -95,7 +95,7 @@ It opens with fixed fields. Each names a tool only, so checks can read it.
 - `Recommended when:` one plain sentence saying when founding should recommend
   this recipe over another that fits the same shape.
 - `Language:`, `Framework:` (including the pinned major), `Typing:`,
-  `Database:`, `Sign-in:`, `Email:`, `Files:`, `Jobs:`, `Testing:` and
+  `User interface:`, `Database:`, `Sign-in:`, `Email:`, `Files:`, `Jobs:`, `Testing:` and
   `Linting:` name the whole stack.
 - `Starter:` names the pinned starter folder, or says when it is coming.
 - `Optional parts:` names the parts the recipe accepts, or `none`. A part
@@ -128,7 +128,7 @@ one. The line never quotes a price. Founding reads it when it offers the
 recipe and tells the person to read the terms themselves.
 
 The shared stack part holds sign-in and roles, row rules, files, jobs, email,
-the project check and updates. Each section carries the same four lines as a
+the user interface, the project check and updates. Each section carries the same four lines as a
 recipe section. The access gate stays in each recipe because it differs by
 host. Part D adds the per-change row rules check against migrations and a local
 database. The launch check reads the live database.

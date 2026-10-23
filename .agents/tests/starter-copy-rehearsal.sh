@@ -23,9 +23,15 @@ printf 'LOCAL_ONLY=keep' > "$SCRATCH/clean/.env.example"
 for required in package.json Dockerfile .env.example public/.keep src/app/api/health/route.ts \
   src/lib/supabase/client.ts src/lib/supabase/server.ts src/app/login/page.tsx src/app/auth/callback/route.ts \
   src/app/api/admin/invitations/route.ts supabase/migrations/20261015000000_roles_and_access_token_hook.sql \
+  components.json src/app/globals.css e2e/accessibility.spec.ts \
+  src/components/ui/button.tsx src/components/ui/input.tsx src/components/ui/label.tsx \
+  src/components/ui/card.tsx src/components/ui/table.tsx src/components/ui/dialog.tsx \
+  src/components/ui/select.tsx src/components/ui/field.tsx src/components/ui/separator.tsx src/components/ui/sonner.tsx \
   scripts/check.sh types/database.ts; do
   [ -f "$SCRATCH/clean/$required" ] || fail "copied starter is missing $required"
 done
+
+[ ! -e "$SCRATCH/clean/src/components/ui/form.tsx" ] || fail "copied starter still ships the legacy form component"
 
 python3 - "$COPY" "$SCRATCH" <<'PY'
 from pathlib import Path

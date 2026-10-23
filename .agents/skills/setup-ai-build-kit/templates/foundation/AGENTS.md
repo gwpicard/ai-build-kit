@@ -152,7 +152,6 @@ authentication, project check, browser availability, independent-review method,
 and optional harness capabilities.)
 
 ## Stack, and how to run and check it
-
 (Filled in by the setup-ai-build-kit skill: `Recipe: <recipe folder name>` or
 `Recipe: none`, then run, test, type check and lint commands, or `none for
 <language>`, and conventions that differ from the default, including

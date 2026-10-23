@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""behaviour_checks.py: the disk checks of the behaviour scenarios, 64 to 81.
+"""behaviour_checks.py: disk checks for the behaviour set and the starter screen.
 
 Usage: behaviour_checks.py <scenario number> <project directory>
 Prints one JSON object: {"disk": {"<check>": {"verdict": ..., "note": ...}}}
@@ -21,6 +21,7 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
@@ -580,8 +581,56 @@ def c81(p):
     return {"repair-state-unchanged": repair_state(p), "nothing-saved": nothing_saved(p)}
 
 
+def c82(p):
+    names = ("screen-components", "screen-controls-and-colours", "project-lint")
+    out = {name: bad("no saved pull request holds the new Request leave page") for name in names}
+    out["pr-open-unmerged"] = pr_open_unmerged(p)
+    page = "src/app/request-leave/page.tsx"
+    candidates = [(branch, head) for _, branch, head in piece_pr(p)
+                  if head and page in p.branch_files(branch)]
+    if not candidates:
+        return out
+    if len(candidates) != 1:
+        return {name: bad("more than one pull request holds the Request leave page") for name in out}
+    branch, _ = candidates[0]
+    with tempfile.TemporaryDirectory(prefix="replay-screen-") as work:
+        snapshot = os.path.join(work, "result")
+        cloned = subprocess.run(["git", "clone", "-q", "--shared", "--single-branch", "--branch", branch,
+                                 p.remote, snapshot], capture_output=True, text=True)
+        if cloned.returncode:
+            out.update({name: skip("could not read the saved branch: " + cloned.stderr.strip()) for name in names})
+            return out
+        modules = os.path.join(p.path, "node_modules")
+        if not os.path.isdir(modules):
+            out.update({name: skip("could not run: the project has no installed dependencies") for name in names})
+            return out
+        os.symlink(os.path.abspath(modules), os.path.join(snapshot, "node_modules"))
+        policy = os.path.join(ROOT, ".agents", "skills", "setup-hosting", "recipes", "parts",
+                              "starters", "nextjs-supabase", "eslint.config.mjs")
+        try:
+            checked = subprocess.run(["node", os.path.join(HERE, "screen-result.mjs"), snapshot, policy],
+                                     capture_output=True, text=True, timeout=120)
+            found = json.loads(checked.stdout) if checked.returncode == 0 else None
+            for name in names[:2]:
+                out[name] = (found[name]["verdict"], found[name]["note"]) if found else skip(
+                    "could not read the saved screen: " + checked.stderr.strip()[-800:])
+            before = json.loads(p.at_start("package.json") or "{}")
+            package = load_json(os.path.join(snapshot, "package.json")) or {}
+            if (package.get("scripts", {}).get("lint") != before.get("scripts", {}).get("lint")
+                    or read(os.path.join(snapshot, "eslint.config.mjs")) != p.at_start("eslint.config.mjs")):
+                out["project-lint"] = bad("the piece changed the starter's lint command or rules")
+                return out
+            lint = subprocess.run(["npm", "run", "lint"], cwd=snapshot,
+                                  capture_output=True, text=True, timeout=120)
+            out["project-lint"] = ok("npm run lint passes on the saved pull-request branch") if lint.returncode == 0 else bad(
+                "npm run lint failed on the saved branch: " + (lint.stdout + lint.stderr).strip()[-800:])
+        except (OSError, subprocess.TimeoutExpired, ValueError, KeyError) as error:
+            out.update({name: skip("could not run the saved screen checks: " + str(error)) for name in names})
+    return out
+
+
 CHECKS = {64: c64, 65: c65, 66: c66, 67: c67, 68: c68, 69: c69, 70: c70, 71: c71, 72: c72,
-          73: c73, 74: c74, 75: c75, 76: c76, 77: c77, 78: c78, 79: c79, 80: c80, 81: c81}
+          73: c73, 74: c74, 75: c75, 76: c76, 77: c77, 78: c78, 79: c79, 80: c80, 81: c81, 82: c82}
 
 
 def main(argv):

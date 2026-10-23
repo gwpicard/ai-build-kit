@@ -5,6 +5,7 @@ Recommended when: <one plain sentence on when to recommend this over another rec
 Language: <language>
 Framework: <framework and pinned major version>
 Typing: <type checker>
+User interface: <interface tools>
 Database: <database service>
 Sign-in: <sign-in service>
 Email: <email provider>

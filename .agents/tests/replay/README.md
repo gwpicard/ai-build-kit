@@ -456,6 +456,13 @@ see the password. The Supabase stand-in answers the recipe's dry run and push
 only with the password, which the preparation makes up for each run, and
 writes an `APPLIED` line to the host's log for each migration it applies.
 
+Scenario 82 adds a screen to a project prepared with the installed kit's own
+`use-starter.sh` and foundation instructions. It asks `/implement` to build one
+ready Request leave form. Its disk checks read the saved pull-request branch,
+run that project's lint, and check component use, raw controls and colours.
+The harness's colour policy also applies to an older kit in a comparison.
+The case is separate from the eighteen command scenarios below.
+
 ## The behaviour set
 
 Scenarios 64 to 81 test each command by what it should do. Each command has

@@ -95,6 +95,24 @@ This list identifies ideas used in the kit and the files that implement them.
 
 ## Screen design
 
+The starter copies its components and design variables with the
+[shadcn/ui command](https://ui.shadcn.com/docs/cli), using the
+[Radix option](https://ui.shadcn.com/docs/changelog/2026-07-base-ui-default).
+The copied files live in the starter's `src/components/ui/` folder. The
+[current form guide](https://ui.shadcn.com/docs/forms/react-hook-form) pairs
+`Field` with react-hook-form and zod.
+
+[better-tailwindcss](https://github.com/schoero/eslint-plugin-better-tailwindcss)
+checks colour classes against the design variables. Its
+[entryPoint setting](https://github.com/schoero/eslint-plugin-better-tailwindcss/blob/main/docs/settings/settings.md)
+points at the Tailwind 4 CSS file. The starter uses the plugin's own
+`no-unknown-classes` and `no-conflicting-classes` rules.
+
+[Playwright's axe guide](https://playwright.dev/docs/accessibility-testing)
+supplies the sign-in scan in `e2e/accessibility.spec.ts`. A separate assertion
+checks that the email label is visible, since axe accepts labels hidden from
+sight. Passing these checks does not prove a screen is accessible.
+
 | Source | Contribution | Where it is in the kit |
 |---|---|---|
 | [Vercel Web Interface Guidelines](https://github.com/vercel-labs/web-interface-guidelines/blob/main/AGENTS.md), [Impeccable craft floor](https://github.com/pbakaus/impeccable/blob/main/skill/reference/craft-floor.md), [GOV.UK Design System](https://design-system.service.gov.uk/), [Nielsen Norman Group](https://www.nngroup.com/articles/ten-usability-heuristics/), [Carbon](https://carbondesignsystem.com/), [Shopify Polaris](https://polaris.shopify.com/), and [WCAG 2.2](https://www.w3.org/WAI/WCAG22/quickref/) | Interface rules for visible labels, errors, keyboard focus, spacing and empty states. | `.agents/skills/screen-check/SKILL.md`. |

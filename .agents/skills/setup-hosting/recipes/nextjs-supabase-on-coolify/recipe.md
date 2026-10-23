@@ -5,6 +5,7 @@ Recommended when: the team wants a rented Coolify server. AI Build Kit builds an
 Language: TypeScript
 Framework: Next.js 16
 Typing: TypeScript tsc
+User interface: Tailwind CSS 4 and shadcn/ui on Radix
 Database: Supabase Postgres
 Sign-in: Supabase Auth
 Email: Resend

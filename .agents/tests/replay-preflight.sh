@@ -58,7 +58,7 @@ preflight() {
 
 kit=$KIT
 code=0
-preflight "$kit" 64 70 >"$WORK/out" 2>&1 || code=$?
+preflight "$kit" 64 70 82 >"$WORK/out" 2>&1 || code=$?
 [ "$code" -eq 0 ] || { cat "$WORK/out" >&2; fail "a sound harness was refused (exit $code)"; }
 pass "a sound harness passes the preflight"
 
