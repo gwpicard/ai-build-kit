@@ -1,50 +1,38 @@
 ---
 title: Hosting recipes
-description: What a hosting recipe is, which recipes exist, and what has been tried on each.
+description: Choose a hosting recipe, understand its checks, and see what remains untested.
 draft: false
 ---
 
-A hosting recipe fixes one software stack and one place to run it. It settles in advance how a change is previewed, goes live, is backed up, is restored and is rolled back to an earlier version, so you do not have to decide any of that. The kit offers hosting only on a recipe, because the guarantees it can check depend on one.
-
-## What a recipe contains
-
-Each recipe is a folder. Its instructions name the language, framework, database, sign-in, email, file storage, background jobs and test tools, and point to a starter project. They then describe ten parts of running a live tool: preview, going live, rollback, backup, restore, secrets, logs, health, access and the settings the kit can read.
-
-Each part says what happens, what a pass means and which script checks it. The script ends with a pass, a failure or "could not run", plus one plain sentence. Some checks need a person or a companion tool to read a server and paste the result back; the recipe then holds the fixed question to ask. Each folder also holds a record of what was tried on a real deployment. The kit never reads that record while it works.
+A hosting recipe specifies a software stack, the combination of software used to build your tool, and a hosting service. It defines how to preview and publish changes, back up and restore data, and return to an earlier application version. Both available recipes have been used in real deployments, but neither has been tested through every procedure.
 
 ## The recipes today
 
-The kit has two recipes. Both use TypeScript, Next.js 16 and Supabase.
+Both recipes use TypeScript, Next.js 16 and Supabase, a combination supported by the kit's existing checks. They suit internal tools such as dashboards, approval workflows, trackers and portals.
 
-- **Next.js and Supabase on Vercel** is the default for a work team. Vercel handles previews, going live and rollback, and the kit can run its checks on your computer. Private tools need a Vercel account for each person with access.
-- **Next.js and Supabase on Coolify** suits a team that rents its own server. It also suits long-running work. Its checks often need you, or a companion tool, to read the server and paste the result back.
+[Next.js and Supabase on Vercel](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/recipe.md) is the default for work teams. Vercel handles previews, deployment and rollback. The kit can run its automated checks on your computer; you open the preview and try the change. Private tools require a Vercel account for each person with access.
 
-They suit dashboards, admin panels, approvals, customer trackers, light stock and order tools, portals, booking and forms. Each recipe points to the plan terms of the services it uses. You read and follow those terms yourself, and the kit does not interpret them.
+[Next.js and Supabase on Coolify](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-coolify/recipe.md) suits teams with a rented server or long-running work. The kit does not access the server directly. Some checks require you, or a separate tool with server access, to retrieve information and paste it into the session for validation.
 
-## What a real run showed
+Each recipe links to its providers' plan terms. Read those terms before choosing a plan; the kit does not interpret them.
 
-A recipe joins the menu after it has been run on real accounts, from an empty project to a live address, with the maintainer's approval. Each recipe's record says exactly what that run covered.
+## Checks and testing status
 
-On Vercel (16 October 2026), the production address answered its health check at commit `29f8b0c`, and two database migrations were applied. Preview, rollback, backup, restore, secrets, logs, access, the settings the kit can read and founding are recorded as not tried.
+Recipes define how to deploy and recover the tool, control access and store keys and passwords. Their checks also cover error logs and health, including whether the live tool responds. A documented procedure does not mean it has been tested in a real deployment.
 
-On Coolify (September 2026), a throwaway app on a rented server went through preview, launch, rollback, secrets, logs and health on a private network. A second run on a public address covered only preview and going live. The rollback button had to be pressed by hand in Coolify, because no script could press it. Backup, restore, access and the settings the kit can read were not run on this recipe.
+| Recipe | Recorded testing |
+|---|---|
+| [Vercel deployment record](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-vercel/PROVEN.md) | Deployment, health and database structure changes were tested in October 2026. Preview, rollback, secrets and logs remain untested. |
+| [Coolify deployment record](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-hosting/recipes/nextjs-supabase-on-coolify/PROVEN.md) | Runs in September 2026 covered preview, deployment, rollback, secrets, logs and health. Previews shared the production database, so isolation from production data remains unproven. Some deployment procedures have changed since those runs and remain untested. |
 
-Parts added after a run are marked "No real run yet" in the record until a later run covers them. On Coolify these are sign-in and roles, row rules, files, jobs, email, the project check and updates. Founding has no real run on either recipe.
+Neither recipe has had a real test of backup, restore, access controls, sign-in settings or initial project setup. Coolify's newer sign-in, database access rules, file storage, background jobs, email, project checks and update procedures also await real testing. The linked records give the full coverage and limitations.
+
+The launch checks require a confirmed backup and a defined rollback procedure. Later launches also require an earlier build to be available. Other failed or incomplete recipe checks are reported as warnings; they do not automatically block launch.
 
 ## Outside a recipe
 
-If your stack or host matches no recipe, the kit says once that it guarantees no rollback, no backup and no checked launch. It records your reply with the date, and it carries on helping by hand. It does not refuse. A project on its own stack can also be offered a move to a close recipe at a maintenance visit. A move happens only after you agree.
+If no recipe matches your stack or host, the kit explains once that it provides no guarantees, including rollback, backup or launch validation. If you choose to continue, it records your decision and the date, then provides individual guidance. During maintenance, it may offer a move to a suitable recipe. Moving requires your approval and a separate task.
 
 ## Keeping recipes current
 
-Services rename settings and change plan terms. Each recipe therefore records the date it was last read against the services' own documentation, the date of its last real run, the versions it was run on, and any setting names that have since been replaced. At each maintenance visit, a script reports a recipe that was last checked more than 90 days ago, that has left the menu, or whose replaced setting names the project still uses. Before each release the maintainer reads every recipe against upstream changes and records proposals in a dated note, which changes nothing by itself.
-
-## Why well-known stacks
-
-The kit prefers stacks that many people use and that the tools it checks support well. A recipe must fit the checks the kit can run, and use a stack the team can prove on every run. The maintainer's research found weaker agent support or recent breaking changes in several alternatives, and a second set of checks would be needed for a Python-only stack, so these stay off the menu. The research also found thin evidence on how many tools each category covers. The two recipes therefore cover common shapes of tool, not every tool.
-
-## What comes next
-
-Written down today: two draft recipe parts wait for a real run, Python document work on Coolify and a read-only link to an existing database. Neither is offered until its run is recorded. Open work items plan a real run on every command of each final recipe, and a routine that keeps recipes current. These items are public on GitHub.
-
-The intended direction is more recipes for well-known stacks, each tried and hardened on real accounts, so that the kit grows more reliable on a stack the more it has been run there. There is no schedule, and no further recipe is promised.
+Services change their settings and plan terms. During [maintenance](/ai-build-kit/how-it-works/#maintain-the-project), a script flags recipes whose documentation review is more than 90 days old, recipes no longer offered, and projects still using superseded setting names. The script reports these findings without changing your project or service settings.
