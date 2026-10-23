@@ -12,8 +12,9 @@ Translate internal facts:
 - No online code yet: "The code stays on this computer until your first build
   asks before putting it online."
 - Issues created: say they are listed in the online repository, naming its
-  owner/name and whether it is public or private. Say the default labels were
-  replaced and merged branches are removed.
+  owner/name and whether it is public or private. Use the script's `removed`,
+  `kept` and `settings` results to report which labels changed and whether
+  automatic removal of merged branches was enabled.
 - A named recipe: name its product and whether launch checks can test its
   steps. Say which accounts the person owns and where the tool runs. `Recipe:
   none` means the kit cannot check recipe launch steps.
@@ -48,8 +49,8 @@ The initial setup is complete.
 
 A checkpoint is saved inside the project on this computer. [State whether an
 online copy exists and whether it was updated.] No code was uploaded or
-published. [Where issues exist, name the repository and say its default labels
-were replaced and merged branches are removed.] [If the online repository has
+published. [Where issues exist, name the repository and report the actual label
+and merged-branch settings results.] [If the online repository has
 no project code, explain that the first build will ask before uploading.]
 
 Private preview: `[address]`

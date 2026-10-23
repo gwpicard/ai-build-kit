@@ -8,7 +8,7 @@
 #   TABLES_ON_RECORD  tables the masterplan records as public by choice,
 #                     separated by commas
 #
-# The live address's /api/health must answer 200 with "database":"ok", and
+# The live address's /api/health must answer 200 with a reachable database, and
 # its commit must equal `git rev-parse origin/main`. DB_PASSWORD_FILE points
 # to the database password file, and TABLES_ON_RECORD names recorded public
 # tables, separated by commas. Behind Vercel's sign-in

@@ -9,10 +9,11 @@ masterplan's "How it stays running" section.
 
 `scripts/hosting-request.sh --lane <internal|public>` prints the request,
 filled from the project rather than by asking the person. Take the lane from
-the masterplan's `Access:` line: internal for private, unless the people it is
-for cannot join the private network, and then public with the gate the
-recipe's Access section names. Open address with invitation only, and public,
-take the public lane with no gate. Copy the block it prints into the
+the masterplan's `Access:` line: internal for private. If intended users cannot
+join the private network, explain that private access is unavailable on this
+recipe for them and ask for another access choice or recipe. Record that
+decision before continuing. Open address with invitation only, and public,
+take the public lane with no network gate. Copy the block it prints into the
 masterplan and put it in the reply, followed by the script's last line, so the
 person can paste it. `Env vars` lists runtime names that are not build names.
 `Build vars` lists the names the build needs; those names are set at build time

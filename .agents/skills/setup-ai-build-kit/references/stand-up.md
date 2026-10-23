@@ -1,7 +1,7 @@
 # Stand the project up
 
-Ask whether the team uses a browser and needs the tool when this computer is
-off, unless answered. Describe it in one plain sentence.
+Unless answered, ask whether the team uses a browser and needs the tool when
+this computer is off. Describe it in one sentence.
 
 Read `recipe.md` files in the installed `setup-hosting/recipes/`. Keep recipes
 whose `Fits:` line matches. Run `scripts/recipe-menu.sh` from this installed
@@ -11,7 +11,7 @@ match, or the first by name, then rerun with `--recommend <recipe>`. Exit 4:
 correct an invalid name. Exit 0: use its printed lines. Handle other exits by
 these rules.
 
-Include menu lines word for word in the closing reply. After the list, explain
+Include menu lines verbatim in the closing reply. After the list, explain
 launch checks, account ownership, and whether the recipe runs on a platform or
 rented server. Use recipe product names, not prices. For work or paid use,
 include `Plan terms:` once, uninterpreted, for the person to read. Omit
@@ -22,9 +22,9 @@ If they choose another stack, record `Recipe: none`, explain what the kit
 cannot check, and do not raise it again. If no recipe fits, record none and
 use an established stack.
 
-For a chosen recipe, use its fixed stack fields; record its folder name in
+Use the chosen recipe's fixed stack fields; record its folder name in
 AGENTS.md. Run `scripts/use-starter.sh <folder>` with the menu's path.
-If the harness refuses a starter command, say so in one plain line and ask
+If the harness refuses a starter command, say so and ask
 whether to build the starter another way. Wait for yes before writing
 replacement starter files.
 Starter exit 1: list only reported clashes and ask which to keep. Exit 2: say what
@@ -33,7 +33,7 @@ could not run. With no recipe, copy `templates/foundation/env.example` to
 
 Use managed services for sign-in, payments and files. Hand-build them only if
 a professional responsible for the work owns another recorded design.
-For tasks only the person can do, follow `manual-setup.md`. If hosting is
+For tasks requiring the person, follow `manual-setup.md`. If hosting is
 needed, arrange a preview address using the recipe; `/setup-hosting` sets up
 the team's address later. Record run/check commands, unusual conventions, and
 the interview's design tool in AGENTS.md. If none, record
@@ -42,8 +42,8 @@ their folder, include it in the working-copy file list, and record handling
 rules in AGENTS.md.
 
 If `.github/workflows/checks.yml` is missing, copy the foundation template and
-edit only `jobs.project-check` with install and test commands. Preserve
-`source-kit-validation`. Follow `quality-checks/references/check-floor.md` for
+edit only `jobs.project-check` with install and test commands.
+Follow `quality-checks/references/check-floor.md` for
 type checks and linting. If a risk area names a boundary, use
 `boundary-rules.md` and offer once to have the check hold it. A working remote
 check is needed before shared or live work. Say: "green means the tests passed;
@@ -54,14 +54,15 @@ on this computer, publish nothing, then stop. Give AGENTS.md's
 warning about a possible confirmation box. Before saving, say it will save a
 local checkpoint and upload nothing.
 
-Then run `scripts/check-tooling.sh --conditions`, with `--recipe <folder>` for
+Run `scripts/check-tooling.sh --conditions`, with `--recipe <folder>` for
 a chosen recipe. It opens and closes one test issue and protects an existing
 `main`. A non-zero exit stops
 founding: give each `missing:` line and its step, and save no checkpoint.
 
 Run `sh scripts/found-save.sh` from the project root. It makes the local
-checkpoint and checks its record. Any non-zero exit means no checkpoint was
-made; report the script's line. If identity is `neutral`, say the checkpoint
+checkpoint and checks its record. A non-zero exit stops founding: report the
+failure line and any checkpoint already printed. Say nothing was saved only
+when the script reports that. If identity is `neutral`, say the checkpoint
 uses that changeable label, nothing was uploaded, and record the real identity
 as an open question. If a `left` line names unsaved work, report it.
 

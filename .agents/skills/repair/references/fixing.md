@@ -1,8 +1,8 @@
 # Building a repair
 
 For a piece labelled `broken`, the `build-piece` skill follows this file from
-step 4. Its other steps still apply: safe start, save route, evidence,
-hand-over, review and merge.
+its agreement and evidence stage. Its other steps still apply: safe start,
+save route, evidence, hand-over, review and merge.
 
 ## Check and rank
 
@@ -23,13 +23,12 @@ not bisect without a known-good point.
 
 ## Change one cause at a time
 
-Change one variable per attempt. Keep temporary instrumentation targeted and
-labelled; name its log file and read it back while testing. After a failed
-attempt, say what the reset will remove, then run this skill's
-`scripts/reset-attempt.sh --start` and the same script with no option. It
-prints a snapshot of the failed attempt and removes only files added since the
-start. Commit useful work, such as a reproducing test, before the attempt so
-the reset cannot remove it.
+Change one variable per attempt. Commit useful work, such as a reproducing
+test, then run this skill's `scripts/reset-attempt.sh --start` before changing
+code. Keep temporary instrumentation targeted and labelled; name its log file
+and read it back while testing. After a failed attempt, say what the reset will
+remove, then run the script with no option. It prints a snapshot of the failed
+attempt and removes only files added since the start. Committed work is kept.
 
 Create regression evidence at the highest credible user-facing boundary. Use
 the matching D number or the repair's number line in its test title. Watch the

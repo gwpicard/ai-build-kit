@@ -19,7 +19,7 @@ Deploy target: Coolify on a rented server, with the Coolify GitHub App connected
 Command-line tools: supabase, docker, psql, curl, git
 Health-check tool: curl
 Last checked: 2026-10-14
-Last proven: 2026-09-27
+Last proven: 2026-10-23
 Proven on: Next.js 16; Supabase CLI 2.117; Coolify 4.3.23; coolify-devops 0.4.0
 Superseded settings: NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
 

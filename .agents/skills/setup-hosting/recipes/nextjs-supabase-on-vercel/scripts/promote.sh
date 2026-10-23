@@ -8,7 +8,7 @@
 # `vercel promote <deployment> --yes` moves the live address to that build
 # and ends the hold a rollback leaves, so later merges go live by themselves
 # again. Then the live address's /api/health, read as check-lib.sh's
-# cl_live_health says, must answer 200 with "database":"ok" and that build's
+# cl_live_health says, must answer 200 with a reachable database and that build's
 # commit.
 #
 # Exit 0 when the live address serves that commit, 1 when it does not, 2 when

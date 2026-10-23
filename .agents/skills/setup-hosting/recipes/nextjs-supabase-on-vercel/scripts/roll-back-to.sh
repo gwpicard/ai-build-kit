@@ -9,7 +9,7 @@
 # `vercel rollback <earlier deployment> --yes` points the production address
 # back at that build in seconds, with no new build. Its whole output is read.
 # Then the live address's /api/health, read as check-lib.sh's cl_live_health
-# says, must answer 200 with "database":"ok" and the earlier commit. A
+# says, must answer 200 with a reachable database and the earlier commit. A
 # rollback does not undo a database
 # migration, which is why a migration only adds.
 #

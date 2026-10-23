@@ -269,6 +269,12 @@ rr_case 0 good keep-out-of-git.sh
 rr_case 2 good GIT_DIR=/nonexistent keep-out-of-git.sh
 rr_case 0 good container-check.sh
 rr_called "docker rmi app-check"
+for rr_http in 200 404 500; do
+  rr_case 1 good RR_NOWHERE_STATUS="$rr_http" container-check.sh
+done
+rr_case 1 good RR_NOWHERE_DOWN=1 container-check.sh
+rr_case 1 good RR_NOWHERE_START_FAIL=1 container-check.sh
+rr_case 0 good RR_HEALTH_DATABASE=reachable container-check.sh
 rr_case 0 good RR_PORT_BUSY=1 container-check.sh
 rr_case 1 bad container-check.sh
 rr_called "docker rmi app-check"

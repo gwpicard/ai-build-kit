@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# recipe-ci-rehearsal.sh: founds a recipe starter and runs its parsed CI commands.
+# recipe-ci-rehearsal.sh: checks the starter's health response and runs its parsed CI commands.
 
 set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
@@ -21,7 +21,8 @@ sed -i.bak 's/^Recipe: none$/Recipe: nextjs-supabase-on-vercel/' "$PROJECT/AGENT
 # presets isolate the starter's own exclusions from framework defaults.
 mkdir -p "$WORK/engines"
 printf '{"private":true}\n' > "$WORK/engines/package.json"
-(cd "$WORK/engines" && npm install --no-audit --no-fund --silent eslint@9.36.0 typescript@5.9.2) ||
+sdk=$(node -p 'require(process.argv[1]).dependencies["@supabase/supabase-js"]' "$PROJECT/package.json")
+(cd "$WORK/engines" && npm install --no-audit --no-fund --silent eslint@9.36.0 typescript@5.9.2 "@supabase/supabase-js@$sdk") ||
   fail "could not install the engines for the kit-folder boundary check"
 node - "$PROJECT" "$WORK/engines" <<'NODE'
 const assert = require('node:assert/strict');
@@ -64,6 +65,61 @@ const ts = requireEngine('typescript');
 })().catch(error => { console.error(error); process.exitCode = 1; });
 NODE
 pass "real ESLint and TypeScript exclude installed kit source while checking application source"
+
+node --input-type=module - "$PROJECT" "$WORK/engines" "$ROOT" <<'NODE'
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import http from 'node:http';
+import path from 'node:path';
+import { createRequire } from 'node:module';
+import { spawnSync } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
+const [project, engines, root] = process.argv.slice(2);
+const requireEngine = createRequire(path.join(engines, 'package.json'));
+const ts = requireEngine('typescript');
+const source = fs.readFileSync(path.join(project, 'src/app/api/health/route.ts'), 'utf8');
+const compiled = path.join(engines, 'health-route.mjs');
+fs.writeFileSync(compiled, ts.transpileModule(source, {
+  compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+}).outputText);
+let unavailable = false;
+let requests = 0;
+const database = http.createServer((request, response) => {
+  assert.ok(request.url.startsWith('/rest/v1/roles?'), 'health did not query the database');
+  requests++;
+  response.writeHead(unavailable ? 500 : 200, { 'content-type': 'application/json' });
+  response.end(unavailable ? JSON.stringify({ message: 'database unavailable' }) : '[]');
+});
+await new Promise(resolve => database.listen(0, '127.0.0.1', resolve));
+try {
+  process.env.NEXT_PUBLIC_SUPABASE_URL = `http://127.0.0.1:${database.address().port}`;
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_contract_test';
+  process.env.SOURCE_COMMIT = 'health-contract';
+  delete process.env.VERCEL_GIT_COMMIT_SHA;
+  const { GET } = await import(pathToFileURL(compiled));
+  const healthy = await GET();
+  assert.equal(healthy.status, 200);
+  const body = await healthy.json();
+  assert.equal(body.status, 'ok');
+  assert.equal(body.commit, 'health-contract');
+  assert.equal(requests, 1);
+  const answer = path.join(engines, 'health-answer.json');
+  fs.writeFileSync(answer, JSON.stringify(body));
+  const parsed = spawnSync('sh', ['-c', '. "$1"; cl_health_fields "$2"', 'health-contract',
+    path.join(root, '.agents/skills/setup-hosting/recipes/parts/scripts/check-lib.sh'), answer], { encoding: 'utf8' });
+  assert.equal(parsed.status, 0, parsed.stderr);
+  assert.equal(parsed.stdout.trim().split('\n')[1], 'ok', 'recipe checks reject the actual starter health response');
+  unavailable = true;
+  const failed = await GET();
+  assert.equal(failed.status, 503);
+  assert.equal((await failed.json()).database, 'unavailable');
+  delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+  assert.equal((await GET()).status, 503);
+} finally {
+  await new Promise(resolve => database.close(resolve));
+}
+NODE
+pass "the actual starter health response passes recipe parsing, and database failures return 503"
 
 ruby -ryaml -rjson -e '
 workflow = YAML.load_file(ARGV[0])

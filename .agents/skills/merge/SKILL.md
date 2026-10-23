@@ -22,8 +22,9 @@ say the person declined only when they did.
 
 Merge only on a yes that names it, unless automatic merge is recorded and
 the script finds its conditions hold. First say what the person can try and where:
-the recipe's preview address or how to try it locally. If their check from
-build step 6 is outstanding, ask for merge only after they confirm the result.
+the recipe's preview address or how to try it locally. If the guided check in
+`build-piece/references/build-limits.md` is outstanding, ask for merge only
+after they confirm the result.
 
 Run `check-sensitive-areas.sh --change <base>` and report each area. For an
 accepted area, state its name and the plain date. Exit 1 means the area is
