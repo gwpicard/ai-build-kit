@@ -111,7 +111,7 @@ Three more say it is waiting on a question rather than on a person: `needs-clari
 
 Every project carries a short risk record at the top of its masterplan. Setup fills it from three plain questions: who is exposed if this fails, what data does it hold, and how would you recover from a failure. The fit check rechecks it as the project changes character.
 
-The care is the same everywhere. Every change goes through a pull request, the project check and an independent review. By default, a person says yes to each merge. Automatic merging is an opt-in recorded in `Runs on its own:`. What differs from piece to piece is the risk areas it touches.
+Every change goes through a pull request, the project check and a fresh review. Review independence is unverified unless another GitHub login approved that version. By default, a person approves each merge. Automatic merging is an opt-in recorded in `Runs on its own:`. What differs from piece to piece is the risk areas it touches.
 
 The record names the risk areas the project touches: personal data, money, sign-in by outsiders, automatic action on people or other systems, irreplaceable live data, or a regulated decision. It names each in your tool's own words, with the one caution that goes with it. Each piece carries a `Risk areas:` line naming the areas it touches, or `none`. A piece with `none` is built the ordinary way. A piece in a named area gets one risk notice, and the caution happens before that part goes live, or you accept skipping it on the record.
 
@@ -232,9 +232,9 @@ and what still needs your eyes. It never claims the screen is accessible,
 compliant, or good, and a piece with no screen sees none of this. If the result
 is wrong, describe what happened and type /shape.
 
-The best independent method available reviews every change before it merges. It reports in plain language, sorted into what's worth stopping for and what's worth knowing.
+The best review method available examines every change before it merges and reports whether its independence could be verified. Findings are reported in plain language, sorted into what's worth stopping for and what's worth knowing.
 
-When more than one piece is ready, /implement shows you the whole set before it builds anything, and asks which to take. It comes back with two lists. The first is everything ready, and those are safe to take on together, because a piece waiting on another piece is never in it. The second is what is waiting, each line saying which piece has to land first: "deposits cannot start until card payments is built". Nothing is built until you choose, unless you have opted in to queue or parallel builds.
+When more than one piece is ready, /implement shows you two lists before building and asks which to take. The ready list contains pieces that can each start; building them together also requires a separate overlap check. The waiting list names what must land first, such as "deposits cannot start until card payments is built". Nothing is built until you choose, unless you have opted in to queue or parallel builds.
 
 A repair that is ready comes first, above both lists, since something that used to work outranks anything new. To see the lists without building, ask for them in your own words, such as "what can I build in parallel?". If the list looks out of date, type /implement again, since it is printed fresh from your project's issues every time. /what-now still names at most three things, so the whole list lives here.
 

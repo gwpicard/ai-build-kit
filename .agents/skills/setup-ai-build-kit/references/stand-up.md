@@ -42,8 +42,8 @@ their folder, include it in the working-copy file list, and record handling
 rules in AGENTS.md.
 
 If `.github/workflows/checks.yml` is missing, copy the foundation template and
-edit only `jobs.project-check` with install and test commands. Preserve
-`source-kit-validation`. Follow `quality-checks/references/check-floor.md` for
+edit only `jobs.project-check` with install and test commands.
+Follow `quality-checks/references/check-floor.md` for
 type checks and linting. If a risk area names a boundary, use
 `boundary-rules.md` and offer once to have the check hold it. A working remote
 check is needed before shared or live work. Say: "green means the tests passed;
@@ -60,8 +60,9 @@ a chosen recipe. It opens and closes one test issue and protects an existing
 founding: give each `missing:` line and its step, and save no checkpoint.
 
 Run `sh scripts/found-save.sh` from the project root. It makes the local
-checkpoint and checks its record. Any non-zero exit means no checkpoint was
-made; report the script's line. If identity is `neutral`, say the checkpoint
+checkpoint and checks its record. A non-zero exit stops founding: report the
+failure line and any checkpoint already printed. Say nothing was saved only
+when the script reports that. If identity is `neutral`, say the checkpoint
 uses that changeable label, nothing was uploaded, and record the real identity
 as an open question. If a `left` line names unsaved work, report it.
 

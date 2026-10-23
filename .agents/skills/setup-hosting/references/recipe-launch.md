@@ -21,5 +21,7 @@ does not hold launch; a repeated warning is only a pointer. When asked what
 remains, give its `Left:` line alone. Exit 3 means no live address is recorded.
 Exit 4 means no way back or no backup: give its `Launch held:` line and its one
 step, do not record the address, and stop.
-Record the address and say once that each merge made by `/implement` puts its
-change live.
+Record the address and explain deployment once. Use the recorded
+`Deploys on merge:` answer: for `yes`, a merge by `/implement` deploys; for
+`no`, name the manual redeploy action in the answer. With no recorded answer,
+follow the recipe's deployment procedure.
