@@ -65,6 +65,7 @@ This list identifies ideas used in the kit and the files that implement them.
 | [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills) | Keep each skill short and load reference files when needed. | `.agents/skills/*/SKILL.md` and their `references/` folders. |
 | [Agent Skills specification](https://agentskills.io/specification) and [Agent Skills best practices](https://agentskills.io/skill-creation/best-practices) | Give each skill one job and load its references only when needed. | The layout of `.agents/skills/*/`. |
 | [IFScale](https://arxiv.org/abs/2507.11538) | Evidence that models can miss instructions when too many apply at once. | Short command files and on-demand background skills, `.agents/skills/`, `.agents/tools/check-structure.py`. |
+| [Vercel, AGENTS.md evaluation](https://vercel.com/blog/agents-md-outperforms-skills-in-our-agent-evals) | Put the component location and add command in the project instructions. Its Next.js evaluation favoured an always-loaded index; the kit still needs its own replay. | `.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md`. |
 | [ETH Zurich, Evaluating AGENTS.md](https://arxiv.org/abs/2602.11988), [Configuration Smells in AGENTS.md](https://arxiv.org/abs/2606.15828), and [Anthropic's memory guidance](https://code.claude.com/docs/en/memory) | Keep standing instructions focused on practices that the code does not reveal, and remove unnecessary context. | `.agents/skills/maintain/scripts/standing-lines.sh`, `.agents/skills/setup-ai-build-kit/templates/foundation/AGENTS.md`. |
 
 ## Running and release work
@@ -94,6 +95,23 @@ This list identifies ideas used in the kit and the files that implement them.
 | [OpenAI, harness engineering](https://www.infoq.com/news/2026/02/openai-harness-engineering-codex/) | Review documentation for descriptions that no longer match the code. | `.agents/skills/quality-checks/references/document-read.md`. |
 
 ## Screen design
+
+The starter copies its components and design variables with the
+[shadcn/ui command](https://ui.shadcn.com/docs/cli), using the
+[Radix option](https://ui.shadcn.com/docs/changelog/2026-07-base-ui-default).
+The copied files live in the starter's
+`src/components/ui/` folder.
+
+[better-tailwindcss](https://github.com/schoero/eslint-plugin-better-tailwindcss)
+checks colour classes against the design variables. Its
+[entryPoint setting](https://github.com/schoero/eslint-plugin-better-tailwindcss/blob/main/docs/settings/settings.md)
+points at the Tailwind 4 CSS file. The starter uses the compatible 3.8 release
+and exposes its `no-unregistered-classes` rule as `no-unknown-classes`.
+
+[Playwright's axe guide](https://playwright.dev/docs/accessibility-testing)
+supplies the sign-in scan in `e2e/accessibility.spec.ts`. A separate assertion
+checks that the email label is visible, since axe accepts labels hidden from
+sight. Passing these checks does not prove a screen is accessible.
 
 | Source | Contribution | Where it is in the kit |
 |---|---|---|

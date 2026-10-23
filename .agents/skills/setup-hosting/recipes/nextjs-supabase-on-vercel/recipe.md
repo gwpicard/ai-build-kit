@@ -5,6 +5,7 @@ Recommended when: the team has no server of its own and wants the host to handle
 Language: TypeScript
 Framework: Next.js 16
 Typing: TypeScript tsc
+User interface: Tailwind CSS 4 and shadcn/ui on Radix
 Database: Supabase Postgres
 Sign-in: Supabase Auth
 Email: Resend

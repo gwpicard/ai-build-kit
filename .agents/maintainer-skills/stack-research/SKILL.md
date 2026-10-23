@@ -67,6 +67,12 @@ For the products the first recipes name:
   <https://supabase.com/docs/guides/self-hosting> for what a self-hosted copy
   loses. Plan limits move the backup and restore sections more often than
   anything else does.
+- shadcn/ui: the changelog at <https://ui.shadcn.com/docs/changelog> and
+  the command documentation at <https://ui.shadcn.com/docs/cli>. Check the
+  Radix option and the generated component dependencies against the starter.
+- Tailwind CSS: the releases at <https://github.com/tailwindlabs/tailwindcss/releases>
+  and the documentation at <https://tailwindcss.com/docs>, including CSS
+  configuration and compatibility with the starter's lint plugin.
 - The Supabase CLI releases at <https://github.com/supabase/cli/releases>, for
   any change to the commands a recipe's checks run.
 - Coolify: the releases at <https://github.com/coollabsio/coolify/releases> and

@@ -32,6 +32,12 @@ How it is checked: Supabase Auth sends a test invitation through the configured 
 Script: coming in part B
 Who runs it: the kit
 
+## User interface
+How it works: Tailwind CSS 4 and shadcn/ui on Radix supply design colours and components in src/components/ui/. react-hook-form and zod are available for forms.
+How it is checked: Lint rejects raw controls and colours outside the generated components. Playwright runs axe on sign-in and checks that its label is visible; this does not prove the screen is accessible.
+Script: scripts/interface.sh
+Who runs it: the kit
+
 ## Project check
 How it works: Every change checks database types, type checks, lint, Vitest with coverage, and Playwright against `next start`. CI starts local Supabase and applies the migrations before the tests.
 How it is checked: The project check is green, including database types and tests against local Supabase.

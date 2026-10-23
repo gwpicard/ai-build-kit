@@ -29,6 +29,7 @@ sed -e 's/YYYY-MM-DD/2024-02-29/' -e 's/^Who runs it: .*/Who runs it: a person l
   -e 's#^Work-team default: .*#Work-team default: no#' \
   -e 's#^Language: .*#Language: TypeScript#' \
   -e 's#^Typing: .*#Typing: TypeScript tsc#' \
+  -e 's#^User interface: .*#User interface: Tailwind CSS 4 and shadcn/ui on Radix#' \
   -e 's#^Database: .*#Database: Supabase Postgres#' \
   -e 's#^Sign-in: .*#Sign-in: Supabase Auth#' \
   -e 's#^Email: .*#Email: Resend#' \
@@ -45,11 +46,13 @@ sed -e 's/YYYY-MM-DD/2024-02-29/' -e 's/^Who runs it: .*/Who runs it: a person l
   -e 's#^Shared stack: .*#Shared stack: [stack](../parts/stack.md)#' \
   -e 's/<[^>]*>/filled in/g' "$BLANK" > "$GOOD/recipe.md"
 {
-  for section in "Sign-in and roles" "Row rules" Files Jobs Email "Project check" Updates; do
-    printf '## %s\nHow it works: example\nHow it is checked: example\nScript: coming in part D\nWho runs it: the kit\n\n' "$section"
+  for section in "Sign-in and roles" "Row rules" Files Jobs Email "User interface" "Project check" Updates; do
+    printf '## %s\nHow it works: example\nHow it is checked: example\nScript: scripts/check.sh\nWho runs it: the kit\n\n' "$section"
   done
 } > "$WORK/recipes/parts/stack.md"
 printf '#!/usr/bin/env sh\nexit 0\n' > "$GOOD/scripts/check.sh"
+cp "$GOOD/scripts/check.sh" "$WORK/recipes/parts/scripts/check.sh"
+chmod +x "$WORK/recipes/parts/scripts/check.sh"
 cp "$GOOD/scripts/check.sh" "$GOOD/scripts/live-check.sh"
 chmod +x "$GOOD/scripts/check.sh" "$GOOD/scripts/live-check.sh"
 {
@@ -161,6 +164,8 @@ refused "an unknown Fits category" recipe.md 's/^Fits: .*/Fits: made up category
 refused "no Recommended when line" recipe.md '/^Recommended when:/d'
 refused "no Work-team default line" recipe.md '/^Work-team default:/d'
 refused "no Language line" recipe.md '/^Language:/d'
+refused "no User interface line" recipe.md '/^User interface:/d'
+refused "an unlisted User interface" recipe.md 's/^User interface: .*/User interface: made up/'
 refused "a Database line that does not name one tool" recipe.md 's/^Database: .*/Database: none, use a spreadsheet/'
 refused "Framework without a pinned major" recipe.md 's/^Framework: .*/Framework: Next.js/'
 # Check the specific reason too. Otherwise the allowed-tool list can reject

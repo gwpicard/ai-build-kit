@@ -81,13 +81,13 @@ ORDER = ["Preview", "Going live", "Rollback", "Backup", "Restore", "Secrets", "L
          "Access"]
 EXTRA = "Settings the kit can read"
 WHO = ("the kit", "a companion or the person, result read back", "a person looking")
-STACK = ["Language", "Framework", "Typing", "Database", "Sign-in", "Email", "Files",
+STACK = ["Language", "Framework", "Typing", "User interface", "Database", "Sign-in", "Email", "Files",
          "Jobs", "Testing", "Linting", "Starter", "Optional parts"]
 HEADS = ["Fits", "Recommended when"] + STACK + ["Work-team default", "Deploy target", "Health-check tool",
          "Command-line tools", "Last checked", "Last proven", "Proven on", "Superseded settings"]
 STACK_SECTIONS = ["Sign-in and roles", "Row rules", "Files", "Jobs", "Email",
-                  "Project check", "Updates"]
-COMING_SECTIONS = set(STACK_SECTIONS)
+                  "User interface", "Project check", "Updates"]
+COMING_SECTIONS = set(STACK_SECTIONS) - {"User interface"}
 FIT_CATEGORIES = {
     "Dashboards and reporting on existing data",
     "Admin panels and back office over an existing database",
@@ -198,6 +198,7 @@ def check_recipe(md, proven):
             problem(where, "Framework must name one tool and one pinned major version")
     allowed_tools = {
         "Language": {"TypeScript", "Python"}, "Framework": {"Next.js 16"},
+        "User interface": {"Tailwind CSS 4 and shadcn/ui on Radix"},
         "Typing": {"TypeScript tsc", "mypy"}, "Database": {"Supabase Postgres", "PostgreSQL", "SQLite"},
         "Sign-in": {"Supabase Auth"}, "Email": {"Resend", "Postmark"},
         "Files": {"Supabase Storage"}, "Jobs": {"Supabase Cron and Queues", "Vercel Cron"},
@@ -305,7 +306,7 @@ def check_recipe(md, proven):
         else:
             stack_order, stack_body = sections(open(stack_path).read())
             if stack_order != STACK_SECTIONS:
-                problem(stack_path, "does not hold the seven shared stack sections in order")
+                problem(stack_path, "does not hold the required shared stack sections in order")
             for stack_section in STACK_SECTIONS:
                 if stack_section in stack_body:
                     body_check("%s ## %s" % (stack_path, stack_section), os.path.dirname(stack_path),
@@ -356,7 +357,7 @@ def check_part(path):
     order, body = sections(text)
     if order:
         if order != STACK_SECTIONS:
-            problem(path, "does not hold the seven shared stack sections in order")
+            problem(path, "does not hold the required shared stack sections in order")
         for name in STACK_SECTIONS:
             if name in body:
                 body_check("%s ## %s" % (path, name), os.path.dirname(path), lines_of(body[name]))

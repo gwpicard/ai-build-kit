@@ -22,7 +22,7 @@ sed -i.bak 's/^Recipe: none$/Recipe: nextjs-supabase-on-vercel/' "$PROJECT/AGENT
 mkdir -p "$WORK/engines"
 printf '{"private":true}\n' > "$WORK/engines/package.json"
 sdk=$(node -p 'require(process.argv[1]).dependencies["@supabase/supabase-js"]' "$PROJECT/package.json")
-(cd "$WORK/engines" && npm install --no-audit --no-fund --silent eslint@9.36.0 typescript@5.9.2 "@supabase/supabase-js@$sdk") ||
+(cd "$WORK/engines" && npm install --no-audit --no-fund --silent eslint@9.36.0 typescript@5.9.2 eslint-plugin-better-tailwindcss@3.8.0 tailwindcss@4.1.14 "@supabase/supabase-js@$sdk") ||
   fail "could not install the engines for the kit-folder boundary check"
 node - "$PROJECT" "$WORK/engines" <<'NODE'
 const assert = require('node:assert/strict');
@@ -35,6 +35,10 @@ const requireEngine = createRequire(path.join(engines, 'package.json'));
 const { ESLint } = requireEngine('eslint');
 const ts = requireEngine('typescript');
 (async () => {
+  process.chdir(project);
+  fs.mkdirSync(path.join(project, 'node_modules'), { recursive: true });
+  fs.symlinkSync(path.join(engines, 'node_modules/eslint-plugin-better-tailwindcss'), path.join(project, 'node_modules/eslint-plugin-better-tailwindcss'));
+  fs.symlinkSync(path.join(engines, 'node_modules/tailwindcss'), path.join(project, 'node_modules/tailwindcss'));
   const preset = path.join(project, 'node_modules/eslint-config-next');
   fs.mkdirSync(preset, { recursive: true });
   fs.writeFileSync(path.join(preset, 'package.json'), JSON.stringify({

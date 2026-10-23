@@ -1,15 +1,28 @@
 import { sendSignInLink } from "./actions";
 
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
 export default function LoginPage() {
   return (
-    <main className="mx-auto max-w-xl p-8">
-      <h1 className="text-2xl font-semibold">Sign in</h1>
-      <p className="mt-3 text-slate-600">Enter your invited email address. We will send a sign-in link.</p>
-      <form action={sendSignInLink} className="mt-6 flex gap-3">
-        <label className="sr-only" htmlFor="email">Email address</label>
-        <input id="email" name="email" type="email" required className="min-w-0 flex-1 rounded border border-slate-300 bg-white px-3 py-2" />
-        <button className="rounded bg-slate-900 px-4 py-2 text-white" type="submit">Send link</button>
-      </form>
+    <main className="mx-auto max-w-xl px-6 py-16">
+      <Card>
+        <CardHeader>
+          <h1 className="text-2xl font-semibold tracking-tight">Sign in</h1>
+          <p className="text-muted-foreground">Enter your invited email address. We will send a sign-in link.</p>
+        </CardHeader>
+        <CardContent>
+          <form action={sendSignInLink} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email address</Label>
+              <Input id="email" name="email" type="email" autoComplete="email" required />
+            </div>
+            <Button type="submit">Send link</Button>
+          </form>
+        </CardContent>
+      </Card>
     </main>
   );
 }

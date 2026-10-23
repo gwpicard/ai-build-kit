@@ -16,3 +16,5 @@ Access: Not tried. Before the Access step, `/`, `/login` and `/admin/setup` retu
 Settings the kit can read: Not tried.
 Migration: Two migrations were applied once.
 Founding: Not tried.
+
+User interface: No real run yet; added 2026-10-23.
