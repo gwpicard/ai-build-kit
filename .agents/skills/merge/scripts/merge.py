@@ -83,6 +83,53 @@ def check_hold(rows):
             stop("merge: project-check is %s (%s); the pull request stays open" % (state, result))
 
 
+BILLING = re.compile(r"job was not started because .*(payments have failed|spending limit)", re.I)
+
+
+def billing_blocked(row):
+    """True when GitHub says it never started this check because of billing."""
+    job = re.search(r"/job/(\d+)", str(row.get("link") or ""))
+    if not job:
+        return False
+    notes = gh("api", "repos/{owner}/{repo}/check-runs/%s/annotations" % job.group(1))
+    if notes.returncode != 0:
+        return False
+    try:
+        rows = json.loads(notes.stdout)
+    except ValueError:
+        return False
+    return isinstance(rows, list) and any(
+        isinstance(note, dict) and BILLING.search(str(note.get("message") or ""))
+        for note in rows)
+
+
+def billing_fallback(rows, head, base, number):
+    """Run project-check here when billing alone stopped GitHub from running it."""
+    held = [row for row in rows if results.blocks(results.from_github(row))]
+    if not held or any(row.get("name") != "project-check" for row in held):
+        return rows, False
+    if not all(billing_blocked(row) for row in held):
+        return rows, False
+    print("merge: GitHub did not start project-check because of a billing limit; "
+          "running the same steps on this computer, on a clean copy of " + head[:12])
+    script = Path(__file__).with_name("local-check.py")
+    try:
+        done = subprocess.run([sys.executable, str(script), head, base, number], text=True,
+                              capture_output=True)
+    except OSError:
+        stop("merge: the local project-check could not start", 2)
+    sys.stdout.write(done.stdout)
+    sys.stderr.write(done.stderr)
+    if done.returncode == 1:
+        stop("merge: project-check failed on this computer (%s); the pull request stays open"
+             % results.FAIL)
+    if done.returncode:
+        stop("merge: project-check could not run on this computer (%s); the pull request "
+             "stays open" % results.NOT_RUN, 2)
+    passed = [dict(row, bucket="pass", state="SUCCESS") if row in held else row for row in rows]
+    return passed, True
+
+
 def git(*args):
     try:
         return subprocess.run(["git", *args], text=True, capture_output=True)
@@ -369,7 +416,7 @@ def main(argv):
         check_main_health()
     check_sensitive_area(data["baseRefOid"], head, automatic=(mode == "--auto"))
 
-    checks = gh("pr", "checks", number, "--json", "name,state,bucket")
+    checks = gh("pr", "checks", number, "--json", "name,state,bucket,link")
     if checks.returncode == 1 and not checks.stdout.strip() and "no checks reported" in checks.stderr:
         stop("merge: project-check is missing; the pull request stays open")
     if checks.returncode != 0:
@@ -380,6 +427,9 @@ def main(argv):
         stop("merge: GitHub returned unreadable pull request checks", 2)
     if mode == "--auto":
         rows = wait_for_auto_checks(number, rows)
+    local = False
+    if mode == "--approved":
+        rows, local = billing_fallback(rows, head, data["baseRefOid"], number)
     check_hold(rows)
 
     if open_review_box(data.get("body") or ""):
@@ -398,9 +448,15 @@ def main(argv):
     else:
         print("merge: the review of this version is unverified: the kit could not confirm "
               "that a second person read it")
+    if local:
+        print("merge: project-check ran on this computer, not on GitHub, because of a billing "
+              "limit; it passed for commit " + head)
     if mode == "--approved":
+        record = "approved merge " + number
+        if local:
+            record += "; project-check passed on this computer: GitHub did not start it (billing)"
         noted = git("notes", "--ref=refs/notes/ai-build-kit-approved-merges",
-                    "add", "-f", "-m", "approved merge " + number, head)
+                    "add", "-f", "-m", record, head)
         if noted.returncode:
             stop("merge: merged, but could not record this named-yes merge", 2)
         remotes = git("remote")
