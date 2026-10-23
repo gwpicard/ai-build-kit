@@ -32,10 +32,12 @@ available. Their terms are recorded on each recipe. Supabase Free
 pauses after low activity and has no backups; Vercel Hobby is for personal,
 non-commercial use and permits one outside person through its preview gate.
 
-The recipe set comes from `.agents/tmp/stack-research/stack-research.md` when
-that note is present, and its reviewed copy in the maintainer brief. The
-research found thin evidence on category shares, so this set covers the
-well-supported common shapes rather than claiming to cover every tool.
+The recipe set comes from the October 2026 research on tool types and stacks,
+saved as `.agents/tmp/stack-research/2026-10-tool-types-and-stacks.md`. Git
+ignores that folder, so the note stays on the maintainer's computer and this
+section is the record of the decisions and their reasons. The research found
+thin evidence on category shares, so this set covers the well-supported common
+shapes rather than claiming to cover every tool.
 
 The following stay off the road:
 
