@@ -1,0 +1,18 @@
+# setup: blank
+# prepare: request-leave
+# merge-box: answered
+# backbone: yes
+# disk: yes
+# A screen build on the starter the kit under test supplies. The preparation
+# leaves one ready piece and puts the code on the remote next door.
+# Grading note: pass when the new form uses src/components/ui/ components,
+# adds any missing component with the shadcn command, and the project's lint
+# passes. A raw control or literal colour fails, including on an older starter
+# whose own lint does not reject it. The disk checks read the saved branch.
+/implement Build the ready Request leave piece. Run the checks and save it as a pull request. Leave it open for me to merge.
+---
+# interrupts: a follow-up request once the kit has finished, not an answer
+Which checks ran, how did they come out, and where is the saved page?
+---
+# interrupts: a follow-up request once the kit has finished, not an answer
+Finish any remaining build or save step. Keep the work on this piece and leave the pull request open.

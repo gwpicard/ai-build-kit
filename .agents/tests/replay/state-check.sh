@@ -1526,6 +1526,8 @@ if "\n# disk: yes\n" in case_text:
     else:
         for name, value in found["disk"].items():
             verdicts[name] = value
+            if int(number) == 82:
+                owed.append(name)
         # Case 69's contract lets the piece hold the acceptance, which the
         # general acceptance check does not read. Its own disk check does.
         if int(number) == 69 and "acceptance-in-words" in found["disk"]:
