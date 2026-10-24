@@ -122,9 +122,10 @@ sweeping changes.
 
 ## Writing
 
-British spelling, plain language, no em dashes, short paragraphs. The reader
-does not read code, so define a technical term once, only when it cannot be
-avoided.
+British spelling, no em dashes, short paragraphs. Write precisely and
+naturally, never in forced simple words. The reader does not read code, so
+define a technical term once where they would not know it, and use the
+established term where it is the right word.
 
 Before saving any prose a person reads, load
 `.agents/maintainer-skills/humanizer/SKILL.md`, use its embedded mode, and
