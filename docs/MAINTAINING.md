@@ -749,33 +749,10 @@ release's maintain text, which reads the new release's notes and nothing else
 of it. So the notes are the one place that can send the person back for the
 visit that finishes the update. The folder never ships.
 
-Write each release's notes file for a person who builds tools with the kit and
-does not read code. Give the file these parts, in this order:
-
-1. One sentence that says what the release does for that person.
-2. Who gets each change. Say first if a change reaches only new projects,
-   because an existing user who expects it and does not get it will think the
-   update failed.
-3. Updating: the command, the new session, any action the person must take,
-   and whether their data changes.
-4. What changes: a numbered list, most useful first. Each item has a short bold
-   name, what the person gets, and why it matters to them. Use plain words, not
-   tool names: "ready screen parts", not a component library's internals. Name
-   a check only where the person will see that name on GitHub.
-5. What was tested, and what is not proven yet. Say what a replay tested, not
-   only how many times it ran. Put each limit in words the person can act on.
-   Leave out conditions that exist only on the maintainer's computer.
-
-Where a sentence could be read as a promise, such as "an accessibility test",
-say in the same item what it does not prove. A pull request title the person
-cannot follow is rewritten in plain words when the notes are edited on the
-Release's web page.
-
-Before the stamp pull request, give the notes file to one fresh reviewer with
-this reader described, and with a plain explanation of the release, written
-separately from the notes. Ask whether the notes say each change as clearly as
-the explanation, and what the explanation leaves out that the notes need. Fix
-what it finds, then check each claim in the notes against the code.
+Write each release's notes file with
+`.agents/maintainer-skills/release-notes/SKILL.md`. It holds the writing
+standard, the shape of the file, and the fresh review the file gets before the
+stamp pull request.
 
 After a release is published, run `.agents/tools/record-released-copies.py`
 with its archive on the next branch. It adds the release's whole-copy files to
