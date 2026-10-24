@@ -20,7 +20,7 @@ Command names say when to use them.
 | It's been a while | /maintain |
 | I'm lost | /what-now |
 
-Two of them carry the day-to-day work. /shape decides what to change next, a new idea or something broken, and turns it into a ready piece, without touching the tool yet. /implement builds a ready piece, whether it makes the tool do something new or brings it back to doing what it already should. It shows you the result and, by default, waits for your approval before merging. Automatic merging is an opt-in. Whether a merge also puts the change live depends on the host, as [Going live](#9-going-live) explains.
+Two of them carry the day-to-day work. /shape helps you decide what to change next and turns a new idea or a fault into a ready piece, without touching the tool yet. /implement builds a ready piece, whether it makes the tool do something new or brings it back to doing what it already should. It shows you the result and, by default, requires your approval before merging. Automatic merging is an opt-in. Whether a merge also puts the change live depends on the host, as [Going live](#9-going-live) explains.
 
 The other four sit around those two. /setup-ai-build-kit founds the project once. /setup-hosting sets up how the tool runs live, and checks it later. /maintain makes the records true again and checks the live copy against your project, runs the upkeep when it is due, prepares a handover, and switches a tool off at the end. /what-now tells you where things stand when you are lost.
 
@@ -78,12 +78,12 @@ The dividing rule: the masterplan describes the present, the plan holds the futu
 
 You can work with the issues yourself, and nothing you do there will be undone. Open one and write it however you like, in as little as half a sentence. /shape settles what done means with you and marks the piece ready; /implement builds only ready pieces and never guesses past an open question. If a piece is not ready when you reach for /implement, it points you to /shape and takes the next ready piece instead.
 
-A piece is written in two layers. The part you read stays in plain words, and it stays complete about anything that affects your product, so it never looks simpler than the work really is. The build detail the agent needs sits in a collapsed "under the hood" section you never have to open. Anything that affects the whole product is written into the masterplan instead, and anything technical that affects the whole project goes into AGENTS.md, so no fact is copied into two places.
+A piece is written in two layers. The part you read uses terms you recognise, and it stays complete about anything that affects your product, so it never looks simpler than the work really is. The build detail the agent needs sits in a collapsed "under the hood" section you never have to open. Anything that affects the whole product is written into the masterplan instead, and anything technical that affects the whole project goes into AGENTS.md, so no fact is copied into two places.
 
 A decision can say what it rests on, in one short line beside it. When /shape
 uses that decision, or /maintain checks the masterplan, the agent reads its support
 again. If it has gone, you hear which decision has lost its ground and answer
-in plain words. You never have to read a test or find a saved change yourself.
+in terms you recognise. You never have to read a test or find a saved change yourself.
 
 Assign yourself to claim a piece, or let the agent put your name on it when it starts; either way nobody else builds the same thing. Close an issue you have decided against and it stays closed. Labels of your own are left alone, and milestones and boards are ignored entirely, so you can use them however suits you.
 
@@ -334,7 +334,7 @@ Green means the checks that exist really passed, which is a smaller promise than
 
 If billing alone prevents GitHub's `project-check` from starting, an approved merge can use the same steps run locally on a clean copy of the exact commit. That run must pass. Other failed, pending or missing checks still hold the merge. You can re-enable checks or merge on GitHub yourself. The check is switched off only if you ask, and /maintain reminds you while it stays off.
 
-A human decides whether to merge by default. Automatic merging is an opt-in. When it is off, once the check is green, /implement tells you what to try and where, such as the preview address, then names the pull request in one plain line and asks for an approval that names the merge. Saying "put it live" or "save it" before any merge was named is not that yes, so it asks again; saying "merge it" is, and it does not ask twice.
+A human decides whether to merge by default. Automatic merging is an opt-in. When it is off, once the check is green, /implement tells you what to try and where, such as the preview address, then names the pull request in one plain line and asks for an approval that names the merge. Saying "put it live" or "save it" before any merge was named is not that approval, so it asks again; saying "merge it" is, and it does not ask twice.
 
 It makes an approved merge on the pull request itself, never by merging on your computer and pushing `main`. In Claude Code a box asks before a named approval merge, where the project's settings carry that question. A project founded before the kit added it gets no box until /maintain adds it, and /implement says so rather than promising one. If GitHub cannot be reached, the merge waits, and you can merge it on GitHub yourself. With automatic merging off, nobody there to answer means the pull request waits. After a merge, everyone pulls main. Every pull request gets its review before it is offered as ready, and a flagged area also gets the review its caution names.
 
@@ -364,9 +364,9 @@ What the agent may not do is take the notice back. Pushing back on the cost, the
 
 ## 9. Going live
 
-/setup-hosting is for the moment you want people to use the tool. Its first run takes what is already on `main` live. On a host that deploys each merge to `main` by itself, as Vercel does, every later merge reaches the team's copy. Where a hosting companion answers the request, its `Deploys on merge:` line is recorded. With `yes`, the host deploys each later merge. With `no`, a merge saves the change and a separate deployment puts it live. /implement waits for merge approval by default, unless automatic merging is on. /setup-hosting never merges code. Run it again to check the live copy, deploy a saved change, or move to another host or recipe.
+/setup-hosting is for the moment you want people to use the tool. Its first run takes what is already on `main` live. On a host that deploys each merge to `main` by itself, as Vercel does, every later merge reaches the team's copy. Where a hosting companion answers the request, its `Deploys on merge:` line is recorded. With `yes`, the host deploys each later merge. With `no`, a merge saves the change and a separate deployment puts it live. /implement requires merge approval by default, unless automatic merging is on. /setup-hosting never merges code. Run it again to check the live copy, deploy a saved change, or move to another host or recipe.
 
-/setup-hosting reads the risk record first. It runs the full evidence run, independent review, operational readiness, and the live transition. With a recipe, hosting follows its checks. With no recipe, the kit says once that it guarantees no way back, backup or checked launch, records your words and the date, and still helps you set the host up by hand.
+/setup-hosting reads the risk record first. It runs the full evidence run, independent review, operational readiness, and the live transition. With a recipe, hosting follows its checks. With no recipe, /setup-hosting gives one notice that rollback, backup and launch checks are not guaranteed, records your words and the date, and still helps you set the host up by hand.
 
 For a risk area, /setup-hosting does the caution it can do itself (a backup restored once, a rehearsal on a copy), and at a caution that is a person who has not looked, gives you the risk notice once. If you carry on, your acceptance is written down and that area goes live too. Where somebody outside the team is going to look, ask for the handover and /maintain prepares it.
 
@@ -401,19 +401,19 @@ not then read it some other way. It asks you, and names the page where the
 setting lives.
 
 A command that changes a live service's settings or data, other than saving
-code through the save route, waits for your approval, in /implement and in /setup-hosting
+code through the save route, requires your approval, in /implement and in /setup-hosting
 alike. The kit first names everything the command will change, not only the
 setting it meant to change, and says whether it can be undone. A real build
 once pushed a whole settings file to change one thing, and switched off a live
 setting it then could not switch back on. The commands your project's recipe
-names are the launch you asked for, and need no second yes.
+names are the launch you asked for, and need no further approval.
 
 A later run is
-different: nobody asked for a launch, so each repair it makes waits for a yes
-that names it.
+different: nobody asked for a launch, so each repair requires your approval
+for the named change.
 
 /setup-hosting never merges your code. A finished piece waiting in a pull
-request is merged by /implement, on a yes that names the merge. When a deploy's
+request is merged by /implement, with your approval for that merge. When a deploy's
 result is unclear, /setup-hosting checks whether it went live before it tries
 again. A second deploy of the same version leaves nothing older to roll back
 to, and /setup-hosting says so before running one. A warning you have already
@@ -424,7 +424,7 @@ colleague later saying the new version is live, take the same save route as a
 piece.
 
 On a shared project they go on one branch and one pull request for each
-run, never straight to `main`, and merging that pull request needs its own yes,
+run, never straight to `main`, and merging that pull request needs its own approval,
 made on the pull request itself. Where your host builds every change to
 `main`, /setup-hosting tells you that merging it starts one more build and
 moves the rollback target, and offers to leave it for the next change. Work of
@@ -485,9 +485,9 @@ settings, entered by name.
 
 After the first launch, a later /setup-hosting compares the live copy with `main` and tells you each gap in one plain line: whether the live copy runs the latest merge, whether it is held on an earlier version since a rollback, whether a database change has not been applied, whether a secret or setting is missing on the host, and whether health answers. It then runs the recipe's checks again, the backup and the restore included.
 
-It repairs each gap only after a yes that names it. It rechecks the risk record first if reliance or consequence has grown. A warning the changelog already holds comes back as one line pointing to it, so anything given in full is new. Every later run leaves one dated entry in the changelog, even when it finds nothing to repair, with its rollback line, such as "Rollback possible, not tried". That entry arrives as a records pull request with its own merge question, and where your host builds every change, that merge is one more build. Moving to another host or recipe is a later run too: the old live copy keeps serving until the new one answers.
+It repairs each gap only with your approval for the named change. It rechecks the risk record first if reliance or consequence has grown. A warning the changelog already holds comes back as one line pointing to it, so anything given in full is new. Every later run leaves one dated entry in the changelog, even when it finds nothing to repair, with its rollback line, such as "Rollback possible, not tried". That entry arrives as a records pull request with its own merge question, and where your host builds every change, that merge is one more build. Moving to another host or recipe is a later run too: the old live copy keeps serving until the new one answers.
 
-You can also ask /setup-hosting for a rollback outright. It reads the host's list of builds, names the version it would bring back by the change it carried and its date, and waits for an approval that names it. It runs the rollback once, or tells you where to click when the host offers nothing the kit can run, and checks that the live copy now reports the earlier version.
+You can also ask /setup-hosting for a rollback outright. It reads the host's list of builds, names the version it would bring back by the change it carried and its date, and requires your approval for that version. It runs the rollback once, or tells you where to click when the host offers nothing the kit can run, and checks that the live copy now reports the earlier version.
 
 A rollback does not undo a database addition, which is why database changes only add. With no recipe the kit guarantees no rollback, and says what one would need.
 
@@ -601,7 +601,7 @@ show. Each monthly visit names two numbers, the version your project holds and
 the latest published AI Build Kit, and says plainly when they differ. An update
 gives you that published release and never work nobody has released yet. When
 a newer kit is available, the agent shows the version and what changed, then
-waits for approval.
+requires your approval.
 
 An update refreshes only the AI Build Kit skills and leaves your tool, its
 records, and its own checks alone. It also adds any skill the kit has renamed
@@ -762,7 +762,7 @@ what it does not cover. Everything outside that area carries on either way.
 /maintain also owns the ending, when a tool's time is over: export the data,
 tell the team, revoke access, and switch off the services. The export is read
 back first. Each step that revokes access, deletes a credential, switches a
-service off or archives the repository waits for your approval, and says first
+service off or archives the repository requires your approval. The agent first explains
 whether it can be undone.
 
 ## Configuration

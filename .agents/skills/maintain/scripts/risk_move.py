@@ -479,7 +479,7 @@ def add_changelog(project, today, line):
         with open(path, encoding="utf-8", newline="") as handle:
             text = handle.read()
     except FileNotFoundError:
-        text = "# Changelog\n\nPlain-language history of the project, newest first.\n"
+        text = "# Changelog\n\nHistory of the project, newest first.\n"
     except OSError as error:
         raise RuntimeError("could not read CHANGELOG.md: %s" % error)
     eol = "\r\n" if "\r\n" in text else "\n"
