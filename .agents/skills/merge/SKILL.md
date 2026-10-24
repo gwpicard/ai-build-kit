@@ -15,8 +15,11 @@ or retrying.
 
 Upload a later piece with `python3 scripts/upload-piece.py --title "<title>"
 --body-file <file>` from the project folder. Exit 3 goes to
-`references/first-upload.md`; other stops name their cause. Report that cause;
-say the person declined only when they did.
+`references/first-upload.md`. Report other stops by their cause; say the person
+declined only when they did.
+
+The pull request description states what changed, why, how it was checked
+and what was not checked.
 
 ## Merge a finished piece
 
@@ -56,8 +59,8 @@ Keep the pull request open and state what it awaits. Read
 intentions and offer to merge the newest `main` into the branch on a yes. Never
 force-push or rebase. Resolve only when the records make the outcome clear;
 otherwise ask. Escalate conflicts involving data, migrations, deployment
-settings or risk areas for a fresh yes. Then rerun project checks and the
-live checks above. For `UNKNOWN`, read again after a short wait.
+settings or risk areas for a fresh yes. Rerun project and live checks.
+For `UNKNOWN`, wait briefly and reread.
 
 ## Ask and merge
 
@@ -86,15 +89,14 @@ a risk area holds it; exit 2
 means a required read/check could not run or GitHub refused. Say what stopped
 it and leave the pull request open. In an unattended run, leave it for review.
 
-After a merge, run the `records` skill's `scripts/piece-labels.sh` with
+After merging, run the `records` skill's `scripts/piece-labels.sh` with
 `merged <number>`, refresh the printout and follow `references/after-merge.md`.
 
 Use the [billing fallback](../../../WORKFLOW.md#7-saving-work) only through
 `merge.py --approved`; say before the yes and after that it runs project-check
 here on a clean copy. Any other check that never started holds the merge.
-For queues, automatic merge, and conflicts between waiting pieces, follow `references/automatic-merge.md`.
-
-Read `references/automatic-merge.md` before using `--auto`.
+For queues, conflicts between waiting pieces or `--auto`, read
+`references/automatic-merge.md` first.
 
 An unattended run merges only through `--auto` when the setting is on. It never
 merges unattended through another route.

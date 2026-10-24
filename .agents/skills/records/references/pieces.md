@@ -4,7 +4,7 @@ A piece is a one-sitting change, recorded as an issue.
 
 ## Issue shape
 
-Title: person's outcome; put technical detail under the hood.
+Title: name the change in natural, precise words the person recognises.
 
 ```md
 ## So that

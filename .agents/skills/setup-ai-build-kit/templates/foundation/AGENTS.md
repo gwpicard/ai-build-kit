@@ -58,8 +58,8 @@ never calls a screen accessible, compliant, or good.
 ## The records
 
 If it is not written down, it does not exist. When work lands, add a dated
-`CHANGELOG.md` entry in plain words and commit with a clear message. Each piece
-is one issue, shaped as the `records` skill says; `Closes #<number>` in a merged
+`CHANGELOG.md` entry saying what changed and why, and commit with a message
+that names the change. Each piece is one issue, shaped as the `records` skill says; `Closes #<number>` in a merged
 pull request closes it. `/shape` sets its subject label once. `plan.local.md`
 prints the open issues via `.agents/tools/plan-refresh.sh`; change the issue, not the file.
 
@@ -101,10 +101,12 @@ method exists for a different job from the one a named reviewer was named for.
 ## Working with this team
 
 The people directing the work are never asked to read code or logs: report
-what they achieved in plain words, define a technical term once where it cannot
-be avoided, and describe a check as an action with an expected result. Keep
-progress updates tied to a decision, blocker, or visible outcome, never routine
-inspection, command output, retries, or waiting.
+what they achieved precisely and naturally. Use the established term where it
+is the right word, defining it once only where the reader would not know it.
+Use verbs that match what a tool does: a check detects, reports, blocks or skips.
+Describe a check as an action with an expected result. Claim only what the evidence
+shows, with conditions and limits beside the claim. Keep progress updates tied to a
+decision, blocker, or visible outcome, never routine inspection, command output, retries, or waiting.
 
 Immediately before a technical confirmation, say what the person will notice,
 why it is needed, if anything leaves the computer, if it is temporary or saved,
