@@ -20,7 +20,7 @@ Command names say when to use them.
 | It's been a while | /maintain |
 | I'm lost | /what-now |
 
-Two of them carry the day-to-day work. /shape decides what to change next, a new idea or something broken, and turns it into a ready piece, without touching the tool yet. /implement builds a ready piece, whether it makes the tool do something new or brings it back to doing what it already should. It shows you the result and, by default, waits for your approval before merging. Automatic merging is an opt-in. The recorded `Deploys on merge:` answer determines whether merging releases it, as [Going live](#9-going-live) explains.
+Two of them carry the day-to-day work. /shape decides what to change next, a new idea or something broken, and turns it into a ready piece, without touching the tool yet. /implement builds a ready piece, whether it makes the tool do something new or brings it back to doing what it already should. It shows you the result and, by default, waits for your approval before merging. Automatic merging is an opt-in. Whether a merge also puts the change live depends on the host, as [Going live](#9-going-live) explains.
 
 The other four sit around those two. /setup-ai-build-kit founds the project once. /setup-hosting sets up how the tool runs live, and checks it later. /maintain makes the records true again and checks the live copy against your project, runs the upkeep when it is due, prepares a handover, and switches a tool off at the end. /what-now tells you where things stand when you are lost.
 
@@ -338,7 +338,7 @@ A human decides whether to merge by default. Automatic merging is an opt-in. Whe
 
 It makes an approved merge on the pull request itself, never by merging on your computer and pushing `main`. In Claude Code a box asks before a named approval merge, where the project's settings carry that question. A project founded before the kit added it gets no box until /maintain adds it, and /implement says so rather than promising one. If GitHub cannot be reached, the merge waits, and you can merge it on GitHub yourself. With automatic merging off, nobody there to answer means the pull request waits. After a merge, everyone pulls main. Every pull request gets its review before it is offered as ready, and a flagged area also gets the review its caution names.
 
-Before a merge, the agent reads the recorded `Deploys on merge:` answer, as [Going live](#9-going-live) explains.
+Before a merge, the agent says whether it will also put the change live, as [Going live](#9-going-live) explains.
 
 So before asking, /implement checks the live side. A change that adds to the database waits until /setup-hosting has applied that addition, which only adds, so the version live now keeps working. A piece whose `Live side needs:` line names a new secret or service waits until /setup-hosting reports it present. So does a piece whose branch adds a setting to `.env.example`, even with no such line, since a piece shaped before the line existed has none. A piece in a risk area waits until its caution is done or your acceptance is recorded.
 
@@ -364,7 +364,7 @@ What the agent may not do is take the notice back. Pushing back on the cost, the
 
 ## 9. Going live
 
-/setup-hosting is for the moment you want people to use the tool. Its first run takes what is already on `main` live and records `Deploys on merge:`. With `yes`, the host deploys each later merge to `main`. With `no`, a merge saves the change and a separate deployment puts it live. /implement waits for merge approval by default, unless automatic merging is on. /setup-hosting never merges code. Run it again to check the live copy, deploy a saved change, or move to another host or recipe.
+/setup-hosting is for the moment you want people to use the tool. Its first run takes what is already on `main` live. On a host that deploys each merge to `main` by itself, as Vercel does, every later merge reaches the team's copy. Where a hosting companion answers the request, its `Deploys on merge:` line is recorded. With `yes`, the host deploys each later merge. With `no`, a merge saves the change and a separate deployment puts it live. /implement waits for merge approval by default, unless automatic merging is on. /setup-hosting never merges code. Run it again to check the live copy, deploy a saved change, or move to another host or recipe.
 
 /setup-hosting reads the risk record first. It runs the full evidence run, independent review, operational readiness, and the live transition. With a recipe, hosting follows its checks. With no recipe, the kit says once that it guarantees no way back, backup or checked launch, records your words and the date, and still helps you set the host up by hand.
 

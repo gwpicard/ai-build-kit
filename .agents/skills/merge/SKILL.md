@@ -6,8 +6,6 @@ user-invocable: false
 
 # Merge
 
-Read the recorded `Deploys on merge:` answer before describing a merge's live
-effect. Follow [Going live](../../../WORKFLOW.md#9-going-live).
 The first upload waits for a yes, as
 `references/first-upload.md` says. In Codex, if push, fetch or remote check
 fails with `unable to get password from user`, run the installed
@@ -64,8 +62,9 @@ live checks above. For `UNKNOWN`, read again after a short wait.
 ## Ask and merge
 
 Name the pull request and what it changes, then ask for a yes that names the
-merge. Say that it puts the change live only when the recorded
-`Deploys on merge:` answer is `yes`. A clear “merge it” already
+merge. Say whether it goes live: it does when `Deploys on merge:` is `yes`, or,
+with no such answer, when the recipe or masterplan deploys every merge to
+`main`. For `no`, name the redeploy. A clear “merge it” already
 counts; do not ask again. A yes to building, saving, uploading, going live,
 hosting, or a question asked before naming the merge does not count. A no
 leaves the pull request open and live tool unchanged. Red, pending or missing
