@@ -153,8 +153,9 @@ kit says plainly that it guarantees nothing, and it still helps.
 
 Some promises hold in every project, so they do not depend on what the person
 asks for. Each one needs a mechanism, which is a machine that makes it true,
-and a check that fails when the mechanism is removed. `docs/MAINTAINING.md`
-lists each promise with its mechanism, or says "none yet".
+and a check that fails when the mechanism is removed. The
+[source repository's mechanism list](https://github.com/gwpicard/ai-build-kit/blob/main/docs/MAINTAINING.md#the-backbone-and-its-mechanisms)
+names each promise's mechanism, or says "none yet".
 
 1. A person approves each merge, unless they chose auto-merge with its limits.
 2. Nothing goes online without a yes.

@@ -67,7 +67,7 @@ waits.
 
 Bigger than a piece goes into the masterplan first and is cut into pieces,
 order confirmed with the person. The `records` skill's `references/pieces.md`,
-under "Status, owner, and order", says
+under "Ownership, order and the local plan", says
 when parts become sub-issues and when separate pieces are linked by
 blocked-by.
 

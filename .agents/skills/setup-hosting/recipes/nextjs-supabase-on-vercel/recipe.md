@@ -41,7 +41,7 @@ Ask: Open the preview address signed in to Vercel, try the change, and tell me w
 ## Going live
 
 How it works: Vercel does not run migrations, so before the build that needs them the kit applies them to the live database with `../parts/scripts/migrate.sh --apply <live project ref>`. A migration only adds, so the version still live keeps working. Before the merge, the kit runs the Health part's container check, so the build that goes live has already answered here. Exit 2 means the check could not run on this computer, so do not ask to merge without it. Exit 1 means it failed and also holds the merge. Vercel then builds `main` and moves the production address to the new build once it succeeds. A changed Vercel setting reaches production only after a new build; run `vercel redeploy <production deployment URL>`. The health route reads `VERCEL_GIT_COMMIT_SHA` on Vercel. `SOURCE_COMMIT` remains a fallback for local runs and hosts that do not supply a commit.
-How it is checked: The live address answers 200 with the database reachable and the commit on `main`, and no public table is open to anyone holding the publishable key beyond the ones on the record.
+How it is checked: The live address answers 200 with the database reachable and the commit on `main`. The database check detects public tables without row-level security, except those on the record. It does not inspect whether policies restrict access.
 Script: scripts/going-live.sh
 Who runs it: the kit
 
@@ -63,7 +63,7 @@ Shared part: [restore on hosted Supabase](../parts/supabase-restore.md)
 ## Secrets
 
 How it works: Use `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` and `SUPABASE_SECRET_KEY`; the legacy `NEXT_PUBLIC_SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` still work. Run `scripts/get-supabase-keys.sh <project ref> <folder>` to write the publishable and secret keys to private files without using the clipboard. Pass a file to `scripts/add-secret.sh <NAME>` on standard input. Use `--replace` to remove that exact production name before adding its checked value. The publishable key reaches the browser by design; row-level security limits it. The secret key stays on the server. The kit never pulls production values or writes a value into the repository.
-How it is checked: Vercel holds every name in `.env.example`, no public name carries a secret, and git ignores `supabase/.temp`, `.vercel` and `.env.local` while `.env.example` can still be committed.
+How it is checked: Vercel holds every name in `.env.example`. The check rejects names there that start with `NEXT_PUBLIC_` and contain `SERVICE_ROLE` or `SECRET`; it reads no values. Git ignores `supabase/.temp`, `.vercel` and `.env.local` while allowing `.env.example` in commits.
 Script: scripts/secrets.sh
 Who runs it: the kit
 

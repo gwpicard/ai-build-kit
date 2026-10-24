@@ -13,7 +13,7 @@ Files: <file storage service>
 Jobs: <background work service>
 Testing: <test tools>
 Linting: <linter>
-Starter: coming in part B at <folder>
+Starter: ../parts/starters/<folder>
 Optional parts: <part names, or none>
 Work-team default: <yes (plans needed) | no>
 Deploy target: <where it runs once it is live>

@@ -1,8 +1,10 @@
 # The check floor
 
 Every founded project gets its language's own mechanical checks on the first
-day: a type check and a linter, wherever the language has them. They sit in
-`jobs.project-check` beside install and test, so they turn the same tick red.
+day: a type check and a linter, wherever the language has them. Recipe projects
+keep install, type, lint and test commands in `jobs.recipe-check` in the
+starter's `.github/workflows/check.yml`. Other projects use `jobs.project-check`
+in `.github/workflows/checks.yml`. Leave separate kit validation jobs alone.
 Green means existing checks passed; red means do not merge and tell
 `/implement`.
 
@@ -36,8 +38,9 @@ check. Add a linter only where the language has one that most of its users run.
 A check that goes red for reasons the person cannot act on teaches them to
 ignore red, and that is worse than having no check. So:
 
-- Use each tool's own default rules. Do not import a style preset, and do not
-  add a formatter check.
+- Keep existing starter rules, including the recipe's colour and component
+  rules. For a new checker, use its default rules. Do not import a style
+  preset or add a formatter check.
 - The check passes on the day it is wired. Run it locally before saving, and
   fix what it finds in code founding wrote.
 - In an adopted project, the new checks may fail on code that was already

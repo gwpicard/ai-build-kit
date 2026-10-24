@@ -6,7 +6,7 @@ user-invocable: false
 
 # Merge
 
-On a live project, merging deploys. The first upload waits for a yes, as
+The first upload waits for a yes, as
 `references/first-upload.md` says. In Codex, if push, fetch or remote check
 fails with `unable to get password from user`, run the installed
 `setup-ai-build-kit` skill's `templates/foundation/codex-github-check.py`
@@ -62,8 +62,9 @@ live checks above. For `UNKNOWN`, read again after a short wait.
 ## Ask and merge
 
 Name the pull request and what it changes, then ask for a yes that names the
-merge. Say that it puts the change live only on a recipe or when the
-masterplan says every change to `main` deploys. A clear “merge it” already
+merge. Say whether it goes live: it does when `Deploys on merge:` is `yes`, or,
+with no such answer, when the recipe or masterplan deploys every merge to
+`main`. For `no`, name the redeploy. A clear “merge it” already
 counts; do not ask again. A yes to building, saving, uploading, going live,
 hosting, or a question asked before naming the merge does not count. A no
 leaves the pull request open and live tool unchanged. Red, pending or missing
@@ -88,9 +89,9 @@ it and leave the pull request open. In an unattended run, leave it for review.
 After a merge, run the `records` skill's `scripts/piece-labels.sh` with
 `merged <number>`, refresh the printout and follow `references/after-merge.md`.
 
-If billing alone stopped GitHub's project-check, `merge.py --approved` runs it
-here on a clean copy; say so before the yes and after. Any other check that
-never started holds the merge; the person can turn it on or merge on GitHub.
+Use the [billing fallback](../../../WORKFLOW.md#7-saving-work) only through
+`merge.py --approved`; say before the yes and after that it runs project-check
+here on a clean copy. Any other check that never started holds the merge.
 For queues, automatic merge, and conflicts between waiting pieces, follow `references/automatic-merge.md`.
 
 Read `references/automatic-merge.md` before using `--auto`.

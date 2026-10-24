@@ -43,9 +43,10 @@ large or ambiguous corrections. Step 6 may also change the project check.
    interrupted manual setup. Where flagged work was built in the period and
    the risk record has no `Accepted:` line for it, say so, and never
    write one after the fact.
-6. Keep `.github/workflows/checks.yml` aligned with AGENTS.md's install and
-   test commands: change only `jobs.project-check`, not a separate source
-   validation job. Run the installed
+6. Align AGENTS.md's install and test commands with
+   `jobs.recipe-check` for recipe projects, `jobs.project-check` otherwise.
+   `quality-checks/references/check-floor.md` names the workflow.
+   Run the installed
    `setup-ai-build-kit/scripts/place-trim-check.py`. Exit 0: say nothing.
    Exit 1: make its offer once; on yes run `--apply` and save with the
    corrections, on no run `--decline`. Exit 2: say it could not be placed.

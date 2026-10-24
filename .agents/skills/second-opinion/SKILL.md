@@ -10,7 +10,8 @@ Report first. Fix only what the person approves.
 
 Run `gate.py brief --base <start commit> --piece <number>` and act on its exit
 code. Review the packet it writes. It is the
-full brief for this review, including the change and the available evidence.
+full brief for this review, including the change, `project-check` and, where
+reported, `recipe-check` evidence for type and lint checks.
 Gemini reviewers have no shell, so include the packet text in the prompt.
 Exit 2 means an input is missing. Continue the review and carry the packet's
 `Review limits` into the result.
