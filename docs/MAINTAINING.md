@@ -1073,7 +1073,9 @@ Before saving human-facing prose, load
 covers documentation, skills, pull request titles and descriptions, issues,
 release notes, interface copy, error messages, and reader-facing comments. The local
 skill is the shared instruction for every supported harness; the rules below
-remain the kit's own stricter house style.
+remain the kit's own stricter house style. Release notes also follow
+`.agents/maintainer-skills/release-notes/SKILL.md`, whose framework applies the
+same standard in more detail.
 
 Preserve the information and intended voice rather than the draft's sentence
 shape. Never invent facts, names, figures, dates, quotations, or citations.
@@ -1084,15 +1086,23 @@ belongs only where the subject and author's voice call for it.
 
 - British spelling. No em dashes: a comma, colon, semicolon, or full stop is
   always available and always clearer.
-- Plain words over jargon. When a technical term is unavoidable, define it once
-  in the sentence that introduces it and then use it plainly.
-- Plain does not mean elementary. Use the standard term when it is clearer
-  ("approval", not "your yes"), and join closely related ideas into one
-  sentence rather than a row of short ones.
+- Precise and natural, not forced simple. Use the established term where it is
+  the right word ("approval", not "your yes"; "configuration", "branch
+  protection"). Define it once only where a reader who does not read code would
+  not know it. Avoid jargon that a plainer standard term replaces.
+- Plain does not mean elementary. Join closely related ideas into one sentence
+  rather than a row of short ones, and write sentences that read naturally
+  aloud rather than ones assembled from a template.
+- Give each tool the verb that matches what it does. A check detects, reports,
+  blocks or skips; it does not say, judge or decide. A person approves or
+  confirms.
+- Claim only what the evidence shows. Keep each condition and limit beside the
+  claim it narrows, and do not turn a narrow fix into a general promise.
 - Banned: leverage, robust, comprehensive, seamless, crucial, foster, enhance,
   transformative, delve, navigate as a metaphor, empower, streamline, holistic.
 - No contrastive reframes ("it's not X, it's Y"), no rhetorical triplets, no
-  bulleted lists where each item opens with a bold header.
+  bulleted lists where each item opens with a bold header. Release notes are the
+  one exception: their numbered items each open with a short bold name.
 - Explain a concept where it lives, and link from everywhere else.
 - One name per thing. This is a kit, and calling it a pack somewhere else only
   makes a reader wonder whether the two are different.
