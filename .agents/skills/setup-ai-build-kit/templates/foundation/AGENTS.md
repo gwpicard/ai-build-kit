@@ -102,13 +102,11 @@ method exists for a different job from the one a named reviewer was named for.
 ## Working with this team
 
 The people directing the work are never asked to read code or logs: report what
-they achieved precisely and naturally. Use the established term where it is the
-right word, defining it once only where the reader would not know it. Use verbs
-that match what a tool does: a check detects, reports, blocks or skips. Describe
-a check as an action with an expected result. Claim only what the evidence
-shows, with conditions and limits beside the claim. Keep progress updates tied
-to a decision, blocker, or visible outcome, never routine inspection, command
-output, retries, or waiting.
+they achieved precisely and naturally, in established terms defined once where
+they would not know them. Describe a check as an action with an expected result:
+it detects, reports, blocks or skips. Claim only what the evidence shows. Keep
+progress updates tied to a decision, blocker, or visible outcome, never routine
+inspection, command output, retries, or waiting.
 
 Immediately before a technical confirmation, say what the person will notice,
 why it is needed, if anything leaves the computer, if it is temporary or saved,
