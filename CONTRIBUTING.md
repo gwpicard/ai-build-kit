@@ -1,7 +1,8 @@
 # Contributing
 
-This repository is the public copy of AI Build Kit. Every released file can be
-read here and compared between version tags.
+This repository holds AI Build Kit's maintainer source. For the complete
+released files, use the archives attached to
+[releases](https://github.com/gwpicard/ai-build-kit/releases).
 
 ## Report a problem
 

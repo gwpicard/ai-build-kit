@@ -43,7 +43,14 @@ case "$*" in
       printf '%s\n' '{"title":"Example","body":"## So that\nIt works.\n\n## Done when\n- It passes\n"}'
     fi
     ;;
-  "pr checks --json name,state,bucket") printf '%s\n' '[{"name":"project-check","state":"SUCCESS","bucket":"pass"},{"name":"type-check","state":"SUCCESS","bucket":"pass"},{"name":"lint","state":"SUCCESS","bucket":"pass"}]' ;;
+  "pr checks --json name,state,bucket")
+    case "${CHECK_CASE:-separate}" in
+      recipe) printf '%s\n' '[{"name":"project-check","state":"SUCCESS","bucket":"pass"},{"name":"recipe-check","state":"FAILURE","bucket":"fail"}]' ;;
+      recipe-separate) printf '%s\n' '[{"name":"project-check","state":"SUCCESS","bucket":"pass"},{"name":"recipe-check","state":"FAILURE","bucket":"fail"},{"name":"type-check","state":"SUCCESS","bucket":"pass"},{"name":"lint","state":"SUCCESS","bucket":"pass"}]' ;;
+      project) printf '%s\n' '[{"name":"project-check","state":"SUCCESS","bucket":"pass"}]' ;;
+      *) printf '%s\n' '[{"name":"project-check","state":"SUCCESS","bucket":"pass"},{"name":"type-check","state":"SUCCESS","bucket":"pass"},{"name":"lint","state":"SUCCESS","bucket":"pass"}]' ;;
+    esac
+    ;;
   "pr view 9 --json title,body,headRefOid,author,reviews")
     BODY=${GH_PR_BODY:-Summary} python3 -c 'import json,os; print(json.dumps({"title":"Example pull request","body":os.environ["BODY"],"headRefOid":os.environ.get("PR_HEAD",""),"author":{"login":"agent"},"reviews":json.loads(os.environ.get("GH_REVIEWS") or "[]")}))'
     ;;
@@ -78,6 +85,26 @@ out=$(cd "$PROJECT" && PATH="$WORK/bin:$PATH" GATE_QUALITY_SCRIPT="$WORK/quality
   && grep -A1 '## Head commit' "$PROJECT/.git/review-packet.md" | grep -qx "$PR_HEAD" \
   && grep -q '^Result: PASS$' "$PROJECT/.git/review-packet.md" \
   && pass "brief writes a complete packet, names the commit it read and exits 0" || fail "brief clean returned $code: $out"
+
+for check_case in recipe recipe-separate; do
+  out=$(cd "$PROJECT" && PATH="$WORK/bin:$PATH" CHECK_CASE="$check_case" GATE_QUALITY_SCRIPT="$WORK/quality.py" python3 "$GATE" brief --base "$BASE" --piece 7 2>&1) && code=0 || code=$?
+  [ "$code" -eq 0 ] \
+    && ! grep -Eq '^(Type|Lint): SUCCESS$' "$PROJECT/.git/review-packet.md" \
+    && grep -qx 'Type: FAILURE' "$PROJECT/.git/review-packet.md" \
+    && grep -qx 'Lint: FAILURE' "$PROJECT/.git/review-packet.md" \
+    && grep -qx 'Recipe check: FAILURE' "$PROJECT/.git/review-packet.md" \
+    && grep -qx 'Project check: SUCCESS' "$PROJECT/.git/review-packet.md" \
+    && pass "brief reports the failed recipe check for type and lint ($check_case)" \
+    || fail "brief hid the failed recipe check ($check_case): $out"
+done
+
+out=$(cd "$PROJECT" && PATH="$WORK/bin:$PATH" CHECK_CASE=project GATE_QUALITY_SCRIPT="$WORK/quality.py" python3 "$GATE" brief --base "$BASE" --piece 7 2>&1) && code=0 || code=$?
+[ "$code" -eq 0 ] \
+  && grep -qx 'Type: SUCCESS' "$PROJECT/.git/review-packet.md" \
+  && grep -qx 'Lint: SUCCESS' "$PROJECT/.git/review-packet.md" \
+  && ! grep -q '^Recipe check:' "$PROJECT/.git/review-packet.md" \
+  && pass "brief keeps the project-check fallback when no recipe check is reported" \
+  || fail "brief changed the project-check fallback: $out"
 
 out=$(cd "$PROJECT" && PATH="$WORK/bin:$PATH" PIECE_CASE=missing GATE_QUALITY_SCRIPT="$WORK/quality.py" python3 "$GATE" brief --base "$BASE" --piece 7 2>&1) && code=0 || code=$?
 [ "$code" -eq 2 ] && grep -q 'Done when' "$PROJECT/.git/review-packet.md" \

@@ -41,10 +41,9 @@ the interview's design tool in AGENTS.md. If none, record
 their folder, include it in the working-copy file list, and record handling
 rules in AGENTS.md.
 
-If `.github/workflows/checks.yml` is missing, copy the foundation template and
-edit only `jobs.project-check` with install and test commands.
-Follow `quality-checks/references/check-floor.md` for
-type checks and linting. If a risk area names a boundary, use
+If `.github/workflows/checks.yml` is missing, copy the foundation template.
+Follow `quality-checks/references/check-floor.md` for the workflow and job
+that owns install, type, lint and test commands. If a risk area names a boundary, use
 `boundary-rules.md` and offer once to have the check hold it. A working remote
 check is needed before shared or live work. Say: "green means the tests passed;
 red means don't merge, tell /implement."

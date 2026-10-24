@@ -22,7 +22,7 @@ Project setup comes first. For each piece, you then agree on the scope, build, r
 - The agent enables Git’s pre-push hook using [this script](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-ai-build-kit/scripts/use-push-guard.sh). The hook blocks direct pushes to the main branch.
 - [Branch protection](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/merge/scripts/protect-branch.py) requires the project check to pass on GitHub where your plan supports it.
 - The [first upload](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/merge/scripts/first-upload.py) requires your approval.
-- The initial [project check](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-ai-build-kit/templates/foundation/checks.yml) deliberately fails until the placeholder is replaced with real project tests.
+- Without a selected recipe, the initial [project check](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-ai-build-kit/templates/foundation/checks.yml) deliberately fails until the agent replaces the placeholder with real project tests. Recipe projects skip that placeholder and use the starter’s [recipe-check workflow](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/.github/workflows/check.yml) for application checks.
 
 **What you decide:** You answer the setup questions and decide whether to use existing work.
 
@@ -81,7 +81,7 @@ Project setup comes first. For each piece, you then agree on the scope, build, r
 **Checks and mechanisms:**
 
 - The [merge script](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/merge/scripts/merge.py) requires your recorded approval unless you have enabled automatic merging. It merges only the version that was checked.
-- It stops when the project check is missing, failed or did not run.
+- It stops when the project check is missing, failed or did not run. The [billing-only fallback](https://github.com/gwpicard/ai-build-kit/blob/main/WORKFLOW.md#7-saving-work) permits an approved merge only after the local check passes for the exact commit. Other checks that failed or did not run still hold the merge.
 - It stops when a blocking review finding remains unresolved or the review identifies another version.
 - The [risk-area check](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/setup-ai-build-kit/templates/foundation/check-sensitive-areas.sh) reports the areas affected by the change and blocks merging while a risk decision remains unresolved.
 - For a live project, the [settings script](https://github.com/gwpicard/ai-build-kit/blob/stable/.agents/skills/merge/scripts/env-names-added.sh) identifies new settings in .env.example. The agent waits for hosting setup to confirm them before requesting a merge.

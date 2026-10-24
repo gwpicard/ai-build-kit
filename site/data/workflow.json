@@ -36,7 +36,12 @@
       {
         "script": "checks.yml",
         "path": ".agents/skills/setup-ai-build-kit/templates/foundation/checks.yml",
-        "description": "The initial project check deliberately fails until the placeholder is replaced with real project tests."
+        "description": "Without a selected recipe, the initial project check deliberately fails until the agent replaces the placeholder with real project tests."
+      },
+      {
+        "script": "check.yml",
+        "path": ".agents/skills/setup-hosting/recipes/parts/starters/nextjs-supabase/.github/workflows/check.yml",
+        "description": "Recipe projects skip the placeholder and use the starter's recipe-check workflow for application checks."
       }
     ],
     "person_decides": "You answer the interview questions and decide whether to use existing work.",

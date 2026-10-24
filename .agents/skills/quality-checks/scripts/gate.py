@@ -110,6 +110,7 @@ def brief(args):
     try:
         checks = json.loads(gh("pr", "checks", "--json", "name,state,bucket"))
         project = [row for row in checks if row.get("name") == "project-check"]
+        recipe = [row for row in checks if row.get("name") == "recipe-check"]
         type_checks = [row for row in checks if "type" in str(row.get("name", "")).casefold()]
         lint_checks = [row for row in checks if "lint" in str(row.get("name", "")).casefold()]
         check_line = ", ".join(str(row.get("state", "unknown")) for row in project) or "project-check not reported"
@@ -117,9 +118,13 @@ def brief(args):
             limits.append("project-check has no reported result")
     except (RuntimeError, ValueError, json.JSONDecodeError):
         check_line = "project-check could not be read"
-        project, type_checks, lint_checks = [], [], []
+        project, recipe, type_checks, lint_checks = [], [], [], []
         limits.append("project check results could not be read")
     result_lines = ["Project check: " + check_line]
+    if recipe:
+        recipe_line = ", ".join(str(row.get("state", "unknown")) for row in recipe)
+        result_lines.append("Recipe check: " + recipe_line)
+        type_checks = lint_checks = recipe
     if type_checks:
         result_lines.append("Type: " + ", ".join(str(row.get("state", "unknown")) for row in type_checks))
     else:

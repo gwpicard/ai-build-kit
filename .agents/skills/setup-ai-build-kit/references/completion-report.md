@@ -5,7 +5,8 @@ next command. Do not lead with Git details, commands, ports or checkpoint data.
 
 Translate internal facts:
 
-- Passing `npm test`: "The automatic project check passed."
+- Passing `npm test`: "Unit tests passed." Say the automatic project check
+  passed only after its complete run.
 - A working local address: "The private preview opened successfully."
 - Clean working tree: "All setup work has been saved."
 - No push: "No code was uploaded or published."
@@ -42,7 +43,8 @@ The initial setup is complete.
 - [Review result and any finding that still waits for the person.]
 - [What the tool runs on, whether launch steps can be checked, and whether
   this computer has the required tools.]
-- The automatic project check passed.
+- [Unit tests passed. Claim the automatic project check passed only after its
+  complete run.]
 - The private preview opened successfully.
 
 ## Where it is saved

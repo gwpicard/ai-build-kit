@@ -47,8 +47,9 @@ For a risk area, follow `fit-check`'s "Rechecks and going live".
 
 Before any live change, load `references/live-records.md`.
 
-Connect one service at a time, starting with harmless parts. Never print what
-the hosting request record contains. Give the live-change warning before asking
+Connect one service at a time, starting with harmless parts. Print the hosting
+request's address and setting names when its instructions require them, never
+secret values. Give the live-change warning before asking
 the person to go live.
 
 When going live changes the risk record or names a risk area, record why,

@@ -1,6 +1,7 @@
 # Reach check
 
-Run `python3` with this skill's `scripts/quality.py reach`, then act on its exit code.
+At shaping, run `python3` with this skill's
+`scripts/quality.py reach --paths <proposed files>`, then act on its exit code.
 
 At build, run `quality.py reach --base <start commit> --piece <number> --run`:
 
