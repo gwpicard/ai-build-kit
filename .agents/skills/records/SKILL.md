@@ -31,11 +31,12 @@ Each decides by its exit code, and changes only what it names.
 
 ## After a build
 
-Update the piece, a dated changelog line written from its `So that` and `Done
-when` in plain words, the masterplan through its recorded change, and AGENTS.md
-only for a lasting convention. Where the tool now reaches something new outside
-itself, update the connections picture and say what it reaches. A finished
-build leaves nothing for /maintain to correct.
+Update the piece, a dated changelog line, the masterplan through its recorded
+change, and AGENTS.md only for a lasting convention. Write the changelog line
+from the finished work: what changed, why it matters and what was verified.
+Check it against the piece's `So that` and `Done when`. Where the tool now
+reaches something new outside itself, update the connections picture and say
+what it reaches. A finished build leaves nothing for /maintain to correct.
 
 When naming what comes next, read it from a refreshed printout, by
 `references/pieces.md`'s rule, and never name the piece just built.

@@ -184,7 +184,7 @@ pictures, and has no comments or replies.
 write("CHANGELOG.md", """
 # Changelog
 
-Plain-language history of the project, newest first. One dated entry per piece of work, written so a teammate who was away can catch up by reading it.
+History of the project, newest first. One dated entry per piece of work. Say what changed, why it matters and how it was checked, in terms a teammate who was away would recognise.
 
 ## 2026-09-19
 
