@@ -20,6 +20,10 @@ findings into one list for the maintainer. A release waits until each finding
 is fixed or the maintainer accepts it. Keep accepted findings and their reasons
 with the review record.
 
+This review checks that claims are true. The version's notes file also gets a
+review for a reader who does not read code, before the stamp pull request.
+`docs/MAINTAINING.md`, under "When a release is cut", says how.
+
 ## The printout
 
 One line for each finding, most serious first:
