@@ -100,7 +100,7 @@ def main(argv):
                 return stop("approval needs the person's words: --words \"<their words>\"", 2)
             rows.append([datetime.date.today().isoformat(), change, clean(argv[3])])
             write(path, rows)
-            print("approval: approval recorded for %s" % change)
+            print("approval: recorded for %s" % change)
             return 0
         found = next((row for row in rows if len(row) == 3 and row[1] == change), None)
         if not found:
