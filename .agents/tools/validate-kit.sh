@@ -1231,7 +1231,7 @@ if [ -f "$sbfile" ] && [ -f "$mergefile" ] && [ -f "$blocked" ] && [ -f "$settin
   rm -f "${TMPDIR:-/tmp}/kit-push-guard-$$.log"
   grep -qF "delete_branch_on_merge" "$cutfile" || \
     { fail "$cutfile: does not enable auto-deletion of merged branches"; mech_ok=0; }
-  grep -qF "Merge only on a yes" "$mergefile" || \
+  grep -qF "Merge only with approval" "$mergefile" || \
     { fail "$mergefile: the merge step does not wait for a yes that names the merge"; mech_ok=0; }
   grep -qF "Make an approved merge on the pull request itself" "$mergefile" || \
     { fail "$mergefile: the merge step does not make the merge on the pull request itself"; mech_ok=0; }
@@ -2724,6 +2724,9 @@ check_claim "first upload and each merge need a yes" "The first upload and each 
 check_claim "blocked commands merge yes claim" "Never merge without the person's yes or force a merge past a required review."
 check_claim "unattended merge always waits" "never merge or accept a risk for the person"
 
+check_claim "informal approval wording" "waits for a yes"
+check_claim "informal named approval wording" "named yes"
+check_claim "informal approval renewal wording" "fresh yes"
 [ "$FAIL" -eq 0 ] && echo "ok: no stale claims found"
 
 # ---------------------------------------------------------------------------

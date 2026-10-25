@@ -22,8 +22,8 @@ crosses it cannot be merged?" If the answer is yes, ask the person to say the
 rule in their own words, and read it back. For example: "Nothing outside
 billing touches the ledger except through the charge step."
 
-Add no rule without a yes, and take one away only with a yes too. Record the
-yes on the area's boundary line, with the sentence:
+Add no rule without approval, and take one away only with approval too. Record the
+approval on the area's boundary line, with the sentence:
 
 ```md
     boundary: reached only through src/billing/charge.ts; held by the check: "Nothing outside billing touches the ledger except through the charge step."

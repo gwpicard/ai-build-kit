@@ -9,7 +9,7 @@ Save records on a branch and pull request for each run using the `merge`
 skill's `scripts/save-records.sh`, then its `scripts/upload-piece.py` with
 `--title` naming the run and `--body-file` holding its report. Never push records to `main` or include
 uncommitted work. Ask to merge the records pull request only after reporting
-the run and getting a yes that names that pull request. If the host builds
+the run and getting approval naming that pull request. If the host builds
 every change to `main`, say the merge moves the rollback target and offer to
 leave the pull request open.
 

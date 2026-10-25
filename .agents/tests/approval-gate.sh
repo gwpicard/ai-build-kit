@@ -19,7 +19,7 @@ git -C "$WORK" init -q project
 cd "$WORK/project"
 
 out=$(python3 "$GATE" use "promote dpl_1 abc" 2>&1) && code=0 || code=$?
-[ "$code" -eq 1 ] && printf '%s' "$out" | grep -q 'no recorded yes for "promote dpl_1 abc"' \
+[ "$code" -eq 1 ] && printf '%s' "$out" | grep -q 'no recorded approval for "promote dpl_1 abc"' \
   && pass "a change with no recorded yes is refused, and the refusal names the change" \
   || fail "no yes returned $code: $out"
 

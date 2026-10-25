@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Say whether a push is the project's first upload, and make it on a yes.
+"""Say whether a push is the project's first upload, and make it with approval.
 
 Founding tells the person nothing will be uploaded, so the first push of the
-project's code waits for their yes. Whether a push is that first upload is a
+project's code requires their approval. Whether a push is that first upload is a
 fact about the remote, so this script reads it rather than leaving it to
 memory.
 
@@ -24,7 +24,7 @@ and exits with the state's code:
 
     0  online         main is on the remote and shares history with the local
                       main: push as usual
-    3  first-upload   the repository has no branch: ask for a yes naming the
+    3  first-upload   the repository has no branch: ask for approval naming the
                       upload, then run again with --approved
     4  holds-other    the repository has branches, none sharing history with
                       main: push nothing and ask the person
@@ -35,7 +35,7 @@ and exits with the state's code:
                       for the person's own
     9  no-main        a branch from this project is online but main is not,
                       because an earlier first upload stopped halfway: ask
-                      for a yes to create main, then run again with --approved
+                      for approval to create main, then run again with --approved
     2                 usage error
 
 Before it says first-upload or no-main, it checks that the GitHub tool is

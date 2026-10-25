@@ -174,16 +174,16 @@ out=$(run success '## Worth stopping for' 2>&1) && code=0 || code=$?
   && pass "passed checks and a yes merge the checked commit, and an unverified review is called unverified" \
   || fail "success returned $code: $out / $(cat "$GH_LOG")"
 
-# The one approval gate: no recorded yes for this merge, no merge, and a yes is spent once used.
+# The one approval gate: no recorded approval for this merge, no merge, and a yes is spent once used.
 rm -f "$WORK/project/.git/ai-build-kit-approvals"
 : > "$GH_LOG"
 out=$(NO_YES=1 run success '## Worth stopping for' 2>&1) && code=0 || code=$?
-[ "$code" -eq 1 ] && printf '%s' "$out" | grep -q 'no recorded yes for "merge pull request 12"' && ! grep -q '^pr merge ' "$GH_LOG" \
+[ "$code" -eq 1 ] && printf '%s' "$out" | grep -q 'no recorded approval for "merge pull request 12"' && ! grep -q '^pr merge ' "$GH_LOG" \
   && pass "an approved merge with no recorded yes is refused before GitHub is asked" \
   || fail "a merge with no recorded yes returned $code: $out / $(cat "$GH_LOG")"
 : > "$GH_LOG"
 out=$(run success '## Worth stopping for' 2>&1) && code=0 || code=$?
-[ "$code" -eq 0 ] && printf '%s' "$out" | grep -q 'using the yes of' \
+[ "$code" -eq 0 ] && printf '%s' "$out" | grep -q 'using the approval of' \
   && ! (cd "$WORK/project" && python3 "$APPROVAL" list | grep -q 'merge pull request 12') \
   && pass "a recorded yes lets the named merge through once, and is spent" \
   || fail "a recorded yes did not merge once ($code): $out"
@@ -204,7 +204,7 @@ check_record_hold "a body edited to open=0 with no matching record" \
 check_record_hold "an older record with no commit" \
   "$(printf '%b' '## Worth stopping for\n- None\n## Worth knowing\n- None\nReview record: reviewed=quality review; tried=1; open=0')" 'older kit'
 git -C "$WORK/project" notes --ref=refs/notes/ai-build-kit-approved-merges list | grep -q . \
-  && pass "an approved merge writes its named-yes ledger record" \
+  && pass "an approved merge writes its explicit approval ledger record" \
   || fail "an approved merge did not record its approval"
 
 out=$(run merge-fails '## Worth stopping for' 2>&1) && code=0 || code=$?
@@ -325,7 +325,7 @@ merge.git = lambda *args: subprocess.CompletedProcess(args, 0, setting if args[0
 merge.auto_setting = real_auto_setting
 try: merge.auto_setting("MAIN")
 except Hold as error:
-    assert "three named-yes merges" in str(error)
+    assert "three explicitly approved merges" in str(error)
     print("ok: automatic merge waits for three recorded approved merges")
 else: raise AssertionError("empty merge ledger earned automatic merge")
 # Pending checks are polled; they may settle, or time out without merging.

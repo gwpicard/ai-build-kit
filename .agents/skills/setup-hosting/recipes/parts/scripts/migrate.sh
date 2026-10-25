@@ -16,7 +16,7 @@
 #
 # A migration only adds, so the version live now keeps working once it is
 # applied. Applying one changes the live database, so the kit runs --apply on
-# the live project only after a yes that names it, except during a first
+# the live project only after approval naming it, except during a first
 # launch, which the person asked for.
 #
 # Without --apply: exit 0 when nothing is waiting, 1 when a migration is

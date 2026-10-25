@@ -6,7 +6,7 @@ into `.github/workflows/checks.yml`, with a checkout that fetches the whole
 history so the step can read every commit in the pull request. A project
 founded before that has neither, and an update refreshes skills only, so its
 check never rejects a silent edit to one of its tests. /maintain runs this in
-the truing, offers what it prints once, and runs it with --apply on a yes.
+the truing, offers what it prints once, and runs it with --apply with approval.
 
 Usage, from the project root:
 

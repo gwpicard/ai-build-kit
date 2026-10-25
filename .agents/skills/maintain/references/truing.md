@@ -16,7 +16,7 @@ large or ambiguous corrections. Step 6 may also change the project check.
 2. Read the open pieces' last-updated times from GitHub. List those untouched
    for 30 days or more, by title, and ask once: "For each of these, is it
    still wanted, should it be parked, or is it done?" Change nothing on that
-   list without a yes for that piece. Age alone never closes or relabels a
+   list without approval for that piece. Age alone never closes or relabels a
    piece. Where the dates cannot be read, say the check could not be made.
 
    Use `records/references/pieces.md` to correct stale states and add missed,
@@ -26,7 +26,7 @@ large or ambiguous corrections. Step 6 may also change the project check.
    Where CHANGELOG.md records that the project check on GitHub was switched
    off, read `gh workflow list --all`. While it is off, say in one line that
    GitHub is not checking pull requests, with the recorded command to turn it
-   back on. Turn it on only on a yes.
+   back on. Turn it on only with approval.
 3. Correct the masterplan using `records/references/masterplan-changes.md`,
    reading from the older of the saved mark and last changelog entry. Never
    rewrite its risk record; rerun `fit-check` if the project's
@@ -36,7 +36,7 @@ large or ambiguous corrections. Step 6 may also change the project check.
 4. Load `records/references/coverage-read.md` and compare promises with
    pieces. Above 1,000 words in the core sections (excluding the risk record, key
    terms, live-running notes, headings, comments and diagram source), ask
-   whether to move piece detail onto pieces. Move only on a yes, preserving
+   whether to move piece detail onto pieces. Move only with approval, preserving
    promises and decisions. Run `quality-checks/references/document-read.md`
    for stale names. Kit-update handles retired-command guidance.
 5. Name anything left open: a recheck trigger, flagged work waiting,
@@ -48,7 +48,7 @@ large or ambiguous corrections. Step 6 may also change the project check.
    `quality-checks/references/check-floor.md` names the workflow.
    Run the installed
    `setup-ai-build-kit/scripts/place-trim-check.py`. Exit 0: say nothing.
-   Exit 1: make its offer once; on yes run `--apply` and save with the
+   Exit 1: make its offer once; with approval run `--apply` and save with the
    corrections, on no run `--decline`. Exit 2: say it could not be placed.
 7. A mistake the agent has made twice becomes one line in AGENTS.md. A pattern
    the person approved more than once may become a project skill. The length
@@ -60,7 +60,7 @@ large or ambiguous corrections. Step 6 may also change the project check.
    `--title` naming the corrections and `--body-file` holding step 9's paragraph,
    then run the project check. Keep uncommitted work out. Never merge, delete
    the branch, commit to `main` or leave corrections uncommitted. The first
-   upload needs a yes. If GitHub is unreachable, save the branch and report
+   upload needs approval. If GitHub is unreachable, save the branch and report
    the missing step. A GitHub label change needs no branch.
 9. Say in one short paragraph what was corrected, or in one line that nothing
    had drifted.

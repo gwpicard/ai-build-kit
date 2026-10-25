@@ -25,7 +25,7 @@ first.
 
 - Use fake or disposable data, and no production credentials.
 - Do not connect to live systems unless the question cannot be answered
-  otherwise and the person says yes.
+  otherwise and the person approves.
 - Make it trivial to run, and show the relevant state after each action.
 - Skip production error handling, abstractions and polish.
 - Build the visible thing to look like what it is testing, not like a labelled

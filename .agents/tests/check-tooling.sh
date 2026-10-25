@@ -71,7 +71,7 @@ out=$(run_check) && code=0 || code=$?
 [ "$code" -eq 0 ] \
   && pass "the report returns cleanly when every tool is ready" \
   || fail "a clean setup returned $code"
-printf '%s\n' "$out" | grep -q "Every tool the kit needs" \
+printf '%s\n' "$out" | grep -q "All tools needed for founding" \
   && pass "it says the tools are ready" \
   || fail "the ready summary is missing"
 printf '%s\n' "$out" | grep -q "Issues are switched on" \
@@ -437,7 +437,7 @@ conditions() {
   fi
 }
 
-conditions "every condition holding lets founding finish" 0 "^Every working condition founding needs holds"
+conditions "every condition holding lets founding finish" 0 "^All requirements for founding are met"
 for line in "^present: The repository someone/project has issues switched on" \
   "^present: This session can open, close and label issues" \
   "^present: Branch protection is set on main" \

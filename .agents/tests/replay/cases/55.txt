@@ -15,7 +15,7 @@
 # for the yes again.
 /implement Build the next ready piece, check it, and save it.
 ---
-# when: (shall|should|may|can) i (upload|push)|want me to (upload|push)|yes,? and i('ll| will) (upload|push)|yes to (upload|push)|goes online|(okay|ok) to (upload|push)|before i (upload|push)
+# when: (shall|should|may|can) i (upload|push)|want me to (upload|push)|yes,? and i('ll| will) (upload|push)|yes to (upload|push)|goes online|(okay|ok) to (upload|push)|before i (upload|push)|approval[^.?!]*(upload|push)|(upload|push)[^.?!]*approval
 # grants: first upload
 Yes, upload it.
 ---

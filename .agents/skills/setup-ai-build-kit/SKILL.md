@@ -52,8 +52,8 @@ on.
 7. Follow `references/stand-up.md` to prepare, check and save; report with
    `references/completion-report.md`.
 
-Do not push or open a pull request during founding. The first upload waits for
-the approval required by `merge`.
+Do not push or open a pull request during founding. The first upload needs
+approval as described in `merge`.
 
 ## Done
 

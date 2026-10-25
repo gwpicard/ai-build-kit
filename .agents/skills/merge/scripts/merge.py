@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Hold a pull request until its checks, review boxes and yes are clear."""
+"""Hold a pull request until its checks, review boxes and approval are clear."""
 
 import json
 import re
@@ -154,7 +154,7 @@ def newest_main(head):
     if base.returncode:
         stop("merge: could not compare the branch with main", 2)
     if base.stdout.strip() != main.stdout.strip():
-        stop("This change is behind the newest version. Bring it up to date and settle any conflicts first, then the checks run again.")
+        stop("merge: this change is behind the newest version. Bring it up to date and settle any conflicts first, then the checks run again.")
     return main.stdout.strip()
 
 
@@ -197,10 +197,10 @@ def check_main_health():
         stop("merge: could not read the latest check on main", 2)
     rows = read_json(result, "latest check on main")
     if not isinstance(rows, list) or not rows:
-        stop("merge: no check is reported on main; automatic merging waits")
+        stop("merge: no check is reported on main; automatic merging is blocked")
     row = rows[0]
     if row.get("status") != "completed":
-        stop("merge: the latest check on main is still running; automatic merging waits")
+        stop("merge: the latest check on main is still running; automatic merging is blocked")
     if row.get("conclusion") != "success":
         reason = "%s is %s" % (row.get("name") or "the latest check on main",
                                row.get("conclusion") or row.get("status") or "unknown")
@@ -233,10 +233,10 @@ def auto_setting(main):
     words = line.group(0)
     notes = git("notes", "--ref=refs/notes/ai-build-kit-approved-merges", "list")
     if notes.returncode != 0:
-        stop("merge: could not count earlier named-yes merges", 2)
+        stop("merge: could not count earlier explicitly approved merges", 2)
     earned = len([line for line in notes.stdout.splitlines() if line.strip()])
     if earned < 3:
-        stop("merge: three named-yes merges are required before automatic merge")
+        stop("merge: three explicitly approved merges are required before automatic merge")
     return words
 
 
@@ -251,7 +251,7 @@ def auto_holds(data, main, head):
     auto_setting(main)
     paths = touched_paths(data["baseRefOid"], head)
     if any(re.search(r"(^|/)(migrations?|alembic|versions?)(/|$)|\.(sql)$", p, re.I) for p in paths):
-        stop("merge: this piece changes a migration; it waits for a named yes")
+        stop("merge: this piece changes a migration; it needs your approval, naming this pull request")
     def is_setting(path):
         name = Path(path).name.casefold()
         return (path.startswith((".github/", ".claude/", ".agents/")) or
@@ -265,7 +265,7 @@ def auto_holds(data, main, head):
                 name.startswith("requirements") and name.endswith(".txt") or
                 "/requirements/" in ("/" + path.casefold() + "/"))
     if any(is_setting(path) for path in paths):
-        stop("merge: this piece changes a setting; it waits for a named yes")
+        stop("merge: this piece changes a setting; it needs your approval, naming this pull request")
     if open_review_box(data.get("body") or ""):
         stop("merge: a finding under Worth stopping for is open; the pull request stays open")
     review_held(data.get("body") or "", head)
@@ -287,9 +287,9 @@ def auto_holds(data, main, head):
     labels = {str(label.get("name", "")).casefold()
               for label in issue_data.get("labels", []) if isinstance(label, dict)}
     if "repair" in labels or "broken" in labels or "repair" in str(issue_data.get("title", "")).casefold():
-        stop("merge: a repair waits for a named yes")
+        stop("merge: a repair needs your approval, naming this pull request")
     if re.search(r"(?im)^Live side needs:\s*\S+", piece_body):
-        stop("merge: this piece needs a live setting; it waits for a named yes")
+        stop("merge: this piece needs a live setting; it needs your approval, naming this pull request")
     done = re.search(r"(?ims)^##+\s+Done when\s*\n(.*?)(?=^##+\s|\Z)", piece_body)
     if done and any("(try it)" in line.casefold() for line in done.group(1).splitlines()):
         stop("merge: a Done when item needs a person to try it")
@@ -300,7 +300,7 @@ def auto_holds(data, main, head):
     except OSError:
         stop("merge: could not check for new settings", 2)
     if env.returncode == 1:
-        stop("merge: this piece adds a setting; it waits for a named yes")
+        stop("merge: this piece adds a setting; it needs your approval, naming this pull request")
     if env.returncode != 0:
         stop("merge: could not check for new settings", 2)
     auto_rule = git("show", head + ":masterplan.md")
@@ -314,12 +314,12 @@ def auto_holds(data, main, head):
     if (pr_line.group(0) if pr_line else None) != (main_line.group(0) if main_line else None):
         stop("merge: this pull request changes its own-merge setting")
     if any("repair" in p.casefold() for p in paths):
-        stop("merge: repair changes wait for a named yes")
+        stop("merge: repair changes need your approval, naming this pull request")
     newest_main(head)
 
 
 def approved_yes(change):
-    """The one gate before an online change: the person's recorded yes for it."""
+    """The one gate before an online change: the person's recorded approval for it."""
     gate = Path(__file__).resolve().parents[2] / "records" / "scripts" / "approval.py"
     try:
         done = subprocess.run([sys.executable, str(gate), "use", change], text=True,
@@ -327,7 +327,7 @@ def approved_yes(change):
     except OSError:
         stop("merge: the approval gate could not run", 2)
     if done.returncode == 1:
-        stop("merge: " + (done.stderr.strip() or "no recorded yes for " + change), 1)
+        stop("merge: " + (done.stderr.strip() or "no recorded approval for " + change), 1)
     if done.returncode:
         stop("merge: the approval gate could not run: " + (done.stderr or done.stdout).strip(), 2)
     sys.stdout.write(done.stdout)
@@ -373,7 +373,7 @@ def check_sensitive_area(base, head, automatic=False):
     if result.stdout:
         sys.stdout.write(result.stdout)
     if automatic and result.stdout.strip():
-        stop("merge: this piece touches a risk area; it waits for a named yes")
+        stop("merge: this piece touches a risk area; it needs your approval, naming this pull request")
     if result.returncode == 1:
         stop("merge: the risk-area check is open; the pull request stays open")
     if result.returncode != 0:
@@ -390,7 +390,7 @@ def main(argv):
         resume_auto()
         return
     if len(argv) == 1 and argv[0].isdigit():
-        stop("merge: a yes naming this pull request is required", 1)
+        stop("merge: your approval naming this pull request is required", 1)
     mode = argv[0] if len(argv) == 2 else ""
     if len(argv) != 2 or mode not in ("--approved", "--auto") or not argv[1].isdigit():
         stop("usage: merge.py [--approved|--auto] <pull request number>", 2)
@@ -458,12 +458,12 @@ def main(argv):
         noted = git("notes", "--ref=refs/notes/ai-build-kit-approved-merges",
                     "add", "-f", "-m", record, head)
         if noted.returncode:
-            stop("merge: merged, but could not record this named-yes merge", 2)
+            stop("merge: merged, but could not record this explicitly approved merge", 2)
         remotes = git("remote")
         if remotes.returncode == 0 and "origin" in remotes.stdout.splitlines():
             pushed = git("push", "origin", "refs/notes/ai-build-kit-approved-merges")
             if pushed.returncode:
-                stop("merge: merged, but could not publish the named-yes merge record", 2)
+                stop("merge: merged, but could not publish the explicitly approved merge record", 2)
 
 
 if __name__ == "__main__":

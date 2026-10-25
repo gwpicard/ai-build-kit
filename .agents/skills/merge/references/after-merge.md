@@ -31,4 +31,4 @@ Change nothing live after the merge: no deploy, no rollback, no second push to
 what it shows; a further deploy belongs to /setup-hosting. Asked whether they
 can go back, say what the recipe's rollback section offers, that a rollback
 has not been tried, and run none here. A live break after this merge goes to
-the `live-copy` skill's "Rolling back", which asks its own yes.
+the `live-copy` skill's "Rolling back", which requires separate approval.

@@ -25,7 +25,7 @@ use an established stack.
 Use the chosen recipe's fixed stack fields; record its folder name in
 AGENTS.md. Run `scripts/use-starter.sh <folder>` with the menu's path.
 If the harness refuses a starter command, say so and ask
-whether to build the starter another way. Wait for yes before writing
+whether to build the starter another way. Wait for approval before writing
 replacement starter files.
 Starter exit 1: list only reported clashes and ask which to keep. Exit 2: say what
 could not run. With no recipe, copy `templates/foundation/env.example` to

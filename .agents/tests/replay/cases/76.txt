@@ -7,7 +7,7 @@
 # waits for a proposed correction and gives the yes.
 /maintain Check the records today. Leave the parked piece alone.
 ---
-# when: correct|propose|approve|yes|shall i|may i
+# when: correct|propose|approv(e|al)|yes|shall i|may i
 # grants: records
 Yes, make that correction. Keep the parked piece parked.
 ---

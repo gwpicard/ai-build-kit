@@ -38,7 +38,7 @@ An answer that depends on an outside fact runs the source check in the `research
 
 ## When to stop
 
-When your guesses keep being right, the main flow, failure and permissions are clear, the fit check's questions can be answered, and every remaining unknown is parked, researched or prototyped rather than assumed. Write what was agreed into the masterplan (founding) or the request, and read the key decisions back as one short list for a yes.
+When your guesses keep being right, the main flow, failure and permissions are clear, the fit check's questions can be answered, and every remaining unknown is parked, researched or prototyped rather than assumed. Write what was agreed into the masterplan (founding) or the request, and read the key decisions back as one short list for approval.
 
 ## Done when
 

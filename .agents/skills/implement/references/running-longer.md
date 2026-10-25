@@ -39,9 +39,9 @@ but automatic merge still holds it.
 With `merge` recorded, use
 `merge/scripts/merge.py --auto` only when the checks and review
 record pass, and the change touches no risk area, migration, setting,
-live requirement or `Done when` line ending `(try it)`. Repairs wait for a
-named yes. Every other gate still holds. The script reads the setting from
-`main`, requires three earlier named-yes merges, and refuses a branch behind
+live requirement or `Done when` line ending `(try it)`. Repairs need
+approval naming the pull request. Every other gate still holds. The script reads the setting from
+`main`, requires three earlier explicitly approved merges, and refuses a branch behind
 `main`. A pending check waits up to 15 minutes. A red, missing or still-pending
 check holds the merge.
 
