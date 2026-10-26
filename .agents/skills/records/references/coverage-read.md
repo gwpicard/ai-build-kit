@@ -33,9 +33,9 @@ twice. Shall I add those to the plan?"
 
 A gap they want becomes a piece. A promise they decide against moves to the
 masterplan's out-of-scope section. Where they say a promise is covered, they
-are right. A missing term goes into the masterplan on a yes: during founding
+are right. A missing term goes into the masterplan with approval: during founding
 directly, otherwise through the truing. A term for work still only planned
 stays on its piece.
 
 It never names a promise not on the page, never adds, edits, closes or
-relabels a piece without a yes, never asks twice, and blocks nothing.
+relabels a piece without approval, never asks twice, and blocks nothing.

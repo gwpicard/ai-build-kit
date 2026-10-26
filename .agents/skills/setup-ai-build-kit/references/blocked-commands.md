@@ -19,7 +19,7 @@ These boundaries need judgement and always apply:
   approval for that action.
 - Never expose a secret, disable access control to pass a check, or bypass a
   failing project check to ship or merge.
-- Never merge without the person's yes, except through the automatic merge
+- Never merge without the person's approval, except through the automatic merge
   option they recorded, or force a merge past a required review.
   The `merge` skill handles approval and merge checks. A check GitHub did not
   start is not a failed check; follow that skill's recovery step.

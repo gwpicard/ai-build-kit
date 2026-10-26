@@ -33,7 +33,7 @@ proposals:
   `docs/release.md`. Keep them in one place and point to it from the other?"
 - "Nothing in the project mentions `docs/scratch.md`. Delete it, or leave it?"
 
-Change nothing without a yes, and keep the person's own words in the copy that
+Change nothing without approval, and keep the person's own words in the copy that
 stays. With any finding, say once: "This finds copied and unused documents. It
 cannot find two documents that say the same thing in different words."
 

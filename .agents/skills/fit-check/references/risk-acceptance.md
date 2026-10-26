@@ -2,7 +2,7 @@
 
 The person carries on by instructing you to do the flagged work after hearing
 the full notice. "Go ahead", "build it anyway", "try it again" and "it is on
-me, build it" count. Do not ask for a clearer yes or reject a reply because it
+me, build it" count. Do not ask for clearer approval or reject a reply because it
 does not repeat the risk back.
 
 Silence, a question, "I am not sure", a change of subject, or a reply that does

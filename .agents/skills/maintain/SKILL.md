@@ -30,8 +30,8 @@ its sentence and stop.
 3. From the project root run
    `merge/scripts/protect-branch.py --check <origin's owner/repository> main`.
    Exit 0 means required; 3 records the private Free limit, with one notice and
-   no offer; 4 means available, so offer to run without `--check` on a yes.
-   Report other exits. Do not change protection without that yes.
+   no offer; 4 means available, so offer to run without `--check` with approval.
+   Report other exits. Do not change protection without that approval.
 4. Run the installed `setup-ai-build-kit` skill's
    `templates/foundation/scan-secrets.sh` from the project root with `--all`.
    Exit 0 means no secret was found, 1 means one was found, and 2 means the scan

@@ -10,7 +10,7 @@ weak evidence, edits that touch many files, failing integrations and records
 that no longer explain reality. Run
 the waste, structure and document-bloat reads from `quality-checks`. Propose
 up to three simplifications with the problem, change, benefit, cost and any
-outside review needed. Apply only on approval.
+outside review needed. Apply only with approval.
 
 Review project skills and offer to remove instructions that no longer pay
     their way. Run the `evidence-run` skill for the risk record and its risk areas.

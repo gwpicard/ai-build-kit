@@ -271,7 +271,7 @@ a draft on the menu would be offered.
 
 When a recipe leaves the menu, keep its name and the route to a current recipe
 in `maintain/references/recipe-move.md`. `/maintain` reads that route for a
-project that still records the retired recipe and offers a move on a yes.
+project that still records the retired recipe and offers a move that requires approval.
 
 A change to what a section does, in `recipe.md`, a part or a script, needs a
 new real run before the next release. Moving a command from prose into a

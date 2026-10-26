@@ -179,7 +179,7 @@ STEP_OF = {
 }
 
 # Files installed by founding, but refreshed only when a person accepts the
-# older-project gate offer. The names are grouped by the separate yes each
+# older-project gate offer. The names are grouped by the separate approval each
 # gate needs. Settings and branch protection have their own paths.
 GATE_FILES = {
     "secret-scan": (
@@ -581,12 +581,12 @@ ACCESS_CHOICES = {"private": "Access: private",
                   "public": "Access: public (decided %s)",
                   "open-address": "Access: open address, invitation only (decided %s)"}
 ACCESS_WORDS = ("This release makes every tool private by default: only people you invite can "
-                "get in, and a check on the live tool proves it. Public is a setting you choose, "
-                "and it is recorded with the date. Your masterplan does not say which this tool "
-                "is. Should it be private; an open address with invitation only, which anyone "
-                "can reach but only invited people can sign in to; or public? I "
-                "record your answer, then run the access check, which changes nothing. Changing "
-                "the live tool to match waits for a separate yes.")
+                "get in, and a check on the live tool proves it. You can choose public access, "
+                "recorded with the date. Your masterplan does not record an access choice. "
+                "Should this tool be private, invitation only at an open address, or public? "
+                "Anyone can reach an open address, but only invited people can sign in. "
+                "I record your answer and run the access check, which changes nothing. "
+                "Changing the live tool to match needs separate approval.")
 
 
 def access_findings(project):
@@ -711,7 +711,7 @@ def planfile_findings(project, monthly):
 
 
 # The founding template's line refusing to show a secret. An AGENTS.md written
-# before it has no such line, so the agent is told once, and adds it on a yes.
+# before it has no such line, so the agent is told once, and adds it with approval.
 REFUSAL = "show or read out a secret"
 SECRETS_WORDS = ("Your AGENTS.md has no line telling me to refuse to show a secret, because "
                  "anything shown here stays in this conversation's record. I can add the kit "

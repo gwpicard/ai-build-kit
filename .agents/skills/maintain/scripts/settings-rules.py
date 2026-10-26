@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Offer Claude Code settings changes and apply them on a yes.
+"""Offer Claude Code settings changes and apply them with approval.
 
 Founding copies the kit's Claude Code settings into `.claude/settings.json`
 once, and no update touches that file again. A later release can refuse more

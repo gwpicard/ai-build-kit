@@ -1013,7 +1013,7 @@ open(p, "w").write(s.replace(old, new, 1))'
       ;;
     auto-migration-pass)
       edit "$tree/.agents/skills/merge/scripts/merge.py" 'import os
-p=os.environ["MUTATE_TARGET"]; s=open(p).read(); old="    if any(re.search(r\"(^|/)(migrations?|alembic|versions?)(/|$)|\\.(sql)$\", p, re.I) for p in paths):\n        stop(\"merge: this piece changes a migration; it waits for a named yes\")\n"; assert old in s; open(p,"w").write(s.replace(old,"",1))'
+p=os.environ["MUTATE_TARGET"]; s=open(p).read(); old="    if any(re.search(r\"(^|/)(migrations?|alembic|versions?)(/|$)|\\.(sql)$\", p, re.I) for p in paths):\n        stop(\"merge: this piece changes a migration; it needs your approval, naming this pull request\")\n"; assert old in s; open(p,"w").write(s.replace(old,"",1))'
       ;;
     auto-sensitive-setting-pass)
       edit "$tree/.agents/skills/merge/scripts/merge.py" 'import os
@@ -1285,7 +1285,7 @@ open(p, "w").write(t.replace(old, "only when the page prose changes.", 1))
 import os
 p = os.environ["MUTATE_TARGET"]
 t = open(p).read()
-old = "Wait for yes before writing\nreplacement starter files."
+old = "Wait for approval before writing\nreplacement starter files."
 assert old in t, "starter approval boundary not found"
 open(p, "w").write(t.replace(old, "Write replacement starter files at once.", 1))
 '

@@ -91,7 +91,7 @@ Ask: <the words the person hears, where the kit does not run the check itself>
 
 ## Access
 
-How it works: <how private keeps out everyone not invited: sign-up closed, and the host's gate where it has one; how public takes the gate off; the scripts that change each, which wait for a yes>
+How it works: <how private keeps out everyone not invited: sign-up closed, and the host's gate where it has one; how public takes the gate off; the scripts that change each, which require approval>
 How it is checked: <sign-up and the gate, read live, match the masterplan's Access: line>
 Script: scripts/<access check>.sh
 Who runs it: <the kit | a companion or the person, result read back | a person looking>

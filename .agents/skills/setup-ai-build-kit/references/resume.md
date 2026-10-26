@@ -18,8 +18,8 @@ question.
 In Codex, run `scripts/setup-codex.py` with python3 and `--hooks` and say: "The
 GitHub check runs when Codex starts; trust this project and review its hook
 with /hooks, then restart." Never trust it for the person. On macOS, also run
-it with `--shell-status` and give its offer once, outside the interview. On a
-yes naming the file, run `--shell-install`; on a no, `--shell-decline`. Both
+it with `--shell-status` and give its offer once, outside the interview. With
+approval naming the file, run `--shell-install`; on a no, `--shell-decline`. Both
 record the answer, so it is never asked again.
 
 A folder holding `.ai-build-kit-version` is an installation waiting for a
@@ -34,4 +34,4 @@ exist, whether any look half-written, a placeholder still in
 changelog. Say where you are resuming from. Never overwrite a record without
 saying so and getting agreement. Where `.agents/tmp/setup-notes.md` exists and
 masterplan.md does not, say you are carrying on from those answers, read them
-back as one short list, and wait for a yes.
+back as one short list, and require approval.

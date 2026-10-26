@@ -30,7 +30,7 @@ uses the old recipe format and may also be offered a move.
    run, and what the move would change (such as a Dockerfile and health
    route, a new deploy target, or dashboard-made tables moved into
    migrations). Never quote a price. Say nothing changes on a no.
-8. On a yes, open a piece titled as a move onto the recipe, holding its folder
+8. With approval, open a piece titled as a move onto the recipe, holding its folder
    name and the changes named. Do not make the move this visit. On a no,
    record `recipe-move-declined|<YYYY-MM-DD>|<recipe>|<menu recipes, comma separated>`,
    replacing any earlier line. For the widened-format offer, record a no with

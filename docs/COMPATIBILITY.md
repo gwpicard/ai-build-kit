@@ -436,7 +436,7 @@ after a clean checkpoint and explicit approval.
 | Unsaved work | `what-now` says what it belongs to | Session-end reminder |
 | Check-up due | `what-now` says when a visit is overdue | Said automatically when a session opens |
 | Safety | Standing restrictions and approval gates | Mechanical command deny list |
-| Merge | By default, a yes that names the merge; recorded automatic merging is available with its limits. `merge.py` holds the project check and open review boxes | Claude Code blocks raw merge commands |
+| Merge | By default, approval naming the merge; recorded automatic merging is available with its limits. `merge.py` holds the project check and open review boxes | Claude Code blocks raw merge commands |
 | Long runs | Normal sequential work | Native goal or orchestration mode |
 
 During `setup-ai-build-kit`, the capability check records which enhancements the current

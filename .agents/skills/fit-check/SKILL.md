@@ -31,7 +31,7 @@ locations, never values.
 Record `Access: private` for invited users, `open address, invitation only
 (decided YYYY-MM-DD)` if anyone can reach the address but only invited people
 can sign in, or `public (decided YYYY-MM-DD)` if anyone can make an account.
-Never refuse an open setting. A live change waits for a yes naming its effect,
+Never refuse an open setting. A live change requires approval naming its effect,
 then follows the recipe's access change and check and goes in the changelog.
 
 ## Risk areas

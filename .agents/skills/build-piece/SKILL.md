@@ -35,7 +35,7 @@ piece into the masterplan before flagged work, following
 Both routes use a short-lived branch from `main`. If
 GitHub is unavailable, save on the branch and note the missing pull request
 on the piece. A service step that could not run is a note, not a warning or
-risk. The first push waits for a yes, as `merge/references/first-upload.md`
+risk. The first push requires approval, as `merge/references/first-upload.md`
 says. Elsewhere, run the `records` skill's `scripts/piece-labels.sh` with
 `start <number>` before changing files; it replaces `ready` with `building` and
 assigns the piece.
@@ -69,8 +69,8 @@ Stop if the work grows beyond agreement. Run
 strength misses and whether the check could not run.
 
 For outside services, follow AGENTS.md's Secrets rule. A change to a live
-service's settings or data, apart from saving code, waits for a yes that names
-each change and says whether it can be undone. Ask before acting. In an
+service's settings or data, apart from saving code, requires approval naming
+each change. Say whether it can be undone. Ask before acting. In an
 unattended run leave it unchanged. A live build never applies a migration;
 `/setup-hosting` does that before merge.
 

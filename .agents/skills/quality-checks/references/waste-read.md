@@ -40,7 +40,7 @@ bug already named. Say which kind it is, in plain words, with the place:
 - "The project lists `left-pad` as something it needs, and nothing uses it."
 
 Say how many more findings there are in one line, and offer to list them.
-Remove nothing without a yes.
+Remove nothing without approval.
 
 Record what the person was offered, and only that: pipe the line of each
 finding you named to the same script, as `quality.py offered waste`, one

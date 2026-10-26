@@ -10,8 +10,8 @@
    `npx skills add gwpicard/ai-build-kit`; never `npx skills update`, which
    drops a renamed skill without warning.
 2. Where the check prints a `planfile` line, read `plan.md`. The person's own
-   notes are left alone. The kit's old list gets the `planfile` sentence; on a
-   yes, on the clean checkpoint, open one issue per row as pieces.md says,
+   notes are left alone. The kit's old list gets the `planfile` sentence; with
+   approval, on the clean checkpoint, open one issue per row as pieces.md says,
    with its subjects, `ready` or its question label, then remove `plan.md` and
    add a dated changelog line. A no is not recorded, so the offer returns.
 3. Re-read the reach check and note whether
@@ -20,7 +20,7 @@
    missing path or an unassigned folder, ask which area it belongs to, or
    `none`, and update the map on the answer.
 5. Update dependencies and check for known vulnerabilities. Report what
-    changed; apply on approval.
+    changed; apply with approval.
 6. Once live, read the error alerts and bills. Anything real becomes a
     piece: sort it with the `triage` skill and write it in the `records` skill's
     piece shape.
@@ -38,7 +38,7 @@
     offer using the measured count and what can go: "The standing instructions
     have reached 240 lines, and 30 of them describe the folder layout the code
     already shows. Shall I trim them?" Never invent removable content. Cut
-    nothing without a yes. Otherwise say nothing.
+    nothing without approval. Otherwise say nothing.
 10. Run "Offering a move onto a
     recipe" in `recipe-move.md` beside this file.
 11. Load the `quality-checks` skill's `references/stale-branches.md` and run its script. Never remove a

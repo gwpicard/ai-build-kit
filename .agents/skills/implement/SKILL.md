@@ -37,8 +37,8 @@ follow `merge` only when asked. Ask which merge when told only "put it live".
 ## Build and save
 
 Build one piece per pass with `build-piece`, through updated records. After
-green checks and records in the pull request, use `merge`. By default, a named
-yes is required to merge. Unattended, leave it ready for review unless the
+green checks and records in the pull request, use `merge`. By default, approval
+naming the merge is required. Unattended, leave it ready for review unless the
 automatic merge option is on.
 
 `auto` needs approval and `references/running-longer.md`. An unattended run merges only through `--auto` when the setting is on, never otherwise. Each piece must be

@@ -238,7 +238,7 @@ When more than one piece is ready, /implement shows you two lists before buildin
 
 A repair that is ready comes first, above both lists, since something that used to work outranks anything new. To see the lists without building, ask for them in your own words, such as "what can I build in parallel?". If the list looks out of date, type /implement again, since it is printed fresh from your project's issues every time. /what-now still names at most three things, so the whole list lives here.
 
-/shape is how you bring anything new: "/shape add a filter to the board". You never sort your own request; the agent works out what kind of work it is. Clear and piece-sized becomes a ready piece, and /shape offers to hand it to /implement, best in a fresh session, or to leave it for later. /shape itself never builds: answering one of its questions is never a yes to building, and the build starts only when you ask for it. Vague gets a short interview.
+/shape is how you bring anything new: "/shape add a filter to the board". You never sort your own request; the agent works out what kind of work it is. Clear and piece-sized becomes a ready piece, and /shape offers to hand it to /implement, best in a fresh session, or to leave it for later. /shape itself never builds: answering one of its questions is never approval for building, and the build starts only when you ask for it. Vague gets a short interview.
 
 Each piece says what it changes in the masterplan, and the masterplan says when
 it was last checked. You see a line such as "When this lands, the masterplan
@@ -334,7 +334,7 @@ Green means the checks that exist really passed, which is a smaller promise than
 
 If billing alone prevents GitHub's `project-check` from starting, an approved merge can use the same steps run locally on a clean copy of the exact commit. That run must pass. Other failed, pending or missing checks still hold the merge. You can re-enable checks or merge on GitHub yourself. The check is switched off only if you ask, and /maintain reminds you while it stays off.
 
-A human decides whether to merge by default. Automatic merging is an opt-in. When it is off, once the check is green, /implement tells you what to try and where, such as the preview address, then names the pull request in one plain line and asks for an approval that names the merge. Saying "put it live" or "save it" before any merge was named is not that approval, so it asks again; saying "merge it" is, and it does not ask twice.
+A human decides whether to merge by default. Automatic merging is an opt-in. When it is off, once the check is green, /implement tells you what to try and where, such as the preview address, then names the pull request in one plain line and asks for an approval naming the merge. Saying "put it live" or "save it" before any merge was named is not that approval, so it asks again; saying "merge it" is, and it does not ask twice.
 
 It makes an approved merge on the pull request itself, never by merging on your computer and pushing `main`. In Claude Code a box asks before a named approval merge, where the project's settings carry that question. A project founded before the kit added it gets no box until /maintain adds it, and /implement says so rather than promising one. If GitHub cannot be reached, the merge waits, and you can merge it on GitHub yourself. With automatic merging off, nobody there to answer means the pull request waits. After a merge, everyone pulls main. Every pull request gets its review before it is offered as ready, and a flagged area also gets the review its caution names.
 
@@ -686,7 +686,7 @@ before recipes existed and one founded on its own stack. The monthly visit then
 offers the move once, and says what it gains: the launch checks /setup-hosting would run
 on that recipe. It also says what the move would change.
 
-Nothing changes without your approval. A yes becomes a piece, shaped and built like
+Nothing changes without your approval. Approval becomes a piece, shaped and built like
 any other, and the offer does not come back while that piece is open. A no is
 recorded, and the offer comes back only when the menu or your stack has
 changed since. The move is never required. When no recipe is close, you hear

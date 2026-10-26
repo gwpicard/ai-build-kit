@@ -3,7 +3,7 @@
 If a project check reports faults inside `.agents/skills/` or `.claude/skills/`,
 read the command and its configuration. Offer to exclude those installed skill
 folders from that check. Show the file and proposed change, explain that the
-project's own code stays checked, and apply it only on the person's yes.
+project's own code stays checked, and apply it only with the person's approval.
 Preserve existing rules and ignore patterns. A no leaves the configuration as
 it is, and the report names the failing check.
 

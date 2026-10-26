@@ -315,8 +315,8 @@ if [ "$blocked" -ne 0 ]; then
 fi
 
 if [ "$conditions" = yes ]; then
-  echo "Every working condition founding needs holds."
+  echo "All requirements for founding are met."
 else
-  echo "Every tool the kit needs to found your pieces is ready."
+  echo "All tools needed for founding are ready."
 fi
 exit 0

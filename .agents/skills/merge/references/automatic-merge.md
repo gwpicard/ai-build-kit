@@ -2,12 +2,12 @@
 
 ## Queue and conflicts
 
-Where several pieces wait, name each pull request on its own line. A yes covers
+Where several pieces wait, name each pull request on its own line. Approval covers
 only the ones named, or all when the person plainly says so, such as “merge
-both”. If merging one leaves another `CONFLICTING`, the same yes covers bringing
+both”. If merging one leaves another `CONFLICTING`, the same approval covers bringing
 `main` into it only when the records settle the conflict plainly. A conflict
 that needs a question, or touches data, a migration, deployment settings or a
-risk area, needs a new yes. After bringing in `main`, rerun the project
+risk area, needs new approval. After bringing in `main`, rerun the project
 and live checks before merging.
 
 Say which intentions collided. Resolve only when the records make the outcome

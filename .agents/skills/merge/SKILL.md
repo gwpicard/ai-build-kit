@@ -1,12 +1,12 @@
 ---
 name: merge
-description: Take a finished piece to main. The first upload and, by default, each merge wait for a yes. Used by implement, setup-hosting, maintain and founding.
+description: Take a finished piece to main. The first upload and, by default, each merge require approval. Used by implement, setup-hosting, maintain and founding.
 user-invocable: false
 ---
 
 # Merge
 
-The first upload waits for a yes, as
+The first upload requires approval, as
 `references/first-upload.md` says. In Codex, if push, fetch or remote check
 fails with `unable to get password from user`, run the installed
 `setup-ai-build-kit` skill's `templates/foundation/codex-github-check.py`
@@ -23,7 +23,7 @@ and what was not checked.
 
 ## Merge a finished piece
 
-Merge only on a yes that names it, unless automatic merge is recorded and
+Merge only with approval naming it, unless automatic merge is recorded and
 the script finds its conditions hold. First say what the person can try and where:
 the recipe's preview address or how to try it locally. If the guided check in
 `build-piece/references/build-limits.md` is outstanding, ask for merge only
@@ -52,35 +52,35 @@ On a live project, make these read-only checks before asking:
   new `.env.example` settings to treat the same way, exit 2 is a one-line
   warning.
 - If rollback left the live copy on an earlier version, say the merge alone
-  will not put this change live; `/setup-hosting` moves it after a yes.
+  will not put this change live; `/setup-hosting` moves it after approval.
 
 Keep the pull request open and state what it awaits. Read
 `gh pr view <number> --json mergeable`. For `CONFLICTING`, explain the two
-intentions and offer to merge the newest `main` into the branch on a yes. Never
+intentions and offer to merge the newest `main` into the branch with approval. Never
 force-push or rebase. Resolve only when the records make the outcome clear;
 otherwise ask. Escalate conflicts involving data, migrations, deployment
-settings or risk areas for a fresh yes. Rerun project and live checks.
+settings or risk areas for fresh approval. Rerun project and live checks.
 For `UNKNOWN`, wait briefly and reread.
 
 ## Ask and merge
 
-Name the pull request and what it changes, then ask for a yes that names the
+Name the pull request and what it changes, then ask for approval naming the
 merge. Say whether it goes live: it does when `Deploys on merge:` is `yes`, or,
 with no such answer, when the recipe or masterplan deploys every merge to
 `main`. For `no`, name the redeploy. A clear “merge it” already
-counts; do not ask again. A yes to building, saving, uploading, going live,
-hosting, or a question asked before naming the merge does not count. A no
+counts; do not ask again. Approval for building, saving, uploading, going live or
+hosting does not count, nor does an answer to a question asked before naming the merge. A no
 leaves the pull request open and live tool unchanged. Red, pending or missing
 checks and an unticked `Worth stopping for` box hold the merge, except
 for billing, below.
 
-One yes covers only named pull requests, or all when clearly asked, such as
+One approval covers only named pull requests, or all when clearly asked, such as
 “merge both”. A merge does not authorise a conflict fix involving a question,
-data, migration, deployment setting or risk area; ask again. A yes given
+data, migration, deployment setting or risk area; ask again. Approval given
 before a non-blocking issue is noticed still stands; report the issue and offer
 it as a piece.
 
-Make an approved merge on the pull request itself. Record the yes with the
+Make an approved merge on the pull request itself. Record the approval with the
 `records` skill's `scripts/approval.py`, as `approval.py yes "merge pull
 request <number>" --words "<their words>"`, then run
 `scripts/merge.py --approved <number>`. Exit 0
@@ -93,7 +93,7 @@ After merging, run the `records` skill's `scripts/piece-labels.sh` with
 `merged <number>`, refresh the printout and follow `references/after-merge.md`.
 
 Use the [billing fallback](../../../WORKFLOW.md#7-saving-work) only through
-`merge.py --approved`; say before the yes and after that it runs project-check
+`merge.py --approved`; say before approval and after that it runs project-check
 here on a clean copy. Any other check that never started holds the merge.
 For queues, conflicts between waiting pieces or `--auto`, read
 `references/automatic-merge.md` first.

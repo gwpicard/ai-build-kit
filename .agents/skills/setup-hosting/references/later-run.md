@@ -4,7 +4,7 @@ Rerun the fit check first if reliance, data or consequence has grown. Then
 compare, changing nothing, as the `live-copy` skill's "Comparing the live
 copy with main" says. Say each gap in one line.
 
-Repair each gap only after a yes that names it, saying what it changes and
+Repair each gap only after approval naming it, saying what it changes and
 whether it can be undone. A migration is applied with the shared
 `migrate.sh --apply`, once, before the merge that needs it. A piece's
 migration not yet on `main` is applied from a temporary checkout of its

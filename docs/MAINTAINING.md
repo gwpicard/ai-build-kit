@@ -154,8 +154,8 @@ named beside it.
 
 | Promise | Mechanism today | Gap |
 |---|---|---|
-| A person approves each merge, unless they chose auto-merge with its limits. | `merge.py --approved` spends the person's recorded yes through the approval gate, `records/scripts/approval.py`; `.agents/tests/merge-gate.sh` and `.agents/tests/approval-gate.sh`; the autonomy limits in `.agents/tests/autonomy-boundaries.sh`; the local push guard and branch protection where the plan allows it, checked by `.agents/tests/push-guard.sh` and `.agents/tests/check-tooling.sh` | A private repository on Free has no GitHub protection; a person with permission can merge by hand there. |
-| Nothing goes online without a yes. | One approval gate, `approval.py`, called by `merge.py --approved` and by every recipe step that moves what is live, applies a migration, adds a secret, or changes access, sign-up or the host connection: `.agents/tests/approval-gate.sh`, `.agents/tests/merge-gate.sh`, `.agents/tests/recipe-nextjs-supabase-on-vercel.sh`. Claude Code asks before a yes is recorded, checked by `.agents/tests/push-to-main-rules.sh`; `.agents/tests/first-upload.sh`. In the behaviour set, `.agents/tests/replay/backbone.py` fails a replay in which a merge, a push to main or a change to the host came before the person's yes | Closed for the kit's own scripts. A host's tool run directly, outside a kit script, is held only by Claude Code's rules. |
+| A person approves each merge, unless they chose auto-merge with its limits. | `merge.py --approved` spends the person's recorded approval through the approval gate, `records/scripts/approval.py`; `.agents/tests/merge-gate.sh` and `.agents/tests/approval-gate.sh`; the autonomy limits in `.agents/tests/autonomy-boundaries.sh`; the local push guard and branch protection where the plan allows it, checked by `.agents/tests/push-guard.sh` and `.agents/tests/check-tooling.sh` | A private repository on Free has no GitHub protection; a person with permission can merge by hand there. |
+| Nothing goes online without approval. | One approval gate, `approval.py`, called by `merge.py --approved` and by every recipe step that moves what is live, applies a migration, adds a secret, or changes access, sign-up or the host connection: `.agents/tests/approval-gate.sh`, `.agents/tests/merge-gate.sh`, `.agents/tests/recipe-nextjs-supabase-on-vercel.sh`. Claude Code asks before approval is recorded, checked by `.agents/tests/push-to-main-rules.sh`; `.agents/tests/first-upload.sh`. In the behaviour set, `.agents/tests/replay/backbone.py` fails a replay in which a merge, a push to main or a change to the host came before the person's approval | Closed for the kit's own scripts. A host's tool run directly, outside a kit script, is held only by Claude Code's rules. |
 | Secrets are never shown. | `.agents/tests/secrets-gates.sh` and `.agents/tests/push-guard.sh` for commits and command output; `.agents/tests/record-secrets.sh` for the saved records: the pull request body `gate.py` writes, the changelog and masterplan `run-recipe.sh` writes, and what Claude Code writes into a record file or a GitHub body. In the behaviour set, each replay project holds a planted canary secret in an untracked file, and `.agents/tests/replay/backbone.py` fails the replay if the canary or any secret-shaped value appears in what the run said or saved | Closed for the kit's scripts and Claude Code. Another agent writing a record by hand is caught when the record is pushed. |
 | Checks pass before a merge. | The project checks workflow, read by `merge.py`; `.agents/tests/merge-gate.sh`. When a billing limit alone stopped GitHub's check, `merge.py --approved` runs the same steps on a clean copy of the commit with `merge/scripts/local-check.py`; `.agents/tests/merge-billing.sh`. Every check reports a result from `quality-checks/scripts/results.py`; `.agents/tests/result-vocabulary.sh` | In the billing case, this computer's own tools stand in for the steps that set up tools on GitHub, so the result can differ from a run on GitHub's fresh machine. |
 | A review matches the code it read. | The review record names the commit the review read and carries a seal over itself and the stopping findings. `check-review.sh` and `merge.py` hold a record for another commit, a hand-edited one, and an older one with no commit. A review no second login approved is recorded as unverified. `.agents/tests/review-gate.sh`, `.agents/tests/merge-gate.sh`. In the behaviour set, `.agents/tests/replay/backbone.py` fails a replay whose merge landed a version the review did not read, and `.agents/tests/replay-behaviour.sh` proves it | The seal stops a hand edit, and anyone who runs the kit's code can still write a record. A review counts as verified only when a second GitHub login approved that commit. |
@@ -237,13 +237,13 @@ The named risk areas are the ones PHILOSOPHY.md lists: personal data, money,
 sign-in, automatic actions, data that cannot be replaced, and a regulated
 decision.
 
-An older project moves from its path record on a yes. `/maintain` shows the old
-section and the proposed record in one reply, before the yes. The first visit
+An older project moves from its path record with approval. `/maintain` shows the old
+section and the proposed record in one reply, before approval. The first visit
 that finds a path record offers the move, and each monthly visit offers it
 again after a no. A no changes nothing in the project's records; the only write
 is the kit's own note in `.ai-build-kit-maintenance` that the offer was
 declined. A project that was private only gets the same offer and is told what
-the kit now expects. On a yes, every risk area, acceptance date and word moves
+the kit now expects. With approval, every risk area, acceptance date and word moves
 as written, and the earlier path and why stay as history. An acceptance is never
 turned into a finished caution. The open pieces get a `Risk areas:` line where
 the piece's reach says which area it touches, and a changelog entry records the
@@ -279,7 +279,7 @@ and the reviewer share one GitHub login. That is a report, never a stop.
   that it guarantees nothing and still helps.
 - The kit never deletes the person's unfinished work. It explains how to
   recover it.
-- "Fix the live error, no more yeses" still needs one named yes.
+- "Fix the live error, no more yeses" still needs approval naming the change.
 - When the person gives too little detail at setup, the kit asks only for the
   three questions, records any gap as an assumption, and goes on.
 - A recipe launch with no confirmed backup or no named rollback stops. With no
@@ -621,7 +621,7 @@ runs `npm audit` on each starter using current advisory data; that network check
 does not run in CI. Its ignored note records upstream changes and proposals.
 Carry agreed changes into the recipe and this guide, with the versions and date
 checked. A recipe taken off the menu keeps its route to a current recipe in
-`maintain/references/recipe-move.md` for `/maintain` to offer on a yes.
+`maintain/references/recipe-move.md` for `/maintain` to offer; the move requires approval.
 The 2026-10-16 read confirmed Supabase recommends publishable keys for client
 code and treats `anon` as their legacy equivalent, to be deprecated by the end
 of 2026 ([API keys](https://supabase.com/docs/guides/getting-started/api-keys)).
@@ -644,8 +644,8 @@ across without losing its work, and the person must be told about it in a place
 they will see. A migration lives in the maintain skill's scripts, chiefly
 `upgrade-check.py`, which runs on every `/maintain` visit and is idempotent. The
 move from a path record to the risk record is `risk_move.py`, which
-`upgrade-check.py` runs on a yes. The script finds what is left, prints the sentence the person hears, and applies the
-change on a yes, so the skill's own text keeps only the ask. The visible change
+`upgrade-check.py` runs with approval. The script finds what is left, prints the sentence the person hears, and applies the
+change with approval, so the skill's own text keeps only the ask. The visible change
 is named in the release notes. A migration stays in the scripts for as long
 as a project could still need it. Each update route brings the latest
 release, so nothing sends a project through an older one first.

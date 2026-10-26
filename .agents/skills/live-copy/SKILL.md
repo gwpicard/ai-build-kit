@@ -1,6 +1,6 @@
 ---
 name: live-copy
-description: Work with the live copy safely. Pass a secret a check needs by its location, ask before any change to a live service, and roll back to an earlier version on a yes. Used by setup-hosting, maintain, merge, repair and what-now.
+description: Work with the live copy safely. Pass a secret a check needs by its location, ask before any change to a live service, and roll back to an earlier version with approval. Used by setup-hosting, maintain, merge, repair and what-now.
 user-invocable: false
 ---
 
@@ -46,13 +46,13 @@ and name the page where it lives.
 ## A change to a live service
 
 Outside a first launch, a command that changes a live service's settings or
-data waits for a yes that names every change it makes and says whether it can
+data requires approval naming every change it makes. Say whether it can
 be undone. A no leaves the service as it was, and the step is a warning.
-On the yes, record it with the `records` skill's `scripts/approval.py`, as
+With that approval, record it with the `records` skill's `scripts/approval.py`, as
 `approval.py yes "<change>" --words "<their words>"`. A recipe step that
 changes something live refuses without it and names the change it waits for.
 Changing the masterplan's `Access:` line is one: say who gains or loses the
-way in, and on the yes run the recipe's Access scripts, write the new line,
+way in, and with that approval run the recipe's Access scripts, write the new line,
 dated unless private, and add a changelog line.
 Never write a secret key to a shared temporary folder.
 
@@ -64,15 +64,15 @@ likely cause, once the changelog, the closed pieces or the person show the
 version before it worked. Say in one line what comes back and that it puts
 nothing else right. Either way, the repair is shaped in `/shape`.
 
-A rollback waits for a yes that names it, even where the recipe names the
+A rollback requires approval naming it, even where the recipe names the
 command. Before asking, name the version it brings back by its change and
-date, from the host's list, and say it does not undo a database addition. On
-the yes, run the recipe's rollback once, or give its words to whoever clicks
+date, from the host's list, and say it does not undo a database addition. With
+that approval, run the recipe's rollback once, or give its words to whoever clicks
 it, and check health names the earlier version before anything else.
 
 Record it in a dated changelog line through the records route, and on the
 repair's piece. Where the host now holds the live copy, say so in the same
 reply and write a dated hold line into "How it stays running". Promote the
-repair once it has merged and its build is listed, after its own named yes,
+repair once it has merged and its build is listed, after separate approval naming that promotion,
 then remove the hold line. Off a recipe, say that whoever runs the host can
 bring back an earlier build it still keeps.

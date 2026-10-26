@@ -6,8 +6,8 @@ is one script, so it maps the same record the same way each time.
 
 1. Run `scripts/risk_move.py` from the project root. It changes nothing. Put
    its before block, after block and pieces block in the same reply as the
-   offer, then each `say` sentence, so the one yes is an informed yes.
-2. On a yes, with the clean checkpoint, run `upgrade-check.py --apply
+   offer, then each `say` sentence, so the approval is informed.
+2. With approval, with the clean checkpoint, run `upgrade-check.py --apply
    fitcheck`. It keeps every risk area, acceptance date and word, and it never
    turns an acceptance into a done caution. It names risk areas on the open
    pieces, adds the changelog entry, and starts any check the project cannot

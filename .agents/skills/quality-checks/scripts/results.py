@@ -14,7 +14,7 @@ NOT_APPLICABLE = "NOT_APPLICABLE"
 RESULTS = (PASS, FAIL, NOT_RUN, INCONCLUSIVE, NOT_APPLICABLE)
 
 # What each result does to a merge: block stops it, review asks a person to
-# look before a yes, inform is reported and nothing more.
+# look before approval, inform is reported and nothing more.
 POLICY = {
     PASS: "inform",
     FAIL: "block",

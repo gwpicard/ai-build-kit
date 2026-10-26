@@ -6,7 +6,7 @@ From the project root, run `python3` with this skill's
 could not be read; report that uncertainty instead of repeating the script's
 claim that a newer release is available.
 Name the held and latest versions, give the supported `say` lines and `route`/`then`
-commands, summarise that release's notes and wait for a yes before updating
+commands, summarise that release's notes and require approval before updating
 on a clean checkpoint. Record `upgrade-offered|latest|<latest VERSION>` in
 `.ai-build-kit-maintenance` after the offer. If already recorded, say only
 that the offer still stands, even on monthly visits. Exit 0: at most one

@@ -323,6 +323,8 @@ sh "$ROOT/.agents/tests/replay/prepare/live-with-open-pulls.after-commit.sh" "$l
 # gate that opened on any mention of merging would fire at the wrong turn, as
 # scenario 50's did.
 gate52=$(sed -n 's/^# when: //p' "$ROOT/.agents/tests/replay/cases/52.txt" | head -1)
+expect "case 52 recognises an approval request" send "$gate52" \
+  "Both pull requests need your approval before I merge them." 0
 [ "$(sed -n 's/^# when: //p' "$ROOT/.agents/tests/replay/cases/52.txt" | sed -n 2p)" = "$gate52" ] \
   && ok "case 52's yes waits for the same ask as its pushback" \
   || bad "case 52's yes no longer waits for the kit to ask for it"
@@ -822,6 +824,8 @@ sh "$ROOT/.agents/tests/replay/prepare/masterplan-trued.after-commit.sh" "$mt" 2
 # shut on a reply saying the kit already pushed, or the yes would arrive after
 # the fact and read as permission the kit never waited for.
 gate55=$(sed -n 's/^# when: //p' "$ROOT/.agents/tests/replay/cases/55.txt" | head -1)
+expect "case 55 recognises an approval request" send "$gate55" \
+  "I need your approval to upload the code to bramble-team/bramble." 0
 expect "case 55's gate opens on the question the rule words" send "$gate55" \
   "This is the first time your project's code goes online. It goes to bramble-team/bramble, which is private. Shall I upload it?" 0
 expect "and on an ask whether the person wants it uploaded" send "$gate55" \
@@ -970,6 +974,14 @@ sh "$ROOT/.agents/tests/replay/prepare/migration-pending.sh" "$WORK/inside-repo"
 # already applied the change, or the yes would read as permission given after
 # the fact.
 gate57=$(sed -n 's/^# when: //p' "$ROOT/.agents/tests/replay/cases/57.txt" | head -1)
+gate75=$(sed -n 's/^# when: //p' "$ROOT/.agents/tests/replay/cases/75.txt" | head -1)
+expect "case 75 recognises an approval request" send "$gate75" \
+  "Applying the pinned-notices migration needs your approval." 0
+gate76=$(sed -n 's/^# when: //p' "$ROOT/.agents/tests/replay/cases/76.txt" | head -1)
+expect "case 76 recognises an approval request" send "$gate76" \
+  "I need your approval before changing the records." 0
+expect "case 57 recognises an approval request" send "$gate57" \
+  "Applying the pinned-notices migration needs your approval." 0
 expect "case 57's yes opens on an ask to apply the migration" send "$gate57" \
   "The live database is missing one change. Shall I apply the migration now?" 0
 expect "and on an ask for a yes that names it" send "$gate57" \
