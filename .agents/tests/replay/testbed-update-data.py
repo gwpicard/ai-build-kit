@@ -29,15 +29,15 @@ def install_skills(project, kit):
             elif target.exists():
                 shutil.rmtree(target)
             shutil.copytree(skill, target, symlinks=True)
-            # The real installer also gives Claude Code its own copy of each
-            # skill, which is where the six commands come from afterwards.
+            # The real installer also links each skill into Claude Code's
+            # folder, which is where the six commands come from afterwards.
             claude = project / '.claude/skills' / skill.name
             if claude.is_symlink():
                 claude.unlink()
             elif claude.exists():
                 shutil.rmtree(claude)
             claude.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copytree(skill, claude, symlinks=True)
+            claude.symlink_to(Path('../../.agents/skills') / skill.name)
     lock = project / 'skills-lock.json'
     data = json.loads(lock.read_text()) if lock.is_file() else {'version': 1, 'skills': {}}
     for skill in (kit / '.agents/skills').iterdir():
@@ -76,8 +76,35 @@ def seed(source, project, kit):
         subprocess.run(['git', '-C', str(project), 'config', key, value], check=True)
 
 
+def update_branch(project, start):
+    """The local branch the kit saved the update on, when it kept main as it was."""
+    current = git(project, 'branch', '--show-current').stdout.decode().strip()
+    names = git(project, 'for-each-ref', '--format=%(refname:short)', 'refs/heads').stdout.decode().split()
+    made = [n for n in names if n != current
+            and git(project, 'rev-list', '--count', n, '^' + current).stdout.decode().strip() not in ('', '0')
+            and git(project, 'merge-base', '--is-ancestor', start, n).returncode == 0]
+    return made[0] if len(made) == 1 else None
+
+
 def snapshot(project, phase):
     project = Path(project)
+    work = json.loads(Path(str(project) + '.person-work.json').read_text())
+    branch = update_branch(project, work['start'])
+    if not branch:
+        return snapshot_tree(project, project, phase, None)
+    # Read the update where the kit saved it, in a separate checkout, so the
+    # person's working folder and unsaved work stay untouched.
+    tree = Path(str(project) + '.update-tree')
+    subprocess.run(['git', '-C', str(project), 'worktree', 'add', '-q', '--detach', str(tree), branch], check=True)
+    try:
+        if (project / 'node_modules').exists():
+            (tree / 'node_modules').symlink_to(project / 'node_modules')
+        return snapshot_tree(project, tree, phase, branch)
+    finally:
+        subprocess.run(['git', '-C', str(project), 'worktree', 'remove', '--force', str(tree)], check=True)
+
+
+def snapshot_tree(project, tree, phase, branch):
     kit = Path(Path(str(project) + '.update-kit').read_text())
     here = Path(__file__).resolve().parent
     env = dict(os.environ, PATH=str(here / 'fake-github') + os.pathsep + str(here / 'fake-host') + os.pathsep + os.environ['PATH'],
@@ -89,30 +116,30 @@ def snapshot(project, phase):
                PYTHONDONTWRITEBYTECODE='1')
     def run(args):
         try:
-            r = subprocess.run(args, cwd=project, capture_output=True, text=True, timeout=180, env=env)
+            r = subprocess.run(args, cwd=tree, capture_output=True, text=True, timeout=180, env=env)
             return {'exit': r.returncode, 'stdout': r.stdout, 'stderr': r.stderr}
         except (OSError, subprocess.TimeoutExpired) as error:
             return {'exit': None, 'stdout': '', 'stderr': 'could not run: ' + str(error)}
     # Use the project's command without installing tools or starting a service.
-    package = project / 'package.json'
+    package = tree / 'package.json'
     check = run(['npm', 'run', 'check']) if package.exists() and 'check' in json.loads(package.read_text()).get('scripts', {}) else {
         'exit': None, 'stdout': '', 'stderr': 'could not run: project has no npm check command'}
-    if not (project / 'node_modules').exists() and check['exit'] != 0:
+    if not (tree / 'node_modules').exists() and check['exit'] != 0:
         check['could_not_run'] = 'Dependencies are absent; the command exit is retained, not a pass.'
-    scripts = project / '.agents/skills/maintain/scripts'
-    leftovers = run(['python3', str(scripts / 'kit-leftovers.py'), str(project)])
-    upgrade = run(['python3', str(scripts / 'upgrade-check.py'), str(project)])
+    scripts = tree / '.agents/skills/maintain/scripts'
+    leftovers = run(['python3', str(scripts / 'kit-leftovers.py'), str(tree)])
+    upgrade = run(['python3', str(scripts / 'upgrade-check.py'), str(tree)])
     different = []
     unsaved = []
     for source in (kit / '.agents/skills').rglob('*'):
         if source.is_file():
-            target = project / source.relative_to(kit)
+            target = tree / source.relative_to(kit)
             if not target.is_file() or source.read_bytes() != target.read_bytes():
                 different.append(str(source.relative_to(kit)))
-            if git(project, 'show', 'HEAD:' + str(source.relative_to(kit))).stdout != source.read_bytes():
+            if git(tree, 'show', 'HEAD:' + str(source.relative_to(kit))).stdout != source.read_bytes():
                 unsaved.append(str(source.relative_to(kit)))
-    lock = project / 'skills-lock.json'
-    if lock.is_file() and git(project, 'show', 'HEAD:skills-lock.json').stdout != lock.read_bytes():
+    lock = tree / 'skills-lock.json'
+    if lock.is_file() and git(tree, 'show', 'HEAD:skills-lock.json').stdout != lock.read_bytes():
         unsaved.append('skills-lock.json')
     work = json.loads(Path(str(project) + '.person-work.json').read_text())
     lost = []
@@ -133,7 +160,7 @@ def snapshot(project, phase):
                 lost.append(name + ': included in ' + commit)
     refs = subprocess.run(['git', '-C', str(project) + '.git', 'for-each-ref', '--format=%(refname)'],
                           capture_output=True, text=True)
-    data = {'project_check': check, 'leftovers': leftovers, 'upgrade': upgrade,
+    data = {'update_branch': branch, 'project_check': check, 'leftovers': leftovers, 'upgrade': upgrade,
             'different_skills': different, 'unsaved_skills': unsaved, 'person_work_faults': lost, 'remote_refs': refs.stdout.splitlines()}
     Path(str(project) + '.' + phase + '.json').write_text(json.dumps(data, indent=2))
     return data
