@@ -5,9 +5,21 @@ draft: false
 tableOfContents: false
 ---
 
+![AI Build Kit: build tools you can maintain without reading code](/ai-build-kit/hero.jpg)
+
 AI Build Kit helps people who do not write code build tools with a coding agent, a program that reads and changes project files. It is intended for people who can create accounts and follow technical setup instructions.
 
 You describe the tool, and the agent builds one agreed piece of work at a time. A piece is a change small enough to build in one session. You try each change and decide whether to merge it into the main branch, the project’s main line of development. A branch is a separate line of work; merging incorporates its changes into another branch.
+
+## Why this kit
+
+The person who needs an internal tool usually knows best what it should do, and often only discovers the details while building it. AI Build Kit lets that person build the tool and keep it running without reading code.
+
+- **It's yours.** Each tool is a standard Next.js and Supabase project in your GitHub, running on Vercel or on a server you rent through Coolify, which can host several tools on one machine.
+- **It lasts.** The agent's work goes through scripted checks and a second agent's review, you try every change in a preview before deciding whether to merge it, and a fixed recipe handles launch, backups and rollback.
+- **You get better at it.** Every change starts as a small piece of work with written acceptance criteria, so you learn to specify and lead the build.
+
+[How it differs](/ai-build-kit/how-it-differs/) compares the kit with hosted app builders such as Lovable and Replit, and with skill sets written for developers.
 
 ## What happens
 

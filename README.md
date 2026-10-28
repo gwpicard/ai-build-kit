@@ -1,5 +1,7 @@
 # AI Build Kit
 
+<p align="center"><img src="https://gwpicard.github.io/ai-build-kit/hero.jpg" alt="AI Build Kit: build tools you can maintain without reading code" width="100%"></p>
+
 [![Licence: MIT](https://img.shields.io/github/license/gwpicard/ai-build-kit)](LICENSE)
 [![Latest release](https://img.shields.io/github/v/release/gwpicard/ai-build-kit)](https://github.com/gwpicard/ai-build-kit/releases/latest)
 
@@ -29,6 +31,67 @@ provide legal, medical, financial or security advice. You use it at your own
 risk. The terms of the services you run a tool on, such as a host or a database
 plan, are between you and those services, and you are responsible for reading
 and following them.
+
+## Why this kit
+
+The person who needs an internal tool usually knows best what it should do,
+and often only discovers the details while building it. AI Build Kit lets that
+person build the tool with an AI coding tool such as Claude Code or Codex,
+and keep it running without reading code.
+
+- **It's yours.** Each tool is a standard Next.js and Supabase project in your
+  GitHub, running on Vercel or on a server you rent through Coolify, which can
+  host several tools on one machine. You can move it, and a developer can take
+  it over at any time.
+- **It lasts.** The agent's work goes through scripted checks and a second
+  agent's review, you try every change in a preview before deciding whether to
+  merge it, and a fixed recipe handles launch, backups and rollback.
+- **You get better at it.** Every change starts as a small piece of work with
+  written acceptance criteria, its "Done when", so you learn to specify and
+  lead the build as well as use the result.
+
+### Compared with hosted app builders
+
+Lovable, Replit, Bolt and similar builders are the fastest route to a working
+demo, and the right choice for a prototype. However, the app lives on their
+platform: the hosting, the database and the deploys stay tied to it even when
+the code can be exported, and reviewing what the AI built is largely left to
+you. The kit takes longer to set up, because you create the accounts it runs in,
+and in exchange the tool runs where you control it and its changes are checked
+before they are merged.
+
+### Compared with developer skill sets
+
+Skill sets such as Superpowers or Addy Osmani's agent skills rest on the same
+idea as the kit: a capable model works best inside a well-designed harness.
+They are written for developers, who choose the stack and hosting and enforce
+the rules by reading the code. The kit is written for people who do not read
+code, so it fixes the stack through recipes, runs its rules as scripts where
+it can, and asks you to judge each change by trying it.
+
+### How it holds up
+
+| | AI coding tool alone | Developer skill sets | Hosted app builders | AI Build Kit |
+|---|---|---|---|---|
+| Code and hosting | Your repository; you choose the hosting | Your repository; you choose the hosting | The platform hosts the app; code export varies | Your GitHub, and your Vercel or Coolify account |
+| How changes are verified | You read the code | Written instructions to the agent, then you read the code | Platform scans, often optional; you test the app | Scripted checks and a second agent's review, then you try a preview |
+| Going live and upkeep | Up to you | Up to you | Built into the platform | A fixed recipe for each host, and `/maintain` |
+| Time to a first app | Hours | Hours | Minutes | Longer: you set up GitHub and hosting accounts first |
+
+During each build, a script confirms that every new test fails without the
+change and passes with it. Once a piece's tests are committed, the project
+check on its pull request fails any commit that alters them, unless the commit
+is marked as a test fix with a reason. Before you see a preview, the agent
+removes code the change added but does not need, and the merge waits until
+the second review has no blocking finding. The launch script will not put a
+tool live until a backup check passes and a rollback step is defined, and
+after launch `/maintain` compares the live tool with the code and reports what
+differs, such as a database change not yet applied.
+
+Claude Code is fully tested and Codex is expected to work. Cursor, Gemini
+CLI and Copilot are experimental. Each recipe's `PROVEN.md` records
+which steps have run on a live host; others, such as restoring a backup, are
+rehearsed by script but not yet proven live.
 
 ## Quick start
 
