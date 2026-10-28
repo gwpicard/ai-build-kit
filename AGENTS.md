@@ -27,8 +27,9 @@ before editing.
   get no adapter. Load one by its path: `humanizer/SKILL.md` for writing,
   `review-issues/SKILL.md` to choose the next piece of work,
   `stack-research/SKILL.md` to check the recipes against their products,
-  `review-public-docs/SKILL.md` before a release, and `release-notes/SKILL.md`
-  to write a release's notes. The stack-research note goes to
+  `review-public-docs/SKILL.md` before a release, `release-notes/SKILL.md`
+  to write a release's notes, and `housekeeping/SKILL.md` to clear what
+  maintainer work left on this computer. The stack-research note goes to
   `.agents/tmp/stack-research/`, which git ignores, so it never ships.
 - `.claude/`, `.cursor/`, `.gemini/`, `.codex/agents/`, `.github/agents/`:
   generated adapters. Change the canonical skill or agent, then run
