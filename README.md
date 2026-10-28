@@ -39,13 +39,13 @@ and often only discovers the details while building it. AI Build Kit lets that
 person build the tool with an AI coding tool such as Claude Code or Codex,
 and keep it running without reading code.
 
-- **It's yours.** Each tool is a standard Next.js and Supabase project in your
-  GitHub, running on Vercel or on a server you rent through Coolify, which can
-  host several tools on one machine. You can move it, and a developer can take
-  it over at any time.
+- **It's yours.** Each tool built on a recipe is a standard Next.js and
+  Supabase project in your GitHub, running on Vercel or on a server you rent
+  through Coolify, which can host several tools on one machine. You can move
+  it, and a developer can take it over at any time.
 - **It lasts.** The agent's work goes through scripted checks and a second
-  agent's review, you try every change in a preview before deciding whether to
-  merge it, and a fixed recipe handles launch, backups and rollback.
+  agent's review, you try each change before deciding whether to merge it, and
+  a fixed recipe handles launch, backups and rollback.
 - **You get better at it.** Every change starts as a small piece of work with
   written acceptance criteria, its "Done when", so you learn to specify and
   lead the build as well as use the result.
@@ -54,9 +54,9 @@ and keep it running without reading code.
 
 Lovable, Replit, Bolt and similar builders are the fastest route to a working
 demo, and the right choice for a prototype. However, the app lives on their
-platform: the hosting, the database and the deploys stay tied to it even when
-the code can be exported, and reviewing what the AI built is largely left to
-you. The kit takes longer to set up, because you create the accounts it runs in,
+platform: by default the hosting, the database and the deploys run there, and
+moving them out is a project of its own. Reviewing what the AI built is
+largely left to you. The kit takes longer to set up, because you create the accounts it runs in,
 and in exchange the tool runs where you control it and its changes are checked
 before they are merged.
 
@@ -64,9 +64,9 @@ before they are merged.
 
 Skill sets such as Superpowers or Addy Osmani's agent skills rest on the same
 idea as the kit: a capable model works best inside a well-designed harness.
-They are written for developers, who choose the stack and hosting and enforce
-the rules by reading the code. The kit is written for people who do not read
-code, so it fixes the stack through recipes, runs its rules as scripts where
+They are written for developers, who choose the stack and hosting and can read
+the code to check what the agent did. The kit is written for people who do not
+read code, so it fixes the stack through recipes, runs its rules as scripts where
 it can, and asks you to judge each change by trying it.
 
 ### How it holds up
@@ -74,21 +74,21 @@ it can, and asks you to judge each change by trying it.
 | | AI coding tool alone | Developer skill sets | Hosted app builders | AI Build Kit |
 |---|---|---|---|---|
 | Code and hosting | Your repository; you choose the hosting | Your repository; you choose the hosting | The platform hosts the app; code export varies | Your GitHub, and your Vercel or Coolify account |
-| How changes are verified | You read the code | Written instructions to the agent, then you read the code | Platform scans, often optional; you test the app | Scripted checks and a second agent's review, then you try a preview |
+| How changes are verified | You read the code | Written instructions to the agent, then you read the code | Platform scans, often optional; you test the app | Scripted checks and a second agent's review, then you try the change |
 | Going live and upkeep | Up to you | Up to you | Built into the platform | A fixed recipe for each host, and `/maintain` |
 | Time to a first app | Hours | Hours | Minutes | Longer: you set up GitHub and hosting accounts first |
 
-During each build, a script confirms that every new test fails without the
-change and passes with it. Once a piece's tests are committed, the project
-check on its pull request fails any commit that alters them, unless the commit
-is marked as a test fix with a reason. Before you see a preview, the agent
-removes code the change added but does not need, and the merge waits until
-the second review has no blocking finding. The launch script will not put a
-tool live until a backup check passes and a rollback step is defined, and
-after launch `/maintain` compares the live tool with the code and reports what
+During each build, a script confirms that every new test of a behaviour change
+fails without the change and passes with it. Once a piece's tests are
+committed, the project check on its pull request fails any commit that alters
+them, unless the commit is marked as a test fix with a reason. Before you try
+the change, the agent removes code the change added but does not need, and the
+merge waits until the second review has no blocking finding. The launch script
+does not record a launch as done until a backup is confirmed and a rollback
+step is defined, and after launch `/maintain` compares the live tool with the code and reports what
 differs, such as a database change not yet applied.
 
-Claude Code is fully tested and Codex is expected to work. Cursor, Gemini
+Claude Code is tested and Codex is expected to work. Cursor, Gemini
 CLI and Copilot are experimental. Each recipe's `PROVEN.md` records
 which steps have run on a live host; others, such as restoring a backup, are
 rehearsed by script but not yet proven live.
