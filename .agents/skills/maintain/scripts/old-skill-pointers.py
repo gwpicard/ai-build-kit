@@ -365,6 +365,11 @@ def own_document_pointers(project, own):
     the project's own Markdown, outside AGENTS.md, masterplan.md and the kit's
     own skill folders. These are only reported: the words are the person's."""
     kit = set(KIT_SKILLS) | set(FORMER_NAMES)
+    leftovers = runpy.run_path(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                          "kit-leftovers.py"))
+    documents = {p for p in leftovers["released"]() if p.startswith("docs/") and p.endswith(".md")}
+    handled = documents | {f[1] for f in leftovers["skill_findings"](project)
+                           if f[0] in ("adapter", "kitcopy", "hook", "folder")}
     found = []
     for here, dirs, names in os.walk(project):
         rel_here = os.path.relpath(here, project).replace(os.sep, "/")
@@ -380,7 +385,8 @@ def own_document_pointers(project, own):
         dirs[:] = keep
         for name in sorted(names):
             rel = (rel_here + "/" + name).lstrip("/")
-            if not name.endswith(".md") or rel in FILES:
+            if (not name.endswith(".md") or rel in FILES
+                    or any(rel == p or rel.startswith(p + "/") for p in handled)):
                 continue
             try:
                 with open(os.path.join(here, name), encoding="utf-8") as handle:
