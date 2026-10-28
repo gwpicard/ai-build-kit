@@ -284,6 +284,10 @@ for name,(script,old,new) in mutations.items():
         else:
             raise AssertionError('removing unfinished status was not caught')
         continue
+    if name == 'plain version marker':
+        # A stable marker absent from the release record still belongs to the
+        # kit. A recorded marker would pass the hash check independently.
+        put(p/'.ai-build-kit-version', 'v999.0.0\n')
     try:
         sentence_pending(skills)
     except AssertionError:

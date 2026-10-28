@@ -39,7 +39,8 @@ DEFAULT_CHECKS="release-builder starter-rehearsal agent-plugin session-start sec
 PUBLISH_CHECKS="release-builder release-publication validate-kit"
 MODE_CHECKS="validate-kit fake-github"
 
-MUTATIONS="reach-wide-threshold
+MUTATIONS="released-docs-unrecorded
+reach-wide-threshold
 reach-route-groups
 reach-alias-imports
 reach-tables-types
@@ -191,6 +192,7 @@ backbone-api-merge-unbound"
 
 describe() {
   case "$1" in
+    released-docs-unrecorded) echo "released documents are omitted from the whole-copy record" ;;
     reach-wide-threshold) echo "the route threshold rises so a broad route reach is no longer reported as wide" ;;
     reach-route-groups) echo "Next route groups remain in the reported address" ;;
     reach-alias-imports) echo "the built-in import reader stops resolving @/ aliases" ;;
@@ -346,6 +348,7 @@ describe() {
 
 checks_for() {
   case "$1" in
+    released-docs-unrecorded) echo "whole-copy-leftovers" ;;
     reach-wide-threshold|reach-route-groups|reach-alias-imports|reach-tables-types|reach-wide-dependents|reach-deleted-paths|reach-wide-tables) echo "reach-rehearsal" ;;
     publish-writes-a-tree) echo "$PUBLISH_CHECKS" ;;
     gate-widened) echo "$MODE_CHECKS" ;;
@@ -446,6 +449,15 @@ apply() {
   name=$1
   tree=$2
   case "$name" in
+    released-docs-unrecorded)
+      edit "$tree/.agents/tools/record-released-copies.py" '
+import os
+p = os.environ["MUTATE_TARGET"]
+s = open(p).read()
+old = "    return True\n"
+assert old in s, "release recording filter not found"
+open(p, "w").write(s.replace(old, "    return not path.startswith(\"docs/\")\n", 1))'
+      ;;
     recipe-freshness-date)
       edit "$tree/.agents/skills/maintain/scripts/recipe-freshness.py" '
 import os

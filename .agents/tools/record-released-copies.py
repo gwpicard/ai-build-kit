@@ -3,10 +3,9 @@
 an untouched copy from one somebody changed.
 
 A project founded from a whole copy of the kit keeps the kit's own files at its
-root: the Agent Plugins folder, the Claude plugin folder, WORKFLOW.md, the
-kit's README, the guard file, the adapter builder, the session-end hook and
-the version marker. No update refreshes them, so after an update they describe
-an older kit. The maintain skill's `kit-leftovers.py` offers to remove one
+root, including documents and generated adapters. No update refreshes them,
+so after an update they describe an older kit. The maintain skill's
+`kit-leftovers.py` offers to remove one
 only when every byte matches a copy a release shipped at the same path. The
 record also keeps canonical skill files, so a later retirement can recognise
 their released bytes and preserve personal additions. This tool writes the
@@ -36,14 +35,6 @@ import tarfile
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 RECORD = os.path.join(ROOT, ".agents", "skills", "maintain", "scripts", "kit-released-copies.json")
 
-# The files and folders a whole copy carries that only the kit needs.
-FILES = (
-    "WORKFLOW.md", "README.md", ".ai-build-kit-version",
-    ".agents/guard/blocked-commands.md", ".agents/tools/build-adapters.sh",
-    ".agents/hooks/session-end-sync.sh",
-)
-FOLDERS = ("agent-plugin/", ".claude-plugin/", ".agents/skills/")
-
 COMMENT = ("The kit files a released whole copy carried, by path, each as the first "
            "16 hex digits of its SHA-256. kit-leftovers.py removes such a file only "
            "when it matches one of these at the same path. Written by "
@@ -55,7 +46,8 @@ def digest(data):
 
 
 def wanted(path):
-    return path in FILES or path.startswith(FOLDERS)
+    # Sources are assembled releases, so every regular file shipped.
+    return True
 
 
 def from_archive(path):

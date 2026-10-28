@@ -254,5 +254,103 @@ first=record.read_bytes();subprocess.run([sys.executable,str(tool),str(release)]
 print('  ok: the recorder keeps skill hashes and a second run changes nothing')
 PY
 
+# Released documents use the same removal decision and once-only notice as
+# other leftovers. Isolate these findings from unrelated upgrade steps.
+python3 - "$ROOT" "$work" <<'PYDOC'
+import contextlib, hashlib, importlib.util, io, json, pathlib, shutil, subprocess, sys
+root, work = map(pathlib.Path, sys.argv[1:])
+scripts = root/'.agents/skills/maintain/scripts'
+def load(name):
+    spec = importlib.util.spec_from_file_location(name, scripts/(name+'.py'))
+    mod = importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
+    return mod
+left = load('kit-leftovers'); upgrade = load('upgrade-check')
+p = work/'documents'; (p/'docs').mkdir(parents=True)
+original = (root/'.agents/tests/fixtures/upgrade-v1.1.2/SOURCES.md.txt').read_bytes()
+(p/'docs/SOURCES.md').write_bytes(original)
+notes = 'Our notes: `.agents/skills/implement/references/merge.md`.\n'
+(p/'docs/notes.md').write_text(notes)
+(p/'masterplan.md').write_text('Our project.\n')
+# Exercise the real pointer scan and leftover classification, while leaving
+# unrelated foundation migrations to upgrade-rehearsal.sh.
+def document_findings(project):
+    result = subprocess.run([sys.executable, str(scripts/'old-skill-pointers.py'), str(project)],
+                            capture_output=True, text=True, check=True)
+    pointers = [('pointer', *line.split('\t')) for line in result.stdout.splitlines()]
+    return left.skill_findings(project) + pointers
+upgrade.findings = document_findings
+upgrade.planfile_findings = lambda project, monthly: []
+def listing():
+    out = io.StringIO()
+    with contextlib.redirect_stdout(out):
+        code = upgrade.listing(str(p), False)
+    return code, out.getvalue()
+code, out = listing()
+assert code == 1 and 'kitcopy\tdocs/SOURCES.md' in out, out
+assert 'say\tremove\t' in out and 'pointer\tdocs/SOURCES.md' not in out, out
+assert 'pointer\tdocs/notes.md:' in out and 'document of your own' in out, out
+assert (p/'docs/SOURCES.md').read_bytes() == original
+upgrade.decline(str(p), ['remove'])
+code, out = listing()
+assert code == 0 and 'say\tremove\t' not in out, out
+assert 'declined\tremove\tkitcopy\tdocs/SOURCES.md' in out, out
+assert 'remove' in (p/'.ai-build-kit-maintenance').read_text()
+print('  ok: the unchanged released document is offered, and a recorded no stops the offer')
+# A yes uses the existing removal step and leaves no offer on the next visit.
+upgrade.apply(str(p), 'remove')
+code, out = listing()
+assert code == 0 and 'docs/SOURCES.md' not in out, out
+assert not (p/'docs/SOURCES.md').exists()
+assert (p/'docs/notes.md').read_text() == notes
+print('  ok: an approved removal leaves personal notes intact and is not offered again')
+(p/'docs/SOURCES.md').write_bytes(original + b'\nOur added credit.\n')
+changed = (p/'docs/SOURCES.md').read_bytes()
+code, out = listing()
+assert code == 0 and "it started as the kit's document and was changed, so it stays" in out, out
+assert 'pointer\tdocs/SOURCES.md' not in out and 'say\tremove\t' not in out, out
+left.remove(str(p), left.skill_findings(str(p)))
+assert (p/'docs/SOURCES.md').read_bytes() == changed
+(p/'.ai-build-kit-maintenance').write_text('upgrade-offered|'+upgrade.installed_version()+'\n')
+code, out = listing()
+assert code == 0 and 'say\tleft\t' not in out, out
+assert 'pointer\tdocs/notes.md:' in out
+print('  ok: an edited kit document stays with one explanation and no pointer lines')
+# A file changed between the offer and removal must stay too.
+(p/'docs/SOURCES.md').write_bytes(original)
+found = left.skill_findings(str(p))
+(p/'docs/SOURCES.md').write_bytes(changed)
+left.remove(str(p), found)
+assert (p/'docs/SOURCES.md').read_bytes() == changed
+print('  ok: a document edited after listing is rechecked before removal')
+# Generated command copies already use the adapter offer on the shared route.
+(p/'.claude/commands').mkdir(parents=True)
+(p/'.claude/commands/shape.md').write_text('<!-- GENERATED from .agents/skills/shape/. Do not edit here; regenerate with .agents/tools/build-adapters.sh -->\n'+notes)
+(p/'skills-lock.json').write_text(json.dumps({'skills': {'shape': {'source': 'gwpicard/ai-build-kit'}}}))
+found = document_findings(str(p))
+assert ('adapter', '.claude/commands/shape.md') in found, found
+assert not any(f[0]=='pointer' and f[1].startswith('.claude/commands/') for f in found), found
+print('  ok: generated command copies keep their adapter offer without personal pointer reports')
+# Both archive and folder sources must record all shipped regular files.
+tool_root = work/'document-recorder'; tool = tool_root/'.agents/tools/record-released-copies.py'
+tool.parent.mkdir(parents=True); shutil.copy2(root/'.agents/tools/record-released-copies.py', tool)
+record = tool_root/'.agents/skills/maintain/scripts/kit-released-copies.json'; record.parent.mkdir(parents=True)
+release = work/'v1.1.2'; (release/'docs').mkdir(parents=True)
+(release/'docs/SOURCES.md').write_bytes(original)
+(release/'.ai-build-kit-version').write_text('v1.1.2\n')
+(release/'LICENSE').write_text('Release licence.\n')
+import tarfile
+archive = work/'ai-build-kit-v1.1.2.tar.gz'
+with tarfile.open(archive, 'w:gz') as handle:
+    for path in release.rglob('*'):
+        if path.is_file(): handle.add(path, arcname='./'+path.relative_to(release).as_posix())
+for source in (release, archive):
+    if record.exists(): record.unlink()
+    subprocess.run([sys.executable, str(tool), str(source)], check=True, capture_output=True)
+    files = json.loads(record.read_text())['files']
+    assert files['docs/SOURCES.md'] == [hashlib.sha256(original).hexdigest()[:16]]
+    assert files['LICENSE'] == [hashlib.sha256(b'Release licence.\n').hexdigest()[:16]]
+print('  ok: folder and archive recording include released documents and other shipped files')
+PYDOC
+
 echo
 echo "whole-copy-leftovers.sh: all checks passed"
